@@ -1,0 +1,24 @@
+# Python
+__pycache__/
+*.pyc
+venv/
+backend/venv/
+backend/__pycache__/
+backend/instance/
+
+# Node
+node_modules/
+frontend/node_modules/
+frontend/.vite/
+
+# Builds
+frontend/dist/
+
+# Secrets & runtime
+backend/.env
+backend/license.key
+*.pid
+nohup.out
+
+# OS
+.DS_Store

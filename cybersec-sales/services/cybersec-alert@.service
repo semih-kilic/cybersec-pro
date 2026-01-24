@@ -1,0 +1,7 @@
+[Unit]
+Description=Send alert email when CyberSec service fails
+After=network.target
+
+[Service]
+Type=oneshot
+ExecStart=/home/sam/APPS/cybersec-sales/scripts/send-alert.sh %i

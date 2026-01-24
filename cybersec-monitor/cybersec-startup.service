@@ -1,0 +1,43 @@
+[Unit]
+Description=CyberSec Pro Startup Services
+After=network-online.target
+Wants=network-online.target
+StartLimitIntervalSec=300
+StartLimitBurst=3
+
+[Service]
+Type=oneshot
+User=sam
+Group=sam
+WorkingDirectory=/home/sam/APPS/cybersec-monitor
+Environment="PATH=/home/sam/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
+Environment="HOME=/home/sam"
+ExecStart=/bin/bash /home/sam/APPS/cybersec-monitor/startup.sh
+RemainAfterExit=yes
+UMask=0077
+TimeoutStartSec=120
+StandardOutput=append:/var/log/cybersec/startup.log
+StandardError=append:/var/log/cybersec/startup.log
+LogsDirectory=cybersec
+LogsDirectoryMode=0700
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=full
+ProtectKernelTunables=true
+ProtectKernelModules=true
+ProtectControlGroups=true
+ProtectKernelLogs=true
+ProtectClock=true
+ProtectHostname=true
+RestrictRealtime=true
+LockPersonality=true
+MemoryDenyWriteExecute=false
+RestrictSUIDSGID=true
+RestrictNamespaces=true
+CapabilityBoundingSet=
+AmbientCapabilities=
+RestrictAddressFamilies=AF_UNIX AF_INET AF_INET6 AF_NETLINK
+UMask=0077
+
+[Install]
+WantedBy=multi-user.target

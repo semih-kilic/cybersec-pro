@@ -1,0 +1,12 @@
+# Allow all user agents to crawl the site, except for disallowed directories.
+User-agent: *
+Allow: /
+Disallow: /admin/
+Disallow: /api/
+Disallow: /downloads/
+
+# Sitemap location
+Sitemap: https://semihkilic.com/sitemap.xml
+
+# A 1-second crawl delay is requested for bots that support it.
+Crawl-delay: 1

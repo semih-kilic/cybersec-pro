@@ -1,0 +1,52 @@
+version: '3.8'
+
+services:
+  kali-tools:
+    image: kalilinux/kali-rolling:latest
+    container_name: cybersec-kali-tools
+    hostname: kali-cybersec
+    restart: unless-stopped
+    privileged: true
+    network_mode: host
+    volumes:
+      - ./kali-data:/root/data
+      - ./kali-tools:/root/tools
+      - ./backend:/root/cybersec-backend
+      - /var/run/docker.sock:/var/run/docker.sock
+    environment:
+      - DEBIAN_FRONTEND=noninteractive
+      - TERM=xterm-256color
+    working_dir: /root
+    command: >
+      bash -c "
+        echo '🐳 Starting Kali Linux container...' &&
+        apt-get update -qq &&
+        apt-get install -y -qq curl wget git python3 python3-pip &&
+        echo '✅ Kali container ready!' &&
+        tail -f /dev/null
+      "
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5001/api/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  kali-installer:
+    image: kalilinux/kali-rolling:latest
+    container_name: cybersec-kali-installer
+    depends_on:
+      - kali-tools
+    volumes:
+      - ./kali-data:/root/data
+      - ./kali-tools:/root/tools
+      - ./backend:/root/cybersec-backend
+    environment:
+      - DEBIAN_FRONTEND=noninteractive
+    working_dir: /root
+    command: >
+      bash -c "
+        echo '🔧 Installing all Kali tools...' &&
+        /root/cybersec-backend/install-all-kali-tools.sh &&
+        echo '✅ All tools installed!'
+      "

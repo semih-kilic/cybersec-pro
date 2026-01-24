@@ -1,0 +1,82 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body {
+    @apply bg-dark-bg text-white antialiased;
+    margin: 0;
+    min-width: 320px;
+    min-height: 100vh;
+  }
+}
+
+@layer utilities {
+  .glass {
+    @apply bg-dark-card/80 backdrop-blur-xl border border-dark-border;
+  }
+  
+  .gradient-text {
+    @apply bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent;
+  }
+  
+  .cyber-glow {
+    @apply shadow-[0_0_20px_rgba(0,255,136,0.3)];
+  }
+}
+
+/* Kali Dragon Animations */
+@keyframes float {
+  0%, 100% {
+    transform: translateY(0) translateX(0);
+    opacity: 0.3;
+  }
+  25% {
+    transform: translateY(-20px) translateX(10px);
+    opacity: 0.6;
+  }
+  50% {
+    transform: translateY(-40px) translateX(-5px);
+    opacity: 0.3;
+  }
+  75% {
+    transform: translateY(-20px) translateX(-10px);
+    opacity: 0.5;
+  }
+}
+
+.animate-float {
+  animation: float 15s ease-in-out infinite;
+}
+
+/* Custom Scrollbar */
+.scrollbar-thin::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+.scrollbar-thin::-webkit-scrollbar-track {
+  background: rgba(30, 30, 40, 0.5);
+  border-radius: 3px;
+}
+
+.scrollbar-thin::-webkit-scrollbar-thumb {
+  background: rgba(54, 123, 240, 0.5);
+  border-radius: 3px;
+}
+
+.scrollbar-thin::-webkit-scrollbar-thumb:hover {
+  background: rgba(54, 123, 240, 0.7);
+}
+
+.scrollbar-thumb-gray-700::-webkit-scrollbar-thumb {
+  background: rgba(55, 65, 81, 0.7);
+}
+
+/* Line clamp utility */
+.line-clamp-2 {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}

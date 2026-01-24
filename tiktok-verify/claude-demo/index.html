@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Claude 3.5 Sonnet Free Demo</title>
+    <script src="https://js.puter.com/v2/"></script>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 2em; }
+        #output { margin-top: 1em; padding: 1em; background: #f4f4f4; border-radius: 8px; }
+        button { margin-top: 1em; }
+    </style>
+</head>
+<body>
+    <h1>Claude 3.5 Sonnet Free Demo (via Puter.js)</h1>
+    <label for="prompt">Prompt:</label><br>
+    <textarea id="prompt" rows="4" cols="60">Explain quantum computing in simple terms</textarea><br>
+    <label for="model">Model:</label>
+    <select id="model">
+        <option value="claude-sonnet-4-5">Claude Sonnet 4.5</option>
+        <option value="claude-opus-4-5">Claude Opus 4.5</option>
+        <option value="claude-haiku-4-5">Claude Haiku 4.5</option>
+    </select><br>
+    <button onclick="runClaude()">Run Claude</button>
+    <div id="output"></div>
+    <script>
+    function runClaude() {
+        const prompt = document.getElementById('prompt').value;
+        const model = document.getElementById('model').value;
+        const output = document.getElementById('output');
+        output.innerHTML = '<em>Loading...</em>';
+        puter.ai.chat(prompt, {model: model})
+            .then(response => {
+                output.innerText = response.message.content[0].text;
+            })
+            .catch(e => {
+                output.innerText = 'Error: ' + e.message;
+            });
+    }
+    </script>
+</body>
+</html>

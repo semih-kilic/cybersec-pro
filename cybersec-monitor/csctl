@@ -1,0 +1,360 @@
+#!/bin/bash
+# CyberSec Pro - Service Control CLI
+# Easy management of all CyberSec services
+
+set -u
+set -o pipefail
+IFS=$'\n\t'
+PATH="/home/sam/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
+
+LOG_DIR="/var/log/cybersec"
+LOG_READ_DIR="/var/log/cybersec"
+if [ ! -w "$LOG_DIR" ]; then
+    LOG_DIR="/tmp/cybersec"
+    mkdir -p "$LOG_DIR" 2>/dev/null || true
+fi
+if [ ! -r "$LOG_READ_DIR/monitor.log" ]; then
+    LOG_READ_DIR="$LOG_DIR"
+fi
+
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+YELLOW='\033[1;33m'
+BLUE='\033[0;34m'
+CYAN='\033[0;36m'
+NC='\033[0m' # No Color
+BOLD='\033[1m'
+
+show_banner() {
+    echo -e "${CYAN}"
+    echo "╔══════════════════════════════════════════════════════════════╗"
+    echo "║       🛡️  CyberSec Pro Service Control  🛡️                   ║"
+    echo "╚══════════════════════════════════════════════════════════════╝"
+    echo -e "${NC}"
+}
+
+show_status() {
+    echo -e "\n${BOLD}📊 Service Status:${NC}\n"
+
+    check_url_ok() {
+        local url="$1"
+        local attempts=3
+        local i=1
+        while [ $i -le $attempts ]; do
+            if command -v curl >/dev/null 2>&1; then
+                code=$(curl -fsS --max-time 3 -o /dev/null -w "%{http_code}" "$url" 2>/dev/null || true)
+                if [ "$code" = "200" ]; then
+                    return 0
+                fi
+            fi
+            sleep 1
+            i=$((i + 1))
+        done
+        return 1
+    }
+
+    check_url_status() {
+        local url="$1"
+        if command -v curl >/dev/null 2>&1; then
+            curl -fsS --max-time 3 -o /dev/null -w "%{http_code}" "$url" 2>/dev/null || echo "000"
+            return
+        fi
+        echo "000"
+    }
+    
+    # Cloudflare Tunnel
+    if pgrep -f "cloudflared tunnel" > /dev/null 2>&1; then
+        echo -e "  ${GREEN}✅${NC} Cloudflare Tunnel    ${GREEN}RUNNING${NC}"
+    else
+        echo -e "  ${RED}❌${NC} Cloudflare Tunnel    ${RED}STOPPED${NC}"
+    fi
+    
+    # Sales API
+    if check_url_ok "http://127.0.0.1:5002/api/health"; then
+        echo -e "  ${GREEN}✅${NC} Sales API (5002)     ${GREEN}RUNNING${NC}"
+    else
+        code=$(check_url_status "http://127.0.0.1:5002/api/health")
+        echo -e "  ${RED}❌${NC} Sales API (5002)     ${RED}STOPPED${NC} (${code})"
+    fi
+    
+    # Main App
+    if check_url_ok "http://127.0.0.1:5001/api/health"; then
+        echo -e "  ${GREEN}✅${NC} Main App (5001)      ${GREEN}RUNNING${NC}"
+    else
+        code=$(check_url_status "http://127.0.0.1:5001/api/health")
+        echo -e "  ${RED}❌${NC} Main App (5001)      ${RED}STOPPED${NC} (${code})"
+    fi
+    
+    # Frontend
+    if check_url_ok "http://127.0.0.1:8080"; then
+        echo -e "  ${GREEN}✅${NC} Frontend (8080)      ${GREEN}RUNNING${NC}"
+    else
+        code=$(check_url_status "http://127.0.0.1:8080")
+        echo -e "  ${RED}❌${NC} Frontend (8080)      ${RED}STOPPED${NC} (${code})"
+    fi
+    
+    # CyberSec Local
+    if check_url_ok "http://127.0.0.1:5173"; then
+        echo -e "  ${GREEN}✅${NC} CyberSec Local (5173) ${GREEN}RUNNING${NC}"
+    else
+        code=$(check_url_status "http://127.0.0.1:5173")
+        echo -e "  ${RED}❌${NC} CyberSec Local (5173) ${RED}STOPPED${NC} (${code})"
+    fi
+    
+    # Website
+    if check_url_ok "https://semihkilic.com"; then
+        echo -e "  ${GREEN}✅${NC} Website              ${GREEN}ONLINE${NC}"
+    else
+        code=$(check_url_status "https://semihkilic.com")
+        echo -e "  ${RED}❌${NC} Website              ${RED}OFFLINE${NC} (${code})"
+    fi
+    
+    # Monitor Service
+    if systemctl is-active --quiet cybersec-monitor 2>/dev/null; then
+        echo -e "  ${GREEN}✅${NC} Monitor Service      ${GREEN}ACTIVE${NC}"
+    else
+        echo -e "  ${RED}❌${NC} Monitor Service      ${RED}INACTIVE${NC}"
+    fi
+    
+    echo ""
+}
+
+start_all() {
+    echo -e "\n${YELLOW}🚀 Starting all services...${NC}\n"
+
+    if command -v systemctl >/dev/null 2>&1; then
+        if systemctl list-unit-files --type=service 2>/dev/null | grep -q '^cybersec-startup.service'; then
+            echo -e "  Starting via systemd startup service..."
+            sudo systemctl restart cybersec-startup.service 2>/dev/null || true
+            sudo systemctl start cybersec-monitor 2>/dev/null || true
+            echo -e "\n${GREEN}✅ All services started!${NC}"
+            show_status
+            return
+        fi
+    fi
+    
+    # Cloudflare Tunnel
+    echo -e "  Starting Cloudflare Tunnel..."
+    pkill -f "cloudflared tunnel" 2>/dev/null || true
+    sleep 1
+    if command -v cloudflared >/dev/null 2>&1; then
+        cd /home/sam && cloudflared tunnel run 3d58ef29-b086-46ae-a21c-b68ddd11725f &>"$LOG_DIR/cloudflared.log" &
+    else
+        echo -e "  ${RED}❌${NC} cloudflared not found"
+    fi
+    sleep 2
+    
+    # Frontend
+    echo -e "  Starting Frontend Server..."
+    pkill -f "python.*http.server.*8080" 2>/dev/null || true
+    sleep 1
+    if command -v python3 >/dev/null 2>&1; then
+        cd /home/sam/APPS/cybersec-sales/frontend && python3 -m http.server 8080 &>"$LOG_DIR/frontend-8080.log" &
+    else
+        echo -e "  ${RED}❌${NC} python3 not found"
+    fi
+    sleep 1
+    
+    # Sales Backend
+    echo -e "  Starting Sales Backend..."
+    pkill -f "gunicorn.*5002" 2>/dev/null || true
+    sleep 1
+    if [ -x "/home/sam/APPS/cybersec-sales/backend/venv/bin/gunicorn" ]; then
+        cd /home/sam/APPS/cybersec-sales/backend && source venv/bin/activate && gunicorn -w 2 -b 127.0.0.1:5002 app:app --daemon --pid /tmp/sales-backend.pid --access-logfile "$LOG_DIR/sales-access.log" --error-logfile "$LOG_DIR/sales-error.log"
+    else
+        echo -e "  ${RED}❌${NC} gunicorn not found in sales backend venv"
+    fi
+    sleep 1
+    
+    # Main Backend
+    echo -e "  Starting Main Backend..."
+    pkill -f "cybersec-kali/backend/app.py" 2>/dev/null || true
+    sleep 1
+    if [ -x "/home/sam/APPS/cybersec-kali/backend/venv/bin/python3" ]; then
+        cd /home/sam/APPS/cybersec-kali/backend && source venv/bin/activate && nohup python3 app.py &>"$LOG_DIR/main-backend.log" &
+    else
+        echo -e "  ${RED}❌${NC} python3 not found in main backend venv"
+    fi
+    sleep 2
+    
+    # CyberSec Local Frontend (Vite)
+    echo -e "  Starting CyberSec Local (5173)..."
+    pkill -f "vite.*5173" 2>/dev/null || true
+    pkill -f "node.*5173" 2>/dev/null || true
+    sleep 1
+    if command -v npm >/dev/null 2>&1; then
+        cd /home/sam/APPS/cybersec-kali/frontend && nohup npm run dev -- --host 0.0.0.0 --port 5173 &>"$LOG_DIR/cybersec-local.log" &
+    else
+        echo -e "  ${RED}❌${NC} npm not found"
+    fi
+    sleep 3
+    
+    # Monitor
+    echo -e "  Starting Monitor Service..."
+    sudo systemctl start cybersec-monitor 2>/dev/null
+    
+    echo -e "\n${GREEN}✅ All services started!${NC}"
+    show_status
+}
+
+stop_all() {
+    echo -e "\n${YELLOW}🛑 Stopping all services...${NC}\n"
+
+    if command -v systemctl >/dev/null 2>&1; then
+        if systemctl list-unit-files --type=service 2>/dev/null | grep -q '^cybersec-startup.service'; then
+            sudo systemctl stop cybersec-monitor 2>/dev/null || true
+            echo -e "${GREEN}✅ All services stopped!${NC}"
+            return
+        fi
+    fi
+    
+    pkill -f "cloudflared tunnel" 2>/dev/null || true
+    pkill -f "python.*http.server.*8080" 2>/dev/null || true
+    pkill -f "gunicorn.*5002" 2>/dev/null || true
+    pkill -f "cybersec-kali/backend/app.py" 2>/dev/null || true
+    pkill -f "vite.*5173" 2>/dev/null || true
+    pkill -f "node.*5173" 2>/dev/null || true
+    sudo systemctl stop cybersec-monitor 2>/dev/null
+    
+    echo -e "${GREEN}✅ All services stopped!${NC}"
+}
+
+restart_all() {
+    echo -e "\n${YELLOW}🔄 Restarting all services...${NC}"
+    if command -v systemctl >/dev/null 2>&1; then
+        if systemctl list-unit-files --type=service 2>/dev/null | grep -q '^cybersec-startup.service'; then
+            sudo systemctl restart cybersec-startup.service 2>/dev/null || true
+            sudo systemctl restart cybersec-monitor 2>/dev/null || true
+            show_status
+            return
+        fi
+    fi
+    stop_all
+    sleep 2
+    start_all
+}
+
+show_logs() {
+    echo -e "\n${BOLD}📜 Recent Monitor Logs:${NC}\n"
+    tail -30 "$LOG_READ_DIR/monitor.log" 2>/dev/null || echo "No logs found"
+}
+
+show_startup_logs() {
+    echo -e "\n${BOLD}📜 Recent Startup Logs:${NC}\n"
+    tail -30 "$LOG_READ_DIR/startup.log" 2>/dev/null || echo "No logs found"
+}
+
+build_sync() {
+    echo -e "\n${YELLOW}🔧 Running Build & Sync...${NC}\n"
+    /home/sam/APPS/cybersec-kali/build-sync.sh full
+}
+
+watch_changes() {
+    echo -e "\n${YELLOW}👀 Starting File Watcher (Ctrl+C to stop)...${NC}\n"
+    /home/sam/APPS/cybersec-kali/watch-sync.sh
+}
+
+take_screenshots() {
+    echo -e "\n${YELLOW}📸 Taking Screenshots...${NC}\n"
+    mkdir -p /home/sam/APPS/cybersec-kali/frontend/screenshots
+    
+    # Check if CyberSec Local is running
+    if ! curl -fsS --max-time 3 http://127.0.0.1:5173 > /dev/null 2>&1; then
+        echo -e "${RED}❌ CyberSec Local (5173) is not running!${NC}"
+        echo "Start it first with: csctl start"
+        return 1
+    fi
+    
+    echo "Opening CyberSec Pro in browser for screenshots..."
+    echo "Screenshots will be saved to: /home/sam/APPS/cybersec-kali/frontend/screenshots/"
+    echo ""
+    echo "Take these screenshots:"
+    echo "  1. Dashboard Overview"
+    echo "  2. Tools Categories"
+    echo "  3. Tool Detail (Nmap)"
+    echo "  4. Terminal Running"
+    echo "  5. Scan Results"
+    echo "  6. Report Generation"
+    echo ""
+    
+    # Open browser
+    xdg-open http://10.0.0.240:5173 2>/dev/null || echo "Open http://10.0.0.240:5173 in browser"
+}
+
+show_help() {
+    echo -e "${BOLD}Usage:${NC} csctl <command>"
+    echo ""
+    echo -e "${BOLD}Service Commands:${NC}"
+    echo "  status    Show status of all services"
+    echo "  start     Start all services"
+    echo "  stop      Stop all services"
+    echo "  restart   Restart all services"
+    echo "  logs      Show monitor logs"
+    echo "  startup-logs  Show startup logs"
+    echo "  monitor   Run manual monitoring check"
+    echo "  snapshot  Log one-time status snapshot"
+    echo "  reload    Reload monitor config"
+    echo "  journal   Show systemd journal (monitor)"
+    echo ""
+    echo -e "${BOLD}Build Commands:${NC}"
+    echo "  build     Build & sync packages to download server"
+    echo "  watch     Watch for changes and auto-sync"
+    echo "  screenshot  Guide for taking screenshots"
+    echo ""
+    echo -e "${BOLD}Other:${NC}"
+    echo "  help      Show this help"
+    echo ""
+}
+
+# Main
+show_banner
+
+case "${1:-status}" in
+    status)
+        show_status
+        ;;
+    start)
+        start_all
+        ;;
+    stop)
+        stop_all
+        ;;
+    restart)
+        restart_all
+        ;;
+    logs)
+        show_logs
+        ;;
+    startup-logs)
+        show_startup_logs
+        ;;
+    snapshot)
+        sudo systemctl kill -s SIGUSR1 cybersec-monitor.service 2>/dev/null || true
+        ;;
+    reload)
+        sudo systemctl reload cybersec-monitor.service 2>/dev/null || true
+        ;;
+    journal)
+        sudo journalctl -u cybersec-monitor.service -n 50 --no-pager 2>/dev/null || true
+        ;;
+    monitor)
+        cd /home/sam/APPS/cybersec-monitor && /home/sam/APPS/cybersec-sales/backend/venv/bin/python3 service_manager.py --once
+        ;;
+    build|sync)
+        build_sync
+        ;;
+    watch)
+        watch_changes
+        ;;
+    screenshot|screenshots)
+        take_screenshots
+        ;;
+    help|--help|-h)
+        show_help
+        ;;
+    *)
+        echo -e "${RED}Unknown command: $1${NC}"
+        show_help
+        exit 1
+        ;;
+esac
