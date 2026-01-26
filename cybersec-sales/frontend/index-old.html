@@ -1,0 +1,2236 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <!-- Preconnect to external domains -->
+    <link rel="preconnect" href="https://www.googletagmanager.com">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="preconnect" href="https://cdn.tailwindcss.com">
+    
+    <link rel="preload" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" as="style" onload="this.onload=null;this.rel='stylesheet'">
+    <link rel="preload" href="/videos/frames/frame_0012-v20260115.png" as="image">
+    <link rel="preload" href="/screenshots/02-tools-categories-v20260115.png" as="image">
+    
+    <!-- Google tag (gtag.js) -->
+    <script defer src="https://www.googletagmanager.com/gtag/js?id=G-DKRDP2WS88"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+
+      gtag('config', 'G-DKRDP2WS88');
+    </script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CyberSec Pro - Professional Penetration Testing & Security Platform | 230+ Tools</title>
+    <meta name="description" content="CyberSec Pro: The most comprehensive cybersecurity testing platform with 230+ professional tools. Penetration testing, vulnerability scanning, network analysis, OSINT, and more. Built for security professionals.">
+    <meta name="keywords" content="cybersecurity, penetration testing, security tools, vulnerability scanner, network analysis, ethical hacking, kali linux tools, OSINT, security platform, pentest, infosec, red team, blue team, security audit">
+    <meta name="author" content="Semih Kilic">
+    <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1">
+    <meta name="googlebot" content="index, follow">
+    <link rel="canonical" href="https://semihkilic.com/">
+    
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://semihkilic.com/">
+    <meta property="og:title" content="CyberSec Pro - Professional Penetration Testing Platform">
+    <meta property="og:description" content="230+ security tools in one powerful platform. Penetration testing, vulnerability scanning, network analysis. Built for security professionals.">
+    <meta property="og:image" content="https://semihkilic.com/screenshots/og-image.png">
+    <meta property="og:image:width" content="1200">
+    <meta property="og:image:height" content="630">
+    <meta property="og:site_name" content="CyberSec Pro">
+    <meta property="og:locale" content="en_US">
+    
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:url" content="https://semihkilic.com/">
+    <meta name="twitter:title" content="CyberSec Pro - Professional Penetration Testing Platform">
+    <meta name="twitter:description" content="230+ security tools in one powerful platform. Built for security professionals.">
+    <meta name="twitter:image" content="https://semihkilic.com/screenshots/og-image.png">
+    
+    <!-- Favicon -->
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+    <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+    <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+    <link rel="manifest" href="/site.webmanifest">
+    <link rel="mask-icon" href="/favicon.svg" color="#00d4ff">
+    <meta name="theme-color" content="#00d4ff">
+    
+    <!-- Structured Data / JSON-LD -->
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "SoftwareApplication",
+        "name": "CyberSec Pro",
+        "description": "Professional cybersecurity testing platform with 230+ security tools for penetration testing, vulnerability scanning, and network analysis.",
+        "applicationCategory": "SecurityApplication",
+        "operatingSystem": "Linux, Windows, macOS",
+        "offers": {
+            "@type": "Offer",
+            "price": "19.00",
+            "priceCurrency": "EUR",
+            "priceValidUntil": "2026-12-31"
+        },
+        "author": {
+            "@type": "Person",
+            "name": "Semih Kilic"
+        },
+        "publisher": {
+            "@type": "Organization",
+            "name": "CyberSec Pro",
+            "url": "https://semihkilic.com"
+        }
+    }
+    </script>
+    
+    <!-- FAQ Structured Data -->
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "FAQPage",
+        "mainEntity": [
+            {
+                "@type": "Question",
+                "name": "What is CyberSec Pro?",
+                "acceptedAnswer": {
+                    "@type": "Answer",
+                    "text": "CyberSec Pro is a cybersecurity testing platform that provides a unified dashboard to run and manage professional security tools for authorized testing."
+                }
+            },
+            {
+                "@type": "Question",
+                "name": "What do I actually get when I buy?",
+                "acceptedAnswer": {
+                    "@type": "Answer",
+                    "text": "You get the CyberSec Pro dashboard, integrations, installers, and updates. The underlying security tools are open-source and may require separate installation depending on your OS."
+                }
+            },
+            {
+                "@type": "Question",
+                "name": "Does it work on Windows or macOS?",
+                "acceptedAnswer": {
+                    "@type": "Answer",
+                    "text": "Not natively. It is designed for Linux. Windows and macOS are supported via Docker or a Linux VM."
+                }
+            },
+            {
+                "@type": "Question",
+                "name": "Is internet required?",
+                "acceptedAnswer": {
+                    "@type": "Answer",
+                    "text": "Internet is required for downloads, updates, license activation, and scanning remote targets. The app itself runs locally."
+                }
+            },
+            {
+                "@type": "Question",
+                "name": "Do you collect scan data?",
+                "acceptedAnswer": {
+                    "@type": "Answer",
+                    "text": "Scan results are stored locally on your machine. We do not require uploading scan data to our servers."
+                }
+            },
+            {
+                "@type": "Question",
+                "name": "Is there a free trial?",
+                "acceptedAnswer": {
+                    "@type": "Answer",
+                    "text": "Yes. A 14-day free trial is available so you can evaluate the product before purchase."
+                }
+            },
+            {
+                "@type": "Question",
+                "name": "How often do you release updates?",
+                "acceptedAnswer": {
+                    "@type": "Answer",
+                    "text": "We ship regular updates for the dashboard, installers, and presets. Tool updates depend on the upstream open-source projects and your OS packages."
+                }
+            },
+            {
+                "@type": "Question",
+                "name": "How fast can I get onboarded?",
+                "acceptedAnswer": {
+                    "@type": "Answer",
+                    "text": "Most users are up and running in 10–15 minutes using the one‑line installer. Enterprise onboarding includes guided setup and rollout planning."
+                }
+            },
+            {
+                "@type": "Question",
+                "name": "Can I transfer my license to a new machine?",
+                "acceptedAnswer": {
+                    "@type": "Answer",
+                    "text": "Yes. If you replace your machine, contact support to transfer your license."
+                }
+            },
+            {
+                "@type": "Question",
+                "name": "Does the Docker option include all tools?",
+                "acceptedAnswer": {
+                    "@type": "Answer",
+                    "text": "The Docker option provides a Kali-based environment with broad tool coverage. Exact tool availability can vary by image and updates."
+                }
+            },
+            {
+                "@type": "Question",
+                "name": "Do you offer team or multi-user licensing?",
+                "acceptedAnswer": {
+                    "@type": "Answer",
+                    "text": "Yes. Enterprise includes multi-user licensing and support options. Contact sales for team pricing and deployment guidance."
+                }
+            },
+            {
+                "@type": "Question",
+                "name": "Can I use it offline?",
+                "acceptedAnswer": {
+                    "@type": "Answer",
+                    "text": "Most features work offline once installed. Internet is needed for activation, updates, and scanning remote targets."
+                }
+            },
+            {
+                "@type": "Question",
+                "name": "Where are reports stored?",
+                "acceptedAnswer": {
+                    "@type": "Answer",
+                    "text": "Reports are saved locally on your machine. You control where to export or share them."
+                }
+            },
+            {
+                "@type": "Question",
+                "name": "Is it safe to install?",
+                "acceptedAnswer": {
+                    "@type": "Answer",
+                    "text": "CyberSec Pro runs locally and does not require sending your scan data to us. Like any security tooling, it should only be installed on machines you trust."
+                }
+            },
+            {
+                "@type": "Question",
+                "name": "Are updates included?",
+                "acceptedAnswer": {
+                    "@type": "Answer",
+                    "text": "Yes. License holders receive dashboard updates. Tool updates depend on the upstream open-source projects and your OS package manager."
+                }
+            },
+            {
+                "@type": "Question",
+                "name": "What are the trial limits?",
+                "acceptedAnswer": {
+                    "@type": "Answer",
+                    "text": "The trial is time-limited (14 days). Some features may be restricted; details are shown in the download section."
+                }
+            },
+            {
+                "@type": "Question",
+                "name": "How does the trial license activate?",
+                "acceptedAnswer": {
+                    "@type": "Answer",
+                    "text": "The 14-day trial activates automatically on first run and requires internet access."
+                }
+            },
+            {
+                "@type": "Question",
+                "name": "When will I receive my license key?",
+                "acceptedAnswer": {
+                    "@type": "Answer",
+                    "text": "Your license key is emailed after payment completes. Check spam/junk if you don’t see it within a few minutes."
+                }
+            },
+            {
+                "@type": "Question",
+                "name": "How do I verify downloads are safe?",
+                "acceptedAnswer": {
+                    "@type": "Answer",
+                    "text": "Download only from semihkilic.com over HTTPS and verify checksums using /downloads/version.json. If a checksum doesn’t match, do not run the file."
+                }
+            },
+            {
+                "@type": "Question",
+                "name": "Can the trial be hacked?",
+                "acceptedAnswer": {
+                    "@type": "Answer",
+                    "text": "No software can guarantee zero risk. The app runs locally and does not expose remote access by default. Keep your OS updated, use strong credentials, and only test authorized targets."
+                }
+            },
+            {
+                "@type": "Question",
+                "name": "Do you offer team or enterprise licensing?",
+                "acceptedAnswer": {
+                    "@type": "Answer",
+                    "text": "Yes. Enterprise includes multi-user licensing and support options. Contact sales for team pricing."
+                }
+            }
+        ]
+    }
+    </script>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <script>
+        tailwind = {
+            config: {
+                theme: {
+                    extend: {
+                        colors: {
+                            dark: { bg: '#0a0a0f', card: '#12121a', border: '#1e1e2e' },
+                            cyber: { cyan: '#00d4ff', blue: '#0066ff', purple: '#8b5cf6' }
+                        }
+                    }
+                }
+            }
+        };
+    </script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* Critical CSS for above-the-fold content */
+        body { 
+            font-family: 'Inter', sans-serif; 
+        }
+        body::before {
+            content: '';
+            position: fixed;
+            inset: 0;
+            background:
+                radial-gradient(900px 480px at 15% 8%, rgba(0, 212, 255, 0.18), transparent 60%),
+                radial-gradient(900px 460px at 85% 12%, rgba(139, 92, 246, 0.18), transparent 60%),
+                radial-gradient(1200px 600px at 50% 95%, rgba(255, 153, 0, 0.14), transparent 60%),
+                linear-gradient(135deg, rgba(0, 212, 255, 0.08), rgba(139, 92, 246, 0.06));
+            z-index: -1;
+        }
+        .bg-dark-card { background: rgba(17, 24, 39, 0.7); }
+        .bg-dark-bg { background: rgba(10, 15, 22, 0.9); }
+        .border-dark-border { border-color: rgba(148, 163, 184, 0.15); }
+        .kali-dragon {
+            position: relative;
+        }
+        .kali-dragon::after {
+            content: '';
+            position: absolute;
+            inset: -60px;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='900' height='600' viewBox='0 0 900 600'%3E%3Cpath fill='none' stroke='rgba(0,212,255,0.12)' stroke-width='2' d='M110 420c45-115 150-210 280-245 120-33 265-6 360 70-35-12-70-12-105 0 30 10 60 25 90 50-50-10-95-2-135 20 35 5 70 18 100 40-85-25-175-12-245 35-90 61-170 88-255 90 48-18 88-45 120-82-70 20-140 14-210-18z'/%3E%3Cpath fill='rgba(139,92,246,0.08)' d='M520 170c40-20 82-25 125-18-40 7-72 22-95 45 40 0 80 12 110 35-40-6-72-4-95 6 30 7 55 20 75 40-70-18-140-4-195 35 20-20 35-42 45-64-25 0-50-5-70-15 25-5 50-18 70-39z'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right top;
+            background-size: 70% auto;
+            opacity: 0.7;
+            pointer-events: none;
+        }
+        .kali-glow {
+            box-shadow: 0 0 35px rgba(0, 212, 255, 0.35), 0 0 60px rgba(139, 92, 246, 0.25);
+        }
+        .kali-glow-strong {
+            box-shadow: 0 0 45px rgba(0, 212, 255, 0.45), 0 0 90px rgba(139, 92, 246, 0.35);
+        }
+        .kali-border {
+            border: 1px solid rgba(0, 212, 255, 0.35);
+        }
+        .kali-btn {
+            background: linear-gradient(135deg, #00d4ff 0%, #8b5cf6 50%, #ff9a00 100%);
+            color: white;
+            box-shadow: 0 15px 35px rgba(0, 212, 255, 0.35), 0 5px 20px rgba(139, 92, 246, 0.35);
+            transform: translateY(0);
+            transition: transform 0.2s ease, box-shadow 0.2s ease, opacity 0.2s ease;
+        }
+        .kali-btn:hover {
+            transform: translateY(-2px) scale(1.01);
+            box-shadow: 0 20px 45px rgba(0, 212, 255, 0.5), 0 10px 30px rgba(139, 92, 246, 0.45);
+        }
+        .kali-btn-outline {
+            border: 1px solid rgba(0, 212, 255, 0.7);
+            color: white;
+            background: linear-gradient(120deg, rgba(0, 212, 255, 0.12), rgba(139, 92, 246, 0.12));
+            box-shadow: 0 12px 30px rgba(0, 212, 255, 0.25);
+            transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+        }
+        .kali-btn-outline:hover {
+            transform: translateY(-2px) scale(1.01);
+            border-color: rgba(255, 153, 0, 0.8);
+            box-shadow: 0 18px 40px rgba(255, 153, 0, 0.35);
+        }
+        .kali-btn-secondary {
+            background: linear-gradient(135deg, rgba(0, 212, 255, 0.2), rgba(139, 92, 246, 0.25));
+            border: 1px solid rgba(0, 212, 255, 0.35);
+            color: white;
+            box-shadow: 0 12px 28px rgba(0, 212, 255, 0.2);
+            transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+        }
+        .kali-btn-secondary:hover {
+            transform: translateY(-2px);
+            border-color: rgba(139, 92, 246, 0.65);
+            box-shadow: 0 18px 38px rgba(139, 92, 246, 0.35);
+        }
+        .kali-btn-gold {
+            background: linear-gradient(135deg, #ffb300 0%, #ff7b00 100%);
+            color: #111827;
+            box-shadow: 0 15px 35px rgba(255, 153, 0, 0.35);
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+        .kali-btn-gold:hover {
+            transform: translateY(-2px) scale(1.01);
+            box-shadow: 0 20px 45px rgba(255, 153, 0, 0.5);
+        }
+        * {
+            box-sizing: border-box;
+        }
+        .fixed { position: fixed; }
+        .top-0 { top: 0; }
+        .left-0 { left: 0; }
+        .right-0 { right: 0; }
+        .z-50 { z-index: 50; }
+        .bg-dark-bg { background: #0a0a0f; }
+        .border-b { border-bottom-width: 1px; }
+        .border-dark-border { border-color: #1e1e2e; }
+        .flex { display: flex; }
+        .items-center { align-items: center; }
+        .justify-between { justify-content: space-between; }
+        .px-4 { padding-left: 1rem; padding-right: 1rem; }
+        .py-3 { padding-top: 0.75rem; padding-bottom: 0.75rem; }
+        .gap-2 { gap: 0.5rem; }
+        .text-white { color: white; }
+        .text-lg { font-size: 1.125rem; }
+        .font-bold { font-weight: 700; }
+        .rounded-xl { border-radius: 0.75rem; }
+        .w-8 { width: 2rem; }
+        .h-8 { height: 2rem; }
+        .gradient-text { 
+            background: linear-gradient(135deg, #00d4ff, #8b5cf6); 
+            -webkit-background-clip: text; 
+            background-clip: text; 
+            -webkit-text-fill-color: transparent;
+        }
+        .gradient-border { 
+            border: 2px solid transparent; 
+            background: linear-gradient(#12121a, #12121a) padding-box, linear-gradient(135deg, #00d4ff, #8b5cf6) border-box; 
+        }
+        .glow { box-shadow: 0 0 60px rgba(0, 212, 255, 0.3); }
+        .feature-card:hover { transform: translateY(-5px); border-color: #00d4ff; }
+        @keyframes float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }
+        .float { animation: float 3s ease-in-out infinite; }
+        
+        /* Accessibility improvements */
+        button:focus, a:focus, input:focus, textarea:focus {
+            outline: 2px solid #00d4ff;
+            outline-offset: 2px;
+        }
+        .sr-only {
+            position: absolute;
+            width: 1px;
+            height: 1px;
+            padding: 0;
+            margin: -1px;
+            overflow: hidden;
+            clip: rect(0,0,0,0);
+            white-space: nowrap;
+            border: 0;
+        }
+        
+        /* Performance optimizations */
+        img {
+            max-width: 100%;
+            height: auto;
+            loading: lazy;
+            decoding: async;
+        }
+        video {
+            max-width: 100%;
+            height: auto;
+            loading: lazy;
+        }
+        
+        /* Resource hints */
+        img, video, script, link {
+            image-rendering: -webkit-optimize-contrast;
+            image-rendering: crisp-edges;
+        }
+        
+        /* Mobile optimizations */
+        @media (max-width: 768px) {
+            .glow { box-shadow: 0 0 15px rgba(0, 212, 255, 0.1); }
+            .gradient-border { border-width: 1px; }
+            .feature-card:hover { transform: translateY(-1px); }
+            @keyframes float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-2px); } }
+            /* Reduce animations on mobile */
+            *, *::before, *::after {
+                animation-duration: 0.01ms !important;
+                animation-delay: 0.01ms !important;
+                transition-duration: 0.01ms !important;
+            }
+            /* Keep only essential animations */
+            .animate-pulse {
+                animation-duration: 2s !important;
+            }
+        }
+        
+        /* Critical CSS for mobile */
+        @media (max-width: 640px) {
+            .gradient-text {
+                background: #00d4ff;
+                -webkit-text-fill-color: #00d4ff;
+            }
+            body {
+                font-size: 16px; /* Prevent zoom on iOS */
+            }
+        }
+        
+        /* Hide non-critical elements initially */
+        .hidden { display: none; }
+        .md\:flex { display: none; }
+        @media (min-width: 768px) {
+            .md\:flex { display: flex; }
+        }
+    </style>
+</head>
+<body class="bg-dark-bg text-white min-h-screen">
+    <!-- Navigation -->
+    <nav class="fixed top-0 left-0 right-0 z-50 bg-dark-bg/95 backdrop-blur-md border-b border-dark-border" role="navigation" aria-label="Main navigation">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 py-3 sm:py-4 flex justify-between items-center">
+            <div class="flex items-center gap-2 sm:gap-3">
+                <div class="w-8 h-8 sm:w-10 sm:h-10 rounded-xl bg-gradient-to-br from-cyber-cyan to-cyber-purple flex items-center justify-center" aria-hidden="true">
+                    <svg class="w-4 h-4 sm:w-6 sm:h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/>
+                    </svg>
+                </div>
+                <span class="text-lg sm:text-xl font-bold">CyberSec Pro</span>
+            </div>
+            <div class="hidden md:flex items-center gap-8">
+                <a href="#features" class="hover:text-cyber-cyan transition focus:outline-none focus:ring-2 focus:ring-cyber-cyan focus:ring-offset-2 rounded">Features</a>
+                <a href="#tools" class="hover:text-cyber-cyan transition focus:outline-none focus:ring-2 focus:ring-cyber-cyan focus:ring-offset-2 rounded">Tools</a>
+                <a href="#pricing" class="hover:text-cyber-cyan transition focus:outline-none focus:ring-2 focus:ring-cyber-cyan focus:ring-offset-2 rounded">Pricing</a>
+                <a href="#download" class="hover:text-cyber-cyan transition focus:outline-none focus:ring-2 focus:ring-cyber-cyan focus:ring-offset-2 rounded">Download</a>
+            </div>
+            
+            <!-- Mobile menu button -->
+            <button id="mobile-menu-btn" class="md:hidden flex items-center gap-2 text-white hover:text-cyber-cyan transition focus:outline-none focus:ring-2 focus:ring-cyber-cyan focus:ring-offset-2 rounded p-2" aria-label="Toggle navigation menu" aria-expanded="false" aria-controls="mobile-menu">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/>
+                </svg>
+                <span class="sr-only">Menu</span>
+            </button>
+            
+            <!-- CTA Button - Always visible -->
+            <a id="cta-get-started-nav" href="#download" class="hidden sm:block px-4 sm:px-6 py-2 rounded-full bg-gradient-to-r from-cyber-cyan to-cyber-blue text-white font-medium hover:opacity-90 transition focus:outline-none focus:ring-2 focus:ring-cyber-cyan focus:ring-offset-2 rounded text-sm sm:text-base" role="button">
+                Get Started
+            </a>
+        </div>
+        
+        <!-- Mobile menu -->
+        <div id="mobile-menu" class="hidden md:hidden bg-dark-bg border-b border-dark-border" role="navigation" aria-label="Mobile navigation">
+            <div class="px-4 py-3 space-y-3">
+                <a href="#features" class="block hover:text-cyber-cyan transition focus:outline-none focus:ring-2 focus:ring-cyber-cyan focus:ring-offset-2 rounded py-2">Features</a>
+                <a href="#tools" class="block hover:text-cyber-cyan transition focus:outline-none focus:ring-2 focus:ring-cyber-cyan focus:ring-offset-2 rounded py-2">Tools</a>
+                <a href="#pricing" class="block hover:text-cyber-cyan transition focus:outline-none focus:ring-2 focus:ring-cyber-cyan focus:ring-offset-2 rounded py-2">Pricing</a>
+                <a href="#download" class="block hover:text-cyber-cyan transition focus:outline-none focus:ring-2 focus:ring-cyber-cyan focus:ring-offset-2 rounded py-2">Download</a>
+                <!-- Mobile CTA -->
+                <a id="cta-get-started-mobile" href="#download" class="block w-full px-4 py-2 rounded-full bg-gradient-to-r from-cyber-cyan to-cyber-blue text-white font-medium hover:opacity-90 transition focus:outline-none focus:ring-2 focus:ring-cyber-cyan focus:ring-offset-2 rounded text-center mt-4" role="button">
+                    Get Started
+                </a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Skip to main content link -->
+    <a href="#main-content" class="sr-only focus:not-sr-only bg-cyber-cyan text-white px-4 py-2 absolute top-4 left-4 rounded focus:outline-none">
+        Skip to main content
+    </a>
+
+    <!-- Hero Section -->
+    <section id="main-content" class="pt-24 pb-16 px-4 sm:px-6 kali-dragon">
+        <div class="max-w-7xl mx-auto">
+            <div class="text-center max-w-4xl mx-auto">
+                <div class="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-cyber-cyan/10 text-cyber-cyan text-sm mb-8">
+                    <span class="w-2 h-2 rounded-full bg-cyber-cyan animate-pulse"></span>
+                    Version 2.0.1 Now Available
+                </div>
+                <h1 class="text-4xl sm:text-5xl md:text-7xl font-bold mb-6">
+                    The Ultimate<br>
+                    <span class="gradient-text">Cybersecurity</span> Platform
+                </h1>
+                <p class="text-lg sm:text-xl text-gray-400 mb-8 max-w-2xl mx-auto">
+                    230+ security tools in one powerful platform. Penetration testing, vulnerability scanning, 
+                    network analysis, and more. Built for professionals.
+                </p>
+                <p class="text-sm text-gray-500 mb-6">Install in minutes • Run locally • Export client‑ready reports</p>
+                <div class="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center">
+                    <a id="cta-download-trial-hero" href="#download" class="px-6 py-3 sm:px-8 sm:py-4 rounded-xl font-semibold text-base sm:text-lg kali-btn kali-glow-strong">
+                        Download Free Trial
+                    </a>
+                    <a href="#demo" class="px-6 py-3 sm:px-8 sm:py-4 rounded-xl font-semibold text-base sm:text-lg kali-btn-outline">
+                        Watch Demo
+                    </a>
+                </div>
+                <p class="mt-6 text-gray-500 text-sm">14-day free trial • No credit card required</p>
+                <a href="#features" class="mt-8 inline-flex items-center gap-2 text-sm text-gray-400 hover:text-cyber-cyan transition">
+                    Explore features
+                    <span aria-hidden="true">↓</span>
+                </a>
+                <div class="mt-10 grid grid-cols-1 sm:grid-cols-3 gap-4 text-left">
+                    <div class="bg-dark-card/60 border border-dark-border rounded-xl p-4">
+                        <div class="text-sm text-gray-400">Unified Workspace</div>
+                        <div class="text-lg font-semibold">Tools, scans, reports in one place</div>
+                    </div>
+                    <div class="bg-dark-card/60 border border-dark-border rounded-xl p-4">
+                        <div class="text-sm text-gray-400">Operational Ready</div>
+                        <div class="text-lg font-semibold">Real-time monitoring & audit trail</div>
+                    </div>
+                    <div class="bg-dark-card/60 border border-dark-border rounded-xl p-4">
+                        <div class="text-sm text-gray-400">Faster Delivery</div>
+                        <div class="text-lg font-semibold">Generate executive PDFs instantly</div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Hero Video/Screenshot -->
+            <div class="mt-16 relative" id="demo">
+                <div class="absolute inset-0 bg-gradient-to-t from-dark-bg via-transparent to-transparent z-10 pointer-events-none"></div>
+                <div class="gradient-border rounded-2xl overflow-hidden glow aspect-video bg-dark-bg">
+                    <video 
+                        autoplay 
+                        loop 
+                        muted 
+                        playsinline
+                        loading="lazy"
+                        poster="/videos/frames/frame_0012-v20260115.png"
+                        class="w-full h-full object-contain"
+                    >
+                        <source src="/videos/hero-demo-v20260115.webm" type="video/webm">
+                        <source src="/videos/hero-demo-v20260115.mp4" type="video/mp4">
+                        <img src="/screenshots/01-dashboard-overview-v20260115.png" alt="CyberSec Pro Dashboard" loading="lazy">
+                    </video>
+                </div>
+                <p class="text-center text-gray-500 text-sm mt-4">
+                    <span class="inline-flex items-center gap-2">
+                        <span class="w-2 h-2 rounded-full bg-green-500 animate-pulse"></span>
+                        Live demo preview • Actual product footage
+                    </span>
+                </p>
+                <div class="mt-6 flex flex-wrap items-center justify-center gap-4 text-xs text-gray-400">
+                    <span class="inline-flex items-center gap-2">🔒 Local-first • No cloud uploads</span>
+                    <span class="inline-flex items-center gap-2">⚡ Install in minutes</span>
+                    <a href="/docs.html" class="inline-flex items-center gap-2 text-cyber-cyan hover:underline">📚 Full Documentation</a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Stats -->
+    <section class="py-12 sm:py-16 border-y border-dark-border">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6">
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-6 sm:gap-8">
+                <div class="text-center">
+                    <div class="text-3xl sm:text-4xl md:text-5xl font-bold gradient-text">230+</div>
+                    <div class="text-gray-400 mt-2 text-sm sm:text-base">Security Tools</div>
+                </div>
+                <div class="text-center">
+                    <div class="text-3xl sm:text-4xl md:text-5xl font-bold gradient-text">19</div>
+                    <div class="text-gray-400 mt-2 text-sm sm:text-base">Categories</div>
+                </div>
+                <div class="text-center">
+                    <div class="text-3xl sm:text-4xl md:text-5xl font-bold gradient-text">10K+</div>
+                    <div class="text-gray-400 mt-2 text-sm sm:text-base">Users</div>
+                </div>
+                <div class="text-center">
+                    <div class="text-3xl sm:text-4xl md:text-5xl font-bold gradient-text">24/7</div>
+                    <div class="text-gray-400 mt-2 text-sm sm:text-base">Support</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Trust Badges -->
+    <section class="py-8 sm:py-12 bg-dark-card/30">
+        <div class="max-w-5xl mx-auto px-4 sm:px-6">
+            <div class="flex flex-wrap justify-center items-center gap-6 sm:gap-8 md:gap-16">
+                <div class="flex items-center gap-2 sm:gap-3 text-gray-400">
+                    <svg class="w-6 h-6 sm:w-8 sm:h-8 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/>
+                    </svg>
+                    <span class="text-sm sm:font-medium">SSL Secured</span>
+                </div>
+                <div class="flex items-center gap-2 sm:gap-3 text-gray-400">
+                    <svg class="w-6 h-6 sm:w-8 sm:h-8 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"/>
+                    </svg>
+                    <span class="text-sm sm:font-medium">Secure Payment</span>
+                </div>
+                <div class="flex items-center gap-2 sm:gap-3 text-gray-400">
+                    <svg class="w-6 h-6 sm:w-8 sm:h-8 text-yellow-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                    </svg>
+                    <span class="text-sm sm:font-medium">30-Day Refund</span>
+                </div>
+                <div class="flex items-center gap-2 sm:gap-3 text-gray-400">
+                    <svg class="w-6 h-6 sm:w-8 sm:h-8 text-purple-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 5.636l-3.536 3.536m0 5.656l3.536 3.536M9.172 9.172L5.636 5.636m3.536 9.192l-3.536 3.536M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-5 0a4 4 0 11-8 0 4 4 0 018 0z"/>
+                    </svg>
+                    <span class="text-sm sm:font-medium">24/7 Support</span>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Use Cases / Who it's for -->
+    <section class="py-16 sm:py-20 px-4 sm:px-6">
+        <div class="max-w-7xl mx-auto">
+            <div class="text-center mb-10 sm:mb-14">
+                <h2 class="text-3xl sm:text-4xl md:text-5xl font-bold mb-4">Built for <span class="gradient-text">Security Pros</span></h2>
+                <p class="text-gray-400 text-base sm:text-lg">Real workflows, faster outcomes — without tool sprawl.</p>
+            </div>
+            <div class="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
+                <div class="bg-dark-card border border-dark-border rounded-2xl p-6">
+                    <div class="text-cyber-cyan text-sm font-semibold mb-2">Penetration Testers</div>
+                    <h3 class="text-xl font-bold mb-3">Run complete assessments</h3>
+                    <p class="text-gray-400 text-sm">Launch scanners, validate findings, and export executive reports from one workspace.</p>
+                </div>
+                <div class="bg-dark-card border border-dark-border rounded-2xl p-6">
+                    <div class="text-cyber-cyan text-sm font-semibold mb-2">Red Teams</div>
+                    <h3 class="text-xl font-bold mb-3">Operate faster</h3>
+                    <p class="text-gray-400 text-sm">Chained workflows, integrated terminal, and presets for repeatable operations.</p>
+                </div>
+                <div class="bg-dark-card border border-dark-border rounded-2xl p-6">
+                    <div class="text-cyber-cyan text-sm font-semibold mb-2">Blue Teams</div>
+                    <h3 class="text-xl font-bold mb-3">Verify defenses</h3>
+                    <p class="text-gray-400 text-sm">Validate patching and exposure with curated tools and audit-ready logs.</p>
+                </div>
+                <div class="bg-dark-card border border-dark-border rounded-2xl p-6">
+                    <div class="text-cyber-cyan text-sm font-semibold mb-2">Consultants</div>
+                    <h3 class="text-xl font-bold mb-3">Deliver client-ready</h3>
+                    <p class="text-gray-400 text-sm">Create consistent reports, save time, and standardize engagements.</p>
+                </div>
+            </div>
+
+            <div class="mt-10 sm:mt-12 grid md:grid-cols-3 gap-6">
+                <div class="bg-dark-card/60 border border-dark-border rounded-2xl p-6">
+                    <div class="text-sm text-gray-400">Privacy-first</div>
+                    <div class="text-lg font-semibold">Runs locally — your data stays on your machine</div>
+                </div>
+                <div class="bg-dark-card/60 border border-dark-border rounded-2xl p-6">
+                    <div class="text-sm text-gray-400">Secure downloads</div>
+                    <div class="text-lg font-semibold">Checksums published for integrity verification</div>
+                </div>
+                <div class="bg-dark-card/60 border border-dark-border rounded-2xl p-6">
+                    <div class="text-sm text-gray-400">Fast onboarding</div>
+                    <div class="text-lg font-semibold">Install, launch, and ship reports in minutes</div>
+                </div>
+            </div>
+
+            <div class="mt-10 text-center">
+                <a href="#download" class="inline-flex items-center gap-2 px-6 py-3 rounded-xl font-semibold kali-btn">
+                    Start 14‑Day Free Trial
+                    <span aria-hidden="true">→</span>
+                </a>
+                <p class="text-gray-500 text-sm mt-3">No credit card required</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Comparison Table -->
+    <section class="py-16 sm:py-20 px-4 sm:px-6">
+        <div class="max-w-5xl mx-auto">
+            <div class="text-center mb-8 sm:mb-12">
+                <h2 class="text-3xl sm:text-4xl md:text-5xl font-bold mb-4">Why Choose <span class="gradient-text">CyberSec Pro?</span></h2>
+                <p class="text-gray-400 text-base sm:text-lg">Compare with other solutions</p>
+            </div>
+            
+            <div class="overflow-x-auto">
+                <table class="w-full">
+                    <thead>
+                        <tr class="border-b border-dark-border">
+                            <th class="text-left py-4 px-4 text-gray-400 font-medium">Feature</th>
+                            <th class="py-4 px-4 text-center">
+                                <div class="text-cyber-cyan font-bold">CyberSec Pro</div>
+                            </th>
+                            <th class="py-4 px-4 text-center text-gray-500">Kali Linux</th>
+                            <th class="py-4 px-4 text-center text-gray-500">Burp Suite Pro</th>
+                            <th class="py-4 px-4 text-center text-gray-500">Metasploit Pro</th>
+                        </tr>
+                    </thead>
+                    <tbody class="text-sm">
+                        <tr class="border-b border-dark-border/50">
+                            <td class="py-4 px-4 text-gray-300">Unified Dashboard</td>
+                            <td class="py-4 px-4 text-center"><span class="text-green-500 text-xl">✓</span></td>
+                            <td class="py-4 px-4 text-center"><span class="text-red-500">✗</span></td>
+                            <td class="py-4 px-4 text-center"><span class="text-yellow-500">~</span></td>
+                            <td class="py-4 px-4 text-center"><span class="text-yellow-500">~</span></td>
+                        </tr>
+                        <tr class="border-b border-dark-border/50">
+                            <td class="py-4 px-4 text-gray-300">230+ Tools Included</td>
+                            <td class="py-4 px-4 text-center"><span class="text-green-500 text-xl">✓</span></td>
+                            <td class="py-4 px-4 text-center"><span class="text-green-500">✓</span></td>
+                            <td class="py-4 px-4 text-center"><span class="text-red-500">✗</span></td>
+                            <td class="py-4 px-4 text-center"><span class="text-red-500">✗</span></td>
+                        </tr>
+                        <tr class="border-b border-dark-border/50">
+                            <td class="py-4 px-4 text-gray-300">Modern Web UI</td>
+                            <td class="py-4 px-4 text-center"><span class="text-green-500 text-xl">✓</span></td>
+                            <td class="py-4 px-4 text-center"><span class="text-red-500">✗</span></td>
+                            <td class="py-4 px-4 text-center"><span class="text-green-500">✓</span></td>
+                            <td class="py-4 px-4 text-center"><span class="text-green-500">✓</span></td>
+                        </tr>
+                        <tr class="border-b border-dark-border/50">
+                            <td class="py-4 px-4 text-gray-300">Integrated Terminal</td>
+                            <td class="py-4 px-4 text-center"><span class="text-green-500 text-xl">✓</span></td>
+                            <td class="py-4 px-4 text-center"><span class="text-yellow-500">~</span></td>
+                            <td class="py-4 px-4 text-center"><span class="text-red-500">✗</span></td>
+                            <td class="py-4 px-4 text-center"><span class="text-red-500">✗</span></td>
+                        </tr>
+                        <tr class="border-b border-dark-border/50">
+                            <td class="py-4 px-4 text-gray-300">Scan Management</td>
+                            <td class="py-4 px-4 text-center"><span class="text-green-500 text-xl">✓</span></td>
+                            <td class="py-4 px-4 text-center"><span class="text-red-500">✗</span></td>
+                            <td class="py-4 px-4 text-center"><span class="text-green-500">✓</span></td>
+                            <td class="py-4 px-4 text-center"><span class="text-green-500">✓</span></td>
+                        </tr>
+                        <tr class="border-b border-dark-border/50">
+                            <td class="py-4 px-4 text-gray-300">Report Generation</td>
+                            <td class="py-4 px-4 text-center"><span class="text-green-500 text-xl">✓</span></td>
+                            <td class="py-4 px-4 text-center"><span class="text-red-500">✗</span></td>
+                            <td class="py-4 px-4 text-center"><span class="text-green-500">✓</span></td>
+                            <td class="py-4 px-4 text-center"><span class="text-green-500">✓</span></td>
+                        </tr>
+                        <tr class="border-b border-dark-border/50">
+                            <td class="py-4 px-4 text-gray-300">Export Formats (PDF/HTML/JSON)</td>
+                            <td class="py-4 px-4 text-center"><span class="text-green-500 text-xl">✓</span></td>
+                            <td class="py-4 px-4 text-center"><span class="text-red-500">✗</span></td>
+                            <td class="py-4 px-4 text-center"><span class="text-green-500">✓</span></td>
+                            <td class="py-4 px-4 text-center"><span class="text-green-500">✓</span></td>
+                        </tr>
+                        <tr class="border-b border-dark-border/50">
+                            <td class="py-4 px-4 text-gray-300">Compliance-Ready Reporting</td>
+                            <td class="py-4 px-4 text-center"><span class="text-green-500 text-xl">✓</span></td>
+                            <td class="py-4 px-4 text-center"><span class="text-red-500">✗</span></td>
+                            <td class="py-4 px-4 text-center"><span class="text-green-500">✓</span></td>
+                            <td class="py-4 px-4 text-center"><span class="text-green-500">✓</span></td>
+                        </tr>
+                        <tr class="border-b border-dark-border/50">
+                            <td class="py-4 px-4 text-gray-300">Price (Annual)</td>
+                            <td class="py-4 px-4 text-center"><span class="text-green-500 font-bold">$149</span></td>
+                            <td class="py-4 px-4 text-center text-gray-400">Free</td>
+                            <td class="py-4 px-4 text-center text-gray-400">$449</td>
+                            <td class="py-4 px-4 text-center text-gray-400">$5,000+</td>
+                        </tr>
+                        <tr>
+                            <td class="py-4 px-4 text-gray-300">Learning Curve</td>
+                            <td class="py-4 px-4 text-center"><span class="text-green-500 font-medium">Easy</span></td>
+                            <td class="py-4 px-4 text-center text-gray-400">Hard</td>
+                            <td class="py-4 px-4 text-center text-gray-400">Medium</td>
+                            <td class="py-4 px-4 text-center text-gray-400">Hard</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            
+            <p class="text-center text-gray-500 text-sm mt-6">
+                ~ Partial support • ✓ Full support • ✗ Not available
+            </p>
+        </div>
+    </section>
+
+    <!-- Proof / CTA Band -->
+    <section class="py-10 sm:py-12 px-4 sm:px-6 bg-dark-card/40">
+        <div class="max-w-6xl mx-auto flex flex-col md:flex-row items-center justify-between gap-6">
+            <div>
+                <div class="text-sm text-gray-400">Trusted by security teams</div>
+                <div class="text-2xl font-bold">10,000+ users • 230+ tools • 24/7 support</div>
+                <div class="text-gray-400 text-sm mt-1">Start the free trial and ship client-ready reports faster.</div>
+            </div>
+            <a href="#download" class="px-6 py-3 rounded-xl font-semibold kali-btn">Get the Free Trial</a>
+        </div>
+    </section>
+
+    <!-- Success Stories -->
+    <section class="py-16 sm:py-20 px-4 sm:px-6">
+        <div class="max-w-6xl mx-auto">
+            <div class="text-center mb-10 sm:mb-12">
+                <h2 class="text-3xl sm:text-4xl md:text-5xl font-bold mb-4">What Teams <span class="gradient-text">Say</span></h2>
+                <p class="text-gray-400 text-base sm:text-lg">Real outcomes from real workflows.</p>
+            </div>
+            <div class="grid md:grid-cols-3 gap-6">
+                <div class="bg-dark-card rounded-2xl p-6 border border-dark-border">
+                    <p class="text-gray-300 text-sm">“We reduced report prep time by consolidating tools and exports into one workflow.”</p>
+                    <div class="mt-4 text-gray-500 text-xs">Security Consultant</div>
+                </div>
+                <div class="bg-dark-card rounded-2xl p-6 border border-dark-border">
+                    <p class="text-gray-300 text-sm">“The dashboard made it easier to standardize scans across engagements.”</p>
+                    <div class="mt-4 text-gray-500 text-xs">Red Team Lead</div>
+                </div>
+                <div class="bg-dark-card rounded-2xl p-6 border border-dark-border">
+                    <p class="text-gray-300 text-sm">“Quick onboarding and local-first data handling were exactly what we needed.”</p>
+                    <div class="mt-4 text-gray-500 text-xs">Blue Team Manager</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Features -->
+    <section id="features" class="py-20 px-6">
+        <div class="max-w-7xl mx-auto">
+            <div class="text-center mb-16">
+                <h2 class="text-4xl md:text-5xl font-bold mb-4">Powerful <span class="gradient-text">Features</span></h2>
+                <p class="text-gray-400 text-lg max-w-2xl mx-auto">Everything you need for professional security testing in one integrated platform</p>
+            </div>
+            
+            <div class="grid md:grid-cols-3 gap-8">
+                <!-- Feature 1 -->
+                <div class="feature-card bg-dark-card rounded-2xl p-8 border border-dark-border transition-all duration-300">
+                    <div class="w-14 h-14 rounded-xl bg-gradient-to-br from-cyan-500/20 to-blue-500/20 flex items-center justify-center mb-6">
+                        <svg class="w-7 h-7 text-cyber-cyan" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+                        </svg>
+                    </div>
+                    <h3 class="text-xl font-bold mb-3">Vulnerability Scanner</h3>
+                    <p class="text-gray-400">Comprehensive scanning with Nmap, Nikto, OpenVAS, and more. Detect vulnerabilities before attackers do.</p>
+                </div>
+                
+                <!-- Feature 2 -->
+                <div class="feature-card bg-dark-card rounded-2xl p-8 border border-dark-border transition-all duration-300">
+                    <div class="w-14 h-14 rounded-xl bg-gradient-to-br from-purple-500/20 to-pink-500/20 flex items-center justify-center mb-6">
+                        <svg class="w-7 h-7 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 9l3 3-3 3m5 0h3M5 20h14a2 2 0 002-2V6a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                        </svg>
+                    </div>
+                    <h3 class="text-xl font-bold mb-3">Integrated Terminal</h3>
+                    <p class="text-gray-400">Full terminal access with pre-configured commands. Run any tool directly from the intuitive interface.</p>
+                </div>
+                
+                <!-- Feature 3 -->
+                <div class="feature-card bg-dark-card rounded-2xl p-8 border border-dark-border transition-all duration-300">
+                    <div class="w-14 h-14 rounded-xl bg-gradient-to-br from-green-500/20 to-emerald-500/20 flex items-center justify-center mb-6">
+                        <svg class="w-7 h-7 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                        </svg>
+                    </div>
+                    <h3 class="text-xl font-bold mb-3">Detailed Reports</h3>
+                    <p class="text-gray-400">Generate professional PDF, HTML, or JSON reports. Perfect for compliance and client presentations.</p>
+                </div>
+                
+                <!-- Feature 4 -->
+                <div class="feature-card bg-dark-card rounded-2xl p-8 border border-dark-border transition-all duration-300">
+                    <div class="w-14 h-14 rounded-xl bg-gradient-to-br from-orange-500/20 to-red-500/20 flex items-center justify-center mb-6">
+                        <svg class="w-7 h-7 text-orange-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/>
+                        </svg>
+                    </div>
+                    <h3 class="text-xl font-bold mb-3">Password Cracking</h3>
+                    <p class="text-gray-400">Hashcat, John the Ripper, Hydra integration. Test password strength with the best tools available.</p>
+                </div>
+                
+                <!-- Feature 5 -->
+                <div class="feature-card bg-dark-card rounded-2xl p-8 border border-dark-border transition-all duration-300">
+                    <div class="w-14 h-14 rounded-xl bg-gradient-to-br from-blue-500/20 to-indigo-500/20 flex items-center justify-center mb-6">
+                        <svg class="w-7 h-7 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064"/>
+                        </svg>
+                    </div>
+                    <h3 class="text-xl font-bold mb-3">Network Analysis</h3>
+                    <p class="text-gray-400">Wireshark, Tcpdump, Netcat tools. Analyze network traffic and detect anomalies in real-time.</p>
+                </div>
+                
+                <!-- Feature 6 -->
+                <div class="feature-card bg-dark-card rounded-2xl p-8 border border-dark-border transition-all duration-300">
+                    <div class="w-14 h-14 rounded-xl bg-gradient-to-br from-yellow-500/20 to-amber-500/20 flex items-center justify-center mb-6">
+                        <svg class="w-7 h-7 text-yellow-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/>
+                        </svg>
+                    </div>
+                    <h3 class="text-xl font-bold mb-3">One-Click Scans</h3>
+                    <p class="text-gray-400">Pre-configured scan profiles for common tasks. Start testing in seconds with optimized presets.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Tools Preview - Cloud SaaS -->
+    <section id="tools" class="py-20 px-6 bg-dark-card/50">
+        <div class="max-w-7xl mx-auto">
+            <div class="text-center mb-16">
+                <div class="inline-block bg-gradient-to-r from-cyber-cyan/20 to-cyber-blue/20 rounded-full px-6 py-2 mb-6">
+                    <span class="text-cyber-cyan font-semibold">☁️ CLOUD-BASED</span>
+                </div>
+                <h2 class="text-4xl md:text-5xl font-bold mb-4">230+ <span class="gradient-text">Security Tools</span></h2>
+                <p class="text-gray-400 text-lg max-w-2xl mx-auto">Industry-standard tools organized in 19 categories. Run directly in the cloud - no installation required!</p>
+            </div>
+            
+            <!-- Tools Grid - Clickable -->
+            <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4" id="tools-grid">
+                <!-- Tool badges - Each links to tool detail page -->
+                <a href="/tools/nmap" class="tool-card bg-dark-bg rounded-xl p-4 text-center border border-dark-border hover:border-cyber-cyan hover:shadow-lg hover:shadow-cyber-cyan/10 transition-all duration-300 transform hover:-translate-y-1 group">
+                    <div class="text-3xl mb-2 group-hover:scale-110 transition-transform">🔍</div>
+                    <div class="font-medium">Nmap</div>
+                    <div class="text-xs text-gray-500 mt-1">110 params</div>
+                </a>
+                <a href="/tools/sqlmap" class="tool-card bg-dark-bg rounded-xl p-4 text-center border border-dark-border hover:border-cyber-cyan hover:shadow-lg hover:shadow-cyber-cyan/10 transition-all duration-300 transform hover:-translate-y-1 group">
+                    <div class="text-3xl mb-2 group-hover:scale-110 transition-transform">💉</div>
+                    <div class="font-medium">SQLMap</div>
+                    <div class="text-xs text-gray-500 mt-1">38 params</div>
+                </a>
+                <a href="/tools/burpsuite" class="tool-card bg-dark-bg rounded-xl p-4 text-center border border-dark-border hover:border-purple-400 hover:shadow-lg hover:shadow-purple-400/10 transition-all duration-300 transform hover:-translate-y-1 group">
+                    <div class="text-3xl mb-2 group-hover:scale-110 transition-transform">🌐</div>
+                    <div class="font-medium">Burp Suite</div>
+                    <div class="text-xs text-purple-400 mt-1">PRO</div>
+                </a>
+                <a href="/tools/wireshark" class="tool-card bg-dark-bg rounded-xl p-4 text-center border border-dark-border hover:border-cyber-cyan hover:shadow-lg hover:shadow-cyber-cyan/10 transition-all duration-300 transform hover:-translate-y-1 group">
+                    <div class="text-3xl mb-2 group-hover:scale-110 transition-transform">📡</div>
+                    <div class="font-medium">Wireshark</div>
+                    <div class="text-xs text-gray-500 mt-1">Live capture</div>
+                </a>
+                <a href="/tools/hashcat" class="tool-card bg-dark-bg rounded-xl p-4 text-center border border-dark-border hover:border-yellow-400 hover:shadow-lg hover:shadow-yellow-400/10 transition-all duration-300 transform hover:-translate-y-1 group">
+                    <div class="text-3xl mb-2 group-hover:scale-110 transition-transform">🔓</div>
+                    <div class="font-medium">Hashcat</div>
+                    <div class="text-xs text-yellow-400 mt-1">ENT</div>
+                </a>
+                <a href="/tools/john" class="tool-card bg-dark-bg rounded-xl p-4 text-center border border-dark-border hover:border-cyber-cyan hover:shadow-lg hover:shadow-cyber-cyan/10 transition-all duration-300 transform hover:-translate-y-1 group">
+                    <div class="text-3xl mb-2 group-hover:scale-110 transition-transform">🗝️</div>
+                    <div class="font-medium">John</div>
+                    <div class="text-xs text-gray-500 mt-1">Password cracking</div>
+                </a>
+                <a href="/tools/hydra" class="tool-card bg-dark-bg rounded-xl p-4 text-center border border-dark-border hover:border-cyber-cyan hover:shadow-lg hover:shadow-cyber-cyan/10 transition-all duration-300 transform hover:-translate-y-1 group">
+                    <div class="text-3xl mb-2 group-hover:scale-110 transition-transform">🦈</div>
+                    <div class="font-medium">Hydra</div>
+                    <div class="text-xs text-gray-500 mt-1">Brute force</div>
+                </a>
+                <a href="/tools/nikto" class="tool-card bg-dark-bg rounded-xl p-4 text-center border border-dark-border hover:border-cyber-cyan hover:shadow-lg hover:shadow-cyber-cyan/10 transition-all duration-300 transform hover:-translate-y-1 group">
+                    <div class="text-3xl mb-2 group-hover:scale-110 transition-transform">🕷️</div>
+                    <div class="font-medium">Nikto</div>
+                    <div class="text-xs text-gray-500 mt-1">34 params</div>
+                </a>
+                <a href="/tools/gobuster" class="tool-card bg-dark-bg rounded-xl p-4 text-center border border-dark-border hover:border-cyber-cyan hover:shadow-lg hover:shadow-cyber-cyan/10 transition-all duration-300 transform hover:-translate-y-1 group">
+                    <div class="text-3xl mb-2 group-hover:scale-110 transition-transform">📁</div>
+                    <div class="font-medium">Gobuster</div>
+                    <div class="text-xs text-gray-500 mt-1">Dir fuzzing</div>
+                </a>
+                <a href="/tools/metasploit" class="tool-card bg-dark-bg rounded-xl p-4 text-center border border-dark-border hover:border-purple-400 hover:shadow-lg hover:shadow-purple-400/10 transition-all duration-300 transform hover:-translate-y-1 group">
+                    <div class="text-3xl mb-2 group-hover:scale-110 transition-transform">🔧</div>
+                    <div class="font-medium">Metasploit</div>
+                    <div class="text-xs text-purple-400 mt-1">PRO</div>
+                </a>
+                <a href="/tools/aircrack-ng" class="tool-card bg-dark-bg rounded-xl p-4 text-center border border-dark-border hover:border-purple-400 hover:shadow-lg hover:shadow-purple-400/10 transition-all duration-300 transform hover:-translate-y-1 group">
+                    <div class="text-3xl mb-2 group-hover:scale-110 transition-transform">📶</div>
+                    <div class="font-medium">Aircrack-ng</div>
+                    <div class="text-xs text-purple-400 mt-1">PRO</div>
+                </a>
+                <a href="/tools" class="tool-card bg-gradient-to-br from-cyber-cyan/10 to-cyber-blue/10 rounded-xl p-4 text-center border border-cyber-cyan/50 hover:border-cyber-cyan hover:shadow-lg hover:shadow-cyber-cyan/20 transition-all duration-300 transform hover:-translate-y-1 group">
+                    <div class="text-3xl mb-2 font-bold text-cyber-cyan group-hover:scale-110 transition-transform">+220</div>
+                    <div class="font-medium text-cyber-cyan">View All</div>
+                    <div class="text-xs text-gray-400 mt-1">Full catalog →</div>
+                </a>
+            </div>
+
+            <!-- Cloud Benefits -->
+            <div class="grid md:grid-cols-4 gap-6 mt-16">
+                <div class="text-center p-6 bg-dark-bg/50 rounded-xl border border-dark-border">
+                    <div class="text-3xl mb-3">☁️</div>
+                    <div class="font-semibold mb-2">Cloud-Native</div>
+                    <p class="text-sm text-gray-400">Run scans from anywhere, no local installation needed</p>
+                </div>
+                <div class="text-center p-6 bg-dark-bg/50 rounded-xl border border-dark-border">
+                    <div class="text-3xl mb-3">⚡</div>
+                    <div class="font-semibold mb-2">Instant Access</div>
+                    <p class="text-sm text-gray-400">All 230+ tools ready to use immediately</p>
+                </div>
+                <div class="text-center p-6 bg-dark-bg/50 rounded-xl border border-dark-border">
+                    <div class="text-3xl mb-3">🔒</div>
+                    <div class="font-semibold mb-2">Secure Execution</div>
+                    <p class="text-sm text-gray-400">Isolated containers for each scan</p>
+                </div>
+                <div class="text-center p-6 bg-dark-bg/50 rounded-xl border border-dark-border">
+                    <div class="text-3xl mb-3">📊</div>
+                    <div class="font-semibold mb-2">Auto Reports</div>
+                    <p class="text-sm text-gray-400">Automatic report generation in multiple formats</p>
+                </div>
+            </div>
+
+            <!-- CTA -->
+            <div class="text-center mt-12">
+                <a href="/tools" class="inline-flex items-center gap-2 px-8 py-4 rounded-xl font-semibold kali-btn text-lg">
+                    <span>🛠️</span> Explore All 230+ Tools
+                </a>
+                <p class="text-gray-500 text-sm mt-3">Full documentation for every parameter</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Pricing -->
+    <section id="pricing" class="py-20 px-6">
+        <div class="max-w-7xl mx-auto">
+            <div class="text-center mb-16">
+                <div class="inline-block bg-gradient-to-r from-cyber-cyan/20 to-cyber-blue/20 rounded-full px-6 py-2 mb-6">
+                    <span class="text-cyber-cyan font-semibold">🚀 NEW MONTHLY PLANS</span>
+                </div>
+                <h2 class="text-4xl md:text-5xl font-bold mb-4">Flexible <span class="gradient-text">Monthly Pricing</span></h2>
+                <p class="text-gray-400 text-lg max-w-2xl mx-auto">No annual commitment • Cancel anytime • Scale as you grow</p>
+            </div>
+            
+            <div class="grid md:grid-cols-3 gap-8 max-w-5xl mx-auto">
+                <!-- Starter -->
+                <div class="bg-dark-card rounded-2xl p-8 border border-dark-border flex flex-col">
+                    <div class="h-8 mb-4"></div>
+                    <div class="text-lg font-medium text-gray-400 mb-2">Starter</div>
+                    <div class="flex items-baseline gap-1 mb-6">
+                        <span class="text-5xl font-bold">€19</span>
+                        <span class="text-gray-400">/month</span>
+                    </div>
+                    <ul class="space-y-4 mb-8 flex-grow">
+                        <li class="flex items-center gap-3">
+                            <svg class="w-5 h-5 text-green-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                            <span>10 scans per month</span>
+                        </li>
+                        <li class="flex items-center gap-3">
+                            <svg class="w-5 h-5 text-green-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                            <span>50 security tools</span>
+                        </li>
+                        <li class="flex items-center gap-3">
+                            <svg class="w-5 h-5 text-green-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                            <span>Basic reports (HTML)</span>
+                        </li>
+                        <li class="flex items-center gap-3">
+                            <svg class="w-5 h-5 text-green-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                            <span>Email support</span>
+                        </li>
+                        <li class="flex items-center gap-3 invisible">
+                            <svg class="w-5 h-5 text-green-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                            <span>Placeholder</span>
+                        </li>
+                    </ul>
+                    <div class="mt-auto">
+                        <button id="cta-get-starter" onclick="checkout('starter')" class="block w-full py-3 rounded-xl text-center font-medium cursor-pointer kali-btn-secondary">
+                            Start Free Trial
+                        </button>
+                        <p class="text-gray-500 text-xs mt-3 text-center opacity-0">Placeholder</p>
+                    </div>
+                </div>
+                
+                <!-- Professional -->
+                <div class="bg-dark-card rounded-2xl p-8 border-2 border-cyber-cyan relative glow flex flex-col">
+                    <div class="absolute -top-4 left-1/2 -translate-x-1/2 px-6 py-2 bg-gradient-to-r from-cyber-cyan to-cyber-blue rounded-full text-sm font-bold shadow-lg shadow-cyber-cyan/30 whitespace-nowrap">
+                        ⭐ Most Popular
+                    </div>
+                    <div class="h-4 mb-4"></div>
+                    <div class="text-lg font-medium text-cyber-cyan mb-2">Professional</div>
+                    <div class="flex items-baseline gap-1 mb-6">
+                        <span class="text-5xl font-bold">€59</span>
+                        <span class="text-gray-400">/month</span>
+                    </div>
+                    <ul class="space-y-4 mb-8 flex-grow">
+                        <li class="flex items-center gap-3">
+                            <svg class="w-5 h-5 text-green-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                            <span>50 scans per month</span>
+                        </li>
+                        <li class="flex items-center gap-3">
+                            <svg class="w-5 h-5 text-green-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                            <span><strong>230+</strong> security tools</span>
+                        </li>
+                        <li class="flex items-center gap-3">
+                            <svg class="w-5 h-5 text-green-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                            <span>Advanced reports (PDF)</span>
+                        </li>
+                        <li class="flex items-center gap-3">
+                            <svg class="w-5 h-5 text-green-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                            <span>API access</span>
+                        </li>
+                        <li class="flex items-center gap-3">
+                            <svg class="w-5 h-5 text-green-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                            <span>Priority support</span>
+                        </li>
+                    </ul>
+                    <div class="mt-auto">
+                        <button id="cta-get-professional" onclick="checkout('professional')" class="block w-full py-3 rounded-xl text-center font-semibold cursor-pointer kali-btn kali-glow">
+                            Start Professional
+                        </button>
+                        <p class="text-gray-500 text-xs mt-3 text-center">Cancel anytime • No setup fees</p>
+                    </div>
+                </div>
+                
+                <!-- Enterprise -->
+                <div class="bg-dark-card rounded-2xl p-8 border border-dark-border flex flex-col">
+                    <div class="h-8 mb-4"></div>
+                    <div class="text-lg font-medium text-yellow-400 mb-2">Enterprise</div>
+                    <div class="flex items-baseline gap-1 mb-6">
+                        <span class="text-5xl font-bold">€149</span>
+                        <span class="text-gray-400">/month</span>
+                    </div>
+                    <ul class="space-y-4 mb-8 flex-grow">
+                        <li class="flex items-center gap-3">
+                            <svg class="w-5 h-5 text-green-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                            <span>Unlimited scans</span>
+                        </li>
+                        <li class="flex items-center gap-3">
+                            <svg class="w-5 h-5 text-green-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                            <span><strong>230+</strong> security tools</span>
+                        </li>
+                        <li class="flex items-center gap-3">
+                            <svg class="w-5 h-5 text-green-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                            <span>Custom reports & branding</span>
+                        </li>
+                        <li class="flex items-center gap-3">
+                            <svg class="w-5 h-5 text-green-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                            <span>24/7 priority support</span>
+                        </li>
+                        <li class="flex items-center gap-3">
+                            <svg class="w-5 h-5 text-green-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                            <span>Team management</span>
+                        </li>
+                    </ul>
+                    <div class="mt-auto">
+                        <button onclick="checkout('enterprise')" class="block w-full py-3 rounded-xl text-center font-medium kali-btn-gold">
+                            Go Enterprise
+                        </button>
+                        <p class="text-gray-500 text-xs mt-3 text-center">Custom billing available</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Pricing Comparison Note -->
+            <div class="mt-16 text-center">
+                <div class="bg-yellow-500/10 border border-yellow-500/30 rounded-lg p-6 max-w-3xl mx-auto">
+                    <h4 class="text-yellow-400 font-semibold mb-2">💡 Why Monthly?</h4>
+                    <p class="text-gray-300">
+                        Our new monthly plans offer better flexibility than annual commitments. 
+                        Professional plan at $79/month gives you full access with no long-term lock-in.
+                        <br><span class="text-sm text-gray-400 mt-2 block">Legacy annual customers continue to be supported until renewal.</span>
+                    </p>
+                </div>
+            </div>
+
+            <!-- Support & SLA -->
+            <div class="mt-10 sm:mt-12 grid md:grid-cols-3 gap-4 text-sm">
+                <div class="bg-dark-bg rounded-xl p-5 border border-dark-border">
+                    <div class="text-gray-400">Response time</div>
+                    <div class="font-semibold mt-1">Under 24 hours</div>
+                </div>
+                <div class="bg-dark-bg rounded-xl p-5 border border-dark-border">
+                    <div class="text-gray-400">Monthly flexibility</div>
+                    <div class="font-semibold mt-1">Cancel anytime</div>
+                </div>
+                <div class="bg-dark-bg rounded-xl p-5 border border-dark-border">
+                    <div class="text-gray-400">Enterprise onboarding</div>
+                    <div class="font-semibold mt-1">Guided setup & rollout</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Screenshots Gallery -->
+    <section id="screenshots" class="py-16 sm:py-20 px-4 sm:px-6 bg-dark-card/50">
+        <div class="max-w-6xl mx-auto">
+            <div class="text-center mb-8 sm:mb-12">
+                <h2 class="text-3xl sm:text-4xl md:text-5xl font-bold mb-4">See It In <span class="gradient-text">Action</span></h2>
+                <p class="text-gray-400 text-base sm:text-lg">Real screenshots from actual product</p>
+            </div>
+            
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
+                <!-- Screenshot 1 -->
+                <div class="group relative rounded-xl overflow-hidden border border-dark-border hover:border-cyber-cyan transition cursor-pointer" onclick="openLightbox('/screenshots/01-dashboard-overview-v20260115.png', 'Dashboard Overview')">
+                    <img src="/screenshots/01-dashboard-overview-v20260115.png" alt="Dashboard Overview" class="w-full aspect-video object-cover group-hover:scale-105 transition duration-300" loading="lazy">
+                    <div class="absolute inset-0 bg-gradient-to-t from-dark-bg/90 to-transparent flex items-end p-4">
+                        <span class="font-medium">Dashboard Overview</span>
+                    </div>
+                </div>
+                
+                <!-- Screenshot 2 -->
+                <div class="group relative rounded-xl overflow-hidden border border-dark-border hover:border-cyber-cyan transition cursor-pointer" onclick="openLightbox('/screenshots/03-information-gathering-v20260115.png', 'Information Gathering Tools')">
+                    <img src="/screenshots/03-information-gathering-v20260115.png" alt="Information Gathering" class="w-full aspect-video object-cover group-hover:scale-105 transition duration-300" loading="lazy">
+                    <div class="absolute inset-0 bg-gradient-to-t from-dark-bg/90 to-transparent flex items-end p-4">
+                        <span class="font-medium">Information Gathering</span>
+                    </div>
+                </div>
+                
+                <!-- Screenshot 3 -->
+                <div class="group relative rounded-xl overflow-hidden border border-dark-border hover:border-cyber-cyan transition cursor-pointer" onclick="openLightbox('/screenshots/04-vulnerability-analysis-v20260115.png', 'Vulnerability Analysis')">
+                    <img src="/screenshots/04-vulnerability-analysis-v20260115.png" alt="Vulnerability Analysis" class="w-full aspect-video object-cover group-hover:scale-105 transition duration-300" loading="lazy">
+                    <div class="absolute inset-0 bg-gradient-to-t from-dark-bg/90 to-transparent flex items-end p-4">
+                        <span class="font-medium">Vulnerability Analysis</span>
+                    </div>
+                </div>
+                
+                <!-- Screenshot 4 -->
+                <div class="group relative rounded-xl overflow-hidden border border-dark-border hover:border-cyber-cyan transition cursor-pointer" onclick="openLightbox('/screenshots/05-web-apps-v20260115.png', 'Web Application Tools')">
+                    <img src="/screenshots/05-web-apps-v20260115.png" alt="Web Application Tools" class="w-full aspect-video object-cover group-hover:scale-105 transition duration-300" loading="lazy">
+                    <div class="absolute inset-0 bg-gradient-to-t from-dark-bg/90 to-transparent flex items-end p-4">
+                        <span class="font-medium">Web Application Tools</span>
+                    </div>
+                </div>
+                
+                <!-- Screenshot 5 -->
+                <div class="group relative rounded-xl overflow-hidden border border-dark-border hover:border-cyber-cyan transition cursor-pointer" onclick="openLightbox('/screenshots/02-tools-categories-v20260115.png', 'All Tool Categories')">
+                    <img src="/screenshots/02-tools-categories-v20260115.png" alt="Tool Categories" class="w-full aspect-video object-cover group-hover:scale-105 transition duration-300" loading="lazy">
+                    <div class="absolute inset-0 bg-gradient-to-t from-dark-bg/90 to-transparent flex items-end p-4">
+                        <span class="font-medium">All Categories</span>
+                    </div>
+                </div>
+                
+                <!-- Screenshot 6 -->
+                <div class="group relative rounded-xl overflow-hidden border border-dark-border hover:border-cyber-cyan transition cursor-pointer" onclick="openLightbox('/screenshots/06-dark-theme-v20260115.png', 'Dark Mode Interface')">
+                    <img src="/screenshots/06-dark-theme-v20260115.png" alt="Dark Theme" class="w-full aspect-video object-cover group-hover:scale-105 transition duration-300" loading="lazy">
+                    <div class="absolute inset-0 bg-gradient-to-t from-dark-bg/90 to-transparent flex items-end p-4">
+                        <span class="font-medium">Dark Mode Interface</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Lightbox Modal -->
+    <div id="lightbox" class="fixed inset-0 z-50 bg-black/95 hidden items-center justify-center p-4" onclick="closeLightbox()">
+        <button class="absolute top-6 right-6 text-white hover:text-cyber-cyan transition" onclick="closeLightbox()">
+            <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+        </button>
+        <img id="lightbox-img" src="" alt="" class="max-w-full max-h-[90vh] rounded-lg shadow-2xl" loading="lazy">
+        <p id="lightbox-caption" class="absolute bottom-6 left-1/2 transform -translate-x-1/2 text-white text-lg font-medium"></p>
+    </div>
+
+    <!-- Download Section -->
+    <section id="download" class="py-20 px-6 bg-gradient-to-b from-dark-bg to-dark-card">
+        <div class="max-w-5xl mx-auto text-center">
+            <h2 class="text-4xl md:text-5xl font-bold mb-6">
+                Ready to Get <span class="gradient-text">Started?</span>
+            </h2>
+            <p class="text-xl text-gray-400 mb-10">
+                Download the trial version and explore all features. The 14‑day trial activates on first run and requires internet access.
+            </p>
+            
+            <div class="bg-dark-card rounded-2xl p-8 border border-dark-border">
+                <!-- Quick Install Command -->
+                <div class="mb-8 bg-dark-bg rounded-xl p-6">
+                    <div class="text-left font-mono">
+                        <div class="text-gray-400 mb-2"># One-line install (recommended)</div>
+                        <div class="flex items-center justify-between bg-gray-900/50 rounded-lg p-4">
+                            <code class="text-cyber-cyan text-lg">curl -sSL https://semihkilic.com/install.sh | bash</code>
+                            <button onclick="copyInstallCommand()" class="ml-4 px-3 py-1 bg-cyber-cyan/20 text-cyber-cyan rounded hover:bg-cyber-cyan/30 transition text-sm">
+                                Copy
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Quick Start Steps -->
+                <div class="mb-8 grid md:grid-cols-3 gap-4 text-left">
+                    <div class="bg-dark-bg rounded-xl p-5 border border-dark-border">
+                        <div class="text-sm text-gray-400 mb-1">Step 1</div>
+                        <div class="font-semibold">Install with one line</div>
+                        <p class="text-gray-400 text-sm mt-2">Auto-detects your OS and sets up the CLI.</p>
+                    </div>
+                    <div class="bg-dark-bg rounded-xl p-5 border border-dark-border">
+                        <div class="text-sm text-gray-400 mb-1">Step 2</div>
+                        <div class="font-semibold">Launch the app</div>
+                        <p class="text-gray-400 text-sm mt-2">Run <span class="text-cyber-cyan">cybersec start</span> to begin.</p>
+                    </div>
+                    <div class="bg-dark-bg rounded-xl p-5 border border-dark-border">
+                        <div class="text-sm text-gray-400 mb-1">Step 3</div>
+                        <div class="font-semibold">Open the dashboard</div>
+                        <p class="text-gray-400 text-sm mt-2">Use <span class="text-cyber-cyan">cybersec open</span> in your browser.</p>
+                    </div>
+                </div>
+
+                <!-- Download Options -->
+                <div class="grid md:grid-cols-3 gap-6 mb-8">
+                    <!-- Linux -->
+                    <a href="/downloads/cybersec-pro-linux.tar.gz" class="block p-6 rounded-xl bg-dark-bg border border-cyber-cyan/60 hover:border-cyber-cyan transition group relative">
+                        <span class="absolute top-4 right-4 text-xs font-semibold bg-cyber-cyan/20 text-cyber-cyan px-2 py-1 rounded-full">Recommended</span>
+                        <div class="text-4xl mb-3">🐧</div>
+                        <div class="font-bold text-lg">Linux / Kali</div>
+                        <div class="text-gray-400 text-sm">Recommended • 2.1 MB</div>
+                        <div class="mt-2 text-xs text-gray-500">Best performance • Full tool coverage</div>
+                        <div class="mt-3 text-cyber-cyan group-hover:underline">Download →</div>
+                    </a>
+                    
+                    <!-- Docker -->
+                    <a href="/downloads/docker-compose.yml" class="block p-6 rounded-xl bg-dark-bg border border-dark-border hover:border-cyber-cyan transition group">
+                        <div class="text-4xl mb-3">🐳</div>
+                        <div class="font-bold text-lg">Docker</div>
+                        <div class="text-gray-400 text-sm">One-line setup</div>
+                        <div class="mt-2 text-xs text-gray-500">Isolated • Easy rollback</div>
+                        <div class="mt-3 text-cyber-cyan group-hover:underline">Download →</div>
+                    </a>
+                    
+                    <!-- Source -->
+                    <a href="/downloads/cybersec-pro-source.zip" class="block p-6 rounded-xl bg-dark-bg border border-dark-border hover:border-cyber-cyan transition group">
+                        <div class="text-4xl mb-3">📦</div>
+                        <div class="font-bold text-lg">Source Code</div>
+                        <div class="text-gray-400 text-sm">Full package • 2.2 MB</div>
+                        <div class="mt-2 text-xs text-gray-500">For audits • Advanced users</div>
+                        <div class="mt-3 text-cyber-cyan group-hover:underline">Download →</div>
+                    </a>
+                </div>
+                
+                <!-- Installation Options -->
+                <div class="text-left space-y-4">
+                    <h3 class="text-lg font-bold text-white mb-4">📋 Installation Options</h3>
+                    
+                    <div class="grid md:grid-cols-2 gap-4">
+                        <!-- Option 1: Quick Install -->
+                        <div class="bg-dark-bg rounded-xl p-5 border border-dark-border">
+                            <div class="flex items-center gap-2 mb-3">
+                                <span class="text-green-400 text-xl">⚡</span>
+                                <span class="font-bold">Quick Install (Recommended)</span>
+                            </div>
+                            <code class="block bg-gray-900/50 rounded p-3 text-sm text-gray-300 mb-3">
+                                curl -sSL https://semihkilic.com/install.sh | bash
+                            </code>
+                            <ul class="text-gray-400 text-sm space-y-1">
+                                <li>✓ Auto-detects your OS</li>
+                                <li>✓ Installs dependencies</li>
+                                <li>✓ Creates 'cybersec' CLI command</li>
+                            </ul>
+                        </div>
+                        
+                        <!-- Option 2: Docker -->
+                        <div class="bg-dark-bg rounded-xl p-5 border border-dark-border">
+                            <div class="flex items-center gap-2 mb-3">
+                                <span class="text-blue-400 text-xl">🐳</span>
+                                <span class="font-bold">Docker Install</span>
+                            </div>
+                            <code class="block bg-gray-900/50 rounded p-3 text-sm text-gray-300 mb-3">
+                                curl -sSL https://semihkilic.com/install.sh | bash -s -- --docker
+                            </code>
+                            <ul class="text-gray-400 text-sm space-y-1">
+                                <li>✓ Isolated environment</li>
+                                <li>✓ No system changes</li>
+                                <li>✓ Easy updates</li>
+                            </ul>
+                        </div>
+                    </div>
+                    
+                    <!-- After Install -->
+                    <div class="mt-6 bg-gradient-to-r from-cyber-cyan/10 to-cyber-purple/10 rounded-xl p-5 border border-cyber-cyan/30">
+                        <h4 class="font-bold mb-3">🚀 After Installation</h4>
+                        <div class="grid md:grid-cols-3 gap-4 text-sm">
+                            <div>
+                                <code class="text-cyber-cyan">cybersec start</code>
+                                <p class="text-gray-400 mt-1">Start the application</p>
+                            </div>
+                            <div>
+                                <code class="text-cyber-cyan">cybersec open</code>
+                                <p class="text-gray-400 mt-1">Open in browser</p>
+                            </div>
+                            <div>
+                                <code class="text-cyber-cyan">cybersec update</code>
+                                <p class="text-gray-400 mt-1">Update to latest</p>
+                            </div>
+                        </div>
+                        <p class="text-gray-400 text-sm mt-4">
+                            Trial license activates automatically on first run (internet required). If activation fails, check your network or contact support.
+                        </p>
+                    </div>
+
+                    <div class="mt-6 bg-dark-bg rounded-xl p-5 border border-dark-border text-left">
+                        <h4 class="font-bold mb-2">✉️ License Delivery</h4>
+                        <p class="text-gray-400 text-sm">
+                            After purchasing <strong>Basic</strong>, <strong>Professional</strong>, or <strong>Enterprise</strong>, your license key is sent by email. Please check spam/junk if you don’t receive it within a few minutes.
+                        </p>
+                    </div>
+
+                    <div class="mt-4 bg-dark-bg rounded-xl p-5 border border-dark-border text-left">
+                        <h4 class="font-bold mb-2">🔒 Download Integrity</h4>
+                        <p class="text-gray-400 text-sm">
+                            Download only from <strong>semihkilic.com</strong> over HTTPS. Verify file integrity using checksums from
+                            <a href="/downloads/version.json" class="text-cyber-cyan hover:underline">version.json</a> before installing. If a checksum doesn’t match, do not run the file.
+                        </p>
+                    </div>
+
+                    <div class="mt-4 bg-dark-bg rounded-xl p-5 border border-dark-border text-left">
+                        <h4 class="font-bold mb-2">🛡️ Privacy & Safety</h4>
+                        <p class="text-gray-400 text-sm">
+                            Runs locally. Your scan data stays on your machine. No cloud uploads required for core features.
+                        </p>
+                    </div>
+                </div>
+                
+                <p class="mt-6 text-gray-500 text-sm">
+                    Trial includes 30 tools • 5 scans/day • 14 days • Auto‑activation on first run • <a href="/docs.html" class="text-cyber-cyan hover:underline">📚 Full Documentation →</a>
+                </p>
+            </div>
+        </div>
+    </section>
+
+    <!-- What You Get Section -->
+    <section class="py-20 px-6 bg-dark-card/30">
+        <div class="max-w-5xl mx-auto">
+            <div class="text-center mb-16">
+                <h2 class="text-4xl md:text-5xl font-bold mb-4">What You're <span class="gradient-text">Getting</span></h2>
+                <p class="text-gray-400 text-lg">Complete transparency - here's exactly what CyberSec Pro provides</p>
+            </div>
+            
+            <div class="grid md:grid-cols-2 gap-8">
+                <!-- What's Included -->
+                <div class="bg-dark-card rounded-2xl p-8 border border-green-500/30">
+                    <h3 class="text-xl font-bold text-green-400 mb-6 flex items-center gap-2">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                        What's Included
+                    </h3>
+                    <ul class="space-y-3 text-gray-300">
+                        <li class="flex items-start gap-3">
+                            <span class="text-green-400 mt-1">✓</span>
+                            <span><strong>Modern Web Dashboard</strong> - Beautiful React-based interface to manage all tools</span>
+                        </li>
+                        <li class="flex items-start gap-3">
+                            <span class="text-green-400 mt-1">✓</span>
+                            <span><strong>230+ Tool Integration</strong> - Pre-configured commands and presets for industry tools</span>
+                        </li>
+                        <li class="flex items-start gap-3">
+                            <span class="text-green-400 mt-1">✓</span>
+                            <span><strong>Integrated Terminal</strong> - Run commands directly from the dashboard</span>
+                        </li>
+                        <li class="flex items-start gap-3">
+                            <span class="text-green-400 mt-1">✓</span>
+                            <span><strong>Scan Management</strong> - Save, organize and track your security scans</span>
+                        </li>
+                        <li class="flex items-start gap-3">
+                            <span class="text-green-400 mt-1">✓</span>
+                            <span><strong>Report Generation</strong> - Export findings in PDF, HTML, JSON formats</span>
+                        </li>
+                        <li class="flex items-start gap-3">
+                            <span class="text-green-400 mt-1">✓</span>
+                            <span><strong>1 Year License</strong> - Full access with updates and support</span>
+                        </li>
+                        <li class="flex items-start gap-3">
+                            <span class="text-green-400 mt-1">✓</span>
+                            <span><strong>Email Support</strong> - Direct technical assistance when you need it</span>
+                        </li>
+                    </ul>
+                </div>
+                
+                <!-- Important Notes -->
+                <div class="bg-dark-card rounded-2xl p-8 border border-yellow-500/30">
+                    <h3 class="text-xl font-bold text-yellow-400 mb-6 flex items-center gap-2">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                        Important to Know
+                    </h3>
+                    <ul class="space-y-3 text-gray-300">
+                        <li class="flex items-start gap-3">
+                            <span class="text-yellow-400 mt-1">!</span>
+                            <span><strong>Kali Linux Recommended</strong> - 100% tool compatibility (230 tools)</span>
+                        </li>
+                        <li class="flex items-start gap-3">
+                            <span class="text-yellow-400 mt-1">!</span>
+                            <span><strong>Ubuntu/Debian</strong> - ~60% tools work out of the box (~140 tools)</span>
+                        </li>
+                        <li class="flex items-start gap-3">
+                            <span class="text-yellow-400 mt-1">!</span>
+                            <span><strong>Docker Option</strong> - Full Kali environment for 100% compatibility</span>
+                        </li>
+                        <li class="flex items-start gap-3">
+                            <span class="text-yellow-400 mt-1">!</span>
+                            <span><strong>Tools Are Open Source</strong> - We provide the interface; tools like Nmap, SQLMap are free</span>
+                        </li>
+                        <li class="flex items-start gap-3">
+                            <span class="text-yellow-400 mt-1">!</span>
+                            <span><strong>Legal Use Only</strong> - Only test systems you own or have permission to test</span>
+                        </li>
+                    </ul>
+                    
+                    <!-- Tool Compatibility Quick Reference -->
+                    <div class="mt-6 pt-6 border-t border-yellow-500/20">
+                        <p class="text-sm text-yellow-400 mb-3">Tool Compatibility by System:</p>
+                        <div class="grid grid-cols-2 gap-2 text-xs">
+                            <div class="flex justify-between"><span>Kali Linux:</span> <span class="text-green-400">230 tools (100%)</span></div>
+                            <div class="flex justify-between"><span>Docker (Kali):</span> <span class="text-green-400">230 tools (100%)</span></div>
+                            <div class="flex justify-between"><span>Ubuntu/Debian:</span> <span class="text-yellow-400">~140 tools (60%)</span></div>
+                            <div class="flex justify-between"><span>Windows WSL2:</span> <span class="text-orange-400">~100 tools (43%)</span></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Live Demo Section -->
+    <section id="demo" class="py-16 sm:py-20 px-4 sm:px-6">
+        <div class="max-w-6xl mx-auto text-center">
+            <h2 class="text-3xl sm:text-4xl md:text-5xl font-bold mb-4">See It <span class="gradient-text">In Action</span></h2>
+            <p class="text-gray-400 text-base sm:text-lg mb-8 sm:mb-10">Explore the dashboard through real screenshots and demo video</p>
+            
+            <!-- Main Screenshot Gallery -->
+            <div class="mb-12">
+                <div class="relative gradient-border rounded-2xl overflow-hidden glow">
+                    <img id="mainScreenshot" src="/screenshots/02-tools-categories-v20260115.png" alt="CyberSec Pro Tools" class="w-full" loading="lazy">
+                    <div class="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-dark-bg to-transparent p-6">
+                        <p id="screenshotCaption" class="text-lg font-medium">Tool Categories - Explore 19 groups</p>
+                    </div>
+                </div>
+                
+                <!-- Thumbnail Gallery -->
+                <div class="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-7 gap-2 sm:gap-3 mt-4 sm:mt-6">
+                    <button onclick="changeScreenshot('tools', 'Tool Categories - Explore 19 groups')" class="screenshot-thumb bg-dark-card rounded-lg p-2 border-2 border-cyber-cyan hover:border-cyber-cyan transition">
+                        <img src="/screenshots/02-tools-categories-v20260115.png" alt="Tools" class="w-full rounded" loading="lazy">
+                    </button>
+                    <button onclick="changeScreenshot('dashboard', 'Dashboard Overview - All 230+ tools at your fingertips')" class="screenshot-thumb bg-dark-card rounded-lg p-2 border-2 border-transparent hover:border-cyber-cyan transition">
+                        <img src="/screenshots/01-dashboard-overview-v20260115.png" alt="Dashboard" class="w-full rounded" loading="lazy">
+                    </button>
+                    <button onclick="changeScreenshot('info', 'Information Gathering - Recon workflows')" class="screenshot-thumb bg-dark-card rounded-lg p-2 border-2 border-transparent hover:border-cyber-cyan transition">
+                        <img src="/screenshots/03-information-gathering-v20260115.png" alt="Information" class="w-full rounded" loading="lazy">
+                    </button>
+                    <button onclick="changeScreenshot('vuln', 'Vulnerability Analysis - Findings & risk')" class="screenshot-thumb bg-dark-card rounded-lg p-2 border-2 border-transparent hover:border-cyber-cyan transition">
+                        <img src="/screenshots/04-vulnerability-analysis-v20260115.png" alt="Vulnerability" class="w-full rounded" loading="lazy">
+                    </button>
+                    <button onclick="changeScreenshot('web', 'Web Application Tools')" class="screenshot-thumb bg-dark-card rounded-lg p-2 border-2 border-transparent hover:border-cyber-cyan transition">
+                        <img src="/screenshots/05-web-apps-v20260115.png" alt="Web Apps" class="w-full rounded" loading="lazy">
+                    </button>
+                    <button onclick="changeScreenshot('dark', 'Dark Theme - Professional UI')" class="screenshot-thumb bg-dark-card rounded-lg p-2 border-2 border-transparent hover:border-cyber-cyan transition">
+                        <img src="/screenshots/06-dark-theme-v20260115.png" alt="Dark Theme" class="w-full rounded" loading="lazy">
+                    </button>
+                    <button onclick="changeScreenshot('dashboard', 'Dashboard Overview - All 230+ tools at your fingertips')" class="screenshot-thumb bg-dark-card rounded-lg p-2 border-2 border-transparent hover:border-cyber-cyan transition">
+                        <img src="/screenshots/01-dashboard-overview-v20260115.png" alt="Dashboard" class="w-full rounded" loading="lazy">
+                    </button>
+                </div>
+            </div>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 sm:gap-8">
+                <!-- Video Demo -->
+                <div class="bg-dark-card rounded-2xl p-6 border border-dark-border">
+                    <div class="aspect-video bg-dark-bg rounded-xl mb-4 border border-dark-border relative overflow-hidden">
+                        <video id="demoVideo" class="w-full h-full object-cover" poster="/videos/frames/frame_0012-v20260115.png" controls loop loading="lazy">
+                            <source src="/videos/demo_smooth-v20260115.mp4" type="video/mp4">
+                            <source src="/videos/demo_final-v20260115.mp4" type="video/mp4">
+                            Your browser does not support the video tag.
+                        </video>
+                    </div>
+                    <h3 class="font-bold text-lg">Quick Demo Preview</h3>
+                    <p class="text-gray-400 text-sm">See how the dashboard works in 15 seconds</p>
+                </div>
+                
+                <!-- Live Demo Info -->
+                <div class="bg-dark-card rounded-2xl p-6 border border-dark-border">
+                    <div class="aspect-video bg-dark-bg rounded-xl flex items-center justify-center mb-4 border border-dark-border">
+                        <div class="text-center p-6">
+                            <div class="text-5xl mb-4">🖥️</div>
+                            <p class="text-xl font-bold mb-2">Try It Yourself</p>
+                            <p class="text-gray-400 text-sm mb-4">Download the free trial and explore all features</p>
+                            <a href="#download" class="inline-block px-6 py-2 rounded-lg kali-btn">
+                                Download Trial
+                            </a>
+                        </div>
+                    </div>
+                    <h3 class="font-bold text-lg">14-Day Free Trial</h3>
+                    <p class="text-gray-400 text-sm">No credit card required • Full access</p>
+                </div>
+            </div>
+            
+            <!-- Tool Categories Preview -->
+            <div class="mt-8 sm:mt-12 bg-dark-card rounded-2xl p-4 sm:p-8 border border-dark-border text-left">
+                <h3 class="text-lg sm:text-xl font-bold mb-4 sm:mb-6 text-center">19 Tool Categories</h3>
+                <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4 text-xs sm:text-sm">
+                    <div class="flex items-center gap-2"><span class="text-cyber-cyan">→</span> Information Gathering (36)</div>
+                    <div class="flex items-center gap-2"><span class="text-cyber-cyan">→</span> Web Applications (25)</div>
+                    <div class="flex items-center gap-2"><span class="text-cyber-cyan">→</span> Exploitation Tools (22)</div>
+                    <div class="flex items-center gap-2"><span class="text-cyber-cyan">→</span> Password Attacks (19)</div>
+                    <div class="flex items-center gap-2"><span class="text-cyber-cyan">→</span> Forensics (18)</div>
+                    <div class="flex items-center gap-2"><span class="text-cyber-cyan">→</span> Wireless Attacks (17)</div>
+                    <div class="flex items-center gap-2"><span class="text-cyber-cyan">→</span> Vulnerability Analysis (14)</div>
+                    <div class="flex items-center gap-2"><span class="text-cyber-cyan">→</span> Sniffing & Spoofing (14)</div>
+                    <div class="flex items-center gap-2"><span class="text-cyber-cyan">→</span> Reverse Engineering (12)</div>
+                    <div class="flex items-center gap-2"><span class="text-cyber-cyan">→</span> Post Exploitation (8)</div>
+                    <div class="flex items-center gap-2"><span class="text-cyber-cyan">→</span> Database Assessment (7)</div>
+                    <div class="flex items-center gap-2"><span class="text-cyber-cyan">→</span> Social Engineering (6)</div>
+                    <div class="flex items-center gap-2"><span class="text-cyber-cyan">→</span> Reporting Tools (6)</div>
+                    <div class="flex items-center gap-2"><span class="text-cyber-cyan">→</span> Mobile Security (5)</div>
+                    <div class="flex items-center gap-2"><span class="text-cyber-cyan">→</span> Stress Testing (4)</div>
+                    <div class="flex items-center gap-2"><span class="text-cyber-cyan">→</span> Hardware Hacking (4)</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+            
+    <!-- FAQ -->
+    <section id="faq" class="py-16 sm:py-20 px-4 sm:px-6">
+        <div class="max-w-4xl mx-auto">
+            <div class="text-center mb-8 sm:mb-10">
+                <h2 class="text-3xl sm:text-4xl md:text-5xl font-bold mb-4">Frequently Asked <span class="gradient-text">Questions</span></h2>
+                <p class="text-gray-400 text-base sm:text-lg">Everything you need before you buy</p>
+            </div>
+            <div class="space-y-3 sm:space-y-4">
+                <details class="bg-dark-card rounded-xl border border-dark-border group">
+                    <summary class="px-4 sm:px-6 py-3 sm:py-4 cursor-pointer font-medium flex justify-between items-center text-sm sm:text-base">
+                        What are the system requirements?
+                        <span class="text-gray-400 group-open:rotate-180 transition">▼</span>
+                    </summary>
+                    <div class="px-4 sm:px-6 pb-3 sm:pb-4 text-gray-400 text-sm sm:text-base">
+                        <strong>Recommended:</strong> Kali Linux (2023+), Ubuntu 20.04+, or Debian 11+<br>
+                        <strong>Hardware:</strong> 4GB RAM minimum (8GB+ recommended), 10GB disk space<br>
+                        <strong>Permissions:</strong> Some tools require sudo/root privileges<br>
+                        <strong>Alternative:</strong> Docker on Windows/macOS/Linux<br>
+                        <strong>Browser:</strong> Chrome, Firefox, or Edge (latest)
+                    </div>
+                </details>
+
+                <details class="bg-dark-card rounded-xl border border-dark-border group">
+                    <summary class="px-4 sm:px-6 py-3 sm:py-4 cursor-pointer font-medium flex justify-between items-center text-sm sm:text-base">
+                        What do I actually get when I buy?
+                        <span class="text-gray-400 group-open:rotate-180 transition">▼</span>
+                    </summary>
+                    <div class="px-4 sm:px-6 pb-3 sm:pb-4 text-gray-400 text-sm sm:text-base">
+                        You get the CyberSec Pro dashboard, integrations, installers, and updates. The security tools themselves are open-source and licensed separately. We provide the interface and presets; you may need to install missing tools depending on your OS.
+                    </div>
+                </details>
+
+                <details class="bg-dark-card rounded-xl border border-dark-border group">
+                    <summary class="px-4 sm:px-6 py-3 sm:py-4 cursor-pointer font-medium flex justify-between items-center text-sm sm:text-base">
+                        Do I need to install the tools separately?
+                        <span class="text-gray-400 group-open:rotate-180 transition">▼</span>
+                    </summary>
+                    <div class="px-4 sm:px-6 pb-3 sm:pb-4 text-gray-400 text-sm sm:text-base">
+                        On <strong>Kali Linux</strong>, most tools are pre-installed. On other distros, many tools require installation. The dashboard shows which tools are missing and provides install guidance.
+                    </div>
+                </details>
+
+                <details class="bg-dark-card rounded-xl border border-dark-border group">
+                    <summary class="px-4 sm:px-6 py-3 sm:py-4 cursor-pointer font-medium flex justify-between items-center text-sm sm:text-base">
+                        Why do the tool counts look different?
+                        <span class="text-gray-400 group-open:rotate-180 transition">▼</span>
+                    </summary>
+                    <div class="px-4 sm:px-6 pb-3 sm:pb-4 text-gray-400 text-sm sm:text-base">
+                        The total catalog is ~230 tools, but the <strong>installed</strong> number depends on your OS and what you’ve installed. Counts are approximate and will vary by distribution and setup.
+                    </div>
+                </details>
+
+                <details class="bg-dark-card rounded-xl border border-dark-border group">
+                    <summary class="px-4 sm:px-6 py-3 sm:py-4 cursor-pointer font-medium flex justify-between items-center text-sm sm:text-base">
+                        Does it work on Windows or macOS?
+                        <span class="text-gray-400 group-open:rotate-180 transition">▼</span>
+                    </summary>
+                    <div class="px-4 sm:px-6 pb-3 sm:pb-4 text-gray-400 text-sm sm:text-base">
+                        Not natively. Use <strong>Docker</strong> (recommended), a Linux <strong>VM</strong>, or <strong>WSL2</strong> on Windows.
+                    </div>
+                </details>
+
+                <details class="bg-dark-card rounded-xl border border-dark-border group">
+                    <summary class="px-4 sm:px-6 py-3 sm:py-4 cursor-pointer font-medium flex justify-between items-center text-sm sm:text-base">
+                        Is internet required?
+                        <span class="text-gray-400 group-open:rotate-180 transition">▼</span>
+                    </summary>
+                    <div class="px-4 sm:px-6 pb-3 sm:pb-4 text-gray-400 text-sm sm:text-base">
+                        Internet is required for downloads, updates, license activation, and scanning remote targets. The app runs locally on your machine.
+                    </div>
+                </details>
+
+                <details class="bg-dark-card rounded-xl border border-dark-border group">
+                    <summary class="px-4 sm:px-6 py-3 sm:py-4 cursor-pointer font-medium flex justify-between items-center text-sm sm:text-base">
+                        Where is my data stored?
+                        <span class="text-gray-400 group-open:rotate-180 transition">▼</span>
+                    </summary>
+                    <div class="px-4 sm:px-6 pb-3 sm:pb-4 text-gray-400 text-sm sm:text-base">
+                        Scan results and reports are stored locally on your machine. We don’t require uploading scan data to our servers.
+                    </div>
+                </details>
+
+                <details class="bg-dark-card rounded-xl border border-dark-border group">
+                    <summary class="px-4 sm:px-6 py-3 sm:py-4 cursor-pointer font-medium flex justify-between items-center text-sm sm:text-base">
+                        Can I run scans on any website?
+                        <span class="text-gray-400 group-open:rotate-180 transition">▼</span>
+                    </summary>
+                    <div class="px-4 sm:px-6 pb-3 sm:pb-4 text-gray-400 text-sm sm:text-base">
+                        <strong>Only test systems you own or have explicit written permission to test.</strong> Unauthorized security testing is illegal in most countries. Use it for your own assets, authorized engagements, or labs.
+                    </div>
+                </details>
+
+                <details class="bg-dark-card rounded-xl border border-dark-border group">
+                    <summary class="px-4 sm:px-6 py-3 sm:py-4 cursor-pointer font-medium flex justify-between items-center text-sm sm:text-base">
+                        Do you guarantee results?
+                        <span class="text-gray-400 group-open:rotate-180 transition">▼</span>
+                    </summary>
+                    <div class="px-4 sm:px-6 pb-3 sm:pb-4 text-gray-400 text-sm sm:text-base">
+                        No. Results depend on your targets, permissions, tool configuration, and your own testing skill. CyberSec Pro is a professional toolkit, not a “one‑click hack.”
+                    </div>
+                </details>
+
+                <details class="bg-dark-card rounded-xl border border-dark-border group">
+                    <summary class="px-4 sm:px-6 py-3 sm:py-4 cursor-pointer font-medium flex justify-between items-center text-sm sm:text-base">
+                        What kind of support do you provide?
+                        <span class="text-gray-400 group-open:rotate-180 transition">▼</span>
+                    </summary>
+                    <div class="px-4 sm:px-6 pb-3 sm:pb-4 text-gray-400 text-sm sm:text-base">
+                        <strong>Basic:</strong> Email support (48–72h)<br>
+                        <strong>Professional:</strong> Priority email (24h)<br>
+                        <strong>Enterprise:</strong> 24/7 with dedicated contact<br><br>
+                        We support installation, the dashboard, and integrations. We don’t provide support for third‑party tool bugs or misuse.
+                    </div>
+                </details>
+
+                <details class="bg-dark-card rounded-xl border border-dark-border group">
+                    <summary class="px-4 sm:px-6 py-3 sm:py-4 cursor-pointer font-medium flex justify-between items-center text-sm sm:text-base">
+                        Is there a refund policy?
+                        <span class="text-gray-400 group-open:rotate-180 transition">▼</span>
+                    </summary>
+                    <div class="px-4 sm:px-6 pb-3 sm:pb-4 text-gray-400 text-sm sm:text-base">
+                        We provide a 14‑day free trial. Because this is a digital product, we do not offer refunds after purchase. If you have technical issues, contact support.
+                    </div>
+                </details>
+
+                <details class="bg-dark-card rounded-xl border border-dark-border group">
+                    <summary class="px-4 sm:px-6 py-3 sm:py-4 cursor-pointer font-medium flex justify-between items-center text-sm sm:text-base">
+                        How do I activate my license after purchase?
+                        <span class="text-gray-400 group-open:rotate-180 transition">▼</span>
+                    </summary>
+                    <div class="px-4 sm:px-6 pb-3 sm:pb-4 text-gray-400 text-sm sm:text-base">
+                        1) You receive a license key by email<br>
+                        2) Download from this website<br>
+                        3) Open Settings → License<br>
+                        4) Paste your key and activate
+                    </div>
+                </details>
+
+                <details class="bg-dark-card rounded-xl border border-dark-border group">
+                    <summary class="px-4 sm:px-6 py-3 sm:py-4 cursor-pointer font-medium flex justify-between items-center text-sm sm:text-base">
+                        Can I use one license on multiple computers?
+                        <span class="text-gray-400 group-open:rotate-180 transition">▼</span>
+                    </summary>
+                    <div class="px-4 sm:px-6 pb-3 sm:pb-4 text-gray-400 text-sm sm:text-base">
+                        Basic and Professional are <strong>single user, single machine</strong>. For multiple installations, choose Enterprise or contact us for volume licensing.
+                    </div>
+                </details>
+
+                <details class="bg-dark-card rounded-xl border border-dark-border group">
+                    <summary class="px-4 sm:px-6 py-3 sm:py-4 cursor-pointer font-medium flex justify-between items-center text-sm sm:text-base">
+                        How often do you release updates?
+                        <span class="text-gray-400 group-open:rotate-180 transition">▼</span>
+                    </summary>
+                    <div class="px-4 sm:px-6 pb-3 sm:pb-4 text-gray-400 text-sm sm:text-base">
+                        We ship regular updates for the dashboard, installers, and presets. Tool updates depend on upstream open-source projects and your OS packages.
+                    </div>
+                </details>
+
+                <details class="bg-dark-card rounded-xl border border-dark-border group">
+                    <summary class="px-4 sm:px-6 py-3 sm:py-4 cursor-pointer font-medium flex justify-between items-center text-sm sm:text-base">
+                        How fast can I get onboarded?
+                        <span class="text-gray-400 group-open:rotate-180 transition">▼</span>
+                    </summary>
+                    <div class="px-4 sm:px-6 pb-3 sm:pb-4 text-gray-400 text-sm sm:text-base">
+                        Most users are up and running in 10–15 minutes using the one‑line installer. Enterprise onboarding includes guided setup and rollout planning.
+                    </div>
+                </details>
+
+                <details class="bg-dark-card rounded-xl border border-dark-border group">
+                    <summary class="px-4 sm:px-6 py-3 sm:py-4 cursor-pointer font-medium flex justify-between items-center text-sm sm:text-base">
+                        Can I transfer my license to a new machine?
+                        <span class="text-gray-400 group-open:rotate-180 transition">▼</span>
+                    </summary>
+                    <div class="px-4 sm:px-6 pb-3 sm:pb-4 text-gray-400 text-sm sm:text-base">
+                        Yes. If you replace your machine, contact support to transfer your license.
+                    </div>
+                </details>
+
+                <details class="bg-dark-card rounded-xl border border-dark-border group">
+                    <summary class="px-4 sm:px-6 py-3 sm:py-4 cursor-pointer font-medium flex justify-between items-center text-sm sm:text-base">
+                        Does the Docker option include all tools?
+                        <span class="text-gray-400 group-open:rotate-180 transition">▼</span>
+                    </summary>
+                    <div class="px-4 sm:px-6 pb-3 sm:pb-4 text-gray-400 text-sm sm:text-base">
+                        The Docker option provides a Kali-based environment with broad tool coverage. Exact tool availability can vary by image and updates.
+                    </div>
+                </details>
+
+                <details class="bg-dark-card rounded-xl border border-dark-border group">
+                    <summary class="px-4 sm:px-6 py-3 sm:py-4 cursor-pointer font-medium flex justify-between items-center text-sm sm:text-base">
+                        Can I use it offline?
+                        <span class="text-gray-400 group-open:rotate-180 transition">▼</span>
+                    </summary>
+                    <div class="px-4 sm:px-6 pb-3 sm:pb-4 text-gray-400 text-sm sm:text-base">
+                        Most features work offline once installed. Internet is needed for activation, updates, and scanning remote targets.
+                    </div>
+                </details>
+
+                <details class="bg-dark-card rounded-xl border border-dark-border group">
+                    <summary class="px-4 sm:px-6 py-3 sm:py-4 cursor-pointer font-medium flex justify-between items-center text-sm sm:text-base">
+                        Where are reports stored?
+                        <span class="text-gray-400 group-open:rotate-180 transition">▼</span>
+                    </summary>
+                    <div class="px-4 sm:px-6 pb-3 sm:pb-4 text-gray-400 text-sm sm:text-base">
+                        Reports are saved locally on your machine. You control where to export or share them.
+                    </div>
+                </details>
+
+                <details class="bg-dark-card rounded-xl border border-dark-border group">
+                    <summary class="px-4 sm:px-6 py-3 sm:py-4 cursor-pointer font-medium flex justify-between items-center text-sm sm:text-base">
+                        Is it safe to install?
+                        <span class="text-gray-400 group-open:rotate-180 transition">▼</span>
+                    </summary>
+                    <div class="px-4 sm:px-6 pb-3 sm:pb-4 text-gray-400 text-sm sm:text-base">
+                        CyberSec Pro runs locally and does not require sending your scan data to us. Install only on machines you trust and keep your system updated.
+                    </div>
+                </details>
+
+                <details class="bg-dark-card rounded-xl border border-dark-border group">
+                    <summary class="px-4 sm:px-6 py-3 sm:py-4 cursor-pointer font-medium flex justify-between items-center text-sm sm:text-base">
+                        Are updates included?
+                        <span class="text-gray-400 group-open:rotate-180 transition">▼</span>
+                    </summary>
+                    <div class="px-4 sm:px-6 pb-3 sm:pb-4 text-gray-400 text-sm sm:text-base">
+                        Yes. License holders receive dashboard updates. Tool updates depend on upstream open-source projects and your OS package manager.
+                    </div>
+                </details>
+
+                <details class="bg-dark-card rounded-xl border border-dark-border group">
+                    <summary class="px-4 sm:px-6 py-3 sm:py-4 cursor-pointer font-medium flex justify-between items-center text-sm sm:text-base">
+                        What are the trial limits?
+                        <span class="text-gray-400 group-open:rotate-180 transition">▼</span>
+                    </summary>
+                    <div class="px-4 sm:px-6 pb-3 sm:pb-4 text-gray-400 text-sm sm:text-base">
+                        The trial is time-limited (14 days). Some features and tool access are restricted; details are listed in the download section.
+                    </div>
+                </details>
+
+                <details class="bg-dark-card rounded-xl border border-dark-border group">
+                    <summary class="px-4 sm:px-6 py-3 sm:py-4 cursor-pointer font-medium flex justify-between items-center text-sm sm:text-base">
+                        How does the trial license activate?
+                        <span class="text-gray-400 group-open:rotate-180 transition">▼</span>
+                    </summary>
+                    <div class="px-4 sm:px-6 pb-3 sm:pb-4 text-gray-400 text-sm sm:text-base">
+                        The 14‑day trial activates automatically on first run and requires internet access.
+                    </div>
+                </details>
+
+                <details class="bg-dark-card rounded-xl border border-dark-border group">
+                    <summary class="px-4 sm:px-6 py-3 sm:py-4 cursor-pointer font-medium flex justify-between items-center text-sm sm:text-base">
+                        When will I receive my license key?
+                        <span class="text-gray-400 group-open:rotate-180 transition">▼</span>
+                    </summary>
+                    <div class="px-4 sm:px-6 pb-3 sm:pb-4 text-gray-400 text-sm sm:text-base">
+                        Your license key is emailed after payment completes. If you don’t see it within a few minutes, check spam/junk or contact support.
+                    </div>
+                </details>
+
+                <details class="bg-dark-card rounded-xl border border-dark-border group">
+                    <summary class="px-4 sm:px-6 py-3 sm:py-4 cursor-pointer font-medium flex justify-between items-center text-sm sm:text-base">
+                        How do I verify downloads are safe?
+                        <span class="text-gray-400 group-open:rotate-180 transition">▼</span>
+                    </summary>
+                    <div class="px-4 sm:px-6 pb-3 sm:pb-4 text-gray-400 text-sm sm:text-base">
+                        Download only from semihkilic.com over HTTPS and verify checksums using <a href="/downloads/version.json" class="text-cyber-cyan hover:underline">version.json</a>. If a checksum doesn’t match, do not run the file.
+                    </div>
+                </details>
+
+                <details class="bg-dark-card rounded-xl border border-dark-border group">
+                    <summary class="px-4 sm:px-6 py-3 sm:py-4 cursor-pointer font-medium flex justify-between items-center text-sm sm:text-base">
+                        Can the trial be hacked?
+                        <span class="text-gray-400 group-open:rotate-180 transition">▼</span>
+                    </summary>
+                    <div class="px-4 sm:px-6 pb-3 sm:pb-4 text-gray-400 text-sm sm:text-base">
+                        No software can guarantee zero risk. The app runs locally and does not expose remote access by default. Keep your OS updated, use strong credentials, and only test authorized targets.
+                    </div>
+                </details>
+
+                <details class="bg-dark-card rounded-xl border border-dark-border group">
+                    <summary class="px-4 sm:px-6 py-3 sm:py-4 cursor-pointer font-medium flex justify-between items-center text-sm sm:text-base">
+                        Do you offer team or multi-user licensing?
+                        <span class="text-gray-400 group-open:rotate-180 transition">▼</span>
+                    </summary>
+                    <div class="px-4 sm:px-6 pb-3 sm:pb-4 text-gray-400 text-sm sm:text-base">
+                        Yes. Enterprise includes multi-user licensing and support options. Contact sales for team pricing and deployment guidance.
+                    </div>
+                </details>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="py-8 sm:py-12 px-4 sm:px-6 border-t border-dark-border">
+        <div class="max-w-7xl mx-auto">
+            <div class="flex flex-col md:flex-row justify-between items-center gap-4 sm:gap-6">
+                <div class="flex items-center gap-3">
+                    <div class="w-8 h-8 sm:w-10 sm:h-10 rounded-xl bg-gradient-to-br from-cyber-cyan to-cyber-purple flex items-center justify-center">
+                        <svg class="w-4 h-4 sm:w-6 sm:h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/>
+                        </svg>
+                    </div>
+                    <span class="text-lg sm:text-xl font-bold">CyberSec Pro</span>
+                </div>
+                
+                <div class="flex gap-4 sm:gap-8 text-gray-400 text-sm sm:text-base">
+                    <a href="mailto:cybersecpro@semihkilic.com" class="hover:text-white transition">Support</a>
+                    <a href="privacy.html" class="hover:text-white transition">Privacy</a>
+                    <a href="terms.html" class="hover:text-white transition">Terms</a>
+                </div>
+                
+                <div class="text-gray-500 text-sm sm:text-base">
+                    © 2026 Semih Kilic. All rights reserved.
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Stripe Checkout Script -->
+    <script>
+        const API_URL = '';  // Production - same domain
+
+        async function checkout(plan) {
+            const btn = event.target;
+            const originalText = btn.textContent;
+            
+            try {
+                // Show loading state
+                btn.disabled = true;
+                btn.innerHTML = '<span class="animate-pulse">⏳ Processing...</span>';
+                
+                const response = await fetch(`${API_URL}/api/create-checkout-session`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ plan_id: plan })
+                });
+                
+                const data = await response.json();
+                
+                const checkoutUrl = data.url || data.checkout_url;
+                if (checkoutUrl) {
+                    // Open Stripe Checkout in NEW WINDOW
+                    const checkoutWindow = window.open(checkoutUrl, '_blank', 'width=600,height=800,scrollbars=yes');
+                    
+                    // Reset button after opening
+                    btn.disabled = false;
+                    btn.textContent = originalText;
+                    
+                    // Show instruction
+                    if (checkoutWindow) {
+                        showNotification('✅ Checkout opened in new window. Complete your payment there!', 'success');
+                    } else {
+                        // Popup blocked - fallback to redirect
+                        showNotification('Popup blocked - redirecting...', 'warning');
+                        window.location.href = checkoutUrl;
+                    }
+                } else {
+                    showNotification('Error: ' + (data.error || 'Unknown error'), 'error');
+                    btn.disabled = false;
+                    btn.textContent = originalText;
+                }
+            } catch (error) {
+                console.error('Checkout error:', error);
+                showNotification('Failed to start checkout. Please try again.', 'error');
+                btn.disabled = false;
+                btn.textContent = originalText;
+            }
+        }
+        
+        // Toast notification system
+        function showNotification(message, type = 'info') {
+            const colors = {
+                success: 'bg-green-600',
+                error: 'bg-red-600',
+                warning: 'bg-yellow-600',
+                info: 'bg-blue-600'
+            };
+            
+            const toast = document.createElement('div');
+            toast.className = `fixed top-20 right-4 z-50 px-6 py-4 rounded-xl ${colors[type]} text-white shadow-2xl transform transition-all duration-300 translate-x-full`;
+            toast.innerHTML = message;
+            document.body.appendChild(toast);
+            
+            setTimeout(() => toast.classList.remove('translate-x-full'), 10);
+            setTimeout(() => {
+                toast.classList.add('translate-x-full');
+                setTimeout(() => toast.remove(), 300);
+            }, 5000);
+        }
+
+        function copyInstallCommand() {
+            const text = 'curl -sSL https://semihkilic.com/install.sh | bash';
+            navigator.clipboard.writeText(text)
+                .then(() => showNotification('✅ Install command copied', 'success'))
+                .catch(() => showNotification('Copy failed. Please copy manually.', 'warning'));
+        }
+        
+        const ASSET_VERSION = '20260115';
+
+        function withAssetVersion(path) {
+            if (!path) return path;
+            if (path.includes('?')) {
+                return `${path}&v=${ASSET_VERSION}`;
+            }
+            return `${path}?v=${ASSET_VERSION}`;
+        }
+
+        // Lightbox functions
+        function openLightbox(src, caption) {
+            const lightbox = document.getElementById('lightbox');
+            const img = document.getElementById('lightbox-img');
+            const cap = document.getElementById('lightbox-caption');
+            
+            img.src = withAssetVersion(src);
+            cap.textContent = caption;
+            lightbox.classList.remove('hidden');
+            lightbox.classList.add('flex');
+            document.body.style.overflow = 'hidden';
+        }
+        
+        function closeLightbox() {
+            const lightbox = document.getElementById('lightbox');
+            lightbox.classList.add('hidden');
+            lightbox.classList.remove('flex');
+            document.body.style.overflow = '';
+        }
+        
+        // Close lightbox on Escape key
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') closeLightbox();
+        });
+        
+        // Smooth scroll for navigation
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    target.scrollIntoView({ behavior: 'smooth' });
+                }
+            });
+        });
+        
+        // Screenshot Gallery - Real screenshots
+        const screenshots = {
+            'dashboard': withAssetVersion('/screenshots/01-dashboard-overview-v20260115.png'),
+            'tools': withAssetVersion('/screenshots/02-tools-categories-v20260115.png'),
+            'info': withAssetVersion('/screenshots/03-information-gathering-v20260115.png'),
+            'vuln': withAssetVersion('/screenshots/04-vulnerability-analysis-v20260115.png'),
+            'web': withAssetVersion('/screenshots/05-web-apps-v20260115.png'),
+            'dark': withAssetVersion('/screenshots/06-dark-theme-v20260115.png')
+        };
+        
+        function changeScreenshot(key, caption) {
+            const mainImg = document.getElementById('mainScreenshot');
+            const captionEl = document.getElementById('screenshotCaption');
+            
+            // Update image with fade effect
+            mainImg.style.opacity = '0.5';
+            setTimeout(() => {
+                mainImg.src = screenshots[key];
+                captionEl.textContent = caption;
+                mainImg.style.opacity = '1';
+            }, 150);
+            
+            // Update active thumbnail
+            document.querySelectorAll('.screenshot-thumb').forEach(thumb => {
+                thumb.classList.remove('border-cyber-cyan');
+                thumb.classList.add('border-transparent');
+            });
+            event.currentTarget.classList.remove('border-transparent');
+            event.currentTarget.classList.add('border-cyber-cyan');
+        }
+    </script>
+    <script>
+        // GA Event Tracking
+        function trackConversion(eventName, eventCategory, eventLabel) {
+            if (typeof gtag === 'function') {
+                gtag('event', eventName, {
+                    'event_category': eventCategory,
+                    'event_label': eventLabel
+                });
+            }
+        }
+
+        // Wait for the DOM to be fully loaded before adding event listeners
+        document.addEventListener('DOMContentLoaded', function() {
+            document.querySelectorAll('img[src^="/screenshots/"], img[src^="/videos/"], source[src^="/videos/"], video[poster^="/videos/"], video[poster^="/screenshots/"]').forEach((el) => {
+                if (el.tagName === 'SOURCE') {
+                    el.src = withAssetVersion(el.getAttribute('src'));
+                } else if (el.tagName === 'VIDEO') {
+                    const poster = el.getAttribute('poster');
+                    if (poster) {
+                        el.setAttribute('poster', withAssetVersion(poster));
+                    }
+                } else {
+                    el.src = withAssetVersion(el.getAttribute('src'));
+                }
+            });
+
+            // Mobile menu toggle
+            const mobileMenuBtn = document.getElementById('mobile-menu-btn');
+            const mobileMenu = document.getElementById('mobile-menu');
+            
+            if (mobileMenuBtn && mobileMenu) {
+                mobileMenuBtn.addEventListener('click', function() {
+                    const isHidden = mobileMenu.classList.contains('hidden');
+                    mobileMenu.classList.toggle('hidden');
+                    // Update ARIA attributes
+                    mobileMenuBtn.setAttribute('aria-expanded', isHidden ? 'true' : 'false');
+                });
+                
+                // Close menu when clicking outside
+                document.addEventListener('click', function(e) {
+                    if (!mobileMenu.contains(e.target) && !mobileMenuBtn.contains(e.target)) {
+                        mobileMenu.classList.add('hidden');
+                        mobileMenuBtn.setAttribute('aria-expanded', 'false');
+                    }
+                });
+                
+                // Close menu on Escape key
+                document.addEventListener('keydown', function(e) {
+                    if (e.key === 'Escape' && !mobileMenu.classList.contains('hidden')) {
+                        mobileMenu.classList.add('hidden');
+                        mobileMenuBtn.setAttribute('aria-expanded', 'false');
+                        mobileMenuBtn.focus();
+                    }
+                });
+            }
+            
+            // Add event listeners to CTA buttons
+            const ctaNav = document.getElementById('cta-get-started-nav');
+            const ctaMobile = document.getElementById('cta-get-started-mobile');
+            
+            if (ctaNav) {
+                ctaNav.addEventListener('click', function() {
+                    trackConversion('generate_lead', 'CTA', 'Get Started Nav');
+                });
+            }
+            
+            if (ctaMobile) {
+                ctaMobile.addEventListener('click', function() {
+                    trackConversion('generate_lead', 'CTA', 'Get Started Mobile');
+                });
+            }
+
+            document.getElementById('cta-download-trial-hero').addEventListener('click', function() {
+                trackConversion('generate_lead', 'CTA', 'Download Trial Hero');
+            });
+
+            document.getElementById('cta-get-basic').addEventListener('click', function() {
+                trackConversion('purchase', 'Pricing', 'Get Basic');
+            });
+
+            document.getElementById('cta-get-professional').addEventListener('click', function() {
+                trackConversion('purchase', 'Pricing', 'Get Professional');
+            });
+
+            document.getElementById('cta-contact-sales').addEventListener('click', function() {
+                trackConversion('generate_lead', 'CTA', 'Contact Sales Enterprise');
+            });
+        });
+    </script>
+    
+    <!-- Performance monitoring -->
+    <script>
+        // Monitor Core Web Vitals
+        if ('PerformanceObserver' in window) {
+            const observer = new PerformanceObserver((list) => {
+                for (const entry of list.getEntries()) {
+                    if (entry.entryType === 'largest-contentful-paint') {
+                        console.log('LCP:', entry.startTime);
+                    }
+                    if (entry.entryType === 'first-input-delay') {
+                        console.log('FID:', entry.processingStart - entry.startTime);
+                    }
+                    if (entry.entryType === 'layout-shift') {
+                        console.log('CLS:', entry.value);
+                    }
+                }
+            });
+            
+            observer.observe({entryTypes: ['largest-contentful-paint', 'first-input-delay', 'layout-shift']});
+        }
+        
+        // Optimize image loading with intersection observer
+        if ('IntersectionObserver' in window) {
+            const imageObserver = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        const img = entry.target;
+                        if (img.dataset.src) {
+                            img.src = img.dataset.src;
+                            img.removeAttribute('data-src');
+                        }
+                    }
+                });
+            });
+            
+            document.querySelectorAll('img[data-src]').forEach(img => {
+                imageObserver.observe(img);
+            });
+        }
+    </script>
+</body>
+</html>
