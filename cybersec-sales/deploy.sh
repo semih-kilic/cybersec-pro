@@ -7,6 +7,10 @@ set -e
 echo "🚀 CyberSec Pro - Deploying to semihkilic.com"
 echo "=============================================="
 
+# Resolve install root
+SALES_ROOT=${CYBERSEC_SALES_ROOT:-/home/sam/APPS/cybersec-sales}
+SALES_USER=${CYBERSEC_SALES_USER:-${SUDO_USER:-$(whoami)}}
+
 # Colors
 GREEN='\033[0;32m'
 YELLOW='\033[1;33m'
@@ -22,7 +26,8 @@ check_sudo() {
 # 2. Setup Nginx
 setup_nginx() {
     echo -e "\n${GREEN}[1/5] Setting up Nginx...${NC}"
-    sudo cp /home/sam/APPS/cybersec-sales/nginx-cybersec.conf /etc/nginx/sites-available/cybersec
+    sudo cp "$SALES_ROOT/nginx-cybersec.conf" /etc/nginx/sites-available/cybersec
+    sudo sed -i "s|/home/sam/APPS/cybersec-sales|$SALES_ROOT|g" /etc/nginx/sites-available/cybersec
     sudo ln -sf /etc/nginx/sites-available/cybersec /etc/nginx/sites-enabled/
     sudo nginx -t && sudo systemctl reload nginx
     echo "✅ Nginx configured"
@@ -45,7 +50,9 @@ setup_ssl() {
 # 4. Setup Systemd Service
 setup_service() {
     echo -e "\n${GREEN}[3/5] Setting up backend service...${NC}"
-    sudo cp /home/sam/APPS/cybersec-sales/cybersec-sales.service /etc/systemd/system/
+    sudo cp "$SALES_ROOT/services/cybersec-sales.service" /etc/systemd/system/
+    sudo sed -i "s|/home/sam/APPS/cybersec-sales|$SALES_ROOT|g" /etc/systemd/system/cybersec-sales.service
+    sudo sed -i "s|^User=sam$|User=$SALES_USER|" /etc/systemd/system/cybersec-sales.service
     sudo systemctl daemon-reload
     sudo systemctl enable cybersec-sales
     sudo systemctl restart cybersec-sales
@@ -55,12 +62,16 @@ setup_service() {
 # 5. Initialize Database
 init_db() {
     echo -e "\n${GREEN}[4/5] Initializing database...${NC}"
-    cd /home/sam/APPS/cybersec-sales/backend
+    cd "$SALES_ROOT/backend"
+    if [ ! -d "venv" ]; then
+        python3 -m venv venv
+    fi
     source venv/bin/activate
-    python -c "from app import app, db; 
-with app.app_context():
-    db.create_all()
-    print('Database ready')"
+    pip install --upgrade pip >/dev/null
+    if [ -f requirements.txt ]; then
+        pip install -r requirements.txt
+    fi
+    python -c "from app import init_db; init_db(); print('Database ready')"
     echo "✅ Database initialized"
 }
 

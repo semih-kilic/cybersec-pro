@@ -5,8 +5,7 @@ import {
   Shield, Database, Terminal, Package
 } from 'lucide-react';
 import axios from 'axios';
-
-const API_URL = '';
+import { apiUrl } from '../config/api';
 
 interface UpdateInfo {
   available_updates: number;
@@ -36,7 +35,7 @@ export default function UpdatesPage() {
 
   const loadUpdates = async () => {
     try {
-      const response = await axios.get(`${API_URL}/api/updates/check`);
+      const response = await axios.get(apiUrl('/api/updates/check'));
       setUpdateInfo(response.data);
       setToolUpdates(response.data.tools || []);
     } catch (error) {
@@ -49,7 +48,7 @@ export default function UpdatesPage() {
   const checkForUpdates = async () => {
     setChecking(true);
     try {
-      await axios.post(`${API_URL}/api/updates/refresh`);
+      await axios.post(apiUrl('/api/updates/refresh'));
       await loadUpdates();
       alert('✅ Update check complete!');
     } catch (error: any) {
@@ -62,7 +61,7 @@ export default function UpdatesPage() {
   const updateTool = async (toolId: number, toolName: string) => {
     setUpdating(toolId);
     try {
-      await axios.post(`${API_URL}/api/tools/${toolId}/update`);
+      await axios.post(apiUrl(`/api/tools/${toolId}/update`));
       alert(`✅ ${toolName} updated successfully!`);
       loadUpdates();
     } catch (error: any) {
@@ -75,7 +74,7 @@ export default function UpdatesPage() {
   const updateAll = async () => {
     setUpdatingAll(true);
     try {
-      await axios.post(`${API_URL}/api/updates/all`);
+      await axios.post(apiUrl('/api/updates/all'));
       alert('✅ All tools updated successfully!');
       loadUpdates();
     } catch (error: any) {

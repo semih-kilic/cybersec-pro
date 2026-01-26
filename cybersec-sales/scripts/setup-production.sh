@@ -17,7 +17,8 @@ if [ "$EUID" -ne 0 ]; then
     exit 1
 fi
 
-INSTALL_DIR="/home/sam/APPS/cybersec-sales"
+INSTALL_DIR=${CYBERSEC_SALES_ROOT:-/home/sam/APPS/cybersec-sales}
+SERVICE_USER=${CYBERSEC_SALES_USER:-${SUDO_USER:-$(whoami)}}
 SERVICE_DIR="$INSTALL_DIR/services"
 SCRIPT_DIR="$INSTALL_DIR/scripts"
 
@@ -57,11 +58,11 @@ systemctl status cybersec-frontend --no-pager -l | head -10
 echo ""
 echo "⏰ Setting up monitoring cron job..."
 CRON_CMD="*/5 * * * * /bin/bash $SCRIPT_DIR/monitor.sh monitor >> /var/log/cybersec-monitor.log 2>&1"
-(crontab -u sam -l 2>/dev/null | grep -v "monitor.sh"; echo "$CRON_CMD") | crontab -u sam -
+(crontab -u "$SERVICE_USER" -l 2>/dev/null | grep -v "monitor.sh"; echo "$CRON_CMD") | crontab -u "$SERVICE_USER" -
 
 # Create log file
 touch /var/log/cybersec-monitor.log
-chown sam:sam /var/log/cybersec-monitor.log
+chown "$SERVICE_USER":"$SERVICE_USER" /var/log/cybersec-monitor.log
 
 echo ""
 echo "╔════════════════════════════════════════════════════╗"

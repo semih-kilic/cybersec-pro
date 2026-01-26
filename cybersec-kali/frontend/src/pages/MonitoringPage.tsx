@@ -5,8 +5,7 @@ import {
   Server, ArrowUp, ArrowDown, Zap,
   Eye, Target, Lock, Unlock
 } from 'lucide-react';
-
-const API_URL = '';
+import { apiUrl } from '../config/api';
 
 interface SystemMetrics {
   cpu: number;
@@ -113,7 +112,7 @@ export default function MonitoringPage() {
       try {
         const token = localStorage.getItem('token');
         const headers: Record<string, string> = token ? { Authorization: `Bearer ${token}` } : {};
-        const metricsResponse = await fetch(`${API_URL}/api/monitoring/metrics`, { headers });
+        const metricsResponse = await fetch(apiUrl('/api/monitoring/metrics'), { headers });
         if (!metricsResponse.ok) {
           const payload = await metricsResponse.json().catch(() => ({}));
           const message = payload?.error || 'Monitoring access denied.';
@@ -142,17 +141,17 @@ export default function MonitoringPage() {
           setSystemStats(metricsData.system);
         }
 
-        const logsResponse = await fetch(`${API_URL}/api/monitoring/logs`, { headers });
+        const logsResponse = await fetch(apiUrl('/api/monitoring/logs'), { headers });
         const logsData = await logsResponse.json();
         if (Array.isArray(logsData?.logs)) {
           setLogs(logsData.logs.slice(0, 50));
         }
 
-        const targetResponse = await fetch(`${API_URL}/api/monitoring/targets/summary`, { headers });
+        const targetResponse = await fetch(apiUrl('/api/monitoring/targets/summary'), { headers });
         const targetData = await targetResponse.json();
         setTargetSummary(targetData?.target ?? null);
 
-        const servicesResponse = await fetch(`${API_URL}/api/monitoring/services?limit=80`, { headers });
+        const servicesResponse = await fetch(apiUrl('/api/monitoring/services?limit=80'), { headers });
         if (servicesResponse.ok) {
           const servicesData = await servicesResponse.json();
           if (Array.isArray(servicesData?.services)) {

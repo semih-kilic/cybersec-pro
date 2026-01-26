@@ -5,8 +5,7 @@ import {
   Monitor, HardDrive, Cpu, MemoryStick
 } from 'lucide-react';
 import axios from 'axios';
-
-const API_URL = '';
+import { apiUrl } from '../config/api';
 
 interface ServerInfo {
   id: number;
@@ -48,7 +47,7 @@ export default function ServersPage() {
 
   const loadServers = async () => {
     try {
-      const response = await axios.get(`${API_URL}/api/servers`);
+      const response = await axios.get(apiUrl('/api/servers'));
       setServers(response.data.servers || []);
     } catch (error) {
       console.error('Failed to load servers:', error);
@@ -65,7 +64,7 @@ export default function ServersPage() {
     ));
     
     try {
-      const response = await axios.post(`${API_URL}/api/servers/${serverId}/check`);
+      const response = await axios.post(apiUrl(`/api/servers/${serverId}/check`));
       setServers(prev => prev.map(s => 
         s.id === serverId ? { ...s, ...response.data, status: response.data.online ? 'online' : 'offline' } : s
       ));
@@ -96,8 +95,8 @@ export default function ServersPage() {
 
     try {
       const response = editingServer
-        ? await axios.put(`${API_URL}/api/servers/${editingServer.id}`, payload)
-        : await axios.post(`${API_URL}/api/servers`, payload);
+        ? await axios.put(apiUrl(`/api/servers/${editingServer.id}`), payload)
+        : await axios.post(apiUrl('/api/servers'), payload);
 
       setServers(prev => editingServer
         ? prev.map(s => s.id === editingServer.id ? response.data : s)
@@ -115,7 +114,7 @@ export default function ServersPage() {
     if (!confirm('Are you sure you want to delete this server?')) return;
     
     try {
-      await axios.delete(`${API_URL}/api/servers/${serverId}`);
+      await axios.delete(apiUrl(`/api/servers/${serverId}`));
     } catch (error) {
       console.error('Failed to delete server:', error);
       setErrorMessage('Failed to delete server.');

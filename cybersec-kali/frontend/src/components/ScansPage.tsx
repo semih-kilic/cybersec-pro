@@ -2,8 +2,7 @@ import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Terminal, Clock, CheckCircle, XCircle, Loader, TrendingUp } from 'lucide-react';
 import axios from 'axios';
-
-const API_URL = '';
+import { apiUrl } from '../config/api';
 
 interface Scan {
   id: number;
@@ -46,7 +45,7 @@ export default function ScansPage() {
         headers['X-Admin-Token'] = adminToken;
       }
 
-      const response = await axios.get(`${API_URL}/api/scans`, {
+      const response = await axios.get(apiUrl('/api/scans'), {
         headers
       });
       

@@ -5,8 +5,7 @@ import {
   Trash2, Play, Pause, Eye, FileText, Shield
 } from 'lucide-react';
 import axios from 'axios';
-
-const API_URL = '';
+import { apiUrl } from '../config/api';
 
 interface Project {
   id: number;
@@ -149,8 +148,8 @@ export default function ProjectsPage() {
         const token = localStorage.getItem('token');
         const headers = token ? { Authorization: `Bearer ${token}` } : undefined;
         const [scansResponse, reportsResponse] = await Promise.all([
-          axios.get(`${API_URL}/api/projects/${selectedProject.id}/scans?limit=5`, { headers }),
-          axios.get(`${API_URL}/api/projects/${selectedProject.id}/reports?limit=5`, { headers })
+          axios.get(apiUrl(`/api/projects/${selectedProject.id}/scans?limit=5`), { headers }),
+          axios.get(apiUrl(`/api/projects/${selectedProject.id}/reports?limit=5`), { headers })
         ]);
         setProjectScans(Array.isArray(scansResponse.data?.scans) ? scansResponse.data.scans : []);
         setProjectReports(Array.isArray(reportsResponse.data?.reports) ? reportsResponse.data.reports : []);
@@ -168,7 +167,7 @@ export default function ProjectsPage() {
 
   const loadProjects = async () => {
     try {
-      const response = await axios.get(`${API_URL}/api/projects`);
+      const response = await axios.get(apiUrl('/api/projects'));
       const rawProjects = Array.isArray(response.data.projects) ? response.data.projects : [];
       const normalized = rawProjects
         .map((project: Partial<Project>) => normalizeProject(project))
@@ -201,7 +200,7 @@ export default function ProjectsPage() {
         team: formData.team.split(',').map(t => t.trim()).filter(Boolean)
       };
 
-      const response = await axios.post(`${API_URL}/api/projects`, payload);
+      const response = await axios.post(apiUrl('/api/projects'), payload);
       const createdProject = response.data?.project ?? response.data;
       const normalized = normalizeProject(createdProject);
       if (normalized) {
@@ -222,7 +221,7 @@ export default function ProjectsPage() {
   const deleteProject = async (projectId: number) => {
     if (!confirm('Are you sure you want to delete this project?')) return;
     try {
-      await axios.delete(`${API_URL}/api/projects/${projectId}`);
+      await axios.delete(apiUrl(`/api/projects/${projectId}`));
       setProjects(prev => prev.filter(p => p.id !== projectId));
     } catch (error) {
       console.error('Failed to delete project:', error);

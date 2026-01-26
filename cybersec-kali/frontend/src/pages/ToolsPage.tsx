@@ -7,8 +7,7 @@ import {
   BookOpen, Target
 } from 'lucide-react';
 import axios from 'axios';
-
-const API_URL = '';
+import { apiUrl } from '../config/api';
 
 interface Tool {
   id: number;
@@ -63,6 +62,15 @@ interface Category {
   icon: React.ReactNode;
 }
 
+interface TaskGroup {
+  id: string;
+  name: string;
+  description: string;
+  icon: React.ReactNode;
+  categories: string[];
+  keywords: string[];
+}
+
 const CATEGORY_ICONS: Record<string, React.ReactNode> = {
   'Information Gathering': <Search className="w-5 h-5" />,
   'Vulnerability Analysis': <Bug className="w-5 h-5" />,
@@ -86,10 +94,94 @@ const DIFFICULTY_COLORS: Record<string, string> = {
   'advanced': 'bg-red-500/20 text-red-400 border-red-500/30',
 };
 
+const TASK_GROUPS: TaskGroup[] = [
+  {
+    id: 'recon',
+    name: 'Recon & Discovery',
+    description: 'Discover hosts, subdomains, and services.',
+    icon: <Search className="w-5 h-5" />,
+    categories: ['Information Gathering', 'Sniffing & Spoofing'],
+    keywords: ['recon', 'enumeration', 'discover', 'whois', 'dns', 'subdomain', 'scan']
+  },
+  {
+    id: 'web',
+    name: 'Web Security',
+    description: 'Test web apps and APIs.',
+    icon: <Globe className="w-5 h-5" />,
+    categories: ['Web Application Analysis', 'Vulnerability Analysis'],
+    keywords: ['web', 'http', 'api', 'sql', 'xss', 'csrf', 'vuln']
+  },
+  {
+    id: 'network',
+    name: 'Network & Ports',
+    description: 'Map networks and open ports.',
+    icon: <Server className="w-5 h-5" />,
+    categories: ['Information Gathering', 'Sniffing & Spoofing', 'Stress Testing'],
+    keywords: ['network', 'port', 'tcp', 'udp', 'arp', 'sniff']
+  },
+  {
+    id: 'passwords',
+    name: 'Password & Auth',
+    description: 'Audit and recover credentials.',
+    icon: <Key className="w-5 h-5" />,
+    categories: ['Password Attacks'],
+    keywords: ['password', 'hash', 'crack', 'brute', 'auth']
+  },
+  {
+    id: 'wireless',
+    name: 'Wireless',
+    description: 'Test Wi‑Fi security.',
+    icon: <Wifi className="w-5 h-5" />,
+    categories: ['Wireless Attacks'],
+    keywords: ['wifi', 'wireless', 'wpa', 'wpa2', 'wpa3', 'handshake']
+  },
+  {
+    id: 'exploit',
+    name: 'Exploitation',
+    description: 'Exploit and validate issues.',
+    icon: <Bug className="w-5 h-5" />,
+    categories: ['Exploitation Tools', 'Post Exploitation'],
+    keywords: ['exploit', 'payload', 'shell', 'metasploit']
+  },
+  {
+    id: 'forensics',
+    name: 'Forensics',
+    description: 'Analyze disks and memory.',
+    icon: <FileSearch className="w-5 h-5" />,
+    categories: ['Forensics'],
+    keywords: ['forensics', 'memory', 'disk', 'image', 'artifact']
+  },
+  {
+    id: 'reverse',
+    name: 'Reverse Engineering',
+    description: 'Analyze binaries and malware.',
+    icon: <Code className="w-5 h-5" />,
+    categories: ['Reverse Engineering'],
+    keywords: ['reverse', 'binary', 'malware', 'disassembly']
+  },
+  {
+    id: 'reporting',
+    name: 'Reporting',
+    description: 'Export and organize results.',
+    icon: <Database className="w-5 h-5" />,
+    categories: ['Reporting Tools'],
+    keywords: ['report', 'export', 'pdf', 'html']
+  },
+  {
+    id: 'social',
+    name: 'Social Engineering',
+    description: 'Phishing and awareness tests.',
+    icon: <Lock className="w-5 h-5" />,
+    categories: ['Social Engineering'],
+    keywords: ['phishing', 'social', 'email', 'osint']
+  }
+];
+
 export default function ToolsPage() {
   const [tools, setTools] = useState<Tool[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
+  const [selectedTask, setSelectedTask] = useState<string>('all');
   const [searchQuery, setSearchQuery] = useState('');
   const [loading, setLoading] = useState(true);
   const [installingTool, setInstallingTool] = useState<number | null>(null);
@@ -107,7 +199,7 @@ export default function ToolsPage() {
 
   const loadTools = async () => {
     try {
-      const response = await axios.get(`${API_URL}/api/tools`);
+      const response = await axios.get(apiUrl('/api/tools'));
       setTools(response.data.tools || []);
       
       const categoryMap = new Map<string, number>();
@@ -132,7 +224,7 @@ export default function ToolsPage() {
   const loadToolDetails = async (toolId: number) => {
     setLoadingDetails(true);
     try {
-      const response = await axios.get(`${API_URL}/api/tools/${toolId}/details`);
+      const response = await axios.get(apiUrl(`/api/tools/${toolId}/details`));
       setSelectedTool(response.data);
     } catch (error) {
       console.error('Failed to load tool details:', error);
@@ -160,7 +252,7 @@ export default function ToolsPage() {
   const handleInstall = async (toolId: number, toolName: string) => {
     setInstallingTool(toolId);
     try {
-      await axios.post(`${API_URL}/api/tools/${toolId}/install`);
+      await axios.post(apiUrl(`/api/tools/${toolId}/install`));
       alert(`✅ ${toolName} installed successfully!`);
       loadTools();
       if (selectedTool?.id === toolId) {
@@ -198,7 +290,7 @@ export default function ToolsPage() {
     try {
       const token = localStorage.getItem('token');
       const headers = token ? { Authorization: `Bearer ${token}` } : undefined;
-      const createResponse = await axios.post(`${API_URL}/api/scans`, {
+      const createResponse = await axios.post(apiUrl('/api/scans'), {
         name: `${selectedTool?.name} - ${selectedPreset.name}`,
         target: targetInput,
         tool_id: selectedTool.id,
@@ -211,7 +303,7 @@ export default function ToolsPage() {
         return;
       }
 
-      await axios.post(`${API_URL}/api/scans/${scanId}/execute`, null, { headers });
+      await axios.post(apiUrl(`/api/scans/${scanId}/execute`), null, { headers });
 
       setCommandOutput(prev => prev + `\n✅ Scan started successfully!\n\nScan ID: ${scanId}\nCommand: ${command}\n\nGo to Scans page to see results.`);
     } catch (error: any) {
@@ -230,9 +322,15 @@ export default function ToolsPage() {
                            (selectedCategory === 'installed' && tool.installed) ||
                            (selectedCategory === 'not-installed' && !tool.installed) ||
                            tool.category === selectedCategory;
+    const task = TASK_GROUPS.find(group => group.id === selectedTask);
+    const toolText = `${tool.name} ${tool.description} ${tool.category}`.toLowerCase();
+    const matchesTask = selectedTask === 'all' || (task ? (
+      task.categories.includes(tool.category) ||
+      task.keywords.some(keyword => toolText.includes(keyword))
+    ) : true);
     const matchesSearch = tool.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
                          tool.description.toLowerCase().includes(searchQuery.toLowerCase());
-    return matchesCategory && matchesSearch;
+    return matchesCategory && matchesTask && matchesSearch;
   });
 
   const installedCount = tools.filter(t => t.installed).length;
@@ -251,6 +349,56 @@ export default function ToolsPage() {
       {/* Categories Sidebar */}
       <div className="w-72 glass border-r border-dark-border p-4 overflow-y-auto">
         <h2 className="text-lg font-bold text-white mb-4 flex items-center gap-2">
+          <Target className="text-primary" />
+          Tasks
+        </h2>
+
+        <button
+          onClick={() => setSelectedTask('all')}
+          className={`w-full text-left p-3 rounded-lg mb-2 transition-all cursor-pointer ${
+            selectedTask === 'all'
+              ? 'bg-primary/20 text-primary border border-primary/30'
+              : 'hover:bg-white/5 text-gray-300'
+          }`}
+        >
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <Shield className="w-5 h-5" />
+              <span>All Tasks</span>
+            </div>
+            <span className="text-xs text-gray-400">{tools.length}</span>
+          </div>
+        </button>
+
+        {TASK_GROUPS.map(group => {
+          const count = tools.filter(tool =>
+            group.categories.includes(tool.category) ||
+            group.keywords.some(keyword => `${tool.name} ${tool.description} ${tool.category}`.toLowerCase().includes(keyword))
+          ).length;
+
+          return (
+            <button
+              key={group.id}
+              onClick={() => setSelectedTask(group.id)}
+              className={`w-full text-left p-3 rounded-lg mb-2 transition-all cursor-pointer ${
+                selectedTask === group.id
+                  ? 'bg-primary/20 text-primary border border-primary/30'
+                  : 'hover:bg-white/5 text-gray-300'
+              }`}
+            >
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  {group.icon}
+                  <span>{group.name}</span>
+                </div>
+                <span className="text-xs text-gray-400">{count}</span>
+              </div>
+              <div className="text-xs text-gray-500 mt-1">{group.description}</div>
+            </button>
+          );
+        })}
+
+        <h2 className="text-lg font-bold text-white mb-4 mt-6 flex items-center gap-2">
           <Shield className="text-primary" />
           Categories
         </h2>

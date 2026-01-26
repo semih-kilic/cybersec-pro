@@ -1,0 +1,261 @@
+/**
+ * 🐉 Cyberpunk Theme System - CSS Custom Properties
+ * Kali Dragon Landing Page Theme Configuration
+ * 
+ * This file defines the comprehensive CSS custom properties system
+ * for the cyberpunk-inspired Kali Linux dragon theme.
+ */
+
+:root {
+  /* ===== CORE BACKGROUND COLORS ===== */
+  --color-bg-primary: #0a0a0a;           /* Deep black primary background */
+  --color-bg-secondary: #1a1a1a;         /* Dark gray secondary background */
+  --color-bg-tertiary: #2a2a2a;          /* Lighter gray for cards/sections */
+  --color-bg-terminal: #000000;          /* Pure black for terminal elements */
+  --color-bg-overlay: rgba(0, 0, 0, 0.8); /* Semi-transparent overlay */
+
+  /* ===== TEXT COLORS ===== */
+  --color-text-primary: #ffffff;         /* Primary white text */
+  --color-text-secondary: #a0a0a0;       /* Secondary gray text */
+  --color-text-muted: #666666;           /* Muted text for less important content */
+  --color-text-terminal: #00ff00;        /* Terminal green text */
+  --color-text-terminal-prompt: #ff0040; /* Terminal prompt red */
+
+  /* ===== NEON ACCENT COLORS ===== */
+  --color-neon-green: #00ff00;           /* Primary neon green */
+  --color-neon-green-dim: #00cc00;       /* Dimmed neon green */
+  --color-neon-green-bright: #00ff41;    /* Bright neon green */
+  --color-neon-red: #ff0040;             /* Primary neon red */
+  --color-neon-red-dim: #cc0033;         /* Dimmed neon red */
+  --color-neon-cyan: #00ffff;            /* Neon cyan accent */
+  --color-neon-purple: #ff00ff;          /* Neon purple accent */
+
+  /* ===== BORDER AND OUTLINE COLORS ===== */
+  --color-border-primary: #333333;       /* Primary border color */
+  --color-border-secondary: #555555;     /* Secondary border color */
+  --color-border-neon: var(--color-neon-green); /* Neon border accent */
+  --color-border-terminal: var(--color-neon-green); /* Terminal border */
+
+  /* ===== SHADOW AND GLOW EFFECTS ===== */
+  --shadow-neon-green: 0 0 10px var(--color-neon-green);
+  --shadow-neon-green-intense: 0 0 20px var(--color-neon-green), 0 0 40px var(--color-neon-green);
+  --shadow-neon-red: 0 0 10px var(--color-neon-red);
+  --shadow-neon-red-intense: 0 0 20px var(--color-neon-red), 0 0 40px var(--color-neon-red);
+  --shadow-terminal: 0 0 15px rgba(0, 255, 0, 0.3);
+
+  /* ===== TYPOGRAPHY ===== */
+  --font-primary: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --font-terminal: 'JetBrains Mono', 'Fira Code', 'Courier New', monospace;
+  --font-heading: 'Orbitron', 'Inter', sans-serif;
+
+  /* Font Sizes */
+  --text-xs: 0.75rem;     /* 12px */
+  --text-sm: 0.875rem;    /* 14px */
+  --text-base: 1rem;      /* 16px */
+  --text-lg: 1.125rem;    /* 18px */
+  --text-xl: 1.25rem;     /* 20px */
+  --text-2xl: 1.5rem;     /* 24px */
+  --text-3xl: 1.875rem;   /* 30px */
+  --text-4xl: 2.25rem;    /* 36px */
+  --text-5xl: 3rem;       /* 48px */
+  --text-6xl: 3.75rem;    /* 60px */
+
+  /* Font Weights */
+  --font-light: 300;
+  --font-normal: 400;
+  --font-medium: 500;
+  --font-semibold: 600;
+  --font-bold: 700;
+  --font-extrabold: 800;
+
+  /* ===== SPACING SYSTEM ===== */
+  --space-1: 0.25rem;     /* 4px */
+  --space-2: 0.5rem;      /* 8px */
+  --space-3: 0.75rem;     /* 12px */
+  --space-4: 1rem;        /* 16px */
+  --space-5: 1.25rem;     /* 20px */
+  --space-6: 1.5rem;      /* 24px */
+  --space-8: 2rem;        /* 32px */
+  --space-10: 2.5rem;     /* 40px */
+  --space-12: 3rem;       /* 48px */
+  --space-16: 4rem;       /* 64px */
+  --space-20: 5rem;       /* 80px */
+  --space-24: 6rem;       /* 96px */
+
+  /* ===== RESPONSIVE BREAKPOINTS ===== */
+  --breakpoint-mobile: 320px;
+  --breakpoint-tablet: 768px;
+  --breakpoint-desktop: 1024px;
+  --breakpoint-wide: 1440px;
+  --breakpoint-ultra: 1920px;
+
+  /* ===== ANIMATION DURATIONS ===== */
+  --duration-fast: 0.15s;
+  --duration-normal: 0.3s;
+  --duration-slow: 0.6s;
+  --duration-glitch: 0.1s;
+  --duration-matrix: 20s;
+
+  /* ===== ANIMATION TIMING FUNCTIONS ===== */
+  --ease-in-out: cubic-bezier(0.4, 0, 0.2, 1);
+  --ease-out: cubic-bezier(0, 0, 0.2, 1);
+  --ease-in: cubic-bezier(0.4, 0, 1, 1);
+  --ease-bounce: cubic-bezier(0.68, -0.55, 0.265, 1.55);
+
+  /* ===== Z-INDEX LAYERS ===== */
+  --z-background: -1;
+  --z-base: 0;
+  --z-content: 10;
+  --z-navigation: 100;
+  --z-overlay: 1000;
+  --z-modal: 10000;
+
+  /* ===== BORDER RADIUS ===== */
+  --radius-sm: 0.125rem;   /* 2px */
+  --radius-base: 0.25rem;  /* 4px */
+  --radius-md: 0.375rem;   /* 6px */
+  --radius-lg: 0.5rem;     /* 8px */
+  --radius-xl: 0.75rem;    /* 12px */
+  --radius-2xl: 1rem;      /* 16px */
+  --radius-full: 9999px;   /* Full rounded */
+
+  /* ===== CYBERPUNK SPECIFIC PROPERTIES ===== */
+  --dragon-opacity: 0.1;
+  --matrix-speed: var(--duration-matrix);
+  --glitch-intensity: 2px;
+  --terminal-cursor-blink: 1s;
+  --neon-pulse-duration: 2s;
+}
+
+/* ===== DARK THEME OVERRIDES ===== */
+@media (prefers-color-scheme: dark) {
+  :root {
+    /* Enhance neon effects in dark mode */
+    --shadow-neon-green-intense: 0 0 25px var(--color-neon-green), 0 0 50px var(--color-neon-green);
+    --shadow-neon-red-intense: 0 0 25px var(--color-neon-red), 0 0 50px var(--color-neon-red);
+  }
+}
+
+/* ===== HIGH CONTRAST MODE ===== */
+@media (prefers-contrast: high) {
+  :root {
+    --color-text-primary: #ffffff;
+    --color-text-secondary: #ffffff;
+    --color-bg-primary: #000000;
+    --color-bg-secondary: #000000;
+    --color-neon-green: #00ff00;
+    --color-neon-red: #ff0000;
+  }
+}
+
+/* ===== REDUCED MOTION PREFERENCES ===== */
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --duration-fast: 0s;
+    --duration-normal: 0s;
+    --duration-slow: 0s;
+    --duration-glitch: 0s;
+    --duration-matrix: 0s;
+    --neon-pulse-duration: 0s;
+    --terminal-cursor-blink: 0s;
+  }
+}
+
+/* ===== BASE CYBERPUNK STYLES ===== */
+.cyberpunk-theme {
+  background-color: var(--color-bg-primary);
+  color: var(--color-text-primary);
+  font-family: var(--font-primary);
+}
+
+/* Terminal styling utility class */
+.terminal {
+  background-color: var(--color-bg-terminal);
+  color: var(--color-text-terminal);
+  font-family: var(--font-terminal);
+  border: 1px solid var(--color-border-terminal);
+  box-shadow: var(--shadow-terminal);
+}
+
+/* Neon glow utility classes */
+.neon-green {
+  color: var(--color-neon-green);
+  text-shadow: var(--shadow-neon-green);
+}
+
+.neon-red {
+  color: var(--color-neon-red);
+  text-shadow: var(--shadow-neon-red);
+}
+
+.neon-glow-green {
+  box-shadow: var(--shadow-neon-green-intense);
+}
+
+.neon-glow-red {
+  box-shadow: var(--shadow-neon-red-intense);
+}
+
+/* Dragon graphics opacity utility */
+.dragon-bg {
+  opacity: var(--dragon-opacity);
+}
+
+/* Cyberpunk button base styles */
+.cyberpunk-button {
+  background: transparent;
+  border: 2px solid var(--color-neon-green);
+  color: var(--color-neon-green);
+  font-family: var(--font-terminal);
+  font-weight: var(--font-semibold);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  transition: all var(--duration-normal) var(--ease-in-out);
+  position: relative;
+  overflow: hidden;
+}
+
+.cyberpunk-button:hover {
+  background: var(--color-neon-green);
+  color: var(--color-bg-primary);
+  box-shadow: var(--shadow-neon-green-intense);
+}
+
+.cyberpunk-button:focus {
+  outline: 2px solid var(--color-neon-green);
+  outline-offset: 2px;
+}
+
+/* Cyberpunk card styles */
+.cyberpunk-card {
+  background: var(--color-bg-secondary);
+  border: 1px solid var(--color-border-primary);
+  border-radius: var(--radius-lg);
+  transition: all var(--duration-normal) var(--ease-in-out);
+}
+
+.cyberpunk-card:hover {
+  border-color: var(--color-neon-green);
+  box-shadow: var(--shadow-neon-green);
+  transform: translateY(-2px);
+}
+
+/* Responsive utilities */
+@media (max-width: 768px) {
+  :root {
+    --text-6xl: 2.5rem;     /* Smaller on mobile */
+    --text-5xl: 2rem;
+    --text-4xl: 1.75rem;
+    --space-20: 3rem;       /* Reduced spacing on mobile */
+    --space-24: 4rem;
+  }
+}
+
+@media (max-width: 320px) {
+  :root {
+    --text-6xl: 2rem;       /* Even smaller on very small screens */
+    --text-5xl: 1.75rem;
+    --space-16: 2rem;
+    --space-20: 2.5rem;
+  }
+}

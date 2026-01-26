@@ -1,0 +1,381 @@
+/**
+ * 🐉 Cyberpunk Theme - Main Stylesheet
+ * Kali Dragon Landing Page Styles
+ */
+
+/* Import Google Fonts for cyberpunk aesthetic */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;600;700;800;900&display=swap');
+
+/* Import cyberpunk theme CSS custom properties */
+@import './styles/cyberpunk-theme.css';
+
+/* Import Tailwind CSS */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Base styles */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  font-family: var(--font-primary);
+  background-color: var(--color-bg-primary);
+  color: var(--color-text-primary);
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Remove default button styles */
+button {
+  border: none;
+  background: none;
+  cursor: pointer;
+  font-family: inherit;
+}
+
+/* Remove default link styles */
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+/* Focus styles for accessibility */
+:focus-visible {
+  outline: 2px solid var(--color-neon-green);
+  outline-offset: 2px;
+}
+
+/* Selection styles */
+::selection {
+  background-color: var(--color-neon-green);
+  color: var(--color-bg-primary);
+}
+
+::-moz-selection {
+  background-color: var(--color-neon-green);
+  color: var(--color-bg-primary);
+}
+
+/* Scrollbar styles for webkit browsers */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--color-bg-secondary);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--color-neon-green);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--color-neon-green-bright);
+}
+
+/* Custom utility classes */
+.cyberpunk-gradient {
+  background: linear-gradient(
+    135deg,
+    var(--color-bg-primary) 0%,
+    var(--color-bg-secondary) 50%,
+    var(--color-bg-primary) 100%
+  );
+}
+
+.neon-border-gradient {
+  background: linear-gradient(
+    90deg,
+    var(--color-neon-green) 0%,
+    var(--color-neon-cyan) 50%,
+    var(--color-neon-green) 100%
+  );
+  background-size: 200% 200%;
+  animation: gradient-shift 3s ease infinite;
+}
+
+@keyframes gradient-shift {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+/* Matrix rain effect styles */
+.matrix-rain {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  overflow: hidden;
+  z-index: var(--z-background);
+}
+
+.matrix-column {
+  position: absolute;
+  top: -100vh;
+  font-family: var(--font-terminal);
+  font-size: 14px;
+  color: var(--color-neon-green);
+  opacity: 0.7;
+  animation: matrix-rain var(--duration-matrix) linear infinite;
+}
+
+/* Glitch text effect */
+.glitch-text {
+  position: relative;
+  display: inline-block;
+}
+
+.glitch-text::before,
+.glitch-text::after {
+  content: attr(data-text);
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.glitch-text::before {
+  color: var(--color-neon-red);
+  animation: glitch-1 var(--duration-glitch) infinite;
+}
+
+.glitch-text::after {
+  color: var(--color-neon-cyan);
+  animation: glitch-2 var(--duration-glitch) infinite;
+}
+
+@keyframes glitch-1 {
+  0%, 100% { 
+    opacity: 0;
+    transform: translate(0);
+  }
+  20% { 
+    opacity: 1;
+    transform: translate(-2px, 2px);
+  }
+  40% { 
+    opacity: 1;
+    transform: translate(-2px, -2px);
+  }
+  60% { 
+    opacity: 1;
+    transform: translate(2px, 2px);
+  }
+  80% { 
+    opacity: 1;
+    transform: translate(2px, -2px);
+  }
+}
+
+@keyframes glitch-2 {
+  0%, 100% { 
+    opacity: 0;
+    transform: translate(0);
+  }
+  20% { 
+    opacity: 1;
+    transform: translate(2px, -2px);
+  }
+  40% { 
+    opacity: 1;
+    transform: translate(2px, 2px);
+  }
+  60% { 
+    opacity: 1;
+    transform: translate(-2px, -2px);
+  }
+  80% { 
+    opacity: 1;
+    transform: translate(-2px, 2px);
+  }
+}
+
+/* Terminal cursor effect */
+.terminal-cursor::after {
+  content: '█';
+  color: var(--color-neon-green);
+  animation: terminal-cursor var(--terminal-cursor-blink) infinite;
+}
+
+/* Neon button hover effects */
+.btn-neon-green {
+  position: relative;
+  background: transparent;
+  border: 2px solid var(--color-neon-green);
+  color: var(--color-neon-green);
+  padding: 12px 24px;
+  font-family: var(--font-terminal);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  transition: all var(--duration-normal) ease-in-out;
+  overflow: hidden;
+}
+
+.btn-neon-green::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: var(--color-neon-green);
+  transition: left var(--duration-normal) ease-in-out;
+  z-index: -1;
+}
+
+.btn-neon-green:hover {
+  color: var(--color-bg-primary);
+  box-shadow: var(--shadow-neon-green-intense);
+}
+
+.btn-neon-green:hover::before {
+  left: 0;
+}
+
+.btn-neon-red {
+  position: relative;
+  background: transparent;
+  border: 2px solid var(--color-neon-red);
+  color: var(--color-neon-red);
+  padding: 12px 24px;
+  font-family: var(--font-terminal);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  transition: all var(--duration-normal) ease-in-out;
+  overflow: hidden;
+}
+
+.btn-neon-red::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: var(--color-neon-red);
+  transition: left var(--duration-normal) ease-in-out;
+  z-index: -1;
+}
+
+.btn-neon-red:hover {
+  color: var(--color-bg-primary);
+  box-shadow: var(--shadow-neon-red-intense);
+}
+
+.btn-neon-red:hover::before {
+  left: 0;
+}
+
+/* Dragon silhouette styles */
+.dragon-silhouette {
+  position: absolute;
+  opacity: var(--dragon-opacity);
+  pointer-events: none;
+  z-index: var(--z-background);
+  filter: blur(1px);
+  animation: dragon-float 6s ease-in-out infinite;
+}
+
+/* Responsive dragon graphics */
+@media (max-width: 767px) {
+  .dragon-silhouette {
+    opacity: 0.05;
+    transform: scale(0.7);
+  }
+}
+
+@media (min-width: 768px) and (max-width: 1023px) {
+  .dragon-silhouette {
+    opacity: 0.08;
+    transform: scale(0.85);
+  }
+}
+
+/* High contrast mode adjustments */
+@media (prefers-contrast: high) {
+  .dragon-silhouette {
+    display: none;
+  }
+  
+  .matrix-rain {
+    display: none;
+  }
+  
+  .glitch-text::before,
+  .glitch-text::after {
+    display: none;
+  }
+}
+
+/* Reduced motion preferences */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+  
+  .matrix-rain {
+    display: none;
+  }
+  
+  .dragon-silhouette {
+    animation: none;
+  }
+  
+  .glitch-text::before,
+  .glitch-text::after {
+    animation: none;
+    opacity: 0;
+  }
+}
+
+/* Print styles */
+@media print {
+  .matrix-rain,
+  .dragon-silhouette,
+  .glitch-text::before,
+  .glitch-text::after {
+    display: none !important;
+  }
+  
+  body {
+    background: white !important;
+    color: black !important;
+  }
+  
+  .cyberpunk-theme {
+    background: white !important;
+    color: black !important;
+  }
+}

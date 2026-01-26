@@ -68,8 +68,8 @@
         "operatingSystem": "Linux, Windows, macOS",
         "offers": {
             "@type": "Offer",
-            "price": "29.00",
-            "priceCurrency": "USD",
+            "price": "19.00",
+            "priceCurrency": "EUR",
             "priceValidUntil": "2026-12-31"
         },
         "author": {
@@ -1010,106 +1010,120 @@
             
             <div class="grid md:grid-cols-3 gap-8 max-w-5xl mx-auto">
                 <!-- Starter -->
-                <div class="bg-dark-card rounded-2xl p-8 border border-dark-border flex flex-col h-full">
+                <div class="bg-dark-card rounded-2xl p-8 border border-dark-border flex flex-col">
+                    <div class="h-8 mb-4"></div>
                     <div class="text-lg font-medium text-gray-400 mb-2">Starter</div>
                     <div class="flex items-baseline gap-1 mb-6">
-                        <span class="text-5xl font-bold">$29</span>
+                        <span class="text-5xl font-bold">€19</span>
                         <span class="text-gray-400">/month</span>
                     </div>
-                    <ul class="space-y-4 mb-8">
+                    <ul class="space-y-4 mb-8 flex-grow">
                         <li class="flex items-center gap-3">
-                            <svg class="w-5 h-5 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                            <svg class="w-5 h-5 text-green-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
                             <span>10 scans per month</span>
                         </li>
                         <li class="flex items-center gap-3">
-                            <svg class="w-5 h-5 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                            <svg class="w-5 h-5 text-green-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
                             <span>50 security tools</span>
                         </li>
                         <li class="flex items-center gap-3">
-                            <svg class="w-5 h-5 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                            <svg class="w-5 h-5 text-green-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
                             <span>Basic reports (HTML)</span>
                         </li>
                         <li class="flex items-center gap-3">
-                            <svg class="w-5 h-5 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                            <svg class="w-5 h-5 text-green-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
                             <span>Email support</span>
                         </li>
+                        <li class="flex items-center gap-3 invisible">
+                            <svg class="w-5 h-5 text-green-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                            <span>Placeholder</span>
+                        </li>
                     </ul>
-                    <button id="cta-get-starter" onclick="checkout('starter')" class="mt-auto block w-full py-3 rounded-xl text-center font-medium cursor-pointer kali-btn-secondary">
-                        Start Free Trial
-                    </button>
+                    <div class="mt-auto">
+                        <button id="cta-get-starter" onclick="checkout('starter')" class="block w-full py-3 rounded-xl text-center font-medium cursor-pointer kali-btn-secondary">
+                            Start Free Trial
+                        </button>
+                        <p class="text-gray-500 text-xs mt-3 text-center opacity-0">Placeholder</p>
+                    </div>
                 </div>
                 
                 <!-- Professional -->
-                <div class="bg-dark-card rounded-2xl p-8 border-2 border-cyber-cyan relative glow flex flex-col h-full">
-                    <div class="absolute -top-6 left-1/2 -translate-x-1/2 px-4 py-1 bg-gradient-to-r from-cyber-cyan to-cyber-blue rounded-full text-sm font-medium">
-                        Most Popular
+                <div class="bg-dark-card rounded-2xl p-8 border-2 border-cyber-cyan relative glow flex flex-col">
+                    <div class="absolute -top-4 left-1/2 -translate-x-1/2 px-6 py-2 bg-gradient-to-r from-cyber-cyan to-cyber-blue rounded-full text-sm font-bold shadow-lg shadow-cyber-cyan/30 whitespace-nowrap">
+                        ⭐ Most Popular
                     </div>
+                    <div class="h-4 mb-4"></div>
                     <div class="text-lg font-medium text-cyber-cyan mb-2">Professional</div>
                     <div class="flex items-baseline gap-1 mb-6">
-                        <span class="text-5xl font-bold">$79</span>
+                        <span class="text-5xl font-bold">€59</span>
                         <span class="text-gray-400">/month</span>
                     </div>
-                    <ul class="space-y-4 mb-8">
+                    <ul class="space-y-4 mb-8 flex-grow">
                         <li class="flex items-center gap-3">
-                            <svg class="w-5 h-5 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                            <svg class="w-5 h-5 text-green-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
                             <span>50 scans per month</span>
                         </li>
                         <li class="flex items-center gap-3">
-                            <svg class="w-5 h-5 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                            <svg class="w-5 h-5 text-green-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
                             <span><strong>230+</strong> security tools</span>
                         </li>
                         <li class="flex items-center gap-3">
-                            <svg class="w-5 h-5 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                            <svg class="w-5 h-5 text-green-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
                             <span>Advanced reports (PDF)</span>
                         </li>
                         <li class="flex items-center gap-3">
-                            <svg class="w-5 h-5 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                            <svg class="w-5 h-5 text-green-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
                             <span>API access</span>
                         </li>
                         <li class="flex items-center gap-3">
-                            <svg class="w-5 h-5 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                            <svg class="w-5 h-5 text-green-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
                             <span>Priority support</span>
                         </li>
                     </ul>
-                    <button id="cta-get-professional" onclick="checkout('professional')" class="mt-auto block w-full py-3 rounded-xl text-center font-semibold cursor-pointer kali-btn kali-glow">
-                        Start Professional
-                    </button>
-                    <p class="text-gray-500 text-xs mt-3 text-center">Cancel anytime • No setup fees</p>
+                    <div class="mt-auto">
+                        <button id="cta-get-professional" onclick="checkout('professional')" class="block w-full py-3 rounded-xl text-center font-semibold cursor-pointer kali-btn kali-glow">
+                            Start Professional
+                        </button>
+                        <p class="text-gray-500 text-xs mt-3 text-center">Cancel anytime • No setup fees</p>
+                    </div>
                 </div>
                 
                 <!-- Enterprise -->
-                <div class="bg-dark-card rounded-2xl p-8 border border-dark-border flex flex-col h-full">
+                <div class="bg-dark-card rounded-2xl p-8 border border-dark-border flex flex-col">
+                    <div class="h-8 mb-4"></div>
                     <div class="text-lg font-medium text-yellow-400 mb-2">Enterprise</div>
                     <div class="flex items-baseline gap-1 mb-6">
-                        <span class="text-5xl font-bold">$199</span>
+                        <span class="text-5xl font-bold">€149</span>
                         <span class="text-gray-400">/month</span>
                     </div>
-                    <ul class="space-y-4 mb-8">
+                    <ul class="space-y-4 mb-8 flex-grow">
                         <li class="flex items-center gap-3">
-                            <svg class="w-5 h-5 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                            <svg class="w-5 h-5 text-green-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
                             <span>Unlimited scans</span>
                         </li>
                         <li class="flex items-center gap-3">
-                            <svg class="w-5 h-5 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                            <svg class="w-5 h-5 text-green-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
                             <span><strong>230+</strong> security tools</span>
                         </li>
                         <li class="flex items-center gap-3">
-                            <svg class="w-5 h-5 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                            <svg class="w-5 h-5 text-green-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
                             <span>Custom reports & branding</span>
                         </li>
                         <li class="flex items-center gap-3">
-                            <svg class="w-5 h-5 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                            <svg class="w-5 h-5 text-green-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
                             <span>24/7 priority support</span>
                         </li>
                         <li class="flex items-center gap-3">
-                            <svg class="w-5 h-5 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                            <svg class="w-5 h-5 text-green-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
                             <span>Team management</span>
                         </li>
                     </ul>
-                    <button onclick="checkout('enterprise')" class="mt-auto block w-full py-3 rounded-xl text-center font-medium kali-btn-gold">
-                        Go Enterprise
-                    </button>
-                    <p class="text-gray-500 text-xs mt-3 text-center">Custom billing available</p>
+                    <div class="mt-auto">
+                        <button onclick="checkout('enterprise')" class="block w-full py-3 rounded-xl text-center font-medium kali-btn-gold">
+                            Go Enterprise
+                        </button>
+                        <p class="text-gray-500 text-xs mt-3 text-center">Custom billing available</p>
+                    </div>
                 </div>
             </div>
 
@@ -1900,14 +1914,15 @@
                     headers: {
                         'Content-Type': 'application/json'
                     },
-                    body: JSON.stringify({ plan: plan })
+                    body: JSON.stringify({ plan_id: plan })
                 });
                 
                 const data = await response.json();
                 
-                if (data.url) {
+                const checkoutUrl = data.url || data.checkout_url;
+                if (checkoutUrl) {
                     // Open Stripe Checkout in NEW WINDOW
-                    const checkoutWindow = window.open(data.url, '_blank', 'width=600,height=800,scrollbars=yes');
+                    const checkoutWindow = window.open(checkoutUrl, '_blank', 'width=600,height=800,scrollbars=yes');
                     
                     // Reset button after opening
                     btn.disabled = false;
@@ -1919,7 +1934,7 @@
                     } else {
                         // Popup blocked - fallback to redirect
                         showNotification('Popup blocked - redirecting...', 'warning');
-                        window.location.href = data.url;
+                        window.location.href = checkoutUrl;
                     }
                 } else {
                     showNotification('Error: ' + (data.error || 'Unknown error'), 'error');

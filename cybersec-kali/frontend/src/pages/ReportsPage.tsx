@@ -5,8 +5,7 @@ import {
   Shield, Target, AlertTriangle, Trash2
 } from 'lucide-react';
 import axios from 'axios';
-
-const API_URL = '';
+import { apiUrl } from '../config/api';
 
 interface Scan {
   id: number;
@@ -40,8 +39,8 @@ export default function ReportsPage() {
   const loadData = async () => {
     try {
       const [scansRes, reportsRes] = await Promise.all([
-        axios.get(`${API_URL}/api/scans?status=completed`),
-        axios.get(`${API_URL}/api/reports`)
+        axios.get(apiUrl('/api/scans?status=completed')),
+        axios.get(apiUrl('/api/reports'))
       ]);
       
       setScans(scansRes.data.scans || []);
@@ -70,7 +69,7 @@ export default function ReportsPage() {
     setGenerating(true);
     try {
       const token = localStorage.getItem('token');
-      const response = await fetch(`${API_URL}/api/reports/generate`, {
+      const response = await fetch(apiUrl('/api/reports/generate'), {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -94,7 +93,7 @@ export default function ReportsPage() {
       });
       if (!buffer || buffer.byteLength === 0) {
         const ids = selectedScans.join(',');
-        const fallbackUrl = `${API_URL}/api/reports/generate?scan_ids=${encodeURIComponent(ids)}&title=${encodeURIComponent(reportName || 'Security Report')}`;
+        const fallbackUrl = apiUrl(`/api/reports/generate?scan_ids=${encodeURIComponent(ids)}&title=${encodeURIComponent(reportName || 'Security Report')}`);
         window.location.href = fallbackUrl;
         return;
       }
@@ -127,7 +126,7 @@ export default function ReportsPage() {
     if (!confirm('Are you sure you want to delete this report?')) return;
     
     try {
-      await axios.delete(`${API_URL}/api/reports/${reportId}`);
+      await axios.delete(apiUrl(`/api/reports/${reportId}`));
       loadData();
     } catch (error: any) {
       alert(`❌ Delete failed: ${error.response?.data?.error || error.message}`);
@@ -288,7 +287,7 @@ export default function ReportsPage() {
                   
                   <div className="flex items-center gap-2">
                     <a
-                      href={`${API_URL}/api/reports/${report.id}/download`}
+                      href={apiUrl(`/api/reports/${report.id}/download`)}
                       className="p-2 bg-primary/20 text-primary rounded-lg hover:bg-primary/30 transition-all cursor-pointer"
                     >
                       <Download className="w-5 h-5" />

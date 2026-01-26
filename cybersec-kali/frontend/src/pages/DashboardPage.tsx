@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from 'react';
-
 import { useNavigate } from 'react-router-dom';
 import { 
   Shield, Target, Database, Activity, Terminal,
@@ -7,8 +6,7 @@ import {
   Play, ArrowRight, Zap, Clock, CheckCircle
 } from 'lucide-react';
 import axios from 'axios';
-
-const API_URL = '';
+import { apiUrl } from '../config/api';
 
 interface Stats {
   total_tools: number;
@@ -76,8 +74,8 @@ export default function DashboardPage() {
   const loadDashboard = async () => {
     try {
       const [statsRes, scansRes] = await Promise.all([
-        axios.get(`${API_URL}/api/dashboard/stats`),
-        axios.get(`${API_URL}/api/scans?limit=5`)
+        axios.get(apiUrl('/api/dashboard/stats')),
+        axios.get(apiUrl('/api/scans?limit=5'))
       ]);
       
       setStats(statsRes.data);
@@ -102,7 +100,7 @@ export default function DashboardPage() {
     setSelectedAction(actionId);
 
     try {
-      const response = await axios.post(`${API_URL}/api/scans/quick`, {
+      const response = await axios.post(apiUrl('/api/scans/quick'), {
         tool_name: action.tool,
         target: quickTarget
       });

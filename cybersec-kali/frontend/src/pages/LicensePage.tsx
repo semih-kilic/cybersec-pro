@@ -5,8 +5,7 @@ import {
   CheckCircle, Sparkles
 } from 'lucide-react';
 import axios from 'axios';
-
-const API_URL = '';
+import { apiUrl } from '../config/api';
 
 interface LicenseInfo {
   status: string;
@@ -45,7 +44,7 @@ export default function LicensePage() {
 
   const loadLicenseInfo = async () => {
     try {
-      const response = await axios.get(`${API_URL}/api/license/status`);
+      const response = await axios.get(apiUrl('/api/license/status'));
       setLicenseInfo(response.data);
     } catch (error) {
       console.error('Failed to load license info:', error);
@@ -56,7 +55,7 @@ export default function LicensePage() {
 
   const loadPlans = async () => {
     try {
-      const response = await axios.get(`${API_URL}/api/license/plans`);
+      const response = await axios.get(apiUrl('/api/license/plans'));
       setPlans(response.data.plans || []);
     } catch (error) {
       console.error('Failed to load plans:', error);
@@ -73,7 +72,7 @@ export default function LicensePage() {
     setMessage(null);
 
     try {
-      const response = await axios.post(`${API_URL}/api/license/activate`, {
+      const response = await axios.post(apiUrl('/api/license/activate'), {
         license_key: licenseKey
       });
 
@@ -98,7 +97,7 @@ export default function LicensePage() {
     if (!confirm('Are you sure you want to deactivate the license?')) return;
 
     try {
-      await axios.post(`${API_URL}/api/license/deactivate`);
+      await axios.post(apiUrl('/api/license/deactivate'));
       setMessage({ type: 'success', text: 'License deactivated successfully' });
       loadLicenseInfo();
     } catch (error) {

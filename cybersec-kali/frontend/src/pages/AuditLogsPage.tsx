@@ -1,7 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { ShieldCheck, RefreshCw, Search } from 'lucide-react';
-
-const API_URL = '';
+import { apiUrl } from '../config/api';
 
 interface AuditLogEntry {
   timestamp: string;
@@ -28,7 +27,7 @@ export default function AuditLogsPage() {
     try {
       const token = localStorage.getItem('token');
       const headers: Record<string, string> = token ? { Authorization: `Bearer ${token}` } : {};
-      const response = await fetch(`${API_URL}/api/audit/logs?limit=200`, { headers });
+      const response = await fetch(apiUrl('/api/audit/logs?limit=200'), { headers });
       if (!response.ok) {
         const payload = await response.json().catch(() => ({}));
         throw new Error(payload?.error || 'Audit log access denied.');
@@ -51,7 +50,7 @@ export default function AuditLogsPage() {
     try {
       const token = localStorage.getItem('token');
       const headers: Record<string, string> = token ? { Authorization: `Bearer ${token}` } : {};
-      const response = await fetch(`${API_URL}/api/audit/logs/export?format=${format}&limit=500`, { headers });
+      const response = await fetch(apiUrl(`/api/audit/logs/export?format=${format}&limit=500`), { headers });
       if (!response.ok) {
         const payload = await response.json().catch(() => ({}));
         throw new Error(payload?.error || 'Audit log export denied.');
@@ -80,7 +79,7 @@ export default function AuditLogsPage() {
     try {
       const token = localStorage.getItem('token');
       const headers: Record<string, string> = token ? { Authorization: `Bearer ${token}` } : {};
-      const response = await fetch(`${API_URL}/api/audit/integrity?limit=1000`, { headers });
+      const response = await fetch(apiUrl('/api/audit/integrity?limit=1000'), { headers });
       if (!response.ok) {
         const payload = await response.json().catch(() => ({}));
         throw new Error(payload?.error || 'Integrity check denied.');

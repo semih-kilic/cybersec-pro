@@ -1,0 +1,59 @@
+# 🛡️ CyberSec Pro SaaS - Cloudflare Tunnel Configuration
+# World-class cybersecurity platform - Production tunnel setup
+
+tunnel: 23170f1e-784a-4344-a6e0-12ac63e14d92
+credentials-file: /home/cybersec/.cloudflared/23170f1e-784a-4344-a6e0-12ac63e14d92.json
+
+# Ingress rules - Route traffic to local services
+ingress:
+  # Main website - semihkilic.com (routes to Nginx on port 80)
+  - hostname: semihkilic.com
+    service: http://localhost:80
+    originRequest:
+      httpHostHeader: semihkilic.com
+      connectTimeout: 30s
+      tlsTimeout: 10s
+      tcpKeepAlive: 30s
+      keepAliveConnections: 100
+      keepAliveTimeout: 90s
+  
+  # WWW redirect
+  - hostname: www.semihkilic.com
+    service: http://localhost:80
+    originRequest:
+      httpHostHeader: www.semihkilic.com
+  
+  # App subdomain (future dashboard)
+  - hostname: app.semihkilic.com
+    service: http://localhost:80
+    originRequest:
+      httpHostHeader: app.semihkilic.com
+  
+  # API subdomain (future API-only access)
+  - hostname: api.semihkilic.com
+    service: http://localhost:80
+    originRequest:
+      httpHostHeader: api.semihkilic.com
+  
+  # Catch-all rule (must be last)
+  - service: http_status:404
+
+# Logging configuration
+loglevel: info
+logfile: /var/log/cloudflared/cloudflared.log
+
+# Connection settings
+retries: 3
+grace-period: 30s
+
+# Metrics and monitoring
+metrics: localhost:8082
+
+# Protocol settings
+protocol: http2
+
+# Edge locations (automatic selection)
+region: auto
+
+# No-TLS-Verify for local development (remove in production)
+# no-tls-verify: true

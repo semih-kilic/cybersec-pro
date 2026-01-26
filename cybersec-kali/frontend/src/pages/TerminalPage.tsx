@@ -3,8 +3,7 @@ import {
   Terminal as TerminalIcon, Wifi, Plus, X, 
   Maximize2, Minimize2, Copy
 } from 'lucide-react';
-
-const API_URL = '';
+import { apiUrl } from '../config/api';
 
 interface TerminalTab {
   id: string;
@@ -172,7 +171,7 @@ export default function TerminalPage() {
     setShowConnectModal(false);
 
     try {
-      const response = await fetch(`${API_URL}/api/terminal/connect`, {
+      const response = await fetch(apiUrl('/api/terminal/connect'), {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
@@ -298,7 +297,7 @@ export default function TerminalPage() {
     }));
 
     try {
-      const response = await fetch(`${API_URL}/api/terminal/execute`, {
+      const response = await fetch(apiUrl('/api/terminal/execute'), {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'

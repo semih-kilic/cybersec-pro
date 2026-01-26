@@ -325,6 +325,17 @@ def send_payment_confirmation(customer_email, customer_name, amount, plan_name):
         return False, str(e)
 
 
+class EmailService:
+    """Compatibility wrapper for email helpers."""
+
+    @staticmethod
+    def send_license_email(customer_email, customer_name, license_key, plan_name, expiry_date):
+        return send_license_email(customer_email, customer_name, license_key, plan_name, expiry_date)
+
+    @staticmethod
+    def send_payment_confirmation(customer_email, customer_name, amount, plan_name):
+        return send_payment_confirmation(customer_email, customer_name, amount, plan_name)
+
 # Test function
 if __name__ == "__main__":
     # Test email sending

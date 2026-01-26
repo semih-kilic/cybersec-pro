@@ -14,6 +14,9 @@ from flask import Flask, request, jsonify, render_template_string, redirect, url
 from flask_cors import CORS
 import stripe
 from email_service import EmailService
+from dotenv import load_dotenv
+
+load_dotenv()
 
 # ============================================================================
 # CONFIGURATION
@@ -44,8 +47,8 @@ email_service = EmailService()
 PLANS = {
     'starter': {
         'name': 'Starter',
-        'price': 29,
-        'currency': 'usd',
+        'price': 19,
+        'currency': 'eur',
         'interval': 'month',
         'features': [
             '50+ Essential Security Tools',
@@ -59,8 +62,8 @@ PLANS = {
     },
     'professional': {
         'name': 'Professional', 
-        'price': 79,
-        'currency': 'usd',
+        'price': 59,
+        'currency': 'eur',
         'interval': 'month',
         'features': [
             '120+ Advanced Security Tools',
@@ -76,8 +79,8 @@ PLANS = {
     },
     'enterprise': {
         'name': 'Enterprise',
-        'price': 199,
-        'currency': 'usd', 
+        'price': 149,
+        'currency': 'eur', 
         'interval': 'month',
         'features': [
             '165+ Complete Security Toolkit',
@@ -190,6 +193,7 @@ def create_subscription(customer_id, stripe_subscription_id, plan, status, curre
 # ============================================================================
 
 @app.route('/')
+@app.route('/api')
 def index():
     """Main landing page"""
     return jsonify({
@@ -206,6 +210,7 @@ def index():
     })
 
 @app.route('/health')
+@app.route('/api/health')
 def health():
     """Health check endpoint"""
     return jsonify({
@@ -215,6 +220,7 @@ def health():
     })
 
 @app.route('/plans')
+@app.route('/api/plans')
 def get_plans():
     """Get available subscription plans"""
     return jsonify({
@@ -224,6 +230,7 @@ def get_plans():
     })
 
 @app.route('/create-checkout-session', methods=['POST'])
+@app.route('/api/create-checkout-session', methods=['POST'])
 def create_checkout_session():
     """Create Stripe checkout session for subscription"""
     try:
@@ -262,6 +269,7 @@ def create_checkout_session():
         return jsonify({'error': str(e)}), 500
 
 @app.route('/webhook', methods=['POST'])
+@app.route('/api/webhook', methods=['POST'])
 def stripe_webhook():
     """Handle Stripe webhooks"""
     payload = request.get_data(as_text=True)
@@ -378,8 +386,9 @@ if __name__ == '__main__':
     print(f"🌐 Domain: {YOUR_DOMAIN}")
     print(f"🔑 Stripe configured: {'✅' if STRIPE_SECRET_KEY.startswith('sk_') else '❌'}")
     
+    port = int(os.environ.get('PORT', 5002))
     app.run(
         host='0.0.0.0',
-        port=5003,
+        port=port,
         debug=True
     )
