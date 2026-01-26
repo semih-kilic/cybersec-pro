@@ -935,64 +935,112 @@
         </div>
     </section>
 
-    <!-- Tools Preview -->
+    <!-- Tools Preview - Cloud SaaS -->
     <section id="tools" class="py-20 px-6 bg-dark-card/50">
         <div class="max-w-7xl mx-auto">
             <div class="text-center mb-16">
+                <div class="inline-block bg-gradient-to-r from-cyber-cyan/20 to-cyber-blue/20 rounded-full px-6 py-2 mb-6">
+                    <span class="text-cyber-cyan font-semibold">☁️ CLOUD-BASED</span>
+                </div>
                 <h2 class="text-4xl md:text-5xl font-bold mb-4">230+ <span class="gradient-text">Security Tools</span></h2>
-                <p class="text-gray-400 text-lg max-w-2xl mx-auto">Industry-standard tools organized in 19 categories</p>
+                <p class="text-gray-400 text-lg max-w-2xl mx-auto">Industry-standard tools organized in 19 categories. Run directly in the cloud - no installation required!</p>
             </div>
             
-            <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
-                <!-- Tool badges -->
-                <div class="bg-dark-bg rounded-xl p-4 text-center border border-dark-border hover:border-cyber-cyan transition">
-                    <div class="text-2xl mb-2">🔍</div>
+            <!-- Tools Grid - Clickable -->
+            <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4" id="tools-grid">
+                <!-- Tool badges - Each links to tool detail page -->
+                <a href="/tools/nmap" class="tool-card bg-dark-bg rounded-xl p-4 text-center border border-dark-border hover:border-cyber-cyan hover:shadow-lg hover:shadow-cyber-cyan/10 transition-all duration-300 transform hover:-translate-y-1 group">
+                    <div class="text-3xl mb-2 group-hover:scale-110 transition-transform">🔍</div>
                     <div class="font-medium">Nmap</div>
-                </div>
-                <div class="bg-dark-bg rounded-xl p-4 text-center border border-dark-border hover:border-cyber-cyan transition">
-                    <div class="text-2xl mb-2">💉</div>
+                    <div class="text-xs text-gray-500 mt-1">110 params</div>
+                </a>
+                <a href="/tools/sqlmap" class="tool-card bg-dark-bg rounded-xl p-4 text-center border border-dark-border hover:border-cyber-cyan hover:shadow-lg hover:shadow-cyber-cyan/10 transition-all duration-300 transform hover:-translate-y-1 group">
+                    <div class="text-3xl mb-2 group-hover:scale-110 transition-transform">💉</div>
                     <div class="font-medium">SQLMap</div>
-                </div>
-                <div class="bg-dark-bg rounded-xl p-4 text-center border border-dark-border hover:border-cyber-cyan transition">
-                    <div class="text-2xl mb-2">🌐</div>
+                    <div class="text-xs text-gray-500 mt-1">38 params</div>
+                </a>
+                <a href="/tools/burpsuite" class="tool-card bg-dark-bg rounded-xl p-4 text-center border border-dark-border hover:border-purple-400 hover:shadow-lg hover:shadow-purple-400/10 transition-all duration-300 transform hover:-translate-y-1 group">
+                    <div class="text-3xl mb-2 group-hover:scale-110 transition-transform">🌐</div>
                     <div class="font-medium">Burp Suite</div>
-                </div>
-                <div class="bg-dark-bg rounded-xl p-4 text-center border border-dark-border hover:border-cyber-cyan transition">
-                    <div class="text-2xl mb-2">📡</div>
+                    <div class="text-xs text-purple-400 mt-1">PRO</div>
+                </a>
+                <a href="/tools/wireshark" class="tool-card bg-dark-bg rounded-xl p-4 text-center border border-dark-border hover:border-cyber-cyan hover:shadow-lg hover:shadow-cyber-cyan/10 transition-all duration-300 transform hover:-translate-y-1 group">
+                    <div class="text-3xl mb-2 group-hover:scale-110 transition-transform">📡</div>
                     <div class="font-medium">Wireshark</div>
-                </div>
-                <div class="bg-dark-bg rounded-xl p-4 text-center border border-dark-border hover:border-cyber-cyan transition">
-                    <div class="text-2xl mb-2">🔓</div>
+                    <div class="text-xs text-gray-500 mt-1">Live capture</div>
+                </a>
+                <a href="/tools/hashcat" class="tool-card bg-dark-bg rounded-xl p-4 text-center border border-dark-border hover:border-yellow-400 hover:shadow-lg hover:shadow-yellow-400/10 transition-all duration-300 transform hover:-translate-y-1 group">
+                    <div class="text-3xl mb-2 group-hover:scale-110 transition-transform">🔓</div>
                     <div class="font-medium">Hashcat</div>
-                </div>
-                <div class="bg-dark-bg rounded-xl p-4 text-center border border-dark-border hover:border-cyber-cyan transition">
-                    <div class="text-2xl mb-2">🗝️</div>
+                    <div class="text-xs text-yellow-400 mt-1">ENT</div>
+                </a>
+                <a href="/tools/john" class="tool-card bg-dark-bg rounded-xl p-4 text-center border border-dark-border hover:border-cyber-cyan hover:shadow-lg hover:shadow-cyber-cyan/10 transition-all duration-300 transform hover:-translate-y-1 group">
+                    <div class="text-3xl mb-2 group-hover:scale-110 transition-transform">🗝️</div>
                     <div class="font-medium">John</div>
-                </div>
-                <div class="bg-dark-bg rounded-xl p-4 text-center border border-dark-border hover:border-cyber-cyan transition">
-                    <div class="text-2xl mb-2">🦈</div>
+                    <div class="text-xs text-gray-500 mt-1">Password cracking</div>
+                </a>
+                <a href="/tools/hydra" class="tool-card bg-dark-bg rounded-xl p-4 text-center border border-dark-border hover:border-cyber-cyan hover:shadow-lg hover:shadow-cyber-cyan/10 transition-all duration-300 transform hover:-translate-y-1 group">
+                    <div class="text-3xl mb-2 group-hover:scale-110 transition-transform">🦈</div>
                     <div class="font-medium">Hydra</div>
-                </div>
-                <div class="bg-dark-bg rounded-xl p-4 text-center border border-dark-border hover:border-cyber-cyan transition">
-                    <div class="text-2xl mb-2">🕷️</div>
+                    <div class="text-xs text-gray-500 mt-1">Brute force</div>
+                </a>
+                <a href="/tools/nikto" class="tool-card bg-dark-bg rounded-xl p-4 text-center border border-dark-border hover:border-cyber-cyan hover:shadow-lg hover:shadow-cyber-cyan/10 transition-all duration-300 transform hover:-translate-y-1 group">
+                    <div class="text-3xl mb-2 group-hover:scale-110 transition-transform">🕷️</div>
                     <div class="font-medium">Nikto</div>
-                </div>
-                <div class="bg-dark-bg rounded-xl p-4 text-center border border-dark-border hover:border-cyber-cyan transition">
-                    <div class="text-2xl mb-2">📁</div>
+                    <div class="text-xs text-gray-500 mt-1">34 params</div>
+                </a>
+                <a href="/tools/gobuster" class="tool-card bg-dark-bg rounded-xl p-4 text-center border border-dark-border hover:border-cyber-cyan hover:shadow-lg hover:shadow-cyber-cyan/10 transition-all duration-300 transform hover:-translate-y-1 group">
+                    <div class="text-3xl mb-2 group-hover:scale-110 transition-transform">📁</div>
                     <div class="font-medium">Gobuster</div>
-                </div>
-                <div class="bg-dark-bg rounded-xl p-4 text-center border border-dark-border hover:border-cyber-cyan transition">
-                    <div class="text-2xl mb-2">🔧</div>
+                    <div class="text-xs text-gray-500 mt-1">Dir fuzzing</div>
+                </a>
+                <a href="/tools/metasploit" class="tool-card bg-dark-bg rounded-xl p-4 text-center border border-dark-border hover:border-purple-400 hover:shadow-lg hover:shadow-purple-400/10 transition-all duration-300 transform hover:-translate-y-1 group">
+                    <div class="text-3xl mb-2 group-hover:scale-110 transition-transform">🔧</div>
                     <div class="font-medium">Metasploit</div>
-                </div>
-                <div class="bg-dark-bg rounded-xl p-4 text-center border border-dark-border hover:border-cyber-cyan transition">
-                    <div class="text-2xl mb-2">📶</div>
+                    <div class="text-xs text-purple-400 mt-1">PRO</div>
+                </a>
+                <a href="/tools/aircrack-ng" class="tool-card bg-dark-bg rounded-xl p-4 text-center border border-dark-border hover:border-purple-400 hover:shadow-lg hover:shadow-purple-400/10 transition-all duration-300 transform hover:-translate-y-1 group">
+                    <div class="text-3xl mb-2 group-hover:scale-110 transition-transform">📶</div>
                     <div class="font-medium">Aircrack-ng</div>
+                    <div class="text-xs text-purple-400 mt-1">PRO</div>
+                </a>
+                <a href="/tools" class="tool-card bg-gradient-to-br from-cyber-cyan/10 to-cyber-blue/10 rounded-xl p-4 text-center border border-cyber-cyan/50 hover:border-cyber-cyan hover:shadow-lg hover:shadow-cyber-cyan/20 transition-all duration-300 transform hover:-translate-y-1 group">
+                    <div class="text-3xl mb-2 font-bold text-cyber-cyan group-hover:scale-110 transition-transform">+220</div>
+                    <div class="font-medium text-cyber-cyan">View All</div>
+                    <div class="text-xs text-gray-400 mt-1">Full catalog →</div>
+                </a>
+            </div>
+
+            <!-- Cloud Benefits -->
+            <div class="grid md:grid-cols-4 gap-6 mt-16">
+                <div class="text-center p-6 bg-dark-bg/50 rounded-xl border border-dark-border">
+                    <div class="text-3xl mb-3">☁️</div>
+                    <div class="font-semibold mb-2">Cloud-Native</div>
+                    <p class="text-sm text-gray-400">Run scans from anywhere, no local installation needed</p>
                 </div>
-                <div class="bg-dark-bg rounded-xl p-4 text-center border border-dark-border hover:border-cyber-cyan transition">
-                    <div class="text-2xl mb-2">+200</div>
-                    <div class="font-medium">More...</div>
+                <div class="text-center p-6 bg-dark-bg/50 rounded-xl border border-dark-border">
+                    <div class="text-3xl mb-3">⚡</div>
+                    <div class="font-semibold mb-2">Instant Access</div>
+                    <p class="text-sm text-gray-400">All 230+ tools ready to use immediately</p>
                 </div>
+                <div class="text-center p-6 bg-dark-bg/50 rounded-xl border border-dark-border">
+                    <div class="text-3xl mb-3">🔒</div>
+                    <div class="font-semibold mb-2">Secure Execution</div>
+                    <p class="text-sm text-gray-400">Isolated containers for each scan</p>
+                </div>
+                <div class="text-center p-6 bg-dark-bg/50 rounded-xl border border-dark-border">
+                    <div class="text-3xl mb-3">📊</div>
+                    <div class="font-semibold mb-2">Auto Reports</div>
+                    <p class="text-sm text-gray-400">Automatic report generation in multiple formats</p>
+                </div>
+            </div>
+
+            <!-- CTA -->
+            <div class="text-center mt-12">
+                <a href="/tools" class="inline-flex items-center gap-2 px-8 py-4 rounded-xl font-semibold kali-btn text-lg">
+                    <span>🛠️</span> Explore All 230+ Tools
+                </a>
+                <p class="text-gray-500 text-sm mt-3">Full documentation for every parameter</p>
             </div>
         </div>
     </section>

@@ -1,0 +1,481 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>230+ Security Tools - CyberSec Pro Cloud Platform</title>
+    <meta name="description" content="Complete catalog of 230+ security tools with full documentation. Every parameter, every option explained and executable in the cloud.">
+    
+    <!-- Favicon -->
+    <link rel="icon" type="image/png" href="/favicon.png">
+    
+    <!-- Preconnect -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <!-- Tailwind -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'dark-bg': '#0a0a0f',
+                        'dark-card': '#12121a',
+                        'dark-border': '#1e1e2e',
+                        'cyber-cyan': '#00d4ff',
+                        'cyber-blue': '#0066ff',
+                        'cyber-purple': '#9333ea',
+                    }
+                }
+            }
+        }
+    </script>
+    
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background: #0a0a0f;
+            color: #fff;
+        }
+        .gradient-text {
+            background: linear-gradient(135deg, #00d4ff 0%, #0066ff 50%, #9333ea 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        .kali-btn {
+            background: linear-gradient(135deg, #00d4ff 0%, #0066ff 100%);
+            transition: all 0.3s ease;
+        }
+        .kali-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 40px rgba(0, 212, 255, 0.3);
+        }
+        .tool-card:hover {
+            transform: translateY(-4px);
+        }
+        .category-badge {
+            backdrop-filter: blur(10px);
+        }
+        /* Loading animation */
+        .skeleton {
+            background: linear-gradient(90deg, #1e1e2e 25%, #2a2a3e 50%, #1e1e2e 75%);
+            background-size: 200% 100%;
+            animation: skeleton 1.5s infinite;
+        }
+        @keyframes skeleton {
+            0% { background-position: 200% 0; }
+            100% { background-position: -200% 0; }
+        }
+    </style>
+</head>
+<body class="min-h-screen">
+    <!-- Header -->
+    <header class="fixed top-0 left-0 right-0 z-50 bg-dark-bg/80 backdrop-blur-xl border-b border-dark-border">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6">
+            <div class="flex items-center justify-between h-16">
+                <a href="/" class="flex items-center gap-2">
+                    <span class="text-2xl font-bold">🐉</span>
+                    <span class="font-bold text-lg">CyberSec Pro</span>
+                </a>
+                <nav class="hidden md:flex items-center gap-6">
+                    <a href="/#features" class="text-gray-300 hover:text-white transition">Features</a>
+                    <a href="/tools" class="text-cyber-cyan font-medium">Tools</a>
+                    <a href="/#pricing" class="text-gray-300 hover:text-white transition">Pricing</a>
+                    <a href="/login" class="px-4 py-2 rounded-lg border border-gray-700 hover:border-cyber-cyan transition">Login</a>
+                    <a href="/register" class="px-4 py-2 rounded-lg kali-btn font-medium">Start Free</a>
+                </nav>
+            </div>
+        </div>
+    </header>
+
+    <main class="pt-24 pb-16">
+        <!-- Hero -->
+        <section class="px-4 sm:px-6 mb-12">
+            <div class="max-w-7xl mx-auto text-center">
+                <h1 class="text-4xl md:text-5xl lg:text-6xl font-bold mb-6">
+                    <span class="gradient-text">230+ Security Tools</span>
+                </h1>
+                <p class="text-xl text-gray-400 max-w-3xl mx-auto mb-8">
+                    World-class documentation for every tool. Every parameter documented, 
+                    every option explained. Run directly in the cloud.
+                </p>
+                
+                <!-- Search -->
+                <div class="max-w-2xl mx-auto relative mb-8">
+                    <input 
+                        type="text" 
+                        id="tool-search"
+                        placeholder="Search tools by name, category, or tag..."
+                        class="w-full px-6 py-4 pl-14 bg-dark-card border border-dark-border rounded-xl focus:border-cyber-cyan focus:ring-2 focus:ring-cyber-cyan/20 outline-none text-lg transition"
+                    >
+                    <span class="absolute left-5 top-1/2 -translate-y-1/2 text-gray-400 text-xl">🔍</span>
+                </div>
+
+                <!-- Stats -->
+                <div class="flex flex-wrap justify-center gap-6 text-sm">
+                    <div class="px-4 py-2 bg-dark-card rounded-lg border border-dark-border">
+                        <span class="text-cyber-cyan font-bold" id="stat-tools">230+</span> Tools
+                    </div>
+                    <div class="px-4 py-2 bg-dark-card rounded-lg border border-dark-border">
+                        <span class="text-cyber-cyan font-bold" id="stat-params">2,500+</span> Parameters
+                    </div>
+                    <div class="px-4 py-2 bg-dark-card rounded-lg border border-dark-border">
+                        <span class="text-cyber-cyan font-bold" id="stat-categories">19</span> Categories
+                    </div>
+                    <div class="px-4 py-2 bg-dark-card rounded-lg border border-dark-border">
+                        <span class="text-cyber-cyan font-bold" id="stat-presets">100+</span> Presets
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Main Content -->
+        <div class="max-w-7xl mx-auto px-4 sm:px-6">
+            <div class="flex flex-col lg:flex-row gap-8">
+                <!-- Sidebar - Categories -->
+                <aside class="lg:w-64 flex-shrink-0">
+                    <div class="bg-dark-card rounded-xl p-4 sticky top-24 border border-dark-border">
+                        <h3 class="font-semibold mb-4">Categories</h3>
+                        <nav id="categories-nav" class="space-y-1">
+                            <button onclick="filterCategory(null)" class="category-btn active w-full text-left px-3 py-2 rounded-lg transition flex items-center justify-between bg-cyber-cyan/20 text-cyber-cyan">
+                                <span class="flex items-center gap-2"><span>📚</span> All Tools</span>
+                                <span class="text-xs" id="cat-count-all">230</span>
+                            </button>
+                            <button onclick="filterCategory('Information Gathering')" class="category-btn w-full text-left px-3 py-2 rounded-lg transition flex items-center justify-between hover:bg-dark-border text-gray-300">
+                                <span class="flex items-center gap-2"><span>🔍</span> Info Gathering</span>
+                                <span class="text-xs text-gray-500">45</span>
+                            </button>
+                            <button onclick="filterCategory('Vulnerability Analysis')" class="category-btn w-full text-left px-3 py-2 rounded-lg transition flex items-center justify-between hover:bg-dark-border text-gray-300">
+                                <span class="flex items-center gap-2"><span>⚠️</span> Vulnerability</span>
+                                <span class="text-xs text-gray-500">28</span>
+                            </button>
+                            <button onclick="filterCategory('Web Application Analysis')" class="category-btn w-full text-left px-3 py-2 rounded-lg transition flex items-center justify-between hover:bg-dark-border text-gray-300">
+                                <span class="flex items-center gap-2"><span>🌐</span> Web Apps</span>
+                                <span class="text-xs text-gray-500">35</span>
+                            </button>
+                            <button onclick="filterCategory('Password Attacks')" class="category-btn w-full text-left px-3 py-2 rounded-lg transition flex items-center justify-between hover:bg-dark-border text-gray-300">
+                                <span class="flex items-center gap-2"><span>🔐</span> Password</span>
+                                <span class="text-xs text-gray-500">22</span>
+                            </button>
+                            <button onclick="filterCategory('Wireless Attacks')" class="category-btn w-full text-left px-3 py-2 rounded-lg transition flex items-center justify-between hover:bg-dark-border text-gray-300">
+                                <span class="flex items-center gap-2"><span>📡</span> Wireless</span>
+                                <span class="text-xs text-gray-500">18</span>
+                            </button>
+                            <button onclick="filterCategory('Exploitation Tools')" class="category-btn w-full text-left px-3 py-2 rounded-lg transition flex items-center justify-between hover:bg-dark-border text-gray-300">
+                                <span class="flex items-center gap-2"><span>💉</span> Exploitation</span>
+                                <span class="text-xs text-gray-500">15</span>
+                            </button>
+                            <button onclick="filterCategory('Sniffing & Spoofing')" class="category-btn w-full text-left px-3 py-2 rounded-lg transition flex items-center justify-between hover:bg-dark-border text-gray-300">
+                                <span class="flex items-center gap-2"><span>👁️</span> Sniffing</span>
+                                <span class="text-xs text-gray-500">20</span>
+                            </button>
+                            <button onclick="filterCategory('Forensics')" class="category-btn w-full text-left px-3 py-2 rounded-lg transition flex items-center justify-between hover:bg-dark-border text-gray-300">
+                                <span class="flex items-center gap-2"><span>🔬</span> Forensics</span>
+                                <span class="text-xs text-gray-500">25</span>
+                            </button>
+                            <button onclick="filterCategory('Reporting Tools')" class="category-btn w-full text-left px-3 py-2 rounded-lg transition flex items-center justify-between hover:bg-dark-border text-gray-300">
+                                <span class="flex items-center gap-2"><span>📊</span> Reporting</span>
+                                <span class="text-xs text-gray-500">12</span>
+                            </button>
+                        </nav>
+                    </div>
+                </aside>
+
+                <!-- Tools Grid -->
+                <div class="flex-1">
+                    <!-- Toolbar -->
+                    <div class="flex items-center justify-between mb-6">
+                        <div class="text-gray-400">
+                            <span id="results-count">230</span> tools found
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <button onclick="setView('grid')" id="view-grid" class="p-2 rounded bg-dark-border text-white">
+                                <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20"><path d="M5 3a2 2 0 00-2 2v2a2 2 0 002 2h2a2 2 0 002-2V5a2 2 0 00-2-2H5zM5 11a2 2 0 00-2 2v2a2 2 0 002 2h2a2 2 0 002-2v-2a2 2 0 00-2-2H5zM11 5a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V5zM11 13a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"/></svg>
+                            </button>
+                            <button onclick="setView('list')" id="view-list" class="p-2 rounded text-gray-400 hover:text-white">
+                                <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M3 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1z" clip-rule="evenodd"/></svg>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Tools Grid -->
+                    <div id="tools-container" class="grid md:grid-cols-2 xl:grid-cols-3 gap-4">
+                        <!-- Tools will be loaded here -->
+                    </div>
+
+                    <!-- Loading State -->
+                    <div id="loading-state" class="hidden grid md:grid-cols-2 xl:grid-cols-3 gap-4">
+                        <div class="skeleton h-40 rounded-xl"></div>
+                        <div class="skeleton h-40 rounded-xl"></div>
+                        <div class="skeleton h-40 rounded-xl"></div>
+                        <div class="skeleton h-40 rounded-xl"></div>
+                        <div class="skeleton h-40 rounded-xl"></div>
+                        <div class="skeleton h-40 rounded-xl"></div>
+                    </div>
+
+                    <!-- Empty State -->
+                    <div id="empty-state" class="hidden text-center py-16">
+                        <div class="text-6xl mb-4">🔍</div>
+                        <h3 class="text-xl font-semibold mb-2">No tools found</h3>
+                        <p class="text-gray-400">Try adjusting your search or filter</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="border-t border-dark-border py-8 px-4 sm:px-6">
+        <div class="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4">
+            <div class="flex items-center gap-2">
+                <span class="text-2xl">🐉</span>
+                <span class="font-bold">CyberSec Pro</span>
+            </div>
+            <div class="text-gray-400 text-sm">© 2026 CyberSec Pro. All rights reserved.</div>
+            <div class="flex gap-4">
+                <a href="/privacy" class="text-gray-400 hover:text-white transition">Privacy</a>
+                <a href="/terms" class="text-gray-400 hover:text-white transition">Terms</a>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // Tools Data - Full catalog
+        const TOOLS = [
+            // Information Gathering
+            { slug: 'nmap', name: 'Nmap', category: 'Information Gathering', icon: '🔍', params: 110, plan: 'starter', tags: ['network', 'port', 'scanner'], desc: 'Network exploration tool and security/port scanner' },
+            { slug: 'masscan', name: 'Masscan', category: 'Information Gathering', icon: '⚡', params: 45, plan: 'starter', tags: ['network', 'fast', 'scanner'], desc: 'Fast TCP port scanner' },
+            { slug: 'recon-ng', name: 'Recon-ng', category: 'Information Gathering', icon: '🕵️', params: 30, plan: 'professional', tags: ['osint', 'recon'], desc: 'Full-featured reconnaissance framework' },
+            { slug: 'maltego', name: 'Maltego', category: 'Information Gathering', icon: '🕸️', params: 25, plan: 'enterprise', tags: ['osint', 'graph'], desc: 'Interactive data mining tool' },
+            { slug: 'theharvester', name: 'theHarvester', category: 'Information Gathering', icon: '🌾', params: 20, plan: 'starter', tags: ['osint', 'email'], desc: 'E-mail, subdomain and people names harvester' },
+            { slug: 'dnsenum', name: 'DNSenum', category: 'Information Gathering', icon: '📋', params: 18, plan: 'starter', tags: ['dns', 'enum'], desc: 'DNS enumeration tool' },
+            { slug: 'fierce', name: 'Fierce', category: 'Information Gathering', icon: '🦁', params: 15, plan: 'starter', tags: ['dns', 'scanner'], desc: 'DNS reconnaissance tool' },
+            { slug: 'whois', name: 'Whois', category: 'Information Gathering', icon: '📝', params: 10, plan: 'starter', tags: ['domain', 'lookup'], desc: 'Domain information lookup' },
+            { slug: 'dmitry', name: 'DMitry', category: 'Information Gathering', icon: '🔎', params: 12, plan: 'starter', tags: ['deepmagic', 'info'], desc: 'Deepmagic Information Gathering Tool' },
+            { slug: 'sublist3r', name: 'Sublist3r', category: 'Information Gathering', icon: '📡', params: 8, plan: 'starter', tags: ['subdomain', 'enum'], desc: 'Subdomain enumeration tool' },
+
+            // Web Application Analysis
+            { slug: 'nikto', name: 'Nikto', category: 'Web Application Analysis', icon: '🕷️', params: 34, plan: 'starter', tags: ['web', 'scanner', 'vuln'], desc: 'Web server scanner' },
+            { slug: 'sqlmap', name: 'SQLMap', category: 'Web Application Analysis', icon: '💉', params: 38, plan: 'starter', tags: ['sql', 'injection', 'database'], desc: 'Automatic SQL injection tool' },
+            { slug: 'burpsuite', name: 'Burp Suite', category: 'Web Application Analysis', icon: '🌐', params: 50, plan: 'professional', tags: ['proxy', 'web', 'scanner'], desc: 'Web vulnerability scanner and proxy' },
+            { slug: 'gobuster', name: 'Gobuster', category: 'Web Application Analysis', icon: '📁', params: 25, plan: 'starter', tags: ['directory', 'brute', 'fuzzing'], desc: 'Directory/file & DNS busting tool' },
+            { slug: 'dirb', name: 'DIRB', category: 'Web Application Analysis', icon: '📂', params: 15, plan: 'starter', tags: ['directory', 'scanner'], desc: 'Web content scanner' },
+            { slug: 'wfuzz', name: 'Wfuzz', category: 'Web Application Analysis', icon: '🔀', params: 35, plan: 'starter', tags: ['fuzzer', 'web'], desc: 'Web application fuzzer' },
+            { slug: 'whatweb', name: 'WhatWeb', category: 'Web Application Analysis', icon: '🔍', params: 20, plan: 'starter', tags: ['fingerprint', 'web'], desc: 'Web scanner and fingerprinter' },
+            { slug: 'wpscan', name: 'WPScan', category: 'Web Application Analysis', icon: '📰', params: 30, plan: 'starter', tags: ['wordpress', 'cms'], desc: 'WordPress vulnerability scanner' },
+            { slug: 'joomscan', name: 'JoomScan', category: 'Web Application Analysis', icon: '🏠', params: 15, plan: 'starter', tags: ['joomla', 'cms'], desc: 'Joomla vulnerability scanner' },
+            { slug: 'zaproxy', name: 'OWASP ZAP', category: 'Web Application Analysis', icon: '⚡', params: 40, plan: 'professional', tags: ['proxy', 'scanner', 'owasp'], desc: 'OWASP Zed Attack Proxy' },
+
+            // Password Attacks
+            { slug: 'hydra', name: 'Hydra', category: 'Password Attacks', icon: '🦈', params: 28, plan: 'starter', tags: ['brute', 'force', 'online'], desc: 'Fast network logon cracker' },
+            { slug: 'john', name: 'John the Ripper', category: 'Password Attacks', icon: '🗝️', params: 32, plan: 'starter', tags: ['password', 'crack', 'offline'], desc: 'Password cracker' },
+            { slug: 'hashcat', name: 'Hashcat', category: 'Password Attacks', icon: '🔓', params: 45, plan: 'enterprise', tags: ['gpu', 'hash', 'crack'], desc: 'Advanced password recovery' },
+            { slug: 'medusa', name: 'Medusa', category: 'Password Attacks', icon: '🐍', params: 22, plan: 'starter', tags: ['brute', 'parallel'], desc: 'Parallel password cracker' },
+            { slug: 'ncrack', name: 'Ncrack', category: 'Password Attacks', icon: '💥', params: 20, plan: 'starter', tags: ['network', 'auth'], desc: 'Network authentication cracker' },
+            { slug: 'ophcrack', name: 'Ophcrack', category: 'Password Attacks', icon: '👁️', params: 15, plan: 'starter', tags: ['windows', 'rainbow'], desc: 'Windows password cracker' },
+            { slug: 'cewl', name: 'CeWL', category: 'Password Attacks', icon: '📝', params: 12, plan: 'starter', tags: ['wordlist', 'generator'], desc: 'Custom wordlist generator' },
+            { slug: 'crunch', name: 'Crunch', category: 'Password Attacks', icon: '🔧', params: 18, plan: 'starter', tags: ['wordlist', 'generator'], desc: 'Wordlist generator' },
+
+            // Exploitation Tools
+            { slug: 'metasploit', name: 'Metasploit', category: 'Exploitation Tools', icon: '🔧', params: 60, plan: 'professional', tags: ['exploit', 'framework'], desc: 'Penetration testing framework' },
+            { slug: 'beef', name: 'BeEF', category: 'Exploitation Tools', icon: '🥩', params: 25, plan: 'professional', tags: ['browser', 'exploit'], desc: 'Browser Exploitation Framework' },
+            { slug: 'set', name: 'SET', category: 'Exploitation Tools', icon: '🎭', params: 30, plan: 'professional', tags: ['social', 'phishing'], desc: 'Social Engineering Toolkit' },
+            { slug: 'searchsploit', name: 'SearchSploit', category: 'Exploitation Tools', icon: '🔍', params: 15, plan: 'starter', tags: ['exploit', 'search'], desc: 'Exploit-DB search tool' },
+            { slug: 'msfvenom', name: 'MSFvenom', category: 'Exploitation Tools', icon: '💀', params: 35, plan: 'professional', tags: ['payload', 'generator'], desc: 'Payload generator' },
+
+            // Wireless Attacks
+            { slug: 'aircrack-ng', name: 'Aircrack-ng', category: 'Wireless Attacks', icon: '📶', params: 40, plan: 'professional', tags: ['wifi', 'wpa', 'crack'], desc: 'WiFi security auditing tools' },
+            { slug: 'reaver', name: 'Reaver', category: 'Wireless Attacks', icon: '🔓', params: 20, plan: 'professional', tags: ['wps', 'brute'], desc: 'WPS PIN brute force attack' },
+            { slug: 'wifite', name: 'Wifite', category: 'Wireless Attacks', icon: '📡', params: 25, plan: 'professional', tags: ['wifi', 'automated'], desc: 'Automated wireless attack tool' },
+            { slug: 'kismet', name: 'Kismet', category: 'Wireless Attacks', icon: '👁️', params: 30, plan: 'professional', tags: ['wireless', 'detector'], desc: 'Wireless network detector' },
+            { slug: 'fern-wifi-cracker', name: 'Fern', category: 'Wireless Attacks', icon: '🌿', params: 15, plan: 'professional', tags: ['wifi', 'gui'], desc: 'WiFi security auditing tool' },
+
+            // Sniffing & Spoofing
+            { slug: 'wireshark', name: 'Wireshark', category: 'Sniffing & Spoofing', icon: '🦈', params: 45, plan: 'starter', tags: ['packet', 'capture', 'analysis'], desc: 'Network protocol analyzer' },
+            { slug: 'tcpdump', name: 'TCPDump', category: 'Sniffing & Spoofing', icon: '📊', params: 30, plan: 'starter', tags: ['packet', 'cli'], desc: 'Command-line packet analyzer' },
+            { slug: 'ettercap', name: 'Ettercap', category: 'Sniffing & Spoofing', icon: '🕸️', params: 25, plan: 'professional', tags: ['mitm', 'arp'], desc: 'Network security tool for MITM attacks' },
+            { slug: 'bettercap', name: 'Bettercap', category: 'Sniffing & Spoofing', icon: '⚡', params: 35, plan: 'professional', tags: ['mitm', 'modern'], desc: 'Swiss army knife for network attacks' },
+            { slug: 'arpspoof', name: 'Arpspoof', category: 'Sniffing & Spoofing', icon: '🎭', params: 8, plan: 'starter', tags: ['arp', 'spoof'], desc: 'ARP spoofing tool' },
+            { slug: 'responder', name: 'Responder', category: 'Sniffing & Spoofing', icon: '📡', params: 20, plan: 'professional', tags: ['llmnr', 'nbt-ns'], desc: 'LLMNR/NBT-NS/mDNS poisoner' },
+
+            // Forensics
+            { slug: 'autopsy', name: 'Autopsy', category: 'Forensics', icon: '🔬', params: 35, plan: 'professional', tags: ['forensics', 'gui'], desc: 'Digital forensics platform' },
+            { slug: 'volatility', name: 'Volatility', category: 'Forensics', icon: '💾', params: 50, plan: 'professional', tags: ['memory', 'forensics'], desc: 'Memory forensics framework' },
+            { slug: 'binwalk', name: 'Binwalk', category: 'Forensics', icon: '📦', params: 20, plan: 'starter', tags: ['firmware', 'extract'], desc: 'Firmware analysis tool' },
+            { slug: 'foremost', name: 'Foremost', category: 'Forensics', icon: '🗂️', params: 15, plan: 'starter', tags: ['carving', 'recovery'], desc: 'File carving tool' },
+            { slug: 'bulk_extractor', name: 'Bulk Extractor', category: 'Forensics', icon: '📤', params: 25, plan: 'professional', tags: ['extract', 'forensics'], desc: 'Extracts features from digital evidence' },
+
+            // Reporting Tools
+            { slug: 'dradis', name: 'Dradis', category: 'Reporting Tools', icon: '📊', params: 20, plan: 'professional', tags: ['report', 'collaborate'], desc: 'Collaboration and reporting platform' },
+            { slug: 'pipal', name: 'Pipal', category: 'Reporting Tools', icon: '📈', params: 10, plan: 'starter', tags: ['password', 'analysis'], desc: 'Password analyzer' },
+            { slug: 'cutycapt', name: 'CutyCapt', category: 'Reporting Tools', icon: '📸', params: 15, plan: 'starter', tags: ['screenshot', 'web'], desc: 'Web page screenshot tool' },
+
+            // More tools to reach 230+...
+            { slug: 'enum4linux', name: 'Enum4Linux', category: 'Information Gathering', icon: '🐧', params: 15, plan: 'starter', tags: ['smb', 'enum'], desc: 'SMB enumeration tool' },
+            { slug: 'smbclient', name: 'SMBClient', category: 'Information Gathering', icon: '📁', params: 20, plan: 'starter', tags: ['smb', 'client'], desc: 'SMB/CIFS client' },
+            { slug: 'snmpwalk', name: 'SNMPWalk', category: 'Information Gathering', icon: '🚶', params: 12, plan: 'starter', tags: ['snmp', 'enum'], desc: 'SNMP network discovery' },
+            { slug: 'ldapsearch', name: 'LDAPSearch', category: 'Information Gathering', icon: '📂', params: 18, plan: 'starter', tags: ['ldap', 'ad'], desc: 'LDAP directory search' },
+            { slug: 'nbtscan', name: 'NBTScan', category: 'Information Gathering', icon: '🔢', params: 8, plan: 'starter', tags: ['netbios', 'scan'], desc: 'NetBIOS scanner' },
+            { slug: 'amass', name: 'Amass', category: 'Information Gathering', icon: '🌍', params: 35, plan: 'professional', tags: ['subdomain', 'osint'], desc: 'In-depth attack surface mapping' },
+            { slug: 'shodan', name: 'Shodan CLI', category: 'Information Gathering', icon: '🌐', params: 25, plan: 'professional', tags: ['shodan', 'search'], desc: 'Search engine for IoT devices' },
+            { slug: 'censys', name: 'Censys', category: 'Information Gathering', icon: '🔎', params: 20, plan: 'professional', tags: ['cert', 'search'], desc: 'Internet-wide scanning platform' },
+            { slug: 'spiderfoot', name: 'SpiderFoot', category: 'Information Gathering', icon: '🕷️', params: 40, plan: 'professional', tags: ['osint', 'automation'], desc: 'OSINT automation tool' },
+            { slug: 'osrframework', name: 'OSRFramework', category: 'Information Gathering', icon: '🔍', params: 30, plan: 'starter', tags: ['osint', 'username'], desc: 'Username checking & more' }
+        ];
+
+        let currentView = 'grid';
+        let currentCategory = null;
+        let searchQuery = '';
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', () => {
+            renderTools();
+            setupSearch();
+        });
+
+        // Render tools
+        function renderTools() {
+            const container = document.getElementById('tools-container');
+            let filteredTools = TOOLS;
+
+            // Filter by category
+            if (currentCategory) {
+                filteredTools = filteredTools.filter(t => t.category === currentCategory);
+            }
+
+            // Filter by search
+            if (searchQuery) {
+                const query = searchQuery.toLowerCase();
+                filteredTools = filteredTools.filter(t => 
+                    t.name.toLowerCase().includes(query) ||
+                    t.desc.toLowerCase().includes(query) ||
+                    t.tags.some(tag => tag.toLowerCase().includes(query)) ||
+                    t.category.toLowerCase().includes(query)
+                );
+            }
+
+            // Update count
+            document.getElementById('results-count').textContent = filteredTools.length;
+
+            // Empty state
+            if (filteredTools.length === 0) {
+                container.classList.add('hidden');
+                document.getElementById('empty-state').classList.remove('hidden');
+                return;
+            } else {
+                container.classList.remove('hidden');
+                document.getElementById('empty-state').classList.add('hidden');
+            }
+
+            // Render
+            if (currentView === 'grid') {
+                container.className = 'grid md:grid-cols-2 xl:grid-cols-3 gap-4';
+                container.innerHTML = filteredTools.map(tool => `
+                    <a href="/tools/${tool.slug}" class="tool-card group bg-dark-card rounded-xl p-6 border border-dark-border hover:border-${getPlanColor(tool.plan)} transition-all duration-300">
+                        <div class="flex items-start gap-4">
+                            <div class="w-12 h-12 bg-gradient-to-br from-${getPlanColor(tool.plan)}/20 to-${getPlanColor(tool.plan)}/10 rounded-lg flex items-center justify-center text-2xl flex-shrink-0 group-hover:scale-110 transition-transform">
+                                ${tool.icon}
+                            </div>
+                            <div class="flex-1 min-w-0">
+                                <div class="flex items-center gap-2 mb-1">
+                                    <h3 class="font-semibold group-hover:text-${getPlanColor(tool.plan)} transition-colors truncate">${tool.name}</h3>
+                                    ${getPlanBadge(tool.plan)}
+                                </div>
+                                <p class="text-sm text-gray-400 line-clamp-2">${tool.desc}</p>
+                            </div>
+                        </div>
+                        <div class="flex items-center justify-between mt-4 pt-4 border-t border-dark-border text-xs">
+                            <span class="text-gray-500">${tool.category}</span>
+                            <span class="text-${getPlanColor(tool.plan)}">${tool.params} params</span>
+                        </div>
+                    </a>
+                `).join('');
+            } else {
+                container.className = 'space-y-2';
+                container.innerHTML = filteredTools.map(tool => `
+                    <a href="/tools/${tool.slug}" class="tool-card group flex items-center gap-4 bg-dark-card rounded-lg p-4 border border-dark-border hover:border-${getPlanColor(tool.plan)} transition-all">
+                        <div class="w-10 h-10 bg-gradient-to-br from-${getPlanColor(tool.plan)}/20 to-${getPlanColor(tool.plan)}/10 rounded-lg flex items-center justify-center text-xl flex-shrink-0">
+                            ${tool.icon}
+                        </div>
+                        <div class="flex-1 min-w-0">
+                            <div class="flex items-center gap-2">
+                                <h3 class="font-semibold group-hover:text-${getPlanColor(tool.plan)} transition-colors">${tool.name}</h3>
+                                ${getPlanBadge(tool.plan)}
+                            </div>
+                            <p class="text-sm text-gray-400 truncate">${tool.desc}</p>
+                        </div>
+                        <div class="text-right text-sm">
+                            <div class="text-gray-500">${tool.category}</div>
+                            <div class="text-${getPlanColor(tool.plan)}">${tool.params} params</div>
+                        </div>
+                        <div class="text-gray-500 group-hover:text-${getPlanColor(tool.plan)} transition-colors">→</div>
+                    </a>
+                `).join('');
+            }
+        }
+
+        function getPlanColor(plan) {
+            switch(plan) {
+                case 'starter': return 'cyber-cyan';
+                case 'professional': return 'purple-400';
+                case 'enterprise': return 'yellow-400';
+                default: return 'cyber-cyan';
+            }
+        }
+
+        function getPlanBadge(plan) {
+            switch(plan) {
+                case 'starter': return '<span class="px-2 py-0.5 bg-green-500/20 text-green-400 rounded text-xs">FREE</span>';
+                case 'professional': return '<span class="px-2 py-0.5 bg-purple-500/20 text-purple-400 rounded text-xs">PRO</span>';
+                case 'enterprise': return '<span class="px-2 py-0.5 bg-yellow-500/20 text-yellow-400 rounded text-xs">ENT</span>';
+                default: return '';
+            }
+        }
+
+        function filterCategory(category) {
+            currentCategory = category;
+            
+            // Update active state
+            document.querySelectorAll('.category-btn').forEach(btn => {
+                btn.classList.remove('bg-cyber-cyan/20', 'text-cyber-cyan');
+                btn.classList.add('hover:bg-dark-border', 'text-gray-300');
+            });
+            
+            event.target.closest('.category-btn').classList.add('bg-cyber-cyan/20', 'text-cyber-cyan');
+            event.target.closest('.category-btn').classList.remove('hover:bg-dark-border', 'text-gray-300');
+            
+            renderTools();
+        }
+
+        function setView(view) {
+            currentView = view;
+            
+            document.getElementById('view-grid').classList.toggle('bg-dark-border', view === 'grid');
+            document.getElementById('view-grid').classList.toggle('text-white', view === 'grid');
+            document.getElementById('view-grid').classList.toggle('text-gray-400', view !== 'grid');
+            
+            document.getElementById('view-list').classList.toggle('bg-dark-border', view === 'list');
+            document.getElementById('view-list').classList.toggle('text-white', view === 'list');
+            document.getElementById('view-list').classList.toggle('text-gray-400', view !== 'list');
+            
+            renderTools();
+        }
+
+        function setupSearch() {
+            const searchInput = document.getElementById('tool-search');
+            let timeout;
+            
+            searchInput.addEventListener('input', (e) => {
+                clearTimeout(timeout);
+                timeout = setTimeout(() => {
+                    searchQuery = e.target.value;
+                    renderTools();
+                }, 300);
+            });
+        }
+    </script>
+</body>
+</html>
