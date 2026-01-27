@@ -12,11 +12,11 @@
       name: 'CyberSec Pro',
       description: 'Cloud-based Kali Linux security platform with 350+ penetration testing tools',
       website: 'https://semihkilic.com',
-      support_email: 'support@cybersecpro.com',
-      sales_email: 'sales@cybersecpro.com',
+      support_email: 'cybersecpro@semihkilic.com',
+      sales_email: 'cybersecpro@semihkilic.com',
     },
     pricing: {
-      starter: { price: 0, period: '14 days trial', tools: 33, scans: 10, projects: 1 },
+      starter: { price: 0, period: '14 days trial', tools: 7, scans: 10, projects: 1 },
       professional: { price: 29, period: '/month', tools: 120, scans: 50, projects: 5 },
       team: { price: 79, period: '/month', tools: 200, scans: 100, projects: 20, agents: 1 },
       enterprise: { price: 149, period: '/month', tools: '350+', scans: 'Unlimited', projects: 'Unlimited', agents: 'Unlimited' },
@@ -75,13 +75,13 @@
         "Hello! Welcome to CyberSec Pro. I'm here to answer any questions about our security platform.",
         "Hey there! 🔐 Ready to help you with CyberSec Pro. What would you like to know?"
       ],
-      pricing: "💰 **Our Plans:**\n\n• **Starter (Free Trial)**: €0 for 14 days - 33 tools, 10 scans/day\n• **Professional**: €29/month - 120 tools, 50 scans/day, API access\n• **Team**: €79/month - 200 tools, 100 scans/day, 1 remote agent\n• **Enterprise**: €149/month - All 350+ tools, unlimited everything\n\nWant me to explain any plan in detail?",
+      pricing: "💰 **Our Plans:**\n\n• **Starter (Free Trial)**: €0 for 14 days - 7 tools, 10 scans/day\n• **Professional**: €29/month - 120 tools, 50 scans/day, API access\n• **Team**: €79/month - 200 tools, 100 scans/day, 1 remote agent\n• **Enterprise**: €149/month - All 350+ tools, unlimited everything\n\nWant me to explain any plan in detail?",
       tools: "🛠️ We have **350+ Kali Linux security tools** including:\n\n• **Reconnaissance**: Nmap, Recon-ng, theHarvester, Amass\n• **Web Testing**: Burp Suite, OWASP ZAP, Nikto, SQLMap\n• **Password Attacks**: Hydra, John the Ripper, Hashcat\n• **Exploitation**: Metasploit Framework\n• **Wireless**: Aircrack-ng, Wifite\n\nAll tools run in the cloud - no installation needed!",
-      trial: "🎉 **Free Trial Details:**\n\n• 14 days full access\n• 33 security tools\n• 10 scans per day\n• No credit card required\n• Basic JSON reports\n\n[Start Free Trial →](https://semihkilic.com/dashboard)",
-      support: "📞 **Contact Support:**\n\n• **Email**: support@cybersecpro.com\n• **Live Chat**: Available Mon-Fri, 9AM-6PM CET (Pro & Team users)\n• **Priority Support**: 24/7 for Enterprise users\n\nI can also help answer most questions right here!",
-      enterprise: "🏢 **Enterprise Plan (€149/month):**\n\n• All 350+ Kali tools\n• Unlimited scans & projects\n• Unlimited remote agents\n• Unlimited team members\n• SSO / SAML / LDAP\n• Compliance reports (OWASP, PCI)\n• 24/7 priority support\n• Custom integrations\n\n[Contact Sales →](mailto:sales@cybersecpro.com)",
+      trial: "🎉 **Free Trial Details:**\n\n• 14 days full access\n• 7 security tools\n• 10 scans per day\n• No credit card required\n• Basic JSON reports\n\n[Start Free Trial →](https://semihkilic.com/dashboard)",
+      support: "📞 **Contact Support:**\n\n• **Email**: cybersecpro@semihkilic.com\n• **Live Chat**: Available Mon-Fri, 9AM-6PM CET (Pro & Team users)\n• **Priority Support**: 24/7 for Enterprise users\n\nI can also help answer most questions right here!",
+      enterprise: "🏢 **Enterprise Plan (€149/month):**\n\n• All 350+ Kali tools\n• Unlimited scans & projects\n• Unlimited remote agents\n• Unlimited team members\n• SSO / SAML / LDAP\n• Compliance reports (OWASP, PCI)\n• 24/7 priority support\n• Custom integrations\n\n[Contact Sales →](mailto:cybersecpro@semihkilic.com)",
       agents: "🖥️ **Remote Agents:**\n\nDeploy scanning agents inside your network for:\n• Internal vulnerability scanning\n• Private asset discovery\n• Continuous monitoring\n• Distributed scanning\n\nSupported on: Linux, Windows, macOS, Docker\n\nAvailable on Team (1 agent) and Enterprise (unlimited) plans.",
-      notFound: "🤔 I'm not sure about that. Here's what I can help with:\n\n• 💰 Pricing & plans\n• 🛠️ Tools & features\n• 🎉 Free trial info\n• 📞 Contact support\n• 🖥️ Remote agents\n\nOr contact us at support@cybersecpro.com"
+      notFound: "🤔 I'm not sure about that. Here's what I can help with:\n\n• 💰 Pricing & plans\n• 🛠️ Tools & features\n• 🎉 Free trial info\n• 📞 Contact support\n• 🖥️ Remote agents\n\nOr contact us at cybersecpro@semihkilic.com"
     }
   };
 
@@ -434,7 +434,7 @@
     
     // Refund
     if (/refund|money back|cancel|iptal|iade/.test(lowerText)) {
-      return "💸 **Refund Policy:**\n\n• 30-day money-back guarantee\n• Cancel anytime\n• No questions asked\n• Refund processed within 5-7 days\n\nContact support@cybersecpro.com for refunds.";
+      return "💸 **Refund Policy:**\n\n• 30-day money-back guarantee\n• Cancel anytime\n• No questions asked\n• Refund processed within 5-7 days\n\nContact cybersecpro@semihkilic.com for refunds.";
     }
     
     // API

@@ -17,7 +17,7 @@ const plans = [
     period: '14 days',
     description: 'Perfect for trying the platform',
     features: [
-      '33 security tools',
+      '7 security tools',
       '10 scans per day',
       '1 project',
       'Basic JSON reports',
@@ -125,7 +125,7 @@ export default function UpgradePage() {
     } catch (error) {
       console.error('Upgrade error:', error);
       // Show error or fallback
-      alert('Payment system is currently unavailable. Please try again later or contact support@cybersecpro.com');
+      alert('Payment system is currently unavailable. Please try again later or contact cybersecpro@semihkilic.com');
     } finally {
       setLoading(null);
     }
