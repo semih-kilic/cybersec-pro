@@ -22,6 +22,14 @@ import subprocess
 import uuid
 from functools import wraps
 
+# Load environment variables from .env file
+try:
+    from dotenv import load_dotenv
+    load_dotenv()
+    print("✅ Environment variables loaded from .env")
+except ImportError:
+    print("⚠️ python-dotenv not installed, using system environment variables")
+
 # Initialize Flask app
 app = Flask(__name__)
 
@@ -929,22 +937,22 @@ def create_checkout():
         success_url = data.get('success_url', 'https://semihkilic.com/dashboard/settings?tab=billing')
         cancel_url = data.get('cancel_url', 'https://semihkilic.com/dashboard/upgrade')
         
-        # Stripe Price IDs (these would be real Stripe price IDs in production)
+        # Stripe Price IDs from .env
+        import os
         STRIPE_PRICES = {
-            'professional': 'price_cybersec_professional_monthly',
-            'team': 'price_cybersec_team_monthly',
-            'enterprise': 'price_cybersec_enterprise_monthly',
+            'starter': os.environ.get('STRIPE_STARTER_PRICE_ID', 'price_1Stbp00ed3IDKXcngS5QHCju'),
+            'professional': os.environ.get('STRIPE_PROFESSIONAL_PRICE_ID', 'price_1Stbpv0ed3IDKXcnND1pS9Bj'),
+            'team': os.environ.get('STRIPE_PROFESSIONAL_PRICE_ID', 'price_1Stbpv0ed3IDKXcnND1pS9Bj'),  # Use professional price for team
+            'enterprise': os.environ.get('STRIPE_ENTERPRISE_PRICE_ID', 'price_1StbqM0ed3IDKXcnEVXJzorf'),
         }
         
         if plan not in STRIPE_PRICES:
             return jsonify({'error': 'Invalid plan'}), 400
         
-        # In production, use Stripe API to create checkout session
-        # For now, return a mock checkout URL
-        import os
+        # Use real Stripe API
         stripe_key = os.environ.get('STRIPE_SECRET_KEY')
         
-        if stripe_key:
+        if stripe_key and stripe_key != 'sk_test_...':
             try:
                 import stripe
                 stripe.api_key = stripe_key
@@ -956,7 +964,7 @@ def create_checkout():
                         'quantity': 1,
                     }],
                     mode='subscription',
-                    success_url=success_url,
+                    success_url=success_url + '?session_id={CHECKOUT_SESSION_ID}',
                     cancel_url=cancel_url,
                     customer_email=user.email,
                     metadata={
@@ -972,18 +980,13 @@ def create_checkout():
                 })
             except Exception as e:
                 print(f"Stripe error: {e}")
+                return jsonify({'error': f'Stripe error: {str(e)}'}), 500
         
-        # Fallback: return mock URLs for testing
-        mock_checkout_urls = {
-            'professional': 'https://buy.stripe.com/test_professional_29eur',
-            'team': 'https://buy.stripe.com/test_team_79eur',
-            'enterprise': 'https://buy.stripe.com/test_enterprise_149eur',
-        }
-        
+        # No Stripe key configured
         return jsonify({
-            'checkout_url': mock_checkout_urls.get(plan),
-            'message': 'Stripe not configured - using test checkout'
-        })
+            'error': 'Payment system not configured. Please contact support.',
+            'message': 'Stripe API key is missing'
+        }), 503
         
     except Exception as e:
         return jsonify({'error': str(e)}), 500
