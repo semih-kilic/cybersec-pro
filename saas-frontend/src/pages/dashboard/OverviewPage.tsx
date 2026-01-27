@@ -4,13 +4,13 @@ import { Header } from '../../components/layout/Header';
 import { useAuth } from '../../hooks/useAuth';
 import { OnboardingModal, QuickStartCards } from '../../components/onboarding';
 
-// Plan configurations
+// Plan configurations - synced with backend tool_registry
 const PLAN_CONFIG: Record<string, { tools: number; scansPerDay: number; features: string[] }> = {
-  trial: { tools: 7, scansPerDay: 3, features: ['Basic tools', '3 scans/day', '7 day trial'] },
-  starter: { tools: 7, scansPerDay: 10, features: ['7 Essential tools', '10 scans/day', '1 project'] },
-  professional: { tools: 13, scansPerDay: 50, features: ['13 tools', '50 scans/day', 'Multi-tool scan (3)'] },
-  team: { tools: 15, scansPerDay: 100, features: ['15 tools', '100 scans/day', 'Remote agent'] },
-  enterprise: { tools: 15, scansPerDay: -1, features: ['All tools', 'Unlimited scans', 'SSO/SAML'] },
+  trial: { tools: 19, scansPerDay: 3, features: ['19 Basic tools', '3 scans/day', '7 day trial'] },
+  starter: { tools: 19, scansPerDay: 10, features: ['19 Essential tools', '10 scans/day', '1 project'] },
+  professional: { tools: 82, scansPerDay: 50, features: ['82 tools', '50 scans/day', 'Multi-tool scan (3)'] },
+  team: { tools: 100, scansPerDay: 100, features: ['100 tools', '100 scans/day', 'Remote agent'] },
+  enterprise: { tools: 102, scansPerDay: -1, features: ['102+ tools', 'Unlimited scans', 'SSO/SAML'] },
 };
 
 interface ScanSummary {
@@ -277,11 +277,11 @@ export function OverviewPage() {
                 <h4 className="text-white font-semibold mb-3">⚡ Change Plan (Testing)</h4>
                 <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
                   {[
-                    { id: 'trial', name: 'Trial', tools: '7 tools', scans: '3/day', features: 'Basic', color: 'gray' },
-                    { id: 'starter', name: 'Starter', tools: '7 tools', scans: '10/day', features: '1 project', color: 'green' },
-                    { id: 'professional', name: 'Professional', tools: '13 tools', scans: '50/day', features: 'Multi-tool (3)', color: 'blue' },
-                    { id: 'team', name: 'Team', tools: '15 tools', scans: '100/day', features: 'Agent + Multi (5)', color: 'purple' },
-                    { id: 'enterprise', name: 'Enterprise', tools: '15+ tools', scans: 'Unlimited', features: '∞ Agents + SSO', color: 'yellow' },
+                    { id: 'trial', name: 'Trial', tools: '19 tools', scans: '3/day', features: 'Basic', color: 'gray' },
+                    { id: 'starter', name: 'Starter', tools: '19 tools', scans: '10/day', features: '1 project', color: 'green' },
+                    { id: 'professional', name: 'Professional', tools: '82 tools', scans: '50/day', features: 'Multi-tool (3)', color: 'blue' },
+                    { id: 'team', name: 'Team', tools: '100 tools', scans: '100/day', features: 'Agent + Multi (5)', color: 'purple' },
+                    { id: 'enterprise', name: 'Enterprise', tools: '102+ tools', scans: 'Unlimited', features: '∞ Agents + SSO', color: 'yellow' },
                   ].map((plan) => (
                     <button
                       key={plan.id}

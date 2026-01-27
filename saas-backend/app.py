@@ -37,9 +37,17 @@ app = Flask(__name__)
 try:
     from tools_api import tools_api
     app.register_blueprint(tools_api)
-    print("✅ Tools API blueprint registered")
+    print("✅ Tools API v1 blueprint registered")
 except ImportError as e:
-    print(f"⚠️ Tools API not loaded: {e}")
+    print(f"⚠️ Tools API v1 not loaded: {e}")
+
+# Import and register tools API v2 blueprint (dynamic tool registry)
+try:
+    from tools_api_v2 import tools_api_v2
+    app.register_blueprint(tools_api_v2)
+    print("✅ Tools API v2 blueprint registered (109+ Kali tools)")
+except ImportError as e:
+    print(f"⚠️ Tools API v2 not loaded: {e}")
 
 # Configuration
 app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'cybersec-pro-saas-2026')
