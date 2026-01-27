@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
 """
 🛡️ CyberSec Pro - Tools API v2
-Dynamic tool discovery and execution using tool_registry
+Dynamic tool discovery and execution - 500+ Kali Linux tools
 
 Author: Semih Kılıç
-Version: 2.0.0
+Version: 3.0.0
 """
 
 from flask import Blueprint, request, jsonify
@@ -18,8 +18,8 @@ import os
 import shlex
 import time
 
-# Import tool registry
-from tool_registry import get_registry, get_tool_for_api, get_all_tools_for_api, PLAN_HIERARCHY
+# Import tool registry v3
+from tool_registry_v3 import ToolRegistry, get_registry, PLAN_HIERARCHY
 
 # Create Blueprint
 tools_api_v2 = Blueprint('tools_api_v2', __name__)
