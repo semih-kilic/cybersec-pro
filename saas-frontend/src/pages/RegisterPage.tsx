@@ -21,7 +21,8 @@ export function RegisterPage() {
   const navigate = useNavigate();
 
   const handleGoogleLogin = () => {
-    const redirectUri = `${window.location.origin}/auth/callback`;
+    // Use exact same redirect_uri as configured in Google Cloud Console
+    const redirectUri = `${window.location.origin}/auth/callback?provider=google`;
     const scope = 'openid email profile';
     const googleAuthUrl = `https://accounts.google.com/o/oauth2/v2/auth?client_id=${GOOGLE_CLIENT_ID}&redirect_uri=${encodeURIComponent(redirectUri)}&response_type=code&scope=${encodeURIComponent(scope)}&access_type=offline&prompt=consent`;
     

@@ -442,14 +442,17 @@ def google_oauth():
         
         # Handle OAuth code flow (redirect)
         if data.get('code'):
-            # Exchange code for tokens
+            # Exchange code for tokens - redirect_uri MUST match exactly what was used in auth request
+            domain = os.environ.get('DOMAIN', 'https://semihkilic.com')
+            redirect_uri = f"{domain}/auth/callback?provider=google"
+            
             token_response = requests.post(
                 'https://oauth2.googleapis.com/token',
                 data={
                     'code': data['code'],
                     'client_id': GOOGLE_CLIENT_ID,
                     'client_secret': GOOGLE_CLIENT_SECRET,
-                    'redirect_uri': f"{os.environ.get('DOMAIN', 'https://semihkilic.com')}/auth/callback",
+                    'redirect_uri': redirect_uri,
                     'grant_type': 'authorization_code'
                 }
             )
