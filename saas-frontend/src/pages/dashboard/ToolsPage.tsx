@@ -434,8 +434,14 @@ export function ToolsPage() {
                             {tool.installed && (
                               <span className="text-xs text-green-400">✓ Installed</span>
                             )}
+                            {tool.gui_only && (
+                              <span className="text-xs text-yellow-400" title="Requires desktop environment (VNC/RDP)">🖥️ GUI Only</span>
+                            )}
+                            {tool.requires_root && (
+                              <span className="text-xs text-orange-400" title="Runs with elevated privileges">🔐 Root</span>
+                            )}
                             {tool.dangerous && (
-                              <span className="text-xs text-red-400">⚠️ Dangerous</span>
+                              <span className="text-xs text-red-400" title="Use with caution - may affect target systems">⚠️ Dangerous</span>
                             )}
                           </div>
                         </div>
@@ -449,22 +455,28 @@ export function ToolsPage() {
                         
                         <div className="flex gap-2">
                           {canUse ? (
-                            <>
-                              <Link 
-                                to={`/dashboard/scans/new?tool=${tool.id}`}
-                                className="flex-1 py-2 bg-kali-blue hover:bg-kali-blue/90 text-white text-center rounded-lg text-sm font-medium transition"
-                              >
-                                Run Scan
-                              </Link>
-                              <Link 
-                                to={`/dashboard/tools/${tool.id}`}
-                                className="px-3 py-2 bg-gray-800 hover:bg-gray-700 text-white rounded-lg text-sm transition"
-                              >
-                                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                                </svg>
-                              </Link>
-                            </>
+                            tool.gui_only ? (
+                              <div className="flex-1 py-2 bg-yellow-900/30 text-yellow-400 text-center rounded-lg text-sm font-medium cursor-not-allowed" title="This tool requires a desktop environment. Use VNC or RDP to access.">
+                                🖥️ Desktop Required
+                              </div>
+                            ) : (
+                              <>
+                                <Link 
+                                  to={`/dashboard/scans/new?tool=${tool.id}`}
+                                  className="flex-1 py-2 bg-kali-blue hover:bg-kali-blue/90 text-white text-center rounded-lg text-sm font-medium transition"
+                                >
+                                  {tool.requires_root ? '🔐 Run as Root' : 'Run Scan'}
+                                </Link>
+                                <Link 
+                                  to={`/dashboard/tools/${tool.id}`}
+                                  className="px-3 py-2 bg-gray-800 hover:bg-gray-700 text-white rounded-lg text-sm transition"
+                                >
+                                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                  </svg>
+                                </Link>
+                              </>
+                            )
                           ) : (
                             <Link 
                               to="/#pricing"

@@ -89,12 +89,12 @@ export function LandingPage() {
           
           <div className="grid md:grid-cols-3 gap-8">
             {[
-              { icon: '🔍', title: 'Reconnaissance', desc: '18 tools for information gathering, DNS recon, subdomain enumeration' },
-              { icon: '🌐', title: 'Web Application', desc: '16 tools for web scanning, SQL injection, XSS testing, fuzzing' },
-              { icon: '🔐', title: 'Password Attacks', desc: '12 tools for hash cracking, brute force, dictionary attacks' },
-              { icon: '🛡️', title: 'Vulnerability Analysis', desc: '11 tools for scanning, SSL testing, vulnerability detection' },
-              { icon: '💀', title: 'Exploitation', desc: '6 tools including Metasploit Framework for authorized testing' },
-              { icon: '📊', title: 'Forensics', desc: '11 tools for memory analysis, file carving, steganography' },
+              { icon: '🔍', title: 'Information Gathering', desc: '139 tools for reconnaissance, DNS recon, subdomain enumeration, OSINT' },
+              { icon: '🌐', title: 'Web Application', desc: '23 tools for web scanning, SQL injection, XSS testing, fuzzing' },
+              { icon: '🔐', title: 'Password Attacks', desc: '40 tools for hash cracking, brute force, dictionary attacks' },
+              { icon: '🛡️', title: 'Vulnerability Analysis', desc: '36 tools for scanning, SSL testing, vulnerability detection' },
+              { icon: '💀', title: 'Exploitation', desc: '20 tools including Metasploit Framework for authorized testing' },
+              { icon: '📊', title: 'Forensics', desc: '63 tools for memory analysis, file carving, steganography' },
             ].map((feature, i) => (
               <div key={i} className="bg-gray-800/50 rounded-xl p-6 border border-gray-700 hover:border-cyan-500/50 transition">
                 <div className="text-3xl mb-4">{feature.icon}</div>
@@ -124,7 +124,7 @@ export function LandingPage() {
               </div>
               <ul className="space-y-2 mb-6 text-gray-300 text-sm">
                 <li className="flex items-center gap-2">
-                  <span className="text-green-400">✓</span> 33 Essential Tools
+                  <span className="text-green-400">✓</span> 6 Essential Tools
                 </li>
                 <li className="flex items-center gap-2">
                   <span className="text-green-400">✓</span> 10 scans/day
@@ -153,7 +153,7 @@ export function LandingPage() {
               </div>
               <ul className="space-y-2 mb-6 text-gray-300 text-sm">
                 <li className="flex items-center gap-2">
-                  <span className="text-green-400">✓</span> <strong>120</strong> Tools
+                  <span className="text-green-400">✓</span> <strong>360</strong> Tools
                 </li>
                 <li className="flex items-center gap-2">
                   <span className="text-green-400">✓</span> 50 scans/day
@@ -182,7 +182,7 @@ export function LandingPage() {
               </div>
               <ul className="space-y-2 mb-6 text-gray-300 text-sm">
                 <li className="flex items-center gap-2">
-                  <span className="text-green-400">✓</span> <strong>200</strong> Tools
+                  <span className="text-green-400">✓</span> <strong>390</strong> Tools
                 </li>
                 <li className="flex items-center gap-2">
                   <span className="text-green-400">✓</span> 100 scans/day
@@ -211,7 +211,7 @@ export function LandingPage() {
               </div>
               <ul className="space-y-2 mb-6 text-gray-300 text-sm">
                 <li className="flex items-center gap-2">
-                  <span className="text-green-400">✓</span> <strong>350+</strong> All Tools
+                  <span className="text-green-400">✓</span> <strong>404+</strong> All Tools
                 </li>
                 <li className="flex items-center gap-2">
                   <span className="text-yellow-400">✓</span> Unlimited scans

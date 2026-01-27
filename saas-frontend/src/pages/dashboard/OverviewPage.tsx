@@ -321,11 +321,11 @@ export function OverviewPage() {
               <div>
                 <p className="text-sm text-gray-400">Available Tools</p>
                 <p className="text-3xl font-bold text-white mt-1">
-                  {organization?.plan_type === 'enterprise' ? '350+' : 
-                   organization?.plan_type === 'team' ? totalTools :
-                   organization?.plan_type === 'professional' ? Math.min(totalTools, 120) :
-                   organization?.plan_type === 'starter' ? Math.min(totalTools, 33) : 
-                   Math.min(totalTools, 7)}
+                  {organization?.plan_type === 'enterprise' ? '404' : 
+                   organization?.plan_type === 'team' ? '390' :
+                   organization?.plan_type === 'professional' ? '360' :
+                   organization?.plan_type === 'starter' ? '6' : 
+                   '0'}
                 </p>
                 {organization?.plan_type === 'enterprise' && (
                   <p className="text-xs text-green-400 mt-1">Full Access • All Categories</p>

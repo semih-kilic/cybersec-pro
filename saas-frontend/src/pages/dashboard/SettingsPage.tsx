@@ -610,10 +610,10 @@ export default function SettingsPage() {
                   <div>
                     <p className="text-gray-400 text-sm">Tools Access</p>
                     <p className="text-white font-medium">
-                      {userPlan === 'enterprise' ? '350+' : 
-                       userPlan === 'team' ? '200' :
-                       userPlan === 'professional' ? '120' :
-                       userPlan === 'starter' ? '33' : '7'} Tools
+                      {userPlan === 'enterprise' ? '404' : 
+                       userPlan === 'team' ? '390' :
+                       userPlan === 'professional' ? '360' :
+                       userPlan === 'starter' ? '6' : '0'} Tools
                     </p>
                   </div>
                   <div>
