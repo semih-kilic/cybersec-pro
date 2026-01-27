@@ -2,6 +2,16 @@ import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { Header } from '../../components/layout/Header';
 import { useAuth } from '../../hooks/useAuth';
+import { OnboardingModal, QuickStartCards } from '../../components/onboarding';
+
+// Plan configurations
+const PLAN_CONFIG: Record<string, { tools: number; scansPerDay: number; features: string[] }> = {
+  trial: { tools: 7, scansPerDay: 3, features: ['Basic tools', '3 scans/day', '7 day trial'] },
+  starter: { tools: 7, scansPerDay: 10, features: ['7 Essential tools', '10 scans/day', '1 project'] },
+  professional: { tools: 13, scansPerDay: 50, features: ['13 tools', '50 scans/day', 'Multi-tool scan (3)'] },
+  team: { tools: 15, scansPerDay: 100, features: ['15 tools', '100 scans/day', 'Remote agent'] },
+  enterprise: { tools: 15, scansPerDay: -1, features: ['All tools', 'Unlimited scans', 'SSO/SAML'] },
+};
 
 interface ScanSummary {
   total: number;
@@ -48,6 +58,10 @@ export function OverviewPage() {
   const [totalTargets, setTotalTargets] = useState(0);
   const [showAdminPanel, setShowAdminPanel] = useState(false);
   const [selectedPlan, setSelectedPlan] = useState<string>(organization?.plan_type || 'starter');
+  
+  // Onboarding state
+  const [showOnboarding, setShowOnboarding] = useState(false);
+  const [onboardingChecked, setOnboardingChecked] = useState(false);
   const [changingPlan, setChangingPlan] = useState(false);
 
   const isSuperAdmin = user?.role === 'superadmin';
@@ -82,6 +96,27 @@ export function OverviewPage() {
   useEffect(() => {
     fetchDashboardData();
   }, [token]);
+
+  // Check if user needs onboarding
+  useEffect(() => {
+    if (!onboardingChecked && user && organization) {
+      const onboardingKey = `onboarding_completed_${user.id}`;
+      const isOnboardingCompleted = localStorage.getItem(onboardingKey) === 'true';
+      
+      if (!isOnboardingCompleted) {
+        setShowOnboarding(true);
+      }
+      setOnboardingChecked(true);
+    }
+  }, [user, organization, onboardingChecked]);
+
+  const handleOnboardingComplete = () => {
+    if (user) {
+      const onboardingKey = `onboarding_completed_${user.id}`;
+      localStorage.setItem(onboardingKey, 'true');
+    }
+    setShowOnboarding(false);
+  };
 
   const fetchDashboardData = async () => {
     try {
@@ -170,8 +205,22 @@ export function OverviewPage() {
     );
   }
 
+  const currentPlanConfig = PLAN_CONFIG[organization?.plan_type || 'trial'] || PLAN_CONFIG.trial;
+  const hasRunFirstScan = scanSummary.total > 0;
+
   return (
     <div className="min-h-screen bg-gray-950">
+      {/* Onboarding Modal */}
+      <OnboardingModal
+        isOpen={showOnboarding}
+        onComplete={handleOnboardingComplete}
+        userName={user?.first_name || 'User'}
+        planType={organization?.plan_type || 'trial'}
+        toolsCount={totalTools || currentPlanConfig.tools}
+        scansPerDay={currentPlanConfig.scansPerDay}
+        trialDaysLeft={organization?.plan_type === 'trial' ? 7 : undefined}
+      />
+
       <Header 
         title={`Welcome back, ${user?.first_name || 'User'}`}
         subtitle={`${organization?.name || 'Your Organization'} • ${new Date().toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}`}
@@ -189,6 +238,17 @@ export function OverviewPage() {
       />
 
       <div className="p-6 space-y-6">
+        {/* Quick Start Cards - Show for new/trial users or those with few scans */}
+        {(scanSummary.total < 5 || organization?.plan_type === 'trial') && (
+          <QuickStartCards
+            planType={organization?.plan_type || 'trial'}
+            toolsCount={totalTools || currentPlanConfig.tools}
+            scansToday={scanSummary.running + scanSummary.completed}
+            scansLimit={currentPlanConfig.scansPerDay}
+            hasRunFirstScan={hasRunFirstScan}
+          />
+        )}
+
         {/* Super Admin Panel */}
         {isSuperAdmin && (
           <div className="bg-gradient-to-r from-purple-900/50 to-pink-900/50 rounded-xl p-4 border border-purple-500/30">
@@ -218,10 +278,10 @@ export function OverviewPage() {
                 <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
                   {[
                     { id: 'trial', name: 'Trial', tools: '7 tools', scans: '3/day', features: 'Basic', color: 'gray' },
-                    { id: 'starter', name: 'Starter', tools: '33 tools', scans: '10/day', features: '1 project', color: 'green' },
-                    { id: 'professional', name: 'Professional', tools: '120 tools', scans: '50/day', features: 'Multi-tool (3)', color: 'blue' },
-                    { id: 'team', name: 'Team', tools: '200 tools', scans: '100/day', features: 'Agent + Multi (5)', color: 'purple' },
-                    { id: 'enterprise', name: 'Enterprise', tools: '350+ tools', scans: 'Unlimited', features: '∞ Agents + SSO', color: 'yellow' },
+                    { id: 'starter', name: 'Starter', tools: '7 tools', scans: '10/day', features: '1 project', color: 'green' },
+                    { id: 'professional', name: 'Professional', tools: '13 tools', scans: '50/day', features: 'Multi-tool (3)', color: 'blue' },
+                    { id: 'team', name: 'Team', tools: '15 tools', scans: '100/day', features: 'Agent + Multi (5)', color: 'purple' },
+                    { id: 'enterprise', name: 'Enterprise', tools: '15+ tools', scans: 'Unlimited', features: '∞ Agents + SSO', color: 'yellow' },
                   ].map((plan) => (
                     <button
                       key={plan.id}

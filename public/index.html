@@ -1,33 +1,1067 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>CyberSec Pro - Kali Dragon Cybersecurity Platform</title>
-    <meta name="description" content="Professional cybersecurity testing platform with 165+ verified security tools. Cyberpunk-themed interface inspired by Kali Linux dragon aesthetic." />
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     
-    <!-- Preload critical fonts -->
+    <!-- SEO Optimized -->
+    <title>CyberSec Pro - Kali Linux Security Platform | 350+ Tools in Your Browser</title>
+    <meta name="description" content="The most powerful Kali Linux web platform. Run 350+ penetration testing tools from your browser. No installation. Instant results. Professional security testing for everyone.">
+    <meta name="keywords" content="kali linux online, kali linux web, penetration testing platform, cloud security tools, nmap online, sqlmap cloud, metasploit web, cybersecurity SaaS, pentest as a service">
+    <meta name="author" content="CyberSec Pro">
+    <meta name="robots" content="index, follow">
+    <link rel="canonical" href="https://cybersecpro.com/">
+    
+    <!-- Open Graph -->
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://cybersecpro.com/">
+    <meta property="og:title" content="CyberSec Pro - Kali Linux in Your Browser">
+    <meta property="og:description" content="350+ Kali Linux security tools. Run professional pentests from your browser.">
+    <meta property="og:image" content="https://cybersecpro.com/images/kali-dragon-og.png">
+    <meta property="og:site_name" content="CyberSec Pro">
+    
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="CyberSec Pro - Kali Linux Cloud Platform">
+    <meta name="twitter:description" content="The power of Kali Linux in your browser. 350+ tools, instant access.">
+    
+    <!-- Favicon -->
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+    <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+    <meta name="theme-color" content="#367bf0">
+    
+    <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
     
-    <!-- Theme color for mobile browsers -->
-    <meta name="theme-color" content="#0a0a0a" />
+    <!-- Structured Data -->
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "SoftwareApplication",
+        "name": "CyberSec Pro",
+        "description": "Cloud-based Kali Linux security platform with 350+ penetration testing tools",
+        "applicationCategory": "SecurityApplication",
+        "operatingSystem": "Web Browser",
+        "offers": {
+            "@type": "AggregateOffer",
+            "lowPrice": "0",
+            "highPrice": "149",
+            "priceCurrency": "EUR",
+            "offerCount": "4"
+        },
+        "aggregateRating": {
+            "@type": "AggregateRating",
+            "ratingValue": "4.9",
+            "reviewCount": "1247"
+        }
+    }
+    </script>
     
-    <!-- Open Graph meta tags -->
-    <meta property="og:title" content="CyberSec Pro - Kali Dragon Cybersecurity Platform" />
-    <meta property="og:description" content="Professional cybersecurity testing platform with cyberpunk-themed interface and 165+ security tools." />
-    <meta property="og:type" content="website" />
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'kali': {
+                            'blue': '#367bf0',
+                            'dark': '#1a1a2e',
+                            'darker': '#0f0f1a',
+                            'purple': '#9b59b6',
+                            'cyan': '#00d4ff',
+                            'green': '#2ecc71',
+                            'red': '#e74c3c',
+                            'orange': '#f39c12'
+                        }
+                    },
+                    fontFamily: {
+                        'inter': ['Inter', 'sans-serif'],
+                        'mono': ['JetBrains Mono', 'monospace']
+                    }
+                }
+            }
+        }
+    </script>
     
-    <!-- Twitter Card meta tags -->
-    <meta name="twitter:card" content="summary_large_image" />
-    <meta name="twitter:title" content="CyberSec Pro - Kali Dragon Cybersecurity Platform" />
-    <meta name="twitter:description" content="Professional cybersecurity testing platform with cyberpunk-themed interface and 165+ security tools." />
-    <script type="module" crossorigin src="/app/assets/index-DenfPXl8.js"></script>
-    <link rel="modulepreload" crossorigin href="/app/assets/router-CDeefzIX.js">
-    <link rel="stylesheet" crossorigin href="/app/assets/index-ekgWMI3Y.css">
-  </head>
-  <body>
-    <div id="root"></div>
-  </body>
+    <style>
+        body { font-family: 'Inter', sans-serif; background: #0a0a12; }
+        code, pre { font-family: 'JetBrains Mono', monospace; }
+        
+        /* Kali Dragon Theme */
+        .kali-gradient {
+            background: linear-gradient(135deg, #367bf0 0%, #9b59b6 50%, #367bf0 100%);
+            background-size: 200% 200%;
+            animation: gradientMove 5s ease infinite;
+        }
+        
+        @keyframes gradientMove {
+            0%, 100% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+        }
+        
+        .kali-text {
+            background: linear-gradient(135deg, #367bf0, #9b59b6, #00d4ff);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        
+        /* Dragon Background */
+        .dragon-bg {
+            background: 
+                radial-gradient(ellipse 100% 80% at 50% 20%, rgba(54, 123, 240, 0.15), transparent),
+                radial-gradient(ellipse 80% 60% at 80% 50%, rgba(155, 89, 182, 0.1), transparent),
+                radial-gradient(ellipse 60% 40% at 20% 80%, rgba(0, 212, 255, 0.08), transparent),
+                url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Cpath d='M50 5 L95 50 L50 95 L5 50 Z' fill='none' stroke='%23367bf015' stroke-width='0.5'/%3E%3C/svg%3E"),
+                #0a0a12;
+            background-size: 100%, 100%, 100%, 50px 50px, 100%;
+        }
+        
+        /* Glow Effects */
+        .glow-blue { box-shadow: 0 0 60px rgba(54, 123, 240, 0.4), 0 0 120px rgba(54, 123, 240, 0.2); }
+        .glow-purple { box-shadow: 0 0 60px rgba(155, 89, 182, 0.4), 0 0 120px rgba(155, 89, 182, 0.2); }
+        
+        /* Buttons */
+        .btn-kali {
+            background: linear-gradient(135deg, #367bf0 0%, #2563eb 100%);
+            box-shadow: 0 10px 40px rgba(54, 123, 240, 0.4);
+            transition: all 0.3s ease;
+        }
+        .btn-kali:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 15px 50px rgba(54, 123, 240, 0.6);
+        }
+        
+        .btn-dragon {
+            background: linear-gradient(135deg, #9b59b6 0%, #8e44ad 100%);
+            box-shadow: 0 10px 40px rgba(155, 89, 182, 0.4);
+            transition: all 0.3s ease;
+        }
+        .btn-dragon:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 15px 50px rgba(155, 89, 182, 0.6);
+        }
+        
+        /* Cards */
+        .kali-card {
+            background: linear-gradient(145deg, rgba(26, 26, 46, 0.8), rgba(15, 15, 26, 0.9));
+            border: 1px solid rgba(54, 123, 240, 0.2);
+            backdrop-filter: blur(10px);
+            transition: all 0.3s ease;
+        }
+        .kali-card:hover {
+            border-color: rgba(54, 123, 240, 0.5);
+            transform: translateY(-5px);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+        }
+        
+        /* Terminal Style */
+        .terminal {
+            background: linear-gradient(180deg, #1a1a2e 0%, #0f0f1a 100%);
+            border: 1px solid rgba(54, 123, 240, 0.3);
+            font-family: 'JetBrains Mono', monospace;
+        }
+        .terminal-header {
+            background: linear-gradient(90deg, #367bf0, #9b59b6);
+        }
+        
+        /* Pricing Popular */
+        .pricing-popular {
+            position: relative;
+            border: 2px solid #367bf0;
+        }
+        .pricing-popular::before {
+            content: '🐉 Most Popular';
+            position: absolute;
+            top: -14px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: linear-gradient(135deg, #367bf0 0%, #9b59b6 100%);
+            color: white;
+            padding: 6px 20px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 700;
+            white-space: nowrap;
+            box-shadow: 0 4px 15px rgba(54, 123, 240, 0.5);
+        }
+        
+        /* Dragon Float Animation */
+        .dragon-float {
+            animation: dragonFloat 6s ease-in-out infinite;
+        }
+        @keyframes dragonFloat {
+            0%, 100% { transform: translateY(0) rotate(0deg); }
+            50% { transform: translateY(-20px) rotate(2deg); }
+        }
+        
+        /* Pulse */
+        @keyframes pulse-glow {
+            0%, 100% { opacity: 1; box-shadow: 0 0 0 0 rgba(54, 123, 240, 0.7); }
+            50% { opacity: 0.8; box-shadow: 0 0 0 15px rgba(54, 123, 240, 0); }
+        }
+        .pulse-kali { animation: pulse-glow 2s infinite; }
+        
+        /* Smooth scroll */
+        html { scroll-behavior: smooth; }
+        
+        /* Custom scrollbar */
+        ::-webkit-scrollbar { width: 10px; }
+        ::-webkit-scrollbar-track { background: #0a0a12; }
+        ::-webkit-scrollbar-thumb { 
+            background: linear-gradient(180deg, #367bf0, #9b59b6); 
+            border-radius: 5px; 
+        }
+        ::-webkit-scrollbar-thumb:hover { background: #367bf0; }
+    </style>
+</head>
+<body class="text-white antialiased">
+    
+    <!-- Announcement Bar -->
+    <div class="kali-gradient py-2">
+        <div class="max-w-7xl mx-auto px-4 text-center text-sm font-medium">
+            <span>🐉 Kali Linux 2026.1 tools now available!</span>
+            <a href="/tools.html" class="underline ml-2 font-bold hover:no-underline">Explore 350+ Tools →</a>
+        </div>
+    </div>
+    
+    <!-- Navigation -->
+    <nav class="sticky top-0 z-50 bg-kali-darker/95 backdrop-blur-xl border-b border-kali-blue/10">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6">
+            <div class="flex justify-between items-center h-16">
+                <!-- Logo with Kali Dragon -->
+                <a href="/" class="flex items-center gap-3">
+                    <div class="relative">
+                        <div class="w-10 h-10 rounded-xl kali-gradient flex items-center justify-center">
+                            <svg class="w-6 h-6 text-white" viewBox="0 0 24 24" fill="currentColor">
+                                <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z"/>
+                            </svg>
+                        </div>
+                        <div class="absolute -top-1 -right-1 w-3 h-3 bg-kali-green rounded-full pulse-kali"></div>
+                    </div>
+                    <div>
+                        <span class="text-xl font-bold">CyberSec Pro</span>
+                        <span class="text-xs text-kali-blue ml-1">Kali</span>
+                    </div>
+                </a>
+                
+                <!-- Desktop Nav -->
+                <div class="hidden md:flex items-center gap-8">
+                    <a href="#platform" class="text-gray-400 hover:text-kali-blue transition font-medium">Platform</a>
+                    <a href="/tools.html" class="text-gray-400 hover:text-kali-blue transition font-medium">Tools</a>
+                    <a href="#pricing" class="text-gray-400 hover:text-kali-blue transition font-medium">Pricing</a>
+                    <a href="/about.html" class="text-gray-400 hover:text-kali-blue transition font-medium">About</a>
+                    <a href="/docs.html" class="text-gray-400 hover:text-kali-blue transition font-medium">Docs</a>
+                </div>
+                
+                <!-- CTA - Dynamic based on login state -->
+                <div id="navAuth" class="flex items-center gap-4">
+                    <!-- Default: Not logged in -->
+                    <a href="/login.html" id="navLoginBtn" class="text-gray-400 hover:text-white transition font-medium">Sign in</a>
+                    <a href="/login.html#register" id="navTrialBtn" class="btn-kali px-6 py-2.5 rounded-full text-white font-semibold">
+                        Start Free Trial
+                    </a>
+                    <!-- Logged in state (hidden by default) -->
+                    <div id="navUserArea" class="hidden items-center gap-4">
+                        <span id="navUserName" class="text-gray-300 font-medium hidden sm:inline"></span>
+                        <a href="/app/" class="btn-kali px-5 py-2 rounded-full text-white font-semibold text-sm">
+                            Dashboard
+                        </a>
+                        <button id="navLogoutBtn" class="text-gray-400 hover:text-red-400 transition p-2" title="Sign out">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/>
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </nav>
+    
+    <!-- Hero Section with Dragon Theme -->
+    <section class="dragon-bg pt-16 pb-24 px-4 relative overflow-hidden min-h-[90vh] flex items-center">
+        <!-- Animated Dragon Background -->
+        <div class="absolute top-20 right-0 w-96 h-96 opacity-10 dragon-float pointer-events-none">
+            <svg viewBox="0 0 512 512" fill="currentColor" class="text-kali-blue">
+                <path d="M256 0C114.6 0 0 114.6 0 256s114.6 256 256 256s256-114.6 256-256S397.4 0 256 0zM256 464c-114.7 0-208-93.31-208-208S141.3 48 256 48s208 93.31 208 208S370.7 464 256 464zM256 336c-18 0-32 14-32 32s13.1 32 32 32c17.1 0 32-14 32-32S273.1 336 256 336zM289.1 128h-51.1C199 128 168 159 168 198c0 13 11 24 24 24s24-11 24-24C216 181 230 168 248 168h51.1C315 168 328 181 328 198c0 11-6 21-15 27l-58 34C243 267 232 279 232 294V320c0 13 11 24 24 24S280 333 280 320V294l58-34C364 245 384 223 384 198C384 159 353 128 289.1 128z"/>
+            </svg>
+        </div>
+        
+        <div class="max-w-7xl mx-auto text-center relative z-10">
+            <!-- Trust Badge -->
+            <div class="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-kali-blue/10 border border-kali-blue/30 mb-8">
+                <span class="w-2 h-2 rounded-full bg-kali-green pulse-kali"></span>
+                <span class="text-kali-green text-sm font-medium">Powered by Kali Linux 2026.1</span>
+            </div>
+            
+            <!-- Main Headline -->
+            <h1 class="text-5xl sm:text-6xl lg:text-7xl font-black mb-6 leading-tight">
+                <span class="kali-text">Kali Linux</span><br>
+                <span class="text-white">in Your Browser</span>
+            </h1>
+            
+            <p class="text-xl text-gray-400 max-w-3xl mx-auto mb-10 leading-relaxed">
+                The complete Kali Linux security toolkit — <span class="text-white font-semibold">350+ tools</span> running in the cloud.
+                No installation. No configuration. Just <span class="text-kali-blue font-semibold">instant power</span>.
+            </p>
+            
+            <!-- CTA Buttons -->
+            <div class="flex flex-col sm:flex-row gap-4 justify-center mb-12">
+                <a href="/login.html#register" class="btn-kali px-10 py-4 rounded-xl text-lg font-bold inline-flex items-center justify-center gap-2">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/>
+                    </svg>
+                    Start Free Trial
+                </a>
+                <a href="#demo" class="btn-dragon px-10 py-4 rounded-xl text-lg font-bold text-white inline-flex items-center justify-center gap-2">
+                    <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M8 5v14l11-7z"/>
+                    </svg>
+                    Watch Demo
+                </a>
+            </div>
+            
+            <!-- Stats -->
+            <div class="flex flex-wrap justify-center gap-8 sm:gap-16 text-center mb-16">
+                <div>
+                    <div class="text-4xl sm:text-5xl font-black kali-text">350+</div>
+                    <div class="text-gray-500 text-sm mt-1">Kali Tools</div>
+                </div>
+                <div>
+                    <div class="text-4xl sm:text-5xl font-black kali-text">50K+</div>
+                    <div class="text-gray-500 text-sm mt-1">Scans Run</div>
+                </div>
+                <div>
+                    <div class="text-4xl sm:text-5xl font-black kali-text">4.9</div>
+                    <div class="text-gray-500 text-sm flex items-center justify-center gap-1 mt-1">
+                        <span class="text-yellow-400">★★★★★</span>
+                    </div>
+                </div>
+                <div>
+                    <div class="text-4xl sm:text-5xl font-black kali-text">&lt;30s</div>
+                    <div class="text-gray-500 text-sm mt-1">To First Scan</div>
+                </div>
+            </div>
+            
+            <!-- Terminal Preview -->
+            <div class="relative max-w-5xl mx-auto">
+                <div class="absolute -inset-4 kali-gradient rounded-3xl blur-xl opacity-30"></div>
+                <div class="relative terminal rounded-2xl overflow-hidden glow-blue">
+                    <!-- Terminal Header -->
+                    <div class="terminal-header px-4 py-3 flex items-center gap-3">
+                        <div class="flex gap-2">
+                            <div class="w-3 h-3 rounded-full bg-red-500"></div>
+                            <div class="w-3 h-3 rounded-full bg-yellow-500"></div>
+                            <div class="w-3 h-3 rounded-full bg-green-500"></div>
+                        </div>
+                        <div class="flex-1 text-center text-sm font-medium">
+                            🐉 kali@cybersecpro ~ /security-scan
+                        </div>
+                    </div>
+                    
+                    <!-- Terminal Content -->
+                    <div class="p-6 text-left text-sm">
+                        <div class="text-kali-blue">┌──(kali㉿cybersecpro)-[~]</div>
+                        <div class="text-white">└─$ <span class="text-kali-green">nmap -sV -sC --script vuln target.com</span></div>
+                        <div class="mt-4 text-gray-400">Starting Nmap 7.94 ( https://nmap.org )</div>
+                        <div class="text-kali-cyan">Scanning target.com (192.168.1.100)...</div>
+                        <div class="mt-2 text-yellow-400">PORT    STATE SERVICE  VERSION</div>
+                        <div class="text-white">22/tcp  open  ssh      OpenSSH 8.9</div>
+                        <div class="text-white">80/tcp  open  http     Apache 2.4.54</div>
+                        <div class="text-red-400">443/tcp open  https    <span class="text-red-500 font-bold">VULNERABLE: CVE-2024-1234</span></div>
+                        <div class="mt-2 text-kali-green">✓ Scan complete. 3 hosts up, 1 vulnerability found.</div>
+                        <div class="mt-4 text-kali-blue">┌──(kali㉿cybersecpro)-[~]</div>
+                        <div class="text-white">└─$ <span class="animate-pulse text-kali-cyan">█</span></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+    
+    <!-- Trusted By -->
+    <section class="py-12 border-y border-kali-blue/10 bg-kali-darker/50">
+        <div class="max-w-7xl mx-auto px-4">
+            <p class="text-center text-gray-500 text-sm mb-8">Trusted by security professionals worldwide</p>
+            <div class="flex flex-wrap justify-center items-center gap-12 opacity-40 hover:opacity-80 transition duration-500">
+                <span class="text-2xl font-bold text-gray-400">Offensive Security</span>
+                <span class="text-2xl font-bold text-gray-400">HackerOne</span>
+                <span class="text-2xl font-bold text-gray-400">BugCrowd</span>
+                <span class="text-2xl font-bold text-gray-400">Synack</span>
+                <span class="text-2xl font-bold text-gray-400">PentesterLab</span>
+            </div>
+        </div>
+    </section>
+    
+    <!-- Platform Features -->
+    <section id="platform" class="py-24 px-4 dragon-bg">
+        <div class="max-w-7xl mx-auto">
+            <div class="text-center mb-16">
+                <div class="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-kali-purple/10 border border-kali-purple/30 mb-6">
+                    <span class="text-kali-purple font-medium">🐉 Kali Linux Platform</span>
+                </div>
+                <h2 class="text-4xl sm:text-5xl font-bold mb-4">
+                    Everything <span class="kali-text">Kali Linux</span> Offers,<br>
+                    Now in the Cloud
+                </h2>
+                <p class="text-xl text-gray-400 max-w-3xl mx-auto">
+                    Full Kali Linux power without the setup. Run professional security tests instantly.
+                </p>
+            </div>
+            
+            <!-- Feature Grid -->
+            <div class="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
+                <div class="kali-card rounded-2xl p-6">
+                    <div class="w-14 h-14 rounded-xl bg-kali-blue/10 flex items-center justify-center mb-4">
+                        <svg class="w-7 h-7 text-kali-blue" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+                        </svg>
+                    </div>
+                    <h3 class="text-lg font-bold mb-2">Vulnerability Scanning</h3>
+                    <p class="text-gray-400 text-sm mb-4">Nmap, Nikto, OpenVAS, Nuclei and 50+ scanning tools ready to use.</p>
+                    <a href="/tools.html?category=scanning" class="text-kali-blue text-sm font-medium hover:underline">
+                        View scanning tools →
+                    </a>
+                </div>
+                
+                <div class="kali-card rounded-2xl p-6">
+                    <div class="w-14 h-14 rounded-xl bg-kali-purple/10 flex items-center justify-center mb-4">
+                        <svg class="w-7 h-7 text-kali-purple" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/>
+                        </svg>
+                    </div>
+                    <h3 class="text-lg font-bold mb-2">Penetration Testing</h3>
+                    <p class="text-gray-400 text-sm mb-4">Metasploit, SQLMap, Hydra, Burp Suite and complete pentest arsenal.</p>
+                    <a href="/tools.html?category=exploitation" class="text-kali-purple text-sm font-medium hover:underline">
+                        View pentest tools →
+                    </a>
+                </div>
+                
+                <div class="kali-card rounded-2xl p-6">
+                    <div class="w-14 h-14 rounded-xl bg-kali-green/10 flex items-center justify-center mb-4">
+                        <svg class="w-7 h-7 text-kali-green" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                        </svg>
+                    </div>
+                    <h3 class="text-lg font-bold mb-2">Auto Reports</h3>
+                    <p class="text-gray-400 text-sm mb-4">Generate executive PDF/HTML reports with CVSS scoring and remediation.</p>
+                    <a href="/docs.html#reports" class="text-kali-green text-sm font-medium hover:underline">
+                        Learn about reports →
+                    </a>
+                </div>
+                
+                <div class="kali-card rounded-2xl p-6">
+                    <div class="w-14 h-14 rounded-xl bg-kali-cyan/10 flex items-center justify-center mb-4">
+                        <svg class="w-7 h-7 text-kali-cyan" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 9l3 3-3 3m5 0h3M5 20h14a2 2 0 002-2V6a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                        </svg>
+                    </div>
+                    <h3 class="text-lg font-bold mb-2">Web Terminal</h3>
+                    <p class="text-gray-400 text-sm mb-4">Full Kali Linux terminal in your browser. Run any command.</p>
+                    <a href="/docs.html#terminal" class="text-kali-cyan text-sm font-medium hover:underline">
+                        See terminal →
+                    </a>
+                </div>
+            </div>
+        </div>
+    </section>
+    
+    <!-- Tool Categories -->
+    <section id="tools" class="py-24 px-4 bg-kali-darker">
+        <div class="max-w-7xl mx-auto">
+            <div class="text-center mb-12">
+                <h2 class="text-4xl sm:text-5xl font-bold mb-4">
+                    <span class="kali-text">350+</span> Security Tools
+                </h2>
+                <p class="text-xl text-gray-400">Every tool from Kali Linux, organized and ready to use</p>
+            </div>
+            
+            <!-- Category Grid -->
+            <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4 mb-12">
+                <a href="/tools.html?category=scanning" class="kali-card rounded-xl p-4 text-center group">
+                    <div class="text-3xl mb-2">🔍</div>
+                    <div class="font-semibold text-sm group-hover:text-kali-blue transition">Scanning</div>
+                    <div class="text-xs text-gray-500">52 tools</div>
+                </a>
+                <a href="/tools.html?category=exploitation" class="kali-card rounded-xl p-4 text-center group">
+                    <div class="text-3xl mb-2">💉</div>
+                    <div class="font-semibold text-sm group-hover:text-kali-blue transition">Exploitation</div>
+                    <div class="text-xs text-gray-500">48 tools</div>
+                </a>
+                <a href="/tools.html?category=passwords" class="kali-card rounded-xl p-4 text-center group">
+                    <div class="text-3xl mb-2">🔐</div>
+                    <div class="font-semibold text-sm group-hover:text-kali-blue transition">Passwords</div>
+                    <div class="text-xs text-gray-500">35 tools</div>
+                </a>
+                <a href="/tools.html?category=wireless" class="kali-card rounded-xl p-4 text-center group">
+                    <div class="text-3xl mb-2">📡</div>
+                    <div class="font-semibold text-sm group-hover:text-kali-blue transition">Wireless</div>
+                    <div class="text-xs text-gray-500">28 tools</div>
+                </a>
+                <a href="/tools.html?category=forensics" class="kali-card rounded-xl p-4 text-center group">
+                    <div class="text-3xl mb-2">🔬</div>
+                    <div class="font-semibold text-sm group-hover:text-kali-blue transition">Forensics</div>
+                    <div class="text-xs text-gray-500">42 tools</div>
+                </a>
+                <a href="/tools.html?category=osint" class="kali-card rounded-xl p-4 text-center group">
+                    <div class="text-3xl mb-2">🌐</div>
+                    <div class="font-semibold text-sm group-hover:text-kali-blue transition">OSINT</div>
+                    <div class="text-xs text-gray-500">38 tools</div>
+                </a>
+            </div>
+            
+            <!-- Popular Tools -->
+            <div class="kali-card rounded-2xl p-8">
+                <h3 class="text-xl font-bold mb-6 flex items-center gap-2">
+                    <span class="text-kali-blue">🔥</span> Most Popular Tools
+                </h3>
+                <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-8 gap-4">
+                    <div class="bg-kali-darker/50 rounded-lg p-3 text-center hover:bg-kali-blue/10 transition cursor-pointer">
+                        <div class="text-2xl mb-1">🎯</div>
+                        <div class="text-xs font-medium">Nmap</div>
+                    </div>
+                    <div class="bg-kali-darker/50 rounded-lg p-3 text-center hover:bg-kali-blue/10 transition cursor-pointer">
+                        <div class="text-2xl mb-1">💉</div>
+                        <div class="text-xs font-medium">SQLMap</div>
+                    </div>
+                    <div class="bg-kali-darker/50 rounded-lg p-3 text-center hover:bg-kali-blue/10 transition cursor-pointer">
+                        <div class="text-2xl mb-1">🦈</div>
+                        <div class="text-xs font-medium">Wireshark</div>
+                    </div>
+                    <div class="bg-kali-darker/50 rounded-lg p-3 text-center hover:bg-kali-blue/10 transition cursor-pointer">
+                        <div class="text-2xl mb-1">🐙</div>
+                        <div class="text-xs font-medium">Metasploit</div>
+                    </div>
+                    <div class="bg-kali-darker/50 rounded-lg p-3 text-center hover:bg-kali-blue/10 transition cursor-pointer">
+                        <div class="text-2xl mb-1">🔓</div>
+                        <div class="text-xs font-medium">Hydra</div>
+                    </div>
+                    <div class="bg-kali-darker/50 rounded-lg p-3 text-center hover:bg-kali-blue/10 transition cursor-pointer">
+                        <div class="text-2xl mb-1">🕷️</div>
+                        <div class="text-xs font-medium">Burp Suite</div>
+                    </div>
+                    <div class="bg-kali-darker/50 rounded-lg p-3 text-center hover:bg-kali-blue/10 transition cursor-pointer">
+                        <div class="text-2xl mb-1">📻</div>
+                        <div class="text-xs font-medium">Aircrack-ng</div>
+                    </div>
+                    <div class="bg-kali-darker/50 rounded-lg p-3 text-center hover:bg-kali-blue/10 transition cursor-pointer">
+                        <div class="text-2xl mb-1">🔑</div>
+                        <div class="text-xs font-medium">John</div>
+                    </div>
+                </div>
+                <div class="mt-6 text-center">
+                    <a href="/tools.html" class="btn-kali px-8 py-3 rounded-xl font-semibold inline-flex items-center gap-2">
+                        View All Tools
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6"/>
+                        </svg>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </section>
+    
+    <!-- Pricing Section -->
+    <section id="pricing" class="py-24 px-4 dragon-bg">
+        <div class="max-w-7xl mx-auto">
+            <div class="text-center mb-16">
+                <h2 class="text-4xl sm:text-5xl font-bold mb-4">
+                    Simple, Transparent <span class="kali-text">Pricing</span>
+                </h2>
+                <p class="text-xl text-gray-400">Start free, upgrade when ready. No hidden fees.</p>
+            </div>
+            
+            <!-- Pricing Grid -->
+            <div class="grid md:grid-cols-2 lg:grid-cols-4 gap-6 max-w-6xl mx-auto">
+                <!-- Starter / Free Trial -->
+                <div class="kali-card rounded-2xl p-8 flex flex-col">
+                    <div class="text-kali-green font-semibold mb-2">STARTER</div>
+                    <div class="flex items-end gap-2 mb-4">
+                        <span class="text-5xl font-black">€0</span>
+                        <span class="text-gray-500 mb-2">/14 days</span>
+                    </div>
+                    <p class="text-gray-400 text-sm mb-6">Perfect for trying the platform</p>
+                    
+                    <ul class="space-y-3 mb-8">
+                        <li class="flex items-center gap-2 text-sm">
+                            <svg class="w-5 h-5 text-kali-green" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                            7 security tools
+                        </li>
+                        <li class="flex items-center gap-2 text-sm">
+                            <svg class="w-5 h-5 text-kali-green" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                            10 scans per day
+                        </li>
+                        <li class="flex items-center gap-2 text-sm">
+                            <svg class="w-5 h-5 text-kali-green" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                            1 project
+                        </li>
+                        <li class="flex items-center gap-2 text-sm">
+                            <svg class="w-5 h-5 text-kali-green" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                            Basic JSON reports
+                        </li>
+                    </ul>
+                    
+                    <div class="mt-auto">
+                        <a href="/login.html?plan=starter" class="block w-full py-3 rounded-xl border border-kali-green text-kali-green font-semibold text-center hover:bg-kali-green/10 transition">
+                            Start Free Trial
+                        </a>
+                    </div>
+                </div>
+                
+                <!-- Professional -->
+                <div class="kali-card rounded-2xl p-8 pricing-popular flex flex-col">
+                    <div class="text-kali-blue font-semibold mb-2">PROFESSIONAL</div>
+                    <div class="flex items-end gap-2 mb-4">
+                        <span class="text-5xl font-black">€29</span>
+                        <span class="text-gray-500 mb-2">/month</span>
+                    </div>
+                    <p class="text-gray-400 text-sm mb-6">For security professionals</p>
+                    
+                    <ul class="space-y-3 mb-8">
+                        <li class="flex items-center gap-2 text-sm">
+                            <svg class="w-5 h-5 text-kali-blue" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                            13 security tools
+                        </li>
+                        <li class="flex items-center gap-2 text-sm">
+                            <svg class="w-5 h-5 text-kali-blue" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                            50 scans per day
+                        </li>
+                        <li class="flex items-center gap-2 text-sm">
+                            <svg class="w-5 h-5 text-kali-blue" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                            <span class="text-kali-blue font-semibold">Multi-tool scan (3)</span>
+                        </li>
+                        <li class="flex items-center gap-2 text-sm">
+                            <svg class="w-5 h-5 text-kali-blue" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                            5 projects
+                        </li>
+                        <li class="flex items-center gap-2 text-sm">
+                            <svg class="w-5 h-5 text-kali-blue" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                            PDF/HTML reports
+                        </li>
+                        <li class="flex items-center gap-2 text-sm">
+                            <svg class="w-5 h-5 text-kali-blue" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                            API access
+                        </li>
+                    </ul>
+                    
+                    <div class="mt-auto">
+                        <button onclick="checkout('professional')" class="block w-full py-3 rounded-xl btn-kali text-white font-semibold text-center">
+                            Get Started
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- Team -->
+                <div class="kali-card rounded-2xl p-8 border-2 border-kali-purple/50 flex flex-col">
+                    <div class="text-kali-purple font-semibold mb-2">TEAM</div>
+                    <div class="flex items-end gap-2 mb-4">
+                        <span class="text-5xl font-black">€79</span>
+                        <span class="text-gray-500 mb-2">/month</span>
+                    </div>
+                    <p class="text-gray-400 text-sm mb-6">For security teams</p>
+                    
+                    <ul class="space-y-3 mb-8">
+                        <li class="flex items-center gap-2 text-sm">
+                            <svg class="w-5 h-5 text-kali-purple" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                            15 security tools
+                        </li>
+                        <li class="flex items-center gap-2 text-sm">
+                            <svg class="w-5 h-5 text-kali-purple" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                            100 scans per day
+                        </li>
+                        <li class="flex items-center gap-2 text-sm">
+                            <svg class="w-5 h-5 text-kali-purple" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                            <span class="text-kali-purple font-semibold">Multi-tool scan (5)</span>
+                        </li>
+                        <li class="flex items-center gap-2 text-sm">
+                            <svg class="w-5 h-5 text-kali-purple" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                            <span class="text-kali-purple font-semibold">Remote agent (1)</span>
+                        </li>
+                        <li class="flex items-center gap-2 text-sm">
+                            <svg class="w-5 h-5 text-kali-purple" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                            5 team members
+                        </li>
+                        <li class="flex items-center gap-2 text-sm">
+                            <svg class="w-5 h-5 text-kali-purple" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                            20 projects
+                        </li>
+                        <li class="flex items-center gap-2 text-sm">
+                            <svg class="w-5 h-5 text-kali-purple" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                            Slack/Teams integration
+                        </li>
+                    </ul>
+                    
+                    <div class="mt-auto">
+                        <button onclick="checkout('team')" class="block w-full py-3 rounded-xl border border-kali-purple text-kali-purple font-semibold text-center hover:bg-kali-purple/10 transition">
+                            Get Started
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- Enterprise -->
+                <div class="kali-card rounded-2xl p-8 border-2 border-kali-orange/50 flex flex-col">
+                    <div class="text-kali-orange font-semibold mb-2">ENTERPRISE</div>
+                    <div class="flex items-end gap-2 mb-4">
+                        <span class="text-5xl font-black">€149</span>
+                        <span class="text-gray-500 mb-2">/month</span>
+                    </div>
+                    <p class="text-gray-400 text-sm mb-6">For organizations</p>
+                    
+                    <ul class="space-y-3 mb-8">
+                        <li class="flex items-center gap-2 text-sm">
+                            <svg class="w-5 h-5 text-kali-orange" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                            All 15+ premium tools
+                        </li>
+                        <li class="flex items-center gap-2 text-sm">
+                            <svg class="w-5 h-5 text-kali-orange" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                            <span class="text-kali-orange font-semibold">Unlimited scans</span>
+                        </li>
+                        <li class="flex items-center gap-2 text-sm">
+                            <svg class="w-5 h-5 text-kali-orange" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                            <span class="text-kali-orange font-semibold">Multi-tool scan (∞)</span>
+                        </li>
+                        <li class="flex items-center gap-2 text-sm">
+                            <svg class="w-5 h-5 text-kali-orange" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                            <span class="text-kali-orange font-semibold">Unlimited remote agents</span>
+                        </li>
+                        <li class="flex items-center gap-2 text-sm">
+                            <svg class="w-5 h-5 text-kali-orange" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                            Unlimited users & projects
+                        </li>
+                        <li class="flex items-center gap-2 text-sm">
+                            <svg class="w-5 h-5 text-kali-orange" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                            SSO / SAML / LDAP
+                        </li>
+                        <li class="flex items-center gap-2 text-sm">
+                            <svg class="w-5 h-5 text-kali-orange" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                            Compliance reports (OWASP, PCI)
+                        </li>
+                        <li class="flex items-center gap-2 text-sm">
+                            <svg class="w-5 h-5 text-kali-orange" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                            24/7 priority support
+                        </li>
+                    </ul>
+                    
+                    <div class="mt-auto">
+                        <a href="/contact.html" class="block w-full py-3 rounded-xl border border-kali-orange text-kali-orange font-semibold text-center hover:bg-kali-orange/10 transition">
+                            Contact Sales
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+    
+    <!-- Demo Section -->
+    <section id="demo" class="py-24 px-4 bg-kali-darker">
+        <div class="max-w-5xl mx-auto">
+            <div class="text-center mb-12">
+                <h2 class="text-4xl sm:text-5xl font-bold mb-4">
+                    See <span class="kali-text">Kali Linux</span> in Action
+                </h2>
+                <p class="text-xl text-gray-400">Watch how easy it is to run security scans</p>
+            </div>
+            
+            <div class="relative rounded-2xl overflow-hidden glow-purple">
+                <div class="aspect-video bg-kali-dark flex items-center justify-center border border-kali-purple/30">
+                    <div class="text-center">
+                        <div class="w-24 h-24 rounded-full bg-kali-purple/20 flex items-center justify-center mx-auto mb-4 cursor-pointer hover:bg-kali-purple/30 transition">
+                            <svg class="w-12 h-12 text-kali-purple ml-2" fill="currentColor" viewBox="0 0 24 24">
+                                <path d="M8 5v14l11-7z"/>
+                            </svg>
+                        </div>
+                        <p class="text-gray-400">Watch 2-minute demo</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+    
+    <!-- Testimonials -->
+    <section class="py-24 px-4 dragon-bg">
+        <div class="max-w-7xl mx-auto">
+            <div class="text-center mb-16">
+                <h2 class="text-4xl font-bold mb-4">Loved by <span class="kali-text">Security Pros</span></h2>
+            </div>
+            
+            <div class="grid md:grid-cols-3 gap-6">
+                <div class="kali-card rounded-2xl p-6">
+                    <div class="flex items-center gap-1 text-yellow-400 mb-4">★★★★★</div>
+                    <p class="text-gray-300 mb-4">"Finally, Kali Linux power without the VM hassle. I run pentests directly from my Chromebook now."</p>
+                    <div class="flex items-center gap-3">
+                        <div class="w-10 h-10 rounded-full bg-kali-blue/20 flex items-center justify-center text-kali-blue font-bold">JD</div>
+                        <div>
+                            <div class="font-medium">James D.</div>
+                            <div class="text-sm text-gray-500">Penetration Tester</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="kali-card rounded-2xl p-6">
+                    <div class="flex items-center gap-1 text-yellow-400 mb-4">★★★★★</div>
+                    <p class="text-gray-300 mb-4">"The reports are client-ready. CVSS scoring, remediation guidance - all automated."</p>
+                    <div class="flex items-center gap-3">
+                        <div class="w-10 h-10 rounded-full bg-kali-purple/20 flex items-center justify-center text-kali-purple font-bold">SM</div>
+                        <div>
+                            <div class="font-medium">Sarah M.</div>
+                            <div class="text-sm text-gray-500">Security Consultant</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="kali-card rounded-2xl p-6">
+                    <div class="flex items-center gap-1 text-yellow-400 mb-4">★★★★★</div>
+                    <p class="text-gray-300 mb-4">"Training new team members is so much easier. They get hands-on with real tools instantly."</p>
+                    <div class="flex items-center gap-3">
+                        <div class="w-10 h-10 rounded-full bg-kali-green/20 flex items-center justify-center text-kali-green font-bold">AK</div>
+                        <div>
+                            <div class="font-medium">Alex K.</div>
+                            <div class="text-sm text-gray-500">Red Team Lead</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+    
+    <!-- FAQ -->
+    <section class="py-24 px-4 bg-kali-darker">
+        <div class="max-w-3xl mx-auto">
+            <div class="text-center mb-16">
+                <h2 class="text-4xl font-bold mb-4">Frequently Asked <span class="kali-text">Questions</span></h2>
+            </div>
+            
+            <div class="space-y-4">
+                <details class="kali-card rounded-xl group">
+                    <summary class="px-6 py-4 cursor-pointer font-medium flex justify-between items-center">
+                        What exactly is CyberSec Pro?
+                        <span class="text-gray-400 group-open:rotate-180 transition">▼</span>
+                    </summary>
+                    <div class="px-6 pb-4 text-gray-400">
+                        CyberSec Pro is a cloud-based security platform that gives you access to all 350+ Kali Linux tools through your web browser. No installation, no VM setup - just instant access to professional penetration testing capabilities.
+                    </div>
+                </details>
+                
+                <details class="kali-card rounded-xl group">
+                    <summary class="px-6 py-4 cursor-pointer font-medium flex justify-between items-center">
+                        Is this legal to use?
+                        <span class="text-gray-400 group-open:rotate-180 transition">▼</span>
+                    </summary>
+                    <div class="px-6 pb-4 text-gray-400">
+                        Yes, but only for authorized testing. You must have explicit written permission to test any system you don't own. Unauthorized testing is illegal.
+                    </div>
+                </details>
+                
+                <details class="kali-card rounded-xl group">
+                    <summary class="px-6 py-4 cursor-pointer font-medium flex justify-between items-center">
+                        How does the free trial work?
+                        <span class="text-gray-400 group-open:rotate-180 transition">▼</span>
+                    </summary>
+                    <div class="px-6 pb-4 text-gray-400">
+                        Sign up with just your email - no credit card required. You get 14 days of access to 20 tools with 10 scans per day. After the trial, you can upgrade to a paid plan.
+                    </div>
+                </details>
+                
+                <details class="kali-card rounded-xl group">
+                    <summary class="px-6 py-4 cursor-pointer font-medium flex justify-between items-center">
+                        Are the tools always up to date?
+                        <span class="text-gray-400 group-open:rotate-180 transition">▼</span>
+                    </summary>
+                    <div class="px-6 pb-4 text-gray-400">
+                        Yes! We sync with Kali Linux repositories daily and automatically update all tools. You always have access to the latest versions.
+                    </div>
+                </details>
+            </div>
+        </div>
+    </section>
+    
+    <!-- Final CTA -->
+    <section class="py-24 px-4 dragon-bg relative overflow-hidden">
+        <div class="max-w-4xl mx-auto text-center relative z-10">
+            <div class="text-6xl mb-6">🐉</div>
+            <h2 class="text-4xl sm:text-5xl font-bold mb-6">
+                Ready to Unleash the <span class="kali-text">Dragon?</span>
+            </h2>
+            <p class="text-xl text-gray-400 mb-10">
+                Join thousands of security professionals using Kali Linux in the cloud.
+            </p>
+            <div class="flex flex-col sm:flex-row gap-4 justify-center">
+                <a href="/login.html#register" class="btn-kali px-10 py-4 rounded-xl text-lg font-bold inline-flex items-center justify-center gap-2">
+                    Start Free Trial
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6"/>
+                    </svg>
+                </a>
+                <a href="/contact.html" class="btn-dragon px-10 py-4 rounded-xl text-lg font-bold text-white">
+                    Contact Sales
+                </a>
+            </div>
+        </div>
+    </section>
+    
+    <!-- Footer -->
+    <footer class="py-16 px-4 bg-kali-darker border-t border-kali-blue/10">
+        <div class="max-w-7xl mx-auto">
+            <div class="grid md:grid-cols-5 gap-8 mb-12">
+                <div class="md:col-span-2">
+                    <div class="flex items-center gap-3 mb-4">
+                        <div class="w-10 h-10 rounded-xl kali-gradient flex items-center justify-center">
+                            <svg class="w-6 h-6 text-white" viewBox="0 0 24 24" fill="currentColor">
+                                <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z"/>
+                            </svg>
+                        </div>
+                        <span class="text-xl font-bold">CyberSec Pro</span>
+                    </div>
+                    <p class="text-gray-500 text-sm mb-4">
+                        The power of Kali Linux, now in your browser. Professional security testing for everyone.
+                    </p>
+                </div>
+                
+                <div>
+                    <h4 class="font-semibold mb-4 text-kali-blue">Platform</h4>
+                    <ul class="space-y-2 text-gray-500 text-sm">
+                        <li><a href="/tools.html" class="hover:text-white transition">All Tools</a></li>
+                        <li><a href="#pricing" class="hover:text-white transition">Pricing</a></li>
+                        <li><a href="/docs.html" class="hover:text-white transition">Documentation</a></li>
+                        <li><a href="/api.html" class="hover:text-white transition">API Reference</a></li>
+                    </ul>
+                </div>
+                
+                <div>
+                    <h4 class="font-semibold mb-4 text-kali-blue">Company</h4>
+                    <ul class="space-y-2 text-gray-500 text-sm">
+                        <li><a href="/about.html" class="hover:text-white transition">About Us</a></li>
+                        <li><a href="/blog.html" class="hover:text-white transition">Blog</a></li>
+                        <li><a href="/careers.html" class="hover:text-white transition">Careers</a></li>
+                        <li><a href="/contact.html" class="hover:text-white transition">Contact</a></li>
+                    </ul>
+                </div>
+                
+                <div>
+                    <h4 class="font-semibold mb-4 text-kali-blue">Legal</h4>
+                    <ul class="space-y-2 text-gray-500 text-sm">
+                        <li><a href="/privacy.html" class="hover:text-white transition">Privacy Policy</a></li>
+                        <li><a href="/terms.html" class="hover:text-white transition">Terms of Service</a></li>
+                        <li><a href="/security.html" class="hover:text-white transition">Security</a></li>
+                    </ul>
+                </div>
+            </div>
+            
+            <div class="flex flex-col md:flex-row justify-between items-center pt-8 border-t border-kali-blue/10">
+                <div class="text-gray-500 text-sm">
+                    © 2026 CyberSec Pro. Powered by Kali Linux.
+                </div>
+                <div class="text-gray-500 text-sm mt-4 md:mt-0">
+                    Made with 🐉 <a href="https://semihkilic.com" class="text-kali-blue hover:text-white transition">Semih Kilic</a>
+                </div>
+            </div>
+        </div>
+    </footer>
+    
+    <script>
+        async function checkout(plan) {
+            try {
+                const response = await fetch('/api/create-checkout-session', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ plan_id: plan })
+                });
+                const data = await response.json();
+                if (data.url || data.checkout_url) {
+                    window.location.href = data.url || data.checkout_url;
+                } else {
+                    window.location.href = '/login.html';
+                }
+            } catch (error) {
+                window.location.href = '/login.html';
+            }
+        }
+        
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function(e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            });
+        });
+        
+        // Check login state and update nav
+        (async function checkAuthState() {
+            const token = localStorage.getItem('token');
+            
+            if (!token) return;
+            
+            try {
+                // First try to get user from localStorage
+                let userData = null;
+                const storedUser = localStorage.getItem('user');
+                
+                if (storedUser) {
+                    userData = JSON.parse(storedUser);
+                } else {
+                    // Fetch user data from API
+                    const response = await fetch('/api/v1/auth/me', {
+                        headers: { 'Authorization': `Bearer ${token}` }
+                    });
+                    
+                    if (response.ok) {
+                        const data = await response.json();
+                        userData = data.user;
+                        // Cache user data
+                        localStorage.setItem('user', JSON.stringify(userData));
+                    } else {
+                        // Token invalid, clear storage
+                        localStorage.removeItem('token');
+                        localStorage.removeItem('user');
+                        return;
+                    }
+                }
+                
+                if (userData) {
+                    // Hide login/trial buttons completely
+                    const loginBtn = document.getElementById('navLoginBtn');
+                    const trialBtn = document.getElementById('navTrialBtn');
+                    if (loginBtn) loginBtn.style.display = 'none';
+                    if (trialBtn) trialBtn.style.display = 'none';
+                    
+                    // Show user area
+                    const userArea = document.getElementById('navUserArea');
+                    if (userArea) {
+                        userArea.style.display = 'flex';
+                    }
+                    // Set user name
+                    const userName = document.getElementById('navUserName');
+                    if (userName) {
+                        userName.textContent = userData.first_name || userData.email?.split('@')[0] || 'User';
+                    }
+                    
+                    // UPDATE ALL "Start Free Trial" buttons to "Go to Dashboard"
+                    document.querySelectorAll('a[href*="login.html"], a[href*="register"]').forEach(link => {
+                        if (link.textContent.includes('Start Free Trial') || link.textContent.includes('Free Trial')) {
+                            link.href = '/app/';
+                            link.innerHTML = link.innerHTML.replace(/Start Free Trial|Free Trial/g, 'Go to Dashboard');
+                        }
+                        if (link.textContent.includes('Get Started')) {
+                            link.href = '/app/';
+                            link.innerHTML = link.innerHTML.replace('Get Started', 'Go to Dashboard');
+                        }
+                    });
+                    
+                    // Logout button handler
+                    document.getElementById('navLogoutBtn')?.addEventListener('click', () => {
+                        localStorage.removeItem('token');
+                        localStorage.removeItem('user');
+                        window.location.reload();
+                    });
+                }
+            } catch (e) {
+                console.log('Auth check error:', e);
+            }
+        })();
+    </script>
+    
+    <!-- Live Chat Widget -->
+    <script src="/js/live-chat.js"></script>
+</body>
 </html>
