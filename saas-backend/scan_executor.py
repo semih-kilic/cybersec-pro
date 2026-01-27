@@ -451,11 +451,14 @@ TOOL_CONFIGS = {
     }
 }
 
-# Starter plan tools (free tier)
+# Starter plan tools (free tier) - Also for Trial users
 STARTER_TOOLS = ['nmap', 'nikto', 'whatweb', 'dirb', 'whois', 'dig', 'sslscan']
 
 # Professional plan tools
 PROFESSIONAL_TOOLS = STARTER_TOOLS + ['gobuster', 'sqlmap', 'wpscan', 'dnsrecon', 'theHarvester', 'enum4linux']
+
+# Team plan tools (same as professional + more)
+TEAM_TOOLS = PROFESSIONAL_TOOLS + ['masscan', 'hydra']
 
 # Enterprise plan tools (all)
 ENTERPRISE_TOOLS = list(TOOL_CONFIGS.keys())
@@ -477,9 +480,11 @@ class ScanExecutor:
         """Get available tools for a subscription plan"""
         if plan_type == 'enterprise':
             return ENTERPRISE_TOOLS
+        elif plan_type == 'team':
+            return TEAM_TOOLS
         elif plan_type == 'professional':
             return PROFESSIONAL_TOOLS
-        else:
+        else:  # starter, trial, or any other
             return STARTER_TOOLS
     
     def get_tool_config(self, tool_id: str) -> Optional[Dict]:

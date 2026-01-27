@@ -56,7 +56,7 @@ const categoryColors: { [key: string]: string } = {
 };
 
 export function ToolsPage() {
-  const { token, organization } = useAuth();
+  const { token } = useAuth();
   const [tools, setTools] = useState<{ [category: string]: Tool[] }>({});
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
@@ -70,13 +70,14 @@ export function ToolsPage() {
 
   const fetchTools = async () => {
     try {
-      const res = await fetch('/api/v1/tools', {
+      // Use /tools/available endpoint which returns tools from scan_executor
+      const res = await fetch('/api/v1/tools/available', {
         headers: { 'Authorization': `Bearer ${token}` },
       });
       if (res.ok) {
         const data = await res.json();
         setTools(data.tools || {});
-        setTotalTools(data.total_tools || 0);
+        setTotalTools(data.total_tools || data.available_tools || 0);
       }
     } catch (error) {
       console.error('Failed to fetch tools:', error);
@@ -106,20 +107,25 @@ export function ToolsPage() {
   const getPlanBadge = (plan: string) => {
     switch (plan) {
       case 'starter':
+      case 'trial':
         return <span className="px-2 py-0.5 text-xs rounded-full bg-green-500/20 text-green-400 border border-green-500/30">Free</span>;
       case 'professional':
         return <span className="px-2 py-0.5 text-xs rounded-full bg-blue-500/20 text-blue-400 border border-blue-500/30">Pro</span>;
+      case 'team':
+        return <span className="px-2 py-0.5 text-xs rounded-full bg-purple-500/20 text-purple-400 border border-purple-500/30">Team</span>;
       case 'enterprise':
-        return <span className="px-2 py-0.5 text-xs rounded-full bg-purple-500/20 text-purple-400 border border-purple-500/30">Enterprise</span>;
+        return <span className="px-2 py-0.5 text-xs rounded-full bg-yellow-500/20 text-yellow-400 border border-yellow-500/30">Enterprise</span>;
       default:
-        return null;
+        return <span className="px-2 py-0.5 text-xs rounded-full bg-green-500/20 text-green-400 border border-green-500/30">Free</span>;
     }
   };
 
-  const canUseTool = (plan: string) => {
-    const userPlan = organization?.plan_type || 'starter';
-    const planHierarchy = ['starter', 'professional', 'enterprise'];
-    return planHierarchy.indexOf(userPlan) >= planHierarchy.indexOf(plan);
+  // ALL USERS CAN USE TOOLS THAT ARE IN THEIR PLAN
+  // The tools endpoint already filters based on plan, so all returned tools are usable
+  const canUseTool = (_plan: string) => {
+    // If a tool is returned from the API, the user CAN use it
+    // Backend already filters tools based on user's plan
+    return true;
   };
 
   if (loading) {
