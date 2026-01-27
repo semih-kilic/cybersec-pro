@@ -223,7 +223,7 @@ class Subscription(BaseModel):
     current_period_end = Column(DateTime(timezone=True))
     trial_end = Column(DateTime(timezone=True))
     canceled_at = Column(DateTime(timezone=True))
-    metadata = Column(JSON, default=dict)
+    extra_data = Column(JSON, default=dict)
     
     # Relationships
     organization = relationship("Organization", back_populates="subscriptions")
@@ -301,7 +301,7 @@ class Scan(BaseModel):
     started_at = Column(DateTime(timezone=True))
     completed_at = Column(DateTime(timezone=True))
     execution_time = Column(Integer)  # seconds
-    metadata = Column(JSON, default=dict)
+    extra_data = Column(JSON, default=dict)
     
     # Relationships
     organization = relationship("Organization", back_populates="scans")
@@ -337,7 +337,7 @@ class UsageTracking(BaseModel):
     scan_id = Column(UUID(as_uuid=True), ForeignKey('scans.id'))
     usage_date = Column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc))
     execution_time = Column(Integer)  # seconds
-    metadata = Column(JSON, default=dict)
+    extra_data = Column(JSON, default=dict)
     
     # Relationships
     organization = relationship("Organization", back_populates="usage_tracking")

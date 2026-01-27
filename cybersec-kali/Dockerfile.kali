@@ -1,0 +1,165 @@
+# 🐉 CyberSec Pro - Kali Linux Tools Container
+# 165+ security tools pre-installed
+
+FROM kalilinux/kali-rolling:latest
+
+LABEL maintainer="Semih Kılıç <cybersecpro@semihkilic.com>"
+LABEL description="CyberSec Pro Kali Tools Container with 165+ security tools"
+LABEL version="2.0.0"
+
+# Prevent interactive prompts
+ENV DEBIAN_FRONTEND=noninteractive
+ENV TERM=xterm-256color
+
+# Update and install base packages
+RUN apt-get update && apt-get upgrade -y && \
+    apt-get install -y --no-install-recommends \
+    curl wget git vim nano htop \
+    python3 python3-pip python3-venv \
+    nodejs npm \
+    openssh-server \
+    supervisor \
+    && rm -rf /var/lib/apt/lists/*
+
+# ============================================
+# Install Kali Tools by Category
+# ============================================
+
+# Information Gathering
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    nmap masscan netdiscover arp-scan \
+    dnsenum dnsrecon fierce \
+    theHarvester recon-ng maltego \
+    whatweb wafw00f \
+    && rm -rf /var/lib/apt/lists/*
+
+# Vulnerability Analysis
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    nikto wapiti skipfish \
+    nessus openvas-scanner \
+    lynis unix-privesc-check \
+    && rm -rf /var/lib/apt/lists/* || true
+
+# Web Application Testing
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    sqlmap \
+    dirb dirbuster gobuster ffuf \
+    wfuzz burpsuite \
+    zaproxy \
+    commix xsser \
+    && rm -rf /var/lib/apt/lists/* || true
+
+# Password Attacks
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    john hashcat \
+    hydra medusa ncrack \
+    cewl crunch \
+    hashid hash-identifier \
+    && rm -rf /var/lib/apt/lists/*
+
+# Wireless Testing
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    aircrack-ng \
+    reaver bully pixiewps \
+    wifite fern-wifi-cracker \
+    kismet \
+    && rm -rf /var/lib/apt/lists/* || true
+
+# Exploitation Tools
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    metasploit-framework \
+    exploitdb searchsploit \
+    beef-xss \
+    set \
+    && rm -rf /var/lib/apt/lists/* || true
+
+# Sniffing & Spoofing
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    wireshark tshark \
+    tcpdump \
+    ettercap-text-only bettercap \
+    mitmproxy \
+    responder \
+    && rm -rf /var/lib/apt/lists/*
+
+# Post Exploitation
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    mimikatz \
+    powersploit empire \
+    weevely \
+    && rm -rf /var/lib/apt/lists/* || true
+
+# Forensics
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    autopsy sleuthkit \
+    binwalk foremost \
+    volatility3 \
+    steghide stegcracker \
+    && rm -rf /var/lib/apt/lists/* || true
+
+# Reverse Engineering
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    ghidra \
+    radare2 \
+    gdb \
+    objdump \
+    && rm -rf /var/lib/apt/lists/* || true
+
+# Reporting
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    dradis pipal \
+    cutycapt \
+    && rm -rf /var/lib/apt/lists/* || true
+
+# Additional Tools
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    netcat-traditional socat \
+    proxychains4 tor \
+    sshuttle \
+    enum4linux smbclient \
+    nbtscan onesixtyone snmpwalk \
+    impacket-scripts crackmapexec \
+    evil-winrm \
+    && rm -rf /var/lib/apt/lists/*
+
+# ============================================
+# Setup Tool Execution API
+# ============================================
+
+WORKDIR /opt/cybersec
+
+# Copy API files
+COPY backend/tool_api.py /opt/cybersec/
+COPY backend/requirements.txt /opt/cybersec/
+
+# Install Python dependencies
+RUN pip3 install --no-cache-dir -r requirements.txt || pip3 install flask flask-cors gunicorn
+
+# ============================================
+# Configure SSH
+# ============================================
+RUN mkdir -p /var/run/sshd && \
+    echo 'root:CyberSecPro2026!' | chpasswd && \
+    sed -i 's/#PermitRootLogin prohibit-password/PermitRootLogin yes/' /etc/ssh/sshd_config && \
+    sed -i 's/#PasswordAuthentication yes/PasswordAuthentication yes/' /etc/ssh/sshd_config
+
+# ============================================
+# Supervisor Configuration
+# ============================================
+COPY supervisord.conf /etc/supervisor/conf.d/supervisord.conf
+
+# ============================================
+# Health Check Script
+# ============================================
+COPY healthcheck.sh /opt/cybersec/healthcheck.sh
+RUN chmod +x /opt/cybersec/healthcheck.sh
+
+# ============================================
+# Expose Ports
+# ============================================
+EXPOSE 5003 22 7681
+
+# ============================================
+# Entrypoint
+# ============================================
+CMD ["/usr/bin/supervisord", "-c", "/etc/supervisor/conf.d/supervisord.conf"]

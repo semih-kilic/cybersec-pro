@@ -1,4 +1,4 @@
-import { useState, useEffect, createContext, useContext, ReactNode } from 'react';
+import { useState, useEffect, createContext, useContext, ReactNode, useCallback, useRef } from 'react';
 
 // Types
 interface User {
@@ -8,14 +8,21 @@ interface User {
   last_name: string;
   role: string;
   organization_id: string;
+  avatar_url?: string;
+  company?: string;
 }
 
 interface Organization {
   id: string;
   name: string;
   slug: string;
-  plan_type: 'starter' | 'professional' | 'enterprise';
+  plan_type: 'trial' | 'starter' | 'professional' | 'team' | 'enterprise';
   is_active: boolean;
+}
+
+// Helper to get user's plan from organization
+export function getUserPlan(organization: Organization | null): 'trial' | 'starter' | 'professional' | 'team' | 'enterprise' {
+  return organization?.plan_type || 'trial';
 }
 
 interface AuthContextType {
@@ -44,38 +51,59 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [organization, setOrganization] = useState<Organization | null>(null);
-  const [token, setToken] = useState<string | null>(localStorage.getItem('token'));
-  const [loading, setLoading] = useState(true);
+  const [token, setToken] = useState<string | null>(() => localStorage.getItem('token'));
+  const [loading, setLoading] = useState(() => !!localStorage.getItem('token'));
+  const [initialFetchDone, setInitialFetchDone] = useState(false);
+  const fetchingRef = useRef(false);
 
-  useEffect(() => {
-    if (token) {
-      fetchUser();
-    } else {
-      setLoading(false);
-    }
-  }, [token]);
-
-  const fetchUser = async () => {
+  const fetchUser = useCallback(async (currentToken: string) => {
+    // Prevent multiple simultaneous fetches
+    if (fetchingRef.current) return;
+    
+    fetchingRef.current = true;
+    
     try {
       const response = await fetch(`${API_URL}/auth/me`, {
         headers: {
-          'Authorization': `Bearer ${token}`,
+          'Authorization': `Bearer ${currentToken}`,
         },
       });
+      
       if (response.ok) {
         const data = await response.json();
         setUser(data.user);
         setOrganization(data.organization);
-      } else {
-        logout();
+      } else if (response.status === 401) {
+        // Token expired or invalid - clear auth state
+        console.log('Token invalid, clearing auth state');
+        localStorage.removeItem('token');
+        setToken(null);
+        setUser(null);
+        setOrganization(null);
       }
     } catch (error) {
       console.error('Failed to fetch user:', error);
-      logout();
+      // Don't clear token on network errors - keep user logged in
+      // Only clear if we've never successfully fetched user data
+      if (!user && !initialFetchDone) {
+        // Network error on initial load - don't logout, just mark as done
+        console.log('Network error on initial fetch, keeping token');
+      }
     } finally {
+      fetchingRef.current = false;
       setLoading(false);
+      setInitialFetchDone(true);
     }
-  };
+  }, [user, initialFetchDone]);
+
+  useEffect(() => {
+    if (token && !initialFetchDone) {
+      fetchUser(token);
+    } else if (!token) {
+      setLoading(false);
+      setInitialFetchDone(true);
+    }
+  }, [token, fetchUser, initialFetchDone]);
 
   const login = async (email: string, password: string) => {
     const response = await fetch(`${API_URL}/auth/login`, {
@@ -96,6 +124,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setToken(data.access_token);
     setUser(data.user);
     setOrganization(data.organization);
+    setInitialFetchDone(true);
   };
 
   const register = async (data: RegisterData) => {
@@ -117,6 +146,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setToken(result.access_token);
     setUser(result.user);
     setOrganization(result.organization);
+    setInitialFetchDone(true);
   };
 
   const logout = () => {
@@ -124,7 +154,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setToken(null);
     setUser(null);
     setOrganization(null);
+    setInitialFetchDone(false);
   };
+
+  // isAuthenticated: true if we have a token AND (user is loaded OR we're still loading)
+  // This prevents redirect to login during initial load
+  const isAuthenticated = !!token && (!!user || loading);
 
   return (
     <AuthContext.Provider
@@ -136,7 +171,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         login,
         register,
         logout,
-        isAuthenticated: !!token && !!user,
+        isAuthenticated,
       }}
     >
       {children}

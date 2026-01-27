@@ -1,10 +1,13 @@
 import { Link } from 'react-router-dom';
+import { useAuth } from '../hooks/useAuth';
 
 /**
  * 🐉 CyberSec Pro Landing Page
  * Modern cybersecurity SaaS platform landing
  */
 export function LandingPage() {
+  const { isAuthenticated, user } = useAuth();
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900">
       {/* Hero Section */}
@@ -21,12 +24,25 @@ export function LandingPage() {
               <span className="text-xl font-bold text-white">CyberSec Pro</span>
             </div>
             <div className="flex items-center space-x-4">
-              <Link to="/login" className="text-gray-300 hover:text-white transition">
-                Sign in
-              </Link>
-              <Link to="/register" className="px-4 py-2 bg-gradient-to-r from-cyan-500 to-blue-500 text-white rounded-lg hover:from-cyan-600 hover:to-blue-600 transition">
-                Start Free Trial
-              </Link>
+              {isAuthenticated ? (
+                <>
+                  <span className="text-gray-400 hidden sm:inline">
+                    Welcome, {user?.first_name || 'User'}
+                  </span>
+                  <Link to="/dashboard" className="px-4 py-2 bg-gradient-to-r from-cyan-500 to-blue-500 text-white rounded-lg hover:from-cyan-600 hover:to-blue-600 transition">
+                    Go to Dashboard
+                  </Link>
+                </>
+              ) : (
+                <>
+                  <Link to="/login" className="text-gray-300 hover:text-white transition">
+                    Sign in
+                  </Link>
+                  <Link to="/register" className="px-4 py-2 bg-gradient-to-r from-cyan-500 to-blue-500 text-white rounded-lg hover:from-cyan-600 hover:to-blue-600 transition">
+                    Start Free Trial
+                  </Link>
+                </>
+              )}
             </div>
           </div>
         </nav>
@@ -47,9 +63,15 @@ export function LandingPage() {
             Access 143+ security tools through one powerful dashboard. From reconnaissance to exploitation, we've got everything you need for comprehensive security testing.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Link to="/register" className="px-8 py-4 bg-gradient-to-r from-cyan-500 to-blue-500 text-white text-lg font-semibold rounded-xl hover:from-cyan-600 hover:to-blue-600 transition shadow-lg shadow-cyan-500/25">
-              Start Free Trial - 14 Days
-            </Link>
+            {isAuthenticated ? (
+              <Link to="/dashboard" className="px-8 py-4 bg-gradient-to-r from-cyan-500 to-blue-500 text-white text-lg font-semibold rounded-xl hover:from-cyan-600 hover:to-blue-600 transition shadow-lg shadow-cyan-500/25">
+                Go to Dashboard
+              </Link>
+            ) : (
+              <Link to="/register" className="px-8 py-4 bg-gradient-to-r from-cyan-500 to-blue-500 text-white text-lg font-semibold rounded-xl hover:from-cyan-600 hover:to-blue-600 transition shadow-lg shadow-cyan-500/25">
+                Start Free Trial - 14 Days
+              </Link>
+            )}
             <a href="#features" className="px-8 py-4 bg-gray-800 text-white text-lg font-medium rounded-xl hover:bg-gray-700 transition border border-gray-700">
               See Features →
             </a>
@@ -92,91 +114,120 @@ export function LandingPage() {
             <p className="text-gray-400 text-lg">No hidden fees • Cancel anytime</p>
           </div>
           
-          <div className="grid md:grid-cols-3 gap-8 max-w-5xl mx-auto">
+          <div className="grid md:grid-cols-4 gap-6 max-w-6xl mx-auto">
             {/* Starter */}
-            <div className="bg-gray-800/50 rounded-2xl p-8 border border-gray-700">
-              <div className="text-lg font-medium text-gray-400 mb-2">Starter</div>
-              <div className="flex items-baseline gap-1 mb-6">
-                <span className="text-5xl font-bold text-white">€19</span>
-                <span className="text-gray-400">/month</span>
+            <div className="bg-gray-800/50 rounded-2xl p-6 border border-gray-700">
+              <div className="text-lg font-medium text-green-400 mb-2">Starter</div>
+              <div className="flex items-baseline gap-1 mb-4">
+                <span className="text-4xl font-bold text-white">€0</span>
+                <span className="text-gray-400">/14 days</span>
               </div>
-              <ul className="space-y-3 mb-8 text-gray-300">
+              <ul className="space-y-2 mb-6 text-gray-300 text-sm">
                 <li className="flex items-center gap-2">
                   <span className="text-green-400">✓</span> 33 Essential Tools
                 </li>
                 <li className="flex items-center gap-2">
-                  <span className="text-green-400">✓</span> 10 scans/month
+                  <span className="text-green-400">✓</span> 10 scans/day
+                </li>
+                <li className="flex items-center gap-2">
+                  <span className="text-green-400">✓</span> 1 Project
                 </li>
                 <li className="flex items-center gap-2">
                   <span className="text-green-400">✓</span> Basic Reports
                 </li>
-                <li className="flex items-center gap-2">
-                  <span className="text-green-400">✓</span> Email Support
-                </li>
               </ul>
-              <Link to="/register" className="block w-full py-3 bg-gray-700 text-white text-center rounded-xl hover:bg-gray-600 transition">
+              <Link to="/register" className="block w-full py-2 bg-gray-700 text-white text-center rounded-xl hover:bg-gray-600 transition text-sm">
                 Start Free Trial
               </Link>
             </div>
 
             {/* Professional */}
-            <div className="bg-gray-800/50 rounded-2xl p-8 border-2 border-cyan-500 relative">
-              <div className="absolute -top-4 left-1/2 -translate-x-1/2 px-4 py-1 bg-gradient-to-r from-cyan-500 to-blue-500 rounded-full text-sm font-bold text-white">
+            <div className="bg-gray-800/50 rounded-2xl p-6 border-2 border-cyan-500 relative">
+              <div className="absolute -top-3 left-1/2 -translate-x-1/2 px-3 py-1 bg-gradient-to-r from-cyan-500 to-blue-500 rounded-full text-xs font-bold text-white">
                 ⭐ Most Popular
               </div>
               <div className="text-lg font-medium text-cyan-400 mb-2">Professional</div>
-              <div className="flex items-baseline gap-1 mb-6">
-                <span className="text-5xl font-bold text-white">€59</span>
+              <div className="flex items-baseline gap-1 mb-4">
+                <span className="text-4xl font-bold text-white">€29</span>
                 <span className="text-gray-400">/month</span>
               </div>
-              <ul className="space-y-3 mb-8 text-gray-300">
+              <ul className="space-y-2 mb-6 text-gray-300 text-sm">
                 <li className="flex items-center gap-2">
-                  <span className="text-green-400">✓</span> <strong>120</strong> Advanced Tools
+                  <span className="text-green-400">✓</span> <strong>120</strong> Tools
                 </li>
                 <li className="flex items-center gap-2">
-                  <span className="text-green-400">✓</span> 50 scans/month
+                  <span className="text-green-400">✓</span> 50 scans/day
                 </li>
                 <li className="flex items-center gap-2">
-                  <span className="text-green-400">✓</span> Advanced Reports (PDF)
+                  <span className="text-cyan-400">✓</span> Multi-tool scan (3)
+                </li>
+                <li className="flex items-center gap-2">
+                  <span className="text-green-400">✓</span> PDF/HTML Reports
                 </li>
                 <li className="flex items-center gap-2">
                   <span className="text-green-400">✓</span> API Access
                 </li>
+              </ul>
+              <Link to="/register" className="block w-full py-2 bg-gradient-to-r from-cyan-500 to-blue-500 text-white text-center rounded-xl hover:from-cyan-600 hover:to-blue-600 transition text-sm">
+                Get Started
+              </Link>
+            </div>
+
+            {/* Team */}
+            <div className="bg-gray-800/50 rounded-2xl p-6 border border-purple-500/50">
+              <div className="text-lg font-medium text-purple-400 mb-2">Team</div>
+              <div className="flex items-baseline gap-1 mb-4">
+                <span className="text-4xl font-bold text-white">€79</span>
+                <span className="text-gray-400">/month</span>
+              </div>
+              <ul className="space-y-2 mb-6 text-gray-300 text-sm">
                 <li className="flex items-center gap-2">
-                  <span className="text-green-400">✓</span> Priority Support
+                  <span className="text-green-400">✓</span> <strong>200</strong> Tools
+                </li>
+                <li className="flex items-center gap-2">
+                  <span className="text-green-400">✓</span> 100 scans/day
+                </li>
+                <li className="flex items-center gap-2">
+                  <span className="text-purple-400">✓</span> Multi-tool scan (5)
+                </li>
+                <li className="flex items-center gap-2">
+                  <span className="text-purple-400">✓</span> Remote Agent (1)
+                </li>
+                <li className="flex items-center gap-2">
+                  <span className="text-green-400">✓</span> 5 Team Members
                 </li>
               </ul>
-              <Link to="/register" className="block w-full py-3 bg-gradient-to-r from-cyan-500 to-blue-500 text-white text-center rounded-xl hover:from-cyan-600 hover:to-blue-600 transition">
-                Start Professional
+              <Link to="/register" className="block w-full py-2 bg-purple-600 text-white text-center rounded-xl hover:bg-purple-500 transition text-sm">
+                Get Started
               </Link>
             </div>
 
             {/* Enterprise */}
-            <div className="bg-gray-800/50 rounded-2xl p-8 border border-gray-700">
+            <div className="bg-gray-800/50 rounded-2xl p-6 border border-yellow-500/50">
               <div className="text-lg font-medium text-yellow-400 mb-2">Enterprise</div>
-              <div className="flex items-baseline gap-1 mb-6">
-                <span className="text-5xl font-bold text-white">€149</span>
+              <div className="flex items-baseline gap-1 mb-4">
+                <span className="text-4xl font-bold text-white">€149</span>
                 <span className="text-gray-400">/month</span>
               </div>
-              <ul className="space-y-3 mb-8 text-gray-300">
+              <ul className="space-y-2 mb-6 text-gray-300 text-sm">
                 <li className="flex items-center gap-2">
-                  <span className="text-green-400">✓</span> <strong>143+</strong> All Tools
+                  <span className="text-green-400">✓</span> <strong>350+</strong> All Tools
                 </li>
                 <li className="flex items-center gap-2">
-                  <span className="text-green-400">✓</span> Unlimited scans
+                  <span className="text-yellow-400">✓</span> Unlimited scans
                 </li>
                 <li className="flex items-center gap-2">
-                  <span className="text-green-400">✓</span> Custom Reports
+                  <span className="text-yellow-400">✓</span> Unlimited Agents
                 </li>
                 <li className="flex items-center gap-2">
-                  <span className="text-green-400">✓</span> 24/7 Priority Support
+                  <span className="text-green-400">✓</span> SSO / SAML
                 </li>
                 <li className="flex items-center gap-2">
-                  <span className="text-green-400">✓</span> Team Management
+                  <span className="text-green-400">✓</span> 24/7 Support
                 </li>
               </ul>
-              <Link to="/register" className="block w-full py-3 bg-yellow-500 text-gray-900 text-center font-semibold rounded-xl hover:bg-yellow-400 transition">
-                Go Enterprise
+              <Link to="/contact" className="block w-full py-2 bg-yellow-500 text-gray-900 text-center font-semibold rounded-xl hover:bg-yellow-400 transition text-sm">
+                Contact Sales
               </Link>
             </div>
           </div>
@@ -190,9 +241,15 @@ export function LandingPage() {
           <p className="text-xl text-gray-400 mb-8">
             Join thousands of security professionals using CyberSec Pro for their penetration testing needs.
           </p>
-          <Link to="/register" className="inline-block px-8 py-4 bg-gradient-to-r from-cyan-500 to-blue-500 text-white text-lg font-semibold rounded-xl hover:from-cyan-600 hover:to-blue-600 transition shadow-lg shadow-cyan-500/25">
-            Start Your Free Trial Now
-          </Link>
+          {isAuthenticated ? (
+            <Link to="/dashboard" className="inline-block px-8 py-4 bg-gradient-to-r from-cyan-500 to-blue-500 text-white text-lg font-semibold rounded-xl hover:from-cyan-600 hover:to-blue-600 transition shadow-lg shadow-cyan-500/25">
+              Go to Dashboard
+            </Link>
+          ) : (
+            <Link to="/register" className="inline-block px-8 py-4 bg-gradient-to-r from-cyan-500 to-blue-500 text-white text-lg font-semibold rounded-xl hover:from-cyan-600 hover:to-blue-600 transition shadow-lg shadow-cyan-500/25">
+              Start Your Free Trial Now
+            </Link>
+          )}
         </div>
       </section>
 

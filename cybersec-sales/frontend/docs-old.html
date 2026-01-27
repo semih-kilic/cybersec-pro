@@ -1,0 +1,524 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Installation Guide - CyberSec Pro</title>
+    <meta name="description" content="Complete installation guide for CyberSec Pro - Professional penetration testing platform with 230+ security tools.">
+    <meta name="robots" content="index, follow">
+    <link rel="canonical" href="https://semihkilic.com/docs">
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+    <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+    <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+    <link rel="manifest" href="/site.webmanifest">
+    <link rel="mask-icon" href="/favicon.svg" color="#00d4ff">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        dark: { bg: '#0a0a0f', card: '#12121a', border: '#1e1e2e' },
+                        cyber: { cyan: '#00d4ff', blue: '#0066ff', purple: '#8b5cf6' }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+        code, pre { font-family: 'JetBrains Mono', monospace; }
+        .gradient-text { background: linear-gradient(135deg, #00d4ff, #8b5cf6); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        .code-block { position: relative; }
+        .copy-btn { position: absolute; top: 0.5rem; right: 0.5rem; }
+        .sidebar-link.active { border-left-color: #00d4ff; background: rgba(0, 212, 255, 0.1); }
+        html { scroll-behavior: smooth; }
+    </style>
+</head>
+<body class="bg-dark-bg text-white min-h-screen">
+    <!-- Navigation -->
+    <nav class="fixed top-0 left-0 right-0 z-50 bg-dark-bg/95 backdrop-blur-lg border-b border-dark-border">
+        <div class="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
+            <a href="/" class="flex items-center gap-3">
+                <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-cyber-cyan to-cyber-purple flex items-center justify-center">
+                    <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/>
+                    </svg>
+                </div>
+                <span class="text-xl font-bold">CyberSec Pro</span>
+                <span class="text-gray-500 text-sm ml-2">Documentation</span>
+            </a>
+            <div class="flex items-center gap-4">
+                <a href="/#download" class="text-gray-400 hover:text-white transition">Downloads</a>
+                <a href="/" class="px-5 py-2 rounded-full bg-gradient-to-r from-cyber-cyan to-cyber-blue text-white font-medium hover:opacity-90 transition text-sm">
+                    Back to Home
+                </a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="flex pt-20">
+        <!-- Sidebar -->
+        <aside class="fixed left-0 top-20 w-64 h-[calc(100vh-5rem)] overflow-y-auto border-r border-dark-border p-6 hidden lg:block">
+            <nav class="space-y-1">
+                <a href="#quick-start" class="sidebar-link block px-4 py-2 text-gray-400 hover:text-white border-l-2 border-transparent hover:border-cyber-cyan transition">Quick Start</a>
+                <a href="#requirements" class="sidebar-link block px-4 py-2 text-gray-400 hover:text-white border-l-2 border-transparent hover:border-cyber-cyan transition">Requirements</a>
+                <a href="#installation" class="sidebar-link block px-4 py-2 text-gray-400 hover:text-white border-l-2 border-transparent hover:border-cyber-cyan transition">Installation</a>
+                <a href="#docker" class="sidebar-link block px-4 py-2 text-gray-400 hover:text-white border-l-2 border-transparent hover:border-cyber-cyan transition">Docker Setup</a>
+                <a href="#cli" class="sidebar-link block px-4 py-2 text-gray-400 hover:text-white border-l-2 border-transparent hover:border-cyber-cyan transition">CLI Commands</a>
+                <a href="#license" class="sidebar-link block px-4 py-2 text-gray-400 hover:text-white border-l-2 border-transparent hover:border-cyber-cyan transition">License Activation</a>
+                <a href="#troubleshooting" class="sidebar-link block px-4 py-2 text-gray-400 hover:text-white border-l-2 border-transparent hover:border-cyber-cyan transition">Troubleshooting</a>
+                <a href="#support" class="sidebar-link block px-4 py-2 text-gray-400 hover:text-white border-l-2 border-transparent hover:border-cyber-cyan transition">Support</a>
+            </nav>
+            
+            <div class="mt-8 p-4 bg-dark-card rounded-xl border border-dark-border">
+                <div class="text-sm font-medium mb-2">Current Version</div>
+                <div class="text-cyber-cyan font-mono text-lg">v2.0.1</div>
+                <a href="/downloads/CHANGELOG.md" class="text-xs text-gray-500 hover:text-gray-400">View changelog →</a>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="flex-1 lg:ml-64 px-6 lg:px-12 py-12 max-w-4xl">
+            <!-- Header -->
+            <div class="mb-12">
+                <h1 class="text-4xl font-bold mb-4">
+                    <span class="gradient-text">Installation Guide</span>
+                </h1>
+                <p class="text-xl text-gray-400">
+                    Get CyberSec Pro up and running in minutes with our simple installation process.
+                </p>
+            </div>
+
+            <!-- Quick Start -->
+            <section id="quick-start" class="mb-16 scroll-mt-24">
+                <h2 class="text-2xl font-bold mb-6 flex items-center gap-3">
+                    <span class="text-2xl">⚡</span> Quick Start
+                </h2>
+                <div class="bg-dark-card rounded-xl border border-dark-border p-6">
+                    <p class="text-gray-400 mb-4">Install CyberSec Pro with a single command:</p>
+                    <div class="code-block bg-gray-900 rounded-lg p-4 mb-4">
+                        <button onclick="copyCode(this)" class="copy-btn px-3 py-1 bg-cyber-cyan/20 text-cyber-cyan text-sm rounded hover:bg-cyber-cyan/30 transition">Copy</button>
+                        <pre class="text-cyber-cyan overflow-x-auto"><code>curl -sSL https://semihkilic.com/install.sh | bash</code></pre>
+                    </div>
+                    <p class="text-gray-400 mb-4">After installation, start the application:</p>
+                    <div class="code-block bg-gray-900 rounded-lg p-4 mb-4">
+                        <button onclick="copyCode(this)" class="copy-btn px-3 py-1 bg-cyber-cyan/20 text-cyber-cyan text-sm rounded hover:bg-cyber-cyan/30 transition">Copy</button>
+                        <pre class="text-green-400 overflow-x-auto"><code>cybersec start</code></pre>
+                    </div>
+                    <p class="text-gray-400">Then open <a href="http://localhost:5173" class="text-cyber-cyan hover:underline">http://localhost:5173</a> in your browser.</p>
+                </div>
+            </section>
+
+            <!-- Requirements -->
+            <section id="requirements" class="mb-16 scroll-mt-24">
+                <h2 class="text-2xl font-bold mb-6 flex items-center gap-3">
+                    <span class="text-2xl">📋</span> System Requirements
+                </h2>
+                <div class="grid md:grid-cols-2 gap-4">
+                    <div class="bg-dark-card rounded-xl border border-dark-border p-6">
+                        <h3 class="font-bold mb-4 text-cyber-cyan">Minimum</h3>
+                        <ul class="space-y-3 text-gray-300">
+                            <li class="flex items-center gap-2">
+                                <span class="text-green-400">✓</span> Linux (Ubuntu 20.04+, Debian 11+, Kali)
+                            </li>
+                            <li class="flex items-center gap-2">
+                                <span class="text-green-400">✓</span> Python 3.8+
+                            </li>
+                            <li class="flex items-center gap-2">
+                                <span class="text-green-400">✓</span> 4 GB RAM
+                            </li>
+                            <li class="flex items-center gap-2">
+                                <span class="text-green-400">✓</span> 10 GB Disk Space
+                            </li>
+                        </ul>
+                    </div>
+                    <div class="bg-dark-card rounded-xl border border-dark-border p-6">
+                        <h3 class="font-bold mb-4 text-cyber-purple">Recommended</h3>
+                        <ul class="space-y-3 text-gray-300">
+                            <li class="flex items-center gap-2">
+                                <span class="text-purple-400">★</span> Kali Linux (latest)
+                            </li>
+                            <li class="flex items-center gap-2">
+                                <span class="text-purple-400">★</span> Python 3.10+
+                            </li>
+                            <li class="flex items-center gap-2">
+                                <span class="text-purple-400">★</span> 8 GB RAM
+                            </li>
+                            <li class="flex items-center gap-2">
+                                <span class="text-purple-400">★</span> SSD Storage
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+                
+                <div class="mt-6 p-4 bg-yellow-500/10 border border-yellow-500/30 rounded-xl">
+                    <div class="flex items-start gap-3">
+                        <span class="text-yellow-500 text-xl">💡</span>
+                        <div>
+                            <p class="text-yellow-200 font-medium">Kali Linux Recommended</p>
+                            <p class="text-gray-400 text-sm mt-1">Kali Linux comes with most security tools pre-installed. On other distributions, some tools may need manual installation.</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Installation Methods -->
+            <section id="installation" class="mb-16 scroll-mt-24">
+                <h2 class="text-2xl font-bold mb-6 flex items-center gap-3">
+                    <span class="text-2xl">📦</span> Installation Methods
+                </h2>
+                
+                <!-- Method 1: Auto Install -->
+                <div class="bg-dark-card rounded-xl border border-dark-border p-6 mb-6">
+                    <div class="flex items-center gap-3 mb-4">
+                        <span class="px-3 py-1 bg-green-500/20 text-green-400 text-sm rounded-full">Recommended</span>
+                        <h3 class="text-xl font-bold">Automatic Installation</h3>
+                    </div>
+                    <p class="text-gray-400 mb-4">The installer automatically detects your OS, installs dependencies, and sets up everything:</p>
+                    <div class="code-block bg-gray-900 rounded-lg p-4 mb-4">
+                        <button onclick="copyCode(this)" class="copy-btn px-3 py-1 bg-cyber-cyan/20 text-cyber-cyan text-sm rounded hover:bg-cyber-cyan/30 transition">Copy</button>
+                        <pre class="overflow-x-auto"><code class="text-gray-400"># Standard installation</code>
+<code class="text-cyber-cyan">curl -sSL https://semihkilic.com/install.sh | bash</code>
+
+<code class="text-gray-400"># With additional security tools</code>
+<code class="text-cyber-cyan">curl -sSL https://semihkilic.com/install.sh | bash -s -- --with-tools</code></pre>
+                    </div>
+                </div>
+
+                <!-- Method 2: Manual -->
+                <div class="bg-dark-card rounded-xl border border-dark-border p-6 mb-6">
+                    <h3 class="text-xl font-bold mb-4">Manual Installation</h3>
+                    <div class="space-y-6">
+                        <div>
+                            <p class="text-gray-400 mb-2"><span class="text-cyber-cyan font-bold">Step 1:</span> Download and extract</p>
+                            <div class="code-block bg-gray-900 rounded-lg p-4">
+                                <button onclick="copyCode(this)" class="copy-btn px-3 py-1 bg-cyber-cyan/20 text-cyber-cyan text-sm rounded hover:bg-cyber-cyan/30 transition">Copy</button>
+                                <pre class="overflow-x-auto text-gray-300"><code>wget https://semihkilic.com/downloads/cybersec-pro-linux.tar.gz
+tar -xzf cybersec-pro-linux.tar.gz
+cd cybersec-pro</code></pre>
+                            </div>
+                        </div>
+                        <div>
+                            <p class="text-gray-400 mb-2"><span class="text-cyber-cyan font-bold">Step 2:</span> Setup Python environment</p>
+                            <div class="code-block bg-gray-900 rounded-lg p-4">
+                                <button onclick="copyCode(this)" class="copy-btn px-3 py-1 bg-cyber-cyan/20 text-cyber-cyan text-sm rounded hover:bg-cyber-cyan/30 transition">Copy</button>
+                                <pre class="overflow-x-auto text-gray-300"><code>python3 -m venv backend/venv
+source backend/venv/bin/activate
+pip install -r backend/requirements.txt</code></pre>
+                            </div>
+                        </div>
+                        <div>
+                            <p class="text-gray-400 mb-2"><span class="text-cyber-cyan font-bold">Step 3:</span> Start the application</p>
+                            <div class="code-block bg-gray-900 rounded-lg p-4">
+                                <button onclick="copyCode(this)" class="copy-btn px-3 py-1 bg-cyber-cyan/20 text-cyber-cyan text-sm rounded hover:bg-cyber-cyan/30 transition">Copy</button>
+                                <pre class="overflow-x-auto text-gray-300"><code>./start.sh</code></pre>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Docker -->
+            <section id="docker" class="mb-16 scroll-mt-24">
+                <h2 class="text-2xl font-bold mb-6 flex items-center gap-3">
+                    <span class="text-2xl">🐳</span> Docker Installation
+                </h2>
+                <div class="bg-dark-card rounded-xl border border-dark-border p-6">
+                    <p class="text-gray-400 mb-4">Run CyberSec Pro in an isolated Docker container:</p>
+                    
+                    <div class="code-block bg-gray-900 rounded-lg p-4 mb-6">
+                        <button onclick="copyCode(this)" class="copy-btn px-3 py-1 bg-cyber-cyan/20 text-cyber-cyan text-sm rounded hover:bg-cyber-cyan/30 transition">Copy</button>
+                        <pre class="overflow-x-auto"><code class="text-gray-400"># Quick Docker install</code>
+<code class="text-cyber-cyan">curl -sSL https://semihkilic.com/install.sh | bash -s -- --docker</code></pre>
+                    </div>
+                    
+                    <p class="text-gray-400 mb-4">Or manually with docker-compose:</p>
+                    
+                    <div class="code-block bg-gray-900 rounded-lg p-4">
+                        <button onclick="copyCode(this)" class="copy-btn px-3 py-1 bg-cyber-cyan/20 text-cyber-cyan text-sm rounded hover:bg-cyber-cyan/30 transition">Copy</button>
+                        <pre class="overflow-x-auto text-gray-300"><code># Download docker-compose.yml
+curl -O https://semihkilic.com/downloads/docker-compose.yml
+
+# Start the container
+docker-compose up -d
+
+# Access the dashboard
+open http://localhost:5173</code></pre>
+                    </div>
+                </div>
+            </section>
+
+            <!-- CLI Commands -->
+            <section id="cli" class="mb-16 scroll-mt-24">
+                <h2 class="text-2xl font-bold mb-6 flex items-center gap-3">
+                    <span class="text-2xl">💻</span> CLI Commands
+                </h2>
+                <div class="bg-dark-card rounded-xl border border-dark-border overflow-hidden">
+                    <table class="w-full">
+                        <thead class="bg-dark-bg">
+                            <tr>
+                                <th class="px-6 py-4 text-left text-cyber-cyan font-mono">Command</th>
+                                <th class="px-6 py-4 text-left text-gray-400">Description</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-dark-border">
+                            <tr class="hover:bg-dark-bg/50">
+                                <td class="px-6 py-4 font-mono text-green-400">cybersec start</td>
+                                <td class="px-6 py-4 text-gray-300">Start CyberSec Pro</td>
+                            </tr>
+                            <tr class="hover:bg-dark-bg/50">
+                                <td class="px-6 py-4 font-mono text-green-400">cybersec stop</td>
+                                <td class="px-6 py-4 text-gray-300">Stop CyberSec Pro</td>
+                            </tr>
+                            <tr class="hover:bg-dark-bg/50">
+                                <td class="px-6 py-4 font-mono text-green-400">cybersec restart</td>
+                                <td class="px-6 py-4 text-gray-300">Restart CyberSec Pro</td>
+                            </tr>
+                            <tr class="hover:bg-dark-bg/50">
+                                <td class="px-6 py-4 font-mono text-green-400">cybersec status</td>
+                                <td class="px-6 py-4 text-gray-300">Check if running</td>
+                            </tr>
+                            <tr class="hover:bg-dark-bg/50">
+                                <td class="px-6 py-4 font-mono text-green-400">cybersec open</td>
+                                <td class="px-6 py-4 text-gray-300">Open dashboard in browser</td>
+                            </tr>
+                            <tr class="hover:bg-dark-bg/50">
+                                <td class="px-6 py-4 font-mono text-green-400">cybersec update</td>
+                                <td class="px-6 py-4 text-gray-300">Update to latest version</td>
+                            </tr>
+                            <tr class="hover:bg-dark-bg/50">
+                                <td class="px-6 py-4 font-mono text-green-400">cybersec logs</td>
+                                <td class="px-6 py-4 text-gray-300">View application logs</td>
+                            </tr>
+                            <tr class="hover:bg-dark-bg/50">
+                                <td class="px-6 py-4 font-mono text-green-400">cybersec help</td>
+                                <td class="px-6 py-4 text-gray-300">Show all commands</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <!-- License -->
+            <section id="license" class="mb-16 scroll-mt-24">
+                <h2 class="text-2xl font-bold mb-6 flex items-center gap-3">
+                    <span class="text-2xl">🔑</span> License Activation
+                </h2>
+                <div class="bg-dark-card rounded-xl border border-dark-border p-6">
+                    <div class="space-y-4">
+                        <div class="flex items-start gap-4">
+                            <div class="w-8 h-8 rounded-full bg-cyber-cyan/20 text-cyber-cyan flex items-center justify-center font-bold">1</div>
+                            <div>
+                                <p class="font-medium">Purchase a license</p>
+                                <p class="text-gray-400 text-sm">Choose a plan at <a href="/#pricing" class="text-cyber-cyan hover:underline">semihkilic.com</a></p>
+                            </div>
+                        </div>
+                        <div class="flex items-start gap-4">
+                            <div class="w-8 h-8 rounded-full bg-cyber-cyan/20 text-cyber-cyan flex items-center justify-center font-bold">2</div>
+                            <div>
+                                <p class="font-medium">Receive your license key</p>
+                                <p class="text-gray-400 text-sm">Check your email for the license key</p>
+                            </div>
+                        </div>
+                        <div class="flex items-start gap-4">
+                            <div class="w-8 h-8 rounded-full bg-cyber-cyan/20 text-cyber-cyan flex items-center justify-center font-bold">3</div>
+                            <div>
+                                <p class="font-medium">Activate in the app</p>
+                                <p class="text-gray-400 text-sm">Go to <strong>Settings → License</strong> and enter your key</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="mt-6 p-4 bg-green-500/10 border border-green-500/30 rounded-xl">
+                        <p class="text-green-400 text-sm">
+                            <strong>Trial Mode:</strong> You can use CyberSec Pro for 14 days without a license. Trial includes 30 tools and 5 scans per day.
+                        </p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Troubleshooting -->
+            <section id="troubleshooting" class="mb-16 scroll-mt-24">
+                <h2 class="text-2xl font-bold mb-6 flex items-center gap-3">
+                    <span class="text-2xl">🔧</span> Troubleshooting
+                </h2>
+                
+                <div class="space-y-4">
+                    <!-- Issue 1 -->
+                    <details class="bg-dark-card rounded-xl border border-dark-border group">
+                        <summary class="px-6 py-4 cursor-pointer flex items-center justify-between hover:bg-dark-bg/50 transition">
+                            <span class="font-medium">Port already in use</span>
+                            <svg class="w-5 h-5 text-gray-400 group-open:rotate-180 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+                            </svg>
+                        </summary>
+                        <div class="px-6 pb-4 border-t border-dark-border pt-4">
+                            <p class="text-gray-400 mb-3">If port 5173 or 5001 is already in use:</p>
+                            <div class="code-block bg-gray-900 rounded-lg p-4">
+                                <pre class="overflow-x-auto text-gray-300"><code># Kill existing processes
+pkill -f "python.*app.py"
+pkill -f "node.*5173"
+
+# Or find and kill specific port
+lsof -i :5173
+kill -9 &lt;PID&gt;</code></pre>
+                            </div>
+                        </div>
+                    </details>
+
+                    <!-- Issue 2 -->
+                    <details class="bg-dark-card rounded-xl border border-dark-border group">
+                        <summary class="px-6 py-4 cursor-pointer flex items-center justify-between hover:bg-dark-bg/50 transition">
+                            <span class="font-medium">Permission denied</span>
+                            <svg class="w-5 h-5 text-gray-400 group-open:rotate-180 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+                            </svg>
+                        </summary>
+                        <div class="px-6 pb-4 border-t border-dark-border pt-4">
+                            <p class="text-gray-400 mb-3">Make scripts executable:</p>
+                            <div class="code-block bg-gray-900 rounded-lg p-4">
+                                <pre class="overflow-x-auto text-gray-300"><code>chmod +x start.sh stop.sh install.sh</code></pre>
+                            </div>
+                        </div>
+                    </details>
+
+                    <!-- Issue 3 -->
+                    <details class="bg-dark-card rounded-xl border border-dark-border group">
+                        <summary class="px-6 py-4 cursor-pointer flex items-center justify-between hover:bg-dark-bg/50 transition">
+                            <span class="font-medium">Python not found</span>
+                            <svg class="w-5 h-5 text-gray-400 group-open:rotate-180 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+                            </svg>
+                        </summary>
+                        <div class="px-6 pb-4 border-t border-dark-border pt-4">
+                            <p class="text-gray-400 mb-3">Install Python 3:</p>
+                            <div class="code-block bg-gray-900 rounded-lg p-4">
+                                <pre class="overflow-x-auto text-gray-300"><code># Ubuntu/Debian/Kali
+sudo apt install python3 python3-pip python3-venv
+
+# Fedora
+sudo dnf install python3 python3-pip
+
+# Arch
+sudo pacman -S python python-pip</code></pre>
+                            </div>
+                        </div>
+                    </details>
+
+                    <!-- Issue 4 -->
+                    <details class="bg-dark-card rounded-xl border border-dark-border group">
+                        <summary class="px-6 py-4 cursor-pointer flex items-center justify-between hover:bg-dark-bg/50 transition">
+                            <span class="font-medium">Module not found errors</span>
+                            <svg class="w-5 h-5 text-gray-400 group-open:rotate-180 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+                            </svg>
+                        </summary>
+                        <div class="px-6 pb-4 border-t border-dark-border pt-4">
+                            <p class="text-gray-400 mb-3">Reinstall Python dependencies:</p>
+                            <div class="code-block bg-gray-900 rounded-lg p-4">
+                                <pre class="overflow-x-auto text-gray-300"><code>cd ~/cybersec-pro
+source backend/venv/bin/activate
+pip install --upgrade -r backend/requirements.txt</code></pre>
+                            </div>
+                        </div>
+                    </details>
+                </div>
+            </section>
+
+            <!-- Support -->
+            <section id="support" class="mb-16 scroll-mt-24">
+                <h2 class="text-2xl font-bold mb-6 flex items-center gap-3">
+                    <span class="text-2xl">📧</span> Support
+                </h2>
+                <div class="bg-dark-card rounded-xl border border-dark-border p-6">
+                    <div class="grid md:grid-cols-2 gap-6">
+                        <div>
+                            <h3 class="font-bold mb-3">Contact Us</h3>
+                            <ul class="space-y-2 text-gray-400">
+                                <li>📧 <a href="mailto:cybersecpro@semihkilic.com" class="text-cyber-cyan hover:underline">cybersecpro@semihkilic.com</a></li>
+                                <li>🌐 <a href="https://semihkilic.com" class="text-cyber-cyan hover:underline">semihkilic.com</a></li>
+                            </ul>
+                        </div>
+                        <div>
+                            <h3 class="font-bold mb-3">Resources</h3>
+                            <ul class="space-y-2 text-gray-400">
+                                <li><a href="/downloads/CHANGELOG.md" class="text-gray-300 hover:text-white">📋 Changelog</a></li>
+                                <li><a href="/downloads/version.json" class="text-gray-300 hover:text-white">📦 Version Info</a></li>
+                                <li><a href="/#faq" class="text-gray-300 hover:text-white">❓ FAQ</a></li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- What's Included -->
+            <section class="mb-16">
+                <h2 class="text-2xl font-bold mb-6 flex items-center gap-3">
+                    <span class="text-2xl">📦</span> What's Included
+                </h2>
+                <div class="grid grid-cols-2 md:grid-cols-3 gap-4">
+                    <div class="bg-dark-card rounded-xl border border-dark-border p-4 text-center">
+                        <div class="text-3xl font-bold gradient-text">230+</div>
+                        <div class="text-gray-400 text-sm">Security Tools</div>
+                    </div>
+                    <div class="bg-dark-card rounded-xl border border-dark-border p-4 text-center">
+                        <div class="text-3xl font-bold gradient-text">19</div>
+                        <div class="text-gray-400 text-sm">Categories</div>
+                    </div>
+                    <div class="bg-dark-card rounded-xl border border-dark-border p-4 text-center">
+                        <div class="text-3xl font-bold gradient-text">∞</div>
+                        <div class="text-gray-400 text-sm">Reports</div>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <!-- Footer -->
+    <footer class="lg:ml-64 py-8 px-6 border-t border-dark-border">
+        <div class="max-w-4xl mx-auto text-center text-gray-500 text-sm">
+            © 2026 Semih Kilic. All rights reserved. |
+            <a href="/privacy.html" class="hover:text-white">Privacy</a> |
+            <a href="/terms.html" class="hover:text-white">Terms</a>
+        </div>
+    </footer>
+
+    <script>
+        function copyCode(btn) {
+            const pre = btn.parentElement.querySelector('pre');
+            const code = pre.innerText;
+            navigator.clipboard.writeText(code);
+            btn.innerText = 'Copied!';
+            btn.classList.add('bg-green-500/20', 'text-green-400');
+            setTimeout(() => {
+                btn.innerText = 'Copy';
+                btn.classList.remove('bg-green-500/20', 'text-green-400');
+            }, 2000);
+        }
+
+        // Highlight active section in sidebar
+        const sections = document.querySelectorAll('section[id]');
+        const navLinks = document.querySelectorAll('.sidebar-link');
+
+        window.addEventListener('scroll', () => {
+            let current = '';
+            sections.forEach(section => {
+                const sectionTop = section.offsetTop;
+                if (scrollY >= sectionTop - 100) {
+                    current = section.getAttribute('id');
+                }
+            });
+
+            navLinks.forEach(link => {
+                link.classList.remove('active', 'text-white', 'border-cyber-cyan', 'bg-cyber-cyan/10');
+                if (link.getAttribute('href') === '#' + current) {
+                    link.classList.add('active', 'text-white', 'border-cyber-cyan', 'bg-cyber-cyan/10');
+                }
+            });
+        });
+    </script>
+</body>
+</html>

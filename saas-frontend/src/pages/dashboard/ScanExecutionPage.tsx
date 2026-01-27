@@ -1,0 +1,378 @@
+import { useState, useEffect, useRef } from 'react';
+import { useParams, useSearchParams } from 'react-router-dom';
+import { Header } from '../../components/layout/Header';
+import api, { ScanResult, ToolConfig } from '../../services/api';
+
+export function ScanExecutionPage() {
+  const { scanId } = useParams<{ scanId: string }>();
+  const [searchParams] = useSearchParams();
+  
+  const [tool, setTool] = useState<ToolConfig | null>(null);
+  const [target, setTarget] = useState(searchParams.get('target') || '');
+  const [parameters, setParameters] = useState<Record<string, string | number | boolean>>({});
+  const [status, setStatus] = useState<'idle' | 'running' | 'completed' | 'failed' | 'cancelled'>('idle');
+  const [output, setOutput] = useState<string[]>([]);
+  const [, setResult] = useState<ScanResult | null>(null);
+  const [currentScanId, setCurrentScanId] = useState<string | null>(scanId || null);
+  const [command, setCommand] = useState('');
+  const [error, setError] = useState<string | null>(null);
+  
+  const outputRef = useRef<HTMLDivElement>(null);
+  const toolId = searchParams.get('tool') || 'nmap';
+
+  useEffect(() => {
+    fetchToolConfig();
+  }, [toolId]);
+
+  useEffect(() => {
+    // Auto-scroll output
+    if (outputRef.current) {
+      outputRef.current.scrollTop = outputRef.current.scrollHeight;
+    }
+  }, [output]);
+
+  useEffect(() => {
+    // If we have a scanId, stream its output
+    if (currentScanId && status === 'running') {
+      const cleanup = api.streamScanOutput(
+        currentScanId,
+        (line) => {
+          setOutput(prev => [...prev, line]);
+        },
+        (scanResult) => {
+          setResult(scanResult);
+          setStatus(scanResult.status as 'completed' | 'failed');
+        }
+      );
+
+      return cleanup;
+    }
+  }, [currentScanId, status]);
+
+  const fetchToolConfig = async () => {
+    const response = await api.getToolConfig(toolId);
+    if (response.data) {
+      setTool(response.data.tool);
+      // Set default values
+      const defaults: Record<string, string | number | boolean> = {};
+      Object.entries(response.data.tool.parameters || {}).forEach(([key, param]) => {
+        if (param.default !== undefined) {
+          defaults[key] = param.default;
+        }
+      });
+      setParameters(defaults);
+    }
+  };
+
+  const handleStartScan = async () => {
+    if (!target) {
+      setError('Target is required');
+      return;
+    }
+
+    setError(null);
+    setOutput([]);
+    setStatus('running');
+    setOutput([`🚀 Starting ${tool?.name || toolId} scan on ${target}...`, '']);
+
+    const response = await api.executeScan(toolId, target, parameters);
+    
+    if (response.error) {
+      setError(response.error);
+      setStatus('failed');
+      setOutput(prev => [...prev, `❌ Error: ${response.error}`]);
+      return;
+    }
+
+    if (response.data) {
+      setCurrentScanId(response.data.scan_id);
+      setCommand(response.data.command || '');
+      setOutput(prev => [...prev, `📝 Command: ${response.data?.command || ''}`, '', '--- Scan Output ---', '']);
+    }
+  };
+
+  const handleStopScan = async () => {
+    if (currentScanId) {
+      await api.stopScan(currentScanId);
+      setStatus('cancelled');
+      setOutput(prev => [...prev, '', '⏹️ Scan cancelled by user']);
+    }
+  };
+
+  const handleNewScan = () => {
+    setStatus('idle');
+    setOutput([]);
+    setResult(null);
+    setCurrentScanId(null);
+    setTarget('');
+    setError(null);
+  };
+
+  const handleParamChange = (name: string, value: string | boolean) => {
+    setParameters(prev => ({ ...prev, [name]: value }));
+  };
+
+  const renderParameterInput = (name: string, param: any) => {
+    const value = parameters[name];
+
+    switch (param.type) {
+      case 'boolean':
+        return (
+          <label className="flex items-center gap-3 cursor-pointer">
+            <input
+              type="checkbox"
+              checked={value as boolean || false}
+              onChange={(e) => handleParamChange(name, e.target.checked)}
+              className="w-4 h-4 rounded border-gray-600 bg-gray-800 text-kali-blue focus:ring-kali-blue"
+            />
+            <span className="text-sm text-gray-300">{param.description}</span>
+          </label>
+        );
+      case 'select':
+        return (
+          <select
+            value={value as string || ''}
+            onChange={(e) => handleParamChange(name, e.target.value)}
+            className="w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded-lg text-white focus:outline-none focus:border-kali-blue"
+          >
+            <option value="">Select {name}</option>
+            {param.options?.map((opt: string) => (
+              <option key={opt} value={opt}>{opt}</option>
+            ))}
+          </select>
+        );
+      case 'number':
+        return (
+          <input
+            type="number"
+            value={value as string || ''}
+            onChange={(e) => handleParamChange(name, e.target.value)}
+            min={param.min}
+            max={param.max}
+            className="w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded-lg text-white focus:outline-none focus:border-kali-blue"
+            placeholder={param.description}
+          />
+        );
+      default:
+        return (
+          <input
+            type="text"
+            value={value as string || ''}
+            onChange={(e) => handleParamChange(name, e.target.value)}
+            className="w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded-lg text-white focus:outline-none focus:border-kali-blue"
+            placeholder={param.description}
+          />
+        );
+    }
+  };
+
+  return (
+    <div className="min-h-screen bg-gray-950">
+      <Header 
+        title={`Run ${tool?.name || toolId}`}
+        subtitle="Execute real security scans"
+        breadcrumb={[
+          { label: 'Tools', href: '/dashboard/tools' },
+          { label: tool?.name || toolId, href: `/dashboard/tools/${toolId}` },
+          { label: 'Run Scan' }
+        ]}
+      />
+
+      <div className="p-6">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          {/* Left: Configuration */}
+          <div className="lg:col-span-1 space-y-6">
+            {/* Target Input */}
+            <div className="bg-gray-900 rounded-xl border border-gray-800 p-5">
+              <h3 className="text-white font-semibold mb-4">🎯 Target</h3>
+              <input
+                type="text"
+                value={target}
+                onChange={(e) => setTarget(e.target.value)}
+                placeholder="example.com or 192.168.1.1"
+                disabled={status === 'running'}
+                className="w-full px-4 py-3 bg-gray-800 border border-gray-700 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:border-kali-blue transition disabled:opacity-50"
+              />
+              {error && (
+                <p className="text-red-500 text-sm mt-2">{error}</p>
+              )}
+            </div>
+
+            {/* Parameters */}
+            {tool && Object.keys(tool.parameters || {}).length > 0 && (
+              <div className="bg-gray-900 rounded-xl border border-gray-800 p-5">
+                <h3 className="text-white font-semibold mb-4">⚙️ Parameters</h3>
+                <div className="space-y-4">
+                  {Object.entries(tool.parameters || {}).map(([name, param]) => (
+                    <div key={name}>
+                      <label className="block text-sm text-gray-400 mb-1.5 capitalize">
+                        {name.replace(/_/g, ' ')}
+                      </label>
+                      {renderParameterInput(name, param)}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Actions */}
+            <div className="space-y-3">
+              {status === 'idle' && (
+                <button
+                  onClick={handleStartScan}
+                  className="w-full py-3 bg-gradient-to-r from-kali-blue to-kali-purple text-white font-semibold rounded-lg hover:opacity-90 transition flex items-center justify-center gap-2"
+                >
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" />
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                  Start Scan
+                </button>
+              )}
+
+              {status === 'running' && (
+                <button
+                  onClick={handleStopScan}
+                  className="w-full py-3 bg-red-600 hover:bg-red-700 text-white font-semibold rounded-lg transition flex items-center justify-center gap-2"
+                >
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 10a1 1 0 011-1h4a1 1 0 011 1v4a1 1 0 01-1 1h-4a1 1 0 01-1-1v-4z" />
+                  </svg>
+                  Stop Scan
+                </button>
+              )}
+
+              {(status === 'completed' || status === 'failed' || status === 'cancelled') && (
+                <button
+                  onClick={handleNewScan}
+                  className="w-full py-3 bg-kali-blue hover:bg-kali-blue/80 text-white font-semibold rounded-lg transition flex items-center justify-center gap-2"
+                >
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                  </svg>
+                  New Scan
+                </button>
+              )}
+            </div>
+
+            {/* Status */}
+            <div className="bg-gray-900 rounded-xl border border-gray-800 p-5">
+              <h3 className="text-white font-semibold mb-3">Status</h3>
+              <div className="flex items-center gap-3">
+                {status === 'idle' && (
+                  <>
+                    <div className="w-3 h-3 rounded-full bg-gray-500" />
+                    <span className="text-gray-400">Ready to scan</span>
+                  </>
+                )}
+                {status === 'running' && (
+                  <>
+                    <div className="w-3 h-3 rounded-full bg-yellow-500 animate-pulse" />
+                    <span className="text-yellow-500">Scanning...</span>
+                  </>
+                )}
+                {status === 'completed' && (
+                  <>
+                    <div className="w-3 h-3 rounded-full bg-green-500" />
+                    <span className="text-green-500">Completed</span>
+                  </>
+                )}
+                {status === 'failed' && (
+                  <>
+                    <div className="w-3 h-3 rounded-full bg-red-500" />
+                    <span className="text-red-500">Failed</span>
+                  </>
+                )}
+                {status === 'cancelled' && (
+                  <>
+                    <div className="w-3 h-3 rounded-full bg-orange-500" />
+                    <span className="text-orange-500">Cancelled</span>
+                  </>
+                )}
+              </div>
+              {command && (
+                <div className="mt-3 pt-3 border-t border-gray-800">
+                  <p className="text-xs text-gray-500 mb-1">Command:</p>
+                  <code className="text-xs text-green-400 break-all">{command}</code>
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* Right: Output Terminal */}
+          <div className="lg:col-span-2">
+            <div className="bg-gray-900 rounded-xl border border-gray-800 overflow-hidden h-[calc(100vh-200px)]">
+              {/* Terminal Header */}
+              <div className="flex items-center justify-between px-4 py-3 bg-gray-800 border-b border-gray-700">
+                <div className="flex items-center gap-2">
+                  <div className="flex gap-1.5">
+                    <div className="w-3 h-3 rounded-full bg-red-500" />
+                    <div className="w-3 h-3 rounded-full bg-yellow-500" />
+                    <div className="w-3 h-3 rounded-full bg-green-500" />
+                  </div>
+                  <span className="text-gray-400 text-sm ml-3">
+                    {tool?.name || toolId} - {target || 'No target'}
+                  </span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <button
+                    onClick={() => navigator.clipboard.writeText(output.join(''))}
+                    className="p-1.5 text-gray-400 hover:text-white transition"
+                    title="Copy output"
+                  >
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                    </svg>
+                  </button>
+                  <button
+                    onClick={() => setOutput([])}
+                    className="p-1.5 text-gray-400 hover:text-white transition"
+                    title="Clear output"
+                  >
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                    </svg>
+                  </button>
+                </div>
+              </div>
+
+              {/* Terminal Output */}
+              <div 
+                ref={outputRef}
+                className="p-4 font-mono text-sm text-green-400 bg-gray-950 overflow-auto h-[calc(100%-52px)]"
+              >
+                {output.length === 0 ? (
+                  <div className="text-gray-500">
+                    <pre className="text-kali-blue">{`
+  ██████╗██╗   ██╗██████╗ ███████╗██████╗ ███████╗███████╗ ██████╗
+ ██╔════╝╚██╗ ██╔╝██╔══██╗██╔════╝██╔══██╗██╔════╝██╔════╝██╔════╝
+ ██║      ╚████╔╝ ██████╔╝█████╗  ██████╔╝███████╗█████╗  ██║     
+ ██║       ╚██╔╝  ██╔══██╗██╔══╝  ██╔══██╗╚════██║██╔══╝  ██║     
+ ╚██████╗   ██║   ██████╔╝███████╗██║  ██║███████║███████╗╚██████╗
+  ╚═════╝   ╚═╝   ╚═════╝ ╚══════╝╚═╝  ╚═╝╚══════╝╚══════╝ ╚═════╝
+                                                                   
+`}</pre>
+                    <p className="mt-4">Ready to execute security scan.</p>
+                    <p className="mt-2">Enter a target and click "Start Scan" to begin.</p>
+                    <p className="mt-4 text-yellow-500">⚠️ Only scan systems you have permission to test!</p>
+                  </div>
+                ) : (
+                  output.map((line, idx) => (
+                    <div key={idx} className="whitespace-pre-wrap">{line}</div>
+                  ))
+                )}
+                
+                {status === 'running' && (
+                  <div className="inline-block w-2 h-4 bg-green-400 animate-pulse ml-1" />
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+export default ScanExecutionPage;
