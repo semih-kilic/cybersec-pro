@@ -92,7 +92,7 @@ const planHierarchy: { [key: string]: number } = {
 };
 
 export function ToolsPage() {
-  const { token, user } = useAuth();
+  const { token, organization } = useAuth();
   const [allCategories, setAllCategories] = useState<{ [key: string]: CategoryData }>({});
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
@@ -104,8 +104,8 @@ export function ToolsPage() {
   const [showOnlyAvailable, setShowOnlyAvailable] = useState(false);
   const [sortBy, setSortBy] = useState<'name' | 'category' | 'plan'>('category');
 
-  // Get user plan
-  const userPlan = user?.plan || 'trial';
+  // Get user plan from organization
+  const userPlan = organization?.plan_type || 'trial';
 
   useEffect(() => {
     fetchTools();
