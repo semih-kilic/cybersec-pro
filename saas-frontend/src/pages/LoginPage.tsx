@@ -2,8 +2,9 @@ import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
 
-// Google OAuth Configuration
-const GOOGLE_CLIENT_ID = '890098498498-2hr2r3s8cdqh4r0hk0qqr84o8qfftbsl.apps.googleusercontent.com';
+// OAuth Configuration - matches backend .env
+const GOOGLE_CLIENT_ID = '547951331800-kqkuc6aohfr7ptt26p38mnqfdvt7b6mu.apps.googleusercontent.com';
+const GITHUB_CLIENT_ID = '***REDACTED_GH_OAUTH_CLIENT_ID***';
 
 export function LoginPage() {
   const [email, setEmail] = useState('');
@@ -39,7 +40,7 @@ export function LoginPage() {
   const handleGitHubLogin = () => {
     const redirectUri = `${window.location.origin}/auth/callback?provider=github`;
     const scope = 'user:email';
-    const githubAuthUrl = `https://github.com/login/oauth/authorize?client_id=Ov23liUlz0f7C2eCuRzj&redirect_uri=${encodeURIComponent(redirectUri)}&scope=${encodeURIComponent(scope)}`;
+    const githubAuthUrl = `https://github.com/login/oauth/authorize?client_id=${GITHUB_CLIENT_ID}&redirect_uri=${encodeURIComponent(redirectUri)}&scope=${encodeURIComponent(scope)}`;
     
     window.location.href = githubAuthUrl;
   };

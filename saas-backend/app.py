@@ -733,23 +733,27 @@ def get_tools():
         user = User.query.get(user_id)
         org = user.organization
         
-        # Filter tools based on plan
-        plan_hierarchy = {'starter': 1, 'professional': 2, 'enterprise': 3}
-        user_plan_level = plan_hierarchy.get(org.plan_type, 1)
+        # Plan hierarchy: trial=0, starter=1, professional=2, team=3, enterprise=4
+        plan_limits = {
+            'trial': 7,
+            'starter': 33,
+            'professional': 120,
+            'team': 200,
+            'enterprise': 999  # Unlimited
+        }
         
-        tools = Tool.query.filter(
-            Tool.is_active == True,
-            Tool.plan_required.in_(['starter'] if user_plan_level >= 1 else [])
-        ).all()
+        plan_level = {'trial': 0, 'starter': 1, 'professional': 2, 'team': 3, 'enterprise': 4}
+        user_plan_level = plan_level.get(org.plan_type, 0)
+        tool_limit = plan_limits.get(org.plan_type, 7)
         
-        if user_plan_level >= 2:
-            tools = Tool.query.filter(
-                Tool.is_active == True,
-                Tool.plan_required.in_(['starter', 'professional'])
-            ).all()
+        # Get all active tools
+        all_tools = Tool.query.filter(Tool.is_active == True).order_by(Tool.name).all()
         
-        if user_plan_level >= 3:
-            tools = Tool.query.filter(Tool.is_active == True).all()
+        # Filter based on plan - Enterprise gets all, others get limited
+        if user_plan_level >= 4:  # Enterprise
+            tools = all_tools
+        else:
+            tools = all_tools[:tool_limit]
         
         # Group by category
         tools_by_category = {}
@@ -761,7 +765,8 @@ def get_tools():
         return jsonify({
             'tools': tools_by_category,
             'total_tools': len(tools),
-            'user_plan': org.plan_type
+            'user_plan': org.plan_type,
+            'plan_limit': tool_limit
         })
         
     except Exception as e:
