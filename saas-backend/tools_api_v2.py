@@ -109,21 +109,57 @@ CATEGORY_INFO = {
 # ================================
 # HELPER FUNCTIONS
 # ================================
-def get_user_plan(user_id: str) -> str:
-    """Get user's plan from database"""
+
+# Founder/Admin emails with full access
+FOUNDER_EMAILS = [
+    'semih@semihkilic.com',
+    'admin@cybersecpro.com',
+    'cybersecpro@semihkilic.com',
+    'semihkilictr@gmail.com',
+]
+
+def get_user_context(user_id: str) -> dict:
+    """
+    Get user's complete access context including founder status.
+    
+    Returns:
+        dict with: plan, is_founder, effective_plan, email
+    """
     try:
-        # Import here to avoid circular imports
         from app import User, Organization
         
         user = User.query.get(user_id)
-        if user and user.organization_id:
+        if not user:
+            return {'plan': 'starter', 'is_founder': False, 'effective_plan': 'starter', 'email': None}
+        
+        # Check if founder
+        is_founder = user.email.lower() in [e.lower() for e in FOUNDER_EMAILS]
+        
+        # Get organization plan
+        base_plan = 'starter'
+        if user.organization_id:
             org = Organization.query.get(user.organization_id)
             if org:
-                return org.plan_type or 'starter'
-        return 'starter'  # Default plan
+                base_plan = org.plan_type or 'starter'
+        
+        # Founder mode: Always has enterprise access
+        effective_plan = 'enterprise' if is_founder else base_plan
+        
+        return {
+            'plan': base_plan,
+            'is_founder': is_founder,
+            'effective_plan': effective_plan,
+            'email': user.email,
+            'user_id': user_id
+        }
     except Exception as e:
-        print(f"Error getting user plan: {e}")
-        return 'starter'  # Fallback to starter
+        print(f"Error getting user context: {e}")
+        return {'plan': 'starter', 'is_founder': False, 'effective_plan': 'starter', 'email': None}
+
+def get_user_plan(user_id: str) -> str:
+    """Get user's effective plan (considers founder status)"""
+    ctx = get_user_context(user_id)
+    return ctx['effective_plan']
 
 def validate_target(target: str) -> bool:
     """Validate scan target"""
