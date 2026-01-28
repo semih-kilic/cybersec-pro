@@ -100,7 +100,7 @@
       "dangerous": false,
       "requires_root": false,
       "gui_only": false,
-      "installed": true,
+      "installed": false,
       "path": "/usr/bin/x-www-browser",
       "parameters": {}
     },
@@ -1621,7 +1621,7 @@
       "dangerous": false,
       "requires_root": false,
       "gui_only": false,
-      "installed": true,
+      "installed": false,
       "path": "/usr/bin/x-www-browser",
       "parameters": {}
     },
@@ -1880,7 +1880,7 @@
       "command": "gqrx",
       "dangerous": false,
       "requires_root": false,
-      "gui_only": false,
+      "gui_only": true,
       "installed": true,
       "path": "/usr/bin/gqrx",
       "parameters": {}
@@ -1919,7 +1919,7 @@
       "command": "gnuradio-companion",
       "dangerous": false,
       "requires_root": false,
-      "gui_only": false,
+      "gui_only": true,
       "installed": true,
       "path": "/usr/bin/gnuradio-companion",
       "parameters": {}
@@ -2154,7 +2154,7 @@
       "dangerous": true,
       "requires_root": false,
       "gui_only": false,
-      "installed": true,
+      "installed": false,
       "path": "/usr/bin/x-www-browser",
       "parameters": {}
     },
@@ -2400,7 +2400,7 @@
       "command": "pkexec",
       "dangerous": false,
       "requires_root": true,
-      "gui_only": false,
+      "gui_only": true,
       "installed": true,
       "path": "/usr/bin/pkexec",
       "parameters": {}
@@ -2479,7 +2479,7 @@
       "dangerous": false,
       "requires_root": false,
       "gui_only": false,
-      "installed": true,
+      "installed": false,
       "path": "/usr/bin/x-www-browser",
       "parameters": {}
     },
@@ -3051,7 +3051,7 @@
       "dangerous": false,
       "requires_root": false,
       "gui_only": false,
-      "installed": true,
+      "installed": false,
       "path": "/usr/bin/x-www-browser",
       "parameters": {}
     },
@@ -3389,7 +3389,7 @@
       "dangerous": false,
       "requires_root": false,
       "gui_only": false,
-      "installed": true,
+      "installed": false,
       "path": "/usr/bin/x-www-browser",
       "parameters": {}
     },
@@ -3558,7 +3558,7 @@
       "dangerous": false,
       "requires_root": false,
       "gui_only": false,
-      "installed": true,
+      "installed": false,
       "path": "/usr/bin/x-www-browser",
       "parameters": {}
     },
@@ -4129,7 +4129,7 @@
       "command": "chirpw",
       "dangerous": false,
       "requires_root": false,
-      "gui_only": false,
+      "gui_only": true,
       "installed": true,
       "path": "/usr/bin/chirpw",
       "parameters": {}
@@ -5026,7 +5026,7 @@
       "command": "pkexec",
       "dangerous": false,
       "requires_root": true,
-      "gui_only": false,
+      "gui_only": true,
       "installed": true,
       "path": "/usr/bin/pkexec",
       "parameters": {}
@@ -5989,7 +5989,7 @@
       "dangerous": false,
       "requires_root": false,
       "gui_only": false,
-      "installed": true,
+      "installed": false,
       "path": "/usr/bin/x-www-browser",
       "parameters": {}
     },
@@ -6080,7 +6080,7 @@
       "dangerous": false,
       "requires_root": false,
       "gui_only": false,
-      "installed": true,
+      "installed": false,
       "path": "/usr/bin/x-www-browser",
       "parameters": {}
     },
@@ -6456,7 +6456,7 @@
       "command": "stegosuite",
       "dangerous": false,
       "requires_root": false,
-      "gui_only": false,
+      "gui_only": true,
       "installed": true,
       "path": "/usr/bin/stegosuite",
       "parameters": {}
