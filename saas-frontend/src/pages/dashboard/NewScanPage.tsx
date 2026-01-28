@@ -6,8 +6,13 @@ import { useAuth } from '../../hooks/useAuth';
 interface Tool {
   id: string;
   name: string;
-  slug: string;
+  slug?: string;
   category: string;
+  description?: string;
+  dangerous?: boolean;
+  requires_root?: boolean;
+  gui_only?: boolean;
+  plan_required?: string;
 }
 
 interface Target {
@@ -37,6 +42,8 @@ export function NewScanPage() {
   const [scanName, setScanName] = useState('');
   const [priority, setPriority] = useState<'low' | 'normal' | 'high'>('normal');
   const [notifications, setNotifications] = useState(true);
+  const [showDangerousWarning, setShowDangerousWarning] = useState(false);
+  const [dangerousConfirmed, setDangerousConfirmed] = useState(false);
 
   useEffect(() => {
     fetchData();
@@ -44,13 +51,21 @@ export function NewScanPage() {
 
   const fetchData = async () => {
     try {
-      // Fetch tools
-      const toolsRes = await fetch('/api/v1/tools', {
+      // Fetch tools from v2 API
+      const toolsRes = await fetch('/api/v2/tools?plan=enterprise', {
         headers: { 'Authorization': `Bearer ${token}` },
       });
       if (toolsRes.ok) {
         const data = await toolsRes.json();
-        setTools(data.tools || {});
+        // Convert v2 API format to component format
+        const toolsByCategory: { [key: string]: Tool[] } = {};
+        Object.entries(data.categories || {}).forEach(([catKey, catData]: [string, any]) => {
+          toolsByCategory[catData.info?.name || catKey] = catData.tools.map((t: any) => ({
+            ...t,
+            slug: t.id,
+          }));
+        });
+        setTools(toolsByCategory);
       }
 
       // Fetch targets
@@ -69,33 +84,56 @@ export function NewScanPage() {
   };
 
   const handleSubmit = async () => {
+    // Check if selected tool is dangerous
+    const selectedToolObj = allTools.find(t => t.id === selectedTool || t.slug === selectedTool);
+    
+    if (selectedToolObj?.dangerous && !dangerousConfirmed) {
+      setShowDangerousWarning(true);
+      return;
+    }
+    
     setSubmitting(true);
     try {
-      const res = await fetch('/api/v1/scans', {
+      const res = await fetch('/api/v2/scan/execute', {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          tool: selectedTool,
+          tool_id: selectedTool,
           target: useCustomTarget ? customTarget : selectedTarget,
-          command: customCommand,
+          parameters: {},
           name: scanName,
           priority,
           notifications,
+          confirm_dangerous: dangerousConfirmed,
         }),
       });
 
-      if (res.ok) {
-        const data = await res.json();
+      const data = await res.json();
+      
+      if (res.ok && data.success) {
         navigate(`/dashboard/scans/${data.scan_id}`);
+      } else if (data.requires_confirmation) {
+        // Tool requires dangerous confirmation
+        setShowDangerousWarning(true);
+      } else {
+        console.error('Scan failed:', data.error);
+        alert(data.error || 'Failed to start scan');
       }
     } catch (error) {
       console.error('Failed to start scan:', error);
+      alert('Failed to start scan');
     } finally {
       setSubmitting(false);
     }
+  };
+
+  const confirmDangerousScan = () => {
+    setDangerousConfirmed(true);
+    setShowDangerousWarning(false);
+    handleSubmit();
   };
 
   const allTools = Object.values(tools).flat();
@@ -464,6 +502,53 @@ export function NewScanPage() {
           </div>
         )}
       </div>
+
+      {/* Dangerous Tool Warning Modal */}
+      {showDangerousWarning && (
+        <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 p-4">
+          <div className="bg-gray-900 rounded-2xl border border-red-500/50 max-w-md w-full p-6">
+            <div className="flex items-center gap-4 mb-4">
+              <div className="w-12 h-12 rounded-full bg-red-500/20 flex items-center justify-center">
+                <svg className="w-6 h-6 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                </svg>
+              </div>
+              <div>
+                <h3 className="text-lg font-semibold text-white">⚠️ Dangerous Tool Warning</h3>
+                <p className="text-sm text-gray-400">This action requires confirmation</p>
+              </div>
+            </div>
+            
+            <div className="bg-red-500/10 border border-red-500/30 rounded-lg p-4 mb-6">
+              <p className="text-red-400 text-sm">
+                <strong>{selectedTool}</strong> is marked as a <strong>dangerous tool</strong>. 
+                It may actively exploit vulnerabilities or affect target systems.
+              </p>
+              <ul className="mt-3 text-red-400/80 text-sm space-y-1">
+                <li>• Only use on systems you own or have written permission to test</li>
+                <li>• May trigger security alerts on target systems</li>
+                <li>• Could cause service disruption if misconfigured</li>
+                <li>• All actions are logged for audit purposes</li>
+              </ul>
+            </div>
+
+            <div className="flex gap-3">
+              <button
+                onClick={() => setShowDangerousWarning(false)}
+                className="flex-1 px-4 py-2 bg-gray-800 text-white rounded-lg hover:bg-gray-700 transition"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={confirmDangerousScan}
+                className="flex-1 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-500 transition font-medium"
+              >
+                I Understand, Proceed
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

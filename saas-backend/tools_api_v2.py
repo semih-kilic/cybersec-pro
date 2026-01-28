@@ -344,6 +344,17 @@ def execute_scan():
         if tool.get('gui_only'):
             return jsonify({'success': False, 'error': 'This tool requires a GUI and cannot be run via API'}), 400
         
+        # Check if tool is dangerous - require confirmation
+        if tool.get('dangerous'):
+            confirm = data.get('confirm_dangerous', False)
+            if not confirm:
+                return jsonify({
+                    'success': False, 
+                    'error': 'This is a dangerous tool that may affect target systems. Set confirm_dangerous=true to proceed.',
+                    'requires_confirmation': True,
+                    'warning': f'{tool.get("name")} is marked as dangerous. Use only on authorized targets.'
+                }), 400
+        
         # Get user plan
         user_id = get_jwt_identity()
         user_plan = get_user_plan(user_id)
@@ -588,12 +599,15 @@ def run_scan_background(scan_id: str, command: str, requires_root: bool = False)
         if not scan:
             return
         
-        # Add sudo if required
+        # Add sudo if required (NOPASSWD configured in sudoers)
         if requires_root:
-            command = f"sudo {command}"
+            command = f"sudo -n {command}"
         
-        # Add timeout (5 minutes max)
+        # Add timeout (5 minutes max for safety)
         command = f"timeout 300 {command}"
+        
+        # Log the command (for debugging)
+        print(f"[SCAN {scan_id}] Executing: {command}")
         
         # Run command
         process = subprocess.Popen(
@@ -601,7 +615,8 @@ def run_scan_background(scan_id: str, command: str, requires_root: bool = False)
             shell=True,
             stdout=subprocess.PIPE,
             stderr=subprocess.STDOUT,
-            text=True
+            text=True,
+            env={**os.environ, 'TERM': 'xterm'}
         )
         
         scan['pid'] = process.pid
