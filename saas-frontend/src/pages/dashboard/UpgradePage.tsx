@@ -109,7 +109,8 @@ export default function UpgradePage() {
       if (response.ok) {
         const data = await response.json();
         if (data.checkout_url) {
-          window.location.href = data.checkout_url;
+          // Open in new tab so dashboard doesn't disappear
+          window.open(data.checkout_url, '_blank');
           return;
         }
       }
@@ -117,10 +118,11 @@ export default function UpgradePage() {
       // Fallback: use direct Stripe link if backend doesn't support
       const stripeUrl = STRIPE_CHECKOUT_URLS[planId];
       if (stripeUrl) {
-        window.location.href = stripeUrl;
+        // Open in new tab
+        window.open(stripeUrl, '_blank');
       } else if (planId === 'enterprise') {
-        // Enterprise -> Contact sales page
-        window.location.href = '/contact.html';
+        // Enterprise -> Contact sales page in new tab
+        window.open('/contact.html', '_blank');
       }
     } catch (error) {
       console.error('Upgrade error:', error);
@@ -164,11 +166,11 @@ export default function UpgradePage() {
       </div>
 
       {/* Pricing Grid */}
-      <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
+      <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6 mb-12 items-stretch pt-4">
         {plans.map((plan) => (
           <div
             key={plan.id}
-            className={`relative bg-gray-900 rounded-2xl p-6 border transition-all hover:scale-[1.02] ${
+            className={`relative bg-gray-900 rounded-2xl p-6 border transition-all hover:scale-[1.02] flex flex-col ${
               plan.popular
                 ? 'border-kali-blue shadow-lg shadow-kali-blue/20'
                 : plan.id === currentPlan
@@ -177,12 +179,12 @@ export default function UpgradePage() {
             }`}
           >
             {plan.popular && (
-              <div className="absolute -top-3 left-1/2 -translate-x-1/2 px-3 py-1 bg-kali-blue text-white text-xs font-bold rounded-full">
+              <div className="absolute -top-4 left-1/2 -translate-x-1/2 px-4 py-1.5 bg-gradient-to-r from-kali-blue to-cyan-500 text-white text-xs font-bold rounded-full z-10 shadow-lg">
                 ⭐ Most Popular
               </div>
             )}
             {plan.id === currentPlan && (
-              <div className="absolute -top-3 left-1/2 -translate-x-1/2 px-3 py-1 bg-green-500 text-white text-xs font-bold rounded-full">
+              <div className="absolute -top-4 left-1/2 -translate-x-1/2 px-4 py-1.5 bg-green-500 text-white text-xs font-bold rounded-full z-10 shadow-lg">
                 ✓ Current Plan
               </div>
             )}
@@ -198,7 +200,7 @@ export default function UpgradePage() {
 
             <p className="text-gray-400 text-sm mb-6">{plan.description}</p>
 
-            <ul className="space-y-3 mb-6">
+            <ul className="space-y-3 mb-6 flex-grow">
               {plan.features.map((feature, i) => (
                 <li key={i} className="flex items-start gap-2 text-sm">
                   <svg className={`w-5 h-5 mt-0.5 flex-shrink-0 ${getColorClasses(plan.color).split(' ')[0]}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -209,21 +211,27 @@ export default function UpgradePage() {
               ))}
             </ul>
 
-            <button
-              onClick={() => handleUpgrade(plan.id)}
-              disabled={plan.id === currentPlan}
-              className={`w-full py-3 rounded-xl font-semibold transition ${
-                plan.id === currentPlan
-                  ? 'bg-gray-800 text-gray-500 cursor-not-allowed'
-                  : plan.popular
-                  ? 'bg-gradient-to-r from-kali-blue to-blue-600 text-white hover:from-kali-blue/80 hover:to-blue-600/80'
-                  : plan.id === 'enterprise'
-                  ? 'bg-yellow-500/20 text-yellow-400 border border-yellow-500/50 hover:bg-yellow-500/30'
-                  : `${getColorClasses(plan.color)} border hover:opacity-80`
-              }`}
-            >
-              {getButtonText(plan.id)}
-            </button>
+            <div className="mt-auto">
+              <button
+                onClick={() => handleUpgrade(plan.id)}
+                disabled={plan.id === currentPlan}
+                className={`w-full py-3 rounded-xl font-semibold transition ${
+                  plan.id === currentPlan
+                    ? 'bg-gray-800 text-gray-500 cursor-not-allowed'
+                    : plan.id === 'starter'
+                    ? 'bg-green-500/20 text-green-400 border border-green-500/50 hover:bg-green-500/30'
+                    : plan.popular
+                    ? 'bg-gradient-to-r from-kali-blue to-cyan-500 text-white hover:from-kali-blue/90 hover:to-cyan-500/90 shadow-lg shadow-kali-blue/30'
+                    : plan.id === 'team'
+                    ? 'bg-purple-500 text-white hover:bg-purple-600 shadow-lg shadow-purple-500/30'
+                    : plan.id === 'enterprise'
+                    ? 'bg-gradient-to-r from-yellow-500 to-orange-500 text-gray-900 font-bold hover:from-yellow-400 hover:to-orange-400 shadow-lg shadow-yellow-500/30'
+                    : `${getColorClasses(plan.color)} border hover:opacity-80`
+                }`}
+              >
+                {getButtonText(plan.id)}
+              </button>
+            </div>
           </div>
         ))}
       </div>
