@@ -111,9 +111,19 @@ CATEGORY_INFO = {
 # ================================
 def get_user_plan(user_id: str) -> str:
     """Get user's plan from database"""
-    # In production, this would query the database
-    # For now, return a default plan
-    return 'professional'  # Default for testing
+    try:
+        # Import here to avoid circular imports
+        from app import User, Organization
+        
+        user = User.query.get(user_id)
+        if user and user.organization_id:
+            org = Organization.query.get(user.organization_id)
+            if org:
+                return org.plan_type or 'starter'
+        return 'starter'  # Default plan
+    except Exception as e:
+        print(f"Error getting user plan: {e}")
+        return 'starter'  # Fallback to starter
 
 def validate_target(target: str) -> bool:
     """Validate scan target"""

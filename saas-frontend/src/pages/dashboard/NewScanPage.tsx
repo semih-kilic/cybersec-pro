@@ -44,6 +44,7 @@ export function NewScanPage() {
   const [notifications, setNotifications] = useState(true);
   const [showDangerousWarning, setShowDangerousWarning] = useState(false);
   const [dangerousConfirmed, setDangerousConfirmed] = useState(false);
+  const [toolSearch, setToolSearch] = useState('');
 
   useEffect(() => {
     fetchData();
@@ -201,6 +202,8 @@ export function NewScanPage() {
                 <input
                   type="text"
                   placeholder="Search tools..."
+                  value={toolSearch}
+                  onChange={(e) => setToolSearch(e.target.value)}
                   className="w-full pl-10 pr-4 py-3 bg-gray-800 border border-gray-700 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:border-kali-blue transition"
                 />
                 <svg className="w-5 h-5 text-gray-500 absolute left-3 top-1/2 -translate-y-1/2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -208,7 +211,8 @@ export function NewScanPage() {
                 </svg>
               </div>
 
-              {/* Popular Tools */}
+              {/* Popular Tools - only show when not searching */}
+              {!toolSearch && (
               <div className="mb-6">
                 <h3 className="text-sm text-gray-400 mb-3">Popular Tools</h3>
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
@@ -227,16 +231,31 @@ export function NewScanPage() {
                   ))}
                 </div>
               </div>
+              )}
 
               {/* All Tools by Category */}
               <div>
-                <h3 className="text-sm text-gray-400 mb-3">All Tools</h3>
+                <h3 className="text-sm text-gray-400 mb-3">
+                  {toolSearch ? `Search Results for "${toolSearch}"` : 'All Tools'}
+                </h3>
                 <div className="space-y-4 max-h-96 overflow-y-auto">
-                  {Object.entries(tools).map(([category, categoryTools]) => (
+                  {Object.entries(tools).map(([category, categoryTools]) => {
+                    // Filter tools by search
+                    const filteredTools = toolSearch 
+                      ? categoryTools.filter(t => 
+                          t.name.toLowerCase().includes(toolSearch.toLowerCase()) ||
+                          t.id.toLowerCase().includes(toolSearch.toLowerCase()) ||
+                          (t.description?.toLowerCase() || '').includes(toolSearch.toLowerCase())
+                        )
+                      : categoryTools;
+                    
+                    if (filteredTools.length === 0) return null;
+                    
+                    return (
                     <div key={category}>
                       <p className="text-xs text-gray-500 uppercase tracking-wider mb-2">{category}</p>
                       <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
-                        {categoryTools.map(tool => (
+                        {filteredTools.map(tool => (
                           <button
                             key={tool.id}
                             onClick={() => setSelectedTool(tool.slug || tool.id)}
@@ -251,7 +270,8 @@ export function NewScanPage() {
                         ))}
                       </div>
                     </div>
-                  ))}
+                    );
+                  })}
                 </div>
               </div>
             </div>

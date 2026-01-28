@@ -50,7 +50,7 @@ export function LandingPage() {
         {/* Hero Content */}
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 text-center">
           <div className="inline-block px-4 py-2 bg-cyan-500/10 border border-cyan-500/30 rounded-full text-cyan-400 text-sm font-medium mb-8">
-            🚀 143+ Professional Security Tools
+            🚀 404+ Professional Security Tools
           </div>
           <h1 className="text-5xl md:text-7xl font-bold text-white mb-6">
             Professional<br />
@@ -60,7 +60,7 @@ export function LandingPage() {
             Platform
           </h1>
           <p className="text-xl text-gray-400 max-w-2xl mx-auto mb-10">
-            Access 143+ security tools through one powerful dashboard. From reconnaissance to exploitation, we've got everything you need for comprehensive security testing.
+            Access 404+ security tools through one powerful dashboard. From reconnaissance to exploitation, we've got everything you need for comprehensive security testing.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             {isAuthenticated ? (
@@ -89,12 +89,12 @@ export function LandingPage() {
           
           <div className="grid md:grid-cols-3 gap-8">
             {[
-              { icon: '🔍', title: 'Information Gathering', desc: '139 tools for reconnaissance, DNS recon, subdomain enumeration, OSINT' },
-              { icon: '🌐', title: 'Web Application', desc: '23 tools for web scanning, SQL injection, XSS testing, fuzzing' },
-              { icon: '🔐', title: 'Password Attacks', desc: '40 tools for hash cracking, brute force, dictionary attacks' },
-              { icon: '🛡️', title: 'Vulnerability Analysis', desc: '36 tools for scanning, SSL testing, vulnerability detection' },
-              { icon: '💀', title: 'Exploitation', desc: '20 tools including Metasploit Framework for authorized testing' },
-              { icon: '📊', title: 'Forensics', desc: '63 tools for memory analysis, file carving, steganography' },
+              { icon: '🔍', title: 'Information Gathering', desc: '80+ tools for reconnaissance, DNS recon, subdomain enumeration, OSINT' },
+              { icon: '🌐', title: 'Web Application', desc: '60+ tools for web scanning, SQL injection, XSS testing, fuzzing' },
+              { icon: '🔐', title: 'Password Attacks', desc: '50+ tools for hash cracking, brute force, dictionary attacks' },
+              { icon: '🛡️', title: 'Vulnerability Analysis', desc: '40+ tools for scanning, SSL testing, vulnerability detection' },
+              { icon: '💀', title: 'Exploitation', desc: '30+ tools including Metasploit Framework for authorized testing' },
+              { icon: '📊', title: 'Forensics', desc: '40+ tools for memory analysis, file carving, steganography' },
             ].map((feature, i) => (
               <div key={i} className="bg-gray-800/50 rounded-xl p-6 border border-gray-700 hover:border-cyan-500/50 transition">
                 <div className="text-3xl mb-4">{feature.icon}</div>
