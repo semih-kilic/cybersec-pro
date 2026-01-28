@@ -162,17 +162,15 @@ def sanitize_command_value(value: str) -> str:
 def get_tools_list():
     """Get list of all available tools"""
     try:
-        plan = request.args.get('plan', 'professional')
+        plan = request.args.get('plan', '')
         category = request.args.get('category')
         search = request.args.get('search', '').lower()
         
         registry = get_registry()
         
-        # Get tools for plan
-        if plan:
-            tools = registry.get_tools_for_plan(plan)
-        else:
-            tools = registry.get_installed_tools()
+        # Always return ALL installed tools - frontend handles access control
+        # This allows users to see what tools are available in higher plans
+        tools = registry.get_installed_tools()
         
         # Format tools for response
         tool_list = []
