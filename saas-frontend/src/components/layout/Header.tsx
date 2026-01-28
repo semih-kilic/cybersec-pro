@@ -26,7 +26,7 @@ export function Header({ title, subtitle, actions, breadcrumb }: HeaderProps) {
   };
 
   return (
-    <header className="h-16 bg-gray-900/50 backdrop-blur-xl border-b border-gray-800 flex items-center justify-between px-6 sticky top-0 z-30">
+    <header className="h-16 bg-gray-900/95 backdrop-blur-xl border-b border-gray-800 flex items-center justify-between px-6 sticky top-0 z-50">
       {/* Left - Title & Breadcrumb */}
       <div>
         {breadcrumb && breadcrumb.length > 0 && (
