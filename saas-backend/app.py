@@ -949,13 +949,17 @@ def create_checkout():
         cancel_url = data.get('cancel_url', 'https://semihkilic.com/dashboard/upgrade')
         
         # Stripe Price IDs from .env (Updated Feb 2026 - New Pricing)
+        # Starter = FREE, Professional = €19, Team = €49, Enterprise = €99
         import os
         STRIPE_PRICES = {
-            'starter': os.environ.get('STRIPE_STARTER_PRICE_ID', 'price_1Stbp00ed3IDKXcngS5QHCju'),
-            'professional': os.environ.get('STRIPE_PROFESSIONAL_PRICE_ID', 'price_1Stbpv0ed3IDKXcnND1pS9Bj'),
+            'professional': os.environ.get('STRIPE_PROFESSIONAL_PRICE_ID', 'price_1Stbp00ed3IDKXcngS5QHCju'),
             'team': os.environ.get('STRIPE_TEAM_PRICE_ID', 'price_1SwUPS0ed3IDKXcnw7yBB9NI'),
             'enterprise': os.environ.get('STRIPE_ENTERPRISE_PRICE_ID', 'price_1SwUQ40ed3IDKXcnduws9J5k'),
         }
+        
+        # Starter is free, no checkout needed
+        if plan == 'starter':
+            return jsonify({'error': 'Starter plan is free, no payment required'}), 400
         
         if plan not in STRIPE_PRICES:
             return jsonify({'error': 'Invalid plan'}), 400
