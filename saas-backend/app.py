@@ -948,13 +948,13 @@ def create_checkout():
         success_url = data.get('success_url', 'https://semihkilic.com/dashboard/settings?tab=billing')
         cancel_url = data.get('cancel_url', 'https://semihkilic.com/dashboard/upgrade')
         
-        # Stripe Price IDs from .env
+        # Stripe Price IDs from .env (Updated Feb 2026 - New Pricing)
         import os
         STRIPE_PRICES = {
             'starter': os.environ.get('STRIPE_STARTER_PRICE_ID', 'price_1Stbp00ed3IDKXcngS5QHCju'),
             'professional': os.environ.get('STRIPE_PROFESSIONAL_PRICE_ID', 'price_1Stbpv0ed3IDKXcnND1pS9Bj'),
-            'team': os.environ.get('STRIPE_PROFESSIONAL_PRICE_ID', 'price_1Stbpv0ed3IDKXcnND1pS9Bj'),  # Use professional price for team
-            'enterprise': os.environ.get('STRIPE_ENTERPRISE_PRICE_ID', 'price_1StbqM0ed3IDKXcnEVXJzorf'),
+            'team': os.environ.get('STRIPE_TEAM_PRICE_ID', 'price_1SwUPS0ed3IDKXcnw7yBB9NI'),
+            'enterprise': os.environ.get('STRIPE_ENTERPRISE_PRICE_ID', 'price_1SwUQ40ed3IDKXcnduws9J5k'),
         }
         
         if plan not in STRIPE_PRICES:

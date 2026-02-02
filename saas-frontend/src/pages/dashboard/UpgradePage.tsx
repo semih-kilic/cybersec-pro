@@ -17,7 +17,7 @@ const plans = [
     period: '14 days',
     description: 'Perfect for trying the platform',
     features: [
-      '6 security tools',
+      '33 security tools',
       '10 scans per day',
       '1 project',
       'Basic JSON reports',
@@ -28,11 +28,11 @@ const plans = [
   {
     id: 'professional',
     name: 'Professional',
-    price: 29,
+    price: 19,
     period: '/month',
     description: 'For security professionals',
     features: [
-      '360 security tools',
+      '120 security tools',
       '50 scans per day',
       'Multi-tool scan (3)',
       '5 projects',
@@ -45,11 +45,11 @@ const plans = [
   {
     id: 'team',
     name: 'Team',
-    price: 79,
+    price: 49,
     period: '/month',
     description: 'For security teams',
     features: [
-      '390 security tools',
+      '130 security tools',
       '100 scans per day',
       'Multi-tool scan (5)',
       'Remote agent (1)',
@@ -63,11 +63,11 @@ const plans = [
   {
     id: 'enterprise',
     name: 'Enterprise',
-    price: 149,
+    price: 99,
     period: '/month',
     description: 'For organizations',
     features: [
-      'All 404 Kali tools',
+      'All 143+ Kali tools',
       'Unlimited scans',
       'Multi-tool scan (∞)',
       'Unlimited remote agents',
