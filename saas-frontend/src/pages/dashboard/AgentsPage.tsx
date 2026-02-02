@@ -223,7 +223,7 @@ curl -sSL ${baseUrl}/install.sh | \\
               href="/#pricing"
               className="px-8 py-3 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-lg font-medium hover:from-purple-700 hover:to-pink-700 transition"
             >
-              Upgrade to Team - €79/mo
+              Upgrade to Team - €49/mo
             </a>
             <a
               href="/#pricing"

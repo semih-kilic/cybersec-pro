@@ -47,55 +47,67 @@ email_service = EmailService()
 PLANS = {
     'starter': {
         'name': 'Starter',
+        'price': 0,
+        'currency': 'eur',
+        'interval': 'month',
+        'features': [
+            '33 Essential Security Tools',
+            'Basic Web Dashboard',
+            'Email Support',
+            '10 scans per day',
+            '14-day free trial'
+        ],
+        'stripe_price_id': os.environ.get('STRIPE_STARTER_PRICE_ID', 'price_starter_monthly'),
+        'description': 'Perfect for trying the platform'
+    },
+    'professional': {
+        'name': 'Professional', 
         'price': 19,
         'currency': 'eur',
         'interval': 'month',
         'features': [
-            '50+ Essential Security Tools',
-            'Basic Web Dashboard',
-            'Email Support',
-            'Monthly Updates',
-            'Community Access'
+            '120 Advanced Security Tools',
+            'Advanced Web Dashboard',
+            'API Access',
+            '50 scans per day',
+            'Multi-tool scan (3)',
+            'PDF/HTML Reports'
         ],
-        'stripe_price_id': os.environ.get('STRIPE_STARTER_PRICE_ID', 'price_starter_monthly'),
-        'description': 'Perfect for individual security researchers and students'
+        'stripe_price_id': os.environ.get('STRIPE_PROFESSIONAL_PRICE_ID', 'price_professional_monthly'),
+        'description': 'For security professionals'
     },
-    'professional': {
-        'name': 'Professional', 
-        'price': 59,
+    'team': {
+        'name': 'Team',
+        'price': 49,
         'currency': 'eur',
         'interval': 'month',
         'features': [
-            '120+ Advanced Security Tools',
-            'Advanced Web Dashboard',
-            'API Access (1000 calls/month)',
-            'Priority Email Support',
-            'Weekly Updates',
-            'Custom Scan Profiles',
-            'Export Reports (PDF/JSON)'
+            '130 Security Tools',
+            '100 scans per day',
+            'Multi-tool scan (5)',
+            'Remote agent (1)',
+            '5 team members',
+            'Slack/Teams integration'
         ],
-        'stripe_price_id': os.environ.get('STRIPE_PROFESSIONAL_PRICE_ID', 'price_professional_monthly'),
-        'description': 'Ideal for professional penetration testers and security consultants'
+        'stripe_price_id': os.environ.get('STRIPE_TEAM_PRICE_ID', 'price_team_monthly'),
+        'description': 'For security teams'
     },
     'enterprise': {
         'name': 'Enterprise',
-        'price': 149,
+        'price': 99,
         'currency': 'eur', 
         'interval': 'month',
         'features': [
-            '165+ Complete Security Toolkit',
-            'Full Web Dashboard + API',
-            'Unlimited API Access',
-            '24/7 Priority Support',
-            'Daily Updates',
-            'Custom Integrations',
-            'Advanced Reporting',
-            'Team Management',
-            'White-label Options',
-            'SLA Guarantee'
+            'All 143+ Premium Tools',
+            'Unlimited scans',
+            'Unlimited remote agents',
+            'Unlimited users & projects',
+            'SSO / SAML / LDAP',
+            'Compliance reports',
+            '24/7 priority support'
         ],
         'stripe_price_id': os.environ.get('STRIPE_ENTERPRISE_PRICE_ID', 'price_enterprise_monthly'),
-        'description': 'Complete solution for security teams and enterprises'
+        'description': 'Complete solution for organizations'
     }
 }
 

@@ -669,9 +669,9 @@ export default function SettingsPage() {
                 <h3 className="text-lg font-medium text-white mb-4">Billing History</h3>
                 <div className="space-y-2">
                   {[
-                    { date: 'Jan 26, 2026', amount: '€29.00', status: 'Paid', invoice: '#INV-2601' },
-                    { date: 'Dec 26, 2025', amount: '€29.00', status: 'Paid', invoice: '#INV-2512' },
-                    { date: 'Nov 26, 2025', amount: '€29.00', status: 'Paid', invoice: '#INV-2511' },
+                    { date: 'Jan 26, 2026', amount: '€19.00', status: 'Paid', invoice: '#INV-2601' },
+                    { date: 'Dec 26, 2025', amount: '€19.00', status: 'Paid', invoice: '#INV-2512' },
+                    { date: 'Nov 26, 2025', amount: '€19.00', status: 'Paid', invoice: '#INV-2511' },
                   ].map((item, i) => (
                     <div key={i} className="flex items-center justify-between p-3 bg-gray-800 rounded-lg">
                       <div className="flex items-center gap-4">

@@ -148,12 +148,12 @@ export function LandingPage() {
               </div>
               <div className="text-lg font-medium text-cyan-400 mb-2">Professional</div>
               <div className="flex items-baseline gap-1 mb-4">
-                <span className="text-4xl font-bold text-white">€29</span>
+                <span className="text-4xl font-bold text-white">€19</span>
                 <span className="text-gray-400">/month</span>
               </div>
               <ul className="space-y-2 mb-6 text-gray-300 text-sm">
                 <li className="flex items-center gap-2">
-                  <span className="text-green-400">✓</span> <strong>360</strong> Tools
+                  <span className="text-green-400">✓</span> <strong>120</strong> Tools
                 </li>
                 <li className="flex items-center gap-2">
                   <span className="text-green-400">✓</span> 50 scans/day
@@ -177,12 +177,12 @@ export function LandingPage() {
             <div className="bg-gray-800/50 rounded-2xl p-6 border border-purple-500/50">
               <div className="text-lg font-medium text-purple-400 mb-2">Team</div>
               <div className="flex items-baseline gap-1 mb-4">
-                <span className="text-4xl font-bold text-white">€79</span>
+                <span className="text-4xl font-bold text-white">€49</span>
                 <span className="text-gray-400">/month</span>
               </div>
               <ul className="space-y-2 mb-6 text-gray-300 text-sm">
                 <li className="flex items-center gap-2">
-                  <span className="text-green-400">✓</span> <strong>390</strong> Tools
+                  <span className="text-green-400">✓</span> <strong>130</strong> Tools
                 </li>
                 <li className="flex items-center gap-2">
                   <span className="text-green-400">✓</span> 100 scans/day
@@ -206,12 +206,12 @@ export function LandingPage() {
             <div className="bg-gray-800/50 rounded-2xl p-6 border border-yellow-500/50">
               <div className="text-lg font-medium text-yellow-400 mb-2">Enterprise</div>
               <div className="flex items-baseline gap-1 mb-4">
-                <span className="text-4xl font-bold text-white">€149</span>
+                <span className="text-4xl font-bold text-white">€99</span>
                 <span className="text-gray-400">/month</span>
               </div>
               <ul className="space-y-2 mb-6 text-gray-300 text-sm">
                 <li className="flex items-center gap-2">
-                  <span className="text-green-400">✓</span> <strong>404+</strong> All Tools
+                  <span className="text-green-400">✓</span> <strong>143+</strong> All Tools
                 </li>
                 <li className="flex items-center gap-2">
                   <span className="text-yellow-400">✓</span> Unlimited scans
