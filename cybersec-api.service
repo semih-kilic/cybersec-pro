@@ -1,0 +1,39 @@
+[Unit]
+Description=CyberSec Pro API (Gunicorn)
+Documentation=https://semihkilic.com/docs
+After=network.target redis.service
+Wants=redis.service
+
+[Service]
+Type=notify
+User=cybersec
+Group=cybersec
+RuntimeDirectory=gunicorn
+WorkingDirectory=/home/cybersec/cybersec-pro/saas-backend
+Environment="PATH=/home/cybersec/cybersec-pro/saas-backend/venv/bin"
+Environment="FLASK_ENV=production"
+ExecStart=/home/cybersec/cybersec-pro/saas-backend/venv/bin/gunicorn \
+    --config /home/cybersec/cybersec-pro/saas-backend/gunicorn.conf.py \
+    app:app
+ExecReload=/bin/kill -s HUP $MAINPID
+KillMode=mixed
+TimeoutStopSec=30
+Restart=always
+RestartSec=5
+StandardOutput=append:/home/cybersec/cybersec-pro/logs/gunicorn-stdout.log
+StandardError=append:/home/cybersec/cybersec-pro/logs/gunicorn-stderr.log
+
+# Security hardening
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ReadWritePaths=/home/cybersec/cybersec-pro
+
+# Resource limits for single server
+# 5 workers × ~150MB each = ~750MB max
+LimitNOFILE=65535
+MemoryMax=2G
+CPUQuota=150%
+
+[Install]
+WantedBy=multi-user.target
