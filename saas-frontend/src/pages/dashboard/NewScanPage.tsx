@@ -22,6 +22,21 @@ interface Target {
   type: string;
 }
 
+interface Agent {
+  id: number;
+  name: string;
+  ip_address: string;
+  platform: string;
+  status: string;
+}
+
+interface Project {
+  id: number;
+  name: string;
+  target_url?: string;
+  target_ip?: string;
+}
+
 export function NewScanPage() {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
@@ -30,12 +45,16 @@ export function NewScanPage() {
   const [step, setStep] = useState(1);
   const [tools, setTools] = useState<{ [category: string]: Tool[] }>({});
   const [targets, setTargets] = useState<Target[]>([]);
+  const [agents, setAgents] = useState<Agent[]>([]);
+  const [projects, setProjects] = useState<Project[]>([]);
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   
   // Form state
   const [selectedTool, setSelectedTool] = useState<string>(searchParams.get('tool') || '');
   const [selectedTarget, setSelectedTarget] = useState<string>('');
+  const [selectedAgent, setSelectedAgent] = useState<number | null>(null);
+  const [selectedProject, setSelectedProject] = useState<number | null>(null);
   const [customTarget, setCustomTarget] = useState('');
   const [useCustomTarget, setUseCustomTarget] = useState(true);
   const [customCommand, setCustomCommand] = useState(searchParams.get('command') || '');
@@ -77,6 +96,29 @@ export function NewScanPage() {
         const data = await targetsRes.json();
         setTargets(data.targets || []);
       }
+
+      // Fetch agents
+      const agentsRes = await fetch('/api/v1/agents', {
+        headers: { 'Authorization': `Bearer ${token}` },
+      });
+      if (agentsRes.ok) {
+        const data = await agentsRes.json();
+        setAgents(data.agents || []);
+        // Auto-select first online agent
+        const onlineAgent = (data.agents || []).find((a: Agent) => a.status === 'online');
+        if (onlineAgent) {
+          setSelectedAgent(onlineAgent.id);
+        }
+      }
+
+      // Fetch projects
+      const projectsRes = await fetch('/api/v1/projects', {
+        headers: { 'Authorization': `Bearer ${token}` },
+      });
+      if (projectsRes.ok) {
+        const data = await projectsRes.json();
+        setProjects(data.projects || []);
+      }
     } catch (error) {
       console.error('Failed to fetch data:', error);
     } finally {
@@ -109,6 +151,8 @@ export function NewScanPage() {
           priority,
           notifications,
           confirm_dangerous: dangerousConfirmed,
+          agent_id: selectedAgent,
+          project_id: selectedProject,
         }),
       });
 
@@ -359,6 +403,60 @@ export function NewScanPage() {
                 )}
               </div>
 
+              {/* Agent Selection */}
+              <div className="mb-6">
+                <label className="block text-sm text-gray-400 mb-2">
+                  <span className="flex items-center gap-2">
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 3v2m6-2v2M9 19v2m6-2v2M5 9H3m2 6H3m18-6h-2m2 6h-2M7 19h10a2 2 0 002-2V7a2 2 0 00-2-2H7a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                    </svg>
+                    Execution Agent
+                  </span>
+                </label>
+                <select
+                  value={selectedAgent || ''}
+                  onChange={(e) => setSelectedAgent(e.target.value ? Number(e.target.value) : null)}
+                  className="w-full px-4 py-3 bg-gray-800 border border-gray-700 rounded-xl text-white focus:outline-none focus:border-kali-blue transition"
+                >
+                  <option value="">Server (Default)</option>
+                  {agents.map(agent => (
+                    <option key={agent.id} value={agent.id} disabled={agent.status !== 'online'}>
+                      {agent.status === 'online' ? '🟢' : '🔴'} {agent.name} ({agent.ip_address}) - {agent.platform}
+                    </option>
+                  ))}
+                </select>
+                <p className="text-xs text-gray-500 mt-1">
+                  Select an agent to execute the scan. Use "Server" for built-in execution, or choose an SSH agent.
+                </p>
+              </div>
+
+              {/* Project Selection */}
+              <div className="mb-6">
+                <label className="block text-sm text-gray-400 mb-2">
+                  <span className="flex items-center gap-2">
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z" />
+                    </svg>
+                    Project (Optional)
+                  </span>
+                </label>
+                <select
+                  value={selectedProject || ''}
+                  onChange={(e) => setSelectedProject(e.target.value ? Number(e.target.value) : null)}
+                  className="w-full px-4 py-3 bg-gray-800 border border-gray-700 rounded-xl text-white focus:outline-none focus:border-kali-blue transition"
+                >
+                  <option value="">No Project</option>
+                  {projects.map(project => (
+                    <option key={project.id} value={project.id}>
+                      {project.name}
+                    </option>
+                  ))}
+                </select>
+                <p className="text-xs text-gray-500 mt-1">
+                  Assign this scan to a project for better organization.
+                </p>
+              </div>
+
               {/* Custom Command */}
               <div className="mb-6">
                 <label className="block text-sm text-gray-400 mb-2">
@@ -466,6 +564,24 @@ export function NewScanPage() {
                 <div className="flex items-center justify-between py-3 border-b border-gray-800">
                   <span className="text-gray-400">Notifications</span>
                   <span className="text-white">{notifications ? 'Enabled' : 'Disabled'}</span>
+                </div>
+                <div className="flex items-center justify-between py-3 border-b border-gray-800">
+                  <span className="text-gray-400">Execution Agent</span>
+                  <span className="text-white">
+                    {selectedAgent 
+                      ? agents.find(a => a.id === selectedAgent)?.name || 'Unknown Agent'
+                      : 'Server (Default)'
+                    }
+                  </span>
+                </div>
+                <div className="flex items-center justify-between py-3 border-b border-gray-800">
+                  <span className="text-gray-400">Project</span>
+                  <span className="text-white">
+                    {selectedProject 
+                      ? projects.find(p => p.id === selectedProject)?.name || 'Unknown Project'
+                      : 'No Project'
+                    }
+                  </span>
                 </div>
                 {customCommand && (
                   <div className="py-3">
