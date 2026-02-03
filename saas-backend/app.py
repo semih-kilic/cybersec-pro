@@ -1968,15 +1968,16 @@ Page: {system_info.get('currentUrl', 'N/A')}
 This feedback was submitted via CyberSec Pro dashboard
 """
 
-        # Try to send email
+        # Try to send email via Yandex SMTP (SSL on port 465)
+        email_sent = False
         try:
-            smtp_host = os.environ.get('SMTP_HOST', 'localhost')
-            smtp_port = int(os.environ.get('SMTP_PORT', 25))
+            smtp_host = os.environ.get('SMTP_HOST', 'smtp.yandex.com')
+            smtp_port = int(os.environ.get('SMTP_PORT', 465))
             smtp_user = os.environ.get('SMTP_USER', '')
-            smtp_pass = os.environ.get('SMTP_PASS', '')
+            smtp_pass = os.environ.get('SMTP_PASSWORD', '')  # Fixed: SMTP_PASSWORD not SMTP_PASS
             
             msg = MIMEMultipart()
-            msg['From'] = f"CyberSec Pro <noreply@semihkilic.com>"
+            msg['From'] = f"CyberSec Pro <{smtp_user}>"
             msg['To'] = 'cybersecpro@semihkilic.com'
             msg['Subject'] = email_subject
             msg['Reply-To'] = user.email
@@ -1984,26 +1985,35 @@ This feedback was submitted via CyberSec Pro dashboard
             msg.attach(MIMEText(email_body, 'plain'))
             
             if smtp_user and smtp_pass:
-                server = smtplib.SMTP(smtp_host, smtp_port)
-                server.starttls()
+                # Use SSL for Yandex (port 465)
+                import ssl
+                context = ssl.create_default_context()
+                server = smtplib.SMTP_SSL(smtp_host, smtp_port, context=context)
                 server.login(smtp_user, smtp_pass)
                 server.send_message(msg)
                 server.quit()
+                email_sent = True
+                print(f"✅ Email sent successfully to cybersecpro@semihkilic.com")
             else:
-                print(f"Feedback Email (would send to cybersecpro@semihkilic.com):")
-                print(email_body)
+                print(f"⚠️ SMTP credentials not configured, email not sent")
+                print(f"Feedback content: [{feedback_type}] {subject}")
                 
         except Exception as e:
-            print(f"Email sending failed: {e}")
+            print(f"❌ Email sending failed: {e}")
+            import traceback
+            traceback.print_exc()
         
-        print(f"Feedback received from {user.email}: [{feedback_type}] {subject}")
+        print(f"📝 Feedback received from {user.email}: [{feedback_type}] {subject}")
         
         return jsonify({
             'success': True,
-            'message': 'Feedback submitted successfully'
+            'message': 'Feedback submitted successfully',
+            'email_sent': email_sent
         })
         
     except Exception as e:
+        import traceback
+        traceback.print_exc()
         return jsonify({'error': str(e)}), 500
 
 if __name__ == '__main__':
