@@ -173,6 +173,66 @@ class Subscription(db.Model):
             'created_at': self.created_at.isoformat()
         }
 
+class Agent(db.Model):
+    """Remote agents for scan execution"""
+    __tablename__ = 'agents'
+    
+    id = db.Column(db.String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
+    organization_id = db.Column(db.String(36), db.ForeignKey('organizations.id'), nullable=False)
+    name = db.Column(db.String(100), nullable=False)
+    hostname = db.Column(db.String(255))
+    ip_address = db.Column(db.String(45))
+    platform = db.Column(db.String(20), default='linux')  # linux, windows, macos, docker
+    os_info = db.Column(db.String(100))
+    version = db.Column(db.String(20))
+    status = db.Column(db.String(20), default='pending')  # pending, online, offline, busy, error
+    connection_type = db.Column(db.String(20), default='direct')  # direct, ssh
+    ssh_host = db.Column(db.String(255))
+    ssh_port = db.Column(db.Integer, default=22)
+    ssh_username = db.Column(db.String(100))
+    ssh_key_path = db.Column(db.String(255))
+    ssh_password_encrypted = db.Column(db.Text)  # Encrypted password
+    registration_token = db.Column(db.String(100), unique=True)
+    api_key = db.Column(db.String(100), unique=True)
+    last_heartbeat = db.Column(db.DateTime)
+    cpu_usage = db.Column(db.Float, default=0)
+    memory_usage = db.Column(db.Float, default=0)
+    active_scans = db.Column(db.Integer, default=0)
+    total_scans = db.Column(db.Integer, default=0)
+    location = db.Column(db.String(100))
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    
+    # Relationships
+    organization = db.relationship('Organization', backref='agents')
+    
+    def to_dict(self, include_sensitive=False):
+        data = {
+            'id': self.id,
+            'organization_id': self.organization_id,
+            'name': self.name,
+            'hostname': self.hostname,
+            'ip_address': self.ip_address,
+            'platform': self.platform,
+            'os': self.os_info,
+            'version': self.version,
+            'status': self.status,
+            'connection_type': self.connection_type,
+            'last_seen': self.last_heartbeat.isoformat() if self.last_heartbeat else None,
+            'cpu_usage': self.cpu_usage,
+            'memory_usage': self.memory_usage,
+            'active_scans': self.active_scans,
+            'total_scans': self.total_scans,
+            'location': self.location,
+            'created_at': self.created_at.isoformat()
+        }
+        if include_sensitive:
+            data['ssh_host'] = self.ssh_host
+            data['ssh_port'] = self.ssh_port
+            data['ssh_username'] = self.ssh_username
+            data['registration_token'] = self.registration_token
+        return data
+
 class Tool(db.Model):
     """Security tools catalog"""
     __tablename__ = 'tools'
@@ -1848,6 +1908,535 @@ def create_schedule():
         }), 201
     except Exception as e:
         return jsonify({'error': str(e)}), 500
+
+
+# ================================
+# V2 SCAN API (Enhanced)
+# ================================
+
+@app.route('/api/v2/scan/execute', methods=['POST'])
+@require_organization
+def execute_scan_v2():
+    """Execute a security scan (v2 API with agent support)"""
+    if not SCAN_EXECUTOR_AVAILABLE:
+        return jsonify({'error': 'Scan executor not available'}), 503
+    
+    try:
+        user_id = get_jwt_identity()
+        user = User.query.get(user_id)
+        org = user.organization
+        data = request.get_json()
+        
+        tool_id = data.get('tool_id')
+        target = data.get('target')
+        parameters = data.get('parameters', {})
+        agent_id = data.get('agent_id')  # Optional: specify agent to run scan
+        
+        if not tool_id or not target:
+            return jsonify({'error': 'tool_id and target are required'}), 400
+        
+        # Check plan access
+        executor = get_executor()
+        allowed_tools = executor.get_tools_for_plan(org.plan_type)
+        
+        if tool_id not in allowed_tools:
+            return jsonify({
+                'error': f'Tool {tool_id} requires plan upgrade',
+                'current_plan': org.plan_type,
+                'required_plan': TOOL_CONFIGS.get(tool_id, {}).get('plan_required', 'professional')
+            }), 402
+        
+        # Check daily scan limit based on plan
+        from datetime import date
+        today_scans = Scan.query.filter(
+            Scan.organization_id == org.id,
+            db.func.date(Scan.created_at) == date.today()
+        ).count()
+        
+        plan_limits = {'trial': 3, 'starter': 10, 'professional': 50, 'team': 100, 'enterprise': -1}
+        daily_limit = plan_limits.get(org.plan_type, 3)
+        
+        if daily_limit != -1 and today_scans >= daily_limit:
+            return jsonify({
+                'error': f'Daily scan limit reached ({today_scans}/{daily_limit})',
+                'scans_today': today_scans,
+                'limit': daily_limit
+            }), 429
+        
+        # Create scan record
+        scan_id = str(uuid.uuid4())
+        scan = Scan(
+            id=scan_id,
+            organization_id=org.id,
+            user_id=user.id,
+            tool_id=tool_id,
+            target=target,
+            parameters=parameters,
+            status='running',
+            started_at=datetime.utcnow()
+        )
+        db.session.add(scan)
+        db.session.commit()
+        
+        # Execute scan - if agent specified, use agent, otherwise local
+        if agent_id:
+            agent = Agent.query.filter_by(id=agent_id, organization_id=org.id).first()
+            if not agent:
+                scan.status = 'failed'
+                scan.output = 'Agent not found'
+                db.session.commit()
+                return jsonify({'error': 'Agent not found'}), 404
+            
+            if agent.status != 'online':
+                scan.status = 'failed'
+                scan.output = f'Agent is {agent.status}'
+                db.session.commit()
+                return jsonify({'error': f'Agent is {agent.status}'}), 400
+            
+            # Execute via agent (SSH)
+            if agent.connection_type == 'ssh':
+                result = execute_scan_via_ssh(agent, scan_id, tool_id, target, parameters)
+            else:
+                # Direct agent execution
+                result = executor.start_scan(scan_id, tool_id, target, parameters)
+        else:
+            # Local execution
+            result = executor.start_scan(scan_id, tool_id, target, parameters)
+        
+        if not result.get('success'):
+            scan.status = 'failed'
+            scan.output = result.get('error', 'Unknown error')
+            db.session.commit()
+            return jsonify(result), 400
+        
+        return jsonify({
+            'success': True,
+            'scan_id': scan_id,
+            'status': 'running',
+            'command': result.get('command'),
+            'message': 'Scan started successfully'
+        }), 201
+        
+    except Exception as e:
+        db.session.rollback()
+        import traceback
+        traceback.print_exc()
+        return jsonify({'error': str(e)}), 500
+
+
+def execute_scan_via_ssh(agent, scan_id, tool_id, target, parameters):
+    """Execute scan on remote agent via SSH"""
+    import paramiko
+    
+    try:
+        ssh = paramiko.SSHClient()
+        ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+        
+        # Connect to agent
+        if agent.ssh_key_path:
+            ssh.connect(
+                agent.ssh_host or agent.ip_address,
+                port=agent.ssh_port or 22,
+                username=agent.ssh_username,
+                key_filename=agent.ssh_key_path,
+                timeout=30
+            )
+        else:
+            # Decrypt password
+            from cryptography.fernet import Fernet
+            key = os.environ.get('ENCRYPTION_KEY', 'default_key_change_me')
+            try:
+                f = Fernet(key.encode() if len(key) == 32 else Fernet.generate_key())
+                password = f.decrypt(agent.ssh_password_encrypted.encode()).decode()
+            except:
+                password = agent.ssh_password_encrypted  # Fallback if not encrypted
+            
+            ssh.connect(
+                agent.ssh_host or agent.ip_address,
+                port=agent.ssh_port or 22,
+                username=agent.ssh_username,
+                password=password,
+                timeout=30
+            )
+        
+        # Build command
+        executor = get_executor()
+        cmd = executor.build_command(tool_id, target, parameters)
+        cmd_str = ' '.join(cmd)
+        
+        # Execute command
+        stdin, stdout, stderr = ssh.exec_command(cmd_str, timeout=300)
+        output = stdout.read().decode('utf-8')
+        errors = stderr.read().decode('utf-8')
+        
+        ssh.close()
+        
+        # Update agent stats
+        agent.total_scans = (agent.total_scans or 0) + 1
+        agent.last_heartbeat = datetime.utcnow()
+        db.session.commit()
+        
+        return {
+            'success': True,
+            'scan_id': scan_id,
+            'command': cmd_str,
+            'output': output,
+            'errors': errors,
+            'status': 'completed'
+        }
+        
+    except Exception as e:
+        return {
+            'success': False,
+            'error': f'SSH execution failed: {str(e)}',
+            'scan_id': scan_id
+        }
+
+
+# ================================
+# AGENT API
+# ================================
+
+@app.route('/api/v1/agents', methods=['GET'])
+@require_organization
+def get_agents():
+    """Get all agents for organization"""
+    try:
+        user_id = get_jwt_identity()
+        user = User.query.get(user_id)
+        org = user.organization
+        
+        # Check plan - only team and enterprise have agents
+        if org.plan_type not in ['team', 'enterprise']:
+            return jsonify({
+                'agents': [],
+                'message': 'Agents feature requires Team or Enterprise plan'
+            })
+        
+        agents = Agent.query.filter_by(organization_id=org.id).all()
+        
+        # Update status based on last heartbeat
+        for agent in agents:
+            if agent.last_heartbeat:
+                time_since_heartbeat = (datetime.utcnow() - agent.last_heartbeat).total_seconds()
+                if time_since_heartbeat > 300:  # 5 minutes
+                    agent.status = 'offline'
+                elif agent.status == 'pending':
+                    pass  # Keep pending
+                elif agent.active_scans > 0:
+                    agent.status = 'busy'
+                else:
+                    agent.status = 'online'
+        
+        db.session.commit()
+        
+        return jsonify({
+            'agents': [a.to_dict() for a in agents]
+        })
+        
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+
+@app.route('/api/v1/agents', methods=['POST'])
+@require_organization
+def create_agent():
+    """Create/register a new agent"""
+    try:
+        user_id = get_jwt_identity()
+        user = User.query.get(user_id)
+        org = user.organization
+        
+        # Check plan
+        if org.plan_type not in ['team', 'enterprise']:
+            return jsonify({'error': 'Agents feature requires Team or Enterprise plan'}), 402
+        
+        # Check agent limit
+        current_agents = Agent.query.filter_by(organization_id=org.id).count()
+        max_agents = 1 if org.plan_type == 'team' else 999
+        
+        if current_agents >= max_agents:
+            return jsonify({'error': f'Agent limit reached ({current_agents}/{max_agents})'}), 402
+        
+        data = request.get_json()
+        
+        # Generate tokens
+        registration_token = f"csp_agent_{uuid.uuid4().hex[:16]}"
+        api_key = f"csp_key_{uuid.uuid4().hex}"
+        
+        agent = Agent(
+            organization_id=org.id,
+            name=data.get('name', 'New Agent'),
+            platform=data.get('platform', 'linux'),
+            connection_type=data.get('connection_type', 'direct'),
+            ssh_host=data.get('ssh_host'),
+            ssh_port=data.get('ssh_port', 22),
+            ssh_username=data.get('ssh_username'),
+            ip_address=data.get('ip_address') or data.get('ssh_host'),
+            registration_token=registration_token,
+            api_key=api_key,
+            status='pending'
+        )
+        
+        # Handle SSH password
+        if data.get('ssh_password'):
+            # In production, encrypt this
+            agent.ssh_password_encrypted = data.get('ssh_password')
+        
+        db.session.add(agent)
+        db.session.commit()
+        
+        return jsonify({
+            'agent': agent.to_dict(include_sensitive=True),
+            'registration_token': registration_token,
+            'api_key': api_key,
+            'install_command': get_agent_install_command(agent, registration_token)
+        }), 201
+        
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'error': str(e)}), 500
+
+
+@app.route('/api/v1/agents/<agent_id>', methods=['GET'])
+@require_organization
+def get_agent(agent_id):
+    """Get agent details"""
+    try:
+        user_id = get_jwt_identity()
+        user = User.query.get(user_id)
+        
+        agent = Agent.query.filter_by(id=agent_id, organization_id=user.organization_id).first()
+        if not agent:
+            return jsonify({'error': 'Agent not found'}), 404
+        
+        return jsonify({'agent': agent.to_dict(include_sensitive=True)})
+        
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+
+@app.route('/api/v1/agents/<agent_id>', methods=['PUT'])
+@require_organization
+def update_agent(agent_id):
+    """Update agent configuration"""
+    try:
+        user_id = get_jwt_identity()
+        user = User.query.get(user_id)
+        
+        agent = Agent.query.filter_by(id=agent_id, organization_id=user.organization_id).first()
+        if not agent:
+            return jsonify({'error': 'Agent not found'}), 404
+        
+        data = request.get_json()
+        
+        # Update allowed fields
+        if 'name' in data:
+            agent.name = data['name']
+        if 'ssh_host' in data:
+            agent.ssh_host = data['ssh_host']
+            agent.ip_address = data['ssh_host']
+        if 'ssh_port' in data:
+            agent.ssh_port = data['ssh_port']
+        if 'ssh_username' in data:
+            agent.ssh_username = data['ssh_username']
+        if 'ssh_password' in data and data['ssh_password']:
+            agent.ssh_password_encrypted = data['ssh_password']
+        if 'location' in data:
+            agent.location = data['location']
+        
+        db.session.commit()
+        
+        return jsonify({
+            'agent': agent.to_dict(include_sensitive=True),
+            'message': 'Agent updated successfully'
+        })
+        
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'error': str(e)}), 500
+
+
+@app.route('/api/v1/agents/<agent_id>', methods=['DELETE'])
+@require_organization
+def delete_agent(agent_id):
+    """Delete an agent"""
+    try:
+        user_id = get_jwt_identity()
+        user = User.query.get(user_id)
+        
+        agent = Agent.query.filter_by(id=agent_id, organization_id=user.organization_id).first()
+        if not agent:
+            return jsonify({'error': 'Agent not found'}), 404
+        
+        db.session.delete(agent)
+        db.session.commit()
+        
+        return jsonify({'message': 'Agent deleted successfully'})
+        
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'error': str(e)}), 500
+
+
+@app.route('/api/v1/agents/<agent_id>/test', methods=['POST'])
+@require_organization
+def test_agent_connection(agent_id):
+    """Test connection to an agent"""
+    try:
+        user_id = get_jwt_identity()
+        user = User.query.get(user_id)
+        
+        agent = Agent.query.filter_by(id=agent_id, organization_id=user.organization_id).first()
+        if not agent:
+            return jsonify({'error': 'Agent not found'}), 404
+        
+        if agent.connection_type == 'ssh':
+            # Test SSH connection
+            import paramiko
+            
+            try:
+                ssh = paramiko.SSHClient()
+                ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+                
+                if agent.ssh_key_path:
+                    ssh.connect(
+                        agent.ssh_host or agent.ip_address,
+                        port=agent.ssh_port or 22,
+                        username=agent.ssh_username,
+                        key_filename=agent.ssh_key_path,
+                        timeout=10
+                    )
+                else:
+                    ssh.connect(
+                        agent.ssh_host or agent.ip_address,
+                        port=agent.ssh_port or 22,
+                        username=agent.ssh_username,
+                        password=agent.ssh_password_encrypted,
+                        timeout=10
+                    )
+                
+                # Test basic commands
+                stdin, stdout, stderr = ssh.exec_command('uname -a && which nmap')
+                output = stdout.read().decode()
+                
+                # Get system info
+                stdin, stdout, stderr = ssh.exec_command('cat /etc/os-release | head -5')
+                os_info = stdout.read().decode()
+                
+                ssh.close()
+                
+                # Update agent status
+                agent.status = 'online'
+                agent.last_heartbeat = datetime.utcnow()
+                agent.hostname = output.split()[1] if output else 'unknown'
+                
+                # Extract OS info
+                for line in os_info.split('\n'):
+                    if line.startswith('PRETTY_NAME='):
+                        agent.os_info = line.split('=')[1].strip('"')
+                        break
+                
+                db.session.commit()
+                
+                return jsonify({
+                    'success': True,
+                    'message': 'Connection successful',
+                    'output': output,
+                    'os_info': agent.os_info,
+                    'agent': agent.to_dict()
+                })
+                
+            except Exception as e:
+                agent.status = 'error'
+                db.session.commit()
+                return jsonify({
+                    'success': False,
+                    'error': f'SSH connection failed: {str(e)}'
+                }), 400
+        else:
+            # Direct agent - check via API
+            return jsonify({
+                'success': True,
+                'message': 'Direct agent - waiting for registration'
+            })
+        
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+
+@app.route('/api/v1/agents/heartbeat', methods=['POST'])
+def agent_heartbeat():
+    """Receive heartbeat from agent (no JWT - uses API key)"""
+    try:
+        data = request.get_json()
+        api_key = data.get('api_key') or request.headers.get('X-Agent-Key')
+        
+        if not api_key:
+            return jsonify({'error': 'API key required'}), 401
+        
+        agent = Agent.query.filter_by(api_key=api_key).first()
+        if not agent:
+            return jsonify({'error': 'Invalid API key'}), 401
+        
+        # Update agent status
+        agent.status = 'online'
+        agent.last_heartbeat = datetime.utcnow()
+        agent.cpu_usage = data.get('cpu_usage', 0)
+        agent.memory_usage = data.get('memory_usage', 0)
+        agent.active_scans = data.get('active_scans', 0)
+        agent.hostname = data.get('hostname', agent.hostname)
+        agent.os_info = data.get('os_info', agent.os_info)
+        agent.version = data.get('version', agent.version)
+        
+        db.session.commit()
+        
+        return jsonify({
+            'status': 'ok',
+            'next_heartbeat': 60  # seconds
+        })
+        
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+
+def get_agent_install_command(agent, token):
+    """Generate installation command for agent"""
+    base_url = 'https://cybersecpro.semihkilic.com'
+    
+    if agent.connection_type == 'ssh':
+        return f"""# SSH Connection configured
+# Host: {agent.ssh_host}:{agent.ssh_port}
+# Username: {agent.ssh_username}
+# Click 'Test Connection' to verify SSH access"""
+    
+    if agent.platform == 'linux':
+        return f"""# Linux Installation
+curl -sSL {base_url}/agent/install.sh | bash -s -- --token {token}
+
+# Or manual installation:
+wget {base_url}/agent/cybersec-agent-linux
+chmod +x cybersec-agent-linux
+./cybersec-agent-linux --register {token}"""
+    
+    elif agent.platform == 'windows':
+        return f"""# Windows PowerShell (Run as Administrator)
+irm {base_url}/agent/install.ps1 | iex
+Register-CyberSecAgent -Token "{token}" """
+    
+    elif agent.platform == 'macos':
+        return f"""# macOS Installation
+curl -sSL {base_url}/agent/install-mac.sh | bash -s -- --token {token}"""
+    
+    elif agent.platform == 'docker':
+        return f"""# Docker Installation
+docker run -d --name cybersec-agent \\
+  -e AGENT_TOKEN={token} \\
+  -e API_URL={base_url}/api/v1 \\
+  --network host \\
+  semihkilic/cybersec-agent:latest"""
+    
+    return f"# Registration token: {token}"
 
 
 # ================================
