@@ -1903,13 +1903,6 @@ def init_database():
             db.session.commit()
             print("✅ Sample tools created")
 
-if __name__ == '__main__':
-    init_database()
-    print("🚀 CyberSec Pro SaaS Backend starting...")
-    print("🌍 World-class cybersecurity platform ready!")
-    app.run(host='0.0.0.0', port=5001, debug=True)
-
-
 # ================================
 # FEEDBACK API
 # ================================
@@ -1933,17 +1926,20 @@ def submit_feedback():
         priority = data.get('priority', 'medium')
         system_info = data.get('systemInfo', {})
         
+        # Get user name safely
+        user_name = f"{user.first_name} {user.last_name}" if user.first_name else user.email
+        
         # Build email content
         email_subject = f"[CyberSec Pro {feedback_type.upper()}] {subject}"
         
         email_body = f"""
 ==============================================
-🛡️ CyberSec Pro Feedback
+CyberSec Pro Feedback
 ==============================================
 
 Type: {feedback_type.upper()}
 Priority: {priority.upper()}
-From: {user.name} <{user.email}>
+From: {user_name} <{user.email}>
 Date: {datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S UTC')}
 
 ----------------------------------------------
@@ -1974,7 +1970,6 @@ This feedback was submitted via CyberSec Pro dashboard
 
         # Try to send email
         try:
-            # Using Gmail SMTP or local SMTP
             smtp_host = os.environ.get('SMTP_HOST', 'localhost')
             smtp_port = int(os.environ.get('SMTP_PORT', 25))
             smtp_user = os.environ.get('SMTP_USER', '')
@@ -1989,24 +1984,19 @@ This feedback was submitted via CyberSec Pro dashboard
             msg.attach(MIMEText(email_body, 'plain'))
             
             if smtp_user and smtp_pass:
-                # Authenticated SMTP
                 server = smtplib.SMTP(smtp_host, smtp_port)
                 server.starttls()
                 server.login(smtp_user, smtp_pass)
                 server.send_message(msg)
                 server.quit()
             else:
-                # Local/development - just log
-                print(f"📧 Feedback Email (would send to cybersecpro@semihkilic.com):")
+                print(f"Feedback Email (would send to cybersecpro@semihkilic.com):")
                 print(email_body)
                 
         except Exception as e:
-            print(f"⚠️ Email sending failed: {e}")
-            # Still return success - feedback logged
+            print(f"Email sending failed: {e}")
         
-        # Log feedback to database for record
-        # In production, you'd save this to a Feedback model
-        print(f"📝 Feedback received from {user.email}: [{feedback_type}] {subject}")
+        print(f"Feedback received from {user.email}: [{feedback_type}] {subject}")
         
         return jsonify({
             'success': True,
@@ -2015,3 +2005,9 @@ This feedback was submitted via CyberSec Pro dashboard
         
     except Exception as e:
         return jsonify({'error': str(e)}), 500
+
+if __name__ == '__main__':
+    init_database()
+    print("🚀 CyberSec Pro SaaS Backend starting...")
+    print("🌍 World-class cybersecurity platform ready!")
+    app.run(host='0.0.0.0', port=5001, debug=True)
