@@ -2605,8 +2605,422 @@ This feedback was submitted via CyberSec Pro dashboard
         traceback.print_exc()
         return jsonify({'error': str(e)}), 500
 
+# ==========================================
+# TERMINAL API - Real SSH Execution
+# ==========================================
+
+@app.route('/api/v1/terminal/execute', methods=['POST'])
+@jwt_required()
+def execute_terminal_command():
+    """Execute a command on a remote agent via SSH"""
+    try:
+        user_id = get_jwt_identity()
+        user = User.query.get(user_id)
+        data = request.get_json()
+        
+        agent_id = data.get('agent_id')
+        command = data.get('command', '').strip()
+        
+        if not command:
+            return jsonify({'error': 'Command is required'}), 400
+        
+        # Security check - block dangerous commands
+        dangerous_commands = ['rm -rf /', 'mkfs', 'dd if=/dev/', ':(){:|:&};:', 'fork bomb']
+        for danger in dangerous_commands:
+            if danger in command.lower():
+                return jsonify({
+                    'error': 'Command blocked for security reasons',
+                    'output': 'This command has been blocked for security reasons.',
+                    'exit_code': -1
+                }), 403
+        
+        # If no agent specified, try to use the first online agent
+        if not agent_id:
+            agent = Agent.query.filter_by(
+                organization_id=user.organization_id, 
+                status='online',
+                connection_type='ssh'
+            ).first()
+        else:
+            agent = Agent.query.filter_by(
+                id=agent_id, 
+                organization_id=user.organization_id
+            ).first()
+        
+        if not agent:
+            return jsonify({
+                'error': 'No agent available',
+                'output': 'Error: No SSH agent available. Please add and connect an agent first.',
+                'exit_code': -1
+            }), 404
+        
+        if agent.connection_type != 'ssh':
+            return jsonify({
+                'error': 'Agent does not support SSH',
+                'output': f'Error: Agent "{agent.name}" does not support SSH execution.',
+                'exit_code': -1
+            }), 400
+        
+        # Execute command via SSH
+        try:
+            import paramiko
+            
+            ssh = paramiko.SSHClient()
+            ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+            
+            # Decrypt password
+            password = None
+            if agent.ssh_password_encrypted:
+                from cryptography.fernet import Fernet
+                key = os.environ.get('ENCRYPTION_KEY', 'your-encryption-key-here')
+                if len(key) < 32:
+                    key = key.ljust(32, '0')
+                key = base64.urlsafe_b64encode(key[:32].encode())
+                fernet = Fernet(key)
+                password = fernet.decrypt(agent.ssh_password_encrypted.encode()).decode()
+            
+            ssh.connect(
+                hostname=agent.ssh_host or agent.ip_address,
+                port=agent.ssh_port or 22,
+                username=agent.ssh_username or 'root',
+                password=password,
+                timeout=30
+            )
+            
+            # Execute command with timeout
+            stdin, stdout, stderr = ssh.exec_command(command, timeout=60)
+            
+            output = stdout.read().decode('utf-8', errors='replace')
+            error = stderr.read().decode('utf-8', errors='replace')
+            exit_code = stdout.channel.recv_exit_status()
+            
+            ssh.close()
+            
+            # Combine output
+            full_output = output
+            if error:
+                full_output = output + '\n' + error if output else error
+            
+            # Log command execution
+            print(f"📟 Terminal command executed on {agent.name}: {command[:50]}...")
+            
+            return jsonify({
+                'success': True,
+                'output': full_output or '(no output)',
+                'exit_code': exit_code,
+                'agent_name': agent.name,
+                'agent_platform': agent.platform
+            })
+            
+        except paramiko.AuthenticationException:
+            return jsonify({
+                'error': 'SSH authentication failed',
+                'output': f'Error: SSH authentication failed for agent "{agent.name}". Please check credentials.',
+                'exit_code': -1
+            }), 401
+        except paramiko.SSHException as e:
+            return jsonify({
+                'error': f'SSH error: {str(e)}',
+                'output': f'Error: SSH connection failed - {str(e)}',
+                'exit_code': -1
+            }), 500
+        except Exception as e:
+            return jsonify({
+                'error': f'Execution error: {str(e)}',
+                'output': f'Error: {str(e)}',
+                'exit_code': -1
+            }), 500
+            
+    except Exception as e:
+        import traceback
+        traceback.print_exc()
+        return jsonify({'error': str(e)}), 500
+
+
+@app.route('/api/v1/terminal/agents', methods=['GET'])
+@jwt_required()
+def get_terminal_agents():
+    """Get list of agents available for terminal connection"""
+    try:
+        user_id = get_jwt_identity()
+        user = User.query.get(user_id)
+        
+        agents = Agent.query.filter_by(
+            organization_id=user.organization_id,
+            connection_type='ssh'
+        ).all()
+        
+        return jsonify({
+            'agents': [{
+                'id': a.id,
+                'name': a.name,
+                'hostname': a.hostname,
+                'ip_address': a.ip_address,
+                'platform': a.platform,
+                'status': a.status,
+                'ssh_host': a.ssh_host,
+                'ssh_port': a.ssh_port,
+                'ssh_username': a.ssh_username
+            } for a in agents]
+        })
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+
+@app.route('/api/v1/terminal/test-connection', methods=['POST'])
+@jwt_required()
+def test_terminal_connection():
+    """Test SSH connection to an agent"""
+    try:
+        user_id = get_jwt_identity()
+        user = User.query.get(user_id)
+        data = request.get_json()
+        
+        agent_id = data.get('agent_id')
+        
+        if not agent_id:
+            return jsonify({'error': 'Agent ID required'}), 400
+        
+        agent = Agent.query.filter_by(
+            id=agent_id, 
+            organization_id=user.organization_id
+        ).first()
+        
+        if not agent:
+            return jsonify({'error': 'Agent not found'}), 404
+        
+        if agent.connection_type != 'ssh':
+            return jsonify({
+                'connected': False,
+                'error': 'Agent does not support SSH'
+            })
+        
+        try:
+            import paramiko
+            
+            ssh = paramiko.SSHClient()
+            ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+            
+            # Decrypt password
+            password = None
+            if agent.ssh_password_encrypted:
+                from cryptography.fernet import Fernet
+                key = os.environ.get('ENCRYPTION_KEY', 'your-encryption-key-here')
+                if len(key) < 32:
+                    key = key.ljust(32, '0')
+                key = base64.urlsafe_b64encode(key[:32].encode())
+                fernet = Fernet(key)
+                password = fernet.decrypt(agent.ssh_password_encrypted.encode()).decode()
+            
+            ssh.connect(
+                hostname=agent.ssh_host or agent.ip_address,
+                port=agent.ssh_port or 22,
+                username=agent.ssh_username or 'root',
+                password=password,
+                timeout=10
+            )
+            
+            # Get system info
+            stdin, stdout, stderr = ssh.exec_command('uname -a && hostname && whoami')
+            system_info = stdout.read().decode('utf-8', errors='replace').strip()
+            
+            ssh.close()
+            
+            # Update agent status
+            agent.status = 'online'
+            agent.last_seen = datetime.utcnow()
+            db.session.commit()
+            
+            return jsonify({
+                'connected': True,
+                'agent_name': agent.name,
+                'system_info': system_info,
+                'platform': agent.platform
+            })
+            
+        except Exception as e:
+            agent.status = 'offline'
+            db.session.commit()
+            return jsonify({
+                'connected': False,
+                'error': str(e)
+            })
+            
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+
+# ==========================================
+# PROJECT API - Enhanced
+# ==========================================
+
+@app.route('/api/v1/projects', methods=['GET'])
+@jwt_required()
+def get_projects():
+    """Get all projects for user's organization"""
+    try:
+        user_id = get_jwt_identity()
+        user = User.query.get(user_id)
+        
+        projects = Project.query.filter_by(
+            organization_id=user.organization_id
+        ).order_by(Project.created_at.desc()).all()
+        
+        return jsonify({
+            'projects': [{
+                'id': p.id,
+                'name': p.name,
+                'description': p.description,
+                'target_type': p.target_type,
+                'target_url': p.target_url,
+                'target_ip': p.target_ip,
+                'status': p.status,
+                'created_at': p.created_at.isoformat() if p.created_at else None,
+                'scan_count': Scan.query.filter_by(project_id=p.id).count()
+            } for p in projects]
+        })
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+
+@app.route('/api/v1/projects', methods=['POST'])
+@jwt_required()
+def create_project():
+    """Create a new project"""
+    try:
+        user_id = get_jwt_identity()
+        user = User.query.get(user_id)
+        data = request.get_json()
+        
+        project = Project(
+            name=data.get('name', 'New Project'),
+            description=data.get('description', ''),
+            organization_id=user.organization_id,
+            target_type=data.get('target_type', 'web'),
+            target_url=data.get('target_url'),
+            target_ip=data.get('target_ip'),
+            status='active'
+        )
+        
+        db.session.add(project)
+        db.session.commit()
+        
+        return jsonify({
+            'success': True,
+            'project': {
+                'id': project.id,
+                'name': project.name
+            }
+        }), 201
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'error': str(e)}), 500
+
+
+@app.route('/api/v1/projects/<int:project_id>', methods=['GET'])
+@jwt_required()
+def get_project(project_id):
+    """Get a specific project"""
+    try:
+        user_id = get_jwt_identity()
+        user = User.query.get(user_id)
+        
+        project = Project.query.filter_by(
+            id=project_id,
+            organization_id=user.organization_id
+        ).first()
+        
+        if not project:
+            return jsonify({'error': 'Project not found'}), 404
+        
+        scans = Scan.query.filter_by(project_id=project.id).order_by(Scan.created_at.desc()).limit(10).all()
+        
+        return jsonify({
+            'project': {
+                'id': project.id,
+                'name': project.name,
+                'description': project.description,
+                'target_type': project.target_type,
+                'target_url': project.target_url,
+                'target_ip': project.target_ip,
+                'status': project.status,
+                'created_at': project.created_at.isoformat() if project.created_at else None,
+                'recent_scans': [{
+                    'id': s.id,
+                    'tool': s.tool_name,
+                    'status': s.status,
+                    'created_at': s.created_at.isoformat() if s.created_at else None
+                } for s in scans]
+            }
+        })
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+
+@app.route('/api/v1/projects/<int:project_id>', methods=['PUT'])
+@jwt_required()
+def update_project(project_id):
+    """Update a project"""
+    try:
+        user_id = get_jwt_identity()
+        user = User.query.get(user_id)
+        data = request.get_json()
+        
+        project = Project.query.filter_by(
+            id=project_id,
+            organization_id=user.organization_id
+        ).first()
+        
+        if not project:
+            return jsonify({'error': 'Project not found'}), 404
+        
+        if 'name' in data:
+            project.name = data['name']
+        if 'description' in data:
+            project.description = data['description']
+        if 'target_url' in data:
+            project.target_url = data['target_url']
+        if 'target_ip' in data:
+            project.target_ip = data['target_ip']
+        if 'status' in data:
+            project.status = data['status']
+        
+        db.session.commit()
+        
+        return jsonify({'success': True})
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'error': str(e)}), 500
+
+
+@app.route('/api/v1/projects/<int:project_id>', methods=['DELETE'])
+@jwt_required()
+def delete_project(project_id):
+    """Delete a project"""
+    try:
+        user_id = get_jwt_identity()
+        user = User.query.get(user_id)
+        
+        project = Project.query.filter_by(
+            id=project_id,
+            organization_id=user.organization_id
+        ).first()
+        
+        if not project:
+            return jsonify({'error': 'Project not found'}), 404
+        
+        db.session.delete(project)
+        db.session.commit()
+        
+        return jsonify({'success': True})
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'error': str(e)}), 500
+
+
 if __name__ == '__main__':
     init_database()
     print("🚀 CyberSec Pro SaaS Backend starting...")
     print("🌍 World-class cybersecurity platform ready!")
+    print("📟 Terminal API enabled for SSH execution")
     app.run(host='0.0.0.0', port=5001, debug=True)
