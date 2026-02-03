@@ -33,6 +33,7 @@ const AgentsPage = lazy(() => import('./pages/dashboard/AgentsPage'));
 const ProjectsPage = lazy(() => import('./pages/dashboard/ProjectsPage'));
 const UpgradePage = lazy(() => import('./pages/dashboard/UpgradePage'));
 const BillingPage = lazy(() => import('./pages/dashboard/BillingPage'));
+const FeedbackPage = lazy(() => import('./pages/dashboard/FeedbackPage'));
 
 // Styles
 import './index.css';
@@ -152,6 +153,7 @@ function AppRoutes() {
         <Route path="projects/:projectId" element={<ProjectsPage />} />
         <Route path="upgrade" element={<UpgradePage />} />
         <Route path="billing" element={<BillingPage />} />
+        <Route path="feedback" element={<FeedbackPage />} />
       </Route>
       
       {/* Legacy dashboard route for backwards compatibility */}

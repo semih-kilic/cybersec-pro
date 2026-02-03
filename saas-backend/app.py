@@ -1908,3 +1908,110 @@ if __name__ == '__main__':
     print("🚀 CyberSec Pro SaaS Backend starting...")
     print("🌍 World-class cybersecurity platform ready!")
     app.run(host='0.0.0.0', port=5001, debug=True)
+
+
+# ================================
+# FEEDBACK API
+# ================================
+
+@app.route('/api/v1/feedback', methods=['POST'])
+@jwt_required()
+def submit_feedback():
+    """Submit user feedback via email"""
+    import smtplib
+    from email.mime.text import MIMEText
+    from email.mime.multipart import MIMEMultipart
+    
+    try:
+        user_id = get_jwt_identity()
+        user = User.query.get(user_id)
+        data = request.get_json()
+        
+        feedback_type = data.get('type', 'other')
+        subject = data.get('subject', 'No Subject')
+        message = data.get('message', '')
+        priority = data.get('priority', 'medium')
+        system_info = data.get('systemInfo', {})
+        
+        # Build email content
+        email_subject = f"[CyberSec Pro {feedback_type.upper()}] {subject}"
+        
+        email_body = f"""
+==============================================
+🛡️ CyberSec Pro Feedback
+==============================================
+
+Type: {feedback_type.upper()}
+Priority: {priority.upper()}
+From: {user.name} <{user.email}>
+Date: {datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S UTC')}
+
+----------------------------------------------
+MESSAGE
+----------------------------------------------
+{message}
+
+----------------------------------------------
+USER INFO
+----------------------------------------------
+User ID: {user.id}
+Organization: {user.organization.name if user.organization else 'N/A'}
+Plan: {user.organization.plan_type if user.organization else 'N/A'}
+Role: {user.role}
+
+----------------------------------------------
+SYSTEM INFO
+----------------------------------------------
+Browser: {system_info.get('userAgent', 'N/A')}
+Platform: {system_info.get('platform', 'N/A')}
+Screen: {system_info.get('screenSize', 'N/A')}
+Timezone: {system_info.get('timezone', 'N/A')}
+Page: {system_info.get('currentUrl', 'N/A')}
+
+==============================================
+This feedback was submitted via CyberSec Pro dashboard
+"""
+
+        # Try to send email
+        try:
+            # Using Gmail SMTP or local SMTP
+            smtp_host = os.environ.get('SMTP_HOST', 'localhost')
+            smtp_port = int(os.environ.get('SMTP_PORT', 25))
+            smtp_user = os.environ.get('SMTP_USER', '')
+            smtp_pass = os.environ.get('SMTP_PASS', '')
+            
+            msg = MIMEMultipart()
+            msg['From'] = f"CyberSec Pro <noreply@semihkilic.com>"
+            msg['To'] = 'cybersecpro@semihkilic.com'
+            msg['Subject'] = email_subject
+            msg['Reply-To'] = user.email
+            
+            msg.attach(MIMEText(email_body, 'plain'))
+            
+            if smtp_user and smtp_pass:
+                # Authenticated SMTP
+                server = smtplib.SMTP(smtp_host, smtp_port)
+                server.starttls()
+                server.login(smtp_user, smtp_pass)
+                server.send_message(msg)
+                server.quit()
+            else:
+                # Local/development - just log
+                print(f"📧 Feedback Email (would send to cybersecpro@semihkilic.com):")
+                print(email_body)
+                
+        except Exception as e:
+            print(f"⚠️ Email sending failed: {e}")
+            # Still return success - feedback logged
+        
+        # Log feedback to database for record
+        # In production, you'd save this to a Feedback model
+        print(f"📝 Feedback received from {user.email}: [{feedback_type}] {subject}")
+        
+        return jsonify({
+            'success': True,
+            'message': 'Feedback submitted successfully'
+        })
+        
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500

@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { Header } from '../../components/layout/Header';
 import { useAuth } from '../../hooks/useAuth';
 import { OnboardingModal, QuickStartCards } from '../../components/onboarding';
+import WelcomeTour from '../../components/WelcomeTour';
 
 // Plan configurations - synced with backend database (143 total tools)
 const PLAN_CONFIG: Record<string, { tools: number; scansPerDay: number; features: string[] }> = {
@@ -63,8 +64,19 @@ export function OverviewPage() {
   const [showOnboarding, setShowOnboarding] = useState(false);
   const [onboardingChecked, setOnboardingChecked] = useState(false);
   const [changingPlan, setChangingPlan] = useState(false);
+  
+  // Welcome Tour state
+  const [showWelcomeTour, setShowWelcomeTour] = useState(false);
 
   const isSuperAdmin = user?.role === 'superadmin';
+
+  // Check if user should see welcome tour
+  useEffect(() => {
+    const tourCompleted = localStorage.getItem('cybersec_tour_completed');
+    if (!tourCompleted && user && !loading) {
+      setShowWelcomeTour(true);
+    }
+  }, [user, loading]);
 
   const handlePlanChange = async (plan: string) => {
     setChangingPlan(true);
@@ -210,6 +222,14 @@ export function OverviewPage() {
 
   return (
     <div className="min-h-screen bg-gray-950">
+      {/* Welcome Tour for new users */}
+      <WelcomeTour
+        isOpen={showWelcomeTour}
+        onClose={() => setShowWelcomeTour(false)}
+        userName={user?.first_name || 'User'}
+        planType={organization?.plan_type || 'trial'}
+      />
+
       {/* Onboarding Modal */}
       <OnboardingModal
         isOpen={showOnboarding}
@@ -247,6 +267,64 @@ export function OverviewPage() {
             scansLimit={currentPlanConfig.scansPerDay}
             hasRunFirstScan={hasRunFirstScan}
           />
+        )}
+
+        {/* Demo Targets Card - Show for trial/starter users with few scans */}
+        {(scanSummary.total < 3 && (organization?.plan_type === 'trial' || organization?.plan_type === 'starter')) && (
+          <div className="bg-gradient-to-r from-cyan-900/30 to-blue-900/30 rounded-xl p-6 border border-cyan-500/30">
+            <div className="flex items-start gap-4">
+              <div className="w-12 h-12 rounded-xl bg-cyan-500/20 flex items-center justify-center flex-shrink-0">
+                <span className="text-2xl">🎯</span>
+              </div>
+              <div className="flex-1">
+                <h3 className="text-lg font-bold text-white mb-2">Try Our Safe Demo Targets</h3>
+                <p className="text-gray-400 text-sm mb-4">
+                  Practice with these publicly available test targets designed for security scanning. 100% safe and legal to test!
+                </p>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                  <div className="bg-gray-800/50 rounded-lg p-3">
+                    <div className="flex items-center gap-2 mb-1">
+                      <span className="text-green-400">●</span>
+                      <code className="text-cyan-300 text-sm">scanme.nmap.org</code>
+                    </div>
+                    <p className="text-gray-500 text-xs">Port scanning, service detection</p>
+                    <Link 
+                      to="/dashboard/tools/nmap" 
+                      className="text-cyan-400 text-xs hover:underline mt-2 inline-block"
+                    >
+                      Scan with Nmap →
+                    </Link>
+                  </div>
+                  <div className="bg-gray-800/50 rounded-lg p-3">
+                    <div className="flex items-center gap-2 mb-1">
+                      <span className="text-green-400">●</span>
+                      <code className="text-cyan-300 text-sm">testphp.vulnweb.com</code>
+                    </div>
+                    <p className="text-gray-500 text-xs">Web vulnerabilities, SQL injection</p>
+                    <Link 
+                      to="/dashboard/tools/nikto" 
+                      className="text-cyan-400 text-xs hover:underline mt-2 inline-block"
+                    >
+                      Scan with Nikto →
+                    </Link>
+                  </div>
+                  <div className="bg-gray-800/50 rounded-lg p-3">
+                    <div className="flex items-center gap-2 mb-1">
+                      <span className="text-green-400">●</span>
+                      <code className="text-cyan-300 text-sm">demo.testfire.net</code>
+                    </div>
+                    <p className="text-gray-500 text-xs">OWASP vulnerabilities testing</p>
+                    <Link 
+                      to="/dashboard/tools/whatweb" 
+                      className="text-cyan-400 text-xs hover:underline mt-2 inline-block"
+                    >
+                      Scan with WhatWeb →
+                    </Link>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
         )}
 
         {/* Super Admin Panel */}
