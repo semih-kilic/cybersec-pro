@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState, useCallback } from 'react';
 import { Header } from '../../components/layout/Header';
-import { useAuth } from '../../contexts/AuthContext';
+import { useAuth } from '../../hooks/useAuth';
 
 interface Agent {
   id: number;
@@ -143,7 +143,7 @@ export function TerminalPage() {
     setCurrentInput('');
 
     // Handle local commands
-    const [cmd, ...args] = trimmedCommand.split(' ');
+    const [cmd] = trimmedCommand.split(' ');
 
     // Local commands that don't need SSH
     if (cmd.toLowerCase() === 'clear') {
