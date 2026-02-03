@@ -226,7 +226,6 @@ export function OverviewPage() {
       <WelcomeTour
         isOpen={showWelcomeTour}
         onClose={() => setShowWelcomeTour(false)}
-        userName={user?.first_name || 'User'}
         planType={organization?.plan_type || 'trial'}
       />
 

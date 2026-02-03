@@ -4,7 +4,6 @@ import { XMarkIcon, ArrowRightIcon } from '@heroicons/react/24/outline';
 interface WelcomeTourProps {
   isOpen: boolean;
   onClose: () => void;
-  userName: string;
   planType: string;
 }
 

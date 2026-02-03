@@ -110,7 +110,7 @@ export default function FeedbackPage() {
           systemInfo,
           user: {
             email: user?.email,
-            name: user?.name
+            name: user?.first_name ? `${user.first_name} ${user.last_name || ''}` : 'User'
           }
         })
       });
