@@ -82,9 +82,10 @@ const categoryDisplayNames: { [key: string]: string } = {
 };
 
 // Plan hierarchy for access control
+// Trial users get access to starter tools (same level)
 const planHierarchy: { [key: string]: number } = {
   'free': 0,
-  'trial': 1,
+  'trial': 2,  // Trial users can access starter tools
   'starter': 2,
   'professional': 3,
   'team': 4,

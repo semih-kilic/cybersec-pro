@@ -61,6 +61,7 @@ export default function FeedbackPage() {
   const [selectedType, setSelectedType] = useState<string>('');
   const [subject, setSubject] = useState('');
   const [message, setMessage] = useState('');
+  const [replyEmail, setReplyEmail] = useState(user?.email || '');
   const [priority, setPriority] = useState('medium');
   const [includeSystemInfo, setIncludeSystemInfo] = useState(true);
   const [sending, setSending] = useState(false);
@@ -77,6 +78,11 @@ export default function FeedbackPage() {
     
     if (!subject.trim() || !message.trim()) {
       setError('Please fill in all required fields');
+      return;
+    }
+
+    if (!replyEmail.trim() || !replyEmail.includes('@')) {
+      setError('Please enter a valid email address for reply');
       return;
     }
 
@@ -107,6 +113,7 @@ export default function FeedbackPage() {
           subject,
           message,
           priority,
+          replyEmail,
           systemInfo,
           user: {
             email: user?.email,
@@ -120,6 +127,7 @@ export default function FeedbackPage() {
         setSelectedType('');
         setSubject('');
         setMessage('');
+        setReplyEmail(user?.email || '');
       } else {
         const data = await response.json();
         setError(data.error || 'Failed to send feedback');
@@ -209,6 +217,22 @@ export default function FeedbackPage() {
               {error}
             </div>
           )}
+
+          {/* Reply Email */}
+          <div className="mb-6">
+            <label className="block text-sm font-medium text-gray-300 mb-2">
+              Your Email <span className="text-red-400">*</span>
+              <span className="text-gray-500 font-normal ml-2">(for our reply)</span>
+            </label>
+            <input
+              type="email"
+              value={replyEmail}
+              onChange={(e) => setReplyEmail(e.target.value)}
+              placeholder="your@email.com"
+              className="w-full px-4 py-3 bg-gray-800 border border-gray-700 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:border-cyan-500 transition"
+              required
+            />
+          </div>
 
           {/* Subject */}
           <div className="mb-6">
