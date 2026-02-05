@@ -1298,11 +1298,33 @@ def execute_scan():
 
 
 @app.route('/api/v1/scan/<scan_id>/output', methods=['GET'])
-@require_organization
 def get_scan_output(scan_id):
-    """Get scan output (streaming via SSE)"""
+    """Get scan output (streaming via SSE)
+    
+    Supports both:
+    - Authorization: Bearer <token> header
+    - ?token=<token> query parameter (for EventSource/SSE)
+    """
     if not SCAN_EXECUTOR_AVAILABLE:
         return jsonify({'error': 'Scan executor not available'}), 503
+    
+    # Check authorization - support both header and query param
+    from flask_jwt_extended import verify_jwt_in_request, get_jwt_identity
+    
+    token = request.args.get('token')
+    if token:
+        # Manually set the token for JWT verification
+        request.headers = dict(request.headers)
+        request.headers['Authorization'] = f'Bearer {token}'
+    
+    try:
+        verify_jwt_in_request()
+        user_id = get_jwt_identity()
+        user = User.query.get(user_id)
+        if not user or not user.organization_id:
+            return jsonify({'error': 'Unauthorized'}), 401
+    except Exception as e:
+        return jsonify({'error': 'Unauthorized', 'detail': str(e)}), 401
     
     from flask import Response
     

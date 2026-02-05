@@ -179,7 +179,12 @@ class ApiService {
 
   // SSE for real-time scan output
   streamScanOutput(scanId: string, onOutput: (line: string) => void, onComplete: (result: ScanResult) => void) {
-    const eventSource = new EventSource(`${API_BASE}/scan/${scanId}/output`);
+    // EventSource doesn't support Authorization headers, so we pass token as query param
+    const token = localStorage.getItem('token');
+    const url = token 
+      ? `${API_BASE}/scan/${scanId}/output?token=${encodeURIComponent(token)}`
+      : `${API_BASE}/scan/${scanId}/output`;
+    const eventSource = new EventSource(url);
 
     eventSource.onmessage = (event) => {
       try {
