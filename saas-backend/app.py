@@ -311,6 +311,70 @@ class UsageTracking(db.Model):
     usage_date = db.Column(db.Date, default=datetime.utcnow().date)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
+
+class Report(db.Model):
+    """Generated security reports"""
+    __tablename__ = 'reports'
+    
+    id = db.Column(db.String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
+    organization_id = db.Column(db.String(36), db.ForeignKey('organizations.id'), nullable=False)
+    user_id = db.Column(db.String(36), db.ForeignKey('users.id'), nullable=False)
+    name = db.Column(db.String(255), nullable=False)
+    template = db.Column(db.String(50), default='full')  # executive, technical, compliance, full
+    format = db.Column(db.String(20), default='html')  # html, pdf, json, csv, markdown
+    status = db.Column(db.String(20), default='generating')  # generating, ready, failed
+    
+    # Report metadata
+    scan_ids = db.Column(db.JSON)  # List of scan IDs included
+    sections = db.Column(db.JSON)  # Sections to include
+    
+    # Summary data
+    total_findings = db.Column(db.Integer, default=0)
+    critical_count = db.Column(db.Integer, default=0)
+    high_count = db.Column(db.Integer, default=0)
+    medium_count = db.Column(db.Integer, default=0)
+    low_count = db.Column(db.Integer, default=0)
+    info_count = db.Column(db.Integer, default=0)
+    risk_score = db.Column(db.Integer, default=0)
+    risk_level = db.Column(db.String(20), default='None')
+    
+    # Content storage
+    content = db.Column(db.Text)  # Report content (HTML/JSON/Markdown)
+    file_path = db.Column(db.String(255))  # Path to PDF file if generated
+    file_size = db.Column(db.Integer)  # Size in bytes
+    
+    # Timestamps
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    completed_at = db.Column(db.DateTime)
+    
+    # Relationships
+    user = db.relationship('User', backref='reports')
+    
+    def to_dict(self):
+        return {
+            'id': self.id,
+            'name': self.name,
+            'template': self.template,
+            'format': self.format,
+            'status': self.status,
+            'scan_ids': self.scan_ids,
+            'sections': self.sections,
+            'total_findings': self.total_findings,
+            'severity_breakdown': {
+                'critical': self.critical_count,
+                'high': self.high_count,
+                'medium': self.medium_count,
+                'low': self.low_count,
+                'info': self.info_count
+            },
+            'risk_score': self.risk_score,
+            'risk_level': self.risk_level,
+            'file_size': self.file_size,
+            'created_at': self.created_at.isoformat() if self.created_at else None,
+            'completed_at': self.completed_at.isoformat() if self.completed_at else None
+        }
+
+
 # ================================
 # DECORATORS
 # ================================
@@ -1642,6 +1706,8 @@ def get_target_groups():
 # REPORTS API
 # ================================
 
+from report_generator import ReportGenerator, generate_report_from_scans
+
 @app.route('/api/v1/reports', methods=['GET'])
 @require_organization
 def get_reports():
@@ -1650,43 +1716,39 @@ def get_reports():
         user_id = get_jwt_identity()
         user = User.query.get(user_id)
         
-        # Get completed scans with results as reports
+        # Get saved reports from database
+        saved_reports = Report.query.filter(
+            Report.organization_id == user.organization_id
+        ).order_by(Report.created_at.desc()).limit(50).all()
+        
+        # Also get completed scans that can be converted to reports
         scans = Scan.query.filter(
             Scan.organization_id == user.organization_id,
             Scan.status == 'completed',
-            Scan.result.isnot(None)
-        ).order_by(Scan.created_at.desc()).all()
+            Scan.output.isnot(None)
+        ).order_by(Scan.created_at.desc()).limit(100).all()
         
-        reports = []
-        for scan in scans:
-            reports.append({
-                'id': scan.id,
-                'name': f'{scan.tool_name} Report - {scan.target}',
-                'scan_id': scan.id,
-                'scan_name': f'{scan.tool_name} scan',
-                'target': scan.target,
-                'created_at': scan.completed_at.isoformat() if scan.completed_at else scan.created_at.isoformat(),
-                'format': 'txt',
-                'status': 'ready',
-                'findings': {
-                    'critical': 0,
-                    'high': 0,
-                    'medium': 0,
-                    'low': 0,
-                    'info': 0
-                }
-            })
+        reports = [r.to_dict() for r in saved_reports]
+        available_scans = [{
+            'id': scan.id,
+            'name': f'{scan.tool_name} scan - {scan.target}',
+            'tool': scan.tool_name,
+            'target': scan.target,
+            'completed_at': scan.completed_at.isoformat() if scan.completed_at else scan.created_at.isoformat()
+        } for scan in scans]
         
         return jsonify({
-            'reports': reports
+            'reports': reports,
+            'available_scans': available_scans
         })
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
+
 @app.route('/api/v1/reports', methods=['POST'])
 @require_organization
 def create_report():
-    """Generate a new report from scan results"""
+    """Generate a new professional report from scan results"""
     try:
         user_id = get_jwt_identity()
         user = User.query.get(user_id)
@@ -1694,7 +1756,7 @@ def create_report():
         
         scan_ids = data.get('scan_ids', [])
         report_name = data.get('name', 'Security Assessment Report')
-        report_format = data.get('format', 'json')
+        report_format = data.get('format', 'html')
         template = data.get('template', 'full')
         sections = data.get('sections', ['Executive Summary', 'Technical Details', 'Remediation Guide'])
         
@@ -1710,177 +1772,136 @@ def create_report():
         if not scans:
             return jsonify({'error': 'No valid scans found'}), 404
         
-        # Generate report content
-        report_content = generate_report_content(scans, report_name, template, sections, report_format)
+        # Generate professional report using the new generator
+        report_content = generate_report_from_scans(scans, report_name, template, report_format, sections)
         
-        # Create report record
-        report_id = str(uuid.uuid4())
+        # Parse summary from generator if JSON
+        summary = {'critical': 0, 'high': 0, 'medium': 0, 'low': 0, 'info': 0}
+        risk_score = 0
+        risk_level = 'None'
+        total_findings = 0
+        
+        if report_format == 'json':
+            try:
+                import json
+                report_data = json.loads(report_content)
+                summary = report_data.get('executive_summary', {}).get('severity_breakdown', summary)
+                risk_score = report_data.get('executive_summary', {}).get('risk_score', 0)
+                risk_level = report_data.get('executive_summary', {}).get('risk_level', 'None')
+                total_findings = report_data.get('executive_summary', {}).get('total_findings', 0)
+            except:
+                pass
+        
+        # Create report record in database
+        report = Report(
+            organization_id=user.organization_id,
+            user_id=user.id,
+            name=report_name,
+            template=template,
+            format=report_format,
+            status='ready',
+            scan_ids=scan_ids,
+            sections=sections,
+            total_findings=total_findings,
+            critical_count=summary.get('Critical', summary.get('critical', 0)),
+            high_count=summary.get('High', summary.get('high', 0)),
+            medium_count=summary.get('Medium', summary.get('medium', 0)),
+            low_count=summary.get('Low', summary.get('low', 0)),
+            info_count=summary.get('Info', summary.get('info', 0)),
+            risk_score=risk_score,
+            risk_level=risk_level,
+            content=report_content,
+            file_size=len(report_content.encode('utf-8')),
+            completed_at=datetime.utcnow()
+        )
+        db.session.add(report)
+        db.session.commit()
         
         return jsonify({
             'success': True,
             'report': {
-                'id': report_id,
-                'name': report_name,
-                'format': report_format,
-                'status': 'ready',
-                'content': report_content,
-                'created_at': datetime.utcnow().isoformat(),
-                'scan_count': len(scans)
+                **report.to_dict(),
+                'content': report_content
             }
         })
         
     except Exception as e:
+        import traceback
+        traceback.print_exc()
         return jsonify({'error': str(e)}), 500
 
-def generate_report_content(scans, report_name, template, sections, output_format):
-    """Generate actual report content from scan results"""
-    from datetime import datetime
-    
-    # Collect scan data
-    all_findings = []
-    scan_summaries = []
-    
-    for scan in scans:
-        scan_summaries.append({
-            'tool': scan.tool_name,
-            'target': scan.target,
-            'status': scan.status,
-            'started': scan.started_at.isoformat() if scan.started_at else None,
-            'completed': scan.completed_at.isoformat() if scan.completed_at else None,
-            'result': scan.result[:1000] if scan.result else 'No output'
-        })
-    
-    if output_format == 'json':
-        report = {
-            'report_name': report_name,
-            'generated_at': datetime.utcnow().isoformat(),
-            'template': template,
-            'sections': sections,
-            'summary': {
-                'total_scans': len(scans),
-                'targets_scanned': list(set(s.target for s in scans)),
-                'tools_used': list(set(s.tool_name for s in scans))
-            },
-            'scans': scan_summaries,
-            'executive_summary': 'This report contains the results of security assessments performed using automated scanning tools.',
-            'recommendations': [
-                'Review all findings and prioritize based on risk',
-                'Implement remediation for critical and high severity issues',
-                'Schedule follow-up scans to verify fixes'
-            ]
-        }
-        import json
-        return json.dumps(report, indent=2)
-    
-    elif output_format == 'html':
-        html = f'''<!DOCTYPE html>
-<html>
-<head>
-    <title>{report_name}</title>
-    <style>
-        body {{ font-family: Arial, sans-serif; margin: 40px; background: #1a1a2e; color: #e0e0e0; }}
-        h1 {{ color: #367bf0; border-bottom: 2px solid #367bf0; padding-bottom: 10px; }}
-        h2 {{ color: #00d4ff; margin-top: 30px; }}
-        .scan {{ background: #2a2a4e; padding: 20px; margin: 15px 0; border-radius: 8px; border-left: 4px solid #367bf0; }}
-        .meta {{ color: #888; font-size: 0.9em; }}
-        pre {{ background: #0a0a12; padding: 15px; border-radius: 5px; overflow-x: auto; }}
-        .section {{ margin: 30px 0; }}
-    </style>
-</head>
-<body>
-    <h1>🔐 {report_name}</h1>
-    <p class="meta">Generated: {datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S UTC")}</p>
-    
-    <div class="section">
-        <h2>📊 Executive Summary</h2>
-        <p>This report contains the results of {len(scans)} security scans performed on {len(set(s.target for s in scans))} target(s).</p>
-    </div>
-    
-    <div class="section">
-        <h2>🔍 Scan Results</h2>
-'''
-        for scan in scan_summaries:
-            html += f'''
-        <div class="scan">
-            <h3>🛠️ {scan['tool']} - {scan['target']}</h3>
-            <p class="meta">Status: {scan['status']} | Completed: {scan['completed'] or 'N/A'}</p>
-            <pre>{scan['result']}</pre>
-        </div>
-'''
-        
-        html += '''
-    </div>
-    
-    <div class="section">
-        <h2>📋 Recommendations</h2>
-        <ul>
-            <li>Review all findings and prioritize based on risk level</li>
-            <li>Implement remediation for critical and high severity issues first</li>
-            <li>Schedule follow-up scans to verify that fixes are effective</li>
-            <li>Document all changes made during remediation</li>
-        </ul>
-    </div>
-</body>
-</html>'''
-        return html
-    
-    else:  # PDF/TXT format
-        content = f'''
-================================================================================
-                           {report_name.upper()}
-================================================================================
-Generated: {datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S UTC")}
-Template: {template}
 
-================================================================================
-                           EXECUTIVE SUMMARY
-================================================================================
-This report contains the results of {len(scans)} security scan(s) performed on 
-{len(set(s.target for s in scans))} target(s).
-
-Tools Used: {', '.join(set(s.tool_name for s in scans))}
-Targets: {', '.join(set(s.target for s in scans))}
-
-================================================================================
-                           SCAN RESULTS
-================================================================================
-'''
-        for i, scan in enumerate(scan_summaries, 1):
-            content += f'''
---- Scan {i}: {scan['tool']} ---
-Target: {scan['target']}
-Status: {scan['status']}
-Completed: {scan['completed'] or 'N/A'}
-
-Output:
-{scan['result']}
-
-'''
-        
-        content += '''
-================================================================================
-                           RECOMMENDATIONS
-================================================================================
-1. Review all findings and prioritize based on risk level
-2. Implement remediation for critical and high severity issues first
-3. Schedule follow-up scans to verify that fixes are effective
-4. Document all changes made during remediation
-5. Update security policies based on findings
-
-================================================================================
-                           END OF REPORT
-================================================================================
-'''
-        return content
-
-@app.route('/api/v1/reports/<report_id>/download', methods=['GET'])
+@app.route('/api/v1/reports/<report_id>', methods=['GET'])
 @require_organization
-def download_report(report_id):
-    """Download a report"""
+def get_report(report_id):
+    """Get a specific report with content"""
     try:
         user_id = get_jwt_identity()
         user = User.query.get(user_id)
         
+        report = Report.query.filter_by(
+            id=report_id,
+            organization_id=user.organization_id
+        ).first()
+        
+        if report:
+            return jsonify({
+                **report.to_dict(),
+                'content': report.content
+            })
+        
+        # Fallback: check if it's a scan ID and generate report on the fly
+        scan = Scan.query.filter_by(
+            id=report_id,
+            organization_id=user.organization_id
+        ).first()
+        
+        if not scan:
+            return jsonify({'error': 'Report not found'}), 404
+        
+        # Generate simple report from scan
+        return jsonify({
+            'id': scan.id,
+            'name': f'{scan.tool_name} Report - {scan.target}',
+            'format': 'txt',
+            'status': 'ready',
+            'content': scan.output or 'No results available',
+            'created_at': scan.created_at.isoformat()
+        })
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+
+@app.route('/api/v1/reports/<report_id>/download', methods=['GET'])
+@require_organization
+def download_report(report_id):
+    """Download a report in specified format"""
+    try:
+        user_id = get_jwt_identity()
+        user = User.query.get(user_id)
+        output_format = request.args.get('format', 'html')
+        
+        # Try to find saved report
+        report = Report.query.filter_by(
+            id=report_id,
+            organization_id=user.organization_id
+        ).first()
+        
+        if report:
+            content = report.content
+            filename = f'{report.name.replace(" ", "_")}_{report.created_at.strftime("%Y%m%d")}'
+            
+            # Set appropriate extension
+            ext_map = {'html': 'html', 'json': 'json', 'csv': 'csv', 'markdown': 'md', 'pdf': 'html'}
+            ext = ext_map.get(output_format, 'html')
+            
+            return jsonify({
+                'content': content,
+                'filename': f'{filename}.{ext}',
+                'format': output_format
+            })
+        
+        # Fallback: check if it's a scan ID
         scan = Scan.query.filter_by(
             id=report_id,
             organization_id=user.organization_id
@@ -1890,11 +1911,78 @@ def download_report(report_id):
             return jsonify({'error': 'Report not found'}), 404
         
         return jsonify({
-            'content': scan.result or 'No results available',
-            'filename': f'{scan.tool_name}_{scan.target}_{scan.created_at.strftime("%Y%m%d")}.txt'
+            'content': scan.output or 'No results available',
+            'filename': f'{scan.tool_name}_{scan.target}_{scan.created_at.strftime("%Y%m%d")}.txt',
+            'format': 'txt'
         })
     except Exception as e:
         return jsonify({'error': str(e)}), 500
+
+
+@app.route('/api/v1/reports/<report_id>', methods=['DELETE'])
+@require_organization
+def delete_report(report_id):
+    """Delete a saved report"""
+    try:
+        user_id = get_jwt_identity()
+        user = User.query.get(user_id)
+        
+        report = Report.query.filter_by(
+            id=report_id,
+            organization_id=user.organization_id
+        ).first()
+        
+        if not report:
+            return jsonify({'error': 'Report not found'}), 404
+        
+        db.session.delete(report)
+        db.session.commit()
+        
+        return jsonify({'success': True, 'message': 'Report deleted'})
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+
+@app.route('/api/v1/reports/templates', methods=['GET'])
+@require_organization
+def get_report_templates():
+    """Get available report templates"""
+    templates = [
+        {
+            'id': 'executive',
+            'name': 'Executive Summary',
+            'description': 'High-level overview for management and stakeholders',
+            'icon': '📊',
+            'sections': ['Risk Overview', 'Key Findings', 'Recommendations'],
+            'formats': ['html', 'pdf', 'json']
+        },
+        {
+            'id': 'technical',
+            'name': 'Technical Report',
+            'description': 'Detailed technical analysis for security teams',
+            'icon': '🔧',
+            'sections': ['Vulnerability Details', 'CVE References', 'Technical Remediation', 'Proof of Concept'],
+            'formats': ['html', 'pdf', 'json', 'csv']
+        },
+        {
+            'id': 'compliance',
+            'name': 'Compliance Report',
+            'description': 'Compliance-focused report for auditors',
+            'icon': '📋',
+            'sections': ['Compliance Status', 'Control Mappings', 'Gap Analysis', 'Remediation Timeline'],
+            'frameworks': ['OWASP Top 10', 'PCI-DSS 4.0', 'NIST CSF', 'CIS Controls v8'],
+            'formats': ['html', 'pdf', 'json']
+        },
+        {
+            'id': 'full',
+            'name': 'Full Report',
+            'description': 'Comprehensive report with all sections',
+            'icon': '📑',
+            'sections': ['Executive Summary', 'Technical Details', 'Compliance Mapping', 'Remediation Guide', 'Appendix'],
+            'formats': ['html', 'pdf', 'json', 'csv', 'markdown']
+        }
+    ]
+    return jsonify({'templates': templates})
 
 
 # ================================
