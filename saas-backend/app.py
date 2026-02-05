@@ -332,9 +332,10 @@ def check_plan_access(required_plan):
             user = User.query.get(user_id)
             org = user.organization
             
-            plan_hierarchy = {'starter': 1, 'professional': 2, 'enterprise': 3}
-            user_plan_level = plan_hierarchy.get(org.plan_type, 0)
-            required_plan_level = plan_hierarchy.get(required_plan, 0)
+            # Trial users have same access as starter
+            plan_hierarchy = {'trial': 1, 'starter': 1, 'professional': 2, 'team': 3, 'enterprise': 4}
+            user_plan_level = plan_hierarchy.get(org.plan_type, 1)
+            required_plan_level = plan_hierarchy.get(required_plan, 1)
             
             if user_plan_level < required_plan_level:
                 return jsonify({'error': f'Plan upgrade required. Need {required_plan} plan.'}), 402
@@ -909,8 +910,9 @@ def get_tools():
             'enterprise': 999  # Unlimited
         }
         
-        plan_level = {'trial': 0, 'starter': 1, 'professional': 2, 'team': 3, 'enterprise': 4}
-        user_plan_level = plan_level.get(org.plan_type, 0)
+        # Trial users have same level as starter for tool access
+        plan_level = {'trial': 1, 'starter': 1, 'professional': 2, 'team': 3, 'enterprise': 4}
+        user_plan_level = plan_level.get(org.plan_type, 1)
         tool_limit = plan_limits.get(org.plan_type, 7)
         
         # Get all active tools
@@ -979,9 +981,10 @@ def create_scan():
         
         # Check plan access
         org = user.organization
-        plan_hierarchy = {'starter': 1, 'professional': 2, 'enterprise': 3}
-        user_plan_level = plan_hierarchy.get(org.plan_type, 0)
-        required_plan_level = plan_hierarchy.get(tool.plan_required, 0)
+        # Trial users have same access as starter (7 basic tools)
+        plan_hierarchy = {'trial': 1, 'starter': 1, 'professional': 2, 'team': 3, 'enterprise': 4}
+        user_plan_level = plan_hierarchy.get(org.plan_type, 1)  # Default to starter level
+        required_plan_level = plan_hierarchy.get(tool.plan_required, 1)
         
         if user_plan_level < required_plan_level:
             return jsonify({'error': f'Plan upgrade required. Need {tool.plan_required} plan.'}), 402

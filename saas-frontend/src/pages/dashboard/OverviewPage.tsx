@@ -326,6 +326,45 @@ export function OverviewPage() {
           </div>
         )}
 
+        {/* Trial Tools Info Card */}
+        {(organization?.plan_type === 'trial' || organization?.plan_type === 'starter') && (
+          <div className="bg-gradient-to-r from-purple-900/30 to-pink-900/30 rounded-xl p-6 border border-purple-500/30">
+            <div className="flex items-start gap-4">
+              <div className="w-12 h-12 rounded-xl bg-purple-500/20 flex items-center justify-center flex-shrink-0">
+                <span className="text-2xl">🛠️</span>
+              </div>
+              <div className="flex-1">
+                <h3 className="text-lg font-bold text-white mb-2">Your 7 Trial Tools</h3>
+                <p className="text-gray-400 text-sm mb-4">
+                  During your 14-day trial, you have access to these professional security tools. 
+                  <Link to="/dashboard/billing/upgrade" className="text-purple-400 hover:underline ml-1">Upgrade</Link> to unlock 395+ tools!
+                </p>
+                <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-3">
+                  {[
+                    { id: 'nmap', name: 'Nmap', icon: '🔍', desc: 'Network Scanner' },
+                    { id: 'nikto', name: 'Nikto', icon: '🌐', desc: 'Web Vulnerability' },
+                    { id: 'whatweb', name: 'WhatWeb', icon: '🔎', desc: 'Web Fingerprint' },
+                    { id: 'ncrack', name: 'Ncrack', icon: '🔑', desc: 'Password Cracker' },
+                    { id: 'tcpdump', name: 'TCPDump', icon: '📡', desc: 'Packet Analyzer' },
+                    { id: 'netcat', name: 'Netcat', icon: '🔗', desc: 'Network Utility' },
+                    { id: 'ncat', name: 'Ncat', icon: '⚡', desc: 'Improved Netcat' },
+                  ].map((tool) => (
+                    <Link 
+                      key={tool.id}
+                      to={`/dashboard/tools/${tool.id}`}
+                      className="bg-gray-800/50 hover:bg-gray-800 rounded-lg p-3 text-center transition group"
+                    >
+                      <div className="text-2xl mb-1">{tool.icon}</div>
+                      <div className="text-white font-medium text-sm group-hover:text-purple-400 transition">{tool.name}</div>
+                      <div className="text-gray-500 text-xs">{tool.desc}</div>
+                    </Link>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
         {/* Super Admin Panel */}
         {isSuperAdmin && (
           <div className="bg-gradient-to-r from-purple-900/50 to-pink-900/50 rounded-xl p-4 border border-purple-500/30">

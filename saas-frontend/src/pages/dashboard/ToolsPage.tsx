@@ -291,6 +291,48 @@ export function ToolsPage() {
           </div>
         )}
 
+        {/* Quick Access: Your Trial Tools */}
+        {(userPlan === 'trial' || userPlan === 'starter') && !showOnlyAvailable && (
+          <div className="mb-6 bg-gradient-to-r from-emerald-900/30 to-teal-900/30 rounded-xl p-5 border border-emerald-500/30">
+            <div className="flex items-center justify-between mb-4">
+              <div className="flex items-center gap-3">
+                <span className="text-2xl">✨</span>
+                <div>
+                  <h3 className="text-white font-bold">Quick Access: Your 7 Trial Tools</h3>
+                  <p className="text-gray-400 text-sm">Click any tool to start scanning immediately</p>
+                </div>
+              </div>
+              <button
+                onClick={() => setShowOnlyAvailable(true)}
+                className="text-emerald-400 hover:text-emerald-300 text-sm font-medium"
+              >
+                Show Only My Tools →
+              </button>
+            </div>
+            <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-3">
+              {[
+                { id: 'nmap', name: 'Nmap', icon: '🔍', desc: 'Port Scanner' },
+                { id: 'nikto', name: 'Nikto', icon: '🌐', desc: 'Web Scanner' },
+                { id: 'whatweb', name: 'WhatWeb', icon: '🔎', desc: 'Web Tech' },
+                { id: 'ncrack', name: 'Ncrack', icon: '🔑', desc: 'Password' },
+                { id: 'tcpdump', name: 'TCPDump', icon: '📡', desc: 'Packets' },
+                { id: 'netcat', name: 'Netcat', icon: '🔗', desc: 'Network' },
+                { id: 'ncat', name: 'Ncat', icon: '⚡', desc: 'TCP/UDP' },
+              ].map((tool) => (
+                <Link 
+                  key={tool.id}
+                  to={`/dashboard/scans/new?tool=${tool.id}`}
+                  className="bg-gray-800/60 hover:bg-emerald-900/40 border border-gray-700 hover:border-emerald-500/50 rounded-lg p-3 text-center transition group"
+                >
+                  <div className="text-xl mb-1">{tool.icon}</div>
+                  <div className="text-white font-medium text-sm group-hover:text-emerald-400 transition">{tool.name}</div>
+                  <div className="text-gray-500 text-xs">{tool.desc}</div>
+                </Link>
+              ))}
+            </div>
+          </div>
+        )}
+
         {/* Page Header */}
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-white mb-2">Security Tools</h1>
