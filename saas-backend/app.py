@@ -2513,6 +2513,7 @@ def submit_feedback():
         subject = data.get('subject', 'No Subject')
         message = data.get('message', '')
         priority = data.get('priority', 'medium')
+        reply_email = data.get('replyEmail', user.email if user else '')
         system_info = data.get('systemInfo', {})
         
         # Get user name safely
@@ -2529,6 +2530,7 @@ CyberSec Pro Feedback
 Type: {feedback_type.upper()}
 Priority: {priority.upper()}
 From: {user_name} <{user.email}>
+Reply To: {reply_email}
 Date: {datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S UTC')}
 
 ----------------------------------------------
@@ -2555,6 +2557,7 @@ Page: {system_info.get('currentUrl', 'N/A')}
 
 ==============================================
 This feedback was submitted via CyberSec Pro dashboard
+REPLY TO: {reply_email}
 """
 
         # Try to send email via Yandex SMTP (SSL on port 465)

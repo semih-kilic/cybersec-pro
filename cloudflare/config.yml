@@ -29,6 +29,12 @@ ingress:
     originRequest:
       httpHostHeader: app.semihkilic.com
   
+  # CyberSec Pro SaaS Platform
+  - hostname: cybersecpro.semihkilic.com
+    service: http://localhost:80
+    originRequest:
+      httpHostHeader: cybersecpro.semihkilic.com
+  
   # API subdomain (future API-only access)
   - hostname: api.semihkilic.com
     service: http://localhost:80
