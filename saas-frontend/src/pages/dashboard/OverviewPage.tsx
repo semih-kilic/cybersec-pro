@@ -7,11 +7,11 @@ import WelcomeTour from '../../components/WelcomeTour';
 
 // Plan configurations - synced with backend database (143 total tools)
 const PLAN_CONFIG: Record<string, { tools: number; scansPerDay: number; features: string[] }> = {
-  trial: { tools: 7, scansPerDay: 3, features: ['7 Basic tools', '3 scans/day', '7 day trial'] },
-  starter: { tools: 33, scansPerDay: 10, features: ['33 Essential tools', '10 scans/day', '1 project'] },
-  professional: { tools: 120, scansPerDay: 50, features: ['120 tools', '50 scans/day', 'Multi-tool scan (3)'] },
-  team: { tools: 130, scansPerDay: 100, features: ['130 tools', '100 scans/day', 'Remote agent'] },
-  enterprise: { tools: 143, scansPerDay: -1, features: ['143+ tools', 'Unlimited scans', 'SSO/SAML'] },
+  trial: { tools: 7, scansPerDay: 3, features: ['7 Essential tools', '3 scans/day', '14 day trial'] },
+  starter: { tools: 7, scansPerDay: 10, features: ['7 Essential tools', '10 scans/day', '1 project'] },
+  professional: { tools: 33, scansPerDay: 50, features: ['33 tools', '50 scans/day', 'Multi-tool scan (3)'] },
+  team: { tools: 85, scansPerDay: 100, features: ['85 tools', '100 scans/day', 'Remote agent'] },
+  enterprise: { tools: 143, scansPerDay: -1, features: ['143+ All tools', 'Unlimited scans', 'SSO/SAML'] },
 };
 
 interface ScanSummary {

@@ -371,12 +371,20 @@ export function TerminalPage() {
                 className="bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-cyan-500"
               >
                 <option value="">Select an agent...</option>
+                {agents.length === 0 && (
+                  <option value="" disabled>No agents configured</option>
+                )}
                 {agents.map(agent => (
                   <option key={agent.id} value={agent.id}>
                     {agent.status === 'online' ? '🟢' : '🔴'} {agent.name} ({agent.ip_address})
                   </option>
                 ))}
               </select>
+              {agents.length === 0 && (
+                <span className="text-amber-400 text-xs ml-2">
+                  💡 Deploy a Remote Agent to connect to internal networks
+                </span>
+              )}
             </div>
 
             <button

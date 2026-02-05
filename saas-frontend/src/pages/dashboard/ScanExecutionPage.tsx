@@ -189,7 +189,7 @@ export function ScanExecutionPage() {
                 type="text"
                 value={target}
                 onChange={(e) => setTarget(e.target.value)}
-                placeholder="example.com or 192.168.1.1"
+                placeholder="scanme.nmap.org or your public domain"
                 disabled={status === 'running'}
                 className="w-full px-4 py-3 bg-gray-800 border border-gray-700 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:border-kali-blue transition disabled:opacity-50"
               />

@@ -384,7 +384,7 @@ export function NewScanPage() {
                     type="text"
                     value={customTarget}
                     onChange={(e) => setCustomTarget(e.target.value)}
-                    placeholder="192.168.1.1, example.com, or http://target.com"
+                    placeholder="scanme.nmap.org, testphp.vulnweb.com, or your public IP"
                     className="w-full px-4 py-3 bg-gray-800 border border-gray-700 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:border-kali-blue transition"
                   />
                 ) : (

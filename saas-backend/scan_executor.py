@@ -588,7 +588,7 @@ class ScanExecutor:
         """Validate target is safe to scan"""
         import re
         
-        # Block localhost and private IPs
+        # Block localhost and private IPs (our server can't reach them)
         blocked_patterns = [
             r'^localhost',
             r'^127\.',
@@ -601,7 +601,14 @@ class ScanExecutor:
         
         for pattern in blocked_patterns:
             if re.match(pattern, target, re.IGNORECASE):
-                return False, f"Target {target} is blocked (private/local address)"
+                return False, (
+                    f"Target {target} is a private/internal IP address. "
+                    "Our cloud server cannot reach internal networks. "
+                    "To scan internal networks, please: "
+                    "1) Deploy a Remote Agent in your network (Team/Enterprise plan), or "
+                    "2) Use public IP/domain addresses for external testing. "
+                    "Try: scanme.nmap.org for demo scanning."
+                )
         
         return True, "Target is valid"
     

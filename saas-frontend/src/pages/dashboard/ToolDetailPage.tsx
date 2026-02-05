@@ -31,7 +31,7 @@ interface Tool {
 // Comprehensive Kali tool parameters - real CLI parameters
 const toolParameters: { [key: string]: ToolParameter[] } = {
   'nmap': [
-    { name: 'Target', flag: '', type: 'text', required: true, placeholder: '192.168.1.1 or example.com', description: 'Target IP address, hostname, or CIDR range' },
+    { name: 'Target', flag: '', type: 'text', required: true, placeholder: 'scanme.nmap.org or your-domain.com', description: 'Target IP address, hostname, or CIDR range' },
     { name: 'Scan Type', flag: '-s', type: 'select', required: false, options: ['S (SYN)', 'T (Connect)', 'U (UDP)', 'A (ACK)', 'N (NULL)', 'F (FIN)', 'X (Xmas)'], description: 'Type of scan to perform', group: 'Scan Techniques' },
     { name: 'Port Range', flag: '-p', type: 'text', required: false, placeholder: '1-65535 or 22,80,443', description: 'Specific ports to scan', group: 'Port Options' },
     { name: 'Top Ports', flag: '--top-ports', type: 'number', required: false, placeholder: '1000', description: 'Scan most common ports', group: 'Port Options' },

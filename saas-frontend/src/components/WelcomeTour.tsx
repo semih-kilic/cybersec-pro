@@ -111,7 +111,7 @@ export default function WelcomeTour({ isOpen, onClose, planType }: WelcomeTourPr
               <p className="text-gray-400 text-sm">
                 You're on the <span className="text-cyan-400 font-semibold">{planType}</span> plan with access to{' '}
                 <span className="text-cyan-400 font-semibold">
-                  {planType === 'enterprise' ? '350+' : planType === 'team' ? '200' : planType === 'professional' ? '120' : '33'}
+                  {planType === 'enterprise' ? '143+' : planType === 'team' ? '85' : planType === 'professional' ? '33' : '7'}
                 </span>{' '}
                 security tools.
               </p>
