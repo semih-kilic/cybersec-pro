@@ -119,8 +119,8 @@ export function ScansPage() {
   const filteredScans = scans.filter(scan => {
     const matchesFilter = filter === 'all' || scan.status === filter;
     const matchesSearch = 
-      scan.tool_name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      scan.target.toLowerCase().includes(searchQuery.toLowerCase());
+      (scan.tool_name || '').toLowerCase().includes(searchQuery.toLowerCase()) ||
+      (scan.target || '').toLowerCase().includes(searchQuery.toLowerCase());
     return matchesFilter && matchesSearch;
   });
 
