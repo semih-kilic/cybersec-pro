@@ -250,8 +250,27 @@ export function ToolDetailPage() {
   };
 
   const handleRunScan = () => {
-    // Navigate to scan execution page
-    navigate(`/dashboard/tools/${toolId}/run?tool=${toolId}`);
+    // Find the target value from parameters (first required parameter)
+    const params = tool?.parameters || [];
+    const targetParam = params.find(p => p.required && (p.name.toLowerCase().includes('target') || p.name.toLowerCase().includes('host') || p.name.toLowerCase().includes('url'))) || params.find(p => p.required);
+    const targetValue = targetParam ? (paramValues[targetParam.name] as string) || '' : '';
+    
+    // Build query params
+    const queryParams = new URLSearchParams();
+    queryParams.set('tool', toolId || '');
+    if (targetValue) {
+      queryParams.set('target', targetValue);
+    }
+    if (generatedCommand) {
+      queryParams.set('command', generatedCommand);
+    }
+    
+    // Pass all parameters as JSON
+    const allParams = { ...paramValues };
+    queryParams.set('params', JSON.stringify(allParams));
+    
+    // Navigate to scan execution page with parameters
+    navigate(`/dashboard/tools/${toolId}/run?${queryParams.toString()}`);
   };
 
   const copyCommand = () => {

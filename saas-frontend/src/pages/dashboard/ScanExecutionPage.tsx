@@ -9,12 +9,23 @@ export function ScanExecutionPage() {
   
   const [tool, setTool] = useState<ToolConfig | null>(null);
   const [target, setTarget] = useState(searchParams.get('target') || '');
-  const [parameters, setParameters] = useState<Record<string, string | number | boolean>>({});
+  const [parameters, setParameters] = useState<Record<string, string | number | boolean>>(() => {
+    // Try to parse parameters from URL
+    const paramsStr = searchParams.get('params');
+    if (paramsStr) {
+      try {
+        return JSON.parse(paramsStr);
+      } catch {
+        return {};
+      }
+    }
+    return {};
+  });
   const [status, setStatus] = useState<'idle' | 'running' | 'completed' | 'failed' | 'cancelled'>('idle');
   const [output, setOutput] = useState<string[]>([]);
   const [, setResult] = useState<ScanResult | null>(null);
   const [currentScanId, setCurrentScanId] = useState<string | null>(scanId || null);
-  const [command, setCommand] = useState('');
+  const [command, setCommand] = useState(searchParams.get('command') || '');
   const [error, setError] = useState<string | null>(null);
   
   const outputRef = useRef<HTMLDivElement>(null);
@@ -53,14 +64,17 @@ export function ScanExecutionPage() {
     const response = await api.getToolConfig(toolId);
     if (response.data) {
       setTool(response.data.tool);
-      // Set default values
-      const defaults: Record<string, string | number | boolean> = {};
-      Object.entries(response.data.tool.parameters || {}).forEach(([key, param]) => {
-        if (param.default !== undefined) {
-          defaults[key] = param.default;
-        }
-      });
-      setParameters(defaults);
+      // Set default values only if no parameters were passed from ToolDetailPage
+      const paramsStr = searchParams.get('params');
+      if (!paramsStr) {
+        const defaults: Record<string, string | number | boolean> = {};
+        Object.entries(response.data.tool.parameters || {}).forEach(([key, param]) => {
+          if (param.default !== undefined) {
+            defaults[key] = param.default;
+          }
+        });
+        setParameters(defaults);
+      }
     }
   };
 
