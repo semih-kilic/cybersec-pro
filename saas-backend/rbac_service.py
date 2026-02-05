@@ -16,8 +16,8 @@ import json
 
 class PlanLevel(IntEnum):
     """Plan hierarchy levels"""
-    TRIAL = 0
-    STARTER = 1
+    TRIAL = 1      # Trial users get STARTER tool access
+    STARTER = 1    # Same level as Trial
     PROFESSIONAL = 2
     TEAM = 3
     ENTERPRISE = 4

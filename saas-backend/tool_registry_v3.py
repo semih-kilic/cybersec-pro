@@ -20,8 +20,9 @@ from pathlib import Path
 logger = logging.getLogger(__name__)
 
 # Plan hierarchy for tool access
+# Trial users have same access as Starter (7 basic tools)
 PLAN_HIERARCHY = {
-    "trial": 1,
+    "trial": 2,      # Same as starter - access to basic tools
     "starter": 2,
     "professional": 3,
     "team": 4,

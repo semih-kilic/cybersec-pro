@@ -267,10 +267,12 @@ export function ToolsPage() {
                 </div>
                 <div>
                   <h3 className="text-lg font-bold text-white">
-                    {userPlan === 'trial' ? `${filteredCount > 0 && showOnlyAvailable ? filteredCount : 7} Tools Available in Your Trial` : `${filteredCount > 0 && showOnlyAvailable ? filteredCount : 33} Tools in Your Plan`}
+                    {(userPlan === 'trial' || userPlan === 'starter') 
+                      ? `${filteredCount > 0 && showOnlyAvailable ? filteredCount : 7} Tools Available in Your Plan` 
+                      : `${filteredCount > 0 && showOnlyAvailable ? filteredCount : totalTools} Tools in Your Plan`}
                   </h3>
                   <p className="text-gray-400 text-sm">
-                    {userPlan === 'trial' 
+                    {(userPlan === 'trial' || userPlan === 'starter')
                       ? 'Click "My Plan" filter to see your available tools. Upgrade to unlock 395+ professional tools!' 
                       : 'Click "My Plan" to see tools included in your plan. Upgrade for more tools!'}
                   </p>
@@ -349,7 +351,7 @@ export function ToolsPage() {
                 <span>My Plan</span>
                 {!showOnlyAvailable && (userPlan === 'trial' || userPlan === 'starter') && (
                   <span className="bg-cyan-500/30 text-cyan-300 px-1.5 py-0.5 rounded text-xs">
-                    {userPlan === 'trial' ? '7' : '33'}
+                    7
                   </span>
                 )}
               </button>
