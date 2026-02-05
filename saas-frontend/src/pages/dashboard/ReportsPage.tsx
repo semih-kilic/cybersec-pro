@@ -224,8 +224,8 @@ export function ReportsPage() {
   };
 
   const filteredReports = reports.filter(report =>
-    report.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    report.target.toLowerCase().includes(searchQuery.toLowerCase())
+    (report.name || '').toLowerCase().includes(searchQuery.toLowerCase()) ||
+    (report.target || '').toLowerCase().includes(searchQuery.toLowerCase())
   );
 
   const getStatusBadge = (status: Report['status']) => {

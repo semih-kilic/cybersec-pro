@@ -417,7 +417,7 @@ export function TargetsPage() {
                   </td>
                   <td className="px-5 py-4">
                     <div className="flex flex-wrap gap-1">
-                      {target.tags.map(tag => (
+                      {(target.tags || []).map(tag => (
                         <span key={tag} className="px-2 py-0.5 bg-gray-800 text-gray-400 rounded text-xs">
                           {tag}
                         </span>

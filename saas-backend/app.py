@@ -280,6 +280,11 @@ class Scan(db.Model):
     user = db.relationship('User', backref='scans')
     tool = db.relationship('Tool', backref='scans')
     
+    @property
+    def tool_name(self):
+        """Helper property to get tool name safely"""
+        return self.tool.name if self.tool else 'Unknown Tool'
+    
     def to_dict(self):
         return {
             'id': self.id,

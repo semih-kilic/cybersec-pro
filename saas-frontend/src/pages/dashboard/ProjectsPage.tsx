@@ -290,7 +290,7 @@ export default function ProjectsPage() {
               
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
-                  {project.tags.map((tag, i) => (
+                  {(project.tags || []).map((tag, i) => (
                     <span
                       key={i}
                       className="px-2 py-1 bg-gray-800 text-gray-400 rounded text-xs"
@@ -300,7 +300,7 @@ export default function ProjectsPage() {
                   ))}
                 </div>
                 <div className="flex items-center gap-1">
-                  {project.members.slice(0, 3).map((member) => (
+                  {(project.members || []).slice(0, 3).map((member) => (
                     <div
                       key={member.id}
                       className="w-8 h-8 rounded-full bg-gradient-to-br from-kali-blue to-kali-purple flex items-center justify-center text-white text-xs font-bold -ml-2 first:ml-0 border-2 border-gray-900"
@@ -309,7 +309,7 @@ export default function ProjectsPage() {
                       {member.name.charAt(0)}
                     </div>
                   ))}
-                  {project.members.length > 3 && (
+                  {(project.members || []).length > 3 && (
                     <div className="w-8 h-8 rounded-full bg-gray-800 flex items-center justify-center text-gray-400 text-xs -ml-2 border-2 border-gray-900">
                       +{project.members.length - 3}
                     </div>
