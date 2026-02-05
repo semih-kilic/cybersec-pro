@@ -403,8 +403,14 @@ def execute_scan():
         user_id = get_jwt_identity()
         user_plan = get_user_plan(user_id)
         
+        # Debug logging
+        print(f"DEBUG: user_id={user_id}, user_plan={user_plan}, tool_id={tool_id}")
+        print(f"DEBUG: tool_plan_required={tool.get('plan_required')}")
+        can_use = registry.can_use_tool(tool_id, user_plan)
+        print(f"DEBUG: can_use_tool={can_use}")
+        
         # Check plan access
-        if not registry.can_use_tool(tool_id, user_plan):
+        if not can_use:
             return jsonify({'success': False, 'error': f'Tool requires {tool.get("plan_required")} plan or higher'}), 403
         
         # Build command
