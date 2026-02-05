@@ -613,8 +613,18 @@ class ScanExecutor:
         return True, "Target is valid"
     
     def start_scan(self, scan_id: str, tool_id: str, target: str, 
-                   parameters: Dict, callback: Optional[Callable] = None) -> Dict:
-        """Start a new scan"""
+                   parameters: Dict, callback: Optional[Callable] = None,
+                   completion_callback: Optional[Callable] = None) -> Dict:
+        """Start a new scan
+        
+        Args:
+            scan_id: Unique scan identifier
+            tool_id: Tool to use
+            target: Target to scan
+            parameters: Tool parameters
+            callback: Called for each output line (scan_id, line)
+            completion_callback: Called when scan completes (scan_id, status, output, exit_code)
+        """
         
         # Validate target
         is_valid, message = self.validate_target(target)
@@ -702,10 +712,20 @@ class ScanExecutor:
                 
                 process.wait()
                 
-                self.scan_results[scan_id]['output'] = ''.join(full_output)
-                self.scan_results[scan_id]['status'] = 'completed' if process.returncode == 0 else 'failed'
+                final_status = 'completed' if process.returncode == 0 else 'failed'
+                final_output = ''.join(full_output)
+                
+                self.scan_results[scan_id]['output'] = final_output
+                self.scan_results[scan_id]['status'] = final_status
                 self.scan_results[scan_id]['completed_at'] = datetime.utcnow().isoformat()
                 self.scan_results[scan_id]['exit_code'] = process.returncode
+                
+                # Call completion callback to update database
+                if completion_callback:
+                    try:
+                        completion_callback(scan_id, final_status, final_output, process.returncode)
+                    except Exception as cb_error:
+                        print(f"Completion callback error for {scan_id}: {cb_error}")
                 
                 output_queue.put(None)  # Signal end
                 
@@ -713,6 +733,14 @@ class ScanExecutor:
                 self.scan_results[scan_id]['status'] = 'error'
                 self.scan_results[scan_id]['error'] = str(e)
                 output_queue.put(f"\n[ERROR] {str(e)}\n")
+                
+                # Call completion callback with error status
+                if completion_callback:
+                    try:
+                        completion_callback(scan_id, 'failed', str(e), -1)
+                    except Exception as cb_error:
+                        print(f"Completion callback error for {scan_id}: {cb_error}")
+                
                 output_queue.put(None)
             
             finally:

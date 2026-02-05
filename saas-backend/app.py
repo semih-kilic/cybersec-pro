@@ -1344,8 +1344,25 @@ def execute_scan():
         db.session.add(scan)
         db.session.commit()
         
-        # Start the actual scan
-        result = executor.start_scan(scan_id, tool_id, target, parameters)
+        # Create a completion callback to update database when scan finishes
+        def on_scan_complete(sid, status, output, exit_code):
+            """Update database when scan completes"""
+            with app.app_context():
+                try:
+                    s = Scan.query.get(sid)
+                    if s:
+                        s.status = status
+                        s.output = output[:65535] if output else ''  # Limit output size
+                        s.completed_at = datetime.utcnow()
+                        db.session.commit()
+                        print(f"✅ Scan {sid} updated to {status}")
+                except Exception as e:
+                    print(f"❌ Failed to update scan {sid}: {e}")
+                    db.session.rollback()
+        
+        # Start the actual scan with completion callback
+        result = executor.start_scan(scan_id, tool_id, target, parameters, 
+                                     completion_callback=on_scan_complete)
         
         if not result.get('success'):
             scan.status = 'failed'
@@ -2184,6 +2201,22 @@ def execute_scan_v2():
         db.session.add(scan)
         db.session.commit()
         
+        # Create a completion callback to update database when scan finishes
+        def on_scan_complete(sid, status, output, exit_code):
+            """Update database when scan completes"""
+            with app.app_context():
+                try:
+                    s = Scan.query.get(sid)
+                    if s:
+                        s.status = status
+                        s.output = output[:65535] if output else ''  # Limit output size
+                        s.completed_at = datetime.utcnow()
+                        db.session.commit()
+                        print(f"✅ Scan {sid} updated to {status}")
+                except Exception as e:
+                    print(f"❌ Failed to update scan {sid}: {e}")
+                    db.session.rollback()
+        
         # Execute scan - if agent specified, use agent, otherwise local
         if agent_id:
             agent = Agent.query.filter_by(id=agent_id, organization_id=org.id).first()
@@ -2204,10 +2237,12 @@ def execute_scan_v2():
                 result = execute_scan_via_ssh(agent, scan_id, tool_id, target, parameters)
             else:
                 # Direct agent execution
-                result = executor.start_scan(scan_id, tool_id, target, parameters)
+                result = executor.start_scan(scan_id, tool_id, target, parameters,
+                                             completion_callback=on_scan_complete)
         else:
             # Local execution
-            result = executor.start_scan(scan_id, tool_id, target, parameters)
+            result = executor.start_scan(scan_id, tool_id, target, parameters,
+                                         completion_callback=on_scan_complete)
         
         if not result.get('success'):
             scan.status = 'failed'
