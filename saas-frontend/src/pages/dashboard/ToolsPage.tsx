@@ -257,11 +257,44 @@ export function ToolsPage() {
       <Header />
       
       <div className="max-w-7xl mx-auto px-4 py-8">
+        {/* Trial/Starter User Banner */}
+        {(userPlan === 'trial' || userPlan === 'starter') && (
+          <div className="mb-6 bg-gradient-to-r from-cyan-900/30 via-blue-900/30 to-purple-900/30 rounded-xl p-6 border border-cyan-500/30">
+            <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+              <div className="flex items-center gap-4">
+                <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-cyan-500 to-blue-600 flex items-center justify-center">
+                  <span className="text-2xl">🛡️</span>
+                </div>
+                <div>
+                  <h3 className="text-lg font-bold text-white">
+                    {userPlan === 'trial' ? '7 Tools Available in Your Trial' : '33 Tools in Your Plan'}
+                  </h3>
+                  <p className="text-gray-400 text-sm">
+                    {userPlan === 'trial' 
+                      ? 'Click "My Plan" filter to see your available tools. Upgrade to unlock 395+ professional tools!' 
+                      : 'Click "My Plan" to see tools included in your plan. Upgrade for more tools!'}
+                  </p>
+                </div>
+              </div>
+              <Link 
+                to="/dashboard/billing/upgrade"
+                className="px-5 py-2.5 bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-white font-semibold rounded-lg transition flex items-center gap-2"
+              >
+                <span>Upgrade Now</span>
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
+                </svg>
+              </Link>
+            </div>
+          </div>
+        )}
+
         {/* Page Header */}
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-white mb-2">Security Tools</h1>
           <p className="text-gray-400">
             {totalTools} professional security tools available • Your plan: <span className="text-kali-blue font-medium capitalize">{userPlan}</span>
+            {showOnlyAvailable && <span className="ml-2 text-cyan-400">• Showing {filteredCount} tools in your plan</span>}
           </p>
         </div>
 
@@ -306,13 +339,19 @@ export function ToolsPage() {
               </button>
               <button
                 onClick={() => setShowOnlyAvailable(!showOnlyAvailable)}
-                className={`px-4 py-2 rounded-lg text-sm font-medium transition ${
+                className={`px-4 py-2.5 rounded-lg text-sm font-semibold transition flex items-center gap-2 ${
                   showOnlyAvailable 
-                    ? 'bg-kali-blue text-white' 
-                    : 'bg-gray-800 text-gray-400 hover:text-white'
+                    ? 'bg-gradient-to-r from-cyan-500 to-blue-600 text-white shadow-lg shadow-cyan-500/25' 
+                    : 'bg-gray-800 text-gray-300 hover:text-white border border-cyan-500/50 hover:border-cyan-500'
                 }`}
               >
-                🔓 My Plan
+                <span>🎯</span>
+                <span>My Plan</span>
+                {!showOnlyAvailable && (userPlan === 'trial' || userPlan === 'starter') && (
+                  <span className="bg-cyan-500/30 text-cyan-300 px-1.5 py-0.5 rounded text-xs">
+                    {userPlan === 'trial' ? '7' : '33'}
+                  </span>
+                )}
               </button>
               
               {/* Sort Dropdown */}
@@ -424,8 +463,18 @@ export function ToolsPage() {
                     return (
                       <div 
                         key={tool.id}
-                        className={`bg-gray-900 rounded-xl border border-gray-800 p-5 hover:border-gray-700 transition group ${!canUse ? 'opacity-60' : ''}`}
+                        className={`bg-gray-900 rounded-xl border p-5 transition group relative ${
+                          canUse 
+                            ? 'border-gray-800 hover:border-cyan-500/50 hover:shadow-lg hover:shadow-cyan-500/10' 
+                            : 'border-gray-800/50 opacity-50 hover:opacity-70'
+                        }`}
                       >
+                        {/* Available Badge for Trial Users */}
+                        {canUse && (userPlan === 'trial' || userPlan === 'starter') && (
+                          <div className="absolute -top-2 -right-2 w-6 h-6 bg-gradient-to-r from-green-500 to-emerald-500 rounded-full flex items-center justify-center shadow-lg">
+                            <span className="text-white text-xs">✓</span>
+                          </div>
+                        )}
                         <div className="flex items-start justify-between mb-3">
                           <div className={`w-10 h-10 rounded-lg bg-gradient-to-br ${categoryColors[categoryKey] || 'from-gray-500 to-gray-600'} flex items-center justify-center`}>
                             <span className="text-lg">{categoryIcons[categoryKey] || '🔧'}</span>
