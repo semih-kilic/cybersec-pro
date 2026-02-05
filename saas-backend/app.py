@@ -144,6 +144,7 @@ class User(db.Model):
             'last_name': self.last_name,
             'role': self.role,
             'organization_id': self.organization_id,
+            'avatar_url': self.avatar_url,
             'created_at': self.created_at.isoformat(),
             'last_login': self.last_login.isoformat() if self.last_login else None,
             'is_active': self.is_active
@@ -797,6 +798,93 @@ def get_current_user():
         })
         
     except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+
+@app.route('/api/v1/auth/avatar', methods=['POST'])
+@jwt_required()
+def upload_avatar():
+    """Upload user avatar"""
+    import uuid
+    import os
+    
+    try:
+        user_id = get_jwt_identity()
+        user = User.query.get(user_id)
+        
+        if not user:
+            return jsonify({'error': 'User not found'}), 404
+        
+        if 'avatar' not in request.files:
+            return jsonify({'error': 'No file uploaded'}), 400
+        
+        file = request.files['avatar']
+        if file.filename == '':
+            return jsonify({'error': 'No file selected'}), 400
+        
+        # Validate file type
+        allowed_extensions = {'png', 'jpg', 'jpeg', 'gif'}
+        file_ext = file.filename.rsplit('.', 1)[-1].lower() if '.' in file.filename else ''
+        if file_ext not in allowed_extensions:
+            return jsonify({'error': 'Invalid file type. Use JPG, PNG or GIF'}), 400
+        
+        # Create uploads directory
+        upload_dir = os.path.join(os.path.dirname(__file__), 'static', 'avatars')
+        os.makedirs(upload_dir, exist_ok=True)
+        
+        # Generate unique filename
+        filename = f"{user_id}_{uuid.uuid4().hex[:8]}.{file_ext}"
+        filepath = os.path.join(upload_dir, filename)
+        
+        # Save file
+        file.save(filepath)
+        
+        # Update user avatar URL
+        avatar_url = f"/static/avatars/{filename}"
+        user.avatar_url = avatar_url
+        db.session.commit()
+        
+        return jsonify({
+            'success': True,
+            'avatar_url': avatar_url,
+            'message': 'Avatar uploaded successfully'
+        })
+        
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'error': str(e)}), 500
+
+
+@app.route('/api/v1/auth/profile', methods=['PUT'])
+@jwt_required()
+def update_profile():
+    """Update user profile"""
+    try:
+        user_id = get_jwt_identity()
+        user = User.query.get(user_id)
+        
+        if not user:
+            return jsonify({'error': 'User not found'}), 404
+        
+        data = request.get_json()
+        
+        if 'first_name' in data:
+            user.first_name = data['first_name']
+        if 'last_name' in data:
+            user.last_name = data['last_name']
+        if 'company' in data:
+            user.company = data['company']
+        
+        db.session.commit()
+        
+        return jsonify({
+            'success': True,
+            'user': user.to_dict(),
+            'message': 'Profile updated successfully'
+        })
+        
+    except Exception as e:
+        db.session.rollback()
         return jsonify({'error': str(e)}), 500
 
 # ================================

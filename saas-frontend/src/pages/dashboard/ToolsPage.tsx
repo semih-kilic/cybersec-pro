@@ -267,7 +267,7 @@ export function ToolsPage() {
                 </div>
                 <div>
                   <h3 className="text-lg font-bold text-white">
-                    {userPlan === 'trial' ? '7 Tools Available in Your Trial' : '33 Tools in Your Plan'}
+                    {userPlan === 'trial' ? `${filteredCount > 0 && showOnlyAvailable ? filteredCount : 7} Tools Available in Your Trial` : `${filteredCount > 0 && showOnlyAvailable ? filteredCount : 33} Tools in Your Plan`}
                   </h3>
                   <p className="text-gray-400 text-sm">
                     {userPlan === 'trial' 

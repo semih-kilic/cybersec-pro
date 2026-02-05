@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useAuth } from '../../hooks/useAuth';
 import { useSearchParams } from 'react-router-dom';
 
@@ -47,6 +47,9 @@ export default function SettingsPage() {
   const [lastName, setLastName] = useState(user?.last_name || '');
   const [email, setEmail] = useState(user?.email || '');
   const [company, setCompany] = useState(user?.company || '');
+  const [avatarUrl, setAvatarUrl] = useState(user?.avatar_url || '');
+  const [uploadingAvatar, setUploadingAvatar] = useState(false);
+  const avatarInputRef = useRef<HTMLInputElement>(null);
   
   // Security state
   const [currentPassword, setCurrentPassword] = useState('');
@@ -77,8 +80,54 @@ export default function SettingsPage() {
       setLastName(user.last_name || '');
       setEmail(user.email || '');
       setCompany(user.company || '');
+      setAvatarUrl(user.avatar_url || '');
     }
   }, [user]);
+
+  // Avatar upload handler
+  const handleAvatarUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    // Validate file
+    if (!['image/jpeg', 'image/png', 'image/gif'].includes(file.type)) {
+      setMessage({ type: 'error', text: 'Please upload a JPG, PNG or GIF image' });
+      return;
+    }
+    if (file.size > 2 * 1024 * 1024) {
+      setMessage({ type: 'error', text: 'File size must be less than 2MB' });
+      return;
+    }
+
+    setUploadingAvatar(true);
+    setMessage(null);
+
+    try {
+      const token = localStorage.getItem('token');
+      const formData = new FormData();
+      formData.append('avatar', file);
+
+      const response = await fetch('/api/v1/auth/avatar', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+        },
+        body: formData,
+      });
+
+      const data = await response.json();
+      if (response.ok) {
+        setAvatarUrl(data.avatar_url);
+        setMessage({ type: 'success', text: 'Avatar updated successfully!' });
+      } else {
+        setMessage({ type: 'error', text: data.error || 'Failed to upload avatar' });
+      }
+    } catch {
+      setMessage({ type: 'error', text: 'Failed to upload avatar. Please try again.' });
+    } finally {
+      setUploadingAvatar(false);
+    }
+  };
 
   const handleProfileUpdate = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -281,12 +330,39 @@ export default function SettingsPage() {
               <h2 className="text-xl font-bold text-white mb-4">Profile Information</h2>
               
               <div className="flex items-center gap-6 mb-8">
-                <div className="w-20 h-20 rounded-full bg-gradient-to-br from-kali-blue to-kali-purple flex items-center justify-center text-3xl text-white font-bold">
-                  {firstName?.charAt(0) || email?.charAt(0) || '?'}
+                <div className="relative">
+                  {avatarUrl ? (
+                    <img 
+                      src={avatarUrl} 
+                      alt="Avatar" 
+                      className="w-20 h-20 rounded-full object-cover border-2 border-gray-700"
+                    />
+                  ) : (
+                    <div className="w-20 h-20 rounded-full bg-gradient-to-br from-kali-blue to-kali-purple flex items-center justify-center text-3xl text-white font-bold">
+                      {firstName?.charAt(0) || email?.charAt(0) || '?'}
+                    </div>
+                  )}
+                  {uploadingAvatar && (
+                    <div className="absolute inset-0 bg-black/50 rounded-full flex items-center justify-center">
+                      <div className="w-6 h-6 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                    </div>
+                  )}
                 </div>
                 <div>
-                  <button type="button" className="px-4 py-2 bg-gray-800 text-white rounded-lg hover:bg-gray-700 transition">
-                    Change Avatar
+                  <input
+                    type="file"
+                    ref={avatarInputRef}
+                    onChange={handleAvatarUpload}
+                    accept="image/jpeg,image/png,image/gif"
+                    className="hidden"
+                  />
+                  <button 
+                    type="button" 
+                    onClick={() => avatarInputRef.current?.click()}
+                    disabled={uploadingAvatar}
+                    className="px-4 py-2 bg-gray-800 text-white rounded-lg hover:bg-gray-700 transition disabled:opacity-50"
+                  >
+                    {uploadingAvatar ? 'Uploading...' : 'Change Avatar'}
                   </button>
                   <p className="text-gray-500 text-sm mt-1">JPG, PNG or GIF. Max 2MB.</p>
                 </div>
