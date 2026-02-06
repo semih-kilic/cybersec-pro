@@ -42,6 +42,8 @@ def init_socketio(app, **kwargs):
             'https://cybersecpro.com',
             'https://app.cybersecpro.com',
             'https://semihkilic.com',
+            'https://www.semihkilic.com',
+            'https://cybersecpro.semihkilic.com',
             'https://app.semihkilic.com',
             'http://localhost:3000',
             'http://localhost:5173',

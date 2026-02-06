@@ -3,14 +3,33 @@ import { Link, useSearchParams } from 'react-router-dom';
 import { Header } from '../../components/layout/Header';
 import { useAuth } from '../../hooks/useAuth';
 
+interface ScanTool {
+  id: string;
+  name: string;
+  category?: string;
+}
+
+interface ScanFindingsSummary {
+  total?: number;
+  critical?: number;
+  high?: number;
+  medium?: number;
+  low?: number;
+  open_ports?: number;
+}
+
 interface Scan {
   id: string;
-  tool_name: string;
+  tool?: ScanTool;
+  tool_name?: string; // Legacy fallback
   target: string;
-  status: 'running' | 'completed' | 'failed' | 'queued' | 'cancelled';
+  status: 'running' | 'completed' | 'failed' | 'queued' | 'cancelled' | 'pending' | 'timeout';
   started_at: string;
   completed_at?: string;
-  duration?: number;
+  created_at?: string;
+  duration?: string;
+  duration_seconds?: number;
+  findings_summary?: ScanFindingsSummary;
   findings_count?: number;
   critical?: number;
   high?: number;
@@ -18,17 +37,39 @@ interface Scan {
   low?: number;
   command?: string;
   output?: string;
+  error_log?: string;
 }
 
-const statusColors = {
+// Helper to get tool name from scan
+const getToolName = (scan: Scan): string => {
+  if (scan.tool?.name) return scan.tool.name;
+  if (scan.tool_name) return scan.tool_name;
+  return 'Unknown';
+};
+
+// Helper to get findings
+const getFindings = (scan: Scan): ScanFindingsSummary => {
+  if (scan.findings_summary) return scan.findings_summary;
+  return {
+    total: scan.findings_count || 0,
+    critical: scan.critical || 0,
+    high: scan.high || 0,
+    medium: scan.medium || 0,
+    low: scan.low || 0,
+  };
+};
+
+const statusColors: Record<string, string> = {
   running: 'bg-blue-500',
   completed: 'bg-green-500',
   failed: 'bg-red-500',
   queued: 'bg-yellow-500',
   cancelled: 'bg-gray-500',
+  pending: 'bg-gray-500',
+  timeout: 'bg-orange-500',
 };
 
-const statusIcons = {
+const statusIcons: Record<string, React.ReactNode> = {
   running: (
     <svg className="w-4 h-4 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24">
       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
@@ -52,6 +93,16 @@ const statusIcons = {
   cancelled: (
     <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636" />
+    </svg>
+  ),
+  pending: (
+    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+    </svg>
+  ),
+  timeout: (
+    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
     </svg>
   ),
 };
@@ -101,10 +152,17 @@ export function ScansPage() {
 
   const cancelScan = async (scanId: string) => {
     try {
-      await fetch(`/api/v1/scans/${scanId}/cancel`, {
+      // Try v2 endpoint first, then legacy
+      let res = await fetch(`/api/v1/scan/${scanId}/cancel`, {
         method: 'POST',
         headers: { 'Authorization': `Bearer ${token}` },
       });
+      if (!res.ok) {
+        res = await fetch(`/api/v1/scans/${scanId}/cancel`, {
+          method: 'POST',
+          headers: { 'Authorization': `Bearer ${token}` },
+        });
+      }
       fetchScans();
     } catch (error) {
       console.error('Failed to cancel scan:', error);
@@ -112,27 +170,43 @@ export function ScansPage() {
   };
 
   const rerunScan = async (scan: Scan) => {
-    // Navigate to new scan with pre-filled parameters
-    window.location.href = `/dashboard/scans/new?tool=${scan.tool_name}&command=${encodeURIComponent(scan.command || '')}`;
+    const toolName = getToolName(scan);
+    window.location.href = `/dashboard/scans/new?tool=${encodeURIComponent(toolName)}&target=${encodeURIComponent(scan.target)}`;
   };
 
   const filteredScans = scans.filter(scan => {
     const matchesFilter = filter === 'all' || scan.status === filter;
+    const toolName = getToolName(scan);
     const matchesSearch = 
-      (scan.tool_name || '').toLowerCase().includes(searchQuery.toLowerCase()) ||
+      toolName.toLowerCase().includes(searchQuery.toLowerCase()) ||
       (scan.target || '').toLowerCase().includes(searchQuery.toLowerCase());
     return matchesFilter && matchesSearch;
   });
 
   const runningScans = scans.filter(s => s.status === 'running');
   const completedScans = scans.filter(s => s.status === 'completed');
-  const failedScans = scans.filter(s => s.status === 'failed');
+  const failedScans = scans.filter(s => ['failed', 'timeout'].includes(s.status));
 
-  const formatDuration = (seconds?: number) => {
-    if (!seconds) return '-';
-    if (seconds < 60) return `${seconds}s`;
-    if (seconds < 3600) return `${Math.floor(seconds / 60)}m ${seconds % 60}s`;
-    return `${Math.floor(seconds / 3600)}h ${Math.floor((seconds % 3600) / 60)}m`;
+  const formatDuration = (scan: Scan): string => {
+    // If API provides duration string, use it
+    if (scan.duration) return scan.duration;
+    // If seconds provided, format
+    if (scan.duration_seconds) {
+      const secs = scan.duration_seconds;
+      if (secs < 60) return `${Math.round(secs)}s`;
+      if (secs < 3600) return `${Math.floor(secs / 60)}m ${Math.round(secs % 60)}s`;
+      return `${Math.floor(secs / 3600)}h ${Math.floor((secs % 3600) / 60)}m`;
+    }
+    // Calculate from timestamps
+    if (scan.started_at && scan.completed_at) {
+      const start = new Date(scan.started_at);
+      const end = new Date(scan.completed_at);
+      const secs = (end.getTime() - start.getTime()) / 1000;
+      if (secs < 60) return `${Math.round(secs)}s`;
+      if (secs < 3600) return `${Math.floor(secs / 60)}m ${Math.round(secs % 60)}s`;
+      return `${Math.floor(secs / 3600)}h ${Math.floor((secs % 3600) / 60)}m`;
+    }
+    return '-';
   };
 
   const formatDate = (dateStr: string) => {
@@ -298,48 +372,54 @@ export function ScansPage() {
                 </tr>
               </thead>
               <tbody>
-                {filteredScans.map((scan) => (
+                {filteredScans.map((scan) => {
+                  const toolName = getToolName(scan);
+                  const findings = getFindings(scan);
+                  return (
                   <tr 
                     key={scan.id} 
                     className="border-b border-gray-800/50 hover:bg-gray-800/30 transition cursor-pointer"
                     onClick={() => setSelectedScan(scan)}
                   >
                     <td className="px-5 py-4">
-                      <div className={`inline-flex items-center gap-2 px-2.5 py-1 rounded-full text-xs font-medium text-white ${statusColors[scan.status]}`}>
+                      <div className={`inline-flex items-center gap-2 px-2.5 py-1 rounded-full text-xs font-medium text-white ${statusColors[scan.status] || 'bg-gray-500'}`}>
                         {statusIcons[scan.status]}
                         <span className="capitalize">{scan.status}</span>
                       </div>
                     </td>
                     <td className="px-5 py-4">
-                      <span className="text-white font-medium">{scan.tool_name}</span>
+                      <span className="text-white font-medium">{toolName}</span>
                     </td>
                     <td className="px-5 py-4">
                       <span className="text-gray-300 font-mono text-sm">{scan.target}</span>
                     </td>
                     <td className="px-5 py-4 text-sm text-gray-400">
-                      {formatDate(scan.started_at)}
+                      {formatDate(scan.started_at || scan.created_at || '')}
                     </td>
                     <td className="px-5 py-4 text-sm text-gray-400">
                       {scan.status === 'running' ? (
                         <span className="text-blue-400">In progress...</span>
                       ) : (
-                        formatDuration(scan.duration)
+                        formatDuration(scan)
                       )}
                     </td>
                     <td className="px-5 py-4">
-                      {scan.findings_count !== undefined ? (
+                      {(findings.total || 0) > 0 || (findings.open_ports || 0) > 0 ? (
                         <div className="flex items-center gap-1">
-                          {scan.critical! > 0 && (
-                            <span className="px-1.5 py-0.5 bg-red-500/20 text-red-400 text-xs rounded">{scan.critical}C</span>
+                          {(findings.critical || 0) > 0 && (
+                            <span className="px-1.5 py-0.5 bg-red-500/20 text-red-400 text-xs rounded">{findings.critical}C</span>
                           )}
-                          {scan.high! > 0 && (
-                            <span className="px-1.5 py-0.5 bg-orange-500/20 text-orange-400 text-xs rounded">{scan.high}H</span>
+                          {(findings.high || 0) > 0 && (
+                            <span className="px-1.5 py-0.5 bg-orange-500/20 text-orange-400 text-xs rounded">{findings.high}H</span>
                           )}
-                          {scan.medium! > 0 && (
-                            <span className="px-1.5 py-0.5 bg-yellow-500/20 text-yellow-400 text-xs rounded">{scan.medium}M</span>
+                          {(findings.medium || 0) > 0 && (
+                            <span className="px-1.5 py-0.5 bg-yellow-500/20 text-yellow-400 text-xs rounded">{findings.medium}M</span>
                           )}
-                          {scan.low! > 0 && (
-                            <span className="px-1.5 py-0.5 bg-blue-500/20 text-blue-400 text-xs rounded">{scan.low}L</span>
+                          {(findings.low || 0) > 0 && (
+                            <span className="px-1.5 py-0.5 bg-blue-500/20 text-blue-400 text-xs rounded">{findings.low}L</span>
+                          )}
+                          {(findings.open_ports || 0) > 0 && !(findings.critical || findings.high || findings.medium || findings.low) && (
+                            <span className="px-1.5 py-0.5 bg-green-500/20 text-green-400 text-xs rounded">{findings.open_ports} ports</span>
                           )}
                         </div>
                       ) : (
@@ -372,7 +452,8 @@ export function ScansPage() {
                       </div>
                     </td>
                   </tr>
-                ))}
+                  );
+                })}
               </tbody>
             </table>
 
@@ -407,7 +488,7 @@ export function ScansPage() {
                     <div className="flex items-center gap-3">
                       <div className="w-3 h-3 bg-blue-500 rounded-full animate-pulse" />
                       <div>
-                        <h3 className="text-white font-medium">{scan.tool_name}</h3>
+                        <h3 className="text-white font-medium">{getToolName(scan)}</h3>
                         <p className="text-sm text-gray-400">{scan.target}</p>
                       </div>
                     </div>

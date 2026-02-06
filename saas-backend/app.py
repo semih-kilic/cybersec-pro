@@ -90,12 +90,23 @@ except ImportError as e:
     socketio = None
     print(f"⚠️ WebSocket not available: {e}")
 
-# Initialize Scan Engine with WebSocket support
+# Initialize Scan Engine V3 (World-Class Edition)
+try:
+    from scan_engine_v3 import init_engine_v3, get_engine_v3
+    scan_engine_v3 = init_engine_v3(app, socketio=socketio, max_workers=3)
+    SCAN_ENGINE_V3_AVAILABLE = True
+    print("✅ Scan Engine V3 (World-Class) initialized")
+except ImportError as e:
+    scan_engine_v3 = None
+    SCAN_ENGINE_V3_AVAILABLE = False
+    print(f"⚠️ Scan Engine V3 not available: {e}")
+
+# Initialize legacy Scan Engine (fallback)
 try:
     from scan_engine import init_engine, get_engine
     scan_engine = init_engine(app, socketio=socketio, max_workers=4, use_docker=False)
     SCAN_ENGINE_AVAILABLE = True
-    print("✅ Scan Engine (ThreadPoolExecutor) initialized")
+    print("✅ Scan Engine Legacy initialized")
 except ImportError as e:
     scan_engine = None
     SCAN_ENGINE_AVAILABLE = False
@@ -292,8 +303,10 @@ class Scan(db.Model):
     tool_id = db.Column(db.String(36), db.ForeignKey('tools.id'), nullable=False)
     target = db.Column(db.String(255), nullable=False)
     parameters = db.Column(db.JSON)
-    status = db.Column(db.String(20), default='pending')  # pending, running, completed, failed
+    status = db.Column(db.String(20), default='pending')  # pending, running, completed, failed, timeout, cancelled
     output = db.Column(db.Text)
+    error_log = db.Column(db.Text)  # Error details for failed scans
+    findings = db.Column(db.JSON)  # Structured scan findings
     report_path = db.Column(db.String(255))
     started_at = db.Column(db.DateTime)
     completed_at = db.Column(db.DateTime)
@@ -308,7 +321,35 @@ class Scan(db.Model):
         """Helper property to get tool name safely"""
         return self.tool.name if self.tool else 'Unknown Tool'
     
+    @property
+    def duration_seconds(self):
+        """Calculate scan duration in seconds"""
+        if not self.started_at:
+            return 0
+        end = self.completed_at or datetime.utcnow()
+        return (end - self.started_at).total_seconds()
+    
+    @property
+    def duration_str(self):
+        """Human-readable duration"""
+        secs = self.duration_seconds
+        if secs < 60:
+            return f"{int(secs)}s"
+        mins = int(secs // 60)
+        remaining = int(secs % 60)
+        return f"{mins}m {remaining}s"
+    
+    @property
+    def findings_summary(self):
+        """Get findings summary from JSON"""
+        if not self.findings:
+            return {'total': 0, 'critical': 0, 'high': 0, 'medium': 0, 'low': 0, 'open_ports': 0}
+        if isinstance(self.findings, dict) and 'summary' in self.findings:
+            return self.findings['summary']
+        return {'total': len(self.findings) if isinstance(self.findings, list) else 0}
+    
     def to_dict(self):
+        summary = self.findings_summary
         return {
             'id': self.id,
             'organization_id': self.organization_id,
@@ -320,7 +361,11 @@ class Scan(db.Model):
             'started_at': self.started_at.isoformat() if self.started_at else None,
             'completed_at': self.completed_at.isoformat() if self.completed_at else None,
             'created_at': self.created_at.isoformat(),
-            'tool': self.tool.to_dict() if self.tool else None
+            'duration': self.duration_str,
+            'duration_seconds': self.duration_seconds,
+            'tool': self.tool.to_dict() if self.tool else {'name': 'Unknown', 'category': 'Unknown'},
+            'findings_summary': summary,
+            'error_log': self.error_log
         }
 
 class UsageTracking(db.Model):
@@ -1658,6 +1703,277 @@ def get_tool_config(tool_id):
                 'is_available': tool_id in allowed_tools
             }
         })
+        
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+
+# ================================
+# SCAN ENGINE V3 - WORLD-CLASS SCANNING
+# ================================
+
+def get_tool_by_name_or_id(tool_identifier):
+    """
+    Lookup tool in database by name OR UUID
+    Returns tuple: (tool_db_object, tool_name)
+    """
+    # First try exact UUID match
+    tool = Tool.query.get(tool_identifier)
+    if tool:
+        return tool, tool.name
+    
+    # Then try case-insensitive name match
+    tool = Tool.query.filter(
+        db.func.lower(Tool.name) == tool_identifier.lower()
+    ).first()
+    if tool:
+        return tool, tool.name
+    
+    # Try partial match (e.g., 'nmap' matches 'Nmap')
+    tool = Tool.query.filter(
+        Tool.name.ilike(f'%{tool_identifier}%')
+    ).first()
+    if tool:
+        return tool, tool.name
+    
+    return None, tool_identifier
+
+
+@app.route('/api/v1/scan/start', methods=['POST'])
+@require_organization
+def start_scan_v2():
+    """
+    Start a security scan using Scan Engine V3
+    
+    Request body:
+    {
+        "tool": "nmap",           # Tool name (case-insensitive)
+        "target": "8.8.8.8",      # Target IP/hostname
+        "parameters": {           # Optional tool-specific params
+            "ports": "1-1000",
+            "timing": "T3"
+        }
+    }
+    """
+    if not SCAN_ENGINE_V3_AVAILABLE:
+        return jsonify({'error': 'Scan engine not available'}), 503
+    
+    try:
+        user_id = get_jwt_identity()
+        user = User.query.get(user_id)
+        org = user.organization
+        data = request.get_json()
+        
+        # Accept both 'tool' and 'tool_id' for backwards compatibility
+        tool_identifier = data.get('tool') or data.get('tool_id')
+        target = data.get('target')
+        parameters = data.get('parameters', {})
+        
+        # Validate input
+        if not tool_identifier:
+            return jsonify({'error': 'tool is required'}), 400
+        if not target:
+            return jsonify({'error': 'target is required'}), 400
+        
+        # Validate target (basic check)
+        import re
+        ip_pattern = r'^(\d{1,3}\.){3}\d{1,3}$'
+        domain_pattern = r'^[a-zA-Z0-9][-a-zA-Z0-9]*(\.[a-zA-Z0-9][-a-zA-Z0-9]*)+$'
+        
+        if not (re.match(ip_pattern, target) or re.match(domain_pattern, target)):
+            return jsonify({
+                'error': 'Invalid target format',
+                'hint': 'Enter a valid IP address (e.g., 8.8.8.8) or domain (e.g., example.com)'
+            }), 400
+        
+        # Block private/local IPs in production
+        if target.startswith(('10.', '172.16.', '172.17.', '172.18.', '172.19.', 
+                              '172.20.', '172.21.', '172.22.', '172.23.', '172.24.',
+                              '172.25.', '172.26.', '172.27.', '172.28.', '172.29.',
+                              '172.30.', '172.31.', '192.168.', '127.')):
+            return jsonify({
+                'error': 'Private/local addresses are not allowed',
+                'hint': 'Scan public IP addresses or domains only'
+            }), 400
+        
+        # Lookup tool in database
+        tool_db, tool_name = get_tool_by_name_or_id(tool_identifier)
+        
+        if not tool_db:
+            return jsonify({
+                'error': f'Tool "{tool_identifier}" not found',
+                'hint': 'Use tool name like "nmap", "whois", "dig", etc.'
+            }), 404
+        
+        # Check plan access
+        plan_hierarchy = {'trial': 1, 'starter': 1, 'professional': 2, 'team': 3, 'enterprise': 4}
+        user_plan_level = plan_hierarchy.get(org.plan_type, 1)
+        required_plan_level = plan_hierarchy.get(tool_db.plan_required, 1)
+        
+        if user_plan_level < required_plan_level:
+            return jsonify({
+                'error': f'Tool requires {tool_db.plan_required} plan or higher',
+                'current_plan': org.plan_type,
+                'required_plan': tool_db.plan_required
+            }), 402
+        
+        # Check daily scan limit for starter/trial plan
+        if org.plan_type in ('starter', 'trial'):
+            from datetime import date
+            today_scans = Scan.query.filter(
+                Scan.organization_id == org.id,
+                db.func.date(Scan.created_at) == date.today()
+            ).count()
+            
+            if today_scans >= 10:
+                return jsonify({
+                    'error': 'Daily scan limit reached',
+                    'scans_today': today_scans,
+                    'limit': 10,
+                    'hint': 'Upgrade to Professional or higher for unlimited scans'
+                }), 429
+        
+        # Create scan record with proper tool_id (database UUID)
+        scan_id = str(uuid.uuid4())
+        scan = Scan(
+            id=scan_id,
+            organization_id=org.id,
+            user_id=user.id,
+            tool_id=tool_db.id,  # Use actual database UUID
+            target=target,
+            parameters=parameters,
+            status='running',
+            started_at=datetime.utcnow()
+        )
+        db.session.add(scan)
+        db.session.commit()
+        
+        # Create completion callback
+        def on_complete(scan_id, status, output, findings, exit_code):
+            """Update database when scan completes"""
+            with app.app_context():
+                try:
+                    s = db.session.get(Scan, scan_id)
+                    if s:
+                        s.status = status
+                        s.output = output[:65000] if output else ''
+                        s.findings = findings
+                        s.completed_at = datetime.utcnow()
+                        db.session.commit()
+                        print(f"✅ Scan {scan_id[:8]} completed: {status}")
+                except Exception as e:
+                    print(f"❌ Failed to update scan {scan_id[:8]}: {e}")
+                    db.session.rollback()
+        
+        # Start scan using V3 engine
+        from scan_engine_v3 import get_engine_v3
+        engine = get_engine_v3()
+        
+        job = engine.submit_scan(
+            scan_id=scan_id,
+            tool_name=tool_name,
+            tool_id=tool_db.id,
+            target=target,
+            params=parameters,
+            user_id=user.id,
+            organization_id=org.id,
+            db_callback=on_complete
+        )
+        
+        return jsonify({
+            'success': True,
+            'scan_id': scan_id,
+            'status': 'running',
+            'tool': tool_name,
+            'target': target,
+            'command': job.to_dict()['command'],
+            'message': f'{tool_name} scan started on {target}'
+        }), 201
+        
+    except Exception as e:
+        db.session.rollback()
+        import traceback
+        print(f"Scan start error: {traceback.format_exc()}")
+        return jsonify({'error': str(e)}), 500
+
+
+@app.route('/api/v1/scan/<scan_id>/cancel', methods=['POST'])
+@require_organization
+def cancel_scan_v2(scan_id):
+    """Cancel a running scan"""
+    if not SCAN_ENGINE_V3_AVAILABLE:
+        return jsonify({'error': 'Scan engine not available'}), 503
+    
+    try:
+        user_id = get_jwt_identity()
+        user = User.query.get(user_id)
+        
+        # Verify scan belongs to user's organization
+        scan = Scan.query.filter_by(
+            id=scan_id,
+            organization_id=user.organization_id
+        ).first()
+        
+        if not scan:
+            return jsonify({'error': 'Scan not found'}), 404
+        
+        if scan.status not in ('running', 'queued', 'pending'):
+            return jsonify({
+                'error': 'Scan cannot be cancelled',
+                'current_status': scan.status
+            }), 400
+        
+        # Cancel in engine
+        from scan_engine_v3 import get_engine_v3
+        engine = get_engine_v3()
+        cancelled = engine.cancel_scan(scan_id)
+        
+        # Update database
+        scan.status = 'cancelled'
+        scan.completed_at = datetime.utcnow()
+        db.session.commit()
+        
+        return jsonify({
+            'success': True,
+            'scan_id': scan_id,
+            'status': 'cancelled'
+        })
+        
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+
+@app.route('/api/v1/scan/<scan_id>/details', methods=['GET'])
+@require_organization
+def get_scan_details_v2(scan_id):
+    """Get detailed scan results including findings"""
+    try:
+        user_id = get_jwt_identity()
+        user = User.query.get(user_id)
+        
+        scan = Scan.query.filter_by(
+            id=scan_id,
+            organization_id=user.organization_id
+        ).first()
+        
+        if not scan:
+            return jsonify({'error': 'Scan not found'}), 404
+        
+        # Get live data from engine if running
+        job_data = None
+        if scan.status == 'running' and SCAN_ENGINE_V3_AVAILABLE:
+            from scan_engine_v3 import get_engine_v3
+            engine = get_engine_v3()
+            job = engine.get_scan(scan_id)
+            if job:
+                job_data = job.to_dict()
+        
+        result = scan.to_dict()
+        result['output'] = scan.output if scan.output else ''
+        result['findings_detail'] = scan.findings.get('findings', []) if scan.findings else []
+        result['live_data'] = job_data
+        
+        return jsonify({'scan': result})
         
     except Exception as e:
         return jsonify({'error': str(e)}), 500

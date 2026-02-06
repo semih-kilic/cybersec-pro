@@ -137,22 +137,19 @@ export function NewScanPage() {
     
     setSubmitting(true);
     try {
-      const res = await fetch('/api/v2/scan/execute', {
+      // Use new v1 scan/start endpoint with tool name
+      const toolName = selectedToolObj?.name || selectedTool;
+      
+      const res = await fetch('/api/v1/scan/start', {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          tool_id: selectedTool,
+          tool: toolName,
           target: useCustomTarget ? customTarget : selectedTarget,
           parameters: {},
-          name: scanName,
-          priority,
-          notifications,
-          confirm_dangerous: dangerousConfirmed,
-          agent_id: selectedAgent,
-          project_id: selectedProject,
         }),
       });
 
@@ -165,7 +162,7 @@ export function NewScanPage() {
         setShowDangerousWarning(true);
       } else {
         console.error('Scan failed:', data.error);
-        alert(data.error || 'Failed to start scan');
+        alert(data.error || data.hint || 'Failed to start scan');
       }
     } catch (error) {
       console.error('Failed to start scan:', error);
