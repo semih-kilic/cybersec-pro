@@ -455,6 +455,57 @@ def index():
         }
     })
 
+
+@app.route('/api/health')
+def health_check():
+    """Production health check endpoint for Docker/K8s"""
+    health = {
+        'status': 'healthy',
+        'timestamp': datetime.utcnow().isoformat(),
+        'version': '2.0.0',
+        'checks': {}
+    }
+    
+    # Check database connection
+    try:
+        db.session.execute(db.text('SELECT 1'))
+        health['checks']['database'] = 'ok'
+    except Exception as e:
+        health['checks']['database'] = f'error: {str(e)}'
+        health['status'] = 'unhealthy'
+    
+    # Check scan engine
+    try:
+        if SCAN_ENGINE_AVAILABLE:
+            from scan_engine import get_engine
+            engine = get_engine()
+            stats = engine.get_stats()
+            health['checks']['scan_engine'] = {
+                'status': 'ok',
+                'active_scans': stats.get('active_scans', 0),
+                'max_workers': stats.get('max_workers', 0)
+            }
+        else:
+            health['checks']['scan_engine'] = 'not_available'
+    except Exception as e:
+        health['checks']['scan_engine'] = f'error: {str(e)}'
+    
+    # Check WebSocket
+    health['checks']['websocket'] = 'ok' if socketio else 'not_available'
+    
+    status_code = 200 if health['status'] == 'healthy' else 503
+    return jsonify(health), status_code
+
+
+@app.route('/api/ready')
+def readiness_check():
+    """Kubernetes readiness probe endpoint"""
+    try:
+        db.session.execute(db.text('SELECT 1'))
+        return jsonify({'ready': True}), 200
+    except Exception:
+        return jsonify({'ready': False}), 503
+
 # ================================
 # AUTHENTICATION ROUTES
 # ================================

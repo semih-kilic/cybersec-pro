@@ -1,5 +1,5 @@
 # 🐉 CyberSec Pro - Backend Dockerfile
-# Production-ready Flask API with Kali tools
+# Production-ready Flask API with WebSocket support
 
 FROM python:3.11-slim
 
@@ -20,6 +20,9 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     nmap \
     nikto \
     whatweb \
+    whois \
+    dnsutils \
+    net-tools \
     && rm -rf /var/lib/apt/lists/*
 
 # Copy requirements first (for better caching)
@@ -41,7 +44,7 @@ EXPOSE 5001
 
 # Health check
 HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
-    CMD curl -f http://localhost:5001/ || exit 1
+    CMD curl -f http://localhost:5001/api/health || exit 1
 
-# Run with gunicorn for production
-CMD ["gunicorn", "--bind", "0.0.0.0:5001", "--workers", "4", "--threads", "2", "--timeout", "120", "app:app"]
+# Run with gunicorn + eventlet for WebSocket support
+CMD ["gunicorn", "--bind", "0.0.0.0:5001", "--worker-class", "eventlet", "--workers", "1", "--threads", "100", "--timeout", "120", "app:app"]
