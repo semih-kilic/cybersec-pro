@@ -1767,7 +1767,8 @@ def start_scan_v2():
         # Accept both 'tool' and 'tool_id' for backwards compatibility
         tool_identifier = data.get('tool') or data.get('tool_id')
         target = data.get('target')
-        parameters = data.get('parameters', {})
+        # Accept both 'parameters' and 'options' for backwards compatibility
+        parameters = data.get('parameters') or data.get('options') or {}
         
         # Validate input
         if not tool_identifier:

@@ -35,8 +35,8 @@ print(f'   ✅ Token: {token[:30]}...')
 print(f'\n📌 Step 2: Start nmap scan...')
 payload = {
     'tool_id': NMAP_TOOL_ID,
-    'target': '8.8.8.8',
-    'options': {'ports': '53,80,443', 'timing': 'T4'}
+    'target': 'scanme.nmap.org',
+    'options': {'ports': '22,80,443', 'timing': 'T4'}
 }
 scan = requests.post(f'{BASE}/scan/start', headers=headers, json=payload)
 print(f'   Status: {scan.status_code}')
@@ -83,7 +83,7 @@ while True:
         print(f'   Duration: {dd.get("duration")}s')
         print(f'   Tool: {dd.get("tool", {}).get("name") if dd.get("tool") else "N/A"}')
         
-        findings = dd.get('findings', [])
+        findings = dd.get('findings_detail', []) or dd.get('findings', [])
         print(f'   Findings: {len(findings)}')
         for f in findings[:5]:
             print(f'      - Port {f.get("port")}/{f.get("protocol")}: {f.get("service")} ({f.get("state")})')
