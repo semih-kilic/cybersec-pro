@@ -222,11 +222,32 @@ export function ToolDetailPage() {
     }
   };
 
+  // Helper function to normalize parameters from API (handles both array and object formats)
+  const getNormalizedParams = (): ToolParameter[] => {
+    if (!tool) return [];
+    if (Array.isArray(tool.parameters)) return tool.parameters;
+    if (tool.parameters && typeof tool.parameters === 'object') {
+      return Object.entries(tool.parameters).map(([key, param]: [string, any]) => ({
+        name: param.description || key,
+        flag: param.flag || '',
+        type: param.type || 'text',
+        required: param.required || false,
+        default: param.default,
+        placeholder: param.placeholder || param.default || '',
+        options: param.options,
+        description: param.description || key,
+        group: param.group || 'General'
+      }));
+    }
+    // Fallback to local toolParameters
+    return toolParameters[tool.slug] || [];
+  };
+
   const generateCommand = () => {
     if (!tool) return;
     
     let cmd = tool.slug;
-    const params = tool.parameters || [];
+    const params = getNormalizedParams();
     
     params.forEach(param => {
       const value = paramValues[param.name];
@@ -251,7 +272,7 @@ export function ToolDetailPage() {
 
   const handleRunScan = () => {
     // Find the target value from parameters (first required parameter)
-    const params = tool?.parameters || [];
+    const params = getNormalizedParams();
     const targetParam = params.find(p => p.required && (p.name.toLowerCase().includes('target') || p.name.toLowerCase().includes('host') || p.name.toLowerCase().includes('url'))) || params.find(p => p.required);
     const targetValue = targetParam ? (paramValues[targetParam.name] as string) || '' : '';
     
@@ -299,13 +320,16 @@ export function ToolDetailPage() {
     );
   }
 
-  // Group parameters
-  const groupedParams = tool.parameters?.reduce((acc, param) => {
+  // Get normalized parameters using helper function
+  const normalizedParams = getNormalizedParams();
+
+  // Group parameters by category
+  const groupedParams = normalizedParams.reduce((acc, param) => {
     const group = param.group || 'General';
     if (!acc[group]) acc[group] = [];
     acc[group].push(param);
     return acc;
-  }, {} as { [key: string]: ToolParameter[] }) || {};
+  }, {} as { [key: string]: ToolParameter[] });
 
   return (
     <div className="min-h-screen bg-gray-950">
