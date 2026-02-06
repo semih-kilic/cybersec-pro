@@ -71,12 +71,33 @@ CORS(app,
          'https://semihkilic.com', 
          'https://app.semihkilic.com', 
          'http://localhost:3000',
-         'http://localhost:5000'
+         'http://localhost:5000',
+         'http://localhost:5173'
      ],
      supports_credentials=True,
      allow_headers=['Content-Type', 'Authorization', 'X-Requested-With'],
      methods=['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS']
 )
+
+# Initialize Flask-SocketIO for real-time WebSocket support
+try:
+    from websocket_events import init_socketio
+    socketio = init_socketio(app)
+    print("✅ WebSocket (Flask-SocketIO) initialized")
+except ImportError as e:
+    socketio = None
+    print(f"⚠️ WebSocket not available: {e}")
+
+# Initialize Scan Engine with WebSocket support
+try:
+    from scan_engine import init_engine, get_engine
+    scan_engine = init_engine(app, socketio=socketio, max_workers=4, use_docker=False)
+    SCAN_ENGINE_AVAILABLE = True
+    print("✅ Scan Engine (ThreadPoolExecutor) initialized")
+except ImportError as e:
+    scan_engine = None
+    SCAN_ENGINE_AVAILABLE = False
+    print(f"⚠️ Scan Engine not available: {e}")
 
 # ================================
 # DATABASE MODELS
@@ -2134,6 +2155,53 @@ def create_schedule():
 
 
 # ================================
+# ENGINE STATS API
+# ================================
+
+@app.route('/api/v1/engine/stats', methods=['GET'])
+@jwt_required()
+def get_engine_stats():
+    """Get scan engine statistics"""
+    try:
+        if SCAN_ENGINE_AVAILABLE:
+            from scan_engine import get_engine
+            engine = get_engine()
+            return jsonify({
+                'engine': 'ThreadPoolExecutor',
+                'websocket': socketio is not None,
+                **engine.get_stats()
+            })
+        else:
+            return jsonify({
+                'engine': 'legacy',
+                'websocket': False,
+                'message': 'Using legacy scan executor'
+            })
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+
+@app.route('/api/v1/engine/active-scans', methods=['GET'])
+@jwt_required()
+def get_active_scans():
+    """Get all active scans"""
+    try:
+        if SCAN_ENGINE_AVAILABLE:
+            from scan_engine import get_engine
+            engine = get_engine()
+            scans = engine.get_active_scans()
+            return jsonify({
+                'active_scans': [s.to_dict() for s in scans]
+            })
+        else:
+            return jsonify({
+                'active_scans': []
+            })
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+
+# ================================
 # V2 SCAN API (Enhanced)
 # ================================
 
@@ -3267,4 +3335,10 @@ if __name__ == '__main__':
     print("🚀 CyberSec Pro SaaS Backend starting...")
     print("🌍 World-class cybersecurity platform ready!")
     print("📟 Terminal API enabled for SSH execution")
-    app.run(host='0.0.0.0', port=5001, debug=True)
+    print("🔌 WebSocket enabled for real-time updates")
+    
+    # Use socketio.run() if available for WebSocket support
+    if socketio:
+        socketio.run(app, host='0.0.0.0', port=5001, debug=True)
+    else:
+        app.run(host='0.0.0.0', port=5001, debug=True)

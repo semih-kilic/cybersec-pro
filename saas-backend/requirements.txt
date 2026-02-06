@@ -17,6 +17,12 @@ redis==5.0.1
 celery==5.3.4
 celery[redis]==5.3.4
 
+# WebSocket (Real-time updates)
+flask-socketio==5.3.6
+python-socketio==5.10.0
+python-engineio==4.8.1
+eventlet==0.34.2
+
 # Payment Processing
 stripe==7.8.0
 

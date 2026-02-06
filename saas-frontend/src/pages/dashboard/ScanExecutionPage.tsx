@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import { useParams, useSearchParams } from 'react-router-dom';
 import { Header } from '../../components/layout/Header';
 import api, { ScanResult, ToolConfig } from '../../services/api';
+import { useScanSubscription } from '../../hooks/useWebSocket';
 
 export function ScanExecutionPage() {
   const { scanId } = useParams<{ scanId: string }>();
@@ -27,9 +28,13 @@ export function ScanExecutionPage() {
   const [currentScanId, setCurrentScanId] = useState<string | null>(scanId || null);
   const [command, setCommand] = useState(searchParams.get('command') || '');
   const [error, setError] = useState<string | null>(null);
+  const [progress, setProgress] = useState(0);
   
   const outputRef = useRef<HTMLDivElement>(null);
   const toolId = searchParams.get('tool') || 'nmap';
+  
+  // WebSocket subscription for real-time updates
+  const ws = useScanSubscription(status === 'running' ? currentScanId : null);
 
   useEffect(() => {
     fetchToolConfig();
@@ -41,10 +46,36 @@ export function ScanExecutionPage() {
       outputRef.current.scrollTop = outputRef.current.scrollHeight;
     }
   }, [output]);
+  
+  // Handle WebSocket progress updates
+  useEffect(() => {
+    if (ws.progress) {
+      setProgress(ws.progress.progress);
+      if (ws.progress.status && ws.progress.status !== 'running') {
+        setStatus(ws.progress.status as 'completed' | 'failed');
+      }
+    }
+  }, [ws.progress]);
+  
+  // Handle WebSocket output updates
+  useEffect(() => {
+    if (ws.output.length > 0) {
+      const lastOutput = ws.output[ws.output.length - 1];
+      setOutput(prev => [...prev, lastOutput.line]);
+    }
+  }, [ws.output]);
+  
+  // Handle WebSocket completion
+  useEffect(() => {
+    if (ws.complete) {
+      setStatus(ws.complete.status as 'completed' | 'failed');
+      setProgress(100);
+    }
+  }, [ws.complete]);
 
   useEffect(() => {
-    // If we have a scanId, stream its output
-    if (currentScanId && status === 'running') {
+    // If we have a scanId, stream its output (fallback for when WebSocket isn't available)
+    if (currentScanId && status === 'running' && !ws.connected) {
       const cleanup = api.streamScanOutput(
         currentScanId,
         (line) => {
@@ -58,7 +89,7 @@ export function ScanExecutionPage() {
 
       return cleanup;
     }
-  }, [currentScanId, status]);
+  }, [currentScanId, status, ws.connected]);
 
   const fetchToolConfig = async () => {
     const response = await api.getToolConfig(toolId);
@@ -283,7 +314,7 @@ export function ScanExecutionPage() {
                 {status === 'running' && (
                   <>
                     <div className="w-3 h-3 rounded-full bg-yellow-500 animate-pulse" />
-                    <span className="text-yellow-500">Scanning...</span>
+                    <span className="text-yellow-500">Scanning... {progress}%</span>
                   </>
                 )}
                 {status === 'completed' && (
@@ -305,6 +336,25 @@ export function ScanExecutionPage() {
                   </>
                 )}
               </div>
+              
+              {/* Progress Bar */}
+              {status === 'running' && (
+                <div className="mt-3">
+                  <div className="w-full h-2 bg-gray-800 rounded-full overflow-hidden">
+                    <div 
+                      className="h-full bg-gradient-to-r from-kali-blue to-kali-purple transition-all duration-300"
+                      style={{ width: `${progress}%` }}
+                    />
+                  </div>
+                  {ws.connected && (
+                    <p className="text-xs text-green-400 mt-1 flex items-center gap-1">
+                      <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
+                      Real-time updates active
+                    </p>
+                  )}
+                </div>
+              )}
+              
               {command && (
                 <div className="mt-3 pt-3 border-t border-gray-800">
                   <p className="text-xs text-gray-500 mb-1">Command:</p>
