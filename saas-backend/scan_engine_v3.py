@@ -650,14 +650,32 @@ class ScanEngineV3:
                 if int(elapsed) % 2 == 0:
                     self._emit_progress(job)
             
-            # Read remaining output
-            remaining_out, remaining_err = process.communicate(timeout=5)
-            if remaining_out:
-                output_lines.append(remaining_out)
-                job.output_buffer.append(remaining_out)
-            if remaining_err:
-                error_lines.append(remaining_err)
-                job.error_buffer.append(remaining_err)
+            # Read ALL remaining output - critical for nmap XML which outputs at end
+            # Use read() instead of communicate() after partial readline() consumption
+            try:
+                # Drain stdout completely
+                remaining_out = process.stdout.read() if process.stdout else ''
+                if remaining_out:
+                    output_lines.append(remaining_out)
+                    job.output_buffer.append(remaining_out)
+                    logger.debug(f"Scan {scan_id} drained {len(remaining_out)} chars from stdout")
+            except Exception as e:
+                logger.warning(f"Scan {scan_id} stdout drain error: {e}")
+            
+            try:
+                # Drain stderr completely
+                remaining_err = process.stderr.read() if process.stderr else ''
+                if remaining_err:
+                    error_lines.append(remaining_err)
+                    job.error_buffer.append(remaining_err)
+            except Exception as e:
+                logger.warning(f"Scan {scan_id} stderr drain error: {e}")
+            
+            # Ensure process is fully terminated
+            try:
+                process.wait(timeout=5)
+            except subprocess.TimeoutExpired:
+                self._kill_process(process)
             
             # Get exit code
             exit_code = process.returncode
