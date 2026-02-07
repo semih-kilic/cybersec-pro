@@ -613,7 +613,7 @@ export function ScansPage() {
                   </div>
                   <div className="bg-gray-800 rounded-lg p-4">
                     <p className="text-sm text-gray-400 mb-1">Duration</p>
-                    <p className="text-white">{formatDuration(selectedScan.duration)}</p>
+                    <p className="text-white">{formatDuration(selectedScan)}</p>
                   </div>
                   <div className="bg-gray-800 rounded-lg p-4">
                     <p className="text-sm text-gray-400 mb-1">Findings</p>
