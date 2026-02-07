@@ -116,6 +116,8 @@ export function ScansPage() {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedScan, setSelectedScan] = useState<Scan | null>(null);
   const [viewMode, setViewMode] = useState<'list' | 'live'>('list');
+  const [rerunningId, setRerunningId] = useState<string | null>(null);
+  const [notification, setNotification] = useState<{type: 'success' | 'error', message: string} | null>(null);
   const outputRef = useRef<HTMLPreElement>(null);
 
   useEffect(() => {
@@ -170,8 +172,32 @@ export function ScansPage() {
   };
 
   const rerunScan = async (scan: Scan) => {
-    const toolName = getToolName(scan);
-    window.location.href = `/dashboard/scans/new?tool=${encodeURIComponent(toolName)}&target=${encodeURIComponent(scan.target)}`;
+    setRerunningId(scan.id);
+    setNotification(null);
+    
+    try {
+      const res = await fetch(`/api/v1/scans/${scan.id}/rerun`, {
+        method: 'POST',
+        headers: { 'Authorization': `Bearer ${token}` },
+      });
+      
+      const data = await res.json();
+      
+      if (res.ok) {
+        // Success - refresh scan list to show new scan
+        fetchScans();
+        setNotification({ type: 'success', message: `Scan restarted! New scan running...` });
+        // Auto-hide notification after 5s
+        setTimeout(() => setNotification(null), 5000);
+      } else {
+        setNotification({ type: 'error', message: data.error || 'Failed to rerun scan' });
+      }
+    } catch (error) {
+      console.error('Failed to rerun scan:', error);
+      setNotification({ type: 'error', message: 'Network error. Please try again.' });
+    } finally {
+      setRerunningId(null);
+    }
   };
 
   const filteredScans = scans.filter(scan => {
@@ -237,6 +263,25 @@ export function ScansPage() {
         title="Scans"
         subtitle="View and manage your security scans"
       />
+
+      {/* Notification Toast */}
+      {notification && (
+        <div className={`fixed top-4 right-4 z-50 px-6 py-3 rounded-lg shadow-lg flex items-center gap-3 transition-all ${
+          notification.type === 'success' ? 'bg-green-600' : 'bg-red-600'
+        } text-white`}>
+          {notification.type === 'success' ? (
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+            </svg>
+          ) : (
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          )}
+          <span>{notification.message}</span>
+          <button onClick={() => setNotification(null)} className="ml-2 hover:opacity-80">✕</button>
+        </div>
+      )}
 
       <div className="p-6">
         {/* Stats */}
@@ -438,9 +483,10 @@ export function ScansPage() {
                         ) : (
                           <button
                             onClick={() => rerunScan(scan)}
-                            className="px-3 py-1.5 bg-gray-800 hover:bg-gray-700 text-white rounded text-sm transition"
+                            disabled={rerunningId === scan.id}
+                            className="px-3 py-1.5 bg-gray-800 hover:bg-gray-700 text-white rounded text-sm transition disabled:opacity-50 disabled:cursor-wait"
                           >
-                            Rerun
+                            {rerunningId === scan.id ? 'Starting...' : 'Rerun'}
                           </button>
                         )}
                         <Link
@@ -597,9 +643,10 @@ export function ScansPage() {
               <div className="flex justify-end gap-3 p-6 border-t border-gray-800">
                 <button
                   onClick={() => rerunScan(selectedScan)}
-                  className="px-4 py-2 bg-gray-800 hover:bg-gray-700 text-white rounded-lg transition"
+                  disabled={rerunningId === selectedScan.id}
+                  className="px-4 py-2 bg-gray-800 hover:bg-gray-700 text-white rounded-lg transition disabled:opacity-50 disabled:cursor-wait"
                 >
-                  Rerun Scan
+                  {rerunningId === selectedScan.id ? 'Starting...' : 'Rerun Scan'}
                 </button>
                 <Link
                   to={`/dashboard/reports/new?scan=${selectedScan.id}`}

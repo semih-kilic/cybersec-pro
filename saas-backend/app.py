@@ -1248,6 +1248,131 @@ def get_scan(scan_id):
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
+
+@app.route('/api/v1/scans/<scan_id>/rerun', methods=['POST'])
+@require_organization
+def rerun_scan(scan_id):
+    """
+    Rerun an existing scan with the same configuration.
+    Creates a new scan with identical target, tool, and parameters.
+    """
+    try:
+        user_id = get_jwt_identity()
+        user = User.query.get(user_id)
+        org = user.organization
+        
+        # Find original scan
+        original_scan = Scan.query.filter_by(
+            id=scan_id,
+            organization_id=user.organization_id
+        ).first()
+        
+        if not original_scan:
+            return jsonify({'error': 'Scan not found'}), 404
+        
+        # Validate we have enough data to rerun
+        if not original_scan.target:
+            return jsonify({'error': 'Cannot rerun: missing target configuration'}), 400
+        
+        if not original_scan.tool_id:
+            return jsonify({'error': 'Cannot rerun: missing tool configuration'}), 400
+        
+        # Get the tool
+        tool = Tool.query.get(original_scan.tool_id)
+        if not tool:
+            return jsonify({'error': 'Cannot rerun: tool not found'}), 404
+        
+        # Check plan access
+        plan_hierarchy = {'trial': 1, 'starter': 1, 'professional': 2, 'team': 3, 'enterprise': 4}
+        user_plan_level = plan_hierarchy.get(org.plan_type, 1)
+        required_plan_level = plan_hierarchy.get(tool.plan_required, 1)
+        
+        if user_plan_level < required_plan_level:
+            return jsonify({
+                'error': f'Tool requires {tool.plan_required} plan or higher',
+                'current_plan': org.plan_type,
+                'required_plan': tool.plan_required
+            }), 402
+        
+        # Check daily scan limit for starter/trial
+        if org.plan_type in ('starter', 'trial'):
+            from datetime import date
+            today_scans = Scan.query.filter(
+                Scan.organization_id == org.id,
+                db.func.date(Scan.created_at) == date.today()
+            ).count()
+            if today_scans >= 10:
+                return jsonify({
+                    'error': 'Daily scan limit reached (10/day)',
+                    'hint': 'Upgrade to Professional for unlimited scans'
+                }), 429
+        
+        # Create new scan with same config
+        new_scan_id = str(uuid.uuid4())
+        new_scan = Scan(
+            id=new_scan_id,
+            organization_id=org.id,
+            user_id=user.id,
+            tool_id=original_scan.tool_id,
+            target=original_scan.target,
+            parameters=original_scan.parameters,
+            status='running',
+            started_at=datetime.utcnow()
+        )
+        db.session.add(new_scan)
+        db.session.commit()
+        
+        # Start scan using V3 engine
+        def on_complete(scan_id, status, output, findings, exit_code):
+            with app.app_context():
+                try:
+                    s = db.session.get(Scan, scan_id)
+                    if s:
+                        s.status = status
+                        s.output = output[:65000] if output else ''
+                        s.findings = findings
+                        s.completed_at = datetime.utcnow()
+                        db.session.commit()
+                except Exception as e:
+                    print(f"Rerun callback error: {e}")
+                    db.session.rollback()
+        
+        # Get engine and start scan
+        if SCAN_ENGINE_V3_AVAILABLE:
+            from scan_engine_v3 import get_engine_v3
+            engine = get_engine_v3()
+            job = engine.submit_scan(
+                scan_id=new_scan_id,
+                tool_name=tool.name,
+                tool_id=tool.id,
+                target=original_scan.target,
+                params=original_scan.parameters or {},
+                user_id=user.id,
+                organization_id=org.id,
+                db_callback=on_complete
+            )
+            command = ' '.join(job.command) if job else 'N/A'
+        else:
+            command = 'engine_unavailable'
+        
+        return jsonify({
+            'success': True,
+            'new_scan_id': new_scan_id,
+            'original_scan_id': scan_id,
+            'status': 'running',
+            'tool': tool.name,
+            'target': original_scan.target,
+            'command': command,
+            'message': f'Scan restarted with same configuration'
+        }), 201
+        
+    except Exception as e:
+        db.session.rollback()
+        import traceback
+        print(f"Rerun error: {traceback.format_exc()}")
+        return jsonify({'error': str(e)}), 500
+
+
 # ================================
 # BILLING ROUTES
 # ================================
