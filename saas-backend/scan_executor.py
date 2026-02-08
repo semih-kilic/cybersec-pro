@@ -26,6 +26,7 @@ TOOL_CONFIGS = {
         'category': 'Information Gathering',
         'plan_required': 'starter',
         'description': 'Network exploration and security auditing tool',
+        'base_flags': ['-v'],  # Always verbose for real-time streaming
         'parameters': {
             'scan_type': {
                 'flag': '-s',
@@ -64,14 +65,8 @@ TOOL_CONFIGS = {
                 'type': 'text',
                 'default': '',
                 'description': 'NSE scripts to run (e.g., vuln, safe, default)'
-            },
-            'output_format': {
-                'flag': '-oX',
-                'type': 'select',
-                'options': ['normal', 'xml', 'grepable'],
-                'default': 'normal',
-                'description': 'Output format'
             }
+            # Removed output_format - XML output breaks real-time streaming
         }
     },
     'nikto': {
@@ -498,6 +493,10 @@ class ScanExecutor:
             raise ValueError(f"Unknown tool: {tool_id}")
         
         cmd = [config['command']]
+        
+        # Add base flags (e.g., -v for verbose) for real-time streaming
+        if config.get('base_flags'):
+            cmd.extend(config['base_flags'])
         
         # Special handling for different tools
         if tool_id == 'gobuster':
