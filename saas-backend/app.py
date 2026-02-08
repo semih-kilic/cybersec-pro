@@ -20,6 +20,8 @@ import stripe
 import json
 import subprocess
 import uuid
+import logging
+from logging.handlers import RotatingFileHandler
 from functools import wraps
 
 # Load environment variables from .env file
@@ -32,6 +34,31 @@ except ImportError:
 
 # Initialize Flask app
 app = Flask(__name__)
+
+# ================================
+# PRODUCTION LOGGING CONFIGURATION
+# ================================
+if not app.debug and os.environ.get('FLASK_ENV') == 'production':
+    # Create logs directory if not exists
+    if not os.path.exists('logs'):
+        os.makedirs('logs')
+    
+    # File handler with rotation (10MB max, keep 10 backups)
+    file_handler = RotatingFileHandler(
+        'logs/cybersec-pro.log',
+        maxBytes=10 * 1024 * 1024,  # 10MB
+        backupCount=10
+    )
+    file_handler.setFormatter(logging.Formatter(
+        '%(asctime)s %(levelname)s: %(message)s [in %(pathname)s:%(lineno)d]'
+    ))
+    file_handler.setLevel(logging.INFO)
+    app.logger.addHandler(file_handler)
+    app.logger.setLevel(logging.INFO)
+    app.logger.info('CyberSec Pro Backend startup')
+else:
+    # Development logging
+    logging.basicConfig(level=logging.DEBUG)
 
 # Import and register tools API blueprint
 try:
@@ -80,6 +107,56 @@ CORS(app,
      allow_headers=['Content-Type', 'Authorization', 'X-Requested-With'],
      methods=['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS']
 )
+
+# ================================
+# PRODUCTION SECURITY HEADERS
+# ================================
+@app.after_request
+def add_security_headers(response):
+    """Add security headers to all responses"""
+    # Prevent clickjacking
+    response.headers['X-Frame-Options'] = 'SAMEORIGIN'
+    # Prevent MIME type sniffing
+    response.headers['X-Content-Type-Options'] = 'nosniff'
+    # XSS Protection
+    response.headers['X-XSS-Protection'] = '1; mode=block'
+    # Referrer Policy
+    response.headers['Referrer-Policy'] = 'strict-origin-when-cross-origin'
+    # Content Security Policy (production)
+    if os.environ.get('FLASK_ENV') == 'production':
+        response.headers['Content-Security-Policy'] = "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; font-src 'self' data:; connect-src 'self' wss: https:;"
+        # HSTS (1 year)
+        response.headers['Strict-Transport-Security'] = 'max-age=31536000; includeSubDomains; preload'
+    # Permissions Policy
+    response.headers['Permissions-Policy'] = 'geolocation=(), microphone=(), camera=()'
+    return response
+
+# ================================
+# GLOBAL ERROR HANDLERS
+# ================================
+@app.errorhandler(400)
+def bad_request(error):
+    return jsonify({'error': 'Bad Request', 'message': str(error)}), 400
+
+@app.errorhandler(401)
+def unauthorized(error):
+    return jsonify({'error': 'Unauthorized', 'message': 'Authentication required'}), 401
+
+@app.errorhandler(403)
+def forbidden(error):
+    return jsonify({'error': 'Forbidden', 'message': 'Access denied'}), 403
+
+@app.errorhandler(404)
+def not_found(error):
+    return jsonify({'error': 'Not Found', 'message': 'Resource not found'}), 404
+
+@app.errorhandler(429)
+def rate_limit_exceeded(error):
+    return jsonify({'error': 'Rate Limit Exceeded', 'message': 'Too many requests'}), 429
+
+@app.errorhandler(500)
+def internal_error(error):
+    return jsonify({'error': 'Internal Server Error', 'message': 'An unexpected error occurred'}), 500
 
 # Initialize Flask-SocketIO for real-time WebSocket support
 try:
