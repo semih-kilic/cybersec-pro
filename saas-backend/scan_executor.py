@@ -684,8 +684,15 @@ class ScanExecutor:
                     )
                 else:
                     # Run directly (for development)
+                    # Use stdbuf for unbuffered output if available
+                    import shutil
+                    if shutil.which('stdbuf'):
+                        unbuffered_cmd = ['stdbuf', '-oL', '-eL'] + cmd
+                    else:
+                        unbuffered_cmd = cmd
+                    
                     process = subprocess.Popen(
-                        cmd,
+                        unbuffered_cmd,
                         stdout=subprocess.PIPE,
                         stderr=subprocess.STDOUT,
                         text=True,

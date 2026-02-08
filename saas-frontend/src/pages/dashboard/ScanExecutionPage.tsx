@@ -74,8 +74,10 @@ export function ScanExecutionPage() {
   }, [ws.complete]);
 
   useEffect(() => {
-    // If we have a scanId, stream its output (fallback for when WebSocket isn't available)
-    if (currentScanId && status === 'running' && !ws.connected) {
+    // Use SSE as primary streaming method (more reliable than WebSocket in production)
+    // SSE will stream output line-by-line in real-time
+    if (currentScanId && status === 'running') {
+      console.log('📡 Starting SSE stream for scan:', currentScanId);
       const cleanup = api.streamScanOutput(
         currentScanId,
         (line) => {
@@ -89,7 +91,7 @@ export function ScanExecutionPage() {
 
       return cleanup;
     }
-  }, [currentScanId, status, ws.connected]);
+  }, [currentScanId, status]);
 
   const fetchToolConfig = async () => {
     const response = await api.getToolConfig(toolId);
