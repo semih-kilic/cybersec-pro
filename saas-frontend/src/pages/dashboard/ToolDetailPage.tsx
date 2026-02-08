@@ -2,6 +2,26 @@ import { useState, useEffect } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { Header } from '../../components/layout/Header';
 import { useAuth } from '../../hooks/useAuth';
+import { getToolConfig, getSmartDefaults, ToolConfig } from '../../config/toolConfigs';
+
+// Target Memory - store last 10 targets
+const TARGET_STORAGE_KEY = 'cybersec_recent_targets';
+
+function getRecentTargets(): string[] {
+  try {
+    const stored = localStorage.getItem(TARGET_STORAGE_KEY);
+    return stored ? JSON.parse(stored) : [];
+  } catch {
+    return [];
+  }
+}
+
+function addRecentTarget(target: string): void {
+  if (!target) return;
+  const targets = getRecentTargets().filter(t => t !== target);
+  targets.unshift(target);
+  localStorage.setItem(TARGET_STORAGE_KEY, JSON.stringify(targets.slice(0, 10)));
+}
 
 interface ToolParameter {
   name: string;
@@ -18,7 +38,7 @@ interface ToolParameter {
 interface Tool {
   id: string;
   name: string;
-  slug: string;
+  slug?: string;
   description: string;
   category: string;
   plan_required: string;
@@ -27,6 +47,11 @@ interface Tool {
   documentation?: string;
   examples?: { name: string; command: string; description: string }[];
 }
+
+// Get tool slug from name (handle missing slug field)
+const getToolSlug = (tool: Tool): string => {
+  return tool.slug || tool.name?.toLowerCase().replace(/\s+/g, '') || 'unknown';
+};
 
 // Comprehensive Kali tool parameters - real CLI parameters
 const toolParameters: { [key: string]: ToolParameter[] } = {
@@ -161,19 +186,38 @@ export function ToolDetailPage() {
   const { token: _token } = useAuth();
   const [tool, setTool] = useState<Tool | null>(null);
   const [loading, setLoading] = useState(true);
-  const [paramValues, setParamValues] = useState<{ [key: string]: string | boolean }>({});
+  const [paramValues, setParamValues] = useState<{ [key: string]: string | number | boolean }>({});
   const [generatedCommand, setGeneratedCommand] = useState('');
   const [activeTab, setActiveTab] = useState<'params' | 'docs' | 'examples'>('params');
+  
+  // New: One-Click Scan and Target Memory
+  const [recentTargets, setRecentTargets] = useState<string[]>([]);
+  const [showTargetDropdown, setShowTargetDropdown] = useState(false);
+  const [toolConfig, setToolConfig] = useState<ToolConfig | null>(null);
 
   useEffect(() => {
+    setRecentTargets(getRecentTargets());
     fetchTool();
   }, [toolId]);
 
   useEffect(() => {
-    if (tool) {
+    if (tool && toolId) {
+      // Load smart config for this tool
+      const config = getToolConfig(toolId);
+      setToolConfig(config);
+      
+      // Initialize with empty target, user can select from dropdown
       generateCommand();
     }
-  }, [paramValues, tool]);
+  }, [paramValues, tool, targetValue, toolId]);
+  
+  // Apply scan mode defaults
+  useEffect(() => {
+    if (selectedScanMode && toolId) {
+      const defaults = getSmartDefaults(toolId, selectedScanMode);
+      setParamValues(prev => ({ ...prev, ...defaults }));
+    }
+  }, [selectedScanMode, toolId]);
 
   const fetchTool = async () => {
     try {
@@ -186,37 +230,41 @@ export function ToolDetailPage() {
         const data = await res.json();
         setTool(data.tool);
       } else {
-        // Fallback: use local parameters if API unavailable
+        // Use smart config system for fallback
+        const config = getToolConfig(toolId || '');
         const fallbackTool: Tool = {
           id: toolId || '',
-          name: toolId?.toUpperCase() || '',
+          name: config.name || toolId?.toUpperCase() || '',
           slug: toolId || '',
-          description: `${toolId} security tool for penetration testing`,
-          category: 'Security Tools',
+          description: config.description,
+          category: config.category,
           plan_required: 'starter',
           is_active: true,
-          parameters: toolParameters[toolId || ''] || [],
-          documentation: `# ${toolId?.toUpperCase()}\n\nUse the parameters below to configure your scan.`,
-          examples: []
+          parameters: config.parameters,
+          documentation: config.documentation,
+          examples: config.examples
         };
         setTool(fallbackTool);
+        setToolConfig(config);
       }
     } catch (error) {
       console.error('Failed to fetch tool:', error);
-      // Fallback to local parameters
+      // Use smart config system
+      const config = getToolConfig(toolId || '');
       const fallbackTool: Tool = {
         id: toolId || '',
-        name: toolId?.toUpperCase() || '',
+        name: config.name || toolId?.toUpperCase() || '',
         slug: toolId || '',
-        description: `${toolId} security tool`,
-        category: 'Security Tools',
+        description: config.description,
+        category: config.category,
         plan_required: 'starter',
         is_active: true,
-        parameters: toolParameters[toolId || ''] || [],
-        documentation: '',
-        examples: []
+        parameters: config.parameters,
+        documentation: config.documentation,
+        examples: config.examples
       };
       setTool(fallbackTool);
+      setToolConfig(config);
     } finally {
       setLoading(false);
     }
@@ -224,8 +272,13 @@ export function ToolDetailPage() {
 
   // Helper function to normalize parameters from API (handles both array and object formats)
   const getNormalizedParams = (): ToolParameter[] => {
+    // First priority: use toolConfig if available (from smart config system)
+    if (toolConfig) {
+      return toolConfig.parameters;
+    }
+    
     if (!tool) return [];
-    if (Array.isArray(tool.parameters)) return tool.parameters;
+    if (Array.isArray(tool.parameters) && tool.parameters.length > 0) return tool.parameters;
     if (tool.parameters && typeof tool.parameters === 'object') {
       return Object.entries(tool.parameters).map(([key, param]: [string, any]) => ({
         name: param.description || key,
@@ -239,14 +292,15 @@ export function ToolDetailPage() {
         group: param.group || 'General'
       }));
     }
-    // Fallback to local toolParameters
-    return toolParameters[tool.slug] || [];
+    // Final fallback: use smart config system
+    const config = getToolConfig(getToolSlug(tool));
+    return config.parameters;
   };
 
   const generateCommand = () => {
     if (!tool) return;
     
-    let cmd = tool.slug;
+    let cmd = getToolSlug(tool);
     const params = getNormalizedParams();
     
     params.forEach(param => {
@@ -270,17 +324,54 @@ export function ToolDetailPage() {
     setParamValues(prev => ({ ...prev, [name]: value }));
   };
 
-  const handleRunScan = () => {
-    // Find the target value from parameters (first required parameter)
+  // One-Click Scan with mode
+  const handleQuickScan = (mode: 'quick' | 'standard' | 'deep') => {
+    // Get the target from paramValues
     const params = getNormalizedParams();
-    const targetParam = params.find(p => p.required && (p.name.toLowerCase().includes('target') || p.name.toLowerCase().includes('host') || p.name.toLowerCase().includes('url'))) || params.find(p => p.required);
-    const targetValue = targetParam ? (paramValues[targetParam.name] as string) || '' : '';
+    const targetParam = params.find(p => p.required && (p.name.toLowerCase().includes('target') || p.name.toLowerCase().includes('host') || p.name.toLowerCase().includes('url') || p.name.toLowerCase().includes('domain'))) || params.find(p => p.required);
+    const scanTarget = targetParam ? (paramValues[targetParam.name] as string) || '' : '';
+    
+    if (!scanTarget) {
+      alert('Please enter a target first');
+      return;
+    }
+    
+    // Save target to memory
+    addRecentTarget(scanTarget);
+    setRecentTargets(getRecentTargets());
+    
+    // Get smart defaults for this mode
+    const defaults = getSmartDefaults(toolId || '', mode);
+    const allParams = { ...defaults, [targetParam?.name || 'Target']: scanTarget };
     
     // Build query params
     const queryParams = new URLSearchParams();
     queryParams.set('tool', toolId || '');
-    if (targetValue) {
-      queryParams.set('target', targetValue);
+    queryParams.set('target', scanTarget);
+    queryParams.set('mode', mode);
+    queryParams.set('params', JSON.stringify(allParams));
+    
+    // Navigate directly to scan execution
+    navigate(`/dashboard/tools/${toolId}/run?${queryParams.toString()}`);
+  };
+
+  const handleRunScan = () => {
+    // Find the target value from parameters (first required parameter)
+    const params = getNormalizedParams();
+    const targetParam = params.find(p => p.required && (p.name.toLowerCase().includes('target') || p.name.toLowerCase().includes('host') || p.name.toLowerCase().includes('url') || p.name.toLowerCase().includes('domain'))) || params.find(p => p.required);
+    const scanTarget = targetParam ? (paramValues[targetParam.name] as string) || '' : '';
+    
+    // Save target to memory
+    if (scanTarget) {
+      addRecentTarget(scanTarget);
+      setRecentTargets(getRecentTargets());
+    }
+    
+    // Build query params
+    const queryParams = new URLSearchParams();
+    queryParams.set('tool', toolId || '');
+    if (scanTarget) {
+      queryParams.set('target', scanTarget);
     }
     if (generatedCommand) {
       queryParams.set('command', generatedCommand);
@@ -292,6 +383,16 @@ export function ToolDetailPage() {
     
     // Navigate to scan execution page with parameters
     navigate(`/dashboard/tools/${toolId}/run?${queryParams.toString()}`);
+  };
+  
+  // Select from recent targets
+  const handleSelectTarget = (target: string) => {
+    const params = getNormalizedParams();
+    const targetParam = params.find(p => p.required && (p.name.toLowerCase().includes('target') || p.name.toLowerCase().includes('host') || p.name.toLowerCase().includes('url') || p.name.toLowerCase().includes('domain'))) || params.find(p => p.required);
+    if (targetParam) {
+      setParamValues(prev => ({ ...prev, [targetParam.name]: target }));
+    }
+    setShowTargetDropdown(false);
   };
 
   const copyCommand = () => {
@@ -505,6 +606,73 @@ export function ToolDetailPage() {
 
           {/* Right: Command Preview & Actions */}
           <div className="space-y-6">
+            {/* One-Click Scan Modes */}
+            {toolConfig && (
+              <div className="bg-gradient-to-br from-gray-900 to-gray-800 rounded-xl border border-kali-blue/30 p-5">
+                <h3 className="text-white font-semibold mb-3 flex items-center gap-2">
+                  <svg className="w-5 h-5 text-kali-blue" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+                  </svg>
+                  One-Click Scan
+                </h3>
+                <p className="text-xs text-gray-400 mb-4">Select scan intensity. Target required.</p>
+                
+                <div className="grid grid-cols-3 gap-2">
+                  {toolConfig.scanModes.map((mode) => (
+                    <button
+                      key={mode.name}
+                      onClick={() => handleQuickScan(mode.name)}
+                      className={`p-3 rounded-lg text-center transition border ${
+                        mode.name === 'quick' 
+                          ? 'bg-green-500/10 border-green-500/50 hover:bg-green-500/20' 
+                          : mode.name === 'standard'
+                          ? 'bg-blue-500/10 border-blue-500/50 hover:bg-blue-500/20'
+                          : 'bg-purple-500/10 border-purple-500/50 hover:bg-purple-500/20'
+                      }`}
+                    >
+                      <div className={`font-semibold text-sm ${
+                        mode.name === 'quick' ? 'text-green-400' : 
+                        mode.name === 'standard' ? 'text-blue-400' : 'text-purple-400'
+                      }`}>
+                        {mode.label}
+                      </div>
+                      <div className="text-xs text-gray-500 mt-1">{mode.estimatedTime}</div>
+                    </button>
+                  ))}
+                </div>
+                
+                {/* Recent Targets Dropdown */}
+                {recentTargets.length > 0 && (
+                  <div className="mt-4 pt-4 border-t border-gray-700">
+                    <div className="relative">
+                      <button 
+                        onClick={() => setShowTargetDropdown(!showTargetDropdown)}
+                        className="w-full py-2 px-3 bg-gray-800 border border-gray-700 rounded-lg text-left text-sm text-gray-300 hover:border-kali-blue transition flex items-center justify-between"
+                      >
+                        <span>Recent Targets</span>
+                        <svg className={`w-4 h-4 transition ${showTargetDropdown ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                        </svg>
+                      </button>
+                      {showTargetDropdown && (
+                        <div className="absolute top-full left-0 right-0 mt-1 bg-gray-800 border border-gray-700 rounded-lg shadow-xl z-10 max-h-48 overflow-y-auto">
+                          {recentTargets.map((target, idx) => (
+                            <button
+                              key={idx}
+                              onClick={() => handleSelectTarget(target)}
+                              className="w-full px-3 py-2 text-left text-sm text-gray-300 hover:bg-gray-700 transition first:rounded-t-lg last:rounded-b-lg"
+                            >
+                              {target}
+                            </button>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
+
             {/* Command Preview */}
             <div className="bg-gray-900 rounded-xl border border-gray-800 p-5 sticky top-6">
               <div className="flex items-center justify-between mb-4">
@@ -522,7 +690,7 @@ export function ToolDetailPage() {
               
               <div className="bg-gray-950 rounded-lg p-4 mb-4">
                 <code className="text-green-400 font-mono text-sm break-all">
-                  {generatedCommand || `${tool.slug}`}
+                  {generatedCommand || getToolSlug(tool)}
                 </code>
               </div>
 
