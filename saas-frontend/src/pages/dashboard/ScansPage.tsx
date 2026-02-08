@@ -183,10 +183,12 @@ export function ScansPage() {
       
       const data = await res.json();
       
-      if (res.ok) {
+      if (res.ok && data.success) {
         // Success - refresh scan list to show new scan
         fetchScans();
-        setNotification({ type: 'success', message: `Scan restarted! New scan running...` });
+        setNotification({ type: 'success', message: `Scan restarted! Running on ${data.target}` });
+        // Close any open modal
+        setSelectedScan(null);
         // Auto-hide notification after 5s
         setTimeout(() => setNotification(null), 5000);
       } else {

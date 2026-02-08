@@ -162,9 +162,9 @@ class ApiService {
       status: string;
       command: string;
       message: string;
-    }>('/scan/execute', {
+    }>('/scan/start', {
       method: 'POST',
-      body: JSON.stringify({ tool_id: toolId, target, parameters }),
+      body: JSON.stringify({ tool: toolId, target, parameters }),
     });
   }
 

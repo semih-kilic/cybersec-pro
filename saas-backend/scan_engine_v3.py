@@ -65,6 +65,8 @@ class ScanFinding:
     banner: str = ''
     severity: str = 'info'  # critical, high, medium, low, info
     cve: Optional[str] = None
+    title: str = ''  # For nikto/gobuster findings
+    description: str = ''  # Detailed description
     timestamp: datetime = field(default_factory=datetime.utcnow)
     
     def to_dict(self) -> Dict:
@@ -78,6 +80,8 @@ class ScanFinding:
             'banner': self.banner,
             'severity': self.severity,
             'cve': self.cve,
+            'title': self.title,
+            'description': self.description,
             'timestamp': self.timestamp.isoformat()
         }
 
@@ -358,6 +362,108 @@ class NmapParser:
         return 'info'
 
 
+class NiktoParser:
+    """Parse nikto output into structured findings"""
+    
+    @staticmethod
+    def parse_output(output: str, target: str) -> List[ScanFinding]:
+        """Parse nikto text output"""
+        findings = []
+        
+        # Common nikto patterns
+        # + OSVDB-12184: /index.php?=PHPE9568F35-D428-11d2-A769-00AA001ACF42: PHP reveals...
+        # + /admin/: Directory indexing found.
+        vuln_pattern = re.compile(
+            r'\+\s+(?:OSVDB-\d+:\s+)?([^:]+):\s+(.+)',
+            re.IGNORECASE
+        )
+        
+        for line in output.split('\n'):
+            line = line.strip()
+            if line.startswith('+') and not line.startswith('+ Target') and not line.startswith('+ Server'):
+                match = vuln_pattern.match(line)
+                if match:
+                    path = match.group(1).strip()
+                    description = match.group(2).strip()
+                    
+                    # Determine severity based on keywords
+                    severity = 'info'
+                    desc_lower = description.lower()
+                    if any(w in desc_lower for w in ['xss', 'injection', 'sql', 'rce', 'command', 'exec']):
+                        severity = 'critical'
+                    elif any(w in desc_lower for w in ['vuln', 'exploit', 'shell', 'upload', 'bypass']):
+                        severity = 'high'
+                    elif any(w in desc_lower for w in ['directory', 'index', 'listing', 'disclosure', 'default']):
+                        severity = 'medium'
+                    elif any(w in desc_lower for w in ['outdated', 'version', 'header', 'cookie']):
+                        severity = 'low'
+                    
+                    finding = ScanFinding(
+                        host=target,
+                        port=80,  # Default, could be parsed from target
+                        protocol='tcp',
+                        state='open',
+                        service='http',
+                        title=f"Nikto: {path}",
+                        description=description,
+                        severity=severity
+                    )
+                    findings.append(finding)
+        
+        return findings
+
+
+class GobusterParser:
+    """Parse gobuster output into structured findings"""
+    
+    @staticmethod
+    def parse_output(output: str, target: str) -> List[ScanFinding]:
+        """Parse gobuster text output"""
+        findings = []
+        
+        # Gobuster output patterns:
+        # /admin                 (Status: 301) [Size: 0]
+        # /images               (Status: 200) [Size: 1234]
+        path_pattern = re.compile(
+            r'^(/[^\s]+)\s+\(Status:\s*(\d+)\)',
+            re.MULTILINE
+        )
+        
+        for match in path_pattern.finditer(output):
+            path = match.group(1)
+            status = int(match.group(2))
+            
+            # Skip 404s (shouldn't appear but just in case)
+            if status == 404:
+                continue
+            
+            # Determine severity based on path and status
+            severity = 'info'
+            path_lower = path.lower()
+            if any(w in path_lower for w in ['admin', 'backup', 'config', 'database', 'db', 'sql']):
+                severity = 'high'
+            elif any(w in path_lower for w in ['upload', 'api', 'shell', 'cmd', 'exec']):
+                severity = 'high'
+            elif any(w in path_lower for w in ['login', 'auth', 'panel', 'dashboard', 'manage']):
+                severity = 'medium'
+            elif status in [200, 301, 302]:
+                severity = 'low'
+            
+            finding = ScanFinding(
+                host=target,
+                port=80,  # Default
+                protocol='tcp',
+                state='open',
+                service='http',
+                title=f"Directory: {path}",
+                description=f"Found path {path} with status {status}",
+                severity=severity
+            )
+            findings.append(finding)
+        
+        return findings
+
+
 class ScanEngineV3:
     """
     World-class scan execution engine v3.0
@@ -423,8 +529,81 @@ class ScanEngineV3:
         """Get timeout for a tool"""
         return TOOL_TIMEOUTS.get(tool_name.lower(), TOOL_TIMEOUTS['default'])
     
+    def normalize_params(self, params: Dict[str, Any]) -> Dict[str, Any]:
+        """Normalize frontend param names to backend expected keys"""
+        normalized = {}
+        key_map = {
+            # Nmap
+            'Timing': 'timing',
+            'Port Range': 'ports',
+            'Ports': 'ports',
+            'Service Version': 'service_version',
+            'OS Detection': 'os_detection',
+            'Scan Type': 'scan_type',
+            'Scripts': 'script',
+            'Script': 'script',
+            'Top Ports': 'top_ports',
+            'Output Format': 'output_format',
+            'Verbose': 'verbose',
+            'No DNS': 'no_dns',
+            'Aggressive': 'aggressive',
+            # Nikto
+            'Target Host': 'target_host',
+            'Port': 'port',
+            'SSL': 'ssl',
+            'Tuning': 'tuning',
+            'Plugins': 'plugins',
+            'Format': 'format',
+            'Timeout': 'timeout',
+            'No 404': 'no404',
+            'User Agent': 'user_agent',
+            # Gobuster
+            'Mode': 'mode',
+            'Target URL': 'target_url',
+            'Wordlist': 'wordlist',
+            'Extensions': 'extensions',
+            'Threads': 'threads',
+            'Status Codes': 'status_codes',
+            'No TLS Verify': 'no_tls_verify',
+            'Follow Redirect': 'follow_redirect',
+            'Cookie': 'cookie',
+            # SQLMap
+            'Level': 'level',
+            'Risk': 'risk',
+            'Database': 'database',
+            'Tables': 'tables',
+            'Dump': 'dump',
+            'Batch': 'batch',
+            # Hydra
+            'Service': 'service',
+            'Username': 'username',
+            'Password': 'password',
+            'Username List': 'username_list',
+            'Password List': 'password_list',
+        }
+        
+        for key, value in params.items():
+            # Map the key
+            new_key = key_map.get(key, key.lower().replace(' ', '_'))
+            
+            # Clean up select values like "S (SYN)" -> "S"
+            if isinstance(value, str):
+                # Extract just the first part before any description in parentheses
+                if ' (' in value:
+                    value = value.split(' (')[0].strip()
+                # Remove T prefix if it's timing (backend adds it)
+                if new_key == 'timing' and value.startswith('T'):
+                    value = value[1:]  # 'T3' -> '3' (backend adds T prefix)
+            
+            normalized[new_key] = value
+        
+        return normalized
+    
     def build_nmap_command(self, target: str, params: Dict[str, Any]) -> List[str]:
         """Build proper nmap command with XML output"""
+        # Normalize params first
+        params = self.normalize_params(params)
+        
         cmd = ['nmap']
         
         # Always output XML to stdout for parsing
@@ -467,6 +646,8 @@ class ScanEngineV3:
     def build_command(self, tool_name: str, target: str, params: Dict[str, Any]) -> List[str]:
         """Build command for any tool"""
         tool_lower = tool_name.lower()
+        # Normalize params for all tools
+        params = self.normalize_params(params)
         
         if tool_lower == 'nmap':
             return self.build_nmap_command(target, params)
@@ -488,15 +669,128 @@ class ScanEngineV3:
             aggression = params.get('aggression', '1')
             return ['whatweb', f'-a{aggression}', target]
         elif tool_lower == 'nikto':
+            # Build nikto command with all supported parameters
+            cmd = ['nikto', '-h', target]
+            
+            # Port (default 80)
             port = params.get('port', '80')
-            cmd = ['nikto', '-h', target, '-p', str(port)]
+            if port:
+                cmd.extend(['-p', str(port)])
+            
+            # SSL mode
             if params.get('ssl', False):
                 cmd.append('-ssl')
+            
+            # Tuning options (scan type)
+            tuning = params.get('tuning', '')
+            if tuning:
+                cmd.extend(['-Tuning', tuning])
+            
+            # Plugins
+            plugins = params.get('plugins', '')
+            if plugins:
+                cmd.extend(['-Plugins', plugins])
+            
+            # Output format
+            output_format = params.get('format', 'txt')
+            if output_format and output_format != 'txt':
+                cmd.extend(['-Format', output_format])
+            
+            # Timeout
+            timeout_val = params.get('timeout', '')
+            if timeout_val:
+                cmd.extend(['-timeout', str(timeout_val)])
+            
+            # User agent
+            user_agent = params.get('user_agent', '')
+            if user_agent:
+                cmd.extend(['-useragent', user_agent])
+            
+            # No 404
+            if params.get('no404', False):
+                cmd.append('-no404')
+            
             return cmd
         elif tool_lower == 'gobuster':
+            # Build gobuster command with all supported parameters
             mode = params.get('mode', 'dir')
+            cmd = ['gobuster', mode]
+            
+            # URL target
+            cmd.extend(['-u', target if target.startswith(('http://', 'https://')) else f'http://{target}'])
+            
+            # Wordlist (required)
             wordlist = params.get('wordlist', '/usr/share/wordlists/dirb/common.txt')
-            return ['gobuster', mode, '-u', target, '-w', wordlist]
+            cmd.extend(['-w', wordlist])
+            
+            # Extensions
+            extensions = params.get('extensions', '')
+            if extensions:
+                cmd.extend(['-x', extensions])
+            
+            # Threads
+            threads = params.get('threads', '')
+            if threads:
+                cmd.extend(['-t', str(threads)])
+            
+            # Status codes to include
+            status_codes = params.get('status_codes', '')
+            if status_codes:
+                cmd.extend(['-s', status_codes])
+            
+            # No TLS verify
+            if params.get('no_tls_verify', False):
+                cmd.append('-k')
+            
+            # Follow redirects
+            if params.get('follow_redirect', False):
+                cmd.append('-r')
+            
+            # User agent
+            user_agent = params.get('user_agent', '')
+            if user_agent:
+                cmd.extend(['-a', user_agent])
+            
+            # Cookie
+            cookie = params.get('cookie', '')
+            if cookie:
+                cmd.extend(['-c', cookie])
+            
+            # Verbose
+            if params.get('verbose', False):
+                cmd.append('-v')
+            
+            return cmd
+        elif tool_lower == 'sqlmap':
+            # Build sqlmap command
+            cmd = ['sqlmap', '-u', target]
+            
+            # Level
+            level = params.get('level', '')
+            if level:
+                cmd.extend(['--level', str(level)])
+            
+            # Risk
+            risk = params.get('risk', '')
+            if risk:
+                cmd.extend(['--risk', str(risk)])
+            
+            # Batch mode (non-interactive)
+            cmd.append('--batch')
+            
+            # Database enumeration
+            if params.get('database', False) or params.get('dbs', False):
+                cmd.append('--dbs')
+            if params.get('tables', False):
+                cmd.append('--tables')
+            if params.get('dump', False):
+                cmd.append('--dump')
+            
+            # Random agent
+            if params.get('random_agent', False):
+                cmd.append('--random-agent')
+            
+            return cmd
         else:
             # Generic: tool target
             return [tool_name, target]
@@ -684,12 +978,21 @@ class ScanEngineV3:
             raw_output = ''.join(output_lines)
             error_output = ''.join(error_lines)
             
-            # Parse findings
+            # Parse findings based on tool type
             findings = []
-            if job.tool_name.lower() == 'nmap' and raw_output:
+            tool_lower = job.tool_name.lower()
+            
+            if tool_lower == 'nmap' and raw_output:
                 findings = NmapParser.parse_xml(raw_output, job.target)
                 if not findings:
                     findings = NmapParser.parse_text(raw_output, job.target)
+            elif tool_lower == 'nikto' and raw_output:
+                findings = NiktoParser.parse_output(raw_output, job.target)
+            elif tool_lower == 'gobuster' and raw_output:
+                findings = GobusterParser.parse_output(raw_output, job.target)
+            elif raw_output:
+                # Generic parser for other tools - extract any port/service info
+                findings = NmapParser.parse_text(raw_output, job.target)
             
             # Create result
             result = ScanResult(
