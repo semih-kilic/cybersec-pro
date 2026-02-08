@@ -53,132 +53,7 @@ const getToolSlug = (tool: Tool): string => {
   return tool.slug || tool.name?.toLowerCase().replace(/\s+/g, '') || 'unknown';
 };
 
-// Comprehensive Kali tool parameters - real CLI parameters
-const toolParameters: { [key: string]: ToolParameter[] } = {
-  'nmap': [
-    { name: 'Target', flag: '', type: 'text', required: true, placeholder: 'scanme.nmap.org or your-domain.com', description: 'Target IP address, hostname, or CIDR range' },
-    { name: 'Scan Type', flag: '-s', type: 'select', required: false, options: ['S (SYN)', 'T (Connect)', 'U (UDP)', 'A (ACK)', 'N (NULL)', 'F (FIN)', 'X (Xmas)'], description: 'Type of scan to perform', group: 'Scan Techniques' },
-    { name: 'Port Range', flag: '-p', type: 'text', required: false, placeholder: '1-65535 or 22,80,443', description: 'Specific ports to scan', group: 'Port Options' },
-    { name: 'Top Ports', flag: '--top-ports', type: 'number', required: false, placeholder: '1000', description: 'Scan most common ports', group: 'Port Options' },
-    { name: 'OS Detection', flag: '-O', type: 'boolean', required: false, description: 'Enable OS detection', group: 'Detection' },
-    { name: 'Service Version', flag: '-sV', type: 'boolean', required: false, description: 'Probe open ports to determine service/version info', group: 'Detection' },
-    { name: 'Script Scan', flag: '-sC', type: 'boolean', required: false, description: 'Run default scripts', group: 'Scripts' },
-    { name: 'Scripts', flag: '--script', type: 'text', required: false, placeholder: 'vuln,exploit', description: 'NSE scripts to run', group: 'Scripts' },
-    { name: 'Aggressive', flag: '-A', type: 'boolean', required: false, description: 'Enable OS detection, version detection, script scanning, and traceroute', group: 'Detection' },
-    { name: 'Timing', flag: '-T', type: 'select', required: false, options: ['0 (Paranoid)', '1 (Sneaky)', '2 (Polite)', '3 (Normal)', '4 (Aggressive)', '5 (Insane)'], description: 'Timing template', group: 'Performance' },
-    { name: 'Verbose', flag: '-v', type: 'boolean', required: false, description: 'Increase verbosity level', group: 'Output' },
-    { name: 'No DNS', flag: '-n', type: 'boolean', required: false, description: 'Never do DNS resolution', group: 'Performance' },
-    { name: 'Ping Scan Only', flag: '-sn', type: 'boolean', required: false, description: 'Disable port scan, only do host discovery', group: 'Scan Techniques' },
-    { name: 'Output Format', flag: '-o', type: 'select', required: false, options: ['N (Normal)', 'X (XML)', 'G (Grepable)', 'A (All)'], description: 'Output format', group: 'Output' },
-  ],
-  'sqlmap': [
-    { name: 'Target URL', flag: '-u', type: 'text', required: true, placeholder: 'http://example.com/page.php?id=1', description: 'Target URL with parameter to test' },
-    { name: 'Request File', flag: '-r', type: 'file', required: false, description: 'Load HTTP request from file', group: 'Target' },
-    { name: 'Parameter', flag: '-p', type: 'text', required: false, placeholder: 'id', description: 'Testable parameter(s)', group: 'Target' },
-    { name: 'Database', flag: '--dbs', type: 'boolean', required: false, description: 'Enumerate databases', group: 'Enumeration' },
-    { name: 'Tables', flag: '--tables', type: 'boolean', required: false, description: 'Enumerate tables', group: 'Enumeration' },
-    { name: 'Columns', flag: '--columns', type: 'boolean', required: false, description: 'Enumerate columns', group: 'Enumeration' },
-    { name: 'Dump', flag: '--dump', type: 'boolean', required: false, description: 'Dump database table entries', group: 'Enumeration' },
-    { name: 'Dump All', flag: '--dump-all', type: 'boolean', required: false, description: 'Dump all databases', group: 'Enumeration' },
-    { name: 'Database Name', flag: '-D', type: 'text', required: false, placeholder: 'database_name', description: 'Specific database to enumerate', group: 'Enumeration' },
-    { name: 'Table Name', flag: '-T', type: 'text', required: false, placeholder: 'users', description: 'Specific table to enumerate', group: 'Enumeration' },
-    { name: 'Level', flag: '--level', type: 'select', required: false, options: ['1', '2', '3', '4', '5'], description: 'Level of tests (1-5)', group: 'Injection' },
-    { name: 'Risk', flag: '--risk', type: 'select', required: false, options: ['1', '2', '3'], description: 'Risk of tests (1-3)', group: 'Injection' },
-    { name: 'Technique', flag: '--technique', type: 'select', required: false, options: ['B (Boolean)', 'E (Error)', 'U (Union)', 'S (Stacked)', 'T (Time)', 'Q (Inline)'], description: 'SQL injection techniques to use', group: 'Injection' },
-    { name: 'Threads', flag: '--threads', type: 'number', required: false, placeholder: '10', description: 'Number of concurrent threads', group: 'Performance' },
-    { name: 'Batch', flag: '--batch', type: 'boolean', required: false, description: 'Never ask for user input', group: 'General' },
-    { name: 'Random Agent', flag: '--random-agent', type: 'boolean', required: false, description: 'Use random User-Agent', group: 'Request' },
-    { name: 'Cookie', flag: '--cookie', type: 'text', required: false, placeholder: 'session=abc123', description: 'HTTP Cookie header value', group: 'Request' },
-    { name: 'OS Shell', flag: '--os-shell', type: 'boolean', required: false, description: 'Prompt for an interactive OS shell', group: 'Takeover' },
-    { name: 'SQL Shell', flag: '--sql-shell', type: 'boolean', required: false, description: 'Prompt for an interactive SQL shell', group: 'Takeover' },
-  ],
-  'nikto': [
-    { name: 'Target Host', flag: '-h', type: 'text', required: true, placeholder: 'example.com or 192.168.1.1', description: 'Target host' },
-    { name: 'Port', flag: '-p', type: 'number', required: false, placeholder: '80', description: 'Port to use (default 80)', group: 'Target' },
-    { name: 'SSL', flag: '-ssl', type: 'boolean', required: false, description: 'Force SSL mode', group: 'Target' },
-    { name: 'Tuning', flag: '-Tuning', type: 'text', required: false, placeholder: '123', description: 'Scan tuning options (1-9,a-c)', group: 'Scan' },
-    { name: 'Plugins', flag: '-Plugins', type: 'text', required: false, placeholder: 'apacheusers', description: 'Plugins to run', group: 'Scan' },
-    { name: 'Output File', flag: '-o', type: 'text', required: false, placeholder: 'output.txt', description: 'Output file name', group: 'Output' },
-    { name: 'Format', flag: '-Format', type: 'select', required: false, options: ['txt', 'csv', 'htm', 'xml', 'json'], description: 'Output format', group: 'Output' },
-    { name: 'Timeout', flag: '-timeout', type: 'number', required: false, placeholder: '10', description: 'Timeout for requests', group: 'Performance' },
-    { name: 'No 404', flag: '-no404', type: 'boolean', required: false, description: 'Disable 404 guessing', group: 'Scan' },
-    { name: 'User Agent', flag: '-useragent', type: 'text', required: false, placeholder: 'Mozilla/5.0...', description: 'Custom User-Agent string', group: 'Request' },
-  ],
-  'hydra': [
-    { name: 'Target', flag: '', type: 'text', required: true, placeholder: '192.168.1.1 or example.com', description: 'Target host' },
-    { name: 'Service', flag: '', type: 'select', required: true, options: ['ssh', 'ftp', 'http-post-form', 'http-get', 'mysql', 'postgres', 'rdp', 'smb', 'vnc', 'telnet', 'pop3', 'imap', 'smtp'], description: 'Service to attack' },
-    { name: 'Username', flag: '-l', type: 'text', required: false, placeholder: 'admin', description: 'Single username', group: 'Credentials' },
-    { name: 'Username List', flag: '-L', type: 'file', required: false, description: 'Username wordlist file', group: 'Credentials' },
-    { name: 'Password', flag: '-p', type: 'text', required: false, placeholder: 'password123', description: 'Single password', group: 'Credentials' },
-    { name: 'Password List', flag: '-P', type: 'file', required: false, description: 'Password wordlist file', group: 'Credentials' },
-    { name: 'Port', flag: '-s', type: 'number', required: false, placeholder: '22', description: 'Custom port', group: 'Target' },
-    { name: 'Threads', flag: '-t', type: 'number', required: false, placeholder: '16', description: 'Number of parallel tasks', group: 'Performance' },
-    { name: 'Verbose', flag: '-V', type: 'boolean', required: false, description: 'Verbose mode', group: 'Output' },
-    { name: 'Exit on First', flag: '-f', type: 'boolean', required: false, description: 'Exit after first found', group: 'General' },
-    { name: 'Try Login as Pass', flag: '-e', type: 'select', required: false, options: ['n (null)', 's (same)', 'r (reverse)', 'ns', 'nsr'], description: 'Additional checks', group: 'Credentials' },
-  ],
-  'john': [
-    { name: 'Hash File', flag: '', type: 'file', required: true, description: 'File containing password hashes' },
-    { name: 'Wordlist', flag: '--wordlist', type: 'file', required: false, description: 'Wordlist file for dictionary attack', group: 'Attack Mode' },
-    { name: 'Format', flag: '--format', type: 'select', required: false, options: ['raw-md5', 'raw-sha1', 'raw-sha256', 'raw-sha512', 'bcrypt', 'md5crypt', 'sha256crypt', 'sha512crypt', 'nt', 'lm', 'mysql-sha1'], description: 'Hash format', group: 'Format' },
-    { name: 'Incremental', flag: '--incremental', type: 'boolean', required: false, description: 'Incremental (brute force) mode', group: 'Attack Mode' },
-    { name: 'Single', flag: '--single', type: 'boolean', required: false, description: 'Single crack mode', group: 'Attack Mode' },
-    { name: 'Rules', flag: '--rules', type: 'text', required: false, placeholder: 'best64', description: 'Word mangling rules', group: 'Attack Mode' },
-    { name: 'Show', flag: '--show', type: 'boolean', required: false, description: 'Show cracked passwords', group: 'Output' },
-    { name: 'Pot File', flag: '--pot', type: 'text', required: false, placeholder: 'custom.pot', description: 'Custom pot file', group: 'Output' },
-  ],
-  'gobuster': [
-    { name: 'Mode', flag: '', type: 'select', required: true, options: ['dir', 'dns', 'vhost', 'fuzz', 's3'], description: 'Enumeration mode' },
-    { name: 'Target URL', flag: '-u', type: 'text', required: true, placeholder: 'http://example.com', description: 'Target URL' },
-    { name: 'Wordlist', flag: '-w', type: 'file', required: true, description: 'Path to wordlist' },
-    { name: 'Extensions', flag: '-x', type: 'text', required: false, placeholder: 'php,html,txt', description: 'File extensions to search for', group: 'Discovery' },
-    { name: 'Status Codes', flag: '-s', type: 'text', required: false, placeholder: '200,204,301,302', description: 'Positive status codes', group: 'Filtering' },
-    { name: 'Status Codes Blacklist', flag: '-b', type: 'text', required: false, placeholder: '404,500', description: 'Negative status codes', group: 'Filtering' },
-    { name: 'Threads', flag: '-t', type: 'number', required: false, placeholder: '50', description: 'Number of concurrent threads', group: 'Performance' },
-    { name: 'No TLS Verify', flag: '-k', type: 'boolean', required: false, description: 'Skip TLS certificate verification', group: 'Request' },
-    { name: 'Follow Redirect', flag: '-r', type: 'boolean', required: false, description: 'Follow redirects', group: 'Request' },
-    { name: 'User Agent', flag: '-a', type: 'text', required: false, placeholder: 'Mozilla/5.0...', description: 'User-Agent string', group: 'Request' },
-    { name: 'Cookie', flag: '-c', type: 'text', required: false, placeholder: 'session=abc', description: 'Cookies to use', group: 'Request' },
-    { name: 'Output', flag: '-o', type: 'text', required: false, placeholder: 'results.txt', description: 'Output file', group: 'Output' },
-    { name: 'Verbose', flag: '-v', type: 'boolean', required: false, description: 'Verbose output', group: 'Output' },
-  ],
-  'dirb': [
-    { name: 'Target URL', flag: '', type: 'text', required: true, placeholder: 'http://example.com/', description: 'Target URL' },
-    { name: 'Wordlist', flag: '', type: 'file', required: false, description: 'Custom wordlist (default: /usr/share/dirb/wordlists/common.txt)' },
-    { name: 'Agent', flag: '-a', type: 'text', required: false, placeholder: 'Mozilla/5.0', description: 'Custom User-Agent', group: 'Request' },
-    { name: 'Cookie', flag: '-c', type: 'text', required: false, placeholder: 'session=abc', description: 'Cookie string', group: 'Request' },
-    { name: 'Extensions', flag: '-X', type: 'text', required: false, placeholder: '.php,.html', description: 'File extensions to try', group: 'Discovery' },
-    { name: 'Output', flag: '-o', type: 'text', required: false, placeholder: 'output.txt', description: 'Output file', group: 'Output' },
-    { name: 'Not Recursive', flag: '-r', type: 'boolean', required: false, description: 'Non recursive', group: 'Discovery' },
-    { name: 'Silent', flag: '-S', type: 'boolean', required: false, description: 'Silent mode', group: 'Output' },
-  ],
-  'wpscan': [
-    { name: 'Target URL', flag: '--url', type: 'text', required: true, placeholder: 'http://wordpress-site.com', description: 'WordPress site URL' },
-    { name: 'Enumerate', flag: '-e', type: 'select', required: false, options: ['vp (Vulnerable Plugins)', 'ap (All Plugins)', 'p (Popular Plugins)', 'vt (Vulnerable Themes)', 'at (All Themes)', 't (Popular Themes)', 'u (Users)', 'cb (Config Backups)'], description: 'Enumeration process', group: 'Enumeration' },
-    { name: 'API Token', flag: '--api-token', type: 'text', required: false, placeholder: 'YOUR_API_TOKEN', description: 'WPScan API token', group: 'API' },
-    { name: 'Passwords', flag: '-P', type: 'file', required: false, description: 'Password list for brute force', group: 'Brute Force' },
-    { name: 'Usernames', flag: '-U', type: 'text', required: false, placeholder: 'admin,user1', description: 'Usernames for brute force', group: 'Brute Force' },
-    { name: 'Threads', flag: '-t', type: 'number', required: false, placeholder: '20', description: 'Number of threads', group: 'Performance' },
-    { name: 'Stealthy', flag: '--stealthy', type: 'boolean', required: false, description: 'Stealthy scan', group: 'Stealth' },
-    { name: 'Disable TLS', flag: '--disable-tls-checks', type: 'boolean', required: false, description: 'Disable TLS verification', group: 'Request' },
-    { name: 'Output', flag: '-o', type: 'text', required: false, placeholder: 'results.json', description: 'Output file', group: 'Output' },
-    { name: 'Format', flag: '-f', type: 'select', required: false, options: ['cli', 'cli-no-colour', 'json'], description: 'Output format', group: 'Output' },
-  ],
-  'metasploit': [
-    { name: 'Module', flag: 'use', type: 'text', required: true, placeholder: 'exploit/windows/smb/ms17_010_eternalblue', description: 'Metasploit module to use' },
-    { name: 'RHOSTS', flag: 'RHOSTS', type: 'text', required: true, placeholder: '192.168.1.1', description: 'Target host(s)', group: 'Target' },
-    { name: 'RPORT', flag: 'RPORT', type: 'number', required: false, placeholder: '445', description: 'Target port', group: 'Target' },
-    { name: 'LHOST', flag: 'LHOST', type: 'text', required: false, placeholder: '192.168.1.100', description: 'Local host for reverse connection', group: 'Payload' },
-    { name: 'LPORT', flag: 'LPORT', type: 'number', required: false, placeholder: '4444', description: 'Local port for reverse connection', group: 'Payload' },
-    { name: 'Payload', flag: 'payload', type: 'text', required: false, placeholder: 'windows/x64/meterpreter/reverse_tcp', description: 'Payload to use', group: 'Payload' },
-    { name: 'Threads', flag: 'THREADS', type: 'number', required: false, placeholder: '10', description: 'Number of concurrent threads', group: 'Performance' },
-  ],
-  'burpsuite': [
-    { name: 'Target URL', flag: '', type: 'text', required: true, placeholder: 'http://example.com', description: 'Target URL to proxy' },
-    { name: 'Proxy Port', flag: '-port', type: 'number', required: false, placeholder: '8080', description: 'Proxy listener port', group: 'Proxy' },
-    { name: 'Project File', flag: '-project-file', type: 'text', required: false, placeholder: 'project.burp', description: 'Project file to load', group: 'Project' },
-  ],
-};
+// Tool parameters now managed by toolConfigs.ts - see /config/toolConfigs.ts
 
 export function ToolDetailPage() {
   const { toolId } = useParams<{ toolId: string }>();
@@ -209,15 +84,7 @@ export function ToolDetailPage() {
       // Initialize with empty target, user can select from dropdown
       generateCommand();
     }
-  }, [paramValues, tool, targetValue, toolId]);
-  
-  // Apply scan mode defaults
-  useEffect(() => {
-    if (selectedScanMode && toolId) {
-      const defaults = getSmartDefaults(toolId, selectedScanMode);
-      setParamValues(prev => ({ ...prev, ...defaults }));
-    }
-  }, [selectedScanMode, toolId]);
+  }, [paramValues, tool, toolId]);
 
   const fetchTool = async () => {
     try {
