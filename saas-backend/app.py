@@ -1277,15 +1277,19 @@ def rerun_scan(scan_id):
         if not original_scan.tool_id:
             return jsonify({'error': 'Cannot rerun: missing tool configuration'}), 400
         
-        # Get the tool
+        # Get the tool - support both UUID and string-based tool IDs
         tool = Tool.query.get(original_scan.tool_id)
         if not tool:
-            return jsonify({'error': 'Cannot rerun: tool not found'}), 404
+            # Try finding by name (for string-based tool_ids like 'nmap')
+            tool = Tool.query.filter(Tool.name.ilike(original_scan.tool_id)).first()
+        
+        # If still not found, use the tool_id directly (scan_executor handles string IDs)
+        tool_plan_required = tool.plan_required if tool else 'starter'
         
         # Check plan access
         plan_hierarchy = {'trial': 1, 'starter': 1, 'professional': 2, 'team': 3, 'enterprise': 4}
         user_plan_level = plan_hierarchy.get(org.plan_type, 1)
-        required_plan_level = plan_hierarchy.get(tool.plan_required, 1)
+        required_plan_level = plan_hierarchy.get(tool_plan_required, 1)
         
         if user_plan_level < required_plan_level:
             return jsonify({
