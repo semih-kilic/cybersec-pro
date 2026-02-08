@@ -994,12 +994,19 @@ class ScanEngineV3:
                 # Generic parser for other tools - extract any port/service info
                 findings = NmapParser.parse_text(raw_output, job.target)
             
+            # Determine status: if we have findings, it's a success even with non-zero exit
+            # Some tools (nikto, gobuster) return non-zero but still produce valid results
+            if job.status == ScanStatus.TIMEOUT:
+                final_status = ScanStatus.TIMEOUT
+            elif len(findings) > 0 or exit_code == 0:
+                final_status = ScanStatus.COMPLETED
+            else:
+                final_status = ScanStatus.FAILED
+            
             # Create result
             result = ScanResult(
                 scan_id=scan_id,
-                status=job.status if job.status == ScanStatus.TIMEOUT else (
-                    ScanStatus.COMPLETED if exit_code == 0 else ScanStatus.FAILED
-                ),
+                status=final_status,
                 raw_output=raw_output,
                 error_log=error_output,
                 findings=findings,
