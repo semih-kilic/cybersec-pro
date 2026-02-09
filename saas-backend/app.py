@@ -1715,10 +1715,9 @@ def get_scan_output(scan_id):
     Supports both:
     - Authorization: Bearer <token> header
     - ?token=<token> query parameter (for EventSource/SSE)
-    """
-    if not SCAN_EXECUTOR_AVAILABLE:
-        return jsonify({'error': 'Scan executor not available'}), 503
     
+    Works with both V3 engine and legacy executor.
+    """
     # Check authorization - support both header and query param
     from flask_jwt_extended import verify_jwt_in_request, get_jwt_identity
     
@@ -1740,19 +1739,84 @@ def get_scan_output(scan_id):
     from flask import Response
     
     def generate():
-        executor = get_executor()
+        # Try V3 engine first (used by /api/v1/scan/start)
+        v3_engine = None
+        if SCAN_ENGINE_V3_AVAILABLE:
+            try:
+                from scan_engine_v3 import get_engine_v3
+                v3_engine = get_engine_v3()
+                
+                # Wait briefly for scan to be registered (SSE may connect before submit completes)
+                import time as _time
+                job = v3_engine.get_scan(scan_id)
+                if not job:
+                    for _ in range(10):  # Wait up to 5 seconds
+                        _time.sleep(0.5)
+                        job = v3_engine.get_scan(scan_id)
+                        if job:
+                            break
+                
+                if job:
+                    # Use V3 engine for output streaming
+                    import time
+                    max_wait = 300  # 5 min max
+                    start = time.time()
+                    while time.time() - start < max_wait:
+                        try:
+                            line = job.output_queue.get(timeout=1.0)
+                            if line:
+                                yield f"data: {json.dumps({'type': 'output', 'line': line.rstrip()})}\n\n"
+                        except Exception:
+                            pass
+                        
+                        # Check if scan finished
+                        from scan_engine_v3 import ScanStatus
+                        if job.status in (ScanStatus.COMPLETED, ScanStatus.FAILED, ScanStatus.TIMEOUT, ScanStatus.CANCELLED):
+                            # Drain remaining output
+                            while not job.output_queue.empty():
+                                try:
+                                    line = job.output_queue.get_nowait()
+                                    if line:
+                                        yield f"data: {json.dumps({'type': 'output', 'line': line.rstrip()})}\n\n"
+                                except Exception:
+                                    break
+                            
+                            result = {
+                                'status': job.status.value,
+                                'output': '\n'.join(job.output_buffer),
+                                'exit_code': job.exit_code,
+                                'findings': job.findings
+                            }
+                            yield f"data: {json.dumps({'type': 'complete', 'result': result})}\n\n"
+                            return
+                    
+                    # Timed out waiting
+                    yield f"data: {json.dumps({'type': 'complete', 'result': {'status': 'timeout', 'output': 'Stream timeout'}})}\n\n"
+                    return
+            except Exception as e:
+                print(f"V3 stream error: {e}")
         
-        while True:
-            line = executor.get_scan_output(scan_id, timeout=1.0)
-            
-            if line is None:
-                # Scan completed
-                result = executor.get_scan_result(scan_id)
-                if result:
-                    yield f"data: {json.dumps({'type': 'complete', 'result': result})}\n\n"
-                break
-            elif line:
-                yield f"data: {json.dumps({'type': 'output', 'line': line})}\n\n"
+        # Fallback to legacy executor
+        if SCAN_EXECUTOR_AVAILABLE:
+            executor = get_executor()
+            while True:
+                line = executor.get_scan_output(scan_id, timeout=1.0)
+                if line is None:
+                    result = executor.get_scan_result(scan_id)
+                    if result:
+                        yield f"data: {json.dumps({'type': 'complete', 'result': result})}\n\n"
+                    break
+                elif line:
+                    yield f"data: {json.dumps({'type': 'output', 'line': line})}\n\n"
+        else:
+            # No engine available - check database for completed scan
+            scan = Scan.query.get(scan_id)
+            if scan and scan.output:
+                for line in scan.output.split('\n'):
+                    yield f"data: {json.dumps({'type': 'output', 'line': line})}\n\n"
+                yield f"data: {json.dumps({'type': 'complete', 'result': {'status': scan.status, 'output': scan.output}})}\n\n"
+            else:
+                yield f"data: {json.dumps({'type': 'complete', 'result': {'status': 'failed', 'output': 'No scan engine available'}})}\n\n"
     
     return Response(generate(), mimetype='text/event-stream')
 
