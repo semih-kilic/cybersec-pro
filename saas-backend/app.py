@@ -4017,6 +4017,6 @@ if __name__ == '__main__':
     
     # Use socketio.run() if available for WebSocket support
     if socketio:
-        socketio.run(app, host='0.0.0.0', port=5001, debug=True)
+        socketio.run(app, host='0.0.0.0', port=5001, debug=False, use_reloader=False, log_output=True)
     else:
-        app.run(host='0.0.0.0', port=5001, debug=True)
+        app.run(host='0.0.0.0', port=5001, debug=False)
