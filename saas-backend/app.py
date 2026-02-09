@@ -1846,10 +1846,11 @@ def get_scan_output(scan_id):
             else:
                 yield f"data: {json.dumps({'type': 'complete', 'result': {'status': 'failed', 'output': 'No scan engine available'}})}\n\n"
     
-    return Response(generate(), mimetype='text/event-stream')
-
-
-@app.route('/api/v1/scan/<scan_id>/stop', methods=['POST'])
+    response = Response(generate(), mimetype='text/event-stream')
+    response.headers['Cache-Control'] = 'no-cache, no-store, must-revalidate'
+    response.headers['X-Accel-Buffering'] = 'no'
+    response.headers['Connection'] = 'keep-alive'
+    return response
 @require_organization
 def stop_scan(scan_id):
     """Stop a running scan"""
