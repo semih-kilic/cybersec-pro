@@ -100,7 +100,9 @@ export function ScanExecutionPage() {
         },
         (scanResult) => {
           setResult(scanResult);
-          setStatus(scanResult.status as 'completed' | 'failed');
+          const finalStatus = scanResult.status === 'timeout' ? 'failed' : scanResult.status;
+          setStatus(finalStatus as 'completed' | 'failed');
+          setProgress(100);
         }
       );
 
