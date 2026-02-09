@@ -650,32 +650,287 @@ export const toolConfigs: Record<string, ToolConfig> = {
   'aircrack-ng': aircrackConfig,
 };
 
+// ============================================================================
+// CATEGORY-BASED DEFAULT CONFIGS
+// For tools without specific configs, use category-appropriate parameters
+// ============================================================================
+
+const categoryConfigs: Record<string, ToolConfig> = {
+  'information_gathering': {
+    name: '',
+    category: 'Information Gathering',
+    description: 'Gather intelligence about the target',
+    parameters: [
+      { name: 'Target', flag: '', type: 'text', required: true, placeholder: 'target.com or 192.168.1.0/24', description: 'Target domain, IP, or network range', group: 'Target' },
+      { name: 'Output Format', flag: '-o', type: 'select', required: false, options: ['text', 'json', 'xml', 'csv'], description: 'Output format', group: 'Output' },
+      { name: 'Verbose', flag: '-v', type: 'boolean', required: false, description: 'Enable verbose output', group: 'Options' },
+      { name: 'Timeout', flag: '--timeout', type: 'number', required: false, placeholder: '30', description: 'Connection timeout (seconds)', group: 'Options' },
+      { name: 'Threads', flag: '-t', type: 'number', required: false, placeholder: '10', description: 'Number of concurrent threads', group: 'Performance' },
+    ],
+    scanModes: [
+      { name: 'quick', label: 'Quick Recon', description: 'Fast reconnaissance', params: {}, estimatedTime: '30s' },
+      { name: 'standard', label: 'Standard Recon', description: 'Normal information gathering', params: { Verbose: true }, estimatedTime: '2m' },
+      { name: 'deep', label: 'Deep Recon', description: 'Comprehensive information gathering', params: { Verbose: true, Threads: 20 }, estimatedTime: '10m' }
+    ],
+    examples: [],
+    documentation: ''
+  },
+
+  'vulnerability_analysis': {
+    name: '',
+    category: 'Vulnerability Analysis',
+    description: 'Scan for vulnerabilities',
+    parameters: [
+      { name: 'Target URL', flag: '', type: 'text', required: true, placeholder: 'https://target.com', description: 'Target URL or IP to scan', group: 'Target' },
+      { name: 'Port', flag: '-p', type: 'text', required: false, placeholder: '80,443,8080', description: 'Target ports', group: 'Target' },
+      { name: 'Severity', flag: '--severity', type: 'select', required: false, options: ['info', 'low', 'medium', 'high', 'critical'], description: 'Minimum severity level', group: 'Scan Options' },
+      { name: 'Output File', flag: '-o', type: 'text', required: false, placeholder: 'results.txt', description: 'Save results to file', group: 'Output' },
+      { name: 'Verbose', flag: '-v', type: 'boolean', required: false, description: 'Verbose output', group: 'Options' },
+      { name: 'Rate Limit', flag: '--rate', type: 'number', required: false, placeholder: '100', description: 'Requests per second', group: 'Performance' },
+    ],
+    scanModes: [
+      { name: 'quick', label: 'Quick Vuln Scan', description: 'Fast vulnerability check', params: { Severity: 'high' }, estimatedTime: '1m' },
+      { name: 'standard', label: 'Standard Scan', description: 'Normal vulnerability assessment', params: { Severity: 'medium', Verbose: true }, estimatedTime: '5m' },
+      { name: 'deep', label: 'Full Audit', description: 'Comprehensive vulnerability audit', params: { Severity: 'info', Verbose: true }, estimatedTime: '15m' }
+    ],
+    examples: [],
+    documentation: ''
+  },
+
+  'web_application': {
+    name: '',
+    category: 'Web Application Testing',
+    description: 'Test web application security',
+    parameters: [
+      { name: 'Target URL', flag: '', type: 'text', required: true, placeholder: 'https://target.com', description: 'Target web application URL', group: 'Target' },
+      { name: 'Port', flag: '-p', type: 'number', required: false, placeholder: '8080', description: 'Target port', group: 'Target' },
+      { name: 'Proxy', flag: '--proxy', type: 'text', required: false, placeholder: 'http://127.0.0.1:8080', description: 'HTTP proxy for intercepting', group: 'Proxy' },
+      { name: 'Authentication', flag: '--auth', type: 'text', required: false, placeholder: 'user:pass', description: 'HTTP authentication', group: 'Authentication' },
+      { name: 'Cookie', flag: '--cookie', type: 'text', required: false, placeholder: 'session=abc123', description: 'Session cookie', group: 'Authentication' },
+      { name: 'Threads', flag: '-t', type: 'number', required: false, placeholder: '5', description: 'Number of threads', group: 'Performance' },
+      { name: 'Verbose', flag: '-v', type: 'boolean', required: false, description: 'Verbose output', group: 'Options' },
+    ],
+    scanModes: [
+      { name: 'quick', label: 'Quick Web Scan', description: 'Fast web check', params: {}, estimatedTime: '1m' },
+      { name: 'standard', label: 'Standard Web Test', description: 'Normal web application testing', params: { Verbose: true }, estimatedTime: '5m' },
+      { name: 'deep', label: 'Full Web Audit', description: 'Deep web application penetration test', params: { Verbose: true, Threads: 10 }, estimatedTime: '20m' }
+    ],
+    examples: [],
+    documentation: ''
+  },
+
+  'exploitation': {
+    name: '',
+    category: 'Exploitation',
+    description: 'Exploit vulnerabilities in target systems',
+    parameters: [
+      { name: 'Target', flag: '', type: 'text', required: true, placeholder: '192.168.1.100', description: 'Target IP or hostname', group: 'Target' },
+      { name: 'Target Port', flag: '-p', type: 'number', required: false, placeholder: '4444', description: 'Target port', group: 'Target' },
+      { name: 'Payload', flag: '--payload', type: 'select', required: false, options: ['reverse_tcp', 'reverse_https', 'bind_tcp', 'meterpreter', 'shell'], description: 'Payload type', group: 'Payload' },
+      { name: 'LHOST', flag: '--lhost', type: 'text', required: false, placeholder: '10.0.0.1', description: 'Listener host (your IP)', group: 'Listener' },
+      { name: 'LPORT', flag: '--lport', type: 'number', required: false, placeholder: '4444', description: 'Listener port', group: 'Listener' },
+      { name: 'Platform', flag: '--platform', type: 'select', required: false, options: ['windows', 'linux', 'osx', 'android', 'php', 'python', 'java'], description: 'Target platform', group: 'Options' },
+    ],
+    scanModes: [
+      { name: 'quick', label: 'Quick Exploit', description: 'Fast exploitation attempt', params: {}, estimatedTime: '1m' },
+      { name: 'standard', label: 'Standard Exploit', description: 'Normal exploitation', params: {}, estimatedTime: '5m' },
+      { name: 'deep', label: 'Full Exploitation', description: 'Comprehensive exploitation with multiple payloads', params: {}, estimatedTime: '15m' }
+    ],
+    examples: [],
+    documentation: ''
+  },
+
+  'password_attacks': {
+    name: '',
+    category: 'Password Attacks',
+    description: 'Crack or brute-force passwords',
+    parameters: [
+      { name: 'Target', flag: '', type: 'text', required: true, placeholder: '192.168.1.100 or hash_file.txt', description: 'Target host or hash file', group: 'Target' },
+      { name: 'Username', flag: '-l', type: 'text', required: false, placeholder: 'admin', description: 'Username to attack', group: 'Credentials' },
+      { name: 'Username List', flag: '-L', type: 'text', required: false, placeholder: '/usr/share/wordlists/users.txt', description: 'Username wordlist file', group: 'Credentials' },
+      { name: 'Password List', flag: '-P', type: 'text', required: false, placeholder: '/usr/share/wordlists/rockyou.txt', description: 'Password wordlist', group: 'Wordlist' },
+      { name: 'Service', flag: '-s', type: 'select', required: false, options: ['ssh', 'ftp', 'http-get', 'http-post', 'smb', 'rdp', 'mysql', 'mssql', 'vnc', 'telnet'], description: 'Service protocol to attack', group: 'Service' },
+      { name: 'Port', flag: '-p', type: 'number', required: false, placeholder: '22', description: 'Target port', group: 'Target' },
+      { name: 'Threads', flag: '-t', type: 'number', required: false, placeholder: '16', description: 'Number of parallel tasks', group: 'Performance' },
+      { name: 'Verbose', flag: '-v', type: 'boolean', required: false, description: 'Show each attempt', group: 'Options' },
+    ],
+    scanModes: [
+      { name: 'quick', label: 'Quick Attack', description: 'Fast password check with top 100 passwords', params: { Threads: 4 }, estimatedTime: '1m' },
+      { name: 'standard', label: 'Standard Attack', description: 'Medium wordlist attack', params: { Threads: 16 }, estimatedTime: '10m' },
+      { name: 'deep', label: 'Full Attack', description: 'Comprehensive brute-force with large wordlist', params: { Threads: 32, Verbose: true }, estimatedTime: '60m' }
+    ],
+    examples: [],
+    documentation: ''
+  },
+
+  'wireless_attacks': {
+    name: '',
+    category: 'Wireless Attacks',
+    description: 'Attack wireless networks',
+    parameters: [
+      { name: 'Interface', flag: '-i', type: 'text', required: true, placeholder: 'wlan0', description: 'Wireless interface name', group: 'Interface' },
+      { name: 'BSSID', flag: '--bssid', type: 'text', required: false, placeholder: 'AA:BB:CC:DD:EE:FF', description: 'Target access point MAC', group: 'Target' },
+      { name: 'Channel', flag: '-c', type: 'number', required: false, placeholder: '6', description: 'Wireless channel', group: 'Target' },
+      { name: 'ESSID', flag: '--essid', type: 'text', required: false, placeholder: 'NetworkName', description: 'Target network SSID', group: 'Target' },
+      { name: 'Wordlist', flag: '-w', type: 'text', required: false, placeholder: '/usr/share/wordlists/rockyou.txt', description: 'Password wordlist', group: 'Wordlist' },
+      { name: 'Capture File', flag: '-r', type: 'text', required: false, placeholder: 'capture.cap', description: 'Packet capture file', group: 'Input' },
+    ],
+    scanModes: [
+      { name: 'quick', label: 'Quick Scan', description: 'Fast wireless scan', params: {}, estimatedTime: '30s' },
+      { name: 'standard', label: 'Standard Capture', description: 'Normal packet capture', params: {}, estimatedTime: '5m' },
+      { name: 'deep', label: 'Full Attack', description: 'Comprehensive wireless attack', params: {}, estimatedTime: '30m' }
+    ],
+    examples: [],
+    documentation: ''
+  },
+
+  'sniffing_spoofing': {
+    name: '',
+    category: 'Sniffing & Spoofing',
+    description: 'Capture and analyze network traffic',
+    parameters: [
+      { name: 'Interface', flag: '-i', type: 'text', required: true, placeholder: 'eth0', description: 'Network interface to capture on', group: 'Interface' },
+      { name: 'Filter', flag: '-f', type: 'text', required: false, placeholder: 'tcp port 80', description: 'Capture filter (BPF syntax)', group: 'Filter' },
+      { name: 'Target IP', flag: '--target', type: 'text', required: false, placeholder: '192.168.1.1', description: 'Target IP for spoofing', group: 'Target' },
+      { name: 'Packet Count', flag: '-c', type: 'number', required: false, placeholder: '1000', description: 'Number of packets to capture', group: 'Capture' },
+      { name: 'Output File', flag: '-w', type: 'text', required: false, placeholder: 'capture.pcap', description: 'Save capture to file', group: 'Output' },
+      { name: 'Verbose', flag: '-v', type: 'boolean', required: false, description: 'Verbose output', group: 'Options' },
+    ],
+    scanModes: [
+      { name: 'quick', label: 'Quick Capture', description: 'Capture 100 packets', params: { 'Packet Count': 100 }, estimatedTime: '30s' },
+      { name: 'standard', label: 'Standard Capture', description: 'Normal packet capture', params: { 'Packet Count': 1000, Verbose: true }, estimatedTime: '5m' },
+      { name: 'deep', label: 'Full Capture', description: 'Extended packet capture', params: { 'Packet Count': 10000, Verbose: true }, estimatedTime: '30m' }
+    ],
+    examples: [],
+    documentation: ''
+  },
+
+  'post_exploitation': {
+    name: '',
+    category: 'Post Exploitation',
+    description: 'Post-exploitation tools for persistence and lateral movement',
+    parameters: [
+      { name: 'Target', flag: '', type: 'text', required: true, placeholder: '192.168.1.100', description: 'Compromised target host', group: 'Target' },
+      { name: 'Username', flag: '-u', type: 'text', required: false, placeholder: 'admin', description: 'Compromised username', group: 'Credentials' },
+      { name: 'Password', flag: '-p', type: 'text', required: false, placeholder: 'password123', description: 'Compromised password', group: 'Credentials' },
+      { name: 'Domain', flag: '-d', type: 'text', required: false, placeholder: 'CORP.LOCAL', description: 'Domain name', group: 'Domain' },
+      { name: 'Module', flag: '-m', type: 'text', required: false, placeholder: 'privesc/check', description: 'Module to run', group: 'Module' },
+      { name: 'Verbose', flag: '-v', type: 'boolean', required: false, description: 'Verbose output', group: 'Options' },
+    ],
+    scanModes: [
+      { name: 'quick', label: 'Quick Enum', description: 'Fast post-exploitation enumeration', params: {}, estimatedTime: '1m' },
+      { name: 'standard', label: 'Standard Enum', description: 'Normal post-exploitation', params: { Verbose: true }, estimatedTime: '5m' },
+      { name: 'deep', label: 'Full Enum', description: 'Comprehensive post-exploitation', params: { Verbose: true }, estimatedTime: '15m' }
+    ],
+    examples: [],
+    documentation: ''
+  },
+
+  'forensics': {
+    name: '',
+    category: 'Forensics',
+    description: 'Digital forensics and incident response',
+    parameters: [
+      { name: 'Input File', flag: '', type: 'text', required: true, placeholder: '/path/to/image.dd or evidence.bin', description: 'Input file or disk image', group: 'Input' },
+      { name: 'Output Directory', flag: '-o', type: 'text', required: false, placeholder: './output', description: 'Output directory', group: 'Output' },
+      { name: 'File Type', flag: '-t', type: 'select', required: false, options: ['auto', 'raw', 'ewf', 'aff', 'vmdk'], description: 'Input file type', group: 'Input' },
+      { name: 'Carve Files', flag: '--carve', type: 'boolean', required: false, description: 'Enable file carving', group: 'Analysis' },
+      { name: 'Recursive', flag: '-r', type: 'boolean', required: false, description: 'Recursive analysis', group: 'Options' },
+      { name: 'Verbose', flag: '-v', type: 'boolean', required: false, description: 'Verbose output', group: 'Options' },
+    ],
+    scanModes: [
+      { name: 'quick', label: 'Quick Analysis', description: 'Fast forensic scan', params: {}, estimatedTime: '1m' },
+      { name: 'standard', label: 'Standard Analysis', description: 'Normal forensic analysis', params: { Verbose: true }, estimatedTime: '10m' },
+      { name: 'deep', label: 'Deep Analysis', description: 'Comprehensive forensic investigation', params: { 'Carve Files': true, Recursive: true, Verbose: true }, estimatedTime: '30m' }
+    ],
+    examples: [],
+    documentation: ''
+  },
+
+  'reverse_engineering': {
+    name: '',
+    category: 'Reverse Engineering',
+    description: 'Analyze and reverse engineer binaries',
+    parameters: [
+      { name: 'Input Binary', flag: '', type: 'text', required: true, placeholder: '/path/to/binary', description: 'Binary file to analyze', group: 'Input' },
+      { name: 'Architecture', flag: '-a', type: 'select', required: false, options: ['x86', 'x86_64', 'arm', 'arm64', 'mips'], description: 'Target architecture', group: 'Analysis' },
+      { name: 'Output Format', flag: '-f', type: 'select', required: false, options: ['asm', 'json', 'hex', 'raw'], description: 'Output format', group: 'Output' },
+      { name: 'Analyze All', flag: '-A', type: 'boolean', required: false, description: 'Full analysis (functions, strings, xrefs)', group: 'Analysis' },
+      { name: 'Strings', flag: '-z', type: 'boolean', required: false, description: 'Extract strings', group: 'Analysis' },
+      { name: 'Verbose', flag: '-v', type: 'boolean', required: false, description: 'Verbose output', group: 'Options' },
+    ],
+    scanModes: [
+      { name: 'quick', label: 'Quick Analysis', description: 'Fast binary overview', params: { Strings: true }, estimatedTime: '30s' },
+      { name: 'standard', label: 'Standard Analysis', description: 'Normal reverse engineering', params: { 'Analyze All': true }, estimatedTime: '5m' },
+      { name: 'deep', label: 'Deep Analysis', description: 'Comprehensive reverse engineering', params: { 'Analyze All': true, Verbose: true }, estimatedTime: '20m' }
+    ],
+    examples: [],
+    documentation: ''
+  },
+
+  'reporting': {
+    name: '',
+    category: 'Reporting',
+    description: 'Generate security reports',
+    parameters: [
+      { name: 'Input', flag: '', type: 'text', required: true, placeholder: 'scan_results.json or project_name', description: 'Input data or project', group: 'Input' },
+      { name: 'Format', flag: '-f', type: 'select', required: false, options: ['html', 'pdf', 'json', 'csv', 'xml'], description: 'Report format', group: 'Output' },
+      { name: 'Output File', flag: '-o', type: 'text', required: false, placeholder: 'report.html', description: 'Output file path', group: 'Output' },
+      { name: 'Template', flag: '--template', type: 'select', required: false, options: ['default', 'executive', 'technical', 'compliance'], description: 'Report template', group: 'Options' },
+    ],
+    scanModes: [
+      { name: 'quick', label: 'Quick Report', description: 'Fast summary report', params: { Format: 'text' }, estimatedTime: '10s' },
+      { name: 'standard', label: 'Standard Report', description: 'Normal detailed report', params: { Format: 'html' }, estimatedTime: '30s' },
+      { name: 'deep', label: 'Full Report', description: 'Comprehensive security report', params: { Format: 'pdf', Template: 'executive' }, estimatedTime: '2m' }
+    ],
+    examples: [],
+    documentation: ''
+  },
+
+  'networking': {
+    name: '',
+    category: 'Networking',
+    description: 'Network utilities and tools',
+    parameters: [
+      { name: 'Target', flag: '', type: 'text', required: true, placeholder: '192.168.1.100 or target.com', description: 'Target host or IP', group: 'Target' },
+      { name: 'Port', flag: '-p', type: 'number', required: false, placeholder: '4444', description: 'Port number', group: 'Connection' },
+      { name: 'Protocol', flag: '--protocol', type: 'select', required: false, options: ['tcp', 'udp', 'sctp'], description: 'Network protocol', group: 'Connection' },
+      { name: 'Listen Mode', flag: '-l', type: 'boolean', required: false, description: 'Listen for incoming connections', group: 'Mode' },
+      { name: 'Verbose', flag: '-v', type: 'boolean', required: false, description: 'Verbose output', group: 'Options' },
+      { name: 'Timeout', flag: '-w', type: 'number', required: false, placeholder: '5', description: 'Connection timeout (seconds)', group: 'Options' },
+    ],
+    scanModes: [
+      { name: 'quick', label: 'Quick Connect', description: 'Fast connection test', params: {}, estimatedTime: '10s' },
+      { name: 'standard', label: 'Standard Connection', description: 'Normal network operation', params: { Verbose: true }, estimatedTime: '1m' },
+      { name: 'deep', label: 'Full Network Test', description: 'Comprehensive network testing', params: { Verbose: true }, estimatedTime: '5m' }
+    ],
+    examples: [],
+    documentation: ''
+  },
+};
+
 /**
- * Get tool configuration by name/slug
- * Falls back to generic config if not found
+ * Get category-based config for a tool that doesn't have specific config
  */
-export function getToolConfig(toolName: string): ToolConfig {
-  const slug = toolName.toLowerCase().replace(/[^a-z0-9]/g, '');
-  
-  // First try exact match
-  if (toolConfigs[slug]) {
-    return toolConfigs[slug];
+function getCategoryConfig(toolName: string, category: string): ToolConfig {
+  const catConfig = categoryConfigs[category];
+  if (catConfig) {
+    return {
+      ...catConfig,
+      name: toolName,
+      description: `${toolName} - ${catConfig.description}`,
+      documentation: `# ${toolName}\n\n${catConfig.description}\n\nCategory: ${catConfig.category}\n\nConfigure the parameters below and run your scan.`
+    };
   }
-  
-  // Try partial match
-  for (const [key, config] of Object.entries(toolConfigs)) {
-    if (slug.includes(key) || key.includes(slug)) {
-      return config;
-    }
-  }
-  
-  // Return generic config
+  // Ultimate fallback
   return {
     name: toolName,
     category: 'Security Tools',
     description: `${toolName} security tool`,
     parameters: [
-      { name: 'Target', flag: '', type: 'text', required: true, placeholder: 'target.com', description: 'Target to scan', group: 'Target' }
+      { name: 'Target', flag: '', type: 'text', required: true, placeholder: 'target.com', description: 'Target to scan', group: 'Target' },
+      { name: 'Options', flag: '', type: 'text', required: false, placeholder: '--help', description: 'Additional command-line options', group: 'Options' },
+      { name: 'Verbose', flag: '-v', type: 'boolean', required: false, description: 'Enable verbose output', group: 'Options' },
     ],
     scanModes: [
       { name: 'quick', label: 'Quick Scan', description: 'Fast scan', params: {}, estimatedTime: '30s' },
@@ -685,6 +940,54 @@ export function getToolConfig(toolName: string): ToolConfig {
     examples: [],
     documentation: `# ${toolName}\n\nUse the parameters to configure your scan.`
   };
+}
+
+/**
+ * Get tool configuration by name/slug
+ * Uses category-based config if specific config not found
+ */
+export function getToolConfig(toolName: string, category?: string): ToolConfig {
+  const slug = toolName.toLowerCase().replace(/[^a-z0-9-]/g, '');
+  
+  // First try exact match
+  if (toolConfigs[slug]) {
+    return toolConfigs[slug];
+  }
+  
+  // Try with hyphens removed
+  const noHyphens = slug.replace(/-/g, '');
+  if (toolConfigs[noHyphens]) {
+    return toolConfigs[noHyphens];
+  }
+  
+  // Try partial match
+  for (const [key, config] of Object.entries(toolConfigs)) {
+    if (slug.includes(key) || key.includes(slug)) {
+      return config;
+    }
+  }
+  
+  // Use category-based config if category provided
+  if (category) {
+    return getCategoryConfig(toolName, category);
+  }
+  
+  // Try to infer category from tool name
+  const toolLower = toolName.toLowerCase();
+  if (toolLower.includes('sql') || toolLower.includes('inject')) return getCategoryConfig(toolName, 'web_application');
+  if (toolLower.includes('crack') || toolLower.includes('hash') || toolLower.includes('brute') || toolLower.includes('pass')) return getCategoryConfig(toolName, 'password_attacks');
+  if (toolLower.includes('wifi') || toolLower.includes('wlan') || toolLower.includes('air') || toolLower.includes('wireless')) return getCategoryConfig(toolName, 'wireless_attacks');
+  if (toolLower.includes('exploit') || toolLower.includes('payload') || toolLower.includes('shell') || toolLower.includes('msf')) return getCategoryConfig(toolName, 'exploitation');
+  if (toolLower.includes('wireshark') || toolLower.includes('sniff') || toolLower.includes('spoof') || toolLower.includes('tcpdump') || toolLower.includes('arp')) return getCategoryConfig(toolName, 'sniffing_spoofing');
+  if (toolLower.includes('forensic') || toolLower.includes('carv') || toolLower.includes('autops')) return getCategoryConfig(toolName, 'forensics');
+  if (toolLower.includes('reverse') || toolLower.includes('disasm') || toolLower.includes('decompil') || toolLower.includes('radare') || toolLower.includes('ghidra')) return getCategoryConfig(toolName, 'reverse_engineering');
+  if (toolLower.includes('vuln') || toolLower.includes('nuclei') || toolLower.includes('openvas')) return getCategoryConfig(toolName, 'vulnerability_analysis');
+  if (toolLower.includes('web') || toolLower.includes('burp') || toolLower.includes('zap') || toolLower.includes('proxy')) return getCategoryConfig(toolName, 'web_application');
+  if (toolLower.includes('net') || toolLower.includes('tcp') || toolLower.includes('udp') || toolLower.includes('socat')) return getCategoryConfig(toolName, 'networking');
+  if (toolLower.includes('recon') || toolLower.includes('enum') || toolLower.includes('scan') || toolLower.includes('discover')) return getCategoryConfig(toolName, 'information_gathering');
+  
+  // Default: return generic information gathering (most common)
+  return getCategoryConfig(toolName, 'information_gathering');
 }
 
 /**

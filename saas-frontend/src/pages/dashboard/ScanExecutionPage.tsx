@@ -3,13 +3,16 @@ import { useParams, useSearchParams } from 'react-router-dom';
 import { Header } from '../../components/layout/Header';
 import api, { ScanResult, ToolConfig } from '../../services/api';
 import { useScanSubscription } from '../../hooks/useWebSocket';
+import { useTarget } from '../../contexts/TargetContext';
 
 export function ScanExecutionPage() {
-  const { scanId } = useParams<{ scanId: string }>();
+  const { scanId, toolId: routeToolId } = useParams<{ scanId: string; toolId: string }>();
   const [searchParams] = useSearchParams();
+  const { target: globalTarget, addRecentTarget: addGlobalTarget } = useTarget();
   
   const [tool, setTool] = useState<ToolConfig | null>(null);
-  const [target, setTarget] = useState(searchParams.get('target') || '');
+  // Use target from URL params first, then global context
+  const [target, setTarget] = useState(searchParams.get('target') || globalTarget || '');
   const [parameters, setParameters] = useState<Record<string, string | number | boolean>>(() => {
     // Try to parse parameters from URL
     const paramsStr = searchParams.get('params');
@@ -31,7 +34,8 @@ export function ScanExecutionPage() {
   const [progress, setProgress] = useState(0);
   
   const outputRef = useRef<HTMLDivElement>(null);
-  const toolId = searchParams.get('tool') || 'nmap';
+  // Priority: route param (:toolId) > query param (?tool=) > never default to nmap
+  const toolId = routeToolId || searchParams.get('tool') || '';
   
   // WebSocket subscription for real-time updates
   const ws = useScanSubscription(status === 'running' ? currentScanId : null);
@@ -116,6 +120,9 @@ export function ScanExecutionPage() {
       setError('Target is required');
       return;
     }
+
+    // Save target to global context for cross-tool persistence
+    addGlobalTarget(target);
 
     setError(null);
     setOutput([]);

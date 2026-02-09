@@ -8,6 +8,9 @@ import { AuthProvider, useAuth } from './hooks/useAuth';
 // Layout
 import { Sidebar } from './components/layout/Sidebar';
 
+// Global Context
+import { TargetProvider } from './contexts/TargetContext';
+
 // Pages
 import { LandingPage } from './pages/LandingPage';
 import { LoginPage } from './pages/LoginPage';
@@ -91,14 +94,16 @@ function PublicRoute({ children }: { children: React.ReactNode }) {
 // Dashboard Layout with Sidebar
 function DashboardLayout() {
   return (
-    <div className="flex min-h-screen bg-gray-950">
-      <Sidebar />
-      <main className="flex-1 ml-64 overflow-auto">
-        <Suspense fallback={<LoadingSpinner />}>
-          <Outlet />
-        </Suspense>
-      </main>
-    </div>
+    <TargetProvider>
+      <div className="flex min-h-screen bg-gray-950">
+        <Sidebar />
+        <main className="flex-1 ml-64 overflow-auto">
+          <Suspense fallback={<LoadingSpinner />}>
+            <Outlet />
+          </Suspense>
+        </main>
+      </div>
+    </TargetProvider>
   );
 }
 

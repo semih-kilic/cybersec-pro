@@ -3,8 +3,9 @@ import { useParams, useNavigate, Link } from 'react-router-dom';
 import { Header } from '../../components/layout/Header';
 import { useAuth } from '../../hooks/useAuth';
 import { getToolConfig, getSmartDefaults, ToolConfig } from '../../config/toolConfigs';
+import { useTarget } from '../../contexts/TargetContext';
 
-// Target Memory - store last 10 targets
+// Target Memory - now uses global TargetContext for cross-tool persistence
 const TARGET_STORAGE_KEY = 'cybersec_recent_targets';
 
 function getRecentTargets(): string[] {
@@ -59,6 +60,7 @@ export function ToolDetailPage() {
   const { toolId } = useParams<{ toolId: string }>();
   const navigate = useNavigate();
   const { token: _token } = useAuth();
+  const { target: globalTarget, addRecentTarget: addGlobalTarget } = useTarget();
   const [tool, setTool] = useState<Tool | null>(null);
   const [loading, setLoading] = useState(true);
   const [paramValues, setParamValues] = useState<{ [key: string]: string | number | boolean }>({});
@@ -69,16 +71,28 @@ export function ToolDetailPage() {
   const [recentTargets, setRecentTargets] = useState<string[]>([]);
   const [showTargetDropdown, setShowTargetDropdown] = useState(false);
   const [toolConfig, setToolConfig] = useState<ToolConfig | null>(null);
+  const [toolCategory, setToolCategory] = useState<string>('');
 
   useEffect(() => {
     setRecentTargets(getRecentTargets());
     fetchTool();
   }, [toolId]);
 
+  // Auto-fill target from global context when tool changes
+  useEffect(() => {
+    if (globalTarget && tool) {
+      const params = getNormalizedParams();
+      const targetParam = params.find(p => p.required && (p.name.toLowerCase().includes('target') || p.name.toLowerCase().includes('host') || p.name.toLowerCase().includes('url') || p.name.toLowerCase().includes('domain') || p.name.toLowerCase().includes('input'))) || params.find(p => p.required);
+      if (targetParam && !paramValues[targetParam.name]) {
+        setParamValues(prev => ({ ...prev, [targetParam.name]: globalTarget }));
+      }
+    }
+  }, [globalTarget, tool]);
+
   useEffect(() => {
     if (tool && toolId) {
-      // Load smart config for this tool
-      const config = getToolConfig(toolId);
+      // Load smart config for this tool, using category info
+      const config = getToolConfig(toolId, toolCategory || undefined);
       setToolConfig(config);
       
       // Initialize with empty target, user can select from dropdown
@@ -88,6 +102,19 @@ export function ToolDetailPage() {
 
   const fetchTool = async () => {
     try {
+      // First fetch category info from V2 API (always has data for all 682 tools)
+      let category = '';
+      try {
+        const v2Res = await fetch(`/api/v2/tools/${toolId}`);
+        if (v2Res.ok) {
+          const v2Data = await v2Res.json();
+          if (v2Data.success && v2Data.tool) {
+            category = v2Data.tool.category || '';
+            setToolCategory(category);
+          }
+        }
+      } catch { /* V2 API optional */ }
+
       // Fetch tool configuration from API
       const res = await fetch(`/api/v1/tools/${toolId}/config`, {
         headers: { 'Authorization': `Bearer ${localStorage.getItem('token') || ''}` },
@@ -96,15 +123,19 @@ export function ToolDetailPage() {
       if (res.ok) {
         const data = await res.json();
         setTool(data.tool);
+        // Also set category if not already set
+        if (!category && data.tool?.category) {
+          setToolCategory(data.tool.category);
+        }
       } else {
-        // Use smart config system for fallback
-        const config = getToolConfig(toolId || '');
+        // Use smart config system with category for better fallback
+        const config = getToolConfig(toolId || '', category || undefined);
         const fallbackTool: Tool = {
           id: toolId || '',
           name: config.name || toolId?.toUpperCase() || '',
           slug: toolId || '',
           description: config.description,
-          category: config.category,
+          category: category || config.category,
           plan_required: 'starter',
           is_active: true,
           parameters: config.parameters,
@@ -116,14 +147,14 @@ export function ToolDetailPage() {
       }
     } catch (error) {
       console.error('Failed to fetch tool:', error);
-      // Use smart config system
-      const config = getToolConfig(toolId || '');
+      // Use smart config system with category
+      const config = getToolConfig(toolId || '', toolCategory || undefined);
       const fallbackTool: Tool = {
         id: toolId || '',
         name: config.name || toolId?.toUpperCase() || '',
         slug: toolId || '',
         description: config.description,
-        category: config.category,
+        category: toolCategory || config.category,
         plan_required: 'starter',
         is_active: true,
         parameters: config.parameters,
@@ -195,7 +226,7 @@ export function ToolDetailPage() {
   const handleQuickScan = (mode: 'quick' | 'standard' | 'deep') => {
     // Get the target from paramValues
     const params = getNormalizedParams();
-    const targetParam = params.find(p => p.required && (p.name.toLowerCase().includes('target') || p.name.toLowerCase().includes('host') || p.name.toLowerCase().includes('url') || p.name.toLowerCase().includes('domain'))) || params.find(p => p.required);
+    const targetParam = params.find(p => p.required && (p.name.toLowerCase().includes('target') || p.name.toLowerCase().includes('host') || p.name.toLowerCase().includes('url') || p.name.toLowerCase().includes('domain') || p.name.toLowerCase().includes('input'))) || params.find(p => p.required);
     const scanTarget = targetParam ? (paramValues[targetParam.name] as string) || '' : '';
     
     if (!scanTarget) {
@@ -203,7 +234,8 @@ export function ToolDetailPage() {
       return;
     }
     
-    // Save target to memory
+    // Save target to global context + local memory
+    addGlobalTarget(scanTarget);
     addRecentTarget(scanTarget);
     setRecentTargets(getRecentTargets());
     
@@ -225,11 +257,12 @@ export function ToolDetailPage() {
   const handleRunScan = () => {
     // Find the target value from parameters (first required parameter)
     const params = getNormalizedParams();
-    const targetParam = params.find(p => p.required && (p.name.toLowerCase().includes('target') || p.name.toLowerCase().includes('host') || p.name.toLowerCase().includes('url') || p.name.toLowerCase().includes('domain'))) || params.find(p => p.required);
+    const targetParam = params.find(p => p.required && (p.name.toLowerCase().includes('target') || p.name.toLowerCase().includes('host') || p.name.toLowerCase().includes('url') || p.name.toLowerCase().includes('domain') || p.name.toLowerCase().includes('input'))) || params.find(p => p.required);
     const scanTarget = targetParam ? (paramValues[targetParam.name] as string) || '' : '';
     
-    // Save target to memory
+    // Save target to global context + local memory
     if (scanTarget) {
+      addGlobalTarget(scanTarget);
       addRecentTarget(scanTarget);
       setRecentTargets(getRecentTargets());
     }
