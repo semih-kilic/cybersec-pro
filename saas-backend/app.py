@@ -2075,15 +2075,24 @@ def start_scan_v2():
         if not target:
             return jsonify({'error': 'target is required'}), 400
         
-        # Validate target (basic check)
+        # Validate target (flexible check)
         import re
-        ip_pattern = r'^(\d{1,3}\.){3}\d{1,3}$'
+        ip_pattern = r'^(\d{1,3}\.){3}\d{1,3}(/\d{1,2})?$'
         domain_pattern = r'^[a-zA-Z0-9][-a-zA-Z0-9]*(\.[a-zA-Z0-9][-a-zA-Z0-9]*)+$'
+        url_pattern = r'^https?://'
         
-        if not (re.match(ip_pattern, target) or re.match(domain_pattern, target)):
+        # Tools that accept keywords/search terms/file paths instead of IP/domain
+        keyword_tools = {'searchsploit', 'john', 'hashcat', 'crunch', 'strings', 'binwalk',
+                         'foremost', 'exiftool', 'checksec', 'objdump', 'strace', 'ltrace',
+                         'volatility', 'aircrack-ng', 'lynis', 'msfconsole'}
+        
+        tool_lower = (tool_identifier or '').lower()
+        is_keyword_tool = tool_lower in keyword_tools
+        
+        if not is_keyword_tool and not (re.match(ip_pattern, target) or re.match(domain_pattern, target) or re.match(url_pattern, target)):
             return jsonify({
                 'error': 'Invalid target format',
-                'hint': 'Enter a valid IP address (e.g., 8.8.8.8) or domain (e.g., example.com)'
+                'hint': 'Enter a valid IP address (e.g., 8.8.8.8), CIDR (e.g., 10.0.0.0/24), domain (e.g., example.com), or URL (e.g., http://example.com)'
             }), 400
         
         # Block private/local IPs in production

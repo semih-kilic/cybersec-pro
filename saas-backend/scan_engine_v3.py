@@ -620,8 +620,9 @@ class ScanEngineV3:
         if ports:
             cmd.extend(['-p', str(ports)])
         
-        # Service version detection
-        if params.get('service_version', True):
+        # Service version detection (skip if scan_type already includes sV)
+        scan_type_raw = params.get('scan_type', 'S')
+        if params.get('service_version', True) and 'sV' not in scan_type_raw and 'V' not in scan_type_raw:
             cmd.append('-sV')
         
         # OS detection (requires root)
@@ -636,7 +637,12 @@ class ScanEngineV3:
         # Scan type
         scan_type = params.get('scan_type', 'S')
         if scan_type:
-            cmd.append(f'-s{scan_type}')
+            # Handle both formats: '-sV', 'sV', 'S', '-sS'
+            scan_type = scan_type.lstrip('-')
+            if scan_type.startswith('s'):
+                cmd.append(f'-{scan_type}')
+            else:
+                cmd.append(f'-s{scan_type}')
         
         # Target goes last
         cmd.append(target)
