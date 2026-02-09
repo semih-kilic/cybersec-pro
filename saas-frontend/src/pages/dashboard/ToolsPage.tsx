@@ -321,7 +321,7 @@ export function ToolsPage() {
               ].map((tool) => (
                 <Link 
                   key={tool.id}
-                  to={`/dashboard/scans/new?tool=${tool.id}`}
+                  to={`/dashboard/tools/${tool.id}`}
                   className="bg-gray-800/60 hover:bg-emerald-900/40 border border-gray-700 hover:border-emerald-500/50 rounded-lg p-3 text-center transition group"
                 >
                   <div className="text-xl mb-1">{tool.icon}</div>
@@ -556,18 +556,10 @@ export function ToolsPage() {
                             ) : (
                               <>
                                 <Link 
-                                  to={`/dashboard/scans/new?tool=${tool.id}`}
+                                  to={`/dashboard/tools/${tool.id}`}
                                   className="flex-1 py-2 bg-kali-blue hover:bg-kali-blue/90 text-white text-center rounded-lg text-sm font-medium transition"
                                 >
-                                  {tool.requires_root ? '🔐 Run as Root' : 'Run Scan'}
-                                </Link>
-                                <Link 
-                                  to={`/dashboard/tools/${tool.id}`}
-                                  className="px-3 py-2 bg-gray-800 hover:bg-gray-700 text-white rounded-lg text-sm transition"
-                                >
-                                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                                  </svg>
+                                  {tool.requires_root ? '🔐 Run as Root' : '⚡ Run Tool'}
                                 </Link>
                               </>
                             )
@@ -632,7 +624,7 @@ export function ToolsPage() {
                           <div className="flex gap-2">
                             {canUse ? (
                               <Link 
-                                to={`/dashboard/scans/new?tool=${tool.id}`}
+                                to={`/dashboard/tools/${tool.id}`}
                                 className="px-3 py-1.5 bg-kali-blue hover:bg-kali-blue/90 text-white rounded text-sm transition"
                               >
                                 Run
