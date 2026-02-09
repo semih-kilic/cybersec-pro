@@ -44,6 +44,17 @@ export function ScanExecutionPage() {
     fetchToolConfig();
   }, [toolId]);
 
+  // Auto-start scan when coming from ToolDetailPage with target pre-filled
+  const autoStartedRef = useRef(false);
+  useEffect(() => {
+    if (!autoStartedRef.current && target && toolId && status === 'idle' && searchParams.get('target')) {
+      autoStartedRef.current = true;
+      // Small delay to allow tool config to load
+      const timer = setTimeout(() => handleStartScan(), 500);
+      return () => clearTimeout(timer);
+    }
+  }, [target, toolId, status]);
+
   useEffect(() => {
     // Auto-scroll output
     if (outputRef.current) {

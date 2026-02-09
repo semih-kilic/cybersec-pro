@@ -1759,6 +1759,31 @@ def get_scan_output(scan_id):
                 if job:
                     # Use V3 engine for output streaming
                     import time
+                    from scan_engine_v3 import ScanStatus
+                    
+                    # If scan already completed (fast tools like dig, whois),
+                    # serve from output_buffer instead of queue
+                    if job.status in (ScanStatus.COMPLETED, ScanStatus.FAILED, ScanStatus.TIMEOUT, ScanStatus.CANCELLED):
+                        # Send all buffered output
+                        for line in job.output_buffer:
+                            if line:
+                                yield f"data: {json.dumps({'type': 'output', 'line': line.rstrip()})}\n\n"
+                        
+                        # Build result from job
+                        findings_list = []
+                        if job.result and job.result.findings:
+                            findings_list = [{'port': f.port, 'service': f.service, 'state': f.state, 'severity': f.severity, 'title': f.title} for f in job.result.findings]
+                        
+                        result = {
+                            'status': job.status.value,
+                            'output': '\n'.join(job.output_buffer),
+                            'exit_code': job.exit_code,
+                            'findings': findings_list
+                        }
+                        yield f"data: {json.dumps({'type': 'complete', 'result': result})}\n\n"
+                        return
+                    
+                    # Scan still running — stream from queue in real-time
                     max_wait = 300  # 5 min max
                     start = time.time()
                     while time.time() - start < max_wait:
@@ -1770,7 +1795,6 @@ def get_scan_output(scan_id):
                             pass
                         
                         # Check if scan finished
-                        from scan_engine_v3 import ScanStatus
                         if job.status in (ScanStatus.COMPLETED, ScanStatus.FAILED, ScanStatus.TIMEOUT, ScanStatus.CANCELLED):
                             # Drain remaining output
                             while not job.output_queue.empty():
@@ -1781,11 +1805,15 @@ def get_scan_output(scan_id):
                                 except Exception:
                                     break
                             
+                            findings_list = []
+                            if job.result and job.result.findings:
+                                findings_list = [{'port': f.port, 'service': f.service, 'state': f.state, 'severity': f.severity, 'title': f.title} for f in job.result.findings]
+                            
                             result = {
                                 'status': job.status.value,
                                 'output': '\n'.join(job.output_buffer),
                                 'exit_code': job.exit_code,
-                                'findings': job.findings
+                                'findings': findings_list
                             }
                             yield f"data: {json.dumps({'type': 'complete', 'result': result})}\n\n"
                             return
