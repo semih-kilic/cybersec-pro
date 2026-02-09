@@ -45,6 +45,11 @@ class ApiService {
         headers,
       });
 
+      const contentType = response.headers.get('content-type') || '';
+      if (!contentType.includes('application/json')) {
+        return { error: 'Server returned non-JSON response. The backend may be unavailable.' };
+      }
+
       const data = await response.json();
 
       if (!response.ok) {

@@ -643,157 +643,334 @@ class ScanEngineV3:
         
         return cmd
     
+    # Tools that are NOT CLI scanners - they're frameworks, GUIs, or script collections
+    # These need special handling or emulation
+    NON_SCANNER_TOOLS = {
+        'nishang', 'powersploit', 'empire', 'starkiller', 'covenant',
+        'burpsuite', 'wireshark', 'maltego', 'armitage', 'cobalt-strike',
+        'metasploit', 'autopsy', 'ghidra', 'binary-ninja', 'cutter', 'ida',
+        'radare2', 'bloodhound', 'faraday', 'dradis', 'magictree',
+        'cherrytree', 'keepnote', 'serpico', 'recordmydesktop',
+        'king-phisher', 'gophish', 'beef-xss', 'evilginx2',
+        'social-engineering-toolkit', 'set', 'httrack',
+        'GTFOBins', 'LOLBASProject', 'WADComs', 'PEASS-ng',
+        'airgeddon', 'wifite', 'fluxion', 'linpeas', 'winpeas',
+    }
+
+    # Tools that accept a target as first argument: tool <target>
+    SIMPLE_TARGET_TOOLS = {
+        'whois', 'host', 'nslookup', 'sslscan', 'ping',
+        'traceroute', 'arping', 'nbtscan', 'onesixtyone',
+        'swaks', 'smtp-user-enum', 'amap', 'xprobe2',
+    }
+    
+    # Tools that use -h/-host for target
+    DASH_H_TARGET_TOOLS = {
+        'nikto', 'fierce',
+    }
+    
+    # Tools that use -u/-url for target
+    DASH_U_TARGET_TOOLS = {
+        'sqlmap', 'wpscan', 'commix', 'xsser', 'arjun',
+        'paramspider', 'hakrawler',
+    }
+
     def build_command(self, tool_name: str, target: str, params: Dict[str, Any]) -> List[str]:
-        """Build command for any tool"""
-        tool_lower = tool_name.lower()
+        """Build command for any Kali tool with intelligent parameter handling"""
+        tool_lower = tool_name.lower().replace('-', '_')
+        tool_original = tool_name.lower()
         # Normalize params for all tools
         params = self.normalize_params(params)
         
         if tool_lower == 'nmap':
             return self.build_nmap_command(target, params)
-        elif tool_lower == 'whois':
+        elif tool_original == 'whois':
             return ['whois', target]
-        elif tool_lower == 'dig':
+        elif tool_original == 'dig':
             record_type = params.get('record_type', 'A')
             cmd = ['dig', target, record_type]
             if params.get('short', False):
                 cmd.append('+short')
             return cmd
-        elif tool_lower == 'host':
+        elif tool_original == 'host':
             return ['host', target]
-        elif tool_lower == 'nslookup':
+        elif tool_original == 'nslookup':
             return ['nslookup', target]
-        elif tool_lower == 'sslscan':
+        elif tool_original == 'sslscan':
             return ['sslscan', target]
-        elif tool_lower == 'whatweb':
+        elif tool_original == 'whatweb':
             aggression = params.get('aggression', '1')
             return ['whatweb', f'-a{aggression}', target]
-        elif tool_lower == 'nikto':
-            # Build nikto command with all supported parameters
+        
+        # --- INFORMATION GATHERING ---
+        elif tool_original in ('dnsrecon', 'dns-recon'):
+            cmd = ['dnsrecon', '-d', target]
+            scan_type = params.get('type', 'std')
+            if scan_type:
+                cmd.extend(['-t', scan_type])
+            return cmd
+        elif tool_original == 'dnsenum':
+            return ['dnsenum', target]
+        elif tool_original == 'fierce':
+            return ['fierce', '--domain', target]
+        elif tool_original == 'theharvester':
+            source = params.get('source', 'all')
+            limit = params.get('limit', '100')
+            return ['theHarvester', '-d', target, '-b', source, '-l', str(limit)]
+        elif tool_original == 'amass':
+            mode = params.get('mode', 'enum')
+            cmd = ['amass', mode, '-d', target]
+            if params.get('passive', False):
+                cmd.append('-passive')
+            return cmd
+        elif tool_original == 'subfinder':
+            return ['subfinder', '-d', target, '-silent']
+        elif tool_original == 'assetfinder':
+            return ['assetfinder', '--subs-only', target]
+        elif tool_original == 'sublist3r':
+            return ['sublist3r', '-d', target]
+        elif tool_original == 'masscan':
+            ports = params.get('ports', '1-1000')
+            rate = params.get('rate', '1000')
+            return ['masscan', target, '-p', str(ports), '--rate', str(rate)]
+        elif tool_original == 'httpx':
+            return ['echo', target, '|', 'httpx', '-silent']
+        elif tool_original == 'nuclei':
+            cmd = ['nuclei', '-u', target]
+            templates = params.get('templates', '')
+            if templates:
+                cmd.extend(['-t', templates])
+            severity = params.get('severity', '')
+            if severity:
+                cmd.extend(['-severity', severity])
+            return cmd
+        elif tool_original == 'wafw00f':
+            return ['wafw00f', target]
+        elif tool_original == 'censys-cli':
+            return ['censys', 'search', target]
+        elif tool_original == 'shodan':
+            return ['shodan', 'host', target]
+        elif tool_original == 'dmitry':
+            return ['dmitry', '-winsepfb', target]
+        elif tool_original == 'enum4linux':
+            return ['enum4linux', '-a', target]
+        elif tool_original == 'snmpwalk':
+            community = params.get('community', 'public')
+            return ['snmpwalk', '-v2c', '-c', community, target]
+        elif tool_original == 'snmp-check':
+            return ['snmp-check', target]
+        elif tool_original == 'nbtscan':
+            return ['nbtscan', target]
+        elif tool_original == 'arp-scan':
+            return ['arp-scan', target]
+        
+        # --- WEB APPLICATION TOOLS ---
+        elif tool_original == 'nikto':
             cmd = ['nikto', '-h', target]
-            
-            # Port (default 80)
             port = params.get('port', '80')
             if port:
                 cmd.extend(['-p', str(port)])
-            
-            # SSL mode
             if params.get('ssl', False):
                 cmd.append('-ssl')
-            
-            # Tuning options (scan type)
             tuning = params.get('tuning', '')
             if tuning:
                 cmd.extend(['-Tuning', tuning])
-            
-            # Plugins
-            plugins = params.get('plugins', '')
-            if plugins:
-                cmd.extend(['-Plugins', plugins])
-            
-            # Output format
-            output_format = params.get('format', 'txt')
-            if output_format and output_format != 'txt':
-                cmd.extend(['-Format', output_format])
-            
-            # Timeout
-            timeout_val = params.get('timeout', '')
-            if timeout_val:
-                cmd.extend(['-timeout', str(timeout_val)])
-            
-            # User agent
-            user_agent = params.get('user_agent', '')
-            if user_agent:
-                cmd.extend(['-useragent', user_agent])
-            
-            # No 404
-            if params.get('no404', False):
-                cmd.append('-no404')
-            
             return cmd
-        elif tool_lower == 'gobuster':
-            # Build gobuster command with all supported parameters
+        elif tool_original == 'gobuster':
             mode = params.get('mode', 'dir')
             cmd = ['gobuster', mode]
-            
-            # URL target
-            cmd.extend(['-u', target if target.startswith(('http://', 'https://')) else f'http://{target}'])
-            
-            # Wordlist (required)
+            url = target if target.startswith(('http://', 'https://')) else f'http://{target}'
+            cmd.extend(['-u', url])
             wordlist = params.get('wordlist', '/usr/share/wordlists/dirb/common.txt')
             cmd.extend(['-w', wordlist])
-            
-            # Extensions
             extensions = params.get('extensions', '')
             if extensions:
                 cmd.extend(['-x', extensions])
-            
-            # Threads
             threads = params.get('threads', '')
             if threads:
                 cmd.extend(['-t', str(threads)])
-            
-            # Status codes to include
-            status_codes = params.get('status_codes', '')
-            if status_codes:
-                cmd.extend(['-s', status_codes])
-            
-            # No TLS verify
-            if params.get('no_tls_verify', False):
-                cmd.append('-k')
-            
-            # Follow redirects
-            if params.get('follow_redirect', False):
-                cmd.append('-r')
-            
-            # User agent
-            user_agent = params.get('user_agent', '')
-            if user_agent:
-                cmd.extend(['-a', user_agent])
-            
-            # Cookie
-            cookie = params.get('cookie', '')
-            if cookie:
-                cmd.extend(['-c', cookie])
-            
-            # Verbose
-            if params.get('verbose', False):
-                cmd.append('-v')
-            
             return cmd
-        elif tool_lower == 'sqlmap':
-            # Build sqlmap command
-            cmd = ['sqlmap', '-u', target]
-            
-            # Level
+        elif tool_original == 'dirb':
+            url = target if target.startswith(('http://', 'https://')) else f'http://{target}'
+            wordlist = params.get('wordlist', '/usr/share/wordlists/dirb/common.txt')
+            return ['dirb', url, wordlist]
+        elif tool_original == 'dirsearch':
+            url = target if target.startswith(('http://', 'https://')) else f'http://{target}'
+            return ['dirsearch', '-u', url, '-e', params.get('extensions', 'php,html,js')]
+        elif tool_original == 'ffuf':
+            url = target if target.startswith(('http://', 'https://')) else f'http://{target}'
+            wordlist = params.get('wordlist', '/usr/share/wordlists/dirb/common.txt')
+            return ['ffuf', '-u', f'{url}/FUZZ', '-w', wordlist]
+        elif tool_original == 'wpscan':
+            url = target if target.startswith(('http://', 'https://')) else f'http://{target}'
+            cmd = ['wpscan', '--url', url]
+            if params.get('enumerate', ''):
+                cmd.extend(['--enumerate', params['enumerate']])
+            cmd.append('--no-banner')
+            return cmd
+        elif tool_original == 'sqlmap':
+            cmd = ['sqlmap', '-u', target, '--batch']
             level = params.get('level', '')
             if level:
                 cmd.extend(['--level', str(level)])
-            
-            # Risk
             risk = params.get('risk', '')
             if risk:
                 cmd.extend(['--risk', str(risk)])
-            
-            # Batch mode (non-interactive)
-            cmd.append('--batch')
-            
-            # Database enumeration
-            if params.get('database', False) or params.get('dbs', False):
+            if params.get('dbs', False):
                 cmd.append('--dbs')
-            if params.get('tables', False):
-                cmd.append('--tables')
-            if params.get('dump', False):
-                cmd.append('--dump')
-            
-            # Random agent
-            if params.get('random_agent', False):
-                cmd.append('--random-agent')
-            
             return cmd
+        elif tool_original == 'commix':
+            url = target if target.startswith(('http://', 'https://')) else f'http://{target}'
+            return ['commix', '--url', url, '--batch']
+        elif tool_original == 'xsser':
+            url = target if target.startswith(('http://', 'https://')) else f'http://{target}'
+            return ['xsser', '-u', url, '--auto']
+        elif tool_original == 'arjun':
+            url = target if target.startswith(('http://', 'https://')) else f'http://{target}'
+            return ['arjun', '-u', url]
+        elif tool_original == 'curl':
+            url = target if target.startswith(('http://', 'https://')) else f'http://{target}'
+            cmd = ['curl', '-sIL', url]
+            return cmd
+        elif tool_original == 'wget':
+            url = target if target.startswith(('http://', 'https://')) else f'http://{target}'
+            return ['wget', '--spider', '-S', url]
+
+        # --- VULNERABILITY ANALYSIS ---
+        elif tool_original == 'openvas':
+            return ['gvm-cli', 'socket', '--xml', f'<create_target><name>{target}</name><hosts>{target}</hosts></create_target>']
+        elif tool_original == 'lynis':
+            return ['lynis', 'audit', 'system', '--quick']
+        elif tool_original == 'skipfish':
+            url = target if target.startswith(('http://', 'https://')) else f'http://{target}'
+            return ['skipfish', '-o', '/tmp/skipfish-out', url]
+        elif tool_original == 'wapiti':
+            url = target if target.startswith(('http://', 'https://')) else f'http://{target}'
+            return ['wapiti', '-u', url, '-f', 'txt']
+        elif tool_original == 'arachni':
+            url = target if target.startswith(('http://', 'https://')) else f'http://{target}'
+            return ['arachni', url]
+        
+        # --- PASSWORD ATTACKS ---
+        elif tool_original == 'hydra':
+            service = params.get('service', 'ssh')
+            userlist = params.get('userlist', '/usr/share/wordlists/metasploit/unix_users.txt')
+            passlist = params.get('passlist', '/usr/share/wordlists/rockyou.txt')
+            cmd = ['hydra', '-L', userlist, '-P', passlist, target, service]
+            port = params.get('port', '')
+            if port:
+                cmd.extend(['-s', str(port)])
+            threads = params.get('threads', '4')
+            cmd.extend(['-t', str(threads)])
+            return cmd
+        elif tool_original == 'john':
+            hashfile = params.get('hashfile', target)
+            cmd = ['john', hashfile]
+            wordlist = params.get('wordlist', '')
+            if wordlist:
+                cmd.extend(['--wordlist', wordlist])
+            return cmd
+        elif tool_original == 'hashcat':
+            hashfile = params.get('hashfile', target)
+            mode = params.get('mode', '0')
+            cmd = ['hashcat', '-m', str(mode), hashfile]
+            wordlist = params.get('wordlist', '')
+            if wordlist:
+                cmd.append(wordlist)
+            return cmd
+        elif tool_original == 'medusa':
+            service = params.get('service', 'ssh')
+            return ['medusa', '-h', target, '-M', service, '-u', 'admin', '-P', '/usr/share/wordlists/rockyou.txt']
+        elif tool_original == 'cewl':
+            url = target if target.startswith(('http://', 'https://')) else f'http://{target}'
+            depth = params.get('depth', '2')
+            return ['cewl', '-d', str(depth), url]
+        elif tool_original == 'crunch':
+            min_len = params.get('min', '4')
+            max_len = params.get('max', '8')
+            charset = params.get('charset', 'abcdefghijklmnopqrstuvwxyz0123456789')
+            return ['crunch', str(min_len), str(max_len), charset]
+
+        # --- SNIFFING & SPOOFING ---
+        elif tool_original == 'tcpdump':
+            interface = params.get('interface', 'any')
+            count = params.get('count', '100')
+            return ['tcpdump', '-i', interface, '-c', count, 'host', target]
+        elif tool_original == 'tshark':
+            count = params.get('count', '100')
+            return ['tshark', '-c', count, '-f', f'host {target}']
+        elif tool_original == 'bettercap':
+            return ['bettercap', '-eval', f'net.probe on; set arp.spoof.targets {target}; arp.spoof on; sleep 5; quit']
+        elif tool_original == 'ettercap':
+            return ['ettercap', '-T', '-q', '-i', params.get('interface', 'eth0'), f'/{target}//', '-w', '/tmp/ettercap.pcap']
+        elif tool_original in ('netcat', 'nc', 'ncat'):
+            port = params.get('port', '80')
+            return ['nc', '-zv', target, str(port)]
+
+        # --- NETWORK UTILITIES ---
+        elif tool_original == 'ping':
+            count = params.get('count', '4')
+            return ['ping', '-c', str(count), target]
+        elif tool_original == 'traceroute':
+            return ['traceroute', target]
+        elif tool_original == 'hping3':
+            port = params.get('port', '80')
+            return ['hping3', '-S', target, '-p', str(port), '-c', '5']
+        elif tool_original == 'mtr':
+            return ['mtr', '--report', '--report-cycles', '5', target]
+        elif tool_original == 'ike-scan':
+            return ['ike-scan', target]
+        elif tool_original == 'socat':
+            port = params.get('port', '80')
+            return ['socat', '-', f'TCP:{target}:{port}']
+        
+        # --- EXPLOITATION ---
+        elif tool_original == 'msfconsole':
+            module = params.get('module', 'auxiliary/scanner/portscan/tcp')
+            return ['msfconsole', '-q', '-x', f'use {module}; set RHOSTS {target}; run; exit']
+        elif tool_original == 'searchsploit':
+            return ['searchsploit', target]
+        
+        # --- FORENSICS ---
+        elif tool_original == 'exiftool':
+            return ['exiftool', target]
+        elif tool_original == 'binwalk':
+            return ['binwalk', target]
+        elif tool_original == 'strings':
+            return ['strings', target]
+        elif tool_original == 'foremost':
+            return ['foremost', '-i', target]
+        elif tool_original == 'volatility':
+            return ['vol', '-f', target, 'imageinfo']
+        
+        # --- WIRELESS ---
+        elif tool_original == 'aircrack-ng':
+            return ['aircrack-ng', target]
+        elif tool_original == 'airmon-ng':
+            return ['airmon-ng', 'start', params.get('interface', 'wlan0')]
+        elif tool_original == 'airodump-ng':
+            return ['airodump-ng', params.get('interface', 'wlan0mon')]
+        
+        # --- REVERSE ENGINEERING ---
+        elif tool_original == 'checksec':
+            return ['checksec', '--file', target]
+        elif tool_original == 'objdump':
+            return ['objdump', '-d', target]
+        elif tool_original == 'strace':
+            return ['strace', '-c', target]
+        elif tool_original == 'ltrace':
+            return ['ltrace', '-c', target]
+        
+        # --- NON-SCANNER TOOLS: provide useful info instead of failing silently ---
+        elif tool_original in self.NON_SCANNER_TOOLS:
+            # For tools that are frameworks/GUIs/script collections,
+            # run --help or display their usage info
+            return ['sh', '-c', f'{tool_original} --help 2>&1 || {tool_original} -h 2>&1 || echo "{tool_original} is a framework/GUI tool that requires interactive usage. It cannot run as a command-line scanner against a target."']
+        
         else:
-            # Generic: tool target
-            return [tool_name, target]
+            # Smart generic fallback: try the tool with target,
+            # but also capture stderr and handle missing tools
+            return ['sh', '-c', f'command -v {tool_original} > /dev/null 2>&1 && {tool_original} {target} 2>&1 || echo "Tool \\"{tool_original}\\" is not available as a CLI scanner. It may be a GUI application, framework, or requires specific parameters."']
     
     def submit_scan(
         self,
