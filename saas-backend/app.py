@@ -1233,6 +1233,35 @@ def get_tool(tool_id):
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
+@app.route('/api/v1/tools/stats', methods=['GET'])
+@require_organization
+def get_tools_stats():
+    """Get tool statistics - types, hardware, GUI breakdown"""
+    try:
+        total = Tool.query.filter_by(is_active=True).count()
+        cli = Tool.query.filter_by(tool_type='cli', is_active=True).count()
+        gui = Tool.query.filter_by(tool_type='gui', is_active=True).count()
+        service = Tool.query.filter_by(tool_type='service', is_active=True).count()
+        framework = Tool.query.filter_by(tool_type='framework', is_active=True).count()
+        gui_req = Tool.query.filter_by(gui_required=True, is_active=True).count()
+
+        # Category breakdown
+        cats = db.session.query(
+            Tool.category, db.func.count(Tool.id)
+        ).filter(Tool.is_active == True).group_by(Tool.category).all()
+
+        return jsonify({
+            'total': total,
+            'by_type': {
+                'cli': cli, 'gui': gui,
+                'service': service, 'framework': framework
+            },
+            'gui_required': gui_req,
+            'categories': {c: n for c, n in sorted(cats, key=lambda x: -x[1])}
+        })
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
 # ================================
 # SCANS ROUTES
 # ================================
