@@ -358,6 +358,13 @@ class Tool(db.Model):
     plan_required = db.Column(db.String(20), default='starter')  # starter, professional, enterprise
     is_active = db.Column(db.Boolean, default=True)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    # New fields for comprehensive tool metadata
+    tool_type = db.Column(db.String(20), default='cli')  # cli, gui, service, framework
+    hardware_required = db.Column(db.JSON, default=list)  # ['wifi_adapter', 'gpu', 'bluetooth']
+    gui_required = db.Column(db.Boolean, default=False)
+    install_command = db.Column(db.Text)  # apt install command
+    example_usage = db.Column(db.Text)  # Example command line
+    official_url = db.Column(db.String(255))  # Kali tools page URL
     
     def to_dict(self):
         return {
@@ -367,7 +374,13 @@ class Tool(db.Model):
             'description': self.description,
             'parameters': self.parameters,
             'plan_required': self.plan_required,
-            'is_active': self.is_active
+            'is_active': self.is_active,
+            'tool_type': self.tool_type or 'cli',
+            'hardware_required': self.hardware_required or [],
+            'gui_required': self.gui_required or False,
+            'install_command': self.install_command,
+            'example_usage': self.example_usage,
+            'official_url': self.official_url
         }
 
 class Scan(db.Model):
@@ -1217,6 +1230,35 @@ def get_tool(tool_id):
         
         return jsonify({'tool': tool.to_dict()})
         
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/api/v1/tools/stats', methods=['GET'])
+@require_organization
+def get_tools_stats():
+    """Get tool statistics - types, hardware, GUI breakdown"""
+    try:
+        total = Tool.query.filter_by(is_active=True).count()
+        cli = Tool.query.filter_by(tool_type='cli', is_active=True).count()
+        gui = Tool.query.filter_by(tool_type='gui', is_active=True).count()
+        service = Tool.query.filter_by(tool_type='service', is_active=True).count()
+        framework = Tool.query.filter_by(tool_type='framework', is_active=True).count()
+        gui_req = Tool.query.filter_by(gui_required=True, is_active=True).count()
+
+        # Category breakdown
+        cats = db.session.query(
+            Tool.category, db.func.count(Tool.id)
+        ).filter(Tool.is_active == True).group_by(Tool.category).all()
+
+        return jsonify({
+            'total': total,
+            'by_type': {
+                'cli': cli, 'gui': gui,
+                'service': service, 'framework': framework
+            },
+            'gui_required': gui_req,
+            'categories': {c: n for c, n in sorted(cats, key=lambda x: -x[1])}
+        })
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
