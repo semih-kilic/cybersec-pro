@@ -24,6 +24,7 @@ class AgentManager:
         self.socketio = socketio
         self._monitor_thread = None
         self._running = False
+        self._app = None
     
     # ── Registration ──────────────────────────────────────────
     
@@ -197,10 +198,11 @@ class AgentManager:
     
     # ── Status Monitor ────────────────────────────────────────
     
-    def start_monitor(self, interval=30):
+    def start_monitor(self, app, interval=30):
         """Start background thread to monitor agent health"""
         if self._running:
             return
+        self._app = app
         self._running = True
         self._monitor_thread = threading.Thread(target=self._monitor_loop, args=(interval,), daemon=True)
         self._monitor_thread.start()
@@ -211,9 +213,14 @@ class AgentManager:
     
     def _monitor_loop(self, interval):
         """Check agent health periodically"""
+        time.sleep(5)  # Wait for app to fully start
         while self._running:
             try:
-                self._check_agent_health()
+                if self._app:
+                    with self._app.app_context():
+                        self._check_agent_health()
+                else:
+                    self._check_agent_health()
             except Exception as e:
                 logger.error(f"Health check error: {e}")
             time.sleep(interval)
