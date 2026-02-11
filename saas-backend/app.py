@@ -3135,20 +3135,14 @@ def get_agents():
         user = User.query.get(user_id)
         org = user.organization
         
-        # Check plan - only team and enterprise have agents
-        if org.plan_type not in ['team', 'enterprise']:
-            return jsonify({
-                'agents': [],
-                'message': 'Agents feature requires Team or Enterprise plan'
-            })
-        
+        # Agents available for all plans
         agents = Agent.query.filter_by(organization_id=org.id).all()
         
         # Update status based on last heartbeat
         for agent in agents:
             if agent.last_heartbeat:
                 time_since_heartbeat = (datetime.utcnow() - agent.last_heartbeat).total_seconds()
-                if time_since_heartbeat > 300:  # 5 minutes
+                if time_since_heartbeat > 90:  # 90 seconds (3 missed heartbeats)
                     agent.status = 'offline'
                 elif agent.status == 'pending':
                     pass  # Keep pending
@@ -3176,9 +3170,7 @@ def create_agent():
         user = User.query.get(user_id)
         org = user.organization
         
-        # Check plan
-        if org.plan_type not in ['team', 'enterprise']:
-            return jsonify({'error': 'Agents feature requires Team or Enterprise plan'}), 402
+        # Agents available for all plans
         
         # Check agent limit
         current_agents = Agent.query.filter_by(organization_id=org.id).count()
@@ -3422,7 +3414,7 @@ def agent_heartbeat():
         
         return jsonify({
             'status': 'ok',
-            'next_heartbeat': 60  # seconds
+            'next_heartbeat': 30  # seconds
         })
         
     except Exception as e:
@@ -3466,6 +3458,190 @@ docker run -d --name cybersec-agent \\
   semihkilic/cybersec-agent:latest"""
     
     return f"# Registration token: {token}"
+
+
+# ================================
+# AGENT V2 - New Registration & Scan Dispatch
+# ================================
+
+from agent_manager import AgentManager
+agent_mgr = AgentManager(db, Agent, Scan, socketio)
+
+
+@app.route('/api/v1/agents/register', methods=['POST'])
+def agent_register():
+    """Agent self-registration using token (no JWT needed)"""
+    try:
+        data = request.get_json()
+        token = data.get('token')
+        if not token:
+            return jsonify({'error': 'Registration token required'}), 400
+        
+        agent, error = agent_mgr.register_agent(token, data)
+        if error:
+            return jsonify({'error': error}), 400
+        
+        return jsonify({
+            'agent_id': agent.id,
+            'api_key': agent.api_key,
+            'name': agent.name,
+            'status': 'registered',
+            'next_heartbeat': 30
+        })
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+
+@app.route('/api/v1/agents/scan-status', methods=['POST'])
+def agent_scan_status():
+    """Agent reports scan status update"""
+    try:
+        data = request.get_json()
+        api_key = data.get('api_key') or request.headers.get('X-Agent-Key')
+        if not api_key:
+            return jsonify({'error': 'API key required'}), 401
+        
+        agent = Agent.query.filter_by(api_key=api_key).first()
+        if not agent:
+            return jsonify({'error': 'Invalid API key'}), 401
+        
+        scan = Scan.query.get(data.get('scan_id'))
+        if scan:
+            scan.status = data.get('status', 'running')
+            db.session.commit()
+            
+            # Emit real-time update
+            socketio.emit('scan_update', {
+                'scan_id': scan.id,
+                'status': scan.status,
+                'agent_name': agent.name
+            })
+        
+        return jsonify({'status': 'ok'})
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+
+@app.route('/api/v1/agents/scan-result', methods=['POST'])
+def agent_scan_result():
+    """Agent reports scan results"""
+    try:
+        data = request.get_json()
+        api_key = data.get('api_key') or request.headers.get('X-Agent-Key')
+        if not api_key:
+            return jsonify({'error': 'API key required'}), 401
+        
+        agent = Agent.query.filter_by(api_key=api_key).first()
+        if not agent:
+            return jsonify({'error': 'Invalid API key'}), 401
+        
+        scan = Scan.query.get(data.get('scan_id'))
+        if not scan:
+            return jsonify({'error': 'Scan not found'}), 404
+        
+        scan.status = data.get('status', 'completed')
+        scan.output = data.get('output', '')
+        scan.error_log = data.get('error', '')
+        scan.completed_at = datetime.utcnow()
+        
+        # Update agent stats
+        agent.active_scans = max(0, (agent.active_scans or 0) - 1)
+        agent.total_scans = (agent.total_scans or 0) + 1
+        
+        db.session.commit()
+        
+        # Emit real-time result
+        socketio.emit('scan_complete', {
+            'scan_id': scan.id,
+            'status': scan.status,
+            'output_size': len(scan.output or ''),
+            'agent_name': agent.name
+        })
+        
+        return jsonify({'status': 'ok'})
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+
+@app.route('/api/v1/agents/dashboard', methods=['GET'])
+@require_organization
+def agent_dashboard():
+    """Get agent dashboard data with real-time stats"""
+    try:
+        user_id = get_jwt_identity()
+        user = User.query.get(user_id)
+        org = user.organization
+        
+        data = agent_mgr.get_dashboard_data(org.id)
+        return jsonify(data)
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+
+@app.route('/api/v1/agents/dispatch', methods=['POST'])
+@require_organization
+def agent_dispatch_scan():
+    """Dispatch a scan to the best available agent"""
+    try:
+        user_id = get_jwt_identity()
+        user = User.query.get(user_id)
+        org = user.organization
+        
+        data = request.get_json()
+        tool_id = data.get('tool_id')
+        target = data.get('target')
+        agent_id = data.get('agent_id')  # Optional
+        
+        if not tool_id or not target:
+            return jsonify({'error': 'tool_id and target required'}), 400
+        
+        tool = Tool.query.get(tool_id)
+        if not tool:
+            return jsonify({'error': 'Tool not found'}), 404
+        
+        # Create scan record
+        scan = Scan(
+            organization_id=org.id,
+            user_id=user_id,
+            tool_id=tool_id,
+            target=target,
+            parameters=data.get('parameters', {}),
+            status='pending'
+        )
+        db.session.add(scan)
+        db.session.commit()
+        
+        # Dispatch to agent
+        result, error = agent_mgr.dispatch_scan(
+            org.id, scan.id, tool.name, target,
+            data.get('parameters'), agent_id
+        )
+        
+        if error:
+            scan.status = 'failed'
+            scan.error_log = error
+            db.session.commit()
+            return jsonify({'error': error}), 400
+        
+        return jsonify({
+            'scan_id': scan.id,
+            'dispatched_to': result
+        })
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'error': str(e)}), 500
+
+
+@app.route('/api/v1/agent-script', methods=['GET'])
+def serve_agent_script():
+    """Serve the kali_agent.py script for easy installation"""
+    try:
+        script_path = os.path.join(os.path.dirname(__file__), 'kali_agent.py')
+        with open(script_path, 'r') as f:
+            script = f.read()
+        return script, 200, {'Content-Type': 'text/x-python'}
+    except Exception as e:
+        return f"# Error: {e}", 500, {'Content-Type': 'text/plain'}
 
 
 # ================================
@@ -4052,10 +4228,13 @@ def delete_project(project_id):
 
 if __name__ == '__main__':
     init_database()
+    # Start agent health monitor
+    agent_mgr.start_monitor(app)
     print("🚀 CyberSec Pro SaaS Backend starting...")
     print("🌍 World-class cybersecurity platform ready!")
     print("📟 Terminal API enabled for SSH execution")
     print("🔌 WebSocket enabled for real-time updates")
+    print("🤖 Agent health monitor started (30s heartbeat, 90s offline)")
     
     # Use socketio.run() if available for WebSocket support
     if socketio:
