@@ -162,7 +162,7 @@ export default function AgentsPage() {
   };
 
   const deleteAgent = async (agentId: string) => {
-    if (!confirm('Bu agent\'ı silmek istediğinizden emin misiniz?')) return;
+    if (!confirm('Are you sure you want to delete this agent?')) return;
     
     try {
       const res = await fetch(`/api/v1/agents/${agentId}`, {
@@ -195,12 +195,12 @@ export default function AgentsPage() {
       const data = await res.json();
       setTestResult({
         success: data.success,
-        message: data.success ? `Bağlantı başarılı! OS: ${data.os_info || 'Unknown'}` : data.error
+        message: data.success ? `Connection successful! OS: ${data.os_info || 'Unknown'}` : data.error
       });
       
       if (data.success) fetchDashboard();
     } catch (error) {
-      setTestResult({ success: false, message: 'Bağlantı testi başarısız' });
+      setTestResult({ success: false, message: 'Connection test failed' });
     } finally {
       setTestingConnection(false);
     }
@@ -267,11 +267,11 @@ export default function AgentsPage() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold text-white mb-1">Agent Dashboard</h1>
+          <h1 className="text-3xl font-bold text-white mb-1">Agent Management</h1>
           <p className="text-gray-400 text-sm">
-            Kali Linux agent'larınızı yönetin ve izleyin
+            Manage and monitor your Kali Linux agents
             <span className="text-gray-600 ml-2">
-              Son güncelleme: {lastRefresh.toLocaleTimeString('tr-TR')}
+              Last update: {lastRefresh.toLocaleTimeString('en-GB')}
             </span>
           </p>
         </div>
@@ -280,14 +280,14 @@ export default function AgentsPage() {
             onClick={() => setAutoRefresh(!autoRefresh)}
             className={`px-3 py-1.5 rounded-lg text-xs font-medium transition ${autoRefresh ? 'bg-green-500/20 text-green-400 border border-green-500/30' : 'bg-gray-800 text-gray-400 border border-gray-700'}`}
           >
-            {autoRefresh ? '● CANLI' : '○ DURDURULDU'}
+            {autoRefresh ? '● LIVE' : '○ PAUSED'}
           </button>
-          <button onClick={fetchDashboard} className="p-2 hover:bg-gray-800 rounded-lg transition text-gray-400 hover:text-white" title="Yenile">
+          <button onClick={fetchDashboard} className="p-2 hover:bg-gray-800 rounded-lg transition text-gray-400 hover:text-white" title="Refresh">
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" /></svg>
           </button>
           <button onClick={() => setShowAddModal(true)} className="px-4 py-2 bg-gradient-to-r from-kali-blue to-cyan-600 hover:from-kali-blue/90 hover:to-cyan-600/90 text-white rounded-lg font-medium transition flex items-center gap-2 shadow-lg shadow-kali-blue/20">
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" /></svg>
-            Agent Ekle
+            Add Agent
           </button>
         </div>
       </div>
@@ -301,7 +301,7 @@ export default function AgentsPage() {
             </div>
             <div>
               <p className="text-2xl font-bold text-white">{dashboard?.total_agents || 0}</p>
-              <p className="text-gray-500 text-xs">Toplam Agent</p>
+              <p className="text-gray-500 text-xs">Total Agents</p>
             </div>
           </div>
         </div>
@@ -312,7 +312,7 @@ export default function AgentsPage() {
             </div>
             <div>
               <p className="text-2xl font-bold text-green-400">{dashboard?.online || 0}</p>
-              <p className="text-gray-500 text-xs">Çevrimiçi</p>
+              <p className="text-gray-500 text-xs">Online</p>
             </div>
           </div>
         </div>
@@ -323,7 +323,7 @@ export default function AgentsPage() {
             </div>
             <div>
               <p className="text-2xl font-bold text-red-400">{dashboard?.offline || 0}</p>
-              <p className="text-gray-500 text-xs">Çevrimdışı</p>
+              <p className="text-gray-500 text-xs">Offline</p>
             </div>
           </div>
         </div>
@@ -334,7 +334,7 @@ export default function AgentsPage() {
             </div>
             <div>
               <p className="text-2xl font-bold text-yellow-400">{dashboard?.busy || 0}</p>
-              <p className="text-gray-500 text-xs">Tarama Yapıyor</p>
+              <p className="text-gray-500 text-xs">Scanning</p>
             </div>
           </div>
         </div>
@@ -345,7 +345,7 @@ export default function AgentsPage() {
             </div>
             <div>
               <p className="text-2xl font-bold text-purple-400">{dashboard?.total_scans_completed || 0}</p>
-              <p className="text-gray-500 text-xs">Toplam Tarama</p>
+              <p className="text-gray-500 text-xs">Total Scans</p>
             </div>
           </div>
         </div>
@@ -357,12 +357,12 @@ export default function AgentsPage() {
           <div className="w-20 h-20 mx-auto mb-6 rounded-full bg-gray-800 flex items-center justify-center">
             <svg className="w-10 h-10 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" /></svg>
           </div>
-          <h3 className="text-xl font-semibold text-white mb-2">Henüz Agent Yok</h3>
+          <h3 className="text-xl font-semibold text-white mb-2">No Agents Yet</h3>
           <p className="text-gray-400 mb-6 max-w-md mx-auto">
-            İlk agent'ınızı ekleyerek Kali Linux makinenizi bağlayın ve taramalara başlayın
+            Add your first agent to connect your Kali Linux machine and start scanning
           </p>
           <button onClick={() => setShowAddModal(true)} className="px-6 py-3 bg-gradient-to-r from-kali-blue to-cyan-600 text-white rounded-lg font-medium transition shadow-lg shadow-kali-blue/20">
-            İlk Agent'ı Ekle
+            Add First Agent
           </button>
         </div>
       ) : (
@@ -372,7 +372,7 @@ export default function AgentsPage() {
             <div>
               <h2 className="text-sm font-semibold text-green-400 uppercase tracking-wider mb-3 flex items-center gap-2">
                 <div className="w-2 h-2 rounded-full bg-green-400 animate-pulse" />
-                Çevrimiçi ({onlineAgents.length})
+                Online ({onlineAgents.length})
               </h2>
               <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
                 {onlineAgents.map(agent => (
@@ -395,7 +395,7 @@ export default function AgentsPage() {
             <div>
               <h2 className="text-sm font-semibold text-gray-500 uppercase tracking-wider mb-3 flex items-center gap-2">
                 <div className="w-2 h-2 rounded-full bg-gray-500" />
-                Çevrimdışı ({offlineAgents.length})
+                Offline ({offlineAgents.length})
               </h2>
               <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
                 {offlineAgents.map(agent => (
@@ -418,7 +418,7 @@ export default function AgentsPage() {
             <div>
               <h2 className="text-sm font-semibold text-blue-400 uppercase tracking-wider mb-3 flex items-center gap-2">
                 <div className="w-2 h-2 rounded-full bg-blue-400" />
-                Kayıt Bekliyor ({agents.filter(a => a.status === 'pending').length})
+                Pending Registration ({agents.filter(a => a.status === 'pending').length})
               </h2>
               <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
                 {agents.filter(a => a.status === 'pending').map(agent => (
@@ -443,34 +443,34 @@ export default function AgentsPage() {
         <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50 p-4">
           <div className="bg-gray-900 rounded-2xl max-w-lg w-full max-h-[90vh] overflow-y-auto border border-gray-700 shadow-2xl">
             <div className="p-6 border-b border-gray-700 flex items-center justify-between">
-              <h2 className="text-xl font-bold text-white">{installToken ? 'Agent Oluşturuldu!' : 'Yeni Agent Ekle'}</h2>
+              <h2 className="text-xl font-bold text-white">{installToken ? 'Agent Created!' : 'Add New Agent'}</h2>
               <button onClick={resetAddForm} className="p-2 hover:bg-gray-800 rounded-lg transition text-gray-400">✕</button>
             </div>
             <div className="p-6 space-y-4">
               {!installToken ? (
                 <>
                   <div>
-                    <label className="block text-gray-400 text-sm mb-2">Agent Adı</label>
-                    <input type="text" value={newAgentName} onChange={(e) => setNewAgentName(e.target.value)} placeholder="Örn: Kali-Lab-01, Office-Scanner" className="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2.5 text-white focus:border-kali-blue focus:outline-none focus:ring-1 focus:ring-kali-blue/50" />
+                    <label className="block text-gray-400 text-sm mb-2">Agent Name</label>
+                    <input type="text" value={newAgentName} onChange={(e) => setNewAgentName(e.target.value)} placeholder="E.g.: Kali-Lab-01, Office-Scanner" className="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2.5 text-white focus:border-kali-blue focus:outline-none focus:ring-1 focus:ring-kali-blue/50" />
                   </div>
                   <div>
-                    <label className="block text-gray-400 text-sm mb-2">Bağlantı Türü</label>
+                    <label className="block text-gray-400 text-sm mb-2">Connection Type</label>
                     <div className="grid grid-cols-2 gap-3">
                       <button onClick={() => setConnectionType('ssh')} className={`p-4 rounded-lg border transition ${connectionType === 'ssh' ? 'border-kali-blue bg-kali-blue/10 ring-1 ring-kali-blue/30' : 'border-gray-700 bg-gray-800 hover:border-gray-600'}`}>
                         <div className="text-2xl mb-2">🔐</div>
-                        <div className="text-white font-medium text-sm">SSH Bağlantı</div>
-                        <div className="text-gray-500 text-xs mt-1">Mevcut sunucuya bağlan</div>
+                        <div className="text-white font-medium text-sm">SSH Connection</div>
+                        <div className="text-gray-500 text-xs mt-1">Connect to existing server</div>
                       </button>
                       <button onClick={() => setConnectionType('direct')} className={`p-4 rounded-lg border transition ${connectionType === 'direct' ? 'border-kali-blue bg-kali-blue/10 ring-1 ring-kali-blue/30' : 'border-gray-700 bg-gray-800 hover:border-gray-600'}`}>
                         <div className="text-2xl mb-2">📦</div>
-                        <div className="text-white font-medium text-sm">Agent Kur</div>
-                        <div className="text-gray-500 text-xs mt-1">Agent yazılımını kur</div>
+                        <div className="text-white font-medium text-sm">Install Agent</div>
+                        <div className="text-gray-500 text-xs mt-1">Install agent software</div>
                       </button>
                     </div>
                   </div>
                   {connectionType === 'ssh' && (
                     <div className="space-y-3 p-4 bg-gray-800/50 rounded-lg border border-gray-700/50">
-                      <h4 className="text-white font-medium text-sm">SSH Bilgileri</h4>
+                      <h4 className="text-white font-medium text-sm">SSH Details</h4>
                       <div className="grid grid-cols-3 gap-3">
                         <div className="col-span-2">
                           <label className="block text-gray-500 text-xs mb-1">Host / IP</label>
@@ -482,11 +482,11 @@ export default function AgentsPage() {
                         </div>
                       </div>
                       <div>
-                        <label className="block text-gray-500 text-xs mb-1">Kullanıcı Adı</label>
+                        <label className="block text-gray-500 text-xs mb-1">Username</label>
                         <input type="text" value={sshCredentials.username} onChange={(e) => setSshCredentials({...sshCredentials, username: e.target.value})} placeholder="root" className="w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white text-sm focus:border-kali-blue focus:outline-none" />
                       </div>
                       <div>
-                        <label className="block text-gray-500 text-xs mb-1">Şifre</label>
+                        <label className="block text-gray-500 text-xs mb-1">Password</label>
                         <input type="password" value={sshCredentials.password} onChange={(e) => setSshCredentials({...sshCredentials, password: e.target.value})} placeholder="••••••••" className="w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white text-sm focus:border-kali-blue focus:outline-none" />
                       </div>
                     </div>
@@ -509,20 +509,20 @@ export default function AgentsPage() {
                 <div className="space-y-4">
                   <div className="p-4 bg-green-900/30 border border-green-500/30 rounded-lg flex items-center gap-3">
                     <span className="text-green-400 text-xl">✓</span>
-                    <p className="text-green-400">Agent "<span className="font-medium">{newAgentName}</span>" başarıyla oluşturuldu!</p>
+                    <p className="text-green-400">Agent "<span className="font-medium">{newAgentName}</span>" successfully created!</p>
                   </div>
                   <div>
                     <label className="block text-gray-400 text-sm mb-2">
-                      {connectionType === 'ssh' ? 'SSH Yapılandırması' : 'Kurulum Komutu'}
+                      {connectionType === 'ssh' ? 'SSH Configuration' : 'Installation Command'}
                     </label>
                     <div className="bg-gray-950 rounded-lg p-4 font-mono text-sm text-green-400 relative border border-gray-700">
                       <pre className="whitespace-pre-wrap">{installCommand}</pre>
-                      <button onClick={() => copyToClipboard(installCommand)} className="absolute top-2 right-2 p-2 hover:bg-gray-800 rounded transition text-gray-500 hover:text-white" title="Kopyala">📋</button>
+                      <button onClick={() => copyToClipboard(installCommand)} className="absolute top-2 right-2 p-2 hover:bg-gray-800 rounded transition text-gray-500 hover:text-white" title="Copy">📋</button>
                     </div>
                   </div>
                   {connectionType === 'ssh' && (
                     <button onClick={() => testConnection(agents[agents.length - 1]?.id)} disabled={testingConnection} className="w-full py-3 bg-cyan-600 hover:bg-cyan-700 text-white rounded-lg font-medium transition disabled:opacity-50">
-                      {testingConnection ? 'Bağlantı test ediliyor...' : 'SSH Bağlantısını Test Et'}
+                      {testingConnection ? 'Testing connection...' : 'Test SSH Connection'}
                     </button>
                   )}
                   {testResult && (
@@ -534,9 +534,9 @@ export default function AgentsPage() {
               )}
             </div>
             <div className="p-6 border-t border-gray-700 flex justify-end gap-3">
-              <button onClick={resetAddForm} className="px-4 py-2 text-gray-400 hover:text-white transition">{installToken ? 'Tamam' : 'İptal'}</button>
+              <button onClick={resetAddForm} className="px-4 py-2 text-gray-400 hover:text-white transition">{installToken ? 'Done' : 'Cancel'}</button>
               {!installToken && (
-                <button onClick={addAgent} disabled={!newAgentName.trim() || (connectionType === 'ssh' && !sshCredentials.host)} className="px-6 py-2 bg-gradient-to-r from-kali-blue to-cyan-600 text-white rounded-lg font-medium transition disabled:opacity-50 shadow-lg shadow-kali-blue/20">Agent Oluştur</button>
+                <button onClick={addAgent} disabled={!newAgentName.trim() || (connectionType === 'ssh' && !sshCredentials.host)} className="px-6 py-2 bg-gradient-to-r from-kali-blue to-cyan-600 text-white rounded-lg font-medium transition disabled:opacity-50 shadow-lg shadow-kali-blue/20">Create Agent</button>
               )}
             </div>
           </div>
@@ -552,7 +552,7 @@ export default function AgentsPage() {
                 <span className="text-3xl">{getPlatformIcon(selectedAgent.platform)}</span>
                 <div>
                   <h2 className="text-xl font-bold text-white">{selectedAgent.name}</h2>
-                  <p className="text-gray-500 text-sm">{selectedAgent.hostname || 'kayıt-bekliyor'}</p>
+                  <p className="text-gray-500 text-sm">{selectedAgent.hostname || 'pending-registration'}</p>
                 </div>
               </div>
               <button onClick={() => setSelectedAgent(null)} className="p-2 hover:bg-gray-800 rounded-lg transition text-gray-400">✕</button>
@@ -597,31 +597,31 @@ export default function AgentsPage() {
             <div className="space-y-3">
               <div className="grid grid-cols-2 gap-3">
                 <div className="bg-gray-800/50 rounded-lg p-3">
-                  <p className="text-gray-500 text-xs mb-1">IP Adresi</p>
+                  <p className="text-gray-500 text-xs mb-1">IP Address</p>
                   <p className="text-cyan-400 font-mono text-sm">{selectedAgent.ip_address || 'N/A'}</p>
                 </div>
                 <div className="bg-gray-800/50 rounded-lg p-3">
-                  <p className="text-gray-500 text-xs mb-1">Konum</p>
-                  <p className="text-white text-sm">{selectedAgent.location || 'Bilinmiyor'}</p>
+                  <p className="text-gray-500 text-xs mb-1">Location</p>
+                  <p className="text-white text-sm">{selectedAgent.location || 'Unknown'}</p>
                 </div>
               </div>
               <div className="bg-gray-800/50 rounded-lg p-3">
-                <p className="text-gray-500 text-xs mb-1">İşletim Sistemi</p>
-                <p className="text-white text-sm">{selectedAgent.os || 'Kayıt bekleniyor...'}</p>
+                <p className="text-gray-500 text-xs mb-1">Operating System</p>
+                <p className="text-white text-sm">{selectedAgent.os || 'Awaiting registration...'}</p>
               </div>
               {selectedAgent.connection_type === 'ssh' && selectedAgent.ssh_host && (
                 <div className="bg-gray-800/50 rounded-lg p-3">
-                  <p className="text-gray-500 text-xs mb-1">SSH Bağlantısı</p>
+                  <p className="text-gray-500 text-xs mb-1">SSH Connection</p>
                   <p className="text-white font-mono text-sm">{selectedAgent.ssh_username}@{selectedAgent.ssh_host}:{selectedAgent.ssh_port}</p>
                 </div>
               )}
               <div className="grid grid-cols-2 gap-3">
                 <div className="bg-gray-800/50 rounded-lg p-3">
-                  <p className="text-gray-500 text-xs mb-1">Aktif Tarama</p>
+                  <p className="text-gray-500 text-xs mb-1">Active Scans</p>
                   <p className="text-yellow-400 text-lg font-bold">{selectedAgent.active_scans}</p>
                 </div>
                 <div className="bg-gray-800/50 rounded-lg p-3">
-                  <p className="text-gray-500 text-xs mb-1">Toplam Tarama</p>
+                  <p className="text-gray-500 text-xs mb-1">Total Scans</p>
                   <p className="text-purple-400 text-lg font-bold">{selectedAgent.total_scans}</p>
                 </div>
               </div>
@@ -631,12 +631,12 @@ export default function AgentsPage() {
             <div className="mt-6 space-y-3">
               {selectedAgent.connection_type === 'ssh' && (
                 <button onClick={() => testConnection(selectedAgent.id)} disabled={testingConnection} className="w-full py-2.5 bg-cyan-600 hover:bg-cyan-700 text-white rounded-lg font-medium transition disabled:opacity-50">
-                  {testingConnection ? 'Test ediliyor...' : 'Bağlantıyı Test Et'}
+                  {testingConnection ? 'Testing...' : 'Test Connection'}
                 </button>
               )}
               {testResult && <div className={`p-3 rounded-lg text-sm ${testResult.success ? 'bg-green-900/30 text-green-400' : 'bg-red-900/30 text-red-400'}`}>{testResult.message}</div>}
-              <button onClick={() => setShowEditModal(true)} className="w-full py-2.5 bg-gray-800 hover:bg-gray-700 text-white rounded-lg font-medium transition">Düzenle</button>
-              <button onClick={() => deleteAgent(selectedAgent.id)} className="w-full py-2.5 bg-red-600/20 hover:bg-red-600/30 text-red-400 rounded-lg font-medium transition border border-red-500/20">Agent'ı Sil</button>
+              <button onClick={() => setShowEditModal(true)} className="w-full py-2.5 bg-gray-800 hover:bg-gray-700 text-white rounded-lg font-medium transition">Edit</button>
+              <button onClick={() => deleteAgent(selectedAgent.id)} className="w-full py-2.5 bg-red-600/20 hover:bg-red-600/30 text-red-400 rounded-lg font-medium transition border border-red-500/20">Delete Agent</button>
             </div>
           </div>
         </div>
@@ -646,10 +646,10 @@ export default function AgentsPage() {
       {showEditModal && selectedAgent && (
         <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50 p-4">
           <div className="bg-gray-900 rounded-2xl max-w-lg w-full border border-gray-700 shadow-2xl">
-            <div className="p-6 border-b border-gray-700"><h2 className="text-xl font-bold text-white">Agent Düzenle</h2></div>
+            <div className="p-6 border-b border-gray-700"><h2 className="text-xl font-bold text-white">Edit Agent</h2></div>
             <div className="p-6 space-y-4">
               <div>
-                <label className="block text-gray-400 text-sm mb-2">Agent Adı</label>
+                <label className="block text-gray-400 text-sm mb-2">Agent Name</label>
                 <input type="text" value={selectedAgent.name} onChange={(e) => setSelectedAgent({...selectedAgent, name: e.target.value})} className="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2.5 text-white focus:border-kali-blue focus:outline-none" />
               </div>
               {selectedAgent.connection_type === 'ssh' && (
@@ -665,19 +665,19 @@ export default function AgentsPage() {
                     </div>
                   </div>
                   <div>
-                    <label className="block text-gray-400 text-sm mb-2">SSH Kullanıcı Adı</label>
+                    <label className="block text-gray-400 text-sm mb-2">SSH Username</label>
                     <input type="text" value={selectedAgent.ssh_username || ''} onChange={(e) => setSelectedAgent({...selectedAgent, ssh_username: e.target.value})} className="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2.5 text-white focus:border-kali-blue focus:outline-none" />
                   </div>
                 </>
               )}
               <div>
-                <label className="block text-gray-400 text-sm mb-2">Konum</label>
-                <input type="text" value={selectedAgent.location || ''} onChange={(e) => setSelectedAgent({...selectedAgent, location: e.target.value})} placeholder="Örn: Ofis, Ev Lab" className="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2.5 text-white focus:border-kali-blue focus:outline-none" />
+                <label className="block text-gray-400 text-sm mb-2">Location</label>
+                <input type="text" value={selectedAgent.location || ''} onChange={(e) => setSelectedAgent({...selectedAgent, location: e.target.value})} placeholder="E.g.: Office, Home Lab" className="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2.5 text-white focus:border-kali-blue focus:outline-none" />
               </div>
             </div>
             <div className="p-6 border-t border-gray-700 flex justify-end gap-3">
-              <button onClick={() => { setShowEditModal(false); setSelectedAgent(null); }} className="px-4 py-2 text-gray-400 hover:text-white transition">İptal</button>
-              <button onClick={updateAgent} className="px-6 py-2 bg-gradient-to-r from-kali-blue to-cyan-600 text-white rounded-lg font-medium transition shadow-lg shadow-kali-blue/20">Kaydet</button>
+              <button onClick={() => { setShowEditModal(false); setSelectedAgent(null); }} className="px-4 py-2 text-gray-400 hover:text-white transition">Cancel</button>
+              <button onClick={updateAgent} className="px-6 py-2 bg-gradient-to-r from-kali-blue to-cyan-600 text-white rounded-lg font-medium transition shadow-lg shadow-kali-blue/20">Save</button>
             </div>
           </div>
         </div>
@@ -713,7 +713,7 @@ function AgentCard({
           <span className="text-2xl">{getPlatformIcon(agent.platform)}</span>
           <div>
             <h3 className="text-white font-medium group-hover:text-kali-blue transition">{agent.name}</h3>
-            <p className="text-gray-500 text-xs font-mono">{agent.hostname || 'kayıt-bekliyor'}</p>
+            <p className="text-gray-500 text-xs font-mono">{agent.hostname || 'pending-registration'}</p>
           </div>
         </div>
         <div className="flex items-center gap-2">
@@ -730,7 +730,7 @@ function AgentCard({
         </div>
         <div className="flex justify-between">
           <span className="text-gray-500 text-xs">OS</span>
-          <span className="text-gray-300 text-xs truncate max-w-[180px]">{agent.os || 'Bekleniyor...'}</span>
+          <span className="text-gray-300 text-xs truncate max-w-[180px]">{agent.os || 'Awaiting...'}</span>
         </div>
       </div>
 
@@ -760,10 +760,10 @@ function AgentCard({
           {agent.active_scans > 0 && (
             <span className="text-yellow-400 text-xs flex items-center gap-1">
               <svg className="w-3 h-3 animate-spin" fill="none" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path></svg>
-              {agent.active_scans} aktif
+              {agent.active_scans} active
             </span>
           )}
-          <span className="text-gray-600 text-xs">{agent.total_scans} tarama</span>
+          <span className="text-gray-600 text-xs">{agent.total_scans} scans</span>
         </div>
         {agent.last_seen && (
           <span className="text-gray-600 text-[10px]">{agent.last_seen}</span>
