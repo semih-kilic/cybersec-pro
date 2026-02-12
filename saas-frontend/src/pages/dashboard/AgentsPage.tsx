@@ -1,19 +1,22 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '../../hooks/useAuth';
 
 type AgentPlatform = 'linux' | 'windows' | 'macos' | 'docker';
 type ConnectionType = 'direct' | 'ssh';
+type AgentStatus = 'online' | 'offline' | 'busy' | 'error' | 'pending';
 
 interface Agent {
   id: string;
   name: string;
   hostname: string;
   ip_address: string;
-  status: 'online' | 'offline' | 'busy' | 'error' | 'pending';
+  status: AgentStatus;
+  status_emoji?: string;
   os: string;
   platform: AgentPlatform;
-  version: string;
+  version?: string;
   last_seen: string | null;
+  last_heartbeat?: string | null;
   cpu_usage: number;
   memory_usage: number;
   active_scans: number;
@@ -24,10 +27,22 @@ interface Agent {
   ssh_port?: number;
   ssh_username?: string;
   registration_token?: string;
+  created_at?: string;
+}
+
+interface DashboardData {
+  total_agents: number;
+  online: number;
+  offline: number;
+  busy: number;
+  pending: number;
+  total_scans_completed: number;
+  agents: Agent[];
 }
 
 export default function AgentsPage() {
-  const { organization, token } = useAuth();
+  const { token } = useAuth();
+  const [dashboard, setDashboard] = useState<DashboardData | null>(null);
   const [agents, setAgents] = useState<Agent[]>([]);
   const [loading, setLoading] = useState(true);
   const [showAddModal, setShowAddModal] = useState(false);
@@ -35,6 +50,8 @@ export default function AgentsPage() {
   const [showEditModal, setShowEditModal] = useState(false);
   const [testingConnection, setTestingConnection] = useState(false);
   const [testResult, setTestResult] = useState<{ success: boolean; message: string } | null>(null);
+  const [autoRefresh, setAutoRefresh] = useState(true);
+  const [lastRefresh, setLastRefresh] = useState<Date>(new Date());
   
   // Form state
   const [newAgentName, setNewAgentName] = useState('');
@@ -49,31 +66,32 @@ export default function AgentsPage() {
     password: '' 
   });
 
-  const userPlan = organization?.plan_type || 'trial';
-  const planSupportsAgents = ['team', 'enterprise'].includes(userPlan);
-  const maxAgents = userPlan === 'enterprise' ? 999 : userPlan === 'team' ? 1 : 0;
-
-  useEffect(() => {
-    if (planSupportsAgents) {
-      fetchAgents();
-    } else {
-      setLoading(false);
-    }
-  }, [planSupportsAgents]);
-
-  const fetchAgents = async () => {
+  const fetchDashboard = useCallback(async () => {
     try {
-      const res = await fetch('/api/v1/agents', {
+      const res = await fetch('/api/v1/agents/dashboard', {
         headers: { 'Authorization': `Bearer ${token}` }
       });
-      const data = await res.json();
-      setAgents(data.agents || []);
+      if (res.ok) {
+        const data: DashboardData = await res.json();
+        setDashboard(data);
+        setAgents(data.agents || []);
+        setLastRefresh(new Date());
+      }
     } catch (error) {
-      console.error('Failed to fetch agents:', error);
+      console.error('Failed to fetch dashboard:', error);
     } finally {
       setLoading(false);
     }
-  };
+  }, [token]);
+  useEffect(() => {
+    fetchDashboard();
+  }, [fetchDashboard]);
+
+  useEffect(() => {
+    if (!autoRefresh) return;
+    const interval = setInterval(fetchDashboard, 10000);
+    return () => clearInterval(interval);
+  }, [autoRefresh, fetchDashboard]);
 
   const addAgent = async () => {
     if (!newAgentName.trim()) return;
@@ -100,8 +118,8 @@ export default function AgentsPage() {
       
       if (res.ok) {
         setInstallToken(data.registration_token);
-        setInstallCommand(data.install_command);
-        setAgents([...agents, data.agent]);
+        setInstallCommand(data.install_command || `# Agent Registration Token:\n${data.registration_token}\n\n# Install & run:\ncurl -sSL https://cybersecpro.semihkilic.com/api/v1/agent-script | python3 - --token ${data.registration_token}`);
+        fetchDashboard();
       } else {
         alert(data.error || 'Failed to create agent');
       }
@@ -130,13 +148,12 @@ export default function AgentsPage() {
         })
       });
       
-      const data = await res.json();
-      
       if (res.ok) {
-        setAgents(agents.map(a => a.id === selectedAgent.id ? data.agent : a));
         setShowEditModal(false);
         setSelectedAgent(null);
+        fetchDashboard();
       } else {
+        const data = await res.json();
         alert(data.error || 'Failed to update agent');
       }
     } catch (error) {
@@ -145,7 +162,7 @@ export default function AgentsPage() {
   };
 
   const deleteAgent = async (agentId: string) => {
-    if (!confirm('Are you sure you want to remove this agent?')) return;
+    if (!confirm('Bu agent\'ı silmek istediğinizden emin misiniz?')) return;
     
     try {
       const res = await fetch(`/api/v1/agents/${agentId}`, {
@@ -154,8 +171,8 @@ export default function AgentsPage() {
       });
       
       if (res.ok) {
-        setAgents(agents.filter(a => a.id !== agentId));
         setSelectedAgent(null);
+        fetchDashboard();
       } else {
         const data = await res.json();
         alert(data.error || 'Failed to delete agent');
@@ -178,38 +195,47 @@ export default function AgentsPage() {
       const data = await res.json();
       setTestResult({
         success: data.success,
-        message: data.success ? `Connected! OS: ${data.os_info || 'Unknown'}` : data.error
+        message: data.success ? `Bağlantı başarılı! OS: ${data.os_info || 'Unknown'}` : data.error
       });
       
-      if (data.success) {
-        fetchAgents();
-      }
+      if (data.success) fetchDashboard();
     } catch (error) {
-      setTestResult({ success: false, message: 'Connection test failed' });
+      setTestResult({ success: false, message: 'Bağlantı testi başarısız' });
     } finally {
       setTestingConnection(false);
     }
   };
 
-  const getStatusColor = (status: Agent['status']) => {
-    switch (status) {
-      case 'online': return 'text-green-400 bg-green-400/20';
-      case 'busy': return 'text-yellow-400 bg-yellow-400/20';
-      case 'offline': return 'text-gray-400 bg-gray-400/20';
-      case 'error': return 'text-red-400 bg-red-400/20';
-      case 'pending': return 'text-blue-400 bg-blue-400/20';
-      default: return 'text-gray-400 bg-gray-400/20';
-    }
+  const getStatusColor = (status: AgentStatus) => {
+    const colors: Record<string, string> = {
+      online: 'text-green-400 bg-green-400/20',
+      busy: 'text-yellow-400 bg-yellow-400/20',
+      offline: 'text-gray-400 bg-gray-400/20',
+      error: 'text-red-400 bg-red-400/20',
+      pending: 'text-blue-400 bg-blue-400/20',
+    };
+    return colors[status] || 'text-gray-400 bg-gray-400/20';
+  };
+
+  const getStatusDot = (status: AgentStatus) => {
+    const colors: Record<string, string> = {
+      online: 'bg-green-400 shadow-green-400/50',
+      busy: 'bg-yellow-400 shadow-yellow-400/50',
+      offline: 'bg-gray-500',
+      error: 'bg-red-400 shadow-red-400/50',
+      pending: 'bg-blue-400 shadow-blue-400/50',
+    };
+    const pulse = status === 'online' ? 'animate-pulse' : '';
+    return `w-2.5 h-2.5 rounded-full ${colors[status] || 'bg-gray-500'} shadow-lg ${pulse}`;
   };
 
   const getPlatformIcon = (platform: AgentPlatform) => {
-    switch (platform) {
-      case 'windows': return '🪟';
-      case 'macos': return '🍎';
-      case 'docker': return '🐳';
-      default: return '🐧';
-    }
+    const icons: Record<string, string> = { windows: '🪟', macos: '🍎', docker: '🐳', linux: '🐧' };
+    return icons[platform] || '🐧';
   };
+
+  const getCpuColor = (cpu: number) => cpu > 80 ? 'bg-red-500' : cpu > 50 ? 'bg-yellow-500' : 'bg-green-500';
+  const getMemColor = (mem: number) => mem > 80 ? 'bg-red-500' : mem > 50 ? 'bg-yellow-500' : 'bg-cyan-500';
 
   const copyToClipboard = (text: string) => {
     navigator.clipboard.writeText(text);
@@ -225,27 +251,6 @@ export default function AgentsPage() {
     setShowAddModal(false);
   };
 
-  if (!planSupportsAgents) {
-    return (
-      <div className="p-6">
-        <div className="max-w-2xl mx-auto text-center py-20">
-          <div className="w-24 h-24 mx-auto mb-6 rounded-full bg-gray-800 flex items-center justify-center">
-            <svg className="w-12 h-12 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
-            </svg>
-          </div>
-          <h1 className="text-3xl font-bold text-white mb-4">Remote Agents</h1>
-          <p className="text-gray-400 text-lg mb-8">
-            Deploy remote scanning agents in your infrastructure for internal network testing.
-          </p>
-          <a href="/dashboard/billing" className="px-8 py-3 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-lg font-medium">
-            Upgrade to Team - €49/mo
-          </a>
-        </div>
-      </div>
-    );
-  }
-
   if (loading) {
     return (
       <div className="p-6 flex items-center justify-center min-h-[400px]">
@@ -254,105 +259,235 @@ export default function AgentsPage() {
     );
   }
 
+  const onlineAgents = agents.filter(a => a.status === 'online');
+  const offlineAgents = agents.filter(a => a.status === 'offline');
+
   return (
-    <div className="p-6">
-      <div className="flex items-center justify-between mb-8">
+    <div className="p-6 space-y-6">
+      {/* Header */}
+      <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold text-white mb-2">Remote Agents</h1>
-          <p className="text-gray-400">Deploy scanning agents in your infrastructure</p>
+          <h1 className="text-3xl font-bold text-white mb-1">Agent Dashboard</h1>
+          <p className="text-gray-400 text-sm">
+            Kali Linux agent'larınızı yönetin ve izleyin
+            <span className="text-gray-600 ml-2">
+              Son güncelleme: {lastRefresh.toLocaleTimeString('tr-TR')}
+            </span>
+          </p>
         </div>
-        <div className="flex items-center gap-4">
-          <span className="text-gray-400 text-sm">{agents.length} / {maxAgents === 999 ? '∞' : maxAgents} agents</span>
-          <button onClick={() => setShowAddModal(true)} disabled={agents.length >= maxAgents} className="px-4 py-2 bg-kali-blue hover:bg-kali-blue/90 text-white rounded-lg font-medium transition disabled:opacity-50 flex items-center gap-2">
-            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-            </svg>
-            Add Agent
+        <div className="flex items-center gap-3">
+          <button 
+            onClick={() => setAutoRefresh(!autoRefresh)}
+            className={`px-3 py-1.5 rounded-lg text-xs font-medium transition ${autoRefresh ? 'bg-green-500/20 text-green-400 border border-green-500/30' : 'bg-gray-800 text-gray-400 border border-gray-700'}`}
+          >
+            {autoRefresh ? '● CANLI' : '○ DURDURULDU'}
+          </button>
+          <button onClick={fetchDashboard} className="p-2 hover:bg-gray-800 rounded-lg transition text-gray-400 hover:text-white" title="Yenile">
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" /></svg>
+          </button>
+          <button onClick={() => setShowAddModal(true)} className="px-4 py-2 bg-gradient-to-r from-kali-blue to-cyan-600 hover:from-kali-blue/90 hover:to-cyan-600/90 text-white rounded-lg font-medium transition flex items-center gap-2 shadow-lg shadow-kali-blue/20">
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" /></svg>
+            Agent Ekle
           </button>
         </div>
       </div>
 
+      {/* Stats Cards */}
+      <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
+        <div className="bg-gray-800/50 rounded-xl p-4 border border-gray-700">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-lg bg-blue-500/20 flex items-center justify-center">
+              <svg className="w-5 h-5 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" /></svg>
+            </div>
+            <div>
+              <p className="text-2xl font-bold text-white">{dashboard?.total_agents || 0}</p>
+              <p className="text-gray-500 text-xs">Toplam Agent</p>
+            </div>
+          </div>
+        </div>
+        <div className="bg-gray-800/50 rounded-xl p-4 border border-green-500/20">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-lg bg-green-500/20 flex items-center justify-center">
+              <div className="w-3 h-3 rounded-full bg-green-400 animate-pulse" />
+            </div>
+            <div>
+              <p className="text-2xl font-bold text-green-400">{dashboard?.online || 0}</p>
+              <p className="text-gray-500 text-xs">Çevrimiçi</p>
+            </div>
+          </div>
+        </div>
+        <div className="bg-gray-800/50 rounded-xl p-4 border border-gray-700">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-lg bg-red-500/20 flex items-center justify-center">
+              <div className="w-3 h-3 rounded-full bg-red-400" />
+            </div>
+            <div>
+              <p className="text-2xl font-bold text-red-400">{dashboard?.offline || 0}</p>
+              <p className="text-gray-500 text-xs">Çevrimdışı</p>
+            </div>
+          </div>
+        </div>
+        <div className="bg-gray-800/50 rounded-xl p-4 border border-yellow-500/20">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-lg bg-yellow-500/20 flex items-center justify-center">
+              <svg className="w-5 h-5 text-yellow-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" /></svg>
+            </div>
+            <div>
+              <p className="text-2xl font-bold text-yellow-400">{dashboard?.busy || 0}</p>
+              <p className="text-gray-500 text-xs">Tarama Yapıyor</p>
+            </div>
+          </div>
+        </div>
+        <div className="bg-gray-800/50 rounded-xl p-4 border border-gray-700">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-lg bg-purple-500/20 flex items-center justify-center">
+              <svg className="w-5 h-5 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" /></svg>
+            </div>
+            <div>
+              <p className="text-2xl font-bold text-purple-400">{dashboard?.total_scans_completed || 0}</p>
+              <p className="text-gray-500 text-xs">Toplam Tarama</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Agent Grid */}
       {agents.length === 0 ? (
-        <div className="text-center py-20 bg-gray-800/30 rounded-xl border border-gray-700">
-          <h3 className="text-xl font-semibold text-white mb-2">No Agents Yet</h3>
-          <p className="text-gray-400 mb-6">Add your first remote agent to start scanning internal networks</p>
-          <button onClick={() => setShowAddModal(true)} className="px-6 py-2 bg-kali-blue hover:bg-kali-blue/90 text-white rounded-lg font-medium transition">Add First Agent</button>
+        <div className="text-center py-20 bg-gray-800/30 rounded-xl border border-gray-700 border-dashed">
+          <div className="w-20 h-20 mx-auto mb-6 rounded-full bg-gray-800 flex items-center justify-center">
+            <svg className="w-10 h-10 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" /></svg>
+          </div>
+          <h3 className="text-xl font-semibold text-white mb-2">Henüz Agent Yok</h3>
+          <p className="text-gray-400 mb-6 max-w-md mx-auto">
+            İlk agent'ınızı ekleyerek Kali Linux makinenizi bağlayın ve taramalara başlayın
+          </p>
+          <button onClick={() => setShowAddModal(true)} className="px-6 py-3 bg-gradient-to-r from-kali-blue to-cyan-600 text-white rounded-lg font-medium transition shadow-lg shadow-kali-blue/20">
+            İlk Agent'ı Ekle
+          </button>
         </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {agents.map(agent => (
-            <div key={agent.id} className="bg-gray-800/50 rounded-xl p-4 border border-gray-700 hover:border-gray-600 transition cursor-pointer" onClick={() => setSelectedAgent(agent)}>
-              <div className="flex items-start justify-between mb-3">
-                <div className="flex items-center gap-3">
-                  <span className="text-2xl">{getPlatformIcon(agent.platform)}</span>
-                  <div>
-                    <h3 className="text-white font-medium">{agent.name}</h3>
-                    <p className="text-gray-500 text-sm">{agent.hostname || 'pending-registration'}</p>
-                  </div>
-                </div>
-                <span className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(agent.status)}`}>{agent.status}</span>
-              </div>
-              <div className="space-y-2 text-sm">
-                <div className="flex justify-between"><span className="text-gray-500">IP Address</span><span className="text-cyan-400 font-mono">{agent.ip_address || 'N/A'}</span></div>
-                <div className="flex justify-between"><span className="text-gray-500">OS</span><span className="text-gray-300">{agent.os || 'Pending...'}</span></div>
-              </div>
-              <div className="mt-4 pt-3 border-t border-gray-700 flex items-center justify-between text-xs">
-                <span className="text-gray-500">{agent.active_scans} active • {agent.total_scans} total scans</span>
-                {agent.connection_type === 'ssh' && <span className="text-cyan-400">SSH</span>}
+        <div className="space-y-4">
+          {/* Online Agents */}
+          {onlineAgents.length > 0 && (
+            <div>
+              <h2 className="text-sm font-semibold text-green-400 uppercase tracking-wider mb-3 flex items-center gap-2">
+                <div className="w-2 h-2 rounded-full bg-green-400 animate-pulse" />
+                Çevrimiçi ({onlineAgents.length})
+              </h2>
+              <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+                {onlineAgents.map(agent => (
+                  <AgentCard 
+                    key={agent.id} 
+                    agent={agent} 
+                    onSelect={() => setSelectedAgent(agent)}
+                    getStatusDot={getStatusDot}
+                    getPlatformIcon={getPlatformIcon}
+                    getCpuColor={getCpuColor}
+                    getMemColor={getMemColor}
+                  />
+                ))}
               </div>
             </div>
-          ))}
+          )}
+
+          {/* Offline/Pending Agents */}
+          {offlineAgents.length > 0 && (
+            <div>
+              <h2 className="text-sm font-semibold text-gray-500 uppercase tracking-wider mb-3 flex items-center gap-2">
+                <div className="w-2 h-2 rounded-full bg-gray-500" />
+                Çevrimdışı ({offlineAgents.length})
+              </h2>
+              <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+                {offlineAgents.map(agent => (
+                  <AgentCard 
+                    key={agent.id} 
+                    agent={agent} 
+                    onSelect={() => setSelectedAgent(agent)}
+                    getStatusDot={getStatusDot}
+                    getPlatformIcon={getPlatformIcon}
+                    getCpuColor={getCpuColor}
+                    getMemColor={getMemColor}
+                  />
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Pending Agents */}
+          {agents.filter(a => a.status === 'pending').length > 0 && (
+            <div>
+              <h2 className="text-sm font-semibold text-blue-400 uppercase tracking-wider mb-3 flex items-center gap-2">
+                <div className="w-2 h-2 rounded-full bg-blue-400" />
+                Kayıt Bekliyor ({agents.filter(a => a.status === 'pending').length})
+              </h2>
+              <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+                {agents.filter(a => a.status === 'pending').map(agent => (
+                  <AgentCard 
+                    key={agent.id} 
+                    agent={agent} 
+                    onSelect={() => setSelectedAgent(agent)}
+                    getStatusDot={getStatusDot}
+                    getPlatformIcon={getPlatformIcon}
+                    getCpuColor={getCpuColor}
+                    getMemColor={getMemColor}
+                  />
+                ))}
+              </div>
+            </div>
+          )}
         </div>
       )}
 
+      {/* Add Agent Modal */}
       {showAddModal && (
-        <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 p-4">
-          <div className="bg-gray-900 rounded-xl max-w-lg w-full max-h-[90vh] overflow-y-auto">
-            <div className="p-6 border-b border-gray-700">
-              <h2 className="text-xl font-bold text-white">{installToken ? 'Agent Created!' : 'Add Remote Agent'}</h2>
+        <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+          <div className="bg-gray-900 rounded-2xl max-w-lg w-full max-h-[90vh] overflow-y-auto border border-gray-700 shadow-2xl">
+            <div className="p-6 border-b border-gray-700 flex items-center justify-between">
+              <h2 className="text-xl font-bold text-white">{installToken ? 'Agent Oluşturuldu!' : 'Yeni Agent Ekle'}</h2>
+              <button onClick={resetAddForm} className="p-2 hover:bg-gray-800 rounded-lg transition text-gray-400">✕</button>
             </div>
             <div className="p-6 space-y-4">
               {!installToken ? (
                 <>
                   <div>
-                    <label className="block text-gray-400 text-sm mb-2">Agent Name</label>
-                    <input type="text" value={newAgentName} onChange={(e) => setNewAgentName(e.target.value)} placeholder="e.g., My PC, Office Server" className="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2 text-white focus:border-kali-blue focus:outline-none" />
+                    <label className="block text-gray-400 text-sm mb-2">Agent Adı</label>
+                    <input type="text" value={newAgentName} onChange={(e) => setNewAgentName(e.target.value)} placeholder="Örn: Kali-Lab-01, Office-Scanner" className="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2.5 text-white focus:border-kali-blue focus:outline-none focus:ring-1 focus:ring-kali-blue/50" />
                   </div>
                   <div>
-                    <label className="block text-gray-400 text-sm mb-2">Connection Type</label>
+                    <label className="block text-gray-400 text-sm mb-2">Bağlantı Türü</label>
                     <div className="grid grid-cols-2 gap-3">
-                      <button onClick={() => setConnectionType('ssh')} className={`p-4 rounded-lg border ${connectionType === 'ssh' ? 'border-kali-blue bg-kali-blue/10' : 'border-gray-700 bg-gray-800'}`}>
+                      <button onClick={() => setConnectionType('ssh')} className={`p-4 rounded-lg border transition ${connectionType === 'ssh' ? 'border-kali-blue bg-kali-blue/10 ring-1 ring-kali-blue/30' : 'border-gray-700 bg-gray-800 hover:border-gray-600'}`}>
                         <div className="text-2xl mb-2">🔐</div>
-                        <div className="text-white font-medium">SSH Connection</div>
-                        <div className="text-gray-500 text-xs">Connect to existing server</div>
+                        <div className="text-white font-medium text-sm">SSH Bağlantı</div>
+                        <div className="text-gray-500 text-xs mt-1">Mevcut sunucuya bağlan</div>
                       </button>
-                      <button onClick={() => setConnectionType('direct')} className={`p-4 rounded-lg border ${connectionType === 'direct' ? 'border-kali-blue bg-kali-blue/10' : 'border-gray-700 bg-gray-800'}`}>
+                      <button onClick={() => setConnectionType('direct')} className={`p-4 rounded-lg border transition ${connectionType === 'direct' ? 'border-kali-blue bg-kali-blue/10 ring-1 ring-kali-blue/30' : 'border-gray-700 bg-gray-800 hover:border-gray-600'}`}>
                         <div className="text-2xl mb-2">📦</div>
-                        <div className="text-white font-medium">Install Agent</div>
-                        <div className="text-gray-500 text-xs">Install our agent software</div>
+                        <div className="text-white font-medium text-sm">Agent Kur</div>
+                        <div className="text-gray-500 text-xs mt-1">Agent yazılımını kur</div>
                       </button>
                     </div>
                   </div>
                   {connectionType === 'ssh' && (
-                    <div className="space-y-3 p-4 bg-gray-800/50 rounded-lg">
-                      <h4 className="text-white font-medium">SSH Credentials</h4>
+                    <div className="space-y-3 p-4 bg-gray-800/50 rounded-lg border border-gray-700/50">
+                      <h4 className="text-white font-medium text-sm">SSH Bilgileri</h4>
                       <div className="grid grid-cols-3 gap-3">
                         <div className="col-span-2">
                           <label className="block text-gray-500 text-xs mb-1">Host / IP</label>
-                          <input type="text" value={sshCredentials.host} onChange={(e) => setSshCredentials({...sshCredentials, host: e.target.value})} placeholder="10.0.0.115" className="w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white text-sm" />
+                          <input type="text" value={sshCredentials.host} onChange={(e) => setSshCredentials({...sshCredentials, host: e.target.value})} placeholder="10.0.0.115" className="w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white text-sm focus:border-kali-blue focus:outline-none" />
                         </div>
                         <div>
                           <label className="block text-gray-500 text-xs mb-1">Port</label>
-                          <input type="text" value={sshCredentials.port} onChange={(e) => setSshCredentials({...sshCredentials, port: e.target.value})} placeholder="22" className="w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white text-sm" />
+                          <input type="text" value={sshCredentials.port} onChange={(e) => setSshCredentials({...sshCredentials, port: e.target.value})} placeholder="22" className="w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white text-sm focus:border-kali-blue focus:outline-none" />
                         </div>
                       </div>
                       <div>
-                        <label className="block text-gray-500 text-xs mb-1">Username</label>
-                        <input type="text" value={sshCredentials.username} onChange={(e) => setSshCredentials({...sshCredentials, username: e.target.value})} placeholder="root" className="w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white text-sm" />
+                        <label className="block text-gray-500 text-xs mb-1">Kullanıcı Adı</label>
+                        <input type="text" value={sshCredentials.username} onChange={(e) => setSshCredentials({...sshCredentials, username: e.target.value})} placeholder="root" className="w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white text-sm focus:border-kali-blue focus:outline-none" />
                       </div>
                       <div>
-                        <label className="block text-gray-500 text-xs mb-1">Password</label>
-                        <input type="password" value={sshCredentials.password} onChange={(e) => setSshCredentials({...sshCredentials, password: e.target.value})} placeholder="••••••••" className="w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white text-sm" />
+                        <label className="block text-gray-500 text-xs mb-1">Şifre</label>
+                        <input type="password" value={sshCredentials.password} onChange={(e) => setSshCredentials({...sshCredentials, password: e.target.value})} placeholder="••••••••" className="w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white text-sm focus:border-kali-blue focus:outline-none" />
                       </div>
                     </div>
                   )}
@@ -361,7 +496,7 @@ export default function AgentsPage() {
                       <label className="block text-gray-400 text-sm mb-2">Platform</label>
                       <div className="grid grid-cols-4 gap-2">
                         {(['linux', 'windows', 'macos', 'docker'] as AgentPlatform[]).map(p => (
-                          <button key={p} onClick={() => setSelectedPlatform(p)} className={`p-3 rounded-lg border ${selectedPlatform === p ? 'border-kali-blue bg-kali-blue/10' : 'border-gray-700 bg-gray-800'}`}>
+                          <button key={p} onClick={() => setSelectedPlatform(p)} className={`p-3 rounded-lg border transition ${selectedPlatform === p ? 'border-kali-blue bg-kali-blue/10' : 'border-gray-700 bg-gray-800 hover:border-gray-600'}`}>
                             <div className="text-2xl mb-1">{getPlatformIcon(p)}</div>
                             <div className="text-xs text-gray-400 capitalize">{p}</div>
                           </button>
@@ -372,19 +507,22 @@ export default function AgentsPage() {
                 </>
               ) : (
                 <div className="space-y-4">
-                  <div className="p-4 bg-green-900/30 border border-green-500/30 rounded-lg">
-                    <p className="text-green-400">✓ Agent "{newAgentName}" created successfully!</p>
+                  <div className="p-4 bg-green-900/30 border border-green-500/30 rounded-lg flex items-center gap-3">
+                    <span className="text-green-400 text-xl">✓</span>
+                    <p className="text-green-400">Agent "<span className="font-medium">{newAgentName}</span>" başarıyla oluşturuldu!</p>
                   </div>
                   <div>
-                    <label className="block text-gray-400 text-sm mb-2">{connectionType === 'ssh' ? 'SSH Configuration' : 'Installation Command'}</label>
-                    <div className="bg-gray-800 rounded-lg p-4 font-mono text-sm text-gray-300 relative">
+                    <label className="block text-gray-400 text-sm mb-2">
+                      {connectionType === 'ssh' ? 'SSH Yapılandırması' : 'Kurulum Komutu'}
+                    </label>
+                    <div className="bg-gray-950 rounded-lg p-4 font-mono text-sm text-green-400 relative border border-gray-700">
                       <pre className="whitespace-pre-wrap">{installCommand}</pre>
-                      <button onClick={() => copyToClipboard(installCommand)} className="absolute top-2 right-2 p-2 hover:bg-gray-700 rounded transition" title="Copy">📋</button>
+                      <button onClick={() => copyToClipboard(installCommand)} className="absolute top-2 right-2 p-2 hover:bg-gray-800 rounded transition text-gray-500 hover:text-white" title="Kopyala">📋</button>
                     </div>
                   </div>
                   {connectionType === 'ssh' && (
                     <button onClick={() => testConnection(agents[agents.length - 1]?.id)} disabled={testingConnection} className="w-full py-3 bg-cyan-600 hover:bg-cyan-700 text-white rounded-lg font-medium transition disabled:opacity-50">
-                      {testingConnection ? 'Testing Connection...' : 'Test SSH Connection'}
+                      {testingConnection ? 'Bağlantı test ediliyor...' : 'SSH Bağlantısını Test Et'}
                     </button>
                   )}
                   {testResult && (
@@ -396,94 +534,241 @@ export default function AgentsPage() {
               )}
             </div>
             <div className="p-6 border-t border-gray-700 flex justify-end gap-3">
-              <button onClick={resetAddForm} className="px-4 py-2 text-gray-400 hover:text-white transition">{installToken ? 'Done' : 'Cancel'}</button>
+              <button onClick={resetAddForm} className="px-4 py-2 text-gray-400 hover:text-white transition">{installToken ? 'Tamam' : 'İptal'}</button>
               {!installToken && (
-                <button onClick={addAgent} disabled={!newAgentName.trim() || (connectionType === 'ssh' && !sshCredentials.host)} className="px-6 py-2 bg-kali-blue hover:bg-kali-blue/90 text-white rounded-lg font-medium transition disabled:opacity-50">Create Agent</button>
+                <button onClick={addAgent} disabled={!newAgentName.trim() || (connectionType === 'ssh' && !sshCredentials.host)} className="px-6 py-2 bg-gradient-to-r from-kali-blue to-cyan-600 text-white rounded-lg font-medium transition disabled:opacity-50 shadow-lg shadow-kali-blue/20">Agent Oluştur</button>
               )}
             </div>
           </div>
         </div>
       )}
 
+      {/* Agent Detail Sidebar */}
       {selectedAgent && !showEditModal && (
-        <div className="fixed inset-y-0 right-0 w-96 bg-gray-900 border-l border-gray-700 shadow-xl z-40 overflow-y-auto">
+        <div className="fixed inset-y-0 right-0 w-[420px] bg-gray-900 border-l border-gray-700 shadow-2xl z-40 overflow-y-auto">
           <div className="p-6">
             <div className="flex items-center justify-between mb-6">
-              <h2 className="text-xl font-bold text-white">{selectedAgent.name}</h2>
-              <button onClick={() => setSelectedAgent(null)} className="p-2 hover:bg-gray-800 rounded-lg transition">✕</button>
-            </div>
-            <div className="flex items-center gap-3 mb-6">
-              <span className="text-4xl">{getPlatformIcon(selectedAgent.platform)}</span>
-              <div>
-                <p className="text-gray-400 text-sm">{selectedAgent.hostname || 'pending-registration'}</p>
-                <span className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(selectedAgent.status)}`}>{selectedAgent.status}</span>
+              <div className="flex items-center gap-3">
+                <span className="text-3xl">{getPlatformIcon(selectedAgent.platform)}</span>
+                <div>
+                  <h2 className="text-xl font-bold text-white">{selectedAgent.name}</h2>
+                  <p className="text-gray-500 text-sm">{selectedAgent.hostname || 'kayıt-bekliyor'}</p>
+                </div>
               </div>
+              <button onClick={() => setSelectedAgent(null)} className="p-2 hover:bg-gray-800 rounded-lg transition text-gray-400">✕</button>
             </div>
-            <div className="space-y-4">
-              <div className="grid grid-cols-2 gap-4">
-                <div className="bg-gray-800/50 rounded-lg p-3"><p className="text-gray-500 text-xs mb-1">IP Address</p><p className="text-cyan-400 font-mono">{selectedAgent.ip_address || 'N/A'}</p></div>
-                <div className="bg-gray-800/50 rounded-lg p-3"><p className="text-gray-500 text-xs mb-1">Location</p><p className="text-white">{selectedAgent.location || 'Unknown'}</p></div>
-              </div>
-              <div className="bg-gray-800/50 rounded-lg p-3"><p className="text-gray-500 text-xs mb-1">Operating System</p><p className="text-white">{selectedAgent.os || 'Pending...'}</p></div>
-              {selectedAgent.connection_type === 'ssh' && (
-                <div className="bg-gray-800/50 rounded-lg p-3"><p className="text-gray-500 text-xs mb-1">SSH Connection</p><p className="text-white font-mono text-sm">{selectedAgent.ssh_username}@{selectedAgent.ssh_host}:{selectedAgent.ssh_port}</p></div>
+
+            {/* Status Badge */}
+            <div className="flex items-center gap-2 mb-6">
+              <div className={getStatusDot(selectedAgent.status)} />
+              <span className={`px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider ${getStatusColor(selectedAgent.status)}`}>
+                {selectedAgent.status}
+              </span>
+              {selectedAgent.last_seen && (
+                <span className="text-gray-500 text-xs ml-auto">{selectedAgent.last_seen}</span>
               )}
-              <div className="bg-gray-800/50 rounded-lg p-3"><p className="text-gray-500 text-xs mb-1">Scans</p><p className="text-white">{selectedAgent.active_scans} active • {selectedAgent.total_scans} total</p></div>
-              <div className="bg-gray-800/50 rounded-lg p-3"><p className="text-gray-500 text-xs mb-1">Last Seen</p><p className="text-white">{selectedAgent.last_seen ? new Date(selectedAgent.last_seen).toLocaleString() : 'Never'}</p></div>
             </div>
+
+            {/* CPU & RAM Bars */}
+            {selectedAgent.status !== 'pending' && (
+              <div className="space-y-3 mb-6">
+                <div>
+                  <div className="flex items-center justify-between mb-1">
+                    <span className="text-gray-400 text-xs font-medium">CPU</span>
+                    <span className="text-white text-xs font-mono">{selectedAgent.cpu_usage}%</span>
+                  </div>
+                  <div className="w-full bg-gray-800 rounded-full h-2">
+                    <div className={`h-2 rounded-full transition-all duration-500 ${getCpuColor(selectedAgent.cpu_usage)}`} style={{ width: `${Math.min(selectedAgent.cpu_usage, 100)}%` }} />
+                  </div>
+                </div>
+                <div>
+                  <div className="flex items-center justify-between mb-1">
+                    <span className="text-gray-400 text-xs font-medium">RAM</span>
+                    <span className="text-white text-xs font-mono">{selectedAgent.memory_usage}%</span>
+                  </div>
+                  <div className="w-full bg-gray-800 rounded-full h-2">
+                    <div className={`h-2 rounded-full transition-all duration-500 ${getMemColor(selectedAgent.memory_usage)}`} style={{ width: `${Math.min(selectedAgent.memory_usage, 100)}%` }} />
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Info Grid */}
+            <div className="space-y-3">
+              <div className="grid grid-cols-2 gap-3">
+                <div className="bg-gray-800/50 rounded-lg p-3">
+                  <p className="text-gray-500 text-xs mb-1">IP Adresi</p>
+                  <p className="text-cyan-400 font-mono text-sm">{selectedAgent.ip_address || 'N/A'}</p>
+                </div>
+                <div className="bg-gray-800/50 rounded-lg p-3">
+                  <p className="text-gray-500 text-xs mb-1">Konum</p>
+                  <p className="text-white text-sm">{selectedAgent.location || 'Bilinmiyor'}</p>
+                </div>
+              </div>
+              <div className="bg-gray-800/50 rounded-lg p-3">
+                <p className="text-gray-500 text-xs mb-1">İşletim Sistemi</p>
+                <p className="text-white text-sm">{selectedAgent.os || 'Kayıt bekleniyor...'}</p>
+              </div>
+              {selectedAgent.connection_type === 'ssh' && selectedAgent.ssh_host && (
+                <div className="bg-gray-800/50 rounded-lg p-3">
+                  <p className="text-gray-500 text-xs mb-1">SSH Bağlantısı</p>
+                  <p className="text-white font-mono text-sm">{selectedAgent.ssh_username}@{selectedAgent.ssh_host}:{selectedAgent.ssh_port}</p>
+                </div>
+              )}
+              <div className="grid grid-cols-2 gap-3">
+                <div className="bg-gray-800/50 rounded-lg p-3">
+                  <p className="text-gray-500 text-xs mb-1">Aktif Tarama</p>
+                  <p className="text-yellow-400 text-lg font-bold">{selectedAgent.active_scans}</p>
+                </div>
+                <div className="bg-gray-800/50 rounded-lg p-3">
+                  <p className="text-gray-500 text-xs mb-1">Toplam Tarama</p>
+                  <p className="text-purple-400 text-lg font-bold">{selectedAgent.total_scans}</p>
+                </div>
+              </div>
+            </div>
+
+            {/* Actions */}
             <div className="mt-6 space-y-3">
               {selectedAgent.connection_type === 'ssh' && (
-                <button onClick={() => testConnection(selectedAgent.id)} disabled={testingConnection} className="w-full py-2 bg-cyan-600 hover:bg-cyan-700 text-white rounded-lg font-medium transition disabled:opacity-50">
-                  {testingConnection ? 'Testing...' : 'Test Connection'}
+                <button onClick={() => testConnection(selectedAgent.id)} disabled={testingConnection} className="w-full py-2.5 bg-cyan-600 hover:bg-cyan-700 text-white rounded-lg font-medium transition disabled:opacity-50">
+                  {testingConnection ? 'Test ediliyor...' : 'Bağlantıyı Test Et'}
                 </button>
               )}
               {testResult && <div className={`p-3 rounded-lg text-sm ${testResult.success ? 'bg-green-900/30 text-green-400' : 'bg-red-900/30 text-red-400'}`}>{testResult.message}</div>}
-              <button onClick={() => setShowEditModal(true)} className="w-full py-2 bg-gray-800 hover:bg-gray-700 text-white rounded-lg font-medium transition">Edit Agent</button>
-              <button onClick={() => deleteAgent(selectedAgent.id)} className="w-full py-2 bg-red-600/20 hover:bg-red-600/30 text-red-400 rounded-lg font-medium transition">Remove Agent</button>
+              <button onClick={() => setShowEditModal(true)} className="w-full py-2.5 bg-gray-800 hover:bg-gray-700 text-white rounded-lg font-medium transition">Düzenle</button>
+              <button onClick={() => deleteAgent(selectedAgent.id)} className="w-full py-2.5 bg-red-600/20 hover:bg-red-600/30 text-red-400 rounded-lg font-medium transition border border-red-500/20">Agent'ı Sil</button>
             </div>
           </div>
         </div>
       )}
 
+      {/* Edit Modal */}
       {showEditModal && selectedAgent && (
-        <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 p-4">
-          <div className="bg-gray-900 rounded-xl max-w-lg w-full">
-            <div className="p-6 border-b border-gray-700"><h2 className="text-xl font-bold text-white">Edit Agent</h2></div>
+        <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+          <div className="bg-gray-900 rounded-2xl max-w-lg w-full border border-gray-700 shadow-2xl">
+            <div className="p-6 border-b border-gray-700"><h2 className="text-xl font-bold text-white">Agent Düzenle</h2></div>
             <div className="p-6 space-y-4">
               <div>
-                <label className="block text-gray-400 text-sm mb-2">Agent Name</label>
-                <input type="text" value={selectedAgent.name} onChange={(e) => setSelectedAgent({...selectedAgent, name: e.target.value})} className="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2 text-white focus:border-kali-blue focus:outline-none" />
+                <label className="block text-gray-400 text-sm mb-2">Agent Adı</label>
+                <input type="text" value={selectedAgent.name} onChange={(e) => setSelectedAgent({...selectedAgent, name: e.target.value})} className="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2.5 text-white focus:border-kali-blue focus:outline-none" />
               </div>
               {selectedAgent.connection_type === 'ssh' && (
                 <>
                   <div className="grid grid-cols-3 gap-3">
                     <div className="col-span-2">
                       <label className="block text-gray-400 text-sm mb-2">SSH Host</label>
-                      <input type="text" value={selectedAgent.ssh_host || ''} onChange={(e) => setSelectedAgent({...selectedAgent, ssh_host: e.target.value})} className="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2 text-white focus:border-kali-blue focus:outline-none" />
+                      <input type="text" value={selectedAgent.ssh_host || ''} onChange={(e) => setSelectedAgent({...selectedAgent, ssh_host: e.target.value})} className="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2.5 text-white focus:border-kali-blue focus:outline-none" />
                     </div>
                     <div>
                       <label className="block text-gray-400 text-sm mb-2">Port</label>
-                      <input type="number" value={selectedAgent.ssh_port || 22} onChange={(e) => setSelectedAgent({...selectedAgent, ssh_port: parseInt(e.target.value)})} className="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2 text-white focus:border-kali-blue focus:outline-none" />
+                      <input type="number" value={selectedAgent.ssh_port || 22} onChange={(e) => setSelectedAgent({...selectedAgent, ssh_port: parseInt(e.target.value)})} className="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2.5 text-white focus:border-kali-blue focus:outline-none" />
                     </div>
                   </div>
                   <div>
-                    <label className="block text-gray-400 text-sm mb-2">SSH Username</label>
-                    <input type="text" value={selectedAgent.ssh_username || ''} onChange={(e) => setSelectedAgent({...selectedAgent, ssh_username: e.target.value})} className="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2 text-white focus:border-kali-blue focus:outline-none" />
+                    <label className="block text-gray-400 text-sm mb-2">SSH Kullanıcı Adı</label>
+                    <input type="text" value={selectedAgent.ssh_username || ''} onChange={(e) => setSelectedAgent({...selectedAgent, ssh_username: e.target.value})} className="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2.5 text-white focus:border-kali-blue focus:outline-none" />
                   </div>
                 </>
               )}
               <div>
-                <label className="block text-gray-400 text-sm mb-2">Location</label>
-                <input type="text" value={selectedAgent.location || ''} onChange={(e) => setSelectedAgent({...selectedAgent, location: e.target.value})} placeholder="e.g., Office, Home Lab" className="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2 text-white focus:border-kali-blue focus:outline-none" />
+                <label className="block text-gray-400 text-sm mb-2">Konum</label>
+                <input type="text" value={selectedAgent.location || ''} onChange={(e) => setSelectedAgent({...selectedAgent, location: e.target.value})} placeholder="Örn: Ofis, Ev Lab" className="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2.5 text-white focus:border-kali-blue focus:outline-none" />
               </div>
             </div>
             <div className="p-6 border-t border-gray-700 flex justify-end gap-3">
-              <button onClick={() => { setShowEditModal(false); setSelectedAgent(null); }} className="px-4 py-2 text-gray-400 hover:text-white transition">Cancel</button>
-              <button onClick={updateAgent} className="px-6 py-2 bg-kali-blue hover:bg-kali-blue/90 text-white rounded-lg font-medium transition">Save Changes</button>
+              <button onClick={() => { setShowEditModal(false); setSelectedAgent(null); }} className="px-4 py-2 text-gray-400 hover:text-white transition">İptal</button>
+              <button onClick={updateAgent} className="px-6 py-2 bg-gradient-to-r from-kali-blue to-cyan-600 text-white rounded-lg font-medium transition shadow-lg shadow-kali-blue/20">Kaydet</button>
             </div>
           </div>
         </div>
       )}
+    </div>
+  );
+}
+
+// ── Agent Card Component ─────────────────────────────
+function AgentCard({ 
+  agent, 
+  onSelect, 
+  getStatusDot, 
+  getPlatformIcon, 
+  getCpuColor, 
+  getMemColor 
+}: { 
+  agent: Agent;
+  onSelect: () => void;
+  getStatusDot: (s: AgentStatus) => string;
+  getPlatformIcon: (p: AgentPlatform) => string;
+  getCpuColor: (n: number) => string;
+  getMemColor: (n: number) => string;
+}) {
+  return (
+    <div 
+      onClick={onSelect}
+      className="bg-gray-800/50 rounded-xl p-4 border border-gray-700 hover:border-gray-500 transition-all cursor-pointer group hover:shadow-lg hover:shadow-black/20"
+    >
+      {/* Header */}
+      <div className="flex items-start justify-between mb-3">
+        <div className="flex items-center gap-3">
+          <span className="text-2xl">{getPlatformIcon(agent.platform)}</span>
+          <div>
+            <h3 className="text-white font-medium group-hover:text-kali-blue transition">{agent.name}</h3>
+            <p className="text-gray-500 text-xs font-mono">{agent.hostname || 'kayıt-bekliyor'}</p>
+          </div>
+        </div>
+        <div className="flex items-center gap-2">
+          <div className={getStatusDot(agent.status)} />
+          <span className="text-xs text-gray-500 uppercase font-medium">{agent.status}</span>
+        </div>
+      </div>
+
+      {/* IP & OS */}
+      <div className="space-y-1.5 text-sm mb-3">
+        <div className="flex justify-between">
+          <span className="text-gray-500 text-xs">IP</span>
+          <span className="text-cyan-400 font-mono text-xs">{agent.ip_address || 'N/A'}</span>
+        </div>
+        <div className="flex justify-between">
+          <span className="text-gray-500 text-xs">OS</span>
+          <span className="text-gray-300 text-xs truncate max-w-[180px]">{agent.os || 'Bekleniyor...'}</span>
+        </div>
+      </div>
+
+      {/* CPU & RAM Mini Bars */}
+      {agent.status !== 'pending' && (
+        <div className="space-y-2 mb-3">
+          <div className="flex items-center gap-2">
+            <span className="text-gray-500 text-[10px] w-8">CPU</span>
+            <div className="flex-1 bg-gray-700 rounded-full h-1.5">
+              <div className={`h-1.5 rounded-full transition-all ${getCpuColor(agent.cpu_usage)}`} style={{ width: `${Math.min(agent.cpu_usage, 100)}%` }} />
+            </div>
+            <span className="text-gray-400 text-[10px] font-mono w-8 text-right">{agent.cpu_usage}%</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <span className="text-gray-500 text-[10px] w-8">RAM</span>
+            <div className="flex-1 bg-gray-700 rounded-full h-1.5">
+              <div className={`h-1.5 rounded-full transition-all ${getMemColor(agent.memory_usage)}`} style={{ width: `${Math.min(agent.memory_usage, 100)}%` }} />
+            </div>
+            <span className="text-gray-400 text-[10px] font-mono w-8 text-right">{agent.memory_usage}%</span>
+          </div>
+        </div>
+      )}
+
+      {/* Footer */}
+      <div className="pt-3 border-t border-gray-700/50 flex items-center justify-between">
+        <div className="flex items-center gap-3">
+          {agent.active_scans > 0 && (
+            <span className="text-yellow-400 text-xs flex items-center gap-1">
+              <svg className="w-3 h-3 animate-spin" fill="none" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path></svg>
+              {agent.active_scans} aktif
+            </span>
+          )}
+          <span className="text-gray-600 text-xs">{agent.total_scans} tarama</span>
+        </div>
+        {agent.last_seen && (
+          <span className="text-gray-600 text-[10px]">{agent.last_seen}</span>
+        )}
+      </div>
     </div>
   );
 }
