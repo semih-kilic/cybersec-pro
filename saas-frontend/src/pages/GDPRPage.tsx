@@ -27,7 +27,7 @@ export default function GDPRPage() {
         alert('Failed to export data. Please try again or contact support.');
       }
     } catch {
-      alert('Export request failed. Please contact privacy@cybersecpro.semihkilic.com');
+      alert('Export request failed. Please contact cybersecpro@semihkilic.com');
     } finally {
       setExportLoading(false);
     }
@@ -49,10 +49,10 @@ export default function GDPRPage() {
         alert('Account deletion request submitted. Your account and data will be deleted within 30 days. You will receive a confirmation email.');
         window.location.href = '/';
       } else {
-        alert('Failed to submit deletion request. Please contact privacy@cybersecpro.semihkilic.com');
+        alert('Failed to submit deletion request. Please contact cybersecpro@semihkilic.com');
       }
     } catch {
-      alert('Request failed. Please contact privacy@cybersecpro.semihkilic.com');
+      alert('Request failed. Please contact cybersecpro@semihkilic.com');
     } finally {
       setDeleteLoading(false);
       setShowDeleteConfirm(false);
@@ -170,7 +170,7 @@ export default function GDPRPage() {
               {!isAuthenticated && (
                 <div className="mt-4 p-4 bg-blue-900/20 border border-blue-500/30 rounded-lg">
                   <p className="text-blue-400 text-sm">
-                    <Link to="/login" className="underline hover:text-blue-300">Sign in</Link> to exercise your data rights directly from this page, or contact us at <a href="mailto:privacy@cybersecpro.semihkilic.com" className="underline hover:text-blue-300">privacy@cybersecpro.semihkilic.com</a>.
+                    <Link to="/login" className="underline hover:text-blue-300">Sign in</Link> to exercise your data rights directly from this page, or contact us at <a href="mailto:cybersecpro@semihkilic.com" className="underline hover:text-blue-300">cybersecpro@semihkilic.com</a>.
                   </p>
                 </div>
               )}
@@ -187,7 +187,7 @@ export default function GDPRPage() {
                 <li>Security measures and sub-processor management</li>
                 <li>Data breach notification procedures (72-hour window)</li>
               </ul>
-              <p className="text-gray-400 text-sm mt-3">To request a DPA, contact <a href="mailto:legal@cybersecpro.semihkilic.com" className="text-cyan-400 hover:underline">legal@cybersecpro.semihkilic.com</a>.</p>
+              <p className="text-gray-400 text-sm mt-3">To request a DPA, contact <a href="mailto:cybersecpro@semihkilic.com" className="text-cyan-400 hover:underline">cybersecpro@semihkilic.com</a>.</p>
             </section>
 
             {/* Security Measures */}
@@ -215,7 +215,7 @@ export default function GDPRPage() {
               <h2 className="text-xl font-semibold text-white mb-2">Data Protection Officer</h2>
               <p className="text-gray-300 mb-3">For GDPR-related inquiries, contact our DPO:</p>
               <div className="flex flex-col gap-1">
-                <p className="text-gray-300">📧 <a href="mailto:privacy@cybersecpro.semihkilic.com" className="text-cyan-400 hover:underline">privacy@cybersecpro.semihkilic.com</a></p>
+                <p className="text-gray-300">📧 <a href="mailto:cybersecpro@semihkilic.com" className="text-cyan-400 hover:underline">cybersecpro@semihkilic.com</a></p>
                 <p className="text-gray-400 text-sm">Response within 30 days as required by GDPR Art. 12</p>
               </div>
             </section>

@@ -28,7 +28,7 @@ export default function PrivacyPolicyPage() {
             <section>
               <h2 className="text-2xl font-semibold text-white mb-3">1. Introduction</h2>
               <p>CyberSec Pro ("we", "our", "us") is committed to protecting your personal data and respecting your privacy. This Privacy Policy explains how we collect, use, store, and protect your personal information in compliance with the General Data Protection Regulation (GDPR) (EU) 2016/679.</p>
-              <p className="mt-2">Our platform is operated by Semih Kılıç. For data protection inquiries, contact our Data Protection Officer at <a href="mailto:privacy@cybersecpro.semihkilic.com" className="text-cyan-400 hover:underline">privacy@cybersecpro.semihkilic.com</a>.</p>
+              <p className="mt-2">Our platform is operated by Semih Kılıç. For data protection inquiries, contact our Data Protection Officer at <a href="mailto:cybersecpro@semihkilic.com" className="text-cyan-400 hover:underline">cybersecpro@semihkilic.com</a>.</p>
             </section>
 
             <section>
@@ -36,7 +36,7 @@ export default function PrivacyPolicyPage() {
               <p>The data controller responsible for your personal data is:</p>
               <div className="bg-gray-900/50 rounded-lg p-4 mt-2 border border-gray-700">
                 <p>CyberSec Pro / Semih Kılıç</p>
-                <p>Email: privacy@cybersecpro.semihkilic.com</p>
+                <p>Email: cybersecpro@semihkilic.com</p>
                 <p>Website: https://cybersecpro.semihkilic.com</p>
               </div>
             </section>
@@ -97,7 +97,7 @@ export default function PrivacyPolicyPage() {
                   </div>
                 ))}
               </div>
-              <p className="mt-3">To exercise these rights, visit <Link to="/dashboard/settings" className="text-cyan-400 hover:underline">Account Settings</Link> or email <a href="mailto:privacy@cybersecpro.semihkilic.com" className="text-cyan-400 hover:underline">privacy@cybersecpro.semihkilic.com</a>.</p>
+              <p className="mt-3">To exercise these rights, visit <Link to="/dashboard/settings" className="text-cyan-400 hover:underline">Account Settings</Link> or email <a href="mailto:cybersecpro@semihkilic.com" className="text-cyan-400 hover:underline">cybersecpro@semihkilic.com</a>.</p>
             </section>
 
             <section>
@@ -144,7 +144,7 @@ export default function PrivacyPolicyPage() {
               <h2 className="text-2xl font-semibold text-white mb-3">11. Contact</h2>
               <p>For any questions regarding this Privacy Policy or your data rights:</p>
               <div className="bg-gray-900/50 rounded-lg p-4 mt-2 border border-gray-700">
-                <p>Email: <a href="mailto:privacy@cybersecpro.semihkilic.com" className="text-cyan-400 hover:underline">privacy@cybersecpro.semihkilic.com</a></p>
+                <p>Email: <a href="mailto:cybersecpro@semihkilic.com" className="text-cyan-400 hover:underline">cybersecpro@semihkilic.com</a></p>
                 <p>Response time: Within 30 days (as required by GDPR Art. 12)</p>
               </div>
             </section>
