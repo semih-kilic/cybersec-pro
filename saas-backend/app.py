@@ -394,6 +394,7 @@ class Scan(db.Model):
     target = db.Column(db.String(255), nullable=False)
     parameters = db.Column(db.JSON)
     status = db.Column(db.String(20), default='pending')  # pending, running, completed, failed, timeout, cancelled
+    agent_id = db.Column(db.String(36), db.ForeignKey('agents.id'), nullable=True)  # Which agent ran this scan
     output = db.Column(db.Text)
     error_log = db.Column(db.Text)  # Error details for failed scans
     findings = db.Column(db.JSON)  # Structured scan findings

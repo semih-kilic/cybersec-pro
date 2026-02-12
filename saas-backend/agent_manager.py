@@ -298,17 +298,24 @@ class AgentManager:
     
     def _get_pending_scans(self, agent):
         """Get scans dispatched to this agent that haven't started"""
-        scans = self.Scan.query.filter_by(
-            status='pending',
-            agent_id=agent.id if hasattr(self.Scan, 'agent_id') else None
-        ).limit(5).all()
+        # Skip if Scan model doesn't have agent_id column
+        if not hasattr(self.Scan, 'agent_id'):
+            return []
         
-        return [{
-            'scan_id': s.id,
-            'tool_id': s.tool_id,
-            'target': s.target,
-            'parameters': s.parameters
-        } for s in scans] if scans else []
+        try:
+            scans = self.Scan.query.filter_by(
+                status='pending',
+                agent_id=agent.id
+            ).limit(5).all()
+            
+            return [{
+                'scan_id': s.id,
+                'tool_id': s.tool_id,
+                'target': s.target,
+                'parameters': s.parameters
+            } for s in scans] if scans else []
+        except Exception:
+            return []
     
     def _emit_agent_update(self, agent):
         """Emit agent status update via WebSocket"""
