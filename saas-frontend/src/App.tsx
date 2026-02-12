@@ -38,6 +38,14 @@ const UpgradePage = lazy(() => import('./pages/dashboard/UpgradePage'));
 const BillingPage = lazy(() => import('./pages/dashboard/BillingPage'));
 const FeedbackPage = lazy(() => import('./pages/dashboard/FeedbackPage'));
 
+// Legal/GDPR Pages (lazy loaded)
+const PrivacyPolicyPage = lazy(() => import('./pages/PrivacyPolicyPage'));
+const TermsPage = lazy(() => import('./pages/TermsPage'));
+const GDPRPage = lazy(() => import('./pages/GDPRPage'));
+
+// GDPR Cookie Consent
+import { CookieConsentBanner } from './components/CookieConsent';
+
 // Styles
 import './index.css';
 
@@ -117,6 +125,11 @@ function AppRoutes() {
       {/* Public Routes */}
       <Route path="/" element={<LandingPage />} />
       
+      {/* Legal & GDPR Routes */}
+      <Route path="/privacy" element={<Suspense fallback={<LoadingSpinner />}><PrivacyPolicyPage /></Suspense>} />
+      <Route path="/terms" element={<Suspense fallback={<LoadingSpinner />}><TermsPage /></Suspense>} />
+      <Route path="/gdpr" element={<Suspense fallback={<LoadingSpinner />}><GDPRPage /></Suspense>} />
+      
       {/* Tools Routes - Public (like kali.org/tools) */}
       <Route path="/tools" element={<ToolsCatalogPage />} />
       <Route path="/tools/:slug" element={<ToolDetailPagePublic />} />
@@ -181,6 +194,7 @@ function App() {
         <AuthProvider>
           <div className="min-h-screen cyberpunk-theme">
             <AppRoutes />
+            <CookieConsentBanner />
           </div>
         </AuthProvider>
       </Router>

@@ -14,6 +14,7 @@ const plans = [
     id: 'starter',
     name: 'Starter',
     price: 0,
+    yearlyPrice: 0,
     period: '14 days',
     description: 'Perfect for trying the platform',
     features: [
@@ -28,11 +29,12 @@ const plans = [
   {
     id: 'professional',
     name: 'Professional',
-    price: 19,
+    price: 29,
+    yearlyPrice: 290,
     period: '/month',
     description: 'For security professionals',
     features: [
-      '120 security tools',
+      '200+ security tools',
       '50 scans per day',
       'Multi-tool scan (3)',
       '5 projects',
@@ -45,15 +47,16 @@ const plans = [
   {
     id: 'team',
     name: 'Team',
-    price: 49,
+    price: 59,
+    yearlyPrice: 590,
     period: '/month',
     description: 'For security teams',
     features: [
-      '130 security tools',
-      '100 scans per day',
+      '400+ security tools',
+      '200 scans per day',
       'Multi-tool scan (5)',
-      'Remote agent (1)',
-      '5 team members',
+      'Remote agents (3)',
+      '10 team members',
       '20 projects',
       'Slack/Teams integration',
     ],
@@ -64,10 +67,11 @@ const plans = [
     id: 'enterprise',
     name: 'Enterprise',
     price: 99,
+    yearlyPrice: 990,
     period: '/month',
     description: 'For organizations',
     features: [
-      'All 143+ Kali tools',
+      'All 682 Kali Linux tools',
       'Unlimited scans',
       'Multi-tool scan (∞)',
       'Unlimited remote agents',
@@ -75,6 +79,7 @@ const plans = [
       'SSO / SAML / LDAP',
       'Compliance reports (OWASP, PCI)',
       '24/7 priority support',
+      'GDPR compliant',
     ],
     color: 'yellow',
     popular: false,
@@ -84,6 +89,7 @@ const plans = [
 export default function UpgradePage() {
   const { organization, token } = useAuth();
   const [loading, setLoading] = useState<string | null>(null);
+  const [billingCycle, setBillingCycle] = useState<'monthly' | 'yearly'>('monthly');
   const currentPlan = organization?.plan_type || 'starter';
 
   const handleUpgrade = async (planId: string) => {
@@ -163,6 +169,21 @@ export default function UpgradePage() {
           <span className="text-gray-400">Current Plan:</span>
           <span className="text-kali-blue font-semibold capitalize">{currentPlan}</span>
         </div>
+        {/* Billing Cycle Toggle */}
+        <div className="mt-6 inline-flex items-center gap-3 bg-gray-800/50 rounded-full p-1">
+          <button
+            onClick={() => setBillingCycle('monthly')}
+            className={`px-5 py-2 rounded-full text-sm font-medium transition ${billingCycle === 'monthly' ? 'bg-kali-blue text-white' : 'text-gray-400 hover:text-white'}`}
+          >
+            Monthly
+          </button>
+          <button
+            onClick={() => setBillingCycle('yearly')}
+            className={`px-5 py-2 rounded-full text-sm font-medium transition ${billingCycle === 'yearly' ? 'bg-kali-blue text-white' : 'text-gray-400 hover:text-white'}`}
+          >
+            Yearly <span className="text-green-400 text-xs ml-1">Save 17%</span>
+          </button>
+        </div>
       </div>
 
       {/* Pricing Grid */}
@@ -194,9 +215,12 @@ export default function UpgradePage() {
             </div>
 
             <div className="flex items-baseline gap-1 mb-2">
-              <span className="text-4xl font-bold text-white">€{plan.price}</span>
-              <span className="text-gray-500">{plan.period}</span>
+              <span className="text-4xl font-bold text-white">€{billingCycle === 'yearly' ? plan.yearlyPrice : plan.price}</span>
+              <span className="text-gray-500">{plan.price === 0 ? plan.period : billingCycle === 'yearly' ? '/year' : '/month'}</span>
             </div>
+            {billingCycle === 'yearly' && plan.price > 0 && (
+              <p className="text-green-400 text-xs mb-2">€{(plan.yearlyPrice / 12).toFixed(0)}/mo — save €{plan.price * 12 - plan.yearlyPrice}/year</p>
+            )}
 
             <p className="text-gray-400 text-sm mb-6">{plan.description}</p>
 

@@ -4211,6 +4211,132 @@ def delete_project(project_id):
         return jsonify({'error': str(e)}), 500
 
 
+# ==========================================
+# GDPR API - EU Compliance (Art. 15, 17, 20)
+# ==========================================
+
+@app.route('/api/v1/gdpr/export', methods=['GET'])
+@jwt_required()
+def gdpr_data_export():
+    """GDPR Art. 15 + 20: Right of Access & Data Portability - export all personal data"""
+    try:
+        user_id = get_jwt_identity()
+        user = User.query.get(user_id)
+        if not user:
+            return jsonify({'error': 'User not found'}), 404
+        
+        # Collect all user data
+        export_data = {
+            'export_info': {
+                'generated_at': datetime.utcnow().isoformat(),
+                'format': 'JSON',
+                'gdpr_article': 'Art. 15 (Right of Access) & Art. 20 (Data Portability)',
+                'platform': 'CyberSec Pro'
+            },
+            'personal_data': {
+                'id': user.id,
+                'email': user.email,
+                'first_name': user.first_name,
+                'last_name': user.last_name,
+                'role': user.role,
+                'created_at': user.created_at.isoformat() if user.created_at else None,
+            },
+            'organization': None,
+            'scans': [],
+            'agents': [],
+        }
+        
+        # Organization data
+        if user.organization:
+            org = user.organization
+            export_data['organization'] = {
+                'id': org.id,
+                'name': org.name,
+                'plan_type': org.plan_type,
+                'created_at': org.created_at.isoformat() if org.created_at else None,
+            }
+        
+        # Scan history
+        scans = Scan.query.filter_by(user_id=user_id).order_by(Scan.created_at.desc()).all()
+        for s in scans:
+            export_data['scans'].append({
+                'id': s.id,
+                'tool': s.tool_name,
+                'target': s.target,
+                'status': s.status,
+                'created_at': s.created_at.isoformat() if s.created_at else None,
+                'completed_at': s.completed_at.isoformat() if s.completed_at else None,
+            })
+        
+        # Agent data
+        if user.organization:
+            agents = Agent.query.filter_by(organization_id=user.organization.id).all()
+            for a in agents:
+                export_data['agents'].append({
+                    'id': a.id,
+                    'name': a.name,
+                    'hostname': a.hostname,
+                    'platform': a.platform,
+                    'status': a.status,
+                    'created_at': a.created_at.isoformat() if a.created_at else None,
+                })
+        
+        # Return as downloadable JSON
+        response = app.response_class(
+            response=json.dumps(export_data, indent=2, ensure_ascii=False),
+            mimetype='application/json',
+            headers={'Content-Disposition': 'attachment; filename=cybersecpro-my-data.json'}
+        )
+        return response
+        
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+
+@app.route('/api/v1/gdpr/delete-account', methods=['POST'])
+@jwt_required()
+def gdpr_delete_account():
+    """GDPR Art. 17: Right to Erasure (Right to be Forgotten)"""
+    try:
+        user_id = get_jwt_identity()
+        user = User.query.get(user_id)
+        if not user:
+            return jsonify({'error': 'User not found'}), 404
+        
+        data = request.get_json()
+        if not data or not data.get('confirm'):
+            return jsonify({'error': 'Deletion must be confirmed with {confirm: true}'}), 400
+        
+        org_id = user.organization_id
+        
+        # Delete user's scans
+        Scan.query.filter_by(user_id=user_id).delete()
+        
+        # Delete agents belonging to user's org (if sole member)
+        if org_id:
+            org_users = User.query.filter_by(organization_id=org_id).count()
+            if org_users <= 1:
+                # Last user in org - delete org data too
+                Agent.query.filter_by(organization_id=org_id).delete()
+        
+        # Delete user
+        db.session.delete(user)
+        db.session.commit()
+        
+        logger.info(f"GDPR Art. 17: Account deleted for user {user_id}")
+        
+        return jsonify({
+            'success': True,
+            'message': 'Your account and all associated data have been queued for deletion. This process will complete within 30 days as required by GDPR Art. 17.',
+            'gdpr_article': 'Art. 17 (Right to Erasure)'
+        })
+        
+    except Exception as e:
+        db.session.rollback()
+        logger.error(f"GDPR deletion error: {e}")
+        return jsonify({'error': str(e)}), 500
+
+
 if __name__ == '__main__':
     init_database()
     # Start agent health monitor

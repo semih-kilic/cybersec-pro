@@ -275,11 +275,11 @@ class AgentManager:
         if agent.last_heartbeat:
             delta = (now - agent.last_heartbeat).total_seconds()
             if delta < 60:
-                last_seen = f"{int(delta)} saniye önce"
+                last_seen = f"{int(delta)} seconds ago"
             elif delta < 3600:
-                last_seen = f"{int(delta/60)} dakika önce"
+                last_seen = f"{int(delta/60)} minutes ago"
             else:
-                last_seen = f"{int(delta/3600)} saat önce"
+                last_seen = f"{int(delta/3600)} hours ago"
         
         return {
             'id': agent.id,

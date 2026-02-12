@@ -50,17 +50,18 @@ export function LandingPage() {
         {/* Hero Content */}
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 text-center">
           <div className="inline-block px-4 py-2 bg-cyan-500/10 border border-cyan-500/30 rounded-full text-cyan-400 text-sm font-medium mb-8">
-            🚀 404+ Professional Security Tools
+            🚀 682 Professional Security Tools • GDPR Compliant 🇪🇺
           </div>
           <h1 className="text-5xl md:text-7xl font-bold text-white mb-6">
-            Professional<br />
+            The Most Advanced<br />
             <span className="bg-gradient-to-r from-cyan-400 to-blue-500 bg-clip-text text-transparent">
-              Penetration Testing
+              Kali Linux
             </span><br />
-            Platform
+            Platform in Europe
           </h1>
           <p className="text-xl text-gray-400 max-w-2xl mx-auto mb-10">
-            Access 404+ security tools through one powerful dashboard. From reconnaissance to exploitation, we've got everything you need for comprehensive security testing.
+            682 penetration testing tools in your browser. No installation required. 
+            Enterprise-grade security testing platform, built for European compliance standards.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             {isAuthenticated ? (
@@ -89,12 +90,12 @@ export function LandingPage() {
           
           <div className="grid md:grid-cols-3 gap-8">
             {[
-              { icon: '🔍', title: 'Information Gathering', desc: '80+ tools for reconnaissance, DNS recon, subdomain enumeration, OSINT' },
-              { icon: '🌐', title: 'Web Application', desc: '60+ tools for web scanning, SQL injection, XSS testing, fuzzing' },
-              { icon: '🔐', title: 'Password Attacks', desc: '50+ tools for hash cracking, brute force, dictionary attacks' },
-              { icon: '🛡️', title: 'Vulnerability Analysis', desc: '40+ tools for scanning, SSL testing, vulnerability detection' },
-              { icon: '💀', title: 'Exploitation', desc: '30+ tools including Metasploit Framework for authorized testing' },
-              { icon: '📊', title: 'Forensics', desc: '40+ tools for memory analysis, file carving, steganography' },
+              { icon: '🔍', title: 'Information Gathering', desc: '130+ tools for reconnaissance, DNS recon, subdomain enumeration, OSINT' },
+              { icon: '🌐', title: 'Web Application', desc: '100+ tools for web scanning, SQL injection, XSS testing, fuzzing' },
+              { icon: '🔐', title: 'Password Attacks', desc: '80+ tools for hash cracking, brute force, dictionary attacks' },
+              { icon: '🛡️', title: 'Vulnerability Analysis', desc: '60+ tools for scanning, SSL testing, vulnerability detection' },
+              { icon: '💀', title: 'Exploitation', desc: '50+ tools including Metasploit Framework for authorized testing' },
+              { icon: '📊', title: 'Forensics & Reporting', desc: '60+ tools for memory analysis, file carving, GDPR-compliant audit reports' },
             ].map((feature, i) => (
               <div key={i} className="bg-gray-800/50 rounded-xl p-6 border border-gray-700 hover:border-cyan-500/50 transition">
                 <div className="text-3xl mb-4">{feature.icon}</div>
@@ -148,12 +149,12 @@ export function LandingPage() {
               </div>
               <div className="text-lg font-medium text-cyan-400 mb-2">Professional</div>
               <div className="flex items-baseline gap-1 mb-4">
-                <span className="text-4xl font-bold text-white">€19</span>
+                <span className="text-4xl font-bold text-white">€29</span>
                 <span className="text-gray-400">/month</span>
               </div>
               <ul className="space-y-2 mb-6 text-gray-300 text-sm">
                 <li className="flex items-center gap-2">
-                  <span className="text-green-400">✓</span> <strong>33</strong> Tools
+                  <span className="text-green-400">✓</span> <strong>200+</strong> Tools
                 </li>
                 <li className="flex items-center gap-2">
                   <span className="text-green-400">✓</span> 50 scans/day
@@ -177,15 +178,15 @@ export function LandingPage() {
             <div className="bg-gray-800/50 rounded-2xl p-6 border border-purple-500/50">
               <div className="text-lg font-medium text-purple-400 mb-2">Team</div>
               <div className="flex items-baseline gap-1 mb-4">
-                <span className="text-4xl font-bold text-white">€49</span>
+                <span className="text-4xl font-bold text-white">€59</span>
                 <span className="text-gray-400">/month</span>
               </div>
               <ul className="space-y-2 mb-6 text-gray-300 text-sm">
                 <li className="flex items-center gap-2">
-                  <span className="text-green-400">✓</span> <strong>85</strong> Tools
+                  <span className="text-green-400">✓</span> <strong>400+</strong> Tools
                 </li>
                 <li className="flex items-center gap-2">
-                  <span className="text-green-400">✓</span> 100 scans/day
+                  <span className="text-green-400">✓</span> 200 scans/day
                 </li>
                 <li className="flex items-center gap-2">
                   <span className="text-purple-400">✓</span> Multi-tool scan (5)
@@ -211,7 +212,7 @@ export function LandingPage() {
               </div>
               <ul className="space-y-2 mb-6 text-gray-300 text-sm">
                 <li className="flex items-center gap-2">
-                  <span className="text-green-400">✓</span> <strong>143+</strong> All Tools
+                  <span className="text-green-400">✓</span> <strong>682</strong> All Tools
                 </li>
                 <li className="flex items-center gap-2">
                   <span className="text-yellow-400">✓</span> Unlimited scans
@@ -239,7 +240,7 @@ export function LandingPage() {
         <div className="max-w-4xl mx-auto text-center">
           <h2 className="text-4xl font-bold text-white mb-6">Ready to Get Started?</h2>
           <p className="text-xl text-gray-400 mb-8">
-            Join thousands of security professionals using CyberSec Pro for their penetration testing needs.
+            Join thousands of security professionals across Europe using CyberSec Pro for their penetration testing needs.
           </p>
           {isAuthenticated ? (
             <Link to="/dashboard" className="inline-block px-8 py-4 bg-gradient-to-r from-cyan-500 to-blue-500 text-white text-lg font-semibold rounded-xl hover:from-cyan-600 hover:to-blue-600 transition shadow-lg shadow-cyan-500/25">
@@ -267,6 +268,12 @@ export function LandingPage() {
           <p className="text-gray-500 text-sm">
             © 2026 CyberSec Pro by Semih Kılıç. All rights reserved.
           </p>
+          <div className="flex items-center gap-4 mt-4 md:mt-0">
+            <Link to="/privacy" className="text-gray-500 text-sm hover:text-gray-300 transition">Privacy Policy</Link>
+            <Link to="/terms" className="text-gray-500 text-sm hover:text-gray-300 transition">Terms of Service</Link>
+            <Link to="/gdpr" className="text-gray-500 text-sm hover:text-gray-300 transition">GDPR</Link>
+            <span className="text-gray-600 text-xs">🇪🇺 EU Compliant</span>
+          </div>
         </div>
       </footer>
     </div>
