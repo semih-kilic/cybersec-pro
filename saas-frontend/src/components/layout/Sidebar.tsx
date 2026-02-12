@@ -1,5 +1,6 @@
 import { NavLink, useLocation } from 'react-router-dom';
 import { useAuth } from '../../hooks/useAuth';
+import { LanguageSwitcher } from '../LanguageSwitcher';
 
 const navigation = [
   { name: 'Dashboard', href: '/dashboard', icon: DashboardIcon },
@@ -167,6 +168,7 @@ export function Sidebar() {
 
         <div className="border-t border-gray-800 my-4" />
         <div className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-4">System</div>
+        <LanguageSwitcher variant="sidebar" />
         {bottomNav.map((item) => (
           <NavLink
             key={item.name}

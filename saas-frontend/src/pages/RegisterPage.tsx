@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
+import { LanguageSwitcher } from '../components/LanguageSwitcher';
 
 // OAuth Configuration - matches backend .env
 const GOOGLE_CLIENT_ID = '547951331800-kqkuc6aohfr7ptt26p38mnqfdvt7b6mu.apps.googleusercontent.com';
@@ -85,6 +86,11 @@ export function RegisterPage() {
           </div>
           <h1 className="text-3xl font-bold text-white">Start Free Trial</h1>
           <p className="text-gray-400 mt-2">14 days free • No credit card required</p>
+        </div>
+
+        {/* Language Selector */}
+        <div className="flex justify-end mb-4">
+          <LanguageSwitcher variant="compact" />
         </div>
 
         {/* Form */}
