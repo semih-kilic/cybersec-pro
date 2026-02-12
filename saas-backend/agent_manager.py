@@ -186,6 +186,12 @@ class AgentManager:
                 logger.warning(f"WebSocket dispatch failed: {e}")
         
         agent.active_scans = (agent.active_scans or 0) + 1
+        
+        # Link scan to agent
+        scan = self.Scan.query.get(scan_id)
+        if scan and hasattr(scan, 'agent_id'):
+            scan.agent_id = agent.id
+        
         self.db.session.commit()
         
         logger.info(f"Scan {scan_id} dispatched to {agent.name} (ws={dispatched})")
