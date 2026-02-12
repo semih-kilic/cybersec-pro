@@ -3219,249 +3219,9 @@ def create_agent():
         return jsonify({'error': str(e)}), 500
 
 
-@app.route('/api/v1/agents/<agent_id>', methods=['GET'])
-@require_organization
-def get_agent(agent_id):
-    """Get agent details"""
-    try:
-        user_id = get_jwt_identity()
-        user = User.query.get(user_id)
-        
-        agent = Agent.query.filter_by(id=agent_id, organization_id=user.organization_id).first()
-        if not agent:
-            return jsonify({'error': 'Agent not found'}), 404
-        
-        return jsonify({'agent': agent.to_dict(include_sensitive=True)})
-        
-    except Exception as e:
-        return jsonify({'error': str(e)}), 500
-
-
-@app.route('/api/v1/agents/<agent_id>', methods=['PUT'])
-@require_organization
-def update_agent(agent_id):
-    """Update agent configuration"""
-    try:
-        user_id = get_jwt_identity()
-        user = User.query.get(user_id)
-        
-        agent = Agent.query.filter_by(id=agent_id, organization_id=user.organization_id).first()
-        if not agent:
-            return jsonify({'error': 'Agent not found'}), 404
-        
-        data = request.get_json()
-        
-        # Update allowed fields
-        if 'name' in data:
-            agent.name = data['name']
-        if 'ssh_host' in data:
-            agent.ssh_host = data['ssh_host']
-            agent.ip_address = data['ssh_host']
-        if 'ssh_port' in data:
-            agent.ssh_port = data['ssh_port']
-        if 'ssh_username' in data:
-            agent.ssh_username = data['ssh_username']
-        if 'ssh_password' in data and data['ssh_password']:
-            agent.ssh_password_encrypted = data['ssh_password']
-        if 'location' in data:
-            agent.location = data['location']
-        
-        db.session.commit()
-        
-        return jsonify({
-            'agent': agent.to_dict(include_sensitive=True),
-            'message': 'Agent updated successfully'
-        })
-        
-    except Exception as e:
-        db.session.rollback()
-        return jsonify({'error': str(e)}), 500
-
-
-@app.route('/api/v1/agents/<agent_id>', methods=['DELETE'])
-@require_organization
-def delete_agent(agent_id):
-    """Delete an agent"""
-    try:
-        user_id = get_jwt_identity()
-        user = User.query.get(user_id)
-        
-        agent = Agent.query.filter_by(id=agent_id, organization_id=user.organization_id).first()
-        if not agent:
-            return jsonify({'error': 'Agent not found'}), 404
-        
-        db.session.delete(agent)
-        db.session.commit()
-        
-        return jsonify({'message': 'Agent deleted successfully'})
-        
-    except Exception as e:
-        db.session.rollback()
-        return jsonify({'error': str(e)}), 500
-
-
-@app.route('/api/v1/agents/<agent_id>/test', methods=['POST'])
-@require_organization
-def test_agent_connection(agent_id):
-    """Test connection to an agent"""
-    try:
-        user_id = get_jwt_identity()
-        user = User.query.get(user_id)
-        
-        agent = Agent.query.filter_by(id=agent_id, organization_id=user.organization_id).first()
-        if not agent:
-            return jsonify({'error': 'Agent not found'}), 404
-        
-        if agent.connection_type == 'ssh':
-            # Test SSH connection
-            import paramiko
-            
-            try:
-                ssh = paramiko.SSHClient()
-                ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
-                
-                if agent.ssh_key_path:
-                    ssh.connect(
-                        agent.ssh_host or agent.ip_address,
-                        port=agent.ssh_port or 22,
-                        username=agent.ssh_username,
-                        key_filename=agent.ssh_key_path,
-                        timeout=10
-                    )
-                else:
-                    ssh.connect(
-                        agent.ssh_host or agent.ip_address,
-                        port=agent.ssh_port or 22,
-                        username=agent.ssh_username,
-                        password=agent.ssh_password_encrypted,
-                        timeout=10
-                    )
-                
-                # Test basic commands
-                stdin, stdout, stderr = ssh.exec_command('uname -a && which nmap')
-                output = stdout.read().decode()
-                
-                # Get system info
-                stdin, stdout, stderr = ssh.exec_command('cat /etc/os-release | head -5')
-                os_info = stdout.read().decode()
-                
-                ssh.close()
-                
-                # Update agent status
-                agent.status = 'online'
-                agent.last_heartbeat = datetime.utcnow()
-                agent.hostname = output.split()[1] if output else 'unknown'
-                
-                # Extract OS info
-                for line in os_info.split('\n'):
-                    if line.startswith('PRETTY_NAME='):
-                        agent.os_info = line.split('=')[1].strip('"')
-                        break
-                
-                db.session.commit()
-                
-                return jsonify({
-                    'success': True,
-                    'message': 'Connection successful',
-                    'output': output,
-                    'os_info': agent.os_info,
-                    'agent': agent.to_dict()
-                })
-                
-            except Exception as e:
-                agent.status = 'error'
-                db.session.commit()
-                return jsonify({
-                    'success': False,
-                    'error': f'SSH connection failed: {str(e)}'
-                }), 400
-        else:
-            # Direct agent - check via API
-            return jsonify({
-                'success': True,
-                'message': 'Direct agent - waiting for registration'
-            })
-        
-    except Exception as e:
-        return jsonify({'error': str(e)}), 500
-
-
-@app.route('/api/v1/agents/heartbeat', methods=['POST'])
-def agent_heartbeat():
-    """Receive heartbeat from agent (no JWT - uses API key)"""
-    try:
-        data = request.get_json()
-        api_key = data.get('api_key') or request.headers.get('X-Agent-Key')
-        
-        if not api_key:
-            return jsonify({'error': 'API key required'}), 401
-        
-        agent = Agent.query.filter_by(api_key=api_key).first()
-        if not agent:
-            return jsonify({'error': 'Invalid API key'}), 401
-        
-        # Update agent status
-        agent.status = 'online'
-        agent.last_heartbeat = datetime.utcnow()
-        agent.cpu_usage = data.get('cpu_usage', 0)
-        agent.memory_usage = data.get('memory_usage', 0)
-        agent.active_scans = data.get('active_scans', 0)
-        agent.hostname = data.get('hostname', agent.hostname)
-        agent.os_info = data.get('os_info', agent.os_info)
-        agent.version = data.get('version', agent.version)
-        
-        db.session.commit()
-        
-        return jsonify({
-            'status': 'ok',
-            'next_heartbeat': 30  # seconds
-        })
-        
-    except Exception as e:
-        return jsonify({'error': str(e)}), 500
-
-
-def get_agent_install_command(agent, token):
-    """Generate installation command for agent"""
-    base_url = 'https://cybersecpro.semihkilic.com'
-    
-    if agent.connection_type == 'ssh':
-        return f"""# SSH Connection configured
-# Host: {agent.ssh_host}:{agent.ssh_port}
-# Username: {agent.ssh_username}
-# Click 'Test Connection' to verify SSH access"""
-    
-    if agent.platform == 'linux':
-        return f"""# Linux Installation
-curl -sSL {base_url}/agent/install.sh | bash -s -- --token {token}
-
-# Or manual installation:
-wget {base_url}/agent/cybersec-agent-linux
-chmod +x cybersec-agent-linux
-./cybersec-agent-linux --register {token}"""
-    
-    elif agent.platform == 'windows':
-        return f"""# Windows PowerShell (Run as Administrator)
-irm {base_url}/agent/install.ps1 | iex
-Register-CyberSecAgent -Token "{token}" """
-    
-    elif agent.platform == 'macos':
-        return f"""# macOS Installation
-curl -sSL {base_url}/agent/install-mac.sh | bash -s -- --token {token}"""
-    
-    elif agent.platform == 'docker':
-        return f"""# Docker Installation
-docker run -d --name cybersec-agent \\
-  -e AGENT_TOKEN={token} \\
-  -e API_URL={base_url}/api/v1 \\
-  --network host \\
-  semihkilic/cybersec-agent:latest"""
-    
-    return f"# Registration token: {token}"
-
-
 # ================================
 # AGENT V2 - New Registration & Scan Dispatch
+# (MUST be before /agents/<agent_id> wildcard routes)
 # ================================
 
 from agent_manager import AgentManager
@@ -3632,6 +3392,24 @@ def agent_dispatch_scan():
         return jsonify({'error': str(e)}), 500
 
 
+@app.route('/api/v1/agents/heartbeat', methods=['POST'])
+def agent_heartbeat_v2():
+    """Enhanced heartbeat with pending scan delivery"""
+    try:
+        data = request.get_json()
+        api_key = data.get('api_key') or request.headers.get('X-Agent-Key')
+        if not api_key:
+            return jsonify({'error': 'API key required'}), 401
+        
+        result, error = agent_mgr.process_heartbeat(api_key, data)
+        if error:
+            return jsonify({'error': error}), 401
+        
+        return jsonify(result)
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+
 @app.route('/api/v1/agent-script', methods=['GET'])
 def serve_agent_script():
     """Serve the kali_agent.py script for easy installation"""
@@ -3642,6 +3420,212 @@ def serve_agent_script():
         return script, 200, {'Content-Type': 'text/x-python'}
     except Exception as e:
         return f"# Error: {e}", 500, {'Content-Type': 'text/plain'}
+
+
+@app.route('/api/v1/agents/<agent_id>', methods=['GET'])
+@require_organization
+def get_agent(agent_id):
+    """Get agent details"""
+    try:
+        user_id = get_jwt_identity()
+        user = User.query.get(user_id)
+        
+        agent = Agent.query.filter_by(id=agent_id, organization_id=user.organization_id).first()
+        if not agent:
+            return jsonify({'error': 'Agent not found'}), 404
+        
+        return jsonify({'agent': agent.to_dict(include_sensitive=True)})
+        
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+
+@app.route('/api/v1/agents/<agent_id>', methods=['PUT'])
+@require_organization
+def update_agent(agent_id):
+    """Update agent configuration"""
+    try:
+        user_id = get_jwt_identity()
+        user = User.query.get(user_id)
+        
+        agent = Agent.query.filter_by(id=agent_id, organization_id=user.organization_id).first()
+        if not agent:
+            return jsonify({'error': 'Agent not found'}), 404
+        
+        data = request.get_json()
+        
+        # Update allowed fields
+        if 'name' in data:
+            agent.name = data['name']
+        if 'ssh_host' in data:
+            agent.ssh_host = data['ssh_host']
+            agent.ip_address = data['ssh_host']
+        if 'ssh_port' in data:
+            agent.ssh_port = data['ssh_port']
+        if 'ssh_username' in data:
+            agent.ssh_username = data['ssh_username']
+        if 'ssh_password' in data and data['ssh_password']:
+            agent.ssh_password_encrypted = data['ssh_password']
+        if 'location' in data:
+            agent.location = data['location']
+        
+        db.session.commit()
+        
+        return jsonify({
+            'agent': agent.to_dict(include_sensitive=True),
+            'message': 'Agent updated successfully'
+        })
+        
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'error': str(e)}), 500
+
+
+@app.route('/api/v1/agents/<agent_id>', methods=['DELETE'])
+@require_organization
+def delete_agent(agent_id):
+    """Delete an agent"""
+    try:
+        user_id = get_jwt_identity()
+        user = User.query.get(user_id)
+        
+        agent = Agent.query.filter_by(id=agent_id, organization_id=user.organization_id).first()
+        if not agent:
+            return jsonify({'error': 'Agent not found'}), 404
+        
+        db.session.delete(agent)
+        db.session.commit()
+        
+        return jsonify({'message': 'Agent deleted successfully'})
+        
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'error': str(e)}), 500
+
+
+@app.route('/api/v1/agents/<agent_id>/test', methods=['POST'])
+@require_organization
+def test_agent_connection(agent_id):
+    """Test connection to an agent"""
+    try:
+        user_id = get_jwt_identity()
+        user = User.query.get(user_id)
+        
+        agent = Agent.query.filter_by(id=agent_id, organization_id=user.organization_id).first()
+        if not agent:
+            return jsonify({'error': 'Agent not found'}), 404
+        
+        if agent.connection_type == 'ssh':
+            # Test SSH connection
+            import paramiko
+            
+            try:
+                ssh = paramiko.SSHClient()
+                ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+                
+                if agent.ssh_key_path:
+                    ssh.connect(
+                        agent.ssh_host or agent.ip_address,
+                        port=agent.ssh_port or 22,
+                        username=agent.ssh_username,
+                        key_filename=agent.ssh_key_path,
+                        timeout=10
+                    )
+                else:
+                    ssh.connect(
+                        agent.ssh_host or agent.ip_address,
+                        port=agent.ssh_port or 22,
+                        username=agent.ssh_username,
+                        password=agent.ssh_password_encrypted,
+                        timeout=10
+                    )
+                
+                # Test basic commands
+                stdin, stdout, stderr = ssh.exec_command('uname -a && which nmap')
+                output = stdout.read().decode()
+                
+                # Get system info
+                stdin, stdout, stderr = ssh.exec_command('cat /etc/os-release | head -5')
+                os_info = stdout.read().decode()
+                
+                ssh.close()
+                
+                # Update agent status
+                agent.status = 'online'
+                agent.last_heartbeat = datetime.utcnow()
+                agent.hostname = output.split()[1] if output else 'unknown'
+                
+                # Extract OS info
+                for line in os_info.split('\n'):
+                    if line.startswith('PRETTY_NAME='):
+                        agent.os_info = line.split('=')[1].strip('"')
+                        break
+                
+                db.session.commit()
+                
+                return jsonify({
+                    'success': True,
+                    'message': 'Connection successful',
+                    'output': output,
+                    'os_info': agent.os_info,
+                    'agent': agent.to_dict()
+                })
+                
+            except Exception as e:
+                agent.status = 'error'
+                db.session.commit()
+                return jsonify({
+                    'success': False,
+                    'error': f'SSH connection failed: {str(e)}'
+                }), 400
+        else:
+            # Direct agent - check via API
+            return jsonify({
+                'success': True,
+                'message': 'Direct agent - waiting for registration'
+            })
+        
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+
+def get_agent_install_command(agent, token):
+    """Generate installation command for agent"""
+    base_url = 'https://cybersecpro.semihkilic.com'
+    
+    if agent.connection_type == 'ssh':
+        return f"""# SSH Connection configured
+# Host: {agent.ssh_host}:{agent.ssh_port}
+# Username: {agent.ssh_username}
+# Click 'Test Connection' to verify SSH access"""
+    
+    if agent.platform == 'linux':
+        return f"""# Linux Installation
+curl -sSL {base_url}/agent/install.sh | bash -s -- --token {token}
+
+# Or manual installation:
+wget {base_url}/agent/cybersec-agent-linux
+chmod +x cybersec-agent-linux
+./cybersec-agent-linux --register {token}"""
+    
+    elif agent.platform == 'windows':
+        return f"""# Windows PowerShell (Run as Administrator)
+irm {base_url}/agent/install.ps1 | iex
+Register-CyberSecAgent -Token "{token}" """
+    
+    elif agent.platform == 'macos':
+        return f"""# macOS Installation
+curl -sSL {base_url}/agent/install-mac.sh | bash -s -- --token {token}"""
+    
+    elif agent.platform == 'docker':
+        return f"""# Docker Installation
+docker run -d --name cybersec-agent \\
+  -e AGENT_TOKEN={token} \\
+  -e API_URL={base_url}/api/v1 \\
+  --network host \\
+  semihkilic/cybersec-agent:latest"""
+    
+    return f"# Registration token: {token}"
 
 
 # ================================
