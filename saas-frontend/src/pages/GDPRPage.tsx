@@ -224,9 +224,9 @@ export default function GDPRPage() {
 
         {/* Related Links */}
         <div className="mt-8 flex gap-4 justify-center">
-          <Link to="/privacy" className="text-gray-400 hover:text-white transition text-sm">Privacy Policy</Link>
+          <Link to="/dashboard/privacy" className="text-gray-400 hover:text-white transition text-sm">Privacy Policy</Link>
           <span className="text-gray-600">•</span>
-          <Link to="/terms" className="text-gray-400 hover:text-white transition text-sm">Terms of Service</Link>
+          <Link to="/dashboard/terms" className="text-gray-400 hover:text-white transition text-sm">Terms of Service</Link>
           <span className="text-gray-600">•</span>
           <Link to="/" className="text-gray-400 hover:text-white transition text-sm">Home</Link>
         </div>

@@ -269,9 +269,9 @@ export function LandingPage() {
             © 2026 CyberSec Pro by Semih Kılıç. All rights reserved.
           </p>
           <div className="flex items-center gap-4 mt-4 md:mt-0">
-            <Link to="/privacy" className="text-gray-500 text-sm hover:text-gray-300 transition">Privacy Policy</Link>
-            <Link to="/terms" className="text-gray-500 text-sm hover:text-gray-300 transition">Terms of Service</Link>
-            <Link to="/gdpr" className="text-gray-500 text-sm hover:text-gray-300 transition">GDPR</Link>
+            <Link to="/dashboard/privacy" className="text-gray-500 text-sm hover:text-gray-300 transition">Privacy Policy</Link>
+            <Link to="/dashboard/terms" className="text-gray-500 text-sm hover:text-gray-300 transition">Terms of Service</Link>
+            <Link to="/dashboard/gdpr" className="text-gray-500 text-sm hover:text-gray-300 transition">GDPR</Link>
             <span className="text-gray-600 text-xs">🇪🇺 EU Compliant</span>
           </div>
         </div>

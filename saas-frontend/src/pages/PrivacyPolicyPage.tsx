@@ -153,9 +153,9 @@ export default function PrivacyPolicyPage() {
 
         {/* Related Links */}
         <div className="mt-8 flex gap-4 justify-center">
-          <Link to="/terms" className="text-gray-400 hover:text-white transition text-sm">Terms of Service</Link>
+          <Link to="/dashboard/terms" className="text-gray-400 hover:text-white transition text-sm">Terms of Service</Link>
           <span className="text-gray-600">•</span>
-          <Link to="/gdpr" className="text-gray-400 hover:text-white transition text-sm">GDPR Information</Link>
+          <Link to="/dashboard/gdpr" className="text-gray-400 hover:text-white transition text-sm">GDPR Information</Link>
           <span className="text-gray-600">•</span>
           <Link to="/" className="text-gray-400 hover:text-white transition text-sm">Home</Link>
         </div>

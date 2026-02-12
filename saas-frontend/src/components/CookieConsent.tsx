@@ -61,7 +61,7 @@ export function CookieConsentBanner() {
               <p className="text-gray-400 text-sm">
                 We use cookies to enhance your browsing experience, serve personalized content, and analyze our traffic. 
                 Under GDPR, we need your consent for non-essential cookies. 
-                Read our <Link to="/privacy" className="text-cyan-400 hover:underline">Privacy Policy</Link> for more details.
+                Read our <Link to="/dashboard/privacy" className="text-cyan-400 hover:underline">Privacy Policy</Link> for more details.
               </p>
             </div>
           </div>

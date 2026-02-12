@@ -79,7 +79,7 @@ export default function TermsPage() {
 
             <section>
               <h2 className="text-2xl font-semibold text-white mb-3">6. Data Processing</h2>
-              <p>We process your data in accordance with our <Link to="/privacy" className="text-cyan-400 hover:underline">Privacy Policy</Link> and the GDPR. For enterprise customers, we offer a Data Processing Agreement (DPA) upon request.</p>
+              <p>We process your data in accordance with our <Link to="/dashboard/privacy" className="text-cyan-400 hover:underline">Privacy Policy</Link> and the GDPR. For enterprise customers, we offer a Data Processing Agreement (DPA) upon request.</p>
             </section>
 
             <section>
@@ -109,9 +109,9 @@ export default function TermsPage() {
 
         {/* Related Links */}
         <div className="mt-8 flex gap-4 justify-center">
-          <Link to="/privacy" className="text-gray-400 hover:text-white transition text-sm">Privacy Policy</Link>
+          <Link to="/dashboard/privacy" className="text-gray-400 hover:text-white transition text-sm">Privacy Policy</Link>
           <span className="text-gray-600">•</span>
-          <Link to="/gdpr" className="text-gray-400 hover:text-white transition text-sm">GDPR Information</Link>
+          <Link to="/dashboard/gdpr" className="text-gray-400 hover:text-white transition text-sm">GDPR Information</Link>
           <span className="text-gray-600">•</span>
           <Link to="/" className="text-gray-400 hover:text-white transition text-sm">Home</Link>
         </div>
