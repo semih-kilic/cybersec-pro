@@ -2,6 +2,7 @@ import { useState, useEffect, useMemo, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import { Header } from '../../components/layout/Header';
 import { useAuth } from '../../hooks/useAuth';
+import { useTranslation } from 'react-i18next';
 
 interface Tool {
   id: string;
@@ -94,6 +95,7 @@ const planHierarchy: { [key: string]: number } = {
 
 export function ToolsPage() {
   const { token, organization } = useAuth();
+  const { t } = useTranslation();
   const [allCategories, setAllCategories] = useState<{ [key: string]: CategoryData }>({});
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
@@ -335,7 +337,7 @@ export function ToolsPage() {
 
         {/* Page Header */}
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-white mb-2">Security Tools</h1>
+          <h1 className="text-3xl font-bold text-white mb-2">{t('tools.title')}</h1>
           <p className="text-gray-400">
             {totalTools} professional security tools available • Your plan: <span className="text-kali-blue font-medium capitalize">{userPlan}</span>
             {showOnlyAvailable && <span className="ml-2 text-cyan-400">• Showing {filteredCount} tools in your plan</span>}

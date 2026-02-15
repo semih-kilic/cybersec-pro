@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { Header } from '../../components/layout/Header';
 import { useAuth } from '../../hooks/useAuth';
+import { useTranslation } from 'react-i18next';
 
 interface ScanTool {
   id: string;
@@ -109,6 +110,7 @@ const statusIcons: Record<string, React.ReactNode> = {
 
 export function ScansPage() {
   const { token } = useAuth();
+  const { t: _t } = useTranslation();
   const [searchParams] = useSearchParams();
   const [scans, setScans] = useState<Scan[]>([]);
   const [loading, setLoading] = useState(true);

@@ -1,6 +1,7 @@
 import { useAuth } from '../../hooks/useAuth';
 import { Link } from 'react-router-dom';
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 
 // Stripe checkout URLs (would be generated server-side in production)
 const STRIPE_CHECKOUT_URLS: { [key: string]: string } = {
@@ -88,6 +89,7 @@ const plans = [
 
 export default function UpgradePage() {
   const { organization, token } = useAuth();
+  const { t: _t } = useTranslation();
   const [loading, setLoading] = useState<string | null>(null);
   const [billingCycle, setBillingCycle] = useState<'monthly' | 'yearly'>('monthly');
   const currentPlan = organization?.plan_type || 'starter';

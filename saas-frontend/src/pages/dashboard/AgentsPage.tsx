@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '../../hooks/useAuth';
+import { useTranslation } from 'react-i18next';
 
 type AgentPlatform = 'linux' | 'windows' | 'macos' | 'docker';
 type ConnectionType = 'direct' | 'ssh';
@@ -42,6 +43,7 @@ interface DashboardData {
 
 export default function AgentsPage() {
   const { token } = useAuth();
+  const { t: _t } = useTranslation();
   const [dashboard, setDashboard] = useState<DashboardData | null>(null);
   const [agents, setAgents] = useState<Agent[]>([]);
   const [loading, setLoading] = useState(true);
