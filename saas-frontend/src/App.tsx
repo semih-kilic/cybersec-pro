@@ -2,6 +2,9 @@ import { BrowserRouter as Router, Routes, Route, Navigate, Outlet } from 'react-
 import { HelmetProvider } from 'react-helmet-async';
 import { Suspense, lazy } from 'react';
 
+// i18n - must be imported before any component that uses translations
+import './i18n';
+
 // Auth
 import { AuthProvider, useAuth } from './hooks/useAuth';
 
