@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { Header } from '../../components/layout/Header';
 import { useAuth } from '../../hooks/useAuth';
+import { useTranslation } from 'react-i18next';
 import { OnboardingModal, QuickStartCards } from '../../components/onboarding';
 import WelcomeTour from '../../components/WelcomeTour';
 
@@ -50,6 +51,7 @@ interface ScheduledScan {
 
 export function OverviewPage() {
   const { token, organization, user } = useAuth();
+  const { t } = useTranslation();
   const [loading, setLoading] = useState(true);
   const [scanSummary, setScanSummary] = useState<ScanSummary>({ total: 0, running: 0, completed: 0, failed: 0 });
   const [vulnerabilities, setVulnerabilities] = useState<VulnerabilitySummary>({ critical: 0, high: 0, medium: 0, low: 0, info: 0 });
@@ -241,7 +243,7 @@ export function OverviewPage() {
       />
 
       <Header 
-        title={`Welcome back, ${user?.first_name || 'User'}`}
+        title={`${t('overview.welcome')}, ${user?.first_name || 'User'}`}
         subtitle={`${organization?.name || 'Your Organization'} • ${new Date().toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}`}
         actions={
           <Link 

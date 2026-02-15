@@ -1,23 +1,24 @@
 import { NavLink, useLocation } from 'react-router-dom';
 import { useAuth } from '../../hooks/useAuth';
+import { useTranslation } from 'react-i18next';
 import { LanguageSwitcher } from '../LanguageSwitcher';
 
 const navigation = [
-  { name: 'Dashboard', href: '/dashboard', icon: DashboardIcon },
-  { name: 'Tools', href: '/dashboard/tools', icon: ToolsIcon },
-  { name: 'Scans', href: '/dashboard/scans', icon: ScansIcon },
-  { name: 'Targets', href: '/dashboard/targets', icon: TargetsIcon },
-  { name: 'Reports', href: '/dashboard/reports', icon: ReportsIcon },
-  { name: 'Schedule', href: '/dashboard/schedule', icon: ScheduleIcon },
-  { name: 'Projects', href: '/dashboard/projects', icon: ProjectsIcon },
-  { name: 'Agents', href: '/dashboard/agents', icon: AgentsIcon },
-  { name: 'Terminal', href: '/dashboard/terminal', icon: TerminalIcon },
+  { nameKey: 'nav.dashboard', href: '/dashboard', icon: DashboardIcon },
+  { nameKey: 'nav.tools', href: '/dashboard/tools', icon: ToolsIcon },
+  { nameKey: 'nav.scans', href: '/dashboard/scans', icon: ScansIcon },
+  { nameKey: 'nav.targets', href: '/dashboard/targets', icon: TargetsIcon },
+  { nameKey: 'nav.reports', href: '/dashboard/reports', icon: ReportsIcon },
+  { nameKey: 'nav.schedule', href: '/dashboard/schedule', icon: ScheduleIcon },
+  { nameKey: 'nav.projects', href: '/dashboard/projects', icon: ProjectsIcon },
+  { nameKey: 'nav.agents', href: '/dashboard/agents', icon: AgentsIcon },
+  { nameKey: 'nav.terminal', href: '/dashboard/terminal', icon: TerminalIcon },
 ];
 
 const bottomNav = [
-  { name: 'Settings', href: '/dashboard/settings', icon: SettingsIcon },
-  { name: 'Feedback', href: '/dashboard/feedback', icon: FeedbackIcon },
-  { name: 'Documentation', href: '/docs.html', icon: DocsIcon, external: true },
+  { nameKey: 'nav.settings', href: '/dashboard/settings', icon: SettingsIcon },
+  { nameKey: 'nav.feedback', href: '/dashboard/feedback', icon: FeedbackIcon },
+  { nameKey: 'nav.documentation', href: '/docs.html', icon: DocsIcon, external: true },
 ];
 
 function DashboardIcon() {
@@ -121,6 +122,7 @@ function DocsIcon() {
 export function Sidebar() {
   const location = useLocation();
   const { user, organization } = useAuth();
+  const { t } = useTranslation();
 
   return (
     <aside className="w-64 bg-gray-900 border-r border-gray-800 flex flex-col h-screen fixed left-0 top-0 z-40">
@@ -141,13 +143,13 @@ export function Sidebar() {
 
       {/* Navigation */}
       <nav className="flex-1 p-4 space-y-1 overflow-y-auto">
-        <div className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-4">Main</div>
+        <div className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-4">{t('nav.main')}</div>
         {navigation.map((item) => {
           const isActive = location.pathname === item.href || 
             (item.href !== '/dashboard' && location.pathname.startsWith(item.href));
           return (
             <NavLink
-              key={item.name}
+              key={item.nameKey}
               to={item.href}
               className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all ${
                 isActive
@@ -156,8 +158,8 @@ export function Sidebar() {
               }`}
             >
               <item.icon />
-              {item.name}
-              {item.name === 'Scans' && (
+              {t(item.nameKey)}
+              {item.nameKey === 'nav.scans' && (
                 <span className="ml-auto px-2 py-0.5 text-xs bg-kali-blue/20 text-kali-blue rounded-full">
                   Live
                 </span>
@@ -167,17 +169,17 @@ export function Sidebar() {
         })}
 
         <div className="border-t border-gray-800 my-4" />
-        <div className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-4">System</div>
+        <div className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-4">{t('nav.system')}</div>
         <LanguageSwitcher variant="sidebar" />
         {bottomNav.map((item) => (
           <NavLink
-            key={item.name}
+            key={item.nameKey}
             to={item.href}
             target={item.external ? '_blank' : undefined}
             className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-gray-400 hover:text-white hover:bg-gray-800 transition-all"
           >
             <item.icon />
-            {item.name}
+            {t(item.nameKey)}
             {item.external && (
               <svg className="w-3 h-3 ml-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
@@ -195,7 +197,7 @@ export function Sidebar() {
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
             </svg>
-            Upgrade Plan
+            {t('nav.upgradePlan')}
           </NavLink>
         )}
       </nav>

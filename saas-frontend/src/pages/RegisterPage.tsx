@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
+import { useTranslation } from 'react-i18next';
 import { LanguageSwitcher } from '../components/LanguageSwitcher';
 
 // OAuth Configuration - matches backend .env
@@ -20,6 +21,7 @@ export function RegisterPage() {
   const [loading, setLoading] = useState(false);
   const { register } = useAuth();
   const navigate = useNavigate();
+  const { t } = useTranslation();
 
   const handleGoogleLogin = () => {
     // Use exact same redirect_uri as configured in Google Cloud Console
@@ -47,12 +49,12 @@ export function RegisterPage() {
     setError('');
 
     if (formData.password !== formData.confirmPassword) {
-      setError('Passwords do not match');
+      setError(t('auth.passwordsNoMatch'));
       return;
     }
 
     if (formData.password.length < 8) {
-      setError('Password must be at least 8 characters');
+      setError(t('auth.passwordMinLength'));
       return;
     }
 
@@ -84,8 +86,8 @@ export function RegisterPage() {
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z" />
             </svg>
           </div>
-          <h1 className="text-3xl font-bold text-white">Start Free Trial</h1>
-          <p className="text-gray-400 mt-2">14 days free • No credit card required</p>
+          <h1 className="text-3xl font-bold text-white">{t('auth.registerTitle')}</h1>
+          <p className="text-gray-400 mt-2">{t('auth.registerSubtitle')}</p>
         </div>
 
         {/* Language Selector */}
@@ -105,7 +107,7 @@ export function RegisterPage() {
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <label className="block text-sm font-medium text-gray-300 mb-2">
-                  First name
+                  {t('auth.firstName')}
                 </label>
                 <input
                   type="text"
@@ -118,7 +120,7 @@ export function RegisterPage() {
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-300 mb-2">
-                  Last name
+                  {t('auth.lastName')}
                 </label>
                 <input
                   type="text"
@@ -133,7 +135,7 @@ export function RegisterPage() {
 
             <div>
               <label className="block text-sm font-medium text-gray-300 mb-2">
-                Company / Organization *
+                {t('auth.organizationName')} *
               </label>
               <input
                 type="text"
@@ -148,7 +150,7 @@ export function RegisterPage() {
 
             <div>
               <label className="block text-sm font-medium text-gray-300 mb-2">
-                Email address *
+                {t('auth.email')} *
               </label>
               <input
                 type="email"
@@ -163,7 +165,7 @@ export function RegisterPage() {
 
             <div>
               <label className="block text-sm font-medium text-gray-300 mb-2">
-                Password *
+                {t('auth.password')} *
               </label>
               <input
                 type="password"
@@ -178,7 +180,7 @@ export function RegisterPage() {
 
             <div>
               <label className="block text-sm font-medium text-gray-300 mb-2">
-                Confirm password *
+                {t('auth.confirmPassword')} *
               </label>
               <input
                 type="password"
@@ -196,7 +198,7 @@ export function RegisterPage() {
               disabled={loading}
               className="w-full py-3 px-4 bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600 text-white font-semibold rounded-lg transition disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              {loading ? 'Creating account...' : 'Start free trial'}
+              {loading ? t('auth.creating') : t('auth.startFreeTrial')}
             </button>
           </form>
 
@@ -206,7 +208,7 @@ export function RegisterPage() {
               <div className="w-full border-t border-gray-600"></div>
             </div>
             <div className="relative flex justify-center text-sm">
-              <span className="px-2 bg-gray-800/50 text-gray-400">Or sign up with</span>
+              <span className="px-2 bg-gray-800/50 text-gray-400">{t('auth.orSignUpWith')}</span>
             </div>
           </div>
 
@@ -237,14 +239,14 @@ export function RegisterPage() {
           </div>
 
           <p className="text-xs text-gray-500 mt-4 text-center">
-            By signing up, you agree to our Terms of Service and Privacy Policy
+            {t('auth.agreeTerms')}
           </p>
 
           <div className="mt-6 text-center">
             <p className="text-gray-400">
-              Already have an account?{' '}
+              {t('auth.haveAccount')}{' '}
               <Link to="/login" className="text-cyan-400 hover:text-cyan-300 font-medium">
-                Sign in
+                {t('auth.signIn')}
               </Link>
             </p>
           </div>
@@ -253,7 +255,7 @@ export function RegisterPage() {
         {/* Back to Home */}
         <div className="text-center mt-6">
           <Link to="/" className="text-gray-500 hover:text-gray-400 text-sm">
-            ← Back to home
+            ← {t('auth.backToHome')}
           </Link>
         </div>
       </div>

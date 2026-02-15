@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
+import { useTranslation } from 'react-i18next';
 import { LanguageSwitcher } from '../components/LanguageSwitcher';
 
 // OAuth Configuration - matches backend .env
@@ -14,6 +15,7 @@ export function LoginPage() {
   const [loading, setLoading] = useState(false);
   const { login } = useAuth();
   const navigate = useNavigate();
+  const { t } = useTranslation();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -58,7 +60,7 @@ export function LoginPage() {
             </svg>
           </div>
           <h1 className="text-3xl font-bold text-white">CyberSec Pro</h1>
-          <p className="text-gray-400 mt-2">Sign in to your account</p>
+          <p className="text-gray-400 mt-2">{t('auth.signInTitle')}</p>
         </div>
 
         {/* Language Selector */}
@@ -77,7 +79,7 @@ export function LoginPage() {
 
             <div>
               <label htmlFor="email" className="block text-sm font-medium text-gray-300 mb-2">
-                Email address
+                {t('auth.email')}
               </label>
               <input
                 id="email"
@@ -92,7 +94,7 @@ export function LoginPage() {
 
             <div>
               <label htmlFor="password" className="block text-sm font-medium text-gray-300 mb-2">
-                Password
+                {t('auth.password')}
               </label>
               <input
                 id="password"
@@ -110,7 +112,7 @@ export function LoginPage() {
               disabled={loading}
               className="w-full py-3 px-4 bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600 text-white font-semibold rounded-lg transition disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              {loading ? 'Signing in...' : 'Sign in'}
+              {loading ? t('auth.signingIn') : t('auth.signIn')}
             </button>
           </form>
 
@@ -120,7 +122,7 @@ export function LoginPage() {
               <div className="w-full border-t border-gray-600"></div>
             </div>
             <div className="relative flex justify-center text-sm">
-              <span className="px-2 bg-gray-800/50 text-gray-400">Or continue with</span>
+              <span className="px-2 bg-gray-800/50 text-gray-400">{t('auth.orContinueWith')}</span>
             </div>
           </div>
 
@@ -152,9 +154,9 @@ export function LoginPage() {
 
           <div className="mt-6 text-center">
             <p className="text-gray-400">
-              Don't have an account?{' '}
+              {t('auth.noAccount')}{' '}
               <Link to="/register" className="text-cyan-400 hover:text-cyan-300 font-medium">
-                Start free trial
+                {t('auth.startFreeTrial')}
               </Link>
             </p>
           </div>
@@ -163,7 +165,7 @@ export function LoginPage() {
         {/* Back to Home */}
         <div className="text-center mt-6">
           <Link to="/" className="text-gray-500 hover:text-gray-400 text-sm">
-            ← Back to home
+            ← {t('auth.backToHome')}
           </Link>
         </div>
       </div>

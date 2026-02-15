@@ -23,6 +23,7 @@
     "language": "Idioma"
   },
   "nav": {
+    "main": "Principal",
     "dashboard": "Panel",
     "tools": "Herramientas",
     "scans": "Escaneos",
@@ -42,8 +43,22 @@
   "landing": {
     "badge": "682 herramientas de seguridad profesionales • Cumple con RGPD 🇪🇺",
     "headline": "La plataforma Kali Linux más avanzada de Europa",
-    "subheadline": "682 herramientas de pruebas de penetración en tu navegador. Sin instalación.",
-    "startTrial": "Prueba gratuita",
+    "headlinePart1": "La Más Avanzada",
+    "headlinePart2": "Plataforma en Europa",
+    "subheadline": "682 herramientas de pruebas de penetración en tu navegador. Sin instalación. Plataforma de seguridad empresarial para estándares europeos.",
+    "startTrial": "Prueba Gratuita",
+    "startTrial14": "Prueba Gratuita - 14 Días",
+    "startTrialNow": "Comienza tu prueba gratuita ahora",
+    "seeFeatures": "Ver funciones →",
+    "goToDashboard": "Ir al panel",
+    "welcomeUser": "Bienvenido, {{name}}",
+    "featuresTitle": "Todo lo que necesitas",
+    "featuresSubtitle": "Herramientas de seguridad profesionales en una plataforma",
+    "pricingTitle": "Precios simples y transparentes",
+    "pricingSubtitle": "Sin cargos ocultos • Cancela cuando quieras",
+    "ctaTitle": "¿Listo para empezar?",
+    "ctaSubtitle": "Únete a miles de profesionales de seguridad en Europa que usan CyberSec Pro para sus pruebas de penetración.",
+    "copyright": "© 2026 CyberSec Pro por Semih Kılıç. Todos los derechos reservados.",
     "viewTools": "Ver todas las herramientas",
     "contactSales": "Contactar ventas",
     "trustedBy": "Confiado por profesionales de seguridad en toda Europa",
@@ -100,7 +115,13 @@
     "creating": "Creando cuenta...",
     "haveAccount": "¿Ya tienes cuenta?",
     "continueWith": "Continuar con",
-    "orContinueWith": "O continuar con correo"
+    "orContinueWith": "O continuar con correo",
+    "startFreeTrial": "Prueba gratuita",
+    "backToHome": "Volver al inicio",
+    "passwordsNoMatch": "Las contraseñas no coinciden",
+    "passwordMinLength": "La contraseña debe tener al menos 8 caracteres",
+    "orSignUpWith": "O regístrate con",
+    "agreeTerms": "Al registrarte, aceptas nuestros Términos de Servicio y Política de Privacidad"
   },
   "overview": {
     "title": "Vista general del panel",
@@ -225,9 +246,14 @@
     "acceptAll": "Aceptar todo",
     "essentialOnly": "Solo esenciales",
     "customize": "Personalizar →",
-    "essential": "Esenciales",
-    "analytics": "Analíticas",
-    "marketing": "Marketing"
+    "savePreferences": "Guardar preferencias",
+    "essential": "Cookies esenciales",
+    "essentialDesc": "Necesarias para el funcionamiento de la plataforma. No se pueden desactivar.",
+    "analytics": "Cookies analíticas",
+    "analyticsDesc": "Nos ayudan a entender cómo los visitantes usan nuestra plataforma.",
+    "marketing": "Cookies de marketing",
+    "marketingDesc": "Se utilizan para mostrar anuncios relevantes y rastrear el rendimiento de las campañas.",
+    "privacyLink": "Política de privacidad"
   },
   "gdpr": {
     "title": "Tus derechos sobre tus datos según el RGPD",

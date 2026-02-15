@@ -23,6 +23,7 @@
     "language": "Sprache"
   },
   "nav": {
+    "main": "Hauptmenü",
     "dashboard": "Dashboard",
     "tools": "Werkzeuge",
     "scans": "Scans",
@@ -42,8 +43,22 @@
   "landing": {
     "badge": "682 Professionelle Sicherheitstools • DSGVO-konform 🇪🇺",
     "headline": "Die fortschrittlichste Kali Linux Plattform in Europa",
-    "subheadline": "682 Penetrationstest-Tools in Ihrem Browser. Keine Installation erforderlich.",
+    "headlinePart1": "Die fortschrittlichste",
+    "headlinePart2": "Plattform in Europa",
+    "subheadline": "682 Penetrationstest-Tools in Ihrem Browser. Keine Installation erforderlich. Enterprise-Sicherheitsplattform für europäische Compliance-Standards.",
     "startTrial": "Kostenlos testen",
+    "startTrial14": "Kostenlos testen - 14 Tage",
+    "startTrialNow": "Jetzt kostenlos testen",
+    "seeFeatures": "Funktionen ansehen →",
+    "goToDashboard": "Zum Dashboard",
+    "welcomeUser": "Willkommen, {{name}}",
+    "featuresTitle": "Alles was Sie brauchen",
+    "featuresSubtitle": "Professionelle Sicherheitstools auf einer Plattform",
+    "pricingTitle": "Einfache, transparente Preise",
+    "pricingSubtitle": "Keine versteckten Gebühren • Jederzeit kündbar",
+    "ctaTitle": "Bereit loszulegen?",
+    "ctaSubtitle": "Schließen Sie sich Tausenden von Sicherheitsexperten in Europa an, die CyberSec Pro für ihre Penetrationstests nutzen.",
+    "copyright": "© 2026 CyberSec Pro von Semih Kılıç. Alle Rechte vorbehalten.",
     "viewTools": "Alle Tools anzeigen",
     "contactSales": "Vertrieb kontaktieren",
     "trustedBy": "Vertraut von Sicherheitsexperten in ganz Europa",
@@ -100,7 +115,13 @@
     "creating": "Konto wird erstellt...",
     "haveAccount": "Bereits ein Konto?",
     "continueWith": "Weiter mit",
-    "orContinueWith": "Oder mit E-Mail fortfahren"
+    "orContinueWith": "Oder mit E-Mail fortfahren",
+    "startFreeTrial": "Kostenlos testen",
+    "backToHome": "Zurück zur Startseite",
+    "passwordsNoMatch": "Passwörter stimmen nicht überein",
+    "passwordMinLength": "Passwort muss mindestens 8 Zeichen lang sein",
+    "orSignUpWith": "Oder registrieren mit",
+    "agreeTerms": "Mit der Registrierung stimmen Sie unseren Nutzungsbedingungen und Datenschutzrichtlinien zu"
   },
   "overview": {
     "title": "Dashboard-Übersicht",
@@ -225,9 +246,14 @@
     "acceptAll": "Alle akzeptieren",
     "essentialOnly": "Nur essenzielle",
     "customize": "Anpassen →",
-    "essential": "Essenziell",
-    "analytics": "Analyse",
-    "marketing": "Marketing"
+    "savePreferences": "Einstellungen speichern",
+    "essential": "Essenzielle Cookies",
+    "essentialDesc": "Erforderlich für den Betrieb der Plattform. Kann nicht deaktiviert werden.",
+    "analytics": "Analyse-Cookies",
+    "analyticsDesc": "Helfen uns zu verstehen, wie Besucher unsere Plattform nutzen.",
+    "marketing": "Marketing-Cookies",
+    "marketingDesc": "Werden zur Bereitstellung relevanter Werbung und zur Verfolgung der Kampagnenleistung verwendet.",
+    "privacyLink": "Datenschutzerklärung"
   },
   "gdpr": {
     "title": "Ihre Datenrechte nach DSGVO",

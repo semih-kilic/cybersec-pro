@@ -1,5 +1,6 @@
 import { Link } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
+import { useTranslation } from 'react-i18next';
 
 /**
  * 🐉 CyberSec Pro Landing Page
@@ -7,6 +8,7 @@ import { useAuth } from '../hooks/useAuth';
  */
 export function LandingPage() {
   const { isAuthenticated, user } = useAuth();
+  const { t } = useTranslation();
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900">
@@ -27,19 +29,19 @@ export function LandingPage() {
               {isAuthenticated ? (
                 <>
                   <span className="text-gray-400 hidden sm:inline">
-                    Welcome, {user?.first_name || 'User'}
+                    {t('landing.welcomeUser', { name: user?.first_name || 'User' })}
                   </span>
                   <Link to="/dashboard" className="px-4 py-2 bg-gradient-to-r from-cyan-500 to-blue-500 text-white rounded-lg hover:from-cyan-600 hover:to-blue-600 transition">
-                    Go to Dashboard
+                    {t('landing.goToDashboard')}
                   </Link>
                 </>
               ) : (
                 <>
                   <Link to="/login" className="text-gray-300 hover:text-white transition">
-                    Sign in
+                    {t('auth.signIn')}
                   </Link>
                   <Link to="/register" className="px-4 py-2 bg-gradient-to-r from-cyan-500 to-blue-500 text-white rounded-lg hover:from-cyan-600 hover:to-blue-600 transition">
-                    Start Free Trial
+                    {t('landing.startTrial')}
                   </Link>
                 </>
               )}
@@ -50,31 +52,30 @@ export function LandingPage() {
         {/* Hero Content */}
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 text-center">
           <div className="inline-block px-4 py-2 bg-cyan-500/10 border border-cyan-500/30 rounded-full text-cyan-400 text-sm font-medium mb-8">
-            🚀 682 Professional Security Tools • GDPR Compliant 🇪🇺
+            {t('landing.badge')}
           </div>
           <h1 className="text-5xl md:text-7xl font-bold text-white mb-6">
-            The Most Advanced<br />
+            {t('landing.headlinePart1')}<br />
             <span className="bg-gradient-to-r from-cyan-400 to-blue-500 bg-clip-text text-transparent">
               Kali Linux
             </span><br />
-            Platform in Europe
+            {t('landing.headlinePart2')}
           </h1>
           <p className="text-xl text-gray-400 max-w-2xl mx-auto mb-10">
-            682 penetration testing tools in your browser. No installation required. 
-            Enterprise-grade security testing platform, built for European compliance standards.
+            {t('landing.subheadline')}
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             {isAuthenticated ? (
               <Link to="/dashboard" className="px-8 py-4 bg-gradient-to-r from-cyan-500 to-blue-500 text-white text-lg font-semibold rounded-xl hover:from-cyan-600 hover:to-blue-600 transition shadow-lg shadow-cyan-500/25">
-                Go to Dashboard
+                {t('landing.goToDashboard')}
               </Link>
             ) : (
               <Link to="/register" className="px-8 py-4 bg-gradient-to-r from-cyan-500 to-blue-500 text-white text-lg font-semibold rounded-xl hover:from-cyan-600 hover:to-blue-600 transition shadow-lg shadow-cyan-500/25">
-                Start Free Trial - 14 Days
+                {t('landing.startTrial14')}
               </Link>
             )}
             <a href="#features" className="px-8 py-4 bg-gray-800 text-white text-lg font-medium rounded-xl hover:bg-gray-700 transition border border-gray-700">
-              See Features →
+              {t('landing.seeFeatures')}
             </a>
           </div>
         </div>
@@ -84,8 +85,8 @@ export function LandingPage() {
       <section id="features" className="py-20 px-4">
         <div className="max-w-7xl mx-auto">
           <div className="text-center mb-16">
-            <h2 className="text-4xl font-bold text-white mb-4">Everything You Need</h2>
-            <p className="text-gray-400 text-lg">Professional-grade security tools in one platform</p>
+            <h2 className="text-4xl font-bold text-white mb-4">{t('landing.featuresTitle')}</h2>
+            <p className="text-gray-400 text-lg">{t('landing.featuresSubtitle')}</p>
           </div>
           
           <div className="grid md:grid-cols-3 gap-8">
@@ -111,8 +112,8 @@ export function LandingPage() {
       <section id="pricing" className="py-20 px-4 bg-gray-800/30">
         <div className="max-w-7xl mx-auto">
           <div className="text-center mb-16">
-            <h2 className="text-4xl font-bold text-white mb-4">Simple, Transparent Pricing</h2>
-            <p className="text-gray-400 text-lg">No hidden fees • Cancel anytime</p>
+            <h2 className="text-4xl font-bold text-white mb-4">{t('landing.pricingTitle')}</h2>
+            <p className="text-gray-400 text-lg">{t('landing.pricingSubtitle')}</p>
           </div>
           
           <div className="grid md:grid-cols-4 gap-6 max-w-6xl mx-auto">
@@ -238,17 +239,17 @@ export function LandingPage() {
       {/* CTA Section */}
       <section className="py-20 px-4">
         <div className="max-w-4xl mx-auto text-center">
-          <h2 className="text-4xl font-bold text-white mb-6">Ready to Get Started?</h2>
+          <h2 className="text-4xl font-bold text-white mb-6">{t('landing.ctaTitle')}</h2>
           <p className="text-xl text-gray-400 mb-8">
-            Join thousands of security professionals across Europe using CyberSec Pro for their penetration testing needs.
+            {t('landing.ctaSubtitle')}
           </p>
           {isAuthenticated ? (
             <Link to="/dashboard" className="inline-block px-8 py-4 bg-gradient-to-r from-cyan-500 to-blue-500 text-white text-lg font-semibold rounded-xl hover:from-cyan-600 hover:to-blue-600 transition shadow-lg shadow-cyan-500/25">
-              Go to Dashboard
+              {t('landing.goToDashboard')}
             </Link>
           ) : (
             <Link to="/register" className="inline-block px-8 py-4 bg-gradient-to-r from-cyan-500 to-blue-500 text-white text-lg font-semibold rounded-xl hover:from-cyan-600 hover:to-blue-600 transition shadow-lg shadow-cyan-500/25">
-              Start Your Free Trial Now
+              {t('landing.startTrialNow')}
             </Link>
           )}
         </div>
@@ -266,13 +267,13 @@ export function LandingPage() {
             <span className="text-white font-semibold">CyberSec Pro</span>
           </div>
           <p className="text-gray-500 text-sm">
-            © 2026 CyberSec Pro by Semih Kılıç. All rights reserved.
+            {t('landing.copyright')}
           </p>
           <div className="flex items-center gap-4 mt-4 md:mt-0">
-            <Link to="/dashboard/privacy" className="text-gray-500 text-sm hover:text-gray-300 transition">Privacy Policy</Link>
-            <Link to="/dashboard/terms" className="text-gray-500 text-sm hover:text-gray-300 transition">Terms of Service</Link>
-            <Link to="/dashboard/gdpr" className="text-gray-500 text-sm hover:text-gray-300 transition">GDPR</Link>
-            <span className="text-gray-600 text-xs">🇪🇺 EU Compliant</span>
+            <Link to="/dashboard/privacy" className="text-gray-500 text-sm hover:text-gray-300 transition">{t('landing.footer.privacyPolicy')}</Link>
+            <Link to="/dashboard/terms" className="text-gray-500 text-sm hover:text-gray-300 transition">{t('landing.footer.termsOfService')}</Link>
+            <Link to="/dashboard/gdpr" className="text-gray-500 text-sm hover:text-gray-300 transition">{t('landing.footer.gdpr')}</Link>
+            <span className="text-gray-600 text-xs">{t('landing.footer.euCompliant')}</span>
           </div>
         </div>
       </footer>

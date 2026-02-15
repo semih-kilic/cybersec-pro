@@ -23,6 +23,7 @@
     "language": "Langue"
   },
   "nav": {
+    "main": "Principal",
     "dashboard": "Tableau de bord",
     "tools": "Outils",
     "scans": "Analyses",
@@ -42,8 +43,22 @@
   "landing": {
     "badge": "682 outils de sécurité professionnels • Conforme au RGPD 🇪🇺",
     "headline": "La plateforme Kali Linux la plus avancée d'Europe",
-    "subheadline": "682 outils de test d'intrusion dans votre navigateur. Aucune installation requise.",
+    "headlinePart1": "La Plus Avancée",
+    "headlinePart2": "Plateforme en Europe",
+    "subheadline": "682 outils de test d'intrusion dans votre navigateur. Aucune installation requise. Plateforme de test de sécurité de niveau entreprise.",
     "startTrial": "Essai gratuit",
+    "startTrial14": "Essai Gratuit - 14 Jours",
+    "startTrialNow": "Commencez votre essai gratuit",
+    "seeFeatures": "Voir les fonctionnalités →",
+    "goToDashboard": "Aller au tableau de bord",
+    "welcomeUser": "Bienvenue, {{name}}",
+    "featuresTitle": "Tout ce dont vous avez besoin",
+    "featuresSubtitle": "Outils de sécurité professionnels sur une seule plateforme",
+    "pricingTitle": "Tarification simple et transparente",
+    "pricingSubtitle": "Sans frais cachés • Annulation à tout moment",
+    "ctaTitle": "Prêt à commencer ?",
+    "ctaSubtitle": "Rejoignez des milliers de professionnels de la sécurité à travers l'Europe qui utilisent CyberSec Pro.",
+    "copyright": "© 2026 CyberSec Pro par Semih Kılıç. Tous droits réservés.",
     "viewTools": "Voir tous les outils",
     "contactSales": "Contacter les ventes",
     "trustedBy": "Approuvé par les professionnels de la sécurité à travers l'Europe",
@@ -100,7 +115,13 @@
     "creating": "Création du compte...",
     "haveAccount": "Déjà un compte ?",
     "continueWith": "Continuer avec",
-    "orContinueWith": "Ou continuer par e-mail"
+    "orContinueWith": "Ou continuer par e-mail",
+    "startFreeTrial": "Essai gratuit",
+    "backToHome": "Retour à l'accueil",
+    "passwordsNoMatch": "Les mots de passe ne correspondent pas",
+    "passwordMinLength": "Le mot de passe doit contenir au moins 8 caractères",
+    "orSignUpWith": "Ou s'inscrire avec",
+    "agreeTerms": "En vous inscrivant, vous acceptez nos Conditions d'utilisation et notre Politique de confidentialité"
   },
   "overview": {
     "title": "Vue d'ensemble",
@@ -225,9 +246,14 @@
     "acceptAll": "Tout accepter",
     "essentialOnly": "Essentiels uniquement",
     "customize": "Personnaliser →",
-    "essential": "Essentiels",
-    "analytics": "Analytiques",
-    "marketing": "Marketing"
+    "savePreferences": "Enregistrer les préférences",
+    "essential": "Cookies essentiels",
+    "essentialDesc": "Nécessaires au fonctionnement de la plateforme. Ne peuvent pas être désactivés.",
+    "analytics": "Cookies analytiques",
+    "analyticsDesc": "Nous aident à comprendre comment les visiteurs utilisent notre plateforme.",
+    "marketing": "Cookies marketing",
+    "marketingDesc": "Utilisés pour diffuser des publicités pertinentes et suivre les performances des campagnes.",
+    "privacyLink": "Politique de confidentialité"
   },
   "gdpr": {
     "title": "Vos droits sur vos données selon le RGPD",

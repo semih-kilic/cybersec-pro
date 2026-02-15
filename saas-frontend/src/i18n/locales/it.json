@@ -23,6 +23,7 @@
     "language": "Lingua"
   },
   "nav": {
+    "main": "Principale",
     "dashboard": "Dashboard",
     "tools": "Strumenti",
     "scans": "Scansioni",
@@ -42,8 +43,22 @@
   "landing": {
     "badge": "682 strumenti di sicurezza professionali • Conforme al GDPR 🇪🇺",
     "headline": "La piattaforma Kali Linux più avanzata d'Europa",
-    "subheadline": "682 strumenti di penetration testing nel tuo browser. Nessuna installazione richiesta.",
-    "startTrial": "Prova gratuita",
+    "headlinePart1": "La Più Avanzata",
+    "headlinePart2": "Piattaforma in Europa",
+    "subheadline": "682 strumenti di penetration testing nel tuo browser. Nessuna installazione richiesta. Piattaforma di sicurezza enterprise per standard europei.",
+    "startTrial": "Prova Gratuita",
+    "startTrial14": "Prova Gratuita - 14 Giorni",
+    "startTrialNow": "Inizia la tua prova gratuita ora",
+    "seeFeatures": "Vedi funzionalità →",
+    "goToDashboard": "Vai alla dashboard",
+    "welcomeUser": "Benvenuto, {{name}}",
+    "featuresTitle": "Tutto ciò di cui hai bisogno",
+    "featuresSubtitle": "Strumenti di sicurezza professionali in un'unica piattaforma",
+    "pricingTitle": "Prezzi semplici e trasparenti",
+    "pricingSubtitle": "Nessun costo nascosto • Cancella quando vuoi",
+    "ctaTitle": "Pronto per iniziare?",
+    "ctaSubtitle": "Unisciti a migliaia di professionisti della sicurezza in Europa che usano CyberSec Pro per i loro test di penetrazione.",
+    "copyright": "© 2026 CyberSec Pro di Semih Kılıç. Tutti i diritti riservati.",
     "viewTools": "Vedi tutti gli strumenti",
     "contactSales": "Contatta le vendite",
     "trustedBy": "Scelto dai professionisti della sicurezza in tutta Europa",
@@ -100,7 +115,13 @@
     "creating": "Creazione account...",
     "haveAccount": "Hai già un account?",
     "continueWith": "Continua con",
-    "orContinueWith": "Oppure continua con e-mail"
+    "orContinueWith": "Oppure continua con e-mail",
+    "startFreeTrial": "Prova gratuita",
+    "backToHome": "Torna alla home",
+    "passwordsNoMatch": "Le password non corrispondono",
+    "passwordMinLength": "La password deve contenere almeno 8 caratteri",
+    "orSignUpWith": "O registrati con",
+    "agreeTerms": "Registrandoti, accetti i nostri Termini di Servizio e l'Informativa sulla Privacy"
   },
   "overview": {
     "title": "Panoramica dashboard",
@@ -225,9 +246,14 @@
     "acceptAll": "Accetta tutto",
     "essentialOnly": "Solo essenziali",
     "customize": "Personalizza →",
-    "essential": "Essenziali",
-    "analytics": "Analitiche",
-    "marketing": "Marketing"
+    "savePreferences": "Salva preferenze",
+    "essential": "Cookie essenziali",
+    "essentialDesc": "Necessari per il funzionamento della piattaforma. Non possono essere disattivati.",
+    "analytics": "Cookie analitici",
+    "analyticsDesc": "Ci aiutano a capire come i visitatori utilizzano la nostra piattaforma.",
+    "marketing": "Cookie di marketing",
+    "marketingDesc": "Utilizzati per fornire annunci pertinenti e monitorare le prestazioni delle campagne.",
+    "privacyLink": "Informativa sulla privacy"
   },
   "gdpr": {
     "title": "I tuoi diritti sui dati secondo il GDPR",

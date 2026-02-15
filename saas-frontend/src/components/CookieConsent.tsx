@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 
 const CONSENT_KEY = 'cybersecpro_cookie_consent';
 
@@ -13,6 +14,7 @@ interface CookiePreferences {
 export function CookieConsentBanner() {
   const [visible, setVisible] = useState(false);
   const [showDetails, setShowDetails] = useState(false);
+  const { t } = useTranslation();
   const [preferences, setPreferences] = useState<CookiePreferences>({
     essential: true,
     analytics: false,
@@ -57,11 +59,10 @@ export function CookieConsentBanner() {
           <div className="flex items-start gap-4">
             <span className="text-3xl flex-shrink-0 mt-1">🍪</span>
             <div className="flex-1">
-              <h3 className="text-white font-semibold text-lg mb-1">We value your privacy</h3>
+              <h3 className="text-white font-semibold text-lg mb-1">{t('cookie.title')}</h3>
               <p className="text-gray-400 text-sm">
-                We use cookies to enhance your browsing experience, serve personalized content, and analyze our traffic. 
-                Under GDPR, we need your consent for non-essential cookies. 
-                Read our <Link to="/dashboard/privacy" className="text-cyan-400 hover:underline">Privacy Policy</Link> for more details.
+                {t('cookie.description')}{' '}
+                <Link to="/dashboard/privacy" className="text-cyan-400 hover:underline">{t('cookie.privacyLink')}</Link>
               </p>
             </div>
           </div>
@@ -72,8 +73,8 @@ export function CookieConsentBanner() {
               {/* Essential */}
               <div className="flex items-center justify-between p-3 bg-gray-800/50 rounded-lg">
                 <div>
-                  <p className="text-white font-medium text-sm">Essential Cookies</p>
-                  <p className="text-gray-500 text-xs">Required for the platform to function. Cannot be disabled.</p>
+                  <p className="text-white font-medium text-sm">{t('cookie.essential')}</p>
+                  <p className="text-gray-500 text-xs">{t('cookie.essentialDesc')}</p>
                 </div>
                 <div className="w-12 h-6 bg-green-500/20 rounded-full flex items-center justify-end px-1">
                   <div className="w-4 h-4 bg-green-400 rounded-full" />
@@ -83,8 +84,8 @@ export function CookieConsentBanner() {
               {/* Analytics */}
               <div className="flex items-center justify-between p-3 bg-gray-800/50 rounded-lg">
                 <div>
-                  <p className="text-white font-medium text-sm">Analytics Cookies</p>
-                  <p className="text-gray-500 text-xs">Help us understand how visitors use our platform.</p>
+                  <p className="text-white font-medium text-sm">{t('cookie.analytics')}</p>
+                  <p className="text-gray-500 text-xs">{t('cookie.analyticsDesc')}</p>
                 </div>
                 <button
                   onClick={() => setPreferences(p => ({ ...p, analytics: !p.analytics }))}
@@ -97,8 +98,8 @@ export function CookieConsentBanner() {
               {/* Marketing */}
               <div className="flex items-center justify-between p-3 bg-gray-800/50 rounded-lg">
                 <div>
-                  <p className="text-white font-medium text-sm">Marketing Cookies</p>
-                  <p className="text-gray-500 text-xs">Used to deliver relevant advertisements and track campaign performance.</p>
+                  <p className="text-white font-medium text-sm">{t('cookie.marketing')}</p>
+                  <p className="text-gray-500 text-xs">{t('cookie.marketingDesc')}</p>
                 </div>
                 <button
                   onClick={() => setPreferences(p => ({ ...p, marketing: !p.marketing }))}
@@ -116,27 +117,27 @@ export function CookieConsentBanner() {
               onClick={acceptAll}
               className="w-full sm:w-auto px-6 py-2.5 bg-gradient-to-r from-cyan-500 to-blue-500 text-white rounded-lg font-medium hover:from-cyan-600 hover:to-blue-600 transition shadow-lg shadow-cyan-500/20"
             >
-              Accept All
+              {t('cookie.acceptAll')}
             </button>
             <button
               onClick={acceptEssential}
               className="w-full sm:w-auto px-6 py-2.5 bg-gray-800 text-gray-300 rounded-lg font-medium hover:bg-gray-700 transition border border-gray-600"
             >
-              Essential Only
+              {t('cookie.essentialOnly')}
             </button>
             {showDetails ? (
               <button
                 onClick={saveCustom}
                 className="w-full sm:w-auto px-6 py-2.5 bg-gray-800 text-cyan-400 rounded-lg font-medium hover:bg-gray-700 transition border border-cyan-500/30"
               >
-                Save Preferences
+                {t('cookie.savePreferences')}
               </button>
             ) : (
               <button
                 onClick={() => setShowDetails(true)}
                 className="w-full sm:w-auto px-6 py-2.5 text-gray-400 hover:text-white transition text-sm"
               >
-                Customize →
+                {t('cookie.customize')}
               </button>
             )}
           </div>

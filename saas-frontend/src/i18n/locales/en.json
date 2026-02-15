@@ -23,6 +23,7 @@
     "language": "Language"
   },
   "nav": {
+    "main": "Main",
     "dashboard": "Dashboard",
     "tools": "Tools",
     "scans": "Scans",
@@ -42,8 +43,22 @@
   "landing": {
     "badge": "682 Professional Security Tools • GDPR Compliant 🇪🇺",
     "headline": "The Most Advanced Kali Linux Platform in Europe",
-    "subheadline": "682 penetration testing tools in your browser. No installation required.",
+    "headlinePart1": "The Most Advanced",
+    "headlinePart2": "Platform in Europe",
+    "subheadline": "682 penetration testing tools in your browser. No installation required. Enterprise-grade security testing platform, built for European compliance standards.",
     "startTrial": "Start Free Trial",
+    "startTrial14": "Start Free Trial - 14 Days",
+    "startTrialNow": "Start Your Free Trial Now",
+    "seeFeatures": "See Features →",
+    "goToDashboard": "Go to Dashboard",
+    "welcomeUser": "Welcome, {{name}}",
+    "featuresTitle": "Everything You Need",
+    "featuresSubtitle": "Professional-grade security tools in one platform",
+    "pricingTitle": "Simple, Transparent Pricing",
+    "pricingSubtitle": "No hidden fees • Cancel anytime",
+    "ctaTitle": "Ready to Get Started?",
+    "ctaSubtitle": "Join thousands of security professionals across Europe using CyberSec Pro for their penetration testing needs.",
+    "copyright": "© 2026 CyberSec Pro by Semih Kılıç. All rights reserved.",
     "viewTools": "View All Tools",
     "contactSales": "Contact Sales",
     "trustedBy": "Trusted by security professionals across Europe",
@@ -100,7 +115,13 @@
     "creating": "Creating account...",
     "haveAccount": "Already have an account?",
     "continueWith": "Continue with",
-    "orContinueWith": "Or continue with email"
+    "orContinueWith": "Or continue with email",
+    "startFreeTrial": "Start free trial",
+    "backToHome": "Back to home",
+    "passwordsNoMatch": "Passwords do not match",
+    "passwordMinLength": "Password must be at least 8 characters",
+    "orSignUpWith": "Or sign up with",
+    "agreeTerms": "By signing up, you agree to our Terms of Service and Privacy Policy"
   },
   "overview": {
     "title": "Dashboard Overview",
@@ -221,13 +242,18 @@
   "cookie": {
     "title": "We value your privacy",
     "description": "We use cookies to enhance your browsing experience, serve personalized content, and analyze our traffic. Under GDPR, we need your consent for non-essential cookies.",
+    "privacyLink": "Privacy Policy",
     "readMore": "Read our <link>Privacy Policy</link> for more details.",
     "acceptAll": "Accept All",
     "essentialOnly": "Essential Only",
-    "customize": "Customize →",
-    "essential": "Essential",
-    "analytics": "Analytics",
-    "marketing": "Marketing"
+    "customize": "Customize \u2192",
+    "savePreferences": "Save Preferences",
+    "essential": "Essential Cookies",
+    "essentialDesc": "Required for the platform to function. Cannot be disabled.",
+    "analytics": "Analytics Cookies",
+    "analyticsDesc": "Help us understand how visitors use our platform.",
+    "marketing": "Marketing Cookies",
+    "marketingDesc": "Used to deliver relevant advertisements and track campaign performance."
   },
   "gdpr": {
     "title": "Your Data Rights Under GDPR",
