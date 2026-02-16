@@ -1,8 +1,13 @@
 {
   "name": "cybersec-sales",
-  "version": "1.0.0",
+  "version": "2.0.0",
   "main": "index.js",
   "scripts": {
+    "demo": "node record-demo-v2.js",
+    "demo:youtube": "node record-demo-v2.js --upload youtube",
+    "demo:vimeo": "node record-demo-v2.js --upload vimeo",
+    "demo:both": "node record-demo-v2.js --upload both",
+    "demo:cron": "./weekly-demo-cron.sh",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],
@@ -12,5 +17,5 @@
     "puppeteer": "^24.36.0",
     "puppeteer-screen-recorder": "^3.0.6"
   },
-  "description": ""
+  "description": "CyberSec Pro - Demo Video Recording & Marketing"
 }

@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
 import { useTranslation } from 'react-i18next';
@@ -9,6 +10,7 @@ import { useTranslation } from 'react-i18next';
 export function LandingPage() {
   const { isAuthenticated, user } = useAuth();
   const { t } = useTranslation();
+  const [isVideoPlaying, setIsVideoPlaying] = useState(false);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900">
@@ -80,6 +82,100 @@ export function LandingPage() {
           </div>
         </div>
       </header>
+
+      {/* Live Demo Video Section */}
+      <section className="py-16 px-4 bg-gray-900/50">
+        <div className="max-w-5xl mx-auto">
+          <div className="text-center mb-10">
+            <div className="inline-block px-3 py-1 bg-red-500/10 border border-red-500/30 rounded-full text-red-400 text-xs font-medium mb-4">
+              🔴 LIVE DEMO
+            </div>
+            <h2 className="text-3xl md:text-4xl font-bold text-white mb-3">
+              See It In Action
+            </h2>
+            <p className="text-gray-400 text-lg max-w-2xl mx-auto">
+              Watch a real security scan from login to report — updated weekly with latest features.
+            </p>
+          </div>
+
+          {/* Video Player */}
+          <div className="relative rounded-2xl overflow-hidden border border-gray-700 shadow-2xl shadow-cyan-500/10 bg-gray-950 aspect-video group">
+            {!isVideoPlaying ? (
+              <>
+                {/* Thumbnail / Placeholder */}
+                <div className="absolute inset-0 bg-gradient-to-br from-gray-900 via-gray-800 to-cyan-900/20 flex items-center justify-center">
+                  <div className="text-center">
+                    {/* Terminal Preview */}
+                    <div className="w-[600px] max-w-[80vw] mx-auto mb-6 bg-gray-950 rounded-lg border border-gray-700 overflow-hidden shadow-lg">
+                      <div className="flex items-center gap-1.5 px-3 py-2 bg-gray-800 border-b border-gray-700">
+                        <div className="w-2.5 h-2.5 rounded-full bg-red-500" />
+                        <div className="w-2.5 h-2.5 rounded-full bg-yellow-500" />
+                        <div className="w-2.5 h-2.5 rounded-full bg-green-500" />
+                        <span className="text-gray-500 text-xs ml-2">CyberSec Pro Terminal</span>
+                      </div>
+                      <div className="p-4 font-mono text-xs text-left space-y-1">
+                        <p className="text-green-400">$ nmap -sV -sC scanme.nmap.org</p>
+                        <p className="text-gray-500">Starting Nmap 7.94 ( https://nmap.org )</p>
+                        <p className="text-cyan-400">PORT   STATE SERVICE VERSION</p>
+                        <p className="text-white">22/tcp open  ssh     OpenSSH 6.6p1</p>
+                        <p className="text-white">80/tcp open  http    Apache httpd 2.4.7</p>
+                        <p className="text-green-400">Nmap done: 1 IP address (1 host up)</p>
+                      </div>
+                    </div>
+
+                    {/* Play Button */}
+                    <button
+                      onClick={() => setIsVideoPlaying(true)}
+                      className="inline-flex items-center gap-3 px-8 py-4 bg-gradient-to-r from-cyan-500 to-blue-500 text-white font-semibold rounded-xl hover:from-cyan-600 hover:to-blue-600 transition shadow-lg shadow-cyan-500/25 group"
+                    >
+                      <svg className="w-6 h-6 group-hover:scale-110 transition-transform" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M8 5v14l11-7z" />
+                      </svg>
+                      Watch 2-Min Demo
+                    </button>
+                    <p className="text-gray-500 text-sm mt-3">No signup required</p>
+                  </div>
+                </div>
+              </>
+            ) : (
+              <>
+                {/* Embedded Video Player */}
+                <video
+                  className="w-full h-full"
+                  autoPlay
+                  controls
+                  playsInline
+                  poster="/dashboard/videos/demo-thumbnail.png"
+                  onEnded={() => setIsVideoPlaying(false)}
+                >
+                  <source src="/dashboard/videos/demo-latest.mp4" type="video/mp4" />
+                  {/* Fallback to YouTube/Vimeo embed if local video not available */}
+                  Your browser does not support the video tag.
+                </video>
+
+                {/* Close button */}
+                <button
+                  onClick={() => setIsVideoPlaying(false)}
+                  className="absolute top-4 right-4 p-2 bg-black/60 rounded-full text-white hover:bg-black/80 transition z-10"
+                >
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
+              </>
+            )}
+          </div>
+
+          {/* Feature pills under video */}
+          <div className="flex flex-wrap justify-center gap-3 mt-6">
+            {['Login & Dashboard', 'Live Nmap Scan', 'Real-time Output', 'PDF Reports', 'Remote Agents'].map((feat, i) => (
+              <span key={i} className="px-3 py-1.5 bg-gray-800/50 border border-gray-700 rounded-full text-gray-400 text-xs">
+                {['🔐', '🔍', '📡', '📊', '🖥️'][i]} {feat}
+              </span>
+            ))}
+          </div>
+        </div>
+      </section>
 
       {/* Features Section */}
       <section id="features" className="py-20 px-4">

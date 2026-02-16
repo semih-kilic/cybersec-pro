@@ -290,12 +290,48 @@ def register_agent_handlers(sio: SocketIO):
                 'line': line,
                 'source': 'agent'
             }, namespace='/scans', room=f"scan_{scan_id}")
+            
+            # Also append to DB for SSE stream polling
+            try:
+                from flask import current_app
+                with current_app.app_context():
+                    from app import Scan, db
+                    scan = db.session.get(Scan, scan_id)
+                    if scan:
+                        scan.output = (scan.output or '') + line
+                        db.session.commit()
+            except Exception:
+                pass
     
     @sio.on('scan_complete', namespace='/agents')
     def handle_agent_scan_complete(data):
-        """Agent reports scan completion"""
+        """Agent reports scan completion via WebSocket"""
         scan_id = data.get('scan_id')
         if scan_id:
+            # Update DB with final result
+            try:
+                from flask import current_app
+                with current_app.app_context():
+                    from app import Scan, Agent, db
+                    from datetime import datetime
+                    scan = db.session.get(Scan, scan_id)
+                    if scan:
+                        scan.status = data.get('status', 'completed')
+                        scan.output = data.get('output', scan.output or '')
+                        scan.completed_at = datetime.utcnow()
+                        
+                        # Update agent stats
+                        if scan.agent_id:
+                            agent = db.session.get(Agent, scan.agent_id)
+                            if agent:
+                                agent.active_scans = max(0, (agent.active_scans or 0) - 1)
+                                agent.total_scans = (agent.total_scans or 0) + 1
+                        
+                        db.session.commit()
+            except Exception as e:
+                logger.error(f"Failed to save agent scan result: {e}")
+            
+            # Notify dashboard clients
             sio.emit('scan_complete', {
                 'scan_id': scan_id,
                 'status': data.get('status', 'completed'),
