@@ -1,7 +1,8 @@
 import { useAuth } from '../../hooks/useAuth';
 import { Link } from 'react-router-dom';
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
+import { useToolCounts } from '../../hooks/useApiQueries';
 
 // Stripe checkout URLs (would be generated server-side in production)
 const STRIPE_CHECKOUT_URLS: { [key: string]: string } = {
@@ -10,82 +11,84 @@ const STRIPE_CHECKOUT_URLS: { [key: string]: string } = {
   enterprise: 'https://buy.stripe.com/test_enterprise_cybersecpro',
 };
 
-const plans = [
-  {
-    id: 'starter',
-    name: 'Starter',
-    price: 0,
-    yearlyPrice: 0,
-    period: '14 days',
-    description: 'Perfect for trying the platform',
-    features: [
-      '33 security tools',
-      '10 scans per day',
-      '1 project',
-      'Basic JSON reports',
-    ],
-    color: 'green',
-    popular: false,
-  },
-  {
-    id: 'professional',
-    name: 'Professional',
-    price: 29,
-    yearlyPrice: 290,
-    period: '/month',
-    description: 'For security professionals',
-    features: [
-      '200+ security tools',
-      '50 scans per day',
-      'Multi-tool scan (3)',
-      '5 projects',
-      'PDF/HTML reports',
-      'API access',
-    ],
-    color: 'blue',
-    popular: true,
-  },
-  {
-    id: 'team',
-    name: 'Team',
-    price: 59,
-    yearlyPrice: 590,
-    period: '/month',
-    description: 'For security teams',
-    features: [
-      '400+ security tools',
-      '200 scans per day',
-      'Multi-tool scan (5)',
-      'Remote agents (3)',
-      '10 team members',
-      '20 projects',
-      'Slack/Teams integration',
-    ],
-    color: 'purple',
-    popular: false,
-  },
-  {
-    id: 'enterprise',
-    name: 'Enterprise',
-    price: 99,
-    yearlyPrice: 990,
-    period: '/month',
-    description: 'For organizations',
-    features: [
-      'All 682 Kali Linux tools',
-      'Unlimited scans',
-      'Multi-tool scan (∞)',
-      'Unlimited remote agents',
-      'Unlimited users & projects',
-      'SSO / SAML / LDAP',
-      'Compliance reports (OWASP, PCI)',
-      '24/7 priority support',
-      'GDPR compliant',
-    ],
-    color: 'yellow',
-    popular: false,
-  },
-];
+function buildPlans(counts: { starter: number; professional: number; team: number; enterprise: number }) {
+  return [
+    {
+      id: 'starter',
+      name: 'Starter',
+      price: 0,
+      yearlyPrice: 0,
+      period: '14 days',
+      description: 'Perfect for trying the platform',
+      features: [
+        `${counts.starter} security tools`,
+        '10 scans per day',
+        '1 project',
+        'Basic JSON reports',
+      ],
+      color: 'green',
+      popular: false,
+    },
+    {
+      id: 'professional',
+      name: 'Professional',
+      price: 29,
+      yearlyPrice: 290,
+      period: '/month',
+      description: 'For security professionals',
+      features: [
+        `${counts.professional} security tools`,
+        '50 scans per day',
+        'Multi-tool scan (3)',
+        '5 projects',
+        'PDF/HTML reports',
+        'API access',
+      ],
+      color: 'blue',
+      popular: true,
+    },
+    {
+      id: 'team',
+      name: 'Team',
+      price: 59,
+      yearlyPrice: 590,
+      period: '/month',
+      description: 'For security teams',
+      features: [
+        `${counts.team} security tools`,
+        '200 scans per day',
+        'Multi-tool scan (5)',
+        'Remote agents (3)',
+        '10 team members',
+        '20 projects',
+        'Slack/Teams integration',
+      ],
+      color: 'purple',
+      popular: false,
+    },
+    {
+      id: 'enterprise',
+      name: 'Enterprise',
+      price: 99,
+      yearlyPrice: 990,
+      period: '/month',
+      description: 'For organizations',
+      features: [
+        `All ${counts.enterprise} Kali Linux tools`,
+        'Unlimited scans',
+        'Multi-tool scan (∞)',
+        'Unlimited remote agents',
+        'Unlimited users & projects',
+        'SSO / SAML / LDAP',
+        'Compliance reports (OWASP, PCI)',
+        '24/7 priority support',
+        'GDPR compliant',
+      ],
+      color: 'yellow',
+      popular: false,
+    },
+  ];
+}
 
 export default function UpgradePage() {
   const { organization, token } = useAuth();
@@ -93,6 +96,15 @@ export default function UpgradePage() {
   const [loading, setLoading] = useState<string | null>(null);
   const [billingCycle, setBillingCycle] = useState<'monthly' | 'yearly'>('monthly');
   const currentPlan = organization?.plan_type || 'starter';
+
+  // Dynamic tool counts from API
+  const { data: toolCounts } = useToolCounts();
+  const plans = useMemo(() => buildPlans({
+    starter: toolCounts?.plans?.starter ?? 50,
+    professional: toolCounts?.plans?.professional ?? 200,
+    team: toolCounts?.plans?.team ?? 400,
+    enterprise: toolCounts?.plans?.enterprise ?? 682,
+  }), [toolCounts]);
 
   const handleUpgrade = async (planId: string) => {
     if (planId === currentPlan) return;

@@ -126,7 +126,7 @@ export function LandingPage() {
               </div>
               <ul className="space-y-2 mb-6 text-gray-300 text-sm">
                 <li className="flex items-center gap-2">
-                  <span className="text-green-400">✓</span> 7 Essential Tools
+                  <span className="text-green-400">✓</span> 50 Essential Tools
                 </li>
                 <li className="flex items-center gap-2">
                   <span className="text-green-400">✓</span> 10 scans/day
@@ -155,7 +155,7 @@ export function LandingPage() {
               </div>
               <ul className="space-y-2 mb-6 text-gray-300 text-sm">
                 <li className="flex items-center gap-2">
-                  <span className="text-green-400">✓</span> <strong>200+</strong> Tools
+                  <span className="text-green-400">✓</span> <strong>200</strong> Tools
                 </li>
                 <li className="flex items-center gap-2">
                   <span className="text-green-400">✓</span> 50 scans/day
@@ -184,7 +184,7 @@ export function LandingPage() {
               </div>
               <ul className="space-y-2 mb-6 text-gray-300 text-sm">
                 <li className="flex items-center gap-2">
-                  <span className="text-green-400">✓</span> <strong>400+</strong> Tools
+                  <span className="text-green-400">✓</span> <strong>400</strong> Tools
                 </li>
                 <li className="flex items-center gap-2">
                   <span className="text-green-400">✓</span> 200 scans/day

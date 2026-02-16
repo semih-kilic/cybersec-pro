@@ -29,6 +29,36 @@ async function authFetch<T>(url: string, token: string | null, options?: Request
 }
 
 // ==========================================
+// TOOL COUNTS (Public endpoint - no auth)
+// ==========================================
+
+export interface PlanToolCounts {
+  plans: {
+    trial: number;
+    starter: number;
+    professional: number;
+    team: number;
+    enterprise: number;
+  };
+  total: number;
+}
+
+/** Fetches dynamic tool counts per plan from /api/v1/tools/count (public, no auth) */
+export function useToolCounts() {
+  return useQuery<PlanToolCounts>({
+    queryKey: ['toolCounts'],
+    queryFn: async () => {
+      const res = await fetch('/api/v1/tools/count');
+      if (!res.ok) throw new Error('Failed to fetch tool counts');
+      return res.json();
+    },
+    staleTime: CACHE_TIMES.LONG,     // 5 minutes - counts rarely change
+    gcTime: 1000 * 60 * 30,          // 30 min cache
+    refetchOnWindowFocus: false,
+  });
+}
+
+// ==========================================
 // TOOLS HOOKS
 // ==========================================
 

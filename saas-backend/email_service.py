@@ -204,7 +204,7 @@ def notify_user_welcome(user_data: dict) -> bool:
                                 </h2>
                                 
                                 <p style="margin: 0 0 20px 0; color: #b0b0b0; font-size: 16px; line-height: 1.7;">
-                                    Your account has been successfully created. You now have access to the most powerful cloud-based cybersecurity platform with <strong style="color: #2ecc71;">165+ professional security tools</strong> at your fingertips.
+                                    Your account has been successfully created. You now have access to the most powerful cloud-based cybersecurity platform with <strong style="color: #2ecc71;">682 professional security tools</strong> at your fingertips.
                                 </p>
                                 
                                 <p style="margin: 0 0 30px 0; color: #b0b0b0; font-size: 16px; line-height: 1.7;">
@@ -375,7 +375,7 @@ def notify_user_welcome(user_data: dict) -> bool:
     
     Your account has been successfully created!
     
-    You now have access to 165+ professional security tools:
+    You now have access to 682 professional security tools:
     
     🔍 Network Reconnaissance - Nmap, Masscan, Netdiscover
     🌐 Web App Testing - Burp Suite, SQLMap, Nikto
@@ -439,7 +439,7 @@ def notify_trial_expiring(user_data: dict, days_left: int) -> bool:
             <div class="pricing">
                 <p style="margin: 0; color: #888;">Professional Plan</p>
                 <div class="price">€29/month</div>
-                <p style="margin: 10px 0 0 0; color: #ccc;">Full access to 165+ tools, API, and priority support</p>
+                <p style="margin: 10px 0 0 0; color: #ccc;">Full access to 682 tools, API, and priority support</p>
             </div>
             
             <a href="https://app.cybersecpro.com/billing" class="btn">Upgrade Now →</a>

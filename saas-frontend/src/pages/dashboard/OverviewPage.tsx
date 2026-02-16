@@ -10,13 +10,13 @@ import { OverviewSkeleton } from '../../components/ui/Skeleton';
 import { ActivityFeed } from '../../components/dashboard/ActivityFeed';
 import { PageTransition } from '../../components/ui/PageTransition';
 
-// Plan configurations - synced with backend database (143 total tools)
+// Plan configurations - synced with backend /api/v1/tools/count (682 total tools)
 const PLAN_CONFIG: Record<string, { tools: number; scansPerDay: number; features: string[] }> = {
   trial: { tools: 7, scansPerDay: 3, features: ['7 Essential tools', '3 scans/day', '14 day trial'] },
-  starter: { tools: 7, scansPerDay: 10, features: ['7 Essential tools', '10 scans/day', '1 project'] },
-  professional: { tools: 33, scansPerDay: 50, features: ['33 tools', '50 scans/day', 'Multi-tool scan (3)'] },
-  team: { tools: 85, scansPerDay: 100, features: ['85 tools', '100 scans/day', 'Remote agent'] },
-  enterprise: { tools: 143, scansPerDay: -1, features: ['143+ All tools', 'Unlimited scans', 'SSO/SAML'] },
+  starter: { tools: 50, scansPerDay: 10, features: ['50 tools', '10 scans/day', '1 project'] },
+  professional: { tools: 200, scansPerDay: 50, features: ['200 tools', '50 scans/day', 'Multi-tool scan (3)'] },
+  team: { tools: 400, scansPerDay: 200, features: ['400 tools', '200 scans/day', 'Remote agent'] },
+  enterprise: { tools: 682, scansPerDay: -1, features: ['All 682 tools', 'Unlimited scans', 'SSO/SAML'] },
 };
 
 interface VulnerabilitySummary {
@@ -248,10 +248,10 @@ export function OverviewPage() {
                 <span className="text-2xl">🛠️</span>
               </div>
               <div className="flex-1">
-                <h3 className="text-lg font-bold text-white mb-2">Your 7 Trial Tools</h3>
+                <h3 className="text-lg font-bold text-white mb-2">Your Trial Tools</h3>
                 <p className="text-gray-400 text-sm mb-4">
                   During your 14-day trial, you have access to these professional security tools. 
-                  <Link to="/dashboard/billing/upgrade" className="text-purple-400 hover:underline ml-1">Upgrade</Link> to unlock 395+ tools!
+                  <Link to="/dashboard/billing/upgrade" className="text-purple-400 hover:underline ml-1">Upgrade</Link> to unlock 682 tools!
                 </p>
                 <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-3">
                   {[
@@ -308,10 +308,10 @@ export function OverviewPage() {
                 <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
                   {[
                     { id: 'trial', name: 'Trial', tools: '7 tools', scans: '3/day', features: 'Basic', color: 'gray' },
-                    { id: 'starter', name: 'Starter', tools: '33 tools', scans: '10/day', features: '1 project', color: 'green' },
-                    { id: 'professional', name: 'Professional', tools: '120 tools', scans: '50/day', features: 'Multi-tool (3)', color: 'blue' },
-                    { id: 'team', name: 'Team', tools: '130 tools', scans: '100/day', features: 'Agent + Multi (5)', color: 'purple' },
-                    { id: 'enterprise', name: 'Enterprise', tools: '143+ tools', scans: 'Unlimited', features: '∞ Agents + SSO', color: 'yellow' },
+                    { id: 'starter', name: 'Starter', tools: '50 tools', scans: '10/day', features: '1 project', color: 'green' },
+                    { id: 'professional', name: 'Professional', tools: '200 tools', scans: '50/day', features: 'Multi-tool (3)', color: 'blue' },
+                    { id: 'team', name: 'Team', tools: '400 tools', scans: '200/day', features: 'Agent + Multi (5)', color: 'purple' },
+                    { id: 'enterprise', name: 'Enterprise', tools: '682 tools', scans: 'Unlimited', features: '∞ Agents + SSO', color: 'yellow' },
                   ].map((plan) => (
                     <button
                       key={plan.id}

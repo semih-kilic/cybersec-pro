@@ -1202,9 +1202,9 @@ def get_tools():
         # Plan hierarchy: trial=0, starter=1, professional=2, team=3, enterprise=4
         plan_limits = {
             'trial': 7,
-            'starter': 33,
-            'professional': 120,
-            'team': 200,
+            'starter': 50,
+            'professional': 200,
+            'team': 400,
             'enterprise': 999  # Unlimited
         }
         
@@ -1281,6 +1281,49 @@ def get_tools_stats():
         })
     except Exception as e:
         return jsonify({'error': str(e)}), 500
+
+
+@app.route('/api/v1/tools/count', methods=['GET'])
+def get_tools_count():
+    """Get tool counts per plan (public endpoint - no auth required).
+    
+    Query params:
+        plan: Optional plan name (starter|professional|team|enterprise)
+              If provided, returns count for that plan only.
+              If omitted, returns counts for all plans.
+    
+    Returns:
+        JSON with tool counts per plan, dynamically calculated from DB.
+    """
+    try:
+        total_active = Tool.query.filter_by(is_active=True).count()
+        
+        # Plan tool allocations based on total available tools
+        plan_counts = {
+            'trial': 7,
+            'starter': 50,
+            'professional': 200,
+            'team': 400,
+            'enterprise': total_active,  # All tools
+        }
+        
+        plan = request.args.get('plan', '').lower()
+        if plan:
+            if plan not in plan_counts:
+                return jsonify({'error': f'Unknown plan: {plan}'}), 400
+            return jsonify({
+                'plan': plan,
+                'tools': plan_counts[plan],
+                'total': total_active
+            })
+        
+        return jsonify({
+            'plans': plan_counts,
+            'total': total_active
+        })
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
 
 # ================================
 # SCANS ROUTES

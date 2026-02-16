@@ -51,7 +51,7 @@ PLANS = {
         'currency': 'eur',
         'interval': 'month',
         'features': [
-            '33 Essential Security Tools',
+            '50 Essential Security Tools',
             'Basic Web Dashboard',
             'Email Support',
             '10 scans per day',
@@ -66,7 +66,7 @@ PLANS = {
         'currency': 'eur',
         'interval': 'month',
         'features': [
-            '120 Advanced Security Tools',
+            '200 Advanced Security Tools',
             'Advanced Web Dashboard',
             'API Access',
             '50 scans per day',
@@ -82,7 +82,7 @@ PLANS = {
         'currency': 'eur',
         'interval': 'month',
         'features': [
-            '130 Security Tools',
+            '400 Security Tools',
             '100 scans per day',
             'Multi-tool scan (5)',
             'Remote agent (1)',
@@ -98,7 +98,7 @@ PLANS = {
         'currency': 'eur', 
         'interval': 'month',
         'features': [
-            'All 143+ Premium Tools',
+            'All 682 Premium Tools',
             'Unlimited scans',
             'Unlimited remote agents',
             'Unlimited users & projects',
