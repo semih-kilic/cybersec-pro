@@ -73,6 +73,7 @@ def init_socketio(app, **kwargs):
     # Register event handlers
     register_handlers(socketio)
     register_agent_handlers(socketio)
+    register_terminal_handlers(socketio)
     
     logger.info("WebSocket initialized with Flask-SocketIO")
     
@@ -587,3 +588,277 @@ def emit_activity(org_id: str, user_name: str, action: str,
 def get_socketio():
     """Get the global SocketIO instance"""
     return socketio
+
+
+# ================================
+# SSH Terminal WebSocket Namespace
+# ================================
+
+import paramiko
+import threading
+import base64 as b64
+import os
+import socket as _socket
+
+# Active SSH sessions: sid -> { 'ssh': SSHClient, 'channel': Channel, 'thread': Thread }
+_ssh_sessions: dict = {}
+_ssh_lock = threading.Lock()
+
+
+def register_terminal_handlers(sio: SocketIO):
+    """Register SSH terminal WebSocket handlers on /terminal namespace"""
+
+    @sio.on('connect', namespace='/terminal')
+    def handle_terminal_connect():
+        logger.info(f"Terminal client connected: {request.sid}")
+        emit('connected', {'message': 'Terminal WebSocket ready', 'sid': request.sid})
+
+    @sio.on('disconnect', namespace='/terminal')
+    def handle_terminal_disconnect():
+        sid = request.sid
+        logger.info(f"Terminal client disconnected: {sid}")
+        _close_ssh_session(sid)
+
+    @sio.on('ssh_connect', namespace='/terminal')
+    def handle_ssh_connect(data):
+        """
+        Establish persistent SSH connection.
+        data: { agent_id, token } — token is JWT for auth
+        """
+        sid = request.sid
+        agent_id = data.get('agent_id')
+        token = data.get('token')
+
+        if not agent_id or not token:
+            emit('ssh_error', {'error': 'agent_id and token required'})
+            return
+
+        # Validate JWT and get user/agent
+        try:
+            from flask_jwt_extended import decode_token
+            decoded = decode_token(token)
+            user_id = decoded.get('sub')
+
+            from app import User, Agent, db
+            from flask import current_app
+            with current_app.app_context():
+                user = db.session.get(User, user_id)
+                if not user:
+                    emit('ssh_error', {'error': 'Invalid user'})
+                    return
+
+                agent = Agent.query.filter_by(
+                    id=agent_id,
+                    organization_id=user.organization_id
+                ).first()
+                if not agent:
+                    emit('ssh_error', {'error': 'Agent not found'})
+                    return
+                if agent.connection_type != 'ssh':
+                    emit('ssh_error', {'error': 'Agent does not support SSH'})
+                    return
+
+                # Build SSH connection
+                ssh = paramiko.SSHClient()
+                ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+
+                password = None
+                if agent.ssh_password_encrypted:
+                    try:
+                        from cryptography.fernet import Fernet
+                        key = os.environ.get('ENCRYPTION_KEY', 'your-encryption-key-here')
+                        if len(key) < 32:
+                            key = key.ljust(32, '0')
+                        fkey = b64.urlsafe_b64encode(key[:32].encode())
+                        fernet = Fernet(fkey)
+                        password = fernet.decrypt(agent.ssh_password_encrypted.encode()).decode()
+                    except Exception:
+                        password = agent.ssh_password_encrypted  # fallback plaintext
+
+                connect_kwargs = {
+                    'hostname': agent.ssh_host or agent.ip_address,
+                    'port': agent.ssh_port or 22,
+                    'username': agent.ssh_username or 'root',
+                    'timeout': 30,
+                    'allow_agent': False,
+                    'look_for_keys': False,
+                }
+                if agent.ssh_key_path:
+                    connect_kwargs['key_filename'] = agent.ssh_key_path
+                elif password:
+                    connect_kwargs['password'] = password
+
+                ssh.connect(**connect_kwargs)
+
+                # Open interactive shell channel
+                channel = ssh.invoke_shell(term='xterm-256color', width=120, height=40)
+                channel.settimeout(0.1)
+
+                # Enable keepalive on transport
+                transport = ssh.get_transport()
+                if transport:
+                    transport.set_keepalive(15)  # Send keepalive every 15s
+
+                # Update agent status
+                from datetime import datetime as dt
+                agent.status = 'online'
+                agent.last_heartbeat = dt.utcnow()
+                db.session.commit()
+
+                # Store session
+                with _ssh_lock:
+                    _close_ssh_session(sid)  # close any previous
+                    _ssh_sessions[sid] = {
+                        'ssh': ssh,
+                        'channel': channel,
+                        'agent_id': agent_id,
+                        'agent_name': agent.name,
+                        'user_id': user_id,
+                    }
+
+                # Start reader thread
+                reader = threading.Thread(
+                    target=_ssh_reader_loop,
+                    args=(sio, sid, channel),
+                    daemon=True,
+                    name=f'ssh-reader-{sid[:8]}'
+                )
+                reader.start()
+                _ssh_sessions[sid]['thread'] = reader
+
+                emit('ssh_connected', {
+                    'agent_name': agent.name,
+                    'agent_id': agent_id,
+                    'hostname': agent.hostname or agent.ssh_host,
+                    'platform': agent.platform,
+                    'username': agent.ssh_username or 'root'
+                })
+                logger.info(f"SSH session established: {sid} -> {agent.name}")
+
+        except paramiko.AuthenticationException:
+            emit('ssh_error', {'error': 'SSH authentication failed. Check credentials.'})
+        except paramiko.SSHException as e:
+            emit('ssh_error', {'error': f'SSH error: {str(e)}'})
+        except Exception as e:
+            logger.error(f"SSH connect error: {e}", exc_info=True)
+            emit('ssh_error', {'error': f'Connection failed: {str(e)}'})
+
+    @sio.on('ssh_input', namespace='/terminal')
+    def handle_ssh_input(data):
+        """Send user input to SSH channel"""
+        sid = request.sid
+        with _ssh_lock:
+            session = _ssh_sessions.get(sid)
+        if not session:
+            emit('ssh_error', {'error': 'No active SSH session'})
+            return
+        try:
+            input_data = data.get('data', '')
+            if input_data:
+                session['channel'].send(input_data)
+        except Exception as e:
+            emit('ssh_error', {'error': f'Send error: {str(e)}'})
+            _close_ssh_session(sid)
+
+    @sio.on('ssh_resize', namespace='/terminal')
+    def handle_ssh_resize(data):
+        """Handle terminal resize"""
+        sid = request.sid
+        with _ssh_lock:
+            session = _ssh_sessions.get(sid)
+        if session:
+            try:
+                cols = data.get('cols', 120)
+                rows = data.get('rows', 40)
+                session['channel'].resize_pty(width=cols, height=rows)
+            except Exception:
+                pass
+
+    @sio.on('ssh_disconnect', namespace='/terminal')
+    def handle_ssh_disconnect(data=None):
+        """Gracefully close SSH session"""
+        sid = request.sid
+        _close_ssh_session(sid)
+        emit('ssh_disconnected', {'message': 'SSH session closed'})
+
+    @sio.on('ssh_ping', namespace='/terminal')
+    def handle_ssh_ping(data=None):
+        """Keepalive ping"""
+        sid = request.sid
+        with _ssh_lock:
+            session = _ssh_sessions.get(sid)
+        if session:
+            try:
+                transport = session['ssh'].get_transport()
+                if transport and transport.is_active():
+                    transport.send_ignore()
+                    emit('ssh_pong', {'alive': True})
+                else:
+                    emit('ssh_pong', {'alive': False})
+                    _close_ssh_session(sid)
+            except Exception:
+                emit('ssh_pong', {'alive': False})
+                _close_ssh_session(sid)
+        else:
+            emit('ssh_pong', {'alive': False})
+
+    logger.info("Terminal WebSocket handlers registered (/terminal namespace)")
+
+
+def _ssh_reader_loop(sio: SocketIO, sid: str, channel):
+    """Background thread: read SSH channel output and emit to client"""
+    try:
+        while True:
+            with _ssh_lock:
+                session = _ssh_sessions.get(sid)
+            if not session:
+                break
+            try:
+                if channel.recv_ready():
+                    data = channel.recv(4096)
+                    if not data:
+                        break
+                    sio.emit('ssh_output', {
+                        'data': data.decode('utf-8', errors='replace')
+                    }, namespace='/terminal', room=sid)
+                elif channel.recv_stderr_ready():
+                    data = channel.recv_stderr(4096)
+                    if data:
+                        sio.emit('ssh_output', {
+                            'data': data.decode('utf-8', errors='replace')
+                        }, namespace='/terminal', room=sid)
+                else:
+                    # Check if channel is still open
+                    if channel.closed or channel.exit_status_ready():
+                        break
+                    time.sleep(0.05)
+            except _socket.timeout:
+                continue
+            except Exception as e:
+                logger.debug(f"SSH reader error for {sid}: {e}")
+                break
+    except Exception as e:
+        logger.error(f"SSH reader loop crashed for {sid}: {e}")
+    finally:
+        sio.emit('ssh_disconnected', {
+            'message': 'SSH session ended'
+        }, namespace='/terminal', room=sid)
+        _close_ssh_session(sid)
+
+
+def _close_ssh_session(sid: str):
+    """Close and clean up an SSH session"""
+    with _ssh_lock:
+        session = _ssh_sessions.pop(sid, None)
+    if session:
+        try:
+            if 'channel' in session:
+                session['channel'].close()
+        except Exception:
+            pass
+        try:
+            if 'ssh' in session:
+                session['ssh'].close()
+        except Exception:
+            pass
+        logger.info(f"SSH session closed for {sid}")

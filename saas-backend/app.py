@@ -16,11 +16,13 @@ from flask_jwt_extended import JWTManager, jwt_required, create_access_token, ge
 from werkzeug.security import generate_password_hash, check_password_hash
 from datetime import datetime, timedelta
 import os
+import base64
 import stripe
 import json
 import subprocess
 import uuid
 import logging
+import threading
 from logging.handlers import RotatingFileHandler
 from functools import wraps
 
@@ -556,6 +558,7 @@ class Scan(db.Model):
     parameters = db.Column(db.JSON)
     status = db.Column(db.String(20), default='pending')  # pending, running, completed, failed, timeout, cancelled
     agent_id = db.Column(db.String(36), db.ForeignKey('agents.id'), nullable=True)  # Which agent ran this scan
+    project_id = db.Column(db.Integer, db.ForeignKey('projects.id'), nullable=True)  # Associated project
     output = db.Column(db.Text)
     error_log = db.Column(db.Text)  # Error details for failed scans
     findings = db.Column(db.JSON)  # Structured scan findings
@@ -781,6 +784,89 @@ class SSOConfig(db.Model):
                 'ldap_group_filter': self.ldap_group_filter,
             })
         return base
+
+
+class Project(db.Model):
+    """Security testing projects - group scans and targets"""
+    __tablename__ = 'projects'
+    
+    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    organization_id = db.Column(db.String(36), db.ForeignKey('organizations.id'), nullable=False)
+    name = db.Column(db.String(200), nullable=False)
+    description = db.Column(db.Text, default='')
+    target_type = db.Column(db.String(20), default='web')  # web, network, api, mobile, cloud
+    target_url = db.Column(db.String(500))
+    target_ip = db.Column(db.String(100))
+    status = db.Column(db.String(20), default='active')  # active, completed, archived
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    
+    organization = db.relationship('Organization', backref='projects')
+    
+    def to_dict(self):
+        return {
+            'id': self.id,
+            'name': self.name,
+            'description': self.description,
+            'target_type': self.target_type,
+            'target_url': self.target_url,
+            'target_ip': self.target_ip,
+            'status': self.status,
+            'created_at': self.created_at.isoformat() if self.created_at else None,
+            'updated_at': self.updated_at.isoformat() if self.updated_at else None
+        }
+
+
+class ScheduledScan(db.Model):
+    """Scheduled/recurring scans with APScheduler persistence"""
+    __tablename__ = 'scheduled_scans'
+    
+    id = db.Column(db.String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
+    organization_id = db.Column(db.String(36), db.ForeignKey('organizations.id'), nullable=False)
+    user_id = db.Column(db.String(36), db.ForeignKey('users.id'), nullable=False)
+    name = db.Column(db.String(200), nullable=False)
+    tool_name = db.Column(db.String(100), nullable=False)
+    target = db.Column(db.String(500), nullable=False)
+    parameters = db.Column(db.JSON, default=dict)
+    schedule_type = db.Column(db.String(20), default='daily')  # once, daily, weekly, monthly, cron
+    cron_expression = db.Column(db.String(100))  # e.g. "0 2 * * *"
+    hour = db.Column(db.Integer, default=2)
+    minute = db.Column(db.Integer, default=0)
+    day_of_week = db.Column(db.String(20))  # 'mon', 'tue,fri', etc
+    day_of_month = db.Column(db.Integer)
+    is_active = db.Column(db.Boolean, default=True)
+    last_run = db.Column(db.DateTime)
+    next_run = db.Column(db.DateTime)
+    run_count = db.Column(db.Integer, default=0)
+    agent_id = db.Column(db.String(36), db.ForeignKey('agents.id'), nullable=True)
+    project_id = db.Column(db.Integer, db.ForeignKey('projects.id'), nullable=True)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    
+    organization = db.relationship('Organization', backref='scheduled_scans')
+    user = db.relationship('User', backref='scheduled_scans')
+    
+    def to_dict(self):
+        return {
+            'id': self.id,
+            'name': self.name,
+            'tool_name': self.tool_name,
+            'target': self.target,
+            'parameters': self.parameters,
+            'schedule_type': self.schedule_type,
+            'cron_expression': self.cron_expression,
+            'hour': self.hour,
+            'minute': self.minute,
+            'day_of_week': self.day_of_week,
+            'day_of_month': self.day_of_month,
+            'is_active': self.is_active,
+            'last_run': self.last_run.isoformat() if self.last_run else None,
+            'next_run': self.next_run.isoformat() if self.next_run else None,
+            'run_count': self.run_count,
+            'agent_id': self.agent_id,
+            'project_id': self.project_id,
+            'created_at': self.created_at.isoformat() if self.created_at else None
+        }
 
 
 # ================================
