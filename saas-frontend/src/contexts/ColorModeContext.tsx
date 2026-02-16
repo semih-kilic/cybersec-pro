@@ -36,11 +36,6 @@ function getSavedMode(): ColorMode {
   return 'dark'; // Default to dark (cyberpunk theme)
 }
 
-function resolveMode(mode: ColorMode): 'dark' | 'light' {
-  if (mode === 'system') return getSystemPreference();
-  return mode;
-}
-
 export function ColorModeProvider({ children }: { children: React.ReactNode }) {
   const [colorMode, setColorModeState] = useState<ColorMode>(getSavedMode);
   const [systemPref, setSystemPref] = useState<'dark' | 'light'>(getSystemPreference);
