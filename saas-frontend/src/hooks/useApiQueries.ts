@@ -52,8 +52,8 @@ export function useToolCounts() {
       if (!res.ok) throw new Error('Failed to fetch tool counts');
       return res.json();
     },
-    staleTime: CACHE_TIMES.LONG,     // 5 minutes - counts rarely change
-    gcTime: 1000 * 60 * 30,          // 30 min cache
+    staleTime: CACHE_TIMES.tools.staleTime,   // 5 minutes - counts rarely change
+    gcTime: CACHE_TIMES.tools.gcTime,          // 30 min cache
     refetchOnWindowFocus: false,
   });
 }

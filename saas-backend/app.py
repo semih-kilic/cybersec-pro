@@ -1239,6 +1239,47 @@ def get_tools():
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
+@app.route('/api/v1/tools/count', methods=['GET'])
+def get_tools_count():
+    """Get tool counts per plan (public endpoint - no auth required).
+    
+    Query params:
+        plan: Optional plan name (starter|professional|team|enterprise)
+              If provided, returns count for that plan only.
+              If omitted, returns counts for all plans.
+    
+    Returns:
+        JSON with tool counts per plan, dynamically calculated from DB.
+    """
+    try:
+        total_active = Tool.query.filter_by(is_active=True).count()
+        
+        # Plan tool allocations based on total available tools
+        plan_counts = {
+            'trial': 7,
+            'starter': 50,
+            'professional': 200,
+            'team': 400,
+            'enterprise': total_active,  # All tools
+        }
+        
+        plan = request.args.get('plan', '').lower()
+        if plan:
+            if plan not in plan_counts:
+                return jsonify({'error': f'Unknown plan: {plan}'}), 400
+            return jsonify({
+                'plan': plan,
+                'tools': plan_counts[plan],
+                'total': total_active
+            })
+        
+        return jsonify({
+            'plans': plan_counts,
+            'total': total_active
+        })
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
 @app.route('/api/v1/tools/<tool_id>', methods=['GET'])
 @require_organization
 def get_tool(tool_id):
@@ -1278,48 +1319,6 @@ def get_tools_stats():
             },
             'gui_required': gui_req,
             'categories': {c: n for c, n in sorted(cats, key=lambda x: -x[1])}
-        })
-    except Exception as e:
-        return jsonify({'error': str(e)}), 500
-
-
-@app.route('/api/v1/tools/count', methods=['GET'])
-def get_tools_count():
-    """Get tool counts per plan (public endpoint - no auth required).
-    
-    Query params:
-        plan: Optional plan name (starter|professional|team|enterprise)
-              If provided, returns count for that plan only.
-              If omitted, returns counts for all plans.
-    
-    Returns:
-        JSON with tool counts per plan, dynamically calculated from DB.
-    """
-    try:
-        total_active = Tool.query.filter_by(is_active=True).count()
-        
-        # Plan tool allocations based on total available tools
-        plan_counts = {
-            'trial': 7,
-            'starter': 50,
-            'professional': 200,
-            'team': 400,
-            'enterprise': total_active,  # All tools
-        }
-        
-        plan = request.args.get('plan', '').lower()
-        if plan:
-            if plan not in plan_counts:
-                return jsonify({'error': f'Unknown plan: {plan}'}), 400
-            return jsonify({
-                'plan': plan,
-                'tools': plan_counts[plan],
-                'total': total_active
-            })
-        
-        return jsonify({
-            'plans': plan_counts,
-            'total': total_active
         })
     except Exception as e:
         return jsonify({'error': str(e)}), 500

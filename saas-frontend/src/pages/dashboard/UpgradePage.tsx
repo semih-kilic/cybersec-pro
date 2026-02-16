@@ -32,8 +32,8 @@ function buildPlans(counts: { starter: number; professional: number; team: numbe
     {
       id: 'professional',
       name: 'Professional',
-      price: 29,
-      yearlyPrice: 290,
+      price: 19,
+      yearlyPrice: 190,
       period: '/month',
       description: 'For security professionals',
       features: [
@@ -50,16 +50,16 @@ function buildPlans(counts: { starter: number; professional: number; team: numbe
     {
       id: 'team',
       name: 'Team',
-      price: 59,
-      yearlyPrice: 590,
+      price: 49,
+      yearlyPrice: 490,
       period: '/month',
       description: 'For security teams',
       features: [
         `${counts.team} security tools`,
-        '200 scans per day',
+        '100 scans per day',
         'Multi-tool scan (5)',
-        'Remote agents (3)',
-        '10 team members',
+        'Remote agent (1)',
+        '5 team members',
         '20 projects',
         'Slack/Teams integration',
       ],
