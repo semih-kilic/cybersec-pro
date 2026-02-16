@@ -211,6 +211,146 @@ except ImportError as e:
     print(f"⚠️ Scan Engine not available: {e}")
 
 # ================================
+# PLAN CONFIGURATION (Single Source of Truth)
+# ================================
+PLAN_CONFIG = {
+    'trial': {
+        'level': 1,
+        'price_eur': 0,
+        'duration': '14 days',
+        'tool_limit': 7,
+        'daily_scan_limit': 5,
+        'max_projects': 1,
+        'max_team_members': 1,
+        'max_agents': 0,
+        'multi_tool_scan': 1,
+        'features': {
+            'basic_reports': True,
+            'pdf_reports': False,
+            'html_reports': False,
+            'api_access': False,
+            'sso_saml': False,
+            'compliance_reports': False,
+            'remote_agents': False,
+            'scheduled_scans': False,
+            'ai_suggestions': False,
+            'ai_remediation': False,
+            'priority_support': False,
+        }
+    },
+    'starter': {
+        'level': 1,
+        'price_eur': 0,
+        'duration': '14 days',
+        'tool_limit': 50,
+        'daily_scan_limit': 10,
+        'max_projects': 1,
+        'max_team_members': 1,
+        'max_agents': 0,
+        'multi_tool_scan': 1,
+        'features': {
+            'basic_reports': True,
+            'pdf_reports': False,
+            'html_reports': False,
+            'api_access': False,
+            'sso_saml': False,
+            'compliance_reports': False,
+            'remote_agents': False,
+            'scheduled_scans': False,
+            'ai_suggestions': False,
+            'ai_remediation': False,
+            'priority_support': False,
+        }
+    },
+    'professional': {
+        'level': 2,
+        'price_eur': 19,
+        'duration': 'monthly',
+        'tool_limit': 200,
+        'daily_scan_limit': 50,
+        'max_projects': 10,
+        'max_team_members': 1,
+        'max_agents': 0,
+        'multi_tool_scan': 3,
+        'features': {
+            'basic_reports': True,
+            'pdf_reports': True,
+            'html_reports': True,
+            'api_access': True,
+            'sso_saml': False,
+            'compliance_reports': False,
+            'remote_agents': False,
+            'scheduled_scans': True,
+            'ai_suggestions': True,
+            'ai_remediation': False,
+            'priority_support': False,
+        }
+    },
+    'team': {
+        'level': 3,
+        'price_eur': 49,
+        'duration': 'monthly',
+        'tool_limit': 400,
+        'daily_scan_limit': 200,
+        'max_projects': 50,
+        'max_team_members': 5,
+        'max_agents': 1,
+        'multi_tool_scan': 5,
+        'features': {
+            'basic_reports': True,
+            'pdf_reports': True,
+            'html_reports': True,
+            'api_access': True,
+            'sso_saml': False,
+            'compliance_reports': True,
+            'remote_agents': True,
+            'scheduled_scans': True,
+            'ai_suggestions': True,
+            'ai_remediation': True,
+            'priority_support': False,
+        }
+    },
+    'enterprise': {
+        'level': 4,
+        'price_eur': 99,
+        'duration': 'monthly',
+        'tool_limit': 999,
+        'daily_scan_limit': 0,  # 0 = unlimited
+        'max_projects': 0,  # 0 = unlimited
+        'max_team_members': 0,  # 0 = unlimited
+        'max_agents': 0,  # 0 = unlimited (enterprise)
+        'multi_tool_scan': 10,
+        'features': {
+            'basic_reports': True,
+            'pdf_reports': True,
+            'html_reports': True,
+            'api_access': True,
+            'sso_saml': True,
+            'compliance_reports': True,
+            'remote_agents': True,
+            'scheduled_scans': True,
+            'ai_suggestions': True,
+            'ai_remediation': True,
+            'priority_support': True,
+        }
+    }
+}
+
+def get_plan_config(plan_type):
+    """Get plan configuration, defaults to starter"""
+    return PLAN_CONFIG.get(plan_type, PLAN_CONFIG['starter'])
+
+def check_feature(org, feature_name):
+    """Check if an org's plan has a specific feature enabled"""
+    config = get_plan_config(org.plan_type)
+    return config['features'].get(feature_name, False)
+
+def get_plan_level(plan_type):
+    """Get numeric plan level for comparison"""
+    config = PLAN_CONFIG.get(plan_type, PLAN_CONFIG['starter'])
+    return config['level']
+
+# ================================
 # DATABASE MODELS
 # ================================
 
@@ -1501,19 +1641,10 @@ def get_tools():
         user = User.query.get(user_id)
         org = user.organization
         
-        # Plan hierarchy: trial=0, starter=1, professional=2, team=3, enterprise=4
-        plan_limits = {
-            'trial': 7,
-            'starter': 50,
-            'professional': 200,
-            'team': 400,
-            'enterprise': 999  # Unlimited
-        }
-        
-        # Trial users have same level as starter for tool access
-        plan_level = {'trial': 1, 'starter': 1, 'professional': 2, 'team': 3, 'enterprise': 4}
-        user_plan_level = plan_level.get(org.plan_type, 1)
-        tool_limit = plan_limits.get(org.plan_type, 7)
+        # Use centralized PLAN_CONFIG
+        plan_cfg = get_plan_config(org.plan_type)
+        user_plan_level = plan_cfg['level']
+        tool_limit = plan_cfg['tool_limit']
         
         # Get all active tools
         all_tools = Tool.query.filter(Tool.is_active == True).order_by(Tool.name).all()
@@ -1535,7 +1666,8 @@ def get_tools():
             'tools': tools_by_category,
             'total_tools': len(tools),
             'user_plan': org.plan_type,
-            'plan_limit': tool_limit
+            'plan_limit': tool_limit,
+            'features': plan_cfg['features']
         })
         
     except Exception as e:
@@ -1556,22 +1688,21 @@ def get_tools_count():
     try:
         total_active = Tool.query.filter_by(is_active=True).count()
         
-        # Plan tool allocations based on total available tools
-        plan_counts = {
-            'trial': 7,
-            'starter': 50,
-            'professional': 200,
-            'team': 400,
-            'enterprise': total_active,  # All tools
-        }
+        # Build plan counts from PLAN_CONFIG
+        plan_counts = {}
+        for pname, pcfg in PLAN_CONFIG.items():
+            if pname == 'trial':
+                continue
+            plan_counts[pname] = min(pcfg['tool_limit'], total_active) if pcfg['tool_limit'] != 999 else total_active
         
         plan = request.args.get('plan', '').lower()
         if plan:
-            if plan not in plan_counts:
+            if plan not in plan_counts and plan != 'trial':
                 return jsonify({'error': f'Unknown plan: {plan}'}), 400
+            count = min(PLAN_CONFIG.get(plan, PLAN_CONFIG['starter'])['tool_limit'], total_active)
             return jsonify({
                 'plan': plan,
-                'tools': plan_counts[plan],
+                'tools': count,
                 'total': total_active
             })
         
@@ -1622,6 +1753,114 @@ def get_tools_stats():
             'gui_required': gui_req,
             'categories': {c: n for c, n in sorted(cats, key=lambda x: -x[1])}
         })
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+
+# ================================
+# PLAN & FEATURES ROUTES
+# ================================
+
+@app.route('/api/v1/plan/info', methods=['GET'])
+@require_organization
+def get_plan_info():
+    """Get current organization's plan info with usage statistics"""
+    try:
+        user_id = get_jwt_identity()
+        user = User.query.get(user_id)
+        org = user.organization
+        plan_cfg = get_plan_config(org.plan_type)
+        
+        # Calculate today's usage
+        from datetime import date
+        today_scans = Scan.query.filter(
+            Scan.organization_id == org.id,
+            db.func.date(Scan.created_at) == date.today()
+        ).count()
+        
+        total_scans = Scan.query.filter_by(organization_id=org.id).count()
+        team_count = User.query.filter_by(organization_id=org.id).count()
+        agent_count = Agent.query.filter_by(organization_id=org.id, status='online').count()
+        
+        # Tool access count
+        total_tools = Tool.query.filter_by(is_active=True).count()
+        tool_limit = plan_cfg['tool_limit']
+        accessible_tools = min(tool_limit, total_tools) if tool_limit != 999 else total_tools
+        
+        return jsonify({
+            'plan': org.plan_type,
+            'config': {
+                'level': plan_cfg['level'],
+                'price_eur': plan_cfg['price_eur'],
+                'tool_limit': accessible_tools,
+                'daily_scan_limit': plan_cfg['daily_scan_limit'],
+                'max_projects': plan_cfg['max_projects'],
+                'max_team_members': plan_cfg['max_team_members'],
+                'max_agents': plan_cfg['max_agents'],
+                'multi_tool_scan': plan_cfg['multi_tool_scan'],
+                'features': plan_cfg['features'],
+            },
+            'usage': {
+                'scans_today': today_scans,
+                'scans_remaining': max(0, plan_cfg['daily_scan_limit'] - today_scans) if plan_cfg['daily_scan_limit'] > 0 else -1,
+                'total_scans': total_scans,
+                'team_members': team_count,
+                'online_agents': agent_count,
+                'tools_accessible': accessible_tools,
+                'tools_total': total_tools,
+            }
+        })
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+
+@app.route('/api/v1/plan/features', methods=['GET'])
+@require_organization
+def get_plan_features():
+    """Get feature flags for current plan"""
+    try:
+        user_id = get_jwt_identity()
+        user = User.query.get(user_id)
+        org = user.organization
+        plan_cfg = get_plan_config(org.plan_type)
+        
+        return jsonify({
+            'plan': org.plan_type,
+            'features': plan_cfg['features'],
+            'limits': {
+                'daily_scans': plan_cfg['daily_scan_limit'],
+                'tools': plan_cfg['tool_limit'],
+                'projects': plan_cfg['max_projects'],
+                'team_members': plan_cfg['max_team_members'],
+                'agents': plan_cfg['max_agents'],
+                'multi_tool_scan': plan_cfg['multi_tool_scan'],
+            }
+        })
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+
+@app.route('/api/v1/plans', methods=['GET'])
+def get_all_plans():
+    """Public endpoint - get all available plans for comparison"""
+    try:
+        total_tools = Tool.query.filter_by(is_active=True).count()
+        plans = {}
+        for plan_name, cfg in PLAN_CONFIG.items():
+            if plan_name == 'trial':
+                continue  # Don't show trial in public pricing
+            tool_count = min(cfg['tool_limit'], total_tools) if cfg['tool_limit'] != 999 else total_tools
+            plans[plan_name] = {
+                'price_eur': cfg['price_eur'],
+                'tool_count': tool_count,
+                'daily_scan_limit': cfg['daily_scan_limit'] if cfg['daily_scan_limit'] > 0 else 'unlimited',
+                'max_projects': cfg['max_projects'] if cfg['max_projects'] > 0 else 'unlimited',
+                'max_team_members': cfg['max_team_members'] if cfg['max_team_members'] > 0 else 'unlimited',
+                'max_agents': cfg['max_agents'] if plan_name != 'enterprise' else 'unlimited',
+                'multi_tool_scan': cfg['multi_tool_scan'],
+                'features': cfg['features'],
+            }
+        return jsonify({'plans': plans, 'total_tools': total_tools})
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
@@ -1781,17 +2020,21 @@ def rerun_scan(scan_id):
                 'required_plan': tool.plan_required
             }), 402
         
-        # Check daily scan limit for starter/trial
-        if org.plan_type in ('starter', 'trial'):
+        # Check daily scan limit based on plan
+        plan_cfg = get_plan_config(org.plan_type)
+        daily_limit = plan_cfg['daily_scan_limit']
+        if daily_limit > 0:  # 0 = unlimited
             from datetime import date
             today_scans = Scan.query.filter(
                 Scan.organization_id == org.id,
                 db.func.date(Scan.created_at) == date.today()
             ).count()
-            if today_scans >= 10:
+            if today_scans >= daily_limit:
                 return jsonify({
-                    'error': 'Daily scan limit reached (10/day)',
-                    'hint': 'Upgrade to Professional for unlimited scans'
+                    'error': f'Daily scan limit reached ({today_scans}/{daily_limit})',
+                    'scans_today': today_scans,
+                    'limit': daily_limit,
+                    'hint': 'Upgrade your plan for more daily scans'
                 }), 429
         
         # Create new scan with same config
@@ -2045,19 +2288,21 @@ def execute_scan():
                 'required_plan': TOOL_CONFIGS.get(tool_id, {}).get('plan_required', 'professional')
             }), 402
         
-        # Check daily scan limit for starter plan
-        if org.plan_type == 'starter':
+        # Check daily scan limit based on plan
+        plan_cfg = get_plan_config(org.plan_type)
+        daily_limit = plan_cfg['daily_scan_limit']
+        if daily_limit > 0:  # 0 = unlimited
             from datetime import date
             today_scans = Scan.query.filter(
                 Scan.organization_id == org.id,
                 db.func.date(Scan.created_at) == date.today()
             ).count()
-            
-            if today_scans >= 10:
+            if today_scans >= daily_limit:
                 return jsonify({
-                    'error': 'Daily scan limit reached (10/day for Starter plan)',
+                    'error': f'Daily scan limit reached ({today_scans}/{daily_limit})',
                     'scans_today': today_scans,
-                    'limit': 10
+                    'limit': daily_limit,
+                    'hint': 'Upgrade your plan for more daily scans'
                 }), 429
         
         # Create scan record
@@ -2558,20 +2803,21 @@ def start_scan_v2():
                 'required_plan': tool_db.plan_required
             }), 402
         
-        # Check daily scan limit for starter/trial plan
-        if org.plan_type in ('starter', 'trial'):
+        # Check daily scan limit based on plan
+        plan_cfg = get_plan_config(org.plan_type)
+        daily_limit = plan_cfg['daily_scan_limit']
+        if daily_limit > 0:  # 0 = unlimited
             from datetime import date
             today_scans = Scan.query.filter(
                 Scan.organization_id == org.id,
                 db.func.date(Scan.created_at) == date.today()
             ).count()
-            
-            if today_scans >= 10:
+            if today_scans >= daily_limit:
                 return jsonify({
-                    'error': 'Daily scan limit reached',
+                    'error': f'Daily scan limit reached ({today_scans}/{daily_limit})',
                     'scans_today': today_scans,
-                    'limit': 10,
-                    'hint': 'Upgrade to Professional or higher for unlimited scans'
+                    'limit': daily_limit,
+                    'hint': 'Upgrade your plan for more daily scans'
                 }), 429
         
         # Create scan record with proper tool_id (database UUID)
@@ -2819,14 +3065,10 @@ def get_usage_stats():
         completed_scans = Scan.query.filter_by(organization_id=org.id, status='completed').count()
         failed_scans = Scan.query.filter_by(organization_id=org.id, status='failed').count()
         
-        # Plan limits
-        plan_limits = {
-            'starter': {'scans_per_day': 10, 'tools': len(STARTER_TOOLS) if SCAN_EXECUTOR_AVAILABLE else 20},
-            'professional': {'scans_per_day': -1, 'tools': len(PROFESSIONAL_TOOLS) if SCAN_EXECUTOR_AVAILABLE else 165},
-            'enterprise': {'scans_per_day': -1, 'tools': len(ENTERPRISE_TOOLS) if SCAN_EXECUTOR_AVAILABLE else 350}
-        }
-        
-        current_limits = plan_limits.get(org.plan_type, plan_limits['starter'])
+        # Plan limits from centralized config
+        plan_cfg = get_plan_config(org.plan_type)
+        total_tools = Tool.query.filter_by(is_active=True).count()
+        accessible_tools = min(plan_cfg['tool_limit'], total_tools) if plan_cfg['tool_limit'] != 999 else total_tools
         
         return jsonify({
             'usage': {
@@ -2836,8 +3078,14 @@ def get_usage_stats():
                 'completed_scans': completed_scans,
                 'failed_scans': failed_scans
             },
-            'limits': current_limits,
-            'plan': org.plan_type
+            'limits': {
+                'scans_per_day': plan_cfg['daily_scan_limit'] if plan_cfg['daily_scan_limit'] > 0 else -1,
+                'tools': accessible_tools,
+                'max_agents': plan_cfg['max_agents'],
+                'multi_tool_scan': plan_cfg['multi_tool_scan'],
+            },
+            'plan': org.plan_type,
+            'features': plan_cfg['features']
         })
         
     except Exception as e:
@@ -3493,21 +3741,21 @@ def execute_scan_v2():
             }), 402
         
         # Check daily scan limit based on plan
-        from datetime import date
-        today_scans = Scan.query.filter(
-            Scan.organization_id == org.id,
-            db.func.date(Scan.created_at) == date.today()
-        ).count()
-        
-        plan_limits = {'trial': 3, 'starter': 10, 'professional': 50, 'team': 100, 'enterprise': -1}
-        daily_limit = plan_limits.get(org.plan_type, 3)
-        
-        if daily_limit != -1 and today_scans >= daily_limit:
-            return jsonify({
-                'error': f'Daily scan limit reached ({today_scans}/{daily_limit})',
-                'scans_today': today_scans,
-                'limit': daily_limit
-            }), 429
+        plan_cfg = get_plan_config(org.plan_type)
+        daily_limit = plan_cfg['daily_scan_limit']
+        if daily_limit > 0:  # 0 = unlimited
+            from datetime import date
+            today_scans = Scan.query.filter(
+                Scan.organization_id == org.id,
+                db.func.date(Scan.created_at) == date.today()
+            ).count()
+            if today_scans >= daily_limit:
+                return jsonify({
+                    'error': f'Daily scan limit reached ({today_scans}/{daily_limit})',
+                    'scans_today': today_scans,
+                    'limit': daily_limit,
+                    'hint': 'Upgrade your plan for more daily scans'
+                }), 429
         
         # Create scan record
         scan_id = str(uuid.uuid4())

@@ -202,6 +202,54 @@ class ApiService {
     }>('/agents');
   }
 
+  // ── Plan & Features ──
+
+  async getPlanInfo() {
+    return this.request<{
+      plan: string;
+      config: {
+        level: number;
+        price_eur: number;
+        tool_limit: number;
+        daily_scan_limit: number;
+        max_projects: number;
+        max_team_members: number;
+        max_agents: number;
+        multi_tool_scan: number;
+        features: Record<string, boolean>;
+      };
+      usage: {
+        scans_today: number;
+        scans_remaining: number;
+        total_scans: number;
+        team_members: number;
+        online_agents: number;
+        tools_accessible: number;
+        tools_total: number;
+      };
+    }>('/plan/info');
+  }
+
+  async getPlanFeatures() {
+    return this.request<{
+      plan: string;
+      features: Record<string, boolean>;
+      limits: Record<string, number>;
+    }>('/plan/features');
+  }
+
+  async getAllPlans() {
+    return this.request<{
+      plans: Record<string, {
+        price_eur: number;
+        tool_count: number;
+        daily_scan_limit: number | string;
+        features: Record<string, boolean>;
+      }>;
+      total_tools: number;
+    }>('/plans');
+  }
+
   async stopScan(scanId: string) {
     return this.request<{
       success: boolean;
