@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '../../hooks/useAuth';
 import { useTranslation } from 'react-i18next';
+import { AgentsPageSkeleton } from '../../components/ui/Skeleton';
 
 type AgentPlatform = 'linux' | 'windows' | 'macos' | 'docker';
 type ConnectionType = 'direct' | 'ssh';
@@ -254,11 +255,7 @@ export default function AgentsPage() {
   };
 
   if (loading) {
-    return (
-      <div className="p-6 flex items-center justify-center min-h-[400px]">
-        <div className="animate-spin w-8 h-8 border-2 border-kali-blue border-t-transparent rounded-full" />
-      </div>
-    );
+    return <AgentsPageSkeleton />;
   }
 
   const onlineAgents = agents.filter(a => a.status === 'online');

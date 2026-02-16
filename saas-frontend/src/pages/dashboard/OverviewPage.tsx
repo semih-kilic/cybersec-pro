@@ -5,6 +5,8 @@ import { useAuth } from '../../hooks/useAuth';
 import { useTranslation } from 'react-i18next';
 import { OnboardingModal, QuickStartCards } from '../../components/onboarding';
 import WelcomeTour from '../../components/WelcomeTour';
+import { useDashboardData } from '../../hooks/useApiQueries';
+import { OverviewSkeleton } from '../../components/ui/Skeleton';
 
 // Plan configurations - synced with backend database (143 total tools)
 const PLAN_CONFIG: Record<string, { tools: number; scansPerDay: number; features: string[] }> = {
@@ -15,13 +17,6 @@ const PLAN_CONFIG: Record<string, { tools: number; scansPerDay: number; features
   enterprise: { tools: 143, scansPerDay: -1, features: ['143+ All tools', 'Unlimited scans', 'SSO/SAML'] },
 };
 
-interface ScanSummary {
-  total: number;
-  running: number;
-  completed: number;
-  failed: number;
-}
-
 interface VulnerabilitySummary {
   critical: number;
   high: number;
@@ -30,35 +25,19 @@ interface VulnerabilitySummary {
   info: number;
 }
 
-interface RecentScan {
-  id: string;
-  tool_name: string;
-  target: string;
-  status: 'running' | 'completed' | 'failed' | 'queued';
-  started_at: string;
-  duration?: number;
-  findings?: number;
-}
-
-interface ScheduledScan {
-  id: string;
-  name: string;
-  tool: string;
-  target: string;
-  next_run: string;
-  frequency: string;
-}
-
 export function OverviewPage() {
   const { token, organization, user } = useAuth();
   const { t } = useTranslation();
-  const [loading, setLoading] = useState(true);
-  const [scanSummary, setScanSummary] = useState<ScanSummary>({ total: 0, running: 0, completed: 0, failed: 0 });
-  const [vulnerabilities, setVulnerabilities] = useState<VulnerabilitySummary>({ critical: 0, high: 0, medium: 0, low: 0, info: 0 });
-  const [recentScans, setRecentScans] = useState<RecentScan[]>([]);
-  const [_scheduledScans, _setScheduledScans] = useState<ScheduledScan[]>([]);
-  const [totalTools, setTotalTools] = useState(0);
-  const [totalTargets, setTotalTargets] = useState(0);
+  
+  // TanStack Query: cached dashboard data (30s staleTime)
+  const { data: dashData, isLoading: loading } = useDashboardData();
+  const scanSummary = dashData?.scanSummary || { total: 0, running: 0, completed: 0, failed: 0 };
+  const recentScans = dashData?.recentScans || [];
+  const totalTools = dashData?.totalTools || 0;
+  const totalTargets = dashData?.totalTargets || 0;
+  
+  // Static state (no fetch needed)
+  const [vulnerabilities] = useState<VulnerabilitySummary>({ critical: 0, high: 0, medium: 0, low: 0, info: 0 });
   const [showAdminPanel, setShowAdminPanel] = useState(false);
   const [selectedPlan, setSelectedPlan] = useState<string>(organization?.plan_type || 'starter');
   
@@ -108,11 +87,6 @@ export function OverviewPage() {
   };
 
   useEffect(() => {
-    fetchDashboardData();
-  }, [token]);
-
-  // Check if user needs onboarding
-  useEffect(() => {
     if (!onboardingChecked && user && organization) {
       const onboardingKey = `onboarding_completed_${user.id}`;
       const isOnboardingCompleted = localStorage.getItem(onboardingKey) === 'true';
@@ -132,69 +106,6 @@ export function OverviewPage() {
     setShowOnboarding(false);
   };
 
-  const fetchDashboardData = async () => {
-    try {
-      // Fetch tools count
-      const toolsRes = await fetch('/api/v1/tools', {
-        headers: { 'Authorization': `Bearer ${token}` },
-      });
-      if (toolsRes.ok) {
-        const data = await toolsRes.json();
-        setTotalTools(data.total_tools || 0);
-      }
-
-      // Fetch scans
-      const scansRes = await fetch('/api/v1/scans', {
-        headers: { 'Authorization': `Bearer ${token}` },
-      });
-      if (scansRes.ok) {
-        const data = await scansRes.json();
-        const scans = data.scans || [];
-        
-        setScanSummary({
-          total: scans.length,
-          running: scans.filter((s: any) => s.status === 'running').length,
-          completed: scans.filter((s: any) => s.status === 'completed').length,
-          failed: scans.filter((s: any) => s.status === 'failed').length,
-        });
-
-        // Map recent scans
-        setRecentScans(scans.slice(0, 5).map((s: any) => ({
-          id: s.id,
-          tool_name: s.tool?.name || 'Unknown',
-          target: s.target,
-          status: s.status,
-          started_at: s.created_at,
-          findings: s.findings_count || 0,
-        })));
-      }
-
-      // Fetch usage stats for real data
-      const usageRes = await fetch('/api/v1/usage/stats', {
-        headers: { 'Authorization': `Bearer ${token}` },
-      });
-      if (usageRes.ok) {
-        const usageData = await usageRes.json();
-        // Set targets count from usage data or default to scan count
-        setTotalTargets(usageData.usage?.total_scans || recentScans.length);
-      }
-
-      // Initialize vulnerabilities to 0 - will be populated from real scan results
-      setVulnerabilities({
-        critical: 0,
-        high: 0,
-        medium: 0,
-        low: 0,
-        info: 0,
-      });
-
-    } catch (error) {
-      console.error('Failed to fetch dashboard data:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
-
   const getStatusColor = (status: string) => {
     switch (status) {
       case 'running': return 'text-yellow-400 bg-yellow-400/10';
@@ -210,11 +121,9 @@ export function OverviewPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-950 flex items-center justify-center">
-        <div className="flex items-center gap-3">
-          <div className="w-8 h-8 border-4 border-kali-blue border-t-transparent rounded-full animate-spin" />
-          <span className="text-gray-400">Loading dashboard...</span>
-        </div>
+      <div className="min-h-screen bg-gray-950">
+        <Header />
+        <OverviewSkeleton />
       </div>
     );
   }

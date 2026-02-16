@@ -3,6 +3,7 @@ import { Link, useSearchParams } from 'react-router-dom';
 import { Header } from '../../components/layout/Header';
 import { useAuth } from '../../hooks/useAuth';
 import { useTranslation } from 'react-i18next';
+import { ScansPageSkeleton } from '../../components/ui/Skeleton';
 
 interface ScanTool {
   id: string;
@@ -252,11 +253,9 @@ export function ScansPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-950 flex items-center justify-center">
-        <div className="flex items-center gap-3">
-          <div className="w-8 h-8 border-4 border-kali-blue border-t-transparent rounded-full animate-spin" />
-          <span className="text-gray-400">Loading scans...</span>
-        </div>
+      <div className="min-h-screen bg-gray-950">
+        <Header />
+        <ScansPageSkeleton />
       </div>
     );
   }

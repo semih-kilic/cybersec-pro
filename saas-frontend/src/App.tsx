@@ -3,6 +3,7 @@ import { HelmetProvider } from 'react-helmet-async';
 import { Suspense, lazy } from 'react';
 import { QueryClientProvider } from '@tanstack/react-query';
 import { queryClient } from './lib/queryClient';
+import { OverviewSkeleton } from './components/ui/Skeleton';
 
 // i18n - must be imported before any component that uses translations
 import './i18n';
@@ -111,7 +112,7 @@ function DashboardLayout() {
       <div className="flex min-h-screen bg-gray-950">
         <Sidebar />
         <main className="flex-1 ml-64 overflow-auto">
-          <Suspense fallback={<LoadingSpinner />}>
+          <Suspense fallback={<OverviewSkeleton />}>
             <Outlet />
           </Suspense>
         </main>

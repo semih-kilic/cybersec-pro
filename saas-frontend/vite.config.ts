@@ -32,8 +32,12 @@ export default defineConfig({
           vendor: ['react', 'react-dom'],
           router: ['react-router-dom'],
           motion: ['framer-motion'],
+          query: ['@tanstack/react-query'],
+          i18n: ['i18next', 'react-i18next', 'i18next-browser-languagedetector'],
+          charts: ['recharts'],
         },
       },
     },
+    chunkSizeWarningLimit: 500,
   },
 });
