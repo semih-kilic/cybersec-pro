@@ -557,7 +557,6 @@ class RedTeamAgent:
     def __init__(self, scan_engine=None):
         self.scan_engine = scan_engine
         self._running_exercises = {}
-        self._lock = threading.Lock()
         logger.info("🔴 Red Team AI Agent initialized")
     
     def execute_attack_chain(
@@ -759,7 +758,6 @@ class BlueTeamAgent:
     
     def __init__(self):
         self._alerts = []
-        self._lock = threading.Lock()
         self._containment_log = []
         logger.info("🔵 Blue Team AI Agent initialized")
     
@@ -951,8 +949,15 @@ class PurpleTeamCoordinator:
         self.red_agent = RedTeamAgent(scan_engine)
         self.blue_agent = BlueTeamAgent()
         self._exercises = {}
-        self._lock = threading.Lock()
-        self._executor = ThreadPoolExecutor(max_workers=2, thread_name_prefix='PurpleTeam')
+        self._exercise_cache = {}  # Pre-serialized exercise snapshots
+        # Use eventlet green threads if available, else fallback to ThreadPoolExecutor
+        try:
+            import eventlet
+            self._use_eventlet = True
+            logger.info("🟣 Using eventlet green threads for exercise execution")
+        except ImportError:
+            self._use_eventlet = False
+            self._executor = ThreadPoolExecutor(max_workers=2, thread_name_prefix='PurpleTeam')
         logger.info("🟣 Purple Team Coordinator initialized")
     
     def start_exercise(
@@ -982,13 +987,17 @@ class PurpleTeamCoordinator:
             total_steps=len(chain['steps']),
         )
         
-        with self._lock:
-            self._exercises[exercise_id] = exercise
+        self._exercises[exercise_id] = exercise
+        self._update_cache(exercise)
         
-        # Run in background thread
-        self._executor.submit(
-            self._run_exercise, exercise, chain_id, target, on_update
-        )
+        # Run in background green thread (eventlet) or OS thread (fallback)
+        if self._use_eventlet:
+            import eventlet
+            eventlet.spawn_n(self._run_exercise, exercise, chain_id, target, on_update)
+        else:
+            self._executor.submit(
+                self._run_exercise, exercise, chain_id, target, on_update
+            )
         
         return exercise
     
@@ -1018,6 +1027,9 @@ class PurpleTeamCoordinator:
                 exercise.red_team_results.append(asdict(step_result))
                 exercise.completed_steps = step_index + 1
                 
+                # Update cache for thread-safe reads
+                self._update_cache(exercise)
+                
                 # Callback for WebSocket updates
                 if on_update:
                     try:
@@ -1046,6 +1058,9 @@ class PurpleTeamCoordinator:
             exercise.status = 'completed'
             exercise.completed_at = datetime.utcnow().isoformat()
             
+            # Final cache update
+            self._update_cache(exercise)
+            
             logger.info(f"🟣 Exercise '{exercise.name}' completed — "
                         f"Detected: {exercise.detected_attacks}/{exercise.total_steps}, "
                         f"Risk Score: {exercise.risk_score:.1f}")
@@ -1059,6 +1074,7 @@ class PurpleTeamCoordinator:
         except Exception as e:
             exercise.status = 'failed'
             exercise.completed_at = datetime.utcnow().isoformat()
+            self._update_cache(exercise)
             logger.error(f"🟣 Exercise failed: {e}")
     
     def _generate_gap_analysis(self, exercise: PurpleTeamExercise) -> dict:
@@ -1194,21 +1210,49 @@ class PurpleTeamCoordinator:
         
         return min(100.0, base_risk + severity_penalty)
     
+    def _update_cache(self, exercise: PurpleTeamExercise):
+        """Update pre-serialized cache for an exercise (called after each mutation)"""
+        try:
+            self._exercise_cache[exercise.id] = asdict(exercise)
+        except Exception as e:
+            logger.warning(f"Cache update failed for {exercise.id}: {e}")
+    
     def get_exercise(self, exercise_id: str) -> Optional[dict]:
-        """Get exercise details"""
-        with self._lock:
-            ex = self._exercises.get(exercise_id)
-            if ex:
-                return asdict(ex)
+        """Get exercise details — uses cached serialization for thread safety"""
+        # Try cached version first (always up-to-date)
+        cached = self._exercise_cache.get(exercise_id)
+        if cached:
+            return cached
+        # Fallback to live serialization
+        ex = self._exercises.get(exercise_id)
+        if ex:
+            try:
+                result = asdict(ex)
+                self._exercise_cache[exercise_id] = result
+                return result
+            except Exception as e:
+                logger.warning(f"asdict failed for {exercise_id}: {e}")
         return None
     
     def get_exercises(self, organization_id: str = None) -> List[dict]:
         """Get all exercises"""
-        with self._lock:
-            exercises = list(self._exercises.values())
-            if organization_id:
-                exercises = [e for e in exercises if e.organization_id == organization_id]
-            return [asdict(e) for e in exercises]
+        results = []
+        for ex_id, ex in list(self._exercises.items()):
+            cached = self._exercise_cache.get(ex_id)
+            if cached:
+                if organization_id and cached.get('organization_id') != organization_id:
+                    continue
+                results.append(cached)
+            else:
+                try:
+                    d = asdict(ex)
+                    self._exercise_cache[ex_id] = d
+                    if organization_id and d.get('organization_id') != organization_id:
+                        continue
+                    results.append(d)
+                except Exception as e:
+                    logger.warning(f"asdict failed for {ex_id}: {e}")
+        return results
     
     def get_mitre_matrix(self) -> dict:
         """Return full MITRE ATT&CK matrix for visualization"""
