@@ -8,6 +8,12 @@ Author: Semih Kılıç
 Version: 3.0.0 (World-Class Edition)
 """
 
+# ================================
+# EVENTLET MONKEY PATCHING — MUST BE FIRST
+# ================================
+import eventlet
+eventlet.monkey_patch()
+
 from flask import Flask, request, jsonify, render_template_string
 from flask_cors import CORS
 from flask_sqlalchemy import SQLAlchemy
@@ -213,18 +219,54 @@ except ImportError as e:
     print(f"⚠️ Scan Engine not available: {e}")
 
 # ================================
+# HEALTH CHECK ENDPOINT
+# ================================
+@app.route('/api/v1/health', methods=['GET'])
+@app.route('/health', methods=['GET'])
+def health_check():
+    """System health check — returns component status"""
+    health = {
+        'status': 'ok',
+        'timestamp': datetime.utcnow().isoformat(),
+        'version': '3.0.0',
+        'components': {}
+    }
+    
+    # Database check
+    try:
+        db.session.execute(db.text('SELECT 1'))
+        tool_count = db.session.execute(db.text('SELECT COUNT(*) FROM tools')).scalar()
+        health['components']['database'] = {'status': 'ok', 'tools_count': tool_count}
+    except Exception as e:
+        health['components']['database'] = {'status': 'error', 'error': str(e)}
+        health['status'] = 'degraded'
+    
+    # Scan Engine check
+    health['components']['scan_engine_v3'] = {'status': 'ok' if SCAN_ENGINE_V3_AVAILABLE else 'unavailable'}
+    health['components']['scan_engine_legacy'] = {'status': 'ok' if SCAN_ENGINE_AVAILABLE else 'unavailable'}
+    
+    # WebSocket check
+    health['components']['websocket'] = {'status': 'ok' if socketio else 'unavailable'}
+    
+    # Auth check
+    health['components']['auth'] = {'status': 'ok', 'jwt_configured': bool(app.config.get('JWT_SECRET_KEY'))}
+    
+    return jsonify(health), 200 if health['status'] == 'ok' else 503
+
+
+# ================================
 # PLAN CONFIGURATION (Single Source of Truth)
 # ================================
 PLAN_CONFIG = {
     'trial': {
-        'level': 1,
+        'level': 0,
         'price_eur': 0,
         'duration': '14 days',
-        'tool_limit': 7,
+        'tool_limit': 3,
         'daily_scan_limit': 5,
         'max_projects': 1,
         'max_team_members': 1,
-        'max_agents': 0,
+        'max_agents': 1,
         'multi_tool_scan': 1,
         'features': {
             'basic_reports': True,
@@ -245,11 +287,11 @@ PLAN_CONFIG = {
         'level': 1,
         'price_eur': 0,
         'duration': '14 days',
-        'tool_limit': 50,
+        'tool_limit': 7,
         'daily_scan_limit': 10,
         'max_projects': 1,
         'max_team_members': 1,
-        'max_agents': 0,
+        'max_agents': 1,
         'multi_tool_scan': 1,
         'features': {
             'basic_reports': True,
@@ -270,11 +312,11 @@ PLAN_CONFIG = {
         'level': 2,
         'price_eur': 19,
         'duration': 'monthly',
-        'tool_limit': 200,
+        'tool_limit': 25,
         'daily_scan_limit': 50,
         'max_projects': 10,
         'max_team_members': 1,
-        'max_agents': 0,
+        'max_agents': 3,
         'multi_tool_scan': 3,
         'features': {
             'basic_reports': True,
@@ -295,11 +337,11 @@ PLAN_CONFIG = {
         'level': 3,
         'price_eur': 49,
         'duration': 'monthly',
-        'tool_limit': 400,
+        'tool_limit': 100,
         'daily_scan_limit': 200,
         'max_projects': 50,
         'max_team_members': 5,
-        'max_agents': 1,
+        'max_agents': 10,
         'multi_tool_scan': 5,
         'features': {
             'basic_reports': True,
@@ -320,7 +362,7 @@ PLAN_CONFIG = {
         'level': 4,
         'price_eur': 99,
         'duration': 'monthly',
-        'tool_limit': 999,
+        'tool_limit': 682,
         'daily_scan_limit': 0,  # 0 = unlimited
         'max_projects': 0,  # 0 = unlimited
         'max_team_members': 0,  # 0 = unlimited

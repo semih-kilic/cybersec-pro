@@ -10,12 +10,12 @@ import { OverviewSkeleton } from '../../components/ui/Skeleton';
 import { ActivityFeed } from '../../components/dashboard/ActivityFeed';
 import { PageTransition } from '../../components/ui/PageTransition';
 
-// Plan configurations - synced with backend /api/v1/tools/count (682 total tools)
+// Plan configurations - synced with backend PLAN_CONFIG (682 total tools in DB)
 const PLAN_CONFIG: Record<string, { tools: number; scansPerDay: number; features: string[] }> = {
-  trial: { tools: 7, scansPerDay: 3, features: ['7 Essential tools', '3 scans/day', '14 day trial'] },
-  starter: { tools: 50, scansPerDay: 10, features: ['50 tools', '10 scans/day', '1 project'] },
-  professional: { tools: 200, scansPerDay: 50, features: ['200 tools', '50 scans/day', 'Multi-tool scan (3)'] },
-  team: { tools: 400, scansPerDay: 200, features: ['400 tools', '200 scans/day', 'Remote agent'] },
+  trial: { tools: 3, scansPerDay: 5, features: ['3 Essential tools', '5 scans/day', '14 day trial'] },
+  starter: { tools: 7, scansPerDay: 10, features: ['7 tools', '10 scans/day', '1 project'] },
+  professional: { tools: 25, scansPerDay: 50, features: ['25 tools', '50 scans/day', 'Multi-tool scan (3)'] },
+  team: { tools: 100, scansPerDay: 200, features: ['100 tools', '200 scans/day', '10 Remote agents'] },
   enterprise: { tools: 682, scansPerDay: -1, features: ['All 682 tools', 'Unlimited scans', 'SSO/SAML'] },
 };
 

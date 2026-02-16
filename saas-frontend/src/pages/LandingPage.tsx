@@ -222,7 +222,7 @@ export function LandingPage() {
               </div>
               <ul className="space-y-2 mb-6 text-gray-300 text-sm">
                 <li className="flex items-center gap-2">
-                  <span className="text-green-400">✓</span> 50 Essential Tools
+                  <span className="text-green-400">✓</span> 7 Essential Tools
                 </li>
                 <li className="flex items-center gap-2">
                   <span className="text-green-400">✓</span> 10 scans/day
@@ -251,13 +251,13 @@ export function LandingPage() {
               </div>
               <ul className="space-y-2 mb-6 text-gray-300 text-sm">
                 <li className="flex items-center gap-2">
-                  <span className="text-green-400">✓</span> <strong>200</strong> Tools
+                  <span className="text-green-400">✓</span> <strong>25</strong> Tools
                 </li>
                 <li className="flex items-center gap-2">
                   <span className="text-green-400">✓</span> 50 scans/day
                 </li>
                 <li className="flex items-center gap-2">
-                  <span className="text-cyan-400">✓</span> Multi-tool scan (3)
+                  <span className="text-cyan-400">✓</span> 3 Remote Agents
                 </li>
                 <li className="flex items-center gap-2">
                   <span className="text-green-400">✓</span> PDF/HTML Reports
@@ -280,7 +280,7 @@ export function LandingPage() {
               </div>
               <ul className="space-y-2 mb-6 text-gray-300 text-sm">
                 <li className="flex items-center gap-2">
-                  <span className="text-green-400">✓</span> <strong>400</strong> Tools
+                  <span className="text-green-400">✓</span> <strong>100</strong> Tools
                 </li>
                 <li className="flex items-center gap-2">
                   <span className="text-green-400">✓</span> 200 scans/day
@@ -289,7 +289,7 @@ export function LandingPage() {
                   <span className="text-purple-400">✓</span> Multi-tool scan (5)
                 </li>
                 <li className="flex items-center gap-2">
-                  <span className="text-purple-400">✓</span> Remote Agent (1)
+                  <span className="text-purple-400">✓</span> Remote Agents (10)
                 </li>
                 <li className="flex items-center gap-2">
                   <span className="text-green-400">✓</span> 5 Team Members

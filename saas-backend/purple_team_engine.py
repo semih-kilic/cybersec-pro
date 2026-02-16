@@ -759,6 +759,7 @@ class BlueTeamAgent:
     def __init__(self):
         self._alerts = []
         self._containment_log = []
+        self._lock = threading.Lock()
         logger.info("🔵 Blue Team AI Agent initialized")
     
     def analyze_red_team_step(
