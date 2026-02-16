@@ -2456,18 +2456,22 @@ def get_scan_output(scan_id):
     Works with both V3 engine and legacy executor.
     """
     # Check authorization - support both header and query param
-    from flask_jwt_extended import verify_jwt_in_request, get_jwt_identity
+    from flask_jwt_extended import verify_jwt_in_request, get_jwt_identity, decode_token
     
     token = request.args.get('token')
-    if token:
-        # Manually set the token for JWT verification
-        request.headers = dict(request.headers)
-        request.headers['Authorization'] = f'Bearer {token}'
+    user = None
     
     try:
-        verify_jwt_in_request()
-        user_id = get_jwt_identity()
-        user = User.query.get(user_id)
+        if token:
+            # Manually decode JWT from query parameter (for EventSource/SSE)
+            decoded = decode_token(token)
+            user_id = decoded.get('sub')
+            user = User.query.get(user_id)
+        else:
+            verify_jwt_in_request()
+            user_id = get_jwt_identity()
+            user = User.query.get(user_id)
+        
         if not user or not user.organization_id:
             return jsonify({'error': 'Unauthorized'}), 401
     except Exception as e:
@@ -2614,6 +2618,9 @@ def get_scan_output(scan_id):
     response.headers['X-Accel-Buffering'] = 'no'
     response.headers['Connection'] = 'keep-alive'
     return response
+
+
+@app.route('/api/v1/scan/<scan_id>/stop', methods=['POST'])
 @require_organization
 def stop_scan(scan_id):
     """Stop a running scan"""

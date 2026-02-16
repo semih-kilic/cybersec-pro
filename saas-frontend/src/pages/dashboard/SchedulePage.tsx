@@ -103,15 +103,14 @@ export function SchedulePage() {
 
   const handleRunNow = async (schedule: ScheduledScan) => {
     try {
-      // Trigger immediate scan execution
-      const res = await fetch('/api/v1/scan/execute', {
+      const res = await fetch('/api/v1/scan/start', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${token}`,
         },
         body: JSON.stringify({
-          tool: schedule.tool,
+          tool: schedule.tool_name || schedule.tool,
           target: schedule.target,
         }),
       });
@@ -121,6 +120,11 @@ export function SchedulePage() {
     } catch (error) {
       console.error('Failed to start scan:', error);
     }
+  };
+
+  const getScheduleStatus = (s: ScheduledScan): 'active' | 'paused' | 'error' => {
+    if (s.status) return s.status;
+    return s.is_active ? 'active' : 'paused';
   };
 
   const handleSave = async () => {
@@ -244,7 +248,7 @@ export function SchedulePage() {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-2xl font-bold text-green-400">
-                  {schedules.filter(s => s.status === 'active').length}
+                  {schedules.filter(s => getScheduleStatus(s) === 'active').length}
                 </p>
                 <p className="text-sm text-gray-400">Active</p>
               </div>
@@ -259,7 +263,7 @@ export function SchedulePage() {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-2xl font-bold text-white">
-                  {schedules.reduce((sum, s) => sum + s.runs_count, 0)}
+                  {schedules.reduce((sum, s) => sum + (s.run_count || 0), 0)}
                 </p>
                 <p className="text-sm text-gray-400">Total Runs</p>
               </div>
@@ -274,8 +278,8 @@ export function SchedulePage() {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-2xl font-bold text-blue-400">
-                  {schedules.filter(s => s.status === 'active' && s.next_run).length > 0
-                    ? formatRelativeTime(schedules.filter(s => s.status === 'active').sort((a, b) => 
+                  {schedules.filter(s => getScheduleStatus(s) === 'active' && s.next_run).length > 0
+                    ? formatRelativeTime(schedules.filter(s => getScheduleStatus(s) === 'active').sort((a, b) => 
                         new Date(a.next_run).getTime() - new Date(b.next_run).getTime()
                       )[0].next_run)
                     : '-'
@@ -317,7 +321,7 @@ export function SchedulePage() {
                 <div className="flex-1">
                   <div className="flex items-center gap-3 mb-2">
                     <h3 className="text-white font-semibold">{schedule.name}</h3>
-                    {getStatusBadge(schedule.status)}
+                    {getStatusBadge(getScheduleStatus(schedule))}
                   </div>
                   <div className="flex flex-wrap gap-4 text-sm text-gray-400">
                     <span className="flex items-center gap-1.5">
@@ -325,7 +329,7 @@ export function SchedulePage() {
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
                       </svg>
-                      {schedule.tool}
+                      {schedule.tool_name || schedule.tool}
                     </span>
                     <span className="flex items-center gap-1.5 font-mono text-xs">
                       <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -343,20 +347,20 @@ export function SchedulePage() {
                       <svg className="w-5 h-5 text-kali-blue" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
                       </svg>
-                      <span className="font-medium">{formatSchedule(schedule.schedule)}</span>
+                      <span className="font-medium">{formatSchedule(schedule.cron_expression || schedule.schedule_type || '')}</span>
                     </div>
                     <p className="text-xs text-gray-500 mt-1">Schedule</p>
                   </div>
 
                   <div className="text-center">
                     <p className="text-white font-medium">
-                      {schedule.status === 'active' ? formatRelativeTime(schedule.next_run) : '-'}
+                      {getScheduleStatus(schedule) === 'active' ? formatRelativeTime(schedule.next_run) : '-'}
                     </p>
                     <p className="text-xs text-gray-500 mt-1">Next Run</p>
                   </div>
 
                   <div className="text-center">
-                    <p className="text-white font-medium">{schedule.runs_count}</p>
+                    <p className="text-white font-medium">{schedule.run_count || 0}</p>
                     <p className="text-xs text-gray-500 mt-1">Runs</p>
                   </div>
                 </div>
@@ -376,13 +380,13 @@ export function SchedulePage() {
                   <button
                     onClick={() => handleToggleStatus(schedule)}
                     className={`p-2 rounded-lg transition ${
-                      schedule.status === 'active'
+                      getScheduleStatus(schedule) === 'active'
                         ? 'bg-yellow-500/20 text-yellow-400 hover:bg-yellow-500/30'
                         : 'bg-green-500/20 text-green-400 hover:bg-green-500/30'
                     }`}
-                    title={schedule.status === 'active' ? 'Pause' : 'Resume'}
+                    title={getScheduleStatus(schedule) === 'active' ? 'Pause' : 'Resume'}
                   >
-                    {schedule.status === 'active' ? (
+                    {getScheduleStatus(schedule) === 'active' ? (
                       <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 9v6m4-6v6m7-3a9 9 0 11-18 0 9 9 0 0118 0z" />
                       </svg>

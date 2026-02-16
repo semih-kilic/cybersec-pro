@@ -1,75 +1,28 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useAuth } from '../../hooks/useAuth';
 import { Link } from 'react-router-dom';
 
 interface Project {
-  id: string;
+  id: string | number;
   name: string;
   description: string;
+  target_type?: string;
+  target_url?: string;
+  target_ip?: string;
   target_count: number;
   scan_count: number;
   vulnerability_count: number;
   status: 'active' | 'completed' | 'archived';
   created_at: string;
-  updated_at: string;
-  members: { id: string; name: string; avatar?: string }[];
-  tags: string[];
+  updated_at?: string;
+  members?: { id: string; name: string; avatar?: string }[];
+  tags?: string[];
 }
 
-const mockProjects: Project[] = [
-  {
-    id: '1',
-    name: 'Q1 2026 Security Audit',
-    description: 'Quarterly security assessment for production infrastructure',
-    target_count: 15,
-    scan_count: 47,
-    vulnerability_count: 23,
-    status: 'active',
-    created_at: '2026-01-05T10:00:00Z',
-    updated_at: '2026-01-26T14:30:00Z',
-    members: [
-      { id: '1', name: 'Semih K.' },
-      { id: '2', name: 'Alex M.' },
-    ],
-    tags: ['production', 'quarterly', 'compliance'],
-  },
-  {
-    id: '2',
-    name: 'Web Application Pentest',
-    description: 'Penetration testing for new e-commerce platform',
-    target_count: 8,
-    scan_count: 32,
-    vulnerability_count: 12,
-    status: 'active',
-    created_at: '2026-01-15T09:00:00Z',
-    updated_at: '2026-01-25T16:45:00Z',
-    members: [
-      { id: '1', name: 'Semih K.' },
-    ],
-    tags: ['webapp', 'ecommerce', 'critical'],
-  },
-  {
-    id: '3',
-    name: 'Network Infrastructure Review',
-    description: 'Internal network security assessment',
-    target_count: 45,
-    scan_count: 128,
-    vulnerability_count: 56,
-    status: 'completed',
-    created_at: '2025-12-01T08:00:00Z',
-    updated_at: '2025-12-20T17:00:00Z',
-    members: [
-      { id: '1', name: 'Semih K.' },
-      { id: '2', name: 'Alex M.' },
-      { id: '3', name: 'Sarah J.' },
-    ],
-    tags: ['internal', 'network', 'completed'],
-  },
-];
-
 export default function ProjectsPage() {
-  const { user, organization } = useAuth();
-  const [projects, setProjects] = useState<Project[]>(mockProjects);
+  const { token, organization } = useAuth();
+  const [projects, setProjects] = useState<Project[]>([]);
+  const [loading, setLoading] = useState(true);
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [filter, setFilter] = useState<'all' | 'active' | 'completed' | 'archived'>('all');
   const [searchQuery, setSearchQuery] = useState('');
@@ -79,54 +32,85 @@ export default function ProjectsPage() {
   const [newProjectDesc, setNewProjectDesc] = useState('');
   const [newProjectTags, setNewProjectTags] = useState('');
 
-  // Check plan limits - use organization.plan_type
+  // Check plan limits
   const userPlan = organization?.plan_type || 'trial';
-  const planLimits = {
+  const planLimits: Record<string, number> = {
     trial: 1,
     starter: 1,
     professional: 5,
     team: 20,
     enterprise: Infinity,
   };
-  const maxProjects = planLimits[userPlan as keyof typeof planLimits] || 1;
+  const maxProjects = planLimits[userPlan] || 1;
   const canCreateProject = projects.length < maxProjects;
 
-  const filteredProjects = projects
-    .filter(p => filter === 'all' || p.status === filter)
-    .filter(p => 
-      searchQuery === '' || 
-      p.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      p.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      p.tags.some(t => t.toLowerCase().includes(searchQuery.toLowerCase()))
-    );
+  useEffect(() => {
+    fetchProjects();
+  }, [token]);
 
-  const createProject = () => {
+  const fetchProjects = async () => {
+    try {
+      const res = await fetch('/api/v1/projects', {
+        headers: { 'Authorization': `Bearer ${token}` },
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setProjects((data.projects || []).map((p: Record<string, unknown>) => ({
+          ...p,
+          target_count: (p.target_count as number) || 0,
+          scan_count: (p.scan_count as number) || 0,
+          vulnerability_count: (p.vulnerability_count as number) || 0,
+          status: (p.status as string) || 'active',
+          tags: (p.tags as string[]) || [],
+          members: (p.members as Project['members']) || [],
+        })));
+      }
+    } catch (error) {
+      console.error('Failed to fetch projects:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const createProject = async () => {
     if (!newProjectName.trim()) return;
-    
-    const newProject: Project = {
-      id: Math.random().toString(),
-      name: newProjectName,
-      description: newProjectDesc,
-      target_count: 0,
-      scan_count: 0,
-      vulnerability_count: 0,
-      status: 'active',
-      created_at: new Date().toISOString(),
-      updated_at: new Date().toISOString(),
-      members: [{ id: '1', name: user?.first_name || 'You' }],
-      tags: newProjectTags.split(',').map(t => t.trim()).filter(Boolean),
-    };
-    
-    setProjects([newProject, ...projects]);
+    try {
+      const res = await fetch('/api/v1/projects', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          name: newProjectName,
+          description: newProjectDesc,
+        }),
+      });
+      if (res.ok) {
+        fetchProjects();
+      }
+    } catch (error) {
+      console.error('Failed to create project:', error);
+    }
     setShowCreateModal(false);
     setNewProjectName('');
     setNewProjectDesc('');
     setNewProjectTags('');
   };
 
-  const deleteProject = (projectId: string) => {
-    if (!confirm('Are you sure you want to delete this project? All associated data will be lost.')) return;
-    setProjects(projects.filter(p => p.id !== projectId));
+  const deleteProject = async (projectId: string | number) => {
+    if (!confirm('Are you sure you want to delete this project?')) return;
+    try {
+      const res = await fetch(`/api/v1/projects/${projectId}`, {
+        method: 'DELETE',
+        headers: { 'Authorization': `Bearer ${token}` },
+      });
+      if (res.ok) {
+        setProjects(projects.filter(p => p.id !== projectId));
+      }
+    } catch (error) {
+      console.error('Failed to delete project:', error);
+    }
   };
 
   const getStatusColor = (status: Project['status']) => {
@@ -136,6 +120,23 @@ export default function ProjectsPage() {
       case 'archived': return 'text-gray-400 bg-gray-400/20';
     }
   };
+
+  const filteredProjects = projects
+    .filter(p => filter === 'all' || p.status === filter)
+    .filter(p => 
+      searchQuery === '' || 
+      p.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      (p.description || '').toLowerCase().includes(searchQuery.toLowerCase()) ||
+      (p.tags || []).some(t => t.toLowerCase().includes(searchQuery.toLowerCase()))
+    );
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gray-950 flex items-center justify-center">
+        <div className="w-8 h-8 border-4 border-kali-blue border-t-transparent rounded-full animate-spin" />
+      </div>
+    );
+  }
 
   return (
     <div className="p-6">
@@ -284,7 +285,7 @@ export default function ProjectsPage() {
                 </div>
                 <div className="flex items-center gap-2">
                   <span className="text-gray-500 text-sm">Updated:</span>
-                  <span className="text-white">{new Date(project.updated_at).toLocaleDateString()}</span>
+                  <span className="text-white">{new Date(project.updated_at || project.created_at).toLocaleDateString()}</span>
                 </div>
               </div>
               
@@ -311,7 +312,7 @@ export default function ProjectsPage() {
                   ))}
                   {(project.members || []).length > 3 && (
                     <div className="w-8 h-8 rounded-full bg-gray-800 flex items-center justify-center text-gray-400 text-xs -ml-2 border-2 border-gray-900">
-                      +{project.members.length - 3}
+                      +{(project.members || []).length - 3}
                     </div>
                   )}
                 </div>
