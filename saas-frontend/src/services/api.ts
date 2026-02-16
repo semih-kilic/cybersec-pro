@@ -250,6 +250,81 @@ class ApiService {
     }>('/plans');
   }
 
+  // ── Analytics ──
+
+  async getAnalyticsOverview() {
+    return this.request<{
+      daily_trend: Array<{ date: string; scans: number }>;
+      tool_usage: Array<{ name: string; count: number }>;
+      status_distribution: Record<string, number>;
+      target_distribution: Array<{ target: string; count: number }>;
+      comparison: { this_week: number; last_week: number; change_pct: number };
+      performance: { avg_duration_seconds: number; total_scans: number; success_rate: number };
+      risk: { score: number; level: string; severity_totals: Record<string, number>; total_issues: number };
+    }>('/analytics/overview');
+  }
+
+  // ── AI Features ──
+
+  async aiSuggestTools(target: string, context?: string) {
+    return this.request<{
+      target: string;
+      target_type: string;
+      suggestions: Array<{
+        tool_name: string;
+        tool_id: string | null;
+        reason: string;
+        category: string;
+        available: boolean;
+        plan_required: string;
+      }>;
+      scan_plan: {
+        phase_1: string;
+        phase_2: string;
+        phase_3: string;
+        recommended_order: string[];
+      };
+    }>('/ai/suggest', {
+      method: 'POST',
+      body: JSON.stringify({ target, context }),
+    });
+  }
+
+  async aiRemediation(scanId: string) {
+    return this.request<{
+      scan_id: string;
+      tool: string;
+      target: string;
+      remediations: Array<{
+        priority: number;
+        issue: string;
+        severity: string;
+        fix: string;
+        code_example: string;
+        references: string[];
+        estimated_effort: string;
+      }>;
+      total_issues: number;
+      executive_summary: string;
+    }>('/ai/remediation', {
+      method: 'POST',
+      body: JSON.stringify({ scan_id: scanId }),
+    });
+  }
+
+  async aiReportSummary(scanIds: string[]) {
+    return this.request<{
+      summary: string;
+      risk_score: number;
+      risk_level: string;
+      severity_breakdown: Record<string, number>;
+      recommendations: string[];
+    }>('/ai/report-summary', {
+      method: 'POST',
+      body: JSON.stringify({ scan_ids: scanIds }),
+    });
+  }
+
   async stopScan(scanId: string) {
     return this.request<{
       success: boolean;

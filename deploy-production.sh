@@ -303,4 +303,12 @@ echo "   2. Set up SSL certificates"
 echo "   3. Configure database backups"
 echo "   4. Set up monitoring alerts"
 echo ""
+
+# Post-deploy: trigger demo video re-recording (background)
+if [ -f "$PROJECT_DIR/cybersec-sales/weekly-demo-cron.sh" ]; then
+    print_status "Scheduling demo video re-record (background)..."
+    nohup bash "$PROJECT_DIR/cybersec-sales/weekly-demo-cron.sh" > /tmp/demo-record.log 2>&1 &
+    print_success "Demo video re-recording started in background"
+fi
+
 print_success "World-class cybersecurity platform is ready! 🛡️"

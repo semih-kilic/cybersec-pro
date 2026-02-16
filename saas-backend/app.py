@@ -2823,14 +2823,15 @@ def start_scan_v2():
         # Create scan record with proper tool_id (database UUID)
         scan_id = str(uuid.uuid4())
         
-        # ── Agent-based execution decision ──
+        # ── Agent-first execution decision ──
+        # Philosophy: ALL scans go to agents. Local execution is last-resort fallback.
         agent_id_request = data.get('agent_id')  # Optional: specific agent
         execution_mode = data.get('execution_mode', 'auto')  # auto | agent | local
         
         use_agent = False
         selected_agent = None
         
-        if execution_mode in ('agent', 'auto'):
+        if execution_mode != 'local':  # Agent-first: try agent for both 'auto' and 'agent'
             if agent_id_request:
                 # User specified a specific agent
                 selected_agent = Agent.query.filter_by(
@@ -2843,7 +2844,13 @@ def start_scan_v2():
                 selected_agent = agent_mgr.select_best_agent(org.id)
                 if selected_agent:
                     use_agent = True
-        # execution_mode == 'local': always run on server
+                elif execution_mode == 'agent':
+                    # User explicitly wanted agent but none available
+                    return jsonify({
+                        'error': 'No online agents available',
+                        'hint': 'Register an agent or switch to auto mode'
+                    }), 503
+        # execution_mode == 'local': fallback to server-side execution
         
         scan = Scan(
             id=scan_id,
@@ -3523,7 +3530,151 @@ def get_report_templates():
             'formats': ['html', 'pdf', 'json', 'csv', 'markdown']
         }
     ]
-    return jsonify({'templates': templates})
+    
+    # Feature-gate compliance templates based on plan
+    user_id = get_jwt_identity()
+    user = User.query.get(user_id)
+    org = user.organization
+    has_compliance = check_feature(org, 'compliance_reports')
+    has_pdf = check_feature(org, 'pdf_reports')
+    
+    compliance_ids = {'compliance', 'owasp', 'pci-dss', 'iso27001'}
+    filtered = []
+    for t in templates:
+        tmpl = dict(t)
+        if t['id'] in compliance_ids and not has_compliance:
+            tmpl['locked'] = True
+            tmpl['required_plan'] = 'team'
+        if not has_pdf and 'pdf' in t.get('formats', []):
+            tmpl['formats'] = [f for f in tmpl['formats'] if f != 'pdf']
+        filtered.append(tmpl)
+    
+    return jsonify({'templates': filtered, 'plan': org.plan_type})
+
+
+# ================================
+# ANALYTICS API
+# ================================
+
+@app.route('/api/v1/analytics/overview', methods=['GET'])
+@require_organization
+def get_analytics_overview():
+    """Get analytics overview - scan trends, tool usage, risk scores"""
+    try:
+        user_id = get_jwt_identity()
+        user = User.query.get(user_id)
+        org = user.organization
+        
+        from datetime import date, timedelta
+        today = date.today()
+        
+        # Daily scan trend (last 30 days)
+        daily_trend = []
+        for i in range(29, -1, -1):
+            d = today - timedelta(days=i)
+            count = Scan.query.filter(
+                Scan.organization_id == org.id,
+                db.func.date(Scan.created_at) == d
+            ).count()
+            daily_trend.append({'date': d.isoformat(), 'scans': count})
+        
+        # Tool usage (top 10)
+        tool_usage = db.session.query(
+            Tool.name, db.func.count(Scan.id).label('count')
+        ).join(Tool, Scan.tool_id == Tool.id).filter(
+            Scan.organization_id == org.id
+        ).group_by(Tool.name).order_by(db.desc('count')).limit(10).all()
+        
+        # Scan status distribution
+        status_dist = db.session.query(
+            Scan.status, db.func.count(Scan.id)
+        ).filter(
+            Scan.organization_id == org.id
+        ).group_by(Scan.status).all()
+        
+        # Target distribution (top targets)
+        target_dist = db.session.query(
+            Scan.target, db.func.count(Scan.id).label('count')
+        ).filter(
+            Scan.organization_id == org.id
+        ).group_by(Scan.target).order_by(db.desc('count')).limit(10).all()
+        
+        # Weekly comparison
+        this_week = Scan.query.filter(
+            Scan.organization_id == org.id,
+            Scan.created_at >= today - timedelta(days=7)
+        ).count()
+        last_week = Scan.query.filter(
+            Scan.organization_id == org.id,
+            Scan.created_at >= today - timedelta(days=14),
+            Scan.created_at < today - timedelta(days=7)
+        ).count()
+        
+        # Average scan duration
+        completed = Scan.query.filter(
+            Scan.organization_id == org.id,
+            Scan.status == 'completed',
+            Scan.started_at.isnot(None),
+            Scan.completed_at.isnot(None)
+        ).all()
+        avg_duration = 0
+        if completed:
+            durations = [(s.completed_at - s.started_at).total_seconds() for s in completed]
+            avg_duration = sum(durations) / len(durations)
+        
+        # Risk score trend (from findings in last 30 scans)
+        recent_scans = Scan.query.filter(
+            Scan.organization_id == org.id,
+            Scan.status == 'completed',
+            Scan.findings.isnot(None)
+        ).order_by(Scan.created_at.desc()).limit(30).all()
+        
+        risk_scores = []
+        severity_totals = {'critical': 0, 'high': 0, 'medium': 0, 'low': 0, 'info': 0}
+        for scan in recent_scans:
+            summary = scan.findings_summary
+            for sev in severity_totals:
+                severity_totals[sev] += summary.get(sev, 0)
+        
+        # Calculate overall risk score (weighted)
+        total_issues = sum(severity_totals.values())
+        risk_score = 0
+        if total_issues > 0:
+            risk_score = min(100, (
+                severity_totals['critical'] * 40 +
+                severity_totals['high'] * 25 +
+                severity_totals['medium'] * 10 +
+                severity_totals['low'] * 3 +
+                severity_totals['info'] * 1
+            ) / max(1, len(recent_scans)))
+        
+        return jsonify({
+            'daily_trend': daily_trend,
+            'tool_usage': [{'name': t, 'count': c} for t, c in tool_usage],
+            'status_distribution': {s: c for s, c in status_dist},
+            'target_distribution': [{'target': t, 'count': c} for t, c in target_dist],
+            'comparison': {
+                'this_week': this_week,
+                'last_week': last_week,
+                'change_pct': round(((this_week - last_week) / max(1, last_week)) * 100, 1)
+            },
+            'performance': {
+                'avg_duration_seconds': round(avg_duration, 1),
+                'total_scans': Scan.query.filter_by(organization_id=org.id).count(),
+                'success_rate': round(
+                    Scan.query.filter_by(organization_id=org.id, status='completed').count() /
+                    max(1, Scan.query.filter_by(organization_id=org.id).count()) * 100, 1
+                )
+            },
+            'risk': {
+                'score': round(risk_score, 1),
+                'level': 'Critical' if risk_score >= 80 else 'High' if risk_score >= 60 else 'Medium' if risk_score >= 30 else 'Low',
+                'severity_totals': severity_totals,
+                'total_issues': total_issues
+            }
+        })
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
 
 
 # ================================
@@ -5180,6 +5331,431 @@ def get_activity_feed():
 
     except Exception as e:
         return jsonify({'entries': [], 'error': str(e)})
+
+
+# ================================
+# AI-POWERED FEATURES
+# ================================
+
+# AI tool recommendation knowledge base
+AI_TOOL_RECOMMENDATIONS = {
+    'web': {
+        'keywords': ['http', 'https', 'www', 'web', 'html', 'api', 'rest'],
+        'tools': [
+            {'name': 'nikto', 'reason': 'Web server vulnerability scanner - finds misconfigurations, default files, outdated software'},
+            {'name': 'gobuster', 'reason': 'Directory/file brute-force discovery for hidden endpoints'},
+            {'name': 'sqlmap', 'reason': 'Automated SQL injection detection and exploitation'},
+            {'name': 'wpscan', 'reason': 'WordPress-specific vulnerability scanner (if WordPress detected)'},
+            {'name': 'nuclei', 'reason': 'Template-based vulnerability scanner with 6000+ templates'},
+            {'name': 'whatweb', 'reason': 'Web technology fingerprinting - identifies CMS, frameworks, plugins'},
+        ]
+    },
+    'network': {
+        'keywords': ['ip', 'server', 'host', 'subnet', 'network', 'cidr', '/24', '/16'],
+        'tools': [
+            {'name': 'nmap', 'reason': 'Port scanning and service detection - the essential first step'},
+            {'name': 'masscan', 'reason': 'Ultra-fast port scanner for large IP ranges'},
+            {'name': 'nmap-vuln', 'reason': 'Nmap with vulnerability scripts (--script vuln)'},
+            {'name': 'enum4linux', 'reason': 'SMB/NetBIOS enumeration for Windows targets'},
+            {'name': 'snmpwalk', 'reason': 'SNMP enumeration for network devices'},
+        ]
+    },
+    'dns': {
+        'keywords': ['domain', '.com', '.org', '.net', '.io', 'dns', 'subdomain'],
+        'tools': [
+            {'name': 'dig', 'reason': 'DNS record lookup and zone transfer testing'},
+            {'name': 'whois', 'reason': 'Domain registration and ownership information'},
+            {'name': 'subfinder', 'reason': 'Passive subdomain discovery from multiple sources'},
+            {'name': 'dnsrecon', 'reason': 'Comprehensive DNS enumeration and zone transfer testing'},
+            {'name': 'fierce', 'reason': 'DNS reconnaissance for non-contiguous IP space'},
+            {'name': 'amass', 'reason': 'Attack surface mapping with DNS enumeration'},
+        ]
+    },
+    'ssl': {
+        'keywords': ['ssl', 'tls', 'certificate', 'https', '443'],
+        'tools': [
+            {'name': 'sslyze', 'reason': 'SSL/TLS configuration analysis'},
+            {'name': 'sslscan', 'reason': 'SSL cipher and protocol testing'},
+            {'name': 'testssl', 'reason': 'Comprehensive TLS/SSL testing'},
+        ]
+    },
+    'password': {
+        'keywords': ['login', 'auth', 'password', 'ssh', 'ftp', 'rdp', 'brute'],
+        'tools': [
+            {'name': 'hydra', 'reason': 'Network login brute-forcer for SSH, FTP, HTTP, etc.'},
+            {'name': 'john', 'reason': 'Password hash cracker (John the Ripper)'},
+            {'name': 'hashcat', 'reason': 'GPU-accelerated password recovery'},
+            {'name': 'medusa', 'reason': 'Parallel network login brute-forcer'},
+        ]
+    }
+}
+
+# CVE remediation knowledge base
+AI_REMEDIATION_DB = {
+    'SQL Injection': {
+        'severity': 'critical',
+        'fix': 'Use parameterized queries/prepared statements. Never concatenate user input into SQL.',
+        'code_example': "cursor.execute('SELECT * FROM users WHERE id = ?', (user_id,))",
+        'references': ['https://owasp.org/www-community/attacks/SQL_Injection', 'CWE-89']
+    },
+    'XSS': {
+        'severity': 'high',
+        'fix': 'Encode output, use Content-Security-Policy headers, sanitize input.',
+        'code_example': 'Use DOMPurify.sanitize(userInput) or template auto-escaping',
+        'references': ['https://owasp.org/www-community/attacks/xss/', 'CWE-79']
+    },
+    'Open Port': {
+        'severity': 'medium',
+        'fix': 'Close unnecessary ports. Use firewall rules (iptables/nftables) to restrict access.',
+        'code_example': 'sudo ufw deny <port> OR iptables -A INPUT -p tcp --dport <port> -j DROP',
+        'references': ['CIS Benchmark', 'NIST SP 800-123']
+    },
+    'Outdated Software': {
+        'severity': 'high',
+        'fix': 'Update to the latest stable version. Enable automatic security updates.',
+        'code_example': 'sudo apt update && sudo apt upgrade -y',
+        'references': ['CVE Database', 'NIST NVD']
+    },
+    'Weak SSL/TLS': {
+        'severity': 'high',
+        'fix': 'Disable SSLv3, TLS 1.0, TLS 1.1. Use TLS 1.2+ with strong ciphers.',
+        'code_example': 'ssl_protocols TLSv1.2 TLSv1.3; ssl_ciphers HIGH:!aNULL:!MD5;',
+        'references': ['Mozilla SSL Config Generator', 'CWE-326']
+    },
+    'Default Credentials': {
+        'severity': 'critical',
+        'fix': 'Change all default passwords immediately. Implement password policy.',
+        'code_example': 'Enforce minimum 12 chars, complexity requirements, MFA',
+        'references': ['OWASP Authentication Cheatsheet', 'CWE-798']
+    },
+    'Missing Security Headers': {
+        'severity': 'medium',
+        'fix': 'Add security headers: X-Frame-Options, X-Content-Type-Options, CSP, HSTS.',
+        'code_example': 'add_header X-Frame-Options "DENY"; add_header X-Content-Type-Options "nosniff";',
+        'references': ['OWASP Secure Headers Project', 'CWE-16']
+    },
+    'Information Disclosure': {
+        'severity': 'low',
+        'fix': 'Remove server version headers, error details, directory listings.',
+        'code_example': 'server_tokens off; # nginx',
+        'references': ['CWE-200', 'OWASP Information Disclosure']
+    }
+}
+
+
+@app.route('/api/v1/ai/suggest', methods=['POST'])
+@require_organization
+def ai_suggest_tools():
+    """AI-powered tool suggestions based on target analysis"""
+    try:
+        user_id = get_jwt_identity()
+        user = User.query.get(user_id)
+        org = user.organization
+        
+        # Check feature access
+        if not check_feature(org, 'ai_suggestions'):
+            return jsonify({
+                'error': 'AI Suggestions requires Professional plan or higher',
+                'required_plan': 'professional'
+            }), 402
+        
+        data = request.get_json()
+        target = data.get('target', '').strip()
+        context = data.get('context', '')  # Additional context from user
+        
+        if not target:
+            return jsonify({'error': 'Target is required'}), 400
+        
+        # Analyze target to determine type
+        target_lower = target.lower()
+        suggestions = []
+        target_type = 'unknown'
+        
+        # Determine target type
+        import re
+        if re.match(r'^\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}', target):
+            target_type = 'ip'
+        elif re.match(r'^\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}/\d{1,2}$', target):
+            target_type = 'subnet'
+        elif target.startswith(('http://', 'https://')):
+            target_type = 'url'
+        elif '.' in target and not target.startswith('10.') and not target.startswith('192.168.'):
+            target_type = 'domain'
+        
+        # Build recommendations
+        matched_categories = set()
+        
+        # Always recommend network scan for IP/subnet
+        if target_type in ('ip', 'subnet'):
+            matched_categories.add('network')
+        
+        # URL targets get web scanning
+        if target_type == 'url':
+            matched_categories.update(['web', 'ssl'])
+        
+        # Domain targets get DNS + web
+        if target_type == 'domain':
+            matched_categories.update(['dns', 'web', 'ssl'])
+        
+        # Keyword matching for context
+        for cat, info in AI_TOOL_RECOMMENDATIONS.items():
+            for kw in info['keywords']:
+                if kw in target_lower or kw in context.lower():
+                    matched_categories.add(cat)
+        
+        # If no matches, default to network + dns
+        if not matched_categories:
+            matched_categories = {'network', 'dns'}
+        
+        # Collect suggestions
+        seen = set()
+        for cat in matched_categories:
+            if cat in AI_TOOL_RECOMMENDATIONS:
+                for tool_rec in AI_TOOL_RECOMMENDATIONS[cat]['tools']:
+                    if tool_rec['name'] not in seen:
+                        seen.add(tool_rec['name'])
+                        # Check if tool exists in DB
+                        tool_db = Tool.query.filter(
+                            db.func.lower(Tool.name) == tool_rec['name'].lower(),
+                            Tool.is_active == True
+                        ).first()
+                        suggestions.append({
+                            'tool_name': tool_rec['name'],
+                            'tool_id': tool_db.id if tool_db else None,
+                            'reason': tool_rec['reason'],
+                            'category': cat,
+                            'available': tool_db is not None,
+                            'plan_required': tool_db.plan_required if tool_db else 'professional'
+                        })
+        
+        # Recommended scan order
+        order = ['nmap', 'dig', 'whois', 'whatweb', 'nikto', 'nuclei', 'gobuster', 'sslyze', 'sqlmap']
+        suggestions.sort(key=lambda x: order.index(x['tool_name']) if x['tool_name'] in order else 99)
+        
+        return jsonify({
+            'target': target,
+            'target_type': target_type,
+            'suggestions': suggestions[:8],  # Top 8 recommendations
+            'scan_plan': {
+                'phase_1': 'Reconnaissance',
+                'phase_2': 'Scanning',
+                'phase_3': 'Vulnerability Assessment',
+                'recommended_order': [s['tool_name'] for s in suggestions[:5]]
+            }
+        })
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+
+@app.route('/api/v1/ai/remediation', methods=['POST'])
+@require_organization
+def ai_remediation():
+    """AI-powered remediation suggestions for scan findings"""
+    try:
+        user_id = get_jwt_identity()
+        user = User.query.get(user_id)
+        org = user.organization
+        
+        # Check feature access
+        if not check_feature(org, 'ai_remediation'):
+            return jsonify({
+                'error': 'AI Remediation requires Team plan or higher',
+                'required_plan': 'team'
+            }), 402
+        
+        data = request.get_json()
+        scan_id = data.get('scan_id')
+        
+        if not scan_id:
+            return jsonify({'error': 'scan_id is required'}), 400
+        
+        scan = Scan.query.filter_by(id=scan_id, organization_id=org.id).first()
+        if not scan:
+            return jsonify({'error': 'Scan not found'}), 404
+        
+        if scan.status != 'completed':
+            return jsonify({'error': 'Scan must be completed'}), 400
+        
+        # Analyze scan output for known vulnerability patterns
+        output = (scan.output or '').lower()
+        findings = scan.findings or {}
+        remediations = []
+        
+        # Pattern matching against remediation DB
+        patterns = {
+            'sql injection': 'SQL Injection',
+            'sqli': 'SQL Injection',
+            'xss': 'XSS',
+            'cross-site scripting': 'XSS',
+            'open port': 'Open Port',
+            'outdated': 'Outdated Software',
+            'version': 'Outdated Software',
+            'ssl': 'Weak SSL/TLS',
+            'tls 1.0': 'Weak SSL/TLS',
+            'sslv3': 'Weak SSL/TLS',
+            'default': 'Default Credentials',
+            'admin/admin': 'Default Credentials',
+            'x-frame-options': 'Missing Security Headers',
+            'x-content-type': 'Missing Security Headers',
+            'server:': 'Information Disclosure',
+            'directory listing': 'Information Disclosure',
+        }
+        
+        matched_issues = set()
+        for pattern, issue_type in patterns.items():
+            if pattern in output:
+                matched_issues.add(issue_type)
+        
+        # Also check findings JSON
+        if isinstance(findings, dict):
+            summary = findings.get('summary', {})
+            if summary.get('critical', 0) > 0 or summary.get('high', 0) > 0:
+                matched_issues.add('SQL Injection')
+                matched_issues.add('XSS')
+            if summary.get('open_ports', 0) > 0:
+                matched_issues.add('Open Port')
+        
+        # Build remediation recommendations
+        priority = 1
+        for issue in sorted(matched_issues, key=lambda x: {'critical': 0, 'high': 1, 'medium': 2, 'low': 3}.get(
+            AI_REMEDIATION_DB.get(x, {}).get('severity', 'low'), 4
+        )):
+            if issue in AI_REMEDIATION_DB:
+                rem = AI_REMEDIATION_DB[issue]
+                remediations.append({
+                    'priority': priority,
+                    'issue': issue,
+                    'severity': rem['severity'],
+                    'fix': rem['fix'],
+                    'code_example': rem['code_example'],
+                    'references': rem['references'],
+                    'estimated_effort': '1-4 hours' if rem['severity'] in ('critical', 'high') else '30 min - 2 hours'
+                })
+                priority += 1
+        
+        # If no specific issues found, provide generic recommendations
+        if not remediations:
+            remediations = [{
+                'priority': 1,
+                'issue': 'General Security Hardening',
+                'severity': 'info',
+                'fix': 'Review scan output for potential vulnerabilities. Apply security best practices.',
+                'code_example': 'Run comprehensive scans with nmap --script vuln, nikto, and nuclei',
+                'references': ['OWASP Testing Guide', 'CIS Benchmarks'],
+                'estimated_effort': '2-8 hours'
+            }]
+        
+        return jsonify({
+            'scan_id': scan_id,
+            'tool': scan.tool_name,
+            'target': scan.target,
+            'remediations': remediations,
+            'total_issues': len(remediations),
+            'executive_summary': f'Found {len(matched_issues)} issue categories requiring remediation. ' +
+                (f'Critical priority: {sum(1 for r in remediations if r["severity"] == "critical")} items.' 
+                 if any(r['severity'] == 'critical' for r in remediations) else 'No critical issues found.')
+        })
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+
+@app.route('/api/v1/ai/report-summary', methods=['POST'])
+@require_organization
+def ai_report_summary():
+    """Generate executive AI summary for scan results"""
+    try:
+        user_id = get_jwt_identity()
+        user = User.query.get(user_id)
+        org = user.organization
+        
+        data = request.get_json()
+        scan_ids = data.get('scan_ids', [])
+        
+        if not scan_ids:
+            return jsonify({'error': 'scan_ids required'}), 400
+        
+        scans = Scan.query.filter(
+            Scan.id.in_(scan_ids),
+            Scan.organization_id == org.id,
+            Scan.status == 'completed'
+        ).all()
+        
+        if not scans:
+            return jsonify({'error': 'No completed scans found'}), 404
+        
+        # Aggregate findings
+        total_findings = 0
+        severity_totals = {'critical': 0, 'high': 0, 'medium': 0, 'low': 0, 'info': 0}
+        tools_used = set()
+        targets = set()
+        
+        for scan in scans:
+            tools_used.add(scan.tool_name)
+            targets.add(scan.target)
+            summary = scan.findings_summary
+            for sev in severity_totals:
+                severity_totals[sev] += summary.get(sev, 0)
+            total_findings += summary.get('total', 0)
+        
+        # Calculate risk score
+        risk_score = min(100, (
+            severity_totals['critical'] * 40 +
+            severity_totals['high'] * 25 +
+            severity_totals['medium'] * 10 +
+            severity_totals['low'] * 3
+        ))
+        
+        risk_level = 'Critical' if risk_score >= 80 else 'High' if risk_score >= 60 else 'Medium' if risk_score >= 30 else 'Low'
+        
+        # Generate natural language summary
+        summary_text = f"Security assessment of {len(targets)} target(s) using {len(tools_used)} tool(s) "
+        summary_text += f"({', '.join(tools_used)}). "
+        
+        if total_findings == 0:
+            summary_text += "No significant vulnerabilities were detected. The target(s) appear to be well-configured."
+        else:
+            summary_text += f"Identified {total_findings} finding(s): "
+            parts = []
+            if severity_totals['critical'] > 0:
+                parts.append(f"{severity_totals['critical']} critical")
+            if severity_totals['high'] > 0:
+                parts.append(f"{severity_totals['high']} high")
+            if severity_totals['medium'] > 0:
+                parts.append(f"{severity_totals['medium']} medium")
+            if severity_totals['low'] > 0:
+                parts.append(f"{severity_totals['low']} low")
+            summary_text += ', '.join(parts) + '. '
+            
+            if severity_totals['critical'] > 0:
+                summary_text += "IMMEDIATE ACTION REQUIRED: Critical vulnerabilities found that could lead to complete system compromise. "
+            elif severity_totals['high'] > 0:
+                summary_text += "HIGH PRIORITY: Significant vulnerabilities requiring prompt attention. "
+        
+        # Recommendations
+        recommendations = []
+        if severity_totals['critical'] > 0:
+            recommendations.append('Immediately patch critical vulnerabilities and review access controls')
+        if severity_totals['high'] > 0:
+            recommendations.append('Schedule high-priority fixes within 48 hours')
+        if severity_totals['medium'] > 0:
+            recommendations.append('Include medium findings in next sprint planning')
+        recommendations.append('Schedule follow-up scans after implementing fixes')
+        recommendations.append('Review security policies and update incident response plan')
+        
+        return jsonify({
+            'summary': summary_text,
+            'risk_score': risk_score,
+            'risk_level': risk_level,
+            'severity_breakdown': severity_totals,
+            'total_findings': total_findings,
+            'scans_analyzed': len(scans),
+            'tools_used': list(tools_used),
+            'targets': list(targets),
+            'recommendations': recommendations,
+            'generated_at': datetime.utcnow().isoformat()
+        })
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
 
 
 if __name__ == '__main__':
