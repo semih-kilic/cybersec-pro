@@ -160,12 +160,31 @@ def internal_error(error):
 
 # Initialize Flask-SocketIO for real-time WebSocket support
 try:
-    from websocket_events import init_socketio
+    from websocket_events import init_socketio, emit_activity, emit_agent_status, emit_notification
     socketio = init_socketio(app)
     print("✅ WebSocket (Flask-SocketIO) initialized")
 except ImportError as e:
     socketio = None
+    emit_activity = None
+    emit_agent_status = None
+    emit_notification = None
     print(f"⚠️ WebSocket not available: {e}")
+
+
+def _emit_scan_activity(scan, user, tool, action='started scan'):
+    """Helper to emit activity for scan events."""
+    try:
+        if emit_activity is None:
+            return
+        uname = f"{user.first_name} {user.last_name}" if user else "Unknown"
+        tname = tool.name if tool else "tool"
+        emit_activity(
+            scan.organization_id, uname, action,
+            details=f"{tname} on {scan.target}",
+            resource_type='scan', resource_id=scan.id
+        )
+    except Exception as e:
+        print(f"Activity emit error: {e}")
 
 # Initialize Scan Engine V3 (World-Class Edition)
 try:
@@ -3039,6 +3058,9 @@ def execute_scan_v2():
             db.session.commit()
             return jsonify(result), 400
         
+        # Emit activity: user started a scan
+        _emit_scan_activity(scan, user, Tool.query.get(tool_id), 'started scan')
+
         return jsonify({
             'success': True,
             'scan_id': scan_id,
@@ -4335,6 +4357,66 @@ def gdpr_delete_account():
         db.session.rollback()
         logger.error(f"GDPR deletion error: {e}")
         return jsonify({'error': str(e)}), 500
+
+
+# ================================
+# Activity Feed REST API
+# ================================
+
+@app.route('/api/v1/activity', methods=['GET'])
+@jwt_required()
+def get_activity_feed():
+    """Get recent activity feed for the user's organization"""
+    try:
+        user_id = get_jwt_identity()
+        user = User.query.get(user_id)
+        if not user or not user.organization_id:
+            return jsonify({'entries': []})
+
+        org_id = user.organization_id
+
+        # Combine: in-memory real-time + recent scans from DB
+        from websocket_events import _activity_feeds
+        realtime = _activity_feeds.get(org_id, [])[-50:]
+
+        # Also pull recent scans from DB to fill gaps
+        recent_scans = Scan.query.filter_by(organization_id=org_id)\
+            .order_by(Scan.created_at.desc()).limit(20).all()
+
+        db_entries = []
+        for s in recent_scans:
+            u = User.query.get(s.user_id)
+            t = Tool.query.get(s.tool_id)
+            uname = f"{u.first_name} {u.last_name}" if u else "Unknown"
+            tname = t.name if t else "tool"
+
+            action = 'started scan' if s.status == 'running' else \
+                     'completed scan' if s.status == 'completed' else \
+                     f'scan {s.status}'
+
+            db_entries.append({
+                'id': f"db-{s.id[:8]}",
+                'user_name': uname,
+                'action': action,
+                'details': f"{tname} on {s.target}",
+                'resource_type': 'scan',
+                'resource_id': s.id,
+                'timestamp': s.created_at.timestamp() if s.created_at else 0,
+            })
+
+        # Merge and deduplicate by resource_id, sorted by timestamp desc
+        seen = set()
+        combined = []
+        for entry in sorted(realtime + db_entries, key=lambda x: x.get('timestamp', 0), reverse=True):
+            rid = entry.get('resource_id', entry.get('id', ''))
+            if rid not in seen:
+                seen.add(rid)
+                combined.append(entry)
+
+        return jsonify({'entries': combined[:50]})
+
+    except Exception as e:
+        return jsonify({'entries': [], 'error': str(e)})
 
 
 if __name__ == '__main__':

@@ -1,19 +1,24 @@
 #!/usr/bin/env python3
 """
 🛡️ CyberSec Pro - WebSocket Events Handler
-Flask-SocketIO integration for real-time scan updates
+Flask-SocketIO integration for real-time scan updates,
+live notifications, and collaborative activity feed.
 
 Author: Semih Kılıç
-Version: 1.0.0 (FAZ 2)
+Version: 2.0.0 (GÖREV 3.3)
 
 Features:
 - Real-time scan progress updates
 - Live output streaming
 - Connection management with auto-reconnect support
-- Room-based event routing (per scan, per user)
+- Room-based event routing (per scan, per user, per org)
+- Agent status notifications
+- Collaborative activity feed
+- Heartbeat / ping-pong
 """
 
 import logging
+import time
 from functools import wraps
 from flask import request
 from flask_socketio import SocketIO, emit, join_room, leave_room, disconnect
@@ -22,6 +27,10 @@ logger = logging.getLogger('WebSocket')
 
 # SocketIO instance - initialized in init_socketio()
 socketio: SocketIO = None
+
+# In-memory activity feed (last 100 entries, per org)
+_activity_feeds: dict = {}  # org_id -> [activity_entry]
+ACTIVITY_FEED_LIMIT = 100
 
 
 def init_socketio(app, **kwargs):
@@ -176,9 +185,42 @@ def register_handlers(sio: SocketIO):
     @sio.on('ping', namespace='/scans')
     def handle_ping():
         """Respond to ping with pong"""
-        emit('pong', {'timestamp': __import__('time').time()})
-    
-    logger.info("WebSocket handlers registered")
+        emit('pong', {'timestamp': time.time()})
+
+    # ================================
+    # Organization Room (Collaborative)
+    # ================================
+
+    @sio.on('join_org', namespace='/scans')
+    def handle_join_org(data):
+        """Join organization room for activity feed"""
+        org_id = data.get('org_id')
+        if org_id:
+            room = f"org_{org_id}"
+            join_room(room)
+            logger.info(f"Client {request.sid} joined org room {room}")
+            emit('joined_org', {'org_id': org_id})
+
+    @sio.on('leave_org', namespace='/scans')
+    def handle_leave_org(data):
+        """Leave organization room"""
+        org_id = data.get('org_id')
+        if org_id:
+            leave_room(f"org_{org_id}")
+
+    @sio.on('get_activity_feed', namespace='/scans')
+    def handle_get_activity_feed(data):
+        """Return recent activity for the org"""
+        org_id = data.get('org_id')
+        if org_id and org_id in _activity_feeds:
+            emit('activity_feed', {
+                'org_id': org_id,
+                'entries': _activity_feeds[org_id][-50:]
+            })
+        else:
+            emit('activity_feed', {'org_id': org_id, 'entries': []})
+
+    logger.info("WebSocket handlers registered (v2.0 – notifications, activity)")
 
 
 # ================================
@@ -286,6 +328,105 @@ def broadcast_stats():
     stats = engine.get_stats()
     
     socketio.emit('engine_stats', stats, namespace='/scans')
+
+
+# ================================
+# Live Notification Emitters
+# ================================
+
+def emit_notification(title: str, body: str = '', notif_type: str = 'info',
+                      user_id: str = None, org_id: str = None):
+    """
+    Send a live notification to a user or entire org.
+
+    Args:
+        title: Notification title
+        body: Notification body text
+        notif_type: 'success' | 'warning' | 'error' | 'info'
+        user_id: Target specific user (optional)
+        org_id: Target entire org (optional)
+    """
+    if socketio is None:
+        return
+
+    payload = {
+        'title': title,
+        'body': body,
+        'type': notif_type,
+        'timestamp': time.time()
+    }
+
+    if user_id:
+        socketio.emit('notification', payload, namespace='/scans',
+                       room=f"user_{user_id}")
+    elif org_id:
+        socketio.emit('notification', payload, namespace='/scans',
+                       room=f"org_{org_id}")
+    else:
+        socketio.emit('notification', payload, namespace='/scans')
+
+
+def emit_agent_status(agent_id: str, agent_name: str, status: str,
+                      previous_status: str = None, org_id: str = None):
+    """
+    Notify about agent status change.
+    """
+    if socketio is None:
+        return
+
+    payload = {
+        'agent_id': agent_id,
+        'agent_name': agent_name,
+        'status': status,
+        'previous_status': previous_status,
+        'timestamp': time.time()
+    }
+
+    if org_id:
+        socketio.emit('agent_status', payload, namespace='/scans',
+                       room=f"org_{org_id}")
+    else:
+        socketio.emit('agent_status', payload, namespace='/scans')
+
+
+# ================================
+# Collaborative Activity Feed
+# ================================
+
+def emit_activity(org_id: str, user_name: str, action: str,
+                  details: str = '', resource_type: str = '',
+                  resource_id: str = ''):
+    """
+    Broadcast an activity entry to the org feed.
+
+    Example:
+        emit_activity('org-123', 'Admin', 'started scan',
+                       details='nmap on 8.8.8.8', resource_type='scan')
+    """
+    if socketio is None:
+        return
+
+    entry = {
+        'id': f"{int(time.time()*1000)}-{hash(user_name) % 10000:04d}",
+        'user_name': user_name,
+        'action': action,
+        'details': details,
+        'resource_type': resource_type,
+        'resource_id': resource_id,
+        'timestamp': time.time()
+    }
+
+    # Persist in memory
+    if org_id not in _activity_feeds:
+        _activity_feeds[org_id] = []
+    _activity_feeds[org_id].append(entry)
+    # Trim
+    if len(_activity_feeds[org_id]) > ACTIVITY_FEED_LIMIT:
+        _activity_feeds[org_id] = _activity_feeds[org_id][-ACTIVITY_FEED_LIMIT:]
+
+    # Broadcast to org room
+    socketio.emit('activity', entry, namespace='/scans', room=f"org_{org_id}")
+    logger.debug(f"Activity: {user_name} {action} – {details}")
 
 
 def get_socketio():

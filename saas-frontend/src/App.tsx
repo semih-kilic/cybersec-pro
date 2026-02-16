@@ -1,6 +1,6 @@
 import { BrowserRouter as Router, Routes, Route, Navigate, Outlet } from 'react-router-dom';
 import { HelmetProvider } from 'react-helmet-async';
-import { Suspense, lazy } from 'react';
+import { Suspense, lazy, useEffect } from 'react';
 import { QueryClientProvider } from '@tanstack/react-query';
 import { queryClient } from './lib/queryClient';
 import { OverviewSkeleton } from './components/ui/Skeleton';
@@ -22,6 +22,10 @@ import { ToastProvider } from './components/ui/Toast';
 import { ColorModeProvider } from './contexts/ColorModeContext';
 import { CommandPalette } from './components/ui/CommandPalette';
 import { useKeyboardShortcuts } from './hooks/useKeyboardShortcuts';
+
+// Real-time: WebSocket manager + browser notifications
+import { wsManager } from './lib/socketManager';
+import { useBrowserNotifications } from './hooks/useBrowserNotifications';
 
 // Pages
 import { LandingPage } from './pages/LandingPage';
@@ -114,6 +118,14 @@ function PublicRoute({ children }: { children: React.ReactNode }) {
 // Dashboard Layout with Sidebar
 function DashboardLayout() {
   const { isPaletteOpen, closePalette } = useKeyboardShortcuts();
+  const { requestPermission } = useBrowserNotifications();
+
+  // Connect WebSocket once when dashboard mounts
+  useEffect(() => {
+    wsManager.connect();
+    requestPermission();
+    return () => { /* keep connection alive across route changes */ };
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   return (
     <TargetProvider>

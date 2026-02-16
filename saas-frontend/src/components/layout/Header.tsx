@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useAuth } from '../../hooks/useAuth';
 import { useNavigate, Link } from 'react-router-dom';
+import { ConnectionStatus } from '../ui/ConnectionStatus';
 
 interface BreadcrumbItem {
   label: string;
@@ -52,6 +53,9 @@ export function Header({ title, subtitle, actions, breadcrumb }: HeaderProps) {
       {/* Right - Actions & User */}
       <div className="flex items-center gap-4">
         {actions}
+
+        {/* WebSocket Connection Status */}
+        <ConnectionStatus />
 
         {/* Quick Search - opens Command Palette */}
         <div className="relative hidden lg:block">

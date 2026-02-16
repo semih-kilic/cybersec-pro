@@ -7,6 +7,7 @@ import { OnboardingModal, QuickStartCards } from '../../components/onboarding';
 import WelcomeTour from '../../components/WelcomeTour';
 import { useDashboardData } from '../../hooks/useApiQueries';
 import { OverviewSkeleton } from '../../components/ui/Skeleton';
+import { ActivityFeed } from '../../components/dashboard/ActivityFeed';
 
 // Plan configurations - synced with backend database (143 total tools)
 const PLAN_CONFIG: Record<string, { tools: number; scansPerDay: number; features: string[] }> = {
@@ -651,6 +652,11 @@ export function OverviewPage() {
             </div>
           )}
         </div>
+      </div>
+
+      {/* Collaborative Activity Feed */}
+      <div className="mt-8">
+        <ActivityFeed maxItems={15} />
       </div>
     </div>
   );
