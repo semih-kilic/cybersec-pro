@@ -56,6 +56,7 @@ const BillingPage = lazy(() => import('./pages/dashboard/BillingPage'));
 const FeedbackPage = lazy(() => import('./pages/dashboard/FeedbackPage'));
 const AnalyticsPage = lazy(() => import('./pages/dashboard/AnalyticsPage'));
 const AIAssistantPage = lazy(() => import('./pages/dashboard/AIAssistantPage'));
+const PurpleTeamPage = lazy(() => import('./pages/dashboard/PurpleTeamPage'));
 
 // Legal/GDPR Pages (lazy loaded)
 const PrivacyPolicyPage = lazy(() => import('./pages/PrivacyPolicyPage'));
@@ -209,6 +210,7 @@ function AppRoutes() {
         <Route path="feedback" element={<FeedbackPage />} />
         <Route path="analytics" element={<AnalyticsPage />} />
         <Route path="ai" element={<AIAssistantPage />} />
+        <Route path="purple-team" element={<PurpleTeamPage />} />
       </Route>
       
       {/* Legacy dashboard route for backwards compatibility */}
