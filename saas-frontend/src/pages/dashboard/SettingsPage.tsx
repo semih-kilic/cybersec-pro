@@ -29,7 +29,7 @@ export default function SettingsPage() {
   
   // Get initial tab from URL params
   const tabParam = searchParams.get('tab');
-  const validTabs = ['profile', 'security', 'notifications', 'api', 'billing'] as const;
+  const validTabs = ['profile', 'security', 'notifications', 'api', 'sso', 'billing'] as const;
   const initialTab = validTabs.includes(tabParam as typeof validTabs[number]) ? tabParam as typeof validTabs[number] : 'profile';
   
   const [activeTab, setActiveTab] = useState<typeof validTabs[number]>(initialTab);
@@ -73,6 +73,123 @@ export default function SettingsPage() {
     timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
     language: 'en',
   });
+
+  // SSO state
+  const [ssoConfig, setSsoConfig] = useState<any>(null);
+  const [ssoLoading, setSsoLoading] = useState(false);
+  const [ssoTesting, setSsoTesting] = useState(false);
+  const [ssoTestResult, setSsoTestResult] = useState<{ success: boolean; message: string } | null>(null);
+  const [ssoProviderType, setSsoProviderType] = useState<'saml' | 'ldap' | 'oidc'>('saml');
+  const [ssoForm, setSsoForm] = useState<Record<string, any>>({});
+
+  // Fetch SSO config when tab is selected
+  useEffect(() => {
+    if (activeTab === 'sso') {
+      fetchSSOConfig();
+    }
+  }, [activeTab]);
+
+  const fetchSSOConfig = async () => {
+    try {
+      const res = await fetch('/api/v1/sso/config', {
+        headers: { 'Authorization': `Bearer ${(window as any).__auth_token || ''}` },
+      });
+      if (res.ok) {
+        const data = await res.json();
+        if (data.config) {
+          setSsoConfig(data.config);
+          setSsoProviderType(data.config.provider_type);
+          setSsoForm(data.config);
+        }
+      }
+    } catch (e) { /* ignore */ }
+  };
+
+  const handleSSOSave = async () => {
+    setSsoLoading(true);
+    setMessage(null);
+    try {
+      const res = await fetch('/api/v1/sso/config', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${(window as any).__auth_token || ''}`,
+        },
+        body: JSON.stringify({ provider_type: ssoProviderType, ...ssoForm }),
+      });
+      const data = await res.json();
+      if (res.ok && data.success) {
+        setSsoConfig(data.config);
+        setMessage({ type: 'success', text: data.message || 'SSO configuration saved' });
+      } else {
+        setMessage({ type: 'error', text: data.error || 'Failed to save SSO configuration' });
+      }
+    } catch (e) {
+      setMessage({ type: 'error', text: 'Network error saving SSO config' });
+    } finally {
+      setSsoLoading(false);
+    }
+  };
+
+  const handleSSOTest = async () => {
+    setSsoTesting(true);
+    setSsoTestResult(null);
+    try {
+      const res = await fetch('/api/v1/sso/test', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${(window as any).__auth_token || ''}`,
+        },
+      });
+      const data = await res.json();
+      setSsoTestResult({ success: data.success, message: data.message });
+    } catch (e) {
+      setSsoTestResult({ success: false, message: 'Network error testing connection' });
+    } finally {
+      setSsoTesting(false);
+    }
+  };
+
+  const handleSSOToggle = async () => {
+    try {
+      const res = await fetch('/api/v1/sso/toggle', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${(window as any).__auth_token || ''}`,
+        },
+        body: JSON.stringify({ enabled: !ssoConfig?.is_enabled }),
+      });
+      const data = await res.json();
+      if (res.ok && data.success) {
+        setSsoConfig((prev: any) => ({ ...prev, is_enabled: data.is_enabled }));
+        setMessage({ type: 'success', text: data.message });
+      } else {
+        setMessage({ type: 'error', text: data.error || 'Failed to toggle SSO' });
+      }
+    } catch (e) {
+      setMessage({ type: 'error', text: 'Network error' });
+    }
+  };
+
+  const handleSSODelete = async () => {
+    if (!confirm('Are you sure you want to delete the SSO configuration? Users will need to use email/password login.')) return;
+    try {
+      const res = await fetch('/api/v1/sso/config', {
+        method: 'DELETE',
+        headers: { 'Authorization': `Bearer ${(window as any).__auth_token || ''}` },
+      });
+      const data = await res.json();
+      if (res.ok && data.success) {
+        setSsoConfig(null);
+        setSsoForm({});
+        setMessage({ type: 'success', text: 'SSO configuration deleted' });
+      }
+    } catch (e) {
+      setMessage({ type: 'error', text: 'Failed to delete SSO config' });
+    }
+  };
 
   useEffect(() => {
     if (user) {
@@ -283,6 +400,7 @@ export default function SettingsPage() {
     { id: 'security', label: 'Security', icon: '🔐' },
     { id: 'notifications', label: 'Notifications', icon: '🔔' },
     { id: 'api', label: 'API Keys', icon: '🔑' },
+    { id: 'sso', label: 'SSO', icon: '🏢' },
     { id: 'billing', label: 'Billing', icon: '💳' },
   ] as const;
 

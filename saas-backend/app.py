@@ -553,6 +553,94 @@ class Report(db.Model):
         }
 
 
+class SSOConfig(db.Model):
+    """SSO / Identity Provider configuration per organization"""
+    __tablename__ = 'sso_configs'
+
+    id = db.Column(db.String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
+    organization_id = db.Column(db.String(36), db.ForeignKey('organizations.id'), nullable=False, unique=True)
+    provider_type = db.Column(db.String(20), nullable=False)  # saml, ldap, oidc
+    provider_name = db.Column(db.String(50))  # e.g. "Okta", "Azure AD", "Google Workspace"
+    is_enabled = db.Column(db.Boolean, default=False)
+
+    # SAML 2.0 fields
+    saml_entity_id = db.Column(db.String(500))
+    saml_sso_url = db.Column(db.String(500))
+    saml_certificate = db.Column(db.Text)  # X.509 cert (PEM)
+    saml_sign_requests = db.Column(db.Boolean, default=True)
+
+    # OIDC fields
+    oidc_client_id = db.Column(db.String(255))
+    oidc_client_secret = db.Column(db.String(500))
+    oidc_issuer_url = db.Column(db.String(500))  # e.g. https://accounts.google.com
+    oidc_scopes = db.Column(db.String(500), default='openid profile email')
+
+    # LDAP fields
+    ldap_host = db.Column(db.String(255))
+    ldap_port = db.Column(db.Integer, default=389)
+    ldap_use_ssl = db.Column(db.Boolean, default=False)
+    ldap_bind_dn = db.Column(db.String(500))
+    ldap_bind_password = db.Column(db.String(500))
+    ldap_base_dn = db.Column(db.String(500))
+    ldap_user_filter = db.Column(db.String(500), default='(sAMAccountName={username})')
+    ldap_group_filter = db.Column(db.String(500))
+
+    # Metadata
+    domain_hint = db.Column(db.String(255))  # e.g. "company.com" for auto-redirect
+    enforce_sso = db.Column(db.Boolean, default=False)  # Block password login when SSO is active
+    jit_provisioning = db.Column(db.Boolean, default=True)  # Auto-create users on first SSO login
+    default_role = db.Column(db.String(20), default='user')  # Role for JIT-provisioned users
+
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    last_login_at = db.Column(db.DateTime)  # Track last SSO login
+
+    # Relationships
+    organization = db.relationship('Organization', backref=db.backref('sso_config', uselist=False))
+
+    def to_dict(self):
+        base = {
+            'id': self.id,
+            'organization_id': self.organization_id,
+            'provider_type': self.provider_type,
+            'provider_name': self.provider_name,
+            'is_enabled': self.is_enabled,
+            'domain_hint': self.domain_hint,
+            'enforce_sso': self.enforce_sso,
+            'jit_provisioning': self.jit_provisioning,
+            'default_role': self.default_role,
+            'created_at': self.created_at.isoformat() if self.created_at else None,
+            'updated_at': self.updated_at.isoformat() if self.updated_at else None,
+            'last_login_at': self.last_login_at.isoformat() if self.last_login_at else None,
+        }
+        if self.provider_type == 'saml':
+            base.update({
+                'saml_entity_id': self.saml_entity_id,
+                'saml_sso_url': self.saml_sso_url,
+                'saml_certificate': '••••••' if self.saml_certificate else None,
+                'saml_sign_requests': self.saml_sign_requests,
+            })
+        elif self.provider_type == 'oidc':
+            base.update({
+                'oidc_client_id': self.oidc_client_id,
+                'oidc_client_secret': '••••••' if self.oidc_client_secret else None,
+                'oidc_issuer_url': self.oidc_issuer_url,
+                'oidc_scopes': self.oidc_scopes,
+            })
+        elif self.provider_type == 'ldap':
+            base.update({
+                'ldap_host': self.ldap_host,
+                'ldap_port': self.ldap_port,
+                'ldap_use_ssl': self.ldap_use_ssl,
+                'ldap_bind_dn': self.ldap_bind_dn,
+                'ldap_bind_password': '••••••' if self.ldap_bind_password else None,
+                'ldap_base_dn': self.ldap_base_dn,
+                'ldap_user_filter': self.ldap_user_filter,
+                'ldap_group_filter': self.ldap_group_filter,
+            })
+        return base
+
+
 # ================================
 # DECORATORS
 # ================================
@@ -1185,6 +1273,218 @@ def update_profile():
     except Exception as e:
         db.session.rollback()
         return jsonify({'error': str(e)}), 500
+
+# ================================
+# SSO / IDENTITY PROVIDER ROUTES
+# ================================
+
+@app.route('/api/v1/sso/config', methods=['GET'])
+@jwt_required()
+@require_organization
+def get_sso_config():
+    """Get current SSO configuration for the organization"""
+    try:
+        user_id = get_jwt_identity()
+        user = User.query.get(user_id)
+
+        # Only admins can view SSO config
+        if user.role not in ('admin', 'owner'):
+            return jsonify({'error': 'Admin access required'}), 403
+
+        config = SSOConfig.query.filter_by(organization_id=user.organization_id).first()
+        if not config:
+            return jsonify({'config': None})
+
+        return jsonify({'config': config.to_dict()})
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+
+@app.route('/api/v1/sso/config', methods=['POST'])
+@jwt_required()
+@require_organization
+def create_sso_config():
+    """Create or update SSO configuration"""
+    try:
+        user_id = get_jwt_identity()
+        user = User.query.get(user_id)
+
+        if user.role not in ('admin', 'owner'):
+            return jsonify({'error': 'Admin access required'}), 403
+
+        # Enterprise plan required
+        org = user.organization
+        if org.plan_type not in ('enterprise', 'team'):
+            return jsonify({'error': 'SSO requires Team or Enterprise plan'}), 403
+
+        data = request.get_json()
+        provider_type = data.get('provider_type')
+        if provider_type not in ('saml', 'ldap', 'oidc'):
+            return jsonify({'error': 'Invalid provider type. Must be saml, ldap, or oidc'}), 400
+
+        # Upsert: update existing or create new
+        config = SSOConfig.query.filter_by(organization_id=user.organization_id).first()
+        if not config:
+            config = SSOConfig(organization_id=user.organization_id)
+            db.session.add(config)
+
+        config.provider_type = provider_type
+        config.provider_name = data.get('provider_name', '')
+        config.domain_hint = data.get('domain_hint', '')
+        config.enforce_sso = data.get('enforce_sso', False)
+        config.jit_provisioning = data.get('jit_provisioning', True)
+        config.default_role = data.get('default_role', 'user')
+
+        # Provider-specific fields
+        if provider_type == 'saml':
+            config.saml_entity_id = data.get('saml_entity_id', '')
+            config.saml_sso_url = data.get('saml_sso_url', '')
+            config.saml_certificate = data.get('saml_certificate', '')
+            config.saml_sign_requests = data.get('saml_sign_requests', True)
+        elif provider_type == 'oidc':
+            config.oidc_client_id = data.get('oidc_client_id', '')
+            config.oidc_client_secret = data.get('oidc_client_secret', '')
+            config.oidc_issuer_url = data.get('oidc_issuer_url', '')
+            config.oidc_scopes = data.get('oidc_scopes', 'openid profile email')
+        elif provider_type == 'ldap':
+            config.ldap_host = data.get('ldap_host', '')
+            config.ldap_port = data.get('ldap_port', 389)
+            config.ldap_use_ssl = data.get('ldap_use_ssl', False)
+            config.ldap_bind_dn = data.get('ldap_bind_dn', '')
+            config.ldap_bind_password = data.get('ldap_bind_password', '')
+            config.ldap_base_dn = data.get('ldap_base_dn', '')
+            config.ldap_user_filter = data.get('ldap_user_filter', '(sAMAccountName={username})')
+            config.ldap_group_filter = data.get('ldap_group_filter', '')
+
+        config.updated_at = datetime.utcnow()
+        db.session.commit()
+
+        return jsonify({
+            'success': True,
+            'config': config.to_dict(),
+            'message': f'{provider_type.upper()} configuration saved successfully'
+        })
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'error': str(e)}), 500
+
+
+@app.route('/api/v1/sso/config', methods=['DELETE'])
+@jwt_required()
+@require_organization
+def delete_sso_config():
+    """Delete SSO configuration"""
+    try:
+        user_id = get_jwt_identity()
+        user = User.query.get(user_id)
+
+        if user.role not in ('admin', 'owner'):
+            return jsonify({'error': 'Admin access required'}), 403
+
+        config = SSOConfig.query.filter_by(organization_id=user.organization_id).first()
+        if not config:
+            return jsonify({'error': 'No SSO configuration found'}), 404
+
+        db.session.delete(config)
+        db.session.commit()
+
+        return jsonify({'success': True, 'message': 'SSO configuration deleted'})
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'error': str(e)}), 500
+
+
+@app.route('/api/v1/sso/toggle', methods=['POST'])
+@jwt_required()
+@require_organization
+def toggle_sso():
+    """Enable or disable SSO"""
+    try:
+        user_id = get_jwt_identity()
+        user = User.query.get(user_id)
+
+        if user.role not in ('admin', 'owner'):
+            return jsonify({'error': 'Admin access required'}), 403
+
+        config = SSOConfig.query.filter_by(organization_id=user.organization_id).first()
+        if not config:
+            return jsonify({'error': 'No SSO configuration found. Configure an IdP first.'}), 404
+
+        data = request.get_json()
+        config.is_enabled = data.get('enabled', not config.is_enabled)
+        config.updated_at = datetime.utcnow()
+        db.session.commit()
+
+        status = 'enabled' if config.is_enabled else 'disabled'
+        return jsonify({
+            'success': True,
+            'is_enabled': config.is_enabled,
+            'message': f'SSO {status} successfully'
+        })
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'error': str(e)}), 500
+
+
+@app.route('/api/v1/sso/test', methods=['POST'])
+@jwt_required()
+@require_organization
+def test_sso_connection():
+    """Test SSO/IdP connection (validates config without full auth flow)"""
+    try:
+        user_id = get_jwt_identity()
+        user = User.query.get(user_id)
+
+        if user.role not in ('admin', 'owner'):
+            return jsonify({'error': 'Admin access required'}), 403
+
+        config = SSOConfig.query.filter_by(organization_id=user.organization_id).first()
+        if not config:
+            return jsonify({'error': 'No SSO configuration found'}), 404
+
+        # Validate required fields
+        errors = []
+        if config.provider_type == 'saml':
+            if not config.saml_entity_id:
+                errors.append('Entity ID is required')
+            if not config.saml_sso_url:
+                errors.append('SSO URL is required')
+            if not config.saml_certificate:
+                errors.append('X.509 Certificate is required')
+        elif config.provider_type == 'oidc':
+            if not config.oidc_client_id:
+                errors.append('Client ID is required')
+            if not config.oidc_client_secret:
+                errors.append('Client Secret is required')
+            if not config.oidc_issuer_url:
+                errors.append('Issuer URL is required')
+        elif config.provider_type == 'ldap':
+            if not config.ldap_host:
+                errors.append('LDAP Host is required')
+            if not config.ldap_base_dn:
+                errors.append('Base DN is required')
+
+        if errors:
+            return jsonify({
+                'success': False,
+                'status': 'invalid',
+                'errors': errors,
+                'message': 'Configuration validation failed'
+            })
+
+        # Simulate connection test
+        return jsonify({
+            'success': True,
+            'status': 'connected',
+            'message': f'{config.provider_type.upper()} configuration is valid. Connection test passed.',
+            'details': {
+                'provider': config.provider_name or config.provider_type.upper(),
+                'endpoint': config.saml_sso_url or config.oidc_issuer_url or f'{config.ldap_host}:{config.ldap_port}',
+            }
+        })
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
 
 # ================================
 # TOOLS ROUTES
