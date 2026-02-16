@@ -1003,15 +1003,362 @@ class ReportGenerator:
         
         return output.getvalue()
     
+    def generate_pdf_html(self) -> str:
+        """Generate print-optimized HTML for PDF conversion via WeasyPrint"""
+        severity_colors = {
+            'Critical': '#dc2626',
+            'High': '#ea580c',
+            'Medium': '#ca8a04',
+            'Low': '#16a34a',
+            'Info': '#2563eb'
+        }
+        severity_data = self.summary['severity_breakdown']
+        compliance = self._get_compliance_summary()
+        recommendations = self._get_recommendations()
+
+        # Determine focused framework for compliance templates
+        focused_framework = None
+        if self.template == 'owasp':
+            focused_framework = 'OWASP Top 10'
+        elif self.template == 'pci-dss':
+            focused_framework = 'PCI-DSS 4.0'
+        elif self.template == 'iso27001':
+            focused_framework = 'ISO 27001 Annex A'
+
+        # Build risk matrix data
+        risk_matrix = self._build_risk_matrix()
+
+        # Build compliance detail rows
+        compliance_rows = ''
+        target_frameworks = {focused_framework: compliance.get(focused_framework, {})} if focused_framework and focused_framework in compliance else compliance
+        if not target_frameworks or all(not v for v in target_frameworks.values()):
+            # Show all frameworks with all controls if no findings mapped
+            for fw_name in (([focused_framework] if focused_framework else list(COMPLIANCE_MAPPINGS.keys()))):
+                if fw_name in COMPLIANCE_MAPPINGS:
+                    for control in COMPLIANCE_MAPPINGS[fw_name]:
+                        count = compliance.get(fw_name, {}).get(control, 0)
+                        status_badge = f'<span style="color:#16a34a;font-weight:600;">✓ Pass</span>' if count == 0 else f'<span style="color:#dc2626;font-weight:600;">✗ {count} Issue{"s" if count > 1 else ""}</span>'
+                        compliance_rows += f'<tr><td>{fw_name}</td><td>{control}</td><td>{count}</td><td>{status_badge}</td></tr>'
+        else:
+            for fw_name, controls in target_frameworks.items():
+                all_controls = COMPLIANCE_MAPPINGS.get(fw_name, {})
+                for control in all_controls:
+                    count = controls.get(control, 0)
+                    status_badge = f'<span style="color:#16a34a;font-weight:600;">✓ Pass</span>' if count == 0 else f'<span style="color:#dc2626;font-weight:600;">✗ {count} Issue{"s" if count > 1 else ""}</span>'
+                    compliance_rows += f'<tr><td>{fw_name}</td><td>{control}</td><td style="text-align:center;">{count}</td><td>{status_badge}</td></tr>'
+
+        # Template-specific title
+        template_titles = {
+            'owasp': 'OWASP Top 10 Compliance Report',
+            'pci-dss': 'PCI-DSS Requirement 11 – Vulnerability Scanning Report',
+            'iso27001': 'ISO 27001 Annex A – Technical Controls Report',
+            'executive': 'Executive Security Assessment',
+            'technical': 'Technical Vulnerability Report',
+            'compliance': 'Multi-Framework Compliance Report',
+            'full': 'Comprehensive Security Assessment Report'
+        }
+        report_title = template_titles.get(self.template, 'Security Assessment Report')
+
+        # Build findings rows
+        findings_rows = ''
+        sorted_findings = sorted(self.findings, key=lambda x: ['Critical', 'High', 'Medium', 'Low', 'Info'].index(x.severity))
+        for f in sorted_findings[:100]:
+            sev_color = severity_colors.get(f.severity, '#888')
+            findings_rows += f'''<tr>
+                <td style="font-family:monospace;font-size:0.75rem;">{f.id}</td>
+                <td><span style="background:{sev_color}22;color:{sev_color};padding:2px 8px;border-radius:10px;font-size:0.75rem;font-weight:600;">{f.severity}</span></td>
+                <td>{f.title[:80]}</td>
+                <td>{f.source_tool}</td>
+                <td style="text-align:center;">{f.cvss_score}</td>
+                <td style="font-size:0.75rem;">{f.remediation[:100]}</td>
+            </tr>'''
+
+        # Risk matrix HTML
+        risk_matrix_html = self._generate_risk_matrix_html(risk_matrix)
+
+        html = f'''<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>{report_title}</title>
+<style>
+  @page {{
+    size: A4;
+    margin: 20mm 15mm;
+    @top-right {{ content: "CyberSec Pro – Confidential"; font-size: 8pt; color: #888; }}
+    @bottom-center {{ content: "Page " counter(page) " of " counter(pages); font-size: 8pt; color: #888; }}
+  }}
+  * {{ margin: 0; padding: 0; box-sizing: border-box; }}
+  body {{ font-family: 'Helvetica Neue', Arial, sans-serif; font-size: 10pt; color: #1a1a2e; line-height: 1.5; }}
+
+  /* Cover / Header */
+  .cover {{ 
+    background: linear-gradient(135deg, #0a0a12 0%, #1a1a2e 50%, #0d1b2a 100%);
+    color: white; padding: 50px 40px; margin: -20mm -15mm 30px -15mm;
+    page-break-after: always;
+    min-height: 250mm;
+    display: flex; flex-direction: column; justify-content: center;
+  }}
+  .cover .logo {{ font-size: 42pt; font-weight: 800; color: #367bf0; margin-bottom: 10px; letter-spacing: -1px; }}
+  .cover .logo-sub {{ font-size: 14pt; color: #8b9dc3; margin-bottom: 40px; }}
+  .cover h1 {{ font-size: 28pt; margin-bottom: 15px; color: #fff; }}
+  .cover .meta-line {{ font-size: 11pt; color: #8b9dc3; margin: 5px 0; }}
+  .cover .risk-pill {{
+    display: inline-block; margin-top: 30px; padding: 12px 30px;
+    border-radius: 50px; font-weight: 700; font-size: 16pt;
+  }}
+  .risk-critical {{ background: #dc262633; color: #dc2626; border: 2px solid #dc2626; }}
+  .risk-high {{ background: #ea580c33; color: #ea580c; border: 2px solid #ea580c; }}
+  .risk-medium {{ background: #ca8a0433; color: #ca8a04; border: 2px solid #ca8a04; }}
+  .risk-low {{ background: #16a34a33; color: #16a34a; border: 2px solid #16a34a; }}
+  .risk-none {{ background: #2563eb33; color: #2563eb; border: 2px solid #2563eb; }}
+  .cover .confidential {{ 
+    margin-top: auto; padding-top: 40px; border-top: 1px solid #2a2a4e;
+    font-size: 9pt; color: #555; 
+  }}
+
+  /* Section Headers */
+  h2 {{ font-size: 16pt; color: #367bf0; margin: 25px 0 15px; padding-bottom: 8px; border-bottom: 2px solid #367bf0; }}
+  h3 {{ font-size: 12pt; color: #1a1a2e; margin: 15px 0 10px; }}
+
+  /* Summary Stats */
+  .stats-row {{ display: flex; gap: 15px; margin-bottom: 20px; flex-wrap: wrap; }}
+  .stat-box {{ 
+    flex: 1; min-width: 100px; background: #f0f4ff; border-radius: 8px;
+    padding: 15px; text-align: center; border: 1px solid #d0d8f0;
+  }}
+  .stat-box .num {{ font-size: 24pt; font-weight: 700; color: #367bf0; }}
+  .stat-box .lbl {{ font-size: 8pt; color: #555; text-transform: uppercase; letter-spacing: 0.5px; }}
+
+  .severity-row {{ display: flex; gap: 10px; margin-bottom: 20px; }}
+  .sev-box {{ flex: 1; text-align: center; padding: 12px 8px; border-radius: 8px; background: #fafafa; border: 1px solid #eee; }}
+  .sev-box .num {{ font-size: 20pt; font-weight: 700; }}
+  .sev-box .lbl {{ font-size: 8pt; text-transform: uppercase; }}
+
+  /* Tables */
+  table {{ width: 100%; border-collapse: collapse; margin-bottom: 20px; font-size: 9pt; }}
+  th {{ background: #1a1a2e; color: white; padding: 8px 10px; text-align: left; font-weight: 600; font-size: 8pt; text-transform: uppercase; }}
+  td {{ padding: 7px 10px; border-bottom: 1px solid #eee; vertical-align: top; }}
+  tr:nth-child(even) {{ background: #f8f9fc; }}
+
+  /* Risk Matrix */
+  .risk-matrix {{ margin: 20px 0; }}
+  .risk-matrix table {{ border: 1px solid #ccc; }}
+  .risk-matrix th, .risk-matrix td {{ text-align: center; padding: 10px; border: 1px solid #ddd; font-size: 9pt; }}
+  .rm-critical {{ background: #dc262622; color: #dc2626; font-weight: 700; }}
+  .rm-high {{ background: #ea580c22; color: #ea580c; font-weight: 700; }}
+  .rm-medium {{ background: #ca8a0422; color: #ca8a04; font-weight: 700; }}
+  .rm-low {{ background: #16a34a22; color: #16a34a; font-weight: 700; }}
+  .rm-none {{ background: #f0f0f0; color: #888; }}
+
+  /* Recommendations */
+  .rec-card {{ background: #f8f9fc; border-left: 4px solid #367bf0; padding: 12px 15px; margin-bottom: 12px; border-radius: 0 8px 8px 0; }}
+  .rec-card.immediate {{ border-left-color: #dc2626; }}
+  .rec-card.high {{ border-left-color: #ea580c; }}
+  .rec-card.medium {{ border-left-color: #ca8a04; }}
+  .rec-card h4 {{ font-size: 10pt; margin-bottom: 5px; }}
+  .rec-card p {{ font-size: 9pt; color: #555; }}
+
+  /* Compliance Status */
+  .compliance-summary {{ margin: 15px 0; }}
+  .fw-badge {{ display: inline-block; padding: 4px 12px; border-radius: 15px; font-size: 8pt; font-weight: 600; margin: 3px; }}
+
+  .page-break {{ page-break-before: always; }}
+  .footer-note {{ font-size: 8pt; color: #888; text-align: center; margin-top: 30px; padding-top: 15px; border-top: 1px solid #eee; }}
+</style>
+</head>
+<body>
+
+<!-- COVER PAGE -->
+<div class="cover">
+  <div class="logo">🔐 CyberSec Pro</div>
+  <div class="logo-sub">Professional Security Assessment Platform</div>
+  <h1>{report_title}</h1>
+  <div class="meta-line">📅 Report Date: {self.generated_at.strftime("%B %d, %Y")}</div>
+  <div class="meta-line">🎯 Targets: {', '.join(self.summary['targets_scanned'][:5])}</div>
+  <div class="meta-line">🛠️ Tools Used: {', '.join(self.summary['tools_used'])}</div>
+  <div class="meta-line">📊 Total Findings: {self.summary['total_findings']}</div>
+  <div class="risk-pill risk-{self.summary['risk_level'].lower()}">
+    Risk Score: {self.summary['risk_score']}/100 — {self.summary['risk_level']}
+  </div>
+  <div class="confidential">
+    CONFIDENTIAL — This report contains sensitive security assessment data.<br>
+    Distribution should be limited to authorized personnel only.<br>
+    Generated by CyberSec Pro © {datetime.now().year}
+  </div>
+</div>
+
+<!-- EXECUTIVE SUMMARY -->
+<h2>1. Executive Summary</h2>
+<p style="margin-bottom:15px;">
+  This security assessment report presents the findings from <strong>{len(self.scans)} security scan(s)</strong> 
+  performed across <strong>{len(self.summary['targets_scanned'])} target(s)</strong>. 
+  A total of <strong>{self.summary['total_findings']} vulnerabilities</strong> were identified, 
+  with an overall risk score of <strong>{self.summary['risk_score']}/100 ({self.summary['risk_level']})</strong>.
+</p>
+
+<div class="stats-row">
+  <div class="stat-box"><div class="num">{self.summary['total_findings']}</div><div class="lbl">Total Findings</div></div>
+  <div class="stat-box"><div class="num">{len(self.scans)}</div><div class="lbl">Scans Completed</div></div>
+  <div class="stat-box"><div class="num">{len(self.summary['targets_scanned'])}</div><div class="lbl">Targets Scanned</div></div>
+  <div class="stat-box"><div class="num">{self.summary['risk_score']}</div><div class="lbl">Risk Score</div></div>
+</div>
+
+<h3>Severity Breakdown</h3>
+<div class="severity-row">
+  <div class="sev-box"><div class="num" style="color:{severity_colors['Critical']};">{severity_data.get('Critical', 0)}</div><div class="lbl" style="color:{severity_colors['Critical']};">Critical</div></div>
+  <div class="sev-box"><div class="num" style="color:{severity_colors['High']};">{severity_data.get('High', 0)}</div><div class="lbl" style="color:{severity_colors['High']};">High</div></div>
+  <div class="sev-box"><div class="num" style="color:{severity_colors['Medium']};">{severity_data.get('Medium', 0)}</div><div class="lbl" style="color:{severity_colors['Medium']};">Medium</div></div>
+  <div class="sev-box"><div class="num" style="color:{severity_colors['Low']};">{severity_data.get('Low', 0)}</div><div class="lbl" style="color:{severity_colors['Low']};">Low</div></div>
+  <div class="sev-box"><div class="num" style="color:{severity_colors['Info']};">{severity_data.get('Info', 0)}</div><div class="lbl" style="color:{severity_colors['Info']};">Informational</div></div>
+</div>
+
+<!-- RISK MATRIX -->
+<h2>2. Risk Matrix</h2>
+<p style="margin-bottom:10px;">The following matrix maps identified vulnerabilities by impact severity and estimated likelihood:</p>
+{risk_matrix_html}
+
+<!-- VULNERABILITY FINDINGS -->
+<div class="page-break"></div>
+<h2>3. Vulnerability Findings</h2>
+<p style="margin-bottom:10px;">Showing {min(len(self.findings), 100)} of {len(self.findings)} findings, sorted by severity:</p>
+<table>
+  <thead>
+    <tr><th>ID</th><th>Severity</th><th>Title</th><th>Tool</th><th>CVSS</th><th>Remediation</th></tr>
+  </thead>
+  <tbody>
+    {findings_rows}
+  </tbody>
+</table>
+
+<!-- COMPLIANCE MAPPING -->
+<div class="page-break"></div>
+<h2>4. Compliance Mapping{' — ' + focused_framework if focused_framework else ''}</h2>
+<p style="margin-bottom:10px;">
+  {'This section maps all findings to the <strong>' + focused_framework + '</strong> framework controls.' if focused_framework else 'This section maps findings across all applicable compliance frameworks.'}
+</p>
+<table>
+  <thead>
+    <tr><th>Framework</th><th>Control</th><th>Findings</th><th>Status</th></tr>
+  </thead>
+  <tbody>
+    {compliance_rows}
+  </tbody>
+</table>
+
+<!-- RECOMMENDATIONS -->
+<h2>5. Recommendations</h2>
+{''.join(f'<div class="rec-card {rec["priority"].lower()}"><h4>{rec["priority"]}: {rec["title"]}</h4><p>{rec["description"]}</p></div>' for rec in recommendations)}
+
+<!-- SCAN DETAILS -->
+<h2>6. Scan Details</h2>
+<table>
+  <thead><tr><th>Tool</th><th>Target</th><th>Status</th><th>Completed</th></tr></thead>
+  <tbody>
+    {''.join(f"<tr><td>{s.get('tool_name', 'Unknown')}</td><td>{s.get('target', 'N/A')}</td><td>{s.get('status', 'N/A')}</td><td>{s.get('completed_at', 'N/A')}</td></tr>" for s in self.scans)}
+  </tbody>
+</table>
+
+<div class="footer-note">
+  Generated by CyberSec Pro — Professional Security Assessment Platform<br>
+  © {datetime.now().year} CyberSec Pro. All rights reserved. | CONFIDENTIAL
+</div>
+
+</body>
+</html>'''
+        return html
+
+    def _build_risk_matrix(self) -> Dict[str, Dict[str, int]]:
+        """Build risk matrix: severity x likelihood"""
+        matrix = {}
+        likelihoods = ['Very Likely', 'Likely', 'Possible', 'Unlikely']
+        severities = ['Critical', 'High', 'Medium', 'Low']
+        
+        for sev in severities:
+            matrix[sev] = {lik: 0 for lik in likelihoods}
+        
+        for finding in self.findings:
+            sev = finding.severity
+            if sev == 'Info':
+                continue
+            # Estimate likelihood based on vulnerability type
+            text = f"{finding.title} {finding.description}".lower()
+            if any(kw in text for kw in ['exploit', 'rce', 'injection', 'backdoor', 'vulnerable']):
+                likelihood = 'Very Likely'
+            elif any(kw in text for kw in ['cve', 'xss', 'sql', 'outdated', 'default']):
+                likelihood = 'Likely'
+            elif any(kw in text for kw in ['open', 'exposed', 'misconfiguration', 'directory']):
+                likelihood = 'Possible'
+            else:
+                likelihood = 'Unlikely'
+            
+            if sev in matrix:
+                matrix[sev][likelihood] += 1
+        
+        return matrix
+
+    def _generate_risk_matrix_html(self, matrix: Dict) -> str:
+        """Generate risk matrix HTML table"""
+        likelihoods = ['Very Likely', 'Likely', 'Possible', 'Unlikely']
+        severities = ['Critical', 'High', 'Medium', 'Low']
+        
+        # Risk level mapping for cells
+        risk_levels = {
+            ('Critical', 'Very Likely'): 'critical', ('Critical', 'Likely'): 'critical',
+            ('Critical', 'Possible'): 'high', ('Critical', 'Unlikely'): 'high',
+            ('High', 'Very Likely'): 'critical', ('High', 'Likely'): 'high',
+            ('High', 'Possible'): 'high', ('High', 'Unlikely'): 'medium',
+            ('Medium', 'Very Likely'): 'high', ('Medium', 'Likely'): 'medium',
+            ('Medium', 'Possible'): 'medium', ('Medium', 'Unlikely'): 'low',
+            ('Low', 'Very Likely'): 'medium', ('Low', 'Likely'): 'low',
+            ('Low', 'Possible'): 'low', ('Low', 'Unlikely'): 'low',
+        }
+        
+        html = '<div class="risk-matrix"><table>'
+        html += '<tr><th style="background:#2a2a4e;">Impact ↓ / Likelihood →</th>'
+        for lik in likelihoods:
+            html += f'<th>{lik}</th>'
+        html += '</tr>'
+        
+        for sev in severities:
+            html += f'<tr><th style="text-align:left;">{sev}</th>'
+            for lik in likelihoods:
+                count = matrix.get(sev, {}).get(lik, 0)
+                level = risk_levels.get((sev, lik), 'none')
+                cell_class = f'rm-{level}' if count > 0 else 'rm-none'
+                html += f'<td class="{cell_class}">{count if count else "—"}</td>'
+            html += '</tr>'
+        
+        html += '</table></div>'
+        return html
+
+    def generate_pdf(self) -> bytes:
+        """Generate PDF report using WeasyPrint"""
+        try:
+            from weasyprint import HTML
+            pdf_html = self.generate_pdf_html()
+            pdf_bytes = HTML(string=pdf_html).write_pdf()
+            return pdf_bytes
+        except ImportError:
+            # Fallback: return HTML content as bytes
+            return self.generate_pdf_html().encode('utf-8')
+        except Exception as e:
+            # If WeasyPrint fails, return HTML as fallback
+            print(f"PDF generation error: {e}")
+            return self.generate_pdf_html().encode('utf-8')
+
     def generate(self, format: str = 'html') -> str:
         """Generate report in specified format"""
+        if format.lower() == 'pdf':
+            # PDF returns bytes, handled specially
+            return '__PDF__'
+        
         generators = {
             'json': self.generate_json,
             'html': self.generate_html,
             'markdown': self.generate_markdown,
             'md': self.generate_markdown,
             'csv': self.generate_csv,
-            'pdf': self.generate_html  # PDF is rendered from HTML
         }
         
         generator = generators.get(format.lower(), self.generate_html)
@@ -1020,10 +1367,11 @@ class ReportGenerator:
 
 # Utility function for Flask integration
 def generate_report_from_scans(scans: List, report_name: str, template: str, 
-                               output_format: str, sections: List[str] = None) -> str:
+                               output_format: str, sections: List[str] = None):
     """
     Generate a report from scan objects.
     This is the main function to be called from Flask routes.
+    Returns str for text formats, bytes for PDF.
     """
     # Convert SQLAlchemy objects to dicts
     scan_dicts = []
@@ -1039,4 +1387,8 @@ def generate_report_from_scans(scans: List, report_name: str, template: str,
         scan_dicts.append(scan_dict)
     
     generator = ReportGenerator(scan_dicts, report_name, template)
+    
+    if output_format.lower() == 'pdf':
+        return generator.generate_pdf()
+    
     return generator.generate(output_format)

@@ -2895,6 +2895,9 @@ def create_report():
         # Generate professional report using the new generator
         report_content = generate_report_from_scans(scans, report_name, template, report_format, sections)
         
+        # Handle PDF binary response
+        is_pdf = isinstance(report_content, bytes)
+        
         # Parse summary from generator if JSON
         summary = {'critical': 0, 'high': 0, 'medium': 0, 'low': 0, 'info': 0}
         risk_score = 0
@@ -2909,6 +2912,23 @@ def create_report():
                 risk_score = report_data.get('executive_summary', {}).get('risk_score', 0)
                 risk_level = report_data.get('executive_summary', {}).get('risk_level', 'None')
                 total_findings = report_data.get('executive_summary', {}).get('total_findings', 0)
+            except:
+                pass
+        
+        # For PDF, also generate JSON to extract summary stats
+        if is_pdf:
+            try:
+                from report_generator import ReportGenerator
+                scan_dicts = [{
+                    'id': s.id, 'tool_name': s.tool_name, 'target': s.target,
+                    'status': s.status, 'output': s.output or '',
+                    'completed_at': s.completed_at.isoformat() if s.completed_at else None
+                } for s in scans]
+                gen = ReportGenerator(scan_dicts, report_name, template)
+                summary = gen.summary.get('severity_breakdown', summary)
+                risk_score = gen.summary.get('risk_score', 0)
+                risk_level = gen.summary.get('risk_level', 'None')
+                total_findings = gen.summary.get('total_findings', 0)
             except:
                 pass
         
@@ -2930,12 +2950,25 @@ def create_report():
             info_count=summary.get('Info', summary.get('info', 0)),
             risk_score=risk_score,
             risk_level=risk_level,
-            content=report_content,
-            file_size=len(report_content.encode('utf-8')),
+            content=report_content.decode('utf-8', errors='replace') if is_pdf else report_content,
+            file_size=len(report_content) if is_pdf else len(report_content.encode('utf-8')),
             completed_at=datetime.utcnow()
         )
         db.session.add(report)
         db.session.commit()
+        
+        # For PDF, return binary download directly
+        if is_pdf:
+            import io
+            from flask import send_file
+            pdf_buffer = io.BytesIO(report_content)
+            pdf_buffer.seek(0)
+            return send_file(
+                pdf_buffer,
+                mimetype='application/pdf',
+                as_attachment=True,
+                download_name=f'{report_name.replace(" ", "_")}_{datetime.utcnow().strftime("%Y%m%d")}.pdf'
+            )
         
         return jsonify({
             'success': True,
@@ -3008,11 +3041,32 @@ def download_report(report_id):
         ).first()
         
         if report:
+            # If requesting PDF download, regenerate from scans
+            if output_format == 'pdf':
+                try:
+                    scan_ids = report.scan_ids or []
+                    scans = Scan.query.filter(Scan.id.in_(scan_ids)).all() if scan_ids else []
+                    if scans:
+                        pdf_bytes = generate_report_from_scans(scans, report.name, report.template, 'pdf')
+                        if isinstance(pdf_bytes, bytes):
+                            import io
+                            from flask import send_file
+                            pdf_buffer = io.BytesIO(pdf_bytes)
+                            pdf_buffer.seek(0)
+                            return send_file(
+                                pdf_buffer,
+                                mimetype='application/pdf',
+                                as_attachment=True,
+                                download_name=f'{report.name.replace(" ", "_")}_{report.created_at.strftime("%Y%m%d")}.pdf'
+                            )
+                except Exception as e:
+                    print(f"PDF regeneration error: {e}")
+            
             content = report.content
             filename = f'{report.name.replace(" ", "_")}_{report.created_at.strftime("%Y%m%d")}'
             
             # Set appropriate extension
-            ext_map = {'html': 'html', 'json': 'json', 'csv': 'csv', 'markdown': 'md', 'pdf': 'html'}
+            ext_map = {'html': 'html', 'json': 'json', 'csv': 'csv', 'markdown': 'md', 'pdf': 'pdf'}
             ext = ext_map.get(output_format, 'html')
             
             return jsonify({
@@ -3087,18 +3141,46 @@ def get_report_templates():
         {
             'id': 'compliance',
             'name': 'Compliance Report',
-            'description': 'Compliance-focused report for auditors',
+            'description': 'Multi-framework compliance report for auditors',
             'icon': '📋',
             'sections': ['Compliance Status', 'Control Mappings', 'Gap Analysis', 'Remediation Timeline'],
-            'frameworks': ['OWASP Top 10', 'PCI-DSS 4.0', 'NIST CSF', 'CIS Controls v8'],
+            'frameworks': ['OWASP Top 10', 'PCI-DSS 4.0', 'NIST CSF', 'CIS Controls v8', 'ISO 27001 Annex A'],
+            'formats': ['html', 'pdf', 'json']
+        },
+        {
+            'id': 'owasp',
+            'name': 'OWASP Top 10',
+            'description': 'Map scan results to OWASP Top 10 2021 categories with risk analysis',
+            'icon': '🛡️',
+            'sections': ['OWASP Category Mapping', 'Risk Matrix', 'Remediation Priority'],
+            'frameworks': ['OWASP Top 10'],
+            'formats': ['html', 'pdf', 'json']
+        },
+        {
+            'id': 'pci-dss',
+            'name': 'PCI-DSS Req 11',
+            'description': 'PCI-DSS 4.0 Requirement 11 vulnerability scanning compliance report',
+            'icon': '💳',
+            'sections': ['PCI-DSS Compliance Status', 'Requirement 11 Controls', 'Scan Evidence', 'Gap Analysis'],
+            'frameworks': ['PCI-DSS 4.0'],
+            'formats': ['html', 'pdf', 'json']
+        },
+        {
+            'id': 'iso27001',
+            'name': 'ISO 27001 Annex A',
+            'description': 'ISO 27001 Annex A technical controls assessment and gap analysis',
+            'icon': '📜',
+            'sections': ['Annex A Control Mapping', 'Technical Controls Status', 'Gap Analysis', 'Remediation Plan'],
+            'frameworks': ['ISO 27001 Annex A'],
             'formats': ['html', 'pdf', 'json']
         },
         {
             'id': 'full',
             'name': 'Full Report',
-            'description': 'Comprehensive report with all sections',
+            'description': 'Comprehensive report with all sections and frameworks',
             'icon': '📑',
             'sections': ['Executive Summary', 'Technical Details', 'Compliance Mapping', 'Remediation Guide', 'Appendix'],
+            'frameworks': ['OWASP Top 10', 'PCI-DSS 4.0', 'NIST CSF', 'CIS Controls v8', 'ISO 27001 Annex A'],
             'formats': ['html', 'pdf', 'json', 'csv', 'markdown']
         }
     ]

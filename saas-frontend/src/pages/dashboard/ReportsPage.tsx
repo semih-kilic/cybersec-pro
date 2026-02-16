@@ -79,15 +79,42 @@ const defaultTemplates: ReportTemplate[] = [
   {
     id: 'compliance',
     name: 'Compliance Report',
-    description: 'Compliance-focused report for auditors',
+    description: 'Multi-framework compliance report for auditors',
     icon: '📋',
     sections: ['Compliance Status', 'Control Mappings', 'Gap Analysis'],
     formats: ['html', 'pdf', 'json']
   },
   {
+    id: 'owasp',
+    name: 'OWASP Top 10',
+    description: 'Map scan results to OWASP Top 10 2021 categories',
+    icon: '🛡️',
+    sections: ['OWASP Category Mapping', 'Risk Matrix', 'Remediation Priority'],
+    frameworks: ['OWASP Top 10'],
+    formats: ['html', 'pdf', 'json']
+  },
+  {
+    id: 'pci-dss',
+    name: 'PCI-DSS Req 11',
+    description: 'PCI-DSS 4.0 Requirement 11 vulnerability scanning compliance',
+    icon: '💳',
+    sections: ['PCI-DSS Compliance Status', 'Requirement 11 Controls', 'Gap Analysis'],
+    frameworks: ['PCI-DSS 4.0'],
+    formats: ['html', 'pdf', 'json']
+  },
+  {
+    id: 'iso27001',
+    name: 'ISO 27001 Annex A',
+    description: 'ISO 27001 Annex A technical controls assessment',
+    icon: '📜',
+    sections: ['Annex A Control Mapping', 'Technical Controls Status', 'Gap Analysis'],
+    frameworks: ['ISO 27001 Annex A'],
+    formats: ['html', 'pdf', 'json']
+  },
+  {
     id: 'full',
     name: 'Full Report',
-    description: 'Comprehensive report with all sections',
+    description: 'Comprehensive report with all sections and frameworks',
     icon: '📑',
     sections: ['Executive Summary', 'Technical Details', 'Compliance Mapping', 'Remediation Guide'],
     formats: ['html', 'pdf', 'json', 'csv', 'markdown']
@@ -113,7 +140,7 @@ export function ReportsPage() {
   const [selectedTemplate, setSelectedTemplate] = useState('full');
   const [selectedScans, setSelectedScans] = useState<string[]>([]);
   const [reportName, setReportName] = useState('Security Assessment Report');
-  const [reportFormat, setReportFormat] = useState<'html' | 'json' | 'csv' | 'markdown'>('html');
+  const [reportFormat, setReportFormat] = useState<'html' | 'pdf' | 'json' | 'csv' | 'markdown'>('html');
   const [selectedSections, setSelectedSections] = useState<string[]>([]);
   
   const iframeRef = useRef<HTMLIFrameElement>(null);
@@ -189,11 +216,22 @@ export function ReportsPage() {
       });
       
       if (res.ok) {
-        const data = await res.json();
-        
-        // Download the report
-        const content = data.report.content;
-        downloadReport(content, reportName, reportFormat);
+        // PDF returns binary blob directly
+        if (reportFormat === 'pdf') {
+          const blob = await res.blob();
+          const url = window.URL.createObjectURL(blob);
+          const a = document.createElement('a');
+          a.href = url;
+          a.download = `${reportName.replace(/\s+/g, '_')}_${new Date().toISOString().split('T')[0]}.pdf`;
+          document.body.appendChild(a);
+          a.click();
+          window.URL.revokeObjectURL(url);
+          document.body.removeChild(a);
+        } else {
+          const data = await res.json();
+          const content = data.report.content;
+          downloadReport(content, reportName, reportFormat);
+        }
         
         // Refresh and close modal
         setShowGenerateModal(false);
@@ -218,14 +256,14 @@ export function ReportsPage() {
       'json': 'json',
       'csv': 'csv',
       'markdown': 'md',
-      'pdf': 'html'
+      'pdf': 'pdf'
     };
     const mimeMap: Record<string, string> = {
       'html': 'text/html',
       'json': 'application/json',
       'csv': 'text/csv',
       'markdown': 'text/markdown',
-      'pdf': 'text/html'
+      'pdf': 'application/pdf'
     };
     
     const blob = new Blob([content], { type: mimeMap[format] || 'text/plain' });
@@ -566,7 +604,13 @@ export function ReportsPage() {
                   {templates.map((template) => (
                     <button
                       key={template.id}
-                      onClick={() => setSelectedTemplate(template.id)}
+                      onClick={() => {
+                        setSelectedTemplate(template.id);
+                        // Auto-select best format for template
+                        if (!template.formats.includes(reportFormat)) {
+                          setReportFormat((template.formats[0] || 'html') as 'html' | 'pdf' | 'json' | 'csv' | 'markdown');
+                        }
+                      }}
                       className={`p-4 rounded-xl border text-left transition ${
                         selectedTemplate === template.id
                           ? 'bg-kali-blue/20 border-kali-blue'
@@ -576,6 +620,15 @@ export function ReportsPage() {
                       <div className="text-2xl mb-2">{template.icon}</div>
                       <div className="text-white font-medium text-sm">{template.name}</div>
                       <div className="text-gray-400 text-xs mt-1 line-clamp-2">{template.description}</div>
+                      {template.frameworks && template.frameworks.length > 0 && (
+                        <div className="mt-2 flex flex-wrap gap-1">
+                          {template.frameworks.map(fw => (
+                            <span key={fw} className="text-[10px] px-1.5 py-0.5 bg-purple-500/20 text-purple-300 rounded">
+                              {fw}
+                            </span>
+                          ))}
+                        </div>
+                      )}
                     </button>
                   ))}
                 </div>
@@ -585,17 +638,17 @@ export function ReportsPage() {
               <div>
                 <label className="block text-sm font-medium text-gray-300 mb-3">Output Format</label>
                 <div className="flex flex-wrap gap-2">
-                  {['html', 'json', 'csv', 'markdown'].map((format) => (
+                  {(templates.find(t => t.id === selectedTemplate)?.formats || ['html', 'pdf', 'json', 'csv', 'markdown']).map((format) => (
                     <button
                       key={format}
-                      onClick={() => setReportFormat(format as 'html' | 'json' | 'csv' | 'markdown')}
+                      onClick={() => setReportFormat(format as 'html' | 'pdf' | 'json' | 'csv' | 'markdown')}
                       className={`px-4 py-2 rounded-lg border transition ${
                         reportFormat === format
                           ? 'bg-kali-blue/20 border-kali-blue text-white'
                           : 'bg-gray-800 border-gray-700 text-gray-400 hover:border-gray-600'
                       }`}
                     >
-                      {format.toUpperCase()}
+                      {format === 'pdf' ? '📄 PDF' : format.toUpperCase()}
                     </button>
                   ))}
                 </div>
