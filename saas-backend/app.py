@@ -238,6 +238,7 @@ PLAN_CONFIG = {
             'ai_suggestions': False,
             'ai_remediation': False,
             'priority_support': False,
+            'purple_team': False,
         }
     },
     'starter': {
@@ -262,6 +263,7 @@ PLAN_CONFIG = {
             'ai_suggestions': False,
             'ai_remediation': False,
             'priority_support': False,
+            'purple_team': False,
         }
     },
     'professional': {
@@ -286,6 +288,7 @@ PLAN_CONFIG = {
             'ai_suggestions': True,
             'ai_remediation': False,
             'priority_support': False,
+            'purple_team': False,
         }
     },
     'team': {
@@ -310,6 +313,7 @@ PLAN_CONFIG = {
             'ai_suggestions': True,
             'ai_remediation': True,
             'priority_support': False,
+            'purple_team': True,
         }
     },
     'enterprise': {
@@ -334,6 +338,7 @@ PLAN_CONFIG = {
             'ai_suggestions': True,
             'ai_remediation': True,
             'priority_support': True,
+            'purple_team': True,
         }
     }
 }
@@ -6172,6 +6177,227 @@ def ai_report_summary():
         })
     except Exception as e:
         return jsonify({'error': str(e)}), 500
+
+
+# ════════════════════════════════════════════════════════════
+# 🛡️ PURPLE TEAM AUTOMATION — Pentagon/DoD Grade
+# ════════════════════════════════════════════════════════════
+try:
+    from purple_team_engine import get_purple_team_coordinator
+    purple_coordinator = get_purple_team_coordinator()
+    PURPLE_TEAM_AVAILABLE = True
+    print("🟣 Purple Team Coordinator initialized")
+except ImportError as e:
+    purple_coordinator = None
+    PURPLE_TEAM_AVAILABLE = False
+    print(f"⚠️ Purple Team engine not available: {e}")
+
+# --- GET /api/v1/purple-team/chains --- Attack chain catalog
+@app.route('/api/v1/purple-team/chains', methods=['GET'])
+@jwt_required()
+def purple_team_chains():
+    if not PURPLE_TEAM_AVAILABLE:
+        return jsonify({'error': 'Purple Team engine not available'}), 503
+    return jsonify(purple_coordinator.get_attack_chains())
+
+# --- GET /api/v1/purple-team/playbooks --- Blue team playbooks
+@app.route('/api/v1/purple-team/playbooks', methods=['GET'])
+@jwt_required()
+def purple_team_playbooks():
+    if not PURPLE_TEAM_AVAILABLE:
+        return jsonify({'error': 'Purple Team engine not available'}), 503
+    return jsonify(purple_coordinator.get_detection_playbooks())
+
+# --- GET /api/v1/purple-team/mitre-matrix --- Full ATT&CK matrix
+@app.route('/api/v1/purple-team/mitre-matrix', methods=['GET'])
+@jwt_required()
+def purple_team_mitre_matrix():
+    if not PURPLE_TEAM_AVAILABLE:
+        return jsonify({'error': 'Purple Team engine not available'}), 503
+    return jsonify(purple_coordinator.get_mitre_matrix())
+
+# --- POST /api/v1/purple-team/exercises --- Start exercise
+@app.route('/api/v1/purple-team/exercises', methods=['POST'])
+@jwt_required()
+def purple_team_start_exercise():
+    if not PURPLE_TEAM_AVAILABLE:
+        return jsonify({'error': 'Purple Team engine not available'}), 503
+    
+    user_id = get_jwt_identity()
+    user = User.query.get(user_id)
+    if not user:
+        return jsonify({'error': 'User not found'}), 404
+    
+    # Feature gate: team + enterprise only
+    org = Organization.query.get(user.organization_id)
+    plan_level = get_plan_level(org.plan_type) if org else 0
+    if plan_level < 3:
+        return jsonify({'error': 'Purple Team requires Team or Enterprise plan', 'upgrade_required': True}), 403
+    
+    data = request.get_json() or {}
+    chain_id = data.get('chain_id')
+    target = data.get('target', '').strip()
+    exercise_name = data.get('name', '')
+    
+    if not chain_id:
+        return jsonify({'error': 'chain_id is required'}), 400
+    if not target:
+        return jsonify({'error': 'target is required'}), 400
+    
+    def on_exercise_update(exercise):
+        """Push updates via WebSocket"""
+        try:
+            if socketio:
+                from dataclasses import asdict
+                socketio.emit('purple_team_update', {
+                    'exercise_id': exercise.id,
+                    'status': exercise.status,
+                    'completed_steps': exercise.completed_steps,
+                    'total_steps': exercise.total_steps,
+                    'detected_attacks': exercise.detected_attacks,
+                    'missed_attacks': exercise.missed_attacks,
+                    'risk_score': exercise.risk_score,
+                }, namespace='/scans')
+        except Exception as e:
+            print(f"Purple team WS emit error: {e}")
+    
+    try:
+        exercise = purple_coordinator.start_exercise(
+            chain_id=chain_id,
+            target=target,
+            organization_id=user.organization_id or '',
+            user_id=user_id,
+            exercise_name=exercise_name,
+            on_update=on_exercise_update,
+        )
+        
+        # Log activity
+        try:
+            emit_activity(user.organization_id, user_id,
+                          f"Started Purple Team exercise: {exercise.name} → {target}")
+        except:
+            pass
+        
+        from dataclasses import asdict
+        return jsonify(asdict(exercise)), 201
+    except ValueError as e:
+        return jsonify({'error': str(e)}), 400
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+# --- GET /api/v1/purple-team/exercises --- List exercises
+@app.route('/api/v1/purple-team/exercises', methods=['GET'])
+@jwt_required()
+def purple_team_list_exercises():
+    if not PURPLE_TEAM_AVAILABLE:
+        return jsonify({'error': 'Purple Team engine not available'}), 503
+    
+    user_id = get_jwt_identity()
+    user = User.query.get(user_id)
+    org_id = user.organization_id if user else None
+    
+    exercises = purple_coordinator.get_exercises(organization_id=org_id)
+    return jsonify(exercises)
+
+# --- GET /api/v1/purple-team/exercises/<id> --- Exercise detail
+@app.route('/api/v1/purple-team/exercises/<exercise_id>', methods=['GET'])
+@jwt_required()
+def purple_team_exercise_detail(exercise_id):
+    if not PURPLE_TEAM_AVAILABLE:
+        return jsonify({'error': 'Purple Team engine not available'}), 503
+    
+    exercise = purple_coordinator.get_exercise(exercise_id)
+    if not exercise:
+        return jsonify({'error': 'Exercise not found'}), 404
+    return jsonify(exercise)
+
+# --- GET /api/v1/purple-team/exercises/<id>/gap-analysis
+@app.route('/api/v1/purple-team/exercises/<exercise_id>/gap-analysis', methods=['GET'])
+@jwt_required()
+def purple_team_gap_analysis(exercise_id):
+    if not PURPLE_TEAM_AVAILABLE:
+        return jsonify({'error': 'Purple Team engine not available'}), 503
+    
+    exercise = purple_coordinator.get_exercise(exercise_id)
+    if not exercise:
+        return jsonify({'error': 'Exercise not found'}), 404
+    return jsonify(exercise.get('gap_analysis', {}))
+
+# --- GET /api/v1/purple-team/exercises/<id>/coverage
+@app.route('/api/v1/purple-team/exercises/<exercise_id>/coverage', methods=['GET'])
+@jwt_required()
+def purple_team_coverage(exercise_id):
+    if not PURPLE_TEAM_AVAILABLE:
+        return jsonify({'error': 'Purple Team engine not available'}), 503
+    
+    exercise = purple_coordinator.get_exercise(exercise_id)
+    if not exercise:
+        return jsonify({'error': 'Exercise not found'}), 404
+    return jsonify(exercise.get('coverage_map', {}))
+
+# --- GET /api/v1/purple-team/exercises/<id>/alerts
+@app.route('/api/v1/purple-team/exercises/<exercise_id>/alerts', methods=['GET'])
+@jwt_required()
+def purple_team_alerts(exercise_id):
+    if not PURPLE_TEAM_AVAILABLE:
+        return jsonify({'error': 'Purple Team engine not available'}), 503
+    
+    exercise = purple_coordinator.get_exercise(exercise_id)
+    if not exercise:
+        return jsonify({'error': 'Exercise not found'}), 404
+    return jsonify(exercise.get('blue_team_alerts', []))
+
+# --- GET /api/v1/purple-team/exercises/<id>/siem-export
+@app.route('/api/v1/purple-team/exercises/<exercise_id>/siem-export', methods=['GET'])
+@jwt_required()
+def purple_team_siem_export(exercise_id):
+    if not PURPLE_TEAM_AVAILABLE:
+        return jsonify({'error': 'Purple Team engine not available'}), 503
+    
+    fmt = request.args.get('format', 'json')
+    export_data = purple_coordinator.blue_agent.get_siem_export(format=fmt)
+    return app.response_class(export_data, mimetype='application/json')
+
+# --- GET /api/v1/purple-team/dashboard --- Dashboard stats
+@app.route('/api/v1/purple-team/dashboard', methods=['GET'])
+@jwt_required()
+def purple_team_dashboard():
+    if not PURPLE_TEAM_AVAILABLE:
+        return jsonify({'error': 'Purple Team engine not available'}), 503
+    
+    user_id = get_jwt_identity()
+    user = User.query.get(user_id)
+    org_id = user.organization_id if user else None
+    
+    exercises = purple_coordinator.get_exercises(organization_id=org_id)
+    
+    total = len(exercises)
+    running = sum(1 for e in exercises if e.get('status') == 'running')
+    completed = sum(1 for e in exercises if e.get('status') == 'completed')
+    
+    total_attacks = sum(e.get('total_steps', 0) for e in exercises)
+    total_detected = sum(e.get('detected_attacks', 0) for e in exercises)
+    total_missed = sum(e.get('missed_attacks', 0) for e in exercises)
+    
+    avg_risk = 0
+    completed_with_risk = [e for e in exercises if e.get('status') == 'completed' and e.get('risk_score', 0) > 0]
+    if completed_with_risk:
+        avg_risk = sum(e['risk_score'] for e in completed_with_risk) / len(completed_with_risk)
+    
+    detection_rate = round(total_detected / max(1, total_attacks) * 100, 1)
+    
+    return jsonify({
+        'total_exercises': total,
+        'running': running,
+        'completed': completed,
+        'total_attack_steps': total_attacks,
+        'total_detected': total_detected,
+        'total_missed': total_missed,
+        'detection_rate': detection_rate,
+        'average_risk_score': round(avg_risk, 1),
+        'available_chains': len(purple_coordinator.get_attack_chains()),
+        'available_playbooks': len(purple_coordinator.get_detection_playbooks()),
+    })
 
 
 if __name__ == '__main__':
