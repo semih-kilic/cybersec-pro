@@ -5,13 +5,20 @@ import { useAuth } from '../../hooks/useAuth';
 interface ScheduledScan {
   id: string;
   name: string;
-  tool: string;
+  tool_name: string;
+  tool?: string;
   target: string;
-  schedule: string; // cron expression
+  schedule_type: string;
+  cron_expression?: string;
+  hour?: number;
+  minute?: number;
+  day_of_week?: string;
+  day_of_month?: number;
   next_run: string;
   last_run?: string;
-  status: 'active' | 'paused' | 'error';
-  runs_count: number;
+  is_active: boolean;
+  status?: 'active' | 'paused' | 'error';
+  run_count: number;
   created_at: string;
 }
 
@@ -66,14 +73,32 @@ export function SchedulePage() {
   };
 
   const handleToggleStatus = async (schedule: ScheduledScan) => {
-    const newStatus = schedule.status === 'active' ? 'paused' : 'active';
-    setSchedules(schedules.map(s => 
-      s.id === schedule.id ? { ...s, status: newStatus } : s
-    ));
+    try {
+      const res = await fetch(`/api/v1/schedules/${schedule.id}/toggle`, {
+        method: 'POST',
+        headers: { 'Authorization': `Bearer ${token}` },
+      });
+      if (res.ok) {
+        fetchSchedules();
+      }
+    } catch (error) {
+      console.error('Failed to toggle schedule:', error);
+    }
   };
 
   const handleDelete = async (scheduleId: string) => {
-    setSchedules(schedules.filter(s => s.id !== scheduleId));
+    if (!confirm('Delete this scheduled scan?')) return;
+    try {
+      const res = await fetch(`/api/v1/schedules/${scheduleId}`, {
+        method: 'DELETE',
+        headers: { 'Authorization': `Bearer ${token}` },
+      });
+      if (res.ok) {
+        setSchedules(schedules.filter(s => s.id !== scheduleId));
+      }
+    } catch (error) {
+      console.error('Failed to delete schedule:', error);
+    }
   };
 
   const handleRunNow = async (schedule: ScheduledScan) => {
@@ -98,18 +123,42 @@ export function SchedulePage() {
     }
   };
 
-  const handleSave = () => {
-    // Save schedule
+  const handleSave = async () => {
+    try {
+      const schedPreset = presetSchedules.find(p => p.label.toLowerCase() === formData.schedulePreset.toLowerCase());
+      const cronExpr = formData.schedulePreset === 'custom' ? formData.customCron : schedPreset?.value;
+      
+      const body: Record<string, unknown> = {
+        name: formData.name,
+        tool_name: formData.tool,
+        target: formData.target,
+        schedule_type: formData.schedulePreset === 'custom' ? 'cron' : formData.schedulePreset,
+        cron_expression: cronExpr,
+      };
+      
+      const url = editingSchedule 
+        ? `/api/v1/schedules/${editingSchedule.id}` 
+        : '/api/v1/schedules';
+      const method = editingSchedule ? 'PUT' : 'POST';
+      
+      const res = await fetch(url, {
+        method,
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+        body: JSON.stringify(body),
+      });
+      
+      if (res.ok) {
+        fetchSchedules();
+      }
+    } catch (error) {
+      console.error('Failed to save schedule:', error);
+    }
     setShowNewModal(false);
     setEditingSchedule(null);
-    setFormData({
-      name: '',
-      tool: '',
-      target: '',
-      schedulePreset: 'daily',
-      customCron: '',
-      notifications: true,
-    });
+    setFormData({ name: '', tool: '', target: '', schedulePreset: 'daily', customCron: '', notifications: true });
   };
 
   const getStatusBadge = (status: ScheduledScan['status']) => {

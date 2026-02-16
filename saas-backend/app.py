@@ -3855,42 +3855,318 @@ def admin_stats():
 
 
 # ================================
-# SCHEDULES API
+# SCHEDULES API (Real persistence + APScheduler)
 # ================================
+
+# Global scheduler instance
+_scheduler = None
+
+def get_scheduler():
+    """Get or create the APScheduler instance"""
+    global _scheduler
+    if _scheduler is None:
+        from apscheduler.schedulers.background import BackgroundScheduler
+        _scheduler = BackgroundScheduler(timezone='UTC')
+        _scheduler.start()
+        print("📅 APScheduler started")
+    return _scheduler
+
+
+def _execute_scheduled_scan(schedule_id):
+    """Execute a scheduled scan - called by APScheduler"""
+    with app.app_context():
+        try:
+            sched = db.session.get(ScheduledScan, schedule_id)
+            if not sched or not sched.is_active:
+                return
+            
+            scan_id = str(uuid.uuid4())
+            
+            # Find tool
+            tool = Tool.query.filter(
+                db.func.lower(Tool.name) == sched.tool_name.lower()
+            ).first()
+            
+            if not tool:
+                print(f"⚠️ Scheduled scan {schedule_id}: tool '{sched.tool_name}' not found")
+                return
+            
+            scan = Scan(
+                id=scan_id,
+                organization_id=sched.organization_id,
+                user_id=sched.user_id,
+                tool_id=tool.id,
+                target=sched.target,
+                parameters=sched.parameters,
+                status='running',
+                agent_id=sched.agent_id,
+                project_id=sched.project_id,
+                started_at=datetime.utcnow()
+            )
+            db.session.add(scan)
+            
+            sched.last_run = datetime.utcnow()
+            sched.run_count = (sched.run_count or 0) + 1
+            db.session.commit()
+            
+            # Submit to scan engine
+            try:
+                from scan_engine_v3 import get_engine_v3
+                engine = get_engine_v3()
+                
+                def on_complete(scan_id, status, output, findings, exit_code):
+                    with app.app_context():
+                        s = db.session.get(Scan, scan_id)
+                        if s:
+                            s.status = status
+                            s.output = output[:65000] if output else ''
+                            s.findings = findings
+                            s.completed_at = datetime.utcnow()
+                            db.session.commit()
+                
+                engine.submit_scan(
+                    scan_id=scan_id,
+                    tool_name=sched.tool_name,
+                    tool_id=tool.id,
+                    target=sched.target,
+                    params=sched.parameters or {},
+                    user_id=sched.user_id,
+                    organization_id=sched.organization_id,
+                    db_callback=on_complete
+                )
+                print(f"✅ Scheduled scan {schedule_id} triggered: {sched.tool_name} -> {sched.target}")
+            except Exception as e:
+                scan.status = 'failed'
+                scan.error_log = str(e)
+                db.session.commit()
+                print(f"❌ Scheduled scan {schedule_id} failed: {e}")
+                
+        except Exception as e:
+            print(f"❌ Schedule execution error: {e}")
+            db.session.rollback()
+
+
+def _register_schedule_job(sched):
+    """Register a ScheduledScan with APScheduler"""
+    scheduler = get_scheduler()
+    job_id = f'scheduled_scan_{sched.id}'
+    
+    # Remove existing job if any
+    try:
+        scheduler.remove_job(job_id)
+    except Exception:
+        pass
+    
+    if not sched.is_active:
+        return
+    
+    if sched.schedule_type == 'daily':
+        scheduler.add_job(
+            _execute_scheduled_scan,
+            'cron',
+            id=job_id,
+            hour=sched.hour or 2,
+            minute=sched.minute or 0,
+            args=[sched.id]
+        )
+    elif sched.schedule_type == 'weekly':
+        scheduler.add_job(
+            _execute_scheduled_scan,
+            'cron',
+            id=job_id,
+            day_of_week=sched.day_of_week or 'mon',
+            hour=sched.hour or 2,
+            minute=sched.minute or 0,
+            args=[sched.id]
+        )
+    elif sched.schedule_type == 'monthly':
+        scheduler.add_job(
+            _execute_scheduled_scan,
+            'cron',
+            id=job_id,
+            day=sched.day_of_month or 1,
+            hour=sched.hour or 2,
+            minute=sched.minute or 0,
+            args=[sched.id]
+        )
+    elif sched.schedule_type == 'cron' and sched.cron_expression:
+        parts = sched.cron_expression.split()
+        if len(parts) >= 5:
+            scheduler.add_job(
+                _execute_scheduled_scan,
+                'cron',
+                id=job_id,
+                minute=parts[0],
+                hour=parts[1],
+                day=parts[2],
+                month=parts[3],
+                day_of_week=parts[4],
+                args=[sched.id]
+            )
+    
+    # Update next_run from APScheduler
+    try:
+        job = scheduler.get_job(job_id)
+        if job and job.next_run_time:
+            sched.next_run = job.next_run_time.replace(tzinfo=None)
+    except Exception:
+        pass
+
 
 @app.route('/api/v1/schedules', methods=['GET'])
 @require_organization
 def get_schedules():
     """Get all scheduled scans for the organization"""
     try:
-        # In a full implementation, we'd have a ScheduledScan model
-        # For now, return empty list (feature to be implemented)
+        user_id = get_jwt_identity()
+        user = User.query.get(user_id)
+        
+        schedules = ScheduledScan.query.filter_by(
+            organization_id=user.organization_id
+        ).order_by(ScheduledScan.created_at.desc()).all()
+        
         return jsonify({
-            'schedules': []
+            'schedules': [s.to_dict() for s in schedules]
         })
     except Exception as e:
         return jsonify({'error': str(e)}), 500
+
 
 @app.route('/api/v1/schedules', methods=['POST'])
 @require_organization
 def create_schedule():
     """Create a new scheduled scan"""
     try:
+        user_id = get_jwt_identity()
+        user = User.query.get(user_id)
         data = request.get_json()
-        # In a full implementation, save to ScheduledScan model
+        
+        sched = ScheduledScan(
+            organization_id=user.organization_id,
+            user_id=user.id,
+            name=data.get('name', 'Scheduled Scan'),
+            tool_name=data.get('tool', data.get('tool_name', 'nmap')),
+            target=data.get('target', ''),
+            parameters=data.get('parameters', {}),
+            schedule_type=data.get('schedule_type', data.get('schedule', 'daily')),
+            cron_expression=data.get('cron_expression'),
+            hour=data.get('hour', 2),
+            minute=data.get('minute', 0),
+            day_of_week=data.get('day_of_week'),
+            day_of_month=data.get('day_of_month'),
+            agent_id=data.get('agent_id'),
+            project_id=data.get('project_id'),
+            is_active=True
+        )
+        
+        db.session.add(sched)
+        db.session.commit()
+        
+        # Register with APScheduler
+        _register_schedule_job(sched)
+        db.session.commit()
+        
         return jsonify({
-            'schedule': {
-                'id': str(uuid.uuid4()),
-                'name': data.get('name'),
-                'tool': data.get('tool'),
-                'target': data.get('target'),
-                'schedule': data.get('schedule'),
-                'status': 'active',
-                'created_at': datetime.utcnow().isoformat()
-            },
-            'message': 'Scheduled scan feature coming soon'
+            'schedule': sched.to_dict(),
+            'message': 'Scheduled scan created successfully'
         }), 201
     except Exception as e:
+        db.session.rollback()
+        return jsonify({'error': str(e)}), 500
+
+
+@app.route('/api/v1/schedules/<schedule_id>', methods=['PUT'])
+@require_organization
+def update_schedule(schedule_id):
+    """Update a scheduled scan"""
+    try:
+        user_id = get_jwt_identity()
+        user = User.query.get(user_id)
+        data = request.get_json()
+        
+        sched = ScheduledScan.query.filter_by(
+            id=schedule_id,
+            organization_id=user.organization_id
+        ).first()
+        
+        if not sched:
+            return jsonify({'error': 'Schedule not found'}), 404
+        
+        for field in ['name', 'tool_name', 'target', 'parameters', 'schedule_type',
+                      'cron_expression', 'hour', 'minute', 'day_of_week', 'day_of_month',
+                      'agent_id', 'project_id', 'is_active']:
+            if field in data:
+                setattr(sched, field, data[field])
+        
+        db.session.commit()
+        _register_schedule_job(sched)
+        db.session.commit()
+        
+        return jsonify({'schedule': sched.to_dict()})
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'error': str(e)}), 500
+
+
+@app.route('/api/v1/schedules/<schedule_id>', methods=['DELETE'])
+@require_organization
+def delete_schedule(schedule_id):
+    """Delete a scheduled scan"""
+    try:
+        user_id = get_jwt_identity()
+        user = User.query.get(user_id)
+        
+        sched = ScheduledScan.query.filter_by(
+            id=schedule_id,
+            organization_id=user.organization_id
+        ).first()
+        
+        if not sched:
+            return jsonify({'error': 'Schedule not found'}), 404
+        
+        # Remove from scheduler
+        try:
+            scheduler = get_scheduler()
+            scheduler.remove_job(f'scheduled_scan_{sched.id}')
+        except Exception:
+            pass
+        
+        db.session.delete(sched)
+        db.session.commit()
+        
+        return jsonify({'success': True, 'message': 'Schedule deleted'})
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'error': str(e)}), 500
+
+
+@app.route('/api/v1/schedules/<schedule_id>/toggle', methods=['POST'])
+@require_organization
+def toggle_schedule(schedule_id):
+    """Toggle a scheduled scan on/off"""
+    try:
+        user_id = get_jwt_identity()
+        user = User.query.get(user_id)
+        
+        sched = ScheduledScan.query.filter_by(
+            id=schedule_id,
+            organization_id=user.organization_id
+        ).first()
+        
+        if not sched:
+            return jsonify({'error': 'Schedule not found'}), 404
+        
+        sched.is_active = not sched.is_active
+        db.session.commit()
+        _register_schedule_job(sched)
+        db.session.commit()
+        
+        return jsonify({
+            'schedule': sched.to_dict(),
+            'message': f'Schedule {"activated" if sched.is_active else "paused"}'
+        })
+    except Exception as e:
+        db.session.rollback()
         return jsonify({'error': str(e)}), 500
 
 
@@ -4195,9 +4471,10 @@ def create_agent():
         
         # Agents available for all plans
         
-        # Check agent limit
+        # Check agent limit from PLAN_CONFIG
         current_agents = Agent.query.filter_by(organization_id=org.id).count()
-        max_agents = 1 if org.plan_type == 'team' else 999
+        plan_config = get_plan_config(org.plan_type)
+        max_agents = plan_config.get('max_agents', 1)
         
         if current_agents >= max_agents:
             return jsonify({'error': f'Agent limit reached ({current_agents}/{max_agents})'}), 402
@@ -4224,8 +4501,19 @@ def create_agent():
         
         # Handle SSH password
         if data.get('ssh_password'):
-            # In production, encrypt this
-            agent.ssh_password_encrypted = data.get('ssh_password')
+            try:
+                from cryptography.fernet import Fernet
+                key = os.environ.get('ENCRYPTION_KEY', '')
+                if key and len(key) >= 8:
+                    if len(key) < 32:
+                        key = key.ljust(32, '0')
+                    fkey = base64.urlsafe_b64encode(key[:32].encode())
+                    fernet = Fernet(fkey)
+                    agent.ssh_password_encrypted = fernet.encrypt(data['ssh_password'].encode()).decode()
+                else:
+                    agent.ssh_password_encrypted = data['ssh_password']
+            except Exception:
+                agent.ssh_password_encrypted = data['ssh_password']
         
         db.session.add(agent)
         db.session.commit()
@@ -4480,15 +4768,39 @@ def update_agent(agent_id):
         # Update allowed fields
         if 'name' in data:
             agent.name = data['name']
+        if 'hostname' in data:
+            agent.hostname = data['hostname']
+        if 'ip_address' in data:
+            agent.ip_address = data['ip_address']
+        if 'platform' in data:
+            agent.platform = data['platform']
+        if 'connection_type' in data:
+            agent.connection_type = data['connection_type']
         if 'ssh_host' in data:
             agent.ssh_host = data['ssh_host']
-            agent.ip_address = data['ssh_host']
+            if not agent.ip_address:
+                agent.ip_address = data['ssh_host']
         if 'ssh_port' in data:
             agent.ssh_port = data['ssh_port']
         if 'ssh_username' in data:
             agent.ssh_username = data['ssh_username']
         if 'ssh_password' in data and data['ssh_password']:
-            agent.ssh_password_encrypted = data['ssh_password']
+            # Store password (encrypt if ENCRYPTION_KEY is set)
+            try:
+                from cryptography.fernet import Fernet
+                key = os.environ.get('ENCRYPTION_KEY', '')
+                if key and len(key) >= 8:
+                    if len(key) < 32:
+                        key = key.ljust(32, '0')
+                    fkey = base64.urlsafe_b64encode(key[:32].encode())
+                    fernet = Fernet(fkey)
+                    agent.ssh_password_encrypted = fernet.encrypt(data['ssh_password'].encode()).decode()
+                else:
+                    agent.ssh_password_encrypted = data['ssh_password']
+            except Exception:
+                agent.ssh_password_encrypted = data['ssh_password']
+        if 'ssh_key_path' in data:
+            agent.ssh_key_path = data['ssh_key_path']
         if 'location' in data:
             agent.location = data['location']
         
@@ -4659,6 +4971,17 @@ def init_database():
     """Initialize database with sample data"""
     with app.app_context():
         db.create_all()
+        
+        # Re-register all active scheduled scans with APScheduler
+        try:
+            active_schedules = ScheduledScan.query.filter_by(is_active=True).all()
+            for sched in active_schedules:
+                _register_schedule_job(sched)
+            if active_schedules:
+                db.session.commit()
+                print(f"📅 {len(active_schedules)} scheduled scans registered with APScheduler")
+        except Exception as e:
+            print(f"⚠️ Schedule init: {e}")
         
         # Create sample tools if none exist
         if Tool.query.count() == 0:
