@@ -1,0 +1,193 @@
+/**
+ * Micro-interaction CSS utilities
+ * Button hover scale, card hover lift/glow, confetti, progress animations
+ */
+
+/* ============================================
+   1. BUTTON MICRO-INTERACTIONS
+   ============================================ */
+
+/* Scale-up on hover for interactive buttons */
+.btn-micro {
+  transition: transform 150ms ease, box-shadow 150ms ease, filter 150ms ease;
+  will-change: transform;
+}
+
+.btn-micro:hover {
+  transform: scale(1.02);
+}
+
+.btn-micro:active {
+  transform: scale(0.98);
+}
+
+/* Primary action button with glow */
+.btn-glow:hover {
+  box-shadow: 0 0 20px rgba(0, 188, 212, 0.3);
+}
+
+.btn-glow:active {
+  box-shadow: 0 0 10px rgba(0, 188, 212, 0.2);
+}
+
+/* ============================================
+   2. CARD MICRO-INTERACTIONS
+   ============================================ */
+
+.card-hover {
+  transition: transform 200ms ease, box-shadow 200ms ease, border-color 200ms ease;
+  will-change: transform, box-shadow;
+}
+
+.card-hover:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3), 0 0 15px rgba(0, 188, 212, 0.1);
+}
+
+/* ============================================
+   3. CONFETTI ANIMATION
+   ============================================ */
+
+@keyframes confetti-fall {
+  0% {
+    transform: translateY(-100%) rotate(0deg);
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(100vh) rotate(720deg);
+    opacity: 0;
+  }
+}
+
+@keyframes confetti-shake {
+  0%, 100% { transform: translateX(0); }
+  25% { transform: translateX(-10px); }
+  75% { transform: translateX(10px); }
+}
+
+.confetti-piece {
+  position: fixed;
+  top: -10px;
+  width: 10px;
+  height: 10px;
+  border-radius: 2px;
+  animation: confetti-fall 3s ease-out forwards, confetti-shake 0.5s ease-in-out infinite;
+  z-index: 9999;
+  pointer-events: none;
+}
+
+/* ============================================
+   4. SCAN PROGRESS BAR
+   ============================================ */
+
+@keyframes progress-pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.7; }
+}
+
+@keyframes progress-stripe {
+  0% { background-position: 0 0; }
+  100% { background-position: 40px 0; }
+}
+
+.progress-bar-animated {
+  background-image: linear-gradient(
+    45deg,
+    rgba(255, 255, 255, 0.1) 25%,
+    transparent 25%,
+    transparent 50%,
+    rgba(255, 255, 255, 0.1) 50%,
+    rgba(255, 255, 255, 0.1) 75%,
+    transparent 75%
+  );
+  background-size: 40px 40px;
+  animation: progress-stripe 1s linear infinite;
+}
+
+.progress-glow {
+  box-shadow: 0 0 8px currentColor, 0 0 16px currentColor;
+  animation: progress-pulse 2s ease-in-out infinite;
+}
+
+/* ============================================
+   5. TOAST ANIMATIONS
+   ============================================ */
+
+@keyframes toast-slide-in {
+  from {
+    transform: translateX(100%) scale(0.95);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0) scale(1);
+    opacity: 1;
+  }
+}
+
+@keyframes toast-slide-out {
+  from {
+    transform: translateX(0) scale(1);
+    opacity: 1;
+  }
+  to {
+    transform: translateX(100%) scale(0.95);
+    opacity: 0;
+  }
+}
+
+.toast-enter {
+  animation: toast-slide-in 300ms ease-out forwards;
+}
+
+.toast-exit {
+  animation: toast-slide-out 200ms ease-in forwards;
+}
+
+/* ============================================
+   6. COMMAND PALETTE BACKDROP ANIMATION
+   ============================================ */
+
+@keyframes palette-backdrop-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes palette-slide-down {
+  from {
+    transform: translateY(-20px) scale(0.98);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0) scale(1);
+    opacity: 1;
+  }
+}
+
+.palette-backdrop {
+  animation: palette-backdrop-in 150ms ease-out;
+}
+
+.palette-container {
+  animation: palette-slide-down 200ms ease-out;
+}
+
+/* ============================================
+   7. FOCUS RING FOR KEYBOARD NAV
+   ============================================ */
+
+.focus-ring:focus-visible {
+  outline: 2px solid rgba(0, 188, 212, 0.6);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+/* ============================================
+   8. THEME TRANSITION
+   ============================================ */
+
+.theme-transition,
+.theme-transition *,
+.theme-transition *::before,
+.theme-transition *::after {
+  transition: background-color 300ms ease, color 300ms ease, border-color 300ms ease, box-shadow 300ms ease !important;
+}

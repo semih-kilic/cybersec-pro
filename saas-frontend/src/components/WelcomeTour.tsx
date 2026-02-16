@@ -10,33 +10,38 @@ interface WelcomeTourProps {
 const tourSteps = [
   {
     title: "Welcome to CyberSec Pro! 🎉",
-    description: "You're about to access the power of 350+ Kali Linux security tools - all from your browser. Let us show you around!",
+    description: "680+ Kali Linux security tools at your fingertips. Let's get you started in 4 quick steps.",
     image: "🛡️",
-    highlight: null
+    highlight: null,
+    shortcut: null
   },
   {
-    title: "Run Your First Scan",
-    description: "Head to the Tools section to browse available security tools. Click on any tool to see details and run a scan.",
+    title: "Step 1: Connect an Agent",
+    description: "Navigate to Agents and add your first Kali Linux machine. Agents run the actual scans on your targets.",
+    image: "🖥️",
+    highlight: "agents",
+    shortcut: "/dashboard/agents"
+  },
+  {
+    title: "Step 2: Run Your First Scan",
+    description: "Pick a tool (like Nmap), enter a target (try scanme.nmap.org), and hit Run. Results stream in real-time!",
     image: "🔍",
-    highlight: "tools"
+    highlight: "tools",
+    shortcut: "/dashboard/tools"
   },
   {
-    title: "Try Demo Targets",
-    description: "Use our safe demo targets to test without risk:\n• scanme.nmap.org (Nmap testing)\n• testphp.vulnweb.com (Web scanning)\n• demo.testfire.net (SQL injection tests)",
-    image: "🎯",
-    highlight: "targets"
-  },
-  {
-    title: "View Your Results",
-    description: "All scan results appear in the Scans section. You can view detailed outputs, export reports, and track vulnerabilities.",
+    title: "Step 3: View Reports",
+    description: "All scan results appear in Reports. Export as PDF, track vulnerabilities, and share with your team.",
     image: "📊",
-    highlight: "scans"
+    highlight: "reports",
+    shortcut: "/dashboard/reports"
   },
   {
-    title: "You're Ready!",
-    description: "Start exploring CyberSec Pro. If you need help, check out our Documentation or send us Feedback anytime!",
-    image: "🚀",
-    highlight: null
+    title: "You're Ready! 🚀",
+    description: "Use Ctrl+K to quickly navigate anywhere. Need help? Check Documentation or send Feedback anytime.",
+    image: "⚡",
+    highlight: null,
+    shortcut: null
   }
 ];
 
@@ -111,34 +116,39 @@ export default function WelcomeTour({ isOpen, onClose, planType }: WelcomeTourPr
               <p className="text-gray-400 text-sm">
                 You're on the <span className="text-cyan-400 font-semibold">{planType}</span> plan with access to{' '}
                 <span className="text-cyan-400 font-semibold">
-                  {planType === 'enterprise' ? '143+' : planType === 'team' ? '85' : planType === 'professional' ? '33' : '7'}
+                  {planType === 'enterprise' ? '680+' : planType === 'team' ? '350' : planType === 'professional' ? '143' : '33'}
                 </span>{' '}
                 security tools.
               </p>
             </div>
           )}
 
-          {/* Demo Targets Box (step 3) */}
-          {currentStep === 2 && (
+          {/* Keyboard shortcut tip (last step) */}
+          {currentStep === tourSteps.length - 1 && (
             <div className="mb-6 p-4 bg-gray-800/50 rounded-lg text-left">
-              <h4 className="text-sm font-semibold text-gray-300 mb-3">🎯 Safe Demo Targets:</h4>
+              <h4 className="text-sm font-semibold text-gray-300 mb-3">⌨️ Keyboard Shortcuts:</h4>
               <ul className="space-y-2 text-sm">
                 <li className="flex items-center gap-2">
-                  <span className="text-green-400">✓</span>
-                  <code className="text-cyan-300 bg-gray-800 px-2 py-1 rounded">scanme.nmap.org</code>
-                  <span className="text-gray-500">- Port scanning</span>
+                  <kbd className="text-cyan-300 bg-gray-800 px-2 py-1 rounded text-xs">Ctrl+K</kbd>
+                  <span className="text-gray-400">Quick search & navigate</span>
                 </li>
                 <li className="flex items-center gap-2">
-                  <span className="text-green-400">✓</span>
-                  <code className="text-cyan-300 bg-gray-800 px-2 py-1 rounded">testphp.vulnweb.com</code>
-                  <span className="text-gray-500">- Web vulnerabilities</span>
+                  <kbd className="text-cyan-300 bg-gray-800 px-2 py-1 rounded text-xs">/</kbd>
+                  <span className="text-gray-400">Focus search bar</span>
                 </li>
                 <li className="flex items-center gap-2">
-                  <span className="text-green-400">✓</span>
-                  <code className="text-cyan-300 bg-gray-800 px-2 py-1 rounded">demo.testfire.net</code>
-                  <span className="text-gray-500">- OWASP testing</span>
+                  <kbd className="text-cyan-300 bg-gray-800 px-2 py-1 rounded text-xs">Esc</kbd>
+                  <span className="text-gray-400">Close any dialog</span>
                 </li>
               </ul>
+            </div>
+          )}
+
+          {/* Sidebar highlight indicator */}
+          {step.highlight && (
+            <div className="mb-6 flex items-center justify-center gap-2 text-xs text-cyan-400">
+              <span className="w-2 h-2 rounded-full bg-cyan-400 animate-pulse" />
+              Look for the highlighted <strong>{step.highlight}</strong> section in the sidebar
             </div>
           )}
 

@@ -17,6 +17,12 @@ import { Sidebar } from './components/layout/Sidebar';
 // Global Context
 import { TargetProvider } from './contexts/TargetContext';
 
+// UX: Toast, Color Mode, Keyboard Shortcuts, Command Palette
+import { ToastProvider } from './components/ui/Toast';
+import { ColorModeProvider } from './contexts/ColorModeContext';
+import { CommandPalette } from './components/ui/CommandPalette';
+import { useKeyboardShortcuts } from './hooks/useKeyboardShortcuts';
+
 // Pages
 import { LandingPage } from './pages/LandingPage';
 import { LoginPage } from './pages/LoginPage';
@@ -107,6 +113,8 @@ function PublicRoute({ children }: { children: React.ReactNode }) {
 
 // Dashboard Layout with Sidebar
 function DashboardLayout() {
+  const { isPaletteOpen, closePalette } = useKeyboardShortcuts();
+
   return (
     <TargetProvider>
       <div className="flex min-h-screen bg-gray-950">
@@ -116,6 +124,7 @@ function DashboardLayout() {
             <Outlet />
           </Suspense>
         </main>
+        <CommandPalette isOpen={isPaletteOpen} onClose={closePalette} />
       </div>
     </TargetProvider>
   );
@@ -197,14 +206,18 @@ function App() {
   return (
     <HelmetProvider>
       <QueryClientProvider client={queryClient}>
-        <Router>
-          <AuthProvider>
-            <div className="min-h-screen cyberpunk-theme">
-              <AppRoutes />
-              <CookieConsentBanner />
-            </div>
-          </AuthProvider>
-        </Router>
+        <ColorModeProvider>
+          <ToastProvider>
+            <Router>
+              <AuthProvider>
+                <div className="min-h-screen cyberpunk-theme">
+                  <AppRoutes />
+                  <CookieConsentBanner />
+                </div>
+              </AuthProvider>
+            </Router>
+          </ToastProvider>
+        </ColorModeProvider>
       </QueryClientProvider>
     </HelmetProvider>
   );

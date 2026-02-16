@@ -53,17 +53,21 @@ export function Header({ title, subtitle, actions, breadcrumb }: HeaderProps) {
       <div className="flex items-center gap-4">
         {actions}
 
-        {/* Quick Search */}
+        {/* Quick Search - opens Command Palette */}
         <div className="relative hidden lg:block">
-          <input
-            type="text"
-            placeholder="Search tools, scans..."
-            className="w-64 pl-10 pr-4 py-2 bg-gray-800 border border-gray-700 rounded-lg text-sm text-white placeholder-gray-500 focus:outline-none focus:border-kali-blue transition"
-          />
-          <svg className="w-4 h-4 text-gray-500 absolute left-3 top-1/2 -translate-y-1/2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <button
+            onClick={() => {
+              // Dispatch Ctrl+K to trigger command palette
+              document.dispatchEvent(new KeyboardEvent('keydown', { key: 'k', ctrlKey: true, bubbles: true }));
+            }}
+            className="w-64 pl-10 pr-4 py-2 bg-gray-800 border border-gray-700 rounded-lg text-sm text-gray-500 text-left focus:outline-none focus:border-kali-blue transition hover:border-gray-600 btn-micro"
+          >
+            Search tools, scans...
+          </button>
+          <svg className="w-4 h-4 text-gray-500 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
           </svg>
-          <kbd className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-gray-500 bg-gray-700 px-1.5 py-0.5 rounded">⌘K</kbd>
+          <kbd className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-gray-500 bg-gray-700 px-1.5 py-0.5 rounded pointer-events-none">⌘K</kbd>
         </div>
 
         {/* Notifications */}
