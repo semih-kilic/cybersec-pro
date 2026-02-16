@@ -160,7 +160,7 @@ def internal_error(error):
 
 # Initialize Flask-SocketIO for real-time WebSocket support
 try:
-    from websocket_events import init_socketio, emit_activity, emit_agent_status, emit_notification
+    from websocket_events import init_socketio, emit_activity, emit_agent_status, emit_notification, dispatch_scan_ws, is_agent_ws_connected
     socketio = init_socketio(app)
     print("✅ WebSocket (Flask-SocketIO) initialized")
 except ImportError as e:
@@ -168,6 +168,8 @@ except ImportError as e:
     emit_activity = None
     emit_agent_status = None
     emit_notification = None
+    dispatch_scan_ws = None
+    is_agent_ws_connected = None
     print(f"⚠️ WebSocket not available: {e}")
 
 
@@ -2241,9 +2243,35 @@ def get_scan_output(scan_id):
                 elif line:
                     yield f"data: {json.dumps({'type': 'output', 'line': line})}\n\n"
         else:
-            # No engine available - check database for completed scan
+            # No V3 engine — check if this is an agent-based scan or DB-stored scan
             scan = Scan.query.get(scan_id)
-            if scan and scan.output:
+            if scan and scan.agent_id:
+                # Agent-based scan — poll DB for updates
+                import time as _time
+                max_wait = 300  # 5 min
+                start = _time.time()
+                last_output_len = 0
+                
+                while _time.time() - start < max_wait:
+                    db.session.refresh(scan)
+                    
+                    # Stream new output lines
+                    if scan.output and len(scan.output) > last_output_len:
+                        new_content = scan.output[last_output_len:]
+                        for line in new_content.split('\n'):
+                            if line:
+                                yield f"data: {json.dumps({'type': 'output', 'line': line})}\n\n"
+                        last_output_len = len(scan.output)
+                    
+                    # Check completion
+                    if scan.status in ('completed', 'failed', 'timeout', 'cancelled'):
+                        yield f"data: {json.dumps({'type': 'complete', 'result': {'status': scan.status, 'output': scan.output or ''}})}\n\n"
+                        return
+                    
+                    _time.sleep(2)  # Check every 2 seconds
+                
+                yield f"data: {json.dumps({'type': 'complete', 'result': {'status': 'timeout', 'output': 'Agent stream timeout'}})}\n\n"
+            elif scan and scan.output:
                 for line in scan.output.split('\n'):
                     yield f"data: {json.dumps({'type': 'output', 'line': line})}\n\n"
                 yield f"data: {json.dumps({'type': 'complete', 'result': {'status': scan.status, 'output': scan.output}})}\n\n"
@@ -2548,20 +2576,83 @@ def start_scan_v2():
         
         # Create scan record with proper tool_id (database UUID)
         scan_id = str(uuid.uuid4())
+        
+        # ── Agent-based execution decision ──
+        agent_id_request = data.get('agent_id')  # Optional: specific agent
+        execution_mode = data.get('execution_mode', 'auto')  # auto | agent | local
+        
+        use_agent = False
+        selected_agent = None
+        
+        if execution_mode in ('agent', 'auto'):
+            if agent_id_request:
+                # User specified a specific agent
+                selected_agent = Agent.query.filter_by(
+                    id=agent_id_request, organization_id=org.id
+                ).first()
+                if selected_agent and selected_agent.status == 'online':
+                    use_agent = True
+            else:
+                # Find best available agent via load balancer
+                selected_agent = agent_mgr.select_best_agent(org.id)
+                if selected_agent:
+                    use_agent = True
+        # execution_mode == 'local': always run on server
+        
         scan = Scan(
             id=scan_id,
             organization_id=org.id,
             user_id=user.id,
-            tool_id=tool_db.id,  # Use actual database UUID
+            tool_id=tool_db.id,
             target=target,
             parameters=parameters,
-            status='running',
+            status='pending' if use_agent else 'running',
+            agent_id=selected_agent.id if use_agent and selected_agent else None,
             started_at=datetime.utcnow()
         )
         db.session.add(scan)
         db.session.commit()
         
-        # Create completion callback
+        if use_agent and selected_agent:
+            # ── Dispatch to remote agent ──
+            scan_task = {
+                'scan_id': scan_id,
+                'tool_name': tool_name,
+                'target': target,
+                'parameters': parameters or {},
+                'dispatched_at': datetime.utcnow().isoformat()
+            }
+            
+            ws_dispatched = False
+            if is_agent_ws_connected and is_agent_ws_connected(selected_agent.id):
+                ws_dispatched = dispatch_scan_ws(selected_agent.id, scan_task)
+            
+            if ws_dispatched:
+                scan.status = 'dispatched'
+            else:
+                scan.status = 'pending'  # agent picks up via heartbeat
+            
+            selected_agent.active_scans = (selected_agent.active_scans or 0) + 1
+            db.session.commit()
+            
+            return jsonify({
+                'success': True,
+                'scan_id': scan_id,
+                'status': scan.status,
+                'tool': tool_name,
+                'target': target,
+                'execution_mode': 'agent',
+                'agent': {
+                    'id': selected_agent.id,
+                    'name': selected_agent.name,
+                    'ip': selected_agent.ip_address,
+                    'dispatch_method': 'websocket' if ws_dispatched else 'polling'
+                },
+                'command': f'{tool_name} {target}',
+                'message': f'{tool_name} scan dispatched to agent "{selected_agent.name}" ({selected_agent.ip_address})'
+            }), 201
+        
+        # ── Local execution (server-side V3 engine) ──
         def on_complete(scan_id, status, output, findings, exit_code):
             """Update database when scan completes"""
             with app.app_context():
@@ -2578,7 +2669,6 @@ def start_scan_v2():
                     print(f"❌ Failed to update scan {scan_id[:8]}: {e}")
                     db.session.rollback()
         
-        # Start scan using V3 engine
         from scan_engine_v3 import get_engine_v3
         engine = get_engine_v3()
         
@@ -2599,6 +2689,7 @@ def start_scan_v2():
             'status': 'running',
             'tool': tool_name,
             'target': target,
+            'execution_mode': 'local',
             'command': job.to_dict()['command'],
             'message': f'{tool_name} scan started on {target}'
         }), 201

@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
-CyberSec Pro - Kali Linux Agent
-Runs on remote Kali machines. Handles: registration, heartbeat, scan execution.
+CyberSec Pro - Kali Linux Agent v2.0
+Runs on remote Kali machines. WebSocket-first with HTTP fallback.
 
 Usage:
   python3 kali_agent.py --token TOKEN --server https://cybersecpro.semihkilic.com
@@ -24,9 +24,16 @@ import urllib.error
 from datetime import datetime
 from pathlib import Path
 
+# ── Optional: WebSocket support ───────────────────────────────
+try:
+    import socketio
+    WS_AVAILABLE = True
+except ImportError:
+    WS_AVAILABLE = False
+
 # ── Config ────────────────────────────────────────────────────
 
-VERSION = "1.0.0"
+VERSION = "2.0.0"
 CONFIG_DIR = Path.home() / ".cybersec-agent"
 CONFIG_FILE = CONFIG_DIR / "config.json"
 LOG_FILE = CONFIG_DIR / "agent.log"
@@ -53,7 +60,7 @@ logger = logging.getLogger('cybersec-agent')
 
 
 class CyberSecAgent:
-    """CyberSec Pro Agent - runs on Kali Linux"""
+    """CyberSec Pro Agent v2.0 - WebSocket-first with HTTP fallback"""
     
     def __init__(self, server_url, api_key=None, token=None):
         self.server_url = server_url.rstrip('/')
@@ -64,12 +71,14 @@ class CyberSecAgent:
         self.active_scans = {}
         self.scan_lock = threading.Lock()
         self.total_completed = 0
+        self.ws_connected = False
+        self.sio = None
         
         # System info
         self.hostname = socket.gethostname()
         self.ip_address = self._get_ip()
         self.os_info = self._get_os_info()
-        self.platform = self._detect_platform()
+        self.platform_info = self._detect_platform()
     
     # ── Registration ──────────────────────────────────────────
     
@@ -84,7 +93,7 @@ class CyberSecAgent:
             'hostname': self.hostname,
             'ip_address': self.ip_address,
             'os_info': self.os_info,
-            'platform': self.platform,
+            'platform': self.platform_info,
             'version': VERSION,
             'cpu_usage': self._get_cpu_usage(),
             'memory_usage': self._get_memory_usage(),
@@ -108,10 +117,88 @@ class CyberSecAgent:
         logger.info(f"✅ Registered as: {resp.get('name', 'unknown')} (ID: {self.agent_id})")
         return True
     
-    # ── Heartbeat ─────────────────────────────────────────────
+    # ── WebSocket Connection ──────────────────────────────────
+    
+    def _setup_websocket(self):
+        """Set up WebSocket connection to server"""
+        if not WS_AVAILABLE:
+            logger.warning("python-socketio not installed. Using HTTP polling only.")
+            logger.warning("Install with: pip3 install python-socketio[client] websocket-client")
+            return False
+        
+        try:
+            self.sio = socketio.Client(
+                reconnection=True,
+                reconnection_attempts=0,  # infinite
+                reconnection_delay=5,
+                reconnection_delay_max=60,
+                logger=False,
+                engineio_logger=False
+            )
+            
+            # ── WebSocket event handlers ──
+            
+            @self.sio.on('connect', namespace='/agents')
+            def on_connect():
+                logger.info("🔌 WebSocket connected to server")
+                # Authenticate
+                self.sio.emit('agent_auth', {
+                    'api_key': self.api_key,
+                    'agent_id': self.agent_id
+                }, namespace='/agents')
+            
+            @self.sio.on('auth_ok', namespace='/agents')
+            def on_auth_ok(data):
+                self.ws_connected = True
+                logger.info(f"🔑 WebSocket authenticated: {data.get('message', 'OK')}")
+            
+            @self.sio.on('auth_error', namespace='/agents')
+            def on_auth_error(data):
+                self.ws_connected = False
+                logger.error(f"❌ WebSocket auth failed: {data.get('error', 'unknown')}")
+            
+            @self.sio.on('scan_dispatch', namespace='/agents')
+            def on_scan_dispatch(data):
+                """Receive scan task via WebSocket"""
+                scan_id = data.get('scan_id')
+                logger.info(f"📥 Received scan via WebSocket: {scan_id}")
+                self._start_scan(data)
+            
+            @self.sio.on('disconnect', namespace='/agents')
+            def on_disconnect():
+                self.ws_connected = False
+                logger.warning("🔌 WebSocket disconnected, will reconnect...")
+            
+            @self.sio.on('ping_agent', namespace='/agents')
+            def on_ping(data):
+                self.sio.emit('pong_agent', {
+                    'agent_id': self.agent_id,
+                    'timestamp': datetime.utcnow().isoformat()
+                }, namespace='/agents')
+            
+            # Connect
+            ws_url = self.server_url.replace('https://', 'wss://').replace('http://', 'ws://')
+            # socketio-client uses http(s) URL, it handles upgrade internally
+            self.sio.connect(
+                self.server_url,
+                namespaces=['/agents'],
+                transports=['websocket', 'polling'],
+                wait_timeout=10
+            )
+            
+            logger.info("🔌 WebSocket connection established")
+            return True
+            
+        except Exception as e:
+            logger.warning(f"WebSocket connection failed: {e}")
+            logger.info("Falling back to HTTP polling mode")
+            self.ws_connected = False
+            return False
+    
+    # ── Main Loop ─────────────────────────────────────────────
     
     def start(self):
-        """Start agent main loop"""
+        """Start agent main loop with WebSocket + HTTP heartbeat"""
         self.running = True
         signal.signal(signal.SIGINT, self._handle_shutdown)
         signal.signal(signal.SIGTERM, self._handle_shutdown)
@@ -120,29 +207,48 @@ class CyberSecAgent:
         logger.info(f"   Server: {self.server_url}")
         logger.info(f"   Host: {self.hostname} ({self.ip_address})")
         logger.info(f"   OS: {self.os_info}")
+        logger.info(f"   WebSocket: {'available' if WS_AVAILABLE else 'not installed'}")
         logger.info(f"   Heartbeat: every {HEARTBEAT_INTERVAL}s")
+        
+        # Try WebSocket connection
+        ws_thread = None
+        if WS_AVAILABLE:
+            ws_thread = threading.Thread(target=self._setup_websocket, daemon=True)
+            ws_thread.start()
+            time.sleep(3)  # Give WS time to connect
         
         consecutive_failures = 0
         
         while self.running:
             try:
+                # Always send HTTP heartbeat (even with WS) for stats
                 result = self._send_heartbeat()
                 if result:
                     consecutive_failures = 0
-                    # Check for pending scans
-                    pending = result.get('pending_scans', [])
-                    for scan in pending:
-                        self._start_scan(scan)
+                    # If not connected via WS, check for pending scans via polling
+                    if not self.ws_connected:
+                        pending = result.get('pending_scans', [])
+                        for scan in pending:
+                            self._start_scan(scan)
                 else:
                     consecutive_failures += 1
                     if consecutive_failures >= 5:
                         logger.warning(f"⚠️  {consecutive_failures} consecutive heartbeat failures")
                 
+                # Try WebSocket reconnect if disconnected
+                if WS_AVAILABLE and not self.ws_connected and consecutive_failures == 0:
+                    try:
+                        if self.sio and not self.sio.connected:
+                            logger.info("Attempting WebSocket reconnect...")
+                            self._setup_websocket()
+                    except Exception:
+                        pass
+                
             except Exception as e:
                 logger.error(f"Heartbeat error: {e}")
                 consecutive_failures += 1
             
-            # Wait for next heartbeat
+            # Adaptive interval with backoff
             interval = HEARTBEAT_INTERVAL
             if consecutive_failures > 0:
                 interval = min(HEARTBEAT_INTERVAL * (2 ** min(consecutive_failures, 4)), 300)
@@ -150,7 +256,7 @@ class CyberSecAgent:
             time.sleep(interval)
     
     def _send_heartbeat(self):
-        """Send heartbeat to server"""
+        """Send heartbeat to server via HTTP"""
         data = {
             'api_key': self.api_key,
             'hostname': self.hostname,
@@ -159,8 +265,16 @@ class CyberSecAgent:
             'cpu_usage': self._get_cpu_usage(),
             'memory_usage': self._get_memory_usage(),
             'active_scans': len(self.active_scans),
-            'version': VERSION
+            'version': VERSION,
+            'ws_connected': self.ws_connected
         }
+        
+        # Also send heartbeat via WebSocket if connected
+        if self.ws_connected and self.sio:
+            try:
+                self.sio.emit('heartbeat', data, namespace='/agents')
+            except Exception:
+                pass
         
         resp = self._api_post('/api/v1/agents/heartbeat', data)
         return resp if resp and 'error' not in resp else None
@@ -183,7 +297,7 @@ class CyberSecAgent:
         thread.start()
     
     def _execute_scan(self, scan_task):
-        """Execute a scan and report results"""
+        """Execute a scan and report results via WebSocket + HTTP"""
         scan_id = scan_task['scan_id']
         tool_name = scan_task.get('tool_name', '')
         target = scan_task.get('target', '')
@@ -198,36 +312,68 @@ class CyberSecAgent:
             # Build command
             command = self._build_command(tool_name, target, params)
             if not command:
-                self._report_scan_result(scan_id, 'failed', '', f'Unknown tool: {tool_name}')
+                self._report_scan_complete(scan_id, 'failed', '', f'Unknown tool: {tool_name}')
                 return
             
             logger.info(f"   Command: {command}")
             
-            # Execute with timeout
-            result = subprocess.run(
+            # Execute with real-time output streaming
+            output_lines = []
+            process = subprocess.Popen(
                 command,
                 shell=True,
-                capture_output=True,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
                 text=True,
-                timeout=SCAN_TIMEOUT,
                 env={**os.environ, 'TERM': 'dumb'}
             )
             
-            output = result.stdout or ''
-            error = result.stderr or ''
+            # Stream stdout line-by-line via WebSocket
+            start_time = time.time()
             
-            if result.returncode == 0 or output:
-                self._report_scan_result(scan_id, 'completed', output, error)
+            def read_output():
+                for line in iter(process.stdout.readline, ''):
+                    if not line:
+                        break
+                    output_lines.append(line)
+                    # Stream via WebSocket
+                    if self.ws_connected and self.sio:
+                        try:
+                            self.sio.emit('scan_output_line', {
+                                'scan_id': scan_id,
+                                'line': line,
+                                'timestamp': datetime.utcnow().isoformat()
+                            }, namespace='/agents')
+                        except Exception:
+                            pass
+            
+            output_thread = threading.Thread(target=read_output, daemon=True)
+            output_thread.start()
+            
+            # Wait with timeout
+            try:
+                process.wait(timeout=SCAN_TIMEOUT)
+                output_thread.join(timeout=5)
+            except subprocess.TimeoutExpired:
+                process.kill()
+                output_thread.join(timeout=2)
+                self._report_scan_complete(scan_id, 'timeout', ''.join(output_lines), 
+                                          f'Scan timed out after {SCAN_TIMEOUT}s')
+                logger.warning(f"⏰ Scan {scan_id} timed out")
+                return
+            
+            output = ''.join(output_lines)
+            error = process.stderr.read() if process.stderr else ''
+            
+            if process.returncode == 0 or output:
+                self._report_scan_complete(scan_id, 'completed', output, error)
                 logger.info(f"✅ Scan {scan_id} completed ({len(output)} bytes)")
             else:
-                self._report_scan_result(scan_id, 'failed', output, error)
+                self._report_scan_complete(scan_id, 'failed', output, error)
                 logger.warning(f"❌ Scan {scan_id} failed: {error[:200]}")
                 
-        except subprocess.TimeoutExpired:
-            self._report_scan_result(scan_id, 'timeout', '', f'Scan timed out after {SCAN_TIMEOUT}s')
-            logger.warning(f"⏰ Scan {scan_id} timed out")
         except Exception as e:
-            self._report_scan_result(scan_id, 'failed', '', str(e))
+            self._report_scan_complete(scan_id, 'failed', '', str(e))
             logger.error(f"💥 Scan {scan_id} error: {e}")
         finally:
             with self.scan_lock:
@@ -315,20 +461,48 @@ class CyberSecAgent:
         return None
     
     def _report_scan_status(self, scan_id, status):
-        """Report scan status to server"""
-        self._api_post('/api/v1/agents/scan-status', {
+        """Report scan status via WebSocket + HTTP"""
+        data = {
             'api_key': self.api_key,
             'scan_id': scan_id,
             'status': status
-        })
+        }
+        
+        # WebSocket (instant)
+        if self.ws_connected and self.sio:
+            try:
+                self.sio.emit('scan_status_update', {
+                    'scan_id': scan_id,
+                    'status': status,
+                    'timestamp': datetime.utcnow().isoformat()
+                }, namespace='/agents')
+            except Exception:
+                pass
+        
+        # HTTP (reliable)
+        self._api_post('/api/v1/agents/scan-status', data)
     
-    def _report_scan_result(self, scan_id, status, output, error=''):
-        """Report scan result to server"""
+    def _report_scan_complete(self, scan_id, status, output, error=''):
+        """Report scan completion via WebSocket + HTTP"""
+        # WebSocket (instant)
+        if self.ws_connected and self.sio:
+            try:
+                self.sio.emit('scan_complete', {
+                    'scan_id': scan_id,
+                    'status': status,
+                    'output': output[:500000],
+                    'error': error[:10000],
+                    'completed_at': datetime.utcnow().isoformat()
+                }, namespace='/agents')
+            except Exception:
+                pass
+        
+        # HTTP (reliable fallback)
         self._api_post('/api/v1/agents/scan-result', {
             'api_key': self.api_key,
             'scan_id': scan_id,
             'status': status,
-            'output': output[:500000],  # Max 500KB
+            'output': output[:500000],
             'error': error[:10000],
             'completed_at': datetime.utcnow().isoformat()
         })
@@ -451,13 +625,18 @@ class CyberSecAgent:
         """Handle graceful shutdown"""
         logger.info("🛑 Shutting down agent...")
         self.running = False
+        if self.sio and self.sio.connected:
+            try:
+                self.sio.disconnect()
+            except Exception:
+                pass
         sys.exit(0)
 
 
 # ── CLI ───────────────────────────────────────────────────────
 
 def main():
-    parser = argparse.ArgumentParser(description='CyberSec Pro Kali Agent')
+    parser = argparse.ArgumentParser(description='CyberSec Pro Kali Agent v2')
     parser.add_argument('--server', '-s', default='https://cybersecpro.semihkilic.com',
                         help='CyberSec Pro server URL')
     parser.add_argument('--token', '-t', help='Registration token')
@@ -485,6 +664,14 @@ def main():
         if not agent.register():
             logger.error("Registration failed. Check token and server URL.")
             sys.exit(1)
+    
+    # Check WebSocket support
+    if not WS_AVAILABLE:
+        logger.warning("=" * 50)
+        logger.warning("python-socketio not found. Install for real-time mode:")
+        logger.warning("  pip3 install python-socketio[client] websocket-client")
+        logger.warning("Agent will use HTTP polling (slower).")
+        logger.warning("=" * 50)
     
     # Start main loop
     agent.start()

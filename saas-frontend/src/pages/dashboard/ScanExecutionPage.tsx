@@ -5,16 +5,27 @@ import api, { ScanResult, ToolConfig } from '../../services/api';
 import { useScanSubscription } from '../../hooks/useWebSocket';
 import { useTarget } from '../../contexts/TargetContext';
 
+interface AgentInfo {
+  id: string;
+  name: string;
+  hostname: string;
+  ip_address: string;
+  status: string;
+  platform: string;
+  cpu_usage: number;
+  memory_usage: number;
+  active_scans: number;
+  last_heartbeat: string;
+}
+
 export function ScanExecutionPage() {
   const { scanId, toolId: routeToolId } = useParams<{ scanId: string; toolId: string }>();
   const [searchParams] = useSearchParams();
   const { target: globalTarget, addRecentTarget: addGlobalTarget } = useTarget();
   
   const [tool, setTool] = useState<ToolConfig | null>(null);
-  // Use target from URL params first, then global context
   const [target, setTarget] = useState(searchParams.get('target') || globalTarget || '');
   const [parameters, setParameters] = useState<Record<string, string | number | boolean>>(() => {
-    // Try to parse parameters from URL
     const paramsStr = searchParams.get('params');
     if (paramsStr) {
       try {
@@ -33,8 +44,12 @@ export function ScanExecutionPage() {
   const [error, setError] = useState<string | null>(null);
   const [progress, setProgress] = useState(0);
   
+  // Agent selection
+  const [agents, setAgents] = useState<AgentInfo[]>([]);
+  const [selectedAgentId, setSelectedAgentId] = useState<string>('auto');
+  const [executionInfo, setExecutionInfo] = useState<{mode: string; agentName?: string; agentIp?: string; dispatchMethod?: string} | null>(null);
+  
   const outputRef = useRef<HTMLDivElement>(null);
-  // Priority: route param (:toolId) > query param (?tool=) > never default to nmap
   const toolId = routeToolId || searchParams.get('tool') || '';
   
   // WebSocket subscription for real-time updates
@@ -43,6 +58,23 @@ export function ScanExecutionPage() {
   useEffect(() => {
     fetchToolConfig();
   }, [toolId]);
+
+  // Fetch available agents
+  useEffect(() => {
+    const fetchAgents = async () => {
+      try {
+        const response = await api.getAgents();
+        if (response.data?.agents) {
+          setAgents(response.data.agents);
+        }
+      } catch {
+        // Agents feature optional - ignore errors
+      }
+    };
+    fetchAgents();
+    const interval = setInterval(fetchAgents, 15000);
+    return () => clearInterval(interval);
+  }, []);
 
   // Auto-start scan when coming from ToolDetailPage with target pre-filled
   const autoStartedRef = useRef(false);
@@ -140,9 +172,18 @@ export function ScanExecutionPage() {
     setError(null);
     setOutput([]);
     setStatus('running');
-    setOutput([`🚀 Starting ${tool?.name || toolId} scan on ${target}...`, '']);
+    setExecutionInfo(null);
+    
+    const agentLabel = selectedAgentId === 'local' 
+      ? '(Server)' 
+      : selectedAgentId === 'auto'
+        ? '(Auto-select agent)'
+        : `(Agent: ${agents.find(a => a.id === selectedAgentId)?.name || selectedAgentId})`;
+    
+    setOutput([`🚀 Starting ${tool?.name || toolId} scan on ${target} ${agentLabel}...`, '']);
 
-    const response = await api.executeScan(toolId, target, parameters);
+    const agentId = selectedAgentId === 'auto' ? undefined : selectedAgentId === 'local' ? undefined : selectedAgentId;
+    const response = await api.executeScan(toolId, target, parameters, agentId);
     
     if (response.error) {
       setError(response.error);
@@ -154,7 +195,29 @@ export function ScanExecutionPage() {
     if (response.data) {
       setCurrentScanId(response.data.scan_id);
       setCommand(response.data.command || '');
-      setOutput(prev => [...prev, `📝 Command: ${response.data?.command || ''}`, '', '--- Scan Output ---', '']);
+      
+      // Set execution info
+      const mode = response.data.execution_mode || 'local';
+      setExecutionInfo({
+        mode,
+        agentName: response.data.agent?.name,
+        agentIp: response.data.agent?.ip,
+        dispatchMethod: response.data.agent?.dispatch_method
+      });
+      
+      if (mode === 'agent' && response.data.agent) {
+        setOutput(prev => [
+          ...prev, 
+          `📡 Dispatched to agent "${response.data!.agent!.name}" (${response.data!.agent!.ip})`,
+          `🔗 Method: ${response.data!.agent!.dispatch_method === 'websocket' ? 'WebSocket (real-time)' : 'HTTP Polling'}`,
+          `📝 Command: ${response.data?.command || ''}`,
+          '',
+          '--- Agent Output ---',
+          ''
+        ]);
+      } else {
+        setOutput(prev => [...prev, `📝 Command: ${response.data?.command || ''}`, '', '--- Scan Output ---', '']);
+      }
     }
   };
 
@@ -262,6 +325,57 @@ export function ScanExecutionPage() {
               />
               {error && (
                 <p className="text-red-500 text-sm mt-2">{error}</p>
+              )}
+            </div>
+
+            {/* Agent Selection */}
+            <div className="bg-gray-900 rounded-xl border border-gray-800 p-5">
+              <h3 className="text-white font-semibold mb-4">🖥️ Execution Mode</h3>
+              <select
+                value={selectedAgentId}
+                onChange={(e) => setSelectedAgentId(e.target.value)}
+                disabled={status === 'running'}
+                className="w-full px-4 py-3 bg-gray-800 border border-gray-700 rounded-lg text-white focus:outline-none focus:border-kali-blue transition disabled:opacity-50"
+              >
+                <option value="auto">🔄 Auto (Agent preferred, server fallback)</option>
+                <option value="local">🖥️ Server (Local execution)</option>
+                {agents.filter(a => a.status === 'online').map(agent => (
+                  <option key={agent.id} value={agent.id}>
+                    🟢 {agent.name} ({agent.ip_address}) - CPU: {agent.cpu_usage}%
+                  </option>
+                ))}
+                {agents.filter(a => a.status !== 'online').map(agent => (
+                  <option key={agent.id} value={agent.id} disabled>
+                    🔴 {agent.name} ({agent.ip_address}) - Offline
+                  </option>
+                ))}
+              </select>
+              
+              {/* Online agents count */}
+              <div className="mt-2 flex items-center gap-2">
+                <span className={`w-2 h-2 rounded-full ${agents.filter(a => a.status === 'online').length > 0 ? 'bg-green-500' : 'bg-gray-500'}`} />
+                <span className="text-xs text-gray-400">
+                  {agents.filter(a => a.status === 'online').length} agent{agents.filter(a => a.status === 'online').length !== 1 ? 's' : ''} online
+                </span>
+              </div>
+              
+              {/* Execution info */}
+              {executionInfo && (
+                <div className={`mt-3 p-2 rounded-lg text-xs ${
+                  executionInfo.mode === 'agent' 
+                    ? 'bg-blue-500/10 border border-blue-500/30 text-blue-400' 
+                    : 'bg-purple-500/10 border border-purple-500/30 text-purple-400'
+                }`}>
+                  {executionInfo.mode === 'agent' ? (
+                    <>
+                      <p className="font-semibold">📡 Running on Agent</p>
+                      <p>{executionInfo.agentName} ({executionInfo.agentIp})</p>
+                      <p>Via: {executionInfo.dispatchMethod === 'websocket' ? 'WebSocket' : 'Polling'}</p>
+                    </>
+                  ) : (
+                    <p className="font-semibold">🖥️ Running on Server</p>
+                  )}
+                </div>
               )}
             </div>
 

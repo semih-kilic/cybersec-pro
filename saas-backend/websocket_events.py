@@ -72,6 +72,7 @@ def init_socketio(app, **kwargs):
     
     # Register event handlers
     register_handlers(socketio)
+    register_agent_handlers(socketio)
     
     logger.info("WebSocket initialized with Flask-SocketIO")
     
@@ -221,6 +222,124 @@ def register_handlers(sio: SocketIO):
             emit('activity_feed', {'org_id': org_id, 'entries': []})
 
     logger.info("WebSocket handlers registered (v2.0 – notifications, activity)")
+
+
+# ================================
+# Agent WebSocket Namespace
+# ================================
+
+def register_agent_handlers(sio: SocketIO):
+    """Register agent-specific WebSocket events on /agents namespace"""
+    
+    @sio.on('connect', namespace='/agents')
+    def handle_agent_connect():
+        """Handle agent WebSocket connection"""
+        logger.info(f"Agent connected via WebSocket: {request.sid}")
+        emit('connected', {'message': 'Agent WebSocket channel ready', 'sid': request.sid})
+    
+    @sio.on('disconnect', namespace='/agents')
+    def handle_agent_disconnect():
+        """Handle agent disconnection"""
+        sid = request.sid
+        # Find agent by sid and mark offline
+        if sid in _agent_sids:
+            agent_id = _agent_sids.pop(sid)
+            logger.warning(f"Agent {agent_id} disconnected (sid={sid})")
+    
+    @sio.on('agent_auth', namespace='/agents')
+    def handle_agent_auth(data):
+        """Authenticate agent via WebSocket using api_key"""
+        api_key = data.get('api_key')
+        if not api_key:
+            emit('auth_error', {'error': 'api_key required'})
+            return
+        
+        # Store mapping sid -> agent_id for dispatch routing
+        agent_id = data.get('agent_id', '')
+        _agent_sids[request.sid] = agent_id
+        
+        # Join agent-specific room
+        room = f"agent_{agent_id}"
+        join_room(room)
+        logger.info(f"Agent authenticated: {agent_id} → room {room} (sid={request.sid})")
+        emit('auth_ok', {'agent_id': agent_id, 'room': room})
+    
+    @sio.on('heartbeat', namespace='/agents')
+    def handle_agent_heartbeat(data):
+        """Real-time heartbeat from agent (supplements HTTP heartbeat)"""
+        agent_id = _agent_sids.get(request.sid)
+        if agent_id:
+            # Forward to dashboard subscribers
+            sio.emit('agent_heartbeat', {
+                'agent_id': agent_id,
+                'cpu_usage': data.get('cpu_usage', 0),
+                'memory_usage': data.get('memory_usage', 0),
+                'active_scans': data.get('active_scans', 0),
+                'timestamp': time.time()
+            }, namespace='/scans')
+    
+    @sio.on('scan_output_line', namespace='/agents')
+    def handle_agent_scan_output(data):
+        """Agent streams scan output line-by-line"""
+        scan_id = data.get('scan_id')
+        line = data.get('line', '')
+        if scan_id:
+            # Forward to dashboard clients watching this scan
+            sio.emit('scan_output', {
+                'scan_id': scan_id,
+                'line': line,
+                'source': 'agent'
+            }, namespace='/scans', room=f"scan_{scan_id}")
+    
+    @sio.on('scan_complete', namespace='/agents')
+    def handle_agent_scan_complete(data):
+        """Agent reports scan completion"""
+        scan_id = data.get('scan_id')
+        if scan_id:
+            sio.emit('scan_complete', {
+                'scan_id': scan_id,
+                'status': data.get('status', 'completed'),
+                'output_length': len(data.get('output', '')),
+                'source': 'agent'
+            }, namespace='/scans', room=f"scan_{scan_id}")
+            sio.emit('scan_complete', {
+                'scan_id': scan_id,
+                'status': data.get('status', 'completed'),
+                'source': 'agent'
+            }, namespace='/scans')
+    
+    logger.info("Agent WebSocket handlers registered (/agents namespace)")
+
+
+# In-memory: WebSocket sid → agent_id mapping
+_agent_sids: dict = {}
+
+
+def get_agent_sid(agent_id: str) -> str | None:
+    """Get WebSocket session ID for an agent"""
+    for sid, aid in _agent_sids.items():
+        if aid == agent_id:
+            return sid
+    return None
+
+
+def is_agent_ws_connected(agent_id: str) -> bool:
+    """Check if agent has active WebSocket connection"""
+    return get_agent_sid(agent_id) is not None
+
+
+def dispatch_scan_ws(agent_id: str, scan_task: dict) -> bool:
+    """Dispatch scan to agent via WebSocket. Returns True if sent."""
+    if socketio is None:
+        return False
+    try:
+        room = f"agent_{agent_id}"
+        socketio.emit('scan_dispatch', scan_task, namespace='/agents', room=room)
+        logger.info(f"Scan {scan_task.get('scan_id', '?')} dispatched to agent {agent_id} via WebSocket")
+        return True
+    except Exception as e:
+        logger.error(f"WebSocket dispatch failed: {e}")
+        return False
 
 
 # ================================

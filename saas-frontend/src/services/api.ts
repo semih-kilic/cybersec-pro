@@ -160,17 +160,46 @@ class ApiService {
     }>(`/scan/${scanId}/result`);
   }
 
-  async executeScan(toolId: string, target: string, parameters: Record<string, unknown>) {
+  async executeScan(toolId: string, target: string, parameters: Record<string, unknown>, agentId?: string) {
     return this.request<{
       success: boolean;
       scan_id: string;
       status: string;
       command: string;
       message: string;
+      execution_mode?: string;
+      agent?: {
+        id: string;
+        name: string;
+        ip: string;
+        dispatch_method: string;
+      };
     }>('/scan/start', {
       method: 'POST',
-      body: JSON.stringify({ tool: toolId, target, parameters }),
+      body: JSON.stringify({ 
+        tool: toolId, 
+        target, 
+        parameters,
+        ...(agentId && { agent_id: agentId, execution_mode: 'agent' })
+      }),
     });
+  }
+
+  async getAgents() {
+    return this.request<{
+      agents: Array<{
+        id: string;
+        name: string;
+        hostname: string;
+        ip_address: string;
+        status: string;
+        platform: string;
+        cpu_usage: number;
+        memory_usage: number;
+        active_scans: number;
+        last_heartbeat: string;
+      }>;
+    }>('/agents');
   }
 
   async stopScan(scanId: string) {
