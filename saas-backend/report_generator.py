@@ -108,6 +108,22 @@ COMPLIANCE_MAPPINGS = {
         '8 - Audit Log Management': ['logging', 'audit', 'monitoring'],
         '9 - Email/Browser Protections': ['email', 'browser', 'phishing'],
         '10 - Malware Defenses': ['malware', 'antivirus', 'protection']
+    },
+    'ISO 27001 Annex A': {
+        'A.5 - Information Security Policies': ['policy', 'procedure', 'governance', 'standard'],
+        'A.6 - Organization of Information Security': ['organization', 'responsibility', 'role', 'segregation of duties'],
+        'A.7 - Human Resource Security': ['awareness', 'training', 'personnel', 'employee'],
+        'A.8 - Asset Management': ['asset', 'inventory', 'classification', 'media', 'disposal'],
+        'A.9 - Access Control': ['access', 'authentication', 'authorization', 'password', 'privilege', 'MFA'],
+        'A.10 - Cryptography': ['encryption', 'SSL', 'TLS', 'certificate', 'crypto', 'key management', 'hash'],
+        'A.11 - Physical & Environmental Security': ['physical', 'environment', 'facility', 'data center'],
+        'A.12 - Operations Security': ['malware', 'backup', 'logging', 'monitoring', 'change management', 'capacity'],
+        'A.13 - Communications Security': ['network', 'firewall', 'transfer', 'segregation', 'VPN', 'port'],
+        'A.14 - System Acquisition & Development': ['development', 'testing', 'vulnerability', 'patch', 'SDLC', 'secure coding'],
+        'A.15 - Supplier Relationships': ['supplier', 'third-party', 'vendor', 'outsource'],
+        'A.16 - Incident Management': ['incident', 'breach', 'response', 'forensics', 'evidence'],
+        'A.17 - Business Continuity': ['continuity', 'disaster recovery', 'availability', 'resilience'],
+        'A.18 - Compliance': ['compliance', 'audit', 'legal', 'review', 'regulation', 'GDPR']
     }
 }
 
