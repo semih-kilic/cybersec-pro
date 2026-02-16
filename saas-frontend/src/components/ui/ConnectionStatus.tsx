@@ -5,7 +5,7 @@
 import { useRealtimeSocket } from '../../hooks/useRealtimeSocket';
 
 export function ConnectionStatus() {
-  const { state, isConnected, isReconnecting, connect } = useRealtimeSocket();
+  const { state, isConnected, connect } = useRealtimeSocket();
 
   const statusConfig = {
     connected: { color: 'bg-green-500', label: 'Live', pulse: true },

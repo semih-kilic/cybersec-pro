@@ -4,7 +4,7 @@
  * Shows who is doing what: "Admin started nmap on 8.8.8.8"
  * Combines REST endpoint data + live WebSocket activity events.
  */
-import { useState, useEffect, useCallback, memo } from 'react';
+import { useState, useEffect, memo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { wsManager } from '../../lib/socketManager';
 import { useAuth } from '../../hooks/useAuth';
@@ -102,7 +102,7 @@ export function ActivityFeed({ maxItems = 25 }: { maxItems?: number }) {
   useEffect(() => {
     if (!token) return;
 
-    const apiBase = import.meta.env.VITE_API_URL || '';
+    const apiBase = (import.meta as any).env?.VITE_API_URL || '';
     fetch(`${apiBase}/api/v1/activity`, {
       headers: { Authorization: `Bearer ${token}` },
     })
