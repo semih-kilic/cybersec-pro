@@ -1,8 +1,11 @@
-import { useState, useEffect, useMemo, useCallback } from 'react';
+import { useState, useMemo, useCallback, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import { Header } from '../../components/layout/Header';
 import { useAuth } from '../../hooks/useAuth';
 import { useTranslation } from 'react-i18next';
+import { useTools } from '../../hooks/useApiQueries';
+import { useVirtualizer } from '@tanstack/react-virtual';
+import { ToolsPageSkeleton } from '../../components/ui/Skeleton';
 
 interface Tool {
   id: string;
@@ -15,25 +18,6 @@ interface Tool {
   dangerous?: boolean;
   requires_root?: boolean;
   gui_only?: boolean;
-}
-
-interface CategoryInfo {
-  name: string;
-  icon: string;
-  description: string;
-  color: string;
-}
-
-interface CategoryData {
-  info: CategoryInfo;
-  tools: Tool[];
-}
-
-interface ToolsResponse {
-  success: boolean;
-  total_tools: number;
-  categories: { [key: string]: CategoryData };
-  category_list: string[];
 }
 
 // Category icons and colors mapping
@@ -94,53 +78,26 @@ const planHierarchy: { [key: string]: number } = {
 };
 
 export function ToolsPage() {
-  const { token, organization } = useAuth();
+  const { organization } = useAuth();
   const { t } = useTranslation();
-  const [allCategories, setAllCategories] = useState<{ [key: string]: CategoryData }>({});
-  const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
-  const [totalTools, setTotalTools] = useState(0);
-  const [categoryList, setCategoryList] = useState<string[]>([]);
   const [showOnlyInstalled, setShowOnlyInstalled] = useState(false);
   const [showOnlyAvailable, setShowOnlyAvailable] = useState(false);
   const [sortBy, setSortBy] = useState<'name' | 'category' | 'plan'>('category');
 
+  // Virtualizer ref for scrollable container
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
+
   // Get user plan from organization
   const userPlan = organization?.plan_type || 'trial';
 
-  useEffect(() => {
-    fetchTools();
-  }, [token, userPlan]);
-
-  const fetchTools = async () => {
-    try {
-      setLoading(true);
-      // Use v2 API with plan parameter
-      const res = await fetch(`/api/v2/tools?plan=${userPlan}`, {
-        headers: { 
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json'
-        },
-      });
-      
-      if (res.ok) {
-        const data: ToolsResponse = await res.json();
-        if (data.success) {
-          setAllCategories(data.categories || {});
-          setTotalTools(data.total_tools || 0);
-          setCategoryList(data.category_list || []);
-        }
-      } else {
-        console.error('Failed to fetch tools:', res.status);
-      }
-    } catch (error) {
-      console.error('Failed to fetch tools:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
+  // TanStack Query: cached tools fetch (5min staleTime)
+  const { data: toolsData, isLoading: loading } = useTools(userPlan);
+  const allCategories = toolsData?.categories || {};
+  const totalTools = toolsData?.totalTools || 0;
+  const categoryList = toolsData?.categoryList || [];
 
   // Check if user can use a tool based on plan
   const canUseTool = useCallback((toolPlan: string): boolean => {
@@ -247,9 +204,7 @@ export function ToolsPage() {
     return (
       <div className="min-h-screen bg-gray-950">
         <Header />
-        <div className="flex items-center justify-center h-[calc(100vh-64px)]">
-          <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-kali-blue"></div>
-        </div>
+        <ToolsPageSkeleton />
       </div>
     );
   }
@@ -486,168 +441,28 @@ export function ToolsPage() {
           )}
         </div>
 
-        {/* Tools Display */}
+        {/* Tools Display - Virtualized */}
         {viewMode === 'grid' ? (
-          <div className="space-y-8">
-            {Object.entries(filteredCategories).map(([categoryKey, tools]) => (
-              <div key={categoryKey}>
-                <div className="flex items-center gap-3 mb-4">
-                  <div className={`w-10 h-10 rounded-xl bg-gradient-to-br ${categoryColors[categoryKey] || 'from-gray-500 to-gray-600'} flex items-center justify-center text-xl`}>
-                    {categoryIcons[categoryKey] || '🔧'}
-                  </div>
-                  <div>
-                    <h2 className="text-lg font-semibold text-white">
-                      {categoryDisplayNames[categoryKey] || categoryKey}
-                    </h2>
-                    <p className="text-sm text-gray-400">{tools.length} tools</p>
-                  </div>
-                </div>
-                
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-                  {tools.map((tool) => {
-                    const canUse = canUseTool(tool.plan_required);
-                    return (
-                      <div 
-                        key={tool.id}
-                        className={`bg-gray-900 rounded-xl border p-5 transition group relative ${
-                          canUse 
-                            ? 'border-gray-800 hover:border-cyan-500/50 hover:shadow-lg hover:shadow-cyan-500/10' 
-                            : 'border-gray-800/50 opacity-50 hover:opacity-70'
-                        }`}
-                      >
-                        {/* Available Badge for Trial Users */}
-                        {canUse && (userPlan === 'trial' || userPlan === 'starter') && (
-                          <div className="absolute -top-2 -right-2 w-6 h-6 bg-gradient-to-r from-green-500 to-emerald-500 rounded-full flex items-center justify-center shadow-lg">
-                            <span className="text-white text-xs">✓</span>
-                          </div>
-                        )}
-                        <div className="flex items-start justify-between mb-3">
-                          <div className={`w-10 h-10 rounded-lg bg-gradient-to-br ${categoryColors[categoryKey] || 'from-gray-500 to-gray-600'} flex items-center justify-center`}>
-                            <span className="text-lg">{categoryIcons[categoryKey] || '🔧'}</span>
-                          </div>
-                          <div className="flex flex-col items-end gap-1">
-                            {getPlanBadge(tool.plan_required)}
-                            {tool.installed && (
-                              <span className="text-xs text-green-400">✓ Installed</span>
-                            )}
-                            {tool.gui_only && (
-                              <span className="text-xs text-yellow-400" title="Requires desktop environment (VNC/RDP)">🖥️ GUI Only</span>
-                            )}
-                            {tool.requires_root && (
-                              <span className="text-xs text-orange-400" title="Runs with elevated privileges">🔐 Root</span>
-                            )}
-                            {tool.dangerous && (
-                              <span className="text-xs text-red-400" title="Use with caution - may affect target systems">⚠️ Dangerous</span>
-                            )}
-                          </div>
-                        </div>
-                        
-                        <h3 className="text-white font-semibold mb-2 group-hover:text-kali-blue transition">
-                          {tool.name}
-                        </h3>
-                        <p className="text-sm text-gray-400 line-clamp-2 mb-4">
-                          {tool.description || 'No description available'}
-                        </p>
-                        
-                        <div className="flex gap-2">
-                          {canUse ? (
-                            tool.gui_only ? (
-                              <div className="flex-1 py-2 bg-yellow-900/30 text-yellow-400 text-center rounded-lg text-sm font-medium cursor-not-allowed" title="This tool requires a desktop environment. Use VNC or RDP to access.">
-                                🖥️ Desktop Required
-                              </div>
-                            ) : (
-                              <>
-                                <Link 
-                                  to={`/dashboard/tools/${tool.id}`}
-                                  className="flex-1 py-2 bg-kali-blue hover:bg-kali-blue/90 text-white text-center rounded-lg text-sm font-medium transition"
-                                >
-                                  {tool.requires_root ? '🔐 Run as Root' : '⚡ Run Tool'}
-                                </Link>
-                              </>
-                            )
-                          ) : (
-                            <Link 
-                              to="/#pricing"
-                              className="flex-1 py-2 bg-gray-800 hover:bg-gray-700 text-white text-center rounded-lg text-sm font-medium transition"
-                            >
-                              🔒 Upgrade to Use
-                            </Link>
-                          )}
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
-              </div>
-            ))}
-          </div>
+          <VirtualizedToolGrid
+            filteredCategories={filteredCategories}
+            categoryColors={categoryColors}
+            categoryIcons={categoryIcons}
+            categoryDisplayNames={categoryDisplayNames}
+            canUseTool={canUseTool}
+            getPlanBadge={getPlanBadge}
+            userPlan={userPlan}
+            scrollContainerRef={scrollContainerRef}
+          />
         ) : (
-          /* List View */
-          <div className="bg-gray-900 rounded-xl border border-gray-800 overflow-hidden">
-            <table className="w-full">
-              <thead>
-                <tr className="text-left text-sm text-gray-400 border-b border-gray-800">
-                  <th className="px-5 py-3 font-medium">Tool</th>
-                  <th className="px-5 py-3 font-medium">Category</th>
-                  <th className="px-5 py-3 font-medium">Plan</th>
-                  <th className="px-5 py-3 font-medium">Status</th>
-                  <th className="px-5 py-3 font-medium">Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                {Object.entries(filteredCategories).flatMap(([categoryKey, tools]) =>
-                  tools.map((tool) => {
-                    const canUse = canUseTool(tool.plan_required);
-                    return (
-                      <tr key={tool.id} className="border-b border-gray-800/50 hover:bg-gray-800/30 transition">
-                        <td className="px-5 py-4">
-                          <div className="flex items-center gap-3">
-                            <div className={`w-8 h-8 rounded-lg bg-gradient-to-br ${categoryColors[categoryKey] || 'from-gray-500 to-gray-600'} flex items-center justify-center text-sm`}>
-                              {categoryIcons[categoryKey] || '🔧'}
-                            </div>
-                            <div>
-                              <p className="text-white font-medium">{tool.name}</p>
-                              <p className="text-xs text-gray-400 line-clamp-1 max-w-xs">{tool.description}</p>
-                            </div>
-                          </div>
-                        </td>
-                        <td className="px-5 py-4 text-sm text-gray-400">
-                          {categoryDisplayNames[categoryKey] || categoryKey}
-                        </td>
-                        <td className="px-5 py-4">{getPlanBadge(tool.plan_required)}</td>
-                        <td className="px-5 py-4">
-                          {tool.installed ? (
-                            <span className="text-green-400 text-sm">✓ Installed</span>
-                          ) : (
-                            <span className="text-gray-500 text-sm">Not installed</span>
-                          )}
-                        </td>
-                        <td className="px-5 py-4">
-                          <div className="flex gap-2">
-                            {canUse ? (
-                              <Link 
-                                to={`/dashboard/tools/${tool.id}`}
-                                className="px-3 py-1.5 bg-kali-blue hover:bg-kali-blue/90 text-white rounded text-sm transition"
-                              >
-                                Run
-                              </Link>
-                            ) : (
-                              <Link 
-                                to="/#pricing"
-                                className="px-3 py-1.5 bg-gray-800 text-gray-400 hover:text-white rounded text-sm transition"
-                              >
-                                Upgrade
-                              </Link>
-                            )}
-                          </div>
-                        </td>
-                      </tr>
-                    );
-                  })
-                )}
-              </tbody>
-            </table>
-          </div>
+          <VirtualizedToolList
+            filteredCategories={filteredCategories}
+            categoryColors={categoryColors}
+            categoryIcons={categoryIcons}
+            categoryDisplayNames={categoryDisplayNames}
+            canUseTool={canUseTool}
+            getPlanBadge={getPlanBadge}
+            scrollContainerRef={scrollContainerRef}
+          />
         )}
 
         {/* Empty State */}
@@ -668,6 +483,312 @@ export function ToolsPage() {
             </button>
           </div>
         )}
+      </div>
+    </div>
+  );
+}
+
+// ==========================================
+// VIRTUALIZED GRID VIEW (Tool Cards)
+// ==========================================
+
+type VirtualGridRow = 
+  | { type: 'header'; categoryKey: string; toolCount: number }
+  | { type: 'cards'; tools: Array<{ tool: Tool; categoryKey: string }> };
+
+interface VirtualizedToolGridProps {
+  filteredCategories: { [key: string]: Tool[] };
+  categoryColors: { [key: string]: string };
+  categoryIcons: { [key: string]: string };
+  categoryDisplayNames: { [key: string]: string };
+  canUseTool: (plan: string) => boolean;
+  getPlanBadge: (plan: string) => React.ReactNode;
+  userPlan: string;
+  scrollContainerRef: React.RefObject<HTMLDivElement | null>;
+}
+
+function VirtualizedToolGrid({
+  filteredCategories,
+  categoryColors,
+  categoryIcons,
+  categoryDisplayNames,
+  canUseTool,
+  getPlanBadge,
+  userPlan,
+}: VirtualizedToolGridProps) {
+  const containerRef = useRef<HTMLDivElement>(null);
+  const COLS = 4; // xl:grid-cols-4
+
+  // Build flat virtual rows: headers + card rows
+  const virtualRows = useMemo(() => {
+    const rows: VirtualGridRow[] = [];
+    Object.entries(filteredCategories).forEach(([categoryKey, tools]) => {
+      rows.push({ type: 'header', categoryKey, toolCount: tools.length });
+      // Chunk tools into rows of COLS
+      for (let i = 0; i < tools.length; i += COLS) {
+        rows.push({
+          type: 'cards',
+          tools: tools.slice(i, i + COLS).map(tool => ({ tool, categoryKey })),
+        });
+      }
+    });
+    return rows;
+  }, [filteredCategories]);
+
+  const rowVirtualizer = useVirtualizer({
+    count: virtualRows.length,
+    getScrollElement: () => containerRef.current,
+    estimateSize: (index) => virtualRows[index].type === 'header' ? 64 : 220,
+    overscan: 5,
+  });
+
+  return (
+    <div
+      ref={containerRef}
+      className="overflow-auto"
+      style={{ maxHeight: 'calc(100vh - 420px)' }}
+    >
+      <div
+        style={{
+          height: `${rowVirtualizer.getTotalSize()}px`,
+          width: '100%',
+          position: 'relative',
+        }}
+      >
+        {rowVirtualizer.getVirtualItems().map((virtualRow) => {
+          const row = virtualRows[virtualRow.index];
+          
+          if (row.type === 'header') {
+            return (
+              <div
+                key={virtualRow.key}
+                style={{
+                  position: 'absolute',
+                  top: 0,
+                  left: 0,
+                  width: '100%',
+                  height: `${virtualRow.size}px`,
+                  transform: `translateY(${virtualRow.start}px)`,
+                }}
+                className="flex items-center gap-3 pt-6 pb-2"
+              >
+                <div className={`w-10 h-10 rounded-xl bg-gradient-to-br ${categoryColors[row.categoryKey] || 'from-gray-500 to-gray-600'} flex items-center justify-center text-xl`}>
+                  {categoryIcons[row.categoryKey] || '🔧'}
+                </div>
+                <div>
+                  <h2 className="text-lg font-semibold text-white">
+                    {categoryDisplayNames[row.categoryKey] || row.categoryKey}
+                  </h2>
+                  <p className="text-sm text-gray-400">{row.toolCount} tools</p>
+                </div>
+              </div>
+            );
+          }
+          
+          return (
+            <div
+              key={virtualRow.key}
+              style={{
+                position: 'absolute',
+                top: 0,
+                left: 0,
+                width: '100%',
+                height: `${virtualRow.size}px`,
+                transform: `translateY(${virtualRow.start}px)`,
+              }}
+              className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 py-2"
+            >
+              {row.tools.map(({ tool, categoryKey }) => {
+                const canUse = canUseTool(tool.plan_required);
+                return (
+                  <div 
+                    key={tool.id}
+                    className={`bg-gray-900 rounded-xl border p-5 transition group relative ${
+                      canUse 
+                        ? 'border-gray-800 hover:border-cyan-500/50 hover:shadow-lg hover:shadow-cyan-500/10' 
+                        : 'border-gray-800/50 opacity-50 hover:opacity-70'
+                    }`}
+                  >
+                    {canUse && (userPlan === 'trial' || userPlan === 'starter') && (
+                      <div className="absolute -top-2 -right-2 w-6 h-6 bg-gradient-to-r from-green-500 to-emerald-500 rounded-full flex items-center justify-center shadow-lg">
+                        <span className="text-white text-xs">✓</span>
+                      </div>
+                    )}
+                    <div className="flex items-start justify-between mb-3">
+                      <div className={`w-10 h-10 rounded-lg bg-gradient-to-br ${categoryColors[categoryKey] || 'from-gray-500 to-gray-600'} flex items-center justify-center`}>
+                        <span className="text-lg">{categoryIcons[categoryKey] || '🔧'}</span>
+                      </div>
+                      <div className="flex flex-col items-end gap-1">
+                        {getPlanBadge(tool.plan_required)}
+                        {tool.installed && <span className="text-xs text-green-400">✓ Installed</span>}
+                        {tool.gui_only && <span className="text-xs text-yellow-400" title="Requires desktop environment (VNC/RDP)">🖥️ GUI Only</span>}
+                        {tool.requires_root && <span className="text-xs text-orange-400" title="Runs with elevated privileges">🔐 Root</span>}
+                        {tool.dangerous && <span className="text-xs text-red-400" title="Use with caution - may affect target systems">⚠️ Dangerous</span>}
+                      </div>
+                    </div>
+                    <h3 className="text-white font-semibold mb-2 group-hover:text-kali-blue transition">
+                      {tool.name}
+                    </h3>
+                    <p className="text-sm text-gray-400 line-clamp-2 mb-4">
+                      {tool.description || 'No description available'}
+                    </p>
+                    <div className="flex gap-2">
+                      {canUse ? (
+                        tool.gui_only ? (
+                          <div className="flex-1 py-2 bg-yellow-900/30 text-yellow-400 text-center rounded-lg text-sm font-medium cursor-not-allowed">
+                            🖥️ Desktop Required
+                          </div>
+                        ) : (
+                          <Link 
+                            to={`/dashboard/tools/${tool.id}`}
+                            className="flex-1 py-2 bg-kali-blue hover:bg-kali-blue/90 text-white text-center rounded-lg text-sm font-medium transition"
+                          >
+                            {tool.requires_root ? '🔐 Run as Root' : '⚡ Run Tool'}
+                          </Link>
+                        )
+                      ) : (
+                        <Link 
+                          to="/#pricing"
+                          className="flex-1 py-2 bg-gray-800 hover:bg-gray-700 text-white text-center rounded-lg text-sm font-medium transition"
+                        >
+                          🔒 Upgrade to Use
+                        </Link>
+                      )}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+// ==========================================
+// VIRTUALIZED LIST VIEW (Table Rows)
+// ==========================================
+
+interface VirtualizedToolListProps {
+  filteredCategories: { [key: string]: Tool[] };
+  categoryColors: { [key: string]: string };
+  categoryIcons: { [key: string]: string };
+  categoryDisplayNames: { [key: string]: string };
+  canUseTool: (plan: string) => boolean;
+  getPlanBadge: (plan: string) => React.ReactNode;
+  scrollContainerRef: React.RefObject<HTMLDivElement | null>;
+}
+
+function VirtualizedToolList({
+  filteredCategories,
+  categoryColors,
+  categoryIcons,
+  categoryDisplayNames,
+  canUseTool,
+  getPlanBadge,
+}: VirtualizedToolListProps) {
+  const containerRef = useRef<HTMLDivElement>(null);
+
+  // Flatten all tools for list virtualization
+  const flatTools = useMemo(() => {
+    return Object.entries(filteredCategories).flatMap(([categoryKey, tools]) =>
+      tools.map(tool => ({ tool, categoryKey }))
+    );
+  }, [filteredCategories]);
+
+  const rowVirtualizer = useVirtualizer({
+    count: flatTools.length,
+    getScrollElement: () => containerRef.current,
+    estimateSize: () => 64,
+    overscan: 15,
+  });
+
+  return (
+    <div className="bg-gray-900 rounded-xl border border-gray-800 overflow-hidden">
+      <table className="w-full">
+        <thead>
+          <tr className="text-left text-sm text-gray-400 border-b border-gray-800">
+            <th className="px-5 py-3 font-medium">Tool</th>
+            <th className="px-5 py-3 font-medium">Category</th>
+            <th className="px-5 py-3 font-medium">Plan</th>
+            <th className="px-5 py-3 font-medium">Status</th>
+            <th className="px-5 py-3 font-medium">Actions</th>
+          </tr>
+        </thead>
+      </table>
+
+      <div
+        ref={containerRef}
+        className="overflow-auto"
+        style={{ maxHeight: 'calc(100vh - 420px)' }}
+      >
+        <div style={{ height: `${rowVirtualizer.getTotalSize()}px`, position: 'relative' }}>
+          <table className="w-full">
+            <tbody>
+              {rowVirtualizer.getVirtualItems().map((virtualRow) => {
+                const { tool, categoryKey } = flatTools[virtualRow.index];
+                const canUse = canUseTool(tool.plan_required);
+                return (
+                  <tr
+                    key={virtualRow.key}
+                    className="border-b border-gray-800/50 hover:bg-gray-800/30 transition"
+                    style={{
+                      position: 'absolute',
+                      top: 0,
+                      left: 0,
+                      width: '100%',
+                      height: `${virtualRow.size}px`,
+                      transform: `translateY(${virtualRow.start}px)`,
+                      display: 'flex',
+                      alignItems: 'center',
+                    }}
+                  >
+                    <td className="px-5 py-4 flex-[3]">
+                      <div className="flex items-center gap-3">
+                        <div className={`w-8 h-8 rounded-lg bg-gradient-to-br ${categoryColors[categoryKey] || 'from-gray-500 to-gray-600'} flex items-center justify-center text-sm flex-shrink-0`}>
+                          {categoryIcons[categoryKey] || '🔧'}
+                        </div>
+                        <div className="min-w-0">
+                          <p className="text-white font-medium truncate">{tool.name}</p>
+                          <p className="text-xs text-gray-400 truncate max-w-xs">{tool.description}</p>
+                        </div>
+                      </div>
+                    </td>
+                    <td className="px-5 py-4 text-sm text-gray-400 flex-[2]">
+                      {categoryDisplayNames[categoryKey] || categoryKey}
+                    </td>
+                    <td className="px-5 py-4 flex-1">{getPlanBadge(tool.plan_required)}</td>
+                    <td className="px-5 py-4 flex-1">
+                      {tool.installed ? (
+                        <span className="text-green-400 text-sm">✓ Installed</span>
+                      ) : (
+                        <span className="text-gray-500 text-sm">Not installed</span>
+                      )}
+                    </td>
+                    <td className="px-5 py-4 flex-1">
+                      {canUse ? (
+                        <Link 
+                          to={`/dashboard/tools/${tool.id}`}
+                          className="px-3 py-1.5 bg-kali-blue hover:bg-kali-blue/90 text-white rounded text-sm transition inline-block"
+                        >
+                          Run
+                        </Link>
+                      ) : (
+                        <Link 
+                          to="/#pricing"
+                          className="px-3 py-1.5 bg-gray-800 text-gray-400 hover:text-white rounded text-sm transition inline-block"
+                        >
+                          Upgrade
+                        </Link>
+                      )}
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
       </div>
     </div>
   );

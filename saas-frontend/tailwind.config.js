@@ -157,6 +157,9 @@ export default {
           '33%': { transform: 'translateY(-10px) rotate(1deg)' },
           '66%': { transform: 'translateY(5px) rotate(-1deg)' },
         },
+        'shimmer': {
+          '100%': { transform: 'translateX(100%)' },
+        },
       },
       
       // Animation utilities
@@ -166,6 +169,7 @@ export default {
         'matrix-rain': 'matrix-rain var(--duration-matrix) linear infinite',
         'terminal-cursor': 'terminal-cursor var(--terminal-cursor-blink) infinite',
         'dragon-float': 'dragon-float 6s ease-in-out infinite',
+        'shimmer': 'shimmer 1.5s infinite',
       },
       
       // Responsive breakpoints (matching our theme)

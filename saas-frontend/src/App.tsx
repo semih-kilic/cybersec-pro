@@ -1,6 +1,8 @@
 import { BrowserRouter as Router, Routes, Route, Navigate, Outlet } from 'react-router-dom';
 import { HelmetProvider } from 'react-helmet-async';
 import { Suspense, lazy } from 'react';
+import { QueryClientProvider } from '@tanstack/react-query';
+import { queryClient } from './lib/queryClient';
 
 // i18n - must be imported before any component that uses translations
 import './i18n';
@@ -193,14 +195,16 @@ function AppRoutes() {
 function App() {
   return (
     <HelmetProvider>
-      <Router>
-        <AuthProvider>
-          <div className="min-h-screen cyberpunk-theme">
-            <AppRoutes />
-            <CookieConsentBanner />
-          </div>
-        </AuthProvider>
-      </Router>
+      <QueryClientProvider client={queryClient}>
+        <Router>
+          <AuthProvider>
+            <div className="min-h-screen cyberpunk-theme">
+              <AppRoutes />
+              <CookieConsentBanner />
+            </div>
+          </AuthProvider>
+        </Router>
+      </QueryClientProvider>
     </HelmetProvider>
   );
 }
