@@ -428,3 +428,108 @@ html.light .bg-gray-900.w-64 {
 /* Cards and panels */
 html.light .shadow-lg { box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05), 0 2px 4px -2px rgba(0,0,0,0.05) !important; }
 html.light .shadow-2xl { box-shadow: 0 10px 15px -3px rgba(0,0,0,0.08), 0 4px 6px -4px rgba(0,0,0,0.05) !important; }
+
+/* Additional backgrounds */
+html.light .bg-gray-800\/30 { background-color: rgba(241,245,249,0.5) !important; }
+html.light .bg-gray-800\/40 { background-color: rgba(241,245,249,0.6) !important; }
+html.light .bg-gray-950 { background-color: #f8fafc !important; }
+html.light .bg-gray-900\/50 { background-color: rgba(255,255,255,0.7) !important; }
+
+/* Border variants */
+html.light .border-gray-800\/50 { border-color: rgba(226,232,240,0.5) !important; }
+html.light .border-gray-700\/50 { border-color: rgba(226,232,240,0.5) !important; }
+html.light .border-gray-600 { border-color: #cbd5e1 !important; }
+html.light .divide-gray-800 > * + * { border-color: #e2e8f0 !important; }
+
+/* Text extensions */
+html.light .text-gray-600 { color: #475569 !important; }
+html.light .placeholder-gray-500::placeholder { color: #94a3b8 !important; }
+html.light .placeholder-gray-400::placeholder { color: #94a3b8 !important; }
+
+/* Inputs & form controls */
+html.light input[class*="bg-gray-900"],
+html.light input[class*="bg-gray-800"],
+html.light textarea[class*="bg-gray-900"],
+html.light textarea[class*="bg-gray-800"],
+html.light select[class*="bg-gray-900"] {
+  background-color: #ffffff !important;
+  border-color: #e2e8f0 !important;
+  color: #1e293b !important;
+}
+
+/* Buttons */
+html.light button[class*="bg-gray-800"]:not([class*="bg-gray-800/"]) {
+  background-color: #e2e8f0 !important;
+  color: #334155 !important;
+}
+html.light button[class*="bg-gray-800"]:hover {
+  background-color: #cbd5e1 !important;
+}
+html.light button[class*="bg-gray-700"] {
+  background-color: #cbd5e1 !important;
+  color: #334155 !important;
+}
+
+/* Modal backdrop */
+html.light .bg-black\/60 { background-color: rgba(0,0,0,0.3) !important; }
+html.light .bg-black\/50 { background-color: rgba(0,0,0,0.25) !important; }
+
+/* Table headers */
+html.light th[class*="text-gray-400"] { color: #64748b !important; }
+
+/* Code/terminal blocks stay dark in light mode for contrast */
+html.light .font-mono pre,
+html.light pre[class*="text-green"] {
+  background-color: #1e293b !important;
+  color: #4ade80 !important;
+}
+html.light code[class*="text-green"] {
+  color: #059669 !important;
+}
+html.light div[role="log"] {
+  background-color: #1e293b !important;
+}
+
+/* Status badges keep their colors */
+html.light .bg-blue-500\/20 { background-color: rgba(59,130,246,0.1) !important; }
+html.light .bg-green-500\/20 { background-color: rgba(34,197,94,0.1) !important; }
+html.light .bg-red-500\/20 { background-color: rgba(239,68,68,0.1) !important; }
+html.light .bg-yellow-500\/20 { background-color: rgba(234,179,8,0.1) !important; }
+html.light .bg-orange-500\/20 { background-color: rgba(249,115,22,0.1) !important; }
+html.light .bg-purple-500\/20 { background-color: rgba(168,85,247,0.1) !important; }
+html.light .bg-kali-blue\/20 { background-color: rgba(8,145,178,0.1) !important; }
+
+/* Rounded cards get subtle border in light mode */
+html.light [class*="rounded-xl"][class*="border-gray-800"] {
+  border-color: #e2e8f0 !important;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+}
+
+/* Scrollbar for light mode */
+html.light ::-webkit-scrollbar-track { background: #f1f5f9; }
+html.light ::-webkit-scrollbar-thumb { background: #cbd5e1; }
+html.light ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+
+/* Command palette in light mode */
+html.light [role="dialog"] [class*="bg-gray-900"] {
+  background-color: #ffffff !important;
+  border-color: #e2e8f0 !important;
+}
+
+/* Toast in light mode */
+html.light [class*="toast"] {
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1) !important;
+}
+
+/* Skeleton shimmer in light mode */
+html.light [class*="bg-gray-800"][class*="animate"] {
+  background-color: #e2e8f0 !important;
+}
+
+/* Smooth theme transition */
+html.theme-transition,
+html.theme-transition *,
+html.theme-transition *::before,
+html.theme-transition *::after {
+  transition: background-color 0.3s ease, color 0.2s ease, border-color 0.3s ease, box-shadow 0.3s ease !important;
+}

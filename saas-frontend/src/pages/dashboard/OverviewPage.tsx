@@ -8,6 +8,7 @@ import WelcomeTour from '../../components/WelcomeTour';
 import { useDashboardData } from '../../hooks/useApiQueries';
 import { OverviewSkeleton } from '../../components/ui/Skeleton';
 import { ActivityFeed } from '../../components/dashboard/ActivityFeed';
+import { PageTransition } from '../../components/ui/PageTransition';
 
 // Plan configurations - synced with backend database (143 total tools)
 const PLAN_CONFIG: Record<string, { tools: number; scansPerDay: number; features: string[] }> = {
@@ -133,6 +134,7 @@ export function OverviewPage() {
   const hasRunFirstScan = scanSummary.total > 0;
 
   return (
+    <PageTransition>
     <div className="min-h-screen bg-gray-950">
       {/* Welcome Tour for new users */}
       <WelcomeTour
@@ -659,6 +661,7 @@ export function OverviewPage() {
         <ActivityFeed maxItems={15} />
       </div>
     </div>
+    </PageTransition>
   );
 }
 

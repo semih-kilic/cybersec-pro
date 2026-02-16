@@ -22,6 +22,7 @@ import { ToastProvider } from './components/ui/Toast';
 import { ColorModeProvider } from './contexts/ColorModeContext';
 import { CommandPalette } from './components/ui/CommandPalette';
 import { useKeyboardShortcuts } from './hooks/useKeyboardShortcuts';
+import { ShortcutsHelp } from './components/ui/ShortcutsHelp';
 
 // Real-time: WebSocket manager + browser notifications
 import { wsManager } from './lib/socketManager';
@@ -117,7 +118,7 @@ function PublicRoute({ children }: { children: React.ReactNode }) {
 
 // Dashboard Layout with Sidebar
 function DashboardLayout() {
-  const { isPaletteOpen, closePalette } = useKeyboardShortcuts();
+  const { isPaletteOpen, closePalette, showShortcutsHelp, setShowShortcutsHelp } = useKeyboardShortcuts();
   const { requestPermission } = useBrowserNotifications();
 
   // Connect WebSocket once when dashboard mounts
@@ -131,12 +132,13 @@ function DashboardLayout() {
     <TargetProvider>
       <div className="flex min-h-screen bg-gray-950">
         <Sidebar />
-        <main className="flex-1 ml-64 overflow-auto">
+        <main className="flex-1 ml-64 overflow-auto" id="main-content" role="main">
           <Suspense fallback={<OverviewSkeleton />}>
             <Outlet />
           </Suspense>
         </main>
         <CommandPalette isOpen={isPaletteOpen} onClose={closePalette} />
+        <ShortcutsHelp isOpen={showShortcutsHelp} onClose={() => setShowShortcutsHelp(false)} />
       </div>
     </TargetProvider>
   );

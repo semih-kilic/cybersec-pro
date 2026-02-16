@@ -133,7 +133,58 @@ export function OnboardingModal({
         </div>
       ),
     },
-    // Step 2: How It Works
+    // Step 2: Agents & Infrastructure
+    {
+      title: 'Agents & Infrastructure 🖥️',
+      content: (
+        <div className="space-y-6">
+          <p className="text-gray-400 text-center">
+            Connect your Kali Linux agents to run scans from your own infrastructure.
+          </p>
+          
+          <div className="space-y-3">
+            {[
+              {
+                icon: '🐳',
+                title: 'Docker Agent',
+                desc: 'Deploy a pre-configured Kali container in seconds',
+                badge: 'Recommended',
+                badgeColor: 'bg-green-500/20 text-green-400',
+              },
+              {
+                icon: '🖥️',
+                title: 'SSH Agent',
+                desc: 'Connect any existing Kali Linux machine via SSH',
+                badge: 'Advanced',
+                badgeColor: 'bg-blue-500/20 text-blue-400',
+              },
+              {
+                icon: '☁️',
+                title: 'Cloud Agent',
+                desc: 'Use our managed cloud infrastructure',
+                badge: 'Pro',
+                badgeColor: 'bg-purple-500/20 text-purple-400',
+              },
+            ].map((agent, i) => (
+              <div 
+                key={i}
+                className="flex items-center gap-4 p-4 rounded-lg bg-gray-800/50 border border-gray-700 hover:border-cyan-500/50 transition"
+              >
+                <span className="text-3xl">{agent.icon}</span>
+                <div className="flex-1">
+                  <div className="font-semibold text-white flex items-center gap-2">
+                    {agent.title}
+                    <span className={`px-2 py-0.5 rounded-full text-xs ${agent.badgeColor}`}>{agent.badge}</span>
+                  </div>
+                  <div className="text-sm text-gray-400">{agent.desc}</div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      ),
+    },
+    // Step 3: How Scanning Works
     {
       title: 'How It Works ⚡',
       content: (
@@ -186,51 +237,65 @@ export function OnboardingModal({
         </div>
       ),
     },
-    // Step 3: Ready to Start
+    // Step 4: Reports & Analytics
     {
-      title: "You're All Set! 🎊",
+      title: 'Reports & Analytics 📊',
       content: (
-        <div className="text-center space-y-6">
-          <div className="inline-flex items-center justify-center w-24 h-24 rounded-full bg-gradient-to-r from-green-500 to-emerald-600 mb-4">
-            <svg className="w-12 h-12 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-            </svg>
-          </div>
-          
-          <p className="text-gray-400">
-            You're ready to start your first security scan!
+        <div className="space-y-6">
+          <p className="text-gray-400 text-center">
+            Generate professional security reports and track your findings over time.
           </p>
           
           <div className="bg-gray-800/50 rounded-xl p-6 border border-gray-700 space-y-4">
-            <h4 className="font-semibold text-white">Quick Start Options:</h4>
-            
-            <div className="grid grid-cols-1 gap-3">
-              <button
-                onClick={() => {
-                  onComplete();
-                  navigate('/dashboard/scans/new');
-                }}
-                className="flex items-center justify-center gap-2 px-4 py-3 bg-gradient-to-r from-cyan-500 to-blue-500 text-white rounded-lg font-semibold hover:opacity-90 transition"
-              >
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
-                </svg>
-                Run Your First Scan
-              </button>
-              
-              <button
-                onClick={() => {
-                  onComplete();
-                  navigate('/dashboard/tools');
-                }}
-                className="flex items-center justify-center gap-2 px-4 py-3 bg-gray-700 text-white rounded-lg font-semibold hover:bg-gray-600 transition"
-              >
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
-                </svg>
-                Browse All Tools
-              </button>
+            <div className="flex items-center gap-3 pb-4 border-b border-gray-700">
+              <div className="w-10 h-10 rounded-lg bg-green-500/20 flex items-center justify-center text-xl">📋</div>
+              <div>
+                <div className="font-semibold text-white">Detailed Scan Reports</div>
+                <div className="text-sm text-gray-400">Vulnerability details, risk scores, and remediation steps</div>
+              </div>
             </div>
+            <div className="flex items-center gap-3 pb-4 border-b border-gray-700">
+              <div className="w-10 h-10 rounded-lg bg-blue-500/20 flex items-center justify-center text-xl">📈</div>
+              <div>
+                <div className="font-semibold text-white">Trend Analytics</div>
+                <div className="text-sm text-gray-400">Track security posture improvements over time</div>
+              </div>
+            </div>
+            <div className="flex items-center gap-3 pb-4 border-b border-gray-700">
+              <div className="w-10 h-10 rounded-lg bg-purple-500/20 flex items-center justify-center text-xl">📤</div>
+              <div>
+                <div className="font-semibold text-white">Export & Share</div>
+                <div className="text-sm text-gray-400">PDF, JSON, CSV export for compliance needs</div>
+              </div>
+            </div>
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-lg bg-yellow-500/20 flex items-center justify-center text-xl">🔔</div>
+              <div>
+                <div className="font-semibold text-white">Real-time Alerts</div>
+                <div className="text-sm text-gray-400">Browser notifications for critical findings</div>
+              </div>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-2 gap-3 mt-2">
+            <button
+              onClick={() => {
+                onComplete();
+                navigate('/dashboard/scans/new');
+              }}
+              className="flex items-center justify-center gap-2 px-4 py-3 bg-gradient-to-r from-cyan-500 to-blue-500 text-white rounded-lg font-semibold hover:opacity-90 transition text-sm"
+            >
+              🚀 Run First Scan
+            </button>
+            <button
+              onClick={() => {
+                onComplete();
+                navigate('/dashboard/tools');
+              }}
+              className="flex items-center justify-center gap-2 px-4 py-3 bg-gray-700 text-white rounded-lg font-semibold hover:bg-gray-600 transition text-sm"
+            >
+              🛠️ Browse Tools
+            </button>
           </div>
         </div>
       ),

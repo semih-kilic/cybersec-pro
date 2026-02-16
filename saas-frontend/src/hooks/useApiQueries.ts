@@ -320,6 +320,27 @@ export function useCancelScan() {
 }
 
 /**
+ * Rerun a scan
+ */
+export function useRerunScan() {
+  const { token } = useAuth();
+  const qc = useQueryClient();
+
+  return useMutation({
+    mutationFn: (scanId: string) =>
+      authFetch<{ success: boolean; target?: string; error?: string }>(
+        `/api/v1/scans/${scanId}/rerun`,
+        token,
+        { method: 'POST' }
+      ),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: queryKeys.scans.all });
+      qc.invalidateQueries({ queryKey: queryKeys.dashboard.all });
+    },
+  });
+}
+
+/**
  * Delete an agent
  */
 export function useDeleteAgent() {
