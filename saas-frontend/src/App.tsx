@@ -131,8 +131,12 @@ function DashboardLayout() {
   return (
     <TargetProvider>
       <div className="flex min-h-screen bg-gray-950">
+        {/* Accessibility: skip navigation link */}
+        <a href="#main-content" className="skip-to-content">
+          Skip to main content
+        </a>
         <Sidebar />
-        <main className="flex-1 ml-64 overflow-auto" id="main-content" role="main">
+        <main className="flex-1 ml-64 overflow-auto" id="main-content" role="main" aria-label="Dashboard content">
           <Suspense fallback={<OverviewSkeleton />}>
             <Outlet />
           </Suspense>

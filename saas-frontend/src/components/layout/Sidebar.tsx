@@ -126,7 +126,7 @@ export function Sidebar() {
   const { t } = useTranslation();
 
   return (
-    <aside className="w-64 bg-gray-900 border-r border-gray-800 flex flex-col h-screen fixed left-0 top-0 z-40">
+    <aside className="w-64 bg-gray-900 border-r border-gray-800 flex flex-col h-screen fixed left-0 top-0 z-40" role="complementary" aria-label="Sidebar">
       {/* Logo */}
       <div className="p-4 border-b border-gray-800">
         <div className="flex items-center gap-3">
@@ -143,7 +143,7 @@ export function Sidebar() {
       </div>
 
       {/* Navigation */}
-      <nav className="flex-1 p-4 space-y-1 overflow-y-auto">
+      <nav className="flex-1 p-4 space-y-1 overflow-y-auto" aria-label="Main navigation">
         <div className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-4">{t('nav.main')}</div>
         {navigation.map((item) => {
           const isActive = location.pathname === item.href || 
