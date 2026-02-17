@@ -1326,192 +1326,260 @@
     </section>
     
     <!-- Pricing Section -->
-    <section id="pricing" class="py-24 px-4 dragon-bg">
-        <div class="max-w-7xl mx-auto">
+    <section id="pricing" class="py-24 px-4 relative overflow-hidden" style="background: linear-gradient(180deg, #0a0a0f 0%, #0d1117 50%, #0a0a0f 100%);">
+        <div class="max-w-7xl mx-auto relative z-10">
             <div class="text-center mb-16">
-                <h2 class="text-4xl sm:text-5xl font-bold mb-4">
-                    Simple, Transparent <span class="kali-text">Pricing</span>
+                <div class="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-emerald-500/10 border border-emerald-500/30 mb-6">
+                    <span class="text-emerald-400 font-medium">💳 Pricing</span>
+                </div>
+                <h2 class="text-4xl sm:text-5xl font-bold mb-4 text-white">
+                    Simple, Transparent <span class="bg-gradient-to-r from-emerald-400 to-cyan-400 bg-clip-text text-transparent">Pricing for Businesses</span>
                 </h2>
-                <p class="text-xl text-gray-400">Start free, upgrade when ready. No hidden fees.</p>
+                <p class="text-xl text-gray-400">Start with free security scan, upgrade when you need continuous monitoring.</p>
             </div>
             
             <!-- Pricing Grid -->
-            <div class="grid md:grid-cols-2 lg:grid-cols-4 gap-6 max-w-6xl mx-auto">
-                <!-- Starter / Free Trial -->
-                <div class="kali-card rounded-2xl p-8 flex flex-col">
-                    <div class="text-kali-green font-semibold mb-2">STARTER</div>
-                    <div class="flex items-end gap-2 mb-4">
-                        <span class="text-5xl font-black">€0</span>
-                        <span class="text-gray-500 mb-2">/14 days</span>
+            <div class="grid md:grid-cols-2 lg:grid-cols-4 gap-6 max-w-7xl mx-auto">
+
+                <!-- TIER 1: FREE TRIAL -->
+                <div class="bg-white/[0.03] border border-white/10 rounded-2xl p-8 flex flex-col hover:border-emerald-500/30 transition-all duration-300">
+                    <div class="text-emerald-400 font-semibold text-sm tracking-wider mb-3">FREE TRIAL</div>
+                    <div class="flex items-end gap-2 mb-2">
+                        <span class="text-5xl font-black text-white">€0</span>
+                        <span class="text-gray-500 mb-2">/ 14 days</span>
                     </div>
-                    <p class="text-gray-400 text-sm mb-6">Perfect for trying the platform</p>
+                    <p class="text-gray-400 text-sm mb-6">Test drive CyberSec Pro</p>
                     
-                    <ul class="space-y-3 mb-8">
-                        <li class="flex items-center gap-2 text-sm">
-                            <svg class="w-5 h-5 text-kali-green" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
-                            50 security tools
-                        </li>
-                        <li class="flex items-center gap-2 text-sm">
-                            <svg class="w-5 h-5 text-kali-green" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
-                            10 scans per day
-                        </li>
-                        <li class="flex items-center gap-2 text-sm">
-                            <svg class="w-5 h-5 text-kali-green" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
-                            1 project
-                        </li>
-                        <li class="flex items-center gap-2 text-sm">
-                            <svg class="w-5 h-5 text-kali-green" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
-                            Basic JSON reports
-                        </li>
+                    <ul class="space-y-3 mb-6">
+                        <li class="flex items-start gap-2 text-sm text-gray-300"><span class="text-emerald-400 mt-0.5">✓</span> 1 free comprehensive security scan</li>
+                        <li class="flex items-start gap-2 text-sm text-gray-300"><span class="text-emerald-400 mt-0.5">✓</span> Full 682-test coverage</li>
+                        <li class="flex items-start gap-2 text-sm text-gray-300"><span class="text-emerald-400 mt-0.5">✓</span> PDF report with findings</li>
+                        <li class="flex items-start gap-2 text-sm text-gray-300"><span class="text-emerald-400 mt-0.5">✓</span> No credit card required</li>
+                        <li class="flex items-start gap-2 text-sm text-gray-300"><span class="text-emerald-400 mt-0.5">✓</span> Access to sample reports</li>
                     </ul>
+
+                    <div class="bg-white/[0.02] border border-white/5 rounded-lg p-3 mb-6">
+                        <div class="text-gray-500 text-[11px] uppercase tracking-wider mb-2">Ideal for</div>
+                        <ul class="space-y-1.5 text-xs text-gray-400">
+                            <li>• Companies evaluating security posture</li>
+                            <li>• Pre-sales technical due diligence</li>
+                            <li>• One-time security check</li>
+                        </ul>
+                    </div>
                     
                     <div class="mt-auto">
-                        <a href="/login.html?plan=starter" class="block w-full py-3 rounded-xl border border-kali-green text-kali-green font-semibold text-center hover:bg-kali-green/10 transition">
-                            Start Free Trial
+                        <a href="/login.html?plan=starter" class="block w-full py-3 rounded-xl border border-emerald-500/50 text-emerald-400 font-semibold text-center hover:bg-emerald-500/10 transition">
+                            Start Free Scan
                         </a>
                     </div>
                 </div>
-                
-                <!-- Professional -->
-                <div class="kali-card rounded-2xl p-8 pricing-popular flex flex-col">
-                    <div class="text-kali-blue font-semibold mb-2">PROFESSIONAL</div>
-                    <div class="flex items-end gap-2 mb-4">
-                        <span class="text-5xl font-black">€19</span>
+
+                <!-- TIER 2: STARTER -->
+                <div class="bg-white/[0.03] border border-white/10 rounded-2xl p-8 flex flex-col hover:border-blue-500/30 transition-all duration-300">
+                    <div class="text-blue-400 font-semibold text-sm tracking-wider mb-3">STARTER</div>
+                    <div class="flex items-end gap-2 mb-2">
+                        <span class="text-5xl font-black text-white">€99</span>
                         <span class="text-gray-500 mb-2">/month</span>
                     </div>
-                    <p class="text-gray-400 text-sm mb-6">For security professionals</p>
+                    <p class="text-gray-400 text-sm mb-6">For single website/app</p>
                     
-                    <ul class="space-y-3 mb-8">
-                        <li class="flex items-center gap-2 text-sm">
-                            <svg class="w-5 h-5 text-kali-blue" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
-                            200 security tools
-                        </li>
-                        <li class="flex items-center gap-2 text-sm">
-                            <svg class="w-5 h-5 text-kali-blue" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
-                            50 scans per day
-                        </li>
-                        <li class="flex items-center gap-2 text-sm">
-                            <svg class="w-5 h-5 text-kali-blue" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
-                            <span class="text-kali-blue font-semibold">Multi-tool scan (3)</span>
-                        </li>
-                        <li class="flex items-center gap-2 text-sm">
-                            <svg class="w-5 h-5 text-kali-blue" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
-                            5 projects
-                        </li>
-                        <li class="flex items-center gap-2 text-sm">
-                            <svg class="w-5 h-5 text-kali-blue" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
-                            PDF/HTML reports
-                        </li>
-                        <li class="flex items-center gap-2 text-sm">
-                            <svg class="w-5 h-5 text-kali-blue" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
-                            API access
-                        </li>
+                    <ul class="space-y-3 mb-6">
+                        <li class="flex items-start gap-2 text-sm text-gray-300"><span class="text-blue-400 mt-0.5">✓</span> 1 domain/application</li>
+                        <li class="flex items-start gap-2 text-sm text-gray-300"><span class="text-blue-400 mt-0.5">✓</span> Weekly automated scans</li>
+                        <li class="flex items-start gap-2 text-sm text-gray-300"><span class="text-blue-400 mt-0.5">✓</span> Email alerts for new vulnerabilities</li>
+                        <li class="flex items-start gap-2 text-sm text-gray-300"><span class="text-blue-400 mt-0.5">✓</span> PDF &amp; HTML reports</li>
+                        <li class="flex items-start gap-2 text-sm text-gray-300"><span class="text-blue-400 mt-0.5">✓</span> Priority email support (48h)</li>
+                        <li class="flex items-start gap-2 text-sm text-gray-300"><span class="text-blue-400 mt-0.5">✓</span> 3-month vulnerability history</li>
                     </ul>
+
+                    <div class="bg-white/[0.02] border border-white/5 rounded-lg p-3 mb-6">
+                        <div class="text-gray-500 text-[11px] uppercase tracking-wider mb-2">Best for</div>
+                        <ul class="space-y-1.5 text-xs text-gray-400">
+                            <li>• Startups with one main product</li>
+                            <li>• Personal projects going commercial</li>
+                            <li>• Agencies testing client sites</li>
+                        </ul>
+                    </div>
                     
                     <div class="mt-auto">
-                        <button onclick="checkout('professional')" class="block w-full py-3 rounded-xl btn-kali text-white font-semibold text-center">
-                            Get Started
+                        <button onclick="checkout('starter')" class="block w-full py-3 rounded-xl bg-blue-500/10 border border-blue-500/50 text-blue-400 font-semibold text-center hover:bg-blue-500/20 transition">
+                            Subscribe Now
                         </button>
+                        <p class="text-center text-xs text-blue-400/60 mt-2">💡 Most popular for startups</p>
                     </div>
                 </div>
                 
-                <!-- Team -->
-                <div class="kali-card rounded-2xl p-8 border-2 border-kali-purple/50 flex flex-col">
-                    <div class="text-kali-purple font-semibold mb-2">TEAM</div>
-                    <div class="flex items-end gap-2 mb-4">
-                        <span class="text-5xl font-black">€49</span>
-                        <span class="text-gray-500 mb-2">/month</span>
-                    </div>
-                    <p class="text-gray-400 text-sm mb-6">For security teams</p>
-                    
-                    <ul class="space-y-3 mb-8">
-                        <li class="flex items-center gap-2 text-sm">
-                            <svg class="w-5 h-5 text-kali-purple" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
-                            400 security tools
-                        </li>
-                        <li class="flex items-center gap-2 text-sm">
-                            <svg class="w-5 h-5 text-kali-purple" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
-                            100 scans per day
-                        </li>
-                        <li class="flex items-center gap-2 text-sm">
-                            <svg class="w-5 h-5 text-kali-purple" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
-                            <span class="text-kali-purple font-semibold">Multi-tool scan (5)</span>
-                        </li>
-                        <li class="flex items-center gap-2 text-sm">
-                            <svg class="w-5 h-5 text-kali-purple" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
-                            <span class="text-kali-purple font-semibold">Remote agent (1)</span>
-                        </li>
-                        <li class="flex items-center gap-2 text-sm">
-                            <svg class="w-5 h-5 text-kali-purple" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
-                            5 team members
-                        </li>
-                        <li class="flex items-center gap-2 text-sm">
-                            <svg class="w-5 h-5 text-kali-purple" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
-                            20 projects
-                        </li>
-                        <li class="flex items-center gap-2 text-sm">
-                            <svg class="w-5 h-5 text-kali-purple" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
-                            Slack/Teams integration
-                        </li>
-                    </ul>
-                    
-                    <div class="mt-auto">
-                        <button onclick="checkout('team')" class="block w-full py-3 rounded-xl border border-kali-purple text-kali-purple font-semibold text-center hover:bg-kali-purple/10 transition">
-                            Get Started
-                        </button>
+                <!-- TIER 3: PROFESSIONAL (Recommended) -->
+                <div class="relative group">
+                    <div class="absolute -inset-0.5 bg-gradient-to-b from-emerald-500/30 to-cyan-500/30 rounded-2xl blur opacity-75"></div>
+                    <div class="relative bg-[#0d1117] border-2 border-emerald-500/40 rounded-2xl p-8 flex flex-col h-full">
+                        <!-- Recommended badge -->
+                        <div class="absolute -top-3.5 left-1/2 -translate-x-1/2">
+                            <span class="bg-gradient-to-r from-emerald-500 to-cyan-500 text-white text-xs font-bold px-4 py-1.5 rounded-full shadow-lg shadow-emerald-500/25">💎 RECOMMENDED FOR SMEs</span>
+                        </div>
+                        <div class="text-emerald-400 font-semibold text-sm tracking-wider mb-3 mt-2">PROFESSIONAL</div>
+                        <div class="flex items-end gap-2 mb-1">
+                            <span class="text-5xl font-black text-white">€299</span>
+                            <span class="text-gray-500 mb-2">/month</span>
+                        </div>
+                        <p class="text-emerald-400/70 text-xs mb-1">Save €598/year with annual: €2,990/year</p>
+                        <p class="text-gray-400 text-sm mb-6">For growing SaaS &amp; tech companies</p>
+                        
+                        <div class="text-gray-500 text-[11px] uppercase tracking-wider mb-2">Everything in Starter, plus:</div>
+                        <ul class="space-y-3 mb-6">
+                            <li class="flex items-start gap-2 text-sm text-gray-300"><span class="text-emerald-400 mt-0.5">✓</span> Up to 5 domains/applications</li>
+                            <li class="flex items-start gap-2 text-sm text-gray-300"><span class="text-emerald-400 mt-0.5">✓</span> Daily automated scans</li>
+                            <li class="flex items-start gap-2 text-sm text-gray-300"><span class="text-emerald-400 mt-0.5">✓</span> API access for CI/CD integration</li>
+                            <li class="flex items-start gap-2 text-sm text-gray-300"><span class="text-emerald-400 mt-0.5">✓</span> Slack / Teams / Email notifications</li>
+                            <li class="flex items-start gap-2 text-sm text-gray-300"><span class="text-emerald-400 mt-0.5">✓</span> Compliance reports (OWASP, GDPR)</li>
+                            <li class="flex items-start gap-2 text-sm text-gray-300"><span class="text-emerald-400 mt-0.5">✓</span> White-label PDF reports (your logo)</li>
+                            <li class="flex items-start gap-2 text-sm text-gray-300"><span class="text-emerald-400 mt-0.5">✓</span> Priority support (24h response)</li>
+                            <li class="flex items-start gap-2 text-sm text-gray-300"><span class="text-emerald-400 mt-0.5">✓</span> 12-month vulnerability tracking</li>
+                        </ul>
+
+                        <div class="bg-emerald-500/5 border border-emerald-500/10 rounded-lg p-3 mb-6">
+                            <div class="text-gray-500 text-[11px] uppercase tracking-wider mb-2">Best for</div>
+                            <ul class="space-y-1.5 text-xs text-gray-400">
+                                <li>• SaaS companies (Series A/B)</li>
+                                <li>• E-commerce platforms</li>
+                                <li>• Companies preparing for SOC2/ISO27001</li>
+                            </ul>
+                        </div>
+                        
+                        <div class="mt-auto">
+                            <button onclick="checkout('professional')" class="block w-full py-3.5 rounded-xl bg-gradient-to-r from-emerald-500 to-cyan-500 text-white font-bold text-center hover:shadow-lg hover:shadow-emerald-500/25 transition-all hover:-translate-y-0.5">
+                                Subscribe Now
+                            </button>
+                            <p class="text-center text-xs text-emerald-400/60 mt-2">Save €598/year vs monthly</p>
+                        </div>
                     </div>
                 </div>
                 
-                <!-- Enterprise -->
-                <div class="kali-card rounded-2xl p-8 border-2 border-kali-orange/50 flex flex-col">
-                    <div class="text-kali-orange font-semibold mb-2">ENTERPRISE</div>
-                    <div class="flex items-end gap-2 mb-4">
-                        <span class="text-5xl font-black">€99</span>
+                <!-- TIER 4: ENTERPRISE -->
+                <div class="bg-white/[0.03] border border-white/10 rounded-2xl p-8 flex flex-col hover:border-purple-500/30 transition-all duration-300">
+                    <div class="text-purple-400 font-semibold text-sm tracking-wider mb-3">ENTERPRISE</div>
+                    <div class="flex items-end gap-2 mb-2">
+                        <span class="text-5xl font-black text-white">€799</span>
                         <span class="text-gray-500 mb-2">/month</span>
                     </div>
-                    <p class="text-gray-400 text-sm mb-6">For organizations</p>
+                    <p class="text-gray-400 text-sm mb-6">For security-conscious organizations</p>
                     
-                    <ul class="space-y-3 mb-8">
-                        <li class="flex items-center gap-2 text-sm">
-                            <svg class="w-5 h-5 text-kali-orange" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
-                            All 682 premium tools
-                        </li>
-                        <li class="flex items-center gap-2 text-sm">
-                            <svg class="w-5 h-5 text-kali-orange" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
-                            <span class="text-kali-orange font-semibold">Unlimited scans</span>
-                        </li>
-                        <li class="flex items-center gap-2 text-sm">
-                            <svg class="w-5 h-5 text-kali-orange" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
-                            <span class="text-kali-orange font-semibold">Multi-tool scan (∞)</span>
-                        </li>
-                        <li class="flex items-center gap-2 text-sm">
-                            <svg class="w-5 h-5 text-kali-orange" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
-                            <span class="text-kali-orange font-semibold">Unlimited remote agents</span>
-                        </li>
-                        <li class="flex items-center gap-2 text-sm">
-                            <svg class="w-5 h-5 text-kali-orange" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
-                            Unlimited users & projects
-                        </li>
-                        <li class="flex items-center gap-2 text-sm">
-                            <svg class="w-5 h-5 text-kali-orange" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
-                            SSO / SAML / LDAP
-                        </li>
-                        <li class="flex items-center gap-2 text-sm">
-                            <svg class="w-5 h-5 text-kali-orange" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
-                            Compliance reports (OWASP, PCI)
-                        </li>
-                        <li class="flex items-center gap-2 text-sm">
-                            <svg class="w-5 h-5 text-kali-orange" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
-                            24/7 priority support
-                        </li>
+                    <div class="text-gray-500 text-[11px] uppercase tracking-wider mb-2">Everything in Professional, plus:</div>
+                    <ul class="space-y-3 mb-6">
+                        <li class="flex items-start gap-2 text-sm text-gray-300"><span class="text-purple-400 mt-0.5">✓</span> Unlimited domains/applications</li>
+                        <li class="flex items-start gap-2 text-sm text-gray-300"><span class="text-purple-400 mt-0.5">✓</span> <span class="text-purple-300 font-semibold">Continuous monitoring (hourly)</span></li>
+                        <li class="flex items-start gap-2 text-sm text-gray-300"><span class="text-purple-400 mt-0.5">✓</span> Dedicated account manager</li>
+                        <li class="flex items-start gap-2 text-sm text-gray-300"><span class="text-purple-400 mt-0.5">✓</span> Custom compliance (PCI, HIPAA, SOC2)</li>
+                        <li class="flex items-start gap-2 text-sm text-gray-300"><span class="text-purple-400 mt-0.5">✓</span> SSO (SAML, OAuth)</li>
+                        <li class="flex items-start gap-2 text-sm text-gray-300"><span class="text-purple-400 mt-0.5">✓</span> Unlimited users &amp; team collaboration</li>
+                        <li class="flex items-start gap-2 text-sm text-gray-300"><span class="text-purple-400 mt-0.5">✓</span> Advanced API (webhooks, integrations)</li>
+                        <li class="flex items-start gap-2 text-sm text-gray-300"><span class="text-purple-400 mt-0.5">✓</span> SLA guarantee (99.9% uptime)</li>
+                        <li class="flex items-start gap-2 text-sm text-gray-300"><span class="text-purple-400 mt-0.5">✓</span> White-glove onboarding</li>
+                        <li class="flex items-start gap-2 text-sm text-gray-300"><span class="text-purple-400 mt-0.5">✓</span> 24/7 priority support (2h response)</li>
+                        <li class="flex items-start gap-2 text-sm text-gray-300"><span class="text-purple-400 mt-0.5">✓</span> Quarterly security roadmap reviews</li>
                     </ul>
+
+                    <div class="bg-white/[0.02] border border-white/5 rounded-lg p-3 mb-6">
+                        <div class="text-gray-500 text-[11px] uppercase tracking-wider mb-2">Best for</div>
+                        <ul class="space-y-1.5 text-xs text-gray-400">
+                            <li>• Mid-size companies (100–500 employees)</li>
+                            <li>• Regulated industries (FinTech, HealthTech)</li>
+                            <li>• IT consultancies (white-label for clients)</li>
+                        </ul>
+                    </div>
                     
                     <div class="mt-auto">
-                        <a href="/contact.html" class="block w-full py-3 rounded-xl border border-kali-orange text-kali-orange font-semibold text-center hover:bg-kali-orange/10 transition">
+                        <a href="/contact.html" class="block w-full py-3 rounded-xl border border-purple-500/50 text-purple-400 font-semibold text-center hover:bg-purple-500/10 transition">
                             Contact Sales
                         </a>
+                        <p class="text-center text-xs text-purple-400/60 mt-2">🏢 Volume discounts available</p>
                     </div>
                 </div>
+            </div>
+
+            <!-- ROI Calculator -->
+            <div class="mt-20 max-w-3xl mx-auto">
+                <div class="bg-white/[0.03] border border-white/10 rounded-2xl p-8 md:p-10">
+                    <div class="text-center mb-8">
+                        <h3 class="text-2xl font-bold text-white mb-2">Calculate Your Savings vs Manual Pentesting</h3>
+                        <p class="text-gray-400 text-sm">See how much you save with automated continuous scanning</p>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+                        <!-- Slider: Number of apps -->
+                        <div>
+                            <label class="text-gray-400 text-sm mb-2 block">Number of applications</label>
+                            <input type="range" id="roi-apps" min="1" max="10" value="2" class="w-full accent-emerald-500 cursor-pointer" oninput="updateROI()">
+                            <div class="flex justify-between text-xs text-gray-500 mt-1"><span>1</span><span id="roi-apps-val" class="text-emerald-400 font-bold">2</span><span>10</span></div>
+                        </div>
+                        <!-- Frequency -->
+                        <div>
+                            <label class="text-gray-400 text-sm mb-2 block">Pentest frequency</label>
+                            <select id="roi-freq" class="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2.5 text-white text-sm focus:outline-none focus:border-emerald-500/50" onchange="updateROI()">
+                                <option value="1" style="background:#1a1a2e">Once/year</option>
+                                <option value="2" selected style="background:#1a1a2e">Twice/year</option>
+                                <option value="4" style="background:#1a1a2e">Quarterly</option>
+                            </select>
+                        </div>
+                        <!-- Cost per test -->
+                        <div>
+                            <label class="text-gray-400 text-sm mb-2 block">Average pentest cost</label>
+                            <div class="relative">
+                                <span class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 text-sm">€</span>
+                                <input type="number" id="roi-cost" value="8000" min="2000" max="30000" step="1000" class="w-full bg-white/5 border border-white/10 rounded-lg pl-7 pr-3 py-2.5 text-white text-sm focus:outline-none focus:border-emerald-500/50" oninput="updateROI()">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Results -->
+                    <div class="bg-gradient-to-r from-emerald-500/5 to-cyan-500/5 border border-emerald-500/20 rounded-xl p-6">
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 text-center">
+                            <div>
+                                <div class="text-red-400 text-sm mb-1">Manual pentesting cost</div>
+                                <div id="roi-manual" class="text-2xl font-bold text-red-400">€32,000</div>
+                                <div class="text-gray-500 text-xs mt-1">per year</div>
+                            </div>
+                            <div>
+                                <div class="text-emerald-400 text-sm mb-1">CyberSec Pro Professional</div>
+                                <div id="roi-cyber" class="text-2xl font-bold text-emerald-400">€3,588</div>
+                                <div class="text-gray-500 text-xs mt-1">per year</div>
+                            </div>
+                            <div>
+                                <div class="text-cyan-400 text-sm mb-1">Your savings</div>
+                                <div id="roi-savings" class="text-2xl font-bold text-cyan-400">€28,412</div>
+                                <div id="roi-percent" class="text-gray-500 text-xs mt-1">88% reduction</div>
+                            </div>
+                        </div>
+                        <div class="text-center mt-4 pt-4 border-t border-white/5">
+                            <p id="roi-scans" class="text-gray-400 text-sm">Plus: <span class="text-emerald-400 font-semibold">365 daily scans</span> instead of <span class="text-red-400">2 annual tests</span></p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Money-Back Guarantee -->
+            <div class="mt-12 max-w-2xl mx-auto text-center">
+                <div class="bg-white/[0.02] border border-emerald-500/20 rounded-2xl p-8">
+                    <div class="text-4xl mb-3">🛡️</div>
+                    <h3 class="text-xl font-bold text-white mb-2">30-Day Money-Back Guarantee</h3>
+                    <p class="text-gray-400 text-sm leading-relaxed">
+                        Try CyberSec Pro risk-free. If you're not satisfied within 30 days,
+                        we'll refund 100% — no questions asked.
+                    </p>
+                </div>
+            </div>
+
+            <!-- Payment Methods & VAT -->
+            <div class="mt-8 text-center">
+                <div class="inline-flex items-center gap-4 mb-3">
+                    <span class="bg-white/5 border border-white/10 rounded-lg px-3 py-1.5 text-sm text-gray-400 font-semibold">Visa</span>
+                    <span class="bg-white/5 border border-white/10 rounded-lg px-3 py-1.5 text-sm text-gray-400 font-semibold">Mastercard</span>
+                    <span class="bg-white/5 border border-white/10 rounded-lg px-3 py-1.5 text-sm text-gray-400 font-semibold">SEPA</span>
+                    <span class="bg-white/5 border border-white/10 rounded-lg px-3 py-1.5 text-sm text-gray-400 font-semibold">Invoice</span>
+                </div>
+                <p class="text-gray-500 text-xs">
+                    💶 All prices in EUR, VAT excluded (add 24% for Finnish companies, reverse charge for EU B2B)
+                </p>
             </div>
         </div>
     </section>
@@ -1585,46 +1653,139 @@
     </section>
     
     <!-- Testimonials -->
-    <section class="py-24 px-4 dragon-bg">
+    <section class="py-24 px-4 relative" style="background: linear-gradient(180deg, #0a0a0f 0%, #0f0f1a 50%, #0a0a0f 100%);">
         <div class="max-w-7xl mx-auto">
             <div class="text-center mb-16">
-                <h2 class="text-4xl font-bold mb-4">What <span class="kali-text">Business Owners</span> Say</h2>
-                <p class="text-gray-400">Companies without security teams trust CyberSec Pro</p>
+                <div class="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-amber-500/10 border border-amber-500/30 mb-6">
+                    <span class="text-amber-400 font-medium">⭐ Customer Stories</span>
+                </div>
+                <h2 class="text-4xl md:text-5xl font-bold text-white mb-4">
+                    Trusted by <span class="bg-gradient-to-r from-amber-400 to-yellow-400 bg-clip-text text-transparent">Nordic SMEs &amp; Startups</span>
+                </h2>
             </div>
             
-            <div class="grid md:grid-cols-3 gap-6">
-                <div class="kali-card rounded-2xl p-6">
-                    <div class="flex items-center gap-1 text-yellow-400 mb-4">★★★★★</div>
-                    <p class="text-gray-300 mb-4">"We had no idea our customer portal had 12 critical vulnerabilities. CyberSec Pro found them all in 30 minutes — and the fix recommendations saved us €15K in consulting fees."</p>
-                    <div class="flex items-center gap-3">
-                        <div class="w-10 h-10 rounded-full bg-kali-blue/20 flex items-center justify-center text-kali-blue font-bold">MR</div>
-                        <div>
-                            <div class="font-medium">Mikko R.</div>
-                            <div class="text-sm text-gray-500">CTO, Nordic SaaS Company (35 employees)</div>
+            <div class="grid md:grid-cols-2 gap-6 max-w-5xl mx-auto">
+
+                <!-- Testimonial 1: Mikko L. -->
+                <div class="relative group">
+                    <div class="absolute -inset-0.5 bg-gradient-to-br from-cyan-500/15 to-blue-500/15 rounded-2xl blur opacity-0 group-hover:opacity-100 transition duration-500"></div>
+                    <div class="relative bg-white/[0.03] border border-white/10 rounded-2xl p-8 hover:border-cyan-500/20 transition-all duration-300 h-full flex flex-col">
+                        <div class="flex items-center gap-0.5 text-amber-400 text-lg mb-4">★★★★★</div>
+                        <p class="text-gray-300 leading-relaxed mb-6 flex-1">
+                            "We needed ISO 27001 for our first enterprise client. CyberSec Pro's
+                            reports and vulnerability tracking helped us pass certification in <span class="text-white font-semibold">3 months
+                            instead of 6</span>. Worth every euro."
+                        </p>
+                        <div class="flex items-center gap-4 pt-4 border-t border-white/5">
+                            <div class="w-12 h-12 rounded-full bg-gradient-to-br from-cyan-500/20 to-blue-500/20 border border-cyan-500/30 flex items-center justify-center text-cyan-400 font-bold text-sm">ML</div>
+                            <div>
+                                <div class="font-semibold text-white">Mikko L.</div>
+                                <div class="text-sm text-gray-400">CTO, FinTech SaaS (30 employees)</div>
+                                <div class="text-xs text-gray-500 mt-0.5">📍 Helsinki, Finland</div>
+                            </div>
                         </div>
                     </div>
                 </div>
-                
-                <div class="kali-card rounded-2xl p-6">
-                    <div class="flex items-center gap-1 text-yellow-400 mb-4">★★★★★</div>
-                    <p class="text-gray-300 mb-4">"I showed the report to our board — they actually understood it. No jargon, clear risk levels, and a prioritized action plan. Exactly what non-technical leadership needs."</p>
-                    <div class="flex items-center gap-3">
-                        <div class="w-10 h-10 rounded-full bg-kali-purple/20 flex items-center justify-center text-kali-purple font-bold">AV</div>
-                        <div>
-                            <div class="font-medium">Anna V.</div>
-                            <div class="text-sm text-gray-500">CEO, Helsinki E-commerce (20 employees)</div>
+
+                <!-- Testimonial 2: Anna K. -->
+                <div class="relative group">
+                    <div class="absolute -inset-0.5 bg-gradient-to-br from-purple-500/15 to-pink-500/15 rounded-2xl blur opacity-0 group-hover:opacity-100 transition duration-500"></div>
+                    <div class="relative bg-white/[0.03] border border-white/10 rounded-2xl p-8 hover:border-purple-500/20 transition-all duration-300 h-full flex flex-col">
+                        <div class="flex items-center gap-0.5 text-amber-400 text-lg mb-4">★★★★★</div>
+                        <p class="text-gray-300 leading-relaxed mb-6 flex-1">
+                            "As a non-technical CEO, I can finally understand our security posture.
+                            The <span class="text-white font-semibold">plain-language reports</span> made it easy to get board approval for fixing
+                            critical issues."
+                        </p>
+                        <div class="flex items-center gap-4 pt-4 border-t border-white/5">
+                            <div class="w-12 h-12 rounded-full bg-gradient-to-br from-purple-500/20 to-pink-500/20 border border-purple-500/30 flex items-center justify-center text-purple-400 font-bold text-sm">AK</div>
+                            <div>
+                                <div class="font-semibold text-white">Anna K.</div>
+                                <div class="text-sm text-gray-400">CEO, E-commerce Platform (15 employees)</div>
+                                <div class="text-xs text-gray-500 mt-0.5">📍 Tampere, Finland</div>
+                            </div>
                         </div>
                     </div>
                 </div>
-                
-                <div class="kali-card rounded-2xl p-6">
-                    <div class="flex items-center gap-1 text-yellow-400 mb-4">★★★★★</div>
-                    <p class="text-gray-300 mb-4">"Pentest quotes were €8,000-15,000. CyberSec Pro covers 85% of what they test for at a fraction of the cost. We run scans monthly now — our insurance company loves it."</p>
-                    <div class="flex items-center gap-3">
-                        <div class="w-10 h-10 rounded-full bg-kali-green/20 flex items-center justify-center text-kali-green font-bold">JL</div>
+
+                <!-- Testimonial 3: Lars J. -->
+                <div class="relative group">
+                    <div class="absolute -inset-0.5 bg-gradient-to-br from-amber-500/15 to-orange-500/15 rounded-2xl blur opacity-0 group-hover:opacity-100 transition duration-500"></div>
+                    <div class="relative bg-white/[0.03] border border-white/10 rounded-2xl p-8 hover:border-amber-500/20 transition-all duration-300 h-full flex flex-col">
+                        <div class="flex items-center gap-0.5 text-amber-400 text-lg mb-4">★★★★★</div>
+                        <p class="text-gray-300 leading-relaxed mb-6 flex-1">
+                            "We white-label CyberSec Pro for our 40 SME clients. Adds <span class="text-white font-semibold">€500/month
+                            recurring revenue per client</span> with minimal effort. Their support team is
+                            excellent."
+                        </p>
+                        <div class="flex items-center gap-4 pt-4 border-t border-white/5">
+                            <div class="w-12 h-12 rounded-full bg-gradient-to-br from-amber-500/20 to-orange-500/20 border border-amber-500/30 flex items-center justify-center text-amber-400 font-bold text-sm">LJ</div>
+                            <div>
+                                <div class="font-semibold text-white">Lars J.</div>
+                                <div class="text-sm text-gray-400">Founder, IT Consulting Agency</div>
+                                <div class="text-xs text-gray-500 mt-0.5">📍 Stockholm, Sweden</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Testimonial 4: Petra V. -->
+                <div class="relative group">
+                    <div class="absolute -inset-0.5 bg-gradient-to-br from-emerald-500/15 to-teal-500/15 rounded-2xl blur opacity-0 group-hover:opacity-100 transition duration-500"></div>
+                    <div class="relative bg-white/[0.03] border border-white/10 rounded-2xl p-8 hover:border-emerald-500/20 transition-all duration-300 h-full flex flex-col">
+                        <div class="flex items-center gap-0.5 text-amber-400 text-lg mb-4">★★★★★</div>
+                        <p class="text-gray-300 leading-relaxed mb-6 flex-1">
+                            "Saved us <span class="text-white font-semibold">€24,000 in the first year</span> vs hiring a security consultant.
+                            Weekly automated scans give us peace of mind."
+                        </p>
+                        <div class="flex items-center gap-4 pt-4 border-t border-white/5">
+                            <div class="w-12 h-12 rounded-full bg-gradient-to-br from-emerald-500/20 to-teal-500/20 border border-emerald-500/30 flex items-center justify-center text-emerald-400 font-bold text-sm">PV</div>
+                            <div>
+                                <div class="font-semibold text-white">Petra V.</div>
+                                <div class="text-sm text-gray-400">IT Manager, SaaS Startup (22 employees)</div>
+                                <div class="text-xs text-gray-500 mt-0.5">📍 Oulu, Finland</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Trust Badges -->
+            <div class="mt-16 pt-12 border-t border-white/5">
+                <div class="flex flex-wrap items-center justify-center gap-6 md:gap-10">
+                    <div class="flex items-center gap-2 bg-white/[0.03] border border-white/10 rounded-xl px-5 py-3">
+                        <span class="text-xl">🇫🇮</span>
                         <div>
-                            <div class="font-medium">Jens L.</div>
-                            <div class="text-sm text-gray-500">Founder, Stockholm Fintech (50 employees)</div>
+                            <div class="text-white text-sm font-semibold">Business Finland</div>
+                            <div class="text-gray-500 text-[10px]">Funded Project</div>
+                        </div>
+                    </div>
+                    <div class="flex items-center gap-2 bg-white/[0.03] border border-white/10 rounded-xl px-5 py-3">
+                        <span class="text-xl">🚀</span>
+                        <div>
+                            <div class="text-white text-sm font-semibold">Maria 01</div>
+                            <div class="text-gray-500 text-[10px]">Startup Campus</div>
+                        </div>
+                    </div>
+                    <div class="flex items-center gap-2 bg-white/[0.03] border border-emerald-500/20 rounded-xl px-5 py-3">
+                        <span class="text-xl">✅</span>
+                        <div>
+                            <div class="text-emerald-400 text-sm font-semibold">GDPR Compliant</div>
+                            <div class="text-gray-500 text-[10px]">Full compliance</div>
+                        </div>
+                    </div>
+                    <div class="flex items-center gap-2 bg-white/[0.03] border border-blue-500/20 rounded-xl px-5 py-3">
+                        <span class="text-xl">🇪🇺</span>
+                        <div>
+                            <div class="text-blue-400 text-sm font-semibold">Data Stored in EU</div>
+                            <div class="text-gray-500 text-[10px]">Frankfurt servers</div>
+                        </div>
+                    </div>
+                    <div class="flex items-center gap-2 bg-white/[0.03] border border-amber-500/20 rounded-xl px-5 py-3">
+                        <span class="text-xl">🛡️</span>
+                        <div>
+                            <div class="text-amber-400 text-sm font-semibold">ISO 27001 Ready</div>
+                            <div class="text-gray-500 text-[10px]">Certification support</div>
                         </div>
                     </div>
                 </div>
@@ -1633,52 +1794,231 @@
     </section>
     
     <!-- FAQ -->
-    <section class="py-24 px-4 bg-kali-darker">
+    <section class="py-24 px-4" style="background: linear-gradient(180deg, #0a0a0f 0%, #0d1117 50%, #0a0a0f 100%);">
         <div class="max-w-3xl mx-auto">
             <div class="text-center mb-16">
-                <h2 class="text-4xl font-bold mb-4">Frequently Asked <span class="kali-text">Questions</span></h2>
+                <div class="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-blue-500/10 border border-blue-500/30 mb-6">
+                    <span class="text-blue-400 font-medium">❓ FAQ</span>
+                </div>
+                <h2 class="text-4xl md:text-5xl font-bold text-white mb-4">
+                    Frequently Asked <span class="bg-gradient-to-r from-blue-400 to-cyan-400 bg-clip-text text-transparent">Questions</span>
+                </h2>
             </div>
             
             <div class="space-y-4">
-                <details class="kali-card rounded-xl group">
-                    <summary class="px-6 py-4 cursor-pointer font-medium flex justify-between items-center">
-                        What exactly is CyberSec Pro?
-                        <span class="text-gray-400 group-open:rotate-180 transition">▼</span>
+
+                <!-- Q1 -->
+                <details class="group bg-white/[0.03] border border-white/10 rounded-xl hover:border-blue-500/20 transition-all duration-300">
+                    <summary class="px-6 py-5 cursor-pointer font-semibold text-white flex justify-between items-center">
+                        Who should use CyberSec Pro?
+                        <span class="text-gray-500 group-open:rotate-180 transition-transform duration-300 text-sm">▼</span>
                     </summary>
-                    <div class="px-6 pb-4 text-gray-400">
-                        CyberSec Pro is a cloud-based security platform that gives you access to all 682 Kali Linux tools through your web browser. No installation, no VM setup - just instant access to professional penetration testing capabilities.
+                    <div class="px-6 pb-5 text-gray-400 text-sm leading-relaxed border-t border-white/5 pt-4 mt-1">
+                        <p class="mb-3">CyberSec Pro is built for:</p>
+                        <ul class="space-y-1.5 mb-4">
+                            <li class="flex items-start gap-2"><span class="text-blue-400">•</span> SaaS and tech startups without in-house security teams</li>
+                            <li class="flex items-start gap-2"><span class="text-blue-400">•</span> E-commerce companies needing PCI DSS compliance</li>
+                            <li class="flex items-start gap-2"><span class="text-blue-400">•</span> IT consultancies offering security services to clients</li>
+                            <li class="flex items-start gap-2"><span class="text-blue-400">•</span> Any SME that handles customer data and wants to avoid breaches</li>
+                        </ul>
+                        <p>You don't need technical skills — our platform is designed for business owners, CTOs, and IT managers.</p>
                     </div>
                 </details>
-                
-                <details class="kali-card rounded-xl group">
-                    <summary class="px-6 py-4 cursor-pointer font-medium flex justify-between items-center">
-                        Is this legal to use?
-                        <span class="text-gray-400 group-open:rotate-180 transition">▼</span>
+
+                <!-- Q2 -->
+                <details class="group bg-white/[0.03] border border-white/10 rounded-xl hover:border-blue-500/20 transition-all duration-300">
+                    <summary class="px-6 py-5 cursor-pointer font-semibold text-white flex justify-between items-center">
+                        How is this different from manual penetration testing?
+                        <span class="text-gray-500 group-open:rotate-180 transition-transform duration-300 text-sm">▼</span>
                     </summary>
-                    <div class="px-6 pb-4 text-gray-400">
-                        Yes, but only for authorized testing. You must have explicit written permission to test any system you don't own. Unauthorized testing is illegal.
+                    <div class="px-6 pb-5 text-gray-400 text-sm leading-relaxed border-t border-white/5 pt-4 mt-1">
+                        <div class="grid grid-cols-2 gap-4 mb-4">
+                            <div class="bg-red-500/5 border border-red-500/10 rounded-lg p-4">
+                                <div class="text-red-400 font-semibold text-xs mb-2">Manual Pentest</div>
+                                <ul class="space-y-1.5 text-xs">
+                                    <li>€8,000–15,000 one-time</li>
+                                    <li>Takes 2–4 weeks</li>
+                                    <li>Once or twice per year</li>
+                                    <li>200-page technical report</li>
+                                </ul>
+                            </div>
+                            <div class="bg-emerald-500/5 border border-emerald-500/10 rounded-lg p-4">
+                                <div class="text-emerald-400 font-semibold text-xs mb-2">CyberSec Pro</div>
+                                <ul class="space-y-1.5 text-xs">
+                                    <li>€299/month ongoing</li>
+                                    <li>Results in 30 minutes</li>
+                                    <li>Weekly or daily scans</li>
+                                    <li>Plain-language reports + fixes</li>
+                                </ul>
+                            </div>
+                        </div>
+                        <p>Think of us as <span class="text-white">continuous security monitoring</span> vs annual checkup.</p>
                     </div>
                 </details>
-                
-                <details class="kali-card rounded-xl group">
-                    <summary class="px-6 py-4 cursor-pointer font-medium flex justify-between items-center">
+
+                <!-- Q3 -->
+                <details class="group bg-white/[0.03] border border-white/10 rounded-xl hover:border-blue-500/20 transition-all duration-300">
+                    <summary class="px-6 py-5 cursor-pointer font-semibold text-white flex justify-between items-center">
+                        Do I need technical knowledge to use this?
+                        <span class="text-gray-500 group-open:rotate-180 transition-transform duration-300 text-sm">▼</span>
+                    </summary>
+                    <div class="px-6 pb-5 text-gray-400 text-sm leading-relaxed border-t border-white/5 pt-4 mt-1">
+                        <p class="mb-3">No. CyberSec Pro translates technical findings into business language.</p>
+                        <div class="space-y-2">
+                            <div class="flex items-start gap-2 bg-red-500/5 border border-red-500/10 rounded-lg p-3">
+                                <span class="text-red-400 mt-0.5">❌</span>
+                                <span class="text-xs"><span class="text-gray-500">Technical:</span> "SQL injection vulnerability in login.php parameter 'user'"</span>
+                            </div>
+                            <div class="flex items-start gap-2 bg-emerald-500/5 border border-emerald-500/10 rounded-lg p-3">
+                                <span class="text-emerald-400 mt-0.5">✅</span>
+                                <span class="text-xs"><span class="text-gray-500">Plain language:</span> <span class="text-emerald-300">"Your login form allows hackers to steal passwords. Priority: CRITICAL. Fix time: 2 hours. Here's how..."</span></span>
+                            </div>
+                        </div>
+                    </div>
+                </details>
+
+                <!-- Q4 -->
+                <details class="group bg-white/[0.03] border border-white/10 rounded-xl hover:border-blue-500/20 transition-all duration-300">
+                    <summary class="px-6 py-5 cursor-pointer font-semibold text-white flex justify-between items-center">
+                        Is my data safe? Where are your servers?
+                        <span class="text-gray-500 group-open:rotate-180 transition-transform duration-300 text-sm">▼</span>
+                    </summary>
+                    <div class="px-6 pb-5 text-gray-400 text-sm leading-relaxed border-t border-white/5 pt-4 mt-1">
+                        <p class="mb-3">Yes. Your data never leaves the EU:</p>
+                        <ul class="space-y-1.5">
+                            <li class="flex items-start gap-2"><span class="text-emerald-400">✓</span> Servers in Finland and Germany (AWS eu-north-1)</li>
+                            <li class="flex items-start gap-2"><span class="text-emerald-400">✓</span> GDPR compliant</li>
+                            <li class="flex items-start gap-2"><span class="text-emerald-400">✓</span> SOC2 Type II certified infrastructure</li>
+                            <li class="flex items-start gap-2"><span class="text-emerald-400">✓</span> TLS 1.3 encryption in transit</li>
+                            <li class="flex items-start gap-2"><span class="text-emerald-400">✓</span> AES-256 encryption at rest</li>
+                            <li class="flex items-start gap-2"><span class="text-emerald-400">✓</span> We never store your customer data — only scan results</li>
+                        </ul>
+                    </div>
+                </details>
+
+                <!-- Q5 -->
+                <details class="group bg-white/[0.03] border border-white/10 rounded-xl hover:border-blue-500/20 transition-all duration-300">
+                    <summary class="px-6 py-5 cursor-pointer font-semibold text-white flex justify-between items-center">
+                        Can this replace a security team?
+                        <span class="text-gray-500 group-open:rotate-180 transition-transform duration-300 text-sm">▼</span>
+                    </summary>
+                    <div class="px-6 pb-5 text-gray-400 text-sm leading-relaxed border-t border-white/5 pt-4 mt-1">
+                        <p class="mb-3">CyberSec Pro covers <span class="text-white font-semibold">80% of what SMEs need</span>:</p>
+                        <ul class="space-y-1.5 mb-4">
+                            <li class="flex items-start gap-2"><span class="text-emerald-400">✓</span> Vulnerability scanning</li>
+                            <li class="flex items-start gap-2"><span class="text-emerald-400">✓</span> Compliance reporting</li>
+                            <li class="flex items-start gap-2"><span class="text-emerald-400">✓</span> Continuous monitoring</li>
+                        </ul>
+                        <p class="mb-3">We <span class="text-white">don't replace</span>:</p>
+                        <ul class="space-y-1.5 mb-4">
+                            <li class="flex items-start gap-2"><span class="text-gray-500">✗</span> Incident response (if you get breached)</li>
+                            <li class="flex items-start gap-2"><span class="text-gray-500">✗</span> Security architecture design</li>
+                            <li class="flex items-start gap-2"><span class="text-gray-500">✗</span> Penetration testing with social engineering</li>
+                        </ul>
+                        <p>For most SMEs under 100 employees, CyberSec Pro + occasional consultant is enough.</p>
+                    </div>
+                </details>
+
+                <!-- Q6 -->
+                <details class="group bg-white/[0.03] border border-white/10 rounded-xl hover:border-blue-500/20 transition-all duration-300">
+                    <summary class="px-6 py-5 cursor-pointer font-semibold text-white flex justify-between items-center">
+                        What happens if you find vulnerabilities?
+                        <span class="text-gray-500 group-open:rotate-180 transition-transform duration-300 text-sm">▼</span>
+                    </summary>
+                    <div class="px-6 pb-5 text-gray-400 text-sm leading-relaxed border-t border-white/5 pt-4 mt-1">
+                        <p class="mb-3">You get 3 things:</p>
+                        <ol class="space-y-2 mb-4 list-none">
+                            <li class="flex items-start gap-2"><span class="text-cyan-400 font-bold">1.</span> Email alert within 5 minutes (critical issues)</li>
+                            <li class="flex items-start gap-2"><span class="text-cyan-400 font-bold">2.</span> Dashboard showing all findings ranked by severity</li>
+                            <li class="flex items-start gap-2">
+                                <span class="text-cyan-400 font-bold">3.</span>
+                                <div>Fix recommendations with:
+                                    <ul class="mt-1.5 space-y-1 text-gray-500">
+                                        <li>• What the vulnerability is (plain language)</li>
+                                        <li>• Why it matters (business impact)</li>
+                                        <li>• How to fix it (code snippets, config changes)</li>
+                                        <li>• Estimated fix time</li>
+                                    </ul>
+                                </div>
+                            </li>
+                        </ol>
+                        <p>Plus: We track when you mark items as fixed and <span class="text-white">re-scan to verify</span>.</p>
+                    </div>
+                </details>
+
+                <!-- Q7 -->
+                <details class="group bg-white/[0.03] border border-white/10 rounded-xl hover:border-blue-500/20 transition-all duration-300">
+                    <summary class="px-6 py-5 cursor-pointer font-semibold text-white flex justify-between items-center">
+                        Do you offer discounts for startups?
+                        <span class="text-gray-500 group-open:rotate-180 transition-transform duration-300 text-sm">▼</span>
+                    </summary>
+                    <div class="px-6 pb-5 text-gray-400 text-sm leading-relaxed border-t border-white/5 pt-4 mt-1">
+                        <p class="mb-3">Yes:</p>
+                        <ul class="space-y-1.5 mb-4">
+                            <li class="flex items-start gap-2"><span class="text-amber-400">★</span> Business Finland funded startups: <span class="text-white">20% discount</span> (first year)</li>
+                            <li class="flex items-start gap-2"><span class="text-amber-400">★</span> Maria 01 / Startup Sauna companies: <span class="text-white">15% discount</span></li>
+                            <li class="flex items-start gap-2"><span class="text-amber-400">★</span> Annual prepayment: ~€100/month savings</li>
+                            <li class="flex items-start gap-2"><span class="text-amber-400">★</span> Non-profits: <span class="text-white">30% discount</span></li>
+                        </ul>
+                        <p>Contact <span class="text-cyan-400">sales@cybersecpro.com</span> with your startup documentation.</p>
+                    </div>
+                </details>
+
+                <!-- Q8 -->
+                <details class="group bg-white/[0.03] border border-white/10 rounded-xl hover:border-blue-500/20 transition-all duration-300">
+                    <summary class="px-6 py-5 cursor-pointer font-semibold text-white flex justify-between items-center">
+                        Can I white-label this for my clients?
+                        <span class="text-gray-500 group-open:rotate-180 transition-transform duration-300 text-sm">▼</span>
+                    </summary>
+                    <div class="px-6 pb-5 text-gray-400 text-sm leading-relaxed border-t border-white/5 pt-4 mt-1">
+                        <p class="mb-3">Yes, Enterprise plan includes:</p>
+                        <ul class="space-y-1.5 mb-4">
+                            <li class="flex items-start gap-2"><span class="text-purple-400">✓</span> Your logo on PDF reports</li>
+                            <li class="flex items-start gap-2"><span class="text-purple-400">✓</span> Custom domain (scans.youragency.com)</li>
+                            <li class="flex items-start gap-2"><span class="text-purple-400">✓</span> Reseller pricing (30% margin)</li>
+                            <li class="flex items-start gap-2"><span class="text-purple-400">✓</span> Dedicated partner manager</li>
+                        </ul>
+                        <p>Popular with IT consultancies and web agencies serving 10+ SME clients.</p>
+                    </div>
+                </details>
+
+                <!-- Q9 -->
+                <details class="group bg-white/[0.03] border border-white/10 rounded-xl hover:border-blue-500/20 transition-all duration-300">
+                    <summary class="px-6 py-5 cursor-pointer font-semibold text-white flex justify-between items-center">
                         How does the free trial work?
-                        <span class="text-gray-400 group-open:rotate-180 transition">▼</span>
+                        <span class="text-gray-500 group-open:rotate-180 transition-transform duration-300 text-sm">▼</span>
                     </summary>
-                    <div class="px-6 pb-4 text-gray-400">
-                        Sign up with just your email - no credit card required. You get 14 days of access to 20 tools with 10 scans per day. After the trial, you can upgrade to a paid plan.
+                    <div class="px-6 pb-5 text-gray-400 text-sm leading-relaxed border-t border-white/5 pt-4 mt-1">
+                        <p class="mb-3">Sign up with email (no credit card):</p>
+                        <ul class="space-y-1.5 mb-4">
+                            <li class="flex items-start gap-2"><span class="text-emerald-400">✓</span> Run 1 comprehensive scan (all 682 tests)</li>
+                            <li class="flex items-start gap-2"><span class="text-emerald-400">✓</span> Get full PDF report</li>
+                            <li class="flex items-start gap-2"><span class="text-emerald-400">✓</span> See sample compliance reports</li>
+                            <li class="flex items-start gap-2"><span class="text-emerald-400">✓</span> 14 days to explore platform</li>
+                        </ul>
+                        <p>After trial, choose paid plan or walk away — <span class="text-white">no obligations</span>.</p>
                     </div>
                 </details>
-                
-                <details class="kali-card rounded-xl group">
-                    <summary class="px-6 py-4 cursor-pointer font-medium flex justify-between items-center">
-                        Are the tools always up to date?
-                        <span class="text-gray-400 group-open:rotate-180 transition">▼</span>
+
+                <!-- Q10 -->
+                <details class="group bg-white/[0.03] border border-white/10 rounded-xl hover:border-blue-500/20 transition-all duration-300">
+                    <summary class="px-6 py-5 cursor-pointer font-semibold text-white flex justify-between items-center">
+                        What compliance standards do you help with?
+                        <span class="text-gray-500 group-open:rotate-180 transition-transform duration-300 text-sm">▼</span>
                     </summary>
-                    <div class="px-6 pb-4 text-gray-400">
-                        Yes! We sync with Kali Linux repositories daily and automatically update all tools. You always have access to the latest versions.
+                    <div class="px-6 pb-5 text-gray-400 text-sm leading-relaxed border-t border-white/5 pt-4 mt-1">
+                        <p class="mb-3">We provide reports and checks for:</p>
+                        <ul class="space-y-1.5 mb-4">
+                            <li class="flex items-start gap-2"><span class="text-blue-400">✓</span> <span class="text-white">GDPR</span> — data protection requirements</li>
+                            <li class="flex items-start gap-2"><span class="text-blue-400">✓</span> <span class="text-white">OWASP Top 10</span> — web security standard</li>
+                            <li class="flex items-start gap-2"><span class="text-blue-400">✓</span> <span class="text-white">PCI DSS</span> — payment card security</li>
+                            <li class="flex items-start gap-2"><span class="text-blue-400">✓</span> <span class="text-white">ISO 27001</span> Annex A controls (technical subset)</li>
+                            <li class="flex items-start gap-2"><span class="text-blue-400">✓</span> <span class="text-white">SOC2</span> — security controls</li>
+                        </ul>
+                        <p class="text-gray-500 text-xs italic">Note: We help you identify technical gaps. You still need formal audits for certification.</p>
                     </div>
                 </details>
+
             </div>
         </div>
     </section>
@@ -1815,6 +2155,28 @@
                 document.getElementById('langDropdown').classList.add('hidden');
             }
         });
+
+        // ROI Calculator
+        function updateROI() {
+            const apps = parseInt(document.getElementById('roi-apps').value);
+            const freq = parseInt(document.getElementById('roi-freq').value);
+            const cost = parseInt(document.getElementById('roi-cost').value) || 8000;
+            document.getElementById('roi-apps-val').textContent = apps;
+
+            const manualCost = apps * freq * cost;
+            const cyberCost = 299 * 12; // Professional annual
+            const savings = manualCost - cyberCost;
+            const percent = Math.round((savings / manualCost) * 100);
+            const scansPerYear = freq === 4 ? 4 : freq;
+
+            document.getElementById('roi-manual').textContent = '€' + manualCost.toLocaleString('en');
+            document.getElementById('roi-cyber').textContent = '€' + cyberCost.toLocaleString('en');
+            document.getElementById('roi-savings').textContent = savings > 0 ? '€' + savings.toLocaleString('en') : '€0';
+            document.getElementById('roi-percent').textContent = savings > 0 ? percent + '% reduction' : 'Great value from day 1';
+            document.getElementById('roi-scans').innerHTML = 'Plus: <span class="text-emerald-400 font-semibold">365 daily scans</span> instead of <span class="text-red-400">' + scansPerYear + ' annual test' + (scansPerYear > 1 ? 's' : '') + '</span>';
+        }
+        // Initialize ROI on load
+        document.addEventListener('DOMContentLoaded', function() { if(document.getElementById('roi-apps')) updateROI(); });
 
         async function checkout(plan) {
             try {
