@@ -8,7 +8,7 @@ export function OAuthCallback() {
   useEffect(() => {
     const handleCallback = async () => {
       const code = searchParams.get('code');
-      const provider = searchParams.get('provider') || 'google';
+      const provider = searchParams.get('provider') || localStorage.getItem('oauth_provider') || 'google';
       const errorParam = searchParams.get('error');
 
       if (errorParam) {
@@ -23,7 +23,9 @@ export function OAuthCallback() {
 
       try {
         // Send redirect_uri so backend uses the same one for token exchange
-        const redirectUri = `${window.location.origin}/auth/callback?provider=${provider}`;
+        // Must match exactly what was sent to Google/GitHub (no query params)
+        const redirectUri = `${window.location.origin}/auth/callback`;
+        localStorage.removeItem('oauth_provider');
         const response = await fetch(`/api/v1/auth/${provider}`, {
           method: 'POST',
           headers: {
