@@ -325,10 +325,11 @@
         async function handleGoogleOAuthCode(code) {
             console.log('Processing Google OAuth code...');
             try {
+                const redirectUri = window.location.origin + '/login';
                 const res = await fetch(`${API_URL}/api/v1/auth/google`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ code: code })
+                    body: JSON.stringify({ code: code, redirect_uri: redirectUri })
                 });
                 
                 const data = await res.json();

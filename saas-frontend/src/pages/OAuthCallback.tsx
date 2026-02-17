@@ -22,12 +22,14 @@ export function OAuthCallback() {
       }
 
       try {
+        // Send redirect_uri so backend uses the same one for token exchange
+        const redirectUri = `${window.location.origin}/auth/callback?provider=${provider}`;
         const response = await fetch(`/api/v1/auth/${provider}`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
           },
-          body: JSON.stringify({ code }),
+          body: JSON.stringify({ code, redirect_uri: redirectUri }),
         });
 
         const data = await response.json();

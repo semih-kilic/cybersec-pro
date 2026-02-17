@@ -1156,8 +1156,9 @@ def google_oauth():
         # Handle OAuth code flow (redirect)
         if data.get('code'):
             # Exchange code for tokens - redirect_uri MUST match exactly what was used in auth request
+            # Accept redirect_uri from frontend (it knows what it sent to Google)
             domain = os.environ.get('DOMAIN', 'https://semihkilic.com')
-            redirect_uri = f"{domain}/auth/callback?provider=google"
+            redirect_uri = data.get('redirect_uri', f"{domain}/login")
             
             token_response = requests.post(
                 'https://oauth2.googleapis.com/token',
