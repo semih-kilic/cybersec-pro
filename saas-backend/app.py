@@ -2248,6 +2248,74 @@ def get_subscription():
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
+@app.route('/api/create-checkout-session', methods=['POST'])
+def create_checkout_session_public():
+    """Public Stripe checkout session for marketing page (no auth required)"""
+    try:
+        data = request.get_json()
+        plan = data.get('plan_id') or data.get('plan')
+        billing = data.get('billing', 'monthly')  # 'monthly' or 'annual'
+        
+        import os
+        # New tiered pricing (Jan 2026)
+        STRIPE_PRICES = {
+            'free_trial': os.environ.get('STRIPE_FREE_TRIAL_PRICE_ID', 'price_1T1efX0ed3IDKXcnNHleBpc1'),
+            'starter': os.environ.get('STRIPE_STARTER_PRICE_ID', 'price_1T1eh20ed3IDKXcnWZVJA9ur'),
+            'professional': os.environ.get('STRIPE_PROFESSIONAL_PRICE_ID', 'price_1T1ei40ed3IDKXcnZDCi88tv'),
+            'enterprise': os.environ.get('STRIPE_ENTERPRISE_PRICE_ID', 'price_1T1eir0ed3IDKXcn3ILBR48o'),
+        }
+        
+        if plan == 'free_trial':
+            return jsonify({'url': '/login.html?plan=free_trial'}), 200
+        
+        if plan == 'enterprise':
+            return jsonify({'url': '/contact.html?plan=enterprise'}), 200
+        
+        if plan not in STRIPE_PRICES:
+            return jsonify({'error': 'Invalid plan', 'url': '/login.html'}), 400
+        
+        stripe_key = os.environ.get('STRIPE_SECRET_KEY')
+        
+        if stripe_key and stripe_key != 'sk_test_...':
+            try:
+                import stripe
+                stripe.api_key = stripe_key
+                
+                domain = os.environ.get('DOMAIN', 'https://semihkilic.com')
+                
+                checkout_session = stripe.checkout.Session.create(
+                    payment_method_types=['card'],
+                    line_items=[{
+                        'price': STRIPE_PRICES[plan],
+                        'quantity': 1,
+                    }],
+                    mode='subscription',
+                    success_url=domain + '/dashboard/settings?tab=billing&session_id={CHECKOUT_SESSION_ID}',
+                    cancel_url=domain + '/#pricing',
+                    allow_promotion_codes=True,
+                    metadata={
+                        'plan': plan,
+                        'billing': billing,
+                        'source': 'marketing_page',
+                    }
+                )
+                
+                return jsonify({
+                    'url': checkout_session.url,
+                    'checkout_url': checkout_session.url,
+                    'session_id': checkout_session.id
+                })
+            except Exception as e:
+                print(f"Stripe checkout error: {e}")
+                return jsonify({'error': f'Payment error: {str(e)}', 'url': '/login.html?plan=' + plan}), 500
+        
+        # No Stripe key — redirect to signup with plan context
+        return jsonify({'url': '/login.html?plan=' + plan}), 200
+        
+    except Exception as e:
+        return jsonify({'error': str(e), 'url': '/login.html'}), 500
+
+
 @app.route('/api/v1/billing/create-checkout', methods=['POST'])
 @require_organization
 def create_checkout():
@@ -2262,18 +2330,18 @@ def create_checkout():
         success_url = data.get('success_url', 'https://semihkilic.com/dashboard/settings?tab=billing')
         cancel_url = data.get('cancel_url', 'https://semihkilic.com/dashboard/upgrade')
         
-        # Stripe Price IDs from .env (Updated Feb 2026 - New Pricing)
-        # Starter = FREE, Professional = €19, Team = €49, Enterprise = €99
+        # Stripe Price IDs from .env (Updated Jan 2026 - New Tiered Pricing)
+        # Free Trial = €0, Starter = €99/mo, Professional = €299/mo, Enterprise = €799/mo
         import os
         STRIPE_PRICES = {
-            'professional': os.environ.get('STRIPE_PROFESSIONAL_PRICE_ID', 'price_1Stbp00ed3IDKXcngS5QHCju'),
-            'team': os.environ.get('STRIPE_TEAM_PRICE_ID', 'price_1SwUPS0ed3IDKXcnw7yBB9NI'),
-            'enterprise': os.environ.get('STRIPE_ENTERPRISE_PRICE_ID', 'price_1SwUQ40ed3IDKXcnduws9J5k'),
+            'starter': os.environ.get('STRIPE_STARTER_PRICE_ID', 'price_1T1eh20ed3IDKXcnWZVJA9ur'),
+            'professional': os.environ.get('STRIPE_PROFESSIONAL_PRICE_ID', 'price_1T1ei40ed3IDKXcnZDCi88tv'),
+            'enterprise': os.environ.get('STRIPE_ENTERPRISE_PRICE_ID', 'price_1T1eir0ed3IDKXcn3ILBR48o'),
         }
         
-        # Starter is free, no checkout needed
-        if plan == 'starter':
-            return jsonify({'error': 'Starter plan is free, no payment required'}), 400
+        # Free trial doesn't need checkout
+        if plan == 'free_trial':
+            return jsonify({'error': 'Free trial does not require payment'}), 400
         
         if plan not in STRIPE_PRICES:
             return jsonify({'error': 'Invalid plan'}), 400

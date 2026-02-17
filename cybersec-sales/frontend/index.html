@@ -1336,6 +1336,15 @@
                     Simple, Transparent <span class="bg-gradient-to-r from-emerald-400 to-cyan-400 bg-clip-text text-transparent">Pricing for Businesses</span>
                 </h2>
                 <p class="text-xl text-gray-400">Start with free security scan, upgrade when you need continuous monitoring.</p>
+                
+                <!-- Monthly / Annual Toggle -->
+                <div class="mt-8 flex items-center justify-center gap-4">
+                    <span id="toggle-monthly-label" class="text-sm font-semibold text-white">Monthly</span>
+                    <button id="billing-toggle" onclick="toggleBilling()" class="relative w-14 h-7 rounded-full bg-white/10 border border-white/20 transition-colors duration-300 focus:outline-none focus:ring-2 focus:ring-emerald-500/50" aria-label="Toggle annual billing">
+                        <span id="toggle-dot" class="absolute top-0.5 left-0.5 w-6 h-6 rounded-full bg-white shadow-md transition-transform duration-300"></span>
+                    </button>
+                    <span id="toggle-annual-label" class="text-sm font-medium text-gray-500">Annual <span class="text-emerald-400 text-xs font-bold ml-1">Save up to 17%</span></span>
+                </div>
             </div>
             
             <!-- Pricing Grid -->
@@ -1378,9 +1387,10 @@
                 <div class="bg-white/[0.03] border border-white/10 rounded-2xl p-8 flex flex-col hover:border-blue-500/30 transition-all duration-300">
                     <div class="text-blue-400 font-semibold text-sm tracking-wider mb-3">STARTER</div>
                     <div class="flex items-end gap-2 mb-2">
-                        <span class="text-5xl font-black text-white">€99</span>
-                        <span class="text-gray-500 mb-2">/month</span>
+                        <span id="starter-price" class="text-5xl font-black text-white">€99</span>
+                        <span id="starter-period" class="text-gray-500 mb-2">/month</span>
                     </div>
+                    <p id="starter-savings" class="text-blue-400/70 text-xs mb-1 hidden">Save €198/year — 16% discount</p>
                     <p class="text-gray-400 text-sm mb-6">For single website/app</p>
                     
                     <ul class="space-y-3 mb-6">
@@ -1419,10 +1429,10 @@
                         </div>
                         <div class="text-emerald-400 font-semibold text-sm tracking-wider mb-3 mt-2">PROFESSIONAL</div>
                         <div class="flex items-end gap-2 mb-1">
-                            <span class="text-5xl font-black text-white">€299</span>
-                            <span class="text-gray-500 mb-2">/month</span>
+                            <span id="pro-price" class="text-5xl font-black text-white">€299</span>
+                            <span id="pro-period" class="text-gray-500 mb-2">/month</span>
                         </div>
-                        <p class="text-emerald-400/70 text-xs mb-1">Save €598/year with annual: €2,990/year</p>
+                        <p id="pro-savings" class="text-emerald-400/70 text-xs mb-1 hidden">Save €598/year — 17% discount</p>
                         <p class="text-gray-400 text-sm mb-6">For growing SaaS &amp; tech companies</p>
                         
                         <div class="text-gray-500 text-[11px] uppercase tracking-wider mb-2">Everything in Starter, plus:</div>
