@@ -73,7 +73,6 @@ const planHierarchy: { [key: string]: number } = {
   'trial': 2,  // Trial users can access starter tools
   'starter': 2,
   'professional': 3,
-  'team': 4,
   'enterprise': 5,
 };
 
@@ -111,10 +110,9 @@ export function ToolsPage() {
     const badges: { [key: string]: { bg: string; text: string; label: string } } = {
       'free': { bg: 'bg-gray-700', text: 'text-gray-300', label: 'Free' },
       'trial': { bg: 'bg-gray-600', text: 'text-gray-200', label: 'Trial' },
-      'starter': { bg: 'bg-green-900/50', text: 'text-green-400', label: 'Starter' },
-      'professional': { bg: 'bg-blue-900/50', text: 'text-blue-400', label: 'Pro' },
-      'team': { bg: 'bg-purple-900/50', text: 'text-purple-400', label: 'Team' },
-      'enterprise': { bg: 'bg-yellow-900/50', text: 'text-yellow-400', label: 'Enterprise' },
+      'starter': { bg: 'bg-blue-900/50', text: 'text-blue-400', label: 'Starter' },
+      'professional': { bg: 'bg-emerald-900/50', text: 'text-emerald-400', label: 'Pro' },
+      'enterprise': { bg: 'bg-purple-900/50', text: 'text-purple-400', label: 'Enterprise' },
     };
     
     const badge = badges[plan.toLowerCase()] || badges['free'];

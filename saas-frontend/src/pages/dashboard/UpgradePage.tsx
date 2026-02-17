@@ -4,87 +4,85 @@ import { useState, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useToolCounts } from '../../hooks/useApiQueries';
 
-// Stripe checkout URLs (would be generated server-side in production)
-const STRIPE_CHECKOUT_URLS: { [key: string]: string } = {
-  professional: 'https://buy.stripe.com/test_professional_cybersecpro',
-  team: 'https://buy.stripe.com/test_team_cybersecpro',
-  enterprise: 'https://buy.stripe.com/test_enterprise_cybersecpro',
-};
-
-function buildPlans(counts: { starter: number; professional: number; team: number; enterprise: number }) {
+function buildPlans(counts: { starter: number; professional: number; enterprise: number }) {
   return [
     {
-      id: 'starter',
-      name: 'Starter',
+      id: 'trial',
+      name: 'Free Trial',
       price: 0,
       yearlyPrice: 0,
       period: '14 days',
-      description: 'Perfect for trying the platform',
+      description: 'Test drive the platform',
       features: [
-        `${counts.starter} security tools`,
-        '10 scans per day',
-        '1 project',
-        'Basic JSON reports',
+        '1 comprehensive security scan',
+        'Full 682-test coverage',
+        'PDF report with findings',
+        'No credit card required',
       ],
       color: 'green',
       popular: false,
     },
     {
-      id: 'professional',
-      name: 'Professional',
-      price: 19,
-      yearlyPrice: 190,
+      id: 'starter',
+      name: 'Starter',
+      price: 99,
+      yearlyPrice: 990,
       period: '/month',
-      description: 'For security professionals',
+      description: 'For single website/app',
       features: [
-        `${counts.professional} security tools`,
-        '50 scans per day',
-        'Multi-tool scan (3)',
-        '5 projects',
-        'PDF/HTML reports',
-        'API access',
+        `${counts.starter} security tools`,
+        '1 domain/application',
+        'Weekly automated scans',
+        'Email alerts for vulnerabilities',
+        'PDF & HTML reports',
+        'Priority email support (48h)',
+        '3-month vulnerability history',
       ],
       color: 'blue',
-      popular: true,
+      popular: false,
     },
     {
-      id: 'team',
-      name: 'Team',
-      price: 49,
-      yearlyPrice: 490,
+      id: 'professional',
+      name: 'Professional',
+      price: 299,
+      yearlyPrice: 2990,
       period: '/month',
-      description: 'For security teams',
+      description: 'For growing SaaS & tech companies',
       features: [
-        `${counts.team} security tools`,
-        '100 scans per day',
-        'Multi-tool scan (5)',
-        'Remote agent (1)',
-        '5 team members',
-        '20 projects',
-        'Slack/Teams integration',
+        `${counts.professional} security tools`,
+        'Up to 5 domains/applications',
+        'Daily automated scans',
+        'API access for CI/CD',
+        'Slack / Teams / Email notifications',
+        'Compliance reports (OWASP, GDPR)',
+        'White-label PDF reports',
+        'Priority support (24h)',
+        '12-month vulnerability tracking',
       ],
-      color: 'purple',
-      popular: false,
+      color: 'emerald',
+      popular: true,
     },
     {
       id: 'enterprise',
       name: 'Enterprise',
-      price: 99,
-      yearlyPrice: 990,
+      price: 799,
+      yearlyPrice: 0, // Custom annual
       period: '/month',
-      description: 'For organizations',
+      description: 'For security-conscious organizations',
       features: [
         `All ${counts.enterprise} Kali Linux tools`,
-        'Unlimited scans',
-        'Multi-tool scan (∞)',
-        'Unlimited remote agents',
-        'Unlimited users & projects',
+        'Unlimited domains/applications',
+        'Continuous monitoring (hourly)',
+        'Dedicated account manager',
+        'Custom compliance (PCI, HIPAA, SOC2)',
         'SSO / SAML / LDAP',
-        'Compliance reports (OWASP, PCI)',
-        '24/7 priority support',
-        'GDPR compliant',
+        'Unlimited users & team collaboration',
+        'Advanced API (webhooks, integrations)',
+        'SLA guarantee (99.9% uptime)',
+        '24/7 priority support (2h response)',
+        'Quarterly security roadmap reviews',
       ],
-      color: 'yellow',
+      color: 'purple',
       popular: false,
     },
   ];
@@ -102,12 +100,20 @@ export default function UpgradePage() {
   const plans = useMemo(() => buildPlans({
     starter: toolCounts?.plans?.starter ?? 50,
     professional: toolCounts?.plans?.professional ?? 200,
-    team: toolCounts?.plans?.team ?? 400,
     enterprise: toolCounts?.plans?.enterprise ?? 682,
   }), [toolCounts]);
 
   const handleUpgrade = async (planId: string) => {
     if (planId === currentPlan) return;
+    
+    // Free trial doesn't need checkout
+    if (planId === 'trial') return;
+    
+    // Enterprise -> Contact sales
+    if (planId === 'enterprise') {
+      window.open('/contact.html', '_blank');
+      return;
+    }
     
     setLoading(planId);
     
@@ -121,6 +127,7 @@ export default function UpgradePage() {
         },
         body: JSON.stringify({
           plan: planId,
+          billing: billingCycle,
           success_url: `${window.location.origin}/dashboard/settings?tab=billing&success=true`,
           cancel_url: `${window.location.origin}/dashboard/upgrade`,
         }),
@@ -129,24 +136,28 @@ export default function UpgradePage() {
       if (response.ok) {
         const data = await response.json();
         if (data.checkout_url) {
-          // Open in new tab so dashboard doesn't disappear
-          window.open(data.checkout_url, '_blank');
+          window.location.href = data.checkout_url;
           return;
         }
       }
       
-      // Fallback: use direct Stripe link if backend doesn't support
-      const stripeUrl = STRIPE_CHECKOUT_URLS[planId];
-      if (stripeUrl) {
-        // Open in new tab
-        window.open(stripeUrl, '_blank');
-      } else if (planId === 'enterprise') {
-        // Enterprise -> Contact sales page in new tab
-        window.open('/contact.html', '_blank');
+      // Fallback: use public endpoint
+      const fallback = await fetch('/api/create-checkout-session', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ plan_id: planId, billing: billingCycle }),
+      });
+      if (fallback.ok) {
+        const data = await fallback.json();
+        if (data.url || data.checkout_url) {
+          window.location.href = data.url || data.checkout_url;
+          return;
+        }
       }
+      
+      alert('Payment system is currently unavailable. Please try again later.');
     } catch (error) {
       console.error('Upgrade error:', error);
-      // Show error or fallback
       alert('Payment system is currently unavailable. Please try again later or contact cybersecpro@semihkilic.com');
     } finally {
       setLoading(null);
@@ -157,16 +168,20 @@ export default function UpgradePage() {
     if (loading === planId) return 'Processing...';
     if (planId === currentPlan) return 'Current Plan';
     if (planId === 'enterprise') return 'Contact Sales';
-    if (planId === 'starter') return 'Downgrade';
+    if (planId === 'trial') return 'Free Trial';
+    const planLevels = ['trial', 'starter', 'professional', 'enterprise'];
+    const currentLevel = planLevels.indexOf(currentPlan);
+    const targetLevel = planLevels.indexOf(planId);
+    if (targetLevel < currentLevel) return 'Downgrade';
     return 'Upgrade Now';
   };
 
   const getColorClasses = (color: string) => {
     switch (color) {
       case 'green': return 'text-green-400 border-green-500/30 bg-green-500/10';
-      case 'blue': return 'text-kali-blue border-kali-blue bg-kali-blue/10';
+      case 'blue': return 'text-blue-400 border-blue-500/30 bg-blue-500/10';
+      case 'emerald': return 'text-emerald-400 border-emerald-500/30 bg-emerald-500/10';
       case 'purple': return 'text-purple-400 border-purple-500/30 bg-purple-500/10';
-      case 'yellow': return 'text-yellow-400 border-yellow-500/30 bg-yellow-500/10';
       default: return 'text-gray-400 border-gray-500/30 bg-gray-500/10';
     }
   };
@@ -181,19 +196,19 @@ export default function UpgradePage() {
         </p>
         <div className="mt-4 inline-flex items-center gap-2 px-4 py-2 bg-gray-800 rounded-full">
           <span className="text-gray-400">Current Plan:</span>
-          <span className="text-kali-blue font-semibold capitalize">{currentPlan}</span>
+          <span className="text-emerald-400 font-semibold capitalize">{currentPlan}</span>
         </div>
         {/* Billing Cycle Toggle */}
         <div className="mt-6 inline-flex items-center gap-3 bg-gray-800/50 rounded-full p-1">
           <button
             onClick={() => setBillingCycle('monthly')}
-            className={`px-5 py-2 rounded-full text-sm font-medium transition ${billingCycle === 'monthly' ? 'bg-kali-blue text-white' : 'text-gray-400 hover:text-white'}`}
+            className={`px-5 py-2 rounded-full text-sm font-medium transition ${billingCycle === 'monthly' ? 'bg-emerald-500 text-white' : 'text-gray-400 hover:text-white'}`}
           >
             Monthly
           </button>
           <button
             onClick={() => setBillingCycle('yearly')}
-            className={`px-5 py-2 rounded-full text-sm font-medium transition ${billingCycle === 'yearly' ? 'bg-kali-blue text-white' : 'text-gray-400 hover:text-white'}`}
+            className={`px-5 py-2 rounded-full text-sm font-medium transition ${billingCycle === 'yearly' ? 'bg-emerald-500 text-white' : 'text-gray-400 hover:text-white'}`}
           >
             Yearly <span className="text-green-400 text-xs ml-1">Save 17%</span>
           </button>
@@ -207,15 +222,15 @@ export default function UpgradePage() {
             key={plan.id}
             className={`relative bg-gray-900 rounded-2xl p-6 border transition-all hover:scale-[1.02] flex flex-col ${
               plan.popular
-                ? 'border-kali-blue shadow-lg shadow-kali-blue/20'
+                ? 'border-emerald-500 shadow-lg shadow-emerald-500/20'
                 : plan.id === currentPlan
                 ? 'border-green-500'
                 : 'border-gray-800'
             }`}
           >
             {plan.popular && (
-              <div className="absolute -top-4 left-1/2 -translate-x-1/2 px-4 py-1.5 bg-gradient-to-r from-kali-blue to-cyan-500 text-white text-xs font-bold rounded-full z-10 shadow-lg">
-                ⭐ Most Popular
+              <div className="absolute -top-4 left-1/2 -translate-x-1/2 px-4 py-1.5 bg-gradient-to-r from-emerald-500 to-cyan-500 text-white text-xs font-bold rounded-full z-10 shadow-lg">
+                ⭐ Recommended for SMEs
               </div>
             )}
             {plan.id === currentPlan && (
@@ -229,11 +244,18 @@ export default function UpgradePage() {
             </div>
 
             <div className="flex items-baseline gap-1 mb-2">
-              <span className="text-4xl font-bold text-white">€{billingCycle === 'yearly' ? plan.yearlyPrice : plan.price}</span>
-              <span className="text-gray-500">{plan.price === 0 ? plan.period : billingCycle === 'yearly' ? '/year' : '/month'}</span>
+              <span className="text-4xl font-bold text-white">
+                {plan.price === 0 ? '€0' : billingCycle === 'yearly' && plan.yearlyPrice > 0 ? `€${Math.round(plan.yearlyPrice / 12)}` : `€${plan.price}`}
+              </span>
+              <span className="text-gray-500">
+                {plan.price === 0 ? plan.period : billingCycle === 'yearly' && plan.yearlyPrice > 0 ? '/mo billed annually' : '/month'}
+              </span>
             </div>
-            {billingCycle === 'yearly' && plan.price > 0 && (
-              <p className="text-green-400 text-xs mb-2">€{(plan.yearlyPrice / 12).toFixed(0)}/mo — save €{plan.price * 12 - plan.yearlyPrice}/year</p>
+            {billingCycle === 'yearly' && plan.yearlyPrice > 0 && (
+              <p className="text-emerald-400 text-xs mb-2">€{plan.yearlyPrice}/year — save €{plan.price * 12 - plan.yearlyPrice}/year ({Math.round((1 - plan.yearlyPrice / (plan.price * 12)) * 100)}% off)</p>
+            )}
+            {plan.id === 'enterprise' && billingCycle === 'yearly' && (
+              <p className="text-purple-400 text-xs mb-2">Custom annual pricing — contact sales</p>
             )}
 
             <p className="text-gray-400 text-sm mb-6">{plan.description}</p>
@@ -256,14 +278,14 @@ export default function UpgradePage() {
                 className={`w-full py-3 rounded-xl font-semibold transition ${
                   plan.id === currentPlan
                     ? 'bg-gray-800 text-gray-500 cursor-not-allowed'
-                    : plan.id === 'starter'
+                    : plan.id === 'trial'
                     ? 'bg-green-500/20 text-green-400 border border-green-500/50 hover:bg-green-500/30'
                     : plan.popular
-                    ? 'bg-gradient-to-r from-kali-blue to-cyan-500 text-white hover:from-kali-blue/90 hover:to-cyan-500/90 shadow-lg shadow-kali-blue/30'
-                    : plan.id === 'team'
-                    ? 'bg-purple-500 text-white hover:bg-purple-600 shadow-lg shadow-purple-500/30'
+                    ? 'bg-gradient-to-r from-emerald-500 to-cyan-500 text-white hover:from-emerald-500/90 hover:to-cyan-500/90 shadow-lg shadow-emerald-500/30'
+                    : plan.id === 'starter'
+                    ? 'bg-blue-500/20 text-blue-400 border border-blue-500/50 hover:bg-blue-500/30'
                     : plan.id === 'enterprise'
-                    ? 'bg-gradient-to-r from-yellow-500 to-orange-500 text-gray-900 font-bold hover:from-yellow-400 hover:to-orange-400 shadow-lg shadow-yellow-500/30'
+                    ? 'bg-gradient-to-r from-purple-500 to-pink-500 text-white font-bold hover:from-purple-400 hover:to-pink-400 shadow-lg shadow-purple-500/30'
                     : `${getColorClasses(plan.color)} border hover:opacity-80`
                 }`}
               >
@@ -306,7 +328,7 @@ export default function UpgradePage() {
 
       {/* Back Link */}
       <div className="mt-8 text-center">
-        <Link to="/dashboard/settings" className="text-kali-blue hover:underline">
+        <Link to="/dashboard/settings" className="text-emerald-400 hover:underline">
           ← Back to Settings
         </Link>
       </div>

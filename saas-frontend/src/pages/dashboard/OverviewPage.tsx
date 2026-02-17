@@ -13,9 +13,8 @@ import { PageTransition } from '../../components/ui/PageTransition';
 // Plan configurations - synced with backend PLAN_CONFIG (682 total tools in DB)
 const PLAN_CONFIG: Record<string, { tools: number; scansPerDay: number; features: string[] }> = {
   trial: { tools: 3, scansPerDay: 5, features: ['3 Essential tools', '5 scans/day', '14 day trial'] },
-  starter: { tools: 7, scansPerDay: 10, features: ['7 tools', '10 scans/day', '1 project'] },
-  professional: { tools: 25, scansPerDay: 50, features: ['25 tools', '50 scans/day', 'Multi-tool scan (3)'] },
-  team: { tools: 100, scansPerDay: 200, features: ['100 tools', '200 scans/day', '10 Remote agents'] },
+  starter: { tools: 50, scansPerDay: 30, features: ['50 tools', '30 scans/day', 'Weekly scans'] },
+  professional: { tools: 200, scansPerDay: 100, features: ['200 tools', '100 scans/day', 'API + CI/CD'] },
   enterprise: { tools: 682, scansPerDay: -1, features: ['All 682 tools', 'Unlimited scans', 'SSO/SAML'] },
 };
 
@@ -307,11 +306,10 @@ export function OverviewPage() {
                 <h4 className="text-white font-semibold mb-3">⚡ Change Plan (Testing)</h4>
                 <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
                   {[
-                    { id: 'trial', name: 'Trial', tools: '7 tools', scans: '3/day', features: 'Basic', color: 'gray' },
-                    { id: 'starter', name: 'Starter', tools: '50 tools', scans: '10/day', features: '1 project', color: 'green' },
-                    { id: 'professional', name: 'Professional', tools: '200 tools', scans: '50/day', features: 'Multi-tool (3)', color: 'blue' },
-                    { id: 'team', name: 'Team', tools: '400 tools', scans: '200/day', features: 'Agent + Multi (5)', color: 'purple' },
-                    { id: 'enterprise', name: 'Enterprise', tools: '682 tools', scans: 'Unlimited', features: '∞ Agents + SSO', color: 'yellow' },
+                    { id: 'trial', name: 'Trial', tools: '3 tools', scans: '5/day', features: 'Basic', color: 'gray' },
+                    { id: 'starter', name: 'Starter', tools: '50 tools', scans: '30/day', features: 'Weekly scans', color: 'blue' },
+                    { id: 'professional', name: 'Professional', tools: '200 tools', scans: '100/day', features: 'API + CI/CD', color: 'emerald' },
+                    { id: 'enterprise', name: 'Enterprise', tools: '682 tools', scans: 'Unlimited', features: 'SSO + Agents', color: 'purple' },
                   ].map((plan) => (
                     <button
                       key={plan.id}
@@ -351,11 +349,10 @@ export function OverviewPage() {
               <div>
                 <p className="text-sm text-gray-400">Available Tools</p>
                 <p className="text-3xl font-bold text-white mt-1">
-                  {organization?.plan_type === 'enterprise' ? '404' : 
-                   organization?.plan_type === 'team' ? '390' :
-                   organization?.plan_type === 'professional' ? '360' :
-                   organization?.plan_type === 'starter' ? '6' : 
-                   '0'}
+                  {organization?.plan_type === 'enterprise' ? '682' : 
+                   organization?.plan_type === 'professional' ? '200' :
+                   organization?.plan_type === 'starter' ? '50' : 
+                   '3'}
                 </p>
                 {organization?.plan_type === 'enterprise' && (
                   <p className="text-xs text-green-400 mt-1">Full Access • All Categories</p>

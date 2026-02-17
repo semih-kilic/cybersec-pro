@@ -16,12 +16,12 @@ interface Organization {
   id: string;
   name: string;
   slug: string;
-  plan_type: 'trial' | 'starter' | 'professional' | 'team' | 'enterprise';
+  plan_type: 'trial' | 'starter' | 'professional' | 'enterprise';
   is_active: boolean;
 }
 
 // Helper to get user's plan from organization
-export function getUserPlan(organization: Organization | null): 'trial' | 'starter' | 'professional' | 'team' | 'enterprise' {
+export function getUserPlan(organization: Organization | null): 'trial' | 'starter' | 'professional' | 'enterprise' {
   return organization?.plan_type || 'trial';
 }
 

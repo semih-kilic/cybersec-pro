@@ -808,12 +808,12 @@ export default function SettingsPage() {
               </div>
 
               {/* Plan Gate */}
-              {userPlan !== 'enterprise' && userPlan !== 'team' && (
+              {userPlan !== 'enterprise' && (
                 <div className="p-6 bg-yellow-500/10 border border-yellow-500/30 rounded-xl">
                   <div className="flex items-start gap-4">
                     <span className="text-2xl">🔒</span>
                     <div>
-                      <h3 className="text-white font-semibold mb-1">SSO requires Team or Enterprise plan</h3>
+                      <h3 className="text-white font-semibold mb-1">SSO requires Enterprise plan</h3>
                       <p className="text-gray-400 text-sm mb-3">
                         Upgrade to connect your Identity Provider (Okta, Azure AD, Google Workspace, Active Directory).
                       </p>
@@ -826,7 +826,7 @@ export default function SettingsPage() {
               )}
 
               {/* SSO Config Form - shown for Team/Enterprise */}
-              {(userPlan === 'enterprise' || userPlan === 'team') && (
+              {(userPlan === 'enterprise') && (
                 <>
                   {/* Provider Type Selection */}
                   <div>
@@ -1228,18 +1228,17 @@ export default function SettingsPage() {
                   <div>
                     <p className="text-gray-400 text-sm">Tools Access</p>
                     <p className="text-white font-medium">
-                      {userPlan === 'enterprise' ? '404' : 
-                       userPlan === 'team' ? '390' :
-                       userPlan === 'professional' ? '360' :
-                       userPlan === 'starter' ? '6' : '0'} Tools
+                      {userPlan === 'enterprise' ? '682' : 
+                       userPlan === 'professional' ? '200' :
+                       userPlan === 'starter' ? '50' : '3'} Tools
                     </p>
                   </div>
                   <div>
                     <p className="text-gray-400 text-sm">Scans/Day</p>
                     <p className="text-white font-medium">
                       {userPlan === 'enterprise' ? 'Unlimited' : 
-                       userPlan === 'team' ? '100' :
-                       userPlan === 'professional' ? '50' : '5'}
+                       userPlan === 'professional' ? '100' :
+                       userPlan === 'starter' ? '30' : '5'}
                     </p>
                   </div>
                   <div>
@@ -1287,9 +1286,9 @@ export default function SettingsPage() {
                 <h3 className="text-lg font-medium text-white mb-4">Billing History</h3>
                 <div className="space-y-2">
                   {[
-                    { date: 'Jan 26, 2026', amount: '€19.00', status: 'Paid', invoice: '#INV-2601' },
-                    { date: 'Dec 26, 2025', amount: '€19.00', status: 'Paid', invoice: '#INV-2512' },
-                    { date: 'Nov 26, 2025', amount: '€19.00', status: 'Paid', invoice: '#INV-2511' },
+                    { date: 'Jan 26, 2026', amount: '€99.00', status: 'Paid', invoice: '#INV-2601' },
+                    { date: 'Dec 26, 2025', amount: '€99.00', status: 'Paid', invoice: '#INV-2512' },
+                    { date: 'Nov 26, 2025', amount: '€99.00', status: 'Paid', invoice: '#INV-2511' },
                   ].map((item, i) => (
                     <div key={i} className="flex items-center justify-between p-3 bg-gray-800 rounded-lg">
                       <div className="flex items-center gap-4">
