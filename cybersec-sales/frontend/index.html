@@ -1460,7 +1460,7 @@
                             <button onclick="checkout('professional')" class="block w-full py-3.5 rounded-xl bg-gradient-to-r from-emerald-500 to-cyan-500 text-white font-bold text-center hover:shadow-lg hover:shadow-emerald-500/25 transition-all hover:-translate-y-0.5">
                                 Subscribe Now
                             </button>
-                            <p class="text-center text-xs text-emerald-400/60 mt-2">Save €598/year vs monthly</p>
+                            <p class="text-center text-xs text-emerald-400/60 mt-2">30-day money-back guarantee</p>
                         </div>
                     </div>
                 </div>
@@ -1469,9 +1469,10 @@
                 <div class="bg-white/[0.03] border border-white/10 rounded-2xl p-8 flex flex-col hover:border-purple-500/30 transition-all duration-300">
                     <div class="text-purple-400 font-semibold text-sm tracking-wider mb-3">ENTERPRISE</div>
                     <div class="flex items-end gap-2 mb-2">
-                        <span class="text-5xl font-black text-white">€799</span>
-                        <span class="text-gray-500 mb-2">/month</span>
+                        <span id="ent-price" class="text-5xl font-black text-white">€799</span>
+                        <span id="ent-period" class="text-gray-500 mb-2">/month</span>
                     </div>
+                    <p id="ent-savings" class="text-purple-400/70 text-xs mb-1 hidden">Custom annual pricing available</p>
                     <p class="text-gray-400 text-sm mb-6">For security-conscious organizations</p>
                     
                     <div class="text-gray-500 text-[11px] uppercase tracking-wider mb-2">Everything in Professional, plus:</div>
@@ -2269,21 +2270,69 @@
         // Initialize ROI on load
         document.addEventListener('DOMContentLoaded', function() { if(document.getElementById('roi-apps')) updateROI(); });
 
+        // Billing toggle state
+        let billingPeriod = 'monthly';
+
+        function toggleBilling() {
+            billingPeriod = billingPeriod === 'monthly' ? 'annual' : 'monthly';
+            const dot = document.getElementById('toggle-dot');
+            const toggle = document.getElementById('billing-toggle');
+            const monthLabel = document.getElementById('toggle-monthly-label');
+            const annualLabel = document.getElementById('toggle-annual-label');
+
+            if (billingPeriod === 'annual') {
+                dot.style.transform = 'translateX(28px)';
+                toggle.style.background = 'rgba(16,185,129,0.3)';
+                toggle.style.borderColor = 'rgba(16,185,129,0.5)';
+                monthLabel.className = 'text-sm font-medium text-gray-500';
+                annualLabel.className = 'text-sm font-semibold text-white';
+                // Starter annual: 990/12 = 82.50
+                document.getElementById('starter-price').textContent = '\u20AC82.50';
+                document.getElementById('starter-period').textContent = '/mo billed annually';
+                document.getElementById('starter-savings').classList.remove('hidden');
+                // Professional annual: 2990/12 = 249.17
+                document.getElementById('pro-price').textContent = '\u20AC249';
+                document.getElementById('pro-period').textContent = '/mo billed annually';
+                document.getElementById('pro-savings').classList.remove('hidden');
+                // Enterprise: custom annual
+                document.getElementById('ent-price').textContent = 'Custom';
+                document.getElementById('ent-period').textContent = '';
+                document.getElementById('ent-savings').classList.remove('hidden');
+            } else {
+                dot.style.transform = 'translateX(0)';
+                toggle.style.background = 'rgba(255,255,255,0.1)';
+                toggle.style.borderColor = 'rgba(255,255,255,0.2)';
+                monthLabel.className = 'text-sm font-semibold text-white';
+                annualLabel.className = 'text-sm font-medium text-gray-500';
+                document.getElementById('starter-price').textContent = '\u20AC99';
+                document.getElementById('starter-period').textContent = '/month';
+                document.getElementById('starter-savings').classList.add('hidden');
+                document.getElementById('pro-price').textContent = '\u20AC299';
+                document.getElementById('pro-period').textContent = '/month';
+                document.getElementById('pro-savings').classList.add('hidden');
+                document.getElementById('ent-price').textContent = '\u20AC799';
+                document.getElementById('ent-period').textContent = '/month';
+                document.getElementById('ent-savings').classList.add('hidden');
+            }
+        }
+
         async function checkout(plan) {
             try {
                 const response = await fetch('/api/create-checkout-session', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ plan_id: plan })
+                    body: JSON.stringify({ plan_id: plan, billing: billingPeriod })
                 });
                 const data = await response.json();
                 if (data.url || data.checkout_url) {
                     window.location.href = data.url || data.checkout_url;
+                } else if (data.error) {
+                    alert(data.error);
                 } else {
-                    window.location.href = '/login.html';
+                    window.location.href = '/login.html?plan=' + plan;
                 }
             } catch (error) {
-                window.location.href = '/login.html';
+                window.location.href = '/login.html?plan=' + plan;
             }
         }
         
