@@ -1160,6 +1160,8 @@ def google_oauth():
             domain = os.environ.get('DOMAIN', 'https://semihkilic.com')
             redirect_uri = data.get('redirect_uri', f"{domain}/login")
             
+            app.logger.info(f"🔐 Google OAuth code exchange: redirect_uri={redirect_uri}")
+            
             token_response = requests.post(
                 'https://oauth2.googleapis.com/token',
                 data={
@@ -1172,8 +1174,8 @@ def google_oauth():
             )
             
             if token_response.status_code != 200:
-                print(f"Google token exchange error: {token_response.text}")
-                return jsonify({'error': 'Failed to exchange Google code'}), 401
+                app.logger.error(f"🔐 Google token exchange failed (HTTP {token_response.status_code}): {token_response.text}")
+                return jsonify({'error': 'Failed to exchange Google code', 'details': token_response.json().get('error_description', '')}), 401
             
             tokens = token_response.json()
             id_token = tokens.get('id_token')
@@ -1275,6 +1277,7 @@ def google_oauth():
         })
         
     except Exception as e:
+        app.logger.error(f"🔐 Google OAuth error: {str(e)}")
         db.session.rollback()
         return jsonify({'error': str(e)}), 500
 
@@ -1408,6 +1411,7 @@ def github_oauth():
         })
         
     except Exception as e:
+        app.logger.error(f"🔐 GitHub OAuth error: {str(e)}")
         db.session.rollback()
         return jsonify({'error': str(e)}), 500
 
