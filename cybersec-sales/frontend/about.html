@@ -3,17 +3,21 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>About Us - CyberSec Pro | Kali Linux Cloud Platform</title>
-    <meta name="description" content="Learn about CyberSec Pro - the revolutionary Kali Linux web platform bringing 682 security tools to your browser. Our mission, vision, and the team behind the platform.">
+    <title>About Us - CyberSec Pro | Cybersecurity for Nordic SMEs</title>
+    <meta name="description" content="We're making cybersecurity accessible to every business. Founded by Semih K&#305;l&#305;&#231;, 14 years IT security experience. Based in Helsinki, Finland. Business Finland backed.">
     <meta name="robots" content="index, follow">
-    <link rel="canonical" href="https://cybersecpro.com/about">
+    <link rel="canonical" href="https://semihkilic.com/about">
     <link rel="icon" type="image/svg+xml" href="/favicon.svg">
-    <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
-    
+
+    <meta property="og:title" content="About CyberSec Pro - Making Cybersecurity Accessible">
+    <meta property="og:description" content="Professional-grade security testing for SMEs. Founded by ex-KPMG security expert. Helsinki, Finland.">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://semihkilic.com/about">
+
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
-    
+
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
         tailwind.config = {
@@ -35,432 +39,437 @@
             }
         }
     </script>
-    
+
     <style>
         body { font-family: 'Inter', sans-serif; background: #0a0a12; }
-        .kali-gradient { background: linear-gradient(135deg, #367bf0 0%, #9b59b6 50%, #367bf0 100%); background-size: 200% 200%; animation: gradientMove 5s ease infinite; }
-        @keyframes gradientMove { 0%, 100% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } }
-        .kali-text { background: linear-gradient(135deg, #367bf0, #9b59b6, #00d4ff); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; }
-        .dragon-bg { background: radial-gradient(ellipse 100% 80% at 50% 20%, rgba(54, 123, 240, 0.15), transparent), radial-gradient(ellipse 80% 60% at 80% 50%, rgba(155, 89, 182, 0.1), transparent), #0a0a12; }
-        .kali-card { background: linear-gradient(145deg, rgba(26, 26, 46, 0.8), rgba(15, 15, 26, 0.9)); border: 1px solid rgba(54, 123, 240, 0.2); backdrop-filter: blur(10px); transition: all 0.3s ease; }
-        .kali-card:hover { border-color: rgba(54, 123, 240, 0.5); transform: translateY(-5px); }
-        .btn-kali { background: linear-gradient(135deg, #367bf0 0%, #2563eb 100%); box-shadow: 0 10px 40px rgba(54, 123, 240, 0.4); transition: all 0.3s ease; }
-        .btn-kali:hover { transform: translateY(-3px); box-shadow: 0 15px 50px rgba(54, 123, 240, 0.6); }
-        @keyframes pulse-glow { 0%, 100% { box-shadow: 0 0 0 0 rgba(54, 123, 240, 0.7); } 50% { box-shadow: 0 0 0 15px rgba(54, 123, 240, 0); } }
-        .pulse-kali { animation: pulse-glow 2s infinite; }
         html { scroll-behavior: smooth; }
     </style>
 </head>
 <body class="text-white antialiased">
+
     <!-- Navigation -->
-    <nav class="sticky top-0 z-50 bg-kali-darker/95 backdrop-blur-xl border-b border-kali-blue/10">
+    <nav class="sticky top-0 z-50 bg-[#0a0a12]/95 backdrop-blur-xl border-b border-white/5">
         <div class="max-w-7xl mx-auto px-4 sm:px-6">
             <div class="flex justify-between items-center h-16">
                 <a href="/" class="flex items-center gap-3">
                     <div class="relative">
-                        <div class="w-10 h-10 rounded-xl kali-gradient flex items-center justify-center">
+                        <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-cyan-500 to-blue-600 flex items-center justify-center">
                             <svg class="w-6 h-6 text-white" viewBox="0 0 24 24" fill="currentColor">
                                 <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z"/>
                             </svg>
                         </div>
-                        <div class="absolute -top-1 -right-1 w-3 h-3 bg-kali-green rounded-full pulse-kali"></div>
+                        <div class="absolute -top-1 -right-1 w-3 h-3 bg-emerald-500 rounded-full animate-pulse"></div>
                     </div>
                     <span class="text-xl font-bold">CyberSec Pro</span>
                 </a>
-                
+
                 <div class="hidden md:flex items-center gap-8">
-                    <a href="/#platform" class="text-gray-400 hover:text-kali-blue transition font-medium">Platform</a>
-                    <a href="/tools.html" class="text-gray-400 hover:text-kali-blue transition font-medium">Tools</a>
-                    <a href="/#pricing" class="text-gray-400 hover:text-kali-blue transition font-medium">Pricing</a>
-                    <a href="/about.html" class="text-kali-blue font-medium">About</a>
-                    <a href="/docs.html" class="text-gray-400 hover:text-kali-blue transition font-medium">Docs</a>
+                    <a href="/#platform" class="text-gray-400 hover:text-white transition font-medium">Platform</a>
+                    <a href="/#pricing" class="text-gray-400 hover:text-white transition font-medium">Pricing</a>
+                    <a href="/about.html" class="text-cyan-400 font-medium">About</a>
                 </div>
-                
+
                 <div class="flex items-center gap-4">
                     <a href="/login.html" class="hidden sm:block text-gray-400 hover:text-white transition font-medium">Login</a>
-                    <a href="/login.html" class="btn-kali px-6 py-2.5 rounded-full text-white font-semibold">
-                        Start Free Trial
+                    <a href="/login.html" class="bg-gradient-to-r from-cyan-500 to-blue-500 px-6 py-2.5 rounded-full text-white font-semibold hover:shadow-lg hover:shadow-cyan-500/25 transition-all">
+                        Free Security Scan
                     </a>
                 </div>
             </div>
         </div>
     </nav>
-    
+
     <!-- Hero Section -->
-    <section class="dragon-bg pt-20 pb-24 px-4">
-        <div class="max-w-7xl mx-auto">
-            <div class="text-center mb-16">
-                <div class="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-kali-blue/10 border border-kali-blue/30 mb-6">
-                    <span class="text-kali-blue font-medium">🐉 About CyberSec Pro</span>
-                </div>
-                <h1 class="text-5xl sm:text-6xl font-black mb-6">
-                    Bringing <span class="kali-text">Kali Linux</span><br>
-                    to Everyone
-                </h1>
-                <p class="text-xl text-gray-400 max-w-3xl mx-auto">
-                    We believe powerful security tools shouldn't require complex setups. 
-                    That's why we built the first cloud-based Kali Linux platform.
-                </p>
+    <section class="pt-24 pb-20 px-4 relative overflow-hidden">
+        <div class="absolute inset-0 bg-gradient-to-b from-[#0c1929] via-[#0a0a12] to-[#0a0a12]"></div>
+        <div class="absolute top-0 left-1/3 w-96 h-96 bg-cyan-500/5 rounded-full blur-3xl"></div>
+        <div class="absolute top-20 right-1/4 w-96 h-96 bg-blue-500/5 rounded-full blur-3xl"></div>
+
+        <div class="max-w-4xl mx-auto text-center relative z-10">
+            <div class="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-cyan-500/10 border border-cyan-500/30 mb-8">
+                <span class="text-cyan-400 font-medium">About CyberSec Pro</span>
             </div>
-            
-            <!-- Kali Dragon Visual -->
-            <div class="relative max-w-4xl mx-auto">
-                <div class="kali-card rounded-3xl p-8 text-center">
-                    <div class="text-9xl mb-6">🐉</div>
-                    <h2 class="text-3xl font-bold mb-4">The Power of the Dragon</h2>
-                    <p class="text-gray-400 max-w-2xl mx-auto">
-                        Kali Linux is the world's most powerful penetration testing distribution. 
-                        Now, access its full potential from any device, anywhere in the world.
-                    </p>
-                </div>
-            </div>
+            <h1 class="text-4xl sm:text-5xl md:text-6xl font-bold mb-6 leading-tight">
+                We're Making Cybersecurity<br>
+                <span class="bg-gradient-to-r from-cyan-400 to-blue-400 bg-clip-text text-transparent">Accessible to Every Business</span>
+            </h1>
+            <p class="text-xl text-gray-400 max-w-2xl mx-auto leading-relaxed">
+                Too many small companies get hacked because security testing is
+                expensive and complicated. We're changing that.
+            </p>
         </div>
     </section>
-    
-    <!-- What is CyberSec Pro -->
-    <section class="py-24 px-4 bg-kali-darker">
-        <div class="max-w-7xl mx-auto">
-            <div class="grid lg:grid-cols-2 gap-16 items-center">
-                <div>
-                    <h2 class="text-4xl font-bold mb-6">
-                        What is <span class="kali-text">CyberSec Pro?</span>
-                    </h2>
-                    <p class="text-gray-400 text-lg mb-6">
-                        CyberSec Pro is a revolutionary web application that brings the complete Kali Linux security toolkit 
-                        to your browser. No downloads, no VMs, no complex configurations – just instant access to 
-                        <strong class="text-white">682 professional security tools</strong>.
-                    </p>
-                    <p class="text-gray-400 text-lg mb-6">
-                        Built on top of the legendary Kali Linux distribution, our platform provides:
-                    </p>
-                    <ul class="space-y-4 mb-8">
-                        <li class="flex items-start gap-3">
-                            <div class="w-6 h-6 rounded-full bg-kali-blue/20 flex items-center justify-center flex-shrink-0 mt-1">
-                                <svg class="w-4 h-4 text-kali-blue" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+
+    <!-- Founder Story -->
+    <section class="py-20 px-4">
+        <div class="max-w-5xl mx-auto">
+            <div class="grid grid-cols-1 lg:grid-cols-5 gap-12 items-start">
+
+                <!-- Photo + Info Column -->
+                <div class="lg:col-span-2">
+                    <div class="sticky top-24">
+                        <!-- Photo placeholder -->
+                        <div class="relative mb-6">
+                            <div class="w-full aspect-square max-w-xs mx-auto rounded-2xl bg-gradient-to-br from-slate-800 to-slate-900 border border-white/10 overflow-hidden flex items-center justify-center">
+                                <div class="text-center">
+                                    <div class="w-24 h-24 mx-auto rounded-full bg-gradient-to-br from-cyan-500/20 to-blue-500/20 border-2 border-cyan-500/30 flex items-center justify-center mb-4">
+                                        <span class="text-4xl font-bold bg-gradient-to-r from-cyan-400 to-blue-400 bg-clip-text text-transparent">SK</span>
+                                    </div>
+                                    <div class="text-white font-bold text-lg">Semih K&#305;l&#305;&#231;</div>
+                                    <div class="text-gray-500 text-sm">Founder &amp; CEO</div>
+                                </div>
                             </div>
-                            <div>
-                                <strong class="text-white">Browser-Based Access</strong>
-                                <p class="text-gray-500 text-sm">Run Nmap, Metasploit, Burp Suite and more directly from Chrome, Firefox, or Safari</p>
-                            </div>
-                        </li>
-                        <li class="flex items-start gap-3">
-                            <div class="w-6 h-6 rounded-full bg-kali-purple/20 flex items-center justify-center flex-shrink-0 mt-1">
-                                <svg class="w-4 h-4 text-kali-purple" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
-                            </div>
-                            <div>
-                                <strong class="text-white">Always Up-to-Date</strong>
-                                <p class="text-gray-500 text-sm">Daily syncs with Kali Linux repositories ensure you always have the latest tools</p>
-                            </div>
-                        </li>
-                        <li class="flex items-start gap-3">
-                            <div class="w-6 h-6 rounded-full bg-kali-green/20 flex items-center justify-center flex-shrink-0 mt-1">
-                                <svg class="w-4 h-4 text-kali-green" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
-                            </div>
-                            <div>
-                                <strong class="text-white">Enterprise-Ready</strong>
-                                <p class="text-gray-500 text-sm">Professional reports, team collaboration, and API access for automation</p>
-                            </div>
-                        </li>
-                    </ul>
-                </div>
-                
-                <!-- Visual -->
-                <div class="kali-card rounded-2xl p-6">
-                    <div class="bg-kali-darker rounded-xl p-4 font-mono text-sm">
-                        <div class="text-kali-blue mb-2">┌──(kali㉿cybersecpro)-[~]</div>
-                        <div class="text-white mb-4">└─$ <span class="text-kali-green">cat /etc/os-release</span></div>
-                        <div class="text-gray-400 space-y-1">
-                            <div>PRETTY_NAME="Kali GNU/Linux Rolling"</div>
-                            <div>NAME="Kali GNU/Linux"</div>
-                            <div>VERSION="2026.1"</div>
-                            <div>ID=kali</div>
-                            <div class="text-kali-cyan">HOME_URL="https://www.kali.org/"</div>
                         </div>
-                        <div class="mt-4 text-kali-blue">┌──(kali㉿cybersecpro)-[~]</div>
-                        <div class="text-white">└─$ <span class="text-kali-green">apt list --installed | wc -l</span></div>
-                        <div class="text-kali-cyan mt-2">682 security tools installed ✓</div>
+
+                        <!-- Contact links -->
+                        <div class="flex items-center justify-center gap-4 mb-8">
+                            <a href="https://linkedin.com/in/semihkilic" target="_blank" class="flex items-center gap-2 bg-white/[0.03] border border-white/10 rounded-xl px-4 py-2.5 text-sm text-gray-400 hover:text-white hover:border-blue-500/30 transition">
+                                <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/></svg>
+                                LinkedIn
+                            </a>
+                            <a href="mailto:semih@cybersecpro.com" class="flex items-center gap-2 bg-white/[0.03] border border-white/10 rounded-xl px-4 py-2.5 text-sm text-gray-400 hover:text-white hover:border-cyan-500/30 transition">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
+                                Email
+                            </a>
+                        </div>
+
+                        <!-- Certifications -->
+                        <div class="bg-white/[0.03] border border-white/10 rounded-2xl p-6">
+                            <div class="text-gray-500 text-[11px] uppercase tracking-wider mb-4">Certifications</div>
+                            <div class="space-y-3">
+                                <div class="flex items-center gap-3">
+                                    <div class="w-8 h-8 rounded-lg bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center flex-shrink-0">
+                                        <span class="text-emerald-400 text-xs font-bold">CEH</span>
+                                    </div>
+                                    <span class="text-gray-300 text-sm">Certified Ethical Hacker</span>
+                                </div>
+                                <div class="flex items-center gap-3">
+                                    <div class="w-8 h-8 rounded-lg bg-blue-500/10 border border-blue-500/20 flex items-center justify-center flex-shrink-0">
+                                        <span class="text-blue-400 text-xs font-bold">MS</span>
+                                    </div>
+                                    <span class="text-gray-300 text-sm">Microsoft Certified Systems Admin</span>
+                                </div>
+                                <div class="flex items-center gap-3">
+                                    <div class="w-8 h-8 rounded-lg bg-amber-500/10 border border-amber-500/20 flex items-center justify-center flex-shrink-0">
+                                        <span class="text-amber-400 text-xs font-bold">AWS</span>
+                                    </div>
+                                    <span class="text-gray-300 text-sm">AWS Certified</span>
+                                </div>
+                                <div class="flex items-center gap-3">
+                                    <div class="w-8 h-8 rounded-lg bg-cyan-500/10 border border-cyan-500/20 flex items-center justify-center flex-shrink-0">
+                                        <span class="text-cyan-400 text-xs font-bold">14y</span>
+                                    </div>
+                                    <span class="text-gray-300 text-sm">14 years cybersecurity experience</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Story Column -->
+                <div class="lg:col-span-3">
+                    <div class="bg-white/[0.02] border border-white/10 rounded-2xl p-8 md:p-10">
+                        <div class="text-5xl mb-6">&ldquo;</div>
+                        <div class="space-y-5 text-gray-300 text-lg leading-relaxed">
+                            <p>
+                                Hi, I'm <span class="text-white font-semibold">Semih K&#305;l&#305;&#231;</span>, founder of CyberSec Pro.
+                            </p>
+                            <p>
+                                I spent <span class="text-white font-semibold">14 years as an IT Security Administrator</span> at companies like
+                                <span class="text-cyan-400">KPMG</span> and <span class="text-cyan-400">vitastra</span>, protecting enterprise systems.
+                                I watched small businesses struggle with the same security challenges &mdash; but they
+                                couldn't afford &euro;15,000 penetration tests or full-time security hires.
+                            </p>
+                            <p>
+                                So I built CyberSec Pro: <span class="text-white font-semibold">professional-grade security testing that any
+                                business can afford and any team member can use.</span>
+                            </p>
+                            <p>
+                                Today, we help <span class="text-emerald-400 font-semibold">50+ Nordic SMEs</span> stay secure. Our mission
+                                is to protect <span class="text-white font-semibold">10,000 businesses by 2027</span>.
+                            </p>
+                        </div>
+                        <div class="mt-8 pt-6 border-t border-white/5">
+                            <div class="text-white font-semibold">Semih K&#305;l&#305;&#231;</div>
+                            <div class="text-gray-500 text-sm">Founder &amp; CEO</div>
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
     </section>
-    
-    <!-- Mission & Vision -->
-    <section class="py-24 px-4 dragon-bg">
-        <div class="max-w-7xl mx-auto">
-            <div class="text-center mb-16">
-                <h2 class="text-4xl font-bold mb-4">Our <span class="kali-text">Mission & Vision</span></h2>
-            </div>
-            
-            <div class="grid md:grid-cols-2 gap-8">
-                <div class="kali-card rounded-2xl p-8">
-                    <div class="w-16 h-16 rounded-2xl bg-kali-blue/10 flex items-center justify-center mb-6">
-                        <span class="text-4xl">🎯</span>
-                    </div>
-                    <h3 class="text-2xl font-bold mb-4">Our Mission</h3>
-                    <p class="text-gray-400 text-lg">
-                        To democratize cybersecurity by making professional penetration testing tools 
-                        accessible to everyone – from individual researchers to enterprise security teams. 
-                        We're breaking down the barriers of complex installations and expensive hardware 
-                        requirements.
-                    </p>
+
+    <!-- Company Stats -->
+    <section class="py-16 px-4">
+        <div class="max-w-5xl mx-auto">
+            <div class="grid grid-cols-2 md:grid-cols-5 gap-4">
+                <div class="bg-white/[0.03] border border-white/10 rounded-2xl p-6 text-center">
+                    <div class="text-3xl font-bold text-white mb-1">2024</div>
+                    <div class="text-gray-500 text-sm">Founded</div>
                 </div>
-                
-                <div class="kali-card rounded-2xl p-8">
-                    <div class="w-16 h-16 rounded-2xl bg-kali-purple/10 flex items-center justify-center mb-6">
-                        <span class="text-4xl">🚀</span>
+                <div class="bg-white/[0.03] border border-white/10 rounded-2xl p-6 text-center">
+                    <div class="text-3xl font-bold text-white mb-1 flex items-center justify-center gap-1">
+                        <span class="text-lg">&#127467;&#127470;</span> Helsinki
                     </div>
-                    <h3 class="text-2xl font-bold mb-4">Our Vision</h3>
-                    <p class="text-gray-400 text-lg">
-                        A world where every organization, regardless of size or technical expertise, 
-                        can effectively test and secure their digital infrastructure. We envision 
-                        cybersecurity tools as accessible as any other cloud service.
-                    </p>
+                    <div class="text-gray-500 text-sm">Headquarters</div>
+                </div>
+                <div class="bg-white/[0.03] border border-emerald-500/20 rounded-2xl p-6 text-center">
+                    <div class="text-3xl font-bold text-emerald-400 mb-1">BF</div>
+                    <div class="text-gray-500 text-sm">Business Finland Backed</div>
+                </div>
+                <div class="bg-white/[0.03] border border-white/10 rounded-2xl p-6 text-center">
+                    <div class="text-3xl font-bold text-white mb-1">3</div>
+                    <div class="text-gray-500 text-sm">Team (growing)</div>
+                </div>
+                <div class="bg-white/[0.03] border border-cyan-500/20 rounded-2xl p-6 text-center col-span-2 md:col-span-1">
+                    <div class="text-3xl font-bold text-cyan-400 mb-1">50+</div>
+                    <div class="text-gray-500 text-sm">Customers</div>
                 </div>
             </div>
         </div>
     </section>
-    
-    <!-- Why Kali Linux -->
-    <section class="py-24 px-4 bg-kali-darker">
-        <div class="max-w-7xl mx-auto">
+
+    <!-- Our Mission -->
+    <section class="py-20 px-4 relative" style="background: linear-gradient(180deg, #0a0a0f 0%, #0d1117 50%, #0a0a0f 100%);">
+        <div class="max-w-4xl mx-auto">
             <div class="text-center mb-16">
-                <h2 class="text-4xl font-bold mb-4">Why <span class="kali-text">Kali Linux?</span></h2>
-                <p class="text-xl text-gray-400 max-w-3xl mx-auto">
-                    Kali Linux is the industry standard for penetration testing and security auditing
+                <div class="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-emerald-500/10 border border-emerald-500/30 mb-6">
+                    <span class="text-emerald-400 font-medium">&#127919; Our Mission</span>
+                </div>
+                <h2 class="text-3xl md:text-4xl font-bold text-white mb-6">
+                    Democratize Cybersecurity for<br>
+                    <span class="bg-gradient-to-r from-emerald-400 to-cyan-400 bg-clip-text text-transparent">Small and Medium Businesses</span>
+                </h2>
+                <p class="text-lg text-gray-400 max-w-3xl mx-auto leading-relaxed">
+                    67% of Nordic SMEs experienced cyber attacks in 2024, yet only 12%
+                    have security teams. We believe every company &mdash; regardless of size or
+                    budget &mdash; deserves enterprise-grade security protection.
                 </p>
             </div>
-            
-            <div class="grid md:grid-cols-3 gap-8">
-                <div class="kali-card rounded-2xl p-6 text-center">
-                    <div class="text-5xl mb-4">🏆</div>
-                    <h3 class="text-xl font-bold mb-2">Industry Standard</h3>
-                    <p class="text-gray-400">Used by 90% of professional pentesters and security researchers worldwide</p>
+
+            <!-- Values -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div class="bg-white/[0.03] border border-white/10 rounded-2xl p-7 hover:border-cyan-500/20 transition-all duration-300">
+                    <div class="flex items-center gap-3 mb-3">
+                        <div class="w-10 h-10 rounded-xl bg-cyan-500/10 border border-cyan-500/20 flex items-center justify-center">
+                            <span class="text-cyan-400 font-bold">1</span>
+                        </div>
+                        <h3 class="text-lg font-bold text-white">Accessibility</h3>
+                    </div>
+                    <p class="text-gray-400 text-sm leading-relaxed">Security tools for non-security people. If you can use email, you can use CyberSec Pro.</p>
                 </div>
-                
-                <div class="kali-card rounded-2xl p-6 text-center">
-                    <div class="text-5xl mb-4">🔧</div>
-                    <h3 class="text-xl font-bold mb-2">600+ Tools</h3>
-                    <p class="text-gray-400">The most comprehensive collection of security tools in any distribution</p>
+                <div class="bg-white/[0.03] border border-white/10 rounded-2xl p-7 hover:border-emerald-500/20 transition-all duration-300">
+                    <div class="flex items-center gap-3 mb-3">
+                        <div class="w-10 h-10 rounded-xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center">
+                            <span class="text-emerald-400 font-bold">2</span>
+                        </div>
+                        <h3 class="text-lg font-bold text-white">Transparency</h3>
+                    </div>
+                    <p class="text-gray-400 text-sm leading-relaxed">Plain language, no jargon. Every report is written so your board can understand it.</p>
                 </div>
-                
-                <div class="kali-card rounded-2xl p-6 text-center">
-                    <div class="text-5xl mb-4">🔄</div>
-                    <h3 class="text-xl font-bold mb-2">Rolling Release</h3>
-                    <p class="text-gray-400">Always up-to-date with the latest security tools and patches</p>
+                <div class="bg-white/[0.03] border border-white/10 rounded-2xl p-7 hover:border-blue-500/20 transition-all duration-300">
+                    <div class="flex items-center gap-3 mb-3">
+                        <div class="w-10 h-10 rounded-xl bg-blue-500/10 border border-blue-500/20 flex items-center justify-center">
+                            <span class="text-blue-400 font-bold">3</span>
+                        </div>
+                        <h3 class="text-lg font-bold text-white">Trust</h3>
+                    </div>
+                    <p class="text-gray-400 text-sm leading-relaxed">Your data privacy is sacred. EU-only servers, GDPR compliant, we never share scan results.</p>
                 </div>
-                
-                <div class="kali-card rounded-2xl p-6 text-center">
-                    <div class="text-5xl mb-4">🛡️</div>
-                    <h3 class="text-xl font-bold mb-2">Offensive Security</h3>
-                    <p class="text-gray-400">Maintained by the creators of the OSCP certification</p>
-                </div>
-                
-                <div class="kali-card rounded-2xl p-6 text-center">
-                    <div class="text-5xl mb-4">🌐</div>
-                    <h3 class="text-xl font-bold mb-2">Open Source</h3>
-                    <p class="text-gray-400">Free, open-source, and community-driven development</p>
-                </div>
-                
-                <div class="kali-card rounded-2xl p-6 text-center">
-                    <div class="text-5xl mb-4">📚</div>
-                    <h3 class="text-xl font-bold mb-2">Documentation</h3>
-                    <p class="text-gray-400">Extensive documentation and active community support</p>
-                </div>
-            </div>
-        </div>
-    </section>
-    
-    <!-- How It Works -->
-    <section class="py-24 px-4 dragon-bg">
-        <div class="max-w-7xl mx-auto">
-            <div class="text-center mb-16">
-                <h2 class="text-4xl font-bold mb-4">How It <span class="kali-text">Works</span></h2>
-                <p class="text-xl text-gray-400">From sign-up to scan in under 30 seconds</p>
-            </div>
-            
-            <div class="grid md:grid-cols-4 gap-8">
-                <div class="text-center">
-                    <div class="w-16 h-16 rounded-full kali-gradient flex items-center justify-center mx-auto mb-4 text-2xl font-bold">1</div>
-                    <h3 class="text-lg font-bold mb-2">Sign Up</h3>
-                    <p class="text-gray-400 text-sm">Create your free account with just an email</p>
-                </div>
-                
-                <div class="text-center">
-                    <div class="w-16 h-16 rounded-full kali-gradient flex items-center justify-center mx-auto mb-4 text-2xl font-bold">2</div>
-                    <h3 class="text-lg font-bold mb-2">Choose Tool</h3>
-                    <p class="text-gray-400 text-sm">Select from 682 Kali Linux security tools</p>
-                </div>
-                
-                <div class="text-center">
-                    <div class="w-16 h-16 rounded-full kali-gradient flex items-center justify-center mx-auto mb-4 text-2xl font-bold">3</div>
-                    <h3 class="text-lg font-bold mb-2">Run Scan</h3>
-                    <p class="text-gray-400 text-sm">Enter your target and execute the scan</p>
-                </div>
-                
-                <div class="text-center">
-                    <div class="w-16 h-16 rounded-full kali-gradient flex items-center justify-center mx-auto mb-4 text-2xl font-bold">4</div>
-                    <h3 class="text-lg font-bold mb-2">Get Results</h3>
-                    <p class="text-gray-400 text-sm">View results and download professional reports</p>
+                <div class="bg-white/[0.03] border border-white/10 rounded-2xl p-7 hover:border-amber-500/20 transition-all duration-300">
+                    <div class="flex items-center gap-3 mb-3">
+                        <div class="w-10 h-10 rounded-xl bg-amber-500/10 border border-amber-500/20 flex items-center justify-center">
+                            <span class="text-amber-400 font-bold">4</span>
+                        </div>
+                        <h3 class="text-lg font-bold text-white">Impact</h3>
+                    </div>
+                    <p class="text-gray-400 text-sm leading-relaxed">Helping SMEs avoid preventable breaches. Every vulnerability found is a potential disaster averted.</p>
                 </div>
             </div>
         </div>
     </section>
-    
-    <!-- Stats -->
-    <section class="py-24 px-4 bg-kali-darker">
-        <div class="max-w-7xl mx-auto">
-            <div class="grid md:grid-cols-4 gap-8 text-center">
-                <div class="kali-card rounded-2xl p-8">
-                    <div class="text-5xl font-black kali-text mb-2">682</div>
-                    <div class="text-gray-400">Security Tools</div>
-                </div>
-                <div class="kali-card rounded-2xl p-8">
-                    <div class="text-5xl font-black kali-text mb-2">50K+</div>
-                    <div class="text-gray-400">Scans Completed</div>
-                </div>
-                <div class="kali-card rounded-2xl p-8">
-                    <div class="text-5xl font-black kali-text mb-2">99.9%</div>
-                    <div class="text-gray-400">Uptime SLA</div>
-                </div>
-                <div class="kali-card rounded-2xl p-8">
-                    <div class="text-5xl font-black kali-text mb-2">24/7</div>
-                    <div class="text-gray-400">Tool Updates</div>
-                </div>
-            </div>
-        </div>
-    </section>
-    
-    <!-- Use Cases -->
-    <section class="py-24 px-4 dragon-bg">
-        <div class="max-w-7xl mx-auto">
-            <div class="text-center mb-16">
-                <h2 class="text-4xl font-bold mb-4">Who Uses <span class="kali-text">CyberSec Pro?</span></h2>
-            </div>
-            
-            <div class="grid md:grid-cols-3 gap-8">
-                <div class="kali-card rounded-2xl p-8">
-                    <div class="text-4xl mb-4">👨‍💻</div>
-                    <h3 class="text-xl font-bold mb-3">Penetration Testers</h3>
-                    <p class="text-gray-400 mb-4">
-                        Run professional pentests from anywhere. No need to carry a powerful laptop – 
-                        just a browser and internet connection.
+
+    <!-- Why Finland? -->
+    <section class="py-20 px-4">
+        <div class="max-w-4xl mx-auto">
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+                <div>
+                    <div class="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-blue-500/10 border border-blue-500/30 mb-6">
+                        <span class="text-blue-400 font-medium">&#127467;&#127470; Why Finland?</span>
+                    </div>
+                    <h2 class="text-3xl font-bold text-white mb-6">
+                        A Global Leader in<br>
+                        <span class="bg-gradient-to-r from-blue-400 to-cyan-400 bg-clip-text text-transparent">Cybersecurity &amp; Digital Trust</span>
+                    </h2>
+                    <p class="text-gray-400 leading-relaxed mb-6">
+                        Finland is consistently ranked among the top countries for cybersecurity
+                        readiness and digital trust. We're proud to be part of this ecosystem.
                     </p>
-                    <ul class="text-sm text-gray-500 space-y-2">
-                        <li>• Full Metasploit access</li>
-                        <li>• Web application testing</li>
-                        <li>• Network scanning</li>
-                        <li>• Client-ready reports</li>
+                    <ul class="space-y-3">
+                        <li class="flex items-start gap-3 text-gray-300 text-sm">
+                            <span class="text-blue-400 mt-0.5">&#10003;</span>
+                            Based in Helsinki's <span class="text-white font-semibold">Maria 01</span> startup campus
+                        </li>
+                        <li class="flex items-start gap-3 text-gray-300 text-sm">
+                            <span class="text-blue-400 mt-0.5">&#10003;</span>
+                            Backed by <span class="text-white font-semibold">Business Finland</span>
+                        </li>
+                        <li class="flex items-start gap-3 text-gray-300 text-sm">
+                            <span class="text-blue-400 mt-0.5">&#10003;</span>
+                            <span class="text-white font-semibold">GDPR compliant</span> with EU-only data storage
+                        </li>
+                        <li class="flex items-start gap-3 text-gray-300 text-sm">
+                            <span class="text-blue-400 mt-0.5">&#10003;</span>
+                            Part of the <span class="text-white font-semibold">Nordic cybersecurity ecosystem</span>
+                        </li>
                     </ul>
                 </div>
-                
-                <div class="kali-card rounded-2xl p-8">
-                    <div class="text-4xl mb-4">🏢</div>
-                    <h3 class="text-xl font-bold mb-3">Security Teams</h3>
-                    <p class="text-gray-400 mb-4">
-                        Collaborate with your team on security assessments. Share projects, 
-                        findings, and reports seamlessly.
-                    </p>
-                    <ul class="text-sm text-gray-500 space-y-2">
-                        <li>• Team workspaces</li>
-                        <li>• Shared tool configurations</li>
-                        <li>• Centralized reporting</li>
-                        <li>• Role-based access</li>
-                    </ul>
-                </div>
-                
-                <div class="kali-card rounded-2xl p-8">
-                    <div class="text-4xl mb-4">🎓</div>
-                    <h3 class="text-xl font-bold mb-3">Students & Learners</h3>
-                    <p class="text-gray-400 mb-4">
-                        Learn cybersecurity with real tools, not simulations. Perfect for 
-                        certifications like OSCP, CEH, and CompTIA Security+.
-                    </p>
-                    <ul class="text-sm text-gray-500 space-y-2">
-                        <li>• Hands-on practice</li>
-                        <li>• No complex setup</li>
-                        <li>• Built-in tutorials</li>
-                        <li>• Affordable pricing</li>
-                    </ul>
+
+                <!-- Finland visual -->
+                <div class="bg-white/[0.02] border border-white/10 rounded-2xl p-8">
+                    <div class="space-y-4">
+                        <div class="flex items-center gap-4 bg-white/[0.03] border border-white/5 rounded-xl px-5 py-4">
+                            <span class="text-2xl">&#127467;&#127470;</span>
+                            <div>
+                                <div class="text-white font-semibold text-sm">Business Finland</div>
+                                <div class="text-gray-500 text-xs">Government-backed innovation funding</div>
+                            </div>
+                        </div>
+                        <div class="flex items-center gap-4 bg-white/[0.03] border border-white/5 rounded-xl px-5 py-4">
+                            <span class="text-2xl">&#128640;</span>
+                            <div>
+                                <div class="text-white font-semibold text-sm">Maria 01</div>
+                                <div class="text-gray-500 text-xs">Nordics' largest startup campus</div>
+                            </div>
+                        </div>
+                        <div class="flex items-center gap-4 bg-white/[0.03] border border-emerald-500/10 rounded-xl px-5 py-4">
+                            <span class="text-2xl">&#9989;</span>
+                            <div>
+                                <div class="text-emerald-400 font-semibold text-sm">GDPR Compliant</div>
+                                <div class="text-gray-500 text-xs">Full EU data protection compliance</div>
+                            </div>
+                        </div>
+                        <div class="flex items-center gap-4 bg-white/[0.03] border border-blue-500/10 rounded-xl px-5 py-4">
+                            <span class="text-2xl">&#127466;&#127482;</span>
+                            <div>
+                                <div class="text-blue-400 font-semibold text-sm">EU Data Storage</div>
+                                <div class="text-gray-500 text-xs">Servers in Finland &amp; Germany (AWS eu-north-1)</div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
     </section>
-    
-    <!-- CTA -->
-    <section class="py-24 px-4 bg-kali-darker">
-        <div class="max-w-4xl mx-auto text-center">
-            <div class="text-6xl mb-6">🐉</div>
-            <h2 class="text-4xl font-bold mb-6">
-                Ready to Experience <span class="kali-text">Kali Linux</span> in the Cloud?
+
+    <!-- Team -->
+    <section class="py-20 px-4" style="background: linear-gradient(180deg, #0a0a0f 0%, #0d1117 50%, #0a0a0f 100%);">
+        <div class="max-w-4xl mx-auto">
+            <div class="text-center mb-12">
+                <div class="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-violet-500/10 border border-violet-500/30 mb-6">
+                    <span class="text-violet-400 font-medium">&#128101; Our Team</span>
+                </div>
+                <h2 class="text-3xl md:text-4xl font-bold text-white">
+                    The People Behind <span class="bg-gradient-to-r from-violet-400 to-fuchsia-400 bg-clip-text text-transparent">CyberSec Pro</span>
+                </h2>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-2xl mx-auto">
+                <!-- Semih -->
+                <div class="bg-white/[0.03] border border-white/10 rounded-2xl p-8 text-center hover:border-cyan-500/20 transition-all duration-300">
+                    <div class="w-20 h-20 mx-auto rounded-full bg-gradient-to-br from-cyan-500/20 to-blue-500/20 border-2 border-cyan-500/30 flex items-center justify-center mb-4">
+                        <span class="text-2xl font-bold bg-gradient-to-r from-cyan-400 to-blue-400 bg-clip-text text-transparent">SK</span>
+                    </div>
+                    <div class="text-white font-bold text-lg">Semih K&#305;l&#305;&#231;</div>
+                    <div class="text-cyan-400 text-sm font-medium mb-3">Founder &amp; CEO</div>
+                    <p class="text-gray-400 text-sm leading-relaxed">
+                        14 years IT security. Ex-KPMG, ex-vitastra. CEH certified.
+                        Passionate about making security accessible.
+                    </p>
+                </div>
+
+                <!-- Open position -->
+                <div class="bg-white/[0.03] border border-dashed border-white/20 rounded-2xl p-8 text-center hover:border-violet-500/30 transition-all duration-300">
+                    <div class="w-20 h-20 mx-auto rounded-full bg-gradient-to-br from-violet-500/10 to-fuchsia-500/10 border-2 border-dashed border-violet-500/20 flex items-center justify-center mb-4">
+                        <span class="text-2xl text-violet-400">+</span>
+                    </div>
+                    <div class="text-white font-bold text-lg">Your Name Here?</div>
+                    <div class="text-violet-400 text-sm font-medium mb-3">We're Growing</div>
+                    <p class="text-gray-400 text-sm leading-relaxed">
+                        We're looking for passionate people who want to make
+                        cybersecurity accessible to every business.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Hiring CTA -->
+    <section class="py-20 px-4">
+        <div class="max-w-3xl mx-auto text-center">
+            <div class="bg-gradient-to-br from-violet-500/5 to-fuchsia-500/5 border border-violet-500/20 rounded-2xl p-10 md:p-14">
+                <div class="text-5xl mb-4">&#127758;</div>
+                <h2 class="text-3xl font-bold text-white mb-3">We're Hiring</h2>
+                <p class="text-gray-400 text-lg mb-8 max-w-xl mx-auto">
+                    Join us in making the internet safer for SMEs.
+                    Remote-friendly, based in Helsinki.
+                </p>
+                <a href="mailto:careers@cybersecpro.com" class="inline-flex items-center gap-2 bg-gradient-to-r from-violet-500 to-fuchsia-500 text-white font-bold px-8 py-4 rounded-xl hover:shadow-lg hover:shadow-violet-500/25 transition-all hover:-translate-y-0.5">
+                    View Open Positions
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M13 7l5 5m0 0l-5 5m5-5H6"/></svg>
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Final CTA -->
+    <section class="py-20 px-4 relative overflow-hidden">
+        <div class="absolute inset-0 bg-gradient-to-br from-[#0c1929] via-[#0f2847] to-[#0a1628]"></div>
+        <div class="absolute top-0 left-1/4 w-96 h-96 bg-cyan-500/10 rounded-full blur-3xl"></div>
+
+        <div class="max-w-3xl mx-auto text-center relative z-10">
+            <h2 class="text-3xl md:text-4xl font-bold text-white mb-4">
+                Ready to Secure Your Business?
             </h2>
-            <p class="text-xl text-gray-400 mb-10">
-                Join thousands of security professionals who've already made the switch.
+            <p class="text-gray-400 text-lg mb-8">
+                Start with a free security scan. No credit card required.
             </p>
             <div class="flex flex-col sm:flex-row gap-4 justify-center">
-                <a href="/login.html" class="btn-kali px-10 py-4 rounded-xl text-lg font-bold inline-flex items-center justify-center gap-2">
-                    Start Free Trial
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6"/>
-                    </svg>
+                <a href="/login.html" class="inline-flex items-center justify-center gap-2 bg-gradient-to-r from-cyan-500 to-blue-500 text-white font-bold px-8 py-4 rounded-xl hover:shadow-lg hover:shadow-cyan-500/25 transition-all hover:-translate-y-0.5">
+                    Start Free Security Scan
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M13 7l5 5m0 0l-5 5m5-5H6"/></svg>
                 </a>
-                <a href="/contact.html" class="px-10 py-4 rounded-xl text-lg font-bold border border-kali-blue text-kali-blue hover:bg-kali-blue/10 transition">
-                    Contact Sales
+                <a href="/contact.html" class="inline-flex items-center justify-center gap-2 border border-white/20 text-white font-semibold px-8 py-4 rounded-xl hover:bg-white/5 transition-all">
+                    Talk to Our Team
                 </a>
             </div>
         </div>
     </section>
-    
+
     <!-- Footer -->
-    <footer class="py-16 px-4 border-t border-kali-blue/10">
-        <div class="max-w-7xl mx-auto">
-            <div class="grid md:grid-cols-5 gap-8 mb-12">
-                <div class="md:col-span-2">
-                    <div class="flex items-center gap-3 mb-4">
-                        <div class="w-10 h-10 rounded-xl kali-gradient flex items-center justify-center">
-                            <svg class="w-6 h-6 text-white" viewBox="0 0 24 24" fill="currentColor">
-                                <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z"/>
-                            </svg>
-                        </div>
-                        <span class="text-xl font-bold">CyberSec Pro</span>
+    <footer class="py-12 px-4 border-t border-white/5" style="background: #060610;">
+        <div class="max-w-5xl mx-auto">
+            <div class="flex flex-col md:flex-row justify-between items-center gap-6">
+                <div class="flex items-center gap-3">
+                    <div class="w-8 h-8 rounded-lg bg-gradient-to-br from-cyan-500 to-blue-600 flex items-center justify-center">
+                        <svg class="w-5 h-5 text-white" viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z"/>
+                        </svg>
                     </div>
-                    <p class="text-gray-500 text-sm">The power of Kali Linux, now in your browser.</p>
+                    <span class="text-white font-bold">CyberSec Pro</span>
                 </div>
-                
-                <div>
-                    <h4 class="font-semibold mb-4 text-kali-blue">Platform</h4>
-                    <ul class="space-y-2 text-gray-500 text-sm">
-                        <li><a href="/tools.html" class="hover:text-white transition">All Tools</a></li>
-                        <li><a href="/#pricing" class="hover:text-white transition">Pricing</a></li>
-                        <li><a href="/docs.html" class="hover:text-white transition">Documentation</a></li>
-                        <li><a href="/api.html" class="hover:text-white transition">API</a></li>
-                    </ul>
+                <div class="flex items-center gap-6 text-sm text-gray-500">
+                    <a href="/" class="hover:text-white transition">Home</a>
+                    <a href="/#pricing" class="hover:text-white transition">Pricing</a>
+                    <a href="/about.html" class="hover:text-white transition">About</a>
+                    <a href="/login.html" class="hover:text-white transition">Login</a>
                 </div>
-                
-                <div>
-                    <h4 class="font-semibold mb-4 text-kali-blue">Company</h4>
-                    <ul class="space-y-2 text-gray-500 text-sm">
-                        <li><a href="/about.html" class="hover:text-white transition">About Us</a></li>
-                        <li><a href="/blog.html" class="hover:text-white transition">Blog</a></li>
-                        <li><a href="/careers.html" class="hover:text-white transition">Careers</a></li>
-                        <li><a href="/contact.html" class="hover:text-white transition">Contact</a></li>
-                    </ul>
+                <div class="text-gray-600 text-sm">
+                    &copy; 2024-2026 CyberSec Pro. Helsinki, Finland.
                 </div>
-                
-                <div>
-                    <h4 class="font-semibold mb-4 text-kali-blue">Legal</h4>
-                    <ul class="space-y-2 text-gray-500 text-sm">
-                        <li><a href="/privacy.html" class="hover:text-white transition">Privacy</a></li>
-                        <li><a href="/terms.html" class="hover:text-white transition">Terms</a></li>
-                        <li><a href="/security.html" class="hover:text-white transition">Security</a></li>
-                    </ul>
-                </div>
-            </div>
-            
-            <div class="flex flex-col md:flex-row justify-between items-center pt-8 border-t border-kali-blue/10">
-                <div class="text-gray-500 text-sm">© 2026 CyberSec Pro. Powered by Kali Linux.</div>
             </div>
         </div>
     </footer>
+
 </body>
 </html>
