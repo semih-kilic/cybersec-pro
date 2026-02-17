@@ -2023,30 +2023,103 @@
         </div>
     </section>
     
-    <!-- Final CTA -->
-    <section class="py-24 px-4 dragon-bg relative overflow-hidden">
-        <div class="max-w-4xl mx-auto text-center relative z-10">
-            <div class="text-6xl mb-6">�️</div>
-            <h2 class="text-4xl sm:text-5xl font-bold mb-6">
-                Don't Wait for a <span class="kali-text">Breach</span>
-            </h2>
-            <p class="text-xl text-gray-400 mb-4">
-                The average cost of a data breach for SMEs is €120,000.
-                A CyberSec Pro scan takes 30 minutes and costs nothing.
-            </p>
-            <p class="text-sm text-gray-500 mb-10">
-                🇫🇮 Made in Finland • GDPR Compliant • ISO 27001 Ready • Your data never leaves EU servers
-            </p>
-            <div class="flex flex-col sm:flex-row gap-4 justify-center">
-                <a href="/login.html#register" class="btn-kali px-10 py-4 rounded-xl text-lg font-bold inline-flex items-center justify-center gap-2">
-                    Start Free Security Scan
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6"/>
-                    </svg>
-                </a>
-                <a href="/contact.html" class="btn-dragon px-10 py-4 rounded-xl text-lg font-bold text-white">
-                    Talk to Our Team
-                </a>
+            <!-- Final CTA -->
+    <section class="py-28 px-4 relative overflow-hidden">
+        <!-- Professional gradient background -->
+        <div class="absolute inset-0 bg-gradient-to-br from-[#0c1929] via-[#0f2847] to-[#0a1628]"></div>
+        <div class="absolute inset-0 opacity-[0.04]" style="background-image: radial-gradient(rgba(255,255,255,.2) 1px, transparent 1px); background-size: 32px 32px;"></div>
+        <!-- Accent glows -->
+        <div class="absolute top-0 left-1/4 w-96 h-96 bg-cyan-500/10 rounded-full blur-3xl"></div>
+        <div class="absolute bottom-0 right-1/4 w-96 h-96 bg-blue-500/10 rounded-full blur-3xl"></div>
+
+        <div class="max-w-6xl mx-auto relative z-10">
+            <div class="text-center mb-12">
+                <h2 class="text-4xl sm:text-5xl md:text-6xl font-bold text-white mb-5 leading-tight">
+                    Know Your Vulnerabilities<br>
+                    <span class="bg-gradient-to-r from-cyan-400 to-blue-400 bg-clip-text text-transparent">Before Hackers Do</span>
+                </h2>
+                <p class="text-xl text-gray-300">
+                    Start your free security scan today. No credit card required.
+                </p>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center max-w-5xl mx-auto">
+                <!-- Left: Quick Stats -->
+                <div class="space-y-5">
+                    <div class="flex items-center gap-4 group">
+                        <div class="w-10 h-10 rounded-xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center flex-shrink-0 group-hover:bg-emerald-500/20 transition">
+                            <span class="text-emerald-400 font-bold text-sm">&#10003;</span>
+                        </div>
+                        <div>
+                            <span class="text-white font-semibold text-lg">50+ Nordic companies</span>
+                            <span class="text-gray-400 text-lg"> trust CyberSec Pro</span>
+                        </div>
+                    </div>
+                    <div class="flex items-center gap-4 group">
+                        <div class="w-10 h-10 rounded-xl bg-cyan-500/10 border border-cyan-500/20 flex items-center justify-center flex-shrink-0 group-hover:bg-cyan-500/20 transition">
+                            <span class="text-cyan-400 font-bold text-sm">&#10003;</span>
+                        </div>
+                        <div>
+                            <span class="text-white font-semibold text-lg">2,400+ vulnerabilities</span>
+                            <span class="text-gray-400 text-lg"> found and fixed</span>
+                        </div>
+                    </div>
+                    <div class="flex items-center gap-4 group">
+                        <div class="w-10 h-10 rounded-xl bg-blue-500/10 border border-blue-500/20 flex items-center justify-center flex-shrink-0 group-hover:bg-blue-500/20 transition">
+                            <span class="text-blue-400 font-bold text-sm">&#10003;</span>
+                        </div>
+                        <div>
+                            <span class="text-white font-semibold text-lg">&euro;1.2M+</span>
+                            <span class="text-gray-400 text-lg"> in potential breach costs prevented</span>
+                        </div>
+                    </div>
+                    <div class="flex items-center gap-4 group">
+                        <div class="w-10 h-10 rounded-xl bg-amber-500/10 border border-amber-500/20 flex items-center justify-center flex-shrink-0 group-hover:bg-amber-500/20 transition">
+                            <span class="text-amber-400 font-bold text-sm">&#10003;</span>
+                        </div>
+                        <div>
+                            <span class="text-white font-semibold text-lg">+34 points</span>
+                            <span class="text-gray-400 text-lg"> avg security score improvement</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Right: CTA Form -->
+                <div>
+                    <div class="bg-white/[0.05] backdrop-blur-sm border border-white/10 rounded-2xl p-8">
+                        <form id="final-cta-form" onsubmit="handleFinalCTA(event)" class="space-y-4">
+                            <div>
+                                <label class="text-gray-400 text-sm mb-1.5 block">Company email</label>
+                                <input type="email" id="cta-email" required placeholder="you@company.com"
+                                    class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white placeholder-gray-600 text-sm focus:outline-none focus:border-cyan-500/50 focus:ring-1 focus:ring-cyan-500/25 transition">
+                            </div>
+                            <div>
+                                <label class="text-gray-400 text-sm mb-1.5 block">Website URL to scan</label>
+                                <input type="url" id="cta-url" required placeholder="https://mycompany.com"
+                                    class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white placeholder-gray-600 text-sm focus:outline-none focus:border-cyan-500/50 focus:ring-1 focus:ring-cyan-500/25 transition">
+                            </div>
+                            <button type="submit"
+                                class="w-full py-4 rounded-xl bg-gradient-to-r from-cyan-500 to-blue-500 text-white font-bold text-lg hover:shadow-lg hover:shadow-cyan-500/25 transition-all duration-300 hover:-translate-y-0.5 flex items-center justify-center gap-2">
+                                Start Free Scan Now
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M13 7l5 5m0 0l-5 5m5-5H6"/></svg>
+                            </button>
+                        </form>
+
+                        <div class="flex items-center justify-center gap-2 mt-4 text-gray-500 text-xs">
+                            <span>&#128274;</span>
+                            <span>Your scan results are confidential and never shared</span>
+                        </div>
+                    </div>
+
+                    <!-- Alternate CTA -->
+                    <div class="text-center mt-6">
+                        <p class="text-gray-500 text-sm mb-2">Want to talk to a human first?</p>
+                        <a href="/contact.html" class="inline-flex items-center gap-2 text-cyan-400 hover:text-cyan-300 font-semibold text-sm transition-colors">
+                            Schedule 15-Min Demo Call
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+                        </a>
+                    </div>
+                </div>
             </div>
         </div>
     </section>
@@ -2155,6 +2228,14 @@
                 document.getElementById('langDropdown').classList.add('hidden');
             }
         });
+
+        // Final CTA form handler
+        function handleFinalCTA(e) {
+            e.preventDefault();
+            const email = document.getElementById('cta-email').value;
+            const url = document.getElementById('cta-url').value;
+            window.location.href = '/login.html?plan=starter&email=' + encodeURIComponent(email) + '&url=' + encodeURIComponent(url);
+        }
 
         // ROI Calculator
         function updateROI() {
