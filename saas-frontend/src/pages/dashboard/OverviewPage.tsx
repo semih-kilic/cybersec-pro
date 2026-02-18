@@ -186,7 +186,7 @@ export function OverviewPage() {
           <div className="bg-gradient-to-r from-cyan-900/30 to-blue-900/30 rounded-xl p-6 border border-cyan-500/30">
             <div className="flex items-start gap-4">
               <div className="w-12 h-12 rounded-xl bg-cyan-500/20 flex items-center justify-center flex-shrink-0">
-                <span className="text-2xl">🎯</span>
+                <span className="text-2xl">&#127919;</span>
               </div>
               <div className="flex-1">
                 <h3 className="text-lg font-bold text-white mb-2">Try Our Safe Demo Targets</h3>
@@ -196,7 +196,7 @@ export function OverviewPage() {
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
                   <div className="bg-gray-800/50 rounded-lg p-3">
                     <div className="flex items-center gap-2 mb-1">
-                      <span className="text-green-400">●</span>
+                      <span className="text-green-400">&#9679;</span>
                       <code className="text-cyan-300 text-sm">scanme.nmap.org</code>
                     </div>
                     <p className="text-gray-500 text-xs">Port scanning, service detection</p>
@@ -204,12 +204,12 @@ export function OverviewPage() {
                       to="/dashboard/tools/nmap" 
                       className="text-cyan-400 text-xs hover:underline mt-2 inline-block"
                     >
-                      Scan with Nmap →
+                      Run Network Scanner &#8594;
                     </Link>
                   </div>
                   <div className="bg-gray-800/50 rounded-lg p-3">
                     <div className="flex items-center gap-2 mb-1">
-                      <span className="text-green-400">●</span>
+                      <span className="text-green-400">&#9679;</span>
                       <code className="text-cyan-300 text-sm">testphp.vulnweb.com</code>
                     </div>
                     <p className="text-gray-500 text-xs">Web vulnerabilities, SQL injection</p>
@@ -217,12 +217,12 @@ export function OverviewPage() {
                       to="/dashboard/tools/nikto" 
                       className="text-cyan-400 text-xs hover:underline mt-2 inline-block"
                     >
-                      Scan with Nikto →
+                      Run Web Security Scanner &#8594;
                     </Link>
                   </div>
                   <div className="bg-gray-800/50 rounded-lg p-3">
                     <div className="flex items-center gap-2 mb-1">
-                      <span className="text-green-400">●</span>
+                      <span className="text-green-400">&#9679;</span>
                       <code className="text-cyan-300 text-sm">demo.testfire.net</code>
                     </div>
                     <p className="text-gray-500 text-xs">OWASP vulnerabilities testing</p>
@@ -230,7 +230,7 @@ export function OverviewPage() {
                       to="/dashboard/tools/whatweb" 
                       className="text-cyan-400 text-xs hover:underline mt-2 inline-block"
                     >
-                      Scan with WhatWeb →
+                      Run Web Fingerprint Analysis &#8594;
                     </Link>
                   </div>
                 </div>
@@ -244,30 +244,36 @@ export function OverviewPage() {
           <div className="bg-gradient-to-r from-purple-900/30 to-pink-900/30 rounded-xl p-6 border border-purple-500/30">
             <div className="flex items-start gap-4">
               <div className="w-12 h-12 rounded-xl bg-purple-500/20 flex items-center justify-center flex-shrink-0">
-                <span className="text-2xl">🛠️</span>
+                <svg className="w-6 h-6 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+                </svg>
               </div>
               <div className="flex-1">
-                <h3 className="text-lg font-bold text-white mb-2">Your Trial Tools</h3>
+                <h3 className="text-lg font-bold text-white mb-2">Your Security Assessment Toolkit</h3>
                 <p className="text-gray-400 text-sm mb-4">
-                  During your 14-day trial, you have access to these professional security tools. 
-                  <Link to="/dashboard/billing/upgrade" className="text-purple-400 hover:underline ml-1">Upgrade</Link> to unlock 682 tools!
+                  During your trial, you have access to essential security assessment tools. 
+                  <Link to="/dashboard/billing/upgrade" className="text-purple-400 hover:underline ml-1">Upgrade</Link> to unlock all 682 tools!
                 </p>
                 <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-3">
                   {[
-                    { id: 'nmap', name: 'Nmap', icon: '🔍', desc: 'Network Scanner' },
-                    { id: 'nikto', name: 'Nikto', icon: '🌐', desc: 'Web Vulnerability' },
-                    { id: 'whatweb', name: 'WhatWeb', icon: '🔎', desc: 'Web Fingerprint' },
-                    { id: 'ncrack', name: 'Ncrack', icon: '🔑', desc: 'Password Cracker' },
-                    { id: 'tcpdump', name: 'TCPDump', icon: '📡', desc: 'Packet Analyzer' },
-                    { id: 'netcat', name: 'Netcat', icon: '🔗', desc: 'Network Utility' },
-                    { id: 'ncat', name: 'Ncat', icon: '⚡', desc: 'Improved Netcat' },
+                    { id: 'nmap', name: 'Network Scanner', desc: 'Port & Service Discovery' },
+                    { id: 'nikto', name: 'Web Vulnerability Scanner', desc: 'Web Security' },
+                    { id: 'whatweb', name: 'Web Fingerprint Analyzer', desc: 'Technology Detection' },
+                    { id: 'ncrack', name: 'Credential Auditor', desc: 'Password Strength' },
+                    { id: 'tcpdump', name: 'Traffic Analyzer', desc: 'Network Monitoring' },
+                    { id: 'netcat', name: 'Network Connectivity Tool', desc: 'Connection Testing' },
+                    { id: 'ncat', name: 'Secure Connection Tool', desc: 'SSL/TLS Testing' },
                   ].map((tool) => (
                     <Link 
                       key={tool.id}
                       to={`/dashboard/tools/${tool.id}`}
                       className="bg-gray-800/50 hover:bg-gray-800 rounded-lg p-3 text-center transition group"
                     >
-                      <div className="text-2xl mb-1">{tool.icon}</div>
+                      <div className="w-8 h-8 mx-auto mb-1 rounded-lg bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center">
+                        <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+                        </svg>
+                      </div>
                       <div className="text-white font-medium text-sm group-hover:text-purple-400 transition">{tool.name}</div>
                       <div className="text-gray-500 text-xs">{tool.desc}</div>
                     </Link>

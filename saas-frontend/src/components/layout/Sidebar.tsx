@@ -164,7 +164,7 @@ export function Sidebar() {
           </div>
           <div>
             <h1 className="text-lg font-bold text-white">CyberSec Pro</h1>
-            <p className="text-xs text-kali-blue">Kali Linux Platform</p>
+            <p className="text-xs text-kali-blue">Security Platform</p>
           </div>
         </div>
       </div>

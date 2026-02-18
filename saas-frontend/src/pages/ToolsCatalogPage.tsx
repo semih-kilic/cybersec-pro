@@ -133,10 +133,10 @@ const ToolsCatalogPage: React.FC = () => {
         <div className="max-w-7xl mx-auto px-4 py-12">
           <div className="text-center mb-8">
             <h1 className="text-4xl md:text-5xl font-bold mb-4 bg-gradient-to-r from-cyan-400 to-blue-500 bg-clip-text text-transparent">
-              Kali Linux Tools
+              Security Assessment Tools
             </h1>
             <p className="text-xl text-gray-400 max-w-2xl mx-auto">
-              World-class documentation and execution platform for security tools.
+              Enterprise-grade security assessment platform with comprehensive documentation.
               Every parameter, every option, fully documented and executable.
             </p>
           </div>
