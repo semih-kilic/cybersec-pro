@@ -438,7 +438,10 @@ class Subscription(db.Model):
         }
 
 class Agent(db.Model):
-    """Remote agents for scan execution"""
+    """Remote agents for scan execution - 5 Network Modes Architecture
+    
+    Modes: direct, agent, vpn, ssh, api_proxy
+    """
     __tablename__ = 'agents'
     
     id = db.Column(db.String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
@@ -450,12 +453,28 @@ class Agent(db.Model):
     os_info = db.Column(db.String(100))
     version = db.Column(db.String(20))
     status = db.Column(db.String(20), default='pending')  # pending, online, offline, busy, error
-    connection_type = db.Column(db.String(20), default='direct')  # direct, ssh
+    # 5 Network Modes (Master Architecture)
+    connection_type = db.Column(db.String(20), default='direct')  # direct, agent, vpn, ssh, api_proxy
+    # SSH Mode
     ssh_host = db.Column(db.String(255))
     ssh_port = db.Column(db.Integer, default=22)
     ssh_username = db.Column(db.String(100))
     ssh_key_path = db.Column(db.String(255))
-    ssh_password_encrypted = db.Column(db.Text)  # Encrypted password
+    ssh_password_encrypted = db.Column(db.Text)
+    # VPN Mode
+    vpn_config_path = db.Column(db.String(255))  # .ovpn config path
+    vpn_status = db.Column(db.String(20), default='disconnected')  # connected, disconnected, connecting
+    vpn_assigned_ip = db.Column(db.String(45))
+    # API Proxy Mode
+    proxy_endpoint = db.Column(db.String(255))  # https://proxy.example.com/api
+    proxy_api_key = db.Column(db.String(200))
+    proxy_protocol = db.Column(db.String(20), default='https')  # http, https, socks5
+    # Agent Mode (WebSocket)
+    agent_websocket_id = db.Column(db.String(100))
+    agent_capabilities = db.Column(db.JSON)  # ['nmap', 'nikto', 'sqlmap', ...]
+    agent_docker_enabled = db.Column(db.Boolean, default=False)  # Docker-in-Docker support
+    auto_update = db.Column(db.Boolean, default=True)
+    # Common fields
     registration_token = db.Column(db.String(100), unique=True)
     api_key = db.Column(db.String(100), unique=True)
     last_heartbeat = db.Column(db.DateTime)
@@ -463,7 +482,9 @@ class Agent(db.Model):
     memory_usage = db.Column(db.Float, default=0)
     active_scans = db.Column(db.Integer, default=0)
     total_scans = db.Column(db.Integer, default=0)
+    max_concurrent_scans = db.Column(db.Integer, default=5)
     location = db.Column(db.String(100))
+    network_zone = db.Column(db.String(50), default='public')  # public, private, dmz
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
     
@@ -482,6 +503,9 @@ class Agent(db.Model):
             'version': self.version,
             'status': self.status,
             'connection_type': self.connection_type,
+            'network_zone': self.network_zone or 'public',
+            'agent_docker_enabled': self.agent_docker_enabled or False,
+            'max_concurrent_scans': self.max_concurrent_scans or 5,
             'last_seen': self.last_heartbeat.isoformat() if self.last_heartbeat else None,
             'cpu_usage': self.cpu_usage,
             'memory_usage': self.memory_usage,
@@ -495,45 +519,64 @@ class Agent(db.Model):
             data['ssh_port'] = self.ssh_port
             data['ssh_username'] = self.ssh_username
             data['registration_token'] = self.registration_token
+            data['vpn_config_path'] = self.vpn_config_path
+            data['proxy_endpoint'] = self.proxy_endpoint
         return data
 
 class Tool(db.Model):
-    """Security tools catalog"""
+    """Security tools catalog - Business Language Architecture
+    
+    Tool names are HIDDEN from users. They see business_name instead.
+    6 business categories replace old Kali categories.
+    """
     __tablename__ = 'tools'
     
     id = db.Column(db.String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
-    name = db.Column(db.String(100), nullable=False)
-    category = db.Column(db.String(50), nullable=False)
+    name = db.Column(db.String(100), nullable=False)  # Internal technical name (HIDDEN from users)
+    category = db.Column(db.String(50), nullable=False)  # Display category name
     description = db.Column(db.Text)
     command_template = db.Column(db.Text)
     parameters = db.Column(db.JSON)
     plan_required = db.Column(db.String(20), default='starter')  # starter, professional, enterprise
     is_active = db.Column(db.Boolean, default=True)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
-    # New fields for comprehensive tool metadata
+    # Tool metadata
     tool_type = db.Column(db.String(20), default='cli')  # cli, gui, service, framework
     hardware_required = db.Column(db.JSON, default=list)  # ['wifi_adapter', 'gpu', 'bluetooth']
     gui_required = db.Column(db.Boolean, default=False)
-    install_command = db.Column(db.Text)  # apt install command
-    example_usage = db.Column(db.Text)  # Example command line
-    official_url = db.Column(db.String(255))  # Kali tools page URL
+    install_command = db.Column(db.Text)
+    example_usage = db.Column(db.Text)
+    official_url = db.Column(db.String(255))
+    # Business Language fields (Master Architecture v1)
+    business_name = db.Column(db.String(200), default='')  # User-facing name
+    business_description = db.Column(db.Text, default='')  # User-facing description
+    business_category = db.Column(db.String(50), default='')  # One of 6 business categories
+    subcategory = db.Column(db.String(100), default='')  # Subcategory within business category
+    risk_context = db.Column(db.Text, default='')  # Business risk explanation
     
-    def to_dict(self):
-        return {
+    def to_dict(self, include_technical=False):
+        """Return tool data in business language. Technical names hidden by default."""
+        data = {
             'id': self.id,
-            'name': self.name,
+            'name': self.business_name or self.name,  # Business name first
             'category': self.category,
-            'description': self.description,
+            'business_category': self.business_category or 'web_application_security',
+            'subcategory': self.subcategory or '',
+            'description': self.business_description or self.description,
+            'risk_context': self.risk_context or '',
             'parameters': self.parameters,
             'plan_required': self.plan_required,
             'is_active': self.is_active,
             'tool_type': self.tool_type or 'cli',
             'hardware_required': self.hardware_required or [],
             'gui_required': self.gui_required or False,
-            'install_command': self.install_command,
-            'example_usage': self.example_usage,
-            'official_url': self.official_url
         }
+        if include_technical:
+            data['technical_name'] = self.name
+            data['install_command'] = self.install_command
+            data['example_usage'] = self.example_usage
+            data['official_url'] = self.official_url
+        return data
 
 class Scan(db.Model):
     """Scan execution tracking"""
