@@ -178,25 +178,39 @@ export default function AgentsPage() {
   const updateAgent = async () => {
     if (!selectedAgent) return;
     
+    const agentData = selectedAgent as Agent & { ssh_password?: string; ssh_key_path?: string };
+    
     try {
+      const body: Record<string, unknown> = {
+        name: selectedAgent.name,
+        ssh_host: selectedAgent.ssh_host,
+        ssh_port: selectedAgent.ssh_port,
+        ssh_username: selectedAgent.ssh_username,
+        location: selectedAgent.location,
+        connection_type: selectedAgent.connection_type,
+      };
+      
+      // Only send password if user typed something
+      if (agentData.ssh_password) {
+        body.ssh_password = agentData.ssh_password;
+      }
+      if (agentData.ssh_key_path) {
+        body.ssh_key_path = agentData.ssh_key_path;
+      }
+      
       const res = await fetch(`/api/v1/agents/${selectedAgent.id}`, {
         method: 'PUT',
         headers: {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json'
         },
-        body: JSON.stringify({
-          name: selectedAgent.name,
-          ssh_host: selectedAgent.ssh_host,
-          ssh_port: selectedAgent.ssh_port,
-          ssh_username: selectedAgent.ssh_username,
-          location: selectedAgent.location,
-        })
+        body: JSON.stringify(body)
       });
       
       if (res.ok) {
         setShowEditModal(false);
         setSelectedAgent(null);
+        setTestResult(null);
         fetchDashboard();
       } else {
         const data = await res.json();
@@ -780,7 +794,7 @@ export default function AgentsPage() {
                   <p className="text-white text-sm">{NETWORK_MODES[selectedAgent.connection_type]?.name || selectedAgent.connection_type}</p>
                 </div>
               </div>
-              {(selectedAgent.connection_type === 'agent_internal' || selectedAgent.connection_type === 'agent_dmz') && selectedAgent.ssh_host && (
+              {selectedAgent.ssh_host && (
                 <div className="bg-gray-800/50 rounded-lg p-3">
                   <p className="text-gray-500 text-xs mb-1">Agent Connection</p>
                   <p className="text-white font-mono text-sm">{selectedAgent.ssh_username}@{selectedAgent.ssh_host}:{selectedAgent.ssh_port}</p>
@@ -800,7 +814,7 @@ export default function AgentsPage() {
 
             {/* Actions */}
             <div className="mt-6 space-y-3">
-              {(selectedAgent.connection_type === 'agent_internal' || selectedAgent.connection_type === 'agent_dmz') && (
+              {selectedAgent.ssh_host && (
                 <button onClick={() => testConnection(selectedAgent.id)} disabled={testingConnection} className="w-full py-2.5 bg-cyan-600 hover:bg-cyan-700 text-white rounded-lg font-medium transition disabled:opacity-50">
                   {testingConnection ? 'Testing...' : 'Test Connection'}
                 </button>
@@ -816,38 +830,80 @@ export default function AgentsPage() {
       {/* Edit Modal */}
       {showEditModal && selectedAgent && (
         <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-          <div className="bg-gray-900 rounded-2xl max-w-lg w-full border border-gray-700 shadow-2xl">
+          <div className="bg-gray-900 rounded-2xl max-w-lg w-full border border-gray-700 shadow-2xl max-h-[90vh] overflow-y-auto">
             <div className="p-6 border-b border-gray-700"><h2 className="text-xl font-bold text-white">Edit Agent</h2></div>
             <div className="p-6 space-y-4">
               <div>
                 <label className="block text-gray-400 text-sm mb-2">Agent Name</label>
                 <input type="text" value={selectedAgent.name} onChange={(e) => setSelectedAgent({...selectedAgent, name: e.target.value})} className="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2.5 text-white focus:border-kali-blue focus:outline-none" />
               </div>
-              {(selectedAgent.connection_type === 'agent_internal' || selectedAgent.connection_type === 'agent_dmz') && (
-                <>
-                  <div className="grid grid-cols-3 gap-3">
-                    <div className="col-span-2">
-                      <label className="block text-gray-400 text-sm mb-2">Agent Host</label>
-                      <input type="text" value={selectedAgent.ssh_host || ''} onChange={(e) => setSelectedAgent({...selectedAgent, ssh_host: e.target.value})} className="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2.5 text-white focus:border-kali-blue focus:outline-none" />
-                    </div>
-                    <div>
-                      <label className="block text-gray-400 text-sm mb-2">Port</label>
-                      <input type="number" value={selectedAgent.ssh_port || 22} onChange={(e) => setSelectedAgent({...selectedAgent, ssh_port: parseInt(e.target.value)})} className="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2.5 text-white focus:border-kali-blue focus:outline-none" />
-                    </div>
+
+              {/* Connection Type */}
+              <div>
+                <label className="block text-gray-400 text-sm mb-2">Network Mode</label>
+                <select
+                  value={selectedAgent.connection_type}
+                  onChange={(e) => setSelectedAgent({...selectedAgent, connection_type: e.target.value as ConnectionType})}
+                  className="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2.5 text-white focus:border-kali-blue focus:outline-none"
+                >
+                  {Object.entries(NETWORK_MODES).map(([key, mode]) => (
+                    <option key={key} value={key}>{mode.emoji} {mode.name}</option>
+                  ))}
+                </select>
+              </div>
+
+              {/* SSH Configuration - always shown for agent types */}
+              <div className="border border-gray-700 rounded-lg p-4 space-y-3">
+                <h3 className="text-white text-sm font-medium flex items-center gap-2">
+                  <svg className="w-4 h-4 text-cyan-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" /></svg>
+                  SSH Connection
+                </h3>
+                <div className="grid grid-cols-3 gap-3">
+                  <div className="col-span-2">
+                    <label className="block text-gray-400 text-xs mb-1">Host / IP</label>
+                    <input type="text" value={selectedAgent.ssh_host || ''} onChange={(e) => setSelectedAgent({...selectedAgent, ssh_host: e.target.value})} placeholder="192.168.1.100" className="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-white text-sm focus:border-kali-blue focus:outline-none" />
                   </div>
                   <div>
-                    <label className="block text-gray-400 text-sm mb-2">SSH Username</label>
-                    <input type="text" value={selectedAgent.ssh_username || ''} onChange={(e) => setSelectedAgent({...selectedAgent, ssh_username: e.target.value})} className="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2.5 text-white focus:border-kali-blue focus:outline-none" />
+                    <label className="block text-gray-400 text-xs mb-1">Port</label>
+                    <input type="number" value={selectedAgent.ssh_port || 22} onChange={(e) => setSelectedAgent({...selectedAgent, ssh_port: parseInt(e.target.value)})} className="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-white text-sm focus:border-kali-blue focus:outline-none" />
                   </div>
-                </>
-              )}
+                </div>
+                <div>
+                  <label className="block text-gray-400 text-xs mb-1">Username</label>
+                  <input type="text" value={selectedAgent.ssh_username || ''} onChange={(e) => setSelectedAgent({...selectedAgent, ssh_username: e.target.value})} placeholder="root" className="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-white text-sm focus:border-kali-blue focus:outline-none" />
+                </div>
+                <div>
+                  <label className="block text-gray-400 text-xs mb-1">Password</label>
+                  <input type="password" value={(selectedAgent as Agent & { ssh_password?: string }).ssh_password || ''} onChange={(e) => setSelectedAgent({...selectedAgent, ssh_password: e.target.value} as Agent)} placeholder="Leave empty to keep existing" className="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-white text-sm focus:border-kali-blue focus:outline-none" />
+                </div>
+                <div>
+                  <label className="block text-gray-400 text-xs mb-1">SSH Key Path (optional)</label>
+                  <input type="text" value={(selectedAgent as Agent & { ssh_key_path?: string }).ssh_key_path || ''} onChange={(e) => setSelectedAgent({...selectedAgent, ssh_key_path: e.target.value} as Agent)} placeholder="/home/user/.ssh/id_rsa" className="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-white text-sm focus:border-kali-blue focus:outline-none" />
+                </div>
+
+                {/* Test Connection Button */}
+                <button
+                  onClick={() => testConnection(selectedAgent.id)}
+                  disabled={testingConnection || !selectedAgent.ssh_host}
+                  className="w-full py-2 bg-cyan-600/20 hover:bg-cyan-600/30 text-cyan-400 rounded-lg text-sm font-medium transition border border-cyan-600/30 disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                >
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" /></svg>
+                  {testingConnection ? 'Testing...' : 'Test Connection'}
+                </button>
+                {testResult && (
+                  <div className={`p-2 rounded-lg text-xs ${testResult.success ? 'bg-green-900/30 text-green-400' : 'bg-red-900/30 text-red-400'}`}>
+                    {testResult.message}
+                  </div>
+                )}
+              </div>
+
               <div>
                 <label className="block text-gray-400 text-sm mb-2">Location</label>
-                <input type="text" value={selectedAgent.location || ''} onChange={(e) => setSelectedAgent({...selectedAgent, location: e.target.value})} placeholder="E.g.: Office, Home Lab" className="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2.5 text-white focus:border-kali-blue focus:outline-none" />
+                <input type="text" value={selectedAgent.location || ''} onChange={(e) => setSelectedAgent({...selectedAgent, location: e.target.value})} placeholder="E.g.: Office, Home Lab, AWS EU" className="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2.5 text-white focus:border-kali-blue focus:outline-none" />
               </div>
             </div>
             <div className="p-6 border-t border-gray-700 flex justify-end gap-3">
-              <button onClick={() => { setShowEditModal(false); setSelectedAgent(null); }} className="px-4 py-2 text-gray-400 hover:text-white transition">Cancel</button>
+              <button onClick={() => { setShowEditModal(false); setSelectedAgent(null); setTestResult(null); }} className="px-4 py-2 text-gray-400 hover:text-white transition">Cancel</button>
               <button onClick={updateAgent} className="px-6 py-2 bg-gradient-to-r from-kali-blue to-cyan-600 text-white rounded-lg font-medium transition shadow-lg shadow-kali-blue/20">Save</button>
             </div>
           </div>

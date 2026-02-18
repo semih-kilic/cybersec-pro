@@ -224,15 +224,15 @@ export default function UpgradePage() {
             key={plan.id}
             className={`relative bg-gray-900 rounded-2xl p-6 border transition-all hover:scale-[1.02] flex flex-col ${
               plan.popular
-                ? 'border-emerald-500 shadow-lg shadow-emerald-500/20'
+                ? 'border-blue-500 shadow-lg shadow-blue-500/10 ring-1 ring-blue-500/30'
                 : plan.id === currentPlan
                 ? 'border-green-500'
                 : 'border-gray-800'
             }`}
           >
             {plan.popular && (
-              <div className="absolute -top-4 left-1/2 -translate-x-1/2 px-4 py-1.5 bg-gradient-to-r from-emerald-500 to-cyan-500 text-white text-xs font-bold rounded-full z-10 shadow-lg">
-                ⭐ Recommended for SMEs
+              <div className="absolute -top-3.5 left-1/2 -translate-x-1/2 px-5 py-1 bg-blue-600 text-white text-xs font-semibold rounded-full z-10 tracking-wide">
+                MOST POPULAR
               </div>
             )}
             {plan.id === currentPlan && (
@@ -283,7 +283,7 @@ export default function UpgradePage() {
                     : plan.id === 'trial'
                     ? 'bg-green-500/20 text-green-400 border border-green-500/50 hover:bg-green-500/30'
                     : plan.popular
-                    ? 'bg-gradient-to-r from-emerald-500 to-cyan-500 text-white hover:from-emerald-500/90 hover:to-cyan-500/90 shadow-lg shadow-emerald-500/30'
+                    ? 'bg-blue-600 text-white hover:bg-blue-500 shadow-lg shadow-blue-600/20'
                     : plan.id === 'starter'
                     ? 'bg-blue-500/20 text-blue-400 border border-blue-500/50 hover:bg-blue-500/30'
                     : plan.id === 'enterprise'
