@@ -25,7 +25,6 @@ PLAN_HIERARCHY = {
     "trial": 2,      # Same as starter - access to basic tools
     "starter": 2,
     "professional": 3,
-    "team": 4,
     "enterprise": 5
 }
 

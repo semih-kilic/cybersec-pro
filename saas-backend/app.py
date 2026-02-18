@@ -218,6 +218,31 @@ except ImportError as e:
     SCAN_ENGINE_AVAILABLE = False
     print(f"⚠️ Scan Engine not available: {e}")
 
+# Initialize Business Language Translator (Master Architecture v1)
+try:
+    from business_language import get_translator, BUSINESS_CATEGORIES
+    business_translator = get_translator()
+    BUSINESS_LANGUAGE_AVAILABLE = True
+    print(f"✅ Business Language Translator initialized ({len(BUSINESS_CATEGORIES)} categories)")
+except ImportError as e:
+    business_translator = None
+    BUSINESS_LANGUAGE_AVAILABLE = False
+    print(f"⚠️ Business Language not available: {e}")
+
+# Initialize Scan Orchestrator v4 (Category-based)
+try:
+    from scan_orchestrator import init_orchestrator, get_orchestrator
+    scan_orchestrator = init_orchestrator(
+        app, socketio=socketio,
+        scan_engine=scan_engine_v3 if SCAN_ENGINE_V3_AVAILABLE else scan_engine
+    )
+    ORCHESTRATOR_AVAILABLE = True
+    print("✅ Scan Orchestrator v4 initialized (6 business categories)")
+except ImportError as e:
+    scan_orchestrator = None
+    ORCHESTRATOR_AVAILABLE = False
+    print(f"⚠️ Scan Orchestrator not available: {e}")
+
 # ================================
 # PLAN CONFIGURATION (Single Source of Truth)
 # ================================
@@ -1776,7 +1801,7 @@ def test_sso_connection():
 @app.route('/api/v1/tools', methods=['GET'])
 @require_organization
 def get_tools():
-    """Get available tools based on user's plan"""
+    """Get available tools based on user's plan - Business Language"""
     try:
         user_id = get_jwt_identity()
         user = User.query.get(user_id)
@@ -1788,7 +1813,7 @@ def get_tools():
         tool_limit = plan_cfg['tool_limit']
         
         # Get all active tools
-        all_tools = Tool.query.filter(Tool.is_active == True).order_by(Tool.name).all()
+        all_tools = Tool.query.filter(Tool.is_active == True).order_by(Tool.business_name).all()
         
         # Filter based on plan - Enterprise gets all, others get limited
         if user_plan_level >= 4:  # Enterprise
@@ -1796,19 +1821,21 @@ def get_tools():
         else:
             tools = all_tools[:tool_limit]
         
-        # Group by category
+        # Group by BUSINESS category (6 categories instead of 15)
         tools_by_category = {}
         for tool in tools:
-            if tool.category not in tools_by_category:
-                tools_by_category[tool.category] = []
-            tools_by_category[tool.category].append(tool.to_dict())
+            cat_key = tool.business_category or tool.category
+            if cat_key not in tools_by_category:
+                tools_by_category[cat_key] = []
+            tools_by_category[cat_key].append(tool.to_dict())
         
         return jsonify({
             'tools': tools_by_category,
             'total_tools': len(tools),
             'user_plan': org.plan_type,
             'plan_limit': tool_limit,
-            'features': plan_cfg['features']
+            'features': plan_cfg['features'],
+            'categories': list(BUSINESS_CATEGORIES.keys()) if BUSINESS_LANGUAGE_AVAILABLE else [],
         })
         
     except Exception as e:
@@ -1867,6 +1894,190 @@ def get_tool(tool_id):
         
     except Exception as e:
         return jsonify({'error': str(e)}), 500
+
+
+# ================================
+# BUSINESS LANGUAGE API ENDPOINTS (Master Architecture v1)
+# All tool names are HIDDEN - users see business names only
+# ================================
+
+@app.route('/api/v1/business/categories', methods=['GET'])
+def get_business_categories_endpoint():
+    """Get 6 business security categories with tool counts"""
+    try:
+        categories = []
+        for cat_id, cat_info in BUSINESS_CATEGORIES.items():
+            count = Tool.query.filter_by(
+                business_category=cat_id, is_active=True
+            ).count()
+            categories.append({
+                'id': cat_id,
+                'name': cat_info['name'],
+                'business_name': cat_info['business_name'],
+                'description': cat_info['description'],
+                'icon': cat_info['icon'],
+                'color': cat_info['color'],
+                'tool_count': count,
+                'subcategories': cat_info.get('subcategories', []),
+            })
+        
+        return jsonify({
+            'categories': categories,
+            'total_tools': Tool.query.filter_by(is_active=True).count(),
+        })
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+
+@app.route('/api/v1/business/categories/<category_id>/tools', methods=['GET'])
+@require_organization
+def get_category_tools(category_id):
+    """Get tools in a business category (business language only)"""
+    try:
+        user_id = get_jwt_identity()
+        user = User.query.get(user_id)
+        org = user.organization
+        plan_cfg = get_plan_config(org.plan_type)
+        user_plan_level = plan_cfg['level']
+        
+        tools = Tool.query.filter_by(
+            business_category=category_id, is_active=True
+        ).order_by(Tool.business_name).all()
+        
+        result = []
+        for tool in tools:
+            tool_level = get_plan_config(tool.plan_required)['level']
+            accessible = user_plan_level >= tool_level
+            result.append({
+                'id': tool.id,
+                'name': tool.business_name or tool.name,
+                'description': tool.business_description or tool.description,
+                'subcategory': tool.subcategory or '',
+                'risk_context': tool.risk_context or '',
+                'plan_required': tool.plan_required,
+                'accessible': accessible,
+            })
+        
+        cat_info = BUSINESS_CATEGORIES.get(category_id, {})
+        return jsonify({
+            'category': {
+                'id': category_id,
+                'name': cat_info.get('name', category_id),
+                'description': cat_info.get('description', ''),
+            },
+            'tools': result,
+            'total': len(result),
+            'accessible': sum(1 for t in result if t['accessible']),
+        })
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+
+@app.route('/api/v1/business/scan', methods=['POST'])
+@require_organization
+def start_business_scan():
+    """Start an orchestrated scan (business language, category-based)"""
+    try:
+        user_id = get_jwt_identity()
+        user = User.query.get(user_id)
+        org = user.organization
+        plan_cfg = get_plan_config(org.plan_type)
+        
+        data = request.get_json()
+        target = data.get('target', '').strip()
+        categories = data.get('categories', None)  # None = all
+        network_mode = data.get('network_mode', 'direct')
+        agent_id = data.get('agent_id', None)
+        
+        if not target:
+            return jsonify({'error': 'Target is required'}), 400
+        
+        # Check daily scan limit
+        from datetime import date
+        today_scans = Scan.query.filter(
+            Scan.organization_id == org.id,
+            db.func.date(Scan.created_at) == date.today()
+        ).count()
+        
+        if today_scans >= plan_cfg['daily_scan_limit']:
+            return jsonify({
+                'error': 'Daily scan limit reached',
+                'limit': plan_cfg['daily_scan_limit'],
+                'used': today_scans,
+                'upgrade_message': 'Upgrade your plan for more daily scans'
+            }), 429
+        
+        if ORCHESTRATOR_AVAILABLE and scan_orchestrator:
+            scan_id = scan_orchestrator.start_full_scan(
+                target=target,
+                organization_id=org.id,
+                user_id=user_id,
+                plan=org.plan_type,
+                categories=categories,
+                network_mode=network_mode,
+                agent_id=agent_id,
+            )
+            
+            return jsonify({
+                'scan_id': scan_id,
+                'status': 'initializing',
+                'message': f'Security assessment started for {target}',
+                'categories': len(categories) if categories else len(BUSINESS_CATEGORIES),
+                'network_mode': network_mode,
+            })
+        else:
+            return jsonify({'error': 'Scan engine not available'}), 503
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+
+@app.route('/api/v1/business/scan/<scan_id>', methods=['GET'])
+@require_organization
+def get_business_scan_status(scan_id):
+    """Get orchestrated scan status (business language)"""
+    try:
+        if ORCHESTRATOR_AVAILABLE and scan_orchestrator:
+            status = scan_orchestrator.get_scan_status(scan_id)
+            if status:
+                return jsonify(status)
+        
+        # Fallback: check DB
+        scan = Scan.query.get(scan_id)
+        if not scan:
+            return jsonify({'error': 'Scan not found'}), 404
+        
+        # Translate to business language
+        result = scan.to_dict()
+        if BUSINESS_LANGUAGE_AVAILABLE and business_translator:
+            result = business_translator.translate_scan_result(result)
+        
+        return jsonify(result)
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+
+@app.route('/api/v1/business/network-modes', methods=['GET'])
+@require_organization
+def get_network_modes():
+    """Get available network modes for the organization"""
+    try:
+        user_id = get_jwt_identity()
+        user = User.query.get(user_id)
+        org = user.organization
+        
+        if hasattr(agent_manager, 'get_available_modes'):
+            modes = agent_manager.get_available_modes(org.id)
+        else:
+            from agent_manager import NETWORK_MODES
+            modes = [
+                {**info, 'id': mode_id, 'available': not info['requires_agent'], 'agents': []}
+                for mode_id, info in NETWORK_MODES.items()
+            ]
+        
+        return jsonify({'modes': modes})
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
 
 @app.route('/api/v1/tools/stats', methods=['GET'])
 @require_organization

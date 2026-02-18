@@ -1,21 +1,69 @@
 #!/usr/bin/env python3
 """
-CyberSec Pro - Agent Manager
-Server-side agent management: registration, heartbeat tracking, load balancing, scan dispatch
+CyberSec Pro - Agent Manager v2.0
+5 Network Modes: Direct, Agent-based, VPN Tunnel, SSH Tunnel, API Proxy
+
+Features:
+  - WebSocket-based agent communication
+  - Docker-in-Docker tool execution support
+  - Auto-reconnect + auto-update
+  - Network zone awareness (public, private, dmz)
+  - Encrypted communication channels
 """
 import uuid
 import json
 import time
 import logging
 import threading
+import subprocess
 from datetime import datetime, timedelta
 from functools import wraps
+from typing import Optional, Dict, Any, List, Tuple
 
 logger = logging.getLogger('agent_manager')
 
+# Network mode capabilities
+NETWORK_MODES = {
+    'direct': {
+        'name': 'Direct Scan',
+        'description': 'Scan directly from the SaaS platform',
+        'requires_agent': False,
+        'supports_private': False,
+        'icon': 'globe-alt'
+    },
+    'agent': {
+        'name': 'Agent-Based Scan',
+        'description': 'Scan via installed agent on target network',
+        'requires_agent': True,
+        'supports_private': True,
+        'icon': 'cpu-chip'
+    },
+    'vpn': {
+        'name': 'VPN Tunnel Scan',
+        'description': 'Scan through encrypted VPN tunnel to private network',
+        'requires_agent': True,
+        'supports_private': True,
+        'icon': 'shield-check'
+    },
+    'ssh': {
+        'name': 'SSH Tunnel Scan',
+        'description': 'Scan through SSH tunnel to remote systems',
+        'requires_agent': False,
+        'supports_private': True,
+        'icon': 'command-line'
+    },
+    'api_proxy': {
+        'name': 'API Proxy Scan',
+        'description': 'Scan through API proxy endpoint in target environment',
+        'requires_agent': False,
+        'supports_private': True,
+        'icon': 'arrow-path'
+    }
+}
+
 
 class AgentManager:
-    """Manages remote Kali Linux agents for distributed scan execution"""
+    """Manages remote agents with 5 network modes for distributed scan execution"""
     
     def __init__(self, db, Agent, Scan, socketio=None):
         self.db = db
@@ -25,10 +73,13 @@ class AgentManager:
         self._monitor_thread = None
         self._running = False
         self._app = None
+        self._websocket_agents: Dict[str, str] = {}  # ws_sid -> agent_id
     
     # ── Registration ──────────────────────────────────────────
     
-    def generate_registration_token(self, org_id, agent_name, platform='linux'):
+    def generate_registration_token(self, org_id, agent_name, platform='linux',
+                                     connection_type='direct', network_zone='public',
+                                     **kwargs):
         """Generate a unique registration token for a new agent"""
         token = f"csp_{uuid.uuid4().hex[:24]}"
         api_key = f"ak_{uuid.uuid4().hex}"
@@ -40,7 +91,23 @@ class AgentManager:
             status='pending',
             registration_token=token,
             api_key=api_key,
-            connection_type='direct'
+            connection_type=connection_type,
+            network_zone=network_zone,
+            # VPN config
+            vpn_config_path=kwargs.get('vpn_config_path'),
+            # SSH config
+            ssh_host=kwargs.get('ssh_host'),
+            ssh_port=kwargs.get('ssh_port', 22),
+            ssh_username=kwargs.get('ssh_username'),
+            ssh_key_path=kwargs.get('ssh_key_path'),
+            # API Proxy config
+            proxy_endpoint=kwargs.get('proxy_endpoint'),
+            proxy_api_key=kwargs.get('proxy_api_key'),
+            proxy_protocol=kwargs.get('proxy_protocol', 'https'),
+            # Agent capabilities
+            agent_docker_enabled=kwargs.get('docker_enabled', False),
+            auto_update=kwargs.get('auto_update', True),
+            max_concurrent_scans=kwargs.get('max_concurrent', 5),
         )
         self.db.session.add(agent)
         self.db.session.commit()
@@ -49,7 +116,10 @@ class AgentManager:
             'agent_id': agent.id,
             'token': token,
             'api_key': api_key,
-            'install_command': self._get_install_script(token)
+            'connection_type': connection_type,
+            'network_zone': network_zone,
+            'install_command': self._get_install_script(token, connection_type),
+            'network_modes': NETWORK_MODES,
         }
     
     def register_agent(self, token, agent_info):
@@ -71,13 +141,20 @@ class AgentManager:
         agent.cpu_usage = agent_info.get('cpu_usage', 0)
         agent.memory_usage = agent_info.get('memory_usage', 0)
         agent.active_scans = 0
+        # Update capabilities if reported
+        if 'capabilities' in agent_info:
+            agent.agent_capabilities = agent_info['capabilities']
+        if 'docker_enabled' in agent_info:
+            agent.agent_docker_enabled = agent_info['docker_enabled']
         
         self.db.session.commit()
         
         # Notify dashboard
         self._emit_agent_update(agent)
         
-        logger.info(f"Agent registered: {agent.name} ({agent.hostname}) [{agent.ip_address}]")
+        logger.info(f"Agent registered: {agent.name} ({agent.hostname}) "
+                    f"[{agent.ip_address}] mode={agent.connection_type} "
+                    f"zone={agent.network_zone}")
         return agent, None
     
     # ── Heartbeat ─────────────────────────────────────────────
@@ -281,6 +358,8 @@ class AgentManager:
             else:
                 last_seen = f"{int(delta/3600)} hours ago"
         
+        mode_info = NETWORK_MODES.get(agent.connection_type, NETWORK_MODES['direct'])
+        
         return {
             'id': agent.id,
             'name': agent.name,
@@ -296,7 +375,13 @@ class AgentManager:
             'memory_usage': round(agent.memory_usage or 0, 1),
             'active_scans': agent.active_scans or 0,
             'total_scans': agent.total_scans or 0,
+            'max_concurrent_scans': getattr(agent, 'max_concurrent_scans', 5) or 5,
             'connection_type': agent.connection_type,
+            'connection_mode': mode_info,
+            'network_zone': getattr(agent, 'network_zone', 'public') or 'public',
+            'docker_enabled': getattr(agent, 'agent_docker_enabled', False) or False,
+            'auto_update': getattr(agent, 'auto_update', True),
+            'capabilities': getattr(agent, 'agent_capabilities', None),
             'created_at': agent.created_at.isoformat()
         }
     
@@ -332,10 +417,54 @@ class AgentManager:
             except Exception:
                 pass
     
-    def _get_install_script(self, token):
-        """Generate agent installation command"""
-        base_url = 'https://cybersecpro.semihkilic.com'
-        return f"""# CyberSec Pro Agent Installation
+    def _get_install_script(self, token, connection_type='direct'):
+        """Generate agent installation command based on connection type"""
+        base_url = 'https://semihkilic.com'
+        
+        if connection_type == 'agent':
+            return f"""# CyberSec Pro Agent Installation (Agent Mode - WebSocket)
+# Run on your Kali Linux / security testing machine:
+
+curl -sSL {base_url}/api/v1/agent-script | python3 - --token {token} --mode agent
+
+# Features: WebSocket real-time, Docker-in-Docker, auto-update
+# Supports: All 682 security tools"""
+
+        elif connection_type == 'vpn':
+            return f"""# CyberSec Pro Agent Installation (VPN Tunnel Mode)
+# Step 1: Download VPN configuration
+curl -sSL {base_url}/api/v1/agent-vpn-config?token={token} -o cybersec.ovpn
+
+# Step 2: Connect VPN
+sudo openvpn --config cybersec.ovpn --daemon
+
+# Step 3: Install agent
+curl -sSL {base_url}/api/v1/agent-script | python3 - --token {token} --mode vpn"""
+
+        elif connection_type == 'ssh':
+            return f"""# CyberSec Pro Agent Setup (SSH Tunnel Mode)
+# No agent installation needed! Configure SSH access:
+#
+# 1. Add your SSH public key to the target server
+# 2. The platform will tunnel scans through SSH
+#
+# Token: {token}
+# Configure SSH details in the dashboard."""
+
+        elif connection_type == 'api_proxy':
+            return f"""# CyberSec Pro API Proxy Setup
+# Deploy the proxy container in your environment:
+
+docker run -d --name cybersec-proxy \\
+  -e PROXY_TOKEN={token} \\
+  -e PROXY_SERVER={base_url} \\
+  -p 8443:8443 \\
+  cybersecpro/api-proxy:latest
+
+# The proxy will register automatically."""
+
+        else:
+            return f"""# CyberSec Pro Agent Installation (Direct Mode)
 # Run on your Kali Linux machine:
 
 curl -sSL {base_url}/api/v1/agent-script | python3 - --token {token}
@@ -343,3 +472,108 @@ curl -sSL {base_url}/api/v1/agent-script | python3 - --token {token}
 # Or download and run manually:
 wget -O cybersec-agent.py {base_url}/api/v1/agent-script
 python3 cybersec-agent.py --token {token} --server {base_url}"""
+
+    # ── Network Mode Methods ──────────────────────────────────
+
+    def get_available_modes(self, org_id: str) -> List[Dict]:
+        """Get available network modes for an organization"""
+        agents = self.Agent.query.filter_by(organization_id=org_id).all()
+        
+        modes = []
+        for mode_id, mode_info in NETWORK_MODES.items():
+            mode_data = {
+                **mode_info,
+                'id': mode_id,
+                'available': True if not mode_info['requires_agent'] else False,
+                'agents': [],
+            }
+            
+            # Check if any agents support this mode
+            for agent in agents:
+                if agent.connection_type == mode_id and agent.status == 'online':
+                    mode_data['available'] = True
+                    mode_data['agents'].append({
+                        'id': agent.id,
+                        'name': agent.name,
+                        'status': agent.status,
+                        'network_zone': getattr(agent, 'network_zone', 'public'),
+                    })
+            
+            modes.append(mode_data)
+        
+        return modes
+
+    def test_connection(self, agent_id: str) -> Dict[str, Any]:
+        """Test connectivity to an agent"""
+        agent = self.Agent.query.get(agent_id)
+        if not agent:
+            return {'success': False, 'error': 'Agent not found'}
+        
+        conn_type = agent.connection_type
+        
+        if conn_type == 'ssh':
+            return self._test_ssh_connection(agent)
+        elif conn_type == 'vpn':
+            return self._test_vpn_connection(agent)
+        elif conn_type == 'api_proxy':
+            return self._test_proxy_connection(agent)
+        else:
+            return {'success': True, 'mode': conn_type, 'latency_ms': 0}
+
+    def _test_ssh_connection(self, agent) -> Dict[str, Any]:
+        """Test SSH connection to agent"""
+        try:
+            ssh_host = agent.ssh_host or agent.ip_address
+            ssh_port = agent.ssh_port or 22
+            ssh_user = agent.ssh_username or 'root'
+            
+            cmd = ['ssh', '-o', 'ConnectTimeout=5', '-o', 'StrictHostKeyChecking=no',
+                   '-p', str(ssh_port)]
+            if agent.ssh_key_path:
+                cmd.extend(['-i', agent.ssh_key_path])
+            cmd.extend([f'{ssh_user}@{ssh_host}', 'echo', 'cybersec-ok'])
+            
+            result = subprocess.run(cmd, capture_output=True, text=True, timeout=10)
+            return {
+                'success': 'cybersec-ok' in result.stdout,
+                'mode': 'ssh',
+                'host': ssh_host,
+                'port': ssh_port,
+            }
+        except Exception as e:
+            return {'success': False, 'mode': 'ssh', 'error': str(e)}
+
+    def _test_vpn_connection(self, agent) -> Dict[str, Any]:
+        """Test VPN connection"""
+        vpn_ip = getattr(agent, 'vpn_assigned_ip', None)
+        if vpn_ip:
+            try:
+                result = subprocess.run(
+                    ['ping', '-c', '1', '-W', '3', vpn_ip],
+                    capture_output=True, timeout=5
+                )
+                return {'success': result.returncode == 0, 'mode': 'vpn', 'vpn_ip': vpn_ip}
+            except Exception as e:
+                return {'success': False, 'mode': 'vpn', 'error': str(e)}
+        return {'success': False, 'mode': 'vpn', 'error': 'No VPN IP assigned'}
+
+    def _test_proxy_connection(self, agent) -> Dict[str, Any]:
+        """Test API proxy connection"""
+        endpoint = getattr(agent, 'proxy_endpoint', None)
+        if endpoint:
+            try:
+                result = subprocess.run(
+                    ['curl', '-sI', '-o', '/dev/null', '-w', '%{http_code}',
+                     '-m', '5', f'{endpoint}/health'],
+                    capture_output=True, text=True, timeout=8
+                )
+                status = result.stdout.strip()
+                return {
+                    'success': status in ('200', '204'),
+                    'mode': 'api_proxy',
+                    'endpoint': endpoint,
+                    'http_status': status,
+                }
+            except Exception as e:
+                return {'success': False, 'mode': 'api_proxy', 'error': str(e)}
+        return {'success': False, 'mode': 'api_proxy', 'error': 'No proxy endpoint configured'}
