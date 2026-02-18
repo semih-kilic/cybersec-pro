@@ -73,6 +73,8 @@ export function ScanExecutionPage() {
   const [command, setCommand] = useState(searchParams.get('command') || '');
   const [error, setError] = useState<string | null>(null);
   const [progress, setProgress] = useState(0);
+  const [scanStartTime, setScanStartTime] = useState<number | null>(null);
+  const [elapsedSeconds, setElapsedSeconds] = useState(0);
   
   // Agent selection
   const [agents, setAgents] = useState<AgentInfo[]>([]);
@@ -164,9 +166,22 @@ export function ScanExecutionPage() {
     if (ws.complete) {
       setStatus(ws.complete.status as 'completed' | 'failed');
       setProgress(100);
+      setScanStartTime(null);
       if (ws.complete.status === 'completed') fetchBusinessResults();
     }
   }, [ws.complete]);
+
+  // Elapsed time counter for running scans
+  useEffect(() => {
+    if (status === 'running' && scanStartTime) {
+      const interval = setInterval(() => {
+        setElapsedSeconds(Math.floor((Date.now() - scanStartTime) / 1000));
+      }, 1000);
+      return () => clearInterval(interval);
+    } else {
+      setElapsedSeconds(0);
+    }
+  }, [status, scanStartTime]);
 
   // Fetch business-language results when scan completes
   const fetchBusinessResults = async () => {
@@ -252,6 +267,7 @@ export function ScanExecutionPage() {
     setOutput([]);
     setStatus('running');
     setExecutionInfo(null);
+    setScanStartTime(Date.now());
     
     const agentLabel = selectedAgentId === 'local' 
       ? '(Server)' 

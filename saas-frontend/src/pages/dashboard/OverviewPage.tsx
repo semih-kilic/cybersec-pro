@@ -122,7 +122,7 @@ export function OverviewPage() {
 
       <Header 
         title={`Welcome back, ${user?.first_name || 'User'}`}
-        subtitle={`${organization?.name || 'Your Organization'} \u2022 ${new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' })}`}
+        subtitle={`${organization?.name || 'Your Organization'} • ${new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' })}`}
         actions={
           <Link to="/dashboard/scans/new" className="flex items-center gap-2 px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-semibold transition shadow-lg shadow-blue-600/20">
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" /></svg>
@@ -137,10 +137,10 @@ export function OverviewPage() {
           <div className="bg-gradient-to-r from-blue-600/20 to-purple-600/20 rounded-xl p-4 border border-blue-500/30 flex items-center justify-between">
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 rounded-full bg-blue-500/20 flex items-center justify-center">
-                <span className="text-lg">\u23f3</span>
+                <span className="text-lg">⏳</span>
               </div>
               <div>
-                <p className="text-white font-semibold">Free Trial \u2014 {trialDaysLeft} days remaining</p>
+                <p className="text-white font-semibold">Free Trial — {trialDaysLeft} days remaining</p>
                 <p className="text-gray-400 text-sm">Unlock unlimited scans and compliance reports</p>
               </div>
             </div>
@@ -158,7 +158,7 @@ export function OverviewPage() {
               <div className="w-10 h-10 rounded-lg bg-blue-500/10 flex items-center justify-center">
                 <svg className="w-5 h-5 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" /></svg>
               </div>
-              <Link to="/dashboard/targets" className="text-xs text-blue-400 hover:underline opacity-0 group-hover:opacity-100 transition">Manage \u2192</Link>
+              <Link to="/dashboard/targets" className="text-xs text-blue-400 hover:underline opacity-0 group-hover:opacity-100 transition">Manage →</Link>
             </div>
             <p className="text-sm text-gray-400 mb-1">Protected Assets</p>
             <p className="text-2xl font-bold text-white">{totalTargets} <span className="text-sm font-normal text-gray-500">active domains</span></p>
@@ -170,7 +170,7 @@ export function OverviewPage() {
               <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${securityScore >= 80 ? 'bg-green-500/10' : securityScore >= 60 ? 'bg-yellow-500/10' : 'bg-red-500/10'}`}>
                 <svg className={`w-5 h-5 ${getScoreColor(securityScore)}`} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
               </div>
-              <Link to="/dashboard/reports" className="text-xs text-blue-400 hover:underline opacity-0 group-hover:opacity-100 transition">Breakdown \u2192</Link>
+              <Link to="/dashboard/reports" className="text-xs text-blue-400 hover:underline opacity-0 group-hover:opacity-100 transition">Breakdown →</Link>
             </div>
             <p className="text-sm text-gray-400 mb-1">Security Score</p>
             <div className="flex items-baseline gap-2">
@@ -185,13 +185,13 @@ export function OverviewPage() {
               <div className="w-10 h-10 rounded-lg bg-purple-500/10 flex items-center justify-center">
                 <svg className="w-5 h-5 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
               </div>
-              {lastScan && <Link to={`/dashboard/scans/${lastScan.id}`} className="text-xs text-blue-400 hover:underline opacity-0 group-hover:opacity-100 transition">View \u2192</Link>}
+              {lastScan && <Link to={`/dashboard/scans/${lastScan.id}`} className="text-xs text-blue-400 hover:underline opacity-0 group-hover:opacity-100 transition">View →</Link>}
             </div>
             <p className="text-sm text-gray-400 mb-1">Last Scan</p>
             <p className="text-2xl font-bold text-white">{lastScanAgo}</p>
             {lastScan && (
               <span className={`inline-flex items-center gap-1 text-xs mt-1 ${lastScan.status === 'completed' ? 'text-green-400' : lastScan.status === 'running' ? 'text-yellow-400' : 'text-red-400'}`}>
-                {lastScan.status === 'completed' ? '\u2705' : lastScan.status === 'running' ? '\u23f3' : '\u274c'} {lastScan.status.charAt(0).toUpperCase() + lastScan.status.slice(1)}
+                {lastScan.status === 'completed' ? '✅' : lastScan.status === 'running' ? '⏳' : '❌'} {lastScan.status.charAt(0).toUpperCase() + lastScan.status.slice(1)}
               </span>
             )}
           </div>
@@ -202,7 +202,7 @@ export function OverviewPage() {
               <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${openIssues.total > 0 ? 'bg-orange-500/10' : 'bg-green-500/10'}`}>
                 <svg className={`w-5 h-5 ${openIssues.total > 0 ? 'text-orange-400' : 'text-green-400'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" /></svg>
               </div>
-              <Link to="/dashboard/reports" className="text-xs text-blue-400 hover:underline opacity-0 group-hover:opacity-100 transition">Fix \u2192</Link>
+              <Link to="/dashboard/reports" className="text-xs text-blue-400 hover:underline opacity-0 group-hover:opacity-100 transition">Fix →</Link>
             </div>
             <p className="text-sm text-gray-400 mb-1">Open Issues</p>
             <p className="text-2xl font-bold text-white">{openIssues.total} <span className="text-sm font-normal text-gray-500">vulnerabilities</span></p>
@@ -344,12 +344,12 @@ export function OverviewPage() {
             </div>
             <div className="p-4 grid grid-cols-2 gap-2">
               {[
-                { to: '/dashboard/scans/new', icon: '\ud83d\udd0d', label: 'New Scan', color: 'blue' },
-                { to: '/dashboard/reports', icon: '\ud83d\udcca', label: 'Reports', color: 'purple' },
-                { to: '/dashboard/targets/new', icon: '\u2699\ufe0f', label: 'Add Domain', color: 'green' },
-                { to: '/dashboard/analytics', icon: '\ud83d\udcc8', label: 'Analytics', color: 'orange' },
-                { to: '/dashboard/settings', icon: '\ud83d\udd14', label: 'Alerts', color: 'yellow' },
-                { to: '/dashboard/settings', icon: '\ud83d\udc65', label: 'Team', color: 'cyan' },
+                { to: '/dashboard/scans/new', icon: '🔍', label: 'New Scan', color: 'blue' },
+                { to: '/dashboard/reports', icon: '📊', label: 'Reports', color: 'purple' },
+                { to: '/dashboard/targets/new', icon: '⚙️', label: 'Add Domain', color: 'green' },
+                { to: '/dashboard/analytics', icon: '📈', label: 'Analytics', color: 'orange' },
+                { to: '/dashboard/settings', icon: '🔔', label: 'Alerts', color: 'yellow' },
+                { to: '/dashboard/settings', icon: '👥', label: 'Team', color: 'cyan' },
               ].map((action) => (
                 <Link
                   key={action.label}

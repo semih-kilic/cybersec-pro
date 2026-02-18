@@ -222,7 +222,7 @@ TOOL_TIMEOUTS = {
     'dnsrecon': 120,
     
     # Medium tools (5 minutes)
-    'nmap': 300,
+    'nmap': 600,
     'nikto': 300,
     'gobuster': 300,
     'dirb': 300,
@@ -615,10 +615,16 @@ class ScanEngineV3:
             timing = f'T{timing}'
         cmd.append(f'-{timing}')
         
-        # Port range
-        ports = params.get('ports', '1-1000')
+        # Port range — default is --top-ports 1000 for fast comprehensive scans
+        ports = params.get('ports', '')
+        top_ports = params.get('top_ports', '')
         if ports:
             cmd.extend(['-p', str(ports)])
+        elif top_ports:
+            cmd.extend(['--top-ports', str(top_ports)])
+        else:
+            # Default: top 1000 ports (faster than 1-1000 sequential, same coverage)
+            cmd.extend(['--top-ports', '1000'])
         
         # Service version detection (skip if scan_type already includes sV)
         scan_type_raw = params.get('scan_type', 'S')
@@ -1122,6 +1128,19 @@ class ScanEngineV3:
                         else:
                             error_lines.append(line)
                             job.error_buffer.append(line)
+                
+                # Emit progress status lines to keep SSE stream alive
+                # nmap XML mode (-oX -) buffers all output until the end,
+                # so we emit phase updates as synthetic lines
+                if int(elapsed) % 5 == 0 and int(elapsed) > 0:
+                    phase = job.current_phase
+                    pct = job.progress
+                    status_line = f"[{phase}] {pct}% complete... ({int(elapsed)}s elapsed)"
+                    # Only emit status updates, don't add to output_buffer (not real tool output)
+                    try:
+                        job.output_queue.put(status_line)
+                    except Exception:
+                        pass
                 
                 # Emit progress every 2 seconds
                 if int(elapsed) % 2 == 0:
