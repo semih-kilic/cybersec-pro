@@ -378,7 +378,7 @@ export default function AgentsPage() {
         )}
       </div>
 
-      {/* Stats Cards */
+      {/* Stats Cards */}
       <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
         <div className="bg-gray-800/50 rounded-xl p-4 border border-gray-700">
           <div className="flex items-center gap-3">

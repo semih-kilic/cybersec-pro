@@ -2218,6 +2218,239 @@ def get_all_plans():
 
 
 # ================================
+# DASHBOARD & BUSINESS SCAN ROUTES
+# ================================
+
+@app.route('/api/v1/dashboard/security-summary', methods=['GET'])
+@require_organization
+def dashboard_security_summary():
+    """Return security summary for Overview dashboard"""
+    try:
+        user_id = get_jwt_identity()
+        user = User.query.get(user_id)
+        if not user:
+            return jsonify({'error': 'User not found'}), 404
+        
+        org = Organization.query.get(user.organization_id)
+        
+        # Get recent scans for this org
+        recent_scans = ScanResult.query.filter_by(
+            organization_id=user.organization_id
+        ).order_by(ScanResult.created_at.desc()).limit(50).all()
+        
+        # Calculate security score based on scan results
+        completed_scans = [s for s in recent_scans if s.status == 'completed']
+        
+        total_issues = 0
+        critical_issues = 0
+        high_issues = 0
+        medium_issues = 0
+        low_issues = 0
+        info_issues = 0
+        
+        for scan in completed_scans:
+            result_data = {}
+            if scan.result:
+                try:
+                    import json
+                    result_data = json.loads(scan.result) if isinstance(scan.result, str) else scan.result
+                except:
+                    pass
+            
+            findings = result_data.get('findings', [])
+            for f in findings:
+                sev = (f.get('severity') or '').lower()
+                if sev == 'critical':
+                    critical_issues += 1
+                elif sev == 'high':
+                    high_issues += 1
+                elif sev == 'medium':
+                    medium_issues += 1
+                elif sev == 'low':
+                    low_issues += 1
+                else:
+                    info_issues += 1
+                total_issues += 1
+        
+        # Simple scoring: start at 100, deduct for issues
+        security_score = max(0, min(100, 100 - (critical_issues * 15) - (high_issues * 8) - (medium_issues * 3) - (low_issues * 1)))
+        
+        # If no scans completed, show neutral score
+        if not completed_scans:
+            security_score = None
+        
+        return jsonify({
+            'security_score': security_score,
+            'open_issues': total_issues,
+            'critical': critical_issues,
+            'high': high_issues,
+            'medium': medium_issues,
+            'low': low_issues,
+            'info': info_issues,
+            'total_scans': len(recent_scans),
+            'completed_scans': len(completed_scans),
+            'protected_assets': org.max_targets if org else 1,
+            'plan': org.plan_type if org else 'trial',
+        })
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+
+@app.route('/api/v1/scans/business', methods=['POST'])
+@require_organization
+def create_business_scan():
+    """Create scan from business wizard (NewScanPage)"""
+    try:
+        user_id = get_jwt_identity()
+        user = User.query.get(user_id)
+        if not user:
+            return jsonify({'error': 'User not found'}), 404
+        
+        data = request.get_json()
+        target_url = data.get('target_url', '')
+        target_type = data.get('target_type', 'website')
+        scan_type = data.get('scan_type', 'quick')
+        schedule_type = data.get('schedule_type', 'now')
+        
+        if not target_url:
+            return jsonify({'error': 'Target URL is required'}), 400
+        
+        # Map scan_type to tool categories
+        scan_config = {
+            'quick': {'categories': ['web_security', 'network_security'], 'max_tools': 200, 'estimated_duration': '30 min'},
+            'full': {'categories': ['web_security', 'network_security', 'vulnerability_assessment', 'compliance_audit', 'threat_intelligence', 'forensics_monitoring'], 'max_tools': 682, 'estimated_duration': '2 hours'},
+            'compliance': {'categories': ['compliance_audit', 'web_security'], 'max_tools': 100, 'estimated_duration': '1 hour'},
+        }
+        
+        config = scan_config.get(scan_type, scan_config['quick'])
+        
+        # Create scan record
+        scan = ScanResult(
+            user_id=user_id,
+            organization_id=user.organization_id,
+            tool_id=f'business_{scan_type}',
+            target=target_url,
+            parameters=json.dumps({
+                'target_type': target_type,
+                'scan_type': scan_type,
+                'schedule_type': schedule_type,
+                'categories': config['categories'],
+                'max_tools': config['max_tools'],
+                'source': 'business_wizard',
+            }),
+            status='pending',
+        )
+        db.session.add(scan)
+        db.session.commit()
+        
+        return jsonify({
+            'scan_id': scan.id,
+            'status': 'pending',
+            'estimated_duration': config['estimated_duration'],
+            'message': f'{scan_type.capitalize()} scan created for {target_url}',
+        }), 201
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'error': str(e)}), 500
+
+
+@app.route('/api/v1/scans/<scan_id>/business-report', methods=['GET'])
+@require_organization
+def get_scan_business_report(scan_id):
+    """Return business-language report for a completed scan"""
+    try:
+        user_id = get_jwt_identity()
+        user = User.query.get(user_id)
+        if not user:
+            return jsonify({'error': 'User not found'}), 404
+        
+        scan = ScanResult.query.filter_by(
+            id=scan_id,
+            organization_id=user.organization_id
+        ).first()
+        
+        if not scan:
+            return jsonify({'error': 'Scan not found'}), 404
+        
+        # Parse scan results
+        result_data = {}
+        if scan.result:
+            try:
+                result_data = json.loads(scan.result) if isinstance(scan.result, str) else scan.result
+            except:
+                pass
+        
+        # Build business report
+        findings = result_data.get('findings', [])
+        
+        critical = sum(1 for f in findings if (f.get('severity') or '').lower() == 'critical')
+        high = sum(1 for f in findings if (f.get('severity') or '').lower() == 'high')
+        medium = sum(1 for f in findings if (f.get('severity') or '').lower() == 'medium')
+        low = sum(1 for f in findings if (f.get('severity') or '').lower() == 'low')
+        
+        score = max(0, min(100, 100 - (critical * 15) - (high * 8) - (medium * 3) - (low * 1)))
+        
+        # Try to use BusinessReportGenerator if available
+        try:
+            from report_generator import BusinessReportGenerator
+            generator = BusinessReportGenerator()
+            business_findings = generator.translate_findings(findings)
+        except:
+            # Fallback: pass findings through with business language
+            business_findings = findings
+        
+        # Build compliance status
+        compliance = {}
+        params = {}
+        if scan.parameters:
+            try:
+                params = json.loads(scan.parameters) if isinstance(scan.parameters, str) else scan.parameters
+            except:
+                pass
+        
+        categories = params.get('categories', [])
+        if 'compliance_audit' in categories:
+            compliance = {
+                'OWASP': score if score > 0 else 'pending',
+                'GDPR': min(100, score + 10) if score > 0 else 'pending',
+            }
+        
+        # Build fix roadmap
+        roadmap = []
+        for f in sorted(findings, key=lambda x: {'critical': 0, 'high': 1, 'medium': 2, 'low': 3}.get((x.get('severity') or '').lower(), 4)):
+            if len(roadmap) >= 5:
+                break
+            sev = (f.get('severity') or 'medium').lower()
+            roadmap.append({
+                'action': f.get('fix') or f.get('title') or 'Review finding',
+                'title': f.get('title', 'Finding'),
+                'priority': sev if sev in ('high', 'medium', 'low') else 'high' if sev == 'critical' else 'medium',
+                'timeline': 'This week' if sev in ('critical', 'high') else 'Next 2 weeks' if sev == 'medium' else 'Next month',
+                'effort': '1-2 hours' if sev in ('low', 'medium') else '2-4 hours',
+            })
+        
+        return jsonify({
+            'scan_id': scan_id,
+            'target': scan.target,
+            'status': scan.status,
+            'summary': {
+                'score': score,
+                'critical': critical,
+                'high': high,
+                'medium': medium,
+                'low': low,
+                'total': len(findings),
+            },
+            'findings': business_findings,
+            'compliance': compliance if compliance else None,
+            'roadmap': roadmap,
+            'generated_at': datetime.utcnow().isoformat(),
+        })
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+
+# ================================
 # SCANS ROUTES
 # ================================
 
