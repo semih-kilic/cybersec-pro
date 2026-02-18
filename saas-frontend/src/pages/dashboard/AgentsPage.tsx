@@ -94,6 +94,9 @@ export default function AgentsPage() {
   const [testResult, setTestResult] = useState<{ success: boolean; message: string } | null>(null);
   const [autoRefresh, setAutoRefresh] = useState(true);
   const [lastRefresh, setLastRefresh] = useState<Date>(new Date());
+  const [showExplainer, setShowExplainer] = useState(false);
+  const [setupStep, setSetupStep] = useState(1);
+  const [setupMethod, setSetupMethod] = useState<'docker' | 'windows' | 'kubernetes'>('docker');
   
   // Form state
   const [newAgentName, setNewAgentName] = useState('');
@@ -308,7 +311,7 @@ export default function AgentsPage() {
         <div>
           <h1 className="text-3xl font-bold text-white mb-1">Agent Management</h1>
           <p className="text-gray-400 text-sm">
-            Manage and monitor your Kali Linux agents
+            Manage and monitor your security agents
             <span className="text-gray-600 ml-2">
               Last update: {lastRefresh.toLocaleTimeString('en-GB')}
             </span>
@@ -331,7 +334,51 @@ export default function AgentsPage() {
         </div>
       </div>
 
-      {/* Stats Cards */}
+      {/* What are Agents? Explainer */}
+      <div className="bg-gradient-to-r from-blue-500/10 to-cyan-500/10 rounded-xl border border-blue-500/20 overflow-hidden">
+        <button 
+          onClick={() => setShowExplainer(!showExplainer)}
+          className="w-full p-4 flex items-center justify-between text-left"
+        >
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-lg bg-blue-500/20 flex items-center justify-center">
+              <span className="text-xl">💡</span>
+            </div>
+            <div>
+              <h3 className="text-white font-semibold">What are Agents?</h3>
+              <p className="text-gray-400 text-sm">Learn how agents extend your scanning capabilities</p>
+            </div>
+          </div>
+          <svg className={`w-5 h-5 text-gray-400 transition-transform ${showExplainer ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" /></svg>
+        </button>
+        {showExplainer && (
+          <div className="px-4 pb-5 space-y-4">
+            <p className="text-gray-300 text-sm leading-relaxed">
+              Agents are lightweight software that runs inside your network, enabling internal vulnerability scanning 
+              that cloud-based tools cannot reach. They securely connect to CyberSec Pro and execute scans on your behalf.
+            </p>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+              <div className="bg-gray-900/50 rounded-lg p-4 border border-gray-700/50">
+                <div className="text-2xl mb-2">☁️</div>
+                <h4 className="text-white font-medium text-sm">Cloud Scanning</h4>
+                <p className="text-gray-500 text-xs mt-1">No agent needed. We scan your external-facing systems from our cloud.</p>
+              </div>
+              <div className="bg-gray-900/50 rounded-lg p-4 border border-blue-500/20">
+                <div className="text-2xl mb-2">🔒</div>
+                <h4 className="text-white font-medium text-sm">Internal Agent</h4>
+                <p className="text-gray-500 text-xs mt-1">Deploy inside your network to scan internal systems and databases.</p>
+              </div>
+              <div className="bg-gray-900/50 rounded-lg p-4 border border-gray-700/50">
+                <div className="text-2xl mb-2">🔄</div>
+                <h4 className="text-white font-medium text-sm">Hybrid Mode</h4>
+                <p className="text-gray-500 text-xs mt-1">Combine cloud + agent for complete internal and external coverage.</p>
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* Stats Cards */
       <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
         <div className="bg-gray-800/50 rounded-xl p-4 border border-gray-700">
           <div className="flex items-center gap-3">
@@ -398,11 +445,81 @@ export default function AgentsPage() {
           </div>
           <h3 className="text-xl font-semibold text-white mb-2">No Agents Yet</h3>
           <p className="text-gray-400 mb-6 max-w-md mx-auto">
-            Add your first agent to connect your Kali Linux machine and start scanning
+            Deploy an agent inside your network to scan internal systems, or use cloud scanning for external targets.
           </p>
-          <button onClick={() => setShowAddModal(true)} className="px-6 py-3 bg-gradient-to-r from-kali-blue to-cyan-600 text-white rounded-lg font-medium transition shadow-lg shadow-kali-blue/20">
-            Add First Agent
-          </button>
+          
+          {/* 3-Step Quick Setup */}
+          <div className="max-w-2xl mx-auto mb-6">
+            <div className="flex items-center justify-center gap-2 mb-6">
+              {[1, 2, 3].map(s => (
+                <div key={s} className="flex items-center gap-2">
+                  <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold transition ${setupStep === s ? 'bg-blue-600 text-white' : setupStep > s ? 'bg-green-500 text-white' : 'bg-gray-700 text-gray-400'}`}>
+                    {setupStep > s ? '✓' : s}
+                  </div>
+                  <span className={`text-xs ${setupStep === s ? 'text-white' : 'text-gray-500'}`}>
+                    {s === 1 ? 'Choose Method' : s === 2 ? 'Install' : 'Verify'}
+                  </span>
+                  {s < 3 && <div className={`w-12 h-0.5 ${setupStep > s ? 'bg-green-500' : 'bg-gray-700'}`} />}
+                </div>
+              ))}
+            </div>
+            
+            {setupStep === 1 && (
+              <div className="grid grid-cols-3 gap-3 text-left">
+                <button onClick={() => { setSetupMethod('docker'); setSetupStep(2); }} className={`p-4 rounded-xl border transition hover:border-blue-500/50 ${setupMethod === 'docker' ? 'border-blue-500 bg-blue-500/10' : 'border-gray-700 bg-gray-800/50'}`}>
+                  <div className="text-3xl mb-2">🐳</div>
+                  <h4 className="text-white font-semibold text-sm">Docker</h4>
+                  <p className="text-gray-500 text-xs mt-1">Recommended. One command to start.</p>
+                  <span className="text-green-400 text-xs mt-2 inline-block">✓ Fastest setup</span>
+                </button>
+                <button onClick={() => { setSetupMethod('windows'); setSetupStep(2); }} className="p-4 rounded-xl border border-gray-700 bg-gray-800/50 transition hover:border-blue-500/50">
+                  <div className="text-3xl mb-2">🪟</div>
+                  <h4 className="text-white font-semibold text-sm">Windows</h4>
+                  <p className="text-gray-500 text-xs mt-1">Windows Service. Run as background service.</p>
+                </button>
+                <button onClick={() => { setSetupMethod('kubernetes'); setSetupStep(2); }} className="p-4 rounded-xl border border-gray-700 bg-gray-800/50 transition hover:border-blue-500/50">
+                  <div className="text-3xl mb-2">☸️</div>
+                  <h4 className="text-white font-semibold text-sm">Kubernetes</h4>
+                  <p className="text-gray-500 text-xs mt-1">Helm chart for K8s clusters.</p>
+                </button>
+              </div>
+            )}
+            
+            {setupStep === 2 && (
+              <div className="bg-gray-800/50 rounded-xl border border-gray-700 p-5 text-left">
+                <div className="flex items-center justify-between mb-4">
+                  <h4 className="text-white font-semibold">Install Agent ({setupMethod === 'docker' ? 'Docker' : setupMethod === 'windows' ? 'Windows' : 'Kubernetes'})</h4>
+                  <button onClick={() => setSetupStep(1)} className="text-xs text-gray-400 hover:text-white transition">← Change method</button>
+                </div>
+                <div className="bg-gray-950 rounded-lg p-4 font-mono text-sm text-green-400 relative border border-gray-700">
+                  <pre className="whitespace-pre-wrap">{setupMethod === 'docker' 
+                    ? 'docker run -d --name cybersec-agent \\\n  -e AGENT_TOKEN=<your-token> \\\n  -e API_URL=https://semihkilic.com/api \\\n  --restart unless-stopped \\\n  cybersecpro/agent:latest'
+                    : setupMethod === 'windows'
+                    ? '# Download installer\nInvoke-WebRequest -Uri "https://semihkilic.com/api/v1/agent-installer.exe" -OutFile agent-setup.exe\n\n# Install with token\n.\\agent-setup.exe --token <your-token>'
+                    : '# Add Helm repo\nhelm repo add cybersecpro https://charts.semihkilic.com\n\n# Install\nhelm install cybersec-agent cybersecpro/agent \\\n  --set token=<your-token> \\\n  --set apiUrl=https://semihkilic.com/api'
+                  }</pre>
+                  <button onClick={() => navigator.clipboard.writeText(setupMethod === 'docker' ? 'docker run -d ...' : 'helm install ...')} className="absolute top-2 right-2 p-2 hover:bg-gray-800 rounded transition text-gray-500 hover:text-white" title="Copy">📋</button>
+                </div>
+                <p className="text-gray-500 text-xs mt-3">Replace &lt;your-token&gt; with the token generated when you click "Add Agent" above.</p>
+                <div className="flex gap-3 mt-4">
+                  <button onClick={() => setSetupStep(3)} className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm font-medium transition">I've installed it →</button>
+                  <button onClick={() => setShowAddModal(true)} className="px-4 py-2 bg-gray-700 hover:bg-gray-600 text-white rounded-lg text-sm font-medium transition">Generate Token First</button>
+                </div>
+              </div>
+            )}
+            
+            {setupStep === 3 && (
+              <div className="bg-gray-800/50 rounded-xl border border-gray-700 p-5 text-center">
+                <div className="w-16 h-16 mx-auto rounded-full bg-blue-500/10 flex items-center justify-center mb-4">
+                  <svg className="w-8 h-8 text-blue-400 animate-spin" fill="none" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path></svg>
+                </div>
+                <h4 className="text-white font-semibold mb-2">Waiting for Agent Connection...</h4>
+                <p className="text-gray-400 text-sm mb-4">Your agent should appear here within 30 seconds after installation.</p>
+                <button onClick={() => { fetchDashboard(); }} className="px-4 py-2 bg-gray-700 hover:bg-gray-600 text-white rounded-lg text-sm font-medium transition">🔄 Refresh Now</button>
+                <button onClick={() => setSetupStep(1)} className="ml-3 px-4 py-2 text-gray-400 hover:text-white text-sm transition">Start Over</button>
+              </div>
+            )}
+          </div>
         </div>
       ) : (
         <div className="space-y-4">
@@ -490,7 +607,7 @@ export default function AgentsPage() {
                 <>
                   <div>
                     <label className="block text-gray-400 text-sm mb-2">Agent Name</label>
-                    <input type="text" value={newAgentName} onChange={(e) => setNewAgentName(e.target.value)} placeholder="E.g.: Kali-Lab-01, Office-Scanner" className="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2.5 text-white focus:border-kali-blue focus:outline-none focus:ring-1 focus:ring-kali-blue/50" />
+                    <input type="text" value={newAgentName} onChange={(e) => setNewAgentName(e.target.value)} placeholder="E.g.: Office-Scanner, DMZ-Agent-01" className="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2.5 text-white focus:border-kali-blue focus:outline-none focus:ring-1 focus:ring-kali-blue/50" />
                   </div>
                   <div>
                     <label className="block text-gray-400 text-sm mb-2">Network Mode</label>

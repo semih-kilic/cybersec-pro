@@ -70,7 +70,7 @@ function buildPlans(counts: { starter: number; professional: number; enterprise:
       period: '/month',
       description: 'For security-conscious organizations',
       features: [
-        `All ${counts.enterprise} Kali Linux tools`,
+        `All ${counts.enterprise} security tools`,
         'Unlimited domains/applications',
         'Continuous monitoring (hourly)',
         'Dedicated account manager',
@@ -93,6 +93,8 @@ export default function UpgradePage() {
   const { t: _t } = useTranslation();
   const [loading, setLoading] = useState<string | null>(null);
   const [billingCycle, setBillingCycle] = useState<'monthly' | 'yearly'>('monthly');
+  const [pentestsPerYear, setPentestsPerYear] = useState(2);
+  const [costPerPentest, setCostPerPentest] = useState(12000);
   const currentPlan = organization?.plan_type || 'starter';
 
   // Dynamic tool counts from API
@@ -294,6 +296,54 @@ export default function UpgradePage() {
             </div>
           </div>
         ))}
+      </div>
+
+      {/* ROI Calculator */}
+      <div className="bg-gradient-to-br from-emerald-500/10 to-cyan-500/10 rounded-2xl p-8 border border-emerald-500/20 mb-12">
+        <div className="grid md:grid-cols-2 gap-8 items-center">
+          <div>
+            <h2 className="text-2xl font-bold text-white mb-2">ROI Calculator</h2>
+            <p className="text-gray-400 text-sm mb-6">See how much you save compared to traditional penetration testing.</p>
+            <div className="space-y-4">
+              <div>
+                <label className="text-gray-400 text-sm mb-1 block">Pentests per year</label>
+                <input type="range" min={1} max={6} value={pentestsPerYear} onChange={(e) => setPentestsPerYear(Number(e.target.value))} className="w-full accent-emerald-500" />
+                <div className="flex justify-between text-xs text-gray-500 mt-1"><span>1</span><span className="text-emerald-400 font-bold">{pentestsPerYear}</span><span>6</span></div>
+              </div>
+              <div>
+                <label className="text-gray-400 text-sm mb-1 block">Average cost per pentest (€)</label>
+                <input type="range" min={5000} max={25000} step={1000} value={costPerPentest} onChange={(e) => setCostPerPentest(Number(e.target.value))} className="w-full accent-emerald-500" />
+                <div className="flex justify-between text-xs text-gray-500 mt-1"><span>€5K</span><span className="text-emerald-400 font-bold">€{costPerPentest.toLocaleString()}</span><span>€25K</span></div>
+              </div>
+            </div>
+          </div>
+          <div className="bg-gray-900/80 rounded-xl p-6 border border-gray-700">
+            <div className="space-y-4">
+              <div className="flex justify-between items-center">
+                <span className="text-gray-400">Traditional pentests</span>
+                <span className="text-red-400 font-bold text-lg">€{(pentestsPerYear * costPerPentest).toLocaleString()}/year</span>
+              </div>
+              <div className="flex justify-between items-center">
+                <span className="text-gray-400">CyberSec Pro (Professional)</span>
+                <span className="text-emerald-400 font-bold text-lg">€3,588/year</span>
+              </div>
+              <div className="border-t border-gray-700 pt-4">
+                <div className="flex justify-between items-center">
+                  <span className="text-white font-semibold">Your savings</span>
+                  <div className="text-right">
+                    <span className="text-emerald-400 font-bold text-2xl">€{Math.max(0, pentestsPerYear * costPerPentest - 3588).toLocaleString()}</span>
+                    <span className="text-emerald-400 text-sm ml-1">/ year</span>
+                  </div>
+                </div>
+                <div className="mt-2 w-full bg-gray-800 rounded-full h-3">
+                  <div className="h-3 rounded-full bg-gradient-to-r from-emerald-500 to-cyan-500 transition-all" style={{ width: `${Math.min(100, Math.round((1 - 3588 / (pentestsPerYear * costPerPentest)) * 100))}%` }} />
+                </div>
+                <p className="text-emerald-400 font-medium text-sm mt-2">{Math.round((1 - 3588 / (pentestsPerYear * costPerPentest)) * 100)}% cost reduction</p>
+              </div>
+              <p className="text-gray-500 text-xs">Plus: continuous monitoring, automated scans, real-time alerts — not just point-in-time testing.</p>
+            </div>
+          </div>
+        </div>
       </div>
 
       {/* FAQ Section */}

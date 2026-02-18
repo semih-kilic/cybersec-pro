@@ -823,7 +823,6 @@ export function ScanExecutionPage() {
             )}
           </div>
         </div>
-        </div>
       </div>
     </div>
   );
