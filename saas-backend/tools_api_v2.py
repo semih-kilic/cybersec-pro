@@ -21,6 +21,13 @@ import time
 # Import tool registry v3
 from tool_registry_v3 import ToolRegistry, get_registry, PLAN_HIERARCHY
 
+# Import business language layer
+try:
+    from business_language import get_translator, BUSINESS_CATEGORIES, OLD_TO_NEW_CATEGORY
+    _BL_AVAILABLE = True
+except ImportError:
+    _BL_AVAILABLE = False
+
 # Create Blueprint
 tools_api_v2 = Blueprint('tools_api_v2', __name__)
 
@@ -29,81 +36,64 @@ active_scans = {}
 scan_results = {}
 
 # ================================
-# CATEGORY MAPPINGS
+# BUSINESS CATEGORY MAPPINGS (6 categories - user-facing)
 # ================================
 CATEGORY_INFO = {
-    'information_gathering': {
-        'name': 'Information Gathering',
-        'icon': '🔍',
-        'description': 'Tools for reconnaissance and information collection',
+    'web_application_security': {
+        'name': 'Web Application Security',
+        'icon': 'shield',
+        'description': 'Protect web applications with automated vulnerability detection, penetration testing, and security hardening tools',
         'color': 'blue'
     },
-    'vulnerability_analysis': {
-        'name': 'Vulnerability Analysis',
-        'icon': '🔓',
-        'description': 'Tools for finding security vulnerabilities',
-        'color': 'red'
+    'data_protection': {
+        'name': 'Data Protection & Privacy',
+        'icon': 'lock',
+        'description': 'Encrypt, monitor, and safeguard sensitive data across your infrastructure with comprehensive protection tools',
+        'color': 'emerald'
     },
-    'web_application': {
-        'name': 'Web Application Analysis',
-        'icon': '🌐',
-        'description': 'Tools for web application security testing',
+    'infrastructure_security': {
+        'name': 'Infrastructure Security',
+        'icon': 'server',
+        'description': 'Secure networks, servers, and cloud infrastructure with advanced monitoring and defense capabilities',
         'color': 'purple'
     },
-    'password_attacks': {
-        'name': 'Password Attacks',
-        'icon': '🔑',
-        'description': 'Tools for password cracking and analysis',
+    'api_mobile_security': {
+        'name': 'API & Mobile Security',
+        'icon': 'smartphone',
+        'description': 'Test and secure APIs, mobile applications, and IoT devices against modern attack vectors',
         'color': 'orange'
     },
-    'wireless_attacks': {
-        'name': 'Wireless Attacks',
-        'icon': '📡',
-        'description': 'Tools for wireless network security testing',
+    'compliance': {
+        'name': 'Compliance & Audit',
+        'icon': 'clipboard',
+        'description': 'Automated compliance checking, security auditing, and regulatory framework assessment tools',
         'color': 'cyan'
     },
-    'sniffing_spoofing': {
-        'name': 'Sniffing & Spoofing',
-        'icon': '👃',
-        'description': 'Tools for network traffic analysis and manipulation',
-        'color': 'green'
-    },
-    'exploitation': {
-        'name': 'Exploitation Tools',
-        'icon': '💥',
-        'description': 'Tools for exploiting vulnerabilities',
+    'vulnerability_database': {
+        'name': 'Vulnerability Intelligence',
+        'icon': 'database',
+        'description': 'Comprehensive vulnerability database, threat intelligence feeds, and exploit research tools',
         'color': 'red'
-    },
-    'post_exploitation': {
-        'name': 'Post Exploitation',
-        'icon': '🎯',
-        'description': 'Tools for post-exploitation activities',
-        'color': 'yellow'
-    },
-    'forensics': {
-        'name': 'Forensics',
-        'icon': '🔬',
-        'description': 'Tools for digital forensics and analysis',
-        'color': 'indigo'
-    },
-    'reverse_engineering': {
-        'name': 'Reverse Engineering',
-        'icon': '⚙️',
-        'description': 'Tools for reverse engineering software',
-        'color': 'gray'
-    },
-    'reporting': {
-        'name': 'Reporting Tools',
-        'icon': '📊',
-        'description': 'Tools for generating reports',
-        'color': 'teal'
-    },
-    'networking': {
-        'name': 'Networking',
-        'icon': '🌍',
-        'description': 'General networking tools',
-        'color': 'blue'
     }
+}
+
+# Old Kali category -> New business category mapping
+_OLD_TO_NEW = {
+    'information_gathering': 'infrastructure_security',
+    'vulnerability_analysis': 'vulnerability_database',
+    'web_application': 'web_application_security',
+    'password_attacks': 'data_protection',
+    'wireless_attacks': 'infrastructure_security',
+    'sniffing_spoofing': 'data_protection',
+    'exploitation': 'vulnerability_database',
+    'post_exploitation': 'compliance',
+    'forensics': 'compliance',
+    'reverse_engineering': 'api_mobile_security',
+    'reporting': 'compliance',
+    'networking': 'infrastructure_security',
+    'social_engineering': 'web_application_security',
+    'hardware_hacking': 'api_mobile_security',
+    'maintaining_access': 'infrastructure_security',
 }
 
 # ================================
@@ -196,7 +186,7 @@ def sanitize_command_value(value: str) -> str:
 
 @tools_api_v2.route('/api/v2/tools', methods=['GET'])
 def get_tools_list():
-    """Get list of all available tools"""
+    """Get list of all available tools with business language names"""
     try:
         plan = request.args.get('plan', '')
         category = request.args.get('category')
@@ -204,29 +194,46 @@ def get_tools_list():
         
         registry = get_registry()
         
+        # Get business translator if available
+        translator = get_translator() if _BL_AVAILABLE else None
+        
         # Always return ALL installed tools - frontend handles access control
-        # This allows users to see what tools are available in higher plans
         tools = registry.get_installed_tools()
         
-        # Format tools for response
+        # Format tools for response - apply business language
         tool_list = []
         for tool_id, tool in tools.items():
-            # Filter by category
-            if category and tool.get('category') != category:
+            # Map old category to business category
+            old_cat = tool.get('category', 'information_gathering')
+            business_cat = _OLD_TO_NEW.get(old_cat, 'infrastructure_security')
+            
+            # Filter by business category
+            if category and business_cat != category:
                 continue
             
-            # Search filter
+            # Get business name (hide technical name)
+            if translator:
+                tool_info = translator.get_tool_info(tool_id)
+                biz_name = tool_info.get('business_name', tool.get('name', tool_id))
+                biz_desc = tool_info.get('business_description', tool.get('description', ''))
+                biz_subcat = tool_info.get('subcategory', tool.get('subcategory', ''))
+            else:
+                biz_name = tool.get('name', tool_id)
+                biz_desc = tool.get('description', '')
+                biz_subcat = tool.get('subcategory', '')
+            
+            # Search filter (search in business name + description)
             if search:
-                searchable = f"{tool_id} {tool.get('name', '')} {tool.get('description', '')} {tool.get('category', '')}".lower()
+                searchable = f"{biz_name} {biz_desc} {business_cat} {biz_subcat}".lower()
                 if search not in searchable:
                     continue
             
             tool_list.append({
                 'id': tool_id,
-                'name': tool.get('name'),
-                'category': tool.get('category'),
-                'subcategory': tool.get('subcategory'),
-                'description': tool.get('description'),
+                'name': biz_name,
+                'category': business_cat,
+                'subcategory': biz_subcat,
+                'description': biz_desc,
                 'plan_required': tool.get('plan_required'),
                 'installed': tool.get('installed', False),
                 'dangerous': tool.get('dangerous', False),
@@ -234,22 +241,28 @@ def get_tools_list():
                 'gui_only': tool.get('gui_only', False),
             })
         
-        # Group by category
+        # Group by business category
         grouped = {}
         for tool in tool_list:
             cat = tool['category']
             if cat not in grouped:
+                cat_info = CATEGORY_INFO.get(cat, {'name': cat, 'icon': 'shield', 'description': '', 'color': 'gray'})
                 grouped[cat] = {
-                    'info': CATEGORY_INFO.get(cat, {'name': cat, 'icon': '🔧', 'description': '', 'color': 'gray'}),
+                    'info': cat_info,
                     'tools': []
                 }
             grouped[cat]['tools'].append(tool)
+        
+        # Sort categories in consistent order
+        ordered_cats = ['web_application_security', 'data_protection', 'infrastructure_security', 
+                       'api_mobile_security', 'compliance', 'vulnerability_database']
+        category_list = [c for c in ordered_cats if c in grouped]
         
         return jsonify({
             'success': True,
             'total_tools': len(tool_list),
             'categories': grouped,
-            'category_list': list(grouped.keys())
+            'category_list': category_list
         })
         
     except Exception as e:
@@ -258,15 +271,25 @@ def get_tools_list():
 
 @tools_api_v2.route('/api/v2/tools/<tool_id>', methods=['GET'])
 def get_tool_detail(tool_id: str):
-    """Get detailed information about a specific tool"""
+    """Get detailed information about a specific tool (business language)"""
     try:
         tool = get_tool_for_api(tool_id)
         
         if not tool:
             return jsonify({'success': False, 'error': 'Tool not found'}), 404
         
-        # Add category info
-        tool['category_info'] = CATEGORY_INFO.get(tool.get('category'), {})
+        # Apply business language
+        old_cat = tool.get('category', 'information_gathering')
+        business_cat = _OLD_TO_NEW.get(old_cat, 'infrastructure_security')
+        tool['category'] = business_cat
+        tool['category_info'] = CATEGORY_INFO.get(business_cat, {})
+        
+        # Replace name with business name
+        if _BL_AVAILABLE:
+            translator = get_translator()
+            tool_info = translator.get_tool_info(tool_id)
+            tool['name'] = tool_info.get('business_name', tool.get('name', tool_id))
+            tool['description'] = tool_info.get('business_description', tool.get('description', ''))
         
         return jsonify({
             'success': True,
@@ -279,10 +302,16 @@ def get_tool_detail(tool_id: str):
 
 @tools_api_v2.route('/api/v2/tools/statistics', methods=['GET'])
 def get_tools_statistics():
-    """Get tool statistics"""
+    """Get tool statistics with business categories"""
     try:
         registry = get_registry()
         stats = registry.get_statistics()
+        
+        # Remap by_category to business categories
+        biz_by_category = {}
+        for old_cat, count in stats.get('by_category', {}).items():
+            new_cat = _OLD_TO_NEW.get(old_cat, 'infrastructure_security')
+            biz_by_category[new_cat] = biz_by_category.get(new_cat, 0) + count
         
         return jsonify({
             'success': True,
@@ -290,17 +319,19 @@ def get_tools_statistics():
                 'total_defined': stats['total_defined'],
                 'total_installed': stats['total_installed'],
                 'by_plan': stats['by_plan'],
-                'by_category': stats['by_category'],
+                'by_category': biz_by_category,
                 'dangerous_tools': stats['dangerous_tools'],
                 'gui_tools': stats['gui_tools'],
                 'requires_root': stats['requires_root'],
                 'categories': [
                     {
                         'id': cat,
-                        **CATEGORY_INFO.get(cat, {'name': cat, 'icon': '🔧', 'description': '', 'color': 'gray'}),
-                        'tool_count': count
+                        **CATEGORY_INFO.get(cat, {'name': cat, 'icon': 'shield', 'description': '', 'color': 'gray'}),
+                        'tool_count': biz_by_category.get(cat, 0)
                     }
-                    for cat, count in stats['by_category'].items()
+                    for cat in ['web_application_security', 'data_protection', 'infrastructure_security', 
+                               'api_mobile_security', 'compliance', 'vulnerability_database']
+                    if biz_by_category.get(cat, 0) > 0
                 ]
             }
         })
