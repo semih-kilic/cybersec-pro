@@ -33,7 +33,7 @@ function getSavedMode(): ColorMode {
     const saved = localStorage.getItem(STORAGE_KEY);
     if (saved === 'dark' || saved === 'light' || saved === 'system') return saved;
   } catch { /* noop */ }
-  return 'dark'; // Default to dark (cyberpunk theme)
+  return 'light'; // Default to light (professional SaaS appearance)
 }
 
 export function ColorModeProvider({ children }: { children: React.ReactNode }) {

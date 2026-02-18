@@ -333,7 +333,7 @@ PLAN_CONFIG = {
         'daily_scan_limit': 0,  # 0 = unlimited
         'max_projects': 0,  # 0 = unlimited
         'max_team_members': 0,  # 0 = unlimited
-        'max_agents': 0,  # 0 = unlimited (enterprise)
+        'max_agents': -1,  # -1 = unlimited (enterprise)
         'multi_tool_scan': 10,
         'features': {
             'basic_reports': True,
@@ -2148,7 +2148,7 @@ def get_plan_info():
                 'daily_scan_limit': plan_cfg['daily_scan_limit'],
                 'max_projects': plan_cfg['max_projects'],
                 'max_team_members': plan_cfg['max_team_members'],
-                'max_agents': plan_cfg['max_agents'],
+                'max_agents': plan_cfg['max_agents'] if plan_cfg['max_agents'] != -1 else 'unlimited',
                 'multi_tool_scan': plan_cfg['multi_tool_scan'],
                 'features': plan_cfg['features'],
             },
@@ -2184,7 +2184,7 @@ def get_plan_features():
                 'tools': plan_cfg['tool_limit'],
                 'projects': plan_cfg['max_projects'],
                 'team_members': plan_cfg['max_team_members'],
-                'agents': plan_cfg['max_agents'],
+                'agents': plan_cfg['max_agents'] if plan_cfg['max_agents'] != -1 else 'unlimited',
                 'multi_tool_scan': plan_cfg['multi_tool_scan'],
             }
         })
@@ -2208,7 +2208,7 @@ def get_all_plans():
                 'daily_scan_limit': cfg['daily_scan_limit'] if cfg['daily_scan_limit'] > 0 else 'unlimited',
                 'max_projects': cfg['max_projects'] if cfg['max_projects'] > 0 else 'unlimited',
                 'max_team_members': cfg['max_team_members'] if cfg['max_team_members'] > 0 else 'unlimited',
-                'max_agents': cfg['max_agents'] if plan_name != 'enterprise' else 'unlimited',
+                'max_agents': cfg['max_agents'] if cfg['max_agents'] != -1 else 'unlimited',
                 'multi_tool_scan': cfg['multi_tool_scan'],
                 'features': cfg['features'],
             }
@@ -2758,6 +2758,7 @@ def create_checkout_session_public():
                     success_url=domain + '/dashboard/settings?tab=billing&session_id={CHECKOUT_SESSION_ID}',
                     cancel_url=domain + '/#pricing',
                     allow_promotion_codes=True,
+                    customer_email=data.get('email'),  # For webhook org resolution
                     metadata={
                         'plan': plan,
                         'billing': billing,
@@ -2871,26 +2872,164 @@ def stripe_webhook():
             event = request.get_json()
         
         event_type = event.get('type') if isinstance(event, dict) else event['type']
+        data_object = event['data']['object'] if isinstance(event, dict) else event.data.object
         
-        if event_type == 'checkout.session.completed':
-            session = event['data']['object'] if isinstance(event, dict) else event.data.object
-            metadata = session.get('metadata', {})
+        def _resolve_org(session_or_sub):
+            """Resolve Organization from metadata, customer_email, or stripe_customer_id"""
+            metadata = session_or_sub.get('metadata', {}) if isinstance(session_or_sub, dict) else getattr(session_or_sub, 'metadata', {})
             
-            org_id = metadata.get('organization_id')
-            plan = metadata.get('plan')
-            
-            if org_id and plan:
+            # 1. Try metadata organization_id (authenticated checkout)
+            org_id = metadata.get('organization_id') if metadata else None
+            if org_id:
                 org = Organization.query.get(org_id)
                 if org:
-                    org.plan_type = plan
-                    db.session.commit()
-                    print(f"✅ Upgraded org {org_id} to {plan}")
+                    return org
+            
+            # 2. Try stripe_customer_id
+            customer_id = session_or_sub.get('customer') if isinstance(session_or_sub, dict) else getattr(session_or_sub, 'customer', None)
+            if customer_id:
+                org = Organization.query.filter_by(stripe_customer_id=customer_id).first()
+                if org:
+                    return org
+            
+            # 3. Try customer_email (public checkout fallback)
+            email = session_or_sub.get('customer_email') if isinstance(session_or_sub, dict) else getattr(session_or_sub, 'customer_email', None)
+            if not email:
+                customer_details = session_or_sub.get('customer_details', {}) if isinstance(session_or_sub, dict) else getattr(session_or_sub, 'customer_details', {})
+                email = customer_details.get('email') if customer_details else None
+            if email:
+                user = User.query.filter_by(email=email).first()
+                if user and user.organization:
+                    return user.organization
+            
+            return None
+        
+        def _get_plan_from_metadata(obj):
+            """Extract plan from metadata"""
+            metadata = obj.get('metadata', {}) if isinstance(obj, dict) else getattr(obj, 'metadata', {})
+            return metadata.get('plan') if metadata else None
+        
+        # ── checkout.session.completed ──────────────────────────
+        if event_type == 'checkout.session.completed':
+            org = _resolve_org(data_object)
+            plan = _get_plan_from_metadata(data_object)
+            
+            if org and plan:
+                org.plan_type = plan
+                # Store subscription ID for future webhook events
+                sub_id = data_object.get('subscription') if isinstance(data_object, dict) else getattr(data_object, 'subscription', None)
+                if sub_id:
+                    org.stripe_subscription_id = sub_id
+                customer_id = data_object.get('customer') if isinstance(data_object, dict) else getattr(data_object, 'customer', None)
+                if customer_id and not org.stripe_customer_id:
+                    org.stripe_customer_id = customer_id
+                db.session.commit()
+                print(f"✅ Upgraded org {org.id} ({org.name}) to {plan}")
+            else:
+                print(f"⚠️ checkout.session.completed: could not resolve org or plan. org={org}, plan={plan}")
+        
+        # ── customer.subscription.updated ───────────────────────
+        elif event_type == 'customer.subscription.updated':
+            org = _resolve_org(data_object)
+            if org:
+                status = data_object.get('status') if isinstance(data_object, dict) else getattr(data_object, 'status', None)
+                if status == 'active':
+                    plan = _get_plan_from_metadata(data_object)
+                    if plan:
+                        org.plan_type = plan
+                        db.session.commit()
+                        print(f"✅ Subscription updated: org {org.id} → {plan}")
+                elif status in ('past_due', 'unpaid'):
+                    print(f"⚠️ Subscription {status} for org {org.id}")
+        
+        # ── customer.subscription.deleted ───────────────────────
+        elif event_type == 'customer.subscription.deleted':
+            org = _resolve_org(data_object)
+            if org:
+                org.plan_type = 'trial'
+                org.stripe_subscription_id = None
+                db.session.commit()
+                print(f"⚠️ Subscription cancelled: org {org.id} → trial")
+        
+        # ── invoice.payment_failed ──────────────────────────────
+        elif event_type == 'invoice.payment_failed':
+            customer_id = data_object.get('customer') if isinstance(data_object, dict) else getattr(data_object, 'customer', None)
+            if customer_id:
+                org = Organization.query.filter_by(stripe_customer_id=customer_id).first()
+                if org:
+                    print(f"⚠️ Payment failed for org {org.id} ({org.name})")
         
         return jsonify({'received': True})
         
     except Exception as e:
         print(f"Webhook error: {e}")
         return jsonify({'error': str(e)}), 400
+
+
+@app.route('/api/v1/billing/sync-plan', methods=['POST'])
+@require_organization
+def sync_plan_from_stripe():
+    """Manual sync: check Stripe subscription and update plan_type accordingly"""
+    import os
+    try:
+        user_id = get_jwt_identity()
+        user = User.query.get(user_id)
+        org = user.organization
+        
+        stripe_key = os.environ.get('STRIPE_SECRET_KEY')
+        if not stripe_key or stripe_key == 'sk_test_...':
+            return jsonify({'error': 'Stripe not configured'}), 503
+        
+        import stripe
+        stripe.api_key = stripe_key
+        
+        # Price ID → plan name reverse map
+        PRICE_TO_PLAN = {
+            os.environ.get('STRIPE_STARTER_PRICE_ID', 'price_1T1eh20ed3IDKXcnWZVJA9ur'): 'starter',
+            os.environ.get('STRIPE_PROFESSIONAL_PRICE_ID', 'price_1T1ei40ed3IDKXcnZDCi88tv'): 'professional',
+            os.environ.get('STRIPE_ENTERPRISE_PRICE_ID', 'price_1T1eir0ed3IDKXcn3ILBR48o'): 'enterprise',
+        }
+        
+        old_plan = org.plan_type
+        
+        # Try subscription ID first
+        if org.stripe_subscription_id:
+            try:
+                sub = stripe.Subscription.retrieve(org.stripe_subscription_id)
+                if sub.status == 'active':
+                    price_id = sub['items']['data'][0]['price']['id']
+                    plan = PRICE_TO_PLAN.get(price_id)
+                    if plan:
+                        org.plan_type = plan
+                        db.session.commit()
+                        return jsonify({'synced': True, 'old_plan': old_plan, 'new_plan': plan})
+                elif sub.status in ('canceled', 'incomplete_expired'):
+                    org.plan_type = 'trial'
+                    org.stripe_subscription_id = None
+                    db.session.commit()
+                    return jsonify({'synced': True, 'old_plan': old_plan, 'new_plan': 'trial', 'reason': 'subscription_cancelled'})
+            except Exception as e:
+                print(f"Subscription lookup failed: {e}")
+        
+        # Try customer ID
+        if org.stripe_customer_id:
+            try:
+                subs = stripe.Subscription.list(customer=org.stripe_customer_id, status='active', limit=1)
+                if subs.data:
+                    sub = subs.data[0]
+                    org.stripe_subscription_id = sub.id
+                    price_id = sub['items']['data'][0]['price']['id']
+                    plan = PRICE_TO_PLAN.get(price_id)
+                    if plan:
+                        org.plan_type = plan
+                        db.session.commit()
+                        return jsonify({'synced': True, 'old_plan': old_plan, 'new_plan': plan})
+            except Exception as e:
+                print(f"Customer subscription lookup failed: {e}")
+        
+        return jsonify({'synced': False, 'plan': org.plan_type, 'message': 'No active subscription found'})
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
 
 # ================================
 # ADMIN ROUTES (Legacy - moved to ADMIN API section)
@@ -3348,24 +3487,115 @@ def get_tool_config(tool_id):
 # SCAN ENGINE V3 - WORLD-CLASS SCANNING
 # ================================
 
+# Business name → tool slug alias mapping
+# Maps user-friendly business names to actual tool identifiers
+TOOL_BUSINESS_ALIASES = {
+    # Network & Infrastructure
+    'network scanner': 'nmap',
+    'network discovery': 'nmap',
+    'port scanner': 'nmap',
+    'network audit': 'nmap',
+    'dns lookup': 'dnsrecon',
+    'dns scanner': 'dnsrecon',
+    'dns audit': 'dnsrecon',
+    'subdomain finder': 'sublist3r',
+    'subdomain scanner': 'sublist3r',
+    'ssl checker': 'sslyze',
+    'ssl scanner': 'sslyze',
+    'ssl audit': 'testssl',
+    'certificate scanner': 'sslyze',
+    'firewall scanner': 'hping3',
+    'traceroute': 'traceroute',
+    'whois lookup': 'whois',
+    'network sniffer': 'tcpdump',
+    'packet capture': 'tcpdump',
+    
+    # Web Application Security
+    'website scanner': 'nikto',
+    'web scanner': 'nikto',
+    'web vulnerability scanner': 'nikto',
+    'web app scanner': 'zap',
+    'web application scanner': 'zap',
+    'owasp scanner': 'zap',
+    'xss scanner': 'xsstrike',
+    'sql injection': 'sqlmap',
+    'sqli scanner': 'sqlmap',
+    'database scanner': 'sqlmap',
+    'directory scanner': 'gobuster',
+    'directory finder': 'dirb',
+    'cms scanner': 'wpscan',
+    'wordpress scanner': 'wpscan',
+    'api scanner': 'arjun',
+    'header scanner': 'nikto',
+    
+    # Vulnerability Assessment
+    'vulnerability scanner': 'openvas',
+    'vuln scanner': 'openvas',
+    'security audit': 'lynis',
+    'system audit': 'lynis',
+    'linux audit': 'lynis',
+    'compliance scanner': 'lynis',
+    'cve scanner': 'searchsploit',
+    'exploit finder': 'searchsploit',
+    
+    # Password & Authentication
+    'password tester': 'hydra',
+    'password cracker': 'john',
+    'brute force': 'hydra',
+    'login tester': 'hydra',
+    'hash cracker': 'hashcat',
+    'wifi scanner': 'aircrack-ng',
+    'wireless scanner': 'aircrack-ng',
+    
+    # Information Gathering
+    'email finder': 'theharvester',
+    'osint scanner': 'theharvester',
+    'information gathering': 'theharvester',
+    'recon scanner': 'recon-ng',
+    'metadata scanner': 'exiftool',
+    'google dorking': 'metagoofil',
+    
+    # Container & Cloud
+    'docker scanner': 'trivy',
+    'container scanner': 'trivy',
+    'image scanner': 'trivy',
+    'kubernetes scanner': 'kube-bench',
+    'cloud scanner': 'prowler',
+    'aws scanner': 'prowler',
+}
+
 def get_tool_by_name_or_id(tool_identifier):
     """
-    Lookup tool in database by name OR UUID
+    Lookup tool in database by name, UUID, or business alias.
+    Resolution order: UUID → exact name → business alias → partial match
     Returns tuple: (tool_db_object, tool_name)
     """
-    # First try exact UUID match
+    if not tool_identifier:
+        return None, tool_identifier
+    
+    # 1. Try exact UUID match
     tool = Tool.query.get(tool_identifier)
     if tool:
         return tool, tool.name
     
-    # Then try case-insensitive name match
+    # 2. Try case-insensitive exact name match
     tool = Tool.query.filter(
         db.func.lower(Tool.name) == tool_identifier.lower()
     ).first()
     if tool:
         return tool, tool.name
     
-    # Try partial match (e.g., 'nmap' matches 'Nmap')
+    # 3. Try business alias mapping
+    alias_key = tool_identifier.lower().strip()
+    slug = TOOL_BUSINESS_ALIASES.get(alias_key)
+    if slug:
+        tool = Tool.query.filter(
+            db.func.lower(Tool.name) == slug.lower()
+        ).first()
+        if tool:
+            return tool, tool.name
+    
+    # 4. Try partial match (e.g., 'nmap' matches 'Nmap')
     tool = Tool.query.filter(
         Tool.name.ilike(f'%{tool_identifier}%')
     ).first()
@@ -3748,7 +3978,7 @@ def get_usage_stats():
             'limits': {
                 'scans_per_day': plan_cfg['daily_scan_limit'] if plan_cfg['daily_scan_limit'] > 0 else -1,
                 'tools': accessible_tools,
-                'max_agents': plan_cfg['max_agents'],
+                'max_agents': plan_cfg['max_agents'] if plan_cfg['max_agents'] != -1 else 'unlimited',
                 'multi_tool_scan': plan_cfg['multi_tool_scan'],
             },
             'plan': org.plan_type,
@@ -5050,8 +5280,8 @@ def create_agent():
         plan_config = get_plan_config(org.plan_type)
         max_agents = plan_config.get('max_agents', 1)
         
-        if current_agents >= max_agents:
-            return jsonify({'error': f'Agent limit reached ({current_agents}/{max_agents})'}), 402
+        if max_agents != -1 and current_agents >= max_agents:
+            return jsonify({'error': f'Agent limit reached ({current_agents}/{max_agents}). Upgrade your plan for more agents.'}), 402
         
         data = request.get_json()
         

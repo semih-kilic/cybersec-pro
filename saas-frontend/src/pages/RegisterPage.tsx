@@ -107,10 +107,10 @@ export function RegisterPage() {
           {/* Trust Points */}
           <div className="space-y-5">
             {[
-              { icon: '\u2705', text: '682 security tests, continuously updated' },
-              { icon: '\u2705', text: 'Business-language reports, no jargon' },
-              { icon: '\u2705', text: 'GDPR & OWASP compliance built-in' },
-              { icon: '\u2705', text: '14-day free trial, no credit card' },
+              { icon: '✅', text: '682 security tests, continuously updated' },
+              { icon: '✅', text: 'Business-language reports, no jargon' },
+              { icon: '✅', text: 'GDPR & OWASP compliance built-in' },
+              { icon: '✅', text: '14-day free trial, no credit card' },
             ].map((item, i) => (
               <div key={i} className="flex items-center gap-3">
                 <span className="text-lg">{item.icon}</span>
@@ -144,8 +144,8 @@ export function RegisterPage() {
           
           {/* Made in Finland badge */}
           <div className="mt-6 flex items-center gap-2 text-gray-500 text-sm">
-            <span>\ud83c\uddeb\ud83c\uddee</span>
-            <span>Made in Finland \u2022 EU Data Residency \u2022 GDPR Compliant</span>
+            <span>🇫🇮</span>
+            <span>Made in Finland • EU Data Residency • GDPR Compliant</span>
           </div>
         </div>
       </div>
@@ -284,7 +284,7 @@ export function RegisterPage() {
                 value={formData.confirmPassword}
                 onChange={handleChange}
                 className="w-full px-4 py-2.5 bg-gray-900 border border-gray-800 rounded-lg text-white placeholder-gray-600 focus:outline-none focus:border-blue-500 transition text-sm"
-                placeholder="\u2022\u2022\u2022\u2022\u2022\u2022\u2022\u2022"
+                placeholder="••••••••"
               />
             </div>
 
@@ -310,7 +310,7 @@ export function RegisterPage() {
               disabled={loading || !agreedTerms}
               className="w-full py-3 bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-500 hover:to-cyan-500 text-white font-semibold rounded-lg transition disabled:opacity-50 disabled:cursor-not-allowed text-sm"
             >
-              {loading ? 'Creating account...' : 'Start Free Trial \u2192'}
+              {loading ? 'Creating account...' : 'Start Free Trial →'}
             </button>
           </form>
 
@@ -324,7 +324,7 @@ export function RegisterPage() {
           {/* Back to Home (mobile) */}
           <div className="mt-4 text-center lg:hidden">
             <Link to="/" className="text-gray-600 hover:text-gray-400 text-xs">
-              \u2190 Back to home
+              ← Back to home
             </Link>
           </div>
         </div>
