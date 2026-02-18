@@ -3,7 +3,7 @@ import { Header } from '../../components/layout/Header';
 import { useAuth } from '../../hooks/useAuth';
 
 interface Agent {
-  id: number;
+  id: number | string;
   name: string;
   hostname: string;
   ip_address: string;
@@ -12,6 +12,7 @@ interface Agent {
   ssh_host: string;
   ssh_port: number;
   ssh_username: string;
+  connection_type?: string;
 }
 
 interface HistoryLine {
@@ -72,10 +73,12 @@ export function TerminalPage() {
       const data = await response.json();
       if (data.agents) {
         setAgents(data.agents);
-        // Auto-select first online agent
-        const onlineAgent = data.agents.find((a: Agent) => a.status === 'online');
-        if (onlineAgent) {
-          setSelectedAgent(onlineAgent);
+        // Auto-select first online agent (local server is always first)
+        if (!selectedAgent) {
+          const onlineAgent = data.agents.find((a: Agent) => a.status === 'online');
+          if (onlineAgent) {
+            setSelectedAgent(onlineAgent);
+          }
         }
       }
     } catch (err) {
@@ -364,7 +367,7 @@ export function TerminalPage() {
               <select
                 value={selectedAgent?.id || ''}
                 onChange={(e) => {
-                  const agent = agents.find(a => a.id === Number(e.target.value));
+                  const agent = agents.find(a => String(a.id) === e.target.value);
                   setSelectedAgent(agent || null);
                   setIsConnected(false);
                 }}
@@ -375,8 +378,8 @@ export function TerminalPage() {
                   <option value="" disabled>No agents configured</option>
                 )}
                 {agents.map(agent => (
-                  <option key={agent.id} value={agent.id}>
-                    {agent.status === 'online' ? '🟢' : '🔴'} {agent.name} ({agent.ip_address})
+                  <option key={String(agent.id)} value={String(agent.id)}>
+                    {agent.status === 'online' ? '🟢' : '🔴'} {agent.name} {agent.ip_address ? `(${agent.ip_address})` : ''} {agent.connection_type === 'local' ? '[Local]' : '[SSH]'}
                   </option>
                 ))}
               </select>

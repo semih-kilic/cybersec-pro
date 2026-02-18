@@ -215,6 +215,7 @@ export function ScanExecutionPage() {
           const finalStatus = scanResult.status === 'timeout' ? 'failed' : scanResult.status;
           setStatus(finalStatus as 'completed' | 'failed');
           setProgress(100);
+          setScanStartTime(null);
         }
       );
 
@@ -579,6 +580,9 @@ export function ScanExecutionPage() {
                   <>
                     <div className="w-3 h-3 rounded-full bg-yellow-500 animate-pulse" />
                     <span className="text-yellow-500">Scanning... {progress}%</span>
+                    <span className="text-gray-500 text-xs ml-auto">
+                      {Math.floor(elapsedSeconds / 60)}:{String(elapsedSeconds % 60).padStart(2, '0')}
+                    </span>
                   </>
                 )}
                 {status === 'completed' && (
@@ -614,6 +618,12 @@ export function ScanExecutionPage() {
                     <p className="text-xs text-green-400 mt-1 flex items-center gap-1">
                       <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
                       Real-time updates active
+                    </p>
+                  )}
+                  {elapsedSeconds > 15 && (
+                    <p className="text-xs text-blue-400 mt-2 flex items-center gap-1">
+                      <svg className="w-3 h-3 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                      Scan may take several minutes depending on target and parameters. Output will appear when data is available.
                     </p>
                   )}
                 </div>

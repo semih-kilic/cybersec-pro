@@ -2110,6 +2110,266 @@ def get_tools_stats():
 
 
 # ================================
+# TOOL HEALTH CHECK / VERIFICATION
+# ================================
+
+# In-memory cache for tool health results
+_tool_health_cache = {}
+_tool_health_cache_time = None
+
+def _check_tool_installed(tool_name):
+    """Check if a tool binary is installed and get version info"""
+    import shutil
+    
+    # Map tool names to actual binary names
+    TOOL_BINARY_MAP = {
+        'nmap': 'nmap',
+        'nikto': 'nikto',
+        'gobuster': 'gobuster',
+        'sqlmap': 'sqlmap',
+        'wpscan': 'wpscan',
+        'masscan': 'masscan',
+        'hydra': 'hydra',
+        'john': 'john',
+        'hashcat': 'hashcat',
+        'dirb': 'dirb',
+        'whois': 'whois',
+        'dig': 'dig',
+        'host': 'host',
+        'nslookup': 'nslookup',
+        'sslscan': 'sslscan',
+        'whatweb': 'whatweb',
+        'dnsrecon': 'dnsrecon',
+        'theharvester': 'theHarvester',
+        'subfinder': 'subfinder',
+        'amass': 'amass',
+        'fierce': 'fierce',
+        'enum4linux': 'enum4linux',
+        'smbclient': 'smbclient',
+        'netcat': 'nc',
+        'tcpdump': 'tcpdump',
+        'traceroute': 'traceroute',
+        'ping': 'ping',
+        'arp-scan': 'arp-scan',
+        'arping': 'arping',
+        'nbtscan': 'nbtscan',
+        'snmpwalk': 'snmpwalk',
+        'onesixtyone': 'onesixtyone',
+        'smtp-user-enum': 'smtp-user-enum',
+        'responder': 'responder',
+        'crackmapexec': 'crackmapexec',
+        'evil-winrm': 'evil-winrm',
+        'impacket': 'impacket-smbclient',
+        'wfuzz': 'wfuzz',
+        'ffuf': 'ffuf',
+        'commix': 'commix',
+        'xsser': 'xsser',
+        'arjun': 'arjun',
+        'nuclei': 'nuclei',
+        'httpx': 'httpx',
+        'dnsx': 'dnsx',
+        'katana': 'katana',
+        'curl': 'curl',
+        'wget': 'wget',
+        'netdiscover': 'netdiscover',
+        'hping3': 'hping3',
+        'aircrack-ng': 'aircrack-ng',
+        'reaver': 'reaver',
+        'bettercap': 'bettercap',
+        'ettercap': 'ettercap',
+        'mitmproxy': 'mitmproxy',
+        'wireshark': 'wireshark',
+        'tshark': 'tshark',
+        'foremost': 'foremost',
+        'binwalk': 'binwalk',
+        'volatility': 'volatility',
+        'autopsy': 'autopsy',
+        'steghide': 'steghide',
+        'exiftool': 'exiftool',
+        'metagoofil': 'metagoofil',
+        'sherlock': 'sherlock',
+        'maltego': 'maltego',
+        'recon-ng': 'recon-ng',
+        'spiderfoot': 'spiderfoot',
+        'metasploit': 'msfconsole',
+        'searchsploit': 'searchsploit',
+        'setoolkit': 'setoolkit',
+        'social-engineering-toolkit': 'setoolkit',
+    }
+    
+    # NON_SCANNER tools that are GUI/framework — mark as "not_applicable"
+    NON_VERIFIABLE = {
+        'nishang', 'powersploit', 'empire', 'starkiller', 'covenant',
+        'cobalt-strike', 'binary-ninja', 'ida', 'bloodhound',
+        'magictree', 'cherrytree', 'keepnote', 'serpico',
+        'recordmydesktop', 'king-phisher', 'GTFOBins',
+        'LOLBASProject', 'WADComs', 'PEASS-ng',
+    }
+    
+    tool_lower = tool_name.lower().replace(' ', '-').replace('_', '-')
+    
+    if tool_lower in NON_VERIFIABLE or tool_name in NON_VERIFIABLE:
+        return {'status': 'not_applicable', 'reason': 'GUI/framework tool - not CLI verifiable'}
+    
+    # Get binary name
+    binary = TOOL_BINARY_MAP.get(tool_lower, tool_lower)
+    
+    # Check if binary exists
+    path = shutil.which(binary)
+    if not path:
+        # Try alternate names
+        alternates = [
+            tool_lower,
+            tool_lower.replace('-', ''),
+            tool_name.lower(),
+            tool_name.lower().replace(' ', '-'),
+        ]
+        for alt in alternates:
+            path = shutil.which(alt)
+            if path:
+                binary = alt
+                break
+    
+    if not path:
+        return {'status': 'not_installed', 'binary': binary}
+    
+    # Get version
+    version = None
+    try:
+        result = subprocess.run(
+            [binary, '--version'],
+            capture_output=True, text=True, timeout=5
+        )
+        version_output = result.stdout.strip() or result.stderr.strip()
+        if version_output:
+            # Take first line, max 100 chars
+            version = version_output.split('\n')[0][:100]
+    except Exception:
+        try:
+            result = subprocess.run(
+                [binary, '-V'],
+                capture_output=True, text=True, timeout=5
+            )
+            version_output = result.stdout.strip() or result.stderr.strip()
+            if version_output:
+                version = version_output.split('\n')[0][:100]
+        except Exception:
+            version = 'installed (version unknown)'
+    
+    return {
+        'status': 'installed',
+        'binary': binary,
+        'path': path,
+        'version': version or 'installed'
+    }
+
+
+@app.route('/api/v1/tools/health', methods=['GET'])
+@require_organization
+def get_tools_health():
+    """Get health status of all tools — cached for 5 minutes
+    
+    Returns:
+        - total: total tools checked
+        - installed: number of installed tools
+        - not_installed: number missing
+        - not_applicable: GUI/framework tools
+        - percentage: installation percentage
+        - tools: detailed per-tool status
+    """
+    global _tool_health_cache, _tool_health_cache_time
+    
+    # Use cache if fresh (5 minutes)
+    if _tool_health_cache_time and (datetime.utcnow() - _tool_health_cache_time).seconds < 300:
+        return jsonify(_tool_health_cache)
+    
+    try:
+        tools = Tool.query.filter_by(is_active=True).all()
+        results = []
+        installed_count = 0
+        not_installed_count = 0
+        not_applicable_count = 0
+        
+        for tool in tools:
+            health = _check_tool_installed(tool.name)
+            results.append({
+                'id': tool.id,
+                'name': tool.business_name or tool.name,
+                'technical_name': tool.name,
+                'category': tool.business_category or tool.category,
+                'tool_type': tool.tool_type or 'cli',
+                'health': health
+            })
+            if health['status'] == 'installed':
+                installed_count += 1
+            elif health['status'] == 'not_installed':
+                not_installed_count += 1
+            else:
+                not_applicable_count += 1
+        
+        verifiable = installed_count + not_installed_count
+        percentage = round((installed_count / verifiable * 100), 1) if verifiable > 0 else 0
+        
+        response = {
+            'total': len(tools),
+            'installed': installed_count,
+            'not_installed': not_installed_count,
+            'not_applicable': not_applicable_count,
+            'percentage': percentage,
+            'checked_at': datetime.utcnow().isoformat(),
+            'tools': sorted(results, key=lambda x: (
+                0 if x['health']['status'] == 'installed' else
+                1 if x['health']['status'] == 'not_applicable' else 2,
+                x['technical_name']
+            ))
+        }
+        
+        _tool_health_cache = response
+        _tool_health_cache_time = datetime.utcnow()
+        
+        return jsonify(response)
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+
+@app.route('/api/v1/tools/<tool_id>/health', methods=['GET'])
+@require_organization
+def get_tool_health(tool_id):
+    """Get health status of a specific tool"""
+    try:
+        tool = Tool.query.get(tool_id)
+        if not tool:
+            # Try by name/slug
+            tool = Tool.query.filter(
+                db.or_(Tool.name == tool_id, Tool.name.ilike(f'%{tool_id}%'))
+            ).first()
+        
+        if not tool:
+            return jsonify({'error': 'Tool not found'}), 404
+        
+        health = _check_tool_installed(tool.name)
+        
+        return jsonify({
+            'id': tool.id,
+            'name': tool.business_name or tool.name,
+            'technical_name': tool.name,
+            'health': health
+        })
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+
+@app.route('/api/v1/tools/health/refresh', methods=['POST'])
+@require_organization
+def refresh_tools_health():
+    """Force refresh of tool health cache"""
+    global _tool_health_cache, _tool_health_cache_time
+    _tool_health_cache = {}
+    _tool_health_cache_time = None
+    return jsonify({'message': 'Health cache cleared. Next request will perform fresh check.'})
+
+
+# ================================
 # PLAN & FEATURES ROUTES
 # ================================
 
@@ -5954,7 +6214,7 @@ REPLY TO: {reply_email}
 @app.route('/api/v1/terminal/execute', methods=['POST'])
 @jwt_required()
 def execute_terminal_command():
-    """Execute a command on a remote agent via SSH"""
+    """Execute a command on a remote agent via SSH or locally"""
     try:
         user_id = get_jwt_identity()
         user = User.query.get(user_id)
@@ -5976,12 +6236,69 @@ def execute_terminal_command():
                     'exit_code': -1
                 }), 403
         
-        # If no agent specified, try to use the first online agent
+        # Local execution mode
+        if agent_id == 'local':
+            try:
+                # Security: only allow whitelisted tool prefixes for local execution
+                allowed_prefixes = [
+                    'nmap', 'nikto', 'gobuster', 'dirb', 'sqlmap', 'wpscan', 'whatweb',
+                    'whois', 'dig', 'host', 'nslookup', 'sslscan', 'traceroute', 'ping',
+                    'masscan', 'hydra', 'john', 'hashcat', 'theharvester', 'subfinder',
+                    'amass', 'fierce', 'dnsrecon', 'enum4linux', 'nbtscan', 'snmpwalk',
+                    'ffuf', 'wfuzz', 'nuclei', 'httpx', 'dnsx', 'katana', 'arjun',
+                    'searchsploit', 'curl', 'wget', 'netdiscover', 'arp-scan', 'hping3',
+                    'tshark', 'tcpdump', 'foremost', 'binwalk', 'exiftool', 'steghide',
+                    'ls', 'pwd', 'cat', 'head', 'tail', 'grep', 'find', 'wc',
+                    'uname', 'hostname', 'whoami', 'id', 'date', 'uptime',
+                    'df', 'free', 'top', 'ps', 'netstat', 'ss', 'ip', 'ifconfig',
+                    'which', 'file', 'strings', 'xxd', 'base64', 'echo',
+                ]
+                first_word = command.split()[0].split('/')[-1]  # handle /usr/bin/nmap etc
+                if first_word not in allowed_prefixes:
+                    return jsonify({
+                        'error': f'Command "{first_word}" is not allowed in local mode',
+                        'output': f'Error: "{first_word}" is not in the allowed command list for local execution.',
+                        'exit_code': -1
+                    }), 403
+                
+                result = subprocess.run(
+                    command, shell=True,
+                    capture_output=True, text=True, timeout=120
+                )
+                output = result.stdout
+                if result.stderr:
+                    output = output + '\n' + result.stderr if output else result.stderr
+                
+                return jsonify({
+                    'success': True,
+                    'output': output or '(no output)',
+                    'exit_code': result.returncode,
+                    'agent_name': 'Local Server',
+                    'agent_platform': 'linux'
+                })
+            except subprocess.TimeoutExpired:
+                return jsonify({
+                    'error': 'Command timed out',
+                    'output': 'Error: Command timed out after 120 seconds.',
+                    'exit_code': -1
+                }), 504
+            except Exception as e:
+                return jsonify({
+                    'error': str(e),
+                    'output': f'Error: {str(e)}',
+                    'exit_code': -1
+                }), 500
+        
+        # SSH execution mode
+        # If no agent specified, try to use the first online agent with SSH
         if not agent_id:
-            agent = Agent.query.filter_by(
-                organization_id=user.organization_id, 
-                status='online',
-                connection_type='ssh'
+            agent = Agent.query.filter(
+                Agent.organization_id == user.organization_id,
+                Agent.status == 'online',
+                db.or_(
+                    Agent.connection_type == 'ssh',
+                    Agent.ssh_host.isnot(None)
+                )
             ).first()
         else:
             agent = Agent.query.filter_by(
@@ -5992,14 +6309,14 @@ def execute_terminal_command():
         if not agent:
             return jsonify({
                 'error': 'No agent available',
-                'output': 'Error: No SSH agent available. Please add and connect an agent first.',
+                'output': 'Error: No SSH agent available. Please add and connect an agent first, or use "Local Server" for local execution.',
                 'exit_code': -1
             }), 404
         
-        if agent.connection_type != 'ssh':
+        if not agent.ssh_host and not agent.ip_address:
             return jsonify({
-                'error': 'Agent does not support SSH',
-                'output': f'Error: Agent "{agent.name}" does not support SSH execution.',
+                'error': 'Agent has no SSH host configured',
+                'output': f'Error: Agent "{agent.name}" has no SSH host configured. Edit the agent to add SSH credentials.',
                 'exit_code': -1
             }), 400
         
@@ -6082,28 +6399,53 @@ def execute_terminal_command():
 @app.route('/api/v1/terminal/agents', methods=['GET'])
 @jwt_required()
 def get_terminal_agents():
-    """Get list of agents available for terminal connection"""
+    """Get list of agents available for terminal connection.
+    Returns agents with SSH credentials OR connection_type='ssh'.
+    Also includes a 'local' pseudo-agent for localhost execution.
+    """
     try:
         user_id = get_jwt_identity()
         user = User.query.get(user_id)
         
-        agents = Agent.query.filter_by(
-            organization_id=user.organization_id,
-            connection_type='ssh'
+        # Get all agents that have SSH capability (connection_type='ssh' OR have SSH credentials)
+        agents = Agent.query.filter(
+            Agent.organization_id == user.organization_id,
+            db.or_(
+                Agent.connection_type == 'ssh',
+                Agent.ssh_host.isnot(None),
+                Agent.ssh_username.isnot(None)
+            )
         ).all()
         
+        agent_list = [{
+            'id': a.id,
+            'name': a.name,
+            'hostname': a.hostname,
+            'ip_address': a.ip_address,
+            'platform': a.platform,
+            'status': a.status,
+            'ssh_host': a.ssh_host,
+            'ssh_port': a.ssh_port,
+            'ssh_username': a.ssh_username,
+            'connection_type': a.connection_type
+        } for a in agents]
+        
+        # Add localhost pseudo-agent for local tool execution
+        agent_list.insert(0, {
+            'id': 'local',
+            'name': 'Local Server',
+            'hostname': 'localhost',
+            'ip_address': '127.0.0.1',
+            'platform': 'linux',
+            'status': 'online',
+            'ssh_host': None,
+            'ssh_port': None,
+            'ssh_username': None,
+            'connection_type': 'local'
+        })
+        
         return jsonify({
-            'agents': [{
-                'id': a.id,
-                'name': a.name,
-                'hostname': a.hostname,
-                'ip_address': a.ip_address,
-                'platform': a.platform,
-                'status': a.status,
-                'ssh_host': a.ssh_host,
-                'ssh_port': a.ssh_port,
-                'ssh_username': a.ssh_username
-            } for a in agents]
+            'agents': agent_list
         })
     except Exception as e:
         return jsonify({'error': str(e)}), 500
@@ -6112,7 +6454,7 @@ def get_terminal_agents():
 @app.route('/api/v1/terminal/test-connection', methods=['POST'])
 @jwt_required()
 def test_terminal_connection():
-    """Test SSH connection to an agent"""
+    """Test SSH connection to an agent or local connectivity"""
     try:
         user_id = get_jwt_identity()
         user = User.query.get(user_id)
@@ -6123,6 +6465,22 @@ def test_terminal_connection():
         if not agent_id:
             return jsonify({'error': 'Agent ID required'}), 400
         
+        # Local agent test
+        if agent_id == 'local':
+            try:
+                result = subprocess.run(
+                    'uname -a && hostname && whoami',
+                    shell=True, capture_output=True, text=True, timeout=5
+                )
+                return jsonify({
+                    'connected': True,
+                    'agent_name': 'Local Server',
+                    'system_info': result.stdout.strip(),
+                    'platform': 'linux'
+                })
+            except Exception as e:
+                return jsonify({'connected': False, 'error': str(e)})
+        
         agent = Agent.query.filter_by(
             id=agent_id, 
             organization_id=user.organization_id
@@ -6131,10 +6489,10 @@ def test_terminal_connection():
         if not agent:
             return jsonify({'error': 'Agent not found'}), 404
         
-        if agent.connection_type != 'ssh':
+        if not agent.ssh_host and not agent.ip_address:
             return jsonify({
                 'connected': False,
-                'error': 'Agent does not support SSH'
+                'error': 'Agent has no SSH host configured. Edit the agent to add SSH credentials.'
             })
         
         try:
