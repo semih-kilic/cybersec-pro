@@ -4,8 +4,17 @@ import { useTranslation } from 'react-i18next';
 import { AgentsPageSkeleton } from '../../components/ui/Skeleton';
 
 type AgentPlatform = 'linux' | 'windows' | 'macos' | 'docker';
-type ConnectionType = 'direct' | 'ssh';
+type ConnectionType = 'direct' | 'agent' | 'vpn' | 'ssh' | 'api_proxy';
 type AgentStatus = 'online' | 'offline' | 'busy' | 'error' | 'pending';
+
+// Network mode descriptions for the UI
+const NETWORK_MODES: Record<ConnectionType, { name: string; description: string; icon: string }> = {
+  direct: { name: 'Direct (Local)', description: 'Tools run on the CyberSec Pro server directly', icon: 'server' },
+  agent: { name: 'Agent Mode', description: 'Lightweight agent installed on remote host via WebSocket', icon: 'agent' },
+  vpn: { name: 'VPN Tunnel', description: 'Secure VPN connection to private network', icon: 'vpn' },
+  ssh: { name: 'SSH Gateway', description: 'Connect via SSH to run tools remotely', icon: 'ssh' },
+  api_proxy: { name: 'API Proxy', description: 'Forward requests through HTTP/SOCKS proxy', icon: 'proxy' },
+};
 
 interface Agent {
   id: string;
