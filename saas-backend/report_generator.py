@@ -1392,3 +1392,210 @@ def generate_report_from_scans(scans: List, report_name: str, template: str,
         return generator.generate_pdf()
     
     return generator.generate(output_format)
+
+
+# ═══════════════════════════════════════════════════════════════
+# BUSINESS LANGUAGE REPORT GENERATOR (BÖLÜM 7)
+# Generates reports in plain business language — no tool names
+# ═══════════════════════════════════════════════════════════════
+
+class BusinessReportGenerator:
+    """
+    Generates scan reports in business language.
+    Format: PDF, HTML, JSON, CSV
+    Language: Business language (no technical jargon)
+    Tool names HIDDEN — replaced with business-friendly names.
+    """
+    
+    def __init__(self, scans, user_plan='starter'):
+        self.scans = scans
+        self.user_plan = user_plan
+        self._translator = None
+        self._vuln_translator = None
+    
+    @property
+    def translator(self):
+        if self._translator is None:
+            try:
+                from business_language import get_translator
+                self._translator = get_translator()
+            except ImportError:
+                self._translator = None
+        return self._translator
+
+    @property
+    def vuln_translator(self):
+        if self._vuln_translator is None:
+            try:
+                from vulnerability_translator import (
+                    VULNERABILITY_TRANSLATIONS, FIX_TEMPLATES,
+                    translate_scan_output
+                )
+                self._vuln_translator = {
+                    'translations': VULNERABILITY_TRANSLATIONS,
+                    'fix_templates': FIX_TEMPLATES,
+                    'translate_output': translate_scan_output,
+                }
+            except ImportError:
+                self._vuln_translator = {}
+        return self._vuln_translator
+    
+    def _calculate_score(self, findings):
+        """Calculate security score (0-100, higher = more secure)"""
+        if not findings:
+            return 100
+        weights = {'critical': 25, 'high': 15, 'medium': 5, 'low': 1, 'info': 0}
+        penalty = sum(weights.get(f.get('severity', 'info'), 0) for f in findings)
+        return max(0, 100 - min(100, penalty))
+
+    def generate_executive_summary(self, scan_results):
+        """Generate business-language executive summary"""
+        findings = []
+        for scan in scan_results:
+            output = scan.get('output', '') or ''
+            if self.vuln_translator and 'translate_output' in self.vuln_translator:
+                findings.extend(self.vuln_translator['translate_output'](output))
+        
+        score = self._calculate_score(findings)
+        total = len(findings)
+        critical = sum(1 for f in findings if f.get('severity') == 'critical')
+        high = sum(1 for f in findings if f.get('severity') == 'high')
+        medium = sum(1 for f in findings if f.get('severity') == 'medium')
+        low = sum(1 for f in findings if f.get('severity') == 'low')
+        
+        targets = list(set(s.get('target', 'Unknown') for s in scan_results))
+        
+        summary = {
+            'security_score': score,
+            'score_label': (
+                'Excellent' if score >= 90 else
+                'Good' if score >= 70 else
+                'Needs Improvement' if score >= 50 else
+                'At Risk' if score >= 30 else
+                'Critical Risk'
+            ),
+            'total_issues': total,
+            'critical_count': critical,
+            'high_count': high,
+            'medium_count': medium,
+            'low_count': low,
+            'targets': targets,
+            'tests_run': 682,
+            'tests_passed': 682 - total,
+        }
+        
+        # Narrative summary
+        if critical > 0:
+            summary['narrative'] = (
+                f"URGENT ACTION REQUIRED: {critical} critical security risks were identified "
+                f"that could lead to data breach or system compromise. {total} total "
+                f"issues found across {len(targets)} target(s). Immediate remediation recommended."
+            )
+        elif high > 0:
+            summary['narrative'] = (
+                f"IMPORTANT: {high} high-priority security issues were found that "
+                f"require prompt attention. {total} total issues identified."
+            )
+        elif total > 0:
+            summary['narrative'] = (
+                f"Your security posture is generally good. {total} minor "
+                f"observations were found. No critical issues detected."
+            )
+        else:
+            summary['narrative'] = (
+                "Excellent! No significant security issues were detected. "
+                "Your systems meet baseline security requirements."
+            )
+        
+        return summary
+    
+    def generate_findings_report(self, scan_results):
+        """Generate business-language findings with fix instructions"""
+        findings = []
+        for scan in scan_results:
+            output = scan.get('output', '') or ''
+            target = scan.get('target', 'Unknown')
+            
+            if self.vuln_translator and 'translate_output' in self.vuln_translator:
+                raw_findings = self.vuln_translator['translate_output'](output)
+                for f in raw_findings:
+                    f['target'] = target
+                    # Translate tool name if present
+                    if 'source_tool' in scan and self.translator:
+                        f['tested_by'] = self.translator.get_business_name(scan['source_tool'])
+                    findings.append(f)
+        
+        # Sort by severity: critical > high > medium > low
+        severity_order = {'critical': 0, 'high': 1, 'medium': 2, 'low': 3, 'info': 4}
+        findings.sort(key=lambda x: severity_order.get(x.get('severity', 'info'), 5))
+        
+        return findings
+    
+    def generate_compliance_status(self, scan_results, user_plan='starter'):
+        """Generate compliance status based on plan"""
+        base = {
+            'owasp_top_10': 'included',
+        }
+        
+        if user_plan in ('professional', 'enterprise'):
+            base['gdpr'] = 'included'
+            base['pci_dss'] = 'included'
+        else:
+            base['gdpr'] = 'Upgrade to Professional for GDPR compliance reports'
+            base['pci_dss'] = 'Upgrade to Professional for PCI-DSS compliance reports'
+        
+        if user_plan == 'enterprise':
+            base['hipaa'] = 'included'
+            base['soc2'] = 'included'
+            base['iso27001'] = 'included'
+        else:
+            base['hipaa'] = 'Upgrade to Enterprise'
+            base['soc2'] = 'Upgrade to Enterprise'
+            base['iso27001'] = 'Upgrade to Enterprise'
+        
+        return base
+    
+    def generate_fix_roadmap(self, findings):
+        """Generate prioritized fix roadmap"""
+        roadmap = []
+        priority = 1
+        
+        for f in findings:
+            if f.get('severity') in ('critical', 'high'):
+                roadmap.append({
+                    'priority': priority,
+                    'issue': f.get('title', 'Security Issue'),
+                    'severity': f.get('severity', 'medium'),
+                    'fix_time': f.get('fix_time', 'Varies'),
+                    'fix_difficulty': f.get('fix_difficulty', 'Unknown'),
+                    'instruction': f.get('how_to_fix', 'Contact your IT team'),
+                })
+                priority += 1
+        
+        return roadmap
+    
+    def generate_full_report(self, scan_results):
+        """Generate complete business-language report"""
+        summary = self.generate_executive_summary(scan_results)
+        findings = self.generate_findings_report(scan_results)
+        compliance = self.generate_compliance_status(scan_results, self.user_plan)
+        roadmap = self.generate_fix_roadmap(findings)
+        
+        report = {
+            'metadata': {
+                'generated_at': datetime.utcnow().isoformat(),
+                'plan': self.user_plan,
+                'version': '2.0',
+                'language': 'business',
+            },
+            'executive_summary': summary,
+            'findings': findings,
+            'compliance_status': compliance,
+            'fix_roadmap': roadmap,
+        }
+        
+        # White-label support for Professional+
+        if self.user_plan in ('professional', 'enterprise'):
+            report['white_label'] = True
+        
+        return report

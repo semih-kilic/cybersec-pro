@@ -4,16 +4,46 @@ import { useTranslation } from 'react-i18next';
 import { AgentsPageSkeleton } from '../../components/ui/Skeleton';
 
 type AgentPlatform = 'linux' | 'windows' | 'macos' | 'docker';
-type ConnectionType = 'direct' | 'agent' | 'vpn' | 'ssh' | 'api_proxy';
+type ConnectionType = 'cloud_to_target' | 'agent_internal' | 'agent_dmz' | 'agent_airgapped' | 'hybrid';
 type AgentStatus = 'online' | 'offline' | 'busy' | 'error' | 'pending';
 
-// Network mode descriptions for the UI
-const NETWORK_MODES: Record<ConnectionType, { name: string; description: string; icon: string }> = {
-  direct: { name: 'Direct (Local)', description: 'Tools run on the CyberSec Pro server directly', icon: 'server' },
-  agent: { name: 'Agent Mode', description: 'Lightweight agent installed on remote host via WebSocket', icon: 'agent' },
-  vpn: { name: 'VPN Tunnel', description: 'Secure VPN connection to private network', icon: 'vpn' },
-  ssh: { name: 'SSH Gateway', description: 'Connect via SSH to run tools remotely', icon: 'ssh' },
-  api_proxy: { name: 'API Proxy', description: 'Forward requests through HTTP/SOCKS proxy', icon: 'proxy' },
+// 5 Network Modes matching backend agent_manager.py
+const NETWORK_MODES: Record<ConnectionType, { name: string; description: string; icon: string; emoji: string; needsAgent: boolean }> = {
+  cloud_to_target: {
+    name: 'Cloud → Target',
+    description: 'Our cloud scanners test your external-facing systems directly. No installation needed.',
+    icon: 'cloud',
+    emoji: '☁️',
+    needsAgent: false
+  },
+  agent_internal: {
+    name: 'Internal Agent',
+    description: 'Install a lightweight agent inside your network for internal vulnerability scanning.',
+    icon: 'agent',
+    emoji: '🔒',
+    needsAgent: true
+  },
+  agent_dmz: {
+    name: 'DMZ Agent',
+    description: 'Deploy an agent in your DMZ to scan both internal and external attack surfaces.',
+    icon: 'dmz',
+    emoji: '🛡️',
+    needsAgent: true
+  },
+  agent_airgapped: {
+    name: 'Air-Gapped',
+    description: 'For isolated networks: export scan configs via USB, import results back securely.',
+    icon: 'airgap',
+    emoji: '🔌',
+    needsAgent: true
+  },
+  hybrid: {
+    name: 'Hybrid Mode',
+    description: 'Combine cloud scanning with an internal agent for comprehensive coverage.',
+    icon: 'hybrid',
+    emoji: '🔄',
+    needsAgent: true
+  },
 };
 
 interface Agent {
@@ -70,7 +100,7 @@ export default function AgentsPage() {
   const [installToken, setInstallToken] = useState<string | null>(null);
   const [installCommand, setInstallCommand] = useState<string>('');
   const [selectedPlatform, setSelectedPlatform] = useState<AgentPlatform>('linux');
-  const [connectionType, setConnectionType] = useState<ConnectionType>('ssh');
+  const [connectionType, setConnectionType] = useState<ConnectionType>('cloud_to_target');
   const [sshCredentials, setSshCredentials] = useState({ 
     host: '', 
     port: '22', 
@@ -119,10 +149,11 @@ export default function AgentsPage() {
           name: newAgentName,
           platform: selectedPlatform,
           connection_type: connectionType,
-          ssh_host: connectionType === 'ssh' ? sshCredentials.host : undefined,
-          ssh_port: connectionType === 'ssh' ? parseInt(sshCredentials.port) : undefined,
-          ssh_username: connectionType === 'ssh' ? sshCredentials.username : undefined,
-          ssh_password: connectionType === 'ssh' ? sshCredentials.password : undefined,
+          network_mode: connectionType,
+          ssh_host: (connectionType === 'agent_internal' || connectionType === 'agent_dmz') ? sshCredentials.host : undefined,
+          ssh_port: (connectionType === 'agent_internal' || connectionType === 'agent_dmz') ? parseInt(sshCredentials.port) : undefined,
+          ssh_username: (connectionType === 'agent_internal' || connectionType === 'agent_dmz') ? sshCredentials.username : undefined,
+          ssh_password: (connectionType === 'agent_internal' || connectionType === 'agent_dmz') ? sshCredentials.password : undefined,
         })
       });
       
@@ -258,7 +289,7 @@ export default function AgentsPage() {
     setInstallToken(null);
     setInstallCommand('');
     setSelectedPlatform('linux');
-    setConnectionType('ssh');
+    setConnectionType('cloud_to_target');
     setSshCredentials({ host: '', port: '22', username: 'root', password: '' });
     setShowAddModal(false);
   };
@@ -462,21 +493,29 @@ export default function AgentsPage() {
                     <input type="text" value={newAgentName} onChange={(e) => setNewAgentName(e.target.value)} placeholder="E.g.: Kali-Lab-01, Office-Scanner" className="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2.5 text-white focus:border-kali-blue focus:outline-none focus:ring-1 focus:ring-kali-blue/50" />
                   </div>
                   <div>
-                    <label className="block text-gray-400 text-sm mb-2">Connection Type</label>
-                    <div className="grid grid-cols-2 gap-3">
-                      <button onClick={() => setConnectionType('ssh')} className={`p-4 rounded-lg border transition ${connectionType === 'ssh' ? 'border-kali-blue bg-kali-blue/10 ring-1 ring-kali-blue/30' : 'border-gray-700 bg-gray-800 hover:border-gray-600'}`}>
-                        <div className="text-2xl mb-2">🔐</div>
-                        <div className="text-white font-medium text-sm">SSH Connection</div>
-                        <div className="text-gray-500 text-xs mt-1">Connect to existing server</div>
-                      </button>
-                      <button onClick={() => setConnectionType('direct')} className={`p-4 rounded-lg border transition ${connectionType === 'direct' ? 'border-kali-blue bg-kali-blue/10 ring-1 ring-kali-blue/30' : 'border-gray-700 bg-gray-800 hover:border-gray-600'}`}>
-                        <div className="text-2xl mb-2">📦</div>
-                        <div className="text-white font-medium text-sm">Install Agent</div>
-                        <div className="text-gray-500 text-xs mt-1">Install agent software</div>
-                      </button>
+                    <label className="block text-gray-400 text-sm mb-2">Network Mode</label>
+                    <div className="grid grid-cols-1 gap-2">
+                      {(Object.entries(NETWORK_MODES) as [ConnectionType, typeof NETWORK_MODES[ConnectionType]][]).map(([key, mode]) => (
+                        <button
+                          key={key}
+                          onClick={() => setConnectionType(key)}
+                          className={`p-3 rounded-lg border transition text-left flex items-start gap-3 ${connectionType === key ? 'border-kali-blue bg-kali-blue/10 ring-1 ring-kali-blue/30' : 'border-gray-700 bg-gray-800 hover:border-gray-600'}`}
+                        >
+                          <span className="text-xl mt-0.5">{mode.emoji}</span>
+                          <div className="flex-1 min-w-0">
+                            <div className="text-white font-medium text-sm">{mode.name}</div>
+                            <div className="text-gray-500 text-xs mt-0.5 leading-relaxed">{mode.description}</div>
+                          </div>
+                          {connectionType === key && (
+                            <div className="w-5 h-5 rounded-full bg-kali-blue flex items-center justify-center shrink-0 mt-0.5">
+                              <svg className="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" /></svg>
+                            </div>
+                          )}
+                        </button>
+                      ))}
                     </div>
                   </div>
-                  {connectionType === 'ssh' && (
+                  {(connectionType === 'agent_internal' || connectionType === 'agent_dmz') && (
                     <div className="space-y-3 p-4 bg-gray-800/50 rounded-lg border border-gray-700/50">
                       <h4 className="text-white font-medium text-sm">SSH Details</h4>
                       <div className="grid grid-cols-3 gap-3">
@@ -499,7 +538,7 @@ export default function AgentsPage() {
                       </div>
                     </div>
                   )}
-                  {connectionType === 'direct' && (
+                  {NETWORK_MODES[connectionType]?.needsAgent && connectionType !== 'agent_internal' && connectionType !== 'agent_dmz' && (
                     <div>
                       <label className="block text-gray-400 text-sm mb-2">Platform</label>
                       <div className="grid grid-cols-4 gap-2">
@@ -521,16 +560,16 @@ export default function AgentsPage() {
                   </div>
                   <div>
                     <label className="block text-gray-400 text-sm mb-2">
-                      {connectionType === 'ssh' ? 'SSH Configuration' : 'Installation Command'}
+                      {(connectionType === 'agent_internal' || connectionType === 'agent_dmz') ? 'SSH / Agent Configuration' : connectionType === 'agent_airgapped' ? 'Air-Gap Setup Instructions' : 'Setup Instructions'}
                     </label>
                     <div className="bg-gray-950 rounded-lg p-4 font-mono text-sm text-green-400 relative border border-gray-700">
                       <pre className="whitespace-pre-wrap">{installCommand}</pre>
                       <button onClick={() => copyToClipboard(installCommand)} className="absolute top-2 right-2 p-2 hover:bg-gray-800 rounded transition text-gray-500 hover:text-white" title="Copy">📋</button>
                     </div>
                   </div>
-                  {connectionType === 'ssh' && (
+                  {(connectionType === 'agent_internal' || connectionType === 'agent_dmz') && (
                     <button onClick={() => testConnection(agents[agents.length - 1]?.id)} disabled={testingConnection} className="w-full py-3 bg-cyan-600 hover:bg-cyan-700 text-white rounded-lg font-medium transition disabled:opacity-50">
-                      {testingConnection ? 'Testing connection...' : 'Test SSH Connection'}
+                      {testingConnection ? 'Testing connection...' : 'Test Agent Connection'}
                     </button>
                   )}
                   {testResult && (
@@ -544,7 +583,7 @@ export default function AgentsPage() {
             <div className="p-6 border-t border-gray-700 flex justify-end gap-3">
               <button onClick={resetAddForm} className="px-4 py-2 text-gray-400 hover:text-white transition">{installToken ? 'Done' : 'Cancel'}</button>
               {!installToken && (
-                <button onClick={addAgent} disabled={!newAgentName.trim() || (connectionType === 'ssh' && !sshCredentials.host)} className="px-6 py-2 bg-gradient-to-r from-kali-blue to-cyan-600 text-white rounded-lg font-medium transition disabled:opacity-50 shadow-lg shadow-kali-blue/20">Create Agent</button>
+                <button onClick={addAgent} disabled={!newAgentName.trim() || ((connectionType === 'agent_internal' || connectionType === 'agent_dmz') && !sshCredentials.host)} className="px-6 py-2 bg-gradient-to-r from-kali-blue to-cyan-600 text-white rounded-lg font-medium transition disabled:opacity-50 shadow-lg shadow-kali-blue/20">Create Agent</button>
               )}
             </div>
           </div>
@@ -617,9 +656,16 @@ export default function AgentsPage() {
                 <p className="text-gray-500 text-xs mb-1">Operating System</p>
                 <p className="text-white text-sm">{selectedAgent.os || 'Awaiting registration...'}</p>
               </div>
-              {selectedAgent.connection_type === 'ssh' && selectedAgent.ssh_host && (
+              <div className="bg-gray-800/50 rounded-lg p-3">
+                <p className="text-gray-500 text-xs mb-1">Network Mode</p>
+                <div className="flex items-center gap-2">
+                  <span>{NETWORK_MODES[selectedAgent.connection_type]?.emoji || '☁️'}</span>
+                  <p className="text-white text-sm">{NETWORK_MODES[selectedAgent.connection_type]?.name || selectedAgent.connection_type}</p>
+                </div>
+              </div>
+              {(selectedAgent.connection_type === 'agent_internal' || selectedAgent.connection_type === 'agent_dmz') && selectedAgent.ssh_host && (
                 <div className="bg-gray-800/50 rounded-lg p-3">
-                  <p className="text-gray-500 text-xs mb-1">SSH Connection</p>
+                  <p className="text-gray-500 text-xs mb-1">Agent Connection</p>
                   <p className="text-white font-mono text-sm">{selectedAgent.ssh_username}@{selectedAgent.ssh_host}:{selectedAgent.ssh_port}</p>
                 </div>
               )}
@@ -637,7 +683,7 @@ export default function AgentsPage() {
 
             {/* Actions */}
             <div className="mt-6 space-y-3">
-              {selectedAgent.connection_type === 'ssh' && (
+              {(selectedAgent.connection_type === 'agent_internal' || selectedAgent.connection_type === 'agent_dmz') && (
                 <button onClick={() => testConnection(selectedAgent.id)} disabled={testingConnection} className="w-full py-2.5 bg-cyan-600 hover:bg-cyan-700 text-white rounded-lg font-medium transition disabled:opacity-50">
                   {testingConnection ? 'Testing...' : 'Test Connection'}
                 </button>
@@ -660,11 +706,11 @@ export default function AgentsPage() {
                 <label className="block text-gray-400 text-sm mb-2">Agent Name</label>
                 <input type="text" value={selectedAgent.name} onChange={(e) => setSelectedAgent({...selectedAgent, name: e.target.value})} className="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2.5 text-white focus:border-kali-blue focus:outline-none" />
               </div>
-              {selectedAgent.connection_type === 'ssh' && (
+              {(selectedAgent.connection_type === 'agent_internal' || selectedAgent.connection_type === 'agent_dmz') && (
                 <>
                   <div className="grid grid-cols-3 gap-3">
                     <div className="col-span-2">
-                      <label className="block text-gray-400 text-sm mb-2">SSH Host</label>
+                      <label className="block text-gray-400 text-sm mb-2">Agent Host</label>
                       <input type="text" value={selectedAgent.ssh_host || ''} onChange={(e) => setSelectedAgent({...selectedAgent, ssh_host: e.target.value})} className="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2.5 text-white focus:border-kali-blue focus:outline-none" />
                     </div>
                     <div>

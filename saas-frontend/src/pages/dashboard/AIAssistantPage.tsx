@@ -1,282 +1,243 @@
-import { useState } from 'react';
-import { Link } from 'react-router-dom';
-import api from '../../services/api';
+import { useState, useRef, useEffect } from 'react';
+import { useAuth } from '../../hooks/useAuth';
 
-interface Suggestion {
-  tool_name: string;
-  tool_id: string | null;
-  reason: string;
-  category: string;
-  available: boolean;
-  plan_required: string;
+interface ChatMessage {
+  id: string;
+  role: 'user' | 'bot';
+  content: string;
+  type?: string;
+  timestamp: Date;
 }
 
-interface Remediation {
-  priority: number;
-  issue: string;
-  severity: string;
-  fix: string;
-  code_example: string;
-  references: string[];
-  estimated_effort: string;
+interface QuickAction {
+  id: string;
+  label: string;
 }
+
+const WELCOME_MESSAGE: ChatMessage = {
+  id: 'welcome',
+  role: 'bot',
+  content: `Hi! I'm **CyberBot**, your security assistant. 👋
+
+I can help you with:
+- 💰 **Plan pricing** and comparisons
+- 🔍 **What we test** — 682 security tests explained
+- 🛡️ **Scan results** — I'll explain findings in plain language
+- 🔧 **Fix guidance** — Step-by-step remediation instructions
+- 📞 **Support** — Connect with our team
+
+Just type your question or use the quick actions below!`,
+  type: 'welcome',
+  timestamp: new Date(),
+};
 
 export default function AIAssistantPage() {
-  const [target, setTarget] = useState('');
-  const [context, setContext] = useState('');
-  const [suggestions, setSuggestions] = useState<Suggestion[]>([]);
-  const [scanPlan, setScanPlan] = useState<{ recommended_order: string[] } | null>(null);
-  const [targetType, setTargetType] = useState('');
+  const { token } = useAuth();
+  const [messages, setMessages] = useState<ChatMessage[]>([WELCOME_MESSAGE]);
+  const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
+  const [quickActions, setQuickActions] = useState<QuickAction[]>([
+    { id: 'pricing', label: '💰 Pricing' },
+    { id: 'what_we_test', label: '🔍 What do you test?' },
+    { id: 'free_trial', label: '🎁 Free Trial' },
+    { id: 'support', label: '📞 Support' },
+  ]);
+  const messagesEndRef = useRef<HTMLDivElement>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
 
-  // Remediation tab
-  const [scanId, setScanId] = useState('');
-  const [remediations, setRemediations] = useState<Remediation[]>([]);
-  const [remediationSummary, setRemediationSummary] = useState('');
-  const [remLoading, setRemLoading] = useState(false);
+  useEffect(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  }, [messages]);
 
-  const [activeTab, setActiveTab] = useState<'suggest' | 'remediate'>('suggest');
+  const sendMessage = async (text: string, quickAction?: string) => {
+    if (!text.trim() && !quickAction) return;
 
-  const handleSuggest = async () => {
-    if (!target.trim()) return;
+    // Add user message
+    const userMsg: ChatMessage = {
+      id: `user-${Date.now()}`,
+      role: 'user',
+      content: quickAction ? quickActions.find(q => q.id === quickAction)?.label || text : text,
+      timestamp: new Date(),
+    };
+    setMessages(prev => [...prev, userMsg]);
+    setInput('');
     setLoading(true);
-    setError('');
-    setSuggestions([]);
-    
-    const res = await api.aiSuggestTools(target, context);
-    if (res.data) {
-      setSuggestions(res.data.suggestions || []);
-      setScanPlan(res.data.scan_plan || null);
-      setTargetType(res.data.target_type || '');
-    } else {
-      setError(res.error || 'Failed to get suggestions');
+
+    try {
+      const res = await fetch('/api/v1/chatbot/message', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          message: text,
+          quick_action: quickAction || undefined,
+        }),
+      });
+
+      const data = await res.json();
+
+      const botMsg: ChatMessage = {
+        id: `bot-${Date.now()}`,
+        role: 'bot',
+        content: data.response || 'Sorry, I could not process that. Please try again.',
+        type: data.type,
+        timestamp: new Date(),
+      };
+      setMessages(prev => [...prev, botMsg]);
+
+      if (data.quick_actions) {
+        setQuickActions(data.quick_actions);
+      }
+    } catch {
+      const errorMsg: ChatMessage = {
+        id: `error-${Date.now()}`,
+        role: 'bot',
+        content: 'Connection error. Please check your internet and try again.',
+        type: 'error',
+        timestamp: new Date(),
+      };
+      setMessages(prev => [...prev, errorMsg]);
     }
+
     setLoading(false);
+    inputRef.current?.focus();
   };
 
-  const handleRemediate = async () => {
-    if (!scanId.trim()) return;
-    setRemLoading(true);
-    setError('');
-    setRemediations([]);
-    
-    const res = await api.aiRemediation(scanId);
-    if (res.data) {
-      setRemediations(res.data.remediations || []);
-      setRemediationSummary(res.data.executive_summary || '');
-    } else {
-      setError(res.error || 'Failed to get remediations');
-    }
-    setRemLoading(false);
+  const handleQuickAction = (actionId: string) => {
+    sendMessage('', actionId);
   };
 
-  const severityColors: Record<string, string> = {
-    critical: 'bg-red-500/20 text-red-400 border-red-500/30',
-    high: 'bg-orange-500/20 text-orange-400 border-orange-500/30',
-    medium: 'bg-yellow-500/20 text-yellow-400 border-yellow-500/30',
-    low: 'bg-blue-500/20 text-blue-400 border-blue-500/30',
-    info: 'bg-gray-500/20 text-gray-400 border-gray-500/30',
+  const renderMarkdown = (text: string) => {
+    // Simple markdown renderer
+    return text
+      .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+      .replace(/\*(.*?)\*/g, '<em>$1</em>')
+      .replace(/`(.*?)`/g, '<code class="bg-gray-800 px-1 py-0.5 rounded text-cyan-400 text-xs">$1</code>')
+      .replace(/^• /gm, '&bull; ')
+      .replace(/^(\d+)\. /gm, '$1. ')
+      .replace(/\n/g, '<br/>');
   };
 
   return (
-    <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold text-white flex items-center gap-2">
-          🤖 AI Security Assistant
-        </h1>
-        <p className="text-gray-400 mt-1">AI-powered tool recommendations and remediation guidance</p>
+    <div className="flex flex-col h-[calc(100vh-120px)]">
+      {/* Header */}
+      <div className="flex items-center gap-3 pb-4 border-b border-gray-700/50">
+        <div className="w-10 h-10 rounded-full bg-gradient-to-br from-cyan-500 to-emerald-500 flex items-center justify-center text-lg">
+          🤖
+        </div>
+        <div>
+          <h1 className="text-xl font-bold text-white">CyberBot</h1>
+          <p className="text-xs text-gray-400">AI Security Assistant — Always here to help</p>
+        </div>
+        <div className="ml-auto flex items-center gap-2">
+          <span className="w-2 h-2 bg-emerald-400 rounded-full animate-pulse" />
+          <span className="text-xs text-emerald-400">Online</span>
+        </div>
       </div>
 
-      {/* Tab Switcher */}
-      <div className="flex gap-2">
-        <button
-          onClick={() => setActiveTab('suggest')}
-          className={`px-4 py-2 rounded-lg text-sm font-medium transition ${
-            activeTab === 'suggest'
-              ? 'bg-cyan-500/20 text-cyan-400 border border-cyan-500/30'
-              : 'bg-gray-800 text-gray-400 hover:bg-gray-700'
-          }`}
-        >
-          🔍 Tool Suggestions
-        </button>
-        <button
-          onClick={() => setActiveTab('remediate')}
-          className={`px-4 py-2 rounded-lg text-sm font-medium transition ${
-            activeTab === 'remediate'
-              ? 'bg-purple-500/20 text-purple-400 border border-purple-500/30'
-              : 'bg-gray-800 text-gray-400 hover:bg-gray-700'
-          }`}
-        >
-          🛡️ Auto-Remediation
-        </button>
-      </div>
-
-      {error && (
-        <div className="bg-red-500/10 border border-red-500/30 rounded-lg p-4 text-red-400">
-          {error}
-        </div>
-      )}
-
-      {/* Suggestions Tab */}
-      {activeTab === 'suggest' && (
-        <div className="space-y-6">
-          <div className="bg-gray-800/50 rounded-xl p-6 border border-gray-700">
-            <h2 className="text-lg font-semibold text-white mb-4">Enter Target for Analysis</h2>
-            <div className="space-y-4">
-              <div>
-                <label className="block text-sm text-gray-400 mb-1">Target (IP, Domain, or URL)</label>
-                <input
-                  type="text"
-                  value={target}
-                  onChange={(e) => setTarget(e.target.value)}
-                  placeholder="e.g., example.com, 192.168.1.0/24, https://app.example.com"
-                  className="w-full bg-gray-900 border border-gray-600 rounded-lg px-4 py-2 text-white focus:border-cyan-500 focus:outline-none"
-                  onKeyDown={(e) => e.key === 'Enter' && handleSuggest()}
-                />
-              </div>
-              <div>
-                <label className="block text-sm text-gray-400 mb-1">Context (optional)</label>
-                <input
-                  type="text"
-                  value={context}
-                  onChange={(e) => setContext(e.target.value)}
-                  placeholder="e.g., web application, internal network, API server"
-                  className="w-full bg-gray-900 border border-gray-600 rounded-lg px-4 py-2 text-white focus:border-cyan-500 focus:outline-none"
-                />
-              </div>
-              <button
-                onClick={handleSuggest}
-                disabled={loading || !target.trim()}
-                className="px-6 py-2 bg-gradient-to-r from-cyan-500 to-blue-500 text-white rounded-lg hover:from-cyan-600 hover:to-blue-600 disabled:opacity-50 transition"
-              >
-                {loading ? '🔄 Analyzing...' : '🤖 Get AI Recommendations'}
-              </button>
-            </div>
-          </div>
-
-          {targetType && (
-            <div className="bg-gray-800/30 rounded-lg px-4 py-2 text-sm text-gray-300">
-              Detected target type: <span className="text-cyan-400 font-medium">{targetType}</span>
-            </div>
-          )}
-
-          {suggestions.length > 0 && (
-            <div className="space-y-4">
-              <h2 className="text-lg font-semibold text-white">🎯 Recommended Tools</h2>
-              <div className="grid gap-3">
-                {suggestions.map((s, i) => (
-                  <div key={i} className="bg-gray-800/50 rounded-xl p-4 border border-gray-700 flex items-start gap-4">
-                    <div className="text-2xl font-bold text-gray-600 w-8">{i + 1}</div>
-                    <div className="flex-1">
-                      <div className="flex items-center gap-2 mb-1">
-                        <span className="text-white font-semibold">{s.tool_name}</span>
-                        <span className="text-xs px-2 py-0.5 rounded bg-gray-700 text-gray-300">{s.category}</span>
-                        {!s.available && (
-                          <span className="text-xs px-2 py-0.5 rounded bg-yellow-500/20 text-yellow-400">
-                            Requires {s.plan_required}
-                          </span>
-                        )}
-                      </div>
-                      <p className="text-sm text-gray-400">{s.reason}</p>
-                    </div>
-                    {s.tool_id && (
-                      <Link
-                        to={`/dashboard/tools/${s.tool_id}/run`}
-                        className="px-3 py-1 bg-cyan-500/20 text-cyan-400 rounded-lg text-sm hover:bg-cyan-500/30 transition whitespace-nowrap"
-                      >
-                        Run →
-                      </Link>
-                    )}
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {scanPlan && scanPlan.recommended_order.length > 0 && (
-            <div className="bg-gray-800/50 rounded-xl p-6 border border-gray-700">
-              <h2 className="text-lg font-semibold text-white mb-3">📋 Recommended Scan Order</h2>
-              <div className="flex flex-wrap gap-2">
-                {scanPlan.recommended_order.map((tool, i) => (
-                  <div key={i} className="flex items-center gap-1">
-                    <span className="bg-cyan-500/20 text-cyan-400 px-3 py-1 rounded-full text-sm font-medium">
-                      {i + 1}. {tool}
-                    </span>
-                    {i < scanPlan.recommended_order.length - 1 && (
-                      <span className="text-gray-600">→</span>
-                    )}
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
-        </div>
-      )}
-
-      {/* Remediation Tab */}
-      {activeTab === 'remediate' && (
-        <div className="space-y-6">
-          <div className="bg-gray-800/50 rounded-xl p-6 border border-gray-700">
-            <h2 className="text-lg font-semibold text-white mb-4">Enter Scan ID for Remediation Analysis</h2>
-            <div className="flex gap-4">
-              <input
-                type="text"
-                value={scanId}
-                onChange={(e) => setScanId(e.target.value)}
-                placeholder="Paste scan ID from completed scan"
-                className="flex-1 bg-gray-900 border border-gray-600 rounded-lg px-4 py-2 text-white focus:border-purple-500 focus:outline-none font-mono text-sm"
-                onKeyDown={(e) => e.key === 'Enter' && handleRemediate()}
-              />
-              <button
-                onClick={handleRemediate}
-                disabled={remLoading || !scanId.trim()}
-                className="px-6 py-2 bg-gradient-to-r from-purple-500 to-pink-500 text-white rounded-lg hover:from-purple-600 hover:to-pink-600 disabled:opacity-50 transition"
-              >
-                {remLoading ? '🔄 Analyzing...' : '🛡️ Get Remediation Plan'}
-              </button>
-            </div>
-          </div>
-
-          {remediationSummary && (
-            <div className="bg-purple-500/10 border border-purple-500/30 rounded-xl p-4">
-              <h3 className="text-sm font-semibold text-purple-400 mb-1">Executive Summary</h3>
-              <p className="text-gray-300 text-sm">{remediationSummary}</p>
-            </div>
-          )}
-
-          {remediations.length > 0 && (
-            <div className="space-y-4">
-              <h2 className="text-lg font-semibold text-white">🔧 Remediation Plan</h2>
-              {remediations.map((r, i) => (
-                <div key={i} className={`rounded-xl p-5 border ${severityColors[r.severity] || severityColors.info}`}>
-                  <div className="flex items-center justify-between mb-2">
-                    <div className="flex items-center gap-2">
-                      <span className="text-lg font-bold">#{r.priority}</span>
-                      <span className="font-semibold">{r.issue}</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <span className="text-xs uppercase font-bold">{r.severity}</span>
-                      <span className="text-xs text-gray-400">⏱ {r.estimated_effort}</span>
-                    </div>
-                  </div>
-                  <p className="text-sm mb-3">{r.fix}</p>
-                  <div className="bg-gray-900/50 rounded-lg p-3 mb-2">
-                    <code className="text-xs text-green-400 font-mono break-all">{r.code_example}</code>
-                  </div>
-                  <div className="flex flex-wrap gap-2">
-                    {r.references.map((ref, j) => (
-                      <span key={j} className="text-xs bg-gray-800 text-gray-400 px-2 py-0.5 rounded">
-                        {ref}
-                      </span>
-                    ))}
-                  </div>
+      {/* Messages */}
+      <div className="flex-1 overflow-y-auto py-4 space-y-4 scrollbar-thin scrollbar-thumb-gray-700">
+        {messages.map((msg) => (
+          <div
+            key={msg.id}
+            className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}
+          >
+            <div
+              className={`max-w-[85%] rounded-2xl px-4 py-3 ${
+                msg.role === 'user'
+                  ? 'bg-cyan-600/20 border border-cyan-500/30 text-cyan-50'
+                  : msg.type === 'error'
+                  ? 'bg-red-500/10 border border-red-500/30 text-red-300'
+                  : 'bg-gray-800/60 border border-gray-700/50 text-gray-200'
+              }`}
+            >
+              {msg.role === 'bot' && (
+                <div className="flex items-center gap-2 mb-2 pb-1 border-b border-gray-700/30">
+                  <span className="text-sm">🤖</span>
+                  <span className="text-xs font-medium text-cyan-400">CyberBot</span>
+                  <span className="text-xs text-gray-500">
+                    {msg.timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                  </span>
                 </div>
-              ))}
+              )}
+              <div
+                className="text-sm leading-relaxed whitespace-pre-wrap"
+                dangerouslySetInnerHTML={{ __html: renderMarkdown(msg.content) }}
+              />
+              {msg.role === 'user' && (
+                <div className="text-right mt-1">
+                  <span className="text-xs text-gray-500">
+                    {msg.timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                  </span>
+                </div>
+              )}
             </div>
-          )}
+          </div>
+        ))}
+
+        {loading && (
+          <div className="flex justify-start">
+            <div className="bg-gray-800/60 border border-gray-700/50 rounded-2xl px-4 py-3">
+              <div className="flex items-center gap-2 mb-2 pb-1 border-b border-gray-700/30">
+                <span className="text-sm">🤖</span>
+                <span className="text-xs font-medium text-cyan-400">CyberBot</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <div className="flex gap-1">
+                  <span className="w-2 h-2 bg-cyan-400 rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
+                  <span className="w-2 h-2 bg-cyan-400 rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
+                  <span className="w-2 h-2 bg-cyan-400 rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
+                </div>
+                <span className="text-xs text-gray-400">Thinking...</span>
+              </div>
+            </div>
+          </div>
+        )}
+
+        <div ref={messagesEndRef} />
+      </div>
+
+      {/* Quick Actions */}
+      <div className="flex gap-2 py-3 overflow-x-auto">
+        {quickActions.map((action) => (
+          <button
+            key={action.id}
+            onClick={() => handleQuickAction(action.id)}
+            disabled={loading}
+            className="px-3 py-1.5 bg-gray-800 hover:bg-gray-700 border border-gray-600 rounded-full text-xs text-gray-300 hover:text-white transition whitespace-nowrap disabled:opacity-50"
+          >
+            {action.label}
+          </button>
+        ))}
+      </div>
+
+      {/* Input */}
+      <div className="border-t border-gray-700/50 pt-3">
+        <div className="flex gap-2">
+          <input
+            ref={inputRef}
+            type="text"
+            value={input}
+            onChange={(e) => setInput(e.target.value)}
+            onKeyDown={(e) => e.key === 'Enter' && !e.shiftKey && sendMessage(input)}
+            placeholder="Ask CyberBot anything about security, scans, pricing..."
+            className="flex-1 bg-gray-800/80 border border-gray-600 rounded-xl px-4 py-3 text-white placeholder-gray-500 focus:border-cyan-500 focus:outline-none focus:ring-1 focus:ring-cyan-500/30 text-sm"
+            disabled={loading}
+          />
+          <button
+            onClick={() => sendMessage(input)}
+            disabled={loading || !input.trim()}
+            className="px-5 py-3 bg-gradient-to-r from-cyan-500 to-emerald-500 text-white rounded-xl hover:from-cyan-600 hover:to-emerald-600 disabled:opacity-50 disabled:cursor-not-allowed transition font-medium text-sm"
+          >
+            Send
+          </button>
         </div>
-      )}
+        <p className="text-center text-xs text-gray-600 mt-2">
+          CyberBot uses business language — no technical jargon. Your data stays private.
+        </p>
+      </div>
     </div>
   );
 }

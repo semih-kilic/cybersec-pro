@@ -4,6 +4,29 @@ import { Header } from '../../components/layout/Header';
 import api, { ScanResult, ToolConfig } from '../../services/api';
 import { useScanSubscription } from '../../hooks/useWebSocket';
 import { useTarget } from '../../contexts/TargetContext';
+import { useAuth } from '../../hooks/useAuth';
+
+// Business-friendly category names
+const BUSINESS_CATEGORIES: Record<string, { label: string; emoji: string }> = {
+  network_security: { label: 'Network Security', emoji: '🌐' },
+  web_security: { label: 'Web Application Security', emoji: '🔒' },
+  vulnerability_assessment: { label: 'Vulnerability Assessment', emoji: '🔍' },
+  compliance_audit: { label: 'Compliance & Audit', emoji: '📋' },
+  threat_intelligence: { label: 'Threat Intelligence', emoji: '🛡️' },
+  forensics_monitoring: { label: 'Forensics & Monitoring', emoji: '📊' },
+};
+
+interface ToolExecutionMode {
+  tool_id: string;
+  execution_mode: string;
+  can_execute: boolean;
+  config?: {
+    backend_mode?: string;
+    user_display?: string;
+    user_explanation?: string;
+    headless_alternative?: string;
+  };
+}
 
 interface AgentInfo {
   id: string;
@@ -22,8 +45,13 @@ export function ScanExecutionPage() {
   const { scanId, toolId: routeToolId } = useParams<{ scanId: string; toolId: string }>();
   const [searchParams] = useSearchParams();
   const { target: globalTarget, addRecentTarget: addGlobalTarget } = useTarget();
+  const { token } = useAuth();
   
   const [tool, setTool] = useState<ToolConfig | null>(null);
+  const [businessName, setBusinessName] = useState<string>('');
+  const [businessDescription, setBusinessDescription] = useState<string>('');
+  const [executionMode, setExecutionMode] = useState<ToolExecutionMode | null>(null);
+  const [showCommand, setShowCommand] = useState(false);
   const [target, setTarget] = useState(searchParams.get('target') || globalTarget || '');
   const [parameters, setParameters] = useState<Record<string, string | number | boolean>>(() => {
     const paramsStr = searchParams.get('params');
@@ -57,7 +85,24 @@ export function ScanExecutionPage() {
 
   useEffect(() => {
     fetchToolConfig();
+    fetchExecutionMode();
   }, [toolId]);
+
+  // Fetch execution mode for dangerous tool handling
+  const fetchExecutionMode = async () => {
+    if (!toolId) return;
+    try {
+      const res = await fetch(`/api/v1/tools/${toolId}/execution-mode`, {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setExecutionMode(data);
+      }
+    } catch {
+      // Not critical
+    }
+  };
 
   // Fetch available agents
   useEffect(() => {
@@ -145,7 +190,21 @@ export function ScanExecutionPage() {
   const fetchToolConfig = async () => {
     const response = await api.getToolConfig(toolId);
     if (response.data) {
-      setTool(response.data.tool);
+      const t = response.data.tool;
+      setTool(t);
+      
+      // Set business-friendly name
+      const bName = t.business_name || t.name;
+      setBusinessName(bName);
+      
+      // Generate business description based on category
+      const cat = t.category || 'vulnerability_assessment';
+      const catInfo = BUSINESS_CATEGORIES[cat];
+      if (catInfo) {
+        setBusinessDescription(`${catInfo.emoji} ${catInfo.label} — This scan helps identify security issues in your systems.`);
+      } else {
+        setBusinessDescription('🔍 Security Assessment — Comprehensive security testing for your infrastructure.');
+      }
       // Set default values only if no parameters were passed from ToolDetailPage
       const paramsStr = searchParams.get('params');
       if (!paramsStr) {
@@ -299,11 +358,11 @@ export function ScanExecutionPage() {
   return (
     <div className="min-h-screen bg-gray-950">
       <Header 
-        title={`Run ${tool?.name || toolId}`}
-        subtitle="Execute real security scans"
+        title={`Run: ${businessName || tool?.name || toolId}`}
+        subtitle="Execute security assessment"
         breadcrumb={[
           { label: 'Tools', href: '/dashboard/tools' },
-          { label: tool?.name || toolId, href: `/dashboard/tools/${toolId}` },
+          { label: businessName || tool?.name || toolId, href: `/dashboard/tools/${toolId}` },
           { label: 'Run Scan' }
         ]}
       />
@@ -314,7 +373,10 @@ export function ScanExecutionPage() {
           <div className="lg:col-span-1 space-y-6">
             {/* Target Input */}
             <div className="bg-gray-900 rounded-xl border border-gray-800 p-5">
-              <h3 className="text-white font-semibold mb-4">🎯 Target</h3>
+              <h3 className="text-white font-semibold mb-2">🎯 Target</h3>
+              {businessDescription && (
+                <p className="text-gray-400 text-xs mb-3 leading-relaxed">{businessDescription}</p>
+              )}
               <input
                 type="text"
                 value={target}
@@ -327,6 +389,36 @@ export function ScanExecutionPage() {
                 <p className="text-red-500 text-sm mt-2">{error}</p>
               )}
             </div>
+
+            {/* Execution Mode Warning for dangerous tools */}
+            {executionMode && executionMode.execution_mode !== 'normal' && (
+              <div className={`bg-gray-900 rounded-xl border p-5 ${
+                executionMode.execution_mode === 'sandbox' ? 'border-yellow-500/30' :
+                executionMode.execution_mode === 'not_applicable' ? 'border-red-500/30' :
+                'border-blue-500/30'
+              }`}>
+                <h3 className={`font-semibold mb-2 text-sm ${
+                  executionMode.execution_mode === 'sandbox' ? 'text-yellow-400' :
+                  executionMode.execution_mode === 'not_applicable' ? 'text-red-400' :
+                  'text-blue-400'
+                }`}>
+                  {executionMode.execution_mode === 'sandbox' ? '⚠️ Sandboxed Execution' :
+                   executionMode.execution_mode === 'rate_limited' ? '⏱️ Rate-Limited Scan' :
+                   executionMode.execution_mode === 'simulation' ? '🧪 Simulation Mode' :
+                   executionMode.execution_mode === 'headless' ? '🖥️ Headless Mode' :
+                   executionMode.execution_mode === 'not_applicable' ? '❌ Not Available' :
+                   '⚙️ Special Execution'}
+                </h3>
+                <p className="text-gray-400 text-xs leading-relaxed">
+                  {executionMode.config?.user_explanation || 
+                   executionMode.config?.user_display || 
+                   'This tool runs in a restricted environment for safety.'}
+                </p>
+                {!executionMode.can_execute && (
+                  <p className="text-red-400 text-xs mt-2 font-medium">This scan type is not available for remote execution.</p>
+                )}
+              </div>
+            )}
 
             {/* Agent Selection */}
             <div className="bg-gray-900 rounded-xl border border-gray-800 p-5">
@@ -493,8 +585,16 @@ export function ScanExecutionPage() {
               
               {command && (
                 <div className="mt-3 pt-3 border-t border-gray-800">
-                  <p className="text-xs text-gray-500 mb-1">Command:</p>
-                  <code className="text-xs text-green-400 break-all">{command}</code>
+                  <button 
+                    onClick={() => setShowCommand(!showCommand)} 
+                    className="text-xs text-gray-500 hover:text-gray-300 transition flex items-center gap-1"
+                  >
+                    <svg className={`w-3 h-3 transition-transform ${showCommand ? 'rotate-90' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" /></svg>
+                    Technical Details
+                  </button>
+                  {showCommand && (
+                    <code className="text-xs text-green-400 break-all mt-2 block">{command}</code>
+                  )}
                 </div>
               )}
             </div>
@@ -512,7 +612,7 @@ export function ScanExecutionPage() {
                     <div className="w-3 h-3 rounded-full bg-green-500" />
                   </div>
                   <span className="text-gray-400 text-sm ml-3">
-                    {tool?.name || toolId} - {target || 'No target'}
+                    {businessName || tool?.name || toolId} — {target || 'No target'}
                   </span>
                 </div>
                 <div className="flex items-center gap-2">

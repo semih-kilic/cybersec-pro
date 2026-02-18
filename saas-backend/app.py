@@ -6729,6 +6729,499 @@ def purple_team_dashboard():
     })
 
 
+# ═══════════════════════════════════════════════════════════════
+# CYBERBOT — AI SECURITY ASSISTANT CHATBOT (BÖLÜM 4)
+# ═══════════════════════════════════════════════════════════════
+
+CYBERBOT_SYSTEM_PROMPT = """You are CyberBot — CyberSec Pro platform's AI security assistant.
+
+ROLE:
+- Explain security scan results to non-technical users in plain language
+- Describe vulnerabilities using business impact language
+- Provide step-by-step remediation guidance
+- Answer plan, billing, and feature questions
+
+TONE:
+- Professional but friendly
+- Patient and educational
+- Never condescending
+- No technical jargon (unless user specifically asks)
+
+NEVER DO:
+- Give raw technical commands (like "nmap -sV...")
+- Mention tool names (Metasploit, SQLMap, Nmap, etc.)
+- Assume user has technical knowledge
+- Give vague answers — always provide concrete, actionable guidance
+
+ALWAYS DO:
+- Translate technical terms to business language
+- Explain "why this matters" (business impact)
+- Provide step-by-step fix instructions
+- Refer to human support when appropriate
+
+PLAN INFORMATION (current prices):
+- Free Trial: €0, 14 days, 1 scan, 682 tests
+- Starter: €99/month, 1 domain, weekly scans, email support (48h)
+- Professional: €299/month, 5 domains, daily scans, API access, compliance reports, priority support (24h)
+- Enterprise: €799/month, unlimited domains, hourly monitoring, white-label, 24/7 dedicated support (2h)
+
+SECURITY TEST CATEGORIES (682 tests in 6 categories — no tool names):
+1. Website & Web App Protection — Tests web applications for injection, XSS, misconfigurations
+2. Data & Encryption Security — Checks encryption, password strength, data leak exposure
+3. Network & Infrastructure Protection — Scans network ports, firewalls, DNS, cloud configs
+4. API & Mobile App Protection — Tests API endpoints, mobile backends, authentication
+5. Compliance & Standards Verification — GDPR, PCI-DSS, HIPAA, ISO 27001 checks
+6. Known Threat & CVE Detection — Scans against known vulnerability databases
+"""
+
+CYBERBOT_QUICK_ACTIONS = {
+    "pricing": {
+        "label": "💰 Pricing",
+        "response": """Here's our current plan comparison:
+
+**Free Trial** — €0 for 14 days
+• 1 full security scan with all 682 tests
+• Basic PDF report
+• No credit card required
+
+**Starter** — €99/month (€990/year, save 16%)
+• 1 domain, weekly scans
+• PDF & HTML reports
+• Email support (48h response)
+
+**Professional** — €299/month (€2,990/year, save 17%)
+• 5 domains, daily scans
+• API access & compliance reports (OWASP, GDPR, PCI-DSS)
+• Priority support (24h), Slack/Teams integration
+
+**Enterprise** — €799/month (custom annual pricing)
+• Unlimited domains, hourly monitoring
+• White-label reports, SSO, dedicated support (2h)
+• On-site audits, SLA 99.9%
+
+Would you like to start a free trial or upgrade your plan?"""
+    },
+    "what_we_test": {
+        "label": "🔍 What do you test?",
+        "response": """We run **682 security tests** across 6 categories:
+
+1. **Website & Web App Protection** (~180 tests)
+   Checks for injection attacks, content manipulation, server misconfigurations, CMS vulnerabilities
+
+2. **Data & Encryption Security** (~95 tests)
+   Tests encryption strength, password policies, credential exposure, data leak detection
+
+3. **Network & Infrastructure Protection** (~120 tests)
+   Scans network ports, firewall rules, DNS security, cloud configurations, container security
+
+4. **API & Mobile App Protection** (~85 tests)
+   Tests API endpoints, authentication, rate limiting, mobile backend security
+
+5. **Compliance & Standards Verification** (~120 tests)
+   Automated checks for GDPR, PCI-DSS, HIPAA, ISO 27001, OWASP Top 10
+
+6. **Known Threat & CVE Detection** (~82 tests)
+   Scans against databases of known vulnerabilities and exploits
+
+Every plan includes all 682 tests. Higher plans add more domains, scan frequency, and reporting features."""
+    },
+    "free_trial": {
+        "label": "🎁 Free Trial",
+        "response": """**Start your free trial in 30 seconds:**
+
+✅ 14 days full access
+✅ 1 complete security scan with all 682 tests
+✅ Basic PDF security report
+✅ No credit card required
+✅ No commitment — cancel anytime
+
+Just click "Start Free Trial" on the pricing page, or I can help you set it up right now.
+
+Need help getting started? I'll walk you through your first scan step by step!"""
+    },
+    "support": {
+        "label": "📞 Support",
+        "response": """**Support channels and response times:**
+
+📧 **Email**: support@semihkilic.com
+• Starter: 48-hour response
+• Professional: 24-hour response
+• Enterprise: 2-hour response
+
+💬 **Live Chat** (Professional+): Available during business hours (CET)
+
+📱 **Slack/Teams** (Professional+): Direct integration with your workspace
+
+🤝 **Dedicated Manager** (Enterprise): Your personal security advisor
+
+📋 **Knowledge Base**: docs.semihkilic.com — Guides, tutorials, FAQs
+
+How can I help you today?"""
+    },
+}
+
+
+@app.route('/api/v1/chatbot/message', methods=['POST'])
+@require_organization
+def chatbot_message():
+    """CyberBot AI assistant - handles user messages"""
+    try:
+        user_id = get_jwt_identity()
+        user = User.query.get(user_id)
+        org = user.organization
+        data = request.get_json()
+        
+        message = data.get('message', '').strip()
+        quick_action = data.get('quick_action')
+        scan_id = data.get('scan_id')
+        
+        # Handle quick actions
+        if quick_action and quick_action in CYBERBOT_QUICK_ACTIONS:
+            action = CYBERBOT_QUICK_ACTIONS[quick_action]
+            return jsonify({
+                'response': action['response'],
+                'type': 'quick_action',
+                'action': quick_action,
+            })
+        
+        if not message:
+            return jsonify({'error': 'Message is required'}), 400
+        
+        msg_lower = message.lower()
+        response_text = ""
+        response_type = "chat"
+        
+        # Keyword-based routing for common questions
+        if any(kw in msg_lower for kw in ['price', 'pricing', 'cost', 'plan', 'upgrade', 'how much', 'fiyat']):
+            return jsonify({
+                'response': CYBERBOT_QUICK_ACTIONS['pricing']['response'],
+                'type': 'quick_action',
+                'action': 'pricing',
+            })
+        
+        if any(kw in msg_lower for kw in ['what do you test', 'what tests', 'what scan', '682', 'categories', 'ne test']):
+            return jsonify({
+                'response': CYBERBOT_QUICK_ACTIONS['what_we_test']['response'],
+                'type': 'quick_action',
+                'action': 'what_we_test',
+            })
+        
+        if any(kw in msg_lower for kw in ['free trial', 'trial', 'try', 'demo', 'deneme']):
+            return jsonify({
+                'response': CYBERBOT_QUICK_ACTIONS['free_trial']['response'],
+                'type': 'quick_action',
+                'action': 'free_trial',
+            })
+        
+        if any(kw in msg_lower for kw in ['support', 'help', 'contact', 'destek']):
+            return jsonify({
+                'response': CYBERBOT_QUICK_ACTIONS['support']['response'],
+                'type': 'quick_action',
+                'action': 'support',
+            })
+        
+        # Scan result explanation request
+        if scan_id or any(kw in msg_lower for kw in ['scan result', 'explain', 'what does', 'meaning', 'tarama sonuç']):
+            if scan_id:
+                scan = Scan.query.filter_by(id=scan_id, organization_id=org.id).first()
+                if scan:
+                    # Use vulnerability translator for business language
+                    try:
+                        from vulnerability_translator import translate_scan_output
+                        findings = translate_scan_output(scan.output or '')
+                        if findings:
+                            response_text = f"**Security Scan Results for {scan.target}:**\n\n"
+                            for i, f in enumerate(findings, 1):
+                                severity_emoji = {'critical': '🔴', 'high': '🟠', 'medium': '🟡', 'low': '🔵'}.get(f['severity'], '⚪')
+                                response_text += f"{severity_emoji} **{f['title']}**\n"
+                                response_text += f"   Impact: {f['business_impact']}\n"
+                                response_text += f"   Fix time: {f['fix_time']} | Difficulty: {f['fix_difficulty']}\n\n"
+                            response_text += "Would you like detailed fix instructions for any of these issues?"
+                        else:
+                            response_text = f"✅ **Good news!** The scan of {scan.target} completed and no significant issues were detected. Your security posture looks solid!"
+                    except ImportError:
+                        response_text = f"Scan of {scan.target} completed with status: {scan.status}. Check the Reports page for detailed findings."
+                    response_type = "scan_explanation"
+                else:
+                    response_text = "I couldn't find that scan. Please make sure the scan ID is correct and belongs to your organization."
+            else:
+                response_text = "I'd be happy to explain your scan results! Could you share the scan ID? You can find it on the Scans page."
+        
+        # How to fix / remediation questions
+        elif any(kw in msg_lower for kw in ['how to fix', 'fix', 'remediat', 'nasıl düzelt', 'çözüm']):
+            try:
+                from vulnerability_translator import VULNERABILITY_TRANSLATIONS, FIX_TEMPLATES
+                # Try to match the vulnerability type from the message
+                matched = None
+                for vtype, vinfo in VULNERABILITY_TRANSLATIONS.items():
+                    if any(kw in msg_lower for kw in vtype.replace('_', ' ').split()):
+                        matched = vtype
+                        break
+                
+                if matched and matched in FIX_TEMPLATES:
+                    fix = FIX_TEMPLATES[matched]
+                    trans = VULNERABILITY_TRANSLATIONS[matched]
+                    response_text = f"**How to fix: {trans['title']}**\n\n"
+                    response_text += fix['non_technical']
+                    response_text += f"\n\n⏱ Estimated fix time: {trans['fix_time']}\n"
+                    response_text += f"📊 Difficulty: {trans['fix_difficulty']}"
+                    response_type = "remediation"
+                else:
+                    response_text = "I'd be happy to help! Could you be more specific about what issue you're trying to fix? For example:\n\n"
+                    response_text += "• Database access vulnerability\n"
+                    response_text += "• Weak encryption\n"
+                    response_text += "• Open ports\n"
+                    response_text += "• Missing HTTPS\n"
+                    response_text += "• Default passwords\n\n"
+                    response_text += "Or share a scan ID and I'll provide fix instructions for each finding."
+            except ImportError:
+                response_text = "I can help with remediation! Please share the scan ID and I'll analyze the findings."
+        
+        # General security questions
+        elif any(kw in msg_lower for kw in ['security', 'secure', 'safe', 'güvenli', 'güvenlik']):
+            response_text = """**General Security Best Practices:**
+
+1. 🔒 **Enable HTTPS** — Free with Let's Encrypt
+2. 🔑 **Strong passwords** — 12+ characters, use a password manager
+3. 📱 **Enable 2FA** — Add two-factor authentication everywhere
+4. 🔄 **Keep software updated** — Enable auto-updates when possible
+5. 🛡️ **Run regular security scans** — We recommend weekly at minimum
+
+Would you like to start a security scan? Or do you have specific questions about your current security posture?"""
+        
+        # Fallback — friendly generic response
+        else:
+            response_text = f"""I'm CyberBot, your security assistant! 👋
+
+Here's what I can help you with:
+
+💰 **Pricing** — Plan comparison and upgrade options
+🔍 **Test details** — What our 682 security tests cover
+🛡️ **Scan results** — Explain findings in plain language
+🔧 **Fix guidance** — Step-by-step remediation instructions
+📞 **Support** — Connect with our security team
+
+Just ask me anything, or try one of the quick actions below!"""
+        
+        return jsonify({
+            'response': response_text,
+            'type': response_type,
+            'quick_actions': [
+                {'id': k, 'label': v['label']}
+                for k, v in CYBERBOT_QUICK_ACTIONS.items()
+            ],
+        })
+    except Exception as e:
+        logger.error(f"Chatbot error: {e}")
+        return jsonify({
+            'response': "I'm having a moment — please try again. If this persists, contact support@semihkilic.com.",
+            'type': 'error',
+        })
+
+
+# ═══════════════════════════════════════════════════════════════
+# PLAN FEATURES — FULL GATE LOGIC (BÖLÜM 6)
+# ═══════════════════════════════════════════════════════════════
+
+PLAN_FEATURES = {
+    "free_trial": {
+        "domains": 1,
+        "scans_total": 1,
+        "scan_types": ["full"],
+        "scan_frequency": "one_time",
+        "reports": ["pdf_basic"],
+        "tests_count": 682,
+        "history_months": 0,
+        "team_members": 1,
+        "support": "community",
+        "support_response": "72h",
+        "api_access": False,
+        "compliance_reports": False,
+        "white_label": False,
+        "agent_support": False,
+        "integrations": [],
+        "notifications": ["email_complete"],
+        "sso": False,
+    },
+    "starter": {
+        "domains": 1,
+        "scans_total": "unlimited",
+        "scan_types": ["quick", "full", "compliance"],
+        "scan_frequency": "weekly",
+        "reports": ["pdf", "html"],
+        "tests_count": 682,
+        "history_months": 3,
+        "team_members": 1,
+        "support": "email",
+        "support_response": "48h",
+        "api_access": False,
+        "compliance_reports": ["owasp"],
+        "white_label": False,
+        "agent_support": False,
+        "integrations": ["email"],
+        "notifications": ["email_complete", "email_critical"],
+        "sso": False,
+    },
+    "professional": {
+        "domains": 5,
+        "scans_total": "unlimited",
+        "scan_types": ["quick", "full", "compliance", "custom"],
+        "scan_frequency": "daily",
+        "reports": ["pdf", "html", "json"],
+        "tests_count": 682,
+        "history_months": 12,
+        "team_members": 5,
+        "support": "priority",
+        "support_response": "24h",
+        "api_access": True,
+        "compliance_reports": ["owasp", "gdpr", "pci_dss"],
+        "white_label": True,
+        "agent_support": True,
+        "integrations": ["email", "slack", "teams", "jira", "github"],
+        "notifications": ["email", "slack", "teams", "webhook"],
+        "sso": False,
+    },
+    "enterprise": {
+        "domains": "unlimited",
+        "scans_total": "unlimited",
+        "scan_types": ["quick", "full", "compliance", "custom", "manual_request"],
+        "scan_frequency": "hourly",
+        "reports": ["pdf", "html", "json", "csv", "pptx"],
+        "tests_count": 682,
+        "history_months": "unlimited",
+        "team_members": "unlimited",
+        "support": "dedicated",
+        "support_response": "2h",
+        "api_access": True,
+        "compliance_reports": ["owasp", "gdpr", "pci_dss", "hipaa", "soc2", "iso27001"],
+        "white_label": True,
+        "agent_support": True,
+        "integrations": ["email", "slack", "teams", "jira", "github", "gitlab",
+                         "pagerduty", "opsgenie", "servicenow", "datadog", "splunk",
+                         "webhook", "custom"],
+        "notifications": ["email", "slack", "teams", "sms", "pagerduty", "webhook"],
+        "sso": True,
+        "sla": "99.9%",
+        "dedicated_manager": True,
+        "quarterly_reviews": True,
+        "on_site_audit": True,
+    },
+}
+
+
+@app.route('/api/v1/plan/full-features', methods=['GET'])
+@require_organization
+def get_plan_full_features():
+    """Get full feature matrix for current plan"""
+    try:
+        user_id = get_jwt_identity()
+        user = User.query.get(user_id)
+        org = user.organization
+        plan = org.plan_type or 'trial'
+        plan_key = 'free_trial' if plan == 'trial' else plan
+        
+        features = PLAN_FEATURES.get(plan_key, PLAN_FEATURES['free_trial'])
+        
+        return jsonify({
+            'plan': plan,
+            'features': features,
+            'all_plans': {k: v for k, v in PLAN_FEATURES.items()},
+        })
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+
+@app.route('/api/v1/plan/check-feature', methods=['POST'])
+@require_organization
+def check_plan_feature():
+    """Check if a specific feature is available for current plan"""
+    try:
+        user_id = get_jwt_identity()
+        user = User.query.get(user_id)
+        org = user.organization
+        plan = org.plan_type or 'trial'
+        plan_key = 'free_trial' if plan == 'trial' else plan
+        
+        data = request.get_json()
+        feature = data.get('feature')
+        
+        if not feature:
+            return jsonify({'error': 'feature is required'}), 400
+        
+        features = PLAN_FEATURES.get(plan_key, PLAN_FEATURES['free_trial'])
+        
+        value = features.get(feature)
+        available = bool(value) if not isinstance(value, (list, str, int)) else True
+        
+        # Determine minimum plan needed
+        min_plan = None
+        for pname in ['free_trial', 'starter', 'professional', 'enterprise']:
+            pf = PLAN_FEATURES[pname]
+            pval = pf.get(feature)
+            if pval and (isinstance(pval, bool) and pval or isinstance(pval, (list, str, int))):
+                min_plan = pname
+                break
+        
+        return jsonify({
+            'feature': feature,
+            'available': available,
+            'value': value,
+            'current_plan': plan,
+            'minimum_plan': min_plan,
+        })
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+
+# ═══════════════════════════════════════════════════════════════
+# DANGEROUS TOOLS API (BÖLÜM 5)
+# ═══════════════════════════════════════════════════════════════
+
+@app.route('/api/v1/tools/<tool_id>/execution-mode', methods=['GET'])
+@require_organization
+def get_tool_execution_mode_api(tool_id):
+    """Get execution mode and safety information for a tool"""
+    try:
+        tool = Tool.query.get(tool_id)
+        if not tool:
+            return jsonify({'error': 'Tool not found'}), 404
+        
+        try:
+            from dangerous_tools import get_tool_execution_mode
+            mode_info = get_tool_execution_mode(tool.name)
+        except ImportError:
+            mode_info = {
+                'mode': 'standard',
+                'config': {},
+                'user_display': tool.business_name or tool.name,
+                'user_explanation': 'Standard security test execution',
+                'can_execute': True,
+            }
+        
+        return jsonify({
+            'tool_id': tool_id,
+            'tool_name': tool.business_name or tool.name,
+            'execution_mode': mode_info,
+        })
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+
+@app.route('/api/v1/security/verification-methods', methods=['GET'])
+def get_verification_methods():
+    """Get domain ownership verification methods"""
+    try:
+        from dangerous_tools import get_verification_methods as _get_methods
+        methods = _get_methods()
+    except ImportError:
+        methods = [
+            {"id": "dns_txt", "name": "DNS TXT Record", "instruction": "Add TXT record: cybersecpro-verify=TOKEN"},
+            {"id": "html_file", "name": "HTML File Upload", "instruction": "Upload verification file to web root"},
+        ]
+    
+    return jsonify({'methods': methods})
+
+
 if __name__ == '__main__':
     init_database()
     # Start agent health monitor
@@ -6738,6 +7231,8 @@ if __name__ == '__main__':
     print("📟 Terminal API enabled for SSH execution")
     print("🔌 WebSocket enabled for real-time updates")
     print("🤖 Agent health monitor started (30s heartbeat, 90s offline)")
+    print("💬 CyberBot AI assistant active")
+    print("🔒 Dangerous tool safety module loaded")
     
     # Use socketio.run() if available for WebSocket support
     if socketio:
