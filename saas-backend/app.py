@@ -1004,7 +1004,7 @@ def health_check():
         tool_count = db.session.execute(db.text('SELECT COUNT(*) FROM tools')).scalar()
         health['checks']['database'] = {'status': 'ok', 'tools_count': tool_count}
     except Exception as e:
-        health['checks']['database'] = f'error: {str(e)}'
+        health['checks']['database'] = {'status': 'error', 'error': str(e)}
         health['status'] = 'unhealthy'
     
     # Check scan engine
@@ -1019,12 +1019,33 @@ def health_check():
                 'max_workers': stats.get('max_workers', 0)
             }
         else:
-            health['checks']['scan_engine'] = 'not_available'
+            health['checks']['scan_engine'] = {'status': 'not_available'}
     except Exception as e:
-        health['checks']['scan_engine'] = f'error: {str(e)}'
+        health['checks']['scan_engine'] = {'status': 'error', 'error': str(e)}
     
     # Check WebSocket
-    health['checks']['websocket'] = 'ok' if socketio else 'not_available'
+    health['checks']['websocket'] = {'status': 'ok' if socketio else 'not_available'}
+
+    # Organization & user counts
+    try:
+        org_count = db.session.execute(db.text('SELECT COUNT(*) FROM organizations')).scalar()
+        user_count = db.session.execute(db.text('SELECT COUNT(*) FROM users')).scalar()
+        agent_count = db.session.execute(db.text('SELECT COUNT(*) FROM agents')).scalar()
+        scan_count = db.session.execute(db.text('SELECT COUNT(*) FROM scans')).scalar()
+        health['checks']['counts'] = {
+            'organizations': org_count or 0,
+            'users': user_count or 0,
+            'agents': agent_count or 0,
+            'scans': scan_count or 0,
+        }
+    except Exception:
+        pass
+
+    # Stripe connectivity
+    health['checks']['stripe'] = {'status': 'configured' if os.environ.get('STRIPE_SECRET_KEY') else 'not_configured'}
+
+    # Plan config
+    health['checks']['plans'] = list(PLAN_CONFIG.keys())
     
     status_code = 200 if health['status'] == 'healthy' else 503
     return jsonify(health), status_code

@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '../../hooks/useAuth';
 import { useTranslation } from 'react-i18next';
 import { AgentsPageSkeleton } from '../../components/ui/Skeleton';
+import { useToast } from '../../components/ui/Toast';
 
 type AgentPlatform = 'linux' | 'windows' | 'macos' | 'docker';
 type ConnectionType = 'cloud_to_target' | 'agent_internal' | 'agent_dmz' | 'agent_airgapped' | 'hybrid';
@@ -84,6 +85,7 @@ interface DashboardData {
 export default function AgentsPage() {
   const { token } = useAuth();
   const { t: _t } = useTranslation();
+  const toast = useToast();
   const [dashboard, setDashboard] = useState<DashboardData | null>(null);
   const [agents, setAgents] = useState<Agent[]>([]);
   const [loading, setLoading] = useState(true);
@@ -110,6 +112,7 @@ export default function AgentsPage() {
     username: 'root', 
     password: '' 
   });
+  const [creatingAgent, setCreatingAgent] = useState(false);
 
   const fetchDashboard = useCallback(async () => {
     try {
@@ -140,6 +143,7 @@ export default function AgentsPage() {
 
   const addAgent = async () => {
     if (!newAgentName.trim()) return;
+    setCreatingAgent(true);
     
     try {
       const res = await fetch('/api/v1/agents', {
@@ -165,13 +169,16 @@ export default function AgentsPage() {
       if (res.ok) {
         setInstallToken(data.registration_token);
         setInstallCommand(data.install_command || `# Agent Registration Token:\n${data.registration_token}\n\n# Install & run:\ncurl -sSL https://cybersecpro.semihkilic.com/api/v1/agent-script | python3 - --token ${data.registration_token}`);
+        toast.success(`Agent "${newAgentName}" created successfully`);
         fetchDashboard();
       } else {
-        alert(data.error || 'Failed to create agent');
+        toast.error(data.error || 'Failed to create agent');
       }
     } catch (error) {
       console.error('Failed to add agent:', error);
-      alert('Failed to create agent');
+      toast.error('Connection error. Please try again.');
+    } finally {
+      setCreatingAgent(false);
     }
   };
 
@@ -714,7 +721,7 @@ export default function AgentsPage() {
             <div className="p-6 border-t border-gray-700 flex justify-end gap-3">
               <button onClick={resetAddForm} className="px-4 py-2 text-gray-400 hover:text-white transition">{installToken ? 'Done' : 'Cancel'}</button>
               {!installToken && (
-                <button onClick={addAgent} disabled={!newAgentName.trim() || ((connectionType === 'agent_internal' || connectionType === 'agent_dmz') && !sshCredentials.host)} className="px-6 py-2 bg-gradient-to-r from-kali-blue to-cyan-600 text-white rounded-lg font-medium transition disabled:opacity-50 shadow-lg shadow-kali-blue/20">Create Agent</button>
+                <button onClick={addAgent} disabled={creatingAgent || !newAgentName.trim() || ((connectionType === 'agent_internal' || connectionType === 'agent_dmz') && !sshCredentials.host)} className="px-6 py-2 bg-gradient-to-r from-kali-blue to-cyan-600 text-white rounded-lg font-medium transition disabled:opacity-50 shadow-lg shadow-kali-blue/20">{creatingAgent ? 'Creating...' : 'Create Agent'}</button>
               )}
             </div>
           </div>

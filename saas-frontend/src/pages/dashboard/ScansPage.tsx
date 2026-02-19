@@ -396,6 +396,32 @@ export function ScansPage() {
                               >
                                 View
                               </Link>
+                              {deleteConfirm === scan.id ? (
+                                <div className="flex gap-1">
+                                  <button
+                                    onClick={() => handleDelete(scan.id)}
+                                    disabled={deleteMutation.isPending}
+                                    className="px-2 py-1.5 bg-red-600 text-white hover:bg-red-700 rounded text-xs font-medium transition disabled:opacity-50"
+                                  >
+                                    {deleteMutation.isPending ? '...' : 'Confirm'}
+                                  </button>
+                                  <button
+                                    onClick={() => setDeleteConfirm(null)}
+                                    className="px-2 py-1.5 bg-gray-700 text-gray-300 hover:bg-gray-600 rounded text-xs transition"
+                                  >
+                                    ✕
+                                  </button>
+                                </div>
+                              ) : (
+                                <button
+                                  onClick={() => setDeleteConfirm(scan.id)}
+                                  className="px-2 py-1.5 text-gray-500 hover:text-red-400 hover:bg-red-500/10 rounded text-sm transition focus:outline-none"
+                                  aria-label={`Delete ${getToolName(scan)} scan`}
+                                  title="Delete scan"
+                                >
+                                  🗑️
+                                </button>
+                              )}
                             </div>
                           </td>
                         </motion.tr>
@@ -592,6 +618,23 @@ export function ScansPage() {
                 </div>
 
                 <div className="flex flex-col sm:flex-row justify-end gap-3 p-4 sm:p-6 border-t border-gray-800">
+                  <button
+                    onClick={() => {
+                      if (deleteConfirm === selectedScan.id) {
+                        handleDelete(selectedScan.id);
+                      } else {
+                        setDeleteConfirm(selectedScan.id);
+                      }
+                    }}
+                    disabled={deleteMutation.isPending}
+                    className={`px-4 py-2 rounded-lg transition focus:outline-none focus:ring-2 disabled:opacity-50 ${
+                      deleteConfirm === selectedScan.id
+                        ? 'bg-red-600 hover:bg-red-700 text-white focus:ring-red-400/50'
+                        : 'bg-red-500/10 text-red-400 hover:bg-red-500/20 focus:ring-red-400/50'
+                    }`}
+                  >
+                    {deleteMutation.isPending ? 'Deleting...' : deleteConfirm === selectedScan.id ? 'Confirm Delete' : 'Delete'}
+                  </button>
                   <button
                     onClick={() => handleRerun(selectedScan)}
                     disabled={rerunMutation.isPending}

@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { useState, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useToolCounts } from '../../hooks/useApiQueries';
+import { useToast } from '../../components/ui/Toast';
 
 function buildPlans(counts: { starter: number; professional: number; enterprise: number }) {
   return [
@@ -96,6 +97,7 @@ export default function UpgradePage() {
   const [pentestsPerYear, setPentestsPerYear] = useState(2);
   const [costPerPentest, setCostPerPentest] = useState(12000);
   const currentPlan = organization?.plan_type || 'starter';
+  const toast = useToast();
 
   // Dynamic tool counts from API
   const { data: toolCounts } = useToolCounts();
@@ -157,10 +159,10 @@ export default function UpgradePage() {
         }
       }
       
-      alert('Payment system is currently unavailable. Please try again later.');
+      toast.error('Payment system is temporarily unavailable. Please contact cybersecpro@semihkilic.com for manual upgrade.');
     } catch (error) {
       console.error('Upgrade error:', error);
-      alert('Payment system is currently unavailable. Please try again later or contact cybersecpro@semihkilic.com');
+      toast.error('Connection error. Please try again or contact cybersecpro@semihkilic.com for assistance.');
     } finally {
       setLoading(null);
     }
