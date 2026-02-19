@@ -270,8 +270,8 @@ export function LandingPage() {
 
             {/* Professional */}
             <div className="bg-gray-800/50 rounded-2xl p-6 border-2 border-emerald-500 relative">
-              <div className="absolute -top-3 left-1/2 -translate-x-1/2 px-3 py-1 bg-gradient-to-r from-emerald-500 to-cyan-500 rounded-full text-xs font-bold text-white">
-                ⭐ Recommended for SMEs
+              <div className="absolute -top-3.5 left-1/2 -translate-x-1/2 px-5 py-1 bg-blue-600 text-white text-xs font-semibold rounded-full z-10 tracking-wide shadow-lg">
+                MOST POPULAR
               </div>
               <div className="text-lg font-medium text-emerald-400 mb-2">Professional</div>
               <div className="flex items-baseline gap-1 mb-4">

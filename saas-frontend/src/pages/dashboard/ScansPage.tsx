@@ -16,7 +16,7 @@ import { Header } from '../../components/layout/Header';
 import { useTranslation } from 'react-i18next';
 import { ScansPageSkeleton } from '../../components/ui/Skeleton';
 import { useToast } from '../../components/ui/Toast';
-import { useScans, useCancelScan, useRerunScan, type Scan } from '../../hooks/useApiQueries';
+import { useScans, useCancelScan, useRerunScan, useDeleteScan, type Scan } from '../../hooks/useApiQueries';
 import { motion, AnimatePresence } from 'framer-motion';
 
 // ---- Helpers ----
@@ -132,6 +132,10 @@ export function ScansPage() {
   const { data: scans = [], isLoading, isFetching } = useScans();
   const cancelMutation = useCancelScan();
   const rerunMutation = useRerunScan();
+  const deleteMutation = useDeleteScan();
+
+  // Delete confirmation
+  const [deleteConfirm, setDeleteConfirm] = useState<string | null>(null);
 
   // --- Local UI state ---
   const [filter, setFilter] = useState(searchParams.get('status') || 'all');
@@ -159,6 +163,17 @@ export function ScansPage() {
       toast.error(e?.message || 'Failed to rerun scan');
     }
   }, [rerunMutation, toast]);
+
+  const handleDelete = useCallback(async (scanId: string) => {
+    try {
+      await deleteMutation.mutateAsync(scanId);
+      toast.success('Scan deleted');
+      setDeleteConfirm(null);
+      setSelectedScan(null);
+    } catch {
+      toast.error('Failed to delete scan');
+    }
+  }, [deleteMutation, toast]);
 
   // --- Filtering ---
   const filteredScans = scans.filter((scan: Scan) => {

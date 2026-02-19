@@ -350,6 +350,23 @@ export function useCancelScan() {
 }
 
 /**
+ * Delete a scan
+ */
+export function useDeleteScan() {
+  const { token } = useAuth();
+  const qc = useQueryClient();
+
+  return useMutation({
+    mutationFn: (scanId: string) =>
+      authFetch(`/api/v1/scans/${scanId}`, token, { method: 'DELETE' }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: queryKeys.scans.all });
+      qc.invalidateQueries({ queryKey: queryKeys.dashboard.all });
+    },
+  });
+}
+
+/**
  * Rerun a scan
  */
 export function useRerunScan() {

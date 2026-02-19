@@ -4150,6 +4150,41 @@ def cancel_scan_v2(scan_id):
         return jsonify({'error': str(e)}), 500
 
 
+@app.route('/api/v1/scans/<scan_id>', methods=['DELETE'])
+@require_organization
+def delete_scan(scan_id):
+    """Delete a scan record. Running scans are cancelled first."""
+    try:
+        user_id = get_jwt_identity()
+        user = User.query.get(user_id)
+        
+        scan = Scan.query.filter_by(
+            id=scan_id,
+            organization_id=user.organization_id
+        ).first()
+        
+        if not scan:
+            return jsonify({'error': 'Scan not found'}), 404
+        
+        # If still running, kill it first
+        if scan.status in ('running', 'queued', 'pending', 'dispatched'):
+            try:
+                if SCAN_ENGINE_V3_AVAILABLE:
+                    from scan_engine_v3 import get_engine_v3
+                    get_engine_v3().cancel_scan(scan_id)
+            except Exception:
+                pass
+        
+        db.session.delete(scan)
+        db.session.commit()
+        
+        return jsonify({'success': True, 'scan_id': scan_id, 'message': 'Scan deleted'})
+        
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'error': str(e)}), 500
+
+
 @app.route('/api/v1/scan/<scan_id>/details', methods=['GET'])
 @require_organization
 def get_scan_details_v2(scan_id):
