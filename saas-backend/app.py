@@ -5092,6 +5092,138 @@ def admin_stats():
         return jsonify({'error': str(e)}), 500
 
 
+@app.route('/api/v1/admin/impersonate', methods=['POST'])
+@jwt_required()
+def admin_impersonate():
+    """Impersonate another user (superadmin only)"""
+    try:
+        user_id = get_jwt_identity()
+        user = User.query.get(user_id)
+        if not user or user.role != 'superadmin':
+            return jsonify({'error': 'Unauthorized. Superadmin access required.'}), 403
+
+        data = request.get_json()
+        target_user_id = data.get('user_id')
+        target_email = data.get('email')
+
+        if target_user_id:
+            target = User.query.get(target_user_id)
+        elif target_email:
+            target = User.query.filter_by(email=target_email).first()
+        else:
+            return jsonify({'error': 'Provide user_id or email'}), 400
+
+        if not target:
+            return jsonify({'error': 'Target user not found'}), 404
+
+        # Create token for impersonated user
+        token = create_access_token(
+            identity=target.id,
+            additional_claims={'impersonated_by': user.id}
+        )
+        target_org = Organization.query.get(target.organization_id) if target.organization_id else None
+
+        return jsonify({
+            'success': True,
+            'message': f'Now impersonating {target.email}',
+            'token': token,
+            'user': target.to_dict(),
+            'organization': target_org.to_dict() if target_org else None,
+            'impersonated_by': user.email
+        })
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+
+@app.route('/api/v1/admin/promote-superadmin', methods=['POST'])
+@jwt_required()
+def admin_promote_superadmin():
+    """Promote a user to superadmin (existing superadmin only)"""
+    try:
+        user_id = get_jwt_identity()
+        user = User.query.get(user_id)
+        if not user or user.role != 'superadmin':
+            return jsonify({'error': 'Unauthorized'}), 403
+
+        data = request.get_json()
+        target_email = data.get('email')
+        if not target_email:
+            return jsonify({'error': 'email required'}), 400
+
+        target = User.query.filter_by(email=target_email).first()
+        if not target:
+            return jsonify({'error': 'User not found'}), 404
+
+        target.role = 'superadmin'
+        db.session.commit()
+        return jsonify({'success': True, 'message': f'{target_email} is now superadmin'})
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'error': str(e)}), 500
+
+
+@app.route('/api/v1/admin/overview', methods=['GET'])
+@jwt_required()
+def admin_overview():
+    """Complete admin overview with all critical data (superadmin only)"""
+    try:
+        user_id = get_jwt_identity()
+        user = User.query.get(user_id)
+        if not user or user.role != 'superadmin':
+            return jsonify({'error': 'Unauthorized'}), 403
+
+        # Users
+        all_users = User.query.all()
+        active_users = [u for u in all_users if u.is_active]
+
+        # Organizations
+        all_orgs = Organization.query.all()
+        plans_dist = {}
+        for org in all_orgs:
+            plans_dist[org.plan_type] = plans_dist.get(org.plan_type, 0) + 1
+
+        # Scans
+        total_scans = Scan.query.count()
+        running_scans = Scan.query.filter_by(status='running').count()
+        recent_scans = Scan.query.order_by(Scan.created_at.desc()).limit(10).all()
+
+        # Agents
+        total_agents = Agent.query.count()
+        online_agents = Agent.query.filter_by(status='online').count()
+
+        # Revenue estimation
+        plan_prices = {'trial': 0, 'starter': 99, 'professional': 299, 'enterprise': 799}
+        mrr = sum(plan_prices.get(org.plan_type, 0) for org in all_orgs if org.is_active)
+
+        return jsonify({
+            'users': {
+                'total': len(all_users),
+                'active': len(active_users),
+                'list': [u.to_dict() for u in all_users[:50]]
+            },
+            'organizations': {
+                'total': len(all_orgs),
+                'plans_distribution': plans_dist,
+                'list': [o.to_dict() for o in all_orgs[:50]]
+            },
+            'scans': {
+                'total': total_scans,
+                'running': running_scans,
+                'recent': [{'id': s.id, 'target': s.target, 'status': s.status, 'created_at': s.created_at.isoformat()} for s in recent_scans]
+            },
+            'agents': {
+                'total': total_agents,
+                'online': online_agents
+            },
+            'revenue': {
+                'mrr': mrr,
+                'arr': mrr * 12
+            }
+        })
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+
 # ================================
 # SCHEDULES API (Real persistence + APScheduler)
 # ================================

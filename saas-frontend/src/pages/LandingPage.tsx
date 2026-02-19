@@ -214,7 +214,7 @@ export function LandingPage() {
           
           <div className="grid md:grid-cols-4 gap-6 max-w-6xl mx-auto">
             {/* Free Trial */}
-            <div className="bg-gray-800/50 rounded-2xl p-6 border border-gray-700">
+            <div className="bg-gray-800/50 rounded-2xl p-6 border border-gray-700 flex flex-col">
               <div className="text-lg font-medium text-green-400 mb-2">Free Trial</div>
               <div className="flex items-baseline gap-1 mb-4">
                 <span className="text-4xl font-bold text-white">€0</span>
@@ -234,13 +234,15 @@ export function LandingPage() {
                   <span className="text-green-400">✓</span> No credit card required
                 </li>
               </ul>
-              <Link to="/register" className="block w-full py-2 bg-gray-700 text-white text-center rounded-xl hover:bg-gray-600 transition text-sm">
-                Start Free Scan
-              </Link>
+              <div className="mt-auto">
+                <Link to="/register" className="block w-full py-2 bg-gray-700 text-white text-center rounded-xl hover:bg-gray-600 transition text-sm">
+                  Start Free Scan
+                </Link>
+              </div>
             </div>
 
             {/* Starter */}
-            <div className="bg-gray-800/50 rounded-2xl p-6 border border-blue-500/50">
+            <div className="bg-gray-800/50 rounded-2xl p-6 border border-blue-500/50 flex flex-col">
               <div className="text-lg font-medium text-blue-400 mb-2">Starter</div>
               <div className="flex items-baseline gap-1 mb-4">
                 <span className="text-4xl font-bold text-white">€99</span>
@@ -263,13 +265,15 @@ export function LandingPage() {
                   <span className="text-blue-400">✓</span> Email support (48h)
                 </li>
               </ul>
-              <Link to="/register" className="block w-full py-2 bg-blue-500/20 text-blue-400 border border-blue-500/50 text-center rounded-xl hover:bg-blue-500/30 transition text-sm">
-                Get Started
-              </Link>
+              <div className="mt-auto">
+                <Link to="/register" className="block w-full py-2 bg-blue-500/20 text-blue-400 border border-blue-500/50 text-center rounded-xl hover:bg-blue-500/30 transition text-sm">
+                  Get Started
+                </Link>
+              </div>
             </div>
 
             {/* Professional */}
-            <div className="bg-gray-800/50 rounded-2xl p-6 border-2 border-emerald-500/80 relative shadow-xl shadow-emerald-500/5">
+            <div className="bg-gray-800/50 rounded-2xl p-6 border-2 border-emerald-500/80 relative shadow-xl shadow-emerald-500/5 flex flex-col">
               <div className="absolute -top-3.5 left-1/2 -translate-x-1/2 inline-flex items-center gap-1.5 px-4 py-1.5 bg-gradient-to-r from-emerald-500 to-cyan-500 text-white text-[11px] font-bold rounded-full z-10 tracking-widest uppercase shadow-lg shadow-emerald-500/30 whitespace-nowrap">
                 <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" /></svg>
                 Most Popular
@@ -296,13 +300,15 @@ export function LandingPage() {
                   <span className="text-emerald-400">✓</span> Priority support (24h)
                 </li>
               </ul>
-              <Link to="/register" className="block w-full py-2 bg-gradient-to-r from-emerald-500 to-cyan-500 text-white text-center rounded-xl hover:from-emerald-600 hover:to-cyan-600 transition text-sm">
-                Get Started
-              </Link>
+              <div className="mt-auto">
+                <Link to="/register" className="block w-full py-2 bg-gradient-to-r from-emerald-500 to-cyan-500 text-white text-center rounded-xl hover:from-emerald-600 hover:to-cyan-600 transition text-sm">
+                  Get Started
+                </Link>
+              </div>
             </div>
 
             {/* Enterprise */}
-            <div className="bg-gray-800/50 rounded-2xl p-6 border border-purple-500/50">
+            <div className="bg-gray-800/50 rounded-2xl p-6 border border-purple-500/50 flex flex-col">
               <div className="text-lg font-medium text-purple-400 mb-2">Enterprise</div>
               <div className="flex items-baseline gap-1 mb-4">
                 <span className="text-4xl font-bold text-white">€799</span>
@@ -325,9 +331,11 @@ export function LandingPage() {
                   <span className="text-purple-400">✓</span> 24/7 priority support
                 </li>
               </ul>
-              <Link to="/contact" className="block w-full py-2 bg-gradient-to-r from-purple-500 to-pink-500 text-white text-center font-semibold rounded-xl hover:from-purple-400 hover:to-pink-400 transition text-sm">
-                Contact Sales
-              </Link>
+              <div className="mt-auto">
+                <Link to="/contact" className="block w-full py-2 bg-gradient-to-r from-purple-500 to-pink-500 text-white text-center font-semibold rounded-xl hover:from-purple-400 hover:to-pink-400 transition text-sm">
+                  Contact Sales
+                </Link>
+              </div>
             </div>
           </div>
         </div>
