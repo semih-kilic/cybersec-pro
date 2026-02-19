@@ -20,6 +20,7 @@ from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
 from flask_jwt_extended import JWTManager, jwt_required, create_access_token, get_jwt_identity
 from werkzeug.security import generate_password_hash, check_password_hash
+from werkzeug.middleware.proxy_fix import ProxyFix
 from datetime import datetime, timedelta
 import os
 import base64
@@ -42,6 +43,12 @@ except ImportError:
 
 # Initialize Flask app
 app = Flask(__name__)
+
+# ProxyFix: Trust Cloudflare/Nginx reverse proxy headers
+# This ensures request.url_root and request.scheme return https:// 
+# when behind Cloudflare/Nginx, preventing OAuth redirect_uri mismatches
+app.wsgi_app = ProxyFix(app.wsgi_app, x_for=1, x_proto=1, x_host=1, x_prefix=1)
+app.config['PREFERRED_URL_SCHEME'] = 'https'
 
 # ================================
 # PRODUCTION LOGGING CONFIGURATION
@@ -1225,7 +1232,10 @@ def google_oauth():
             # Exchange code for tokens - redirect_uri MUST match exactly what was used in auth request
             # Accept redirect_uri from frontend (it knows what it sent to Google)
             domain = os.environ.get('DOMAIN', 'https://semihkilic.com')
-            redirect_uri = data.get('redirect_uri', f"{domain}/login")
+            # Ensure domain always uses https
+            if domain.startswith('http://'):
+                domain = domain.replace('http://', 'https://', 1)
+            redirect_uri = data.get('redirect_uri', f"{domain}/auth/callback")
             
             app.logger.info(f"🔐 Google OAuth code exchange: redirect_uri={redirect_uri}")
             
@@ -2388,6 +2398,82 @@ def refresh_tools_health():
     _tool_health_cache = {}
     _tool_health_cache_time = None
     return jsonify({'message': 'Health cache cleared. Next request will perform fresh check.'})
+
+
+@app.route('/api/v1/tools/verify-all', methods=['POST'])
+@require_organization
+def verify_all_tools():
+    """Comprehensive tool verification — checks all critical tools and returns status report.
+    Optional body: {"target": "10.0.0.115"} for smoke test against a target.
+    """
+    try:
+        import shutil
+        
+        # Critical tools that should be installed
+        CRITICAL_TOOLS = [
+            'nmap', 'nikto', 'gobuster', 'sqlmap', 'wpscan', 'hydra', 'john',
+            'hashcat', 'dirb', 'whois', 'dig', 'host', 'sslscan', 'whatweb',
+            'dnsrecon', 'subfinder', 'masscan', 'ffuf', 'nuclei', 'httpx',
+            'curl', 'wget', 'traceroute', 'ping', 'netcat', 'tcpdump',
+            'exiftool', 'binwalk', 'foremost', 'tshark', 'arping', 'nbtscan',
+            'snmpwalk', 'enum4linux', 'smbclient', 'wfuzz', 'commix',
+            'searchsploit', 'lynis', 'trivy', 'fierce', 'hping3',
+            'aircrack-ng', 'recon-ng', 'theharvester', 'amass', 'dnsx',
+            'katana', 'arjun', 'xsstrike', 'sslyze',
+        ]
+        
+        results = {
+            'timestamp': datetime.utcnow().isoformat(),
+            'total_checked': 0,
+            'installed': 0,
+            'missing': 0,
+            'not_applicable': 0,
+            'tools': []
+        }
+        
+        for tool_name in CRITICAL_TOOLS:
+            status = _check_tool_installed(tool_name)
+            results['total_checked'] += 1
+            if status['status'] == 'installed':
+                results['installed'] += 1
+            elif status['status'] == 'not_installed':
+                results['missing'] += 1
+            else:
+                results['not_applicable'] += 1
+            
+            results['tools'].append({
+                'name': tool_name,
+                **status
+            })
+        
+        # Quick nmap smoke test if target provided
+        data = request.get_json(silent=True) or {}
+        target = data.get('target')
+        if target and shutil.which('nmap'):
+            try:
+                smoke = subprocess.run(
+                    ['nmap', '-F', '-T4', '--top-ports', '10', target],
+                    capture_output=True, text=True, timeout=30
+                )
+                results['smoke_test'] = {
+                    'tool': 'nmap',
+                    'target': target,
+                    'success': smoke.returncode == 0,
+                    'output_preview': (smoke.stdout or smoke.stderr)[:500]
+                }
+            except Exception as e:
+                results['smoke_test'] = {
+                    'tool': 'nmap',
+                    'target': target,
+                    'success': False,
+                    'error': str(e)
+                }
+        
+        results['summary'] = f"{results['installed']}/{results['total_checked']} tools installed, {results['missing']} missing"
+        
+        return jsonify(results)
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
 
 
 # ================================
@@ -3775,19 +3861,26 @@ TOOL_BUSINESS_ALIASES = {
     'network scanner': 'nmap',
     'network discovery': 'nmap',
     'port scanner': 'nmap',
+    'network port scanner': 'nmap',
+    'network-port-scanner': 'nmap',
     'network audit': 'nmap',
+    'network infrastructure scanner': 'nmap',
     'dns lookup': 'dnsrecon',
     'dns scanner': 'dnsrecon',
+    'dns reconnaissance': 'dnsrecon',
     'dns audit': 'dnsrecon',
     'subdomain finder': 'sublist3r',
     'subdomain scanner': 'sublist3r',
+    'subdomain discovery': 'sublist3r',
     'ssl checker': 'sslyze',
     'ssl scanner': 'sslyze',
+    'ssl/tls analyzer': 'sslyze',
     'ssl audit': 'testssl',
     'certificate scanner': 'sslyze',
     'firewall scanner': 'hping3',
     'traceroute': 'traceroute',
     'whois lookup': 'whois',
+    'domain lookup': 'whois',
     'network sniffer': 'tcpdump',
     'packet capture': 'tcpdump',
     
@@ -3795,50 +3888,65 @@ TOOL_BUSINESS_ALIASES = {
     'website scanner': 'nikto',
     'web scanner': 'nikto',
     'web vulnerability scanner': 'nikto',
+    'web server scanner': 'nikto',
     'web app scanner': 'zap',
     'web application scanner': 'zap',
     'owasp scanner': 'zap',
     'xss scanner': 'xsstrike',
+    'cross-site scripting': 'xsstrike',
     'sql injection': 'sqlmap',
+    'sql injection scanner': 'sqlmap',
     'sqli scanner': 'sqlmap',
     'database scanner': 'sqlmap',
     'directory scanner': 'gobuster',
     'directory finder': 'dirb',
+    'directory brute force': 'gobuster',
     'cms scanner': 'wpscan',
     'wordpress scanner': 'wpscan',
     'api scanner': 'arjun',
+    'api parameter finder': 'arjun',
     'header scanner': 'nikto',
     
     # Vulnerability Assessment
     'vulnerability scanner': 'openvas',
     'vuln scanner': 'openvas',
+    'vulnerability assessment': 'openvas',
     'security audit': 'lynis',
     'system audit': 'lynis',
     'linux audit': 'lynis',
     'compliance scanner': 'lynis',
     'cve scanner': 'searchsploit',
     'exploit finder': 'searchsploit',
+    'exploit database': 'searchsploit',
     
     # Password & Authentication
     'password tester': 'hydra',
     'password cracker': 'john',
+    'password auditor': 'hydra',
     'brute force': 'hydra',
+    'brute force scanner': 'hydra',
     'login tester': 'hydra',
     'hash cracker': 'hashcat',
     'wifi scanner': 'aircrack-ng',
     'wireless scanner': 'aircrack-ng',
+    'wireless security': 'aircrack-ng',
     
     # Information Gathering
     'email finder': 'theharvester',
+    'email harvester': 'theharvester',
     'osint scanner': 'theharvester',
+    'osint tool': 'theharvester',
     'information gathering': 'theharvester',
     'recon scanner': 'recon-ng',
+    'reconnaissance': 'recon-ng',
     'metadata scanner': 'exiftool',
+    'metadata extractor': 'exiftool',
     'google dorking': 'metagoofil',
     
     # Container & Cloud
     'docker scanner': 'trivy',
     'container scanner': 'trivy',
+    'container security': 'trivy',
     'image scanner': 'trivy',
     'kubernetes scanner': 'kube-bench',
     'cloud scanner': 'prowler',
@@ -3847,8 +3955,8 @@ TOOL_BUSINESS_ALIASES = {
 
 def get_tool_by_name_or_id(tool_identifier):
     """
-    Lookup tool in database by name, UUID, or business alias.
-    Resolution order: UUID → exact name → business alias → partial match
+    Lookup tool in database by name, UUID, business_name, or business alias.
+    Resolution order: UUID → exact name → exact business_name → business alias → partial match
     Returns tuple: (tool_db_object, tool_name)
     """
     if not tool_identifier:
@@ -3859,14 +3967,21 @@ def get_tool_by_name_or_id(tool_identifier):
     if tool:
         return tool, tool.name
     
-    # 2. Try case-insensitive exact name match
+    # 2. Try case-insensitive exact name match (technical name)
     tool = Tool.query.filter(
         db.func.lower(Tool.name) == tool_identifier.lower()
     ).first()
     if tool:
         return tool, tool.name
     
-    # 3. Try business alias mapping
+    # 3. Try case-insensitive exact business_name match
+    tool = Tool.query.filter(
+        db.func.lower(Tool.business_name) == tool_identifier.lower()
+    ).first()
+    if tool:
+        return tool, tool.name
+    
+    # 4. Try business alias mapping
     alias_key = tool_identifier.lower().strip()
     slug = TOOL_BUSINESS_ALIASES.get(alias_key)
     if slug:
@@ -3876,9 +3991,12 @@ def get_tool_by_name_or_id(tool_identifier):
         if tool:
             return tool, tool.name
     
-    # 4. Try partial match (e.g., 'nmap' matches 'Nmap')
+    # 5. Try partial match on name or business_name
     tool = Tool.query.filter(
-        Tool.name.ilike(f'%{tool_identifier}%')
+        db.or_(
+            Tool.name.ilike(f'%{tool_identifier}%'),
+            Tool.business_name.ilike(f'%{tool_identifier}%')
+        )
     ).first()
     if tool:
         return tool, tool.name
@@ -6456,21 +6574,15 @@ def execute_terminal_command():
 @jwt_required()
 def get_terminal_agents():
     """Get list of agents available for terminal connection.
-    Returns agents with SSH credentials OR connection_type='ssh'.
-    Also includes a 'local' pseudo-agent for localhost execution.
+    Returns all agents for the organization plus a local pseudo-agent.
     """
     try:
         user_id = get_jwt_identity()
         user = User.query.get(user_id)
         
-        # Get all agents that have SSH capability (connection_type='ssh' OR have SSH credentials)
+        # Get ALL agents for this organization
         agents = Agent.query.filter(
-            Agent.organization_id == user.organization_id,
-            db.or_(
-                Agent.connection_type == 'ssh',
-                Agent.ssh_host.isnot(None),
-                Agent.ssh_username.isnot(None)
-            )
+            Agent.organization_id == user.organization_id
         ).all()
         
         agent_list = [{
