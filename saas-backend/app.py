@@ -5792,6 +5792,407 @@ def execute_scan_via_ssh(agent, scan_id, tool_id, target, parameters):
 
 
 # ================================
+# V7 SCAN ENGINE — Tool Automation
+# ================================
+
+try:
+    from tool_configs import TOOL_REGISTRY, get_tools_for_plan as v7_get_tools_for_plan, get_tool as v7_get_tool, get_categories as v7_get_categories, get_all_slugs as v7_get_all_slugs
+    from scan_runner import execute_scan as v7_execute_scan, validate_binary, build_command as v7_build_command
+    from scan_runner import ToolNotFoundError, BinaryMissingError, TargetRequiredError, PlanAccessDeniedError, ScanTimeoutError
+    from parsers import auto_parse
+    V7_ENGINE_AVAILABLE = True
+    print("✅ V7 Scan Engine loaded (60+ tools)")
+except ImportError as e:
+    V7_ENGINE_AVAILABLE = False
+    print(f"⚠️ V7 Scan Engine not available: {e}")
+
+
+@app.route('/api/v1/v7/tools', methods=['GET'])
+@require_organization
+def v7_list_tools():
+    """List all tools available for the user's plan (V7 Engine)"""
+    if not V7_ENGINE_AVAILABLE:
+        return jsonify({'error': 'V7 engine not available'}), 503
+
+    try:
+        user_id = get_jwt_identity()
+        user = User.query.get(user_id)
+        org = user.organization
+        plan = org.plan_type or 'trial'
+
+        allowed_slugs = v7_get_tools_for_plan(plan)
+        tools_list = []
+        for slug in sorted(allowed_slugs):
+            tc = v7_get_tool(slug)
+            if tc:
+                # Check if binary is installed
+                import shutil
+                binary_path = shutil.which(tc.binary)
+                tools_list.append({
+                    'slug': tc.slug,
+                    'name': tc.name,
+                    'binary': tc.binary,
+                    'category': tc.category,
+                    'description': tc.description,
+                    'plan': tc.plan,
+                    'installed': binary_path is not None,
+                    'profiles': list(tc.profiles.keys()),
+                    'needs_target': tc.needs_target,
+                    'dangerous': tc.dangerous,
+                    'output_format': tc.output_format,
+                })
+
+        categories = {}
+        for t in tools_list:
+            cat = t['category']
+            if cat not in categories:
+                categories[cat] = []
+            categories[cat].append(t['slug'])
+
+        return jsonify({
+            'tools': tools_list,
+            'total': len(tools_list),
+            'plan': plan,
+            'categories': categories,
+        })
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+
+@app.route('/api/v1/v7/tools/<slug>', methods=['GET'])
+@require_organization
+def v7_tool_detail(slug):
+    """Get detailed tool config including profiles (V7 Engine)"""
+    if not V7_ENGINE_AVAILABLE:
+        return jsonify({'error': 'V7 engine not available'}), 503
+
+    tc = v7_get_tool(slug)
+    if not tc:
+        return jsonify({'error': f'Tool {slug} not found in registry'}), 404
+
+    import shutil
+    binary_path = shutil.which(tc.binary)
+
+    profiles = {}
+    for pname, p in tc.profiles.items():
+        profiles[pname] = {
+            'name': p.name,
+            'description': p.description,
+            'timeout': p.timeout,
+            'requires_root': p.requires_root,
+        }
+
+    return jsonify({
+        'slug': tc.slug,
+        'name': tc.name,
+        'binary': tc.binary,
+        'category': tc.category,
+        'description': tc.description,
+        'plan': tc.plan,
+        'installed': binary_path is not None,
+        'binary_path': binary_path,
+        'profiles': profiles,
+        'needs_target': tc.needs_target,
+        'dangerous': tc.dangerous,
+        'target_mode': tc.target_mode,
+        'output_format': tc.output_format,
+        'notes': tc.notes,
+    })
+
+
+@app.route('/api/v1/v7/scan/execute', methods=['POST'])
+@require_organization
+def v7_execute_scan_endpoint():
+    """
+    Execute a one-click scan using the V7 engine.
+    
+    Body JSON:
+      {
+        "tool_slug": "nmap",
+        "target": "example.com",
+        "profile": "quick",         // optional, defaults to "default"
+        "extra_args": [],            // optional
+        "agent_id": null             // optional — future SSH agent support
+      }
+    
+    Returns:
+      201 — scan started, with scan_id and streaming will be available
+    """
+    if not V7_ENGINE_AVAILABLE:
+        return jsonify({'error': 'V7 engine not available'}), 503
+
+    try:
+        user_id = get_jwt_identity()
+        user = User.query.get(user_id)
+        org = user.organization
+        data = request.get_json()
+
+        tool_slug = data.get('tool_slug')
+        target = data.get('target')
+        profile = data.get('profile', 'default')
+        extra_args = data.get('extra_args', [])
+
+        if not tool_slug or not target:
+            return jsonify({'error': 'tool_slug and target are required'}), 400
+
+        # Resolve tool config
+        tc = v7_get_tool(tool_slug)
+        if not tc:
+            return jsonify({'error': f'Unknown tool: {tool_slug}'}), 404
+
+        # Plan access check
+        plan = org.plan_type or 'trial'
+        allowed = v7_get_tools_for_plan(plan)
+        if tool_slug not in allowed:
+            return jsonify({
+                'error': f'Tool {tool_slug} requires plan upgrade',
+                'current_plan': plan,
+                'required_plan': tc.plan,
+            }), 402
+
+        # Daily scan limit
+        plan_cfg = get_plan_config(plan)
+        daily_limit = plan_cfg['daily_scan_limit']
+        if daily_limit > 0:
+            from datetime import date
+            today_scans = Scan.query.filter(
+                Scan.organization_id == org.id,
+                db.func.date(Scan.created_at) == date.today()
+            ).count()
+            if today_scans >= daily_limit:
+                return jsonify({
+                    'error': f'Daily scan limit reached ({today_scans}/{daily_limit})',
+                    'scans_today': today_scans,
+                    'limit': daily_limit,
+                }), 429
+
+        # Resolve or create Tool DB record for FK
+        tool_db = Tool.query.filter_by(name=tool_slug).first()
+        if not tool_db:
+            tool_db = Tool.query.filter_by(name=tc.name).first()
+        if not tool_db:
+            # Auto-create tool record
+            tool_db = Tool(
+                name=tool_slug,
+                business_name=tc.name,
+                category=tc.category,
+                business_category=tc.category,
+                description=tc.description,
+                business_description=tc.description,
+                plan_required=tc.plan,
+                is_active=True,
+                tool_type='cli',
+            )
+            db.session.add(tool_db)
+            db.session.flush()
+
+        # Create scan record
+        scan_id = str(uuid.uuid4())
+        scan = Scan(
+            id=scan_id,
+            organization_id=org.id,
+            user_id=user.id,
+            tool_id=tool_db.id,
+            target=target,
+            parameters={'profile': profile, 'extra_args': extra_args, 'engine': 'v7'},
+            status='running',
+            started_at=datetime.utcnow(),
+        )
+        db.session.add(scan)
+        db.session.commit()
+
+        # Build command preview
+        try:
+            cmd = v7_build_command(tc, target, profile, extra_args)
+            cmd_str = ' '.join(cmd)
+        except Exception as cmd_err:
+            cmd_str = f"(build error: {cmd_err})"
+
+        # Run scan in background thread with DB callback
+        import threading
+
+        def _run_v7_scan():
+            with app.app_context():
+                try:
+                    output_lines = []
+
+                    def on_output(line):
+                        output_lines.append(line)
+                        # Emit via WebSocket if available
+                        try:
+                            socketio.emit('scan_output', {
+                                'scan_id': scan_id,
+                                'line': line.rstrip(),
+                            }, room=f'org_{org.id}')
+                        except Exception:
+                            pass
+
+                    result = v7_execute_scan(
+                        tool_slug=tool_slug,
+                        target=target,
+                        profile=profile,
+                        user_plan=plan,
+                        extra_args=extra_args,
+                        scan_id=scan_id,
+                        on_output=on_output,
+                    )
+
+                    s = Scan.query.get(scan_id)
+                    if s:
+                        s.output = result.stdout[:65535] if result.stdout else ''
+                        s.error_log = result.stderr[:10000] if result.stderr else ''
+                        s.completed_at = datetime.utcnow()
+
+                        if result.success:
+                            s.status = 'completed'
+                            s.findings = result.parsed or {}
+                        elif result.timed_out:
+                            s.status = 'timeout'
+                        else:
+                            s.status = 'failed'
+
+                        db.session.commit()
+                        print(f"✅ V7 Scan {scan_id} → {s.status} ({result.duration:.1f}s)")
+
+                        # Emit completion
+                        try:
+                            socketio.emit('scan_complete', {
+                                'scan_id': scan_id,
+                                'status': s.status,
+                                'duration': result.duration,
+                                'findings_count': len(result.parsed.get('findings', [])) if result.parsed else 0,
+                            }, room=f'org_{org.id}')
+                        except Exception:
+                            pass
+
+                except Exception as e:
+                    print(f"❌ V7 Scan {scan_id} error: {e}")
+                    import traceback
+                    traceback.print_exc()
+                    try:
+                        s = Scan.query.get(scan_id)
+                        if s:
+                            s.status = 'failed'
+                            s.error_log = str(e)
+                            s.completed_at = datetime.utcnow()
+                            db.session.commit()
+                    except Exception:
+                        db.session.rollback()
+
+        t = threading.Thread(target=_run_v7_scan, daemon=True)
+        t.start()
+
+        # Emit activity
+        _emit_scan_activity(scan, user, tool_db, 'started scan')
+
+        return jsonify({
+            'success': True,
+            'scan_id': scan_id,
+            'status': 'running',
+            'tool': tool_slug,
+            'profile': profile,
+            'target': target,
+            'command': cmd_str,
+            'engine': 'v7',
+            'message': f'{tc.name} scan started with {profile} profile',
+        }), 201
+
+    except Exception as e:
+        db.session.rollback()
+        import traceback
+        traceback.print_exc()
+        return jsonify({'error': str(e)}), 500
+
+
+@app.route('/api/v1/v7/scan/<scan_id>/output', methods=['GET'])
+@require_organization
+def v7_scan_output(scan_id):
+    """Get scan output and parsed findings for a V7 scan."""
+    try:
+        user_id = get_jwt_identity()
+        user = User.query.get(user_id)
+
+        scan = Scan.query.filter_by(
+            id=scan_id,
+            organization_id=user.organization_id,
+        ).first()
+
+        if not scan:
+            return jsonify({'error': 'Scan not found'}), 404
+
+        return jsonify({
+            'scan_id': scan.id,
+            'status': scan.status,
+            'tool_id': scan.tool_id,
+            'target': scan.target,
+            'parameters': scan.parameters,
+            'output': scan.output,
+            'error_log': scan.error_log,
+            'findings': scan.findings,
+            'started_at': scan.started_at.isoformat() if scan.started_at else None,
+            'completed_at': scan.completed_at.isoformat() if scan.completed_at else None,
+            'duration': scan.duration_str,
+        })
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+
+@app.route('/api/v1/v7/categories', methods=['GET'])
+@require_organization
+def v7_categories():
+    """List all tool categories with counts (V7 Engine)"""
+    if not V7_ENGINE_AVAILABLE:
+        return jsonify({'error': 'V7 engine not available'}), 503
+
+    try:
+        user_id = get_jwt_identity()
+        user = User.query.get(user_id)
+        org = user.organization
+        plan = org.plan_type or 'trial'
+
+        cats = v7_get_categories()
+        allowed = v7_get_tools_for_plan(plan)
+
+        result = []
+        for cat, slugs in sorted(cats.items()):
+            accessible = [s for s in slugs if s in allowed]
+            result.append({
+                'category': cat,
+                'total_tools': len(slugs),
+                'accessible_tools': len(accessible),
+                'tools': accessible,
+            })
+
+        return jsonify({'categories': result, 'plan': plan})
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+
+@app.route('/api/v1/v7/verify', methods=['GET'])
+@require_organization
+def v7_verify_tools():
+    """Verify which tools are installed on the server (admin/superadmin only)"""
+    if not V7_ENGINE_AVAILABLE:
+        return jsonify({'error': 'V7 engine not available'}), 503
+
+    try:
+        user_id = get_jwt_identity()
+        user = User.query.get(user_id)
+        if user.role not in ('admin', 'superadmin'):
+            return jsonify({'error': 'Admin access required'}), 403
+
+        from verify_installation import verify_all
+        results, summary = verify_all()
+
+        return jsonify({
+            'results': results,
+            'summary': summary,
+        })
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+
+# ================================
 # AGENT API
 # ================================
 
