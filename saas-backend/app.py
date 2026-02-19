@@ -6003,7 +6003,7 @@ def v7_execute_scan_endpoint():
 
         # Build command preview
         try:
-            cmd = v7_build_command(tc, target, profile, extra_args)
+            cmd, _prof = v7_build_command(tc, target, profile, extra_args)
             cmd_str = ' '.join(cmd)
         except Exception as cmd_err:
             cmd_str = f"(build error: {cmd_err})"
@@ -6030,7 +6030,7 @@ def v7_execute_scan_endpoint():
                     result = v7_execute_scan(
                         tool_slug=tool_slug,
                         target=target,
-                        profile=profile,
+                        profile_name=profile,
                         user_plan=plan,
                         extra_args=extra_args,
                         scan_id=scan_id,
