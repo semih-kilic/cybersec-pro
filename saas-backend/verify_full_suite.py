@@ -23,10 +23,26 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
 def verify_registry():
     """Verify the tool registry has enough tools and check installations."""
-    from tool_configs import TOOL_REGISTRY, get_categories, get_all_slugs, load_tools_from_system
+    from tool_configs import TOOL_REGISTRY, get_categories, get_all_slugs, load_tools_from_system, bulk_register_from_db
 
     # Ensure system tools are discovered
     load_tools_from_system()
+    
+    # Sync DB tools into registry if available
+    try:
+        from app import app, db, Tool
+        with app.app_context():
+            all_db_tools = Tool.query.all()
+            tools_data = [{
+                'name': t.name,
+                'category': t.category,
+                'plan_required': t.plan_required,
+                'business_name': t.business_name,
+                'description': t.description or '',
+            } for t in all_db_tools]
+            bulk_register_from_db(tools_data)
+    except Exception:
+        pass  # DB not available in standalone mode
 
     total = len(TOOL_REGISTRY)
     categories = get_categories()
