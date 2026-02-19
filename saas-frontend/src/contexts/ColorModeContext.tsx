@@ -31,7 +31,12 @@ function getSystemPreference(): 'dark' | 'light' {
 function getSavedMode(): ColorMode {
   try {
     const saved = localStorage.getItem(STORAGE_KEY);
-    if (saved === 'dark' || saved === 'light' || saved === 'system') return saved;
+    // Only accept explicit 'dark' or 'light'. Treat 'system' as 'light' to prevent
+    // OS dark-mode preference from overriding our default.
+    if (saved === 'dark') return 'dark';
+    if (saved === 'light') return 'light';
+    // 'system' or missing → force light. Write it so pre-hydration script agrees.
+    localStorage.setItem(STORAGE_KEY, 'light');
   } catch { /* noop */ }
   return 'light'; // Default to light (professional SaaS appearance)
 }
@@ -49,8 +54,10 @@ export function ColorModeProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   const resolvedMode = useMemo(
-    () => (colorMode === 'system' ? systemPref : colorMode),
-    [colorMode, systemPref]
+    // Never follow system preference — only explicit user choice.
+    // 'system' treated as 'light' to guarantee light-mode default.
+    () => (colorMode === 'dark' ? 'dark' : 'light'),
+    [colorMode]
   );
 
   const isDark = resolvedMode === 'dark';

@@ -18,7 +18,9 @@
     <script>
       (function(){
         var s=localStorage.getItem('cybersecpro_color_mode');
-        var m=(s==='dark')?'dark':(s==='system'&&window.matchMedia('(prefers-color-scheme:dark)').matches)?'dark':'light';
+        // Only go dark if user EXPLICITLY chose 'dark'. Ignore system preference.
+        var m=(s==='dark')?'dark':'light';
+        document.documentElement.classList.remove('dark','light');
         document.documentElement.classList.add(m);
       })();
     </script>

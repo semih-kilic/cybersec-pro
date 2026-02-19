@@ -7554,7 +7554,7 @@ def purple_team_dashboard():
 # CYBERBOT — AI SECURITY ASSISTANT CHATBOT (BÖLÜM 4)
 # ═══════════════════════════════════════════════════════════════
 
-CYBERBOT_SYSTEM_PROMPT = """You are CyberBot — CyberSec Pro platform's AI security assistant.
+CYBERBOT_SYSTEM_PROMPT_TEMPLATE = """You are CyberBot — CyberSec Pro platform's AI security assistant.
 
 ROLE:
 - Explain security scan results to non-technical users in plain language
@@ -7580,19 +7580,12 @@ ALWAYS DO:
 - Provide step-by-step fix instructions
 - Refer to human support when appropriate
 
-PLAN INFORMATION (current prices):
-- Free Trial: €0, 14 days, 1 scan, 682 tests
-- Starter: €99/month, 1 domain, weekly scans, email support (48h)
-- Professional: €299/month, 5 domains, daily scans, API access, compliance reports, priority support (24h)
-- Enterprise: €799/month, unlimited domains, hourly monitoring, white-label, 24/7 dedicated support (2h)
+PLATFORM DATA (live — do NOT override with guesses):
+- Total security tools: {total_tools}
+- {plan_text}
 
-SECURITY TEST CATEGORIES (682 tests in 6 categories — no tool names):
-1. Website & Web App Protection — Tests web applications for injection, XSS, misconfigurations
-2. Data & Encryption Security — Checks encryption, password strength, data leak exposure
-3. Network & Infrastructure Protection — Scans network ports, firewalls, DNS, cloud configs
-4. API & Mobile App Protection — Tests API endpoints, mobile backends, authentication
-5. Compliance & Standards Verification — GDPR, PCI-DSS, HIPAA, ISO 27001 checks
-6. Known Threat & CVE Detection — Scans against known vulnerability databases
+The categories are dynamically loaded from the database. Current categories:
+{categories}
 """
 
 def _build_dynamic_chatbot_context(user, org):

@@ -618,22 +618,31 @@ class ScanEngineV3:
         # Always output XML to stdout for parsing
         cmd.extend(['-oX', '-'])
         
-        # Timing (default T3)
+        # Timing — SAFETY: force minimum T3, never allow T1/T2 (too slow)
         timing = params.get('timing', 'T3')
         if not timing.startswith('T'):
             timing = f'T{timing}'
+        # Block T0, T1, T2 — they cause scans to hang
+        timing_num = int(timing[1]) if len(timing) > 1 and timing[1].isdigit() else 3
+        if timing_num < 3:
+            logger.warning(f"Blocked slow timing {timing}, forcing T3")
+            timing = 'T3'
         cmd.append(f'-{timing}')
         
-        # Port range — default is --top-ports 1000 for fast comprehensive scans
+        # Port range — SAFETY OVERRIDE: never allow 1-65535 full scan
         ports = params.get('ports', '')
         top_ports = params.get('top_ports', '')
+        
+        # EMERGENCY FIX: Intercept full-range port scans and replace with --top-ports
+        if ports and ('65535' in str(ports) or str(ports).strip() in ('-', '1-65535', '0-65535')):
+            logger.warning(f"Blocked full port range '{ports}', using --top-ports 10000 instead")
+            ports = ''  # Clear dangerous port range
+            top_ports = '10000'  # Use top 10000 instead
+        
         if ports:
-            # Safety: if full port range requested, add max-retries to prevent hanging
-            if '65535' in str(ports):
-                cmd.extend(['--max-retries', '1', '--host-timeout', '25m'])
             cmd.extend(['-p', str(ports)])
         elif top_ports:
-            cmd.extend(['--top-ports', str(top_ports)])
+            cmd.extend(['--top-ports', str(int(top_ports))])
         else:
             # Default: top 1000 ports (faster than 1-1000 sequential, same coverage)
             cmd.extend(['--top-ports', '1000'])
