@@ -160,7 +160,7 @@ class ApiService {
     }>(`/scan/${scanId}/result`);
   }
 
-  async executeScan(toolId: string, target: string, parameters: Record<string, unknown>, agentId?: string) {
+  async executeScan(toolId: string, target: string, parameters: Record<string, unknown>, agentId?: string, executionMode?: string) {
     return this.request<{
       success: boolean;
       scan_id: string;
@@ -168,6 +168,7 @@ class ApiService {
       command: string;
       message: string;
       execution_mode?: string;
+      engine?: string;
       agent?: {
         id: string;
         name: string;
@@ -180,7 +181,8 @@ class ApiService {
         tool: toolId, 
         target, 
         parameters,
-        ...(agentId && { agent_id: agentId, execution_mode: 'agent' })
+        ...(executionMode && { execution_mode: executionMode }),
+        ...(agentId && { agent_id: agentId }),
       }),
     });
   }

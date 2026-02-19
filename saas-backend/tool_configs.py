@@ -58,6 +58,13 @@ class ToolConfig:
     def default_profile(self) -> Optional[ScanProfile]:
         return self.profiles.get('default') or next(iter(self.profiles.values()), None)
 
+    @property
+    def target_flag(self) -> Optional[str]:
+        """Return the flag used to specify the target, or None for append/positional."""
+        if self.target_mode in ('append', 'positional', 'none'):
+            return None
+        return self.target_mode  # e.g. '-h', '-u', '--url'
+
     def to_dict(self) -> Dict:
         d = asdict(self)
         d['default_profile'] = self.default_profile.name if self.default_profile else None
@@ -887,6 +894,314 @@ def get_or_generic(slug: str) -> ToolConfig:
     g.name = slug.replace('-', ' ').title()
     g.binary = slug
     return g
+
+
+# ═══════════════════════════════════════════════
+#  BULK AUTO-REGISTRATION FROM DATABASE
+# ═══════════════════════════════════════════════
+
+# Category mapping: DB categories → V7 categories
+_DB_CATEGORY_MAP = {
+    'API & Mobile Backend Security': 'Mobile & API Security',
+    'Compliance & Regulatory': 'Forensics & Compliance',
+    'Data Protection & Encryption': 'Cryptography & Data Protection',
+    'Infrastructure Security': 'Network Scanning',
+    'Known Vulnerability Database': 'Vulnerability Assessment',
+    'Web Application Security': 'Web Security',
+    'information_gathering': 'Information Gathering',
+    'vulnerability_analysis': 'Vulnerability Assessment',
+    'web_application': 'Web Security',
+    'password_attacks': 'Password & Authentication',
+    'wireless_attacks': 'Wireless Security',
+    'sniffing_spoofing': 'Network Scanning',
+    'exploitation': 'Exploitation',
+    'post_exploitation': 'Post-Exploitation',
+    'forensics': 'Forensics & Compliance',
+    'reverse_engineering': 'Mobile & API Security',
+    'reporting': 'Forensics & Compliance',
+    'networking': 'Network Scanning',
+}
+
+# Tools that are GUI-only or frameworks (not CLI scanners)
+_GUI_ONLY_TOOLS = {
+    'maltego', 'burpsuite', 'ida', 'ida-free', 'binary-ninja', 'hopper',
+    'ollydbg', 'x64dbg', 'windbg', 'ghidra', 'cutter', 'autopsy',
+    'guymager', 'keepnote', 'cherrytree', 'magictree', 'faraday',
+    'wireshark', 'zenmap', 'armitage', 'cobalt-strike', 'metasploit-framework',
+    'dirbuster', 'etherape', 'kismet-gui', 'dradis', 'bloodhound',
+}
+
+# Tool binary name overrides (when slug != binary name)
+_BINARY_OVERRIDES = {
+    'theHarvester': 'theHarvester',
+    'theharvester': 'theHarvester',
+    'zaproxy': 'zap-cli',
+    'wpscan': 'wpscan',
+    'hashcat': 'hashcat',
+    'msfconsole': 'msfconsole',
+    'searchsploit': 'searchsploit',
+    'john': 'john',
+    'hydra': 'hydra',
+    'aircrack-ng': 'aircrack-ng',
+    'recon-ng': 'recon-ng',
+    'spiderfoot': 'spiderfoot',
+    'subfinder': 'subfinder',
+    'amass': 'amass',
+    'crackmapexec': 'crackmapexec',
+    'responder': 'responder',
+    'enum4linux': 'enum4linux',
+    'steghide': 'steghide',
+    'binwalk': 'binwalk',
+    'volatility': 'vol.py',
+    'volatility3': 'vol3',
+    'foremost': 'foremost',
+    'bulk-extractor': 'bulk_extractor',
+    'linpeas': 'linpeas.sh',
+    'winpeas': 'winpeas.exe',
+    'PEASS-ng': 'linpeas.sh',
+    'empire': 'powershell-empire',
+    'strace': 'strace',
+    'ltrace': 'ltrace',
+    'gdb': 'gdb',
+    'radare2': 'r2',
+    'apktool': 'apktool',
+    'jadx': 'jadx',
+    'frida': 'frida',
+    'objection': 'objection',
+    'mitmproxy': 'mitmproxy',
+    'bettercap': 'bettercap',
+    'ettercap': 'ettercap',
+    'pixiewps': 'pixiewps',
+    'airgeddon': 'airgeddon',
+    'wifite': 'wifite',
+    'fern-wifi': 'fern-wifi-cracker',
+    'cowpatty': 'cowpatty',
+    'hashdeep': 'hashdeep',
+    'yara': 'yara',
+    'trivy': 'trivy',
+    'lynis': 'lynis',
+    'chkrootkit': 'chkrootkit',
+    'rkhunter': 'rkhunter',
+    'clamav': 'clamscan',
+    'snort': 'snort',
+    'suricata': 'suricata',
+    'openvas': 'gvm-cli',
+    'nessus': 'nessuscli',
+    'GTFOBins': 'gtfobins',
+    'LOLBASProject': 'lolbas',
+    'WADComs': 'wadcoms',
+}
+
+# Target modes for known tool types
+_TARGET_MODE_MAP = {
+    'Network Scanning': 'append',
+    'Web Security': '-u',
+    'Information Gathering': 'append',
+    'Vulnerability Assessment': 'append',
+    'Password & Authentication': '-h',
+    'Wireless Security': 'none',
+    'Forensics & Compliance': 'positional',
+    'Cryptography & Data Protection': 'positional',
+    'Mobile & API Security': 'positional',
+    'Exploitation': 'append',
+    'Post-Exploitation': 'append',
+}
+
+
+def bulk_register_from_db(tools_data: List[Dict[str, Any]]) -> int:
+    """
+    Bulk-register tools from database records into V7 TOOL_REGISTRY.
+    
+    Only registers tools that aren't already in the registry.
+    
+    Args:
+        tools_data: List of dicts with keys: name, category, plan_required, business_name, description
+    
+    Returns:
+        Number of newly registered tools
+    """
+    import shutil
+    count = 0
+    
+    for td in tools_data:
+        slug = td.get('name', '').strip()
+        if not slug or slug in TOOL_REGISTRY:
+            continue
+        
+        db_category = td.get('category', 'general')
+        v7_category = _DB_CATEGORY_MAP.get(db_category, db_category)
+        plan = td.get('plan_required', 'starter')
+        biz_name = td.get('business_name', slug.replace('-', ' ').title())
+        description = td.get('description', '') or td.get('business_description', '') or f'{biz_name} security tool'
+        
+        # Determine binary name
+        binary = _BINARY_OVERRIDES.get(slug, slug)
+        
+        # Determine target mode
+        target_mode = _TARGET_MODE_MAP.get(v7_category, 'append')
+        
+        # Check if tool is GUI-only
+        is_gui = slug in _GUI_ONLY_TOOLS
+        
+        # Check if binary exists on system
+        binary_path = shutil.which(binary)
+        installed = binary_path is not None
+        
+        # Create ToolConfig with generic profiles
+        tc = ToolConfig(
+            slug=slug,
+            name=biz_name if biz_name else slug.replace('-', ' ').title(),
+            binary=binary,
+            category=v7_category,
+            description=description[:200] if description else f'{slug} security tool',
+            plan=plan,
+            target_mode=target_mode,
+            output_format='text',
+            version_flag='--version' if not is_gui else '',
+            needs_target=not is_gui,
+            dangerous=slug in {'empire', 'cobalt-strike', 'ettercap', 'bettercap', 'responder', 'msfconsole'},
+            notes='gui-only' if is_gui else ('installed' if installed else 'not-installed'),
+            profiles={
+                'default': _p('default', f'Run {slug} with standard settings', [], timeout=300),
+                'quick': _p('quick', f'Quick {slug} scan', [], timeout=120),
+                'full': _p('full', f'Comprehensive {slug} scan', [], timeout=600),
+            }
+        )
+        
+        TOOL_REGISTRY[slug] = tc
+        count += 1
+    
+    return count
+
+
+def load_tools_from_system() -> int:
+    """
+    Auto-discover security tools from system paths.
+    Scans /usr/bin, /usr/sbin, and known Kali tool locations.
+    
+    Returns:
+        Number of newly discovered tools
+    """
+    import shutil
+    import os
+    
+    # Known security tool binaries to look for
+    KNOWN_SECURITY_TOOLS = [
+        # Network
+        'nmap', 'masscan', 'zmap', 'unicornscan', 'arp-scan', 'netdiscover',
+        'hping3', 'fping', 'arping', 'nbtscan', 'onesixtyone', 'snmpwalk',
+        'snmpcheck', 'snmpenum', 'ike-scan', 'p0f', 'netcat', 'ncat', 'socat',
+        'proxychains', 'proxychains4', 'tor', 'torsocks',
+        
+        # DNS
+        'dig', 'host', 'nslookup', 'dnsrecon', 'dnsenum', 'fierce', 'dnsmap',
+        'dnswalk', 'whois', 'dmitri',
+        
+        # Web
+        'nikto', 'whatweb', 'wpscan', 'gobuster', 'dirb', 'wfuzz', 'ffuf',
+        'sqlmap', 'xsser', 'commix', 'dalfox', 'arjun', 'httpx', 'httprobe',
+        'wafw00f', 'feroxbuster', 'wapiti', 'skipfish', 'uniscan',
+        'cadaver', 'davtest', 'joomscan', 'droopescan', 'cmsmap',
+        
+        # Vulnerability
+        'nuclei', 'searchsploit', 'nmap-vulners', 'vulscan',
+        'openvas', 'lynis', 'chkrootkit', 'rkhunter', 'tiger',
+        
+        # Password
+        'hydra', 'john', 'hashcat', 'medusa', 'ncrack', 'patator',
+        'cewl', 'crunch', 'cupp', 'wordlister', 'crowbar',
+        'ophcrack', 'rainbowcrack', 'johnny',
+        
+        # Wireless
+        'aircrack-ng', 'airmon-ng', 'airodump-ng', 'aireplay-ng',
+        'wifite', 'reaver', 'bully', 'pixiewps', 'fern-wifi-cracker',
+        'cowpatty', 'mdk3', 'mdk4', 'hostapd-mana',
+        
+        # Exploitation
+        'msfconsole', 'msfvenom', 'msfdb', 'shellter', 'veil',
+        'empire', 'covenant', 'sliver',
+        
+        # OSINT
+        'theharvester', 'recon-ng', 'maltego', 'spiderfoot', 'sherlock',
+        'metagoofil', 'exiftool', 'foca', 'osrframework',
+        
+        # Forensics
+        'foremost', 'binwalk', 'volatility', 'autopsy', 'sleuthkit',
+        'bulk_extractor', 'scalpel', 'dc3dd', 'dcfldd', 'guymager',
+        'hashdeep', 'md5deep', 'photorec', 'testdisk',
+        
+        # Reverse Engineering
+        'gdb', 'radare2', 'r2', 'ghidra', 'jadx', 'apktool',
+        'dex2jar', 'objdump', 'readelf', 'strings', 'strace', 'ltrace',
+        'nm', 'hexdump', 'xxd',
+        
+        # Network Sniffing
+        'tcpdump', 'tshark', 'wireshark', 'ettercap', 'bettercap',
+        'dsniff', 'arpspoof', 'mitmproxy', 'sslstrip', 'sslsplit',
+        'responder',
+        
+        # Container/Cloud
+        'trivy', 'docker', 'kubectl', 'prowler', 'scout',
+        
+        # Crypto
+        'sslscan', 'sslyze', 'testssl', 'tlsx', 'cipherscan',
+        
+        # Misc
+        'yara', 'suricata', 'snort', 'clamav', 'clamscan',
+        'steghide', 'stegsolve', 'openstego', 'snow', 'outguess',
+        'ipcalc', 'sipcalc', 'macchanger', 'ethtool',
+    ]
+    
+    count = 0
+    for tool_name in KNOWN_SECURITY_TOOLS:
+        if tool_name in TOOL_REGISTRY:
+            continue
+        
+        binary_path = shutil.which(tool_name)
+        if not binary_path:
+            continue
+        
+        # Auto-categorize
+        category = 'Uncategorized'
+        for cat_keyword, cat_name in [
+            ('dns', 'DNS & Domain'), ('nmap', 'Network Scanning'), 
+            ('scan', 'Vulnerability Assessment'), ('web', 'Web Security'),
+            ('sql', 'Web Security'), ('crack', 'Password & Authentication'),
+            ('hash', 'Password & Authentication'), ('air', 'Wireless Security'),
+            ('wifi', 'Wireless Security'), ('msf', 'Exploitation'),
+            ('forensic', 'Forensics & Compliance'), ('steg', 'Steganography'),
+            ('ssl', 'Cryptography & Data Protection'), ('sniff', 'Network Scanning'),
+            ('dump', 'Forensics & Compliance'),
+        ]:
+            if cat_keyword in tool_name.lower():
+                category = cat_name
+                break
+        
+        tc = ToolConfig(
+            slug=tool_name,
+            name=tool_name.replace('-', ' ').title(),
+            binary=tool_name,
+            category=category,
+            description=f'{tool_name} security tool (auto-discovered)',
+            plan='starter',
+            target_mode='append',
+            output_format='text',
+            version_flag='--version',
+            profiles={
+                'default': _p('default', f'Run {tool_name}', [], timeout=300),
+            }
+        )
+        
+        TOOL_REGISTRY[tool_name] = tc
+        count += 1
+    
+    return count
+
+
+# Auto-discover system tools at import time
+_sys_discovered = load_tools_from_system()
+if _sys_discovered > 0:
+    pass  # Silent — app.py will print summary
 
 
 # Quick summary when run directly

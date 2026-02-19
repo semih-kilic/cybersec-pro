@@ -3816,35 +3816,111 @@ def get_available_tools():
 @app.route('/api/v1/tools/<tool_id>/config', methods=['GET'])
 @require_organization
 def get_tool_config(tool_id):
-    """Get specific tool configuration with parameters"""
-    if not SCAN_EXECUTOR_AVAILABLE:
-        return jsonify({'error': 'Scan executor not available'}), 503
+    """Get specific tool configuration with parameters.
     
+    Resolution order:
+    1. V7 TOOL_REGISTRY (tool_configs.py) — richest config
+    2. Legacy scan_executor — older configs
+    3. Database tool record — generate minimal config
+    """
     try:
         user_id = get_jwt_identity()
         user = User.query.get(user_id)
         org = user.organization
-        
-        executor = get_executor()
-        config = executor.get_tool_config(tool_id)
-        
-        if not config:
-            return jsonify({'error': 'Tool not found'}), 404
-        
-        allowed_tools = executor.get_tools_for_plan(org.plan_type)
-        
-        return jsonify({
-            'tool': {
-                'id': tool_id,
-                'name': config.get('name'),
-                'command': config.get('command'),
-                'description': config.get('description'),
-                'category': config.get('category'),
-                'plan_required': config.get('plan_required'),
-                'parameters': config.get('parameters', {}),
-                'is_available': tool_id in allowed_tools
-            }
-        })
+
+        # ── 1. Try V7 engine (best config) ──
+        if V7_ENGINE_AVAILABLE:
+            tc = v7_get_tool(tool_id)
+            if tc is None:
+                from tool_configs import get_or_generic
+                tc = get_or_generic(tool_id)
+
+            if tc:
+                # Convert V7 ToolConfig to API response
+                plan = org.plan_type or 'trial'
+                allowed = v7_get_tools_for_plan(plan)
+                
+                # Build parameters dict from V7 profiles
+                params = {}
+                if tc.profiles:
+                    default_profile = tc.profiles.get('default') or next(iter(tc.profiles.values()), None)
+                    if default_profile and default_profile.args:
+                        for arg in default_profile.args:
+                            if arg.startswith('-'):
+                                flag = arg.split()[0] if ' ' in arg else arg
+                                param_name = flag.lstrip('-').replace('-', '_')
+                                params[param_name] = {
+                                    'flag': flag,
+                                    'type': 'text',
+                                    'description': f'{param_name} option',
+                                    'default': '',
+                                }
+                
+                # Add target placeholder parameter
+                if tc.target_flag:
+                    params['target'] = {
+                        'flag': tc.target_flag,
+                        'type': 'text',
+                        'description': 'Target host, IP, or URL',
+                        'required': True,
+                    }
+
+                return jsonify({
+                    'tool': {
+                        'id': tool_id,
+                        'name': tc.name,
+                        'command': tc.binary,
+                        'description': tc.description,
+                        'category': tc.category,
+                        'plan_required': tc.plan,
+                        'parameters': params,
+                        'is_available': tool_id in allowed,
+                    }
+                })
+
+        # ── 2. Try legacy scan_executor ──
+        if SCAN_EXECUTOR_AVAILABLE:
+            executor = get_executor()
+            config = executor.get_tool_config(tool_id)
+            if config:
+                allowed_tools = executor.get_tools_for_plan(org.plan_type)
+                return jsonify({
+                    'tool': {
+                        'id': tool_id,
+                        'name': config.get('name'),
+                        'command': config.get('command'),
+                        'description': config.get('description'),
+                        'category': config.get('category'),
+                        'plan_required': config.get('plan_required'),
+                        'parameters': config.get('parameters', {}),
+                        'is_available': tool_id in allowed_tools
+                    }
+                })
+
+        # ── 3. Fallback: lookup in DB ──
+        tool_db = Tool.query.filter(
+            db.or_(
+                Tool.name == tool_id,
+                db.func.lower(Tool.name) == tool_id.lower(),
+                Tool.id == tool_id,
+            )
+        ).first()
+
+        if tool_db:
+            return jsonify({
+                'tool': {
+                    'id': tool_id,
+                    'name': tool_db.business_name or tool_db.name,
+                    'command': tool_db.name,
+                    'description': tool_db.description or tool_db.business_description or f'{tool_db.name} security tool',
+                    'category': tool_db.category or 'general',
+                    'plan_required': tool_db.plan_required or 'starter',
+                    'parameters': {},
+                    'is_available': True,
+                }
+            })
+
+        return jsonify({'error': 'Tool not found'}), 404
         
     except Exception as e:
         return jsonify({'error': str(e)}), 500
@@ -4194,7 +4270,110 @@ def start_scan_v2():
                 'message': f'{tool_name} scan dispatched to agent "{selected_agent.name}" ({selected_agent.ip_address})'
             }), 201
         
-        # ── Local execution (server-side V3 engine) ──
+        # ── Local execution — prefer V7 engine, fallback to V3 ──
+        if V7_ENGINE_AVAILABLE:
+            # V7 Engine — tool_configs + scan_runner + parsers
+            tc = v7_get_tool(tool_name)
+            if tc is None:
+                # Try get_or_generic for auto-detected tools
+                from tool_configs import get_or_generic
+                tc = get_or_generic(tool_name)
+
+            profile = parameters.pop('profile', 'default') if isinstance(parameters, dict) else 'default'
+            extra_args = parameters.pop('extra_args', []) if isinstance(parameters, dict) else []
+
+            # Build command preview
+            try:
+                cmd, _prof = v7_build_command(tc, target, profile, extra_args)
+                cmd_str = ' '.join(cmd)
+            except Exception as cmd_err:
+                cmd_str = f"{tool_name} {target}"
+
+            plan = org.plan_type or 'trial'
+
+            # Run V7 scan in background thread
+            import threading
+
+            def _run_v7_scan_from_start():
+                with app.app_context():
+                    try:
+                        output_lines = []
+
+                        def on_output(line):
+                            output_lines.append(line)
+                            try:
+                                socketio.emit('scan_output', {
+                                    'scan_id': scan_id,
+                                    'line': line.rstrip(),
+                                }, room=f'org_{org.id}')
+                            except Exception:
+                                pass
+
+                        result = v7_execute_scan(
+                            tool_slug=tool_name,
+                            target=target,
+                            profile_name=profile if profile != 'default' else 'default',
+                            user_plan=plan,
+                            extra_args=extra_args,
+                            scan_id=scan_id,
+                            on_output=on_output,
+                        )
+
+                        s = Scan.query.get(scan_id)
+                        if s:
+                            s.output = result.stdout[:65535] if result.stdout else ''
+                            s.error_log = result.stderr[:10000] if result.stderr else ''
+                            s.completed_at = datetime.utcnow()
+                            if result.success:
+                                s.status = 'completed'
+                                s.findings = result.parsed or {}
+                            elif result.timed_out:
+                                s.status = 'timeout'
+                            else:
+                                s.status = 'failed'
+                            db.session.commit()
+                            print(f"✅ V7 Scan {scan_id[:8]} → {s.status} ({result.duration:.1f}s)")
+
+                            try:
+                                socketio.emit('scan_complete', {
+                                    'scan_id': scan_id,
+                                    'status': s.status,
+                                    'duration': result.duration,
+                                    'findings_count': len(result.parsed.get('findings', [])) if result.parsed else 0,
+                                }, room=f'org_{org.id}')
+                            except Exception:
+                                pass
+
+                    except Exception as e:
+                        print(f"❌ V7 Scan {scan_id[:8]} error: {e}")
+                        import traceback
+                        traceback.print_exc()
+                        try:
+                            s = Scan.query.get(scan_id)
+                            if s:
+                                s.status = 'failed'
+                                s.error_log = str(e)
+                                s.completed_at = datetime.utcnow()
+                                db.session.commit()
+                        except Exception:
+                            db.session.rollback()
+
+            t = threading.Thread(target=_run_v7_scan_from_start, daemon=True)
+            t.start()
+
+            return jsonify({
+                'success': True,
+                'scan_id': scan_id,
+                'status': 'running',
+                'tool': tool_name,
+                'target': target,
+                'execution_mode': 'local',
+                'engine': 'v7',
+                'command': cmd_str,
+                'message': f'{tool_name} scan started on {target}'
+            }), 201
+
+        # Fallback: V3 engine
         def on_complete(scan_id, status, output, findings, exit_code):
             """Update database when scan completes"""
             with app.app_context():
@@ -5796,12 +5975,30 @@ def execute_scan_via_ssh(agent, scan_id, tool_id, target, parameters):
 # ================================
 
 try:
-    from tool_configs import TOOL_REGISTRY, get_tools_for_plan as v7_get_tools_for_plan, get_tool as v7_get_tool, get_categories as v7_get_categories, get_all_slugs as v7_get_all_slugs
+    from tool_configs import (TOOL_REGISTRY, get_tools_for_plan as v7_get_tools_for_plan,
+                              get_tool as v7_get_tool, get_categories as v7_get_categories,
+                              get_all_slugs as v7_get_all_slugs, bulk_register_from_db)
     from scan_runner import execute_scan as v7_execute_scan, validate_binary, build_command as v7_build_command
     from scan_runner import ToolNotFoundError, BinaryMissingError, TargetRequiredError, PlanAccessDeniedError, ScanTimeoutError
     from parsers import auto_parse
     V7_ENGINE_AVAILABLE = True
-    print("✅ V7 Scan Engine loaded (60+ tools)")
+    
+    # Bulk-register all DB tools into V7 registry
+    with app.app_context():
+        try:
+            all_db_tools = Tool.query.all()
+            tools_data = [{
+                'name': t.name,
+                'category': t.category,
+                'plan_required': t.plan_required,
+                'business_name': t.business_name,
+                'description': t.description or t.business_description or '',
+            } for t in all_db_tools]
+            added = bulk_register_from_db(tools_data)
+            print(f"✅ V7 Scan Engine loaded ({len(TOOL_REGISTRY)} tools, {added} auto-registered from DB)")
+        except Exception as e:
+            print(f"✅ V7 Scan Engine loaded ({len(TOOL_REGISTRY)} tools) — DB sync skipped: {e}")
+    
 except ImportError as e:
     V7_ENGINE_AVAILABLE = False
     print(f"⚠️ V7 Scan Engine not available: {e}")

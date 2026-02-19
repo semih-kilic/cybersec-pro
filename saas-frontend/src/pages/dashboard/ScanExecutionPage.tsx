@@ -278,8 +278,9 @@ export function ScanExecutionPage() {
     
     setOutput([`🚀 Starting ${tool?.name || toolId} scan on ${target} ${agentLabel}...`, '']);
 
-    const agentId = selectedAgentId === 'auto' ? undefined : selectedAgentId === 'local' ? undefined : selectedAgentId;
-    const response = await api.executeScan(toolId, target, parameters, agentId);
+    const agentId = selectedAgentId !== 'auto' && selectedAgentId !== 'local' ? selectedAgentId : undefined;
+    const executionMode = selectedAgentId === 'local' ? 'local' : selectedAgentId === 'auto' ? 'auto' : 'agent';
+    const response = await api.executeScan(toolId, target, parameters, agentId, executionMode);
     
     if (response.error) {
       setError(response.error);
