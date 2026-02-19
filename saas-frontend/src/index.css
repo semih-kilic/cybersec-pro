@@ -467,6 +467,8 @@ html.light .shadow-2xl { box-shadow: 0 10px 15px -3px rgba(0,0,0,0.08), 0 4px 6p
 /* Additional backgrounds */
 html.light .bg-gray-800\/30 { background-color: rgba(241,245,249,0.5) !important; }
 html.light .bg-gray-800\/40 { background-color: rgba(241,245,249,0.6) !important; }
+html.light .bg-gray-800\/60 { background-color: rgba(241,245,249,0.7) !important; }
+html.light .bg-gray-800\/80 { background-color: rgba(241,245,249,0.85) !important; }
 html.light .bg-gray-950 { background-color: #f8fafc !important; }
 html.light .bg-gray-900\/50 { background-color: rgba(255,255,255,0.7) !important; }
 
@@ -508,6 +510,15 @@ html.light button[class*="bg-gray-700"] {
 /* Modal backdrop */
 html.light .bg-black\/60 { background-color: rgba(0,0,0,0.3) !important; }
 html.light .bg-black\/50 { background-color: rgba(0,0,0,0.25) !important; }
+html.light .bg-black\/70 { background-color: rgba(0,0,0,0.35) !important; }
+html.light .bg-black\/80 { background-color: rgba(0,0,0,0.4) !important; }
+
+/* Hover backgrounds in light mode */
+html.light .hover\:bg-gray-700:hover { background-color: #e2e8f0 !important; }
+html.light .hover\:bg-gray-800:hover { background-color: #e2e8f0 !important; }
+html.light .hover\:bg-gray-800\/50:hover { background-color: rgba(241,245,249,0.6) !important; }
+html.light .hover\:text-white:hover { color: #0f172a !important; }
+html.light .hover\:text-cyan-400:hover { color: #0891b2 !important; }
 
 /* Table headers */
 html.light th[class*="text-gray-400"] { color: #64748b !important; }

@@ -7595,70 +7595,125 @@ SECURITY TEST CATEGORIES (682 tests in 6 categories — no tool names):
 6. Known Threat & CVE Detection — Scans against known vulnerability databases
 """
 
-CYBERBOT_QUICK_ACTIONS = {
-    "pricing": {
-        "label": "💰 Pricing",
-        "response": """Here's our current plan comparison:
+def _build_dynamic_chatbot_context(user, org):
+    """Build dynamic chatbot context from real platform data.
+    Called at the start of each chat session to ensure fresh data."""
+    plan_cfg = get_plan_config(org.plan_type)
+    total_tools = Tool.query.filter_by(is_active=True).count()
+    
+    # Category breakdown
+    cats = db.session.query(
+        Tool.business_category, db.func.count(Tool.id)
+    ).filter(Tool.is_active == True).group_by(Tool.business_category).all()
+    cat_summary = ', '.join([f'{c}: {n}' for c, n in sorted(cats, key=lambda x: -x[1]) if c]) or f'{total_tools} tools across multiple categories'
+    
+    # Today's scan usage
+    from datetime import date
+    today_scans = Scan.query.filter(
+        Scan.organization_id == org.id,
+        db.func.date(Scan.created_at) == date.today()
+    ).count()
+    daily_limit = plan_cfg['daily_scan_limit']
+    scans_remaining = max(0, daily_limit - today_scans) if daily_limit > 0 else 'unlimited'
+    
+    # Agent count
+    agent_count = Agent.query.filter_by(organization_id=org.id).count()
+    online_agents = Agent.query.filter_by(organization_id=org.id, status='online').count()
+    
+    # Build plan comparison from PLAN_CONFIG
+    plan_lines = []
+    for pname in ['trial', 'starter', 'professional', 'enterprise']:
+        pcfg = PLAN_CONFIG[pname]
+        price = f"\u20ac{pcfg['price_eur']}/month" if pcfg['price_eur'] > 0 else '\u20ac0 (14-day free trial)'
+        yearly = f" (\u20ac{pcfg['yearly_price_eur']}/year)" if pcfg.get('yearly_price_eur', 0) > 0 else ''
+        tools = pcfg['tool_limit'] if pcfg['tool_limit'] < 999 else total_tools
+        scans_day = pcfg['daily_scan_limit'] if pcfg['daily_scan_limit'] > 0 else 'unlimited'
+        agents = pcfg['max_agents'] if pcfg['max_agents'] > 0 else 'unlimited'
+        plan_lines.append(
+            f"  - **{pname.capitalize()}**: {price}{yearly} | {tools} tools | {scans_day} scans/day | {agents} agent(s) | {pcfg['max_team_members']} team member(s)"
+        )
+    plan_text = '\n'.join(plan_lines)
+    
+    # User's current plan info
+    user_plan_info = (
+        f"User's current plan: {org.plan_type.capitalize()}\n"
+        f"  Tools available: {plan_cfg['tool_limit'] if plan_cfg['tool_limit'] < 999 else total_tools}\n"
+        f"  Daily scan limit: {daily_limit if daily_limit > 0 else 'unlimited'}\n"
+        f"  Scans used today: {today_scans}\n"
+        f"  Scans remaining: {scans_remaining}\n"
+        f"  Agents: {agent_count} ({online_agents} online)\n"
+        f"  Max agents: {plan_cfg['max_agents'] if plan_cfg['max_agents'] > 0 else 'unlimited'}"
+    )
+    
+    # Features for current plan
+    features_on = [k.replace('_', ' ').title() for k, v in plan_cfg['features'].items() if v]
+    features_off = [k.replace('_', ' ').title() for k, v in plan_cfg['features'].items() if not v]
+    
+    return {
+        'total_tools': total_tools,
+        'categories': cat_summary,
+        'plan_text': plan_text,
+        'user_plan_info': user_plan_info,
+        'features_on': ', '.join(features_on),
+        'features_off': ', '.join(features_off),
+        'user_name': user.first_name or user.email.split('@')[0],
+        'org_name': org.name,
+    }
 
-**Free Trial** — €0 for 14 days
-• 1 full security scan with all 682 tests
-• Basic PDF report
-• No credit card required
 
-**Starter** — €99/month (€990/year, save 16%)
-• 1 domain, weekly scans
-• PDF & HTML reports
-• Email support (48h response)
+def _get_dynamic_pricing_response(ctx):
+    """Generate pricing response from real plan data"""
+    return f"""Here's our current plan comparison:
 
-**Professional** — €299/month (€2,990/year, save 17%)
-• 5 domains, daily scans
-• API access & compliance reports (OWASP, GDPR, PCI-DSS)
-• Priority support (24h), Slack/Teams integration
+{ctx['plan_text']}
 
-**Enterprise** — €799/month (custom annual pricing)
-• Unlimited domains, hourly monitoring
-• White-label reports, SSO, dedicated support (2h)
-• On-site audits, SLA 99.9%
+**Your current plan: {ctx['user_plan_info'].split(chr(10))[0].split(': ')[1]}**
 
-Would you like to start a free trial or upgrade your plan?"""
-    },
-    "what_we_test": {
-        "label": "🔍 What do you test?",
-        "response": """We run **682 security tests** across 6 categories:
+All plans include access to our security scanning platform. Higher plans add more tools, scan frequency, agents, and advanced features like API access, compliance reports, and SSO.
 
-1. **Website & Web App Protection** (~180 tests)
-   Checks for injection attacks, content manipulation, server misconfigurations, CMS vulnerabilities
+Would you like to upgrade your plan or start a free trial?"""
 
-2. **Data & Encryption Security** (~95 tests)
-   Tests encryption strength, password policies, credential exposure, data leak detection
 
-3. **Network & Infrastructure Protection** (~120 tests)
-   Scans network ports, firewall rules, DNS security, cloud configurations, container security
+def _get_dynamic_tools_response(ctx):
+    """Generate tools response from real data"""
+    return f"""We have **{ctx['total_tools']} security tools** available across our categories:
 
-4. **API & Mobile App Protection** (~85 tests)
-   Tests API endpoints, authentication, rate limiting, mobile backend security
+{ctx['categories']}
 
-5. **Compliance & Standards Verification** (~120 tests)
-   Automated checks for GDPR, PCI-DSS, HIPAA, ISO 27001, OWASP Top 10
+Every scan uses professional-grade tools. Your plan ({ctx['user_plan_info'].split(chr(10))[0].split(': ')[1]}) gives you access to {ctx['user_plan_info'].split(chr(10))[1].strip()}.
 
-6. **Known Threat & CVE Detection** (~82 tests)
-   Scans against databases of known vulnerabilities and exploits
+Would you like to browse tools by category, or start a scan?"""
 
-Every plan includes all 682 tests. Higher plans add more domains, scan frequency, and reporting features."""
-    },
-    "free_trial": {
-        "label": "🎁 Free Trial",
-        "response": """**Start your free trial in 30 seconds:**
 
-✅ 14 days full access
-✅ 1 complete security scan with all 682 tests
-✅ Basic PDF security report
+def _get_dynamic_trial_response(ctx):
+    """Generate trial response from real data"""
+    trial_cfg = PLAN_CONFIG['trial']
+    return f"""**Start your free trial in 30 seconds:**
+
+✅ {trial_cfg['duration']} full access
+✅ {trial_cfg['tool_limit']} security tools to test
+✅ {trial_cfg['daily_scan_limit']} scans per day
+✅ Basic security reports
 ✅ No credit card required
 ✅ No commitment — cancel anytime
 
 Just click "Start Free Trial" on the pricing page, or I can help you set it up right now.
 
 Need help getting started? I'll walk you through your first scan step by step!"""
+
+
+CYBERBOT_QUICK_ACTIONS = {
+    "pricing": {
+        "label": "💰 Pricing",
+        "dynamic": True,
+    },
+    "what_we_test": {
+        "label": "🔍 What do you test?",
+        "dynamic": True,
+    },
+    "free_trial": {
+        "label": "🎁 Free Trial",
+        "dynamic": True,
     },
     "support": {
         "label": "📞 Support",
@@ -7696,11 +7751,22 @@ def chatbot_message():
         quick_action = data.get('quick_action')
         scan_id = data.get('scan_id')
         
+        # Build dynamic context once for this request
+        ctx = _build_dynamic_chatbot_context(user, org)
+        
+        # Dynamic response dispatch map
+        _DYNAMIC_DISPATCH = {
+            'pricing': lambda: _get_dynamic_pricing_response(ctx),
+            'what_we_test': lambda: _get_dynamic_tools_response(ctx),
+            'free_trial': lambda: _get_dynamic_trial_response(ctx),
+            'support': lambda: CYBERBOT_QUICK_ACTIONS['support']['response'],
+        }
+        
         # Handle quick actions
         if quick_action and quick_action in CYBERBOT_QUICK_ACTIONS:
-            action = CYBERBOT_QUICK_ACTIONS[quick_action]
+            resp_text = _DYNAMIC_DISPATCH.get(quick_action, lambda: "I'm not sure about that. Try asking me something else!")()
             return jsonify({
-                'response': action['response'],
+                'response': resp_text,
                 'type': 'quick_action',
                 'action': quick_action,
             })
@@ -7715,28 +7781,28 @@ def chatbot_message():
         # Keyword-based routing for common questions
         if any(kw in msg_lower for kw in ['price', 'pricing', 'cost', 'plan', 'upgrade', 'how much', 'fiyat']):
             return jsonify({
-                'response': CYBERBOT_QUICK_ACTIONS['pricing']['response'],
+                'response': _DYNAMIC_DISPATCH['pricing'](),
                 'type': 'quick_action',
                 'action': 'pricing',
             })
         
         if any(kw in msg_lower for kw in ['what do you test', 'what tests', 'what scan', '682', 'categories', 'ne test']):
             return jsonify({
-                'response': CYBERBOT_QUICK_ACTIONS['what_we_test']['response'],
+                'response': _DYNAMIC_DISPATCH['what_we_test'](),
                 'type': 'quick_action',
                 'action': 'what_we_test',
             })
         
         if any(kw in msg_lower for kw in ['free trial', 'trial', 'try', 'demo', 'deneme']):
             return jsonify({
-                'response': CYBERBOT_QUICK_ACTIONS['free_trial']['response'],
+                'response': _DYNAMIC_DISPATCH['free_trial'](),
                 'type': 'quick_action',
                 'action': 'free_trial',
             })
         
         if any(kw in msg_lower for kw in ['support', 'help', 'contact', 'destek']):
             return jsonify({
-                'response': CYBERBOT_QUICK_ACTIONS['support']['response'],
+                'response': _DYNAMIC_DISPATCH['support'](),
                 'type': 'quick_action',
                 'action': 'support',
             })
@@ -7817,7 +7883,7 @@ Would you like to start a security scan? Or do you have specific questions about
 Here's what I can help you with:
 
 💰 **Pricing** — Plan comparison and upgrade options
-🔍 **Test details** — What our 682 security tests cover
+🔍 **Test details** — What our {ctx['total_tools']} security tests cover
 🛡️ **Scan results** — Explain findings in plain language
 🔧 **Fix guidance** — Step-by-step remediation instructions
 📞 **Support** — Connect with our security team

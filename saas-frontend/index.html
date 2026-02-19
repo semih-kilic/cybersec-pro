@@ -12,7 +12,16 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     
     <!-- Theme color for mobile browsers -->
-    <meta name="theme-color" content="#0a0a0a" />
+    <meta name="theme-color" content="#f8fafc" />
+    
+    <!-- Prevent flash of wrong theme before React hydrates -->
+    <script>
+      (function(){
+        var s=localStorage.getItem('cybersecpro_color_mode');
+        var m=(s==='dark')?'dark':(s==='system'&&window.matchMedia('(prefers-color-scheme:dark)').matches)?'dark':'light';
+        document.documentElement.classList.add(m);
+      })();
+    </script>
     
     <!-- Open Graph meta tags -->
     <meta property="og:title" content="CyberSec Pro - Kali Dragon Cybersecurity Platform" />

@@ -79,9 +79,9 @@ const nmapConfig: ToolConfig = {
     {
       name: 'deep',
       label: 'Deep Scan',
-      description: 'Comprehensive scan with all ports and scripts',
-      params: { 'Timing': '2', 'Port Range': '1-65535', 'OS Detection': true, 'Service Version': true, 'Script Scan': true, 'Verbose': true },
-      estimatedTime: '15m'
+      description: 'Comprehensive scan with top 10000 ports, OS detection and scripts',
+      params: { 'Timing': '3', 'Top Ports': 10000, 'OS Detection': true, 'Service Version': true, 'Script Scan': true, 'Verbose': true },
+      estimatedTime: '5-10m'
     }
   ],
   examples: [

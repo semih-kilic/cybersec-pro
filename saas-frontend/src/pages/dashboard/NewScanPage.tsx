@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useSearchParams, useNavigate, Link } from 'react-router-dom';
 import { Header } from '../../components/layout/Header';
 import { useAuth } from '../../hooks/useAuth';
+import { getToolConfig, getSmartDefaults } from '../../config/toolConfigs';
 
 interface Tool {
   id: string;
@@ -149,7 +150,7 @@ export function NewScanPage() {
         body: JSON.stringify({
           tool: toolName,
           target: useCustomTarget ? customTarget : selectedTarget,
-          parameters: {},
+          parameters: getSmartDefaults(toolName, 'standard'),
         }),
       });
 

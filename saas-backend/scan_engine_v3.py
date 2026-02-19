@@ -525,9 +525,18 @@ class ScanEngineV3:
                 pass
         self._active_pids.clear()
     
-    def get_timeout(self, tool_name: str) -> int:
-        """Get timeout for a tool"""
-        return TOOL_TIMEOUTS.get(tool_name.lower(), TOOL_TIMEOUTS['default'])
+    def get_timeout(self, tool_name: str, params: Dict[str, Any] = None) -> int:
+        """Get timeout for a tool, scaling for intensive params"""
+        base = TOOL_TIMEOUTS.get(tool_name.lower(), TOOL_TIMEOUTS['default'])
+        # Scale nmap timeout if full port range requested
+        if tool_name.lower() == 'nmap' and params:
+            ports = params.get('ports', '') or params.get('Port Range', '')
+            if ports and ('65535' in str(ports) or str(ports).strip() == '-'):
+                base = max(base, 1800)  # 30 min for full port scans
+            top_ports = params.get('top_ports', '') or params.get('Top Ports', '')
+            if top_ports and int(str(top_ports)) > 5000:
+                base = max(base, 900)  # 15 min for >5k ports
+        return base
     
     def normalize_params(self, params: Dict[str, Any]) -> Dict[str, Any]:
         """Normalize frontend param names to backend expected keys"""
@@ -619,6 +628,9 @@ class ScanEngineV3:
         ports = params.get('ports', '')
         top_ports = params.get('top_ports', '')
         if ports:
+            # Safety: if full port range requested, add max-retries to prevent hanging
+            if '65535' in str(ports):
+                cmd.extend(['--max-retries', '1', '--host-timeout', '25m'])
             cmd.extend(['-p', str(ports)])
         elif top_ports:
             cmd.extend(['--top-ports', str(top_ports)])
@@ -1048,7 +1060,7 @@ class ScanEngineV3:
     ):
         """Execute scan in worker thread"""
         scan_id = job.id
-        timeout = self.get_timeout(job.tool_name)
+        timeout = self.get_timeout(job.tool_name, job.params)
         
         try:
             # Update status
