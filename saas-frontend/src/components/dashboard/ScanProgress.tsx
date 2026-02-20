@@ -9,7 +9,7 @@
  *   → PARSING_OUTPUT → SAVING_RESULTS → COMPLETED / FAILED
  */
 
-import React, { useEffect, useState, useCallback, useRef } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { wsManager } from '../../lib/socketManager';
 
 // ── Phase Definitions ──
@@ -61,7 +61,7 @@ interface ScanProgressProps {
 
 export const ScanProgress: React.FC<ScanProgressProps> = ({
   scanId,
-  isRunning = false,
+  isRunning: _isRunning = false,
   className = '',
 }) => {
   const [currentPhase, setCurrentPhase] = useState<PhaseState | null>(null);
