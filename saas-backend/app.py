@@ -418,6 +418,11 @@ class User(db.Model):
     last_login = db.Column(db.DateTime)
     is_active = db.Column(db.Boolean, default=True)
     
+    # Email verification (V13)
+    email_verified = db.Column(db.Boolean, default=False)
+    verification_token = db.Column(db.String(100))
+    verification_sent_at = db.Column(db.DateTime)
+    
     # OAuth fields
     oauth_provider = db.Column(db.String(20))  # google, github, None for email
     oauth_id = db.Column(db.String(100))  # Provider's user ID
@@ -442,7 +447,8 @@ class User(db.Model):
             'avatar_url': self.avatar_url,
             'created_at': self.created_at.isoformat(),
             'last_login': self.last_login.isoformat() if self.last_login else None,
-            'is_active': self.is_active
+            'is_active': self.is_active,
+            'email_verified': self.email_verified if self.email_verified is not None else True
         }
 
 class Subscription(db.Model):
@@ -1073,8 +1079,9 @@ def readiness_check():
 
 @app.route('/api/v1/auth/register', methods=['POST'])
 def register():
-    """Register new user and organization"""
+    """Register new user and organization — sends verification email"""
     try:
+        import secrets
         data = request.get_json()
         
         # Validate input
@@ -1084,7 +1091,28 @@ def register():
                 return jsonify({'error': f'{field} is required'}), 400
         
         # Check if user already exists
-        if User.query.filter_by(email=data['email']).first():
+        existing = User.query.filter_by(email=data['email']).first()
+        if existing:
+            # If unverified, allow re-registration with new token
+            if existing.email_verified == False and existing.verification_token:
+                token = secrets.token_urlsafe(48)
+                existing.verification_token = token
+                existing.verification_sent_at = datetime.utcnow()
+                existing.set_password(data['password'])
+                db.session.commit()
+                try:
+                    from email_service import send_verification_email
+                    send_verification_email({
+                        'email': existing.email,
+                        'first_name': existing.first_name or '',
+                        'verification_token': token,
+                    })
+                except Exception as e:
+                    print(f"Verification email resend failed: {e}")
+                return jsonify({
+                    'message': 'Verification email resent. Please check your inbox.',
+                    'requires_verification': True,
+                }), 200
             return jsonify({'error': 'Email already registered'}), 409
         
         # Create organization
@@ -1097,13 +1125,19 @@ def register():
         db.session.add(org)
         db.session.flush()  # Get org.id
         
-        # Create user
+        # Generate verification token
+        verification_token = secrets.token_urlsafe(48)
+        
+        # Create user (email NOT verified yet)
         user = User(
             email=data['email'],
             first_name=data.get('first_name', ''),
             last_name=data.get('last_name', ''),
             role='admin',
-            organization_id=org.id
+            organization_id=org.id,
+            email_verified=False,
+            verification_token=verification_token,
+            verification_sent_at=datetime.utcnow(),
         )
         user.set_password(data['password'])
         db.session.add(user)
@@ -1121,40 +1155,134 @@ def register():
         
         db.session.commit()
         
-        # Send email notifications (async in production)
+        # Send verification email + admin notification
         try:
-            from email_service import notify_admin_new_registration, notify_user_welcome
+            from email_service import send_verification_email, notify_admin_new_registration
             
             user_data = {
                 'email': user.email,
                 'first_name': user.first_name,
                 'last_name': user.last_name,
                 'organization_name': org.name,
-                'plan': 'Starter (Trial)'
+                'plan': 'Starter (Trial)',
+                'verification_token': verification_token,
             }
+            
+            # Send verification email to user
+            send_verification_email(user_data)
             
             # Notify admin of new registration
             notify_admin_new_registration(user_data)
-            
-            # Send welcome email to user
-            notify_user_welcome(user_data)
             
         except Exception as e:
             print(f"Email notification failed: {e}")
             # Don't fail registration if email fails
         
-        # Generate JWT token
-        access_token = create_access_token(identity=user.id)
-        
+        # V13: Do NOT return JWT — user must verify email first
         return jsonify({
-            'message': 'Registration successful',
-            'access_token': access_token,
-            'user': user.to_dict(),
-            'organization': org.to_dict()
+            'message': 'Registration successful! Please check your email to verify your account.',
+            'requires_verification': True,
+            'email': user.email,
         }), 201
         
     except Exception as e:
         db.session.rollback()
+        return jsonify({'error': str(e)}), 500
+
+
+@app.route('/api/v1/auth/verify-email', methods=['POST'])
+def verify_email():
+    """Verify user email with token — V13"""
+    try:
+        data = request.get_json()
+        token = data.get('token')
+        
+        if not token:
+            return jsonify({'error': 'Verification token is required'}), 400
+        
+        user = User.query.filter_by(verification_token=token).first()
+        if not user:
+            return jsonify({'error': 'Invalid or expired verification token'}), 400
+        
+        # Check expiry (24 hours)
+        if user.verification_sent_at:
+            elapsed = (datetime.utcnow() - user.verification_sent_at).total_seconds()
+            if elapsed > 86400:  # 24 hours
+                return jsonify({'error': 'Verification token has expired. Please request a new one.'}), 400
+        
+        # Verify the email
+        user.email_verified = True
+        user.verification_token = None  # Invalidate token
+        db.session.commit()
+        
+        # Generate JWT now that email is verified
+        access_token = create_access_token(identity=user.id)
+        
+        # Send welcome email
+        try:
+            from email_service import notify_user_welcome
+            notify_user_welcome({
+                'email': user.email,
+                'first_name': user.first_name,
+            })
+        except Exception:
+            pass
+        
+        return jsonify({
+            'message': 'Email verified successfully!',
+            'access_token': access_token,
+            'user': user.to_dict(),
+            'organization': user.organization.to_dict() if user.organization else None,
+        }), 200
+        
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+
+@app.route('/api/v1/auth/resend-verification', methods=['POST'])
+def resend_verification():
+    """Resend email verification link — V13"""
+    try:
+        import secrets
+        data = request.get_json()
+        email = data.get('email', '').strip().lower()
+        
+        if not email:
+            return jsonify({'error': 'Email is required'}), 400
+        
+        user = User.query.filter_by(email=email).first()
+        if not user:
+            # Don't reveal if email exists
+            return jsonify({'message': 'If that email exists, a new verification link has been sent.'}), 200
+        
+        if user.email_verified:
+            return jsonify({'message': 'Email is already verified. You can log in.'}), 200
+        
+        # Rate limit: max one resend per 60 seconds
+        if user.verification_sent_at:
+            elapsed = (datetime.utcnow() - user.verification_sent_at).total_seconds()
+            if elapsed < 60:
+                return jsonify({'error': f'Please wait {int(60 - elapsed)} seconds before requesting again.'}), 429
+        
+        # Generate new token
+        token = secrets.token_urlsafe(48)
+        user.verification_token = token
+        user.verification_sent_at = datetime.utcnow()
+        db.session.commit()
+        
+        try:
+            from email_service import send_verification_email
+            send_verification_email({
+                'email': user.email,
+                'first_name': user.first_name or '',
+                'verification_token': token,
+            })
+        except Exception as e:
+            print(f"Resend verification failed: {e}")
+        
+        return jsonify({'message': 'If that email exists, a new verification link has been sent.'}), 200
+        
+    except Exception as e:
         return jsonify({'error': str(e)}), 500
 
 @app.route('/api/v1/auth/login', methods=['POST'])
@@ -1185,6 +1313,15 @@ def login():
         if not user.is_active:
             app.logger.warning(f"🔐 Login blocked: deactivated account {email}")
             return jsonify({'error': 'Account deactivated'}), 403
+        
+        # V13: Check email verification
+        if user.email_verified == False and user.oauth_provider is None:
+            app.logger.warning(f"🔐 Login blocked: email not verified for {email}")
+            return jsonify({
+                'error': 'Please verify your email before logging in.',
+                'requires_verification': True,
+                'email': user.email,
+            }), 403
         
         # Update last login
         user.last_login = datetime.utcnow()

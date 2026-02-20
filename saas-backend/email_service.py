@@ -403,6 +403,148 @@ def notify_user_welcome(user_data: dict) -> bool:
     return send_email(user_data.get('email'), subject, html_body, text_body)
 
 
+def send_verification_email(user_data: dict) -> bool:
+    """
+    Send email verification link to new user — V13
+    
+    Args:
+        user_data: Dictionary with email, first_name, verification_token
+    
+    Returns:
+        bool: True if email sent successfully
+    """
+    first_name = user_data.get('first_name', 'there') or 'there'
+    token = user_data.get('verification_token', '')
+    verify_url = f"https://cybersecpro.com/verify-email?token={token}"
+    
+    subject = "🔐 Verify Your CyberSec Pro Account"
+    
+    html_body = f"""
+    <!DOCTYPE html>
+    <html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Verify Your Email</title>
+    </head>
+    <body style="margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #0a0a12;">
+        <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="background: linear-gradient(180deg, #0a0a12 0%, #1a1a2e 100%); padding: 40px 20px;">
+            <tr>
+                <td align="center">
+                    <table role="presentation" width="600" cellspacing="0" cellpadding="0" style="background: linear-gradient(135deg, #0d0d1a 0%, #1a1a2e 50%, #0d0d1a 100%); border-radius: 16px; border: 1px solid #367bf0; box-shadow: 0 0 40px rgba(54, 123, 240, 0.15);">
+                        
+                        <!-- Header -->
+                        <tr>
+                            <td style="padding: 40px 40px 20px 40px; text-align: center; border-bottom: 1px solid rgba(54, 123, 240, 0.2);">
+                                <div style="font-size: 64px; margin-bottom: 10px;">🔐</div>
+                                <h1 style="margin: 0; font-size: 28px; font-weight: 700; color: #367bf0; letter-spacing: 1px;">
+                                    VERIFY YOUR EMAIL
+                                </h1>
+                                <p style="margin: 8px 0 0 0; color: #666; font-size: 12px; text-transform: uppercase; letter-spacing: 3px;">
+                                    CyberSec Pro Account Activation
+                                </p>
+                            </td>
+                        </tr>
+                        
+                        <!-- Body -->
+                        <tr>
+                            <td style="padding: 40px;">
+                                <h2 style="margin: 0 0 20px 0; color: #ffffff; font-size: 22px; font-weight: 600;">
+                                    Hi {first_name}! 👋
+                                </h2>
+                                
+                                <p style="margin: 0 0 20px 0; color: #b0b0b0; font-size: 16px; line-height: 1.7;">
+                                    Thanks for signing up for <strong style="color: #fff;">CyberSec Pro</strong>. 
+                                    To complete your registration and access 682 professional security tools, 
+                                    please verify your email address.
+                                </p>
+                                
+                                <p style="margin: 0 0 30px 0; color: #b0b0b0; font-size: 16px; line-height: 1.7;">
+                                    Click the button below to verify your account:
+                                </p>
+                                
+                                <!-- CTA Button -->
+                                <table role="presentation" width="100%" cellspacing="0" cellpadding="0">
+                                    <tr>
+                                        <td align="center">
+                                            <a href="{verify_url}" style="display: inline-block; background: linear-gradient(135deg, #367bf0 0%, #6c4bf0 100%); color: #ffffff; padding: 16px 48px; border-radius: 8px; text-decoration: none; font-weight: 700; font-size: 16px; text-transform: uppercase; letter-spacing: 1px; box-shadow: 0 4px 20px rgba(54, 123, 240, 0.4);">
+                                                ✅ Verify My Email
+                                            </a>
+                                        </td>
+                                    </tr>
+                                </table>
+                                
+                                <!-- Alternative link -->
+                                <p style="margin: 25px 0 0 0; color: #666; font-size: 13px; line-height: 1.6;">
+                                    If the button doesn't work, copy and paste this link:<br>
+                                    <a href="{verify_url}" style="color: #367bf0; word-break: break-all; font-size: 12px;">{verify_url}</a>
+                                </p>
+                                
+                                <!-- Expiry notice -->
+                                <div style="margin-top: 25px; padding: 15px; background: rgba(241, 196, 15, 0.1); border-radius: 8px; border: 1px solid rgba(241, 196, 15, 0.2);">
+                                    <p style="margin: 0; color: #f1c40f; font-size: 13px;">
+                                        ⏰ This verification link expires in <strong>24 hours</strong>. 
+                                        If it expires, you can request a new one from the login page.
+                                    </p>
+                                </div>
+                            </td>
+                        </tr>
+                        
+                        <!-- Security Notice -->
+                        <tr>
+                            <td style="padding: 0 40px 40px 40px;">
+                                <div style="padding: 15px; background: rgba(54, 123, 240, 0.05); border-radius: 8px; border: 1px solid rgba(54, 123, 240, 0.15);">
+                                    <p style="margin: 0; color: #888; font-size: 12px; line-height: 1.6;">
+                                        🛡️ <strong style="color: #aaa;">Security Notice:</strong> 
+                                        If you did not create a CyberSec Pro account, you can safely ignore this email. 
+                                        No account will be activated without verification.
+                                    </p>
+                                </div>
+                            </td>
+                        </tr>
+                        
+                        <!-- Footer -->
+                        <tr>
+                            <td style="padding: 25px 40px; background: rgba(0, 0, 0, 0.3); border-radius: 0 0 16px 16px; border-top: 1px solid rgba(54, 123, 240, 0.1);">
+                                <p style="margin: 0; text-align: center; color: #444; font-size: 11px;">
+                                    © 2026 CyberSec Pro by Semih Kılıç | 
+                                    <a href="https://cybersecpro.com" style="color: #367bf0; text-decoration: none;">cybersecpro.com</a>
+                                </p>
+                            </td>
+                        </tr>
+                        
+                    </table>
+                </td>
+            </tr>
+        </table>
+    </body>
+    </html>
+    """
+    
+    text_body = f"""
+    ═══════════════════════════════════════════════════
+    🔐 VERIFY YOUR EMAIL — CyberSec Pro
+    ═══════════════════════════════════════════════════
+    
+    Hi {first_name}!
+    
+    Thanks for signing up for CyberSec Pro.
+    To complete your registration, please verify your email:
+    
+    {verify_url}
+    
+    This link expires in 24 hours.
+    
+    If you did not create this account, ignore this email.
+    
+    ───────────────────────────────────────────────────
+    © 2026 CyberSec Pro by Semih Kılıç
+    https://cybersecpro.com
+    """
+    
+    return send_email(user_data.get('email'), subject, html_body, text_body)
+
+
 def notify_trial_expiring(user_data: dict, days_left: int) -> bool:
     """
     Notify user that their trial is expiring

@@ -412,7 +412,8 @@ export function ScanExecutionPage() {
           <div className="lg:col-span-1 space-y-6">
             {/* Target Input */}
             <div className="bg-gray-900 rounded-xl border border-gray-800 p-5">
-              <h3 className="text-white font-semibold mb-2">🎯 Target</h3>
+              <h3 className="text-white font-semibold mb-2">🎯 Target <span className="text-red-400">*</span></h3>
+              <p className="text-gray-500 text-xs mb-3">Enter the IP address, domain, or URL you want to scan. You must own or have permission to test this target.</p>
               {businessDescription && (
                 <p className="text-gray-400 text-xs mb-3 leading-relaxed">{businessDescription}</p>
               )}
@@ -420,10 +421,18 @@ export function ScanExecutionPage() {
                 type="text"
                 value={target}
                 onChange={(e) => setTarget(e.target.value)}
-                placeholder="scanme.nmap.org or your public domain"
+                placeholder="e.g. 192.168.1.0/24, example.com, https://app.example.com"
                 disabled={status === 'running'}
-                className="w-full px-4 py-3 bg-gray-800 border border-gray-700 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:border-kali-blue transition disabled:opacity-50"
+                className={`w-full px-4 py-3 bg-gray-800 border rounded-lg text-white placeholder-gray-500 focus:outline-none transition disabled:opacity-50 ${
+                  !target && status === 'idle' ? 'border-yellow-600/50 focus:border-yellow-500' : 'border-gray-700 focus:border-kali-blue'
+                }`}
               />
+              {!target && status === 'idle' && (
+                <p className="text-yellow-500/80 text-xs mt-2 flex items-center gap-1">
+                  <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z" /></svg>
+                  Target is required to start a scan
+                </p>
+              )}
               {error && (
                 <p className="text-red-500 text-sm mt-2">{error}</p>
               )}
@@ -461,23 +470,24 @@ export function ScanExecutionPage() {
 
             {/* Agent Selection */}
             <div className="bg-gray-900 rounded-xl border border-gray-800 p-5">
-              <h3 className="text-white font-semibold mb-4">🖥️ Execution Mode</h3>
+              <h3 className="text-white font-semibold mb-2">🖥️ Execution Node</h3>
+              <p className="text-gray-500 text-xs mb-3">Choose where to run the scan. Use a private agent to scan internal networks behind your firewall.</p>
               <select
                 value={selectedAgentId}
                 onChange={(e) => setSelectedAgentId(e.target.value)}
                 disabled={status === 'running'}
                 className="w-full px-4 py-3 bg-gray-800 border border-gray-700 rounded-lg text-white focus:outline-none focus:border-kali-blue transition disabled:opacity-50"
               >
-                <option value="auto">🔄 Auto (Agent preferred, server fallback)</option>
-                <option value="local">🖥️ Server (Local execution)</option>
+                <option value="auto">🔄 Auto — Best available node</option>
+                <option value="local">☁️ Cloud Server — Public internet scan</option>
                 {agents.filter(a => a.status === 'online').map(agent => (
                   <option key={agent.id} value={agent.id}>
-                    🟢 {agent.name} ({agent.ip_address}) - CPU: {agent.cpu_usage}%
+                    🟢 {agent.name} — {agent.ip_address} (Private Network) — CPU: {agent.cpu_usage}%
                   </option>
                 ))}
                 {agents.filter(a => a.status !== 'online').map(agent => (
                   <option key={agent.id} value={agent.id} disabled>
-                    🔴 {agent.name} ({agent.ip_address}) - Offline
+                    🔴 {agent.name} — {agent.ip_address} — Offline
                   </option>
                 ))}
               </select>
@@ -532,7 +542,8 @@ export function ScanExecutionPage() {
               {status === 'idle' && (
                 <button
                   onClick={handleStartScan}
-                  className="w-full py-3 bg-gradient-to-r from-kali-blue to-kali-purple text-white font-semibold rounded-lg hover:opacity-90 transition flex items-center justify-center gap-2"
+                  disabled={!target.trim()}
+                  className="w-full py-3 bg-gradient-to-r from-kali-blue to-kali-purple text-white font-semibold rounded-lg hover:opacity-90 transition flex items-center justify-center gap-2 disabled:opacity-40 disabled:cursor-not-allowed"
                 >
                   <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" />
