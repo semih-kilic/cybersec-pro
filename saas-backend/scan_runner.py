@@ -17,6 +17,8 @@ Version: 7.0.0
 from __future__ import annotations
 
 import os
+import pty
+import select
 import shlex
 import shutil
 import signal
@@ -25,6 +27,7 @@ import threading
 import time
 import uuid
 from datetime import datetime
+from enum import Enum
 from typing import Any, Callable, Dict, Generator, List, Optional, Tuple
 
 from tool_configs import (
@@ -34,6 +37,34 @@ from tool_configs import (
     get_or_generic,
     get_tools_for_plan,
 )
+
+
+# ─────────────────────────────────────────────
+# V12: Scan Lifecycle Phases
+# ─────────────────────────────────────────────
+
+class ScanPhase(str, Enum):
+    """Structured scan lifecycle phases for UI progress tracking."""
+    INITIALIZING     = "INITIALIZING"
+    RESOLVING_TARGET = "RESOLVING_TARGET"
+    PREPARING_TOOL   = "PREPARING_TOOL"
+    EXECUTING        = "EXECUTING"
+    PARSING_OUTPUT   = "PARSING_OUTPUT"
+    SAVING_RESULTS   = "SAVING_RESULTS"
+    COMPLETED        = "COMPLETED"
+    FAILED           = "FAILED"
+
+
+PHASE_INFO = {
+    ScanPhase.INITIALIZING:     {"progress": 0,   "description": "Validating configuration..."},
+    ScanPhase.RESOLVING_TARGET: {"progress": 10,  "description": "Resolving target..."},
+    ScanPhase.PREPARING_TOOL:   {"progress": 20,  "description": "Preparing tool command..."},
+    ScanPhase.EXECUTING:        {"progress": 30,  "description": "Tool is running..."},
+    ScanPhase.PARSING_OUTPUT:   {"progress": 90,  "description": "Analyzing results..."},
+    ScanPhase.SAVING_RESULTS:   {"progress": 95,  "description": "Saving findings..."},
+    ScanPhase.COMPLETED:        {"progress": 100, "description": "Scan complete."},
+    ScanPhase.FAILED:           {"progress": 100, "description": "Scan failed."},
+}
 
 # ─────────────────────────────────────────────
 # Exceptions
@@ -185,6 +216,7 @@ def execute_scan(
     scan_id: Optional[str] = None,
     on_output: Optional[Callable[[str], None]] = None,
     timeout_override: Optional[int] = None,
+    on_phase: Optional[Callable[[str, str, int], None]] = None,
 ) -> ScanRunResult:
     """
     Execute a security tool synchronously.
@@ -207,6 +239,20 @@ def execute_scan(
 
     result = ScanRunResult(scan_id, tool_slug, target, profile_name or 'default')
 
+    def emit_phase(phase: ScanPhase, description: Optional[str] = None):
+        """Emit a scan lifecycle phase update."""
+        info = PHASE_INFO.get(phase, {})
+        desc = description or info.get("description", "")
+        progress = info.get("progress", 0)
+        if on_phase:
+            try:
+                on_phase(phase.value, desc, progress)
+            except Exception:
+                pass
+
+    # Phase 1: INITIALIZING
+    emit_phase(ScanPhase.INITIALIZING)
+
     # 1. Resolve tool from registry
     tool = TOOL_REGISTRY.get(tool_slug)
     if not tool:
@@ -221,13 +267,20 @@ def execute_scan(
         result.error = f"Tool '{tool_slug}' requires '{tool.plan}' plan (you have '{user_plan}')"
         return result
 
+    # Phase 2: RESOLVING_TARGET
+    emit_phase(ScanPhase.RESOLVING_TARGET, f"Checking target: {target}")
+
     # 3. Binary validation
     try:
         binary_path = validate_binary(tool.binary)
         result.binary_path = binary_path
     except BinaryMissingError as e:
         result.error = str(e)
+        emit_phase(ScanPhase.FAILED, str(e))
         return result
+
+    # Phase 3: PREPARING_TOOL
+    emit_phase(ScanPhase.PREPARING_TOOL, f"Constructing {tool.slug} command...")
 
     # 4. Build command
     try:
@@ -243,22 +296,32 @@ def execute_scan(
     timeout = timeout_override or profile.timeout
     result.started_at = datetime.utcnow()
 
-    # 5. Execute
+    # Phase 4: EXECUTING
+    emit_phase(ScanPhase.EXECUTING, f"Running {tool.slug}... (see output)")
+
+    # 5. Execute (V11: unbuffered with PTY for real-time streaming)
     stdout_lines: List[str] = []
     stderr_lines: List[str] = []
 
     try:
         env = os.environ.copy()
         env['TERM'] = 'dumb'  # suppress colour codes from some tools
+        env['PYTHONUNBUFFERED'] = '1'
+        env['COLUMNS'] = '200'
+
+        # V11: Use PTY for stdout to force line-buffered output from tools
+        master_fd, slave_fd = pty.openpty()
 
         proc = subprocess.Popen(
             cmd,
-            stdout=subprocess.PIPE,
+            stdout=slave_fd,
             stderr=subprocess.PIPE,
-            text=True,
+            stdin=subprocess.DEVNULL,
+            text=False,
             env=env,
             preexec_fn=os.setsid if os.name != 'nt' else None,
         )
+        os.close(slave_fd)  # parent doesn't need slave end
 
         # Threaded stderr reader so it doesn't block
         def _read_stderr():
@@ -268,23 +331,82 @@ def execute_scan(
         t = threading.Thread(target=_read_stderr, daemon=True)
         t.start()
 
-        # Read stdout line by line for real-time streaming
+        # V11: Read PTY master fd with select() for non-blocking, real-time output
         deadline = time.monotonic() + timeout
-        for line in proc.stdout:
-            stdout_lines.append(line)
-            if on_output:
-                try:
-                    on_output(line.rstrip('\n'))
-                except Exception:
-                    pass
+        buf = b''
+        last_progress_emit = time.monotonic()
+
+        while True:
             if time.monotonic() > deadline:
-                # Kill process group
                 try:
                     os.killpg(os.getpgid(proc.pid), signal.SIGKILL)
                 except Exception:
                     proc.kill()
                 result.timed_out = True
                 break
+
+            try:
+                ready, _, _ = select.select([master_fd], [], [], 0.1)
+            except (ValueError, OSError):
+                break
+
+            if ready:
+                try:
+                    chunk = os.read(master_fd, 4096)
+                except OSError:
+                    break
+                if not chunk:
+                    break
+                buf += chunk
+                while b'\n' in buf:
+                    line_bytes, buf = buf.split(b'\n', 1)
+                    line = line_bytes.decode('utf-8', errors='replace') + '\n'
+                    stdout_lines.append(line)
+                    if on_output:
+                        try:
+                            on_output(line.rstrip('\n'))
+                        except Exception:
+                            pass
+
+                # V12: Emit progress updates during execution (30-80% range)
+                now = time.monotonic()
+                if now - last_progress_emit >= 3.0:
+                    elapsed = now - (deadline - timeout)
+                    exec_progress = min(80, 30 + int(50 * elapsed / timeout))
+                    emit_phase(ScanPhase.EXECUTING, f"Running... {len(stdout_lines)} lines captured")
+                    if on_phase:
+                        try:
+                            on_phase(ScanPhase.EXECUTING.value, f"Running... {len(stdout_lines)} lines", exec_progress)
+                        except Exception:
+                            pass
+                    last_progress_emit = now
+            else:
+                # No data ready — check if process ended
+                if proc.poll() is not None:
+                    # Drain remaining
+                    try:
+                        while True:
+                            chunk = os.read(master_fd, 4096)
+                            if not chunk:
+                                break
+                            buf += chunk
+                    except OSError:
+                        pass
+                    # Process remaining buffer
+                    if buf:
+                        line = buf.decode('utf-8', errors='replace') + '\n'
+                        stdout_lines.append(line)
+                        if on_output:
+                            try:
+                                on_output(line.rstrip('\n'))
+                            except Exception:
+                                pass
+                    break
+
+        try:
+            os.close(master_fd)
+        except OSError:
+            pass
 
         proc.wait(timeout=10)
         t.join(timeout=5)
@@ -315,6 +437,9 @@ def execute_scan(
     result.stdout = ''.join(stdout_lines)
     result.stderr = ''.join(stderr_lines)
 
+    # Phase 5: PARSING_OUTPUT
+    emit_phase(ScanPhase.PARSING_OUTPUT, "Analyzing scan results...")
+
     # 6. Auto-parse output
     try:
         from parsers import auto_parse
@@ -324,6 +449,17 @@ def execute_scan(
     except Exception as e:
         # Don't fail the scan just because parsing failed
         result.parsed = {'parse_error': str(e)}
+
+    # Phase 6: SAVING_RESULTS
+    emit_phase(ScanPhase.SAVING_RESULTS, "Storing findings...")
+
+    # Phase 7: COMPLETED / FAILED
+    if result.success:
+        emit_phase(ScanPhase.COMPLETED, f"Done — {len(stdout_lines)} lines, {result.duration:.1f}s")
+    elif result.timed_out:
+        emit_phase(ScanPhase.FAILED, f"Timed out after {timeout}s")
+    else:
+        emit_phase(ScanPhase.FAILED, result.error or f"Exit code: {result.exit_code}")
 
     return result
 
