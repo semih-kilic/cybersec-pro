@@ -116,6 +116,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     if (!response.ok) {
       const error = await response.json();
+      // V13: Handle email verification requirement
+      if (error.requires_verification) {
+        const e: any = new Error(error.error || 'Please verify your email first.');
+        e.requires_verification = true;
+        e.email = error.email;
+        throw e;
+      }
       throw new Error(error.error || 'Login failed');
     }
 

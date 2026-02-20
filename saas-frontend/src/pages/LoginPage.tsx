@@ -13,20 +13,44 @@ export function LoginPage() {
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const [needsVerification, setNeedsVerification] = useState(false);
+  const [verificationEmail, setVerificationEmail] = useState('');
+  const [resendStatus, setResendStatus] = useState<'idle' | 'sending' | 'sent'>('idle');
   const { login } = useAuth();
   const navigate = useNavigate();
   const { t } = useTranslation();
 
+  const handleResendVerification = async () => {
+    setResendStatus('sending');
+    try {
+      const res = await fetch('/api/v1/auth/resend-verification', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: verificationEmail }),
+      });
+      if (res.ok) setResendStatus('sent');
+    } catch {
+      setResendStatus('idle');
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
+    setNeedsVerification(false);
     setLoading(true);
 
     try {
       await login(email, password);
       navigate('/dashboard');
     } catch (err: any) {
-      setError(err.message || 'Login failed');
+      if (err.requires_verification) {
+        setNeedsVerification(true);
+        setVerificationEmail(err.email || email);
+        setError('Please verify your email address before logging in.');
+      } else {
+        setError(err.message || 'Login failed');
+      }
     } finally {
       setLoading(false);
     }
@@ -76,6 +100,18 @@ export function LoginPage() {
             {error && (
               <div className="bg-red-500/10 border border-red-500/50 rounded-lg p-4 text-red-400 text-sm">
                 {error}
+                {needsVerification && (
+                  <div className="mt-3 pt-3 border-t border-red-500/20">
+                    <button
+                      type="button"
+                      onClick={handleResendVerification}
+                      disabled={resendStatus === 'sending' || resendStatus === 'sent'}
+                      className="text-blue-400 hover:text-blue-300 font-medium text-xs transition disabled:opacity-50"
+                    >
+                      {resendStatus === 'sending' ? 'Sending...' : resendStatus === 'sent' ? '✅ Verification email sent!' : '📧 Resend verification email'}
+                    </button>
+                  </div>
+                )}
               </div>
             )}
 

@@ -63,14 +63,33 @@ export function RegisterPage() {
     setLoading(true);
 
     try {
-      await register({
-        email: formData.email,
-        password: formData.password,
-        organization_name: formData.organization_name,
-        first_name: formData.first_name,
-        last_name: formData.last_name,
+      // V13: Registration now requires email verification
+      const res = await fetch('/api/v1/auth/register', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          email: formData.email,
+          password: formData.password,
+          organization_name: formData.organization_name,
+          first_name: formData.first_name,
+          last_name: formData.last_name,
+        }),
       });
-      navigate('/dashboard');
+      
+      const data = await res.json();
+      
+      if (res.ok && data.requires_verification) {
+        // Show verification message instead of redirecting
+        setVerificationSent(true);
+        setVerificationEmail(formData.email);
+      } else if (res.ok && data.access_token) {
+        // Legacy: if server returns token directly (OAuth users)
+        localStorage.setItem('access_token', data.access_token);
+        localStorage.setItem('user', JSON.stringify(data.user));
+        navigate('/dashboard');
+      } else {
+        setError(data.error || 'Registration failed');
+      }
     } catch (err: any) {
       setError(err.message || 'Registration failed');
     } finally {
@@ -80,6 +99,62 @@ export function RegisterPage() {
 
   return (
     <div className="min-h-screen flex">
+      {/* Verification Sent Screen */}
+      {verificationSent && (
+        <div className="fixed inset-0 bg-gray-950 z-50 flex items-center justify-center p-6">
+          <div className="max-w-md w-full text-center">
+            <div className="bg-gray-900 rounded-2xl border border-gray-800 p-8">
+              <div className="w-16 h-16 mx-auto mb-6 bg-blue-500/20 rounded-full flex items-center justify-center">
+                <svg className="w-8 h-8 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                </svg>
+              </div>
+              <h2 className="text-2xl font-bold text-white mb-3">Check Your Email 📧</h2>
+              <p className="text-gray-400 mb-2">
+                We sent a verification link to:
+              </p>
+              <p className="text-blue-400 font-medium mb-6">{verificationEmail}</p>
+              <p className="text-gray-500 text-sm mb-6">
+                Click the link in the email to verify your account and start your 14-day free trial.
+                The link expires in 24 hours.
+              </p>
+
+              <div className="border-t border-gray-800 pt-6 space-y-3">
+                <p className="text-gray-600 text-xs">Didn't receive the email? Check your spam folder or:</p>
+                <button
+                  onClick={async () => {
+                    setResendStatus('sending');
+                    try {
+                      const res = await fetch('/api/v1/auth/resend-verification', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ email: verificationEmail }),
+                      });
+                      if (res.ok) setResendStatus('sent');
+                      else {
+                        const data = await res.json();
+                        setError(data.error || '');
+                        setResendStatus('error');
+                      }
+                    } catch { setResendStatus('error'); }
+                  }}
+                  disabled={resendStatus === 'sending' || resendStatus === 'sent'}
+                  className="px-6 py-2.5 bg-gray-800 hover:bg-gray-700 text-white rounded-lg text-sm font-medium transition disabled:opacity-50"
+                >
+                  {resendStatus === 'sending' ? 'Sending...' : resendStatus === 'sent' ? '✅ Sent!' : 'Resend Verification Email'}
+                </button>
+                {resendStatus === 'sent' && (
+                  <p className="text-green-400 text-xs">New verification link sent!</p>
+                )}
+              </div>
+
+              <p className="mt-6 text-gray-600 text-sm">
+                <Link to="/login" className="text-blue-400 hover:text-blue-300">Back to Login</Link>
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
       {/* Left Panel - Social Proof (40%) */}
       <div className="hidden lg:flex lg:w-[40%] bg-gradient-to-br from-gray-900 via-blue-950 to-gray-900 flex-col justify-between p-12 relative overflow-hidden">
         {/* Background Effect */}
