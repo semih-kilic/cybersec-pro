@@ -32,6 +32,7 @@ import { useBrowserNotifications } from './hooks/useBrowserNotifications';
 import { LandingPage } from './pages/LandingPage';
 import { LoginPage } from './pages/LoginPage';
 import { RegisterPage } from './pages/RegisterPage';
+import { VerifyEmailPage } from './pages/VerifyEmailPage';
 import { OAuthCallback } from './pages/OAuthCallback';
 import { DashboardPage } from './pages/DashboardPage';
 import ToolsCatalogPage from './pages/ToolsCatalogPage';
@@ -183,6 +184,7 @@ function AppRoutes() {
         </PublicRoute>
       } />
       <Route path="/auth/callback" element={<OAuthCallback />} />
+      <Route path="/verify-email" element={<VerifyEmailPage />} />
       
       {/* Protected Dashboard Routes */}
       <Route path="/dashboard" element={
