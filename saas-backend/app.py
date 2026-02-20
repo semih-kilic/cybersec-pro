@@ -4302,10 +4302,24 @@ def start_scan_v2():
                         def on_output(line):
                             output_lines.append(line)
                             try:
+                                # V11: Emit to BOTH scan-specific and org rooms
+                                socketio.emit('scan_output', {
+                                    'scan_id': scan_id,
+                                    'line': line.rstrip(),
+                                }, namespace='/scans', room=f'scan_{scan_id}')
                                 socketio.emit('scan_output', {
                                     'scan_id': scan_id,
                                     'line': line.rstrip(),
                                 }, room=f'org_{org.id}')
+                            except Exception:
+                                pass
+
+                        def on_phase(phase, description, progress):
+                            """V12: Emit phase updates for stepper UI."""
+                            try:
+                                from websocket_events import emit_scan_phase
+                                emit_scan_phase(scan_id, phase, description, progress,
+                                                org_id=str(org.id))
                             except Exception:
                                 pass
 
@@ -4317,6 +4331,7 @@ def start_scan_v2():
                             extra_args=extra_args,
                             scan_id=scan_id,
                             on_output=on_output,
+                            on_phase=on_phase,
                         )
 
                         s = Scan.query.get(scan_id)
@@ -4335,6 +4350,13 @@ def start_scan_v2():
                             print(f"✅ V7 Scan {scan_id[:8]} → {s.status} ({result.duration:.1f}s)")
 
                             try:
+                                # V11: Emit complete to BOTH rooms
+                                socketio.emit('scan_complete', {
+                                    'scan_id': scan_id,
+                                    'status': s.status,
+                                    'duration': result.duration,
+                                    'findings_count': len(result.parsed.get('findings', [])) if result.parsed else 0,
+                                }, namespace='/scans', room=f'scan_{scan_id}')
                                 socketio.emit('scan_complete', {
                                     'scan_id': scan_id,
                                     'status': s.status,

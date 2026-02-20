@@ -383,6 +383,37 @@ def dispatch_scan_ws(agent_id: str, scan_task: dict) -> bool:
 # Utility Functions for Emitting
 # ================================
 
+def emit_scan_phase(scan_id: str, phase: str, description: str, progress: int,
+                    org_id: str = None):
+    """
+    Emit scan lifecycle phase update (V12 stepper).
+
+    Args:
+        scan_id: Scan ID
+        phase: ScanPhase enum value (e.g. 'EXECUTING')
+        description: Human-readable status text
+        progress: Progress percentage (0-100)
+        org_id: Optional org ID for room fan-out
+    """
+    if socketio is None:
+        return
+
+    data = {
+        'scan_id': scan_id,
+        'phase': phase,
+        'description': description,
+        'progress': progress,
+    }
+
+    # Emit to scan-specific room (frontend subscribes here)
+    socketio.emit('scan_phase_update', data, namespace='/scans', room=f"scan_{scan_id}")
+    # Also broadcast on namespace for dashboards
+    socketio.emit('scan_phase_update', data, namespace='/scans')
+    # Also emit to org room (backwards compat)
+    if org_id:
+        socketio.emit('scan_phase_update', data, namespace='/scans', room=f"org_{org_id}")
+
+
 def emit_scan_progress(scan_id: str, status: str, progress: int, **extra):
     """
     Emit scan progress update to all subscribers

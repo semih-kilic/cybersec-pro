@@ -5,6 +5,7 @@ import api, { ScanResult, ToolConfig } from '../../services/api';
 import { useScanSubscription } from '../../hooks/useWebSocket';
 import { useTarget } from '../../contexts/TargetContext';
 import { useAuth } from '../../hooks/useAuth';
+import { ScanProgress } from '../../components/dashboard/ScanProgress';
 
 // Business-friendly category names
 const BUSINESS_CATEGORIES: Record<string, { label: string; emoji: string }> = {
@@ -781,6 +782,15 @@ export function ScanExecutionPage() {
                 )}
               </div>
             ) : (
+            <div>
+            {/* V12: Scan Progress Stepper */}
+            {(status === 'running' || status === 'completed' || status === 'failed') && currentScanId && (
+              <ScanProgress
+                scanId={currentScanId}
+                isRunning={status === 'running'}
+              />
+            )}
+
             <div className="bg-gray-900 rounded-xl border border-gray-800 overflow-hidden h-[calc(100vh-200px)]">
               {/* Terminal Header */}
               <div className="flex items-center justify-between px-4 py-3 bg-gray-800 border-b border-gray-700">
@@ -795,6 +805,11 @@ export function ScanExecutionPage() {
                   </span>
                 </div>
                 <div className="flex items-center gap-2">
+                  {/* V11: WS Connection Indicator */}
+                  <span className="flex items-center gap-1 text-xs mr-2" title={ws.connected ? 'WebSocket connected' : 'WebSocket disconnected'}>
+                    <span className={`w-2 h-2 rounded-full ${ws.connected ? 'bg-green-400 animate-pulse' : 'bg-red-400'}`} />
+                    <span className={ws.connected ? 'text-green-500' : 'text-red-500'}>{ws.connected ? 'LIVE' : 'OFFLINE'}</span>
+                  </span>
                   <button
                     onClick={() => navigator.clipboard.writeText(output.join(''))}
                     className="p-1.5 text-gray-400 hover:text-white transition"
@@ -846,6 +861,7 @@ export function ScanExecutionPage() {
                   <div className="inline-block w-2 h-4 bg-green-400 animate-pulse ml-1" />
                 )}
               </div>
+            </div>
             </div>
             )}
           </div>

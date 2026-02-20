@@ -98,12 +98,12 @@ _register(ToolConfig(
     plan='starter', target_mode='append', output_format='xml',
     version_flag='--version',
     profiles={
-        'quick':   _p('quick',   'Top 100 ports, fast',      ['-T4', '--top-ports', '100', '-sV', '-oX', '-'], timeout=120),
-        'default': _p('default', 'Top 1000 ports, versions', ['-T4', '-sV', '--top-ports', '1000', '-oX', '-'], timeout=300),
-        'full':    _p('full',    'All 65535 ports, OS + versions', ['-T4', '-p-', '-sV', '-O', '-oX', '-'], timeout=900, root=True),
-        'vuln':    _p('vuln',    'Vulnerability scripts',    ['-T4', '-sV', '--script', 'vuln', '--top-ports', '1000', '-oX', '-'], timeout=600),
-        'stealth': _p('stealth', 'SYN stealth scan',         ['-sS', '-T2', '--top-ports', '1000', '-oX', '-'], timeout=600, root=True),
-        'udp':     _p('udp',     'UDP top 100 ports',         ['-sU', '-T4', '--top-ports', '100', '-oX', '-'], timeout=600, root=True),
+        'quick':   _p('quick',   'Top 100 ports, fast',      ['-v', '--stats-every', '3s', '-T4', '--top-ports', '100', '-sV', '-oX', '-'], timeout=120),
+        'default': _p('default', 'Top 1000 ports, versions', ['-v', '--stats-every', '3s', '-T4', '-sV', '--top-ports', '1000', '-oX', '-'], timeout=300),
+        'full':    _p('full',    'All 65535 ports, OS + versions', ['-v', '--stats-every', '5s', '-T4', '-p-', '-sV', '-O', '-oX', '-'], timeout=900, root=True),
+        'vuln':    _p('vuln',    'Vulnerability scripts',    ['-v', '--stats-every', '5s', '-T4', '-sV', '--script', 'vuln', '--top-ports', '1000', '-oX', '-'], timeout=600),
+        'stealth': _p('stealth', 'SYN stealth scan',         ['-v', '--stats-every', '5s', '-sS', '-T2', '--top-ports', '1000', '-oX', '-'], timeout=600, root=True),
+        'udp':     _p('udp',     'UDP top 100 ports',         ['-v', '--stats-every', '5s', '-sU', '-T4', '--top-ports', '100', '-oX', '-'], timeout=600, root=True),
     }
 ))
 
@@ -161,9 +161,9 @@ _register(ToolConfig(
     plan='starter', target_mode='-h', output_format='text',
     version_flag='-Version',
     profiles={
-        'quick':   _p('quick',   'Quick scan, tuning x',   ['-Tuning', 'x', '-maxtime', '120s'], timeout=150),
-        'default': _p('default', 'Standard scan',          ['-Tuning', 'x'], timeout=600),
-        'full':    _p('full',    'Comprehensive',           ['-Tuning', '123456789x', '-C', 'all'], timeout=1200),
+        'quick':   _p('quick',   'Quick scan, tuning x',   ['-Display', 'V', '-Tuning', 'x', '-maxtime', '120s'], timeout=150),
+        'default': _p('default', 'Standard scan',          ['-Display', 'V', '-Tuning', 'x'], timeout=600),
+        'full':    _p('full',    'Comprehensive',           ['-Display', 'V', '-Tuning', '123456789x', '-C', 'all'], timeout=1200),
     }
 ))
 
@@ -234,9 +234,9 @@ _register(ToolConfig(
     plan='professional', target_mode='-u', output_format='text',
     version_flag='version',
     profiles={
-        'quick':   _p('quick',   'Small wordlist, fast',    ['dir', '-w', '/usr/share/wordlists/dirb/common.txt', '-t', '50', '-q'], timeout=120),
-        'default': _p('default', 'Medium wordlist',         ['dir', '-w', '/usr/share/wordlists/dirbuster/directory-list-2.3-medium.txt', '-t', '30', '-q'], timeout=600),
-        'full':    _p('full',    'Large wordlist, extensions', ['dir', '-w', '/usr/share/wordlists/dirbuster/directory-list-2.3-medium.txt', '-x', 'php,html,js,txt,bak', '-t', '20', '-q'], timeout=1200),
+        'quick':   _p('quick',   'Small wordlist, fast',    ['dir', '-w', '/usr/share/wordlists/dirb/common.txt', '-t', '50', '--no-color'], timeout=120),
+        'default': _p('default', 'Medium wordlist',         ['dir', '-w', '/usr/share/wordlists/dirbuster/directory-list-2.3-medium.txt', '-t', '30', '--no-color', '-v'], timeout=600),
+        'full':    _p('full',    'Large wordlist, extensions', ['dir', '-w', '/usr/share/wordlists/dirbuster/directory-list-2.3-medium.txt', '-x', 'php,html,js,txt,bak', '-t', '20', '--no-color', '-v'], timeout=1200),
     }
 ))
 
@@ -282,9 +282,9 @@ _register(ToolConfig(
     plan='professional', target_mode='-u', output_format='text',
     version_flag='--version',
     profiles={
-        'quick':   _p('quick',   'Quick, level 1',          ['--batch', '--level', '1', '--risk', '1', '--smart', '--threads', '4'], timeout=180),
-        'default': _p('default', 'Standard, level 2',       ['--batch', '--level', '2', '--risk', '2', '--threads', '4'], timeout=600),
-        'full':    _p('full',    'Deep, level 5 risk 3',    ['--batch', '--level', '5', '--risk', '3', '--threads', '4', '--forms', '--crawl', '2'], timeout=1800),
+        'quick':   _p('quick',   'Quick, level 1',          ['-v', '1', '--batch', '--level', '1', '--risk', '1', '--smart', '--threads', '4'], timeout=180),
+        'default': _p('default', 'Standard, level 2',       ['-v', '2', '--batch', '--level', '2', '--risk', '2', '--threads', '4'], timeout=600),
+        'full':    _p('full',    'Deep, level 5 risk 3',    ['-v', '2', '--batch', '--level', '5', '--risk', '3', '--threads', '4', '--forms', '--crawl', '2'], timeout=1800),
     },
     dangerous=True
 ))
