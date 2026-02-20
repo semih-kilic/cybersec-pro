@@ -202,20 +202,20 @@
 <div class="container">
 
 <h1>⚡ CyberSec Pro — Ultimate Verification Report</h1>
-<p class="timestamp">Generated: 2026-02-19 20:28:33 | V9 Final Exam</p>
+<p class="timestamp">Generated: 2026-02-19 21:44:18 | V9 Final Exam</p>
 
 <!-- Score Cards -->
 <div class="score-grid">
     <div class="score-card perfect">
-        <div class="score-number">355</div>
+        <div class="score-number">361</div>
         <div class="score-label">✅ Perfect (Install+Config+Run)</div>
     </div>
     <div class="score-card warning">
-        <div class="score-number">0</div>
+        <div class="score-number">1</div>
         <div class="score-label">⚠️ Warning (Needs Attention)</div>
     </div>
     <div class="score-card missing">
-        <div class="score-number">321</div>
+        <div class="score-number">314</div>
         <div class="score-label">❌ Missing (Not Installed)</div>
     </div>
     <div class="score-card info">
@@ -230,9 +230,9 @@
     <div class="stage-bar s1">
         <div class="stage-label">
             <span>Stage 1: Installation Check</span>
-            <span>355/676 (52.5%)</span>
+            <span>362/676 (53.6%)</span>
         </div>
-        <div class="progress-bar"><div class="progress-fill" style="width:53%">53%</div></div>
+        <div class="progress-bar"><div class="progress-fill" style="width:54%">54%</div></div>
     </div>
     <div class="stage-bar s2">
         <div class="stage-label">
@@ -244,7 +244,7 @@
     <div class="stage-bar s3">
         <div class="stage-label">
             <span>Stage 3: Runtime Smoke Test</span>
-            <span>355/676 (52.5%)</span>
+            <span>361/676 (53.4%)</span>
         </div>
         <div class="progress-bar"><div class="progress-fill" style="width:53%">53%</div></div>
     </div>
@@ -271,31 +271,31 @@
         </tr><tr>
             <td><strong>Data Protection & Encryption</strong></td>
             <td>99</td>
-            <td>42</td>
+            <td>44</td>
             <td>99</td>
-            <td>42</td>
-            <td><div class="progress-bar"><div class="progress-fill" style="width:42%">42%</div></div></td>
+            <td>44</td>
+            <td><div class="progress-bar"><div class="progress-fill" style="width:44%">44%</div></div></td>
         </tr><tr>
             <td><strong>Infrastructure Security</strong></td>
             <td>236</td>
-            <td>155</td>
+            <td>156</td>
             <td>236</td>
             <td>155</td>
             <td><div class="progress-bar"><div class="progress-fill" style="width:66%">66%</div></div></td>
         </tr><tr>
             <td><strong>Known Vulnerability Database</strong></td>
             <td>137</td>
-            <td>42</td>
+            <td>44</td>
             <td>126</td>
-            <td>42</td>
-            <td><div class="progress-bar"><div class="progress-fill" style="width:31%">31%</div></div></td>
+            <td>44</td>
+            <td><div class="progress-bar"><div class="progress-fill" style="width:32%">32%</div></div></td>
         </tr><tr>
             <td><strong>Web Application Security</strong></td>
             <td>63</td>
-            <td>27</td>
+            <td>29</td>
             <td>62</td>
-            <td>27</td>
-            <td><div class="progress-bar"><div class="progress-fill" style="width:43%">43%</div></div></td>
+            <td>29</td>
+            <td><div class="progress-bar"><div class="progress-fill" style="width:46%">46%</div></div></td>
         </tr><tr>
             <td><strong>development</strong></td>
             <td>5</td>
@@ -326,9 +326,9 @@
 <div class="filter-bar">
     <input class="search" type="text" id="searchInput" placeholder="🔍 Search tools..." onkeyup="filterTools()">
     <button class="filter-btn active" onclick="filterStatus('all', this)">All (691)</button>
-    <button class="filter-btn" onclick="filterStatus('perfect', this)">✅ Perfect (355)</button>
-    <button class="filter-btn" onclick="filterStatus('warning', this)">⚠️ Warning (0)</button>
-    <button class="filter-btn" onclick="filterStatus('missing', this)">❌ Missing (321)</button>
+    <button class="filter-btn" onclick="filterStatus('perfect', this)">✅ Perfect (361)</button>
+    <button class="filter-btn" onclick="filterStatus('warning', this)">⚠️ Warning (1)</button>
+    <button class="filter-btn" onclick="filterStatus('missing', this)">❌ Missing (314)</button>
     <button class="filter-btn" onclick="filterStatus('non-cli', this)">📄 Non-CLI (15)</button>
 </div>
 
@@ -394,7 +394,9 @@
             <td>✅</td>
             <td>✅ <small>1 profiles</small></td>
             <td>✅</td>
-            <td class="runtime-info"><small>Run it as root
+            <td class="runtime-info"><small>
+usage: airmon-ng &lt;start|stop|check&gt; &lt;interface&gt; [channel or frequency]
+
 </small></td>
         </tr>
 <tr class="tool-row perfect">
@@ -439,6 +441,18 @@ Syntax: /usr/</small></td>
             <td>✅</td>
             <td class="runtime-info"><small>[31mERR[39m   Could not find parser model file of known type
   [90m at addres</small></td>
+        </tr>
+<tr class="tool-row perfect">
+            <td>✅</td>
+            <td><strong>anew</strong></td>
+            <td><code>anew</code></td>
+            <td>Known Vulnerability Database</td>
+            <td>✅</td>
+            <td>✅ <small>3 profiles</small></td>
+            <td>✅</td>
+            <td class="runtime-info"><small>flag provided but not defined: -version
+Usage of /usr/local/bin/anew:
+  -d	don't</small></td>
         </tr>
 <tr class="tool-row perfect">
             <td>✅</td>
@@ -503,8 +517,9 @@ usage: arping [ -0aAbdDeFpPqrRu</small></td>
             <td>✅</td>
             <td>✅ <small>1 profiles</small></td>
             <td>✅</td>
-            <td class="runtime-info"><small>arpspoof: libnet_open_link(): UID/EUID 0 or capability CAP_NET_RAW required
-</small></td>
+            <td class="runtime-info"><small>/usr/bin/arpspoof: invalid option -- '-'
+Version: 2.5a2
+Usage: arpspoof [-i inte</small></td>
         </tr>
 <tr class="tool-row perfect">
             <td>✅</td>
@@ -526,8 +541,9 @@ usage: arping [ -0aAbdDeFpPqrRu</small></td>
             <td>✅</td>
             <td>✅ <small>3 profiles</small></td>
             <td>✅</td>
-            <td class="runtime-info"><small>Traceback (most recent call last):
-  File "/usr/share/doc/python3-impacket/examp</small></td>
+            <td class="runtime-info"><small>Impacket v0.14.0.dev0 - Copyright Fortra, LLC and its affiliated companies 
+
+usa</small></td>
         </tr>
 <tr class="tool-row perfect">
             <td>✅</td>
@@ -561,7 +577,8 @@ usage: autossh [-V] [-M monitor_</small></td>
             <td>✅</td>
             <td>✅ <small>3 profiles</small></td>
             <td>✅</td>
-            <td class="runtime-info"><small>[timeout — tool started but took too long]</small></td>
+            <td class="runtime-info"><small>aws-cli/2.31.35 Python/3.13.11 Linux/6.18.5+kali-amd64 source/x86_64.kali.2025
+</small></td>
         </tr>
 <tr class="tool-row perfect">
             <td>✅</td>
@@ -605,8 +622,7 @@ Created by the BloodHound Enterprise</small></td>
             <td>✅</td>
             <td>✅ <small>3 profiles</small></td>
             <td>✅</td>
-            <td class="runtime-info"><small>[01;31m[-][00m This script must be [01;31mrun as root[00m
-</small></td>
+            <td class="runtime-info"><small>[timeout — tool started but took too long]</small></td>
         </tr>
 <tr class="tool-row perfect">
             <td>✅</td>
@@ -641,7 +657,10 @@ https://github.com/OS</small></td>
             <td>✅</td>
             <td>✅ <small>3 profiles</small></td>
             <td>✅</td>
-            <td class="runtime-info"><small>sudo: a terminal is required to read the password; either use ssh's -t option or</small></td>
+            <td class="runtime-info"><small>
+ It seems it's the first time you run bloodhound
+
+ Please run [1;32mbloodhound</small></td>
         </tr>
 <tr class="tool-row perfect">
             <td>✅</td>
@@ -651,9 +670,9 @@ https://github.com/OS</small></td>
             <td>✅</td>
             <td>✅ <small>3 profiles</small></td>
             <td>✅</td>
-            <td class="runtime-info"><small>bluesnarfer: you must be root
+            <td class="runtime-info"><small>/usr/sbin/bluesnarfer: invalid option -- '-'
 bluesnarfer, version 0.1 -
-usage: /usr/sbin/bluesn</small></td>
+usage: /</small></td>
         </tr>
 <tr class="tool-row perfect">
             <td>✅</td>
@@ -755,7 +774,9 @@ neon 0.36.0: Library build, IPv6, libxml 2.15.1, zlib 1.3.1, GNU TL</small></td>
             <td>✅</td>
             <td>✅ <small>3 profiles</small></td>
             <td>✅</td>
-            <td class="runtime-info"><small>[timeout — tool started but took too long]</small></td>
+            <td class="runtime-info"><small>┏━([1;31mMessage from Kali developers[00m)
+┃
+┃ WARNING: This will call back ho</small></td>
         </tr>
 <tr class="tool-row perfect">
             <td>✅</td>
@@ -798,8 +819,9 @@ Usag</small></td>
             <td>✅</td>
             <td>✅ <small>3 profiles</small></td>
             <td>✅</td>
-            <td class="runtime-info"><small>checksec v2.6.0, Brian Davis, github.com/slimm609/checksec.sh, Dec 2015
-Based of</small></td>
+            <td class="runtime-info"><small>usage: pwn [-h] {checksec} ...
+pwn: error: unrecognized arguments: --version
+</small></td>
         </tr>
 <tr class="tool-row perfect">
             <td>✅</td>
@@ -810,7 +832,7 @@ Based of</small></td>
             <td>✅ <small>3 profiles</small></td>
             <td>✅</td>
             <td class="runtime-info"><small>
-(cherrytree:1760639): Gtk-WARNING **: 20:27:07.927: cannot open display: 
+(cherrytree:339326): Gtk-WARNING **: 21:42:56.578: cannot open display: 
 </small></td>
         </tr>
 <tr class="tool-row perfect">
@@ -948,6 +970,18 @@ qt.qpa.plugin: Could not load the Qt p</small></td>
         </tr>
 <tr class="tool-row perfect">
             <td>✅</td>
+            <td><strong>dalfox</strong></td>
+            <td><code>dalfox</code></td>
+            <td>Web Application Security</td>
+            <td>✅</td>
+            <td>✅ <small>1 profiles</small></td>
+            <td>✅</td>
+            <td class="runtime-info"><small>
+                                                        
+               ░█▒    </small></td>
+        </tr>
+<tr class="tool-row perfect">
+            <td>✅</td>
             <td><strong>darkstat</strong></td>
             <td><code>darkstat</code></td>
             <td>Infrastructure Security</td>
@@ -1014,8 +1048,9 @@ GNU dd </small></td>
             <td>✅</td>
             <td>✅ <small>3 profiles</small></td>
             <td>✅</td>
-            <td class="runtime-info"><small>Traceback (most recent call last):
-  File "/usr/share/doc/python3-impacket/examp</small></td>
+            <td class="runtime-info"><small>Impacket v0.14.0.dev0 - Copyright Fortra, LLC and its affiliated companies 
+
+usa</small></td>
         </tr>
 <tr class="tool-row perfect">
             <td>✅</td>
@@ -1074,8 +1109,8 @@ Usage: java -jar DirBuster-1.0-RC1 -u &lt;URL http://example.co</small></td>
             <td>✅</td>
             <td>✅ <small>3 profiles</small></td>
             <td>✅</td>
-            <td class="runtime-info"><small>Traceback (most recent call last):
-  File "/usr/lib/python3/dist-packages/dirsea</small></td>
+            <td class="runtime-info"><small>dirsearch v0.4.3
+/usr/lib/python3/dist-packages/dirsearch/dirsearch.py:23: Depre</small></td>
         </tr>
 <tr class="tool-row perfect">
             <td>✅</td>
@@ -1111,7 +1146,7 @@ Note: If no -</small></td>
             <td>✅</td>
             <td>✅ <small>3 profiles</small></td>
             <td>✅</td>
-            <td class="runtime-info"><small>[timeout — tool started but took too long]</small></td>
+            <td class="runtime-info"><small>usage: dnsrecon [-h] [-d DOMAIN] [-iL INPUT_LIST] [-n NS_SERVER] [-r RANGE] [-D </small></td>
         </tr>
 <tr class="tool-row perfect">
             <td>✅</td>
@@ -1144,7 +1179,8 @@ DNSTRACER version 1.8.1 - (c) Edwin Gr</small></td>
             <td>✅</td>
             <td>✅ <small>3 profiles</small></td>
             <td>✅</td>
-            <td class="runtime-info"><small>[timeout — tool started but took too long]</small></td>
+            <td class="runtime-info"><small>dnstwist 20250130
+</small></td>
         </tr>
 <tr class="tool-row perfect">
             <td>✅</td>
@@ -1189,8 +1225,18 @@ DNSTRACER version 1.8.1 - (c) Edwin Gr</small></td>
             <td>✅</td>
             <td>✅ <small>3 profiles</small></td>
             <td>✅</td>
-            <td class="runtime-info"><small>[01;31m[-][00m This script must be [01;31mrun as root[00m
-</small></td>
+            <td class="runtime-info"><small>[timeout — tool started but took too long]</small></td>
+        </tr>
+<tr class="tool-row perfect">
+            <td>✅</td>
+            <td><strong>droopescan</strong></td>
+            <td><code>droopescan</code></td>
+            <td>Web Application Security</td>
+            <td>✅</td>
+            <td>✅ <small>1 profiles</small></td>
+            <td>✅</td>
+            <td class="runtime-info"><small>Traceback (most recent call last):
+  File "/usr/local/bin/droopescan", line 3, i</small></td>
         </tr>
 <tr class="tool-row perfect">
             <td>✅</td>
@@ -1224,7 +1270,7 @@ Copyright 1998-2026 Gerald Combs &lt;gerald@wireshark.o</small></td>
             <td>✅</td>
             <td>✅ <small>3 profiles</small></td>
             <td>✅</td>
-            <td class="runtime-info"><small>Error: /usr/bin/eaphammer must be run as root
+            <td class="runtime-info"><small>1.14.0
 </small></td>
         </tr>
 <tr class="tool-row perfect">
@@ -1246,8 +1292,7 @@ qt.qpa.plugin: Could not load the Qt p</small></td>
             <td>✅</td>
             <td>✅ <small>3 profiles</small></td>
             <td>✅</td>
-            <td class="runtime-info"><small>Traceback (most recent call last):
-  File "/usr/share/emailharvester/./EmailHarv</small></td>
+            <td class="runtime-info"><small>usage: EmailHarvester.py [-h] [-d DOMAIN] [-s FILE] [-e ENGINE] [-l LIMIT] [-u U</small></td>
         </tr>
 <tr class="tool-row perfect">
             <td>✅</td>
@@ -1257,7 +1302,7 @@ qt.qpa.plugin: Could not load the Qt p</small></td>
             <td>✅</td>
             <td>✅ <small>3 profiles</small></td>
             <td>✅</td>
-            <td class="runtime-info"><small>sudo: a terminal is required to read the password; either use ssh's -t option or</small></td>
+            <td class="runtime-info"><small>[timeout — tool started but took too long]</small></td>
         </tr>
 <tr class="tool-row perfect">
             <td>✅</td>
@@ -1267,7 +1312,7 @@ qt.qpa.plugin: Could not load the Qt p</small></td>
             <td>✅</td>
             <td>✅ <small>3 profiles</small></td>
             <td>✅</td>
-            <td class="runtime-info"><small>sudo: a terminal is required to read the password; either use ssh's -t option or</small></td>
+            <td class="runtime-info"><small>[timeout — tool started but took too long]</small></td>
         </tr>
 <tr class="tool-row perfect">
             <td>✅</td>
@@ -1370,8 +1415,7 @@ Processor is little endian.
             <td>✅</td>
             <td>✅ <small>3 profiles</small></td>
             <td>✅</td>
-            <td class="runtime-info"><small>Traceback (most recent call last):
-  File "/usr/share/eyewitness/EyeWitness.py",</small></td>
+            <td class="runtime-info"><small>################################################################################</small></td>
         </tr>
 <tr class="tool-row perfect">
             <td>✅</td>
@@ -1381,7 +1425,7 @@ Processor is little endian.
             <td>✅</td>
             <td>✅ <small>3 profiles</small></td>
             <td>✅</td>
-            <td class="runtime-info"><small>Failed to start postgresql.service: Access denied as the requested operation req</small></td>
+            <td class="runtime-info"><small>[timeout — tool started but took too long]</small></td>
         </tr>
 <tr class="tool-row perfect">
             <td>✅</td>
@@ -1415,13 +1459,8 @@ Usage: fatcat disk.img [options]
             <td>✅</td>
             <td>✅ <small>1 profiles</small></td>
             <td>✅</td>
-            <td class="runtime-info"><small>Missing module:
-
-use apt install to install it
-
-Missing module:
-
-use apt install</small></td>
+            <td class="runtime-info"><small>qt.qpa.xcb: could not connect to display 
+qt.qpa.plugin: Could not load the Qt p</small></td>
         </tr>
 <tr class="tool-row perfect">
             <td>✅</td>
@@ -1510,6 +1549,18 @@ This program is a work of the US Government. In accordance with 17 USC 105</smal
             <td>✅</td>
             <td class="runtime-info"><small>ftp: --: unknown option
 usage: ftp [-46AadefginpRtVv] [-N NETRC] [-o OUTPUT] [-P</small></td>
+        </tr>
+<tr class="tool-row perfect">
+            <td>✅</td>
+            <td><strong>gau</strong></td>
+            <td><code>gau</code></td>
+            <td>Data Protection & Encryption</td>
+            <td>✅</td>
+            <td>✅ <small>3 profiles</small></td>
+            <td>✅</td>
+            <td class="runtime-info"><small>unknown shorthand flag: 'v' in -version
+Usage of gau:
+      --blacklist strings </small></td>
         </tr>
 <tr class="tool-row perfect">
             <td>✅</td>
@@ -1640,7 +1691,7 @@ Copyright (C) 200</small></td>
             <td class="runtime-info"><small>Starting gophish...
 Default user is: admin
 Default password is: kali-gophish
-Fai</small></td>
+Ope</small></td>
         </tr>
 <tr class="tool-row perfect">
             <td>✅</td>
@@ -1685,8 +1736,7 @@ Fai</small></td>
             <td>✅ <small>1 profiles</small></td>
             <td>✅</td>
             <td class="runtime-info"><small>
-Using default log file name /var/log/guymager.log
-Log file error: Can't be open</small></td>
+Using default log file name /var/log/guymager.logqt.qpa.xcb: could not connect </small></td>
         </tr>
 <tr class="tool-row perfect">
             <td>✅</td>
@@ -1767,7 +1817,7 @@ Try `hashdeep -h` for more information.</small></td>
             <td>✅</td>
             <td>✅ <small>3 profiles</small></td>
             <td>✅</td>
-            <td class="runtime-info"><small>[20:27:24] [ERRO] Failed to execute havoc
+            <td class="runtime-info"><small>[21:43:16] [ERRO] Failed to execute havoc
 Error: unknown flag: --version
 </small></td>
         </tr>
@@ -1975,8 +2025,9 @@ ike-scan com</small></td>
             <td>✅</td>
             <td>✅ <small>3 profiles</small></td>
             <td>✅</td>
-            <td class="runtime-info"><small>Traceback (most recent call last):
-  File "/usr/share/doc/python3-impacket/examp</small></td>
+            <td class="runtime-info"><small>Impacket v0.14.0.dev0 - Copyright Fortra, LLC and its affiliated companies 
+
+usa</small></td>
         </tr>
 <tr class="tool-row perfect">
             <td>✅</td>
@@ -1986,8 +2037,9 @@ ike-scan com</small></td>
             <td>✅</td>
             <td>✅ <small>3 profiles</small></td>
             <td>✅</td>
-            <td class="runtime-info"><small>Traceback (most recent call last):
-  File "/usr/share/doc/python3-impacket/examp</small></td>
+            <td class="runtime-info"><small>Impacket v0.14.0.dev0 - Copyright Fortra, LLC and its affiliated companies 
+
+usa</small></td>
         </tr>
 <tr class="tool-row perfect">
             <td>✅</td>
@@ -1997,8 +2049,9 @@ ike-scan com</small></td>
             <td>✅</td>
             <td>✅ <small>3 profiles</small></td>
             <td>✅</td>
-            <td class="runtime-info"><small>Traceback (most recent call last):
-  File "/usr/share/doc/python3-impacket/examp</small></td>
+            <td class="runtime-info"><small>Impacket v0.14.0.dev0 - Copyright Fortra, LLC and its affiliated companies 
+
+usa</small></td>
         </tr>
 <tr class="tool-row perfect">
             <td>✅</td>
@@ -2052,7 +2105,8 @@ Linux CyberSecPro 6.18.5+kali-amd64 #1 SMP PREEMPT_DYN</small></td>
             <td>✅</td>
             <td>✅ <small>3 profiles</small></td>
             <td>✅</td>
-            <td class="runtime-info"><small>fatal: This program can be run only by the system administrator
+            <td class="runtime-info"><small>/usr/sbin/iptraf-ng: unrecognized option '--version'
+usage: iptraf-ng [options]
 </small></td>
         </tr>
 <tr class="tool-row perfect">
@@ -2129,7 +2183,7 @@ Linux CyberSecPro 6.18.5+kali-amd64 #1 SMP PREEMPT_DYN</small></td>
             <td>✅</td>
             <td>✅ <small>3 profiles</small></td>
             <td>✅</td>
-            <td class="runtime-info"><small>[timeout — tool started but took too long]</small></td>
+            <td class="runtime-info"><small>usage: KNOCKPY [-h] [-d DOMAIN] [-f FILE] [--dns DNS] [--useragent USERAGENT] [-</small></td>
         </tr>
 <tr class="tool-row perfect">
             <td>✅</td>
@@ -2149,8 +2203,7 @@ Linux CyberSecPro 6.18.5+kali-amd64 #1 SMP PREEMPT_DYN</small></td>
             <td>✅</td>
             <td>✅ <small>3 profiles</small></td>
             <td>✅</td>
-            <td class="runtime-info"><small>Traceback (most recent call last):
-  File "/usr/share/legion/legion.py", line 22</small></td>
+            <td class="runtime-info"><small>[21:43:23] INFO     Using temp directory: /tmp/legion                           </small></td>
         </tr>
 <tr class="tool-row perfect">
             <td>✅</td>
@@ -2334,8 +2387,7 @@ http://www.netsniff-ng.org
             <td>✅</td>
             <td>✅ <small>1 profiles</small></td>
             <td>✅</td>
-            <td class="runtime-info"><small>Traceback (most recent call last):
-  File "/usr/share/metagoofil/metagoofil.py",</small></td>
+            <td class="runtime-info"><small>usage: metagoofil.py [-h] -d DOMAIN [-e DELAY] [-f [SAVE_FILE]] [-i URL_TIMEOUT]</small></td>
         </tr>
 <tr class="tool-row perfect">
             <td>✅</td>
@@ -2526,7 +2578,9 @@ Written by: Jaime Pena</small></td>
             <td>✅</td>
             <td>✅ <small>3 profiles</small></td>
             <td>✅</td>
-            <td class="runtime-info"><small>[timeout — tool started but took too long]</small></td>
+            <td class="runtime-info"><small>[*] First time use detected
+[*] Creating home directory structure
+[*] Creating m</small></td>
         </tr>
 <tr class="tool-row perfect">
             <td>✅</td>
@@ -2653,6 +2707,19 @@ Compiled wi</small></td>
         </tr>
 <tr class="tool-row perfect">
             <td>✅</td>
+            <td><strong>notify</strong></td>
+            <td><code>notify</code></td>
+            <td>Infrastructure Security</td>
+            <td>✅</td>
+            <td>✅ <small>3 profiles</small></td>
+            <td>✅</td>
+            <td class="runtime-info"><small>
+             __  _ ___    
+  ___  ___  / /_(_) _/_ __
+ / _ \/ _ \/ __/ / _/ // </small></td>
+        </tr>
+<tr class="tool-row perfect">
+            <td>✅</td>
             <td><strong>nslookup</strong></td>
             <td><code>nslookup</code></td>
             <td>Infrastructure Security</td>
@@ -2671,8 +2738,9 @@ Compiled wi</small></td>
             <td>✅</td>
             <td>✅ <small>3 profiles</small></td>
             <td>✅</td>
-            <td class="runtime-info"><small>Traceback (most recent call last):
-  File "/usr/share/doc/python3-impacket/examp</small></td>
+            <td class="runtime-info"><small>Impacket v0.14.0.dev0 - Copyright Fortra, LLC and its affiliated companies 
+
+usa</small></td>
         </tr>
 <tr class="tool-row perfect">
             <td>✅</td>
@@ -2716,8 +2784,8 @@ Copyright (C) 2025 Free S</small></td>
             <td>✅ <small>3 profiles</small></td>
             <td>✅</td>
             <td class="runtime-info"><small>ohrwurm-0.1
-ERROR: couldn't read from /proc/sys/net/ipv4/ip_forward
-</small></td>
+
+usage: /usr/bin/ohrwurm -a &lt;IP target a&gt; -b &lt;IP target b&gt; [-s &lt;rand</small></td>
         </tr>
 <tr class="tool-row perfect">
             <td>✅</td>
@@ -2922,7 +2990,7 @@ Usage: pipal [OP</small></td>
             <td class="runtime-info"><small>Pixiewps 1.4.2
  
 
- [*] System time: 1771550870 (Fri Feb 20 01:27:50 2026 UTC)
+ [*] System time: 1771555421 (Fri Feb 20 02:43:41 2026 UTC)
  [</small></td>
         </tr>
 <tr class="tool-row perfect">
@@ -2933,7 +3001,8 @@ Usage: pipal [OP</small></td>
             <td>✅</td>
             <td>✅ <small>3 profiles</small></td>
             <td>✅</td>
-            <td class="runtime-info"><small>[timeout — tool started but took too long]</small></td>
+            <td class="runtime-info"><small>You must select either client mode (-c) or listen mode (-l).
+</small></td>
         </tr>
 <tr class="tool-row perfect">
             <td>✅</td>
@@ -2978,8 +3047,8 @@ Usage: pipal [OP</small></td>
             <td>✅</td>
             <td>✅ <small>3 profiles</small></td>
             <td>✅</td>
-            <td class="runtime-info"><small>[=] Session log /home/cybersec/.proxmark3/logs/log_20260220012753.txt
-Client: Ic</small></td>
+            <td class="runtime-info"><small>[=] Session log /root/.proxmark3/logs/log_20260220024342.txt
+Client: Iceman/mast</small></td>
         </tr>
 <tr class="tool-row perfect">
             <td>✅</td>
@@ -3001,8 +3070,9 @@ Usage:	proxychains4 -q -f config_file program_name [arguments]
             <td>✅</td>
             <td>✅ <small>3 profiles</small></td>
             <td>✅</td>
-            <td class="runtime-info"><small>Traceback (most recent call last):
-  File "/usr/share/doc/python3-impacket/examp</small></td>
+            <td class="runtime-info"><small>Impacket v0.14.0.dev0 - Copyright Fortra, LLC and its affiliated companies 
+
+usa</small></td>
         </tr>
 <tr class="tool-row perfect">
             <td>✅</td>
@@ -3046,7 +3116,7 @@ Error: unknown </small></td>
             <td>✅</td>
             <td>✅ <small>3 profiles</small></td>
             <td>✅</td>
-            <td class="runtime-info"><small>[timeout — tool started but took too long]</small></td>
+            <td class="runtime-info"><small>usage: pypykatz [-h] [-v] {live,lsa,registry,crypto,kerberos,dpapi,ldap,rdp,pars</small></td>
         </tr>
 <tr class="tool-row perfect">
             <td>✅</td>
@@ -3169,8 +3239,8 @@ author:   Ollie Whiteh</small></td>
             <td>✅</td>
             <td>✅ <small>1 profiles</small></td>
             <td>✅</td>
-            <td class="runtime-info"><small>You need to install python3-netifaces or run Responder with python3...
-Try "apt-</small></td>
+            <td class="runtime-info"><small>                                         __
+  .----.-----.-----.-----.-----.----</small></td>
         </tr>
 <tr class="tool-row perfect">
             <td>✅</td>
@@ -3353,8 +3423,9 @@ usage: scp [-346ABCOpqRrsTv] [-c cipher] [-D s</small></td>
             <td>✅</td>
             <td>✅ <small>3 profiles</small></td>
             <td>✅</td>
-            <td class="runtime-info"><small>Traceback (most recent call last):
-  File "/usr/share/doc/python3-impacket/examp</small></td>
+            <td class="runtime-info"><small>Impacket v0.14.0.dev0 - Copyright Fortra, LLC and its affiliated companies 
+
+usa</small></td>
         </tr>
 <tr class="tool-row perfect">
             <td>✅</td>
@@ -3364,10 +3435,7 @@ usage: scp [-346ABCOpqRrsTv] [-c cipher] [-D s</small></td>
             <td>✅</td>
             <td>✅ <small>3 profiles</small></td>
             <td>✅</td>
-            <td class="runtime-info"><small>
- The Social-Engineer Toolkit (SET) - by David Kennedy (ReL1K)
-
- Not running as </small></td>
+            <td class="runtime-info"><small>[94m[1m[-] [0mNew set.config.py file generated on: 2026-02-19 21:43:48.340901</small></td>
         </tr>
 <tr class="tool-row perfect">
             <td>✅</td>
@@ -3377,18 +3445,6 @@ usage: scp [-346ABCOpqRrsTv] [-c cipher] [-D s</small></td>
             <td>✅</td>
             <td>✅ <small>1 profiles</small></td>
             <td>✅</td>
-            <td class="runtime-info"><small>┏━([1;31mMessage from Kali developers[00m)
-┃
-┃ You may need to install the win</small></td>
-        </tr>
-<tr class="tool-row perfect">
-            <td>✅</td>
-            <td><strong>sherlock</strong></td>
-            <td><code>sherlock</code></td>
-            <td>Data Protection & Encryption</td>
-            <td>✅</td>
-            <td>✅ <small>1 profiles</small></td>
-            <td>✅</td>
             <td class="runtime-info"><small>[timeout — tool started but took too long]</small></td>
         </tr>
 <tr class="tool-row perfect">
@@ -3399,7 +3455,19 @@ usage: scp [-346ABCOpqRrsTv] [-c cipher] [-D s</small></td>
             <td>✅</td>
             <td>✅ <small>1 profiles</small></td>
             <td>✅</td>
-            <td class="runtime-info"><small>[timeout — tool started but took too long]</small></td>
+            <td class="runtime-info"><small>Sherlock v0.15.0
+</small></td>
+        </tr>
+<tr class="tool-row perfect">
+            <td>✅</td>
+            <td><strong>sherlock</strong></td>
+            <td><code>sherlock</code></td>
+            <td>Data Protection & Encryption</td>
+            <td>✅</td>
+            <td>✅ <small>1 profiles</small></td>
+            <td>✅</td>
+            <td class="runtime-info"><small>Sherlock v0.15.0
+</small></td>
         </tr>
 <tr class="tool-row perfect">
             <td>✅</td>
@@ -3476,8 +3544,9 @@ Usage: skipfish [ options ... ]</small></td>
             <td>✅</td>
             <td>✅ <small>3 profiles</small></td>
             <td>✅</td>
-            <td class="runtime-info"><small>Traceback (most recent call last):
-  File "/usr/share/doc/python3-impacket/examp</small></td>
+            <td class="runtime-info"><small>Impacket v0.14.0.dev0 - Copyright Fortra, LLC and its affiliated companies 
+
+usa</small></td>
         </tr>
 <tr class="tool-row perfect">
             <td>✅</td>
@@ -3497,8 +3566,9 @@ Usage: skipfish [ options ... ]</small></td>
             <td>✅</td>
             <td>✅ <small>3 profiles</small></td>
             <td>✅</td>
-            <td class="runtime-info"><small>Traceback (most recent call last):
-  File "/usr/share/doc/python3-impacket/examp</small></td>
+            <td class="runtime-info"><small>Impacket v0.14.0.dev0 - Copyright Fortra, LLC and its affiliated companies 
+
+usa</small></td>
         </tr>
 <tr class="tool-row perfect">
             <td>✅</td>
@@ -3842,8 +3912,8 @@ Usage of /usr/bin/subjack:
             <td>✅</td>
             <td>✅ <small>3 profiles</small></td>
             <td>✅</td>
-            <td class="runtime-info"><small>sucrack 1.2.3 (LINUX) - the su cracker
-Copyright (C) 2006  Nico Leidecker; nfl@p</small></td>
+            <td class="runtime-info"><small>yah, very funny!
+</small></td>
         </tr>
 <tr class="tool-row perfect">
             <td>✅</td>
@@ -4053,6 +4123,17 @@ Copyright 2008-2023 Canonical Ltd.
         </tr>
 <tr class="tool-row perfect">
             <td>✅</td>
+            <td><strong>uncover</strong></td>
+            <td><code>uncover</code></td>
+            <td>Known Vulnerability Database</td>
+            <td>✅</td>
+            <td>✅ <small>3 profiles</small></td>
+            <td>✅</td>
+            <td class="runtime-info"><small>[[34mINF[0m] Current Version: v1.1.0
+[[34mINF[0m] Uncover ConfigDir: /root/.</small></td>
+        </tr>
+<tr class="tool-row perfect">
+            <td>✅</td>
             <td><strong>unicorn</strong></td>
             <td><code>unicorn</code></td>
             <td>Known Vulnerability Database</td>
@@ -4115,9 +4196,9 @@ pcap ver</small></td>
             <td>✅ <small>1 profiles</small></td>
             <td>✅</td>
             <td class="runtime-info"><small>
-                [1;97m______
-               [1;97m/      \
-              [1;</small></td>
+                   [1;97m______
+                  [1;97m/      \
+            </small></td>
         </tr>
 <tr class="tool-row perfect">
             <td>✅</td>
@@ -4142,14 +4223,28 @@ pcap ver</small></td>
         </tr>
 <tr class="tool-row perfect">
             <td>✅</td>
+            <td><strong>waybackurls</strong></td>
+            <td><code>waybackurls</code></td>
+            <td>Data Protection & Encryption</td>
+            <td>✅</td>
+            <td>✅ <small>3 profiles</small></td>
+            <td>✅</td>
+            <td class="runtime-info"><small>Usage of waybackurls:
+  -dates
+    	show date of fetch in the first column
+  -ge</small></td>
+        </tr>
+<tr class="tool-row perfect">
+            <td>✅</td>
             <td><strong>weevely</strong></td>
             <td><code>weevely</code></td>
             <td>Web Application Security</td>
             <td>✅</td>
             <td>✅ <small>3 profiles</small></td>
             <td>✅</td>
-            <td class="runtime-info"><small>Traceback (most recent call last):
-  File "/usr/bin/weevely", line 13, in &lt;modul</small></td>
+            <td class="runtime-info"><small>
+[+] weevely 4.0.1
+[!] Error: the following arguments are required: url, passwor</small></td>
         </tr>
 <tr class="tool-row perfect">
             <td>✅</td>
@@ -4267,8 +4362,9 @@ Copyright 1998-2026 Gerald Combs &lt;gerald@wireshark.org&gt; and co</small></td
             <td>✅</td>
             <td>✅ <small>3 profiles</small></td>
             <td>✅</td>
-            <td class="runtime-info"><small>Traceback (most recent call last):
-  File "/usr/share/doc/python3-impacket/examp</small></td>
+            <td class="runtime-info"><small>Impacket v0.14.0.dev0 - Copyright Fortra, LLC and its affiliated companies 
+
+usa</small></td>
         </tr>
 <tr class="tool-row perfect">
             <td>✅</td>
@@ -4278,8 +4374,7 @@ Copyright 1998-2026 Gerald Combs &lt;gerald@wireshark.org&gt; and co</small></td
             <td>✅</td>
             <td>✅ <small>3 profiles</small></td>
             <td>✅</td>
-            <td class="runtime-info"><small>SYCOPHANT : Please run as root
-</small></td>
+            <td class="runtime-info"><small>Usage: sudo wpa_sycophant -c /etc/wpa-sycophant/wpa_sycophant_example.conf -i wl</small></td>
         </tr>
 <tr class="tool-row perfect">
             <td>✅</td>
@@ -4289,8 +4384,7 @@ Copyright 1998-2026 Gerald Combs &lt;gerald@wireshark.org&gt; and co</small></td
             <td>✅</td>
             <td>✅ <small>3 profiles</small></td>
             <td>✅</td>
-            <td class="runtime-info"><small>_______________________________________________________________
-         __     </small></td>
+            <td class="runtime-info"><small>[timeout — tool started but took too long]</small></td>
         </tr>
 <tr class="tool-row perfect">
             <td>✅</td>
@@ -4312,8 +4406,9 @@ compiled against libxsl</small></td>
             <td>✅</td>
             <td>✅ <small>1 profiles</small></td>
             <td>✅</td>
-            <td class="runtime-info"><small>Traceback (most recent call last):
-  File "/usr/share/xsser/xsser", line 22, in </small></td>
+            <td class="runtime-info"><small>Usage: 
+
+xsser [OPTIONS] [--all &lt;url&gt; |-u &lt;url&gt; |-i &lt;file&gt; |-d &lt;dork&gt; (options)|</small></td>
         </tr>
 <tr class="tool-row perfect">
             <td>✅</td>
@@ -4352,19 +4447,6 @@ usage: xsstrike.py [-h] [-u TARGET] [--data PAR</small></td>
         </tr>
 <tr class="tool-row perfect">
             <td>✅</td>
-            <td><strong>yersinia</strong></td>
-            <td><code>yersinia</code></td>
-            <td>Infrastructure Security</td>
-            <td>✅</td>
-            <td>✅ <small>3 profiles</small></td>
-            <td>✅</td>
-            <td class="runtime-info"><small>You must be root to run yersinia 0.8.2
-
-
-MOTD: It's the voodoo who do what you d</small></td>
-        </tr>
-<tr class="tool-row perfect">
-            <td>✅</td>
             <td><strong>zaproxy</strong></td>
             <td><code>zaproxy</code></td>
             <td>API & Mobile Backend Security</td>
@@ -4382,7 +4464,17 @@ MOTD: It's the voodoo who do what you d</small></td>
             <td>✅ <small>1 profiles</small></td>
             <td>✅</td>
             <td class="runtime-info"><small>zmap v4.3.4
-Feb 19 20:28:25.622 [INFO] zmap: By default, ZMap will output the un</small></td>
+Feb 19 21:44:10.972 [INFO] zmap: By default, ZMap will output the un</small></td>
+        </tr>
+<tr class="tool-row warning">
+            <td>⚠️</td>
+            <td><strong>yersinia</strong></td>
+            <td><code>yersinia</code></td>
+            <td>Infrastructure Security</td>
+            <td>✅</td>
+            <td>✅ <small>3 profiles</small></td>
+            <td>❌</td>
+            <td class="runtime-info"><small>'utf-8' codec can't decode byte 0xdb in position 17: invalid</small></td>
         </tr>
 <tr class="tool-row non-cli">
             <td>📄</td>
@@ -4548,16 +4640,6 @@ Feb 19 20:28:25.622 [INFO] zmap: By default, ZMap will output the un</small></td
             <td>❌</td>
             <td><strong>alterx</strong></td>
             <td><code>alterx</code></td>
-            <td>Known Vulnerability Database</td>
-            <td>❌</td>
-            <td>✅ <small>3 profiles</small></td>
-            <td>➖</td>
-            <td class="runtime-info"><small>—</small></td>
-        </tr>
-<tr class="tool-row missing">
-            <td>❌</td>
-            <td><strong>anew</strong></td>
-            <td><code>anew</code></td>
             <td>Known Vulnerability Database</td>
             <td>❌</td>
             <td>✅ <small>3 profiles</small></td>
@@ -5046,16 +5128,6 @@ Feb 19 20:28:25.622 [INFO] zmap: By default, ZMap will output the un</small></td
         </tr>
 <tr class="tool-row missing">
             <td>❌</td>
-            <td><strong>dalfox</strong></td>
-            <td><code>dalfox</code></td>
-            <td>Web Application Security</td>
-            <td>❌</td>
-            <td>✅ <small>3 profiles</small></td>
-            <td>➖</td>
-            <td class="runtime-info"><small>—</small></td>
-        </tr>
-<tr class="tool-row missing">
-            <td>❌</td>
             <td><strong>dehashed</strong></td>
             <td><code>dehashed</code></td>
             <td>Data Protection & Encryption</td>
@@ -5169,16 +5241,6 @@ Feb 19 20:28:25.622 [INFO] zmap: By default, ZMap will output the un</small></td
             <td><strong>dragonblood</strong></td>
             <td><code>dragonblood</code></td>
             <td>Infrastructure Security</td>
-            <td>❌</td>
-            <td>✅ <small>3 profiles</small></td>
-            <td>➖</td>
-            <td class="runtime-info"><small>—</small></td>
-        </tr>
-<tr class="tool-row missing">
-            <td>❌</td>
-            <td><strong>droopescan</strong></td>
-            <td><code>droopescan</code></td>
-            <td>Web Application Security</td>
             <td>❌</td>
             <td>✅ <small>3 profiles</small></td>
             <td>➖</td>
@@ -5329,16 +5391,6 @@ Feb 19 20:28:25.622 [INFO] zmap: By default, ZMap will output the un</small></td
             <td><strong>fx-json</strong></td>
             <td><code>fx-json</code></td>
             <td>Known Vulnerability Database</td>
-            <td>❌</td>
-            <td>✅ <small>3 profiles</small></td>
-            <td>➖</td>
-            <td class="runtime-info"><small>—</small></td>
-        </tr>
-<tr class="tool-row missing">
-            <td>❌</td>
-            <td><strong>gau</strong></td>
-            <td><code>gau</code></td>
-            <td>Data Protection & Encryption</td>
             <td>❌</td>
             <td>✅ <small>3 profiles</small></td>
             <td>➖</td>
@@ -6179,16 +6231,6 @@ Feb 19 20:28:25.622 [INFO] zmap: By default, ZMap will output the un</small></td
             <td><strong>nosqlmap</strong></td>
             <td><code>nosqlmap</code></td>
             <td>Web Application Security</td>
-            <td>❌</td>
-            <td>✅ <small>3 profiles</small></td>
-            <td>➖</td>
-            <td class="runtime-info"><small>—</small></td>
-        </tr>
-<tr class="tool-row missing">
-            <td>❌</td>
-            <td><strong>notify</strong></td>
-            <td><code>notify</code></td>
-            <td>Infrastructure Security</td>
             <td>❌</td>
             <td>✅ <small>3 profiles</small></td>
             <td>➖</td>
@@ -7326,16 +7368,6 @@ Feb 19 20:28:25.622 [INFO] zmap: By default, ZMap will output the un</small></td
         </tr>
 <tr class="tool-row missing">
             <td>❌</td>
-            <td><strong>uncover</strong></td>
-            <td><code>uncover</code></td>
-            <td>Known Vulnerability Database</td>
-            <td>❌</td>
-            <td>✅ <small>3 profiles</small></td>
-            <td>➖</td>
-            <td class="runtime-info"><small>—</small></td>
-        </tr>
-<tr class="tool-row missing">
-            <td>❌</td>
             <td><strong>unfurl</strong></td>
             <td><code>unfurl</code></td>
             <td>Known Vulnerability Database</td>
@@ -7509,16 +7541,6 @@ Feb 19 20:28:25.622 [INFO] zmap: By default, ZMap will output the un</small></td
             <td><strong>wayback-machine</strong></td>
             <td><code>wayback-machine</code></td>
             <td>Web Application Security</td>
-            <td>❌</td>
-            <td>✅ <small>3 profiles</small></td>
-            <td>➖</td>
-            <td class="runtime-info"><small>—</small></td>
-        </tr>
-<tr class="tool-row missing">
-            <td>❌</td>
-            <td><strong>waybackurls</strong></td>
-            <td><code>waybackurls</code></td>
-            <td>Data Protection & Encryption</td>
             <td>❌</td>
             <td>✅ <small>3 profiles</small></td>
             <td>➖</td>
@@ -7751,9 +7773,9 @@ Feb 19 20:28:25.622 [INFO] zmap: By default, ZMap will output the un</small></td
 <div class="verdict warn">
     <div style="font-size:2em;margin-bottom:10px">⚠️</div>
     <strong>VERIFICATION VERDICT</strong><br>
-    355 of 676 CLI tools installed (52.5%)<br>
-    676 configured | 355 runtime-verified<br>
-    <small>355 tools are PERFECT (all 3 stages pass)</small>
+    362 of 676 CLI tools installed (53.6%)<br>
+    676 configured | 361 runtime-verified<br>
+    <small>361 tools are PERFECT (all 3 stages pass)</small>
 </div>
 
 <div class="footer">
