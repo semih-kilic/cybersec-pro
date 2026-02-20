@@ -112,6 +112,24 @@ BINARY_ALIASES = {
     "payloadsallthethings": "payloadsallthethings",
     "seclists": "seclists",
     "rockyou": "rockyou",
+    # V9.1 — packages with different binary names
+    "awscli": "aws",
+    "bluez": "bluetoothctl",
+    "capstone-tool": "cstool",
+    "csvkit": "csvcut",
+    "dex2jar": "d2j-apk-sign",
+    "gdb-peda": "gdb",
+    "hcxtools": "hcxpcapngtool",
+    "ligolo-ng": "ligolo-proxy",
+    "miller": "mlr",
+    "nftables": "nft",
+    "redfang": "fang",
+    "sipvicious": "svmap",
+    "sleuthkit": "blkcat",
+    "sliver": "sliver-server",
+    "ubertooth": "ubertooth-btle",
+    "wpa-sycophant": "wpa_sycophant",
+    "zaproxy": "zaproxy",
 }
 
 # ─── Tools that should use special version check commands ────
@@ -235,6 +253,23 @@ VERSION_COMMANDS = {
     "waybackurls": ["waybackurls", "-h"],
     "hakrawler": ["hakrawler", "-h"],
     "assetfinder": ["assetfinder", "-h"],
+    # V9.1 — version commands for aliased packages
+    "aws": ["aws", "--version"],
+    "bluetoothctl": ["bluetoothctl", "--version"],
+    "cstool": ["cstool", "-v"],
+    "csvcut": ["csvcut", "--version"],
+    "d2j-apk-sign": ["d2j-apk-sign", "--help"],
+    "hcxpcapngtool": ["hcxpcapngtool", "--version"],
+    "ligolo-proxy": ["ligolo-proxy", "--help"],
+    "mlr": ["mlr", "--version"],
+    "nft": ["nft", "--version"],
+    "fang": ["fang", "-h"],
+    "svmap": ["svmap", "--version"],
+    "blkcat": ["blkcat", "-V"],
+    "sliver-server": ["sliver-server", "version"],
+    "ubertooth-btle": ["ubertooth-btle", "-h"],
+    "wpa_sycophant": ["wpa_sycophant", "-h"],
+    "zaproxy": ["zaproxy", "-cmd", "-version"],
 }
 
 # ─── Non-CLI entries (CVEs, wordlists, frameworks, references) ───
