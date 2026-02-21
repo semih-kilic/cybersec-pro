@@ -4274,14 +4274,41 @@ def start_scan_v2():
                 'hint': 'Enter a valid IP address (e.g., 8.8.8.8), CIDR (e.g., 10.0.0.0/24), domain (e.g., example.com), or URL (e.g., http://example.com)'
             }), 400
         
-        # Block private/local IPs in production
-        if target.startswith(('10.', '172.16.', '172.17.', '172.18.', '172.19.', 
+        # Check if target is a private/local IP
+        is_private_ip = target.startswith(('10.', '172.16.', '172.17.', '172.18.', '172.19.', 
                               '172.20.', '172.21.', '172.22.', '172.23.', '172.24.',
                               '172.25.', '172.26.', '172.27.', '172.28.', '172.29.',
-                              '172.30.', '172.31.', '192.168.', '127.')):
+                              '172.30.', '172.31.', '192.168.', '127.'))
+        
+        # Get execution mode from request
+        requested_execution_mode = data.get('execution_mode', 'auto')
+        agent_id_from_request = data.get('agent_id')
+        
+        # Private IP scanning is allowed when:
+        # 1. User explicitly selected an agent (agent_id provided)
+        # 2. User selected 'local' mode (scanning from their own network via server)
+        # 3. Enterprise plan users (they may have internal infrastructure access)
+        allow_private_ips = (
+            agent_id_from_request or  # User selected a specific agent
+            requested_execution_mode == 'local' or  # User explicitly wants local execution
+            org.plan_type == 'enterprise'  # Enterprise users have full access
+        )
+        
+        # Block private/local IPs only when auto mode without agent
+        if is_private_ip and not allow_private_ips:
+            # Check if user has any online agents - if so, suggest using one
+            has_agents = Agent.query.filter_by(
+                organization_id=org.id, status='online'
+            ).count() > 0
+            
+            hint = 'Select a Private Agent to scan internal networks, or use public IP addresses'
+            if not has_agents:
+                hint = 'Register a Private Agent to scan internal networks, or use public IP addresses'
+            
             return jsonify({
-                'error': 'Private/local addresses are not allowed',
-                'hint': 'Scan public IP addresses or domains only'
+                'error': 'Private/local addresses require agent mode',
+                'hint': hint,
+                'suggestion': 'Select execution mode "agent" or register a private agent for internal network scanning'
             }), 400
         
         # Lookup tool in database

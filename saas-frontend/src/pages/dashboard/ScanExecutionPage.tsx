@@ -478,11 +478,11 @@ export function ScanExecutionPage() {
                 disabled={status === 'running'}
                 className="w-full px-4 py-3 bg-gray-800 border border-gray-700 rounded-lg text-white focus:outline-none focus:border-kali-blue transition disabled:opacity-50"
               >
-                <option value="auto">🔄 Auto — Best available node</option>
-                <option value="local">☁️ Cloud Server — Public internet scan</option>
+                <option value="auto">🔄 Auto — Best available (public targets only)</option>
+                <option value="local">☁️ Server — Run on cloud server (can target private IPs)</option>
                 {agents.filter(a => a.status === 'online').map(agent => (
                   <option key={agent.id} value={agent.id}>
-                    🟢 {agent.name} — {agent.ip_address} (Private Network) — CPU: {agent.cpu_usage}%
+                    🟢 {agent.name} — {agent.ip_address} (Private Network Access) — CPU: {agent.cpu_usage}%
                   </option>
                 ))}
                 {agents.filter(a => a.status !== 'online').map(agent => (
@@ -499,6 +499,15 @@ export function ScanExecutionPage() {
                   {agents.filter(a => a.status === 'online').length} agent{agents.filter(a => a.status === 'online').length !== 1 ? 's' : ''} online
                 </span>
               </div>
+              
+              {/* Private network scanning hint */}
+              {target && (target.startsWith('10.') || target.startsWith('172.') || target.startsWith('192.168.') || target.startsWith('127.')) && selectedAgentId === 'auto' && (
+                <div className="mt-2 p-2 rounded-lg bg-yellow-500/10 border border-yellow-500/30">
+                  <p className="text-yellow-400 text-xs">
+                    ⚠️ Private IP detected. Select "Server" or a Private Agent to scan internal networks.
+                  </p>
+                </div>
+              )}
               
               {/* Execution info */}
               {executionInfo && (
