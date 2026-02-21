@@ -230,8 +230,8 @@ export function ScanExecutionPage() {
       const t = response.data.tool;
       setTool(t);
       
-      // Set business-friendly name
-      const bName = t.business_name || t.name;
+      // Set business-friendly name (business_name may be present in API response)
+      const bName = (t as any).business_name || t.name;
       setBusinessName(bName);
       
       // Generate business description based on category
