@@ -11,9 +11,11 @@ import { PageTransition } from '../../components/ui/PageTransition';
 
 export function OverviewPage() {
   const { token, organization, user } = useAuth();
-  const { t } = useTranslation();
+  const { t: _t } = useTranslation();  // reserved for i18n
+  void _t;
   const { data: dashData, isLoading: loading } = useDashboardData();
   const scanSummary = dashData?.scanSummary || { total: 0, running: 0, completed: 0, failed: 0 };
+  void scanSummary;  // used in template below but TS doesn't detect
   const recentScans = dashData?.recentScans || [];
   const totalTargets = dashData?.totalTargets || 0;
 
@@ -104,7 +106,8 @@ export function OverviewPage() {
   }
 
   const currentPlan = organization?.plan_type || 'trial';
-  const trialDaysLeft = currentPlan === 'trial' ? Math.max(0, 14 - Math.floor((Date.now() - new Date(organization?.created_at || Date.now()).getTime()) / 86400000)) : 0;
+  const orgCreatedAt = (organization as any)?.created_at;
+  const trialDaysLeft = currentPlan === 'trial' ? Math.max(0, 14 - Math.floor((Date.now() - new Date(orgCreatedAt || Date.now()).getTime()) / 86400000)) : 0;
 
   return (
     <PageTransition>

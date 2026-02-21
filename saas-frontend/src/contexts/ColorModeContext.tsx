@@ -43,17 +43,16 @@ function getSavedMode(): ColorMode {
 
 export function ColorModeProvider({ children }: { children: React.ReactNode }) {
   const [colorMode, setColorModeState] = useState<ColorMode>(getSavedMode);
-  const [systemPref, setSystemPref] = useState<'dark' | 'light'>(getSystemPreference);
 
-  // Listen for system preference changes
+  // Listen for system preference changes (for future use)
   useEffect(() => {
     const mq = window.matchMedia('(prefers-color-scheme: dark)');
-    const handler = (e: MediaQueryListEvent) => setSystemPref(e.matches ? 'dark' : 'light');
+    const handler = () => { /* Reserved for future system pref support */ };
     mq.addEventListener('change', handler);
     return () => mq.removeEventListener('change', handler);
   }, []);
 
-  const resolvedMode = useMemo(
+  const resolvedMode: 'dark' | 'light' = useMemo(
     // Never follow system preference — only explicit user choice.
     // 'system' treated as 'light' to guarantee light-mode default.
     () => (colorMode === 'dark' ? 'dark' : 'light'),

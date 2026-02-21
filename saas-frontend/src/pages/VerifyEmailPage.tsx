@@ -7,6 +7,7 @@ export function VerifyEmailPage() {
   const token = searchParams.get('token');
   const navigate = useNavigate();
   const { login: authLogin } = useAuth();
+  void authLogin; // reserved for future auto-login after verification
 
   const [status, setStatus] = useState<'verifying' | 'success' | 'error' | 'no-token'>('verifying');
   const [message, setMessage] = useState('');

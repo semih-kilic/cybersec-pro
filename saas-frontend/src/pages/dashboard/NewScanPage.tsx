@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useSearchParams, useNavigate, Link } from 'react-router-dom';
 import { Header } from '../../components/layout/Header';
 import { useAuth } from '../../hooks/useAuth';
-import { getToolConfig, getSmartDefaults } from '../../config/toolConfigs';
+import { getSmartDefaults } from '../../config/toolConfigs';
 
 interface Tool {
   id: string;

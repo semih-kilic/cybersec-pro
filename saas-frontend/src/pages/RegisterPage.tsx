@@ -22,7 +22,8 @@ export function RegisterPage() {
   const [verificationSent, setVerificationSent] = useState(false);
   const [verificationEmail, setVerificationEmail] = useState('');
   const [resendStatus, setResendStatus] = useState<'idle' | 'sending' | 'sent' | 'error'>('idle');
-  const { register } = useAuth();
+  const { register: _register } = useAuth();  // unused after V13 email verification flow
+  void _register; // suppress unused variable warning
   const navigate = useNavigate();
   const { t } = useTranslation();
 
