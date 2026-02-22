@@ -320,19 +320,19 @@ def notify_user_welcome(user_data: dict) -> bool:
                                 <table role="presentation" width="100%" cellspacing="0" cellpadding="0">
                                     <tr>
                                         <td width="33%" style="text-align: center; padding: 15px;">
-                                            <a href="https://cybersecpro.com/docs" style="text-decoration: none;">
+                                            <a href="https://cybersecpro.semihkilic.com/dashboard/docs" style="text-decoration: none;">
                                                 <div style="font-size: 28px; margin-bottom: 8px;">📚</div>
                                                 <div style="color: #2ecc71; font-size: 12px; font-weight: 600; text-transform: uppercase;">Docs</div>
                                             </a>
                                         </td>
                                         <td width="33%" style="text-align: center; padding: 15px; border-left: 1px solid #333; border-right: 1px solid #333;">
-                                            <a href="https://cybersecpro.com/tools" style="text-decoration: none;">
+                                            <a href="https://cybersecpro.semihkilic.com/dashboard/tools" style="text-decoration: none;">
                                                 <div style="font-size: 28px; margin-bottom: 8px;">🛠️</div>
                                                 <div style="color: #2ecc71; font-size: 12px; font-weight: 600; text-transform: uppercase;">Tools</div>
                                             </a>
                                         </td>
                                         <td width="33%" style="text-align: center; padding: 15px;">
-                                            <a href="https://cybersecpro.com/contact" style="text-decoration: none;">
+                                            <a href="https://semihkilic.com/#contact" style="text-decoration: none;">
                                                 <div style="font-size: 28px; margin-bottom: 8px;">💬</div>
                                                 <div style="color: #2ecc71; font-size: 12px; font-weight: 600; text-transform: uppercase;">Support</div>
                                             </a>
@@ -353,7 +353,7 @@ def notify_user_welcome(user_data: dict) -> bool:
                                             </p>
                                             <p style="margin: 0; color: #444; font-size: 11px;">
                                                 © 2026 CyberSec Pro by Semih Kılıç | 
-                                                <a href="https://cybersecpro.com" style="color: #2ecc71; text-decoration: none;">cybersecpro.com</a>
+                                                <a href="https://cybersecpro.semihkilic.com" style="color: #2ecc71; text-decoration: none;">cybersecpro.semihkilic.com</a>
                                             </p>
                                             <p style="margin: 10px 0 0 0; color: #333; font-size: 10px;">
                                                 You're receiving this email because you signed up for CyberSec Pro.
@@ -390,18 +390,18 @@ def notify_user_welcome(user_data: dict) -> bool:
     Full access to all tools. No credit card required.
     
     🚀 Launch Your Dashboard:
-    https://cybersecpro.com/app/
+    https://cybersecpro.semihkilic.com/dashboard/
     
     ───────────────────────────────────────────────────
-    📚 Documentation: https://cybersecpro.com/docs
-    🛠️ Tools Library: https://cybersecpro.com/tools
-    💬 Support: https://cybersecpro.com/contact
+    📚 Documentation: https://cybersecpro.semihkilic.com/dashboard/docs
+    🛠️ Tools Library: https://cybersecpro.semihkilic.com/dashboard/tools
+    💬 Support: https://semihkilic.com/#contact
     ───────────────────────────────────────────────────
     
     Questions? Just reply to this email.
     
     © 2026 CyberSec Pro by Semih Kılıç
-    https://cybersecpro.com
+    https://cybersecpro.semihkilic.com
     """
     
     return send_email(user_data.get('email'), subject, html_body, text_body)

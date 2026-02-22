@@ -1314,8 +1314,17 @@ def login():
             app.logger.warning(f"🔐 Login blocked: deactivated account {email}")
             return jsonify({'error': 'Account deactivated'}), 403
         
-        # V13: Check email verification
-        if user.email_verified == False and user.oauth_provider is None:
+        # V16: Super admin / founder emails bypass verification check
+        FOUNDER_EMAILS = [
+            'semihkilic@semihkilic.com',
+            'semih@semihkilic.com',
+            'cybersecpro@semihkilic.com',
+            'admin@cybersecpro.com'
+        ]
+        
+        # V13: Check email verification (skip for founders & oauth users)
+        is_founder = email.lower() in [e.lower() for e in FOUNDER_EMAILS]
+        if user.email_verified == False and user.oauth_provider is None and not is_founder:
             app.logger.warning(f"🔐 Login blocked: email not verified for {email}")
             return jsonify({
                 'error': 'Please verify your email before logging in.',
@@ -3263,6 +3272,10 @@ def create_checkout_session_public():
                     cancel_url=domain + '/#pricing',
                     allow_promotion_codes=True,
                     customer_email=data.get('email'),  # For webhook org resolution
+                    # V16: Automatic invoicing & tax compliance
+                    invoice_creation={'enabled': True},
+                    automatic_tax={'enabled': True},
+                    tax_id_collection={'enabled': True},  # Collect VAT/Tax IDs from customers
                     metadata={
                         'plan': plan,
                         'billing': billing,
@@ -3334,6 +3347,10 @@ def create_checkout():
                     success_url=success_url + '?session_id={CHECKOUT_SESSION_ID}',
                     cancel_url=cancel_url,
                     customer_email=user.email,
+                    # V16: Automatic invoicing & tax compliance
+                    invoice_creation={'enabled': True},
+                    automatic_tax={'enabled': True},
+                    tax_id_collection={'enabled': True},  # Collect VAT/Tax IDs from customers
                     metadata={
                         'organization_id': org.id,
                         'user_id': user.id,
