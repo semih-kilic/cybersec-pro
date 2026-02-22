@@ -527,7 +527,7 @@ def send_verification_email(user_data: dict) -> bool:
                             <td style="padding: 25px 40px; background: rgba(0, 0, 0, 0.3); border-radius: 0 0 16px 16px; border-top: 1px solid rgba(54, 123, 240, 0.1);">
                                 <p style="margin: 0; text-align: center; color: #444; font-size: 11px;">
                                     © 2026 CyberSec Pro by Semih Kılıç | 
-                                    <a href="https://cybersecpro.com" style="color: #367bf0; text-decoration: none;">cybersecpro.com</a>
+                                    <a href="https://cybersecpro.semihkilic.com" style="color: #367bf0; text-decoration: none;">cybersecpro.semihkilic.com</a>
                                 </p>
                             </td>
                         </tr>
@@ -558,7 +558,7 @@ def send_verification_email(user_data: dict) -> bool:
     
     ───────────────────────────────────────────────────
     © 2026 CyberSec Pro by Semih Kılıç
-    https://cybersecpro.com
+    https://cybersecpro.semihkilic.com
     """
     
     return send_email(user_data.get('email'), subject, html_body, text_body)
@@ -603,7 +603,7 @@ def notify_trial_expiring(user_data: dict, days_left: int) -> bool:
                 <p style="margin: 10px 0 0 0; color: #ccc;">Full access to 682 tools, API, and priority support</p>
             </div>
             
-            <a href="https://app.cybersecpro.com/billing" class="btn">Upgrade Now →</a>
+            <a href="https://cybersecpro.semihkilic.com/dashboard/settings?tab=billing" class="btn">Upgrade Now →</a>
             
             <div class="footer">
                 <p>Questions? Contact us at cybersecpro@semihkilic.com</p>
