@@ -26,6 +26,10 @@ SMTP_PASSWORD = 'jkmjddzxcsjjfohl'
 ADMIN_EMAIL = 'cybersecpro@semihkilic.com'
 FROM_EMAIL = 'cybersecpro@semihkilic.com'
 
+# CRITICAL: Correct frontend URL for email links
+# This MUST match where the React app is deployed
+FRONTEND_URL = os.environ.get('FRONTEND_URL', 'https://cybersecpro.semihkilic.com/dashboard')
+
 
 def send_email(to_email: str, subject: str, html_body: str, text_body: str = None) -> bool:
     """
@@ -136,7 +140,7 @@ def notify_admin_new_registration(user_data: dict) -> bool:
             
             <div class="footer">
                 <p>This is an automated notification from CyberSec Pro.</p>
-                <p>View all users at <a href="https://app.cybersecpro.com/admin" style="color: #367bf0;">Admin Dashboard</a></p>
+                <p>View all users at <a href="https://cybersecpro.semihkilic.com/dashboard/admin" style="color: #367bf0;">Admin Dashboard</a></p>
             </div>
         </div>
     </body>
@@ -215,7 +219,7 @@ def notify_user_welcome(user_data: dict) -> bool:
                                 <table role="presentation" width="100%" cellspacing="0" cellpadding="0">
                                     <tr>
                                         <td align="center">
-                                            <a href="https://cybersecpro.com/app/" style="display: inline-block; background: linear-gradient(135deg, #2ecc71 0%, #27ae60 100%); color: #0a0a12; padding: 16px 40px; border-radius: 8px; text-decoration: none; font-weight: 700; font-size: 16px; text-transform: uppercase; letter-spacing: 1px; box-shadow: 0 4px 20px rgba(46, 204, 113, 0.4);">
+                                            <a href="https://cybersecpro.semihkilic.com/dashboard/" style="display: inline-block; background: linear-gradient(135deg, #2ecc71 0%, #27ae60 100%); color: #0a0a12; padding: 16px 40px; border-radius: 8px; text-decoration: none; font-weight: 700; font-size: 16px; text-transform: uppercase; letter-spacing: 1px; box-shadow: 0 4px 20px rgba(46, 204, 113, 0.4);">
                                                 🚀 Launch Your Dashboard
                                             </a>
                                         </td>
@@ -415,7 +419,8 @@ def send_verification_email(user_data: dict) -> bool:
     """
     first_name = user_data.get('first_name', 'there') or 'there'
     token = user_data.get('verification_token', '')
-    verify_url = f"https://cybersecpro.com/verify-email?token={token}"
+    # V16 FIX: Use correct frontend URL (was cybersecpro.com - WRONG!)
+    verify_url = f"{FRONTEND_URL}/verify-email?token={token}"
     
     subject = "🔐 Verify Your CyberSec Pro Account"
     
