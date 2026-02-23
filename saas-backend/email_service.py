@@ -4,7 +4,7 @@
 Sends email notifications for user registrations, alerts, and updates
 
 Author: CyberSec Pro Team
-Version: 2.0.0 (V16 - Brevo SMTP)
+Version: 1.0.0
 """
 
 import os
@@ -18,22 +18,17 @@ import logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-# Email configuration - Read from environment with Brevo defaults
-# V16: Switched from Yandex SMTP to Brevo (Sendinblue) for better deliverability
-# Yandex SMTP has known issues delivering to Hotmail/Outlook/Microsoft servers
-SMTP_HOST = os.environ.get('SMTP_HOST', 'smtp-relay.brevo.com')
-SMTP_PORT = int(os.environ.get('SMTP_PORT', '587'))
-SMTP_USER = os.environ.get('SMTP_USER', 'cybersecpro@semihkilic.com')
-SMTP_PASSWORD = os.environ.get('SMTP_PASSWORD', '')  # Brevo SMTP key from .env
-ADMIN_EMAIL = os.environ.get('ADMIN_EMAIL', 'cybersecpro@semihkilic.com')
-FROM_EMAIL = os.environ.get('FROM_EMAIL', 'cybersecpro@semihkilic.com')
+# Email configuration - Yandex SMTP
+SMTP_HOST = 'smtp.yandex.com'
+SMTP_PORT = 465  # SSL port for Yandex
+SMTP_USER = 'cybersecpro@semihkilic.com'
+SMTP_PASSWORD = 'jkmjddzxcsjjfohl'
+ADMIN_EMAIL = 'cybersecpro@semihkilic.com'
+FROM_EMAIL = 'cybersecpro@semihkilic.com'
 
 # CRITICAL: Correct frontend URL for email links
 # This MUST match where the React app is deployed
 FRONTEND_URL = os.environ.get('FRONTEND_URL', 'https://cybersecpro.semihkilic.com/dashboard')
-
-# Log SMTP configuration on startup (hide password)
-logger.info(f"📧 SMTP Config: host={SMTP_HOST}, port={SMTP_PORT}, user={SMTP_USER}, from={FROM_EMAIL}")
 
 
 def send_email(to_email: str, subject: str, html_body: str, text_body: str = None) -> bool:
@@ -50,8 +45,7 @@ def send_email(to_email: str, subject: str, html_body: str, text_body: str = Non
         bool: True if email sent successfully, False otherwise
     """
     if not SMTP_USER or not SMTP_PASSWORD:
-        logger.warning("⚠️ SMTP credentials not configured. Email not sent.")
-        logger.warning(f"  SMTP_HOST={SMTP_HOST}, SMTP_USER={SMTP_USER}, SMTP_PASSWORD={'SET' if SMTP_PASSWORD else 'EMPTY'}")
+        logger.warning("SMTP credentials not configured. Email not sent.")
         return False
     
     try:
@@ -59,10 +53,6 @@ def send_email(to_email: str, subject: str, html_body: str, text_body: str = Non
         msg['Subject'] = subject
         msg['From'] = FROM_EMAIL
         msg['To'] = to_email
-        
-        # Add List-Unsubscribe header (helps avoid spam folder)
-        msg['List-Unsubscribe'] = f'<mailto:{ADMIN_EMAIL}?subject=unsubscribe>'
-        msg['X-Mailer'] = 'CyberSec Pro v3.0'
         
         # Attach text and HTML parts
         if text_body:
@@ -72,26 +62,22 @@ def send_email(to_email: str, subject: str, html_body: str, text_body: str = Non
         part2 = MIMEText(html_body, 'html')
         msg.attach(part2)
         
-        # Send email - Support both SSL (465) and TLS (587/25)
+        # Send email - Use SSL for Yandex (port 465)
         if SMTP_PORT == 465:
-            # SSL mode (Yandex, some legacy servers)
-            with smtplib.SMTP_SSL(SMTP_HOST, SMTP_PORT, timeout=30) as server:
+            with smtplib.SMTP_SSL(SMTP_HOST, SMTP_PORT) as server:
                 server.login(SMTP_USER, SMTP_PASSWORD)
                 server.sendmail(FROM_EMAIL, to_email, msg.as_string())
         else:
-            # TLS/STARTTLS mode (Brevo, SendGrid, Mailjet, etc.)
-            with smtplib.SMTP(SMTP_HOST, SMTP_PORT, timeout=30) as server:
-                server.ehlo()
+            with smtplib.SMTP(SMTP_HOST, SMTP_PORT) as server:
                 server.starttls()
-                server.ehlo()
                 server.login(SMTP_USER, SMTP_PASSWORD)
                 server.sendmail(FROM_EMAIL, to_email, msg.as_string())
         
-        logger.info(f"✅ Email sent to {to_email}: {subject} (via {SMTP_HOST})")
+        logger.info(f"Email sent to {to_email}: {subject}")
         return True
         
     except Exception as e:
-        logger.error(f"❌ Failed to send email to {to_email} via {SMTP_HOST}:{SMTP_PORT}: {e}")
+        logger.error(f"Failed to send email to {to_email}: {e}")
         return False
 
 
@@ -527,7 +513,7 @@ def send_verification_email(user_data: dict) -> bool:
                             <td style="padding: 25px 40px; background: rgba(0, 0, 0, 0.3); border-radius: 0 0 16px 16px; border-top: 1px solid rgba(54, 123, 240, 0.1);">
                                 <p style="margin: 0; text-align: center; color: #444; font-size: 11px;">
                                     © 2026 CyberSec Pro by Semih Kılıç | 
-                                    <a href="https://cybersecpro.semihkilic.com" style="color: #367bf0; text-decoration: none;">cybersecpro.semihkilic.com</a>
+                                    <a href="https://cybersecpro.com" style="color: #367bf0; text-decoration: none;">cybersecpro.com</a>
                                 </p>
                             </td>
                         </tr>
@@ -558,7 +544,7 @@ def send_verification_email(user_data: dict) -> bool:
     
     ───────────────────────────────────────────────────
     © 2026 CyberSec Pro by Semih Kılıç
-    https://cybersecpro.semihkilic.com
+    https://cybersecpro.com
     """
     
     return send_email(user_data.get('email'), subject, html_body, text_body)
@@ -603,7 +589,7 @@ def notify_trial_expiring(user_data: dict, days_left: int) -> bool:
                 <p style="margin: 10px 0 0 0; color: #ccc;">Full access to 682 tools, API, and priority support</p>
             </div>
             
-            <a href="https://cybersecpro.semihkilic.com/dashboard/settings?tab=billing" class="btn">Upgrade Now →</a>
+            <a href="https://app.cybersecpro.com/billing" class="btn">Upgrade Now →</a>
             
             <div class="footer">
                 <p>Questions? Contact us at cybersecpro@semihkilic.com</p>
