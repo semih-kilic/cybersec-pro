@@ -517,7 +517,7 @@ export function ToolDetailPage() {
                 </h3>
                 <p className="text-xs text-gray-400 mb-4">Select scan intensity. Target required.</p>
                 
-                <div className="grid grid-cols-3 gap-2">
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
                   {toolConfig.scanModes.map((mode) => (
                     <button
                       key={mode.name}

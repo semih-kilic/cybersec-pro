@@ -25,7 +25,7 @@ export default defineConfig({
   },
   build: {
     outDir: 'dist',
-    sourcemap: true,
+    sourcemap: false, // V17: disabled for production security
     rollupOptions: {
       output: {
         manualChunks: {

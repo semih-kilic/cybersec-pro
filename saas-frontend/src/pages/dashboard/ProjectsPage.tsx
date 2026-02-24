@@ -197,7 +197,7 @@ export default function ProjectsPage() {
       </div>
 
       {/* Stats */}
-      <div className="grid grid-cols-4 gap-6 mb-8">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
         {[
           { label: 'Total Projects', value: projects.length, icon: '📁', color: 'text-white' },
           { label: 'Active', value: projects.filter(p => p.status === 'active').length, icon: '🟢', color: 'text-green-400' },

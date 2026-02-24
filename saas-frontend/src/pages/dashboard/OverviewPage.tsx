@@ -311,7 +311,7 @@ export function OverviewPage() {
               ) : (
                 <div className="space-y-4">
                   {/* Severity Breakdown */}
-                  <div className="grid grid-cols-5 gap-3">
+                  <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
                     {[
                       { label: 'Critical', count: openIssues.critical, color: 'red' },
                       { label: 'High', count: openIssues.high, color: 'orange' },
@@ -345,7 +345,7 @@ export function OverviewPage() {
             <div className="p-5 border-b border-gray-800">
               <h2 className="text-lg font-semibold text-white">Quick Actions</h2>
             </div>
-            <div className="p-4 grid grid-cols-2 gap-2">
+            <div className="p-4 grid grid-cols-1 sm:grid-cols-2 gap-2">
               {[
                 { to: '/dashboard/scans/new', icon: '🔍', label: 'New Scan', color: 'blue' },
                 { to: '/dashboard/reports', icon: '📊', label: 'Reports', color: 'purple' },

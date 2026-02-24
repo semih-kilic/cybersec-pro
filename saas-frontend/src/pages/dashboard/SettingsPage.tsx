@@ -488,7 +488,7 @@ export default function SettingsPage() {
                 </div>
               </div>
               
-              <div className="grid grid-cols-2 gap-6">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                 <div>
                   <label className="block text-gray-400 text-sm mb-2">First Name</label>
                   <input
@@ -942,7 +942,7 @@ export default function SettingsPage() {
                   {/* Provider Type Selection */}
                   <div>
                     <label className="block text-sm font-medium text-gray-300 mb-3">Identity Provider Type</label>
-                    <div className="grid grid-cols-3 gap-3">
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                       {[
                         { id: 'saml' as const, name: 'SAML 2.0', desc: 'Okta, Azure AD, OneLogin', icon: '🛡️', color: 'blue' },
                         { id: 'oidc' as const, name: 'OpenID Connect', desc: 'Google Workspace, GitHub Enterprise', icon: '🔗', color: 'green' },
@@ -966,7 +966,7 @@ export default function SettingsPage() {
                   </div>
 
                   {/* Provider Name & Domain */}
-                  <div className="grid grid-cols-2 gap-4">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div>
                       <label className="block text-sm font-medium text-gray-300 mb-2">Provider Name</label>
                       <input
@@ -1062,7 +1062,7 @@ export default function SettingsPage() {
                           className="w-full px-4 py-2.5 bg-gray-800 border border-gray-700 rounded-lg text-white placeholder-gray-500 focus:border-green-500 focus:ring-1 focus:ring-green-500 font-mono text-sm"
                         />
                       </div>
-                      <div className="grid grid-cols-2 gap-4">
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         <div>
                           <label className="block text-sm font-medium text-gray-300 mb-2">Client ID</label>
                           <input
@@ -1109,8 +1109,8 @@ export default function SettingsPage() {
                       <h3 className="text-white font-semibold flex items-center gap-2">
                         📁 LDAP / Active Directory Configuration
                       </h3>
-                      <div className="grid grid-cols-3 gap-4">
-                        <div className="col-span-2">
+                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                        <div className="col-span-1 sm:col-span-2">
                           <label className="block text-sm font-medium text-gray-300 mb-2">LDAP Host</label>
                           <input
                             type="text"
@@ -1139,7 +1139,7 @@ export default function SettingsPage() {
                         />
                         <span className="text-gray-300 text-sm">Use SSL/TLS (LDAPS)</span>
                       </label>
-                      <div className="grid grid-cols-2 gap-4">
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         <div>
                           <label className="block text-sm font-medium text-gray-300 mb-2">Bind DN</label>
                           <input
@@ -1171,7 +1171,7 @@ export default function SettingsPage() {
                           className="w-full px-4 py-2.5 bg-gray-800 border border-gray-700 rounded-lg text-white placeholder-gray-500 focus:border-purple-500 focus:ring-1 focus:ring-purple-500 font-mono text-sm"
                         />
                       </div>
-                      <div className="grid grid-cols-2 gap-4">
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         <div>
                           <label className="block text-sm font-medium text-gray-300 mb-2">User Filter</label>
                           <input
@@ -1198,7 +1198,7 @@ export default function SettingsPage() {
                   {/* Advanced Options */}
                   <div className="p-5 bg-gray-800/30 border border-gray-700 rounded-xl space-y-4">
                     <h3 className="text-white font-semibold">Advanced Options</h3>
-                    <div className="grid grid-cols-2 gap-4">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                       <label className="flex items-center gap-3 cursor-pointer">
                         <input
                           type="checkbox"
@@ -1281,7 +1281,7 @@ export default function SettingsPage() {
                   {/* Supported Providers Info */}
                   <div className="p-5 bg-gray-800/30 border border-gray-700 rounded-xl">
                     <h3 className="text-white font-semibold mb-3">Supported Identity Providers</h3>
-                    <div className="grid grid-cols-3 gap-4">
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                       <div>
                         <h4 className="text-blue-400 font-medium text-sm mb-2">SAML 2.0</h4>
                         <ul className="space-y-1 text-gray-400 text-xs">
@@ -1335,7 +1335,7 @@ export default function SettingsPage() {
                     Active
                   </span>
                 </div>
-                <div className="grid grid-cols-3 gap-4 mt-4 pt-4 border-t border-gray-700">
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mt-4 pt-4 border-t border-gray-700">
                   <div>
                     <p className="text-gray-400 text-sm">Tools Access</p>
                     <p className="text-white font-medium">

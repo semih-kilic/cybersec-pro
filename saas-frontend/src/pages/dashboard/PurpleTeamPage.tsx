@@ -383,7 +383,7 @@ function ExerciseDetail({ exercise }: { exercise: Exercise }) {
         </div>
 
         {/* Stats row */}
-        <div className="grid grid-cols-4 gap-3">
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
           <StatCard label="Risk Score" value={exercise.risk_score?.toFixed(1) || '0'} icon="⚠️" color="red" />
           <StatCard label="Detected" value={exercise.detected_attacks} icon="🛡️" color="green" />
           <StatCard label="Missed" value={exercise.missed_attacks} icon="💀" color="red" />
@@ -525,7 +525,7 @@ function ExerciseDetail({ exercise }: { exercise: Exercise }) {
           <div>
             {/* Detection summary */}
             <div className="mb-4 p-3 rounded-lg bg-gray-800/50 border border-gray-700/50">
-              <div className="grid grid-cols-3 gap-4 text-center mb-3">
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-center mb-3">
                 <div>
                   <div className="text-2xl font-bold text-white">{exercise.gap_analysis.total_attacks}</div>
                   <div className="text-xs text-gray-400">Total Attacks</div>
@@ -839,7 +839,7 @@ export default function PurpleTeamPage() {
           </div>
 
           {/* Available chains summary */}
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="bg-gray-900/50 border border-gray-700/50 rounded-xl p-4">
               <h3 className="text-sm font-bold text-white mb-2">🔴 Available Attack Chains</h3>
               <div className="text-3xl font-bold text-red-400">{stats.available_chains}</div>

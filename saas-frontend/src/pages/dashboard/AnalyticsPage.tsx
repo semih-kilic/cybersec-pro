@@ -191,7 +191,7 @@ export default function AnalyticsPage() {
       <div className="grid md:grid-cols-2 gap-6">
         <div className="bg-gray-800/50 rounded-xl p-6 border border-gray-700">
           <h2 className="text-lg font-semibold text-white mb-4">📋 Scan Status</h2>
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             {Object.entries(data.status_distribution).map(([status, count]) => {
               const statusColors: Record<string, string> = {
                 completed: 'bg-green-500/20 text-green-400',

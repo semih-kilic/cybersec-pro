@@ -486,7 +486,7 @@ export default function AgentsPage() {
             </div>
             
             {setupStep === 1 && (
-              <div className="grid grid-cols-3 gap-3 text-left">
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-left">
                 <button onClick={() => { setSetupMethod('docker'); setSetupStep(2); }} className={`p-4 rounded-xl border transition hover:border-blue-500/50 ${setupMethod === 'docker' ? 'border-blue-500 bg-blue-500/10' : 'border-gray-700 bg-gray-800/50'}`}>
                   <div className="text-3xl mb-2">🐳</div>
                   <h4 className="text-white font-semibold text-sm">Docker</h4>
@@ -656,7 +656,7 @@ export default function AgentsPage() {
                   {(connectionType === 'agent_internal' || connectionType === 'agent_dmz') && (
                     <div className="space-y-3 p-4 bg-gray-800/50 rounded-lg border border-gray-700/50">
                       <h4 className="text-white font-medium text-sm">SSH Details</h4>
-                      <div className="grid grid-cols-3 gap-3">
+                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                         <div className="col-span-2">
                           <label className="block text-gray-500 text-xs mb-1">Host / IP</label>
                           <input type="text" value={sshCredentials.host} onChange={(e) => setSshCredentials({...sshCredentials, host: e.target.value})} placeholder="10.0.0.115" className="w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white text-sm focus:border-kali-blue focus:outline-none" />
@@ -679,7 +679,7 @@ export default function AgentsPage() {
                   {NETWORK_MODES[connectionType]?.needsAgent && connectionType !== 'agent_internal' && connectionType !== 'agent_dmz' && (
                     <div>
                       <label className="block text-gray-400 text-sm mb-2">Platform</label>
-                      <div className="grid grid-cols-4 gap-2">
+                      <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
                         {(['linux', 'windows', 'macos', 'docker'] as AgentPlatform[]).map(p => (
                           <button key={p} onClick={() => setSelectedPlatform(p)} className={`p-3 rounded-lg border transition ${selectedPlatform === p ? 'border-kali-blue bg-kali-blue/10' : 'border-gray-700 bg-gray-800 hover:border-gray-600'}`}>
                             <div className="text-2xl mb-1">{getPlatformIcon(p)}</div>
@@ -780,7 +780,7 @@ export default function AgentsPage() {
 
             {/* Info Grid */}
             <div className="space-y-3">
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div className="bg-gray-800/50 rounded-lg p-3">
                   <p className="text-gray-500 text-xs mb-1">IP Address</p>
                   <p className="text-cyan-400 font-mono text-sm">{selectedAgent.ip_address || 'N/A'}</p>
@@ -807,7 +807,7 @@ export default function AgentsPage() {
                   <p className="text-white font-mono text-sm">{selectedAgent.ssh_username}@{selectedAgent.ssh_host}:{selectedAgent.ssh_port}</p>
                 </div>
               )}
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div className="bg-gray-800/50 rounded-lg p-3">
                   <p className="text-gray-500 text-xs mb-1">Active Scans</p>
                   <p className="text-yellow-400 text-lg font-bold">{selectedAgent.active_scans}</p>
@@ -865,7 +865,7 @@ export default function AgentsPage() {
                   <svg className="w-4 h-4 text-cyan-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" /></svg>
                   SSH Connection
                 </h3>
-                <div className="grid grid-cols-3 gap-3">
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                   <div className="col-span-2">
                     <label className="block text-gray-400 text-xs mb-1">Host / IP</label>
                     <input type="text" value={selectedAgent.ssh_host || ''} onChange={(e) => setSelectedAgent({...selectedAgent, ssh_host: e.target.value})} placeholder="192.168.1.100" className="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-white text-sm focus:border-kali-blue focus:outline-none" />
