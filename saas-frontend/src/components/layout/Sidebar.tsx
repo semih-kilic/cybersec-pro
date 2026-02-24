@@ -207,7 +207,8 @@ export function Sidebar({ isOpen = false, onClose }: SidebarProps) {
             <NavLink
               key={item.nameKey}
               to={item.href}
-              className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all ${
+              onClick={onClose}
+              className={`flex items-center gap-3 px-3 py-3 rounded-lg text-sm font-medium transition-all ${
                 isActive
                   ? 'bg-kali-blue/20 text-kali-blue border-l-2 border-kali-blue'
                   : 'text-gray-400 hover:text-white hover:bg-gray-800'
@@ -233,7 +234,8 @@ export function Sidebar({ isOpen = false, onClose }: SidebarProps) {
             key={item.nameKey}
             to={item.href}
             target={item.external ? '_blank' : undefined}
-            className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-gray-400 hover:text-white hover:bg-gray-800 transition-all"
+            onClick={!item.external ? onClose : undefined}
+            className="flex items-center gap-3 px-3 py-3 rounded-lg text-sm font-medium text-gray-400 hover:text-white hover:bg-gray-800 transition-all"
           >
             <item.icon />
             {t(item.nameKey)}
@@ -249,7 +251,8 @@ export function Sidebar({ isOpen = false, onClose }: SidebarProps) {
         {user?.role === 'superadmin' && (
           <NavLink
             to="/dashboard/admin"
-            className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all ${
+            onClick={onClose}
+            className={`flex items-center gap-3 px-3 py-3 rounded-lg text-sm font-medium transition-all ${
               location.pathname === '/dashboard/admin'
                 ? 'bg-red-500/20 text-red-400 border-l-2 border-red-400'
                 : 'text-red-400/70 hover:text-red-400 hover:bg-red-500/10'

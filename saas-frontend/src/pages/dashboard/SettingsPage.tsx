@@ -421,29 +421,29 @@ export default function SettingsPage() {
         </div>
       )}
 
-      <div className="flex gap-8">
-        {/* Tabs Sidebar */}
-        <div className="w-48 flex-shrink-0">
-          <nav className="space-y-1">
+      <div className="flex flex-col lg:flex-row gap-4 lg:gap-8">
+        {/* Tabs — V17: horizontal scrollable on mobile, sidebar on desktop */}
+        <div className="w-full lg:w-48 flex-shrink-0">
+          <nav className="flex lg:flex-col gap-1 overflow-x-auto pb-2 lg:pb-0 lg:space-y-1 scrollbar-hide">
             {tabs.map((tab) => (
               <button
                 key={tab.id}
                 onClick={() => handleTabChange(tab.id)}
-                className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg text-left transition ${
+                className={`flex items-center gap-2 lg:gap-3 px-3 lg:px-4 py-2.5 lg:py-3 rounded-lg text-left transition whitespace-nowrap flex-shrink-0 lg:w-full ${
                   activeTab === tab.id
-                    ? 'bg-kali-blue/20 text-kali-blue border-l-2 border-kali-blue'
+                    ? 'bg-kali-blue/20 text-kali-blue border-b-2 lg:border-b-0 lg:border-l-2 border-kali-blue'
                     : 'text-gray-400 hover:text-white hover:bg-gray-800'
                 }`}
               >
                 <span>{tab.icon}</span>
-                <span className="font-medium">{tab.label}</span>
+                <span className="font-medium text-sm">{tab.label}</span>
               </button>
             ))}
           </nav>
         </div>
 
         {/* Content */}
-        <div className="flex-1 bg-gray-900 rounded-xl p-6 border border-gray-800">
+        <div className="flex-1 bg-gray-900 rounded-xl p-4 sm:p-6 border border-gray-800 min-w-0">
           {/* Profile Tab */}
           {activeTab === 'profile' && (
             <form onSubmit={handleProfileUpdate} className="space-y-6">
