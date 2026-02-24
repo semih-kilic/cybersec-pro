@@ -674,26 +674,39 @@ def build_scan_command(tool: dict, target: str, parameters: dict) -> str:
 
 
 def run_scan_background(scan_id: str, command: str, requires_root: bool = False):
-    """Run scan in background thread"""
+    """Run scan in background thread — V17: shell=False for security"""
     try:
+        import shlex
         scan = active_scans.get(scan_id)
         if not scan:
             return
         
+        # V17: Parse command into safe argument list (prevents shell injection)
+        try:
+            cmd_parts = shlex.split(command)
+        except ValueError as e:
+            print(f"[SCAN {scan_id}] Invalid command syntax: {e}")
+            scan['status'] = 'failed'
+            scan['error'] = 'Invalid command syntax'
+            scan_results[scan_id] = scan
+            if scan_id in active_scans:
+                del active_scans[scan_id]
+            return
+        
         # Add sudo if required (NOPASSWD configured in sudoers)
         if requires_root:
-            command = f"sudo -n {command}"
+            cmd_parts = ['sudo', '-n'] + cmd_parts
         
         # Add timeout (5 minutes max for safety)
-        command = f"timeout 300 {command}"
+        cmd_parts = ['timeout', '300'] + cmd_parts
         
         # Log the command (for debugging)
-        print(f"[SCAN {scan_id}] Executing: {command}")
+        print(f"[SCAN {scan_id}] Executing: {' '.join(cmd_parts)}")
         
-        # Run command
+        # V17: Run command with shell=False to prevent injection
         process = subprocess.Popen(
-            command,
-            shell=True,
+            cmd_parts,
+            shell=False,
             stdout=subprocess.PIPE,
             stderr=subprocess.STDOUT,
             text=True,

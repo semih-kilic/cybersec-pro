@@ -91,12 +91,20 @@ try:
 except ImportError as e:
     print(f"⚠️ Tools API v2 not loaded: {e}")
 
-# Configuration
-app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'cybersec-pro-saas-2026')
+# Configuration — V17: No weak fallbacks. App MUST have proper secrets.
+_secret = os.environ.get('SECRET_KEY')
+_jwt_secret = os.environ.get('JWT_SECRET_KEY')
+if not _secret or len(_secret) < 32:
+    raise RuntimeError('FATAL: SECRET_KEY env var must be set (min 32 chars). Generate: python3 -c "import secrets; print(secrets.token_hex(32))"')
+if not _jwt_secret or len(_jwt_secret) < 32:
+    raise RuntimeError('FATAL: JWT_SECRET_KEY env var must be set (min 32 chars).')
+
+app.config['SECRET_KEY'] = _secret
 app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get('DATABASE_URL', 'sqlite:///cybersec_saas.db')
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-app.config['JWT_SECRET_KEY'] = os.environ.get('JWT_SECRET_KEY', 'jwt-secret-cybersec-2026')
-app.config['JWT_ACCESS_TOKEN_EXPIRES'] = timedelta(hours=24)
+app.config['JWT_SECRET_KEY'] = _jwt_secret
+app.config['JWT_ACCESS_TOKEN_EXPIRES'] = timedelta(hours=1)  # V17: Reduced from 24h
+app.config['MAX_CONTENT_LENGTH'] = 10 * 1024 * 1024  # V17: 10MB max upload size
 
 # Stripe configuration
 stripe.api_key = os.environ.get('STRIPE_SECRET_KEY', 'sk_test_...')
@@ -105,19 +113,21 @@ stripe.api_key = os.environ.get('STRIPE_SECRET_KEY', 'sk_test_...')
 db = SQLAlchemy(app)
 migrate = Migrate(app, db)
 jwt = JWTManager(app)
+# V17: Remove localhost origins in production mode
+_cors_origins = [
+    'https://cybersecpro.com', 
+    'https://www.cybersecpro.com',
+    'https://app.cybersecpro.com',
+    'https://semihkilic.com',
+    'https://www.semihkilic.com',
+    'https://cybersecpro.semihkilic.com',
+    'https://app.semihkilic.com',
+]
+if os.environ.get('FLASK_ENV') != 'production':
+    _cors_origins += ['http://localhost:3000', 'http://localhost:5000', 'http://localhost:5173']
+
 CORS(app, 
-     origins=[
-         'https://cybersecpro.com', 
-         'https://www.cybersecpro.com',
-         'https://app.cybersecpro.com',
-         'https://semihkilic.com',
-         'https://www.semihkilic.com',
-         'https://cybersecpro.semihkilic.com',
-         'https://app.semihkilic.com', 
-         'http://localhost:3000',
-         'http://localhost:5000',
-         'http://localhost:5173'
-     ],
+     origins=_cors_origins,
      supports_credentials=True,
      allow_headers=['Content-Type', 'Authorization', 'X-Requested-With'],
      methods=['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS']
