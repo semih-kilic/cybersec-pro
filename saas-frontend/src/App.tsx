@@ -13,6 +13,7 @@ import { AuthProvider, useAuth } from './hooks/useAuth';
 
 // Layout
 import { Sidebar } from './components/layout/Sidebar';
+import { useState, useCallback } from 'react';
 
 // Global Context
 import { TargetProvider } from './contexts/TargetContext';
@@ -121,10 +122,14 @@ function PublicRoute({ children }: { children: React.ReactNode }) {
   return <>{children}</>;
 }
 
-// Dashboard Layout with Sidebar
+// Dashboard Layout with Sidebar — V17: Mobile responsive
 function DashboardLayout() {
   const { isPaletteOpen, closePalette, showShortcutsHelp, setShowShortcutsHelp } = useKeyboardShortcuts();
   const { requestPermission } = useBrowserNotifications();
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+
+  const toggleSidebar = useCallback(() => setSidebarOpen(prev => !prev), []);
+  const closeSidebar = useCallback(() => setSidebarOpen(false), []);
 
   // Connect WebSocket once when dashboard mounts
   useEffect(() => {
@@ -140,8 +145,42 @@ function DashboardLayout() {
         <a href="#main-content" className="skip-to-content">
           Skip to main content
         </a>
-        <Sidebar />
-        <main className="flex-1 ml-64 overflow-auto" id="main-content" role="main" aria-label="Dashboard content">
+
+        {/* Mobile overlay backdrop */}
+        {sidebarOpen && (
+          <div
+            className="fixed inset-0 bg-black/60 z-40 lg:hidden backdrop-blur-sm"
+            onClick={closeSidebar}
+            aria-hidden="true"
+          />
+        )}
+
+        {/* Sidebar — hidden on mobile by default, slide-in when open */}
+        <Sidebar isOpen={sidebarOpen} onClose={closeSidebar} />
+
+        {/* Main Content — no ml-64 on mobile */}
+        <main className="flex-1 lg:ml-64 overflow-auto min-w-0" id="main-content" role="main" aria-label="Dashboard content">
+          {/* Mobile top bar with hamburger */}
+          <div className="sticky top-0 z-30 lg:hidden flex items-center gap-3 px-4 py-3 bg-gray-900/95 backdrop-blur-md border-b border-gray-800">
+            <button
+              onClick={toggleSidebar}
+              className="p-2 rounded-lg text-gray-400 hover:text-white hover:bg-gray-800 transition active:scale-95"
+              aria-label="Open menu"
+            >
+              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+              </svg>
+            </button>
+            <div className="flex items-center gap-2">
+              <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-kali-blue to-kali-purple flex items-center justify-center">
+                <svg className="w-4 h-4 text-white" viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/>
+                </svg>
+              </div>
+              <span className="text-sm font-bold text-white">CyberSec Pro</span>
+            </div>
+          </div>
+
           <Suspense fallback={<OverviewSkeleton />}>
             <Outlet />
           </Suspense>

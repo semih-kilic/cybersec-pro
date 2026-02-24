@@ -33,6 +33,10 @@ import threading
 from logging.handlers import RotatingFileHandler
 from functools import wraps
 
+# V17: Rate Limiting
+from flask_limiter import Limiter
+from flask_limiter.util import get_remote_address
+
 # Load environment variables from .env file
 try:
     from dotenv import load_dotenv
@@ -43,6 +47,15 @@ except ImportError:
 
 # Initialize Flask app
 app = Flask(__name__)
+
+# V17: Rate Limiting — protect auth endpoints from brute force
+limiter = Limiter(
+    get_remote_address,
+    app=app,
+    default_limits=['200 per hour', '50 per minute'],
+    storage_uri='memory://',
+    strategy='fixed-window'
+)
 
 # ProxyFix: Trust Cloudflare/Nginx reverse proxy headers
 # This ensures request.url_root and request.scheme return https:// 
@@ -1088,6 +1101,7 @@ def readiness_check():
 # ================================
 
 @app.route('/api/v1/auth/register', methods=['POST'])
+@limiter.limit('3 per minute')  # V17: Prevent registration abuse
 def register():
     """Register new user and organization — sends verification email"""
     try:
@@ -1250,6 +1264,7 @@ def verify_email():
 
 
 @app.route('/api/v1/auth/resend-verification', methods=['POST'])
+@limiter.limit('2 per minute')  # V17: Prevent email spam
 def resend_verification():
     """Resend email verification link — V13"""
     try:
@@ -1296,6 +1311,7 @@ def resend_verification():
         return jsonify({'error': str(e)}), 500
 
 @app.route('/api/v1/auth/login', methods=['POST'])
+@limiter.limit('5 per minute')  # V17: Brute force protection
 def login():
     """User login"""
     try:

@@ -4,6 +4,11 @@ import { useTranslation } from 'react-i18next';
 import { LanguageSwitcher } from '../LanguageSwitcher';
 import { ThemeToggle } from '../ui/ThemeToggle';
 
+interface SidebarProps {
+  isOpen?: boolean;
+  onClose?: () => void;
+}
+
 const navigation = [
   { nameKey: 'nav.dashboard', href: '/dashboard', icon: DashboardIcon },
   { nameKey: 'nav.tools', href: '/dashboard/tools', icon: ToolsIcon },
@@ -155,25 +160,40 @@ function AdminIcon() {
   );
 }
 
-export function Sidebar() {
+export function Sidebar({ isOpen = false, onClose }: SidebarProps) {
   const location = useLocation();
   const { user, organization } = useAuth();
   const { t } = useTranslation();
 
   return (
-    <aside className="w-64 bg-gray-900 border-r border-gray-800 flex flex-col h-screen fixed left-0 top-0 z-40" role="complementary" aria-label="Sidebar">
-      {/* Logo */}
+    <aside
+      className={`w-64 bg-gray-900 border-r border-gray-800 flex flex-col h-screen fixed left-0 top-0 z-50 transition-transform duration-300 ease-in-out
+        ${isOpen ? 'translate-x-0' : '-translate-x-full'} lg:translate-x-0`}
+      role="complementary"
+      aria-label="Sidebar"
+    >
+      {/* Logo + Mobile close button */}
       <div className="p-4 border-b border-gray-800">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-kali-blue to-kali-purple flex items-center justify-center">
+          <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-kali-blue to-kali-purple flex items-center justify-center flex-shrink-0">
             <svg className="w-6 h-6 text-white" viewBox="0 0 24 24" fill="currentColor">
               <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/>
             </svg>
           </div>
-          <div>
+          <div className="flex-1 min-w-0">
             <h1 className="text-lg font-bold text-white">CyberSec Pro</h1>
             <p className="text-xs text-kali-blue">Security Platform</p>
           </div>
+          {/* Mobile close button */}
+          <button
+            onClick={onClose}
+            className="lg:hidden p-1.5 rounded-lg text-gray-400 hover:text-white hover:bg-gray-800 transition"
+            aria-label="Close menu"
+          >
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
         </div>
       </div>
 

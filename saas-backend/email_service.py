@@ -18,13 +18,13 @@ import logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-# Email configuration - Yandex SMTP
-SMTP_HOST = 'smtp.yandex.com'
-SMTP_PORT = 465  # SSL port for Yandex
-SMTP_USER = 'cybersecpro@semihkilic.com'
-SMTP_PASSWORD = 'jkmjddzxcsjjfohl'
-ADMIN_EMAIL = 'cybersecpro@semihkilic.com'
-FROM_EMAIL = 'cybersecpro@semihkilic.com'
+# Email configuration — V17: Read credentials from environment, not hardcoded
+SMTP_HOST = os.environ.get('SMTP_HOST', 'smtp.yandex.com')
+SMTP_PORT = int(os.environ.get('SMTP_PORT', '465'))
+SMTP_USER = os.environ.get('SMTP_USER', 'cybersecpro@semihkilic.com')
+SMTP_PASSWORD = os.environ.get('SMTP_PASSWORD', '')
+ADMIN_EMAIL = os.environ.get('ADMIN_EMAIL', 'cybersecpro@semihkilic.com')
+FROM_EMAIL = os.environ.get('FROM_EMAIL', 'cybersecpro@semihkilic.com')
 
 # CRITICAL: Correct frontend URL for email links
 # This MUST match where the React app is deployed

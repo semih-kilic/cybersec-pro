@@ -89,8 +89,19 @@ def register_handlers(sio: SocketIO):
     
     @sio.on('connect')
     def handle_connect():
-        """Handle new client connection"""
-        logger.info(f"Client connected: {request.sid}")
+        """Handle new client connection — V17: Validate JWT token"""
+        token = request.args.get('token')
+        if token:
+            try:
+                from flask_jwt_extended import decode_token
+                decoded = decode_token(token)
+                user_id = decoded.get('sub')
+                logger.info(f"Authenticated WebSocket connection: user_id={user_id}, sid={request.sid}")
+            except Exception as e:
+                logger.warning(f"WebSocket auth failed: {e}, sid={request.sid}")
+                # Allow connection but log the warning — don't break existing clients
+        else:
+            logger.info(f"Unauthenticated WebSocket connection: {request.sid}")
         emit('connected', {
             'message': 'Connected to CyberSec Pro WebSocket',
             'sid': request.sid
