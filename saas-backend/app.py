@@ -1293,6 +1293,10 @@ def verify_email():
         }), 200
         
     except Exception as e:
+        # V17: Re-raise HTTP exceptions (413, etc.) so Flask error handlers can process them
+        from werkzeug.exceptions import HTTPException
+        if isinstance(e, HTTPException):
+            raise
         return jsonify({'error': str(e)}), 500
 
 
@@ -1414,6 +1418,10 @@ def login():
         })
         
     except Exception as e:
+        # V17: Re-raise HTTP exceptions (413, etc.) so Flask error handlers can process them
+        from werkzeug.exceptions import HTTPException
+        if isinstance(e, HTTPException):
+            raise
         app.logger.error(f"🔐 Login error: {str(e)}")
         return jsonify({'error': str(e)}), 500
 
