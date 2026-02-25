@@ -49,13 +49,19 @@ except ImportError:
 app = Flask(__name__)
 
 # V17: Rate Limiting — protect auth endpoints from brute force
+# Uses file storage for eventlet compatibility (memory:// breaks with monkey_patch)
+import tempfile
+_limiter_db = os.path.join(tempfile.gettempdir(), 'cybersec_limiter')
 limiter = Limiter(
     get_remote_address,
     app=app,
     default_limits=['200 per hour', '50 per minute'],
-    storage_uri='memory://',
-    strategy='fixed-window'
+    storage_uri=f'memory://',
+    strategy='fixed-window',
+    key_prefix='cybersec_rl'
 )
+# Ensure the limiter is enabled
+limiter.enabled = True
 
 # ProxyFix: Trust Cloudflare/Nginx reverse proxy headers
 # This ensures request.url_root and request.scheme return https:// 
@@ -118,6 +124,13 @@ app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.config['JWT_SECRET_KEY'] = _jwt_secret
 app.config['JWT_ACCESS_TOKEN_EXPIRES'] = timedelta(hours=1)  # V17: Reduced from 24h
 app.config['MAX_CONTENT_LENGTH'] = 10 * 1024 * 1024  # V17: 10MB max upload size
+
+# V17: Handle oversized request bodies gracefully
+from werkzeug.exceptions import RequestEntityTooLarge
+@app.errorhandler(413)
+@app.errorhandler(RequestEntityTooLarge)
+def handle_request_too_large(e):
+    return jsonify({'error': 'Request body too large. Maximum size is 10MB.'}), 413
 
 # Stripe configuration
 stripe.api_key = os.environ.get('STRIPE_SECRET_KEY', 'sk_test_...')
