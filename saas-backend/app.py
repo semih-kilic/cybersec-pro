@@ -48,20 +48,37 @@ except ImportError:
 # Initialize Flask app
 app = Flask(__name__)
 
-# V17: Rate Limiting — protect auth endpoints from brute force
-# Uses file storage for eventlet compatibility (memory:// breaks with monkey_patch)
-import tempfile
-_limiter_db = os.path.join(tempfile.gettempdir(), 'cybersec_limiter')
+# V17: Rate Limiting — custom implementation for eventlet compatibility
+# flask-limiter's memory storage doesn't work reliably with eventlet monkey_patch
+import time as _time
+from collections import defaultdict
+
+class SimpleRateLimiter:
+    """Thread-safe rate limiter that works with eventlet green threads."""
+    def __init__(self):
+        self._requests = defaultdict(list)  # key -> [timestamps]
+    
+    def is_limited(self, key, limit, window_seconds=60):
+        """Check if key has exceeded limit within window. Returns True if limited."""
+        now = _time.time()
+        cutoff = now - window_seconds
+        # Clean old entries and add new
+        self._requests[key] = [t for t in self._requests[key] if t > cutoff]
+        if len(self._requests[key]) >= limit:
+            return True
+        self._requests[key].append(now)
+        return False
+
+_rate_limiter = SimpleRateLimiter()
+
+# Keep flask-limiter for default limits on all routes
 limiter = Limiter(
     get_remote_address,
     app=app,
     default_limits=['200 per hour', '50 per minute'],
-    storage_uri=f'memory://',
-    strategy='fixed-window',
-    key_prefix='cybersec_rl'
+    storage_uri='memory://',
+    strategy='fixed-window'
 )
-# Ensure the limiter is enabled
-limiter.enabled = True
 
 # ProxyFix: Trust Cloudflare/Nginx reverse proxy headers
 # This ensures request.url_root and request.scheme return https:// 
@@ -1114,9 +1131,12 @@ def readiness_check():
 # ================================
 
 @app.route('/api/v1/auth/register', methods=['POST'])
-@limiter.limit('3 per minute')  # V17: Prevent registration abuse
 def register():
     """Register new user and organization — sends verification email"""
+    # V17: Custom rate limiting (3 per minute) — eventlet compatible
+    client_ip = request.remote_addr or 'unknown'
+    if _rate_limiter.is_limited(f'register:{client_ip}', limit=3, window_seconds=60):
+        return jsonify({'error': 'Too many registration attempts. Please try again later.'}), 429
     try:
         import secrets
         data = request.get_json()
@@ -1277,9 +1297,12 @@ def verify_email():
 
 
 @app.route('/api/v1/auth/resend-verification', methods=['POST'])
-@limiter.limit('2 per minute')  # V17: Prevent email spam
 def resend_verification():
     """Resend email verification link — V13"""
+    # V17: Custom rate limiting (2 per minute) — eventlet compatible
+    client_ip = request.remote_addr or 'unknown'
+    if _rate_limiter.is_limited(f'resend:{client_ip}', limit=2, window_seconds=60):
+        return jsonify({'error': 'Too many requests. Please try again later.'}), 429
     try:
         import secrets
         data = request.get_json()
@@ -1324,9 +1347,12 @@ def resend_verification():
         return jsonify({'error': str(e)}), 500
 
 @app.route('/api/v1/auth/login', methods=['POST'])
-@limiter.limit('5 per minute')  # V17: Brute force protection
 def login():
     """User login"""
+    # V17: Custom rate limiting (5 per minute) — eventlet compatible
+    client_ip = request.remote_addr or 'unknown'
+    if _rate_limiter.is_limited(f'login:{client_ip}', limit=5, window_seconds=60):
+        return jsonify({'error': 'Too many login attempts. Please try again later.'}), 429
     try:
         data = request.get_json()
         
