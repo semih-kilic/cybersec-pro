@@ -4,7 +4,6 @@ import { Suspense, lazy, useEffect } from 'react';
 import { QueryClientProvider } from '@tanstack/react-query';
 import { queryClient } from './lib/queryClient';
 import { OverviewSkeleton } from './components/ui/Skeleton';
-import { ErrorBoundary } from './components/ui/ErrorBoundary';
 
 // i18n - must be imported before any component that uses translations
 import './i18n';
@@ -118,44 +117,6 @@ function PublicRoute({ children }: { children: React.ReactNode }) {
   
   if (isAuthenticated) {
     return <Navigate to="/dashboard" replace />;
-  }
-  
-  return <>{children}</>;
-}
-
-// V18: Admin Route Guard — only superadmin/admin can access
-function AdminRoute({ children }: { children: React.ReactNode }) {
-  const { user, isAuthenticated, loading } = useAuth();
-  
-  if (loading) {
-    return (
-      <div className="min-h-screen bg-gray-900 flex items-center justify-center">
-        <div className="text-cyan-400">Loading...</div>
-      </div>
-    );
-  }
-  
-  if (!isAuthenticated) {
-    return <Navigate to="/login" replace />;
-  }
-  
-  if (user?.role !== 'superadmin' && user?.role !== 'admin') {
-    return (
-      <div className="min-h-screen bg-gray-950 flex items-center justify-center p-6">
-        <div className="text-center max-w-md">
-          <div className="mx-auto w-16 h-16 rounded-2xl bg-red-500/10 flex items-center justify-center mb-4">
-            <svg className="w-8 h-8 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636" />
-            </svg>
-          </div>
-          <h2 className="text-xl font-bold text-white mb-2">Access Denied</h2>
-          <p className="text-gray-400 mb-4">You don't have permission to access the admin panel.</p>
-          <a href="/dashboard" className="text-cyan-400 hover:text-cyan-300 text-sm font-medium">
-            &larr; Back to Dashboard
-          </a>
-        </div>
-      </div>
-    );
   }
   
   return <>{children}</>;
@@ -292,7 +253,7 @@ function AppRoutes() {
         <Route path="analytics" element={<AnalyticsPage />} />
         <Route path="ai" element={<AIAssistantPage />} />
         <Route path="purple-team" element={<PurpleTeamPage />} />
-        <Route path="admin" element={<AdminRoute><AdminPage /></AdminRoute>} />
+        <Route path="admin" element={<AdminPage />} />
       </Route>
       
       {/* Legacy dashboard route for backwards compatibility */}
@@ -310,24 +271,22 @@ function AppRoutes() {
 
 function App() {
   return (
-    <ErrorBoundary>
-      <HelmetProvider>
-        <QueryClientProvider client={queryClient}>
-          <ColorModeProvider>
-            <ToastProvider>
-              <Router>
-                <AuthProvider>
-                  <div className="min-h-screen cyberpunk-theme">
-                    <AppRoutes />
-                    <CookieConsentBanner />
-                  </div>
-                </AuthProvider>
-              </Router>
-            </ToastProvider>
-          </ColorModeProvider>
-        </QueryClientProvider>
-      </HelmetProvider>
-    </ErrorBoundary>
+    <HelmetProvider>
+      <QueryClientProvider client={queryClient}>
+        <ColorModeProvider>
+          <ToastProvider>
+            <Router>
+              <AuthProvider>
+                <div className="min-h-screen cyberpunk-theme">
+                  <AppRoutes />
+                  <CookieConsentBanner />
+                </div>
+              </AuthProvider>
+            </Router>
+          </ToastProvider>
+        </ColorModeProvider>
+      </QueryClientProvider>
+    </HelmetProvider>
   );
 }
 

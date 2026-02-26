@@ -22,6 +22,9 @@ sqlx = { version = "0.7", features = ["runtime-tokio", "sqlite", "postgres", "ch
 # Auth
 jsonwebtoken = "9"
 
+# Async process execution (safe command builder — replaces shell=True)
+tokio-process = "0.2"
+
 # Logging & tracing
 tracing = "0.1"
 tracing-subscriber = { version = "0.3", features = ["env-filter", "json"] }

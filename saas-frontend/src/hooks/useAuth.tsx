@@ -64,7 +64,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     
     try {
       const response = await fetch(`${API_URL}/auth/me`, {
-        credentials: 'include',  // V18: Send httpOnly cookies
         headers: {
           'Authorization': `Bearer ${currentToken}`,
         },
@@ -109,7 +108,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const login = async (email: string, password: string) => {
     const response = await fetch(`${API_URL}/auth/login`, {
       method: 'POST',
-      credentials: 'include',  // V18: Send/receive httpOnly cookies
       headers: {
         'Content-Type': 'application/json',
       },
@@ -129,7 +127,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
 
     const data = await response.json();
-    // V18: Still store token for backward compat (will be removed once httpOnly-only)
     localStorage.setItem('token', data.access_token);
     setToken(data.access_token);
     setUser(data.user);
@@ -140,7 +137,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const register = async (data: RegisterData) => {
     const response = await fetch(`${API_URL}/auth/register`, {
       method: 'POST',
-      credentials: 'include',  // V18: Send/receive httpOnly cookies
       headers: {
         'Content-Type': 'application/json',
       },
@@ -160,52 +156,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setInitialFetchDone(true);
   };
 
-  // V18: Auto-refresh token before expiry using the refresh cookie
-  const refreshToken = useCallback(async () => {
-    try {
-      const response = await fetch(`${API_URL}/auth/refresh`, {
-        method: 'POST',
-        credentials: 'include',  // Sends refresh_token cookie
-      });
-      if (response.ok) {
-        const data = await response.json();
-        localStorage.setItem('token', data.access_token);
-        setToken(data.access_token);
-        if (data.user) setUser(data.user);
-        if (data.organization) setOrganization(data.organization);
-        return true;
-      }
-    } catch {
-      // Silent fail — user will be redirected to login if needed
-    }
-    return false;
-  }, []);
-
-  // V18: Schedule token refresh every 50 minutes (token expires in 60)
-  useEffect(() => {
-    if (!token || !user) return;
-    const interval = setInterval(() => {
-      refreshToken();
-    }, 50 * 60 * 1000); // 50 minutes
-    return () => clearInterval(interval);
-  }, [token, user, refreshToken]);
-
-  const logout = useCallback(async () => {
-    // V18: Clear httpOnly cookies on server
-    try {
-      await fetch(`${API_URL}/auth/logout`, {
-        method: 'POST',
-        credentials: 'include',
-      });
-    } catch {
-      // Continue with local cleanup even if server call fails
-    }
+  const logout = () => {
     localStorage.removeItem('token');
     setToken(null);
     setUser(null);
     setOrganization(null);
     setInitialFetchDone(false);
-  }, []);
+  };
 
   // isAuthenticated: true if we have a token AND (user is loaded OR we're still loading)
   // This prevents redirect to login during initial load
