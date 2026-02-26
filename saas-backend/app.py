@@ -18,7 +18,7 @@ from flask import Flask, request, jsonify, render_template_string
 from flask_cors import CORS
 from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
-from flask_jwt_extended import JWTManager, jwt_required, create_access_token, get_jwt_identity
+from flask_jwt_extended import JWTManager, jwt_required, create_access_token, create_refresh_token, get_jwt_identity, set_access_cookies, set_refresh_cookies, unset_jwt_cookies, get_jwt
 from werkzeug.security import generate_password_hash, check_password_hash
 from werkzeug.middleware.proxy_fix import ProxyFix
 from datetime import datetime, timedelta
@@ -142,6 +142,19 @@ app.config['JWT_SECRET_KEY'] = _jwt_secret
 app.config['JWT_ACCESS_TOKEN_EXPIRES'] = timedelta(hours=1)  # V17: Reduced from 24h
 app.config['MAX_CONTENT_LENGTH'] = 10 * 1024 * 1024  # V17: 10MB max upload size
 
+# V18: httpOnly cookie-based JWT (eliminates XSS token theft)
+app.config['JWT_TOKEN_LOCATION'] = ['cookies', 'headers']  # Accept both for migration
+app.config['JWT_COOKIE_SECURE'] = os.environ.get('FLASK_ENV') == 'production'  # HTTPS only in prod
+app.config['JWT_COOKIE_CSRF_PROTECT'] = True
+app.config['JWT_COOKIE_SAMESITE'] = 'Lax'
+app.config['JWT_ACCESS_COOKIE_NAME'] = 'access_token_cookie'
+app.config['JWT_ACCESS_COOKIE_PATH'] = '/api/'
+app.config['JWT_COOKIE_DOMAIN'] = os.environ.get('COOKIE_DOMAIN', None)  # '.semihkilic.com' in prod
+# V18: Refresh tokens for seamless session extension
+app.config['JWT_REFRESH_TOKEN_EXPIRES'] = timedelta(days=30)
+app.config['JWT_REFRESH_COOKIE_NAME'] = 'refresh_token_cookie'
+app.config['JWT_REFRESH_COOKIE_PATH'] = '/api/v1/auth/refresh'
+
 # V17: Handle oversized request bodies gracefully
 from werkzeug.exceptions import RequestEntityTooLarge
 @app.errorhandler(413)
@@ -156,6 +169,20 @@ stripe.api_key = os.environ.get('STRIPE_SECRET_KEY', 'sk_test_...')
 db = SQLAlchemy(app)
 migrate = Migrate(app, db)
 jwt = JWTManager(app)
+
+# V18: Admin-required decorator for role-based access control
+from functools import wraps
+def admin_required(fn):
+    """Decorator that requires superadmin or admin role."""
+    @wraps(fn)
+    @jwt_required()
+    def wrapper(*args, **kwargs):
+        uid = get_jwt_identity()
+        u = User.query.get(uid) if uid else None
+        if not u or u.role not in ('admin', 'superadmin'):
+            return jsonify({'error': 'Admin access required'}), 403
+        return fn(*args, **kwargs)
+    return wrapper
 # V17: Remove localhost origins in production mode
 _cors_origins = [
     'https://cybersecpro.com', 
@@ -177,26 +204,57 @@ CORS(app,
 )
 
 # ================================
-# PRODUCTION SECURITY HEADERS
+# PRODUCTION SECURITY HEADERS — V18: Enhanced CSP + Cache-Control
 # ================================
+import hashlib as _hashlib
+
 @app.after_request
 def add_security_headers(response):
-    """Add security headers to all responses"""
+    """Add security headers to all responses — V18 enterprise-grade"""
     # Prevent clickjacking
-    response.headers['X-Frame-Options'] = 'SAMEORIGIN'
+    response.headers['X-Frame-Options'] = 'DENY'
     # Prevent MIME type sniffing
     response.headers['X-Content-Type-Options'] = 'nosniff'
-    # XSS Protection
+    # XSS Protection (legacy browsers)
     response.headers['X-XSS-Protection'] = '1; mode=block'
     # Referrer Policy
     response.headers['Referrer-Policy'] = 'strict-origin-when-cross-origin'
-    # Content Security Policy (production)
-    if os.environ.get('FLASK_ENV') == 'production':
-        response.headers['Content-Security-Policy'] = "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; font-src 'self' data:; connect-src 'self' wss: https:;"
-        # HSTS (1 year)
-        response.headers['Strict-Transport-Security'] = 'max-age=31536000; includeSubDomains; preload'
+    # V18: Enhanced Content Security Policy for all environments
+    csp = (
+        "default-src 'self'; "
+        "script-src 'self'; "
+        "style-src 'self' 'unsafe-inline'; "
+        "img-src 'self' data: https: blob:; "
+        "font-src 'self' data:; "
+        "connect-src 'self' wss: https:; "
+        "frame-ancestors 'none'; "
+        "base-uri 'self'; "
+        "form-action 'self'; "
+        "object-src 'none';"
+    )
+    response.headers['Content-Security-Policy'] = csp
+    # HSTS (1 year) — always on
+    response.headers['Strict-Transport-Security'] = 'max-age=31536000; includeSubDomains; preload'
     # Permissions Policy
-    response.headers['Permissions-Policy'] = 'geolocation=(), microphone=(), camera=()'
+    response.headers['Permissions-Policy'] = 'geolocation=(), microphone=(), camera=(), usb=(), payment=()'
+    # V18: Cache-Control for API responses
+    if request.path.startswith('/api/'):
+        if request.method == 'GET' and response.status_code == 200:
+            # Cache health checks and read-only data for 30s
+            if '/health' in request.path or '/tools' in request.path:
+                response.headers['Cache-Control'] = 'public, max-age=30, stale-while-revalidate=60'
+                # ETag based on response data
+                etag = _hashlib.md5(response.get_data()).hexdigest()
+                response.headers['ETag'] = f'"{etag}"'
+                # Check If-None-Match for 304
+                if_none_match = request.headers.get('If-None-Match')
+                if if_none_match and if_none_match.strip('"') == etag:
+                    response.status_code = 304
+                    response.set_data(b'')
+            else:
+                response.headers['Cache-Control'] = 'private, no-cache'
+        else:
+            response.headers['Cache-Control'] = 'no-store'
     return response
 
 # ================================
@@ -1405,17 +1463,22 @@ def login():
         user.last_login = datetime.utcnow()
         db.session.commit()
         
-        # Generate JWT token
+        # Generate JWT tokens — V18: access + refresh
         access_token = create_access_token(identity=user.id)
+        refresh_token = create_refresh_token(identity=user.id)
         
         app.logger.info(f"🔐 Login successful: {email} (user_id={user.id})")
         
-        return jsonify({
+        # V18: Set httpOnly cookies + return JSON (dual mode for migration)
+        resp = jsonify({
             'message': 'Login successful',
-            'access_token': access_token,
+            'access_token': access_token,  # Still returned for legacy/mobile clients
             'user': user.to_dict(),
             'organization': user.organization.to_dict() if user.organization else None
         })
+        set_access_cookies(resp, access_token)
+        set_refresh_cookies(resp, refresh_token)
+        return resp
         
     except Exception as e:
         # V17: Re-raise HTTP exceptions (413, etc.) so Flask error handlers can process them
@@ -1424,6 +1487,40 @@ def login():
             raise
         app.logger.error(f"🔐 Login error: {str(e)}")
         return jsonify({'error': str(e)}), 500
+
+
+# ================================
+# V18: TOKEN REFRESH & LOGOUT (httpOnly cookies)
+# ================================
+
+@app.route('/api/v1/auth/refresh', methods=['POST'])
+@jwt_required(refresh=True)
+def refresh_token():
+    """Issue a new access token using the refresh token cookie — V18"""
+    try:
+        user_id = get_jwt_identity()
+        user = User.query.get(user_id)
+        if not user or not user.is_active:
+            return jsonify({'error': 'Invalid session'}), 401
+        
+        new_access = create_access_token(identity=user_id)
+        resp = jsonify({
+            'access_token': new_access,
+            'user': user.to_dict(),
+            'organization': user.organization.to_dict() if user.organization else None,
+        })
+        set_access_cookies(resp, new_access)
+        return resp
+    except Exception as e:
+        return jsonify({'error': 'Token refresh failed'}), 401
+
+
+@app.route('/api/v1/auth/logout', methods=['POST'])
+def auth_logout():
+    """Clear httpOnly JWT cookies — V18"""
+    resp = jsonify({'message': 'Logged out'})
+    unset_jwt_cookies(resp)
+    return resp
 
 
 # ================================
