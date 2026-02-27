@@ -4,6 +4,7 @@ import { Suspense, lazy, useEffect } from 'react';
 import { QueryClientProvider } from '@tanstack/react-query';
 import { queryClient } from './lib/queryClient';
 import { OverviewSkeleton } from './components/ui/Skeleton';
+import { ErrorBoundary } from './components/ui/ErrorBoundary';
 
 // i18n - must be imported before any component that uses translations
 import './i18n';
@@ -182,7 +183,9 @@ function DashboardLayout() {
           </div>
 
           <Suspense fallback={<OverviewSkeleton />}>
-            <Outlet />
+            <ErrorBoundary>
+              <Outlet />
+            </ErrorBoundary>
           </Suspense>
         </main>
         <CommandPalette isOpen={isPaletteOpen} onClose={closePalette} />
