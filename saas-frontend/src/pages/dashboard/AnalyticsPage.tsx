@@ -1,5 +1,16 @@
+/**
+ * CyberSec Pro — Analytics Dashboard (V18)
+ * World-class data visualization with Recharts, stat cards, and interactive charts
+ */
 import { useState, useEffect } from 'react';
+import {
+  AreaChart, Area, BarChart, Bar, PieChart, Pie, Cell,
+  XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip,
+  ResponsiveContainer, Legend, RadialBarChart, RadialBar,
+} from 'recharts';
+import { motion } from 'framer-motion';
 import api from '../../services/api';
+import { StatCard, Card, CardHeader, EmptyState, Button, PageTransition } from '../../components/ui';
 
 interface AnalyticsData {
   daily_trend: Array<{ date: string; scans: number }>;
@@ -11,13 +22,58 @@ interface AnalyticsData {
   risk: { score: number; level: string; severity_totals: Record<string, number>; total_issues: number };
 }
 
+// Chart color palette
+const COLORS = {
+  cyan: '#22d3ee',
+  blue: '#3b82f6',
+  purple: '#a78bfa',
+  green: '#34d399',
+  amber: '#fbbf24',
+  red: '#f87171',
+  orange: '#fb923c',
+  gray: '#6b7280',
+};
+
+const SEVERITY_COLORS: Record<string, string> = {
+  critical: '#ef4444',
+  high: '#f97316',
+  medium: '#eab308',
+  low: '#3b82f6',
+  info: '#6b7280',
+};
+
+const STATUS_COLORS: Record<string, string> = {
+  completed: '#34d399',
+  running: '#22d3ee',
+  failed: '#f87171',
+  pending: '#fbbf24',
+  timeout: '#fb923c',
+  cancelled: '#6b7280',
+};
+
+// Custom tooltip for Recharts
+function ChartTooltip({ active, payload, label }: any) {
+  if (!active || !payload?.length) return null;
+  return (
+    <div className="bg-gray-900/95 backdrop-blur-sm border border-gray-700/50 rounded-lg px-3 py-2 shadow-xl">
+      {label && <p className="text-xs text-gray-400 mb-1">{label}</p>}
+      {payload.map((entry: any, i: number) => (
+        <p key={i} className="text-sm font-medium" style={{ color: entry.color }}>
+          {entry.name}: {entry.value.toLocaleString()}
+        </p>
+      ))}
+    </div>
+  );
+}
+
 export default function AnalyticsPage() {
   const [data, setData] = useState<AnalyticsData | null>(null);
   const [loading, setLoading] = useState(true);
+  const [timeRange, setTimeRange] = useState<'7d' | '30d' | '90d'>('30d');
 
   useEffect(() => {
     loadAnalytics();
-  }, []);
+  }, [timeRange]);
 
   const loadAnalytics = async () => {
     setLoading(true);
@@ -28,204 +84,435 @@ export default function AnalyticsPage() {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center h-64">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-cyan-500" />
-      </div>
+      <PageTransition>
+        <div className="p-6 space-y-6">
+          <div className="flex items-center justify-between">
+            <div className="h-8 w-48 bg-gray-800 rounded-lg animate-pulse" />
+            <div className="h-9 w-32 bg-gray-800 rounded-lg animate-pulse" />
+          </div>
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+            {[...Array(4)].map((_, i) => (
+              <div key={i} className="h-28 bg-gray-800/50 rounded-xl border border-gray-700/50 animate-pulse" />
+            ))}
+          </div>
+          <div className="h-80 bg-gray-800/50 rounded-xl border border-gray-700/50 animate-pulse" />
+        </div>
+      </PageTransition>
     );
   }
 
   if (!data) {
     return (
-      <div className="text-center py-20 text-gray-400">
-        <p className="text-2xl mb-2">📊</p>
-        <p>No analytics data available yet. Start scanning to see insights.</p>
-      </div>
+      <PageTransition>
+        <div className="p-6">
+          <EmptyState
+            icon={
+              <svg className="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+              </svg>
+            }
+            title="No analytics data yet"
+            description="Run security scans to generate analytics and insights about your infrastructure."
+          />
+        </div>
+      </PageTransition>
     );
   }
 
-  const riskColor = data.risk.level === 'Critical' ? 'text-red-500' :
-    data.risk.level === 'High' ? 'text-orange-500' :
-    data.risk.level === 'Medium' ? 'text-yellow-500' : 'text-green-500';
+  // Prepare chart data
+  const trendData = data.daily_trend.map(d => ({
+    date: new Date(d.date).toLocaleDateString('en', { month: 'short', day: 'numeric' }),
+    scans: d.scans,
+  }));
 
-  const maxScans = Math.max(...data.daily_trend.map(d => d.scans), 1);
+  const statusData = Object.entries(data.status_distribution).map(([name, value]) => ({
+    name: name.charAt(0).toUpperCase() + name.slice(1),
+    value,
+    color: STATUS_COLORS[name] || COLORS.gray,
+  }));
+
+  const severityData = Object.entries(data.risk.severity_totals)
+    .filter(([, count]) => count > 0)
+    .map(([name, value]) => ({
+      name: name.charAt(0).toUpperCase() + name.slice(1),
+      value,
+      color: SEVERITY_COLORS[name] || COLORS.gray,
+    }));
+
+  const toolData = data.tool_usage.slice(0, 8).map(t => ({
+    name: t.name.length > 12 ? t.name.slice(0, 12) + '…' : t.name,
+    fullName: t.name,
+    count: t.count,
+  }));
+
+  // Risk gauge data for radial chart
+  const riskGauge = [{ name: 'Risk', value: data.risk.score, fill: data.risk.score >= 70 ? COLORS.red : data.risk.score >= 40 ? COLORS.amber : COLORS.green }];
+
+  // Trend sparkline data for stat cards (last 7 data points)
+  const recentTrend = data.daily_trend.slice(-7).map(d => d.scans);
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold text-white">📊 Analytics Dashboard</h1>
-        <button onClick={loadAnalytics} className="px-4 py-2 bg-gray-700 text-gray-300 rounded-lg hover:bg-gray-600 text-sm">
-          ↻ Refresh
-        </button>
-      </div>
-
-      {/* KPI Cards */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        <div className="bg-gray-800/50 rounded-xl p-4 border border-gray-700">
-          <div className="text-gray-400 text-sm">Total Scans</div>
-          <div className="text-2xl font-bold text-white">{data.performance.total_scans}</div>
-        </div>
-        <div className="bg-gray-800/50 rounded-xl p-4 border border-gray-700">
-          <div className="text-gray-400 text-sm">Success Rate</div>
-          <div className="text-2xl font-bold text-green-400">{data.performance.success_rate}%</div>
-        </div>
-        <div className="bg-gray-800/50 rounded-xl p-4 border border-gray-700">
-          <div className="text-gray-400 text-sm">Avg Duration</div>
-          <div className="text-2xl font-bold text-cyan-400">{data.performance.avg_duration_seconds}s</div>
-        </div>
-        <div className="bg-gray-800/50 rounded-xl p-4 border border-gray-700">
-          <div className="text-gray-400 text-sm">Risk Score</div>
-          <div className={`text-2xl font-bold ${riskColor}`}>{data.risk.score}</div>
-          <div className={`text-xs ${riskColor}`}>{data.risk.level}</div>
-        </div>
-      </div>
-
-      {/* Weekly Comparison */}
-      <div className="bg-gray-800/50 rounded-xl p-6 border border-gray-700">
-        <h2 className="text-lg font-semibold text-white mb-3">📈 Weekly Comparison</h2>
-        <div className="flex items-center gap-8">
+    <PageTransition>
+      <div className="p-6 space-y-6">
+        {/* Header */}
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
           <div>
-            <div className="text-gray-400 text-sm">This Week</div>
-            <div className="text-3xl font-bold text-white">{data.comparison.this_week}</div>
+            <h1 className="text-2xl font-bold text-white flex items-center gap-2">
+              <svg className="w-6 h-6 text-cyan-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+              </svg>
+              Analytics
+            </h1>
+            <p className="text-sm text-gray-500 mt-0.5">Security metrics and scan performance insights</p>
           </div>
-          <div>
-            <div className="text-gray-400 text-sm">Last Week</div>
-            <div className="text-3xl font-bold text-gray-400">{data.comparison.last_week}</div>
-          </div>
-          <div>
-            <div className="text-gray-400 text-sm">Change</div>
-            <div className={`text-3xl font-bold ${data.comparison.change_pct >= 0 ? 'text-green-400' : 'text-red-400'}`}>
-              {data.comparison.change_pct >= 0 ? '+' : ''}{data.comparison.change_pct}%
+          <div className="flex items-center gap-2">
+            <div className="flex bg-gray-800/60 border border-gray-700/50 rounded-lg p-0.5">
+              {(['7d', '30d', '90d'] as const).map(range => (
+                <button
+                  key={range}
+                  onClick={() => setTimeRange(range)}
+                  className={`px-3 py-1.5 text-xs font-medium rounded-md transition-all ${
+                    timeRange === range
+                      ? 'bg-cyan-600/20 text-cyan-400 shadow-sm'
+                      : 'text-gray-400 hover:text-white'
+                  }`}
+                >
+                  {range === '7d' ? '7 Days' : range === '30d' ? '30 Days' : '90 Days'}
+                </button>
+              ))}
             </div>
+            <Button variant="secondary" size="sm" onClick={loadAnalytics} icon={
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+              </svg>
+            }>
+              Refresh
+            </Button>
           </div>
         </div>
-      </div>
 
-      {/* Scan Trend Chart (Bar chart with CSS) */}
-      <div className="bg-gray-800/50 rounded-xl p-6 border border-gray-700">
-        <h2 className="text-lg font-semibold text-white mb-4">📊 30-Day Scan Trend</h2>
-        <div className="flex items-end gap-1 h-32">
-          {data.daily_trend.map((d, i) => (
-            <div key={i} className="flex-1 group relative">
-              <div
-                className="bg-cyan-500/80 hover:bg-cyan-400 rounded-t transition-all"
-                style={{ height: `${Math.max((d.scans / maxScans) * 100, 2)}%` }}
-              />
-              <div className="hidden group-hover:block absolute bottom-full left-1/2 -translate-x-1/2 bg-gray-900 text-white text-xs p-1 rounded whitespace-nowrap z-10">
-                {d.date}: {d.scans} scans
+        {/* KPI Stat Cards */}
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+          <StatCard
+            title="Total Scans"
+            value={data.performance.total_scans.toLocaleString()}
+            change={{ value: data.comparison.change_pct, label: 'vs last week' }}
+            variant="cyan"
+            sparkline={recentTrend}
+            icon={
+              <svg className="w-5 h-5 text-cyan-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+              </svg>
+            }
+          />
+          <StatCard
+            title="Success Rate"
+            value={`${data.performance.success_rate}%`}
+            variant="green"
+            icon={
+              <svg className="w-5 h-5 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+            }
+          />
+          <StatCard
+            title="Avg Duration"
+            value={`${data.performance.avg_duration_seconds}s`}
+            variant="purple"
+            icon={
+              <svg className="w-5 h-5 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+            }
+          />
+          <StatCard
+            title="Risk Score"
+            value={data.risk.score.toString()}
+            variant={data.risk.score >= 70 ? 'red' : data.risk.score >= 40 ? 'amber' : 'green'}
+            icon={
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+              </svg>
+            }
+          />
+        </div>
+
+        {/* Scan Trend Area Chart */}
+        <Card variant="elevated">
+          <CardHeader
+            title="Scan Activity"
+            subtitle="Daily scan volume over time"
+            icon={
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
+              </svg>
+            }
+          />
+          <div className="h-72 -mx-2">
+            <ResponsiveContainer width="100%" height="100%">
+              <AreaChart data={trendData} margin={{ top: 5, right: 10, left: -10, bottom: 0 }}>
+                <defs>
+                  <linearGradient id="scanGradient" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stopColor={COLORS.cyan} stopOpacity={0.3} />
+                    <stop offset="100%" stopColor={COLORS.cyan} stopOpacity={0} />
+                  </linearGradient>
+                </defs>
+                <CartesianGrid strokeDasharray="3 3" stroke="#1f2937" vertical={false} />
+                <XAxis
+                  dataKey="date"
+                  axisLine={false}
+                  tickLine={false}
+                  tick={{ fill: '#6b7280', fontSize: 11 }}
+                  interval="preserveStartEnd"
+                />
+                <YAxis
+                  axisLine={false}
+                  tickLine={false}
+                  tick={{ fill: '#6b7280', fontSize: 11 }}
+                  allowDecimals={false}
+                />
+                <RechartsTooltip content={<ChartTooltip />} />
+                <Area
+                  type="monotone"
+                  dataKey="scans"
+                  name="Scans"
+                  stroke={COLORS.cyan}
+                  strokeWidth={2}
+                  fill="url(#scanGradient)"
+                  dot={false}
+                  activeDot={{ r: 4, fill: COLORS.cyan, stroke: '#0a0a0a', strokeWidth: 2 }}
+                />
+              </AreaChart>
+            </ResponsiveContainer>
+          </div>
+        </Card>
+
+        {/* Middle row: Tool Usage + Status Distribution */}
+        <div className="grid md:grid-cols-2 gap-6">
+          {/* Tool Usage Bar Chart */}
+          <Card variant="elevated">
+            <CardHeader
+              title="Top Tools"
+              subtitle="Most used scanning tools"
+              icon={
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.066 2.573c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.573 1.066c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.066-2.573c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                </svg>
+              }
+            />
+            <div className="h-64">
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart data={toolData} layout="vertical" margin={{ top: 0, right: 10, left: 0, bottom: 0 }}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="#1f2937" horizontal={false} />
+                  <XAxis type="number" axisLine={false} tickLine={false} tick={{ fill: '#6b7280', fontSize: 11 }} allowDecimals={false} />
+                  <YAxis type="category" dataKey="name" axisLine={false} tickLine={false} tick={{ fill: '#9ca3af', fontSize: 11 }} width={90} />
+                  <RechartsTooltip content={<ChartTooltip />} />
+                  <Bar dataKey="count" name="Scans" radius={[0, 4, 4, 0]} maxBarSize={24}>
+                    {toolData.map((_, i) => (
+                      <Cell key={i} fill={i === 0 ? COLORS.cyan : i === 1 ? COLORS.blue : COLORS.purple} fillOpacity={0.8} />
+                    ))}
+                  </Bar>
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
+          </Card>
+
+          {/* Status Distribution Donut */}
+          <Card variant="elevated">
+            <CardHeader
+              title="Scan Status"
+              subtitle="Distribution by completion status"
+              icon={
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 3.055A9.001 9.001 0 1020.945 13H11V3.055z" />
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20.488 9H15V3.512A9.025 9.025 0 0120.488 9z" />
+                </svg>
+              }
+            />
+            <div className="h-64 flex items-center justify-center">
+              {statusData.length > 0 ? (
+                <ResponsiveContainer width="100%" height="100%">
+                  <PieChart>
+                    <Pie
+                      data={statusData}
+                      cx="50%"
+                      cy="50%"
+                      innerRadius={60}
+                      outerRadius={90}
+                      paddingAngle={3}
+                      dataKey="value"
+                      nameKey="name"
+                      stroke="none"
+                    >
+                      {statusData.map((entry, i) => (
+                        <Cell key={i} fill={entry.color} />
+                      ))}
+                    </Pie>
+                    <RechartsTooltip content={<ChartTooltip />} />
+                    <Legend
+                      iconType="circle"
+                      iconSize={8}
+                      formatter={(value: string) => <span className="text-xs text-gray-300">{value}</span>}
+                    />
+                  </PieChart>
+                </ResponsiveContainer>
+              ) : (
+                <p className="text-sm text-gray-500">No scan data</p>
+              )}
+            </div>
+          </Card>
+        </div>
+
+        {/* Bottom row: Severity + Risk Gauge + Targets */}
+        <div className="grid md:grid-cols-3 gap-6">
+          {/* Severity Breakdown */}
+          <Card variant="elevated">
+            <CardHeader
+              title="Severity Breakdown"
+              subtitle={`${data.risk.total_issues} total issues`}
+              icon={
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+                </svg>
+              }
+            />
+            <div className="space-y-3">
+              {severityData.length > 0 ? severityData.map(({ name, value, color }) => {
+                const pct = data.risk.total_issues > 0 ? (value / data.risk.total_issues) * 100 : 0;
+                return (
+                  <div key={name}>
+                    <div className="flex items-center justify-between mb-1">
+                      <div className="flex items-center gap-2">
+                        <span className="w-2 h-2 rounded-full" style={{ backgroundColor: color }} />
+                        <span className="text-sm text-gray-300">{name}</span>
+                      </div>
+                      <span className="text-sm font-medium text-gray-200">{value}</span>
+                    </div>
+                    <div className="h-1.5 bg-gray-800 rounded-full overflow-hidden">
+                      <motion.div
+                        initial={{ width: 0 }}
+                        animate={{ width: `${Math.max(pct, value > 0 ? 3 : 0)}%` }}
+                        transition={{ delay: 0.3, duration: 0.6, ease: 'easeOut' }}
+                        className="h-full rounded-full"
+                        style={{ backgroundColor: color }}
+                      />
+                    </div>
+                  </div>
+                );
+              }) : (
+                <p className="text-sm text-gray-500 py-4 text-center">No vulnerabilities found</p>
+              )}
+            </div>
+          </Card>
+
+          {/* Risk Score Gauge */}
+          <Card variant="elevated" className="flex flex-col items-center justify-center">
+            <CardHeader title="Risk Assessment" subtitle={data.risk.level} />
+            <div className="h-48 w-48">
+              <ResponsiveContainer width="100%" height="100%">
+                <RadialBarChart
+                  cx="50%"
+                  cy="50%"
+                  innerRadius="60%"
+                  outerRadius="90%"
+                  barSize={12}
+                  data={riskGauge}
+                  startAngle={200}
+                  endAngle={-20}
+                >
+                  <RadialBar
+                    dataKey="value"
+                    cornerRadius={6}
+                    background={{ fill: '#1f2937' }}
+                  />
+                  <text
+                    x="50%"
+                    y="46%"
+                    textAnchor="middle"
+                    dominantBaseline="middle"
+                    className="fill-white text-3xl font-bold"
+                  >
+                    {data.risk.score}
+                  </text>
+                  <text
+                    x="50%"
+                    y="60%"
+                    textAnchor="middle"
+                    className="fill-gray-400 text-xs"
+                  >
+                    /100
+                  </text>
+                </RadialBarChart>
+              </ResponsiveContainer>
+            </div>
+            <p className={`text-sm font-medium mt-2 ${
+              data.risk.score >= 70 ? 'text-red-400' : data.risk.score >= 40 ? 'text-amber-400' : 'text-emerald-400'
+            }`}>
+              {data.risk.level}
+            </p>
+          </Card>
+
+          {/* Top Targets */}
+          <Card variant="elevated">
+            <CardHeader
+              title="Top Targets"
+              subtitle="Most scanned hosts"
+              icon={
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9" />
+                </svg>
+              }
+            />
+            <div className="space-y-2">
+              {data.target_distribution.length > 0 ? data.target_distribution.slice(0, 6).map((t, i) => (
+                <div key={i} className="flex items-center justify-between py-1.5 group">
+                  <div className="flex items-center gap-2 min-w-0">
+                    <span className="text-xs text-gray-600 w-4">{i + 1}.</span>
+                    <span className="text-sm text-gray-300 font-mono truncate group-hover:text-white transition-colors">
+                      {t.target}
+                    </span>
+                  </div>
+                  <span className="text-xs text-gray-500 ml-2 flex-shrink-0 tabular-nums">
+                    {t.count} scans
+                  </span>
+                </div>
+              )) : (
+                <p className="text-sm text-gray-500 py-4 text-center">No targets scanned</p>
+              )}
+            </div>
+          </Card>
+        </div>
+
+        {/* Weekly Comparison */}
+        <Card variant="glass">
+          <div className="flex flex-col sm:flex-row items-center justify-between gap-6 py-2">
+            <div className="flex items-center gap-8">
+              <div className="text-center">
+                <p className="text-xs text-gray-500 mb-1">This Week</p>
+                <p className="text-3xl font-bold text-white">{data.comparison.this_week}</p>
+              </div>
+              <div className="text-gray-700">
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
+                </svg>
+              </div>
+              <div className="text-center">
+                <p className="text-xs text-gray-500 mb-1">Last Week</p>
+                <p className="text-3xl font-bold text-gray-500">{data.comparison.last_week}</p>
               </div>
             </div>
-          ))}
-        </div>
-        <div className="flex justify-between mt-1 text-xs text-gray-500">
-          <span>{data.daily_trend[0]?.date}</span>
-          <span>{data.daily_trend[data.daily_trend.length - 1]?.date}</span>
-        </div>
-      </div>
-
-      <div className="grid md:grid-cols-2 gap-6">
-        {/* Tool Usage */}
-        <div className="bg-gray-800/50 rounded-xl p-6 border border-gray-700">
-          <h2 className="text-lg font-semibold text-white mb-4">🔧 Top Tools</h2>
-          <div className="space-y-3">
-            {data.tool_usage.map((t, i) => {
-              const maxCount = data.tool_usage[0]?.count || 1;
-              return (
-                <div key={i}>
-                  <div className="flex justify-between text-sm mb-1">
-                    <span className="text-gray-300">{t.name}</span>
-                    <span className="text-gray-400">{t.count}</span>
-                  </div>
-                  <div className="h-2 bg-gray-700 rounded-full overflow-hidden">
-                    <div
-                      className="h-full bg-gradient-to-r from-cyan-500 to-blue-500 rounded-full"
-                      style={{ width: `${(t.count / maxCount) * 100}%` }}
-                    />
-                  </div>
-                </div>
-              );
-            })}
-            {data.tool_usage.length === 0 && (
-              <p className="text-gray-500 text-sm">No tool usage data yet</p>
-            )}
-          </div>
-        </div>
-
-        {/* Severity Breakdown */}
-        <div className="bg-gray-800/50 rounded-xl p-6 border border-gray-700">
-          <h2 className="text-lg font-semibold text-white mb-4">🛡️ Severity Breakdown</h2>
-          <div className="space-y-3">
-            {Object.entries(data.risk.severity_totals).map(([sev, count]) => {
-              const colors: Record<string, string> = {
-                critical: 'from-red-600 to-red-500',
-                high: 'from-orange-500 to-orange-400',
-                medium: 'from-yellow-500 to-yellow-400',
-                low: 'from-blue-500 to-blue-400',
-                info: 'from-gray-500 to-gray-400',
-              };
-              return (
-                <div key={sev}>
-                  <div className="flex justify-between text-sm mb-1">
-                    <span className="text-gray-300 capitalize">{sev}</span>
-                    <span className="text-gray-400">{count}</span>
-                  </div>
-                  <div className="h-2 bg-gray-700 rounded-full overflow-hidden">
-                    <div
-                      className={`h-full bg-gradient-to-r ${colors[sev] || 'from-gray-500 to-gray-400'} rounded-full`}
-                      style={{ width: `${Math.max((count / Math.max(data.risk.total_issues, 1)) * 100, count > 0 ? 5 : 0)}%` }}
-                    />
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-          <div className="mt-4 pt-4 border-t border-gray-700">
-            <div className="flex justify-between">
-              <span className="text-gray-400 text-sm">Total Issues</span>
-              <span className="text-white font-bold">{data.risk.total_issues}</span>
+            <div className={`text-center px-6 py-3 rounded-xl ${
+              data.comparison.change_pct >= 0 ? 'bg-emerald-500/10 border border-emerald-500/20' : 'bg-red-500/10 border border-red-500/20'
+            }`}>
+              <p className={`text-2xl font-bold ${data.comparison.change_pct >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
+                {data.comparison.change_pct >= 0 ? '+' : ''}{data.comparison.change_pct}%
+              </p>
+              <p className="text-xs text-gray-400">Week over Week</p>
             </div>
           </div>
-        </div>
+        </Card>
       </div>
-
-      {/* Status Distribution & Targets */}
-      <div className="grid md:grid-cols-2 gap-6">
-        <div className="bg-gray-800/50 rounded-xl p-6 border border-gray-700">
-          <h2 className="text-lg font-semibold text-white mb-4">📋 Scan Status</h2>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            {Object.entries(data.status_distribution).map(([status, count]) => {
-              const statusColors: Record<string, string> = {
-                completed: 'bg-green-500/20 text-green-400',
-                running: 'bg-cyan-500/20 text-cyan-400',
-                failed: 'bg-red-500/20 text-red-400',
-                pending: 'bg-yellow-500/20 text-yellow-400',
-                timeout: 'bg-orange-500/20 text-orange-400',
-                cancelled: 'bg-gray-500/20 text-gray-400',
-              };
-              return (
-                <div key={status} className={`${statusColors[status] || 'bg-gray-500/20 text-gray-400'} rounded-lg p-3 text-center`}>
-                  <div className="text-2xl font-bold">{count}</div>
-                  <div className="text-xs capitalize">{status}</div>
-                </div>
-              );
-            })}
-          </div>
-        </div>
-
-        <div className="bg-gray-800/50 rounded-xl p-6 border border-gray-700">
-          <h2 className="text-lg font-semibold text-white mb-4">🎯 Top Targets</h2>
-          <div className="space-y-2">
-            {data.target_distribution.map((t, i) => (
-              <div key={i} className="flex justify-between items-center py-1">
-                <span className="text-gray-300 text-sm font-mono truncate max-w-[200px]">{t.target}</span>
-                <span className="text-gray-400 text-sm ml-2">{t.count} scans</span>
-              </div>
-            ))}
-            {data.target_distribution.length === 0 && (
-              <p className="text-gray-500 text-sm">No targets scanned yet</p>
-            )}
-          </div>
-        </div>
-      </div>
-    </div>
+    </PageTransition>
   );
 }
