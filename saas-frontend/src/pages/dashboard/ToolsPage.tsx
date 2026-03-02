@@ -485,6 +485,7 @@ export function ToolsPage() {
         )}
       </div>
     </div>
+    </PageTransition>
   );
 }
 
@@ -791,7 +792,6 @@ function VirtualizedToolList({
         </div>
       </div>
     </div>
-    </PageTransition>
   );
 }
 
