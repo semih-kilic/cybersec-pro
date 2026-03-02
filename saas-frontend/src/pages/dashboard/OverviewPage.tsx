@@ -8,7 +8,7 @@ import { OnboardingModal } from '../../components/onboarding';
 import WelcomeTour from '../../components/WelcomeTour';
 import { useDashboardData } from '../../hooks/useApiQueries';
 import { OverviewSkeleton } from '../../components/ui/Skeleton';
-import { PageTransition, Card, CardHeader, StatCard, Badge } from '../../components/ui';
+import { PageTransition, Card, CardHeader, StatCard, Badge, EmptyState } from '../../components/ui';
 
 export function OverviewPage() {
   const { token, organization, user } = useAuth();
@@ -348,16 +348,17 @@ export function OverviewPage() {
                 </Link>
               ))}
             </div>
-          </div>
+          </Card>
         </div>
 
         {/* Scheduled Scans */}
         {scheduledScans.length > 0 && (
-          <div className="bg-gray-900 rounded-xl border border-gray-800">
-            <div className="p-5 border-b border-gray-800 flex items-center justify-between">
-              <h2 className="text-lg font-semibold text-white">Scheduled Scans</h2>
-              <Link to="/dashboard/schedule" className="text-sm text-blue-400 hover:underline">Manage</Link>
-            </div>
+          <Card variant="elevated" padding="none">
+            <CardHeader
+              title="Scheduled Scans"
+              action={<Link to="/dashboard/schedule" className="text-sm text-cyan-400 hover:underline">Manage →</Link>}
+              className="px-5 pt-5 pb-4 border-b border-gray-700/50"
+            />
             <div className="overflow-x-auto">
               <table className="w-full">
                 <thead>
@@ -378,7 +379,7 @@ export function OverviewPage() {
                 </tbody>
               </table>
             </div>
-          </div>
+          </Card>
         )}
       </div>
     </div>
