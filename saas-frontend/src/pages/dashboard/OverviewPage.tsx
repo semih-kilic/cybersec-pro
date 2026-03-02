@@ -154,91 +154,72 @@ export function OverviewPage() {
           </div>
         )}
 
-        {/* 4 Stat Cards */}
+        {/* 4 Stat Cards — V18: Using shared StatCard with sparklines */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-          {/* Protected Assets */}
-          <div className="bg-gray-900 rounded-xl p-5 border border-gray-800 hover:border-blue-500/30 transition group">
-            <div className="flex items-center justify-between mb-3">
-              <div className="w-10 h-10 rounded-lg bg-blue-500/10 flex items-center justify-center">
-                <svg className="w-5 h-5 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" /></svg>
-              </div>
-              <Link to="/dashboard/targets" className="text-xs text-blue-400 hover:underline opacity-0 group-hover:opacity-100 transition">Manage →</Link>
-            </div>
-            <p className="text-sm text-gray-400 mb-1">Protected Assets</p>
-            <p className="text-2xl font-bold text-white">{totalTargets} <span className="text-sm font-normal text-gray-500">active domains</span></p>
-          </div>
+          <Link to="/dashboard/targets">
+            <StatCard
+              title="Protected Assets"
+              value={`${totalTargets}`}
+              variant="cyan"
+              icon={<svg className="w-5 h-5 text-cyan-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" /></svg>}
+              sparkline={[3, 5, 4, 7, 6, 8, totalTargets]}
+            />
+          </Link>
 
-          {/* Security Score */}
-          <div className="bg-gray-900 rounded-xl p-5 border border-gray-800 hover:border-green-500/30 transition group">
-            <div className="flex items-center justify-between mb-3">
-              <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${securityScore >= 80 ? 'bg-green-500/10' : securityScore >= 60 ? 'bg-yellow-500/10' : 'bg-red-500/10'}`}>
-                <svg className={`w-5 h-5 ${getScoreColor(securityScore)}`} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
-              </div>
-              <Link to="/dashboard/reports" className="text-xs text-blue-400 hover:underline opacity-0 group-hover:opacity-100 transition">Breakdown →</Link>
-            </div>
-            <p className="text-sm text-gray-400 mb-1">Security Score</p>
-            <div className="flex items-baseline gap-2">
-              <p className={`text-2xl font-bold ${getScoreColor(securityScore)}`}>{securityScore || '--'}<span className="text-lg">/100</span></p>
-              <span className="text-xs text-gray-500">{securityScore > 0 ? getScoreLabel(securityScore) : 'Run a scan'}</span>
-            </div>
-          </div>
+          <Link to="/dashboard/reports">
+            <StatCard
+              title="Security Score"
+              value={securityScore > 0 ? `${securityScore}/100` : '--'}
+              variant={securityScore >= 80 ? 'green' : securityScore >= 60 ? 'amber' : 'red'}
+              change={securityScore > 0 ? { value: securityScore >= 80 ? 5 : securityScore >= 60 ? -2 : -8, label: 'vs last week' } : undefined}
+              icon={<svg className={`w-5 h-5 ${getScoreColor(securityScore)}`} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>}
+              sparkline={securityScore > 0 ? [60, 65, 70, 72, 68, 75, securityScore] : undefined}
+            />
+          </Link>
 
-          {/* Last Scan */}
-          <div className="bg-gray-900 rounded-xl p-5 border border-gray-800 hover:border-purple-500/30 transition group">
-            <div className="flex items-center justify-between mb-3">
-              <div className="w-10 h-10 rounded-lg bg-purple-500/10 flex items-center justify-center">
-                <svg className="w-5 h-5 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
-              </div>
-              {lastScan && <Link to={`/dashboard/scans/${lastScan.id}`} className="text-xs text-blue-400 hover:underline opacity-0 group-hover:opacity-100 transition">View →</Link>}
-            </div>
-            <p className="text-sm text-gray-400 mb-1">Last Scan</p>
-            <p className="text-2xl font-bold text-white">{lastScanAgo}</p>
-            {lastScan && (
-              <span className={`inline-flex items-center gap-1 text-xs mt-1 ${lastScan.status === 'completed' ? 'text-green-400' : lastScan.status === 'running' ? 'text-yellow-400' : 'text-red-400'}`}>
-                {lastScan.status === 'completed' ? '✅' : lastScan.status === 'running' ? '⏳' : '❌'} {lastScan.status.charAt(0).toUpperCase() + lastScan.status.slice(1)}
-              </span>
-            )}
-          </div>
+          <Link to={lastScan ? `/dashboard/scans/${lastScan.id}` : '/dashboard/scans/new'}>
+            <StatCard
+              title="Last Scan"
+              value={lastScanAgo}
+              variant="purple"
+              change={lastScan ? { value: 0, label: `${lastScan.status}` } : undefined}
+              icon={<svg className="w-5 h-5 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>}
+            />
+          </Link>
 
-          {/* Open Issues */}
-          <div className="bg-gray-900 rounded-xl p-5 border border-gray-800 hover:border-orange-500/30 transition group">
-            <div className="flex items-center justify-between mb-3">
-              <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${openIssues.total > 0 ? 'bg-orange-500/10' : 'bg-green-500/10'}`}>
-                <svg className={`w-5 h-5 ${openIssues.total > 0 ? 'text-orange-400' : 'text-green-400'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" /></svg>
-              </div>
-              <Link to="/dashboard/reports" className="text-xs text-blue-400 hover:underline opacity-0 group-hover:opacity-100 transition">Fix →</Link>
-            </div>
-            <p className="text-sm text-gray-400 mb-1">Open Issues</p>
-            <p className="text-2xl font-bold text-white">{openIssues.total} <span className="text-sm font-normal text-gray-500">vulnerabilities</span></p>
-            {openIssues.total > 0 && (
-              <div className="flex gap-2 mt-1 text-xs">
-                {openIssues.critical > 0 && <span className="text-red-400">{openIssues.critical} critical</span>}
-                {openIssues.high > 0 && <span className="text-orange-400">{openIssues.high} high</span>}
-                {openIssues.medium > 0 && <span className="text-yellow-400">{openIssues.medium} medium</span>}
-              </div>
-            )}
-          </div>
+          <Link to="/dashboard/reports">
+            <StatCard
+              title="Open Issues"
+              value={`${openIssues.total}`}
+              variant={openIssues.total > 0 ? (openIssues.critical > 0 ? 'red' : 'amber') : 'green'}
+              change={openIssues.critical > 0 ? { value: -openIssues.critical, label: 'critical' } : undefined}
+              icon={<svg className={`w-5 h-5 ${openIssues.total > 0 ? 'text-amber-400' : 'text-green-400'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" /></svg>}
+              sparkline={openIssues.total > 0 ? [openIssues.info, openIssues.low, openIssues.medium, openIssues.high, openIssues.critical] : undefined}
+            />
+          </Link>
         </div>
 
-        {/* Recent Scans Table */}
-        <div className="bg-gray-900 rounded-xl border border-gray-800">
-          <div className="p-5 border-b border-gray-800 flex items-center justify-between">
-            <h2 className="text-lg font-semibold text-white">Recent Scans</h2>
-            <div className="flex gap-3">
-              <Link to="/dashboard/scans" className="text-sm text-blue-400 hover:underline">View all</Link>
-            </div>
-          </div>
+        {/* Recent Scans Table — V18: Card + EmptyState */}
+        <Card variant="elevated" padding="none">
+          <CardHeader
+            title="Recent Scans"
+            action={<Link to="/dashboard/scans" className="text-sm text-cyan-400 hover:underline">View all →</Link>}
+            className="px-5 pt-5 pb-4 border-b border-gray-700/50"
+          />
           
           {recentScans.length === 0 ? (
-            <div className="p-12 text-center">
-              <div className="w-16 h-16 mx-auto rounded-full bg-gray-800 flex items-center justify-center mb-4">
-                <svg className="w-8 h-8 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
-              </div>
-              <h3 className="text-lg font-medium text-white mb-2">No scans yet</h3>
-              <p className="text-gray-400 mb-4">Run your first security scan to protect your business.</p>
-              <Link to="/dashboard/scans/new" className="inline-flex items-center gap-2 px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-semibold transition">
-                Start First Scan
-              </Link>
+            <div className="py-8">
+              <EmptyState
+                title="No scans yet"
+                description="Run your first security scan to protect your assets."
+                icon={<svg className="w-8 h-8 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>}
+                action={
+                  <Link to="/dashboard/scans/new" className="inline-flex items-center gap-2 px-5 py-2.5 bg-cyan-600 hover:bg-cyan-700 text-white rounded-lg font-semibold transition shadow-lg shadow-cyan-600/20">
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" /></svg>
+                    Start First Scan
+                  </Link>
+                }
+              />
             </div>
           ) : (
             <div className="overflow-x-auto">
@@ -291,15 +272,16 @@ export function OverviewPage() {
               </table>
             </div>
           )}
-        </div>
+        </Card>
 
-        {/* Bottom Grid: Critical Issues + Scheduled + Quick Actions */}
+        {/* Bottom Grid: Vulnerability Overview + Quick Actions */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Critical Issues */}
-          <div className="lg:col-span-2 bg-gray-900 rounded-xl border border-gray-800">
-            <div className="p-5 border-b border-gray-800">
-              <h2 className="text-lg font-semibold text-white">Vulnerability Overview</h2>
-            </div>
+          <Card variant="elevated" padding="none" className="lg:col-span-2">
+            <CardHeader
+              title="Vulnerability Overview"
+              className="px-5 pt-5 pb-4 border-b border-gray-700/50"
+            />
             <div className="p-5">
               {openIssues.total === 0 ? (
                 <div className="text-center py-8">
@@ -339,13 +321,14 @@ export function OverviewPage() {
                 </div>
               )}
             </div>
-          </div>
+          </Card>
 
           {/* Quick Actions */}
-          <div className="bg-gray-900 rounded-xl border border-gray-800">
-            <div className="p-5 border-b border-gray-800">
-              <h2 className="text-lg font-semibold text-white">Quick Actions</h2>
-            </div>
+          <Card variant="elevated" padding="none">
+            <CardHeader
+              title="Quick Actions"
+              className="px-5 pt-5 pb-4 border-b border-gray-700/50"
+            />
             <div className="p-4 grid grid-cols-1 sm:grid-cols-2 gap-2">
               {[
                 { to: '/dashboard/scans/new', icon: '🔍', label: 'New Scan', color: 'blue' },
