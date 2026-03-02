@@ -23,13 +23,6 @@ export function useColorMode() {
   return ctx;
 }
 
-// @ts-ignore — reserved for system preference feature
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-function _getSystemPreference(): 'dark' | 'light' {
-  if (typeof window === 'undefined') return 'dark';
-  return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
-}
-
 function getSavedMode(): ColorMode {
   try {
     const saved = localStorage.getItem(STORAGE_KEY);
