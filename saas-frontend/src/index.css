@@ -14,6 +14,9 @@
 /* Import micro-interactions & UX animations */
 @import './styles/micro-interactions.css';
 
+/* Import premium visual effects — V18 */
+@import './styles/premium-effects.css';
+
 /* Import Tailwind CSS */
 @tailwind base;
 @tailwind components;

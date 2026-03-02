@@ -3,6 +3,7 @@ import { useAuth } from '../../hooks/useAuth';
 import { useTranslation } from 'react-i18next';
 import { LanguageSwitcher } from '../LanguageSwitcher';
 import { ThemeToggle } from '../ui/ThemeToggle';
+import { NotificationCenter } from '../ui/NotificationCenter';
 
 interface SidebarProps {
   isOpen?: boolean;
@@ -183,6 +184,10 @@ export function Sidebar({ isOpen = false, onClose }: SidebarProps) {
           <div className="flex-1 min-w-0">
             <h1 className="text-lg font-bold text-white">CyberSec Pro</h1>
             <p className="text-xs text-kali-blue">Security Platform</p>
+          </div>
+          {/* Notification bell — desktop only (mobile uses top bar) */}
+          <div className="hidden lg:block">
+            <NotificationCenter />
           </div>
           {/* Mobile close button */}
           <button
