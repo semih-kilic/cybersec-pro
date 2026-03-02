@@ -39,3 +39,5 @@ export { CommandPalette } from './CommandPalette';
 export { ConnectionStatus } from './ConnectionStatus';
 export { ShortcutsHelp } from './ShortcutsHelp';
 export { ThemeToggle } from './ThemeToggle';
+export { NotificationCenter } from './NotificationCenter';
+export type { Notification } from './NotificationCenter';
