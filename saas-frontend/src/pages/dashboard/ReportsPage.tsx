@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { Header } from '../../components/layout/Header';
+import { PageTransition } from '../../components/ui';
 import { useAuth } from '../../hooks/useAuth';
 import {
   DocumentTextIcon,
@@ -362,6 +363,7 @@ export function ReportsPage() {
   }
 
   return (
+    <PageTransition>
     <div className="min-h-screen bg-gray-950">
       <Header 
         title="Security Reports"
@@ -775,6 +777,7 @@ export function ReportsPage() {
         </div>
       )}
     </div>
+    </PageTransition>
   );
 }
 

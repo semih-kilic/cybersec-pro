@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { Header } from '../../components/layout/Header';
+import { PageTransition } from '../../components/ui';
 import { useAuth } from '../../hooks/useAuth';
 
 interface Target {
@@ -184,6 +185,7 @@ export function TargetsPage() {
   }
 
   return (
+    <PageTransition>
     <div className="min-h-screen bg-gray-950">
       <Header 
         title="Targets"
@@ -654,6 +656,7 @@ export function TargetsPage() {
         )}
       </div>
     </div>
+    </PageTransition>
   );
 }
 

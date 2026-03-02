@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { useAuth } from '../../hooks/useAuth';
 import { useSearchParams } from 'react-router-dom';
+import { PageTransition } from '../../components/ui';
 
 interface UserSettings {
   notifications: {
@@ -407,6 +408,7 @@ export default function SettingsPage() {
   ] as const;
 
   return (
+    <PageTransition>
     <div className="p-6 max-w-6xl mx-auto">
       {/* Header */}
       <div className="mb-8">
@@ -1417,5 +1419,6 @@ export default function SettingsPage() {
         </div>
       </div>
     </div>
+    </PageTransition>
   );
 }

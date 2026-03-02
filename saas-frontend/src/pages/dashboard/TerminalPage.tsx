@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState, useCallback } from 'react';
 import { Header } from '../../components/layout/Header';
 import { useAuth } from '../../hooks/useAuth';
+import { PageTransition } from '../../components/ui';
 
 interface Agent {
   id: number | string;
@@ -352,6 +353,7 @@ export function TerminalPage() {
   const promptHost = selectedAgent?.hostname || 'cybersec';
 
   return (
+    <PageTransition>
     <div className="min-h-screen bg-gray-950">
       <Header 
         title="SSH Terminal"
@@ -599,6 +601,7 @@ export function TerminalPage() {
         </div>
       </div>
     </div>
+    </PageTransition>
   );
 }
 
