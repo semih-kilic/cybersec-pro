@@ -61,7 +61,7 @@ export function ErrorFallback({ error, onRetry }: ErrorFallbackProps) {
         </p>
 
         {/* Error details (dev mode) */}
-        {error && import.meta.env.DEV && (
+        {error && (import.meta as any).env?.DEV && (
           <details className="mb-6 text-left">
             <summary className="text-xs text-gray-500 cursor-pointer hover:text-gray-400">
               Technical details

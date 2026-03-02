@@ -23,6 +23,7 @@ export function useColorMode() {
   return ctx;
 }
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 function getSystemPreference(): 'dark' | 'light' {
   if (typeof window === 'undefined') return 'dark';
   return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';

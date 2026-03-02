@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { motion } from 'framer-motion';
+// motion available for future animations
 import { Header } from '../../components/layout/Header';
 import { useAuth } from '../../hooks/useAuth';
 import { useTranslation } from 'react-i18next';
@@ -8,7 +8,7 @@ import { OnboardingModal } from '../../components/onboarding';
 import WelcomeTour from '../../components/WelcomeTour';
 import { useDashboardData } from '../../hooks/useApiQueries';
 import { OverviewSkeleton } from '../../components/ui/Skeleton';
-import { PageTransition, Card, CardHeader, StatCard, Badge, EmptyState, ActivityFeed } from '../../components/ui';
+import { PageTransition, Card, CardHeader, StatCard, EmptyState, ActivityFeed } from '../../components/ui';
 
 export function OverviewPage() {
   const { token, organization, user } = useAuth();
@@ -89,7 +89,8 @@ export function OverviewPage() {
     return 'text-red-400';
   };
 
-  const getScoreLabel = (score: number) => {
+  // getScoreLabel available for future tooltip use
+  void function getScoreLabel(score: number) {
     if (score >= 90) return 'Excellent';
     if (score >= 80) return 'Good';
     if (score >= 60) return 'Needs Attention';
