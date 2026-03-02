@@ -6,6 +6,7 @@ import { useTranslation } from 'react-i18next';
 import { useTools } from '../../hooks/useApiQueries';
 import { useVirtualizer } from '@tanstack/react-virtual';
 import { ToolsPageSkeleton } from '../../components/ui/Skeleton';
+import { PageTransition } from '../../components/ui';
 
 interface Tool {
   id: string;
@@ -208,6 +209,7 @@ export function ToolsPage() {
   }
 
   return (
+    <PageTransition>
     <div className="min-h-screen bg-gray-950">
       <Header />
       
@@ -789,6 +791,7 @@ function VirtualizedToolList({
         </div>
       </div>
     </div>
+    </PageTransition>
   );
 }
 

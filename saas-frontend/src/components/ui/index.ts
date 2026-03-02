@@ -41,3 +41,5 @@ export { ShortcutsHelp } from './ShortcutsHelp';
 export { ThemeToggle } from './ThemeToggle';
 export { NotificationCenter } from './NotificationCenter';
 export type { Notification } from './NotificationCenter';
+export { ActivityFeed } from './ActivityFeed';
+export type { ActivityItem } from './ActivityFeed';

@@ -15,6 +15,7 @@ import { Link, useSearchParams } from 'react-router-dom';
 import { Header } from '../../components/layout/Header';
 import { useTranslation } from 'react-i18next';
 import { ScansPageSkeleton } from '../../components/ui/Skeleton';
+import { PageTransition } from '../../components/ui';
 import { useToast } from '../../components/ui/Toast';
 import { useScans, useCancelScan, useRerunScan, useDeleteScan, type Scan } from '../../hooks/useApiQueries';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -198,6 +199,7 @@ export function ScansPage() {
   }
 
   return (
+    <PageTransition>
     <div className="min-h-screen bg-gray-950" role="main" aria-label="Scans management">
       <Header title="Scans" subtitle="View and manage your security scans" />
 
@@ -655,6 +657,7 @@ export function ScansPage() {
         </AnimatePresence>
       </div>
     </div>
+    </PageTransition>
   );
 }
 

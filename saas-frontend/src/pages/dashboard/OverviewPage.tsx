@@ -8,7 +8,7 @@ import { OnboardingModal } from '../../components/onboarding';
 import WelcomeTour from '../../components/WelcomeTour';
 import { useDashboardData } from '../../hooks/useApiQueries';
 import { OverviewSkeleton } from '../../components/ui/Skeleton';
-import { PageTransition, Card, CardHeader, StatCard, Badge, EmptyState } from '../../components/ui';
+import { PageTransition, Card, CardHeader, StatCard, Badge, EmptyState, ActivityFeed } from '../../components/ui';
 
 export function OverviewPage() {
   const { token, organization, user } = useAuth();
@@ -381,6 +381,18 @@ export function OverviewPage() {
             </div>
           </Card>
         )}
+
+        {/* Activity Feed — V18: Real-time timeline */}
+        <Card variant="elevated" padding="none">
+          <CardHeader
+            title="Recent Activity"
+            action={<span className="flex items-center gap-1.5 text-xs text-gray-500"><span className="status-dot status-dot-online" /> Live</span>}
+            className="px-5 pt-5 pb-4 border-b border-gray-700/50"
+          />
+          <div className="p-4">
+            <ActivityFeed limit={10} compact />
+          </div>
+        </Card>
       </div>
     </div>
     </PageTransition>
