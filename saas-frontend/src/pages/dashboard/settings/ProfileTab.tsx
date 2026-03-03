@@ -1,0 +1,169 @@
+/**
+ * Profile Settings Tab
+ * Avatar upload, name, email, company
+ */
+import { useState, useRef, FormEvent } from 'react';
+import { motion } from 'framer-motion';
+import type { SettingsTabProps } from './types';
+
+export function ProfileTab({ loading, setLoading, setMessage, user }: SettingsTabProps) {
+  const [firstName, setFirstName] = useState(user?.first_name || '');
+  const [lastName, setLastName] = useState(user?.last_name || '');
+  const [email] = useState(user?.email || '');
+  const [company, setCompany] = useState(user?.company || '');
+  const [avatarUrl, setAvatarUrl] = useState(user?.avatar_url || '');
+  const [uploadingAvatar, setUploadingAvatar] = useState(false);
+  const avatarInputRef = useRef<HTMLInputElement>(null);
+
+  const handleAvatarUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    
+    if (file.size > 2 * 1024 * 1024) {
+      setMessage({ type: 'error', text: 'File too large. Maximum 2MB allowed.' });
+      return;
+    }
+
+    setUploadingAvatar(true);
+    try {
+      const formData = new FormData();
+      formData.append('avatar', file);
+      const res = await fetch('/api/v1/auth/avatar', {
+        method: 'POST',
+        headers: { 'Authorization': `Bearer ${(window as any).__auth_token || ''}` },
+        body: formData,
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setAvatarUrl(data.avatar_url || URL.createObjectURL(file));
+        setMessage({ type: 'success', text: 'Avatar updated!' });
+      }
+    } catch {
+      setMessage({ type: 'error', text: 'Failed to upload avatar' });
+    } finally {
+      setUploadingAvatar(false);
+    }
+  };
+
+  const handleProfileUpdate = async (e: FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
+    try {
+      const res = await fetch('/api/v1/auth/profile', {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${(window as any).__auth_token || ''}`,
+        },
+        body: JSON.stringify({ first_name: firstName, last_name: lastName, company }),
+      });
+      if (res.ok) {
+        setMessage({ type: 'success', text: 'Profile updated successfully!' });
+      } else {
+        setMessage({ type: 'error', text: 'Failed to update profile' });
+      }
+    } catch {
+      setMessage({ type: 'error', text: 'Network error' });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <motion.form
+      initial={{ opacity: 0, y: 8 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.2 }}
+      onSubmit={handleProfileUpdate}
+      className="space-y-6"
+    >
+      <h2 className="text-xl font-bold text-white mb-4">Profile Information</h2>
+
+      {/* Avatar */}
+      <div className="flex items-center gap-6 mb-8">
+        <div className="relative group">
+          {avatarUrl ? (
+            <img src={avatarUrl} alt="Avatar" className="w-20 h-20 rounded-full object-cover border-2 border-gray-700 group-hover:border-kali-blue transition" />
+          ) : (
+            <div className="w-20 h-20 rounded-full bg-gradient-to-br from-kali-blue to-kali-purple flex items-center justify-center text-3xl text-white font-bold">
+              {firstName?.charAt(0) || email?.charAt(0) || '?'}
+            </div>
+          )}
+          {uploadingAvatar && (
+            <div className="absolute inset-0 bg-black/50 rounded-full flex items-center justify-center">
+              <div className="w-6 h-6 border-2 border-white border-t-transparent rounded-full animate-spin" />
+            </div>
+          )}
+        </div>
+        <div>
+          <input type="file" ref={avatarInputRef} onChange={handleAvatarUpload} accept="image/jpeg,image/png,image/gif" className="hidden" />
+          <button
+            type="button"
+            onClick={() => avatarInputRef.current?.click()}
+            disabled={uploadingAvatar}
+            className="px-4 py-2 bg-gray-800 text-white rounded-lg hover:bg-gray-700 transition disabled:opacity-50 btn-micro"
+          >
+            {uploadingAvatar ? 'Uploading...' : 'Change Avatar'}
+          </button>
+          <p className="text-gray-500 text-sm mt-1">JPG, PNG or GIF. Max 2MB.</p>
+        </div>
+      </div>
+
+      {/* Name */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+        <div>
+          <label className="block text-gray-400 text-sm mb-2">First Name</label>
+          <input
+            type="text"
+            value={firstName}
+            onChange={(e) => setFirstName(e.target.value)}
+            className="w-full px-4 py-3 bg-gray-800 border border-gray-700 rounded-lg text-white focus:border-kali-blue focus:ring-1 focus:ring-kali-blue transition"
+          />
+        </div>
+        <div>
+          <label className="block text-gray-400 text-sm mb-2">Last Name</label>
+          <input
+            type="text"
+            value={lastName}
+            onChange={(e) => setLastName(e.target.value)}
+            className="w-full px-4 py-3 bg-gray-800 border border-gray-700 rounded-lg text-white focus:border-kali-blue focus:ring-1 focus:ring-kali-blue transition"
+          />
+        </div>
+      </div>
+
+      {/* Email (read-only) */}
+      <div>
+        <label className="block text-gray-400 text-sm mb-2">Email</label>
+        <input
+          type="email"
+          value={email}
+          disabled
+          className="w-full px-4 py-3 bg-gray-800/50 border border-gray-700 rounded-lg text-gray-500 cursor-not-allowed"
+        />
+        <p className="text-gray-500 text-sm mt-1">Email cannot be changed</p>
+      </div>
+
+      {/* Company */}
+      <div>
+        <label className="block text-gray-400 text-sm mb-2">Company</label>
+        <input
+          type="text"
+          value={company}
+          onChange={(e) => setCompany(e.target.value)}
+          className="w-full px-4 py-3 bg-gray-800 border border-gray-700 rounded-lg text-white focus:border-kali-blue focus:ring-1 focus:ring-kali-blue transition"
+          placeholder="Your company name"
+        />
+      </div>
+
+      <div className="pt-4 border-t border-gray-800">
+        <button
+          type="submit"
+          disabled={loading}
+          className="px-6 py-3 bg-kali-blue text-white rounded-lg font-medium hover:bg-kali-blue/80 transition disabled:opacity-50 btn-micro"
+        >
+          {loading ? 'Saving...' : 'Save Changes'}
+        </button>
+      </div>
+    </motion.form>
+  );
+}
