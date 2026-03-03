@@ -8,6 +8,8 @@ import { NotificationCenter } from '../ui/NotificationCenter';
 interface SidebarProps {
   isOpen?: boolean;
   onClose?: () => void;
+  isCollapsed?: boolean;
+  onToggleCollapse?: () => void;
 }
 
 const navigation = [
@@ -161,14 +163,16 @@ function AdminIcon() {
   );
 }
 
-export function Sidebar({ isOpen = false, onClose }: SidebarProps) {
+export function Sidebar({ isOpen = false, onClose, isCollapsed = false, onToggleCollapse }: SidebarProps) {
   const location = useLocation();
   const { user, organization } = useAuth();
   const { t } = useTranslation();
 
+  const sidebarWidth = isCollapsed ? 'w-16' : 'w-64';
+
   return (
     <aside
-      className={`w-64 bg-gray-900 border-r border-gray-800 flex flex-col h-screen fixed left-0 top-0 z-50 transition-transform duration-300 ease-in-out
+      className={`${sidebarWidth} bg-gray-900 border-r border-gray-800 flex flex-col h-screen fixed left-0 top-0 z-50 transition-all duration-300 ease-in-out
         ${isOpen ? 'translate-x-0' : '-translate-x-full'} lg:translate-x-0`}
       role="complementary"
       aria-label="Sidebar"
@@ -181,14 +185,18 @@ export function Sidebar({ isOpen = false, onClose }: SidebarProps) {
               <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/>
             </svg>
           </div>
-          <div className="flex-1 min-w-0">
-            <h1 className="text-lg font-bold text-white">CyberSec Pro</h1>
-            <p className="text-xs text-kali-blue">Security Platform</p>
-          </div>
-          {/* Notification bell — desktop only (mobile uses top bar) */}
-          <div className="hidden lg:block">
-            <NotificationCenter />
-          </div>
+          {!isCollapsed && (
+            <>
+              <div className="flex-1 min-w-0">
+                <h1 className="text-lg font-bold text-white">CyberSec Pro</h1>
+                <p className="text-xs text-kali-blue">Security Platform</p>
+              </div>
+              {/* Notification bell — desktop only (mobile uses top bar) */}
+              <div className="hidden lg:block">
+                <NotificationCenter />
+              </div>
+            </>
+          )}
           {/* Mobile close button */}
           <button
             onClick={onClose}
@@ -202,9 +210,28 @@ export function Sidebar({ isOpen = false, onClose }: SidebarProps) {
         </div>
       </div>
 
+      {/* ⌘K Search Hint */}
+      {!isCollapsed && (
+        <div className="px-4 pt-3">
+          <button
+            onClick={() => {
+              // Trigger ⌘K palette by simulating keyboard event
+              window.dispatchEvent(new KeyboardEvent('keydown', { key: 'k', metaKey: true, ctrlKey: true }));
+            }}
+            className="w-full flex items-center gap-2 px-3 py-2 bg-gray-800/50 border border-gray-700 rounded-lg text-gray-500 hover:text-gray-300 hover:border-gray-600 hover:bg-gray-800 transition text-sm"
+          >
+            <svg className="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+            </svg>
+            <span className="flex-1 text-left">Search...</span>
+            <kbd className="text-xs bg-gray-700 px-1.5 py-0.5 rounded font-mono">⌘K</kbd>
+          </button>
+        </div>
+      )}
+
       {/* Navigation */}
       <nav className="flex-1 p-4 space-y-1 overflow-y-auto" aria-label="Main navigation">
-        <div className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-4">{t('nav.main')}</div>
+        {!isCollapsed && <div className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-4">{t('nav.main')}</div>}
         {navigation.map((item) => {
           const isActive = location.pathname === item.href || 
             (item.href !== '/dashboard' && location.pathname.startsWith(item.href));
@@ -213,15 +240,16 @@ export function Sidebar({ isOpen = false, onClose }: SidebarProps) {
               key={item.nameKey}
               to={item.href}
               onClick={onClose}
-              className={`flex items-center gap-3 px-3 py-3 rounded-lg text-sm font-medium transition-all ${
+              title={isCollapsed ? t(item.nameKey) : undefined}
+              className={`flex items-center gap-3 ${isCollapsed ? 'justify-center px-2' : 'px-3'} py-3 rounded-lg text-sm font-medium transition-all ${
                 isActive
                   ? 'bg-kali-blue/20 text-kali-blue border-l-2 border-kali-blue'
                   : 'text-gray-400 hover:text-white hover:bg-gray-800'
               }`}
             >
               <item.icon />
-              {t(item.nameKey)}
-              {item.nameKey === 'nav.scans' && (
+              {!isCollapsed && t(item.nameKey)}
+              {!isCollapsed && item.nameKey === 'nav.scans' && (
                 <span className="ml-auto px-2 py-0.5 text-xs bg-kali-blue/20 text-kali-blue rounded-full">
                   Live
                 </span>
@@ -231,20 +259,21 @@ export function Sidebar({ isOpen = false, onClose }: SidebarProps) {
         })}
 
         <div className="border-t border-gray-800 my-4" />
-        <div className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-4">{t('nav.system')}</div>
-        <LanguageSwitcher variant="sidebar" />
-        <ThemeToggle />
+        {!isCollapsed && <div className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-4">{t('nav.system')}</div>}
+        {!isCollapsed && <LanguageSwitcher variant="sidebar" />}
+        {!isCollapsed && <ThemeToggle />}
         {bottomNav.map((item) => (
           <NavLink
             key={item.nameKey}
             to={item.href}
             target={item.external ? '_blank' : undefined}
             onClick={!item.external ? onClose : undefined}
-            className="flex items-center gap-3 px-3 py-3 rounded-lg text-sm font-medium text-gray-400 hover:text-white hover:bg-gray-800 transition-all"
+            title={isCollapsed ? t(item.nameKey) : undefined}
+            className={`flex items-center gap-3 ${isCollapsed ? 'justify-center px-2' : 'px-3'} py-3 rounded-lg text-sm font-medium text-gray-400 hover:text-white hover:bg-gray-800 transition-all`}
           >
             <item.icon />
-            {t(item.nameKey)}
-            {item.external && (
+            {!isCollapsed && t(item.nameKey)}
+            {!isCollapsed && item.external && (
               <svg className="w-3 h-3 ml-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
               </svg>
@@ -257,20 +286,25 @@ export function Sidebar({ isOpen = false, onClose }: SidebarProps) {
           <NavLink
             to="/dashboard/admin"
             onClick={onClose}
-            className={`flex items-center gap-3 px-3 py-3 rounded-lg text-sm font-medium transition-all ${
+            title={isCollapsed ? 'Admin' : undefined}
+            className={`flex items-center gap-3 ${isCollapsed ? 'justify-center px-2' : 'px-3'} py-3 rounded-lg text-sm font-medium transition-all ${
               location.pathname === '/dashboard/admin'
                 ? 'bg-red-500/20 text-red-400 border-l-2 border-red-400'
                 : 'text-red-400/70 hover:text-red-400 hover:bg-red-500/10'
             }`}
           >
             <AdminIcon />
-            <span>Admin</span>
-            <span className="ml-auto px-1.5 py-0.5 text-[10px] bg-red-500/20 text-red-400 rounded font-bold">GOD</span>
+            {!isCollapsed && (
+              <>
+                <span>Admin</span>
+                <span className="ml-auto px-1.5 py-0.5 text-[10px] bg-red-500/20 text-red-400 rounded font-bold">GOD</span>
+              </>
+            )}
           </NavLink>
         )}
 
         {/* Upgrade Banner for non-enterprise users */}
-        {organization?.plan_type !== 'enterprise' && (
+        {!isCollapsed && organization?.plan_type !== 'enterprise' && (
           <NavLink
             to="/dashboard/upgrade"
             className="mt-4 flex items-center gap-3 px-3 py-3 rounded-lg text-sm font-medium bg-gradient-to-r from-kali-blue/20 to-purple-500/20 text-kali-blue hover:from-kali-blue/30 hover:to-purple-500/30 transition-all border border-kali-blue/30"
@@ -283,25 +317,48 @@ export function Sidebar({ isOpen = false, onClose }: SidebarProps) {
         )}
       </nav>
 
+      {/* Collapse Toggle — desktop only */}
+      <div className="hidden lg:block px-3 py-2 border-t border-gray-800">
+        <button
+          onClick={onToggleCollapse}
+          className="w-full flex items-center justify-center gap-2 px-3 py-2 rounded-lg text-gray-500 hover:text-white hover:bg-gray-800 transition text-sm"
+          title={isCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
+        >
+          <svg
+            className={`w-4 h-4 transition-transform duration-300 ${isCollapsed ? 'rotate-180' : ''}`}
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 19l-7-7 7-7m8 14l-7-7 7-7" />
+          </svg>
+          {!isCollapsed && <span>Collapse</span>}
+        </button>
+      </div>
+
       {/* User Profile */}
       <div className="p-4 border-t border-gray-800">
-        <div className="flex items-center gap-3 p-3 rounded-lg bg-gray-800/50 hover:bg-gray-800 transition cursor-pointer">
+        <div className={`flex items-center gap-3 ${isCollapsed ? 'justify-center p-2' : 'p-3'} rounded-lg bg-gray-800/50 hover:bg-gray-800 transition cursor-pointer`}>
           {user?.avatar_url ? (
-            <img src={user.avatar_url} alt="" className="w-9 h-9 rounded-full" />
+            <img src={user.avatar_url} alt="" className="w-9 h-9 rounded-full flex-shrink-0" />
           ) : (
-            <div className="w-9 h-9 rounded-full bg-gradient-to-br from-kali-blue to-kali-purple flex items-center justify-center text-white font-bold text-sm">
+            <div className="w-9 h-9 rounded-full bg-gradient-to-br from-kali-blue to-kali-purple flex items-center justify-center text-white font-bold text-sm flex-shrink-0">
               {user?.first_name?.[0] || user?.email?.[0]?.toUpperCase()}
             </div>
           )}
-          <div className="flex-1 min-w-0">
-            <p className="text-sm font-medium text-white truncate">
-              {user?.first_name} {user?.last_name}
-            </p>
-            <p className="text-xs text-gray-400 truncate">{organization?.plan_type?.toUpperCase()}</p>
-          </div>
-          <svg className="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 9l4-4 4 4m0 6l-4 4-4-4" />
-          </svg>
+          {!isCollapsed && (
+            <>
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-medium text-white truncate">
+                  {user?.first_name} {user?.last_name}
+                </p>
+                <p className="text-xs text-gray-400 truncate">{organization?.plan_type?.toUpperCase()}</p>
+              </div>
+              <svg className="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 9l4-4 4 4m0 6l-4 4-4-4" />
+              </svg>
+            </>
+          )}
         </div>
       </div>
     </aside>

@@ -124,14 +124,25 @@ function PublicRoute({ children }: { children: React.ReactNode }) {
   return <>{children}</>;
 }
 
-// Dashboard Layout with Sidebar — V17: Mobile responsive
+// Dashboard Layout with Sidebar — V18: Collapsible sidebar + responsive
 function DashboardLayout() {
   const { isPaletteOpen, closePalette, showShortcutsHelp, setShowShortcutsHelp } = useKeyboardShortcuts();
   const { requestPermission } = useBrowserNotifications();
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(() => {
+    try { return localStorage.getItem('cybersecpro_sidebar_collapsed') === 'true'; }
+    catch { return false; }
+  });
 
   const toggleSidebar = useCallback(() => setSidebarOpen(prev => !prev), []);
   const closeSidebar = useCallback(() => setSidebarOpen(false), []);
+  const toggleCollapse = useCallback(() => {
+    setSidebarCollapsed(prev => {
+      const next = !prev;
+      try { localStorage.setItem('cybersecpro_sidebar_collapsed', String(next)); } catch {}
+      return next;
+    });
+  }, []);
 
   // Connect WebSocket once when dashboard mounts
   useEffect(() => {
@@ -158,10 +169,10 @@ function DashboardLayout() {
         )}
 
         {/* Sidebar — hidden on mobile by default, slide-in when open */}
-        <Sidebar isOpen={sidebarOpen} onClose={closeSidebar} />
+        <Sidebar isOpen={sidebarOpen} onClose={closeSidebar} isCollapsed={sidebarCollapsed} onToggleCollapse={toggleCollapse} />
 
-        {/* Main Content — no ml-64 on mobile */}
-        <main className="flex-1 lg:ml-64 overflow-auto min-w-0" id="main-content" role="main" aria-label="Dashboard content">
+        {/* Main Content — dynamic margin based on collapsed state */}
+        <main className={`flex-1 ${sidebarCollapsed ? 'lg:ml-16' : 'lg:ml-64'} overflow-auto min-w-0 transition-[margin] duration-300`} id="main-content" role="main" aria-label="Dashboard content">
           {/* Mobile top bar with hamburger */}
           <div className="sticky top-0 z-30 lg:hidden flex items-center gap-3 px-4 py-3 bg-gray-900/95 backdrop-blur-md border-b border-gray-800">
             <button
