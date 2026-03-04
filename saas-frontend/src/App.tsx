@@ -6,6 +6,7 @@ import { queryClient } from './lib/queryClient';
 import { OverviewSkeleton } from './components/ui/Skeleton';
 import { ErrorBoundary } from './components/ui/ErrorBoundary';
 import { NotificationCenter } from './components/ui/NotificationCenter';
+import { Breadcrumb } from './components/ui/Breadcrumb';
 
 // i18n - must be imported before any component that uses translations
 import './i18n';
@@ -199,6 +200,9 @@ function DashboardLayout() {
 
           <Suspense fallback={<OverviewSkeleton />}>
             <ErrorBoundary>
+              <div className="px-4 pt-3 lg:px-6 lg:pt-4">
+                <Breadcrumb />
+              </div>
               <Outlet />
             </ErrorBoundary>
           </Suspense>
