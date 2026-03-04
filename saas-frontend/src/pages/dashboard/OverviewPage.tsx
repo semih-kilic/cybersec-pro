@@ -4,56 +4,33 @@ import { Link } from 'react-router-dom';
 import { Header } from '../../components/layout/Header';
 import { useAuth } from '../../hooks/useAuth';
 import { useTranslation } from 'react-i18next';
+import { useDocumentTitle } from '../../hooks/useUtilities';
 import { OnboardingModal } from '../../components/onboarding';
 import WelcomeTour from '../../components/WelcomeTour';
-import { useDashboardData } from '../../hooks/useApiQueries';
+import { useDashboardData, useSecuritySummary, useScheduledScans } from '../../hooks/useApiQueries';
 import { OverviewSkeleton } from '../../components/ui/Skeleton';
 import { PageTransition, Card, CardHeader, StatCard, EmptyState, ActivityFeed } from '../../components/ui';
 
 export function OverviewPage() {
-  const { token, organization, user } = useAuth();
+  const { organization, user } = useAuth();
   const { t: _t } = useTranslation();  // reserved for i18n
   void _t;
+  useDocumentTitle('Dashboard — CyberSec Pro');
   const { data: dashData, isLoading: loading } = useDashboardData();
+  const { data: securityData } = useSecuritySummary();
+  const { data: scheduledScans = [] } = useScheduledScans(5);
+
   const scanSummary = dashData?.scanSummary || { total: 0, running: 0, completed: 0, failed: 0 };
   void scanSummary;  // used in template below but TS doesn't detect
   const recentScans = dashData?.recentScans || [];
   const totalTargets = dashData?.totalTargets || 0;
 
+  const securityScore = securityData?.securityScore || 0;
+  const openIssues = securityData?.openIssues || { critical: 0, high: 0, medium: 0, low: 0, info: 0, total: 0 };
+
   const [showOnboarding, setShowOnboarding] = useState(false);
   const [onboardingChecked, setOnboardingChecked] = useState(false);
   const [showWelcomeTour, setShowWelcomeTour] = useState(false);
-  const [securityScore, setSecurityScore] = useState(0);
-  const [openIssues, setOpenIssues] = useState({ critical: 0, high: 0, medium: 0, low: 0, info: 0, total: 0 });
-  const [scheduledScans, setScheduledScans] = useState<any[]>([]);
-
-  // Fetch security score & issues from API
-  useEffect(() => {
-    const fetchSecurityData = async () => {
-      try {
-        const res = await fetch('/api/v1/dashboard/security-summary', {
-          headers: { 'Authorization': `Bearer ${token}` }
-        });
-        if (res.ok) {
-          const data = await res.json();
-          setSecurityScore(data.security_score || 0);
-          setOpenIssues(data.open_issues || { critical: 0, high: 0, medium: 0, low: 0, info: 0, total: 0 });
-        }
-      } catch { /* Use defaults */ }
-    };
-    const fetchScheduled = async () => {
-      try {
-        const res = await fetch('/api/v1/schedules', {
-          headers: { 'Authorization': `Bearer ${token}` }
-        });
-        if (res.ok) {
-          const data = await res.json();
-          setScheduledScans((data.schedules || []).slice(0, 5));
-        }
-      } catch { /* ignore */ }
-    };
-    if (token) { fetchSecurityData(); fetchScheduled(); }
-  }, [token]);
 
   useEffect(() => {
     const tourCompleted = localStorage.getItem('cybersec_tour_completed');

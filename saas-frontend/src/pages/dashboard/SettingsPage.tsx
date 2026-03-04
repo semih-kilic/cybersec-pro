@@ -1,5 +1,6 @@
 import { useState, useCallback } from 'react';
 import { useAuth } from '../../hooks/useAuth';
+import { useDocumentTitle } from '../../hooks/useUtilities';
 import { useSearchParams } from 'react-router-dom';
 import { PageTransition } from '../../components/ui';
 import {

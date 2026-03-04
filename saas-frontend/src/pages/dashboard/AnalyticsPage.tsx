@@ -3,6 +3,7 @@
  * World-class data visualization with Recharts, stat cards, and interactive charts
  */
 import { useState, useEffect } from 'react';
+import { useDocumentTitle } from '../../hooks/useUtilities';
 import {
   AreaChart, Area, BarChart, Bar, PieChart, Pie, Cell,
   XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip,

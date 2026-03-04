@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { Header } from '../../components/layout/Header';
 import { useAuth } from '../../hooks/useAuth';
 import { useTranslation } from 'react-i18next';
+import { useDocumentTitle } from '../../hooks/useUtilities';
 import { useTools } from '../../hooks/useApiQueries';
 import { useVirtualizer } from '@tanstack/react-virtual';
 import { ToolsPageSkeleton } from '../../components/ui/Skeleton';

@@ -8,6 +8,7 @@ import { ErrorBoundary } from './components/ui/ErrorBoundary';
 import { NotificationCenter } from './components/ui/NotificationCenter';
 import { Breadcrumb } from './components/ui/Breadcrumb';
 import { OfflineBanner } from './components/ui/OfflineBanner';
+import { ScrollToTop } from './components/ui/ScrollToTop';
 
 // i18n - must be imported before any component that uses translations
 import './i18n';
@@ -155,6 +156,7 @@ function DashboardLayout() {
 
   return (
     <TargetProvider>
+      <ScrollToTop />
       <div className="flex min-h-screen bg-gray-950">
         {/* Accessibility: skip navigation link */}
         <a href="#main-content" className="skip-to-content">

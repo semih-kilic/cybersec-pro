@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '../../hooks/useAuth';
+import { useDocumentTitle } from '../../hooks/useUtilities';
 import { useTranslation } from 'react-i18next';
 import { AgentsPageSkeleton } from '../../components/ui/Skeleton';
 import { useToast } from '../../components/ui/Toast';
