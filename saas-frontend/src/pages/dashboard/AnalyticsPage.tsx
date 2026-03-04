@@ -68,6 +68,7 @@ function ChartTooltip({ active, payload, label }: any) {
 }
 
 export default function AnalyticsPage() {
+  useDocumentTitle('Analytics — CyberSec Pro');
   const [data, setData] = useState<AnalyticsData | null>(null);
   const [loading, setLoading] = useState(true);
   const [timeRange, setTimeRange] = useState<'7d' | '30d' | '90d'>('30d');

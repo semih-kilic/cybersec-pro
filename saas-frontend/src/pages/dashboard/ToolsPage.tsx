@@ -79,6 +79,7 @@ const planHierarchy: { [key: string]: number } = {
 };
 
 export function ToolsPage() {
+  useDocumentTitle('Tools — CyberSec Pro');
   const { organization } = useAuth();
   const { t } = useTranslation();
   const [searchQuery, setSearchQuery] = useState('');

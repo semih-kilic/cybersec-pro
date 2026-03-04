@@ -124,6 +124,7 @@ const defaultTemplates: ReportTemplate[] = [
 ];
 
 export function ReportsPage() {
+  useDocumentTitle('Reports — CyberSec Pro');
   const { token } = useAuth();
   const [reports, setReports] = useState<ReportSummary[]>([]);
   const [availableScans, setAvailableScans] = useState<AvailableScan[]>([]);

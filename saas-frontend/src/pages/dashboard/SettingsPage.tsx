@@ -29,6 +29,7 @@ const TABS = [
 type TabId = typeof TABS[number]['id'];
 
 export default function SettingsPage() {
+  useDocumentTitle('Settings — CyberSec Pro');
   const { user, organization } = useAuth();
   const [searchParams, setSearchParams] = useSearchParams();
   const userPlan = organization?.plan_type || 'trial';

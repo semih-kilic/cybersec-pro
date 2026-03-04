@@ -84,6 +84,7 @@ interface DashboardData {
 }
 
 export default function AgentsPage() {
+  useDocumentTitle('Agents — CyberSec Pro');
   const { token } = useAuth();
   const { t: _t } = useTranslation();
   const toast = useToast();

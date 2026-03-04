@@ -12,6 +12,7 @@
  */
 import { useState, useRef, useCallback, memo } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
+import { useDocumentTitle } from '../../hooks/useUtilities';
 import { Header } from '../../components/layout/Header';
 import { useTranslation } from 'react-i18next';
 import { ScansPageSkeleton } from '../../components/ui/Skeleton';
@@ -126,6 +127,7 @@ FindingsBadges.displayName = 'FindingsBadges';
 // MAIN COMPONENT
 // ========================
 export function ScansPage() {
+  useDocumentTitle('Scans — CyberSec Pro');
   const { t: _t } = useTranslation();
   const [searchParams] = useSearchParams();
   const toast = useToast();

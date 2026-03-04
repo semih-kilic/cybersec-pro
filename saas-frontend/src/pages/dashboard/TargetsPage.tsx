@@ -64,6 +64,7 @@ const typeLabels: { [key: string]: string } = {
 };
 
 export function TargetsPage() {
+  useDocumentTitle('Targets — CyberSec Pro');
   const { token } = useAuth();
   const [targets, setTargets] = useState<Target[]>([]);
   const [groups, setGroups] = useState<TargetGroup[]>([]);
