@@ -202,6 +202,77 @@ export function useDashboardData() {
 }
 
 // ==========================================
+// SECURITY SUMMARY (Dashboard security score + issues)
+// ==========================================
+
+export interface OpenIssues {
+  critical: number;
+  high: number;
+  medium: number;
+  low: number;
+  info: number;
+  total: number;
+}
+
+export interface SecuritySummary {
+  security_score: number;
+  open_issues: OpenIssues;
+}
+
+/**
+ * Fetch security score & vulnerability breakdown
+ * Used by OverviewPage for the security overview widgets
+ */
+export function useSecuritySummary() {
+  const { token } = useAuth();
+
+  return useQuery({
+    queryKey: [...queryKeys.dashboard.all, 'security-summary'],
+    queryFn: () => authFetch<SecuritySummary>('/api/v1/dashboard/security-summary', token),
+    ...CACHE_TIMES.dashboard,
+    enabled: !!token,
+    select: (data) => ({
+      securityScore: data.security_score || 0,
+      openIssues: data.open_issues || { critical: 0, high: 0, medium: 0, low: 0, info: 0, total: 0 },
+    }),
+    // Don't throw on 404 — new users have no data
+    retry: 1,
+  });
+}
+
+// ==========================================
+// SCHEDULED SCANS
+// ==========================================
+
+export interface ScheduledScan {
+  target?: string;
+  name?: string;
+  next_run?: string;
+  frequency?: string;
+  schedule?: string;
+}
+
+interface ScheduledScansResponse {
+  schedules: ScheduledScan[];
+}
+
+/**
+ * Fetch scheduled scans list
+ */
+export function useScheduledScans(limit = 5) {
+  const { token } = useAuth();
+
+  return useQuery({
+    queryKey: [...queryKeys.dashboard.all, 'scheduled-scans'],
+    queryFn: () => authFetch<ScheduledScansResponse>('/api/v1/schedules', token),
+    ...CACHE_TIMES.dashboard,
+    enabled: !!token,
+    select: (data) => (data.schedules || []).slice(0, limit),
+    retry: 1,
+  });
+}
+
+// ==========================================
 // SCANS HOOKS
 // ==========================================
 

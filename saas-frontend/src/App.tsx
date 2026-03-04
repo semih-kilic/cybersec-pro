@@ -7,6 +7,7 @@ import { OverviewSkeleton } from './components/ui/Skeleton';
 import { ErrorBoundary } from './components/ui/ErrorBoundary';
 import { NotificationCenter } from './components/ui/NotificationCenter';
 import { Breadcrumb } from './components/ui/Breadcrumb';
+import { OfflineBanner } from './components/ui/OfflineBanner';
 
 // i18n - must be imported before any component that uses translations
 import './i18n';
@@ -174,6 +175,8 @@ function DashboardLayout() {
 
         {/* Main Content — dynamic margin based on collapsed state */}
         <main className={`flex-1 ${sidebarCollapsed ? 'lg:ml-16' : 'lg:ml-64'} overflow-auto min-w-0 transition-[margin] duration-300`} id="main-content" role="main" aria-label="Dashboard content">
+          {/* Global offline banner */}
+          <OfflineBanner />
           {/* Mobile top bar with hamburger */}
           <div className="sticky top-0 z-30 lg:hidden flex items-center gap-3 px-4 py-3 bg-gray-900/95 backdrop-blur-md border-b border-gray-800">
             <button

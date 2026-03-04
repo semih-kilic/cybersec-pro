@@ -43,3 +43,5 @@ export { NotificationCenter } from './NotificationCenter';
 export type { Notification } from './NotificationCenter';
 export { ActivityFeed } from './ActivityFeed';
 export type { ActivityItem } from './ActivityFeed';
+export { Breadcrumb } from './Breadcrumb';
+export { OfflineBanner } from './OfflineBanner';
