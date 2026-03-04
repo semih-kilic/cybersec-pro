@@ -45,3 +45,6 @@ export { ActivityFeed } from './ActivityFeed';
 export type { ActivityItem } from './ActivityFeed';
 export { Breadcrumb } from './Breadcrumb';
 export { OfflineBanner } from './OfflineBanner';
+export { ProgressBar, StepIndicator, CircularProgress } from './ProgressBar';
+export type { Step } from './ProgressBar';
+export { SparklineKPI } from './SparklineKPI';
