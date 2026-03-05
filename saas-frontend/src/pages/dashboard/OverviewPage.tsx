@@ -10,6 +10,7 @@ import WelcomeTour from '../../components/WelcomeTour';
 import { useDashboardData, useSecuritySummary, useScheduledScans } from '../../hooks/useApiQueries';
 import { OverviewSkeleton } from '../../components/ui/Skeleton';
 import { PageTransition, Card, CardHeader, StatCard, EmptyState, ActivityFeed } from '../../components/ui';
+import { CircularProgress } from '../../components/ui/ProgressBar';
 
 export function OverviewPage() {
   const { organization, user } = useAuth();
@@ -262,17 +263,29 @@ export function OverviewPage() {
             />
             <div className="p-5">
               {openIssues.total === 0 ? (
-                <div className="text-center py-8">
-                  <div className="w-14 h-14 mx-auto rounded-full bg-green-500/10 flex items-center justify-center mb-3">
-                    <svg className="w-7 h-7 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                <div className="flex items-center gap-6 py-4">
+                  <CircularProgress value={securityScore || 100} variant="success" size={90} strokeWidth={7} label="Score" />
+                  <div>
+                    <p className="text-green-400 font-medium text-lg">No vulnerabilities found</p>
+                    <p className="text-gray-500 text-sm mt-1">Run a scan to check your security posture</p>
                   </div>
-                  <p className="text-green-400 font-medium">No vulnerabilities found</p>
-                  <p className="text-gray-500 text-sm mt-1">Run a scan to check your security posture</p>
                 </div>
               ) : (
-                <div className="space-y-4">
-                  {/* Severity Breakdown */}
-                  <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
+                <div className="flex flex-col sm:flex-row gap-6">
+                  {/* Security Score Ring */}
+                  <div className="flex-shrink-0 flex flex-col items-center">
+                    <CircularProgress
+                      value={securityScore}
+                      variant={securityScore >= 80 ? 'success' : securityScore >= 60 ? 'warning' : 'danger'}
+                      size={100}
+                      strokeWidth={8}
+                    />
+                    <span className="text-xs text-gray-500 mt-1.5 font-medium">Security Score</span>
+                  </div>
+
+                  <div className="flex-1 space-y-4">
+                    {/* Severity Breakdown */}
+                    <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
                     {[
                       { label: 'Critical', count: openIssues.critical, color: 'red' },
                       { label: 'High', count: openIssues.high, color: 'orange' },
@@ -295,6 +308,7 @@ export function OverviewPage() {
                     {openIssues.medium > 0 && <div className="bg-yellow-500 h-full" style={{ width: `${(openIssues.medium / openIssues.total) * 100}%` }} />}
                     {openIssues.low > 0 && <div className="bg-blue-500 h-full" style={{ width: `${(openIssues.low / openIssues.total) * 100}%` }} />}
                     {openIssues.info > 0 && <div className="bg-gray-500 h-full" style={{ width: `${(openIssues.info / openIssues.total) * 100}%` }} />}
+                  </div>
                   </div>
                 </div>
               )}
