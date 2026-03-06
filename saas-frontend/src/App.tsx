@@ -2,7 +2,7 @@ import { BrowserRouter as Router, Routes, Route, Navigate, Outlet } from 'react-
 import { HelmetProvider } from 'react-helmet-async';
 import { Suspense, lazy, useEffect } from 'react';
 import { QueryClientProvider } from '@tanstack/react-query';
-import { queryClient } from './lib/queryClient';
+import { queryClient, setGlobalToastError } from './lib/queryClient';
 import { OverviewSkeleton } from './components/ui/Skeleton';
 import { ErrorBoundary } from './components/ui/ErrorBoundary';
 import { NotificationCenter } from './components/ui/NotificationCenter';
@@ -24,7 +24,7 @@ import { useState, useCallback } from 'react';
 import { TargetProvider } from './contexts/TargetContext';
 
 // UX: Toast, Color Mode, Keyboard Shortcuts, Command Palette
-import { ToastProvider } from './components/ui/Toast';
+import { ToastProvider, useToast } from './components/ui/Toast';
 import { ColorModeProvider } from './contexts/ColorModeContext';
 import { CommandPalette } from './components/ui/CommandPalette';
 import { useKeyboardShortcuts } from './hooks/useKeyboardShortcuts';
@@ -296,12 +296,23 @@ function AppRoutes() {
   );
 }
 
+/** Bridges React Query global errors → Toast notifications */
+function QueryErrorBridge() {
+  const toast = useToast();
+  useEffect(() => {
+    setGlobalToastError(toast.error);
+    return () => setGlobalToastError(null);
+  }, [toast.error]);
+  return null;
+}
+
 function App() {
   return (
     <HelmetProvider>
       <QueryClientProvider client={queryClient}>
         <ColorModeProvider>
           <ToastProvider>
+            <QueryErrorBridge />
             <Router>
               <AuthProvider>
                 <div className="min-h-screen cyberpunk-theme">
