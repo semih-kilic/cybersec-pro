@@ -2917,9 +2917,9 @@ def dashboard_security_summary():
         org = Organization.query.get(user.organization_id)
         
         # Get recent scans for this org
-        recent_scans = ScanResult.query.filter_by(
+        recent_scans = Scan.query.filter_by(
             organization_id=user.organization_id
-        ).order_by(ScanResult.created_at.desc()).limit(50).all()
+        ).order_by(Scan.created_at.desc()).limit(50).all()
         
         # Calculate security score based on scan results
         completed_scans = [s for s in recent_scans if s.status == 'completed']
@@ -3008,7 +3008,7 @@ def create_business_scan():
         config = scan_config.get(scan_type, scan_config['quick'])
         
         # Create scan record
-        scan = ScanResult(
+        scan = Scan(
             user_id=user_id,
             organization_id=user.organization_id,
             tool_id=f'business_{scan_type}',
@@ -3047,7 +3047,7 @@ def get_scan_business_report(scan_id):
         if not user:
             return jsonify({'error': 'User not found'}), 404
         
-        scan = ScanResult.query.filter_by(
+        scan = Scan.query.filter_by(
             id=scan_id,
             organization_id=user.organization_id
         ).first()
@@ -3057,9 +3057,9 @@ def get_scan_business_report(scan_id):
         
         # Parse scan results
         result_data = {}
-        if scan.result:
+        if scan.output:
             try:
-                result_data = json.loads(scan.result) if isinstance(scan.result, str) else scan.result
+                result_data = json.loads(scan.output) if isinstance(scan.output, str) else scan.output
             except:
                 pass
         
