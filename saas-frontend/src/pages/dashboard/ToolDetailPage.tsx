@@ -61,6 +61,7 @@ const getToolSlug = (tool: Tool): string => {
 export function ToolDetailPage() {
   const { toolId } = useParams<{ toolId: string }>();
   const navigate = useNavigate();
+  const toast = useToast();
   const { token: _token } = useAuth();
   const { target: globalTarget, addRecentTarget: addGlobalTarget } = useTarget();
   const [tool, setTool] = useState<Tool | null>(null);

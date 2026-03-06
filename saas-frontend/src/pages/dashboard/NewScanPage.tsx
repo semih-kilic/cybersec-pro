@@ -43,6 +43,7 @@ interface Project {
 
 export function NewScanPage() {
   useDocumentTitle('New Scan — CyberSec Pro');
+  const toast = useToast();
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const { token } = useAuth();

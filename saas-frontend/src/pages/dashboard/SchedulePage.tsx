@@ -36,6 +36,7 @@ const presetSchedules = [
 
 export function SchedulePage() {
   useDocumentTitle('Schedule — CyberSec Pro');
+  const toast = useToast();
   const { token } = useAuth();
   const [schedules, setSchedules] = useState<ScheduledScan[]>([]);
   const [loading, setLoading] = useState(true);
