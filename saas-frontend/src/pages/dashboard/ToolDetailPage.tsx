@@ -2,6 +2,8 @@ import { useState, useEffect } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { Header } from '../../components/layout/Header';
 import { useAuth } from '../../hooks/useAuth';
+import { useDocumentTitle } from '../../hooks/useUtilities';
+import { PageTransition } from '../../components/ui';
 import { getToolConfig, getSmartDefaults, ToolConfig } from '../../config/toolConfigs';
 import { useTarget } from '../../contexts/TargetContext';
 
@@ -72,6 +74,8 @@ export function ToolDetailPage() {
   const [showTargetDropdown, setShowTargetDropdown] = useState(false);
   const [toolConfig, setToolConfig] = useState<ToolConfig | null>(null);
   const [toolCategory, setToolCategory] = useState<string>('');
+
+  useDocumentTitle(tool ? `${tool.name} — CyberSec Pro` : 'Tool — CyberSec Pro');
 
   useEffect(() => {
     setRecentTargets(getRecentTargets());
@@ -333,6 +337,7 @@ export function ToolDetailPage() {
   }, {} as { [key: string]: ToolParameter[] });
 
   return (
+    <PageTransition>
     <div className="min-h-screen bg-gray-950">
       <Header 
         title={tool.name}
@@ -645,6 +650,7 @@ export function ToolDetailPage() {
         </div>
       </div>
     </div>
+    </PageTransition>
   );
 }
 

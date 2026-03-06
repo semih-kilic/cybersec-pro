@@ -2,6 +2,8 @@ import { useState, useEffect } from 'react';
 import { useSearchParams, useNavigate, Link } from 'react-router-dom';
 import { Header } from '../../components/layout/Header';
 import { useAuth } from '../../hooks/useAuth';
+import { useDocumentTitle } from '../../hooks/useUtilities';
+import { PageTransition } from '../../components/ui';
 import { getSmartDefaults } from '../../config/toolConfigs';
 
 interface Tool {
@@ -39,6 +41,7 @@ interface Project {
 }
 
 export function NewScanPage() {
+  useDocumentTitle('New Scan — CyberSec Pro');
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const { token } = useAuth();
@@ -195,6 +198,7 @@ export function NewScanPage() {
   }
 
   return (
+    <PageTransition>
     <div className="min-h-screen bg-gray-950">
       <Header 
         title="New Scan"
@@ -680,6 +684,7 @@ export function NewScanPage() {
         </div>
       )}
     </div>
+    </PageTransition>
   );
 }
 

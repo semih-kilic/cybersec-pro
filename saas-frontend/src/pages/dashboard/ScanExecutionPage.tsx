@@ -1,6 +1,8 @@
 import { useState, useEffect, useRef } from 'react';
 import { useParams, useSearchParams, Link } from 'react-router-dom';
 import { Header } from '../../components/layout/Header';
+import { useDocumentTitle } from '../../hooks/useUtilities';
+import { PageTransition } from '../../components/ui';
 import api, { ScanResult, ToolConfig } from '../../services/api';
 import { useScanSubscription } from '../../hooks/useWebSocket';
 import { useTarget } from '../../contexts/TargetContext';
@@ -43,6 +45,7 @@ interface AgentInfo {
 }
 
 export function ScanExecutionPage() {
+  useDocumentTitle('Scan Execution — CyberSec Pro');
   const { scanId, toolId: routeToolId } = useParams<{ scanId: string; toolId: string }>();
   const [searchParams] = useSearchParams();
   const { target: globalTarget, addRecentTarget: addGlobalTarget } = useTarget();
@@ -395,6 +398,7 @@ export function ScanExecutionPage() {
   };
 
   return (
+    <PageTransition>
     <div className="min-h-screen bg-gray-950">
       <Header 
         title={`Run: ${businessName || tool?.name || toolId}`}
@@ -883,6 +887,7 @@ export function ScanExecutionPage() {
         </div>
       </div>
     </div>
+    </PageTransition>
   );
 }
 
