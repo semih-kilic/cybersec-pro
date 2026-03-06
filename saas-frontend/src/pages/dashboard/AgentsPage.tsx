@@ -4,6 +4,7 @@ import { useDocumentTitle } from '../../hooks/useUtilities';
 import { useTranslation } from 'react-i18next';
 import { AgentsPageSkeleton } from '../../components/ui/Skeleton';
 import { useToast } from '../../components/ui/Toast';
+import { PageTransition } from '../../components/ui';
 
 type AgentPlatform = 'linux' | 'windows' | 'macos' | 'docker';
 type ConnectionType = 'cloud_to_target' | 'agent_internal' | 'agent_dmz' | 'agent_airgapped' | 'hybrid';
@@ -328,6 +329,7 @@ export default function AgentsPage() {
   const offlineAgents = agents.filter(a => a.status === 'offline');
 
   return (
+    <PageTransition>
     <div className="p-6 space-y-6">
       {/* Header */}
       <div className="flex items-center justify-between">
@@ -1006,5 +1008,6 @@ function AgentCard({
         )}
       </div>
     </div>
+    </PageTransition>
   );
 }

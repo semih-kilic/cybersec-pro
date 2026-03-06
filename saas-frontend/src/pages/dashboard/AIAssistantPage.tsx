@@ -1,5 +1,7 @@
 import { useState, useRef, useEffect } from 'react';
 import { useAuth } from '../../hooks/useAuth';
+import { PageTransition } from '../../components/ui';
+import { useDocumentTitle } from '../../hooks/useUtilities';
 
 interface ChatMessage {
   id: string;
@@ -32,6 +34,7 @@ Just type your question or use the quick actions below!`,
 };
 
 export default function AIAssistantPage() {
+  useDocumentTitle('AI Assistant — CyberSec Pro');
   const { token } = useAuth();
   const [messages, setMessages] = useState<ChatMessage[]>([WELCOME_MESSAGE]);
   const [input, setInput] = useState('');
@@ -239,5 +242,6 @@ export default function AIAssistantPage() {
         </p>
       </div>
     </div>
+    </PageTransition>
   );
 }

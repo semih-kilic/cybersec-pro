@@ -4,6 +4,8 @@
  */
 import { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '../../hooks/useAuth';
+import { PageTransition } from '../../components/ui';
+import { useDocumentTitle } from '../../hooks/useUtilities';
 
 interface AdminUser {
   id: string;
@@ -40,6 +42,7 @@ interface AdminOverview {
 }
 
 export function AdminPage() {
+  useDocumentTitle('Admin — CyberSec Pro');
   const { user, token } = useAuth();
   const [overview, setOverview] = useState<AdminOverview | null>(null);
   const [loading, setLoading] = useState(true);
@@ -390,6 +393,7 @@ function StatCard({ label, value, sub, color }: { label: string; value: string |
       <div className="text-2xl font-bold text-gray-900 dark:text-white mt-1">{value}</div>
       <div className="text-xs text-gray-400 mt-0.5">{sub}</div>
     </div>
+    </PageTransition>
   );
 }
 

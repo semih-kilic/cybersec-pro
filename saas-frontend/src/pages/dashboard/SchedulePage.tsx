@@ -1,6 +1,8 @@
 import { useState, useEffect } from 'react';
 import { Header } from '../../components/layout/Header';
 import { useAuth } from '../../hooks/useAuth';
+import { PageTransition } from '../../components/ui';
+import { useDocumentTitle } from '../../hooks/useUtilities';
 
 interface ScheduledScan {
   id: string;
@@ -32,6 +34,7 @@ const presetSchedules = [
 ];
 
 export function SchedulePage() {
+  useDocumentTitle('Schedule — CyberSec Pro');
   const { token } = useAuth();
   const [schedules, setSchedules] = useState<ScheduledScan[]>([]);
   const [loading, setLoading] = useState(true);
@@ -593,6 +596,7 @@ export function SchedulePage() {
         )}
       </div>
     </div>
+    </PageTransition>
   );
 }
 

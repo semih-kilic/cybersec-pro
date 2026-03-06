@@ -1,5 +1,7 @@
 import { useState } from 'react';
 import { useAuth } from '../../hooks/useAuth';
+import { PageTransition } from '../../components/ui';
+import { useDocumentTitle } from '../../hooks/useUtilities';
 import { 
   BugAntIcon, 
   LightBulbIcon, 
@@ -57,6 +59,7 @@ const feedbackTypes: FeedbackType[] = [
 ];
 
 export default function FeedbackPage() {
+  useDocumentTitle('Feedback — CyberSec Pro');
   const { user } = useAuth();
   const [selectedType, setSelectedType] = useState<string>('');
   const [subject, setSubject] = useState('');
@@ -360,5 +363,6 @@ export default function FeedbackPage() {
         </div>
       </div>
     </div>
+    </PageTransition>
   );
 }

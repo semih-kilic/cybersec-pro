@@ -1,6 +1,8 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '../../hooks/useAuth';
 import { Link } from 'react-router-dom';
+import { PageTransition } from '../../components/ui';
+import { useDocumentTitle } from '../../hooks/useUtilities';
 
 interface Project {
   id: string | number;
@@ -20,6 +22,7 @@ interface Project {
 }
 
 export default function ProjectsPage() {
+  useDocumentTitle('Projects — CyberSec Pro');
   const { token, organization } = useAuth();
   const [projects, setProjects] = useState<Project[]>([]);
   const [loading, setLoading] = useState(true);
@@ -412,5 +415,6 @@ export default function ProjectsPage() {
         </div>
       )}
     </div>
+    </PageTransition>
   );
 }

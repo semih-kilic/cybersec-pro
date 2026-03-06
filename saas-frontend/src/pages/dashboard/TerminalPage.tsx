@@ -2,6 +2,7 @@ import { useEffect, useRef, useState, useCallback } from 'react';
 import { Header } from '../../components/layout/Header';
 import { useAuth } from '../../hooks/useAuth';
 import { PageTransition } from '../../components/ui';
+import { useDocumentTitle } from '../../hooks/useUtilities';
 
 interface Agent {
   id: number | string;
@@ -23,6 +24,7 @@ interface HistoryLine {
 }
 
 export function TerminalPage() {
+  useDocumentTitle('Terminal — CyberSec Pro');
   const { token } = useAuth();
   const terminalRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);

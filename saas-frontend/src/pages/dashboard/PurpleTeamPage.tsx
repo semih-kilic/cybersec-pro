@@ -1,5 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
+import { PageTransition } from '../../components/ui';
+import { useDocumentTitle } from '../../hooks/useUtilities';
 
 // ═══════════════════════════════════════════════════════════
 // API Helper (matches existing api.ts pattern)
@@ -606,6 +608,7 @@ function ExerciseDetail({ exercise }: { exercise: Exercise }) {
 // ═══════════════════════════════════════════════════════════
 
 export default function PurpleTeamPage() {
+  useDocumentTitle('Purple Team — CyberSec Pro');
   const { t: _t } = useTranslation();
 
   // State

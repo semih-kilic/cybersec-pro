@@ -4,6 +4,8 @@ import { useState, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useToolCounts } from '../../hooks/useApiQueries';
 import { useToast } from '../../components/ui/Toast';
+import { PageTransition } from '../../components/ui';
+import { useDocumentTitle } from '../../hooks/useUtilities';
 
 function buildPlans(counts: { starter: number; professional: number; enterprise: number }) {
   return [
@@ -90,6 +92,7 @@ function buildPlans(counts: { starter: number; professional: number; enterprise:
 }
 
 export default function UpgradePage() {
+  useDocumentTitle('Upgrade — CyberSec Pro');
   const { organization, token } = useAuth();
   const { t: _t } = useTranslation();
   const [loading, setLoading] = useState<string | null>(null);
@@ -386,5 +389,6 @@ export default function UpgradePage() {
         </Link>
       </div>
     </div>
+    </PageTransition>
   );
 }
