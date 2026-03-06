@@ -337,10 +337,6 @@ export function ToolDetailPage() {
       <Header 
         title={tool.name}
         subtitle={tool.description}
-        breadcrumb={[
-          { label: 'Tools', href: '/dashboard/tools' },
-          { label: tool.name }
-        ]}
       />
 
       <div className="p-6">

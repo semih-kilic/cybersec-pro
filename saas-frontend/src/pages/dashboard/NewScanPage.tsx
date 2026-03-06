@@ -199,10 +199,6 @@ export function NewScanPage() {
       <Header 
         title="New Scan"
         subtitle="Configure and start a new security scan"
-        breadcrumb={[
-          { label: 'Scans', href: '/dashboard/scans' },
-          { label: 'New Scan' }
-        ]}
       />
 
       <div className="max-w-4xl mx-auto p-6">

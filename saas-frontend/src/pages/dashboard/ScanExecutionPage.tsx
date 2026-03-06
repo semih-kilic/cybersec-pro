@@ -399,11 +399,6 @@ export function ScanExecutionPage() {
       <Header 
         title={`Run: ${businessName || tool?.name || toolId}`}
         subtitle="Execute security assessment"
-        breadcrumb={[
-          { label: 'Tools', href: '/dashboard/tools' },
-          { label: businessName || tool?.name || toolId, href: `/dashboard/tools/${toolId}` },
-          { label: 'Run Scan' }
-        ]}
       />
 
       <div className="p-6">
