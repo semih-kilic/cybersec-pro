@@ -141,6 +141,7 @@ export function AdminPage() {
   const d = overview;
 
   return (
+    <PageTransition>
     <div className="p-6 max-w-7xl mx-auto space-y-6">
       {/* Header */}
       <div className="flex items-center justify-between">
@@ -375,6 +376,7 @@ export function AdminPage() {
         </div>
       )}
     </div>
+    </PageTransition>
   );
 }
 
@@ -393,7 +395,6 @@ function StatCard({ label, value, sub, color }: { label: string; value: string |
       <div className="text-2xl font-bold text-gray-900 dark:text-white mt-1">{value}</div>
       <div className="text-xs text-gray-400 mt-0.5">{sub}</div>
     </div>
-    </PageTransition>
   );
 }
 

@@ -224,10 +224,10 @@ export default function AgentsPage() {
         fetchDashboard();
       } else {
         const data = await res.json();
-        alert(data.error || 'Failed to update agent');
+        toast.error('Update Failed', data.error || 'Failed to update agent');
       }
     } catch (error) {
-      console.error('Failed to update agent:', error);
+      toast.error('Update Failed', 'Failed to update agent');
     }
   };
 
@@ -245,10 +245,10 @@ export default function AgentsPage() {
         fetchDashboard();
       } else {
         const data = await res.json();
-        alert(data.error || 'Failed to delete agent');
+        toast.error('Delete Failed', data.error || 'Failed to delete agent');
       }
     } catch (error) {
-      console.error('Failed to delete agent:', error);
+      toast.error('Delete Failed', 'Failed to delete agent');
     }
   };
 

@@ -165,6 +165,7 @@ export default function FeedbackPage() {
   }
 
   return (
+    <PageTransition>
     <div className="p-6">
       {/* Header */}
       <div className="mb-8">

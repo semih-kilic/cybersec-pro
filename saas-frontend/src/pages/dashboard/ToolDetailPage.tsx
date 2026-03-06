@@ -234,7 +234,7 @@ export function ToolDetailPage() {
     const scanTarget = targetParam ? (paramValues[targetParam.name] as string) || '' : '';
     
     if (!scanTarget) {
-      alert('Please enter a target first');
+      toast.warning('Target Required', 'Please enter a target first');
       return;
     }
     

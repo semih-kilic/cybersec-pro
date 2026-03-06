@@ -4,6 +4,7 @@ import { Header } from '../../components/layout/Header';
 import { useAuth } from '../../hooks/useAuth';
 import { useDocumentTitle } from '../../hooks/useUtilities';
 import { PageTransition } from '../../components/ui';
+import { useToast } from '../../components/ui/Toast';
 import { getSmartDefaults } from '../../config/toolConfigs';
 
 interface Tool {
@@ -165,12 +166,10 @@ export function NewScanPage() {
         // Tool requires dangerous confirmation
         setShowDangerousWarning(true);
       } else {
-        console.error('Scan failed:', data.error);
-        alert(data.error || data.hint || 'Failed to start scan');
+        toast.error('Scan Failed', data.error || data.hint || 'Failed to start scan');
       }
     } catch (error) {
-      console.error('Failed to start scan:', error);
-      alert('Failed to start scan');
+      toast.error('Scan Failed', 'Failed to start scan');
     } finally {
       setSubmitting(false);
     }

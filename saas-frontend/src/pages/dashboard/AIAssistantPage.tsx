@@ -124,6 +124,7 @@ export default function AIAssistantPage() {
   };
 
   return (
+    <PageTransition>
     <div className="flex flex-col h-[calc(100vh-120px)]">
       {/* Header */}
       <div className="flex items-center gap-3 pb-4 border-b border-gray-700/50">

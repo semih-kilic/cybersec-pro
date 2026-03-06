@@ -3,6 +3,7 @@ import { Header } from '../../components/layout/Header';
 import { PageTransition } from '../../components/ui';
 import { useAuth } from '../../hooks/useAuth';
 import { useDocumentTitle } from '../../hooks/useUtilities';
+import { useToast } from '../../components/ui/Toast';
 import {
   DocumentTextIcon,
   DocumentArrowDownIcon,
@@ -196,7 +197,7 @@ export function ReportsPage() {
 
   const handleGenerateReport = async () => {
     if (selectedScans.length === 0) {
-      alert('Please select at least one scan');
+      toast.warning('No Scans Selected', 'Please select at least one scan');
       return;
     }
     
@@ -243,11 +244,10 @@ export function ReportsPage() {
         fetchData();
       } else {
         const error = await res.json();
-        alert(error.error || 'Failed to generate report');
+        toast.error('Report Failed', error.error || 'Failed to generate report');
       }
     } catch (error) {
-      console.error('Generate report failed:', error);
-      alert('Failed to generate report');
+      toast.error('Report Failed', 'Failed to generate report');
     } finally {
       setGenerating(false);
     }

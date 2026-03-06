@@ -3,6 +3,7 @@ import { Header } from '../../components/layout/Header';
 import { useAuth } from '../../hooks/useAuth';
 import { PageTransition } from '../../components/ui';
 import { useDocumentTitle } from '../../hooks/useUtilities';
+import { useToast } from '../../components/ui/Toast';
 
 interface ScheduledScan {
   id: string;
@@ -118,10 +119,10 @@ export function SchedulePage() {
         }),
       });
       if (res.ok) {
-        alert(`${schedule.name} scan started!`);
+        toast.success('Scan Started', `${schedule.name} scan launched successfully`);
       }
     } catch (error) {
-      console.error('Failed to start scan:', error);
+      toast.error('Scan Failed', 'Failed to start scheduled scan');
     }
   };
 
@@ -225,6 +226,7 @@ export function SchedulePage() {
   }
 
   return (
+    <PageTransition>
     <div className="min-h-screen bg-gray-950">
       <Header 
         title="Schedule"
