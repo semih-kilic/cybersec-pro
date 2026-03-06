@@ -174,7 +174,7 @@ export function ReportsPage() {
         setAvailableScans(data.available_scans || []);
       }
     } catch (error) {
-      console.error('Failed to fetch reports:', error);
+      toast.error('Load Failed', 'Failed to fetch reports');
     } finally {
       setLoading(false);
     }
@@ -192,7 +192,7 @@ export function ReportsPage() {
         }
       }
     } catch (error) {
-      console.error('Failed to fetch templates:', error);
+      toast.error('Load Failed', 'Failed to fetch templates');
     }
   };
 
@@ -293,7 +293,7 @@ export function ReportsPage() {
         setShowPreviewModal(true);
       }
     } catch (error) {
-      console.error('Failed to fetch report:', error);
+      toast.error('Preview Failed', 'Failed to fetch report');
     }
   };
 
@@ -307,7 +307,7 @@ export function ReportsPage() {
         downloadReport(data.content, report.name, report.format);
       }
     } catch (error) {
-      console.error('Download failed:', error);
+      toast.error('Download Failed', 'Could not download report');
     }
   };
 
@@ -323,7 +323,7 @@ export function ReportsPage() {
         setReports(reports.filter(r => r.id !== reportId));
       }
     } catch (error) {
-      console.error('Delete failed:', error);
+      toast.error('Delete Failed', 'Could not delete report');
     }
   };
 

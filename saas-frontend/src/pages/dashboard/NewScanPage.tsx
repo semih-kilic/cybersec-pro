@@ -126,7 +126,7 @@ export function NewScanPage() {
         setProjects(data.projects || []);
       }
     } catch (error) {
-      console.error('Failed to fetch data:', error);
+      toast.error('Load Failed', 'Failed to fetch scan data');
     } finally {
       setLoading(false);
     }

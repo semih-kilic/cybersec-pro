@@ -164,7 +164,6 @@ export default function UpgradePage() {
       
       toast.error('Payment system is temporarily unavailable. Please contact cybersecpro@semihkilic.com for manual upgrade.');
     } catch (error) {
-      console.error('Upgrade error:', error);
       toast.error('Connection error. Please try again or contact cybersecpro@semihkilic.com for assistance.');
     } finally {
       setLoading(null);

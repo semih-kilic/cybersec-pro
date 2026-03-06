@@ -151,7 +151,6 @@ export function ToolDetailPage() {
         setToolConfig(config);
       }
     } catch (error) {
-      console.error('Failed to fetch tool:', error);
       // Use smart config system with category
       const config = getToolConfig(toolId || '', toolCategory || undefined);
       const fallbackTool: Tool = {

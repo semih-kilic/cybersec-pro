@@ -70,7 +70,7 @@ export function SchedulePage() {
         setSchedules([]);
       }
     } catch (error) {
-      console.error('Failed to fetch schedules:', error);
+      toast.error('Load Failed', 'Failed to fetch schedules');
       setSchedules([]);
     } finally {
       setLoading(false);
@@ -87,7 +87,7 @@ export function SchedulePage() {
         fetchSchedules();
       }
     } catch (error) {
-      console.error('Failed to toggle schedule:', error);
+      toast.error('Toggle Failed', 'Failed to toggle schedule');
     }
   };
 
@@ -102,7 +102,7 @@ export function SchedulePage() {
         setSchedules(schedules.filter(s => s.id !== scheduleId));
       }
     } catch (error) {
-      console.error('Failed to delete schedule:', error);
+      toast.error('Delete Failed', 'Failed to delete schedule');
     }
   };
 
@@ -163,7 +163,7 @@ export function SchedulePage() {
         fetchSchedules();
       }
     } catch (error) {
-      console.error('Failed to save schedule:', error);
+      toast.error('Save Failed', 'Failed to save schedule');
     }
     setShowNewModal(false);
     setEditingSchedule(null);

@@ -129,7 +129,7 @@ export default function AgentsPage() {
         setLastRefresh(new Date());
       }
     } catch (error) {
-      console.error('Failed to fetch dashboard:', error);
+      toast.error('Load Failed', 'Failed to fetch agents dashboard');
     } finally {
       setLoading(false);
     }
@@ -178,8 +178,7 @@ export default function AgentsPage() {
         toast.error(data.error || 'Failed to create agent');
       }
     } catch (error) {
-      console.error('Failed to add agent:', error);
-      toast.error('Connection error. Please try again.');
+      toast.error('Connection Error', 'Failed to add agent');
     } finally {
       setCreatingAgent(false);
     }

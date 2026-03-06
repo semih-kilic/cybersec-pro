@@ -3,6 +3,7 @@ import { useAuth } from '../../hooks/useAuth';
 import { Link } from 'react-router-dom';
 import { PageTransition } from '../../components/ui';
 import { useDocumentTitle } from '../../hooks/useUtilities';
+import { useToast } from '../../components/ui/Toast';
 
 interface Project {
   id: string | number;
@@ -23,6 +24,7 @@ interface Project {
 
 export default function ProjectsPage() {
   useDocumentTitle('Projects — CyberSec Pro');
+  const toast = useToast();
   const { token, organization } = useAuth();
   const [projects, setProjects] = useState<Project[]>([]);
   const [loading, setLoading] = useState(true);
@@ -69,7 +71,7 @@ export default function ProjectsPage() {
         })));
       }
     } catch (error) {
-      console.error('Failed to fetch projects:', error);
+      toast.error('Load Failed', 'Failed to fetch projects');
     } finally {
       setLoading(false);
     }
@@ -93,7 +95,7 @@ export default function ProjectsPage() {
         fetchProjects();
       }
     } catch (error) {
-      console.error('Failed to create project:', error);
+      toast.error('Create Failed', 'Failed to create project');
     }
     setShowCreateModal(false);
     setNewProjectName('');
@@ -112,7 +114,7 @@ export default function ProjectsPage() {
         setProjects(projects.filter(p => p.id !== projectId));
       }
     } catch (error) {
-      console.error('Failed to delete project:', error);
+      toast.error('Delete Failed', 'Failed to delete project');
     }
   };
 

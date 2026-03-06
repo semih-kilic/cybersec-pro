@@ -4,6 +4,7 @@ import { Header } from '../../components/layout/Header';
 import { PageTransition } from '../../components/ui';
 import { useAuth } from '../../hooks/useAuth';
 import { useDocumentTitle } from '../../hooks/useUtilities';
+import { useToast } from '../../components/ui/Toast';
 
 interface Target {
   id: string;
@@ -65,6 +66,7 @@ const typeLabels: { [key: string]: string } = {
 
 export function TargetsPage() {
   useDocumentTitle('Targets — CyberSec Pro');
+  const toast = useToast();
   const { token } = useAuth();
   const [targets, setTargets] = useState<Target[]>([]);
   const [groups, setGroups] = useState<TargetGroup[]>([]);
@@ -114,7 +116,7 @@ export function TargetsPage() {
         setGroups([]);
       }
     } catch (error) {
-      console.error('Failed to fetch targets:', error);
+      toast.error('Load Failed', 'Failed to fetch targets');
       setTargets([]);
       setGroups([]);
     } finally {
@@ -141,7 +143,7 @@ export function TargetsPage() {
       setShowAddModal(false);
       setNewTarget({ name: '', value: '', type: 'ip', group_id: '', tags: '', notes: '' });
     } catch (error) {
-      console.error('Failed to add target:', error);
+      toast.error('Add Failed', 'Failed to add target');
     }
   };
 

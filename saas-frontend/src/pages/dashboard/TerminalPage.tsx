@@ -3,6 +3,7 @@ import { Header } from '../../components/layout/Header';
 import { useAuth } from '../../hooks/useAuth';
 import { PageTransition } from '../../components/ui';
 import { useDocumentTitle } from '../../hooks/useUtilities';
+import { useToast } from '../../components/ui/Toast';
 
 interface Agent {
   id: number | string;
@@ -25,6 +26,7 @@ interface HistoryLine {
 
 export function TerminalPage() {
   useDocumentTitle('Terminal — CyberSec Pro');
+  const toast = useToast();
   const { token } = useAuth();
   const terminalRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -85,7 +87,7 @@ export function TerminalPage() {
         }
       }
     } catch (err) {
-      console.error('Failed to fetch agents:', err);
+      toast.error('Connection Error', 'Failed to fetch agents');
     }
   };
 
