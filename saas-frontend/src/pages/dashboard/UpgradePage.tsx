@@ -194,6 +194,7 @@ export default function UpgradePage() {
   };
 
   return (
+    <PageTransition>
     <div className="p-6 max-w-7xl mx-auto">
       {/* Header */}
       <div className="text-center mb-12">
