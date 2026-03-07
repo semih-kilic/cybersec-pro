@@ -473,3 +473,188 @@ export function useDeleteAgent() {
     },
   });
 }
+
+// ==========================================
+// TARGETS HOOKS
+// ==========================================
+
+export interface Target {
+  id: string;
+  name: string;
+  value: string;
+  type: 'ip' | 'domain' | 'url' | 'cidr' | 'range';
+  group_id?: string;
+  group_name?: string;
+  tags: string[];
+  last_scan?: string;
+  scans_count: number;
+  risk_score?: number;
+  created_at: string;
+  notes?: string;
+}
+
+export interface TargetGroup {
+  id: string;
+  name: string;
+  color: string;
+  targets_count: number;
+}
+
+export function useTargets() {
+  const { token } = useAuth();
+
+  return useQuery({
+    queryKey: queryKeys.targets.list(),
+    queryFn: () => authFetch<{ targets: Target[] }>('/api/v1/targets', token),
+    select: (data) => data.targets || [],
+    ...CACHE_TIMES.targets,
+    enabled: !!token,
+  });
+}
+
+export function useTargetGroups() {
+  const { token } = useAuth();
+
+  return useQuery({
+    queryKey: queryKeys.targets.groups(),
+    queryFn: () => authFetch<{ groups: TargetGroup[] }>('/api/v1/target-groups', token),
+    select: (data) => data.groups || [],
+    ...CACHE_TIMES.targets,
+    enabled: !!token,
+  });
+}
+
+// ==========================================
+// REPORTS HOOKS
+// ==========================================
+
+export interface ReportSummary {
+  id: string;
+  name: string;
+  template: string;
+  format: string;
+  status: string;
+  scan_ids: string[];
+  sections: string[];
+  total_findings: number;
+  severity_breakdown: {
+    critical: number;
+    high: number;
+    medium: number;
+    low: number;
+    info: number;
+  };
+  risk_score: number;
+  risk_level: string;
+  file_size: number;
+  created_at: string;
+  completed_at: string;
+}
+
+export interface AvailableScan {
+  id: string;
+  name: string;
+  tool: string;
+  target: string;
+  completed_at: string;
+}
+
+export function useReports() {
+  const { token } = useAuth();
+
+  return useQuery({
+    queryKey: queryKeys.reports.list(),
+    queryFn: () => authFetch<{ reports: ReportSummary[]; available_scans: AvailableScan[] }>('/api/v1/reports', token),
+    ...CACHE_TIMES.reports,
+    enabled: !!token,
+  });
+}
+
+export function useReportTemplates() {
+  const { token } = useAuth();
+
+  return useQuery({
+    queryKey: queryKeys.reports.templates(),
+    queryFn: () => authFetch<{ templates: { id: string; name: string; description: string; icon: string; sections: string[]; format: string[] }[] }>('/api/v1/reports/templates', token),
+    select: (data) => data.templates || [],
+    ...CACHE_TIMES.reports,
+    enabled: !!token,
+  });
+}
+
+// ==========================================
+// SCHEDULES HOOKS
+// ==========================================
+
+export interface ScheduledScanFull {
+  id: string;
+  name: string;
+  tool_name: string;
+  tool?: string;
+  target: string;
+  schedule_type: string;
+  cron_expression?: string;
+  hour?: number;
+  minute?: number;
+  day_of_week?: string;
+  day_of_month?: number;
+  next_run: string;
+  last_run?: string;
+  is_active: boolean;
+  status?: 'active' | 'paused' | 'error';
+  run_count: number;
+  created_at: string;
+}
+
+export function useSchedules() {
+  const { token } = useAuth();
+
+  return useQuery({
+    queryKey: queryKeys.schedules.list(),
+    queryFn: () => authFetch<{ schedules: ScheduledScanFull[] }>('/api/v1/schedules', token),
+    select: (data) => data.schedules || [],
+    ...CACHE_TIMES.schedules,
+    enabled: !!token,
+  });
+}
+
+// ==========================================
+// PROJECTS HOOKS
+// ==========================================
+
+export interface Project {
+  id: string | number;
+  name: string;
+  description: string;
+  target_type?: string;
+  target_url?: string;
+  target_ip?: string;
+  target_count: number;
+  scan_count: number;
+  vulnerability_count: number;
+  status: 'active' | 'completed' | 'archived';
+  created_at: string;
+  updated_at?: string;
+  members?: { id: string; name: string; avatar?: string }[];
+  tags?: string[];
+}
+
+export function useProjects() {
+  const { token } = useAuth();
+
+  return useQuery({
+    queryKey: queryKeys.projects.list(),
+    queryFn: () => authFetch<{ projects: Record<string, unknown>[] }>('/api/v1/projects', token),
+    select: (data) => (data.projects || []).map((p): Project => ({
+      ...p as unknown as Project,
+      target_count: (p.target_count as number) || 0,
+      scan_count: (p.scan_count as number) || 0,
+      vulnerability_count: (p.vulnerability_count as number) || 0,
+      status: (p.status as string as Project['status']) || 'active',
+      tags: (p.tags as string[]) || [],
+      members: (p.members as Project['members']) || [],
+    })),
+    ...CACHE_TIMES.projects,
+    enabled: !!token,
+  });
+}

@@ -1,8 +1,9 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Header } from '../../components/layout/Header';
 import { PageTransition } from '../../components/ui';
 import { useAuth } from '../../hooks/useAuth';
+import { useTargets, useTargetGroups } from '../../hooks/useApiQueries';
 import { useDocumentTitle } from '../../hooks/useUtilities';
 import { useToast } from '../../components/ui/Toast';
 
@@ -68,9 +69,9 @@ export function TargetsPage() {
   useDocumentTitle('Targets — CyberSec Pro');
   const toast = useToast();
   const { token } = useAuth();
-  const [targets, setTargets] = useState<Target[]>([]);
-  const [groups, setGroups] = useState<TargetGroup[]>([]);
-  const [loading, setLoading] = useState(true);
+  const { data: targets = [], isLoading: targetsLoading } = useTargets();
+  const { data: groups = [], isLoading: groupsLoading } = useTargetGroups();
+  const loading = targetsLoading || groupsLoading;
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedGroup, setSelectedGroup] = useState<string | null>(null);
   const [selectedType, setSelectedType] = useState<string | null>(null);
@@ -87,42 +88,6 @@ export function TargetsPage() {
     tags: '',
     notes: '',
   });
-
-  useEffect(() => {
-    fetchData();
-  }, [token]);
-
-  const fetchData = async () => {
-    try {
-      // Fetch real targets from API
-      const targetsRes = await fetch('/api/v1/targets', {
-        headers: { 'Authorization': `Bearer ${token}` },
-      });
-      if (targetsRes.ok) {
-        const data = await targetsRes.json();
-        setTargets(data.targets || []);
-      } else {
-        setTargets([]);
-      }
-
-      // Fetch real groups from API
-      const groupsRes = await fetch('/api/v1/target-groups', {
-        headers: { 'Authorization': `Bearer ${token}` },
-      });
-      if (groupsRes.ok) {
-        const data = await groupsRes.json();
-        setGroups(data.groups || []);
-      } else {
-        setGroups([]);
-      }
-    } catch (error) {
-      toast.error('Load Failed', 'Failed to fetch targets');
-      setTargets([]);
-      setGroups([]);
-    } finally {
-      setLoading(false);
-    }
-  };
 
   const handleAddTarget = async () => {
     try {
