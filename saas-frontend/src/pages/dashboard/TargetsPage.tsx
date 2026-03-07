@@ -1,9 +1,11 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
+import { useQueryClient } from '@tanstack/react-query';
 import { Header } from '../../components/layout/Header';
 import { PageTransition } from '../../components/ui';
 import { useAuth } from '../../hooks/useAuth';
 import { useTargets, useTargetGroups } from '../../hooks/useApiQueries';
+import { queryKeys } from '../../lib/queryClient';
 import { useDocumentTitle } from '../../hooks/useUtilities';
 import { useToast } from '../../components/ui/Toast';
 
@@ -69,6 +71,7 @@ export function TargetsPage() {
   useDocumentTitle('Targets — CyberSec Pro');
   const toast = useToast();
   const { token } = useAuth();
+  const queryClient = useQueryClient();
   const { data: targets = [], isLoading: targetsLoading } = useTargets();
   const { data: groups = [], isLoading: groupsLoading } = useTargetGroups();
   const loading = targetsLoading || groupsLoading;
@@ -104,7 +107,9 @@ export function TargetsPage() {
         created_at: new Date().toISOString(),
         notes: newTarget.notes,
       };
-      setTargets([target, ...targets]);
+      queryClient.setQueryData(queryKeys.targets.list(), (old: { targets: Target[] } | undefined) => ({
+        targets: [target, ...(old?.targets || [])],
+      }));
       setShowAddModal(false);
       setNewTarget({ name: '', value: '', type: 'ip', group_id: '', tags: '', notes: '' });
     } catch (error) {
@@ -113,7 +118,9 @@ export function TargetsPage() {
   };
 
   const handleDeleteTargets = async () => {
-    setTargets(targets.filter(t => !selectedTargets.includes(t.id)));
+    queryClient.setQueryData(queryKeys.targets.list(), (old: { targets: Target[] } | undefined) => ({
+      targets: (old?.targets || []).filter(t => !selectedTargets.includes(t.id)),
+    }));
     setSelectedTargets([]);
   };
 
