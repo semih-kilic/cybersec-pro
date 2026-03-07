@@ -1,7 +1,10 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
+import { useQueryClient } from '@tanstack/react-query';
 import { Header } from '../../components/layout/Header';
 import { useAuth } from '../../hooks/useAuth';
 import { PageTransition } from '../../components/ui';
+import { useSchedules } from '../../hooks/useApiQueries';
+import { queryKeys } from '../../lib/queryClient';
 import { useDocumentTitle } from '../../hooks/useUtilities';
 import { useToast } from '../../components/ui/Toast';
 
@@ -38,8 +41,8 @@ export function SchedulePage() {
   useDocumentTitle('Schedule — CyberSec Pro');
   const toast = useToast();
   const { token } = useAuth();
-  const [schedules, setSchedules] = useState<ScheduledScan[]>([]);
-  const [loading, setLoading] = useState(true);
+  const queryClient = useQueryClient();
+  const { data: schedules = [], isLoading: loading } = useSchedules();
   const [showNewModal, setShowNewModal] = useState(false);
   const [editingSchedule, setEditingSchedule] = useState<ScheduledScan | null>(null);
 
@@ -53,29 +56,7 @@ export function SchedulePage() {
     notifications: true,
   });
 
-  useEffect(() => {
-    fetchSchedules();
-  }, [token]);
-
-  const fetchSchedules = async () => {
-    try {
-      // Fetch real schedules from API
-      const res = await fetch('/api/v1/schedules', {
-        headers: { 'Authorization': `Bearer ${token}` },
-      });
-      if (res.ok) {
-        const data = await res.json();
-        setSchedules(data.schedules || []);
-      } else {
-        setSchedules([]);
-      }
-    } catch (error) {
-      toast.error('Load Failed', 'Failed to fetch schedules');
-      setSchedules([]);
-    } finally {
-      setLoading(false);
-    }
-  };
+  const invalidateSchedules = () => queryClient.invalidateQueries({ queryKey: queryKeys.schedules.all });
 
   const handleToggleStatus = async (schedule: ScheduledScan) => {
     try {
@@ -84,7 +65,7 @@ export function SchedulePage() {
         headers: { 'Authorization': `Bearer ${token}` },
       });
       if (res.ok) {
-        fetchSchedules();
+        invalidateSchedules();
       }
     } catch (error) {
       toast.error('Toggle Failed', 'Failed to toggle schedule');
@@ -99,7 +80,7 @@ export function SchedulePage() {
         headers: { 'Authorization': `Bearer ${token}` },
       });
       if (res.ok) {
-        setSchedules(schedules.filter(s => s.id !== scheduleId));
+        invalidateSchedules();
       }
     } catch (error) {
       toast.error('Delete Failed', 'Failed to delete schedule');
@@ -160,7 +141,7 @@ export function SchedulePage() {
       });
       
       if (res.ok) {
-        fetchSchedules();
+        invalidateSchedules();
       }
     } catch (error) {
       toast.error('Save Failed', 'Failed to save schedule');

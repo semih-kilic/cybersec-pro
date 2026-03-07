@@ -1,7 +1,10 @@
 import { useState, useEffect, useRef } from 'react';
+import { useQueryClient } from '@tanstack/react-query';
 import { Header } from '../../components/layout/Header';
 import { PageTransition } from '../../components/ui';
 import { useAuth } from '../../hooks/useAuth';
+import { useReports, useReportTemplates } from '../../hooks/useApiQueries';
+import { queryKeys } from '../../lib/queryClient';
 import { useDocumentTitle } from '../../hooks/useUtilities';
 import { useToast } from '../../components/ui/Toast';
 import {
@@ -128,10 +131,13 @@ export function ReportsPage() {
   useDocumentTitle('Reports — CyberSec Pro');
   const toast = useToast();
   const { token } = useAuth();
-  const [reports, setReports] = useState<ReportSummary[]>([]);
-  const [availableScans, setAvailableScans] = useState<AvailableScan[]>([]);
-  const [templates, setTemplates] = useState<ReportTemplate[]>(defaultTemplates);
-  const [loading, setLoading] = useState(true);
+  const queryClient = useQueryClient();
+  const { data: reportsData, isLoading: reportsLoading } = useReports();
+  const reports = reportsData?.reports || [];
+  const availableScans = reportsData?.available_scans || [];
+  const { data: fetchedTemplates = [], isLoading: templatesLoading } = useReportTemplates();
+  const templates = fetchedTemplates.length > 0 ? fetchedTemplates : defaultTemplates;
+  const loading = reportsLoading || templatesLoading;
   const [generating, setGenerating] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   
@@ -151,50 +157,12 @@ export function ReportsPage() {
   const iframeRef = useRef<HTMLIFrameElement>(null);
 
   useEffect(() => {
-    fetchData();
-    fetchTemplates();
-  }, [token]);
-
-  useEffect(() => {
     // Update sections when template changes
     const template = templates.find(t => t.id === selectedTemplate);
     if (template) {
       setSelectedSections(template.sections);
     }
   }, [selectedTemplate, templates]);
-
-  const fetchData = async () => {
-    try {
-      const res = await fetch('/api/v1/reports', {
-        headers: { 'Authorization': `Bearer ${token}` },
-      });
-      if (res.ok) {
-        const data = await res.json();
-        setReports(data.reports || []);
-        setAvailableScans(data.available_scans || []);
-      }
-    } catch (error) {
-      toast.error('Load Failed', 'Failed to fetch reports');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const fetchTemplates = async () => {
-    try {
-      const res = await fetch('/api/v1/reports/templates', {
-        headers: { 'Authorization': `Bearer ${token}` },
-      });
-      if (res.ok) {
-        const data = await res.json();
-        if (data.templates?.length > 0) {
-          setTemplates(data.templates);
-        }
-      }
-    } catch (error) {
-      toast.error('Load Failed', 'Failed to fetch templates');
-    }
-  };
 
   const handleGenerateReport = async () => {
     if (selectedScans.length === 0) {
@@ -242,7 +210,7 @@ export function ReportsPage() {
         setShowGenerateModal(false);
         setSelectedScans([]);
         setReportName('Security Assessment Report');
-        fetchData();
+        queryClient.invalidateQueries({ queryKey: queryKeys.reports.all });
       } else {
         const error = await res.json();
         toast.error('Report Failed', error.error || 'Failed to generate report');
@@ -320,7 +288,7 @@ export function ReportsPage() {
         headers: { 'Authorization': `Bearer ${token}` },
       });
       if (res.ok) {
-        setReports(reports.filter(r => r.id !== reportId));
+        queryClient.invalidateQueries({ queryKey: queryKeys.reports.all });
       }
     } catch (error) {
       toast.error('Delete Failed', 'Could not delete report');

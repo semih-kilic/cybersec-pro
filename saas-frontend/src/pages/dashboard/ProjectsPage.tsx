@@ -1,7 +1,10 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
+import { useQueryClient } from '@tanstack/react-query';
 import { useAuth } from '../../hooks/useAuth';
 import { Link } from 'react-router-dom';
 import { PageTransition } from '../../components/ui';
+import { useProjects } from '../../hooks/useApiQueries';
+import { queryKeys } from '../../lib/queryClient';
 import { useDocumentTitle } from '../../hooks/useUtilities';
 import { useToast } from '../../components/ui/Toast';
 
@@ -26,8 +29,8 @@ export default function ProjectsPage() {
   useDocumentTitle('Projects — CyberSec Pro');
   const toast = useToast();
   const { token, organization } = useAuth();
-  const [projects, setProjects] = useState<Project[]>([]);
-  const [loading, setLoading] = useState(true);
+  const queryClient = useQueryClient();
+  const { data: projects = [], isLoading: loading } = useProjects();
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [filter, setFilter] = useState<'all' | 'active' | 'completed' | 'archived'>('all');
   const [searchQuery, setSearchQuery] = useState('');
@@ -49,33 +52,7 @@ export default function ProjectsPage() {
   const maxProjects = planLimits[userPlan] || 1;
   const canCreateProject = projects.length < maxProjects;
 
-  useEffect(() => {
-    fetchProjects();
-  }, [token]);
-
-  const fetchProjects = async () => {
-    try {
-      const res = await fetch('/api/v1/projects', {
-        headers: { 'Authorization': `Bearer ${token}` },
-      });
-      if (res.ok) {
-        const data = await res.json();
-        setProjects((data.projects || []).map((p: Record<string, unknown>) => ({
-          ...p,
-          target_count: (p.target_count as number) || 0,
-          scan_count: (p.scan_count as number) || 0,
-          vulnerability_count: (p.vulnerability_count as number) || 0,
-          status: (p.status as string) || 'active',
-          tags: (p.tags as string[]) || [],
-          members: (p.members as Project['members']) || [],
-        })));
-      }
-    } catch (error) {
-      toast.error('Load Failed', 'Failed to fetch projects');
-    } finally {
-      setLoading(false);
-    }
-  };
+  const invalidateProjects = () => queryClient.invalidateQueries({ queryKey: queryKeys.projects.all });
 
   const createProject = async () => {
     if (!newProjectName.trim()) return;
@@ -92,7 +69,7 @@ export default function ProjectsPage() {
         }),
       });
       if (res.ok) {
-        fetchProjects();
+        invalidateProjects();
       }
     } catch (error) {
       toast.error('Create Failed', 'Failed to create project');
@@ -111,7 +88,7 @@ export default function ProjectsPage() {
         headers: { 'Authorization': `Bearer ${token}` },
       });
       if (res.ok) {
-        setProjects(projects.filter(p => p.id !== projectId));
+        invalidateProjects();
       }
     } catch (error) {
       toast.error('Delete Failed', 'Failed to delete project');
