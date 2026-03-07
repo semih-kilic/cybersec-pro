@@ -920,6 +920,7 @@ export default function AgentsPage() {
         </div>
       )}
     </div>
+    </PageTransition>
   );
 }
 
