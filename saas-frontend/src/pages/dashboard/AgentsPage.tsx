@@ -1007,6 +1007,5 @@ function AgentCard({
         )}
       </div>
     </div>
-    </PageTransition>
   );
 }
