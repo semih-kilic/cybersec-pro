@@ -7,6 +7,7 @@ import { useProjects } from '../../hooks/useApiQueries';
 import { queryKeys } from '../../lib/queryClient';
 import { useDocumentTitle } from '../../hooks/useUtilities';
 import { useToast } from '../../components/ui/Toast';
+import { ProjectsPageSkeleton } from '../../components/ui/Skeleton';
 
 interface Project {
   id: string | number;
@@ -113,11 +114,7 @@ export default function ProjectsPage() {
     );
 
   if (loading) {
-    return (
-      <div className="min-h-screen bg-gray-950 flex items-center justify-center">
-        <div className="w-8 h-8 border-4 border-kali-blue border-t-transparent rounded-full animate-spin" />
-      </div>
-    );
+    return <ProjectsPageSkeleton />;
   }
 
   return (

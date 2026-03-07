@@ -254,3 +254,132 @@ export const AgentsPageSkeleton = memo(function AgentsPageSkeleton() {
     </div>
   );
 });
+
+// List Row Skeleton (generic for tables)
+export const ListRowSkeleton = memo(function ListRowSkeleton() {
+  return (
+    <div className="bg-gray-900 rounded-xl border border-gray-800 p-4 flex items-center gap-4">
+      <Skeleton className="h-8 w-8" rounded="lg" />
+      <div className="flex-1">
+        <Skeleton className="h-4 w-36 mb-2" />
+        <Skeleton className="h-3 w-56" />
+      </div>
+      <Skeleton className="h-6 w-20" rounded="full" />
+      <Skeleton className="h-3 w-24" />
+    </div>
+  );
+});
+
+// Targets Page Skeleton
+export const TargetsPageSkeleton = memo(function TargetsPageSkeleton() {
+  return (
+    <div className="min-h-screen bg-gray-950 p-6 space-y-6 animate-in fade-in duration-300">
+      <div className="flex items-center justify-between">
+        <div>
+          <Skeleton className="h-7 w-32 mb-2" />
+          <Skeleton className="h-4 w-56" />
+        </div>
+        <Skeleton className="h-10 w-36" rounded="lg" />
+      </div>
+
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        {Array.from({ length: 4 }).map((_, i) => (
+          <StatCardSkeleton key={i} />
+        ))}
+      </div>
+
+      <div className="bg-gray-900 rounded-xl border border-gray-800 p-4">
+        <Skeleton className="h-10 w-full mb-4" rounded="lg" />
+        <div className="space-y-3">
+          {Array.from({ length: 6 }).map((_, i) => (
+            <ListRowSkeleton key={i} />
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+});
+
+// Reports Page Skeleton
+export const ReportsPageSkeleton = memo(function ReportsPageSkeleton() {
+  return (
+    <div className="p-6 space-y-6 animate-in fade-in duration-300">
+      <div className="flex items-center justify-between">
+        <div>
+          <Skeleton className="h-7 w-32 mb-2" />
+          <Skeleton className="h-4 w-48" />
+        </div>
+        <Skeleton className="h-10 w-40" rounded="lg" />
+      </div>
+
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        {Array.from({ length: 4 }).map((_, i) => (
+          <StatCardSkeleton key={i} />
+        ))}
+      </div>
+
+      <div className="space-y-3">
+        {Array.from({ length: 5 }).map((_, i) => (
+          <ListRowSkeleton key={i} />
+        ))}
+      </div>
+    </div>
+  );
+});
+
+// Schedule Page Skeleton
+export const SchedulePageSkeleton = memo(function SchedulePageSkeleton() {
+  return (
+    <div className="p-6 space-y-6 animate-in fade-in duration-300">
+      <div className="flex items-center justify-between">
+        <div>
+          <Skeleton className="h-7 w-44 mb-2" />
+          <Skeleton className="h-4 w-60" />
+        </div>
+        <Skeleton className="h-10 w-36" rounded="lg" />
+      </div>
+
+      <div className="space-y-3">
+        {Array.from({ length: 5 }).map((_, i) => (
+          <div key={i} className="bg-gray-900 rounded-xl border border-gray-800 p-5 flex items-center gap-4">
+            <div className="flex-1">
+              <Skeleton className="h-5 w-40 mb-2" />
+              <Skeleton className="h-3 w-56" />
+            </div>
+            <Skeleton className="h-6 w-20" rounded="full" />
+            <Skeleton className="h-8 w-24" rounded="lg" />
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+});
+
+// Projects Page Skeleton
+export const ProjectsPageSkeleton = memo(function ProjectsPageSkeleton() {
+  return (
+    <div className="p-6 space-y-6 animate-in fade-in duration-300">
+      <div className="flex items-center justify-between">
+        <div>
+          <Skeleton className="h-7 w-32 mb-2" />
+          <Skeleton className="h-4 w-48" />
+        </div>
+        <Skeleton className="h-10 w-36" rounded="lg" />
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        {Array.from({ length: 6 }).map((_, i) => (
+          <div key={i} className="bg-gray-900 rounded-xl border border-gray-800 p-6">
+            <Skeleton className="h-5 w-40 mb-3" />
+            <Skeleton className="h-3 w-full mb-1" />
+            <Skeleton className="h-3 w-2/3 mb-4" />
+            <div className="flex gap-2">
+              <Skeleton className="h-6 w-16" rounded="full" />
+              <Skeleton className="h-6 w-16" rounded="full" />
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+});
