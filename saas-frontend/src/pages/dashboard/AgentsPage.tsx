@@ -151,7 +151,7 @@ export default function AgentsPage() {
         setInstallToken(data.registration_token);
         setInstallCommand(data.install_command || `# Agent Registration Token:\n${data.registration_token}\n\n# Install & run:\ncurl -sSL https://cybersecpro.semihkilic.com/api/v1/agent-script | python3 - --token ${data.registration_token}`);
         toast.success(`Agent "${newAgentName}" created successfully`);
-        fetchDashboard();
+        invalidateAgents();
       } else {
         toast.error(data.error || 'Failed to create agent');
       }
@@ -198,7 +198,7 @@ export default function AgentsPage() {
         setShowEditModal(false);
         setSelectedAgent(null);
         setTestResult(null);
-        fetchDashboard();
+        invalidateAgents();
       } else {
         const data = await res.json();
         toast.error('Update Failed', data.error || 'Failed to update agent');
@@ -219,7 +219,7 @@ export default function AgentsPage() {
       
       if (res.ok) {
         setSelectedAgent(null);
-        fetchDashboard();
+        invalidateAgents();
       } else {
         const data = await res.json();
         toast.error('Delete Failed', data.error || 'Failed to delete agent');
@@ -245,7 +245,7 @@ export default function AgentsPage() {
         message: data.success ? `Connection successful! OS: ${data.os_info || 'Unknown'}` : data.error
       });
       
-      if (data.success) fetchDashboard();
+      if (data.success) invalidateAgents();
     } catch (error) {
       setTestResult({ success: false, message: 'Connection test failed' });
     } finally {
@@ -315,7 +315,7 @@ export default function AgentsPage() {
           <p className="text-gray-400 text-sm">
             Manage and monitor your security agents
             <span className="text-gray-600 ml-2">
-              Last update: {lastRefresh.toLocaleTimeString('en-GB')}
+              Last update: {dataUpdatedAt ? new Date(dataUpdatedAt).toLocaleTimeString('en-GB') : '—'}
             </span>
           </p>
         </div>
