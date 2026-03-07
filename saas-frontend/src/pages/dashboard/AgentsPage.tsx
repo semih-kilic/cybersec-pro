@@ -1,5 +1,8 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState } from 'react';
+import { useQueryClient } from '@tanstack/react-query';
 import { useAuth } from '../../hooks/useAuth';
+import { useAgentsDashboard } from '../../hooks/useApiQueries';
+import { queryKeys } from '../../lib/queryClient';
 import { useDocumentTitle } from '../../hooks/useUtilities';
 import { useTranslation } from 'react-i18next';
 import { AgentsPageSkeleton } from '../../components/ui/Skeleton';
@@ -89,16 +92,16 @@ export default function AgentsPage() {
   const { token } = useAuth();
   const { t: _t } = useTranslation();
   const toast = useToast();
-  const [dashboard, setDashboard] = useState<DashboardData | null>(null);
-  const [agents, setAgents] = useState<Agent[]>([]);
-  const [loading, setLoading] = useState(true);
+  const queryClient = useQueryClient();
+  const [autoRefresh, setAutoRefresh] = useState(true);
+  const { data: dashboardData, isLoading: loading, dataUpdatedAt } = useAgentsDashboard(autoRefresh);
+  const dashboard = dashboardData as DashboardData | undefined;
+  const agents: Agent[] = (dashboard?.agents as Agent[]) || [];
   const [showAddModal, setShowAddModal] = useState(false);
   const [selectedAgent, setSelectedAgent] = useState<Agent | null>(null);
   const [showEditModal, setShowEditModal] = useState(false);
   const [testingConnection, setTestingConnection] = useState(false);
   const [testResult, setTestResult] = useState<{ success: boolean; message: string } | null>(null);
-  const [autoRefresh, setAutoRefresh] = useState(true);
-  const [lastRefresh, setLastRefresh] = useState<Date>(new Date());
   const [showExplainer, setShowExplainer] = useState(false);
   const [setupStep, setSetupStep] = useState(1);
   const [setupMethod, setSetupMethod] = useState<'docker' | 'windows' | 'kubernetes'>('docker');
@@ -117,32 +120,7 @@ export default function AgentsPage() {
   });
   const [creatingAgent, setCreatingAgent] = useState(false);
 
-  const fetchDashboard = useCallback(async () => {
-    try {
-      const res = await fetch('/api/v1/agents/dashboard', {
-        headers: { 'Authorization': `Bearer ${token}` }
-      });
-      if (res.ok) {
-        const data: DashboardData = await res.json();
-        setDashboard(data);
-        setAgents(data.agents || []);
-        setLastRefresh(new Date());
-      }
-    } catch (error) {
-      toast.error('Load Failed', 'Failed to fetch agents dashboard');
-    } finally {
-      setLoading(false);
-    }
-  }, [token]);
-  useEffect(() => {
-    fetchDashboard();
-  }, [fetchDashboard]);
-
-  useEffect(() => {
-    if (!autoRefresh) return;
-    const interval = setInterval(fetchDashboard, 10000);
-    return () => clearInterval(interval);
-  }, [autoRefresh, fetchDashboard]);
+  const invalidateAgents = () => queryClient.invalidateQueries({ queryKey: queryKeys.agents.all });
 
   const addAgent = async () => {
     if (!newAgentName.trim()) return;
