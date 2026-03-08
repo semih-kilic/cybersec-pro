@@ -8,6 +8,8 @@ import { useScanSubscription } from '../../hooks/useWebSocket';
 import { useTarget } from '../../contexts/TargetContext';
 import { useAuth } from '../../hooks/useAuth';
 import { ScanProgress } from '../../components/dashboard/ScanProgress';
+import { useQuery } from '@tanstack/react-query';
+import { queryKeys, CACHE_TIMES } from '../../lib/queryClient';
 
 // Business-friendly category names
 const BUSINESS_CATEGORIES: Record<string, { label: string; emoji: string }> = {
@@ -91,12 +93,60 @@ export function ScanExecutionPage() {
   // WebSocket subscription for real-time updates
   const ws = useScanSubscription(status === 'running' ? currentScanId : null);
 
-  useEffect(() => {
-    fetchToolConfig();
-    fetchExecutionMode();
-  }, [toolId]);
+  // React Query: tool config (cached across tool detail -> execution navigation)
+  const { data: toolConfigData } = useQuery({
+    queryKey: [...queryKeys.tools.detail(toolId), 'config'],
+    queryFn: async () => {
+      const response = await api.getToolConfig(toolId);
+      return response.data?.tool || null;
+    },
+    ...CACHE_TIMES.tools,
+    enabled: !!toolId,
+  });
 
-  // Fetch execution mode for dangerous tool handling
+  // React Query: agents list with auto-refresh  
+  const { data: agentsData } = useQuery({
+    queryKey: ['agents', 'list'],
+    queryFn: async () => {
+      const response = await api.getAgents();
+      return response.data?.agents || [];
+    },
+    staleTime: 10_000,
+    refetchInterval: 15_000,
+  });
+
+  // Sync tool config from RQ into local state
+  useEffect(() => {
+    if (toolConfigData && !tool) {
+      const t = toolConfigData;
+      setTool(t);
+      const bName = (t as any).business_name || t.name;
+      setBusinessName(bName);
+      const cat = t.category || 'vulnerability_assessment';
+      const catInfo = BUSINESS_CATEGORIES[cat];
+      if (catInfo) {
+        setBusinessDescription(`${catInfo.emoji} ${catInfo.label} — This scan helps identify security issues in your systems.`);
+      } else {
+        setBusinessDescription('🔍 Security Assessment — Comprehensive security testing for your infrastructure.');
+      }
+      const paramsStr = searchParams.get('params');
+      if (!paramsStr && t.parameters && typeof t.parameters === 'object') {
+        const defaults: Record<string, string | number | boolean> = {};
+        Object.entries(t.parameters).forEach(([key, param]: [string, any]) => {
+          if (param.default !== undefined) defaults[key] = param.default;
+        });
+        if (Object.keys(defaults).length > 0) setParameters(defaults);
+      }
+      if (t.command_template) setCommand(t.command_template);
+    }
+  }, [toolConfigData]);
+
+  // Sync agents from RQ
+  useEffect(() => {
+    if (agentsData) setAgents(agentsData as AgentInfo[]);
+  }, [agentsData]);
+
+  // Fetch execution mode
   const fetchExecutionMode = async () => {
     if (!toolId) return;
     try {
@@ -112,22 +162,9 @@ export function ScanExecutionPage() {
     }
   };
 
-  // Fetch available agents
   useEffect(() => {
-    const fetchAgents = async () => {
-      try {
-        const response = await api.getAgents();
-        if (response.data?.agents) {
-          setAgents(response.data.agents);
-        }
-      } catch {
-        // Agents feature optional - ignore errors
-      }
-    };
-    fetchAgents();
-    const interval = setInterval(fetchAgents, 15000);
-    return () => clearInterval(interval);
-  }, []);
+    fetchExecutionMode();
+  }, [toolId]);
 
   // Auto-start scan when coming from ToolDetailPage with target pre-filled
   const autoStartedRef = useRef(false);
@@ -226,38 +263,6 @@ export function ScanExecutionPage() {
       return cleanup;
     }
   }, [currentScanId, status]);
-
-  const fetchToolConfig = async () => {
-    const response = await api.getToolConfig(toolId);
-    if (response.data) {
-      const t = response.data.tool;
-      setTool(t);
-      
-      // Set business-friendly name (business_name may be present in API response)
-      const bName = (t as any).business_name || t.name;
-      setBusinessName(bName);
-      
-      // Generate business description based on category
-      const cat = t.category || 'vulnerability_assessment';
-      const catInfo = BUSINESS_CATEGORIES[cat];
-      if (catInfo) {
-        setBusinessDescription(`${catInfo.emoji} ${catInfo.label} — This scan helps identify security issues in your systems.`);
-      } else {
-        setBusinessDescription('🔍 Security Assessment — Comprehensive security testing for your infrastructure.');
-      }
-      // Set default values only if no parameters were passed from ToolDetailPage
-      const paramsStr = searchParams.get('params');
-      if (!paramsStr) {
-        const defaults: Record<string, string | number | boolean> = {};
-        Object.entries(response.data.tool.parameters || {}).forEach(([key, param]) => {
-          if (param.default !== undefined) {
-            defaults[key] = param.default;
-          }
-        });
-        setParameters(defaults);
-      }
-    }
-  };
 
   const handleStartScan = async () => {
     if (!target) {

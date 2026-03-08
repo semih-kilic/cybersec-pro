@@ -2,7 +2,7 @@
  * CyberSec Pro — Analytics Dashboard (V18)
  * World-class data visualization with Recharts, stat cards, and interactive charts
  */
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useDocumentTitle } from '../../hooks/useUtilities';
 import {
   AreaChart, Area, BarChart, Bar, PieChart, Pie, Cell,
@@ -10,19 +10,9 @@ import {
   ResponsiveContainer, Legend, RadialBarChart, RadialBar,
 } from 'recharts';
 import { motion } from 'framer-motion';
-import api from '../../services/api';
+import { useAnalyticsOverview } from '../../hooks/useApiQueries';
 import { StatCard, Card, CardHeader, EmptyState, Button, PageTransition } from '../../components/ui';
 import { SparklineKPI } from '../../components/ui/SparklineKPI';
-
-interface AnalyticsData {
-  daily_trend: Array<{ date: string; scans: number }>;
-  tool_usage: Array<{ name: string; count: number }>;
-  status_distribution: Record<string, number>;
-  target_distribution: Array<{ target: string; count: number }>;
-  comparison: { this_week: number; last_week: number; change_pct: number };
-  performance: { avg_duration_seconds: number; total_scans: number; success_rate: number };
-  risk: { score: number; level: string; severity_totals: Record<string, number>; total_issues: number };
-}
 
 // Chart color palette
 const COLORS = {
@@ -70,20 +60,8 @@ function ChartTooltip({ active, payload, label }: any) {
 
 export default function AnalyticsPage() {
   useDocumentTitle('Analytics — CyberSec Pro');
-  const [data, setData] = useState<AnalyticsData | null>(null);
-  const [loading, setLoading] = useState(true);
   const [timeRange, setTimeRange] = useState<'7d' | '30d' | '90d'>('30d');
-
-  useEffect(() => {
-    loadAnalytics();
-  }, [timeRange]);
-
-  const loadAnalytics = async () => {
-    setLoading(true);
-    const res = await api.getAnalyticsOverview();
-    if (res.data) setData(res.data);
-    setLoading(false);
-  };
+  const { data, isLoading: loading } = useAnalyticsOverview(timeRange);
 
   if (loading) {
     return (

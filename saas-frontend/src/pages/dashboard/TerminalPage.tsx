@@ -4,6 +4,7 @@ import { useAuth } from '../../hooks/useAuth';
 import { PageTransition } from '../../components/ui';
 import { useDocumentTitle } from '../../hooks/useUtilities';
 import { useToast } from '../../components/ui/Toast';
+import { useTerminalAgents } from '../../hooks/useApiQueries';
 
 interface Agent {
   id: number | string;
@@ -30,7 +31,8 @@ export function TerminalPage() {
   const { token } = useAuth();
   const terminalRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
-  const [agents, setAgents] = useState<Agent[]>([]);
+  const { data: fetchedAgents = [] } = useTerminalAgents();
+  const agents = fetchedAgents as unknown as Agent[];
   const [selectedAgent, setSelectedAgent] = useState<Agent | null>(null);
   const [isConnected, setIsConnected] = useState(false);
   const [isExecuting, setIsExecuting] = useState(false);
@@ -53,10 +55,13 @@ export function TerminalPage() {
   const [historyIndex, setHistoryIndex] = useState(-1);
   const [currentPath, setCurrentPath] = useState('~');
 
-  // Fetch agents on mount
+  // Auto-select first online agent when data loads
   useEffect(() => {
-    fetchAgents();
-  }, []);
+    if (agents.length > 0 && !selectedAgent) {
+      const onlineAgent = agents.find((a: Agent) => a.status === 'online');
+      if (onlineAgent) setSelectedAgent(onlineAgent);
+    }
+  }, [agents]);
 
   // Auto-scroll to bottom
   useEffect(() => {
@@ -69,27 +74,6 @@ export function TerminalPage() {
   useEffect(() => {
     inputRef.current?.focus();
   }, []);
-
-  const fetchAgents = async () => {
-    try {
-      const response = await fetch('/api/v1/terminal/agents', {
-        headers: { 'Authorization': `Bearer ${token}` }
-      });
-      const data = await response.json();
-      if (data.agents) {
-        setAgents(data.agents);
-        // Auto-select first online agent (local server is always first)
-        if (!selectedAgent) {
-          const onlineAgent = data.agents.find((a: Agent) => a.status === 'online');
-          if (onlineAgent) {
-            setSelectedAgent(onlineAgent);
-          }
-        }
-      }
-    } catch (err) {
-      toast.error('Connection Error', 'Failed to fetch agents');
-    }
-  };
 
   const testConnection = async () => {
     if (!selectedAgent) return;

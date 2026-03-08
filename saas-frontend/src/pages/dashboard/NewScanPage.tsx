@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useSearchParams, useNavigate, Link } from 'react-router-dom';
 import { Header } from '../../components/layout/Header';
 import { useAuth } from '../../hooks/useAuth';
@@ -6,6 +6,8 @@ import { useDocumentTitle } from '../../hooks/useUtilities';
 import { PageTransition } from '../../components/ui';
 import { useToast } from '../../components/ui/Toast';
 import { getSmartDefaults } from '../../config/toolConfigs';
+import { useTools, useTargets, useProjects, useStartScan } from '../../hooks/useApiQueries';
+import { NewScanPageSkeleton } from '../../components/ui/Skeleton';
 
 interface Tool {
   id: string;
@@ -48,13 +50,34 @@ export function NewScanPage() {
   const navigate = useNavigate();
   const { token } = useAuth();
   
-  const [step, setStep] = useState(1);
-  const [tools, setTools] = useState<{ [category: string]: Tool[] }>({});
-  const [targets, setTargets] = useState<Target[]>([]);
+  // React Query data fetching
+  const { data: toolsData, isLoading: toolsLoading } = useTools('enterprise');
+  const { data: fetchedTargets = [], isLoading: targetsLoading } = useTargets();
+  const { data: fetchedProjects = [], isLoading: projectsLoading } = useProjects();
+  const startScanMutation = useStartScan();
+
+  // Transform tools data from V2 format to component format
+  const tools = useMemo(() => {
+    if (!toolsData) return {} as { [category: string]: Tool[] };
+    const toolsByCategory: { [key: string]: Tool[] } = {};
+    Object.entries(toolsData.categories || {}).forEach(([catKey, catData]: [string, any]) => {
+      toolsByCategory[catData.info?.name || catKey] = catData.tools.map((t: any) => ({
+        ...t,
+        slug: t.id,
+      }));
+    });
+    return toolsByCategory;
+  }, [toolsData]);
+
+  const targets: Target[] = fetchedTargets as unknown as Target[];
+  const projects: Project[] = fetchedProjects as unknown as Project[];
+
+  // Fetch agents separately (different endpoint from agentsDashboard)
   const [agents, setAgents] = useState<Agent[]>([]);
-  const [projects, setProjects] = useState<Project[]>([]);
-  const [loading, setLoading] = useState(true);
+  const loading = toolsLoading || targetsLoading || projectsLoading;
   const [submitting, setSubmitting] = useState(false);
+  
+  const [step, setStep] = useState(1);
   
   // Form state
   const [selectedTool, setSelectedTool] = useState<string>(searchParams.get('tool') || '');
@@ -72,65 +95,22 @@ export function NewScanPage() {
   const [toolSearch, setToolSearch] = useState('');
 
   useEffect(() => {
-    fetchData();
-  }, []);
-
-  const fetchData = async () => {
-    try {
-      // Fetch tools from v2 API
-      const toolsRes = await fetch('/api/v2/tools?plan=enterprise', {
-        headers: { 'Authorization': `Bearer ${token}` },
-      });
-      if (toolsRes.ok) {
-        const data = await toolsRes.json();
-        // Convert v2 API format to component format
-        const toolsByCategory: { [key: string]: Tool[] } = {};
-        Object.entries(data.categories || {}).forEach(([catKey, catData]: [string, any]) => {
-          toolsByCategory[catData.info?.name || catKey] = catData.tools.map((t: any) => ({
-            ...t,
-            slug: t.id,
-          }));
+    // Fetch agents (lightweight endpoint not covered by existing hooks)
+    const fetchAgents = async () => {
+      try {
+        const agentsRes = await fetch('/api/v1/agents', {
+          headers: { 'Authorization': `Bearer ${token}` },
         });
-        setTools(toolsByCategory);
-      }
-
-      // Fetch targets
-      const targetsRes = await fetch('/api/v1/targets', {
-        headers: { 'Authorization': `Bearer ${token}` },
-      });
-      if (targetsRes.ok) {
-        const data = await targetsRes.json();
-        setTargets(data.targets || []);
-      }
-
-      // Fetch agents
-      const agentsRes = await fetch('/api/v1/agents', {
-        headers: { 'Authorization': `Bearer ${token}` },
-      });
-      if (agentsRes.ok) {
-        const data = await agentsRes.json();
-        setAgents(data.agents || []);
-        // Auto-select first online agent
-        const onlineAgent = (data.agents || []).find((a: Agent) => a.status === 'online');
-        if (onlineAgent) {
-          setSelectedAgent(onlineAgent.id);
+        if (agentsRes.ok) {
+          const data = await agentsRes.json();
+          setAgents(data.agents || []);
+          const onlineAgent = (data.agents || []).find((a: Agent) => a.status === 'online');
+          if (onlineAgent) setSelectedAgent(onlineAgent.id);
         }
-      }
-
-      // Fetch projects
-      const projectsRes = await fetch('/api/v1/projects', {
-        headers: { 'Authorization': `Bearer ${token}` },
-      });
-      if (projectsRes.ok) {
-        const data = await projectsRes.json();
-        setProjects(data.projects || []);
-      }
-    } catch (error) {
-      toast.error('Load Failed', 'Failed to fetch scan data');
-    } finally {
-      setLoading(false);
-    }
-  };
+      } catch { /* handled by loading states */ }
+    };
+    fetchAgents();
+  }, [token]);
 
   const handleSubmit = async () => {
     // Check if selected tool is dangerous
@@ -143,34 +123,22 @@ export function NewScanPage() {
     
     setSubmitting(true);
     try {
-      // Use new v1 scan/start endpoint with tool name
       const toolName = selectedToolObj?.name || selectedTool;
-      
-      const res = await fetch('/api/v1/scan/start', {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          tool: toolName,
-          target: useCustomTarget ? customTarget : selectedTarget,
-          parameters: getSmartDefaults(toolName, 'standard'),
-        }),
+      const result = await startScanMutation.mutateAsync({
+        tool: toolName,
+        target: useCustomTarget ? customTarget : selectedTarget,
+        parameters: getSmartDefaults(toolName, 'standard'),
       });
-
-      const data = await res.json();
       
-      if (res.ok && data.success) {
-        navigate(`/dashboard/scans/${data.scan_id}`);
-      } else if (data.requires_confirmation) {
-        // Tool requires dangerous confirmation
+      if (result.success) {
+        navigate(`/dashboard/scans/${result.scan_id}`);
+      } else if (result.requires_confirmation) {
         setShowDangerousWarning(true);
       } else {
-        toast.error('Scan Failed', data.error || data.hint || 'Failed to start scan');
+        toast.error('Scan Failed', result.error || result.hint || 'Failed to start scan');
       }
-    } catch (error) {
-      toast.error('Scan Failed', 'Failed to start scan');
+    } catch (error: any) {
+      toast.error('Scan Failed', error.message || 'Failed to start scan');
     } finally {
       setSubmitting(false);
     }
@@ -190,11 +158,7 @@ export function NewScanPage() {
   void getToolBySlug; // suppress unused warning
 
   if (loading) {
-    return (
-      <div className="min-h-screen bg-gray-950 flex items-center justify-center">
-        <div className="w-8 h-8 border-4 border-kali-blue border-t-transparent rounded-full animate-spin" />
-      </div>
-    );
+    return <NewScanPageSkeleton />;
   }
 
   return (

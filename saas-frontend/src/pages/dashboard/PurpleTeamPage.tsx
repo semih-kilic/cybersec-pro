@@ -1,24 +1,17 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { PageTransition } from '../../components/ui';
 import { useDocumentTitle } from '../../hooks/useUtilities';
-
-// ═══════════════════════════════════════════════════════════
-// API Helper (matches existing api.ts pattern)
-// ═══════════════════════════════════════════════════════════
-
-const API_BASE = '/api/v1';
-
-async function ptFetch<T>(endpoint: string, opts: RequestInit = {}): Promise<T | null> {
-  const token = localStorage.getItem('token');
-  const headers: Record<string, string> = { 'Content-Type': 'application/json' };
-  if (token) headers['Authorization'] = `Bearer ${token}`;
-  try {
-    const res = await fetch(`${API_BASE}${endpoint}`, { ...opts, headers });
-    if (!res.ok) return null;
-    return await res.json();
-  } catch { return null; }
-}
+import {
+  usePurpleTeamStats,
+  useAttackChains,
+  usePlaybooks,
+  usePurpleTeamExercises,
+  usePurpleTeamExercise,
+  useMitreMatrix,
+  useStartExercise,
+} from '../../hooks/useApiQueries';
+import { PurpleTeamPageSkeleton } from '../../components/ui/Skeleton';
 
 // ═══════════════════════════════════════════════════════════
 // Interfaces
@@ -610,103 +603,68 @@ function ExerciseDetail({ exercise }: { exercise: Exercise }) {
 export default function PurpleTeamPage() {
   useDocumentTitle('Purple Team — CyberSec Pro');
   const { t: _t } = useTranslation();
+  const queryClient = useQueryClient();
 
   // State
   const [tab, setTab] = useState<'dashboard' | 'exercise' | 'matrix' | 'playbooks'>('dashboard');
-  const [loading, setLoading] = useState(true);
-  const [stats, setStats] = useState<DashboardStats | null>(null);
-  const [chains, setChains] = useState<AttackChain[]>([]);
-  const [playbooks, setPlaybooks] = useState<Playbook[]>([]);
-  const [exercises, setExercises] = useState<Exercise[]>([]);
-  const [selectedExercise, setSelectedExercise] = useState<Exercise | null>(null);
-  const [mitreMatrix, setMitreMatrix] = useState<Record<string, MitreTactic>>({});
+  const [selectedExerciseId, setSelectedExerciseId] = useState<string | null>(null);
 
   // New exercise form
   const [showNewExercise, setShowNewExercise] = useState(false);
   const [newTarget, setNewTarget] = useState('');
   const [newName, setNewName] = useState('');
   const [selectedChain, setSelectedChain] = useState<AttackChain | null>(null);
-  const [starting, setStarting] = useState(false);
 
-  // Load everything
-  const loadData = useCallback(async () => {
-    setLoading(true);
-    const [statsRes, chainsRes, playbooksRes, exercisesRes, matrixRes] = await Promise.all([
-      ptFetch<DashboardStats>('/purple-team/dashboard'),
-      ptFetch<AttackChain[]>('/purple-team/chains'),
-      ptFetch<Playbook[]>('/purple-team/playbooks'),
-      ptFetch<Exercise[]>('/purple-team/exercises'),
-      ptFetch<Record<string, MitreTactic>>('/purple-team/mitre-matrix'),
-    ]);
-    if (statsRes) setStats(statsRes);
-    if (chainsRes) setChains(chainsRes);
-    if (playbooksRes) setPlaybooks(playbooksRes);
-    if (exercisesRes) setExercises(exercisesRes);
-    if (matrixRes) setMitreMatrix(matrixRes);
-    setLoading(false);
-  }, []);
+  // React Query hooks — all 5 data sources
+  const { data: stats = null, isLoading: statsLoading } = usePurpleTeamStats();
+  const { data: chains = [], isLoading: chainsLoading } = useAttackChains();
+  const { data: playbooks = [] } = usePlaybooks();
+  const { data: mitreMatrix = {} } = useMitreMatrix();
 
-  useEffect(() => { loadData(); }, [loadData]);
+  // Exercises with auto-refresh when any is running
+  const { data: rawExercises = [] } = usePurpleTeamExercises(false);
+  const exercises = rawExercises as unknown as Exercise[];
+  const hasRunning = useMemo(() => exercises.some(e => e.status === 'running'), [exercises]);
+  // Re-fetch exercises + stats every 3s when running
+  usePurpleTeamExercises(hasRunning);
+  usePurpleTeamStats();
 
-  // Auto-refresh for running exercises
-  useEffect(() => {
-    const running = exercises.some(e => e.status === 'running');
-    if (!running) return;
-    const interval = setInterval(async () => {
-      const res = await ptFetch<Exercise[]>('/purple-team/exercises');
-      if (res) {
-        setExercises(res);
-        // Update selected exercise too
-        if (selectedExercise) {
-          const updated = res.find(e => e.id === selectedExercise.id);
-          if (updated) setSelectedExercise(updated);
-        }
-      }
-      const statsRes = await ptFetch<DashboardStats>('/purple-team/dashboard');
-      if (statsRes) setStats(statsRes);
-    }, 3000);
-    return () => clearInterval(interval);
-  }, [exercises, selectedExercise]);
+  // Exercise detail
+  const { data: exerciseDetail } = usePurpleTeamExercise(selectedExerciseId);
+  const selectedExercise = (exerciseDetail as unknown as Exercise) || null;
+
+  const startExerciseMutation = useStartExercise();
+  const starting = startExerciseMutation.isPending;
+  const loading = statsLoading || chainsLoading;
 
   // Start exercise
   const startExercise = async () => {
     if (!selectedChain || !newTarget.trim()) return;
-    setStarting(true);
-    const res = await ptFetch<Exercise>('/purple-team/exercises', {
-      method: 'POST',
-      body: JSON.stringify({
+    try {
+      const res = await startExerciseMutation.mutateAsync({
         chain_id: selectedChain.id,
         target: newTarget.trim(),
         name: newName.trim() || undefined,
-      }),
-    });
-    if (res) {
-      setExercises(prev => [res, ...prev]);
-      setSelectedExercise(res);
-      setShowNewExercise(false);
-      setNewTarget('');
-      setNewName('');
-      setSelectedChain(null);
-      setTab('exercise');
-    }
-    setStarting(false);
+      });
+      if (res) {
+        setSelectedExerciseId(res.id);
+        setShowNewExercise(false);
+        setNewTarget('');
+        setNewName('');
+        setSelectedChain(null);
+        setTab('exercise');
+      }
+    } catch { /* mutation error handled by global toast */ }
   };
 
   // View exercise detail
   const viewExercise = async (ex: Exercise) => {
-    const detail = await ptFetch<Exercise>(`/purple-team/exercises/${ex.id}`);
-    if (detail) {
-      setSelectedExercise(detail);
-      setTab('exercise');
-    }
+    setSelectedExerciseId(ex.id);
+    setTab('exercise');
   };
 
   if (loading) {
-    return (
-      <div className="flex items-center justify-center h-64">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-500" />
-      </div>
-    );
+    return <PurpleTeamPageSkeleton />;
   }
 
   return (

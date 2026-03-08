@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useAuth } from '../../hooks/useAuth';
 import { PageTransition } from '../../components/ui';
 import { useDocumentTitle } from '../../hooks/useUtilities';
+import { useSubmitFeedback } from '../../hooks/useApiQueries';
 import { 
   BugAntIcon, 
   LightBulbIcon, 
@@ -61,6 +62,7 @@ const feedbackTypes: FeedbackType[] = [
 export default function FeedbackPage() {
   useDocumentTitle('Feedback — CyberSec Pro');
   const { user } = useAuth();
+  const submitFeedback = useSubmitFeedback();
   const [selectedType, setSelectedType] = useState<string>('');
   const [subject, setSubject] = useState('');
   const [message, setMessage] = useState('');
@@ -93,8 +95,6 @@ export default function FeedbackPage() {
     setError('');
 
     try {
-      const token = localStorage.getItem('token');
-      
       // Gather system info if enabled
       const systemInfo = includeSystemInfo ? {
         userAgent: navigator.userAgent,
@@ -105,38 +105,26 @@ export default function FeedbackPage() {
         currentUrl: window.location.href
       } : null;
 
-      const response = await fetch('/api/v1/feedback', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        },
-        body: JSON.stringify({
-          type: selectedType,
-          subject,
-          message,
-          priority,
-          replyEmail,
-          systemInfo,
-          user: {
-            email: user?.email,
-            name: user?.first_name ? `${user.first_name} ${user.last_name || ''}` : 'User'
-          }
-        })
+      await submitFeedback.mutateAsync({
+        type: selectedType,
+        subject,
+        message,
+        priority,
+        replyEmail,
+        systemInfo,
+        user: {
+          email: user?.email,
+          name: user?.first_name ? `${user.first_name} ${user.last_name || ''}` : 'User'
+        }
       });
 
-      if (response.ok) {
-        setSent(true);
-        setSelectedType('');
-        setSubject('');
-        setMessage('');
-        setReplyEmail(user?.email || '');
-      } else {
-        const data = await response.json();
-        setError(data.error || 'Failed to send feedback');
-      }
-    } catch (err) {
-      setError('Network error. Please try again.');
+      setSent(true);
+      setSelectedType('');
+      setSubject('');
+      setMessage('');
+      setReplyEmail(user?.email || '');
+    } catch (err: any) {
+      setError(err.message || 'Network error. Please try again.');
     } finally {
       setSending(false);
     }

@@ -2,6 +2,7 @@ import { useState, useRef, useEffect } from 'react';
 import { useAuth } from '../../hooks/useAuth';
 import { PageTransition } from '../../components/ui';
 import { useDocumentTitle } from '../../hooks/useUtilities';
+import { useSendChatMessage } from '../../hooks/useApiQueries';
 
 interface ChatMessage {
   id: string;
@@ -36,6 +37,7 @@ Just type your question or use the quick actions below!`,
 export default function AIAssistantPage() {
   useDocumentTitle('AI Assistant — CyberSec Pro');
   const { token } = useAuth();
+  const chatMutation = useSendChatMessage();
   const [messages, setMessages] = useState<ChatMessage[]>([WELCOME_MESSAGE]);
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
@@ -67,25 +69,15 @@ export default function AIAssistantPage() {
     setLoading(true);
 
     try {
-      const res = await fetch('/api/v1/chatbot/message', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`,
-        },
-        body: JSON.stringify({
-          message: text,
-          quick_action: quickAction || undefined,
-        }),
+      const data = await chatMutation.mutateAsync({
+        message: text,
+        quick_action: quickAction || undefined,
       });
-
-      const data = await res.json();
 
       const botMsg: ChatMessage = {
         id: `bot-${Date.now()}`,
         role: 'bot',
         content: data.response || 'Sorry, I could not process that. Please try again.',
-        type: data.type,
         timestamp: new Date(),
       };
       setMessages(prev => [...prev, botMsg]);

@@ -383,3 +383,126 @@ export const ProjectsPageSkeleton = memo(function ProjectsPageSkeleton() {
     </div>
   );
 });
+
+// ── Admin Page Skeleton ──
+export const AdminPageSkeleton = memo(function AdminPageSkeleton() {
+  return (
+    <div className="p-6 max-w-7xl mx-auto space-y-6 animate-pulse">
+      <div className="flex items-center justify-between">
+        <div>
+          <Skeleton className="h-8 w-56 mb-2" />
+          <Skeleton className="h-4 w-40" />
+        </div>
+        <Skeleton className="h-6 w-24" rounded="full" />
+      </div>
+      <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
+        {Array.from({ length: 5 }).map((_, i) => (
+          <div key={i} className="bg-gray-900 rounded-xl border border-gray-800 p-4">
+            <Skeleton className="h-3 w-20 mb-2" />
+            <Skeleton className="h-8 w-16" />
+          </div>
+        ))}
+      </div>
+      <div className="bg-gray-900 rounded-xl border border-gray-800 p-6">
+        <Skeleton className="h-5 w-32 mb-4" />
+        {Array.from({ length: 4 }).map((_, i) => (
+          <div key={i} className="flex items-center gap-4 py-3 border-b border-gray-800 last:border-0">
+            <Skeleton className="h-4 w-48" />
+            <Skeleton className="h-4 w-32" />
+            <Skeleton className="h-6 w-16 ml-auto" rounded="full" />
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+});
+
+// ── New Scan Page Skeleton ──
+export const NewScanPageSkeleton = memo(function NewScanPageSkeleton() {
+  return (
+    <div className="min-h-screen bg-gray-950">
+      <div className="max-w-4xl mx-auto p-6 space-y-6 animate-pulse">
+        <Skeleton className="h-8 w-40 mb-2" />
+        <Skeleton className="h-4 w-64 mb-6" />
+        <div className="flex justify-center gap-4 mb-8">
+          {[1, 2, 3].map(i => (
+            <Skeleton key={i} className="h-10 w-10" rounded="full" />
+          ))}
+        </div>
+        <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+          {Array.from({ length: 9 }).map((_, i) => (
+            <div key={i} className="bg-gray-900/50 rounded-xl border border-gray-800 p-4">
+              <Skeleton className="h-5 w-32 mb-2" />
+              <Skeleton className="h-3 w-full" />
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+});
+
+// ── Tool Detail Page Skeleton ──
+export const ToolDetailPageSkeleton = memo(function ToolDetailPageSkeleton() {
+  return (
+    <div className="min-h-screen bg-gray-950 p-6 animate-pulse">
+      <div className="max-w-4xl mx-auto space-y-6">
+        <div className="flex items-center gap-4 mb-6">
+          <Skeleton className="h-6 w-20" />
+          <Skeleton className="h-6 w-2" />
+          <Skeleton className="h-6 w-40" />
+        </div>
+        <div className="bg-gray-900 rounded-xl border border-gray-800 p-6">
+          <Skeleton className="h-8 w-48 mb-3" />
+          <Skeleton className="h-4 w-full mb-1" />
+          <Skeleton className="h-4 w-3/4 mb-4" />
+          <div className="flex gap-2">
+            <Skeleton className="h-6 w-20" rounded="full" />
+            <Skeleton className="h-6 w-24" rounded="full" />
+          </div>
+        </div>
+        <div className="bg-gray-900 rounded-xl border border-gray-800 p-6 space-y-4">
+          <Skeleton className="h-5 w-32 mb-4" />
+          {Array.from({ length: 4 }).map((_, i) => (
+            <div key={i}>
+              <Skeleton className="h-4 w-24 mb-2" />
+              <Skeleton className="h-10 w-full" rounded="lg" />
+            </div>
+          ))}
+        </div>
+        <Skeleton className="h-12 w-full" rounded="xl" />
+      </div>
+    </div>
+  );
+});
+
+// ── Purple Team Page Skeleton ──
+export const PurpleTeamPageSkeleton = memo(function PurpleTeamPageSkeleton() {
+  return (
+    <div className="space-y-6 p-6 animate-pulse">
+      <div className="flex items-center justify-between">
+        <div>
+          <Skeleton className="h-8 w-48 mb-2" />
+          <Skeleton className="h-4 w-64" />
+        </div>
+        <Skeleton className="h-9 w-32" rounded="lg" />
+      </div>
+      <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
+        {Array.from({ length: 5 }).map((_, i) => (
+          <div key={i} className="bg-gradient-to-br from-gray-800/30 to-gray-900/30 border border-gray-700/30 rounded-xl p-4">
+            <Skeleton className="h-3 w-20 mb-2" />
+            <Skeleton className="h-7 w-12" />
+          </div>
+        ))}
+      </div>
+      <div className="bg-gray-900/50 border border-gray-700/50 rounded-xl p-4">
+        <Skeleton className="h-5 w-48 mb-4" />
+        <div className="grid grid-cols-7 gap-2">
+          {Array.from({ length: 14 }).map((_, i) => (
+            <Skeleton key={i} className="h-16 w-full" rounded="lg" />
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+});

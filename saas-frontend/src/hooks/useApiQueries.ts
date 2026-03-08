@@ -658,3 +658,305 @@ export function useProjects() {
     enabled: !!token,
   });
 }
+
+// ==========================================
+// ANALYTICS HOOKS
+// ==========================================
+
+export interface AnalyticsData {
+  daily_trend: Array<{ date: string; scans: number }>;
+  tool_usage: Array<{ name: string; count: number }>;
+  status_distribution: Record<string, number>;
+  target_distribution: Array<{ target: string; count: number }>;
+  comparison: { this_week: number; last_week: number; change_pct: number };
+  performance: { avg_duration_seconds: number; total_scans: number; success_rate: number };
+  risk: { score: number; level: string; severity_totals: Record<string, number>; total_issues: number };
+}
+
+export function useAnalyticsOverview(timeRange?: string) {
+  const { token } = useAuth();
+
+  return useQuery<AnalyticsData>({
+    queryKey: queryKeys.analytics.overview(timeRange),
+    queryFn: () => authFetch<AnalyticsData>('/api/v1/analytics/overview', token),
+    ...CACHE_TIMES.analytics,
+    enabled: !!token,
+  });
+}
+
+// ==========================================
+// ADMIN HOOKS
+// ==========================================
+
+export interface AdminOverview {
+  users: { total: number; active: number; list: Array<{ id: string; email: string; first_name: string; last_name: string; role: string; organization_id: string; is_active: boolean; created_at: string }> };
+  organizations: { total: number; plans_distribution: Record<string, number>; list: Array<{ id: string; name: string; slug: string; plan_type: string; is_active: boolean }> };
+  scans: { total: number; running: number; recent: Array<{ id: string; target: string; status: string; created_at: string }> };
+  agents: { total: number; online: number };
+  revenue: { mrr: number; arr: number };
+}
+
+export function useAdminOverview() {
+  const { token } = useAuth();
+
+  return useQuery<AdminOverview>({
+    queryKey: queryKeys.admin.overview(),
+    queryFn: () => authFetch<AdminOverview>('/api/v1/admin/overview', token),
+    ...CACHE_TIMES.admin,
+    enabled: !!token,
+  });
+}
+
+export function useImpersonateUser() {
+  const { token } = useAuth();
+
+  return useMutation({
+    mutationFn: (email: string) =>
+      authFetch<{ token: string }>('/api/v1/admin/impersonate', token, {
+        method: 'POST',
+        body: JSON.stringify({ email }),
+      }),
+  });
+}
+
+export function useChangePlan() {
+  const { token } = useAuth();
+  const qc = useQueryClient();
+
+  return useMutation({
+    mutationFn: (planType: string) =>
+      authFetch('/api/v1/admin/change-plan', token, {
+        method: 'POST',
+        body: JSON.stringify({ plan_type: planType }),
+      }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: queryKeys.admin.all });
+    },
+  });
+}
+
+// ==========================================
+// PURPLE TEAM HOOKS
+// ==========================================
+
+export interface PurpleTeamStats {
+  total_exercises: number;
+  running: number;
+  completed: number;
+  total_attack_steps: number;
+  total_detected: number;
+  total_missed: number;
+  detection_rate: number;
+  average_risk_score: number;
+  available_chains: number;
+  available_playbooks: number;
+}
+
+export interface AttackChain {
+  id: string;
+  name: string;
+  description: string;
+  severity: string;
+  steps_count: number;
+  mitre_tactics: string[];
+  tools_used: string[];
+}
+
+export interface Playbook {
+  id: string;
+  name: string;
+  trigger: string;
+  severity: string;
+  mitre_techniques: string[];
+  response_actions_count: number;
+  auto_actions: number;
+  detection_logic: Record<string, unknown>;
+}
+
+export interface PurpleExercise {
+  id: string;
+  name: string;
+  attack_chain_id: string;
+  target: string;
+  status: string;
+  started_at: string;
+  completed_at: string;
+  total_steps: number;
+  completed_steps: number;
+  detected_attacks: number;
+  missed_attacks: number;
+  risk_score: number;
+  red_team_results: unknown[];
+  blue_team_alerts: unknown[];
+  gap_analysis: unknown;
+  coverage_map: Record<string, unknown>;
+}
+
+export interface MitreTactic {
+  name: string;
+  techniques: { id: string; name: string; subtechniques_count: number }[];
+  total: number;
+}
+
+export function usePurpleTeamStats() {
+  const { token } = useAuth();
+
+  return useQuery<PurpleTeamStats>({
+    queryKey: queryKeys.purpleTeam.dashboard(),
+    queryFn: () => authFetch<PurpleTeamStats>('/api/v1/purple-team/dashboard', token),
+    ...CACHE_TIMES.purpleTeam,
+    enabled: !!token,
+  });
+}
+
+export function useAttackChains() {
+  const { token } = useAuth();
+
+  return useQuery<AttackChain[]>({
+    queryKey: queryKeys.purpleTeam.chains(),
+    queryFn: () => authFetch<AttackChain[]>('/api/v1/purple-team/chains', token),
+    ...CACHE_TIMES.purpleTeam,
+    enabled: !!token,
+  });
+}
+
+export function usePlaybooks() {
+  const { token } = useAuth();
+
+  return useQuery<Playbook[]>({
+    queryKey: queryKeys.purpleTeam.playbooks(),
+    queryFn: () => authFetch<Playbook[]>('/api/v1/purple-team/playbooks', token),
+    ...CACHE_TIMES.purpleTeam,
+    enabled: !!token,
+  });
+}
+
+export function usePurpleTeamExercises(autoRefresh = false) {
+  const { token } = useAuth();
+
+  return useQuery<PurpleExercise[]>({
+    queryKey: queryKeys.purpleTeam.exercises(),
+    queryFn: () => authFetch<PurpleExercise[]>('/api/v1/purple-team/exercises', token),
+    ...CACHE_TIMES.purpleTeam,
+    refetchInterval: autoRefresh ? 3000 : false,
+    enabled: !!token,
+  });
+}
+
+export function usePurpleTeamExercise(id: string | null) {
+  const { token } = useAuth();
+
+  return useQuery<PurpleExercise>({
+    queryKey: queryKeys.purpleTeam.exercise(id || ''),
+    queryFn: () => authFetch<PurpleExercise>(`/api/v1/purple-team/exercises/${id}`, token),
+    ...CACHE_TIMES.purpleTeam,
+    enabled: !!token && !!id,
+  });
+}
+
+export function useMitreMatrix() {
+  const { token } = useAuth();
+
+  return useQuery<Record<string, MitreTactic>>({
+    queryKey: queryKeys.purpleTeam.mitreMatrix(),
+    queryFn: () => authFetch<Record<string, MitreTactic>>('/api/v1/purple-team/mitre-matrix', token),
+    staleTime: 5 * 60_000,  // MITRE matrix is static data
+    gcTime: 30 * 60_000,
+    enabled: !!token,
+  });
+}
+
+export function useStartExercise() {
+  const { token } = useAuth();
+  const qc = useQueryClient();
+
+  return useMutation({
+    mutationFn: (data: { chain_id: string; target: string; name?: string }) =>
+      authFetch<PurpleExercise>('/api/v1/purple-team/exercises', token, {
+        method: 'POST',
+        body: JSON.stringify(data),
+      }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: queryKeys.purpleTeam.exercises() });
+      qc.invalidateQueries({ queryKey: queryKeys.purpleTeam.dashboard() });
+    },
+  });
+}
+
+// ==========================================
+// TERMINAL HOOKS
+// ==========================================
+
+export interface TerminalAgent {
+  id: number | string;
+  name: string;
+  hostname: string;
+  ip_address: string;
+  platform: string;
+  status: string;
+  ssh_host: string;
+  ssh_port: number;
+  ssh_username: string;
+  connection_type?: string;
+}
+
+export function useTerminalAgents() {
+  const { token } = useAuth();
+
+  return useQuery({
+    queryKey: queryKeys.terminal.agents(),
+    queryFn: () => authFetch<{ agents: TerminalAgent[] }>('/api/v1/terminal/agents', token),
+    select: (data) => data.agents || [],
+    ...CACHE_TIMES.terminal,
+    enabled: !!token,
+  });
+}
+
+// ==========================================
+// SCAN MUTATIONS
+// ==========================================
+
+export function useStartScan() {
+  const { token } = useAuth();
+  const qc = useQueryClient();
+
+  return useMutation({
+    mutationFn: (data: { tool: string; target: string; parameters?: Record<string, unknown> }) =>
+      authFetch<{ success: boolean; scan_id: string; error?: string; hint?: string; requires_confirmation?: boolean }>(
+        '/api/v1/scan/start', token, {
+          method: 'POST',
+          body: JSON.stringify(data),
+        }
+      ),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: queryKeys.scans.all });
+      qc.invalidateQueries({ queryKey: queryKeys.dashboard.all });
+    },
+  });
+}
+
+export function useSubmitFeedback() {
+  const { token } = useAuth();
+
+  return useMutation({
+    mutationFn: (data: Record<string, unknown>) =>
+      authFetch('/api/v1/feedback', token, {
+        method: 'POST',
+        body: JSON.stringify(data),
+      }),
+  });
+}
+
+export function useSendChatMessage() {
+  const { token } = useAuth();
+
+  return useMutation({
+    mutationFn: (data: { message: string; quick_action?: string }) =>
+      authFetch<{ response: string; quick_actions?: Array<{ id: string; label: string }> }>(
+        '/api/v1/chatbot/message', token, {
+          method: 'POST',
+          body: JSON.stringify(data),
+        }
+      ),
+  });
+}

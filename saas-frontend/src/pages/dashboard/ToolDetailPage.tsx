@@ -4,8 +4,11 @@ import { Header } from '../../components/layout/Header';
 import { useAuth } from '../../hooks/useAuth';
 import { useDocumentTitle } from '../../hooks/useUtilities';
 import { PageTransition } from '../../components/ui';
+import { ToolDetailPageSkeleton } from '../../components/ui/Skeleton';
 import { getToolConfig, getSmartDefaults, ToolConfig } from '../../config/toolConfigs';
 import { useTarget } from '../../contexts/TargetContext';
+import { useQuery } from '@tanstack/react-query';
+import { queryKeys, CACHE_TIMES } from '../../lib/queryClient';
 
 // Target Memory - now uses global TargetContext for cross-tool persistence
 const TARGET_STORAGE_KEY = 'cybersec_recent_targets';
@@ -64,8 +67,6 @@ export function ToolDetailPage() {
   const toast = useToast();
   const { token: _token } = useAuth();
   const { target: globalTarget, addRecentTarget: addGlobalTarget } = useTarget();
-  const [tool, setTool] = useState<Tool | null>(null);
-  const [loading, setLoading] = useState(true);
   const [paramValues, setParamValues] = useState<{ [key: string]: string | number | boolean }>({});
   const [generatedCommand, setGeneratedCommand] = useState('');
   const [activeTab, setActiveTab] = useState<'params' | 'docs' | 'examples'>('params');
@@ -73,14 +74,63 @@ export function ToolDetailPage() {
   // New: One-Click Scan and Target Memory
   const [recentTargets, setRecentTargets] = useState<string[]>([]);
   const [showTargetDropdown, setShowTargetDropdown] = useState(false);
-  const [toolConfig, setToolConfig] = useState<ToolConfig | null>(null);
-  const [toolCategory, setToolCategory] = useState<string>('');
+
+  // React Query: fetch tool data with caching
+  const { data: toolQueryData, isLoading: loading } = useQuery({
+    queryKey: queryKeys.tools.detail(toolId || ''),
+    queryFn: async (): Promise<{ tool: Tool; category: string; config: ToolConfig | null }> => {
+      let category = '';
+      // First fetch category info from V2 API
+      try {
+        const v2Res = await fetch(`/api/v2/tools/${toolId}`);
+        if (v2Res.ok) {
+          const v2Data = await v2Res.json();
+          if (v2Data.success && v2Data.tool) {
+            category = v2Data.tool.category || '';
+          }
+        }
+      } catch { /* V2 API optional */ }
+
+      // Fetch tool configuration from V1 API
+      try {
+        const res = await fetch(`/api/v1/tools/${toolId}/config`, {
+          headers: { 'Authorization': `Bearer ${localStorage.getItem('token') || ''}` },
+        });
+        if (res.ok) {
+          const data = await res.json();
+          if (!category && data.tool?.category) category = data.tool.category;
+          return { tool: data.tool, category, config: null };
+        }
+      } catch { /* fallback below */ }
+
+      // Fallback: use smart config system
+      const config = getToolConfig(toolId || '', category || undefined);
+      const fallbackTool: Tool = {
+        id: toolId || '',
+        name: config.name || toolId?.toUpperCase() || '',
+        slug: toolId || '',
+        description: config.description,
+        category: category || config.category,
+        plan_required: 'starter',
+        is_active: true,
+        parameters: config.parameters,
+        documentation: config.documentation,
+        examples: config.examples,
+      };
+      return { tool: fallbackTool, category: category || config.category, config };
+    },
+    ...CACHE_TIMES.tools,
+    enabled: !!toolId,
+  });
+
+  const tool = toolQueryData?.tool || null;
+  const toolCategory = toolQueryData?.category || '';
+  const toolConfig = toolQueryData?.config || (tool && toolId ? getToolConfig(toolId, toolCategory || undefined) : null);
 
   useDocumentTitle(tool ? `${tool.name} — CyberSec Pro` : 'Tool — CyberSec Pro');
 
   useEffect(() => {
     setRecentTargets(getRecentTargets());
-    fetchTool();
   }, [toolId]);
 
   // Auto-fill target from global context when tool changes
@@ -96,81 +146,9 @@ export function ToolDetailPage() {
 
   useEffect(() => {
     if (tool && toolId) {
-      // Load smart config for this tool, using category info
-      const config = getToolConfig(toolId, toolCategory || undefined);
-      setToolConfig(config);
-      
-      // Initialize with empty target, user can select from dropdown
       generateCommand();
     }
   }, [paramValues, tool, toolId]);
-
-  const fetchTool = async () => {
-    try {
-      // First fetch category info from V2 API (always has data for all 682 tools)
-      let category = '';
-      try {
-        const v2Res = await fetch(`/api/v2/tools/${toolId}`);
-        if (v2Res.ok) {
-          const v2Data = await v2Res.json();
-          if (v2Data.success && v2Data.tool) {
-            category = v2Data.tool.category || '';
-            setToolCategory(category);
-          }
-        }
-      } catch { /* V2 API optional */ }
-
-      // Fetch tool configuration from API
-      const res = await fetch(`/api/v1/tools/${toolId}/config`, {
-        headers: { 'Authorization': `Bearer ${localStorage.getItem('token') || ''}` },
-      });
-      
-      if (res.ok) {
-        const data = await res.json();
-        setTool(data.tool);
-        // Also set category if not already set
-        if (!category && data.tool?.category) {
-          setToolCategory(data.tool.category);
-        }
-      } else {
-        // Use smart config system with category for better fallback
-        const config = getToolConfig(toolId || '', category || undefined);
-        const fallbackTool: Tool = {
-          id: toolId || '',
-          name: config.name || toolId?.toUpperCase() || '',
-          slug: toolId || '',
-          description: config.description,
-          category: category || config.category,
-          plan_required: 'starter',
-          is_active: true,
-          parameters: config.parameters,
-          documentation: config.documentation,
-          examples: config.examples
-        };
-        setTool(fallbackTool);
-        setToolConfig(config);
-      }
-    } catch (error) {
-      // Use smart config system with category
-      const config = getToolConfig(toolId || '', toolCategory || undefined);
-      const fallbackTool: Tool = {
-        id: toolId || '',
-        name: config.name || toolId?.toUpperCase() || '',
-        slug: toolId || '',
-        description: config.description,
-        category: toolCategory || config.category,
-        plan_required: 'starter',
-        is_active: true,
-        parameters: config.parameters,
-        documentation: config.documentation,
-        examples: config.examples
-      };
-      setTool(fallbackTool);
-      setToolConfig(config);
-    } finally {
-      setLoading(false);
-    }
-  };
 
   // Helper function to normalize parameters from API (handles both array and object formats)
   const getNormalizedParams = (): ToolParameter[] => {
@@ -305,11 +283,7 @@ export function ToolDetailPage() {
   };
 
   if (loading) {
-    return (
-      <div className="min-h-screen bg-gray-950 flex items-center justify-center">
-        <div className="w-8 h-8 border-4 border-kali-blue border-t-transparent rounded-full animate-spin" />
-      </div>
-    );
+    return <ToolDetailPageSkeleton />;
   }
 
   if (!tool) {

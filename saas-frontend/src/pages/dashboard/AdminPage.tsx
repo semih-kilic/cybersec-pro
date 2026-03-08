@@ -2,10 +2,12 @@
  * 🛡️ Admin God Mode - Superadmin Only
  * Impersonate users, view all organizations, MRR stats.
  */
-import { useState, useEffect, useCallback } from 'react';
+import { useState } from 'react';
 import { useAuth } from '../../hooks/useAuth';
 import { PageTransition } from '../../components/ui';
 import { useDocumentTitle } from '../../hooks/useUtilities';
+import { useAdminOverview, useChangePlan } from '../../hooks/useApiQueries';
+import { AdminPageSkeleton } from '../../components/ui/Skeleton';
 
 interface AdminUser {
   id: string;
@@ -44,34 +46,12 @@ interface AdminOverview {
 export function AdminPage() {
   useDocumentTitle('Admin — CyberSec Pro');
   const { user, token } = useAuth();
-  const [overview, setOverview] = useState<AdminOverview | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const { data: overview, isLoading: loading, error: queryError } = useAdminOverview();
+  const changePlanMutation = useChangePlan();
+  const [error, setError] = useState<string | null>(queryError?.message || null);
   const [impersonating, setImpersonating] = useState(false);
   const [impersonateEmail, setImpersonateEmail] = useState('');
   const [tab, setTab] = useState<'overview' | 'users' | 'orgs'>('overview');
-
-  const fetchOverview = useCallback(async () => {
-    try {
-      setLoading(true);
-      const res = await fetch('/api/v1/admin/overview', {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      if (!res.ok) {
-        const data = await res.json();
-        throw new Error(data.error || 'Failed to load admin data');
-      }
-      setOverview(await res.json());
-    } catch (e: any) {
-      setError(e.message);
-    } finally {
-      setLoading(false);
-    }
-  }, [token]);
-
-  useEffect(() => {
-    fetchOverview();
-  }, [fetchOverview]);
 
   const handleImpersonate = async () => {
     if (!impersonateEmail.trim()) return;
@@ -101,17 +81,7 @@ export function AdminPage() {
 
   const handleChangePlan = async (planType: string) => {
     try {
-      const res = await fetch('/api/v1/admin/change-plan', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({ plan_type: planType }),
-      });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error);
-      fetchOverview();
+      await changePlanMutation.mutateAsync(planType);
     } catch (e: any) {
       setError(e.message);
     }
@@ -131,11 +101,7 @@ export function AdminPage() {
   }
 
   if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="w-8 h-8 border-4 border-kali-blue border-t-transparent rounded-full animate-spin" />
-      </div>
-    );
+    return <AdminPageSkeleton />;
   }
 
   const d = overview;
