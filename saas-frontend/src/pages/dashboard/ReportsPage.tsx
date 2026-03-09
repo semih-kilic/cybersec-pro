@@ -1,10 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
-import { useQueryClient } from '@tanstack/react-query';
 import { Header } from '../../components/layout/Header';
 import { PageTransition } from '../../components/ui';
-import { useAuth } from '../../hooks/useAuth';
-import { useReports, useReportTemplates } from '../../hooks/useApiQueries';
-import { queryKeys } from '../../lib/queryClient';
+import { useReports, useReportTemplates, useGenerateReport, useFetchReport, useDeleteReport } from '../../hooks/useApiQueries';
 import { useDocumentTitle } from '../../hooks/useUtilities';
 import { useToast } from '../../components/ui/Toast';
 import { ReportsPageSkeleton } from '../../components/ui/Skeleton';
@@ -131,9 +128,10 @@ const defaultTemplates: ReportTemplate[] = [
 export function ReportsPage() {
   useDocumentTitle('Reports — CyberSec Pro');
   const toast = useToast();
-  const { token } = useAuth();
-  const queryClient = useQueryClient();
   const { data: reportsData, isLoading: reportsLoading } = useReports();
+  const generateMutation = useGenerateReport();
+  const fetchReportMutation = useFetchReport();
+  const deleteMutation = useDeleteReport();
   const reports = reportsData?.reports || [];
   const availableScans = reportsData?.available_scans || [];
   const { data: fetchedTemplates = [], isLoading: templatesLoading } = useReportTemplates();
@@ -174,50 +172,37 @@ export function ReportsPage() {
     setGenerating(true);
     
     try {
-      const res = await fetch('/api/v1/reports', {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          scan_ids: selectedScans,
-          name: reportName,
-          format: reportFormat,
-          template: selectedTemplate,
-          sections: selectedSections,
-        }),
+      const res = await generateMutation.mutateAsync({
+        scan_ids: selectedScans,
+        name: reportName,
+        format: reportFormat,
+        template: selectedTemplate,
+        sections: selectedSections,
       });
       
-      if (res.ok) {
-        // PDF returns binary blob directly
-        if (reportFormat === 'pdf') {
-          const blob = await res.blob();
-          const url = window.URL.createObjectURL(blob);
-          const a = document.createElement('a');
-          a.href = url;
-          a.download = `${reportName.replace(/\s+/g, '_')}_${new Date().toISOString().split('T')[0]}.pdf`;
-          document.body.appendChild(a);
-          a.click();
-          window.URL.revokeObjectURL(url);
-          document.body.removeChild(a);
-        } else {
-          const data = await res.json();
-          const content = data.report.content;
-          downloadReport(content, reportName, reportFormat);
-        }
-        
-        // Refresh and close modal
-        setShowGenerateModal(false);
-        setSelectedScans([]);
-        setReportName('Security Assessment Report');
-        queryClient.invalidateQueries({ queryKey: queryKeys.reports.all });
+      // PDF returns binary blob directly
+      if (reportFormat === 'pdf') {
+        const blob = await res.blob();
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `${reportName.replace(/\s+/g, '_')}_${new Date().toISOString().split('T')[0]}.pdf`;
+        document.body.appendChild(a);
+        a.click();
+        window.URL.revokeObjectURL(url);
+        document.body.removeChild(a);
       } else {
-        const error = await res.json();
-        toast.error('Report Failed', error.error || 'Failed to generate report');
+        const data = await res.json();
+        const content = data.report.content;
+        downloadReport(content, reportName, reportFormat);
       }
-    } catch (error) {
-      toast.error('Report Failed', 'Failed to generate report');
+      
+      // Close modal and reset
+      setShowGenerateModal(false);
+      setSelectedScans([]);
+      setReportName('Security Assessment Report');
+    } catch (error: any) {
+      toast.error('Report Failed', error?.message || 'Failed to generate report');
     } finally {
       setGenerating(false);
     }
@@ -252,15 +237,10 @@ export function ReportsPage() {
 
   const handlePreview = async (report: ReportSummary) => {
     try {
-      const res = await fetch(`/api/v1/reports/${report.id}`, {
-        headers: { 'Authorization': `Bearer ${token}` },
-      });
-      if (res.ok) {
-        const data = await res.json();
-        setPreviewContent(data.content || '');
-        setPreviewReport(report);
-        setShowPreviewModal(true);
-      }
+      const data = await fetchReportMutation.mutateAsync(report.id);
+      setPreviewContent(data.content || '');
+      setPreviewReport(report);
+      setShowPreviewModal(true);
     } catch (error) {
       toast.error('Preview Failed', 'Failed to fetch report');
     }
@@ -268,13 +248,8 @@ export function ReportsPage() {
 
   const handleDownload = async (report: ReportSummary) => {
     try {
-      const res = await fetch(`/api/v1/reports/${report.id}`, {
-        headers: { 'Authorization': `Bearer ${token}` },
-      });
-      if (res.ok) {
-        const data = await res.json();
-        downloadReport(data.content, report.name, report.format);
-      }
+      const data = await fetchReportMutation.mutateAsync(report.id);
+      downloadReport(data.content, report.name, report.format);
     } catch (error) {
       toast.error('Download Failed', 'Could not download report');
     }
@@ -284,13 +259,7 @@ export function ReportsPage() {
     if (!confirm('Are you sure you want to delete this report?')) return;
     
     try {
-      const res = await fetch(`/api/v1/reports/${reportId}`, {
-        method: 'DELETE',
-        headers: { 'Authorization': `Bearer ${token}` },
-      });
-      if (res.ok) {
-        queryClient.invalidateQueries({ queryKey: queryKeys.reports.all });
-      }
+      await deleteMutation.mutateAsync(reportId);
     } catch (error) {
       toast.error('Delete Failed', 'Could not delete report');
     }

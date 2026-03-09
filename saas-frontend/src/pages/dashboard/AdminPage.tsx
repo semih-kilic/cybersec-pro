@@ -6,7 +6,7 @@ import { useState } from 'react';
 import { useAuth } from '../../hooks/useAuth';
 import { PageTransition } from '../../components/ui';
 import { useDocumentTitle } from '../../hooks/useUtilities';
-import { useAdminOverview, useChangePlan } from '../../hooks/useApiQueries';
+import { useAdminOverview, useChangePlan, useImpersonateUserAction } from '../../hooks/useApiQueries';
 import { AdminPageSkeleton } from '../../components/ui/Skeleton';
 
 interface AdminUser {
@@ -45,9 +45,10 @@ interface AdminOverview {
 
 export function AdminPage() {
   useDocumentTitle('Admin — CyberSec Pro');
-  const { user, token } = useAuth();
+  const { user } = useAuth();
   const { data: overview, isLoading: loading, error: queryError } = useAdminOverview();
   const changePlanMutation = useChangePlan();
+  const impersonateMutation = useImpersonateUserAction();
   const [error, setError] = useState<string | null>(queryError?.message || null);
   const [impersonating, setImpersonating] = useState(false);
   const [impersonateEmail, setImpersonateEmail] = useState('');
@@ -57,16 +58,7 @@ export function AdminPage() {
     if (!impersonateEmail.trim()) return;
     setImpersonating(true);
     try {
-      const res = await fetch('/api/v1/admin/impersonate', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({ email: impersonateEmail.trim() }),
-      });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error);
+      const data = await impersonateMutation.mutateAsync({ email: impersonateEmail.trim() });
 
       // Store impersonation token and reload
       localStorage.setItem('cybersec_token', data.token);

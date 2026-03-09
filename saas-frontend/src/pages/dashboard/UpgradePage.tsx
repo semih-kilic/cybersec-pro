@@ -1,8 +1,8 @@
-import { useAuth } from '../../hooks/useAuth';
 import { Link } from 'react-router-dom';
 import { useState, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useToolCounts } from '../../hooks/useApiQueries';
+import { useAuth } from '../../hooks/useAuth';
+import { useToolCounts, useCreateCheckout } from '../../hooks/useApiQueries';
 import { useToast } from '../../components/ui/Toast';
 import { PageTransition } from '../../components/ui';
 import { useDocumentTitle } from '../../hooks/useUtilities';
@@ -93,8 +93,9 @@ function buildPlans(counts: { starter: number; professional: number; enterprise:
 
 export default function UpgradePage() {
   useDocumentTitle('Upgrade — CyberSec Pro');
-  const { organization, token } = useAuth();
+  const { organization } = useAuth();
   const { t: _t } = useTranslation();
+  const checkoutMutation = useCreateCheckout();
   const [loading, setLoading] = useState<string | null>(null);
   const [billingCycle, setBillingCycle] = useState<'monthly' | 'yearly'>('monthly');
   const [pentestsPerYear, setPentestsPerYear] = useState(2);
@@ -125,41 +126,16 @@ export default function UpgradePage() {
     setLoading(planId);
     
     try {
-      // Call backend to create Stripe checkout session
-      const response = await fetch('/api/v1/billing/create-checkout', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`,
-        },
-        body: JSON.stringify({
-          plan: planId,
-          billing: billingCycle,
-          success_url: `${window.location.origin}/dashboard/settings?tab=billing&success=true`,
-          cancel_url: `${window.location.origin}/dashboard/upgrade`,
-        }),
+      const data = await checkoutMutation.mutateAsync({
+        plan: planId,
+        billing: billingCycle,
+        success_url: `${window.location.origin}/dashboard/settings?tab=billing&success=true`,
+        cancel_url: `${window.location.origin}/dashboard/upgrade`,
       });
-
-      if (response.ok) {
-        const data = await response.json();
-        if (data.checkout_url) {
-          window.location.href = data.checkout_url;
-          return;
-        }
-      }
       
-      // Fallback: use public endpoint
-      const fallback = await fetch('/api/create-checkout-session', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ plan_id: planId, billing: billingCycle }),
-      });
-      if (fallback.ok) {
-        const data = await fallback.json();
-        if (data.url || data.checkout_url) {
-          window.location.href = data.url || data.checkout_url;
-          return;
-        }
+      if (data.checkout_url || data.url) {
+        window.location.href = data.checkout_url || data.url;
+        return;
       }
       
       toast.error('Payment system is temporarily unavailable. Please contact cybersecpro@semihkilic.com for manual upgrade.');
