@@ -5,6 +5,7 @@
 import { useState, useRef, FormEvent } from 'react';
 import { motion } from 'framer-motion';
 import type { SettingsTabProps } from './types';
+import { useUploadAvatar, useUpdateProfile } from '../../../hooks/useApiQueries';
 
 export function ProfileTab({ loading, setLoading, setMessage, user }: SettingsTabProps) {
   const [firstName, setFirstName] = useState(user?.first_name || '');
@@ -12,8 +13,11 @@ export function ProfileTab({ loading, setLoading, setMessage, user }: SettingsTa
   const [email] = useState(user?.email || '');
   const [company, setCompany] = useState(user?.company || '');
   const [avatarUrl, setAvatarUrl] = useState(user?.avatar_url || '');
-  const [uploadingAvatar, setUploadingAvatar] = useState(false);
   const avatarInputRef = useRef<HTMLInputElement>(null);
+
+  const avatarMutation = useUploadAvatar();
+  const profileMutation = useUpdateProfile();
+  const uploadingAvatar = avatarMutation.isPending;
 
   const handleAvatarUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -24,24 +28,12 @@ export function ProfileTab({ loading, setLoading, setMessage, user }: SettingsTa
       return;
     }
 
-    setUploadingAvatar(true);
     try {
-      const formData = new FormData();
-      formData.append('avatar', file);
-      const res = await fetch('/api/v1/auth/avatar', {
-        method: 'POST',
-        headers: { 'Authorization': `Bearer ${(window as any).__auth_token || ''}` },
-        body: formData,
-      });
-      if (res.ok) {
-        const data = await res.json();
-        setAvatarUrl(data.avatar_url || URL.createObjectURL(file));
-        setMessage({ type: 'success', text: 'Avatar updated!' });
-      }
+      const data = await avatarMutation.mutateAsync(file);
+      setAvatarUrl(data.avatar_url || URL.createObjectURL(file));
+      setMessage({ type: 'success', text: 'Avatar updated!' });
     } catch {
       setMessage({ type: 'error', text: 'Failed to upload avatar' });
-    } finally {
-      setUploadingAvatar(false);
     }
   };
 
@@ -49,21 +41,10 @@ export function ProfileTab({ loading, setLoading, setMessage, user }: SettingsTa
     e.preventDefault();
     setLoading(true);
     try {
-      const res = await fetch('/api/v1/auth/profile', {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${(window as any).__auth_token || ''}`,
-        },
-        body: JSON.stringify({ first_name: firstName, last_name: lastName, company }),
-      });
-      if (res.ok) {
-        setMessage({ type: 'success', text: 'Profile updated successfully!' });
-      } else {
-        setMessage({ type: 'error', text: 'Failed to update profile' });
-      }
+      await profileMutation.mutateAsync({ first_name: firstName, last_name: lastName, company });
+      setMessage({ type: 'success', text: 'Profile updated successfully!' });
     } catch {
-      setMessage({ type: 'error', text: 'Network error' });
+      setMessage({ type: 'error', text: 'Failed to update profile' });
     } finally {
       setLoading(false);
     }

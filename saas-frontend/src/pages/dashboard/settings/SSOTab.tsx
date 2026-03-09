@@ -5,104 +5,65 @@
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import type { SettingsTabProps } from './types';
+import { useSSOConfig, useSaveSSOConfig, useTestSSOConnection, useDeleteSSOConfig, useToggleSSO } from '../../../hooks/useApiQueries';
 
 export function SSOTab({ setMessage, userPlan }: SettingsTabProps) {
-  const [ssoConfig, setSsoConfig] = useState<any>(null);
-  const [ssoLoading, setSsoLoading] = useState(false);
-  const [ssoTesting, setSsoTesting] = useState(false);
+  const { data: ssoData } = useSSOConfig();
+  const ssoConfig = ssoData?.config ?? null;
   const [ssoTestResult, setSsoTestResult] = useState<{ success: boolean; message: string } | null>(null);
   const [ssoProviderType, setSsoProviderType] = useState<'saml' | 'ldap' | 'oidc'>('saml');
   const [ssoForm, setSsoForm] = useState<Record<string, any>>({});
 
-  useEffect(() => {
-    fetchSSOConfig();
-  }, []);
+  const saveMutation = useSaveSSOConfig();
+  const testMutation = useTestSSOConnection();
+  const deleteMutation = useDeleteSSOConfig();
+  const toggleMutation = useToggleSSO();
 
-  const fetchSSOConfig = async () => {
-    try {
-      const res = await fetch('/api/v1/sso/config', {
-        headers: { 'Authorization': `Bearer ${(window as any).__auth_token || ''}` },
-      });
-      if (res.ok) {
-        const data = await res.json();
-        if (data.config) {
-          setSsoConfig(data.config);
-          setSsoProviderType(data.config.provider_type || 'saml');
-          setSsoForm(data.config);
-        }
-      }
-    } catch { /* ignore */ }
-  };
+  const ssoLoading = saveMutation.isPending;
+  const ssoTesting = testMutation.isPending;
+
+  // Sync form from query data
+  useEffect(() => {
+    if (ssoConfig) {
+      setSsoProviderType(ssoConfig.provider_type as 'saml' | 'ldap' | 'oidc' || 'saml');
+      setSsoForm(ssoConfig as Record<string, any>);
+    }
+  }, [ssoConfig]);
 
   const handleSSOSave = async () => {
-    setSsoLoading(true);
     try {
-      const res = await fetch('/api/v1/sso/config', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${(window as any).__auth_token || ''}`,
-        },
-        body: JSON.stringify({ ...ssoForm, provider_type: ssoProviderType }),
-      });
-      if (res.ok) {
-        const data = await res.json();
-        setSsoConfig(data.config);
-        setMessage({ type: 'success', text: 'SSO configuration saved!' });
-      } else {
-        setMessage({ type: 'error', text: 'Failed to save SSO configuration' });
-      }
-    } catch { setMessage({ type: 'error', text: 'Network error' }); }
-    finally { setSsoLoading(false); }
+      await saveMutation.mutateAsync({ ...ssoForm, provider_type: ssoProviderType });
+      setMessage({ type: 'success', text: 'SSO configuration saved!' });
+    } catch {
+      setMessage({ type: 'error', text: 'Failed to save SSO configuration' });
+    }
   };
 
   const handleSSOTest = async () => {
-    setSsoTesting(true);
     setSsoTestResult(null);
     try {
-      const res = await fetch('/api/v1/sso/test', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${(window as any).__auth_token || ''}`,
-        },
-        body: JSON.stringify({ provider_type: ssoProviderType }),
-      });
-      const data = await res.json();
+      const data = await testMutation.mutateAsync({ provider_type: ssoProviderType });
       setSsoTestResult({ success: data.success, message: data.message || (data.success ? 'Connection successful!' : 'Test failed') });
-    } catch { setSsoTestResult({ success: false, message: 'Network error during test' }); }
-    finally { setSsoTesting(false); }
+    } catch {
+      setSsoTestResult({ success: false, message: 'Network error during test' });
+    }
   };
 
   const handleSSODelete = async () => {
     if (!confirm('Delete SSO configuration? Users will need to use email/password login.')) return;
     try {
-      const res = await fetch('/api/v1/sso/config', {
-        method: 'DELETE',
-        headers: { 'Authorization': `Bearer ${(window as any).__auth_token || ''}` },
-      });
-      if (res.ok) {
-        setSsoConfig(null);
-        setSsoForm({});
-        setMessage({ type: 'success', text: 'SSO configuration deleted' });
-      }
-    } catch { setMessage({ type: 'error', text: 'Failed to delete' }); }
+      await deleteMutation.mutateAsync();
+      setSsoForm({});
+      setMessage({ type: 'success', text: 'SSO configuration deleted' });
+    } catch {
+      setMessage({ type: 'error', text: 'Failed to delete' });
+    }
   };
 
   const handleSSOToggle = async () => {
     try {
-      const res = await fetch('/api/v1/sso/toggle', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${(window as any).__auth_token || ''}`,
-        },
-        body: JSON.stringify({ enabled: !ssoConfig?.is_enabled }),
-      });
-      if (res.ok) {
-        setSsoConfig({ ...ssoConfig, is_enabled: !ssoConfig?.is_enabled });
-        setMessage({ type: 'success', text: ssoConfig?.is_enabled ? 'SSO disabled' : 'SSO enabled' });
-      }
+      await toggleMutation.mutateAsync(!ssoConfig?.is_enabled);
+      setMessage({ type: 'success', text: ssoConfig?.is_enabled ? 'SSO disabled' : 'SSO enabled' });
     } catch { /* ignore */ }
   };
 

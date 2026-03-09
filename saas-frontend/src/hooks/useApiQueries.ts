@@ -960,3 +960,300 @@ export function useSendChatMessage() {
       ),
   });
 }
+
+// ============================================================
+// V18.9: SSO, Profile, Agent, Schedule, Report, Project mutations
+// ============================================================
+
+// ---- SSO Config ----
+
+export function useSSOConfig() {
+  const { token } = useAuth();
+  return useQuery({
+    queryKey: queryKeys.sso.config(),
+    queryFn: () => authFetch<{ config: Record<string, unknown> | null }>('/api/v1/sso/config', token),
+    ...CACHE_TIMES.sso,
+  });
+}
+
+export function useSaveSSOConfig() {
+  const { token } = useAuth();
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (data: Record<string, unknown>) =>
+      authFetch<{ config: Record<string, unknown> }>('/api/v1/sso/config', token, {
+        method: 'POST',
+        body: JSON.stringify(data),
+      }),
+    onSuccess: () => { qc.invalidateQueries({ queryKey: queryKeys.sso.all }); },
+  });
+}
+
+export function useTestSSOConnection() {
+  const { token } = useAuth();
+  return useMutation({
+    mutationFn: (data: { provider_type: string }) =>
+      authFetch<{ success: boolean; message?: string }>('/api/v1/sso/test', token, {
+        method: 'POST',
+        body: JSON.stringify(data),
+      }),
+  });
+}
+
+export function useDeleteSSOConfig() {
+  const { token } = useAuth();
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: () =>
+      authFetch<{ success: boolean }>('/api/v1/sso/config', token, { method: 'DELETE' }),
+    onSuccess: () => { qc.invalidateQueries({ queryKey: queryKeys.sso.all }); },
+  });
+}
+
+export function useToggleSSO() {
+  const { token } = useAuth();
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (enabled: boolean) =>
+      authFetch<{ success: boolean }>('/api/v1/sso/toggle', token, {
+        method: 'POST',
+        body: JSON.stringify({ enabled }),
+      }),
+    onSuccess: () => { qc.invalidateQueries({ queryKey: queryKeys.sso.all }); },
+  });
+}
+
+// ---- Profile mutations ----
+
+export function useUploadAvatar() {
+  const { token } = useAuth();
+  return useMutation({
+    mutationFn: async (file: File) => {
+      const formData = new FormData();
+      formData.append('avatar', file);
+      const res = await fetch('/api/v1/auth/avatar', {
+        method: 'POST',
+        headers: { ...(token ? { 'Authorization': `Bearer ${token}` } : {}) },
+        body: formData,
+      });
+      if (!res.ok) throw new Error('Failed to upload avatar');
+      return res.json() as Promise<{ avatar_url?: string }>;
+    },
+  });
+}
+
+export function useUpdateProfile() {
+  const { token } = useAuth();
+  return useMutation({
+    mutationFn: (data: { first_name: string; last_name: string; company: string }) =>
+      authFetch('/api/v1/auth/profile', token, {
+        method: 'PUT',
+        body: JSON.stringify(data),
+      }),
+  });
+}
+
+// ---- Agent mutations ----
+
+export function useCreateAgent() {
+  const { token } = useAuth();
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (data: Record<string, unknown>) =>
+      authFetch<{ registration_token?: string; install_command?: string; error?: string }>(
+        '/api/v1/agents', token, { method: 'POST', body: JSON.stringify(data) }
+      ),
+    onSuccess: () => { qc.invalidateQueries({ queryKey: queryKeys.agents.all }); },
+  });
+}
+
+export function useUpdateAgent() {
+  const { token } = useAuth();
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, data }: { id: string; data: Record<string, unknown> }) =>
+      authFetch(`/api/v1/agents/${id}`, token, { method: 'PUT', body: JSON.stringify(data) }),
+    onSuccess: () => { qc.invalidateQueries({ queryKey: queryKeys.agents.all }); },
+  });
+}
+
+export function useTestAgentConnection() {
+  const { token } = useAuth();
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (agentId: string) =>
+      authFetch<{ success: boolean; os_info?: string; error?: string }>(
+        `/api/v1/agents/${agentId}/test`, token, { method: 'POST' }
+      ),
+    onSuccess: (data) => {
+      if (data.success) qc.invalidateQueries({ queryKey: queryKeys.agents.all });
+    },
+  });
+}
+
+// ---- Schedule mutations ----
+
+export function useToggleSchedule() {
+  const { token } = useAuth();
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (scheduleId: string) =>
+      authFetch(`/api/v1/schedules/${scheduleId}/toggle`, token, { method: 'POST' }),
+    onSuccess: () => { qc.invalidateQueries({ queryKey: queryKeys.schedules.all }); },
+  });
+}
+
+export function useDeleteSchedule() {
+  const { token } = useAuth();
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (scheduleId: string) =>
+      authFetch(`/api/v1/schedules/${scheduleId}`, token, { method: 'DELETE' }),
+    onSuccess: () => { qc.invalidateQueries({ queryKey: queryKeys.schedules.all }); },
+  });
+}
+
+export function useSaveSchedule() {
+  const { token } = useAuth();
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, data }: { id?: string; data: Record<string, unknown> }) => {
+      const url = id ? `/api/v1/schedules/${id}` : '/api/v1/schedules';
+      const method = id ? 'PUT' : 'POST';
+      return authFetch(url, token, { method, body: JSON.stringify(data) });
+    },
+    onSuccess: () => { qc.invalidateQueries({ queryKey: queryKeys.schedules.all }); },
+  });
+}
+
+export function useRunScheduleNow() {
+  const { token } = useAuth();
+  return useMutation({
+    mutationFn: (data: { tool: string; target: string }) =>
+      authFetch('/api/v1/scan/start', token, {
+        method: 'POST',
+        body: JSON.stringify(data),
+      }),
+  });
+}
+
+// ---- Report mutations ----
+
+export function useGenerateReport() {
+  const { token } = useAuth();
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (data: Record<string, unknown>) => {
+      const res = await fetch('/api/v1/reports', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          ...(token ? { 'Authorization': `Bearer ${token}` } : {}),
+        },
+        body: JSON.stringify(data),
+      });
+      if (!res.ok) {
+        const error = await res.json().catch(() => ({}));
+        throw new Error(error.error || 'Failed to generate report');
+      }
+      // Return raw response for PDF blob handling
+      return res;
+    },
+    onSuccess: () => { qc.invalidateQueries({ queryKey: queryKeys.reports.all }); },
+  });
+}
+
+export function useFetchReport() {
+  const { token } = useAuth();
+  return useMutation({
+    mutationFn: (reportId: string) =>
+      authFetch<{ content: string }>(`/api/v1/reports/${reportId}`, token),
+  });
+}
+
+export function useDeleteReport() {
+  const { token } = useAuth();
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (reportId: string) =>
+      authFetch(`/api/v1/reports/${reportId}`, token, { method: 'DELETE' }),
+    onSuccess: () => { qc.invalidateQueries({ queryKey: queryKeys.reports.all }); },
+  });
+}
+
+// ---- Project mutations ----
+
+export function useCreateProject() {
+  const { token } = useAuth();
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (data: { name: string; description: string }) =>
+      authFetch('/api/v1/projects', token, {
+        method: 'POST',
+        body: JSON.stringify(data),
+      }),
+    onSuccess: () => { qc.invalidateQueries({ queryKey: queryKeys.projects.all }); },
+  });
+}
+
+export function useDeleteProject() {
+  const { token } = useAuth();
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (projectId: string | number) =>
+      authFetch(`/api/v1/projects/${projectId}`, token, { method: 'DELETE' }),
+    onSuccess: () => { qc.invalidateQueries({ queryKey: queryKeys.projects.all }); },
+  });
+}
+
+// ---- Upgrade/Checkout mutation ----
+
+export function useCreateCheckout() {
+  const { token } = useAuth();
+  return useMutation({
+    mutationFn: async (data: { plan: string; billing: string }) => {
+      // Try primary endpoint first
+      const res = await fetch('/api/v1/billing/create-checkout', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          ...(token ? { 'Authorization': `Bearer ${token}` } : {}),
+        },
+        body: JSON.stringify({
+          ...data,
+          success_url: `${window.location.origin}/dashboard/settings?tab=billing&success=true`,
+          cancel_url: `${window.location.origin}/dashboard/upgrade`,
+        }),
+      });
+      if (res.ok) {
+        const json = await res.json();
+        if (json.checkout_url) return json as { checkout_url: string };
+      }
+      // Fallback endpoint
+      const fallback = await fetch('/api/create-checkout-session', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ plan_id: data.plan, billing: data.billing }),
+      });
+      if (fallback.ok) {
+        const json = await fallback.json();
+        const url = json.url || json.checkout_url;
+        if (url) return { checkout_url: url } as { checkout_url: string };
+      }
+      throw new Error('Payment system is temporarily unavailable');
+    },
+  });
+}
+
+// ---- Admin: impersonate ----
+
+export function useImpersonateUserAction() {
+  const { token } = useAuth();
+  return useMutation({
+    mutationFn: (email: string) =>
+      authFetch<{ token: string }>('/api/v1/admin/impersonate', token, {
+        method: 'POST',
+        body: JSON.stringify({ email }),
+      }),
+  });
+}
