@@ -10,6 +10,7 @@ import { useAuth } from '../../hooks/useAuth';
 import { ScanProgress } from '../../components/dashboard/ScanProgress';
 import { useQuery } from '@tanstack/react-query';
 import { queryKeys, CACHE_TIMES } from '../../lib/queryClient';
+import { useToolExecutionMode, useFetchBusinessReport } from '../../hooks/useApiQueries';
 
 // Business-friendly category names
 const BUSINESS_CATEGORIES: Record<string, { label: string; emoji: string }> = {
@@ -146,25 +147,13 @@ export function ScanExecutionPage() {
     if (agentsData) setAgents(agentsData as AgentInfo[]);
   }, [agentsData]);
 
-  // Fetch execution mode
-  const fetchExecutionMode = async () => {
-    if (!toolId) return;
-    try {
-      const res = await fetch(`/api/v1/tools/${toolId}/execution-mode`, {
-        headers: { 'Authorization': `Bearer ${token}` }
-      });
-      if (res.ok) {
-        const data = await res.json();
-        setExecutionMode(data);
-      }
-    } catch {
-      // Not critical
-    }
-  };
+  // Use execution mode from RQ
+  const { data: executionModeData } = useToolExecutionMode(toolId);
+  const businessReportMutation = useFetchBusinessReport();
 
   useEffect(() => {
-    fetchExecutionMode();
-  }, [toolId]);
+    if (executionModeData) setExecutionMode(executionModeData);
+  }, [executionModeData]);
 
   // Auto-start scan when coming from ToolDetailPage with target pre-filled
   const autoStartedRef = useRef(false);
@@ -228,14 +217,9 @@ export function ScanExecutionPage() {
   const fetchBusinessResults = async () => {
     if (!currentScanId) return;
     try {
-      const res = await fetch(`/api/v1/scans/${currentScanId}/business-report`, {
-        headers: { 'Authorization': `Bearer ${token}` }
-      });
-      if (res.ok) {
-        const data = await res.json();
-        setBusinessResults(data);
-        setViewMode('results');
-      }
+      const data = await businessReportMutation.mutateAsync(currentScanId);
+      setBusinessResults(data);
+      setViewMode('results');
     } catch {
       // Results view stays on terminal
     }

@@ -1250,10 +1250,107 @@ export function useCreateCheckout() {
 export function useImpersonateUserAction() {
   const { token } = useAuth();
   return useMutation({
-    mutationFn: (email: string) =>
+    mutationFn: ({ email }: { email: string }) =>
       authFetch<{ token: string }>('/api/v1/admin/impersonate', token, {
         method: 'POST',
         body: JSON.stringify({ email }),
       }),
+  });
+}
+
+// ---- Tool execution mode (ScanExecutionPage) ----
+
+export function useToolExecutionMode(toolId: string | undefined) {
+  const { token } = useAuth();
+
+  return useQuery({
+    queryKey: queryKeys.tools.executionMode(toolId || ''),
+    queryFn: () => authFetch<{ execution_mode: string; supports_streaming: boolean }>(
+      `/api/v1/tools/${toolId}/execution-mode`, token
+    ),
+    enabled: !!toolId && !!token,
+    staleTime: CACHE_TIMES.tools.staleTime,
+    gcTime: CACHE_TIMES.tools.gcTime,
+  });
+}
+
+// ---- Business report (ScanExecutionPage, imperative) ----
+
+export function useFetchBusinessReport() {
+  const { token } = useAuth();
+  return useMutation({
+    mutationFn: (scanId: string) =>
+      authFetch<any>(`/api/v1/scans/${scanId}/business-report`, token),
+  });
+}
+
+// ---- Agents list (NewScanPage) ----
+
+export function useAgentsList() {
+  const { token } = useAuth();
+
+  return useQuery({
+    queryKey: [...queryKeys.agents.all, 'list'],
+    queryFn: () => authFetch<{ agents: any[] }>('/api/v1/agents', token),
+    select: (data) => data.agents || [],
+    ...CACHE_TIMES.agents,
+    enabled: !!token,
+  });
+}
+
+// ---- Public: Tools catalog (ToolsCatalogPage) ----
+
+export function useToolsCatalog() {
+  return useQuery({
+    queryKey: queryKeys.tools.catalog(),
+    queryFn: async () => {
+      const res = await fetch('/api/v1/tools/catalog');
+      if (!res.ok) throw new Error('Failed to fetch catalog');
+      const data = await res.json();
+      if (!data.success) throw new Error('Catalog fetch failed');
+      return { tools: data.tools, categories: data.categories };
+    },
+    staleTime: CACHE_TIMES.tools.staleTime,
+    gcTime: CACHE_TIMES.tools.gcTime,
+  });
+}
+
+export function useToolsStats() {
+  return useQuery({
+    queryKey: queryKeys.tools.stats(),
+    queryFn: async () => {
+      const res = await fetch('/api/v1/tools/stats');
+      if (!res.ok) throw new Error('Failed to fetch stats');
+      const data = await res.json();
+      if (!data.success) throw new Error('Stats fetch failed');
+      return data.stats;
+    },
+    staleTime: CACHE_TIMES.tools.staleTime,
+    gcTime: CACHE_TIMES.tools.gcTime,
+  });
+}
+
+// ---- DashboardPage (legacy, authenticated) ----
+
+export function useDashboardTools() {
+  const { token } = useAuth();
+
+  return useQuery({
+    queryKey: [...queryKeys.tools.all, 'dashboard'],
+    queryFn: () => authFetch<{ tools: Record<string, any[]>; total_tools: number }>('/api/v1/tools', token),
+    ...CACHE_TIMES.tools,
+    enabled: !!token,
+  });
+}
+
+export function useDashboardScans() {
+  const { token } = useAuth();
+
+  return useQuery({
+    queryKey: [...queryKeys.scans.all, 'dashboard'],
+    queryFn: () => authFetch<{ scans: any[] }>('/api/v1/scans', token),
+    select: (data) => data.scans || [],
+    ...CACHE_TIMES.scans,
+    enabled: !!token,
   });
 }

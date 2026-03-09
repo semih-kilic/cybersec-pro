@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
+import { useToolsCatalog, useToolsStats } from '../hooks/useApiQueries';
 
 interface Tool {
   slug: string;
@@ -22,20 +23,15 @@ interface Category {
 
 const ToolsCatalogPage: React.FC = () => {
   const [searchParams, setSearchParams] = useSearchParams();
-  const [tools, setTools] = useState<Tool[]>([]);
-  const [categories, setCategories] = useState<Category[]>([]);
-  const [loading, setLoading] = useState(true);
+  const { data: catalogData, isLoading: loading } = useToolsCatalog();
+  const { data: stats } = useToolsStats();
+  const tools = catalogData?.tools || [];
+  const categories = catalogData?.categories || [];
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<string | null>(
     searchParams.get('category')
   );
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
-  const [stats, setStats] = useState<any>(null);
-
-  useEffect(() => {
-    fetchCatalog();
-    fetchStats();
-  }, []);
 
   useEffect(() => {
     if (selectedCategory) {
@@ -45,33 +41,6 @@ const ToolsCatalogPage: React.FC = () => {
     }
     setSearchParams(searchParams);
   }, [selectedCategory]);
-
-  const fetchCatalog = async () => {
-    try {
-      const response = await fetch('/api/v1/tools/catalog');
-      const data = await response.json();
-      if (data.success) {
-        setTools(data.tools);
-        setCategories(data.categories);
-      }
-    } catch (error) {
-      console.error('Error fetching catalog:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const fetchStats = async () => {
-    try {
-      const response = await fetch('/api/v1/tools/stats');
-      const data = await response.json();
-      if (data.success) {
-        setStats(data.stats);
-      }
-    } catch (error) {
-      console.error('Error fetching stats:', error);
-    }
-  };
 
   const filteredTools = tools.filter(tool => {
     const matchesSearch = !searchQuery || 

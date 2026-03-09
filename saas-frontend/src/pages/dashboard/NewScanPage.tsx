@@ -1,12 +1,11 @@
 import { useState, useEffect, useMemo } from 'react';
 import { useSearchParams, useNavigate, Link } from 'react-router-dom';
 import { Header } from '../../components/layout/Header';
-import { useAuth } from '../../hooks/useAuth';
 import { useDocumentTitle } from '../../hooks/useUtilities';
 import { PageTransition } from '../../components/ui';
 import { useToast } from '../../components/ui/Toast';
 import { getSmartDefaults } from '../../config/toolConfigs';
-import { useTools, useTargets, useProjects, useStartScan } from '../../hooks/useApiQueries';
+import { useTools, useTargets, useProjects, useStartScan, useAgentsList } from '../../hooks/useApiQueries';
 import { NewScanPageSkeleton } from '../../components/ui/Skeleton';
 
 interface Tool {
@@ -48,7 +47,6 @@ export function NewScanPage() {
   const toast = useToast();
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
-  const { token } = useAuth();
   
   // React Query data fetching
   const { data: toolsData, isLoading: toolsLoading } = useTools('enterprise');
@@ -73,6 +71,7 @@ export function NewScanPage() {
   const projects: Project[] = fetchedProjects as unknown as Project[];
 
   // Fetch agents separately (different endpoint from agentsDashboard)
+  const { data: agentsListData } = useAgentsList();
   const [agents, setAgents] = useState<Agent[]>([]);
   const loading = toolsLoading || targetsLoading || projectsLoading;
   const [submitting, setSubmitting] = useState(false);
@@ -95,22 +94,12 @@ export function NewScanPage() {
   const [toolSearch, setToolSearch] = useState('');
 
   useEffect(() => {
-    // Fetch agents (lightweight endpoint not covered by existing hooks)
-    const fetchAgents = async () => {
-      try {
-        const agentsRes = await fetch('/api/v1/agents', {
-          headers: { 'Authorization': `Bearer ${token}` },
-        });
-        if (agentsRes.ok) {
-          const data = await agentsRes.json();
-          setAgents(data.agents || []);
-          const onlineAgent = (data.agents || []).find((a: Agent) => a.status === 'online');
-          if (onlineAgent) setSelectedAgent(onlineAgent.id);
-        }
-      } catch { /* handled by loading states */ }
-    };
-    fetchAgents();
-  }, [token]);
+    if (agentsListData) {
+      setAgents(agentsListData as Agent[]);
+      const onlineAgent = (agentsListData as Agent[]).find(a => a.status === 'online');
+      if (onlineAgent) setSelectedAgent(onlineAgent.id);
+    }
+  }, [agentsListData]);
 
   const handleSubmit = async () => {
     // Check if selected tool is dangerous

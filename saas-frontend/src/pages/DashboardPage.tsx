@@ -1,6 +1,7 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
+import { useDashboardTools, useDashboardScans } from '../hooks/useApiQueries';
 
 interface Tool {
   id: string;
@@ -19,44 +20,15 @@ interface Scan {
 }
 
 export function DashboardPage() {
-  const { user, organization, logout, token } = useAuth();
+  const { user, organization, logout } = useAuth();
   const navigate = useNavigate();
-  const [tools, setTools] = useState<{ [category: string]: Tool[] }>({});
-  const [scans, setScans] = useState<Scan[]>([]);
-  const [totalTools, setTotalTools] = useState(0);
-  const [loading, setLoading] = useState(true);
+  const { data: toolsData, isLoading: toolsLoading } = useDashboardTools();
+  const { data: scansData, isLoading: scansLoading } = useDashboardScans();
+  const tools = toolsData?.tools || {};
+  const totalTools = toolsData?.total_tools || 0;
+  const scans = scansData || [];
+  const loading = toolsLoading || scansLoading;
   const [activeTab, setActiveTab] = useState<'overview' | 'tools' | 'scans'>('overview');
-
-  useEffect(() => {
-    fetchData();
-  }, [token]);
-
-  const fetchData = async () => {
-    try {
-      // Fetch tools
-      const toolsRes = await fetch('/api/v1/tools', {
-        headers: { 'Authorization': `Bearer ${token}` },
-      });
-      if (toolsRes.ok) {
-        const data = await toolsRes.json();
-        setTools(data.tools);
-        setTotalTools(data.total_tools);
-      }
-
-      // Fetch scans
-      const scansRes = await fetch('/api/v1/scans', {
-        headers: { 'Authorization': `Bearer ${token}` },
-      });
-      if (scansRes.ok) {
-        const data = await scansRes.json();
-        setScans(data.scans);
-      }
-    } catch (error) {
-      console.error('Failed to fetch data:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
 
   const handleLogout = () => {
     logout();
