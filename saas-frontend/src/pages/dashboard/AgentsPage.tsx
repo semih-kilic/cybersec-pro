@@ -1,8 +1,5 @@
 import { useState } from 'react';
-import { useQueryClient } from '@tanstack/react-query';
-import { useAuth } from '../../hooks/useAuth';
-import { useAgentsDashboard } from '../../hooks/useApiQueries';
-import { queryKeys } from '../../lib/queryClient';
+import { useAgentsDashboard, useCreateAgent, useUpdateAgent, useDeleteAgent, useTestAgentConnection } from '../../hooks/useApiQueries';
 import { useDocumentTitle } from '../../hooks/useUtilities';
 import { useTranslation } from 'react-i18next';
 import { AgentsPageSkeleton } from '../../components/ui/Skeleton';
@@ -89,10 +86,8 @@ interface DashboardData {
 
 export default function AgentsPage() {
   useDocumentTitle('Agents — CyberSec Pro');
-  const { token } = useAuth();
   const { t: _t } = useTranslation();
   const toast = useToast();
-  const queryClient = useQueryClient();
   const [autoRefresh, setAutoRefresh] = useState(true);
   const { data: dashboardData, isLoading: loading, dataUpdatedAt } = useAgentsDashboard(autoRefresh);
   const dashboard = dashboardData as DashboardData | undefined;
@@ -120,43 +115,32 @@ export default function AgentsPage() {
   });
   const [creatingAgent, setCreatingAgent] = useState(false);
 
-  const invalidateAgents = () => queryClient.invalidateQueries({ queryKey: queryKeys.agents.all });
+  const createAgentMutation = useCreateAgent();
+  const updateAgentMutation = useUpdateAgent();
+  const deleteAgentMutation = useDeleteAgent();
+  const testConnectionMutation = useTestAgentConnection();
 
   const addAgent = async () => {
     if (!newAgentName.trim()) return;
     setCreatingAgent(true);
     
     try {
-      const res = await fetch('/api/v1/agents', {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          name: newAgentName,
-          platform: selectedPlatform,
-          connection_type: connectionType,
-          network_mode: connectionType,
-          ssh_host: (connectionType === 'agent_internal' || connectionType === 'agent_dmz') ? sshCredentials.host : undefined,
-          ssh_port: (connectionType === 'agent_internal' || connectionType === 'agent_dmz') ? parseInt(sshCredentials.port) : undefined,
-          ssh_username: (connectionType === 'agent_internal' || connectionType === 'agent_dmz') ? sshCredentials.username : undefined,
-          ssh_password: (connectionType === 'agent_internal' || connectionType === 'agent_dmz') ? sshCredentials.password : undefined,
-        })
+      const data = await createAgentMutation.mutateAsync({
+        name: newAgentName,
+        platform: selectedPlatform,
+        connection_type: connectionType,
+        network_mode: connectionType,
+        ssh_host: (connectionType === 'agent_internal' || connectionType === 'agent_dmz') ? sshCredentials.host : undefined,
+        ssh_port: (connectionType === 'agent_internal' || connectionType === 'agent_dmz') ? parseInt(sshCredentials.port) : undefined,
+        ssh_username: (connectionType === 'agent_internal' || connectionType === 'agent_dmz') ? sshCredentials.username : undefined,
+        ssh_password: (connectionType === 'agent_internal' || connectionType === 'agent_dmz') ? sshCredentials.password : undefined,
       });
       
-      const data = await res.json();
-      
-      if (res.ok) {
-        setInstallToken(data.registration_token);
-        setInstallCommand(data.install_command || `# Agent Registration Token:\n${data.registration_token}\n\n# Install & run:\ncurl -sSL https://cybersecpro.semihkilic.com/api/v1/agent-script | python3 - --token ${data.registration_token}`);
-        toast.success(`Agent "${newAgentName}" created successfully`);
-        invalidateAgents();
-      } else {
-        toast.error(data.error || 'Failed to create agent');
-      }
-    } catch (error) {
-      toast.error('Connection Error', 'Failed to add agent');
+      setInstallToken(data.registration_token || '');
+      setInstallCommand(data.install_command || `# Agent Registration Token:\n${data.registration_token}\n\n# Install & run:\ncurl -sSL https://cybersecpro.semihkilic.com/api/v1/agent-script | python3 - --token ${data.registration_token}`);
+      toast.success(`Agent "${newAgentName}" created successfully`);
+    } catch (error: any) {
+      toast.error(error.message || 'Failed to create agent');
     } finally {
       setCreatingAgent(false);
     }
@@ -177,34 +161,15 @@ export default function AgentsPage() {
         connection_type: selectedAgent.connection_type,
       };
       
-      // Only send password if user typed something
-      if (agentData.ssh_password) {
-        body.ssh_password = agentData.ssh_password;
-      }
-      if (agentData.ssh_key_path) {
-        body.ssh_key_path = agentData.ssh_key_path;
-      }
+      if (agentData.ssh_password) body.ssh_password = agentData.ssh_password;
+      if (agentData.ssh_key_path) body.ssh_key_path = agentData.ssh_key_path;
       
-      const res = await fetch(`/api/v1/agents/${selectedAgent.id}`, {
-        method: 'PUT',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(body)
-      });
-      
-      if (res.ok) {
-        setShowEditModal(false);
-        setSelectedAgent(null);
-        setTestResult(null);
-        invalidateAgents();
-      } else {
-        const data = await res.json();
-        toast.error('Update Failed', data.error || 'Failed to update agent');
-      }
-    } catch (error) {
-      toast.error('Update Failed', 'Failed to update agent');
+      await updateAgentMutation.mutateAsync({ id: selectedAgent.id, data: body });
+      setShowEditModal(false);
+      setSelectedAgent(null);
+      setTestResult(null);
+    } catch (error: any) {
+      toast.error('Update Failed', error.message || 'Failed to update agent');
     }
   };
 
@@ -212,20 +177,10 @@ export default function AgentsPage() {
     if (!confirm('Are you sure you want to delete this agent?')) return;
     
     try {
-      const res = await fetch(`/api/v1/agents/${agentId}`, {
-        method: 'DELETE',
-        headers: { 'Authorization': `Bearer ${token}` }
-      });
-      
-      if (res.ok) {
-        setSelectedAgent(null);
-        invalidateAgents();
-      } else {
-        const data = await res.json();
-        toast.error('Delete Failed', data.error || 'Failed to delete agent');
-      }
-    } catch (error) {
-      toast.error('Delete Failed', 'Failed to delete agent');
+      await deleteAgentMutation.mutateAsync(agentId);
+      setSelectedAgent(null);
+    } catch (error: any) {
+      toast.error('Delete Failed', error.message || 'Failed to delete agent');
     }
   };
 
@@ -234,18 +189,11 @@ export default function AgentsPage() {
     setTestResult(null);
     
     try {
-      const res = await fetch(`/api/v1/agents/${agentId}/test`, {
-        method: 'POST',
-        headers: { 'Authorization': `Bearer ${token}` }
-      });
-      
-      const data = await res.json();
+      const data = await testConnectionMutation.mutateAsync(agentId);
       setTestResult({
         success: data.success,
-        message: data.success ? `Connection successful! OS: ${data.os_info || 'Unknown'}` : data.error
+        message: data.success ? `Connection successful! OS: ${data.os_info || 'Unknown'}` : data.error || 'Test failed'
       });
-      
-      if (data.success) invalidateAgents();
     } catch (error) {
       setTestResult({ success: false, message: 'Connection test failed' });
     } finally {

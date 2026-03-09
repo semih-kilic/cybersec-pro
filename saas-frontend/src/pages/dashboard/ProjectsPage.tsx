@@ -1,10 +1,8 @@
 import { useState } from 'react';
-import { useQueryClient } from '@tanstack/react-query';
 import { useAuth } from '../../hooks/useAuth';
 import { Link } from 'react-router-dom';
 import { PageTransition } from '../../components/ui';
-import { useProjects } from '../../hooks/useApiQueries';
-import { queryKeys } from '../../lib/queryClient';
+import { useProjects, useCreateProject, useDeleteProject } from '../../hooks/useApiQueries';
 import { useDocumentTitle } from '../../hooks/useUtilities';
 import { useToast } from '../../components/ui/Toast';
 import { ProjectsPageSkeleton } from '../../components/ui/Skeleton';
@@ -29,9 +27,10 @@ interface Project {
 export default function ProjectsPage() {
   useDocumentTitle('Projects — CyberSec Pro');
   const toast = useToast();
-  const { token, organization } = useAuth();
-  const queryClient = useQueryClient();
+  const { organization } = useAuth();
   const { data: projects = [], isLoading: loading } = useProjects();
+  const createProjectMutation = useCreateProject();
+  const deleteProjectMutation = useDeleteProject();
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [filter, setFilter] = useState<'all' | 'active' | 'completed' | 'archived'>('all');
   const [searchQuery, setSearchQuery] = useState('');
@@ -53,25 +52,13 @@ export default function ProjectsPage() {
   const maxProjects = planLimits[userPlan] || 1;
   const canCreateProject = projects.length < maxProjects;
 
-  const invalidateProjects = () => queryClient.invalidateQueries({ queryKey: queryKeys.projects.all });
-
   const createProject = async () => {
     if (!newProjectName.trim()) return;
     try {
-      const res = await fetch('/api/v1/projects', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`,
-        },
-        body: JSON.stringify({
-          name: newProjectName,
-          description: newProjectDesc,
-        }),
+      await createProjectMutation.mutateAsync({
+        name: newProjectName,
+        description: newProjectDesc,
       });
-      if (res.ok) {
-        invalidateProjects();
-      }
     } catch (error) {
       toast.error('Create Failed', 'Failed to create project');
     }
@@ -84,13 +71,7 @@ export default function ProjectsPage() {
   const deleteProject = async (projectId: string | number) => {
     if (!confirm('Are you sure you want to delete this project?')) return;
     try {
-      const res = await fetch(`/api/v1/projects/${projectId}`, {
-        method: 'DELETE',
-        headers: { 'Authorization': `Bearer ${token}` },
-      });
-      if (res.ok) {
-        invalidateProjects();
-      }
+      await deleteProjectMutation.mutateAsync(projectId);
     } catch (error) {
       toast.error('Delete Failed', 'Failed to delete project');
     }

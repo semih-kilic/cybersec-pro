@@ -1,10 +1,7 @@
 import { useState } from 'react';
-import { useQueryClient } from '@tanstack/react-query';
 import { Header } from '../../components/layout/Header';
-import { useAuth } from '../../hooks/useAuth';
 import { PageTransition } from '../../components/ui';
-import { useSchedules } from '../../hooks/useApiQueries';
-import { queryKeys } from '../../lib/queryClient';
+import { useSchedules, useToggleSchedule, useDeleteSchedule, useRunScheduleNow, useSaveSchedule } from '../../hooks/useApiQueries';
 import { useDocumentTitle } from '../../hooks/useUtilities';
 import { useToast } from '../../components/ui/Toast';
 import { SchedulePageSkeleton } from '../../components/ui/Skeleton';
@@ -41,9 +38,11 @@ const presetSchedules = [
 export function SchedulePage() {
   useDocumentTitle('Schedule — CyberSec Pro');
   const toast = useToast();
-  const { token } = useAuth();
-  const queryClient = useQueryClient();
   const { data: schedules = [], isLoading: loading } = useSchedules();
+  const toggleScheduleMutation = useToggleSchedule();
+  const deleteScheduleMutation = useDeleteSchedule();
+  const runNowMutation = useRunScheduleNow();
+  const saveScheduleMutation = useSaveSchedule();
   const [showNewModal, setShowNewModal] = useState(false);
   const [editingSchedule, setEditingSchedule] = useState<ScheduledScan | null>(null);
 
@@ -57,17 +56,9 @@ export function SchedulePage() {
     notifications: true,
   });
 
-  const invalidateSchedules = () => queryClient.invalidateQueries({ queryKey: queryKeys.schedules.all });
-
   const handleToggleStatus = async (schedule: ScheduledScan) => {
     try {
-      const res = await fetch(`/api/v1/schedules/${schedule.id}/toggle`, {
-        method: 'POST',
-        headers: { 'Authorization': `Bearer ${token}` },
-      });
-      if (res.ok) {
-        invalidateSchedules();
-      }
+      await toggleScheduleMutation.mutateAsync(schedule.id);
     } catch (error) {
       toast.error('Toggle Failed', 'Failed to toggle schedule');
     }
@@ -76,13 +67,7 @@ export function SchedulePage() {
   const handleDelete = async (scheduleId: string) => {
     if (!confirm('Delete this scheduled scan?')) return;
     try {
-      const res = await fetch(`/api/v1/schedules/${scheduleId}`, {
-        method: 'DELETE',
-        headers: { 'Authorization': `Bearer ${token}` },
-      });
-      if (res.ok) {
-        invalidateSchedules();
-      }
+      await deleteScheduleMutation.mutateAsync(scheduleId);
     } catch (error) {
       toast.error('Delete Failed', 'Failed to delete schedule');
     }
@@ -90,20 +75,11 @@ export function SchedulePage() {
 
   const handleRunNow = async (schedule: ScheduledScan) => {
     try {
-      const res = await fetch('/api/v1/scan/start', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`,
-        },
-        body: JSON.stringify({
-          tool: schedule.tool_name || schedule.tool,
-          target: schedule.target,
-        }),
+      await runNowMutation.mutateAsync({
+        tool: schedule.tool_name || schedule.tool || '',
+        target: schedule.target,
       });
-      if (res.ok) {
-        toast.success('Scan Started', `${schedule.name} scan launched successfully`);
-      }
+      toast.success('Scan Started', `${schedule.name} scan launched successfully`);
     } catch (error) {
       toast.error('Scan Failed', 'Failed to start scheduled scan');
     }
@@ -127,23 +103,7 @@ export function SchedulePage() {
         cron_expression: cronExpr,
       };
       
-      const url = editingSchedule 
-        ? `/api/v1/schedules/${editingSchedule.id}` 
-        : '/api/v1/schedules';
-      const method = editingSchedule ? 'PUT' : 'POST';
-      
-      const res = await fetch(url, {
-        method,
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`,
-        },
-        body: JSON.stringify(body),
-      });
-      
-      if (res.ok) {
-        invalidateSchedules();
-      }
+      await saveScheduleMutation.mutateAsync({ id: editingSchedule?.id, data: body });
     } catch (error) {
       toast.error('Save Failed', 'Failed to save schedule');
     }
