@@ -73,7 +73,7 @@ export function ActivityFeed({ limit = 20, compact = false, className = '', filt
         if (limit) params.set('limit', String(limit));
         if (filter?.length) params.set('types', filter.join(','));
 
-        const res = await fetch(`/api/v1/activity-feed?${params}`, {
+        const res = await fetch(`/api/v1/activity?${params}`, {
           headers: { 'Authorization': `Bearer ${token}` },
         });
         if (res.ok) {

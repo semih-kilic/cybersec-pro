@@ -2972,7 +2972,7 @@ def dashboard_security_summary():
             'info': info_issues,
             'total_scans': len(recent_scans),
             'completed_scans': len(completed_scans),
-            'protected_assets': org.max_targets if org else 1,
+            'protected_assets': Target.query.filter_by(organization_id=user.organization_id).count() if user.organization_id else 0,
             'plan': org.plan_type if org else 'trial',
         })
     except Exception as e:
