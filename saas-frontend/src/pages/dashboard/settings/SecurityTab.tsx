@@ -1,17 +1,105 @@
 /**
  * Security Settings Tab
- * Password change, 2FA, danger zone
+ * Password change, 2FA/MFA (V20), danger zone
  */
-import { useState, FormEvent } from 'react';
+import { useState, useEffect, FormEvent } from 'react';
 import { motion } from 'framer-motion';
 import type { SettingsTabProps } from './types';
+import { api } from '../../../services/api';
 
 export function SecurityTab({ loading, setLoading, setMessage }: SettingsTabProps) {
   const [currentPassword, setCurrentPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
-  const [twoFactorEnabled, setTwoFactorEnabled] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+
+  // MFA State — V20
+  const [mfaEnabled, setMfaEnabled] = useState(false);
+  const [mfaLoading, setMfaLoading] = useState(true);
+  const [backupCodesRemaining, setBackupCodesRemaining] = useState(0);
+  const [mfaEnabledAt, setMfaEnabledAt] = useState<string | null>(null);
+  const [setupStep, setSetupStep] = useState<'idle' | 'qr' | 'backup' | 'disable' | 'regenerate'>('idle');
+  const [qrCode, setQrCode] = useState('');
+  const [mfaSecret, setMfaSecret] = useState('');
+  const [verifyCode, setVerifyCode] = useState('');
+  const [backupCodes, setBackupCodes] = useState<string[]>([]);
+  const [disablePassword, setDisablePassword] = useState('');
+
+  // Fetch MFA status on mount
+  useEffect(() => {
+    (async () => {
+      const res = await api.getMfaStatus();
+      if (res.data) {
+        setMfaEnabled(res.data.mfa_enabled);
+        setBackupCodesRemaining(res.data.backup_codes_remaining);
+        setMfaEnabledAt(res.data.mfa_enabled_at);
+      }
+      setMfaLoading(false);
+    })();
+  }, []);
+
+  const handleMfaSetup = async () => {
+    setMfaLoading(true);
+    const res = await api.setupMfa();
+    if (res.data) {
+      setQrCode(res.data.qr_code);
+      setMfaSecret(res.data.secret);
+      setSetupStep('qr');
+    } else {
+      setMessage({ type: 'error', text: res.error || 'Failed to start MFA setup' });
+    }
+    setMfaLoading(false);
+  };
+
+  const handleMfaVerify = async () => {
+    if (verifyCode.length < 6) return;
+    setMfaLoading(true);
+    const res = await api.verifyMfaSetup(verifyCode);
+    if (res.data) {
+      setBackupCodes(res.data.backup_codes);
+      setMfaEnabled(true);
+      setBackupCodesRemaining(res.data.backup_codes.length);
+      setSetupStep('backup');
+      setMessage({ type: 'success', text: 'Two-factor authentication enabled!' });
+    } else {
+      setMessage({ type: 'error', text: res.error || 'Invalid verification code' });
+    }
+    setMfaLoading(false);
+    setVerifyCode('');
+  };
+
+  const handleMfaDisable = async () => {
+    if (!disablePassword) return;
+    setMfaLoading(true);
+    const res = await api.disableMfa(disablePassword);
+    if (res.data) {
+      setMfaEnabled(false);
+      setBackupCodesRemaining(0);
+      setMfaEnabledAt(null);
+      setSetupStep('idle');
+      setMessage({ type: 'success', text: 'Two-factor authentication disabled' });
+    } else {
+      setMessage({ type: 'error', text: res.error || 'Failed to disable MFA' });
+    }
+    setMfaLoading(false);
+    setDisablePassword('');
+  };
+
+  const handleRegenerateBackup = async () => {
+    if (!disablePassword) return;
+    setMfaLoading(true);
+    const res = await api.regenerateBackupCodes(disablePassword);
+    if (res.data) {
+      setBackupCodes(res.data.backup_codes);
+      setBackupCodesRemaining(res.data.backup_codes.length);
+      setSetupStep('backup');
+      setMessage({ type: 'success', text: 'New backup codes generated!' });
+    } else {
+      setMessage({ type: 'error', text: res.error || 'Failed to regenerate backup codes' });
+    }
+    setMfaLoading(false);
+    setDisablePassword('');
+  };
 
   const passwordStrength = (() => {
     if (!newPassword) return { score: 0, label: '', color: '' };
@@ -122,29 +210,184 @@ export function SecurityTab({ loading, setLoading, setMessage }: SettingsTabProp
         </form>
       </div>
 
-      {/* 2FA */}
+      {/* Two-Factor Authentication — V20 */}
       <div className="border-t border-gray-800 pt-8">
         <h2 className="text-xl font-bold text-white mb-4">Two-Factor Authentication</h2>
-        <div className="flex items-center justify-between p-4 bg-gray-800 rounded-lg">
-          <div>
-            <p className="text-white font-medium">2FA Authentication</p>
-            <p className="text-gray-400 text-sm">Add an extra layer of security to your account</p>
+
+        {mfaLoading && setupStep === 'idle' ? (
+          <div className="p-4 bg-gray-800 rounded-lg text-gray-400">Loading MFA status...</div>
+        ) : setupStep === 'qr' ? (
+          /* QR Code Setup Step */
+          <div className="space-y-4">
+            <div className="p-4 bg-gray-800 rounded-lg">
+              <p className="text-white font-medium mb-3">Scan this QR code with your authenticator app</p>
+              <div className="flex justify-center mb-4">
+                <div className="bg-white p-3 rounded-lg" dangerouslySetInnerHTML={{ __html: qrCode }} />
+              </div>
+              <div className="bg-gray-900 rounded-lg p-3">
+                <p className="text-gray-400 text-xs mb-1">Manual entry key:</p>
+                <code className="text-cyan-400 text-sm font-mono break-all select-all">{mfaSecret}</code>
+              </div>
+            </div>
+            <div>
+              <label className="block text-gray-400 text-sm mb-2">Enter 6-digit code from your app</label>
+              <div className="flex gap-3">
+                <input
+                  type="text"
+                  inputMode="numeric"
+                  maxLength={6}
+                  value={verifyCode}
+                  onChange={(e) => setVerifyCode(e.target.value.replace(/\D/g, ''))}
+                  className="flex-1 px-4 py-3 bg-gray-900 border border-gray-700 rounded-lg text-white text-center text-xl tracking-[0.3em] font-mono focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 transition"
+                  placeholder="000000"
+                  autoFocus
+                />
+                <button
+                  onClick={handleMfaVerify}
+                  disabled={mfaLoading || verifyCode.length < 6}
+                  className="px-6 py-3 bg-green-600 text-white rounded-lg font-medium hover:bg-green-700 transition disabled:opacity-50"
+                >
+                  {mfaLoading ? 'Verifying...' : 'Verify'}
+                </button>
+              </div>
+            </div>
+            <button onClick={() => setSetupStep('idle')} className="text-gray-400 hover:text-gray-300 text-sm">
+              Cancel setup
+            </button>
           </div>
-          <button
-            onClick={() => setTwoFactorEnabled(!twoFactorEnabled)}
-            className={`relative w-12 h-6 rounded-full transition-colors ${twoFactorEnabled ? 'bg-green-500' : 'bg-gray-600'}`}
-          >
-            <span className={`absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full transition-transform ${twoFactorEnabled ? 'translate-x-6' : ''}`} />
-          </button>
-        </div>
-        {twoFactorEnabled && (
-          <motion.div
-            initial={{ opacity: 0, height: 0 }}
-            animate={{ opacity: 1, height: 'auto' }}
-            className="mt-4 p-4 bg-green-500/10 border border-green-500/30 rounded-lg"
-          >
-            <p className="text-green-400 text-sm">✅ Two-factor authentication is enabled. Your account is protected with an additional verification step.</p>
-          </motion.div>
+        ) : setupStep === 'backup' ? (
+          /* Backup Codes Display */
+          <div className="space-y-4">
+            <div className="p-4 bg-yellow-500/10 border border-yellow-500/30 rounded-lg">
+              <p className="text-yellow-400 font-medium mb-2">Save your backup codes</p>
+              <p className="text-gray-400 text-sm mb-4">Store these codes securely. Each code can only be used once. They will not be shown again.</p>
+              <div className="grid grid-cols-2 gap-2 mb-4">
+                {backupCodes.map((code, i) => (
+                  <div key={i} className="bg-gray-900 rounded px-3 py-2 text-center">
+                    <code className="text-white font-mono text-sm">{code}</code>
+                  </div>
+                ))}
+              </div>
+              <button
+                onClick={() => {
+                  navigator.clipboard.writeText(backupCodes.join('\n'));
+                  setMessage({ type: 'success', text: 'Backup codes copied to clipboard' });
+                }}
+                className="px-4 py-2 bg-gray-700 text-gray-300 rounded-lg hover:bg-gray-600 transition text-sm"
+              >
+                Copy all codes
+              </button>
+            </div>
+            <button
+              onClick={() => { setSetupStep('idle'); setBackupCodes([]); }}
+              className="px-6 py-3 bg-kali-blue text-white rounded-lg font-medium hover:bg-kali-blue/80 transition"
+            >
+              Done
+            </button>
+          </div>
+        ) : setupStep === 'disable' ? (
+          /* Disable MFA Confirmation */
+          <div className="space-y-4">
+            <div className="p-4 bg-red-500/10 border border-red-500/30 rounded-lg">
+              <p className="text-red-400 font-medium mb-2">Disable two-factor authentication</p>
+              <p className="text-gray-400 text-sm mb-4">Enter your password to confirm. This will remove the extra security layer from your account.</p>
+              <div className="flex gap-3">
+                <input
+                  type="password"
+                  value={disablePassword}
+                  onChange={(e) => setDisablePassword(e.target.value)}
+                  className="flex-1 px-4 py-3 bg-gray-900 border border-gray-700 rounded-lg text-white focus:border-red-500 focus:ring-1 focus:ring-red-500 transition"
+                  placeholder="Enter your password"
+                  autoFocus
+                />
+                <button
+                  onClick={handleMfaDisable}
+                  disabled={mfaLoading || !disablePassword}
+                  className="px-6 py-3 bg-red-600 text-white rounded-lg font-medium hover:bg-red-700 transition disabled:opacity-50"
+                >
+                  {mfaLoading ? 'Disabling...' : 'Disable'}
+                </button>
+              </div>
+            </div>
+            <button onClick={() => { setSetupStep('idle'); setDisablePassword(''); }} className="text-gray-400 hover:text-gray-300 text-sm">
+              Cancel
+            </button>
+          </div>
+        ) : setupStep === 'regenerate' ? (
+          /* Regenerate Backup Codes */
+          <div className="space-y-4">
+            <div className="p-4 bg-cyan-500/10 border border-cyan-500/30 rounded-lg">
+              <p className="text-cyan-400 font-medium mb-2">Regenerate backup codes</p>
+              <p className="text-gray-400 text-sm mb-4">Enter your password to generate new backup codes. This will invalidate all existing codes.</p>
+              <div className="flex gap-3">
+                <input
+                  type="password"
+                  value={disablePassword}
+                  onChange={(e) => setDisablePassword(e.target.value)}
+                  className="flex-1 px-4 py-3 bg-gray-900 border border-gray-700 rounded-lg text-white focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 transition"
+                  placeholder="Enter your password"
+                  autoFocus
+                />
+                <button
+                  onClick={handleRegenerateBackup}
+                  disabled={mfaLoading || !disablePassword}
+                  className="px-6 py-3 bg-cyan-600 text-white rounded-lg font-medium hover:bg-cyan-700 transition disabled:opacity-50"
+                >
+                  {mfaLoading ? 'Generating...' : 'Regenerate'}
+                </button>
+              </div>
+            </div>
+            <button onClick={() => { setSetupStep('idle'); setDisablePassword(''); }} className="text-gray-400 hover:text-gray-300 text-sm">
+              Cancel
+            </button>
+          </div>
+        ) : (
+          /* Default MFA Status View */
+          <div className="space-y-3">
+            <div className="flex items-center justify-between p-4 bg-gray-800 rounded-lg">
+              <div>
+                <p className="text-white font-medium">TOTP Authenticator</p>
+                <p className="text-gray-400 text-sm">
+                  {mfaEnabled
+                    ? `Enabled${mfaEnabledAt ? ` on ${new Date(mfaEnabledAt).toLocaleDateString()}` : ''}`
+                    : 'Add an extra layer of security to your account'}
+                </p>
+              </div>
+              {mfaEnabled ? (
+                <span className="px-3 py-1 bg-green-500/20 text-green-400 rounded-full text-sm font-medium">Enabled</span>
+              ) : (
+                <button
+                  onClick={handleMfaSetup}
+                  disabled={mfaLoading}
+                  className="px-4 py-2 bg-cyan-600 text-white rounded-lg text-sm font-medium hover:bg-cyan-700 transition disabled:opacity-50"
+                >
+                  Enable 2FA
+                </button>
+              )}
+            </div>
+            {mfaEnabled && (
+              <div className="flex items-center justify-between p-4 bg-gray-800 rounded-lg">
+                <div>
+                  <p className="text-white font-medium text-sm">Backup Codes</p>
+                  <p className="text-gray-400 text-xs">{backupCodesRemaining} codes remaining</p>
+                </div>
+                <div className="flex gap-2">
+                  <button
+                    onClick={() => setSetupStep('regenerate')}
+                    className="px-3 py-1.5 bg-gray-700 text-gray-300 rounded-lg text-xs hover:bg-gray-600 transition"
+                  >
+                    Regenerate
+                  </button>
+                  <button
+                    onClick={() => setSetupStep('disable')}
+                    className="px-3 py-1.5 bg-red-600/20 text-red-400 rounded-lg text-xs hover:bg-red-600/30 transition"
+                  >
+                    Disable 2FA
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
         )}
       </div>
 

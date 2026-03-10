@@ -60,15 +60,39 @@ import time as _time
 from collections import defaultdict
 
 class SimpleRateLimiter:
-    """Thread-safe rate limiter that works with eventlet green threads."""
+    """Rate limiter with Redis backend + in-memory fallback. V20: Distributed."""
     def __init__(self):
-        self._requests = defaultdict(list)  # key -> [timestamps]
+        self._requests = defaultdict(list)  # fallback in-memory store
+        self._redis = None
+        try:
+            import redis
+            self._redis = redis.Redis(host='127.0.0.1', port=6379, db=1, socket_timeout=1, decode_responses=True)
+            self._redis.ping()
+            print("✅ Rate limiter using Redis backend")
+        except Exception:
+            self._redis = None
+            print("⚠️ Rate limiter using in-memory fallback (Redis unavailable)")
     
     def is_limited(self, key, limit, window_seconds=60):
         """Check if key has exceeded limit within window. Returns True if limited."""
+        if self._redis:
+            try:
+                pipe = self._redis.pipeline()
+                now = _time.time()
+                redis_key = f"rl:{key}"
+                pipe.zremrangebyscore(redis_key, 0, now - window_seconds)
+                pipe.zcard(redis_key)
+                pipe.zadd(redis_key, {str(now): now})
+                pipe.expire(redis_key, window_seconds)
+                results = pipe.execute()
+                count = results[1]
+                return count >= limit
+            except Exception:
+                pass  # Fall through to in-memory
+        
+        # In-memory fallback
         now = _time.time()
         cutoff = now - window_seconds
-        # Clean old entries and add new
         self._requests[key] = [t for t in self._requests[key] if t > cutoff]
         if len(self._requests[key]) >= limit:
             return True
@@ -1370,6 +1394,10 @@ def register():
             print(f"Email notification failed: {e}")
             # Don't fail registration if email fails
         
+        # V20: Audit log
+        log_audit('user_registered', category='auth', severity='info', user_id=user.id, org_id=org.id,
+                  details={'email': user.email, 'org_name': org.name})
+
         # V13: Do NOT return JWT — user must verify email first
         return jsonify({
             'message': 'Registration successful! Please check your email to verify your account.',
@@ -1629,8 +1657,18 @@ def refresh_token():
 
 
 @app.route('/api/v1/auth/logout', methods=['POST'])
+@jwt_required(optional=True)
 def auth_logout():
     """Clear httpOnly JWT cookies — V18"""
+    # V20: Audit log
+    try:
+        user_id = get_jwt_identity()
+        if user_id:
+            user = User.query.get(user_id)
+            if user:
+                log_audit('logout', category='auth', severity='info', user_id=user.id, org_id=user.organization_id)
+    except Exception:
+        pass
     resp = jsonify({'message': 'Logged out'})
     unset_jwt_cookies(resp)
     return resp
@@ -1725,6 +1763,7 @@ def mfa_verify_setup():
         db.session.commit()
         
         app.logger.info(f"🔐 MFA enabled for {user.email}")
+        log_audit('mfa_enabled', category='auth', severity='info', user_id=user.id, org_id=user.organization_id)
         
         return jsonify({
             'message': 'MFA enabled successfully',
@@ -1762,6 +1801,7 @@ def mfa_disable():
         db.session.commit()
         
         app.logger.info(f"🔐 MFA disabled for {user.email}")
+        log_audit('mfa_disabled', category='auth', severity='warning', user_id=user.id, org_id=user.organization_id)
         
         return jsonify({'message': 'MFA has been disabled'})
     except Exception as e:
@@ -3481,6 +3521,11 @@ def create_scan():
         )
         db.session.add(scan)
         db.session.commit()
+        
+        # V20: Audit log
+        log_audit('scan_started', category='scan', severity='info', user_id=user.id, org_id=user.organization_id,
+                  resource_type='scan', resource_id=scan.id,
+                  details={'tool': data['tool_id'], 'target': data['target']})
         
         # Track usage
         usage = UsageTracking(
@@ -7195,6 +7240,11 @@ def agent_register():
         agent, error = agent_mgr.register_agent(token, data)
         if error:
             return jsonify({'error': error}), 400
+        
+        # V20: Audit log
+        log_audit('agent_registered', category='agent', severity='info',
+                  resource_type='agent', resource_id=agent.id,
+                  details={'agent_name': agent.name, 'ip': request.remote_addr})
         
         return jsonify({
             'agent_id': agent.id,

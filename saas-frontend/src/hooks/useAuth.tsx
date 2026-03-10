@@ -106,14 +106,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   }, [token, fetchUser, initialFetchDone]);
 
-  const login = async (email: string, password: string) => {
+  const login = async (email: string, password: string, mfaCode?: string) => {
+    const body: Record<string, string> = { email, password };
+    if (mfaCode) body.mfa_code = mfaCode;
+
     const response = await fetch(`${API_URL}/auth/login`, {
       method: 'POST',
       credentials: 'include',  // V18: Send/receive httpOnly cookies
       headers: {
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({ email, password }),
+      body: JSON.stringify(body),
     });
 
     if (!response.ok) {
@@ -129,6 +132,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
 
     const data = await response.json();
+
+    // V20: Handle MFA challenge
+    if (data.requires_mfa) {
+      const e: any = new Error('MFA verification required');
+      e.requires_mfa = true;
+      e.user_id = data.user_id;
+      throw e;
+    }
+
     // V18: Still store token for backward compat (will be removed once httpOnly-only)
     localStorage.setItem('token', data.access_token);
     setToken(data.access_token);

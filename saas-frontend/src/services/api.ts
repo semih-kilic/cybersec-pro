@@ -124,6 +124,53 @@ class ApiService {
   }
 
   // ================================
+  // MFA — V20
+  // ================================
+
+  async getMfaStatus() {
+    return this.request<{
+      mfa_enabled: boolean;
+      mfa_enabled_at: string | null;
+      backup_codes_remaining: number;
+    }>('/auth/mfa/status');
+  }
+
+  async setupMfa() {
+    return this.request<{
+      secret: string;
+      qr_code: string;
+      issuer: string;
+    }>('/auth/mfa/setup', { method: 'POST' });
+  }
+
+  async verifyMfaSetup(code: string) {
+    return this.request<{
+      message: string;
+      backup_codes: string[];
+    }>('/auth/mfa/verify-setup', {
+      method: 'POST',
+      body: JSON.stringify({ code }),
+    });
+  }
+
+  async disableMfa(password: string) {
+    return this.request<{ message: string }>('/auth/mfa/disable', {
+      method: 'POST',
+      body: JSON.stringify({ password }),
+    });
+  }
+
+  async regenerateBackupCodes(password: string) {
+    return this.request<{
+      backup_codes: string[];
+      message: string;
+    }>('/auth/mfa/regenerate-backup', {
+      method: 'POST',
+      body: JSON.stringify({ password }),
+    });
+  }
+
+  // ================================
   // TOOLS
   // ================================
 
