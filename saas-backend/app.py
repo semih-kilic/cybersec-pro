@@ -3276,12 +3276,14 @@ def dashboard_security_summary():
         
         for scan in completed_scans:
             result_data = {}
-            if scan.result:
+            if scan.output:
                 try:
                     import json
-                    result_data = json.loads(scan.result) if isinstance(scan.result, str) else scan.result
+                    result_data = json.loads(scan.output) if isinstance(scan.output, str) else scan.output
                 except:
                     pass
+            elif scan.findings:
+                result_data = {'findings': scan.findings if isinstance(scan.findings, list) else []}
             
             findings = result_data.get('findings', [])
             for f in findings:
