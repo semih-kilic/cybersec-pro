@@ -453,6 +453,42 @@ class ApiService {
       body: JSON.stringify({ plan_type: planType }),
     });
   }
+
+  // ================================
+  // Service Manager (Super Admin)
+  // ================================
+  async getServiceManagerDashboard() {
+    return this.request<ServiceManagerDashboard>('/admin/service-manager/dashboard');
+  }
+
+  async getServices() {
+    return this.request<ServiceState[]>('/admin/service-manager/services');
+  }
+
+  async serviceAction(serviceId: string, action: 'start' | 'stop' | 'restart') {
+    return this.request<{ success: boolean; message: string }>(`/admin/service-manager/services/${serviceId}/action`, {
+      method: 'POST',
+      body: JSON.stringify({ action }),
+    });
+  }
+
+  async getSystemMetrics() {
+    return this.request<SystemMetrics>('/admin/service-manager/system');
+  }
+
+  async getProcesses() {
+    return this.request<Array<{ pid: number; name: string; cpu: number; memory_mb: number; status: string }>>('/admin/service-manager/processes');
+  }
+
+  async getServiceAlerts() {
+    return this.request<ServiceAlert[]>('/admin/service-manager/alerts');
+  }
+
+  async acknowledgeAlert(alertId: string) {
+    return this.request<void>(`/admin/service-manager/alerts/${alertId}/acknowledge`, {
+      method: 'POST',
+    });
+  }
 }
 
 // Types
@@ -538,6 +574,77 @@ export interface Subscription {
   current_period_start: string | null;
   current_period_end: string | null;
   created_at: string;
+}
+
+// ================================
+// Service Manager (Super Admin)
+// ================================
+export interface ServiceManagerDashboard {
+  system: SystemMetrics;
+  services: ServiceState[];
+  alerts: ServiceAlert[];
+  summary: DashboardSummary;
+}
+
+export interface SystemMetrics {
+  hostname: string;
+  os: string;
+  kernel: string;
+  uptime_secs: number;
+  cpu_count: number;
+  cpu_usage_percent: number;
+  memory_total_mb: number;
+  memory_used_mb: number;
+  memory_percent: number;
+  disk_total_gb: number;
+  disk_used_gb: number;
+  disk_percent: number;
+  load_avg: [number, number, number];
+  network_rx_bytes: number;
+  network_tx_bytes: number;
+  timestamp: string;
+}
+
+export interface ServiceState {
+  config: {
+    id: string;
+    name: string;
+    description: string;
+    category: string;
+    port: number | null;
+    priority: number;
+  };
+  status: 'running' | 'stopped' | 'starting' | 'stopping' | 'failed' | 'degraded' | 'unknown';
+  pid: number | null;
+  uptime_secs: number | null;
+  cpu_percent: number;
+  memory_mb: number;
+  restart_count: number;
+  last_started: string | null;
+  last_health_check: string | null;
+  health_ok: boolean;
+  error_message: string | null;
+  logs_tail: string[];
+}
+
+export interface ServiceAlert {
+  id: string;
+  severity: 'critical' | 'warning' | 'info';
+  service_id: string | null;
+  message: string;
+  timestamp: string;
+  acknowledged: boolean;
+}
+
+export interface DashboardSummary {
+  total_services: number;
+  running: number;
+  stopped: number;
+  failed: number;
+  total_cpu_percent: number;
+  total_memory_mb: number;
+  uptime_formatted: string;
+  overall_health: string;
 }
 
 // Singleton instance

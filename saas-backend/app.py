@@ -5011,8 +5011,10 @@ def start_scan_v2():
 
             plan = org.plan_type or 'trial'
 
-            # Run V7 scan in background thread
-            import threading
+            # Run V7 scan in native OS thread (eventlet.tpool bypasses monkey-patching)
+            # This is critical: eventlet.monkey_patch replaces threading/subprocess/select
+            # which breaks PTY-based output capture in scan_runner. tpool runs in real threads.
+            import eventlet.tpool
 
             def _run_v7_scan_from_start():
                 with app.app_context():
@@ -5043,7 +5045,10 @@ def start_scan_v2():
                             except Exception:
                                 pass
 
-                        result = v7_execute_scan(
+                        # Run the actual scan in a real OS thread via tpool
+                        # This bypasses eventlet's monkey-patched subprocess/pty/select
+                        result = eventlet.tpool.execute(
+                            v7_execute_scan,
                             tool_slug=tool_name,
                             target=target,
                             profile_name=profile if profile != 'default' else 'default',
@@ -5100,8 +5105,7 @@ def start_scan_v2():
                         except Exception:
                             db.session.rollback()
 
-            t = threading.Thread(target=_run_v7_scan_from_start, daemon=True)
-            t.start()
+            eventlet.spawn_n(_run_v7_scan_from_start)
 
             return jsonify({
                 'success': True,
@@ -9822,6 +9826,74 @@ def get_audit_stats():
         })
     except Exception as e:
         return jsonify({'error': str(e)}), 500
+
+
+# ================================
+# SUPER ADMIN — SERVICE MANAGER (Rust Daemon Proxy)
+# ================================
+RUST_SERVICE_MANAGER_URL = 'http://localhost:9000'
+
+def _proxy_service_manager(path):
+    """Forward request to Rust service manager daemon."""
+    import urllib.request
+    import urllib.error
+    url = f'{RUST_SERVICE_MANAGER_URL}{path}'
+    try:
+        req = urllib.request.Request(url, method=request.method)
+        if request.data:
+            req.data = request.data
+            req.add_header('Content-Type', 'application/json')
+        with urllib.request.urlopen(req, timeout=10) as resp:
+            data = json.loads(resp.read())
+            return jsonify(data), resp.status
+    except urllib.error.HTTPError as e:
+        body = e.read().decode('utf-8', errors='replace')
+        try:
+            return jsonify(json.loads(body)), e.code
+        except Exception:
+            return jsonify({'error': body}), e.code
+    except Exception as e:
+        return jsonify({'error': f'Service manager unavailable: {str(e)}'}), 503
+
+@app.route('/api/v1/admin/service-manager/dashboard', methods=['GET'])
+@admin_required
+def sm_dashboard():
+    return _proxy_service_manager('/api/admin/dashboard')
+
+@app.route('/api/v1/admin/service-manager/services', methods=['GET'])
+@admin_required
+def sm_services():
+    return _proxy_service_manager('/api/admin/services')
+
+@app.route('/api/v1/admin/service-manager/services/<service_id>', methods=['GET'])
+@admin_required
+def sm_service_detail(service_id):
+    return _proxy_service_manager(f'/api/admin/services/{service_id}')
+
+@app.route('/api/v1/admin/service-manager/services/<service_id>/action', methods=['POST'])
+@admin_required
+def sm_service_action(service_id):
+    return _proxy_service_manager(f'/api/admin/services/{service_id}/action')
+
+@app.route('/api/v1/admin/service-manager/system', methods=['GET'])
+@admin_required
+def sm_system_metrics():
+    return _proxy_service_manager('/api/admin/system')
+
+@app.route('/api/v1/admin/service-manager/processes', methods=['GET'])
+@admin_required
+def sm_processes():
+    return _proxy_service_manager('/api/admin/processes')
+
+@app.route('/api/v1/admin/service-manager/alerts', methods=['GET'])
+@admin_required
+def sm_alerts():
+    return _proxy_service_manager('/api/admin/alerts')
+
+@app.route('/api/v1/admin/service-manager/alerts/<alert_id>/acknowledge', methods=['POST'])
+@admin_required
+def sm_acknowledge_alert(alert_id):
+    return _proxy_service_manager(f'/api/admin/alerts/{alert_id}/acknowledge')
 
 
 if __name__ == '__main__':
