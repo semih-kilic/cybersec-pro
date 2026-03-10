@@ -2,7 +2,7 @@
  * 🐉 CyberSec Pro — DataTable Component
  * Full-featured table with sorting, pagination, row selection, and responsive design
  */
-import { useState, useMemo, type ReactNode } from 'react';
+import { useState, useMemo, memo, useCallback, type ReactNode } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 export interface Column<T> {
@@ -31,6 +31,58 @@ interface DataTableProps<T> {
 }
 
 type SortDir = 'asc' | 'desc';
+
+interface DataTableRowProps<T> {
+  row: T;
+  rowKey: string;
+  columns: Column<T>[];
+  cellPad: string;
+  isSelected?: boolean;
+  selectable?: boolean;
+  onRowClick?: (row: T) => void;
+  onToggleRow?: (key: string) => void;
+}
+
+const DataTableRow = memo(function DataTableRow<T>({
+  row,
+  rowKey,
+  columns,
+  cellPad,
+  isSelected,
+  selectable,
+  onRowClick,
+  onToggleRow,
+}: DataTableRowProps<T>) {
+  return (
+    <motion.tr
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      onClick={onRowClick ? () => onRowClick(row) : undefined}
+      className={`
+        transition-colors
+        ${onRowClick ? 'cursor-pointer hover:bg-gray-700/30' : ''}
+        ${isSelected ? 'bg-cyan-500/5' : 'hover:bg-gray-800/40'}
+      `.trim()}
+    >
+      {selectable && (
+        <td className="px-3 py-3" onClick={(e) => e.stopPropagation()}>
+          <input
+            type="checkbox"
+            checked={isSelected || false}
+            onChange={() => onToggleRow?.(rowKey)}
+            className="rounded border-gray-600 bg-gray-800 text-cyan-500 focus:ring-cyan-500/50 focus:ring-offset-0"
+          />
+        </td>
+      )}
+      {columns.map(col => (
+        <td key={col.key} className={`${cellPad} text-gray-300 ${col.className || ''}`}>
+          {col.render ? col.render(row) : String((row as Record<string, unknown>)[col.key] ?? '')}
+        </td>
+      ))}
+    </motion.tr>
+  );
+}) as <T>(props: DataTableRowProps<T>) => React.ReactElement;
 
 export function DataTable<T extends Record<string, unknown>>({
   columns,
@@ -82,13 +134,13 @@ export function DataTable<T extends Record<string, unknown>>({
     }
   };
 
-  const toggleRow = (key: string) => {
+  const toggleRow = useCallback((key: string) => {
     if (!onSelectionChange || !selectedKeys) return;
     const next = new Set(selectedKeys);
     if (next.has(key)) next.delete(key);
     else next.add(key);
     onSelectionChange(next);
-  };
+  }, [onSelectionChange, selectedKeys]);
 
   // Pagination
   const totalPages = pagination ? Math.ceil(pagination.total / pagination.perPage) : 0;
@@ -152,36 +204,18 @@ export function DataTable<T extends Record<string, unknown>>({
               <AnimatePresence>
                 {sortedData.map((row) => {
                   const key = keyExtractor(row);
-                  const isSelected = selectedKeys?.has(key);
                   return (
-                    <motion.tr
+                    <DataTableRow
                       key={key}
-                      initial={{ opacity: 0 }}
-                      animate={{ opacity: 1 }}
-                      exit={{ opacity: 0 }}
-                      onClick={onRowClick ? () => onRowClick(row) : undefined}
-                      className={`
-                        transition-colors
-                        ${onRowClick ? 'cursor-pointer hover:bg-gray-700/30' : ''}
-                        ${isSelected ? 'bg-cyan-500/5' : 'hover:bg-gray-800/40'}
-                      `.trim()}
-                    >
-                      {selectable && (
-                        <td className="px-3 py-3" onClick={(e) => e.stopPropagation()}>
-                          <input
-                            type="checkbox"
-                            checked={isSelected || false}
-                            onChange={() => toggleRow(key)}
-                            className="rounded border-gray-600 bg-gray-800 text-cyan-500 focus:ring-cyan-500/50 focus:ring-offset-0"
-                          />
-                        </td>
-                      )}
-                      {columns.map(col => (
-                        <td key={col.key} className={`${cellPad} text-gray-300 ${col.className || ''}`}>
-                          {col.render ? col.render(row) : String(row[col.key] ?? '')}
-                        </td>
-                      ))}
-                    </motion.tr>
+                      row={row}
+                      rowKey={key}
+                      columns={columns}
+                      cellPad={cellPad}
+                      isSelected={selectedKeys?.has(key)}
+                      selectable={selectable}
+                      onRowClick={onRowClick}
+                      onToggleRow={toggleRow}
+                    />
                   );
                 })}
               </AnimatePresence>

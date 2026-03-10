@@ -1,7 +1,7 @@
 /**
  * useLocalStorage — Typed localStorage hook with SSR safety
  */
-import { useState, useCallback, useEffect } from 'react';
+import { useState, useCallback, useEffect, useRef } from 'react';
 
 export function useLocalStorage<T>(key: string, initialValue: T) {
   const [storedValue, setStoredValue] = useState<T>(() => {
@@ -129,28 +129,6 @@ export function useOnlineStatus(): boolean {
 }
 
 /**
- * useIntersectionObserver — Observe element visibility
- */
-export function useIntersectionObserver(
-  options: IntersectionObserverInit = {}
-): [React.RefCallback<Element>, boolean] {
-  const [isIntersecting, setIsIntersecting] = useState(false);
-  const [node, setNode] = useState<Element | null>(null);
-
-  useEffect(() => {
-    if (!node) return;
-    const observer = new IntersectionObserver(
-      ([entry]) => setIsIntersecting(entry.isIntersecting),
-      { threshold: 0.1, ...options }
-    );
-    observer.observe(node);
-    return () => observer.disconnect();
-  }, [node, options.threshold, options.root, options.rootMargin]);
-
-  return [setNode, isIntersecting];
-}
-
-/**
  * useDocumentTitle — Set dynamic page title
  */
 export function useDocumentTitle(title: string) {
@@ -164,10 +142,56 @@ export function useDocumentTitle(title: string) {
 /**
  * usePrevious — Track previous value of a reactive variable
  */
-import { useRef } from 'react';
-
 export function usePrevious<T>(value: T): T | undefined {
   const ref = useRef<T>();
   useEffect(() => { ref.current = value; });
   return ref.current;
+}
+
+/**
+ * useIntersectionObserver — Lazy-load content when it enters viewport
+ */
+export function useIntersectionObserver(
+  options: IntersectionObserverInit = {}
+): [React.RefCallback<Element>, boolean] {
+  const [isIntersecting, setIntersecting] = useState(false);
+  const observerRef = useRef<IntersectionObserver | null>(null);
+
+  const ref = useCallback(
+    (node: Element | null) => {
+      if (observerRef.current) {
+        observerRef.current.disconnect();
+        observerRef.current = null;
+      }
+      if (!node) return;
+      observerRef.current = new IntersectionObserver(
+        ([entry]) => {
+          if (entry.isIntersecting) {
+            setIntersecting(true);
+            observerRef.current?.disconnect();
+          }
+        },
+        { rootMargin: '200px', ...options }
+      );
+      observerRef.current.observe(node);
+    },
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [options.rootMargin, options.threshold]
+  );
+
+  return [ref, isIntersecting];
+}
+
+/**
+ * useStableCallback — Returns a stable reference to the latest callback.
+ * Useful for passing callbacks to memoized children without triggering re-renders.
+ */
+export function useStableCallback<T extends (...args: any[]) => any>(callback: T): T {
+  const callbackRef = useRef(callback);
+  callbackRef.current = callback;
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  return useCallback(
+    ((...args: any[]) => callbackRef.current(...args)) as T,
+    []
+  );
 }

@@ -26,15 +26,33 @@ export default defineConfig({
   build: {
     outDir: 'dist',
     sourcemap: false, // V17: disabled for production security
+    target: 'es2020',
+    cssCodeSplit: true,
     rollupOptions: {
       output: {
         manualChunks: {
+          // Core React runtime — cached long-term
           vendor: ['react', 'react-dom'],
+          // Routing — loaded on first navigation
           router: ['react-router-dom'],
+          // Animation — only pages using motion
           motion: ['framer-motion'],
+          // Data layer
           query: ['@tanstack/react-query'],
+          // i18n bundle — loaded once
           i18n: ['i18next', 'react-i18next', 'i18next-browser-languagedetector'],
+          // Charts — only loaded by analytics-heavy pages
           charts: ['recharts'],
+          // UI primitives — headless UI + heroicons
+          ui: ['@headlessui/react', '@heroicons/react'],
+          // Terminal — only loaded by TerminalPage
+          xterm: ['xterm', 'xterm-addon-fit', 'xterm-addon-web-links'],
+          // Payments — only loaded by UpgradePage/BillingPage
+          stripe: ['@stripe/stripe-js', '@stripe/react-stripe-js'],
+          // Real-time
+          socket: ['socket.io-client'],
+          // Forms & validation
+          forms: ['react-hook-form', '@hookform/resolvers', 'zod'],
         },
       },
     },

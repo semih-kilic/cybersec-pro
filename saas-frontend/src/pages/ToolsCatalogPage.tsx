@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, memo } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { useToolsCatalog, useToolsStats } from '../hooks/useApiQueries';
 
@@ -20,6 +20,100 @@ interface Category {
   count: number;
   icon: string;
 }
+
+const getPlanBadge = (plan: string) => {
+  switch (plan) {
+    case 'starter':
+      return <span className="px-2 py-0.5 bg-green-500/20 text-green-400 rounded text-xs">FREE</span>;
+    case 'professional':
+      return <span className="px-2 py-0.5 bg-cyan-500/20 text-cyan-400 rounded text-xs">PRO</span>;
+    case 'enterprise':
+      return <span className="px-2 py-0.5 bg-yellow-500/20 text-yellow-400 rounded text-xs">ENT</span>;
+    default:
+      return null;
+  }
+};
+
+const ToolGridCard = memo(function ToolGridCard({ tool }: { tool: Tool }) {
+  return (
+    <Link
+      to={`/tools/${tool.slug}`}
+      className="group bg-gray-800 rounded-xl p-6 hover:bg-gray-750 border border-transparent hover:border-cyan-500/50 transition-all duration-200"
+    >
+      <div className="flex items-start gap-4">
+        <div className="w-12 h-12 bg-gradient-to-br from-cyan-500 to-blue-600 rounded-lg flex items-center justify-center text-xl font-bold flex-shrink-0 group-hover:scale-110 transition-transform">
+          {tool.name.charAt(0)}
+        </div>
+        <div className="flex-1 min-w-0">
+          <div className="flex items-center gap-2 mb-1">
+            <h3 className="text-lg font-semibold group-hover:text-cyan-400 transition-colors truncate">
+              {tool.name}
+            </h3>
+            {getPlanBadge(tool.plan_required)}
+          </div>
+          <p className="text-sm text-gray-400 line-clamp-2 mb-3">
+            {tool.description}
+          </p>
+          <div className="flex items-center gap-4 text-xs text-gray-500">
+            <span className="flex items-center gap-1">
+              <span>⚙️</span>
+              <span>{tool.parameter_count} params</span>
+            </span>
+            <span className="flex items-center gap-1">
+              <span>📋</span>
+              <span>{tool.preset_count} presets</span>
+            </span>
+          </div>
+        </div>
+      </div>
+      {tool.tags?.length > 0 && (
+        <div className="flex flex-wrap gap-1 mt-4 pt-4 border-t border-gray-700">
+          {tool.tags.slice(0, 4).map(tag => (
+            <span key={tag} className="px-2 py-0.5 bg-gray-700 rounded text-xs text-gray-400">
+              {tag}
+            </span>
+          ))}
+          {tool.tags.length > 4 && (
+            <span className="px-2 py-0.5 text-xs text-gray-500">
+              +{tool.tags.length - 4} more
+            </span>
+          )}
+        </div>
+      )}
+    </Link>
+  );
+});
+
+const ToolListRow = memo(function ToolListRow({ tool }: { tool: Tool }) {
+  return (
+    <Link
+      to={`/tools/${tool.slug}`}
+      className="group flex items-center gap-4 bg-gray-800 rounded-lg p-4 hover:bg-gray-750 border border-transparent hover:border-cyan-500/50 transition-all"
+    >
+      <div className="w-10 h-10 bg-gradient-to-br from-cyan-500 to-blue-600 rounded-lg flex items-center justify-center font-bold flex-shrink-0">
+        {tool.name.charAt(0)}
+      </div>
+      <div className="flex-1 min-w-0">
+        <div className="flex items-center gap-2">
+          <h3 className="font-semibold group-hover:text-cyan-400 transition-colors">
+            {tool.name}
+          </h3>
+          {getPlanBadge(tool.plan_required)}
+        </div>
+        <p className="text-sm text-gray-400 truncate">
+          {tool.description}
+        </p>
+      </div>
+      <div className="flex items-center gap-6 text-sm text-gray-500">
+        <span>{tool.category}</span>
+        <span>{tool.parameter_count} params</span>
+      </div>
+      <div className="text-gray-500 group-hover:text-cyan-400 transition-colors">
+        →
+      </div>
+    </Link>
+  );
+});
 
 const ToolsCatalogPage: React.FC = () => {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -69,19 +163,6 @@ const ToolsCatalogPage: React.FC = () => {
       'Hardware Hacking': '🔧',
     };
     return icons[category] || '🛠️';
-  };
-
-  const getPlanBadge = (plan: string) => {
-    switch (plan) {
-      case 'starter':
-        return <span className="px-2 py-0.5 bg-green-500/20 text-green-400 rounded text-xs">FREE</span>;
-      case 'professional':
-        return <span className="px-2 py-0.5 bg-cyan-500/20 text-cyan-400 rounded text-xs">PRO</span>;
-      case 'enterprise':
-        return <span className="px-2 py-0.5 bg-yellow-500/20 text-yellow-400 rounded text-xs">ENT</span>;
-      default:
-        return null;
-    }
   };
 
   if (loading) {
@@ -228,86 +309,13 @@ const ToolsCatalogPage: React.FC = () => {
             {viewMode === 'grid' ? (
               <div className="grid md:grid-cols-2 xl:grid-cols-3 gap-4">
                 {filteredTools.map(tool => (
-                  <Link
-                    key={tool.slug}
-                    to={`/tools/${tool.slug}`}
-                    className="group bg-gray-800 rounded-xl p-6 hover:bg-gray-750 border border-transparent hover:border-cyan-500/50 transition-all duration-200"
-                  >
-                    <div className="flex items-start gap-4">
-                      {/* Tool Icon */}
-                      <div className="w-12 h-12 bg-gradient-to-br from-cyan-500 to-blue-600 rounded-lg flex items-center justify-center text-xl font-bold flex-shrink-0 group-hover:scale-110 transition-transform">
-                        {tool.name.charAt(0)}
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-2 mb-1">
-                          <h3 className="text-lg font-semibold group-hover:text-cyan-400 transition-colors truncate">
-                            {tool.name}
-                          </h3>
-                          {getPlanBadge(tool.plan_required)}
-                        </div>
-                        <p className="text-sm text-gray-400 line-clamp-2 mb-3">
-                          {tool.description}
-                        </p>
-                        <div className="flex items-center gap-4 text-xs text-gray-500">
-                          <span className="flex items-center gap-1">
-                            <span>⚙️</span>
-                            <span>{tool.parameter_count} params</span>
-                          </span>
-                          <span className="flex items-center gap-1">
-                            <span>📋</span>
-                            <span>{tool.preset_count} presets</span>
-                          </span>
-                        </div>
-                      </div>
-                    </div>
-                    {/* Tags */}
-                    {tool.tags?.length > 0 && (
-                      <div className="flex flex-wrap gap-1 mt-4 pt-4 border-t border-gray-700">
-                        {tool.tags.slice(0, 4).map(tag => (
-                          <span key={tag} className="px-2 py-0.5 bg-gray-700 rounded text-xs text-gray-400">
-                            {tag}
-                          </span>
-                        ))}
-                        {tool.tags.length > 4 && (
-                          <span className="px-2 py-0.5 text-xs text-gray-500">
-                            +{tool.tags.length - 4} more
-                          </span>
-                        )}
-                      </div>
-                    )}
-                  </Link>
+                  <ToolGridCard key={tool.slug} tool={tool} />
                 ))}
               </div>
             ) : (
               <div className="space-y-2">
                 {filteredTools.map(tool => (
-                  <Link
-                    key={tool.slug}
-                    to={`/tools/${tool.slug}`}
-                    className="group flex items-center gap-4 bg-gray-800 rounded-lg p-4 hover:bg-gray-750 border border-transparent hover:border-cyan-500/50 transition-all"
-                  >
-                    <div className="w-10 h-10 bg-gradient-to-br from-cyan-500 to-blue-600 rounded-lg flex items-center justify-center font-bold flex-shrink-0">
-                      {tool.name.charAt(0)}
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2">
-                        <h3 className="font-semibold group-hover:text-cyan-400 transition-colors">
-                          {tool.name}
-                        </h3>
-                        {getPlanBadge(tool.plan_required)}
-                      </div>
-                      <p className="text-sm text-gray-400 truncate">
-                        {tool.description}
-                      </p>
-                    </div>
-                    <div className="flex items-center gap-6 text-sm text-gray-500">
-                      <span>{tool.category}</span>
-                      <span>{tool.parameter_count} params</span>
-                    </div>
-                    <div className="text-gray-500 group-hover:text-cyan-400 transition-colors">
-                      →
-                    </div>
-                  </Link>
+                  <ToolListRow key={tool.slug} tool={tool} />
                 ))}
               </div>
             )}

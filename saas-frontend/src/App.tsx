@@ -34,15 +34,15 @@ import { ShortcutsHelp } from './components/ui/ShortcutsHelp';
 import { wsManager } from './lib/socketManager';
 import { useBrowserNotifications } from './hooks/useBrowserNotifications';
 
-// Pages
-import { LandingPage } from './pages/LandingPage';
-import { LoginPage } from './pages/LoginPage';
-import { RegisterPage } from './pages/RegisterPage';
-import { VerifyEmailPage } from './pages/VerifyEmailPage';
-import { OAuthCallback } from './pages/OAuthCallback';
-import { DashboardPage } from './pages/DashboardPage';
-import ToolsCatalogPage from './pages/ToolsCatalogPage';
-import ToolDetailPagePublic from './pages/ToolDetailPage';
+// Pages — lazy loaded for optimal code splitting
+const LandingPage = lazy(() => import('./pages/LandingPage').then(m => ({ default: m.LandingPage })));
+const LoginPage = lazy(() => import('./pages/LoginPage').then(m => ({ default: m.LoginPage })));
+const RegisterPage = lazy(() => import('./pages/RegisterPage').then(m => ({ default: m.RegisterPage })));
+const VerifyEmailPage = lazy(() => import('./pages/VerifyEmailPage').then(m => ({ default: m.VerifyEmailPage })));
+const OAuthCallback = lazy(() => import('./pages/OAuthCallback'));
+const DashboardPage = lazy(() => import('./pages/DashboardPage').then(m => ({ default: m.DashboardPage })));
+const ToolsCatalogPage = lazy(() => import('./pages/ToolsCatalogPage'));
+const ToolDetailPagePublic = lazy(() => import('./pages/ToolDetailPage'));
 
 // Dashboard Pages (lazy loaded for performance)
 const OverviewPage = lazy(() => import('./pages/dashboard/OverviewPage'));
@@ -81,9 +81,37 @@ import './index.css';
 function LoadingSpinner() {
   return (
     <div className="min-h-screen bg-gray-950 flex items-center justify-center">
-      <div className="flex items-center gap-3">
-        <div className="w-8 h-8 border-4 border-kali-blue border-t-transparent rounded-full animate-spin" />
-        <span className="text-gray-400">Loading...</span>
+      <div className="flex flex-col items-center gap-4">
+        <div className="relative">
+          <div className="w-10 h-10 border-4 border-cyan-500/30 rounded-full" />
+          <div className="absolute inset-0 w-10 h-10 border-4 border-cyan-400 border-t-transparent rounded-full animate-spin" />
+        </div>
+        <span className="text-gray-500 text-sm">Loading...</span>
+      </div>
+    </div>
+  );
+}
+
+/** Route-level error boundary fallback for individual page crashes */
+function RouteErrorFallback() {
+  return (
+    <div className="min-h-[60vh] flex items-center justify-center px-6">
+      <div className="max-w-md w-full text-center">
+        <div className="w-14 h-14 mx-auto mb-5 rounded-xl bg-red-500/10 border border-red-500/20 flex items-center justify-center">
+          <svg className="w-7 h-7 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 9v3.75m9.303 3.376c-.866 1.5.217 3.374 1.948 3.374H4.752c1.73 0 2.814-1.874 1.948-3.374L12.949 3.378c-.866-1.5-3.032-1.5-3.898 0z" />
+          </svg>
+        </div>
+        <h2 className="text-lg font-semibold text-white mb-2">Page failed to load</h2>
+        <p className="text-sm text-gray-400 mb-5">Something went wrong loading this page.</p>
+        <div className="flex items-center justify-center gap-3">
+          <button onClick={() => window.location.reload()} className="px-4 py-2 text-sm rounded-lg bg-cyan-600 text-white hover:bg-cyan-500 transition">
+            Reload
+          </button>
+          <a href="/dashboard" className="px-4 py-2 text-sm rounded-lg bg-gray-800 text-gray-300 hover:bg-gray-700 transition border border-gray-700">
+            Go to Dashboard
+          </a>
+        </div>
       </div>
     </div>
   );
@@ -204,7 +232,7 @@ function DashboardLayout() {
           </div>
 
           <Suspense fallback={<OverviewSkeleton />}>
-            <ErrorBoundary>
+            <ErrorBoundary fallback={<RouteErrorFallback />}>
               <div className="px-4 pt-3 lg:px-6 lg:pt-4">
                 <Breadcrumb />
               </div>
@@ -227,7 +255,7 @@ function AppRoutes() {
   return (
     <Routes>
       {/* Public Routes */}
-      <Route path="/" element={<LandingPage />} />
+      <Route path="/" element={<Suspense fallback={<LoadingSpinner />}><LandingPage /></Suspense>} />
       
       {/* Legal & GDPR Routes (under /dashboard/ for nginx SPA routing) */}
       <Route path="/dashboard/privacy" element={<Suspense fallback={<LoadingSpinner />}><PrivacyPolicyPage /></Suspense>} />
@@ -235,22 +263,22 @@ function AppRoutes() {
       <Route path="/dashboard/gdpr" element={<Suspense fallback={<LoadingSpinner />}><GDPRPage /></Suspense>} />
       
       {/* Tools Routes - Public (like kali.org/tools) */}
-      <Route path="/tools" element={<ToolsCatalogPage />} />
-      <Route path="/tools/:slug" element={<ToolDetailPagePublic />} />
+      <Route path="/tools" element={<Suspense fallback={<LoadingSpinner />}><ToolsCatalogPage /></Suspense>} />
+      <Route path="/tools/:slug" element={<Suspense fallback={<LoadingSpinner />}><ToolDetailPagePublic /></Suspense>} />
       
       {/* Auth Routes */}
       <Route path="/login" element={
         <PublicRoute>
-          <LoginPage />
+          <Suspense fallback={<LoadingSpinner />}><LoginPage /></Suspense>
         </PublicRoute>
       } />
       <Route path="/register" element={
         <PublicRoute>
-          <RegisterPage />
+          <Suspense fallback={<LoadingSpinner />}><RegisterPage /></Suspense>
         </PublicRoute>
       } />
-      <Route path="/auth/callback" element={<OAuthCallback />} />
-      <Route path="/verify-email" element={<VerifyEmailPage />} />
+      <Route path="/auth/callback" element={<Suspense fallback={<LoadingSpinner />}><OAuthCallback /></Suspense>} />
+      <Route path="/verify-email" element={<Suspense fallback={<LoadingSpinner />}><VerifyEmailPage /></Suspense>} />
       
       {/* Protected Dashboard Routes */}
       <Route path="/dashboard" element={
@@ -286,7 +314,7 @@ function AppRoutes() {
       {/* Legacy dashboard route for backwards compatibility */}
       <Route path="/dashboard-old" element={
         <ProtectedRoute>
-          <DashboardPage />
+          <Suspense fallback={<LoadingSpinner />}><DashboardPage /></Suspense>
         </ProtectedRoute>
       } />
       
