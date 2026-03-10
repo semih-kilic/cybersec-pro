@@ -30,8 +30,14 @@ import subprocess
 import uuid
 import logging
 import threading
+import io
 from logging.handlers import RotatingFileHandler
 from functools import wraps
+
+# V20: MFA/TOTP
+import pyotp
+import qrcode
+import qrcode.image.svg
 
 # V17: Rate Limiting
 from flask_limiter import Limiter
@@ -539,6 +545,12 @@ class User(db.Model):
     oauth_id = db.Column(db.String(100))  # Provider's user ID
     avatar_url = db.Column(db.String(255))  # Profile picture URL
     
+    # V20: MFA/TOTP fields
+    mfa_enabled = db.Column(db.Boolean, default=False)
+    mfa_secret = db.Column(db.String(32))  # TOTP secret key
+    mfa_backup_codes = db.Column(db.JSON)  # Encrypted backup codes
+    mfa_enabled_at = db.Column(db.DateTime)
+    
     def set_password(self, password):
         self.password_hash = generate_password_hash(password)
     
@@ -559,8 +571,73 @@ class User(db.Model):
             'created_at': self.created_at.isoformat(),
             'last_login': self.last_login.isoformat() if self.last_login else None,
             'is_active': self.is_active,
-            'email_verified': self.email_verified if self.email_verified is not None else True
+            'email_verified': self.email_verified if self.email_verified is not None else True,
+            'mfa_enabled': self.mfa_enabled if self.mfa_enabled is not None else False
         }
+
+
+# ================================
+# V20: AUDIT LOG MODEL
+# ================================
+
+class AuditLog(db.Model):
+    """Audit trail for security-critical actions — V20 (GDPR/ISO 27001 compliance)"""
+    __tablename__ = 'audit_logs'
+    
+    id = db.Column(db.String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
+    organization_id = db.Column(db.String(36), db.ForeignKey('organizations.id'), nullable=True)
+    user_id = db.Column(db.String(36), db.ForeignKey('users.id'), nullable=True)
+    action = db.Column(db.String(100), nullable=False)  # login, logout, scan_start, mfa_enable, etc.
+    category = db.Column(db.String(50), default='system')  # auth, scan, admin, billing, agent, security
+    severity = db.Column(db.String(20), default='info')  # info, warning, critical
+    ip_address = db.Column(db.String(45))
+    user_agent = db.Column(db.String(500))
+    details = db.Column(db.JSON)  # Additional context
+    resource_type = db.Column(db.String(50))  # user, scan, agent, report, etc.
+    resource_id = db.Column(db.String(36))
+    status = db.Column(db.String(20), default='success')  # success, failure
+    created_at = db.Column(db.DateTime, default=datetime.utcnow, index=True)
+    
+    def to_dict(self):
+        return {
+            'id': self.id,
+            'organization_id': self.organization_id,
+            'user_id': self.user_id,
+            'action': self.action,
+            'category': self.category,
+            'severity': self.severity,
+            'ip_address': self.ip_address,
+            'details': self.details,
+            'resource_type': self.resource_type,
+            'resource_id': self.resource_id,
+            'status': self.status,
+            'created_at': self.created_at.isoformat() if self.created_at else None
+        }
+
+
+def log_audit(action, category='system', severity='info', user_id=None, org_id=None, 
+              details=None, resource_type=None, resource_id=None, status='success'):
+    """Helper to record an audit log entry — V20"""
+    try:
+        entry = AuditLog(
+            action=action,
+            category=category,
+            severity=severity,
+            user_id=user_id,
+            organization_id=org_id,
+            ip_address=request.remote_addr if request else None,
+            user_agent=request.headers.get('User-Agent', '')[:500] if request else None,
+            details=details,
+            resource_type=resource_type,
+            resource_id=resource_id,
+            status=status
+        )
+        db.session.add(entry)
+        db.session.commit()
+    except Exception as e:
+        app.logger.error(f"Audit log error: {str(e)}")
+        db.session.rollback()
+
 
 class Subscription(db.Model):
     """Stripe subscription management"""
@@ -1431,14 +1508,17 @@ def login():
         
         if not user:
             app.logger.warning(f"🔐 Login failed: no user found for {email}")
+            log_audit('login_failed', category='auth', severity='warning', details={'email': email, 'reason': 'user_not_found'}, status='failure')
             return jsonify({'error': 'Invalid credentials'}), 401
         
         if not user.check_password(data['password']):
             app.logger.warning(f"🔐 Login failed: wrong password for {email}")
+            log_audit('login_failed', category='auth', severity='warning', user_id=user.id, org_id=user.organization_id, details={'reason': 'wrong_password'}, status='failure')
             return jsonify({'error': 'Invalid credentials'}), 401
         
         if not user.is_active:
             app.logger.warning(f"🔐 Login blocked: deactivated account {email}")
+            log_audit('login_blocked', category='auth', severity='warning', user_id=user.id, details={'reason': 'deactivated'}, status='failure')
             return jsonify({'error': 'Account deactivated'}), 403
         
         # V16: Super admin / founder emails bypass verification check
@@ -1459,6 +1539,38 @@ def login():
                 'email': user.email,
             }), 403
         
+        # V20: MFA challenge — if user has MFA enabled, require TOTP before issuing tokens
+        if user.mfa_enabled and user.mfa_secret:
+            mfa_code = data.get('mfa_code')
+            if not mfa_code:
+                # Return MFA challenge — don't issue tokens yet
+                app.logger.info(f"🔐 MFA challenge issued for {email}")
+                return jsonify({
+                    'requires_mfa': True,
+                    'user_id': user.id,
+                    'message': 'MFA verification required'
+                }), 200
+            
+            # Verify TOTP code or backup code
+            totp = pyotp.TOTP(user.mfa_secret)
+            if not totp.verify(mfa_code, valid_window=1):
+                # Check backup codes
+                backup_codes = user.mfa_backup_codes or []
+                hashed_input = generate_password_hash(mfa_code)
+                code_valid = False
+                for i, stored_code in enumerate(backup_codes):
+                    if check_password_hash(stored_code, mfa_code):
+                        code_valid = True
+                        backup_codes.pop(i)
+                        user.mfa_backup_codes = backup_codes
+                        db.session.commit()
+                        app.logger.info(f"🔐 MFA backup code used for {email}, {len(backup_codes)} remaining")
+                        break
+                if not code_valid:
+                    app.logger.warning(f"🔐 MFA failed: invalid code for {email}")
+                    log_audit('mfa_failed', category='auth', severity='warning', user_id=user.id, org_id=user.organization_id, status='failure')
+                    return jsonify({'error': 'Invalid MFA code'}), 401
+        
         # Update last login
         user.last_login = datetime.utcnow()
         db.session.commit()
@@ -1468,6 +1580,7 @@ def login():
         refresh_token = create_refresh_token(identity=user.id)
         
         app.logger.info(f"🔐 Login successful: {email} (user_id={user.id})")
+        log_audit('login_success', category='auth', user_id=user.id, org_id=user.organization_id)
         
         # V18: Set httpOnly cookies + return JSON (dual mode for migration)
         resp = jsonify({
@@ -1521,6 +1634,196 @@ def auth_logout():
     resp = jsonify({'message': 'Logged out'})
     unset_jwt_cookies(resp)
     return resp
+
+
+# ================================
+# V20: MFA/TOTP ENDPOINTS
+# ================================
+
+@app.route('/api/v1/auth/mfa/setup', methods=['POST'])
+@jwt_required()
+def mfa_setup():
+    """Generate TOTP secret and QR code for MFA setup — V20"""
+    try:
+        user_id = get_jwt_identity()
+        user = User.query.get(user_id)
+        if not user:
+            return jsonify({'error': 'User not found'}), 404
+        
+        if user.mfa_enabled:
+            return jsonify({'error': 'MFA is already enabled'}), 400
+        
+        # Generate new TOTP secret
+        secret = pyotp.random_base32()
+        totp = pyotp.TOTP(secret)
+        provisioning_uri = totp.provisioning_uri(
+            name=user.email,
+            issuer_name='CyberSec Pro'
+        )
+        
+        # Generate QR code as base64 SVG
+        qr = qrcode.QRCode(version=1, box_size=10, border=4)
+        qr.add_data(provisioning_uri)
+        qr.make(fit=True)
+        img = qr.make_image(image_factory=qrcode.image.svg.SvgPathImage)
+        buffer = io.BytesIO()
+        img.save(buffer)
+        qr_svg = buffer.getvalue().decode('utf-8')
+        
+        # Store secret temporarily (not enabled until verified)
+        user.mfa_secret = secret
+        db.session.commit()
+        
+        app.logger.info(f"🔐 MFA setup initiated for {user.email}")
+        
+        return jsonify({
+            'secret': secret,
+            'qr_code': qr_svg,
+            'provisioning_uri': provisioning_uri,
+            'message': 'Scan QR code with your authenticator app, then verify with a code'
+        })
+    except Exception as e:
+        app.logger.error(f"🔐 MFA setup error: {str(e)}")
+        return jsonify({'error': 'MFA setup failed'}), 500
+
+
+@app.route('/api/v1/auth/mfa/verify-setup', methods=['POST'])
+@jwt_required()
+def mfa_verify_setup():
+    """Verify TOTP code to complete MFA setup — V20"""
+    try:
+        user_id = get_jwt_identity()
+        user = User.query.get(user_id)
+        if not user:
+            return jsonify({'error': 'User not found'}), 404
+        
+        if user.mfa_enabled:
+            return jsonify({'error': 'MFA is already enabled'}), 400
+        
+        if not user.mfa_secret:
+            return jsonify({'error': 'MFA setup not initiated. Call /mfa/setup first'}), 400
+        
+        data = request.get_json()
+        code = data.get('code', '').strip()
+        
+        if not code or len(code) != 6:
+            return jsonify({'error': 'A 6-digit code is required'}), 400
+        
+        totp = pyotp.TOTP(user.mfa_secret)
+        if not totp.verify(code, valid_window=1):
+            return jsonify({'error': 'Invalid code. Please try again'}), 400
+        
+        # Generate backup codes
+        import secrets
+        raw_backup_codes = [secrets.token_hex(4).upper() for _ in range(10)]
+        hashed_backup_codes = [generate_password_hash(c) for c in raw_backup_codes]
+        
+        # Enable MFA
+        user.mfa_enabled = True
+        user.mfa_backup_codes = hashed_backup_codes
+        user.mfa_enabled_at = datetime.utcnow()
+        db.session.commit()
+        
+        app.logger.info(f"🔐 MFA enabled for {user.email}")
+        
+        return jsonify({
+            'message': 'MFA enabled successfully',
+            'backup_codes': raw_backup_codes,
+            'warning': 'Save these backup codes securely. They will not be shown again.'
+        })
+    except Exception as e:
+        app.logger.error(f"🔐 MFA verify-setup error: {str(e)}")
+        return jsonify({'error': 'MFA verification failed'}), 500
+
+
+@app.route('/api/v1/auth/mfa/disable', methods=['POST'])
+@jwt_required()
+def mfa_disable():
+    """Disable MFA — requires current password — V20"""
+    try:
+        user_id = get_jwt_identity()
+        user = User.query.get(user_id)
+        if not user:
+            return jsonify({'error': 'User not found'}), 404
+        
+        if not user.mfa_enabled:
+            return jsonify({'error': 'MFA is not enabled'}), 400
+        
+        data = request.get_json()
+        password = data.get('password', '')
+        
+        if not user.check_password(password):
+            return jsonify({'error': 'Invalid password'}), 401
+        
+        user.mfa_enabled = False
+        user.mfa_secret = None
+        user.mfa_backup_codes = None
+        user.mfa_enabled_at = None
+        db.session.commit()
+        
+        app.logger.info(f"🔐 MFA disabled for {user.email}")
+        
+        return jsonify({'message': 'MFA has been disabled'})
+    except Exception as e:
+        app.logger.error(f"🔐 MFA disable error: {str(e)}")
+        return jsonify({'error': 'Failed to disable MFA'}), 500
+
+
+@app.route('/api/v1/auth/mfa/status', methods=['GET'])
+@jwt_required()
+def mfa_status():
+    """Get MFA status for current user — V20"""
+    try:
+        user_id = get_jwt_identity()
+        user = User.query.get(user_id)
+        if not user:
+            return jsonify({'error': 'User not found'}), 404
+        
+        backup_count = len(user.mfa_backup_codes) if user.mfa_backup_codes else 0
+        
+        return jsonify({
+            'mfa_enabled': user.mfa_enabled or False,
+            'mfa_enabled_at': user.mfa_enabled_at.isoformat() if user.mfa_enabled_at else None,
+            'backup_codes_remaining': backup_count
+        })
+    except Exception as e:
+        return jsonify({'error': 'Failed to get MFA status'}), 500
+
+
+@app.route('/api/v1/auth/mfa/regenerate-backup', methods=['POST'])
+@jwt_required()
+def mfa_regenerate_backup():
+    """Regenerate backup codes — requires current password — V20"""
+    try:
+        user_id = get_jwt_identity()
+        user = User.query.get(user_id)
+        if not user:
+            return jsonify({'error': 'User not found'}), 404
+        
+        if not user.mfa_enabled:
+            return jsonify({'error': 'MFA is not enabled'}), 400
+        
+        data = request.get_json()
+        password = data.get('password', '')
+        
+        if not user.check_password(password):
+            return jsonify({'error': 'Invalid password'}), 401
+        
+        import secrets
+        raw_backup_codes = [secrets.token_hex(4).upper() for _ in range(10)]
+        hashed_backup_codes = [generate_password_hash(c) for c in raw_backup_codes]
+        
+        user.mfa_backup_codes = hashed_backup_codes
+        db.session.commit()
+        
+        app.logger.info(f"🔐 MFA backup codes regenerated for {user.email}")
+        
+        return jsonify({
+            'backup_codes': raw_backup_codes,
+            'warning': 'Previous backup codes are now invalid. Save these securely.'
+        })
+    except Exception as e:
+        return jsonify({'error': 'Failed to regenerate backup codes'}), 500
 
 
 # ================================
@@ -9371,6 +9674,83 @@ def get_verification_methods():
         ]
     
     return jsonify({'methods': methods})
+
+
+# ================================
+# V20: AUDIT LOG API
+# ================================
+
+@app.route('/api/v1/admin/audit-logs', methods=['GET'])
+@admin_required
+def get_audit_logs():
+    """Get audit logs — admin only — V20"""
+    try:
+        page = request.args.get('page', 1, type=int)
+        per_page = min(request.args.get('per_page', 50, type=int), 200)
+        category = request.args.get('category')
+        severity = request.args.get('severity')
+        action = request.args.get('action')
+        user_id = request.args.get('user_id')
+        
+        query = AuditLog.query.order_by(AuditLog.created_at.desc())
+        
+        if category:
+            query = query.filter(AuditLog.category == category)
+        if severity:
+            query = query.filter(AuditLog.severity == severity)
+        if action:
+            query = query.filter(AuditLog.action.like(f'%{action}%'))
+        if user_id:
+            query = query.filter(AuditLog.user_id == user_id)
+        
+        paginated = query.paginate(page=page, per_page=per_page, error_out=False)
+        
+        return jsonify({
+            'logs': [log.to_dict() for log in paginated.items],
+            'total': paginated.total,
+            'page': page,
+            'per_page': per_page,
+            'pages': paginated.pages
+        })
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+
+@app.route('/api/v1/admin/audit-logs/stats', methods=['GET'])
+@admin_required
+def get_audit_stats():
+    """Get audit log statistics — admin only — V20"""
+    try:
+        from sqlalchemy import func
+        
+        # Last 24 hours stats
+        since = datetime.utcnow() - timedelta(hours=24)
+        
+        total = AuditLog.query.filter(AuditLog.created_at >= since).count()
+        failures = AuditLog.query.filter(
+            AuditLog.created_at >= since,
+            AuditLog.status == 'failure'
+        ).count()
+        
+        by_category = db.session.query(
+            AuditLog.category,
+            func.count(AuditLog.id)
+        ).filter(AuditLog.created_at >= since).group_by(AuditLog.category).all()
+        
+        by_action = db.session.query(
+            AuditLog.action,
+            func.count(AuditLog.id)
+        ).filter(AuditLog.created_at >= since).group_by(AuditLog.action).order_by(func.count(AuditLog.id).desc()).limit(10).all()
+        
+        return jsonify({
+            'period': '24h',
+            'total_events': total,
+            'failed_events': failures,
+            'by_category': {cat: count for cat, count in by_category},
+            'top_actions': {action: count for action, count in by_action}
+        })
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
 
 
 if __name__ == '__main__':
