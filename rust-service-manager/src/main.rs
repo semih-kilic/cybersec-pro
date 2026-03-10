@@ -16,7 +16,7 @@ use std::sync::Arc;
 use sysinfo::System;
 use tokio::sync::RwLock;
 use tower_http::cors::{Any, CorsLayer};
-use tracing::{error, info, warn};
+use tracing::{error, info};
 
 // ================================
 // DATA MODELS
@@ -504,13 +504,14 @@ async fn refresh_service_state(state: &AppState) {
             }
         }
 
-        let existing = services.get(&id);
+        let existing = services.get(&id).cloned();
         let last_started = if final_status == ServiceStatus::Running {
             existing
+                .as_ref()
                 .and_then(|e| e.last_started)
                 .or(Some(Utc::now()))
         } else {
-            existing.and_then(|e| e.last_started)
+            existing.as_ref().and_then(|e| e.last_started)
         };
 
         let uptime = if final_status == ServiceStatus::Running {
@@ -530,9 +531,9 @@ async fn refresh_service_state(state: &AppState) {
                 uptime_secs: uptime,
                 cpu_percent: cpu,
                 memory_mb: mem_kb as f64 / 1024.0,
-                restart_count: existing.map(|e| e.restart_count).unwrap_or(0),
+                restart_count: existing.as_ref().map(|e| e.restart_count).unwrap_or(0),
                 last_started: last_started,
-                last_stopped: existing.and_then(|e| e.last_stopped),
+                last_stopped: existing.as_ref().and_then(|e| e.last_stopped),
                 last_health_check: Some(Utc::now()),
                 health_ok,
                 error_message: error_msg,
@@ -829,7 +830,8 @@ async fn monitoring_loop(state: AppState) {
         history.push(metrics);
         // Keep last 240 entries (1 hour at 15s intervals)
         if history.len() > 240 {
-            history.drain(0..history.len() - 240);
+            let drain_count = history.len() - 240;
+            history.drain(0..drain_count);
         }
     }
 }

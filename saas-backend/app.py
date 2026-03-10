@@ -902,6 +902,8 @@ class Scan(db.Model):
             'duration_seconds': self.duration_seconds,
             'tool': self.tool.to_dict() if self.tool else {'name': 'Unknown', 'category': 'Unknown'},
             'findings_summary': summary,
+            'findings': self.findings,
+            'output': self.output or '',
             'error_log': self.error_log
         }
 
@@ -4421,16 +4423,33 @@ def get_scan_result(scan_id):
         if not scan:
             return jsonify({'error': 'Scan not found'}), 404
         
-        executor = get_executor()
-        result = executor.get_scan_result(scan_id)
+        result = None
+        try:
+            executor = get_executor()
+            result = executor.get_scan_result(scan_id)
+            # Update database with result from old executor
+            if result:
+                scan.status = result.get('status', 'completed')
+                scan.output = result.get('output', '')
+                if result.get('completed_at'):
+                    scan.completed_at = datetime.fromisoformat(result['completed_at'])
+                db.session.commit()
+        except Exception:
+            pass  # Old executor may not track V7 scans
         
-        # Update database with result
-        if result:
-            scan.status = result.get('status', 'completed')
-            scan.output = result.get('output', '')
-            if result.get('completed_at'):
-                scan.completed_at = datetime.fromisoformat(result['completed_at'])
-            db.session.commit()
+        # Build execution_result from DB if executor didn't have it (V7 scans)
+        if not result and scan.status in ('completed', 'failed', 'timeout'):
+            result = {
+                'scan_id': scan.id,
+                'tool': scan.tool.name if scan.tool else 'unknown',
+                'target': scan.target,
+                'status': scan.status,
+                'output': scan.output or '',
+                'started_at': scan.started_at.isoformat() if scan.started_at else None,
+                'completed_at': scan.completed_at.isoformat() if scan.completed_at else None,
+                'exit_code': 0 if scan.status == 'completed' else 1,
+                'findings': scan.findings,
+            }
         
         return jsonify({
             'scan': scan.to_dict(),
