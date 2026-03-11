@@ -26,8 +26,6 @@ pub async fn log_audit(
         .and_then(|h| h.get("user-agent"))
         .and_then(|v| v.to_str().ok())
         .map(|s| s.chars().take(500).collect::<String>());
-    let details_str = details.map(|d| d.to_string());
-
     let result = sqlx::query(
         "INSERT INTO audit_logs (id, organization_id, user_id, action, category, severity, ip_address, user_agent, details, resource_type, resource_id, status)
          VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)"
@@ -40,7 +38,7 @@ pub async fn log_audit(
     .bind(severity)
     .bind(&ip)
     .bind(&ua)
-    .bind(&details_str)
+    .bind(&details)
     .bind(resource_type)
     .bind(resource_id)
     .bind(status)

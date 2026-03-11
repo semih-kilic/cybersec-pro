@@ -600,8 +600,8 @@ pub async fn agents_dashboard(
         let os: Option<String> = row.get("os_info");
         let platform: Option<String> = row.get("platform");
         let version: Option<String> = row.get("version");
-        let cpu: Option<f64> = row.get("cpu_usage");
-        let mem: Option<f64> = row.get("memory_usage");
+        let cpu: Option<f32> = row.get("cpu_usage");
+        let mem: Option<f32> = row.get("memory_usage");
         let active: Option<i32> = row.get("active_scans");
         let total: Option<i32> = row.get("total_scans");
         let location: Option<String> = row.get("location");
