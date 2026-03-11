@@ -59,7 +59,7 @@ function getTimeAgo(timestamp: string | number): string {
 function getDateGroup(timestamp: string | number): string {
   const ms = typeof timestamp === 'number' ? timestamp : new Date(timestamp).getTime();
   const now = new Date();
-  const date = new Date(ms);
+  const _date = new Date(ms);
   const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
   const yesterday = new Date(today.getTime() - 86400000);
   if (ms >= today.getTime()) return 'Today';

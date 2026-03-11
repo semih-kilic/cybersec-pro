@@ -45,7 +45,7 @@ interface ReportSummary {
   completed_at: string;
 }
 
-interface AvailableScan {
+interface _AvailableScan {
   id: string;
   name: string;
   tool: string;

@@ -61,7 +61,7 @@ function ChartTooltip({ active, payload, label }: any) {
 export default function AnalyticsPage() {
   useDocumentTitle('Analytics — CyberSec Pro');
   const [timeRange, setTimeRange] = useState<'7d' | '30d' | '90d'>('30d');
-  const { data, isLoading: loading } = useAnalyticsOverview(timeRange);
+  const { data, isLoading: loading, refetch: loadAnalytics } = useAnalyticsOverview(timeRange);
 
   if (loading) {
     return (
@@ -162,7 +162,7 @@ export default function AnalyticsPage() {
                 </button>
               ))}
             </div>
-            <Button variant="secondary" size="sm" onClick={loadAnalytics} icon={
+            <Button variant="secondary" size="sm" onClick={() => loadAnalytics()} icon={
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
               </svg>
@@ -240,7 +240,7 @@ export default function AnalyticsPage() {
             title="Avg Duration"
             value={data.performance.avg_duration_seconds}
             suffix="s"
-            data={data.daily_trend.slice(-7).map((_, i) => data.performance.avg_duration_seconds + Math.random() * 10 - 5)}
+            data={data.daily_trend.slice(-7).map((_) => data.performance.avg_duration_seconds + Math.random() * 10 - 5)}
             variant="default"
             icon={<svg className="w-4 h-4 text-cyan-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>}
           />

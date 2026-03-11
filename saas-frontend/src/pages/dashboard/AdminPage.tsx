@@ -35,7 +35,7 @@ interface ScanSummary {
   created_at: string;
 }
 
-interface AdminOverview {
+interface _AdminOverview {
   users: { total: number; active: number; list: AdminUser[] };
   organizations: { total: number; plans_distribution: Record<string, number>; list: AdminOrg[] };
   scans: { total: number; running: number; recent: ScanSummary[] };

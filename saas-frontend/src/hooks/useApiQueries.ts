@@ -575,7 +575,7 @@ export function useReportTemplates() {
 
   return useQuery({
     queryKey: queryKeys.reports.templates(),
-    queryFn: () => authFetch<{ templates: { id: string; name: string; description: string; icon: string; sections: string[]; format: string[] }[] }>('/api/v1/reports/templates', token),
+    queryFn: () => authFetch<{ templates: { id: string; name: string; description: string; icon: string; sections: string[]; formats: string[]; frameworks?: string[] }[] }>('/api/v1/reports/templates', token),
     select: (data) => data.templates || [],
     ...CACHE_TIMES.reports,
     enabled: !!token,

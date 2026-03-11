@@ -126,12 +126,11 @@ export default function UpgradePage() {
     setLoading(planId);
     
     try {
-      const data = await checkoutMutation.mutateAsync({
+      const checkoutData = {
         plan: planId,
         billing: billingCycle,
-        success_url: `${window.location.origin}/dashboard/settings?tab=billing&success=true`,
-        cancel_url: `${window.location.origin}/dashboard/upgrade`,
-      });
+      };
+      const data: any = await checkoutMutation.mutateAsync(checkoutData);
       
       if (data.checkout_url || data.url) {
         window.location.href = data.checkout_url || data.url;

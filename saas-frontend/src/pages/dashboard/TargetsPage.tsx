@@ -25,7 +25,7 @@ interface Target {
   notes?: string;
 }
 
-interface TargetGroup {
+interface _TargetGroup {
   id: string;
   name: string;
   color: string;
@@ -71,7 +71,7 @@ const typeLabels: { [key: string]: string } = {
 export function TargetsPage() {
   useDocumentTitle('Targets — CyberSec Pro');
   const toast = useToast();
-  const { token } = useAuth();
+  const { token: _token } = useAuth();
   const queryClient = useQueryClient();
   const { data: targets = [], isLoading: targetsLoading } = useTargets();
   const { data: groups = [], isLoading: groupsLoading } = useTargetGroups();

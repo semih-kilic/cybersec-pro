@@ -36,7 +36,7 @@ Just type your question or use the quick actions below!`,
 
 export default function AIAssistantPage() {
   useDocumentTitle('AI Assistant — CyberSec Pro');
-  const { token } = useAuth();
+  const { token: _token } = useAuth();
   const chatMutation = useSendChatMessage();
   const [messages, setMessages] = useState<ChatMessage[]>([WELCOME_MESSAGE]);
   const [input, setInput] = useState('');

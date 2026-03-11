@@ -1,5 +1,6 @@
 import { useState, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
+import { useQueryClient } from '@tanstack/react-query';
 import { PageTransition } from '../../components/ui';
 import { useDocumentTitle } from '../../hooks/useUtilities';
 import {
@@ -27,7 +28,7 @@ interface AttackChain {
   tools_used: string[];
 }
 
-interface Playbook {
+interface _Playbook {
   id: string;
   name: string;
   trigger: string;
@@ -117,7 +118,7 @@ interface TacticCoverage {
   techniques: Record<string, { name: string; status: string; subtechniques_count: number }>;
 }
 
-interface DashboardStats {
+interface _DashboardStats {
   total_exercises: number;
   running: number;
   completed: number;
@@ -603,7 +604,7 @@ function ExerciseDetail({ exercise }: { exercise: Exercise }) {
 export default function PurpleTeamPage() {
   useDocumentTitle('Purple Team — CyberSec Pro');
   const { t: _t } = useTranslation();
-  const queryClient = useQueryClient();
+  void useQueryClient();
 
   // State
   const [tab, setTab] = useState<'dashboard' | 'exercise' | 'matrix' | 'playbooks'>('dashboard');
@@ -822,7 +823,7 @@ export default function PurpleTeamPage() {
           {selectedExercise ? (
             <div>
               <button
-                onClick={() => setSelectedExercise(null)}
+                onClick={() => setSelectedExerciseId(null)}
                 className="text-sm text-gray-400 hover:text-white mb-4 flex items-center gap-1"
               >
                 ← Back to list

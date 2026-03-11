@@ -27,11 +27,11 @@ interface HistoryLine {
 
 export function TerminalPage() {
   useDocumentTitle('Terminal — CyberSec Pro');
-  const toast = useToast();
+  const _toast = useToast();
   const { token } = useAuth();
   const terminalRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
-  const { data: fetchedAgents = [] } = useTerminalAgents();
+  const { data: fetchedAgents = [], refetch: fetchAgents } = useTerminalAgents();
   const agents = fetchedAgents as unknown as Agent[];
   const [selectedAgent, setSelectedAgent] = useState<Agent | null>(null);
   const [isConnected, setIsConnected] = useState(false);
@@ -392,7 +392,7 @@ export function TerminalPage() {
             </button>
 
             <button
-              onClick={fetchAgents}
+              onClick={() => fetchAgents()}
               className="px-4 py-2 bg-gray-700 hover:bg-gray-600 text-white rounded-lg text-sm font-medium transition flex items-center gap-2"
             >
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">

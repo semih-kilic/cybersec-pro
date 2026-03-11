@@ -4,6 +4,7 @@ import { Header } from '../../components/layout/Header';
 import { useAuth } from '../../hooks/useAuth';
 import { useDocumentTitle } from '../../hooks/useUtilities';
 import { PageTransition } from '../../components/ui';
+import { useToast } from '../../components/ui/Toast';
 import { ToolDetailPageSkeleton } from '../../components/ui/Skeleton';
 import { getToolConfig, getSmartDefaults, ToolConfig } from '../../config/toolConfigs';
 import { useTarget } from '../../contexts/TargetContext';

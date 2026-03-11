@@ -3311,15 +3311,17 @@ def dashboard_security_summary():
         
         return jsonify({
             'security_score': security_score,
-            'open_issues': total_issues,
-            'critical': critical_issues,
-            'high': high_issues,
-            'medium': medium_issues,
-            'low': low_issues,
-            'info': info_issues,
+            'open_issues': {
+                'critical': critical_issues,
+                'high': high_issues,
+                'medium': medium_issues,
+                'low': low_issues,
+                'info': info_issues,
+                'total': total_issues,
+            },
             'total_scans': len(recent_scans),
             'completed_scans': len(completed_scans),
-            'protected_assets': Target.query.filter_by(organization_id=user.organization_id).count() if user.organization_id else 0,
+            'protected_assets': db.session.query(db.func.count(db.distinct(Scan.target))).filter(Scan.organization_id == user.organization_id).scalar() if user.organization_id else 0,
             'plan': org.plan_type if org else 'trial',
         })
     except Exception as e:

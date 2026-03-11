@@ -52,7 +52,7 @@ export function ScanExecutionPage() {
   const { scanId, toolId: routeToolId } = useParams<{ scanId: string; toolId: string }>();
   const [searchParams] = useSearchParams();
   const { target: globalTarget, addRecentTarget: addGlobalTarget } = useTarget();
-  const { token } = useAuth();
+  const { token: _token } = useAuth();
   
   const [tool, setTool] = useState<ToolConfig | null>(null);
   const [businessName, setBusinessName] = useState<string>('');
@@ -138,7 +138,7 @@ export function ScanExecutionPage() {
         });
         if (Object.keys(defaults).length > 0) setParameters(defaults);
       }
-      if (t.command_template) setCommand(t.command_template);
+      if ((t as any).command_template) setCommand((t as any).command_template);
     }
   }, [toolConfigData]);
 
@@ -152,7 +152,7 @@ export function ScanExecutionPage() {
   const businessReportMutation = useFetchBusinessReport();
 
   useEffect(() => {
-    if (executionModeData) setExecutionMode(executionModeData);
+    if (executionModeData) setExecutionMode(executionModeData as any);
   }, [executionModeData]);
 
   // Auto-start scan when coming from ToolDetailPage with target pre-filled

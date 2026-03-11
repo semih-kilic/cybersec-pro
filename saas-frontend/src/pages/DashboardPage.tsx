@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
 import { useDashboardTools, useDashboardScans } from '../hooks/useApiQueries';
 
-interface Tool {
+interface _Tool {
   id: string;
   name: string;
   description: string;
@@ -11,7 +11,7 @@ interface Tool {
   plan_required: string;
 }
 
-interface Scan {
+interface _Scan {
   id: string;
   tool: { name: string };
   target: string;

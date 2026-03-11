@@ -19,7 +19,6 @@ import { ScansPageSkeleton } from '../../components/ui/Skeleton';
 import { PageTransition } from '../../components/ui';
 import { useToast } from '../../components/ui/Toast';
 import { useScans, useCancelScan, useRerunScan, useDeleteScan, type Scan } from '../../hooks/useApiQueries';
-import { useDocumentTitle } from '../../hooks/useUtilities';
 import { motion, AnimatePresence } from 'framer-motion';
 
 // ---- Helpers ----

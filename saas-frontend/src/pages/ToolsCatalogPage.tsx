@@ -15,7 +15,7 @@ interface Tool {
   tags: string[];
 }
 
-interface Category {
+interface _Category {
   name: string;
   count: number;
   icon: string;
@@ -136,11 +136,11 @@ const ToolsCatalogPage: React.FC = () => {
     setSearchParams(searchParams);
   }, [selectedCategory]);
 
-  const filteredTools = tools.filter(tool => {
+  const filteredTools = tools.filter((tool: any) => {
     const matchesSearch = !searchQuery || 
       tool.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
       tool.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      tool.tags?.some(tag => tag.toLowerCase().includes(searchQuery.toLowerCase()));
+      tool.tags?.some((tag: any) => tag.toLowerCase().includes(searchQuery.toLowerCase()));
     
     const matchesCategory = !selectedCategory || tool.category === selectedCategory;
     
@@ -258,7 +258,7 @@ const ToolsCatalogPage: React.FC = () => {
                   </span>
                   <span className="text-sm text-gray-500">{tools.length}</span>
                 </button>
-                {categories.map(cat => (
+                {categories.map((cat: any) => (
                   <button
                     key={cat.name}
                     onClick={() => setSelectedCategory(cat.name)}
@@ -308,13 +308,13 @@ const ToolsCatalogPage: React.FC = () => {
             {/* Tools Grid/List */}
             {viewMode === 'grid' ? (
               <div className="grid md:grid-cols-2 xl:grid-cols-3 gap-4">
-                {filteredTools.map(tool => (
+                {filteredTools.map((tool: any) => (
                   <ToolGridCard key={tool.slug} tool={tool} />
                 ))}
               </div>
             ) : (
               <div className="space-y-2">
-                {filteredTools.map(tool => (
+                {filteredTools.map((tool: any) => (
                   <ToolListRow key={tool.slug} tool={tool} />
                 ))}
               </div>
