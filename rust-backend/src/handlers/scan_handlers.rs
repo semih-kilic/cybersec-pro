@@ -47,7 +47,7 @@ pub async fn list_scans(
 
     let scans: Vec<Scan> = if let Some(status) = &q.status {
         sqlx::query_as(
-            "SELECT * FROM scans WHERE organization_id = ? AND status = ? ORDER BY created_at DESC LIMIT ? OFFSET ?"
+            "SELECT * FROM scans WHERE organization_id = $1 AND status = $2 ORDER BY created_at DESC LIMIT $3 OFFSET $4"
         )
         .bind(org_id)
         .bind(status)
@@ -58,7 +58,7 @@ pub async fn list_scans(
         .unwrap_or_default()
     } else {
         sqlx::query_as(
-            "SELECT * FROM scans WHERE organization_id = ? ORDER BY created_at DESC LIMIT ? OFFSET ?"
+            "SELECT * FROM scans WHERE organization_id = $1 ORDER BY created_at DESC LIMIT $2 OFFSET $3"
         )
         .bind(org_id)
         .bind(per_page as i64)
@@ -68,7 +68,7 @@ pub async fn list_scans(
         .unwrap_or_default()
     };
 
-    let total: (i64,) = sqlx::query_as("SELECT COUNT(*) FROM scans WHERE organization_id = ?")
+    let total: (i64,) = sqlx::query_as("SELECT COUNT(*) FROM scans WHERE organization_id = $1")
         .bind(org_id)
         .fetch_one(&state.db)
         .await
@@ -97,7 +97,7 @@ pub async fn get_scan(
     };
 
     let scan: Option<Scan> = sqlx::query_as(
-        "SELECT * FROM scans WHERE id = ? AND organization_id = ?"
+        "SELECT * FROM scans WHERE id = $1 AND organization_id = $2"
     )
     .bind(&scan_id)
     .bind(org_id)
@@ -151,7 +151,7 @@ pub async fn start_scan(
     }
 
     let tool: Option<Tool> = sqlx::query_as(
-        "SELECT * FROM tools WHERE id = ? OR name = ? OR business_name = ? LIMIT 1"
+        "SELECT * FROM tools WHERE id = $1 OR name = $2 OR business_name = $3 LIMIT 1"
     )
     .bind(tool_identifier)
     .bind(tool_identifier)
@@ -172,7 +172,7 @@ pub async fn start_scan(
     }
 
     // Check plan access
-    let org_plan: Option<(String,)> = sqlx::query_as("SELECT plan_type FROM organizations WHERE id = ?")
+    let org_plan: Option<(String,)> = sqlx::query_as("SELECT plan_type FROM organizations WHERE id = $1")
         .bind(&org_id)
         .fetch_optional(&state.db)
         .await
@@ -188,7 +188,7 @@ pub async fn start_scan(
     if let Some(config) = plan_configs.get(plan.as_str()) {
         if config.daily_scan_limit > 0 {
             let today_count: (i64,) = sqlx::query_as(
-                "SELECT COUNT(*) FROM scans WHERE organization_id = ? AND date(created_at) = date('now')"
+                "SELECT COUNT(*) FROM scans WHERE organization_id = $1 AND created_at::date = CURRENT_DATE"
             )
             .bind(&org_id)
             .fetch_one(&state.db)
@@ -205,7 +205,7 @@ pub async fn start_scan(
     let scan_id = Uuid::new_v4().to_string();
     let _ = sqlx::query(
         "INSERT INTO scans (id, organization_id, user_id, tool_id, target, parameters, status, agent_id, project_id, started_at)
-         VALUES (?, ?, ?, ?, ?, ?, 'running', ?, ?, CURRENT_TIMESTAMP)"
+         VALUES ($1, $2, $3, $4, $5, $6, 'running', $7, $8, CURRENT_TIMESTAMP)"
     )
     .bind(&scan_id)
     .bind(&org_id)
@@ -221,7 +221,7 @@ pub async fn start_scan(
     // Track usage
     let usage_id = Uuid::new_v4().to_string();
     let _ = sqlx::query(
-        "INSERT INTO usage_tracking (id, organization_id, tool_id, scan_id) VALUES (?, ?, ?, ?)"
+        "INSERT INTO usage_tracking (id, organization_id, tool_id, scan_id) VALUES ($1, $2, $3, $4)"
     )
     .bind(&usage_id)
     .bind(&org_id)
@@ -252,7 +252,7 @@ pub async fn start_scan(
         let findings_str = findings.map(|f| f.to_string());
 
         let _ = sqlx::query(
-            "UPDATE scans SET status = ?, output = ?, findings = ?, error_log = ?, completed_at = CURRENT_TIMESTAMP WHERE id = ?"
+            "UPDATE scans SET status = $1, output = $2, findings = $3, error_log = $4, completed_at = CURRENT_TIMESTAMP WHERE id = $5"
         )
         .bind(&status)
         .bind(&output)
@@ -336,7 +336,7 @@ pub async fn cancel_scan(
     };
 
     let result = sqlx::query(
-        "UPDATE scans SET status = 'cancelled', completed_at = CURRENT_TIMESTAMP WHERE id = ? AND organization_id = ? AND status IN ('pending', 'running')"
+        "UPDATE scans SET status = 'cancelled', completed_at = CURRENT_TIMESTAMP WHERE id = $1 AND organization_id = $2 AND status IN ('pending', 'running')"
     )
     .bind(&scan_id)
     .bind(org_id)
@@ -364,7 +364,7 @@ pub async fn delete_scan(
     };
 
     let result = sqlx::query(
-        "DELETE FROM scans WHERE id = ? AND organization_id = ?"
+        "DELETE FROM scans WHERE id = $1 AND organization_id = $2"
     )
     .bind(&scan_id)
     .bind(org_id)

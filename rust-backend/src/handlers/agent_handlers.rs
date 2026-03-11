@@ -23,7 +23,7 @@ pub async fn list_agents(
     };
 
     let agents: Vec<Agent> = sqlx::query_as(
-        "SELECT * FROM agents WHERE organization_id = ? ORDER BY created_at DESC"
+        "SELECT * FROM agents WHERE organization_id = $1 ORDER BY created_at DESC"
     )
     .bind(org_id)
     .fetch_all(&state.db)
@@ -70,7 +70,7 @@ pub async fn create_agent(
 
     let _ = sqlx::query(
         "INSERT INTO agents (id, organization_id, name, connection_type, hostname, ip_address, platform, network_zone, max_concurrent_scans, ssh_host, ssh_port, ssh_username, vpn_config_path, proxy_endpoint, registration_token, api_key, status)
-         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'pending')"
+         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, 'pending')"
     )
     .bind(&agent_id)
     .bind(org_id)
@@ -115,7 +115,7 @@ pub async fn get_agent(
     };
 
     let agent: Option<Agent> = sqlx::query_as(
-        "SELECT * FROM agents WHERE id = ? AND organization_id = ?"
+        "SELECT * FROM agents WHERE id = $1 AND organization_id = $2"
     )
     .bind(&agent_id)
     .bind(org_id)
@@ -139,7 +139,7 @@ pub async fn delete_agent(
         None => return (StatusCode::FORBIDDEN, Json(json!({"error": "Organization required"}))).into_response(),
     };
 
-    let _ = sqlx::query("DELETE FROM agents WHERE id = ? AND organization_id = ?")
+    let _ = sqlx::query("DELETE FROM agents WHERE id = $1 AND organization_id = $2")
         .bind(&agent_id)
         .bind(org_id)
         .execute(&state.db)
@@ -158,7 +158,7 @@ pub async fn agent_heartbeat(
     let active = body.get("active_scans").and_then(|v| v.as_i64()).unwrap_or(0);
 
     let _ = sqlx::query(
-        "UPDATE agents SET status = 'online', last_heartbeat = CURRENT_TIMESTAMP, cpu_usage = ?, memory_usage = ?, active_scans = ? WHERE id = ?"
+        "UPDATE agents SET status = 'online', last_heartbeat = CURRENT_TIMESTAMP, cpu_usage = $1, memory_usage = $2, active_scans = $3 WHERE id = $4"
     )
     .bind(cpu)
     .bind(mem)

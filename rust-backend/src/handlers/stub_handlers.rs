@@ -121,7 +121,7 @@ pub async fn social_auth(
 
     // Check if user already exists
     let existing: Option<(String, String, Option<String>)> = sqlx::query_as(
-        "SELECT id, role, organization_id FROM users WHERE email = ?"
+        "SELECT id, role, organization_id FROM users WHERE email = $1"
     )
     .bind(&email)
     .fetch_optional(&state.db)
@@ -130,7 +130,7 @@ pub async fn social_auth(
 
     let (user_id, org_id, role) = if let Some((uid, r, oid)) = existing {
         // Update last login + avatar
-        let _ = sqlx::query("UPDATE users SET last_login = CURRENT_TIMESTAMP, avatar_url = ? WHERE id = ?")
+        let _ = sqlx::query("UPDATE users SET last_login = CURRENT_TIMESTAMP, avatar_url = $1 WHERE id = $2")
             .bind(gh_avatar)
             .bind(&uid)
             .execute(&state.db)
@@ -143,7 +143,7 @@ pub async fn social_auth(
         let slug = email.split('@').next().unwrap_or("user").to_string();
 
         let _ = sqlx::query(
-            "INSERT INTO organizations (id, name, slug, plan_type) VALUES (?, ?, ?, 'trial')"
+            "INSERT INTO organizations (id, name, slug, plan_type) VALUES ($1, $2, $3, 'trial')"
         )
         .bind(&new_org_id)
         .bind(&format!("{}'s Organization", first_name))
@@ -153,7 +153,7 @@ pub async fn social_auth(
 
         let _ = sqlx::query(
             "INSERT INTO users (id, email, password_hash, first_name, last_name, role, organization_id, email_verified, avatar_url)
-             VALUES (?, ?, '', ?, ?, 'admin', ?, 1, ?)"
+             VALUES ($1, $2, '', $3, $4, 'admin', $5, 1, $6)"
         )
         .bind(&new_user_id)
         .bind(&email)
@@ -230,7 +230,7 @@ pub async fn tool_config(
     State(state): State<Arc<AppState>>,
 ) -> impl IntoResponse {
     let tool = sqlx::query_as::<_, (String, String, String, String, String, String, Option<String>, Option<String>, Option<String>)>(
-        "SELECT id, name, COALESCE(parameters, '{}'), COALESCE(description,''), category, COALESCE(plan_required,'starter'), command_template, binary_name, tool_group FROM tools WHERE (id = ? OR name = ?) AND is_active = 1"
+        "SELECT id, name, COALESCE(parameters, '{}'), COALESCE(description,''), category, COALESCE(plan_required,'starter'), command_template, binary_name, tool_group FROM tools WHERE (id = $1 OR name = $2) AND is_active = TRUE"
     )
     .bind(&tool_id)
     .bind(&tool_id)
@@ -287,7 +287,7 @@ pub async fn tools_catalog(
     State(state): State<Arc<AppState>>,
 ) -> impl IntoResponse {
     let tools = sqlx::query_as::<_, (String, String, String, String, String)>(
-        "SELECT id, name, category, COALESCE(business_category,''), COALESCE(plan_required,'starter') FROM tools WHERE is_active = 1 ORDER BY name LIMIT 1000"
+        "SELECT id, name, category, COALESCE(business_category,''), COALESCE(plan_required,'starter') FROM tools WHERE is_active = TRUE ORDER BY name LIMIT 1000"
     )
     .fetch_all(&state.db)
     .await
@@ -307,7 +307,7 @@ pub async fn v2_tools(
     let _plan = params.get("plan").cloned().unwrap_or_default();
 
     let tools: Vec<crate::models::Tool> = sqlx::query_as(
-        "SELECT * FROM tools WHERE is_active = 1 ORDER BY name"
+        "SELECT * FROM tools WHERE is_active = TRUE ORDER BY name"
     )
     .fetch_all(&state.db)
     .await
@@ -390,7 +390,7 @@ pub async fn v2_tool_detail(
     State(state): State<Arc<AppState>>,
 ) -> impl IntoResponse {
     let tool = sqlx::query_as::<_, (String, String, String, String, String, bool, Option<String>, Option<String>, Option<String>, Option<String>)>(
-        "SELECT id, name, COALESCE(description,''), category, COALESCE(plan_required,'starter'), is_active, command_template, binary_name, tool_group, kali_package FROM tools WHERE (id = ? OR name = ?) AND is_active = 1"
+        "SELECT id, name, COALESCE(description,''), category, COALESCE(plan_required,'starter'), is_active, command_template, binary_name, tool_group, kali_package FROM tools WHERE (id = $1 OR name = $2) AND is_active = TRUE"
     )
     .bind(&tool_id)
     .bind(&tool_id)
@@ -433,7 +433,7 @@ pub async fn scan_start(
     let scan_id = uuid::Uuid::new_v4().to_string();
 
     let _ = sqlx::query(
-        "INSERT INTO scans (id, user_id, organization_id, tool_id, target, status, created_at) VALUES (?, ?, ?, ?, ?, 'pending', CURRENT_TIMESTAMP)"
+        "INSERT INTO scans (id, user_id, organization_id, tool_id, target, status, created_at) VALUES ($1, $2, $3, $4, $5, 'pending', CURRENT_TIMESTAMP)"
     )
     .bind(&scan_id)
     .bind(&user.user_id)
@@ -452,7 +452,7 @@ pub async fn scan_result(
     State(state): State<Arc<AppState>>,
 ) -> impl IntoResponse {
     let scan = sqlx::query_as::<_, (String, String, Option<String>, Option<String>, Option<String>)>(
-        "SELECT id, status, output, findings, error_log FROM scans WHERE id = ? AND user_id = ?"
+        "SELECT id, status, output, findings, error_log FROM scans WHERE id = $1 AND user_id = $2"
     )
     .bind(&scan_id)
     .bind(&user.user_id)
@@ -486,7 +486,7 @@ pub async fn scan_stop(
     user: AuthUser,
     State(state): State<Arc<AppState>>,
 ) -> impl IntoResponse {
-    let _ = sqlx::query("UPDATE scans SET status = 'cancelled' WHERE id = ? AND user_id = ?")
+    let _ = sqlx::query("UPDATE scans SET status = 'cancelled' WHERE id = $1 AND user_id = $2")
         .bind(&scan_id)
         .bind(&user.user_id)
         .execute(&state.db)
@@ -519,7 +519,7 @@ pub async fn scan_status(
     State(state): State<Arc<AppState>>,
 ) -> impl IntoResponse {
     let status = sqlx::query_as::<_, (String,)>(
-        "SELECT status FROM scans WHERE id = ? AND user_id = ?"
+        "SELECT status FROM scans WHERE id = $1 AND user_id = $2"
     )
     .bind(&scan_id)
     .bind(&user.user_id)
@@ -545,7 +545,7 @@ pub async fn scan_delete(
     user: AuthUser,
     State(state): State<Arc<AppState>>,
 ) -> impl IntoResponse {
-    let _ = sqlx::query("DELETE FROM scans WHERE id = ? AND user_id = ?")
+    let _ = sqlx::query("DELETE FROM scans WHERE id = $1 AND user_id = $2")
         .bind(&scan_id)
         .bind(&user.user_id)
         .execute(&state.db)
@@ -578,7 +578,7 @@ pub async fn agents_dashboard(
 ) -> impl IntoResponse {
     let org_id = user.org_id.as_deref().unwrap_or("");
     let rows = sqlx::query(
-        "SELECT id, name, hostname, ip_address, COALESCE(status,'offline') as status, os_info, platform, version, cpu_usage, memory_usage, active_scans, total_scans, location, connection_type, ssh_port, ssh_username, last_heartbeat FROM agents WHERE organization_id = ? ORDER BY created_at DESC"
+        "SELECT id, name, hostname, ip_address, COALESCE(status,'offline') as status, os_info, platform, version, cpu_usage, memory_usage, active_scans, total_scans, location, connection_type, ssh_port, ssh_username, last_heartbeat FROM agents WHERE organization_id = $1 ORDER BY created_at DESC"
     )
     .bind(org_id)
     .fetch_all(&state.db)
@@ -667,7 +667,7 @@ pub async fn list_schedules(
     State(state): State<Arc<AppState>>,
 ) -> impl IntoResponse {
     let schedules = sqlx::query_as::<_, (String, String, String, String, bool, String)>(
-        "SELECT id, name, cron_expression, COALESCE(tool_id,''), is_active, COALESCE(target,'') FROM scheduled_scans WHERE user_id = ? ORDER BY created_at DESC"
+        "SELECT id, name, cron_expression, COALESCE(tool_id,''), is_active, COALESCE(target,'') FROM scheduled_scans WHERE user_id = $1 ORDER BY created_at DESC"
     )
     .bind(&user.user_id)
     .fetch_all(&state.db)
@@ -693,7 +693,7 @@ pub async fn create_schedule(
     let target = body.get("target").and_then(|v| v.as_str()).unwrap_or("");
 
     let _ = sqlx::query(
-        "INSERT INTO scheduled_scans (id, user_id, organization_id, name, cron_expression, tool_id, target, is_active, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, 1, CURRENT_TIMESTAMP)"
+        "INSERT INTO scheduled_scans (id, user_id, organization_id, name, cron_expression, tool_id, target, is_active, created_at) VALUES ($1, $2, $3, $4, $5, $6, $7, 1, CURRENT_TIMESTAMP)"
     )
     .bind(&id)
     .bind(&user.user_id)
@@ -722,7 +722,7 @@ pub async fn delete_schedule(
     user: AuthUser,
     State(state): State<Arc<AppState>>,
 ) -> impl IntoResponse {
-    let _ = sqlx::query("DELETE FROM scheduled_scans WHERE id = ? AND user_id = ?")
+    let _ = sqlx::query("DELETE FROM scheduled_scans WHERE id = $1 AND user_id = $2")
         .bind(&schedule_id)
         .bind(&user.user_id)
         .execute(&state.db)
@@ -735,7 +735,7 @@ pub async fn toggle_schedule(
     user: AuthUser,
     State(state): State<Arc<AppState>>,
 ) -> impl IntoResponse {
-    let _ = sqlx::query("UPDATE scheduled_scans SET is_active = NOT is_active WHERE id = ? AND user_id = ?")
+    let _ = sqlx::query("UPDATE scheduled_scans SET is_active = NOT is_active WHERE id = $1 AND user_id = $2")
         .bind(&schedule_id)
         .bind(&user.user_id)
         .execute(&state.db)
@@ -751,7 +751,7 @@ pub async fn list_targets(
 ) -> impl IntoResponse {
     // Derive targets from scans with full details
     let targets = sqlx::query_as::<_, (String, i64, Option<String>, Option<String>)>(
-        "SELECT target, COUNT(*) as cnt, MAX(created_at) as last_scan, MIN(created_at) as first_scan FROM scans WHERE user_id = ? GROUP BY target ORDER BY cnt DESC LIMIT 50"
+        "SELECT target, COUNT(*) as cnt, MAX(created_at) as last_scan, MIN(created_at) as first_scan FROM scans WHERE user_id = $1 GROUP BY target ORDER BY cnt DESC LIMIT 50"
     )
     .bind(&user.user_id)
     .fetch_all(&state.db)
@@ -802,11 +802,11 @@ pub async fn analytics_overview(
     State(state): State<Arc<AppState>>,
 ) -> impl IntoResponse {
     let total_scans = sqlx::query_as::<_, (i64,)>(
-        "SELECT COUNT(*) FROM scans WHERE user_id = ?"
+        "SELECT COUNT(*) FROM scans WHERE user_id = $1"
     ).bind(&user.user_id).fetch_one(&state.db).await.unwrap_or((0,));
 
     let completed = sqlx::query_as::<_, (i64,)>(
-        "SELECT COUNT(*) FROM scans WHERE user_id = ? AND status = 'completed'"
+        "SELECT COUNT(*) FROM scans WHERE user_id = $1 AND status = 'completed'"
     ).bind(&user.user_id).fetch_one(&state.db).await.unwrap_or((0,));
 
     Json(json!({
@@ -826,7 +826,7 @@ pub async fn activity_feed(
     let limit: i64 = params.get("limit").and_then(|v| v.parse().ok()).unwrap_or(20);
 
     let activities = sqlx::query_as::<_, (String, String, String, String)>(
-        "SELECT id, action, details, created_at FROM audit_logs WHERE user_id = ? ORDER BY created_at DESC LIMIT ?"
+        "SELECT id, action, details, created_at FROM audit_logs WHERE user_id = $1 ORDER BY created_at DESC LIMIT $2"
     )
     .bind(&user.user_id)
     .bind(limit)
@@ -848,7 +848,7 @@ pub async fn usage_stats(
     State(state): State<Arc<AppState>>,
 ) -> impl IntoResponse {
     let total_scans = sqlx::query_as::<_, (i64,)>(
-        "SELECT COUNT(*) FROM scans WHERE user_id = ?"
+        "SELECT COUNT(*) FROM scans WHERE user_id = $1"
     ).bind(&user.user_id).fetch_one(&state.db).await.unwrap_or((0,));
 
     Json(json!({
@@ -868,7 +868,7 @@ pub async fn plan_info(
     State(state): State<Arc<AppState>>,
 ) -> impl IntoResponse {
     let plan = sqlx::query_as::<_, (String,)>(
-        "SELECT COALESCE(s.plan_type, 'trial') FROM subscriptions s JOIN users u ON u.organization_id = s.organization_id WHERE u.id = ?"
+        "SELECT COALESCE(s.plan_type, 'trial') FROM subscriptions s JOIN users u ON u.organization_id = s.organization_id WHERE u.id = $1"
     )
     .bind(&user.user_id)
     .fetch_optional(&state.db)
@@ -924,7 +924,7 @@ pub async fn admin_overview(
     State(state): State<Arc<AppState>>,
 ) -> impl IntoResponse {
     let total_users = sqlx::query_as::<_, (i64,)>("SELECT COUNT(*) FROM users").fetch_one(&state.db).await.unwrap_or((0,)).0;
-    let active_users = sqlx::query_as::<_, (i64,)>("SELECT COUNT(*) FROM users WHERE is_active = 1").fetch_one(&state.db).await.unwrap_or((0,)).0;
+    let active_users = sqlx::query_as::<_, (i64,)>("SELECT COUNT(*) FROM users WHERE is_active = TRUE").fetch_one(&state.db).await.unwrap_or((0,)).0;
     let total_orgs = sqlx::query_as::<_, (i64,)>("SELECT COUNT(*) FROM organizations").fetch_one(&state.db).await.unwrap_or((0,)).0;
     let total_scans = sqlx::query_as::<_, (i64,)>("SELECT COUNT(*) FROM scans").fetch_one(&state.db).await.unwrap_or((0,)).0;
     let running_scans = sqlx::query_as::<_, (i64,)>("SELECT COUNT(*) FROM scans WHERE status IN ('running','pending')").fetch_one(&state.db).await.unwrap_or((0,)).0;

@@ -23,7 +23,7 @@ pub async fn get_subscription(
     };
 
     let org: Option<(String, Option<String>)> = sqlx::query_as(
-        "SELECT plan_type, stripe_customer_id FROM organizations WHERE id = ?"
+        "SELECT plan_type, stripe_customer_id FROM organizations WHERE id = $1"
     )
     .bind(org_id)
     .fetch_optional(&state.db)
@@ -123,7 +123,7 @@ pub async fn stripe_webhook(
             // Reset to trial
             if let Some(data) = event.get("data").and_then(|d| d.get("object")) {
                 let customer_id = data.get("customer").and_then(|c| c.as_str()).unwrap_or("");
-                let _ = sqlx::query("UPDATE organizations SET plan_type = 'trial' WHERE stripe_customer_id = ?")
+                let _ = sqlx::query("UPDATE organizations SET plan_type = 'trial' WHERE stripe_customer_id = $1")
                     .bind(customer_id)
                     .execute(&state.db)
                     .await;
@@ -150,7 +150,7 @@ pub async fn sync_plan(
     };
 
     let org: Option<(String, Option<String>)> = sqlx::query_as(
-        "SELECT plan_type, stripe_customer_id FROM organizations WHERE id = ?"
+        "SELECT plan_type, stripe_customer_id FROM organizations WHERE id = $1"
     )
     .bind(org_id)
     .fetch_optional(&state.db)

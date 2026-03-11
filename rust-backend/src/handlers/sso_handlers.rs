@@ -23,7 +23,7 @@ pub async fn get_sso_config(
     };
 
     let config: Option<SSOConfig> = sqlx::query_as(
-        "SELECT * FROM sso_configs WHERE organization_id = ?"
+        "SELECT * FROM sso_configs WHERE organization_id = $1"
     )
     .bind(org_id)
     .fetch_optional(&state.db)
@@ -73,7 +73,7 @@ pub async fn create_sso_config(
     };
 
     // Check plan (team+ only)
-    let plan: Option<(String,)> = sqlx::query_as("SELECT plan_type FROM organizations WHERE id = ?")
+    let plan: Option<(String,)> = sqlx::query_as("SELECT plan_type FROM organizations WHERE id = $1")
         .bind(org_id)
         .fetch_optional(&state.db)
         .await
@@ -87,14 +87,14 @@ pub async fn create_sso_config(
     let id = Uuid::new_v4().to_string();
 
     // Delete existing config first (upsert behavior)
-    let _ = sqlx::query("DELETE FROM sso_configs WHERE organization_id = ?")
+    let _ = sqlx::query("DELETE FROM sso_configs WHERE organization_id = $1")
         .bind(org_id)
         .execute(&state.db)
         .await;
 
     let _ = sqlx::query(
         "INSERT INTO sso_configs (id, organization_id, provider_type, provider_name, saml_entity_id, saml_sso_url, saml_certificate, oidc_client_id, oidc_client_secret, oidc_issuer_url, ldap_host, ldap_port, ldap_bind_dn, ldap_bind_password, ldap_base_dn, ldap_user_filter, domain_hint, enforce_sso, jit_provisioning, default_role, is_enabled)
-         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 0)"
+         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, 0)"
     )
     .bind(&id)
     .bind(org_id)
@@ -134,7 +134,7 @@ pub async fn delete_sso_config(
         None => return (StatusCode::FORBIDDEN, Json(json!({"error": "Organization required"}))).into_response(),
     };
 
-    let _ = sqlx::query("DELETE FROM sso_configs WHERE organization_id = ?")
+    let _ = sqlx::query("DELETE FROM sso_configs WHERE organization_id = $1")
         .bind(org_id)
         .execute(&state.db)
         .await;
@@ -152,14 +152,14 @@ pub async fn toggle_sso(
     };
 
     let _ = sqlx::query(
-        "UPDATE sso_configs SET is_enabled = NOT COALESCE(is_enabled, 0) WHERE organization_id = ?"
+        "UPDATE sso_configs SET is_enabled = NOT COALESCE(is_enabled, FALSE) WHERE organization_id = $1"
     )
     .bind(org_id)
     .execute(&state.db)
     .await;
 
     let enabled: Option<(Option<bool>,)> = sqlx::query_as(
-        "SELECT is_enabled FROM sso_configs WHERE organization_id = ?"
+        "SELECT is_enabled FROM sso_configs WHERE organization_id = $1"
     )
     .bind(org_id)
     .fetch_optional(&state.db)

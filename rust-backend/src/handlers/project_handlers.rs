@@ -22,7 +22,7 @@ pub async fn list_projects(
     };
 
     let projects: Vec<Project> = sqlx::query_as(
-        "SELECT * FROM projects WHERE organization_id = ? ORDER BY created_at DESC"
+        "SELECT * FROM projects WHERE organization_id = $1 ORDER BY created_at DESC"
     )
     .bind(org_id)
     .fetch_all(&state.db)
@@ -52,8 +52,8 @@ pub async fn create_project(
         None => return (StatusCode::FORBIDDEN, Json(json!({"error": "Organization required"}))).into_response(),
     };
 
-    let result = sqlx::query(
-        "INSERT INTO projects (organization_id, name, description, target_type, target_url, target_ip) VALUES (?, ?, ?, ?, ?, ?)"
+    let result: Result<(i32,), _> = sqlx::query_as(
+        "INSERT INTO projects (organization_id, name, description, target_type, target_url, target_ip) VALUES ($1, $2, $3, $4, $5, $6) RETURNING id"
     )
     .bind(org_id)
     .bind(&body.name)
@@ -61,14 +61,14 @@ pub async fn create_project(
     .bind(body.target_type.as_deref().unwrap_or("web"))
     .bind(&body.target_url)
     .bind(&body.target_ip)
-    .execute(&state.db)
+    .fetch_one(&state.db)
     .await;
 
     match result {
-        Ok(r) => (StatusCode::CREATED, Json(json!({
+        Ok((new_id,)) => (StatusCode::CREATED, Json(json!({
             "message": "Project created",
             "project": {
-                "id": r.last_insert_rowid(),
+                "id": new_id,
                 "name": body.name
             }
         }))).into_response(),
@@ -87,7 +87,7 @@ pub async fn get_project(
     };
 
     let project: Option<Project> = sqlx::query_as(
-        "SELECT * FROM projects WHERE id = ? AND organization_id = ?"
+        "SELECT * FROM projects WHERE id = $1 AND organization_id = $2"
     )
     .bind(project_id)
     .bind(org_id)
@@ -111,7 +111,7 @@ pub async fn delete_project(
         None => return (StatusCode::FORBIDDEN, Json(json!({"error": "Organization required"}))).into_response(),
     };
 
-    let _ = sqlx::query("DELETE FROM projects WHERE id = ? AND organization_id = ?")
+    let _ = sqlx::query("DELETE FROM projects WHERE id = $1 AND organization_id = $2")
         .bind(project_id)
         .bind(org_id)
         .execute(&state.db)

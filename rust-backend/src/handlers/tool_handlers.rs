@@ -35,35 +35,52 @@ pub async fn list_tools(
     let per_page = q.per_page.unwrap_or(50).min(200);
     let offset = (page - 1) * per_page;
 
-    // Build dynamic WHERE clause
-    let mut where_clauses = vec!["is_active = 1".to_string()];
+    // Build dynamic WHERE clause with PostgreSQL $N placeholders
+    let mut where_clauses = vec!["is_active = TRUE".to_string()];
     let mut bind_values: Vec<String> = vec![];
+    let mut param_idx = 0usize;
 
     if let Some(ref cat) = q.category {
-        where_clauses.push("(business_category = ? OR category = ?)".to_string());
+        param_idx += 1;
+        let p1 = param_idx;
+        param_idx += 1;
+        let p2 = param_idx;
+        where_clauses.push(format!("(business_category = ${p1} OR category = ${p2})"));
         bind_values.push(cat.clone());
         bind_values.push(cat.clone());
     }
     if let Some(ref group) = q.group {
-        where_clauses.push("tool_group = ?".to_string());
+        param_idx += 1;
+        where_clauses.push(format!("tool_group = ${param_idx}"));
         bind_values.push(group.clone());
     }
     if let Some(ref search) = q.search {
-        where_clauses.push("(name LIKE ? OR business_name LIKE ? OR description LIKE ? OR business_description LIKE ?)".to_string());
         let pattern = format!("%{search}%");
+        param_idx += 1;
+        let p1 = param_idx;
+        param_idx += 1;
+        let p2 = param_idx;
+        param_idx += 1;
+        let p3 = param_idx;
+        param_idx += 1;
+        let p4 = param_idx;
+        where_clauses.push(format!("(name LIKE ${p1} OR business_name LIKE ${p2} OR description LIKE ${p3} OR business_description LIKE ${p4})"));
         bind_values.push(pattern.clone());
         bind_values.push(pattern.clone());
         bind_values.push(pattern.clone());
         bind_values.push(pattern.clone());
     }
     if let Some(ref tt) = q.tool_type {
-        where_clauses.push("tool_type = ?".to_string());
+        param_idx += 1;
+        where_clauses.push(format!("tool_type = ${param_idx}"));
         bind_values.push(tt.clone());
     }
 
     let where_sql = where_clauses.join(" AND ");
     let count_sql = format!("SELECT COUNT(*) FROM tools WHERE {}", where_sql);
-    let query_sql = format!("SELECT * FROM tools WHERE {} ORDER BY name LIMIT ? OFFSET ?", where_sql);
+    let limit_p = param_idx + 1;
+    let offset_p = param_idx + 2;
+    let query_sql = format!("SELECT * FROM tools WHERE {} ORDER BY name LIMIT ${limit_p} OFFSET ${offset_p}", where_sql);
 
     // Build count query
     let mut count_q = sqlx::query_as::<_, (i64,)>(&count_sql);
@@ -99,7 +116,7 @@ pub async fn get_tool(
     Path(tool_id): Path<String>,
 ) -> impl IntoResponse {
     let tool: Option<Tool> = sqlx::query_as(
-        "SELECT * FROM tools WHERE id = ? OR name = ? OR business_name = ?"
+        "SELECT * FROM tools WHERE id = $1 OR name = $2 OR business_name = $3"
     )
     .bind(&tool_id)
     .bind(&tool_id)
@@ -120,13 +137,13 @@ pub async fn tools_count(
     State(state): State<Arc<AppState>>,
     _auth: AuthUser,
 ) -> impl IntoResponse {
-    let total: (i64,) = sqlx::query_as("SELECT COUNT(*) FROM tools WHERE is_active = 1")
+    let total: (i64,) = sqlx::query_as("SELECT COUNT(*) FROM tools WHERE is_active = TRUE")
         .fetch_one(&state.db)
         .await
         .unwrap_or((0,));
 
     let by_category: Vec<(String, i64)> = sqlx::query_as(
-        "SELECT COALESCE(business_category, category) as cat, COUNT(*) FROM tools WHERE is_active = 1 GROUP BY cat"
+        "SELECT COALESCE(business_category, category) as cat, COUNT(*) FROM tools WHERE is_active = TRUE GROUP BY cat"
     )
     .fetch_all(&state.db)
     .await
@@ -139,10 +156,10 @@ pub async fn tools_count(
 
     // Plan-based tool counts for pricing pages
     let starter_count: (i64,) = sqlx::query_as(
-        "SELECT COUNT(*) FROM tools WHERE is_active = 1 AND plan_required = 'starter'"
+        "SELECT COUNT(*) FROM tools WHERE is_active = TRUE AND plan_required = 'starter'"
     ).fetch_one(&state.db).await.unwrap_or((0,));
     let pro_count: (i64,) = sqlx::query_as(
-        "SELECT COUNT(*) FROM tools WHERE is_active = 1 AND plan_required IN ('starter','professional')"
+        "SELECT COUNT(*) FROM tools WHERE is_active = TRUE AND plan_required IN ('starter','professional')"
     ).fetch_one(&state.db).await.unwrap_or((0,));
 
     Json(json!({
@@ -165,7 +182,7 @@ pub async fn tool_health(
     _auth: AuthUser,
     Path(tool_id): Path<String>,
 ) -> impl IntoResponse {
-    let tool: Option<Tool> = sqlx::query_as("SELECT * FROM tools WHERE id = ? OR name = ?")
+    let tool: Option<Tool> = sqlx::query_as("SELECT * FROM tools WHERE id = $1 OR name = $2")
         .bind(&tool_id)
         .bind(&tool_id)
         .fetch_optional(&state.db)
@@ -200,7 +217,7 @@ pub async fn all_tools_health(
     _auth: AuthUser,
 ) -> impl IntoResponse {
     let tools: Vec<(String, String)> = sqlx::query_as(
-        "SELECT id, name FROM tools WHERE is_active = 1 AND (tool_type = 'cli' OR tool_type IS NULL)"
+        "SELECT id, name FROM tools WHERE is_active = TRUE AND (tool_type = 'cli' OR tool_type IS NULL)"
     )
     .fetch_all(&state.db)
     .await
@@ -239,17 +256,17 @@ pub async fn tools_stats(
     State(state): State<Arc<AppState>>,
     _auth: AuthUser,
 ) -> impl IntoResponse {
-    let total: (i64,) = sqlx::query_as("SELECT COUNT(*) FROM tools WHERE is_active = 1")
+    let total: (i64,) = sqlx::query_as("SELECT COUNT(*) FROM tools WHERE is_active = TRUE")
         .fetch_one(&state.db)
         .await
         .unwrap_or((0,));
 
-    let cli: (i64,) = sqlx::query_as("SELECT COUNT(*) FROM tools WHERE tool_type = 'cli' AND is_active = 1")
+    let cli: (i64,) = sqlx::query_as("SELECT COUNT(*) FROM tools WHERE tool_type = 'cli' AND is_active = TRUE")
         .fetch_one(&state.db)
         .await
         .unwrap_or((0,));
 
-    let gui: (i64,) = sqlx::query_as("SELECT COUNT(*) FROM tools WHERE gui_required = 1 AND is_active = 1")
+    let gui: (i64,) = sqlx::query_as("SELECT COUNT(*) FROM tools WHERE gui_required = TRUE AND is_active = TRUE")
         .fetch_one(&state.db)
         .await
         .unwrap_or((0,));
@@ -270,7 +287,7 @@ pub async fn available_tools(
 ) -> impl IntoResponse {
     // Get user's org plan
     let org_plan: Option<(String,)> = if let Some(org_id) = &auth.org_id {
-        sqlx::query_as("SELECT plan_type FROM organizations WHERE id = ?")
+        sqlx::query_as("SELECT plan_type FROM organizations WHERE id = $1")
             .bind(org_id)
             .fetch_optional(&state.db)
             .await
@@ -282,7 +299,7 @@ pub async fn available_tools(
     let plan = org_plan.map(|p| p.0).unwrap_or_else(|| "trial".to_string());
     let plan_level = crate::services::plan::get_plan_level(&plan);
 
-    let tools: Vec<Tool> = sqlx::query_as("SELECT * FROM tools WHERE is_active = 1 ORDER BY name")
+    let tools: Vec<Tool> = sqlx::query_as("SELECT * FROM tools WHERE is_active = TRUE ORDER BY name")
         .fetch_all(&state.db)
         .await
         .unwrap_or_default();
@@ -309,7 +326,7 @@ pub async fn business_categories(
     _auth: AuthUser,
 ) -> impl IntoResponse {
     let categories: Vec<(String, i64)> = sqlx::query_as(
-        "SELECT COALESCE(business_category, 'other') as cat, COUNT(*) FROM tools WHERE is_active = 1 GROUP BY cat ORDER BY cat"
+        "SELECT COALESCE(business_category, 'other') as cat, COUNT(*) FROM tools WHERE is_active = TRUE GROUP BY cat ORDER BY cat"
     )
     .fetch_all(&state.db)
     .await
@@ -334,7 +351,7 @@ pub async fn business_category_tools(
     Path(category_id): Path<String>,
 ) -> impl IntoResponse {
     let tools: Vec<Tool> = sqlx::query_as(
-        "SELECT * FROM tools WHERE (business_category = ? OR category = ?) AND is_active = 1 ORDER BY name"
+        "SELECT * FROM tools WHERE (business_category = $1 OR category = $2) AND is_active = TRUE ORDER BY name"
     )
     .bind(&category_id)
     .bind(&category_id)
@@ -358,7 +375,7 @@ pub async fn tool_groups(
     _auth: AuthUser,
 ) -> impl IntoResponse {
     let groups: Vec<(String, i64)> = sqlx::query_as(
-        "SELECT COALESCE(tool_group, 'misc') as grp, COUNT(*) FROM tools WHERE is_active = 1 GROUP BY grp ORDER BY COUNT(*) DESC"
+        "SELECT COALESCE(tool_group, 'misc') as grp, COUNT(*) FROM tools WHERE is_active = TRUE GROUP BY grp ORDER BY COUNT(*) DESC"
     )
     .fetch_all(&state.db)
     .await
@@ -410,7 +427,7 @@ pub async fn group_tools(
     Path(group_id): Path<String>,
 ) -> impl IntoResponse {
     let tools: Vec<Tool> = sqlx::query_as(
-        "SELECT * FROM tools WHERE tool_group = ? AND is_active = 1 ORDER BY name"
+        "SELECT * FROM tools WHERE tool_group = $1 AND is_active = TRUE ORDER BY name"
     )
     .bind(&group_id)
     .fetch_all(&state.db)
@@ -440,7 +457,7 @@ pub async fn search_tools(
     let pattern = format!("%{search}%");
 
     let tools: Vec<Tool> = sqlx::query_as(
-        "SELECT * FROM tools WHERE is_active = 1 AND (name LIKE ? OR business_name LIKE ? OR description LIKE ? OR binary_name LIKE ?) ORDER BY name LIMIT 50"
+        "SELECT * FROM tools WHERE is_active = TRUE AND (name LIKE $1 OR business_name LIKE $2 OR description LIKE $3 OR binary_name LIKE $4) ORDER BY name LIMIT 50"
     )
     .bind(&pattern)
     .bind(&pattern)

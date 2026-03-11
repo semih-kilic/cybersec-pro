@@ -54,7 +54,7 @@ pub async fn register(
     }
 
     // Check existing
-    let existing: Option<(String,)> = sqlx::query_as("SELECT id FROM users WHERE email = ?")
+    let existing: Option<(String,)> = sqlx::query_as("SELECT id FROM users WHERE email = $1")
         .bind(&body.email)
         .fetch_optional(&state.db)
         .await
@@ -71,7 +71,7 @@ pub async fn register(
     let slug = format!("{}-{}", slug, &org_id[..8]);
 
     let _ = sqlx::query(
-        "INSERT INTO organizations (id, name, slug, plan_type) VALUES (?, ?, ?, 'trial')"
+        "INSERT INTO organizations (id, name, slug, plan_type) VALUES ($1, $2, $3, 'trial')"
     )
     .bind(&org_id)
     .bind(org_name)
@@ -90,7 +90,7 @@ pub async fn register(
 
     let result = sqlx::query(
         "INSERT INTO users (id, email, password_hash, first_name, last_name, role, organization_id, email_verified, verification_token, verification_sent_at)
-         VALUES (?, ?, ?, ?, ?, 'admin', ?, 0, ?, CURRENT_TIMESTAMP)"
+         VALUES ($1, $2, $3, $4, $5, 'admin', $6, 0, $7, CURRENT_TIMESTAMP)"
     )
     .bind(&user_id)
     .bind(&body.email)
@@ -151,7 +151,7 @@ pub async fn login(
 
     // Find user
     let user: Option<User> = sqlx::query_as(
-        "SELECT * FROM users WHERE email = ? AND is_active = 1"
+        "SELECT * FROM users WHERE email = $1 AND is_active = TRUE"
     )
     .bind(&body.email)
     .fetch_optional(&state.db)
@@ -205,7 +205,7 @@ pub async fn login(
     }
 
     // Update last_login
-    let _ = sqlx::query("UPDATE users SET last_login = CURRENT_TIMESTAMP WHERE id = ?")
+    let _ = sqlx::query("UPDATE users SET last_login = CURRENT_TIMESTAMP WHERE id = $1")
         .bind(&user.id)
         .execute(&state.db)
         .await;
@@ -249,7 +249,7 @@ pub async fn refresh(
     }
 
     // Fetch user to get current org/role
-    let user: Option<User> = sqlx::query_as("SELECT * FROM users WHERE id = ? AND is_active = 1")
+    let user: Option<User> = sqlx::query_as("SELECT * FROM users WHERE id = $1 AND is_active = TRUE")
         .bind(&claims.sub)
         .fetch_optional(&state.db)
         .await
@@ -310,7 +310,7 @@ pub async fn me(
     State(state): State<Arc<AppState>>,
     auth: AuthUser,
 ) -> impl IntoResponse {
-    let user: Option<User> = sqlx::query_as("SELECT * FROM users WHERE id = ?")
+    let user: Option<User> = sqlx::query_as("SELECT * FROM users WHERE id = $1")
         .bind(&auth.user_id)
         .fetch_optional(&state.db)
         .await
@@ -335,14 +335,14 @@ pub async fn update_profile(
     auth: AuthUser,
     Json(body): Json<UpdateProfileRequest>,
 ) -> impl IntoResponse {
-    let _ = sqlx::query("UPDATE users SET first_name = COALESCE(?, first_name), last_name = COALESCE(?, last_name) WHERE id = ?")
+    let _ = sqlx::query("UPDATE users SET first_name = COALESCE($1, first_name), last_name = COALESCE($2, last_name) WHERE id = $3")
         .bind(&body.first_name)
         .bind(&body.last_name)
         .bind(&auth.user_id)
         .execute(&state.db)
         .await;
 
-    let user: Option<User> = sqlx::query_as("SELECT * FROM users WHERE id = ?")
+    let user: Option<User> = sqlx::query_as("SELECT * FROM users WHERE id = $1")
         .bind(&auth.user_id)
         .fetch_optional(&state.db)
         .await
@@ -360,7 +360,7 @@ pub async fn mfa_setup(
     State(state): State<Arc<AppState>>,
     auth: AuthUser,
 ) -> impl IntoResponse {
-    let user: Option<User> = sqlx::query_as("SELECT * FROM users WHERE id = ?")
+    let user: Option<User> = sqlx::query_as("SELECT * FROM users WHERE id = $1")
         .bind(&auth.user_id)
         .fetch_optional(&state.db)
         .await
@@ -379,7 +379,7 @@ pub async fn mfa_setup(
     let uri = generate_totp_uri(&secret, &user.email).unwrap_or_default();
 
     // Store secret temporarily
-    let _ = sqlx::query("UPDATE users SET mfa_secret = ? WHERE id = ?")
+    let _ = sqlx::query("UPDATE users SET mfa_secret = $1 WHERE id = $2")
         .bind(&secret)
         .bind(&auth.user_id)
         .execute(&state.db)
@@ -405,7 +405,7 @@ pub async fn mfa_verify(
     headers: HeaderMap,
     Json(body): Json<MfaVerifyRequest>,
 ) -> impl IntoResponse {
-    let user: Option<User> = sqlx::query_as("SELECT * FROM users WHERE id = ?")
+    let user: Option<User> = sqlx::query_as("SELECT * FROM users WHERE id = $1")
         .bind(&auth.user_id)
         .fetch_optional(&state.db)
         .await
@@ -430,7 +430,7 @@ pub async fn mfa_verify(
     let hashed_codes: Vec<String> = backup_codes.iter().map(|c| hash_backup_code(c)).collect();
     let codes_json = serde_json::to_string(&hashed_codes).unwrap_or_default();
 
-    let _ = sqlx::query("UPDATE users SET mfa_enabled = 1, mfa_backup_codes = ?, mfa_enabled_at = CURRENT_TIMESTAMP WHERE id = ?")
+    let _ = sqlx::query("UPDATE users SET mfa_enabled = TRUE, mfa_backup_codes = $1, mfa_enabled_at = CURRENT_TIMESTAMP WHERE id = $2")
         .bind(&codes_json)
         .bind(&auth.user_id)
         .execute(&state.db)
@@ -451,7 +451,7 @@ pub async fn mfa_disable(
     auth: AuthUser,
     headers: HeaderMap,
 ) -> impl IntoResponse {
-    let _ = sqlx::query("UPDATE users SET mfa_enabled = 0, mfa_secret = NULL, mfa_backup_codes = NULL, mfa_enabled_at = NULL WHERE id = ?")
+    let _ = sqlx::query("UPDATE users SET mfa_enabled = FALSE, mfa_secret = NULL, mfa_backup_codes = NULL, mfa_enabled_at = NULL WHERE id = $1")
         .bind(&auth.user_id)
         .execute(&state.db)
         .await;
@@ -468,7 +468,7 @@ pub async fn mfa_status(
     auth: AuthUser,
 ) -> impl IntoResponse {
     let row: Option<(Option<bool>, Option<String>)> = sqlx::query_as(
-        "SELECT mfa_enabled, mfa_enabled_at FROM users WHERE id = ?"
+        "SELECT mfa_enabled, mfa_enabled_at FROM users WHERE id = $1"
     )
     .bind(&auth.user_id)
     .fetch_optional(&state.db)

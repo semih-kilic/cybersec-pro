@@ -22,49 +22,49 @@ pub async fn security_summary(
     };
 
     // Total scans
-    let total_scans: (i64,) = sqlx::query_as("SELECT COUNT(*) FROM scans WHERE organization_id = ?")
+    let total_scans: (i64,) = sqlx::query_as("SELECT COUNT(*) FROM scans WHERE organization_id = $1")
         .bind(org_id)
         .fetch_one(&state.db)
         .await
         .unwrap_or((0,));
 
     // Active scans
-    let active_scans: (i64,) = sqlx::query_as("SELECT COUNT(*) FROM scans WHERE organization_id = ? AND status IN ('running', 'pending')")
+    let active_scans: (i64,) = sqlx::query_as("SELECT COUNT(*) FROM scans WHERE organization_id = $1 AND status IN ('running', 'pending')")
         .bind(org_id)
         .fetch_one(&state.db)
         .await
         .unwrap_or((0,));
 
     // Completed scans
-    let completed: (i64,) = sqlx::query_as("SELECT COUNT(*) FROM scans WHERE organization_id = ? AND status = 'completed'")
+    let completed: (i64,) = sqlx::query_as("SELECT COUNT(*) FROM scans WHERE organization_id = $1 AND status = 'completed'")
         .bind(org_id)
         .fetch_one(&state.db)
         .await
         .unwrap_or((0,));
 
     // Failed scans
-    let failed: (i64,) = sqlx::query_as("SELECT COUNT(*) FROM scans WHERE organization_id = ? AND status = 'failed'")
+    let failed: (i64,) = sqlx::query_as("SELECT COUNT(*) FROM scans WHERE organization_id = $1 AND status = 'failed'")
         .bind(org_id)
         .fetch_one(&state.db)
         .await
         .unwrap_or((0,));
 
     // Active agents
-    let active_agents: (i64,) = sqlx::query_as("SELECT COUNT(*) FROM agents WHERE organization_id = ? AND status = 'online'")
+    let active_agents: (i64,) = sqlx::query_as("SELECT COUNT(*) FROM agents WHERE organization_id = $1 AND status = 'online'")
         .bind(org_id)
         .fetch_one(&state.db)
         .await
         .unwrap_or((0,));
 
     // Tools available
-    let tools: (i64,) = sqlx::query_as("SELECT COUNT(*) FROM tools WHERE is_active = 1")
+    let tools: (i64,) = sqlx::query_as("SELECT COUNT(*) FROM tools WHERE is_active = TRUE")
         .fetch_one(&state.db)
         .await
         .unwrap_or((0,));
 
     // Recent scans
     let recent_scans: Vec<(String, String, String, Option<String>)> = sqlx::query_as(
-        "SELECT s.id, t.name, s.target, s.status FROM scans s LEFT JOIN tools t ON s.tool_id = t.id WHERE s.organization_id = ? ORDER BY s.created_at DESC LIMIT 5"
+        "SELECT s.id, t.name, s.target, s.status FROM scans s LEFT JOIN tools t ON s.tool_id = t.id WHERE s.organization_id = $1 ORDER BY s.created_at DESC LIMIT 5"
     )
     .bind(org_id)
     .fetch_all(&state.db)
@@ -81,7 +81,7 @@ pub async fn security_summary(
     }).collect();
 
     // Organization plan
-    let plan: Option<(String,)> = sqlx::query_as("SELECT plan_type FROM organizations WHERE id = ?")
+    let plan: Option<(String,)> = sqlx::query_as("SELECT plan_type FROM organizations WHERE id = $1")
         .bind(org_id)
         .fetch_optional(&state.db)
         .await
@@ -114,7 +114,7 @@ pub async fn analytics_overview(
 
     // Scans per day (last 30 days)
     let daily: Vec<(String, i64)> = sqlx::query_as(
-        "SELECT date(created_at) as day, COUNT(*) FROM scans WHERE organization_id = ? AND created_at >= date('now', '-30 days') GROUP BY day ORDER BY day"
+        "SELECT created_at::date as day, COUNT(*) FROM scans WHERE organization_id = $1 AND created_at >= NOW() - INTERVAL '30 days' GROUP BY day ORDER BY day"
     )
     .bind(org_id)
     .fetch_all(&state.db)
@@ -123,7 +123,7 @@ pub async fn analytics_overview(
 
     // Top tools
     let top_tools: Vec<(String, i64)> = sqlx::query_as(
-        "SELECT t.name, COUNT(*) as cnt FROM scans s JOIN tools t ON s.tool_id = t.id WHERE s.organization_id = ? GROUP BY t.name ORDER BY cnt DESC LIMIT 10"
+        "SELECT t.name, COUNT(*) as cnt FROM scans s JOIN tools t ON s.tool_id = t.id WHERE s.organization_id = $1 GROUP BY t.name ORDER BY cnt DESC LIMIT 10"
     )
     .bind(org_id)
     .fetch_all(&state.db)
@@ -132,7 +132,7 @@ pub async fn analytics_overview(
 
     // Status breakdown
     let status_breakdown: Vec<(Option<String>, i64)> = sqlx::query_as(
-        "SELECT status, COUNT(*) FROM scans WHERE organization_id = ? GROUP BY status"
+        "SELECT status, COUNT(*) FROM scans WHERE organization_id = $1 GROUP BY status"
     )
     .bind(org_id)
     .fetch_all(&state.db)

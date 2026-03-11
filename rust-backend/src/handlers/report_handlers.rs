@@ -34,7 +34,7 @@ pub async fn list_reports(
     let offset = (page - 1) * per_page;
 
     let reports: Vec<Report> = sqlx::query_as(
-        "SELECT * FROM reports WHERE organization_id = ? ORDER BY created_at DESC LIMIT ? OFFSET ?"
+        "SELECT * FROM reports WHERE organization_id = $1 ORDER BY created_at DESC LIMIT $2 OFFSET $3"
     )
     .bind(org_id)
     .bind(per_page as i64)
@@ -81,7 +81,7 @@ pub async fn create_report(
 
     for scan_id in &body.scan_ids {
         let findings: Option<(Option<String>,)> = sqlx::query_as(
-            "SELECT findings FROM scans WHERE id = ? AND organization_id = ?"
+            "SELECT findings FROM scans WHERE id = $1 AND organization_id = $2"
         )
         .bind(scan_id)
         .bind(org_id)
@@ -107,7 +107,7 @@ pub async fn create_report(
 
     let _ = sqlx::query(
         "INSERT INTO reports (id, organization_id, user_id, name, template, format, status, scan_ids, sections, total_findings, critical_count, high_count, medium_count, low_count, risk_score, risk_level)
-         VALUES (?, ?, ?, ?, ?, ?, 'ready', ?, ?, ?, ?, ?, ?, ?, ?, ?)"
+         VALUES ($1, $2, $3, $4, $5, $6, 'ready', $7, $8, $9, $10, $11, $12, $13, $14, $15)"
     )
     .bind(&report_id)
     .bind(org_id)
@@ -152,7 +152,7 @@ pub async fn get_report(
     };
 
     let report: Option<Report> = sqlx::query_as(
-        "SELECT * FROM reports WHERE id = ? AND organization_id = ?"
+        "SELECT * FROM reports WHERE id = $1 AND organization_id = $2"
     )
     .bind(&report_id)
     .bind(org_id)
@@ -176,7 +176,7 @@ pub async fn delete_report(
         None => return (StatusCode::FORBIDDEN, Json(json!({"error": "Organization required"}))).into_response(),
     };
 
-    let _ = sqlx::query("DELETE FROM reports WHERE id = ? AND organization_id = ?")
+    let _ = sqlx::query("DELETE FROM reports WHERE id = $1 AND organization_id = $2")
         .bind(&report_id)
         .bind(org_id)
         .execute(&state.db)

@@ -21,7 +21,7 @@ pub async fn list_notifications(
 
     // Notifications from audit logs (recent activity)
     let logs: Vec<(String, String, Option<String>, Option<String>, Option<String>, Option<String>, Option<String>)> = sqlx::query_as(
-        "SELECT id, action, category, severity, created_at, resource_type, resource_id FROM audit_logs WHERE organization_id = ? ORDER BY created_at DESC LIMIT 50"
+        "SELECT id, action, category, severity, created_at, resource_type, resource_id FROM audit_logs WHERE organization_id = $1 ORDER BY created_at DESC LIMIT 50"
     )
     .bind(org_id)
     .fetch_all(&state.db)
@@ -106,7 +106,7 @@ pub async fn read_all_notifications(
     // Mark all audit logs as read for this org (using a "read" flag approach)
     if let Some(org_id) = &auth.org_id {
         let _ = sqlx::query(
-            "UPDATE audit_logs SET severity = 'read' WHERE organization_id = ? AND (severity IS NULL OR severity != 'read')"
+            "UPDATE audit_logs SET severity = 'read' WHERE organization_id = $1 AND (severity IS NULL OR severity != 'read')"
         )
         .bind(org_id)
         .execute(&state.db)
@@ -121,7 +121,7 @@ pub async fn read_notification(
     Path(notification_id): Path<String>,
 ) -> impl IntoResponse {
     let _ = sqlx::query(
-        "UPDATE audit_logs SET severity = 'read' WHERE id = ?"
+        "UPDATE audit_logs SET severity = 'read' WHERE id = $1"
     )
     .bind(&notification_id)
     .execute(&state.db)

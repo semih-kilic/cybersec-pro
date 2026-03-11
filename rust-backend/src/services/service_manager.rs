@@ -237,7 +237,7 @@ fn get_service_configs() -> Vec<ServiceConfig> {
             id: "rust-backend".into(), name: "Rust API Backend".into(),
             description: "CyberSec Pro main API (Axum/Rust)".into(),
             port: Some(5001),
-            start_command: Some("cd /home/cybersec/cybersec-pro/rust-backend && DATABASE_URL='sqlite:../saas-backend/instance/cybersec_saas.db?mode=rwc' JWT_SECRET_KEY='***REDACTED_JWT_SECRET***' RUST_LOG=info nohup ./target/release/cybersec-pro-backend > /tmp/rust-backend.log 2>&1 &".into()),
+            start_command: Some("cd /home/cybersec/cybersec-pro/rust-backend && DATABASE_URL='postgres://cybersec:***REDACTED_PG_PASSWORD***@localhost:5432/cybersec_pro' JWT_SECRET_KEY='***REDACTED_JWT_SECRET***' RUST_LOG=info nohup ./target/release/cybersec-pro-backend > /tmp/rust-backend.log 2>&1 &".into()),
             auto_restart: true, max_restarts: 100,
             priority: "critical".into(), category: "backend".into(),
         },
