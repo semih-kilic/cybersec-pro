@@ -73,13 +73,20 @@ export interface Tool {
   dangerous?: boolean;
   requires_root?: boolean;
   gui_only?: boolean;
+  gui_required?: boolean;
+  group?: string;
+  binary_name?: string;
+  tool_type?: string;
+  business_category?: string;
 }
 
 export interface CategoryInfo {
+  id?: string;
   name: string;
-  icon: string;
-  description: string;
-  color: string;
+  icon?: string;
+  description?: string;
+  color?: string;
+  tool_count?: number;
 }
 
 export interface CategoryData {

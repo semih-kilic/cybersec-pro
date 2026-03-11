@@ -20,52 +20,72 @@ interface Tool {
   dangerous?: boolean;
   requires_root?: boolean;
   gui_only?: boolean;
+  gui_required?: boolean;
+  group?: string;
+  binary_name?: string;
+  tool_type?: string;
+  business_category?: string;
 }
 
-// Category icons and colors mapping
+// Category icons and colors mapping — 17 groups
 const categoryIcons: { [key: string]: string } = {
-  'information_gathering': '🔍',
-  'vulnerability_analysis': '🔓',
-  'web_application': '🌐',
-  'password_attacks': '🔑',
-  'wireless_attacks': '📡',
-  'sniffing_spoofing': '👃',
+  'web': '🌐',
+  'network': '🌍',
+  'recon': '🔍',
+  'password': '🔑',
   'exploitation': '💥',
-  'post_exploitation': '🎯',
   'forensics': '🔬',
-  'reverse_engineering': '⚙️',
+  'wireless': '📡',
+  'voip': '📞',
+  'database': '🗄️',
+  'ad': '🏢',
+  'email': '📧',
+  'crypto': '🔐',
+  'defense': '🛡️',
   'reporting': '📊',
-  'networking': '🌍',
+  'system': '⚙️',
+  'vulnerability': '🔓',
+  'misc': '🔧',
 };
 
 const categoryColors: { [key: string]: string } = {
-  'information_gathering': 'from-blue-500 to-cyan-500',
-  'vulnerability_analysis': 'from-red-500 to-orange-500',
-  'web_application': 'from-purple-500 to-pink-500',
-  'password_attacks': 'from-yellow-500 to-orange-500',
-  'wireless_attacks': 'from-cyan-500 to-teal-500',
-  'sniffing_spoofing': 'from-green-500 to-emerald-500',
+  'web': 'from-purple-500 to-pink-500',
+  'network': 'from-blue-600 to-indigo-500',
+  'recon': 'from-blue-500 to-cyan-500',
+  'password': 'from-yellow-500 to-orange-500',
   'exploitation': 'from-red-600 to-red-400',
-  'post_exploitation': 'from-yellow-600 to-amber-500',
   'forensics': 'from-indigo-500 to-purple-500',
-  'reverse_engineering': 'from-gray-500 to-slate-500',
+  'wireless': 'from-cyan-500 to-teal-500',
+  'voip': 'from-green-500 to-emerald-500',
+  'database': 'from-amber-500 to-orange-500',
+  'ad': 'from-sky-500 to-blue-600',
+  'email': 'from-pink-500 to-rose-500',
+  'crypto': 'from-violet-500 to-purple-500',
+  'defense': 'from-emerald-500 to-green-600',
   'reporting': 'from-teal-500 to-cyan-500',
-  'networking': 'from-blue-600 to-indigo-500',
+  'system': 'from-gray-500 to-slate-500',
+  'vulnerability': 'from-red-500 to-orange-500',
+  'misc': 'from-gray-600 to-gray-500',
 };
 
 const categoryDisplayNames: { [key: string]: string } = {
-  'information_gathering': 'Information Gathering',
-  'vulnerability_analysis': 'Vulnerability Analysis',
-  'web_application': 'Web Application',
-  'password_attacks': 'Password Attacks',
-  'wireless_attacks': 'Wireless Attacks',
-  'sniffing_spoofing': 'Sniffing & Spoofing',
+  'web': 'Web Application Security',
+  'network': 'Network Security',
+  'recon': 'Reconnaissance',
+  'password': 'Password & Credentials',
   'exploitation': 'Exploitation',
-  'post_exploitation': 'Post Exploitation',
-  'forensics': 'Forensics',
-  'reverse_engineering': 'Reverse Engineering',
+  'forensics': 'Digital Forensics',
+  'wireless': 'Wireless Security',
+  'voip': 'VoIP Security',
+  'database': 'Database Security',
+  'ad': 'Active Directory',
+  'email': 'Email Security',
+  'crypto': 'Cryptography',
+  'defense': 'Defense & Compliance',
   'reporting': 'Reporting',
-  'networking': 'Networking',
+  'system': 'System Security',
+  'vulnerability': 'Vulnerability Assessment',
+  'misc': 'Miscellaneous',
 };
 
 // Plan hierarchy for access control
@@ -226,14 +246,12 @@ export function ToolsPage() {
                 </div>
                 <div>
                   <h3 className="text-lg font-bold text-white">
-                    {(userPlan === 'trial' || userPlan === 'starter') 
-                      ? `${filteredCount > 0 && showOnlyAvailable ? filteredCount : 7} Tools Available in Your Plan` 
-                      : `${filteredCount > 0 && showOnlyAvailable ? filteredCount : totalTools} Tools in Your Plan`}
+                    {totalTools > 0 ? totalTools : '1000+'} Security Tools Available
                   </h3>
                   <p className="text-gray-400 text-sm">
                     {(userPlan === 'trial' || userPlan === 'starter')
-                      ? 'Click "My Plan" filter to see your available tools. Upgrade to unlock 395+ professional tools!' 
-                      : 'Click "My Plan" to see tools included in your plan. Upgrade for more tools!'}
+                      ? `Click "My Plan" filter to see your available tools. Upgrade to unlock all ${totalTools} professional tools!` 
+                      : `${totalTools} tools across 17 categories. Click "My Plan" to see your plan tools.`}
                   </p>
                 </div>
               </div>
@@ -257,7 +275,7 @@ export function ToolsPage() {
               <div className="flex items-center gap-3">
                 <span className="text-2xl">✨</span>
                 <div>
-                  <h3 className="text-white font-bold">Quick Access: Your 7 Trial Tools</h3>
+                  <h3 className="text-white font-bold">Quick Access: Popular Security Tools</h3>
                   <p className="text-gray-400 text-sm">Click any tool to start scanning immediately</p>
                 </div>
               </div>
@@ -272,11 +290,11 @@ export function ToolsPage() {
               {[
                 { id: 'nmap', name: 'Nmap', icon: '🔍', desc: 'Port Scanner' },
                 { id: 'nikto', name: 'Nikto', icon: '🌐', desc: 'Web Scanner' },
-                { id: 'whatweb', name: 'WhatWeb', icon: '🔎', desc: 'Web Tech' },
-                { id: 'ncrack', name: 'Ncrack', icon: '🔑', desc: 'Password' },
-                { id: 'tcpdump', name: 'TCPDump', icon: '📡', desc: 'Packets' },
-                { id: 'netcat', name: 'Netcat', icon: '🔗', desc: 'Network' },
-                { id: 'ncat', name: 'Ncat', icon: '⚡', desc: 'TCP/UDP' },
+                { id: 'sqlmap', name: 'SQLMap', icon: '💉', desc: 'SQL Injection' },
+                { id: 'hydra', name: 'Hydra', icon: '🔑', desc: 'Brute Force' },
+                { id: 'gobuster', name: 'Gobuster', icon: '📂', desc: 'Dir Scanner' },
+                { id: 'nuclei', name: 'Nuclei', icon: '⚛️', desc: 'Vuln Scanner' },
+                { id: 'wireshark', name: 'Wireshark', icon: '📡', desc: 'Packet Analyzer' },
               ].map((tool) => (
                 <Link 
                   key={tool.id}

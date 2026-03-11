@@ -130,18 +130,81 @@ pub async fn v2_tools(
 ) -> impl IntoResponse {
     let _plan = params.get("plan").cloned().unwrap_or_default();
 
-    let tools = sqlx::query_as::<_, (String, String, String, String, bool)>(
-        "SELECT id, name, category, COALESCE(plan_required,'starter'), is_active FROM tools WHERE is_active = 1 ORDER BY name LIMIT 1000"
+    let tools: Vec<crate::models::Tool> = sqlx::query_as(
+        "SELECT * FROM tools WHERE is_active = 1 ORDER BY name"
     )
     .fetch_all(&state.db)
     .await
     .unwrap_or_default();
 
-    let list: Vec<serde_json::Value> = tools.iter().map(|(id, name, cat, pr, active)| {
-        json!({"id": id, "name": name, "category": cat, "plan_required": pr, "is_active": active})
-    }).collect();
+    // Group by tool_group
+    let mut categories: std::collections::HashMap<String, Vec<serde_json::Value>> = std::collections::HashMap::new();
+    for t in &tools {
+        let group = t.tool_group.clone().unwrap_or_else(|| "misc".into());
+        let resp = t.to_response();
+        categories.entry(group).or_default().push(json!({
+            "id": resp.id,
+            "name": resp.name,
+            "description": resp.description,
+            "category": resp.category,
+            "business_category": resp.business_category,
+            "subcategory": resp.subcategory,
+            "plan_required": resp.plan_required,
+            "is_active": resp.is_active,
+            "tool_type": resp.tool_type,
+            "gui_required": resp.gui_required,
+            "group": resp.group,
+            "binary_name": resp.binary_name,
+            "installed": true,
+        }));
+    }
 
-    Json(json!({"tools": list, "total": list.len()})).into_response()
+    // Group display names
+    let group_names: std::collections::HashMap<&str, (&str, &str)> = [
+        ("web", ("Web Application Security", "🌐")),
+        ("network", ("Network Security", "🌍")),
+        ("recon", ("Reconnaissance", "🔍")),
+        ("password", ("Password & Credentials", "🔑")),
+        ("exploitation", ("Exploitation", "💥")),
+        ("forensics", ("Digital Forensics", "🔬")),
+        ("wireless", ("Wireless Security", "📡")),
+        ("voip", ("VoIP Security", "📞")),
+        ("database", ("Database Security", "🗄️")),
+        ("ad", ("Active Directory", "🏢")),
+        ("email", ("Email Security", "📧")),
+        ("crypto", ("Cryptography", "🔐")),
+        ("defense", ("Defense & Compliance", "🛡️")),
+        ("reporting", ("Reporting", "📊")),
+        ("system", ("System Security", "⚙️")),
+        ("vulnerability", ("Vulnerability Assessment", "🔓")),
+        ("misc", ("Miscellaneous", "🔧")),
+    ].into_iter().collect();
+
+    let mut result_cats: serde_json::Map<String, serde_json::Value> = serde_json::Map::new();
+    let mut cat_list: Vec<String> = Vec::new();
+
+    for (group, tool_list) in &categories {
+        let (display_name, icon) = group_names.get(group.as_str()).unwrap_or(&("Other", "🔧"));
+        cat_list.push(group.clone());
+        result_cats.insert(group.clone(), json!({
+            "info": {
+                "id": group,
+                "name": display_name,
+                "icon": icon,
+                "tool_count": tool_list.len(),
+            },
+            "tools": tool_list,
+        }));
+    }
+
+    cat_list.sort();
+
+    Json(json!({
+        "success": true,
+        "total_tools": tools.len(),
+        "categories": result_cats,
+        "category_list": cat_list,
+    })).into_response()
 }
 
 pub async fn v2_tool_detail(
