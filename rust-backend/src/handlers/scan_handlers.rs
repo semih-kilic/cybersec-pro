@@ -76,8 +76,33 @@ pub async fn list_scans(
 
     let response: Vec<_> = scans.iter().map(|s| s.to_response()).collect();
 
+    // Enrich with tool names
+    let tool_ids: Vec<&str> = scans.iter().map(|s| s.tool_id.as_str()).collect();
+    let mut tool_names: std::collections::HashMap<String, String> = std::collections::HashMap::new();
+    if !tool_ids.is_empty() {
+        let tool_rows: Vec<(String, String)> = sqlx::query_as(
+            "SELECT id, name FROM tools WHERE id = ANY($1)"
+        )
+        .bind(&tool_ids)
+        .fetch_all(&state.db)
+        .await
+        .unwrap_or_default();
+        for (id, name) in tool_rows {
+            tool_names.insert(id, name);
+        }
+    }
+
+    let enriched: Vec<_> = response.into_iter().zip(scans.iter()).map(|(mut resp, scan)| {
+        let mut val = serde_json::to_value(&resp).unwrap_or(json!({}));
+        if let serde_json::Value::Object(ref mut map) = val {
+            let tname = tool_names.get(&scan.tool_id).cloned().unwrap_or_default();
+            map.insert("tool_name".into(), json!(tname));
+        }
+        val
+    }).collect();
+
     (StatusCode::OK, Json(json!({
-        "scans": response,
+        "scans": enriched,
         "total": total.0,
         "page": page,
         "per_page": per_page

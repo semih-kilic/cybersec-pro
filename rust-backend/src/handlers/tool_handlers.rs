@@ -102,6 +102,7 @@ pub async fn list_tools(
     Json(json!({
         "tools": response,
         "total": total.0,
+        "total_tools": total.0,
         "page": page,
         "per_page": per_page,
         "pages": (total.0 as f64 / per_page as f64).ceil() as i64

@@ -87,6 +87,53 @@ pub async fn security_summary(
         .await
         .unwrap_or(None);
 
+    // Compute open_issues from scan findings
+    let mut critical: i64 = 0;
+    let mut high: i64 = 0;
+    let mut medium: i64 = 0;
+    let mut low: i64 = 0;
+    let mut info: i64 = 0;
+
+    let findings_rows: Vec<(Option<serde_json::Value>,)> = sqlx::query_as(
+        "SELECT findings FROM scans WHERE organization_id = $1 AND findings IS NOT NULL AND status = 'completed' ORDER BY created_at DESC LIMIT 50"
+    )
+    .bind(org_id)
+    .fetch_all(&state.db)
+    .await
+    .unwrap_or_default();
+
+    for (findings_opt,) in &findings_rows {
+        if let Some(serde_json::Value::Object(map)) = findings_opt {
+            if let Some(summary) = map.get("summary") {
+                critical += summary.get("critical").and_then(|v| v.as_i64()).unwrap_or(0);
+                high += summary.get("high").and_then(|v| v.as_i64()).unwrap_or(0);
+                medium += summary.get("medium").and_then(|v| v.as_i64()).unwrap_or(0);
+                low += summary.get("low").and_then(|v| v.as_i64()).unwrap_or(0);
+            }
+        }
+    }
+
+    let issues_total = critical + high + medium + low + info;
+
+    // Compute security score: base 100, deduct for issues
+    let security_score = if completed.0 == 0 {
+        0
+    } else {
+        let penalty = (critical * 15 + high * 8 + medium * 3 + low * 1).min(100);
+        (100 - penalty).max(0)
+    };
+
+    let open_issues = json!({
+        "critical": critical,
+        "high": high,
+        "medium": medium,
+        "low": low,
+        "info": info,
+        "total": issues_total
+    });
+
+    let risk_level = if security_score >= 80 { "Low" } else if security_score >= 60 { "Medium" } else { "High" };
+
     (StatusCode::OK, Json(json!({
         "total_scans": total_scans.0,
         "active_scans": active_scans.0,
@@ -96,8 +143,10 @@ pub async fn security_summary(
         "tools_available": tools.0,
         "recent_scans": recent,
         "plan_type": plan.map(|p| p.0).unwrap_or_else(|| "trial".into()),
-        "risk_score": 0,
-        "risk_level": "None"
+        "risk_score": security_score,
+        "risk_level": risk_level,
+        "security_score": security_score,
+        "open_issues": open_issues
     }))).into_response()
 }
 

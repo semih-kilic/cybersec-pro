@@ -124,7 +124,8 @@ export function useTools(plan: string) {
 // ==========================================
 
 interface DashboardToolsResponse {
-  total_tools: number;
+  total_tools?: number;
+  total?: number;
   [key: string]: unknown;
 }
 
@@ -135,12 +136,15 @@ interface DashboardScansResponse {
     tool_name?: string;
     target: string;
     status: string;
-    created_at: string;
+    created_at?: string;
+    started_at?: string;
     findings_count?: number;
+    findings_summary?: { total?: number };
   }>;
 }
 
 interface UsageStatsResponse {
+  scans_used?: number;
   usage?: {
     total_scans?: number;
     [key: string]: unknown;
@@ -183,7 +187,7 @@ export function useDashboardData() {
 
       const scans = scansData.scans || [];
       return {
-        totalTools: toolsData.total_tools || 0,
+        totalTools: toolsData.total_tools || toolsData.total || 0,
         scanSummary: {
           total: scans.length,
           running: scans.filter((s) => s.status === 'running').length,
@@ -195,10 +199,10 @@ export function useDashboardData() {
           tool_name: s.tool?.name || s.tool_name || 'Unknown',
           target: s.target,
           status: s.status,
-          started_at: s.created_at,
-          findings: s.findings_count || 0,
+          started_at: s.created_at || s.started_at,
+          findings: s.findings_count || s.findings_summary?.total || 0,
         })),
-        totalTargets: usageData.usage?.total_scans || scans.length,
+        totalTargets: usageData.scans_used || usageData.usage?.total_scans || scans.length,
       };
     },
     ...CACHE_TIMES.dashboard,
@@ -220,8 +224,13 @@ export interface OpenIssues {
 }
 
 export interface SecuritySummary {
-  security_score: number;
-  open_issues: OpenIssues;
+  security_score?: number;
+  risk_score?: number;
+  open_issues?: OpenIssues;
+  // Fields returned by the Rust backend
+  total_scans?: number;
+  completed_scans?: number;
+  failed_scans?: number;
 }
 
 /**
@@ -236,10 +245,19 @@ export function useSecuritySummary() {
     queryFn: () => authFetch<SecuritySummary>('/api/v1/dashboard/security-summary', token),
     ...CACHE_TIMES.dashboard,
     enabled: !!token,
-    select: (data) => ({
-      securityScore: data.security_score || 0,
-      openIssues: data.open_issues || { critical: 0, high: 0, medium: 0, low: 0, info: 0, total: 0 },
-    }),
+    select: (data) => {
+      // Compute a score: use security_score if available, else derive from risk_score or scan stats
+      let score = data.security_score || data.risk_score || 0;
+      if (score === 0 && data.completed_scans && data.completed_scans > 0) {
+        // Derive a basic score from completed vs failed ratio
+        const total = (data.completed_scans || 0) + (data.failed_scans || 0);
+        score = total > 0 ? Math.round((data.completed_scans / total) * 100) : 0;
+      }
+      return {
+        securityScore: score,
+        openIssues: data.open_issues || { critical: 0, high: 0, medium: 0, low: 0, info: 0, total: 0 },
+      };
+    },
     // Don't throw on 404 — new users have no data
     retry: 1,
   });
