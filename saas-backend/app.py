@@ -6809,6 +6809,7 @@ try:
                 'plan_required': t.plan_required,
                 'business_name': t.business_name,
                 'description': t.description or t.business_description or '',
+                'command_template': t.command_template or '',
             } for t in all_db_tools]
             added = bulk_register_from_db(tools_data)
             print(f"✅ V7 Scan Engine loaded ({len(TOOL_REGISTRY)} tools, {added} auto-registered from DB)")

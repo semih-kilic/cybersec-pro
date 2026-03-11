@@ -326,6 +326,8 @@ def execute_scan(
         # Threaded stderr reader so it doesn't block
         def _read_stderr():
             for line in proc.stderr:
+                if isinstance(line, bytes):
+                    line = line.decode('utf-8', errors='replace')
                 stderr_lines.append(line)
 
         t = threading.Thread(target=_read_stderr, daemon=True)

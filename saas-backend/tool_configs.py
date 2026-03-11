@@ -1008,14 +1008,63 @@ _TARGET_MODE_MAP = {
 }
 
 
+def _parse_command_template(template: str, slug: str, binary: str) -> tuple:
+    """
+    Parse a DB command_template like 'nikto -h {target}' into
+    (pre_args, target_mode, post_args).
+    
+    Returns:
+        (pre_args: list[str], target_mode: str, post_args: list[str])
+    """
+    if not template or '{target}' not in template:
+        return [], 'append', []
+    
+    # Split template into tokens, preserving {target} as marker
+    # e.g. 'gobuster dir -u {target} -w /usr/share/wordlists/dirb/common.txt'
+    parts = template.split()
+    
+    # Remove the binary (first token) - we'll add it back from the config
+    if parts and (parts[0] == binary or parts[0] == slug or
+                  parts[0].endswith(f'/{binary}') or parts[0].endswith(f'/{slug}')):
+        parts = parts[1:]
+    
+    pre_args = []
+    post_args = []
+    target_mode = 'append'
+    found_target = False
+    
+    i = 0
+    while i < len(parts):
+        token = parts[i]
+        if '{target}' in token:
+            found_target = True
+            # Check if previous token was a flag like -h, -u, -d, --url, --domain
+            if pre_args and pre_args[-1].startswith('-'):
+                target_mode = pre_args.pop()  # e.g. '-h', '-u', '-d'
+            else:
+                target_mode = 'append'
+            # If token has more than just {target} (e.g. '{service}://{target}')
+            # keep it as a special template — but for now treat as append
+            i += 1
+            continue
+        
+        if not found_target:
+            pre_args.append(token)
+        else:
+            post_args.append(token)
+        i += 1
+    
+    return pre_args, target_mode, post_args
+
+
 def bulk_register_from_db(tools_data: List[Dict[str, Any]]) -> int:
     """
     Bulk-register tools from database records into V7 TOOL_REGISTRY.
     
-    Only registers tools that aren't already in the registry.
+    Parses command_template from DB to build correct command profiles,
+    so tools like 'nikto -h {target}' get proper flags.
     
-    Args:
-        tools_data: List of dicts with keys: name, category, plan_required, business_name, description
+    Only registers tools that aren't already in the registry.
     
     Returns:
         Number of newly registered tools
@@ -1033,12 +1082,22 @@ def bulk_register_from_db(tools_data: List[Dict[str, Any]]) -> int:
         plan = td.get('plan_required', 'starter')
         biz_name = td.get('business_name', slug.replace('-', ' ').title())
         description = td.get('description', '') or td.get('business_description', '') or f'{biz_name} security tool'
+        command_template = td.get('command_template', '') or ''
         
         # Determine binary name
         binary = _BINARY_OVERRIDES.get(slug, slug)
         
-        # Determine target mode
-        target_mode = _TARGET_MODE_MAP.get(v7_category, 'append')
+        # Parse command_template for correct args and target mode
+        pre_args, tmpl_target_mode, post_args = _parse_command_template(command_template, slug, binary)
+        
+        # Use parsed target_mode if available, else fall back to category map
+        if command_template and '{target}' in command_template:
+            target_mode = tmpl_target_mode
+        else:
+            target_mode = _TARGET_MODE_MAP.get(v7_category, 'append')
+        
+        # Build profile args from template
+        default_args = pre_args + post_args  # flags before and after {target}
         
         # Check if tool is GUI-only
         is_gui = slug in _GUI_ONLY_TOOLS
@@ -1047,7 +1106,7 @@ def bulk_register_from_db(tools_data: List[Dict[str, Any]]) -> int:
         binary_path = shutil.which(binary)
         installed = binary_path is not None
         
-        # Create ToolConfig with generic profiles
+        # Create ToolConfig with template-derived profiles
         tc = ToolConfig(
             slug=slug,
             name=biz_name if biz_name else slug.replace('-', ' ').title(),
@@ -1062,9 +1121,9 @@ def bulk_register_from_db(tools_data: List[Dict[str, Any]]) -> int:
             dangerous=slug in {'empire', 'cobalt-strike', 'ettercap', 'bettercap', 'responder', 'msfconsole'},
             notes='gui-only' if is_gui else ('installed' if installed else 'not-installed'),
             profiles={
-                'default': _p('default', f'Run {slug} with standard settings', [], timeout=300),
-                'quick': _p('quick', f'Quick {slug} scan', [], timeout=120),
-                'full': _p('full', f'Comprehensive {slug} scan', [], timeout=600),
+                'default': _p('default', f'Run {slug} with standard settings', default_args, timeout=300),
+                'quick': _p('quick', f'Quick {slug} scan', pre_args, timeout=120),
+                'full': _p('full', f'Comprehensive {slug} scan', default_args, timeout=600),
             }
         )
         
