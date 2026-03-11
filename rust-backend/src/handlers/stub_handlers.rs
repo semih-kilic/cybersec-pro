@@ -453,7 +453,7 @@ pub async fn scan_result(
     State(state): State<Arc<AppState>>,
 ) -> impl IntoResponse {
     let scan = sqlx::query_as::<_, (String, String, Option<String>, Option<String>, Option<String>)>(
-        "SELECT id, status, output, findings, error_log FROM scans WHERE id = $1 AND user_id = $2"
+        "SELECT id, status, output, CAST(findings AS TEXT), error_log FROM scans WHERE id = $1 AND user_id = $2"
     )
     .bind(&scan_id)
     .bind(&user.user_id)
@@ -768,7 +768,7 @@ pub async fn list_targets(
 ) -> impl IntoResponse {
     // Derive targets from scans with full details
     let targets = sqlx::query_as::<_, (String, i64, Option<String>, Option<String>)>(
-        "SELECT target, COUNT(*) as cnt, MAX(created_at) as last_scan, MIN(created_at) as first_scan FROM scans WHERE user_id = $1 GROUP BY target ORDER BY cnt DESC LIMIT 50"
+        "SELECT target, COUNT(*) as cnt, CAST(MAX(created_at) AS TEXT) as last_scan, CAST(MIN(created_at) AS TEXT) as first_scan FROM scans WHERE user_id = $1 GROUP BY target ORDER BY cnt DESC LIMIT 50"
     )
     .bind(&user.user_id)
     .fetch_all(&state.db)
@@ -840,9 +840,9 @@ pub async fn analytics_overview(
     ).bind(&user.user_id).fetch_all(&state.db).await.unwrap_or_default();
     let daily_trend: Vec<serde_json::Value> = trend_rows.iter().map(|(d, c)| json!({"date": d, "scans": c})).collect();
 
-    // Build tool_usage from scans
+    // Build tool_usage from scans joined with tools
     let tool_rows = sqlx::query_as::<_, (String, i64)>(
-        "SELECT COALESCE(tool_name,'unknown'), COUNT(*) FROM scans WHERE user_id = $1 GROUP BY tool_name ORDER BY COUNT(*) DESC LIMIT 10"
+        "SELECT COALESCE(t.name,'unknown'), COUNT(*) FROM scans s LEFT JOIN tools t ON s.tool_id = t.id WHERE s.user_id = $1 GROUP BY t.name ORDER BY COUNT(*) DESC LIMIT 10"
     ).bind(&user.user_id).fetch_all(&state.db).await.unwrap_or_default();
     let tool_usage: Vec<serde_json::Value> = tool_rows.iter().map(|(n, c)| json!({"name": n, "count": c})).collect();
 
@@ -887,7 +887,7 @@ pub async fn activity_feed(
     let limit: i64 = params.get("limit").and_then(|v| v.parse().ok()).unwrap_or(20);
 
     let activities = sqlx::query_as::<_, (String, String, String, String)>(
-        "SELECT id, action, details, created_at FROM audit_logs WHERE user_id = $1 ORDER BY created_at DESC LIMIT $2"
+        "SELECT id, action, COALESCE(details::text, '{}'), CAST(created_at AS TEXT) FROM audit_logs WHERE user_id = $1 ORDER BY created_at DESC LIMIT $2"
     )
     .bind(&user.user_id)
     .bind(limit)
@@ -896,7 +896,7 @@ pub async fn activity_feed(
     .unwrap_or_default();
 
     let list: Vec<serde_json::Value> = activities.iter().map(|(id, action, details, ts)| {
-        json!({"id": id, "action": action, "details": details, "created_at": ts})
+        json!({"id": id, "action": action, "details": details, "created_at": ts, "type": "system"})
     }).collect();
 
     Json(json!({"activities": list})).into_response()
@@ -999,7 +999,7 @@ pub async fn admin_overview(
 
     // Recent users
     let recent_users = sqlx::query_as::<_, (String, String, String, String, Option<String>, bool, String)>(
-        "SELECT id, email, COALESCE(first_name,''), COALESCE(role,'user'), organization_id, is_active, created_at FROM users ORDER BY created_at DESC LIMIT 10"
+        "SELECT id, email, COALESCE(first_name,''), COALESCE(role,'user'), organization_id, is_active, CAST(created_at AS TEXT) FROM users ORDER BY created_at DESC LIMIT 10"
     ).fetch_all(&state.db).await.unwrap_or_default();
     let user_list: Vec<serde_json::Value> = recent_users.iter().map(|(id, email, name, role, org, active, created)| {
         json!({"id": id, "email": email, "first_name": name, "last_name": "", "role": role, "organization_id": org, "is_active": active, "created_at": created})
@@ -1015,7 +1015,7 @@ pub async fn admin_overview(
 
     // Recent scans
     let recent_scans = sqlx::query_as::<_, (String, String, String, String)>(
-        "SELECT id, target, status, created_at FROM scans ORDER BY created_at DESC LIMIT 5"
+        "SELECT id, target, status, CAST(created_at AS TEXT) FROM scans ORDER BY created_at DESC LIMIT 5"
     ).fetch_all(&state.db).await.unwrap_or_default();
     let scan_list: Vec<serde_json::Value> = recent_scans.iter().map(|(id, target, status, created)| {
         json!({"id": id, "target": target, "status": status, "created_at": created})
@@ -1144,6 +1144,16 @@ pub async fn purple_team_dashboard(
     State(_state): State<Arc<AppState>>,
 ) -> impl IntoResponse {
     Json(json!({
+        "total_exercises": 0,
+        "running": 0,
+        "completed": 0,
+        "total_attack_steps": 0,
+        "total_detected": 0,
+        "total_missed": 0,
+        "detection_rate": 0.0,
+        "average_risk_score": 0.0,
+        "available_chains": 0,
+        "available_playbooks": 0,
         "exercises": 0,
         "active_chains": 0,
         "playbooks": 0,
@@ -1155,21 +1165,21 @@ pub async fn purple_team_chains(
     _user: AuthUser,
     State(_state): State<Arc<AppState>>,
 ) -> impl IntoResponse {
-    Json(json!({"chains": []})).into_response()
+    Json(json!([])).into_response()
 }
 
 pub async fn purple_team_playbooks(
     _user: AuthUser,
     State(_state): State<Arc<AppState>>,
 ) -> impl IntoResponse {
-    Json(json!({"playbooks": []})).into_response()
+    Json(json!([])).into_response()
 }
 
 pub async fn purple_team_exercises(
     _user: AuthUser,
     State(_state): State<Arc<AppState>>,
 ) -> impl IntoResponse {
-    Json(json!({"exercises": []})).into_response()
+    Json(json!([])).into_response()
 }
 
 pub async fn purple_team_exercise_detail(
@@ -1192,16 +1202,38 @@ pub async fn purple_team_mitre(
     _user: AuthUser,
     State(_state): State<Arc<AppState>>,
 ) -> impl IntoResponse {
-    Json(json!({"matrix": [], "tactics": [], "techniques": []})).into_response()
+    Json(json!({})).into_response()
 }
 
 // ── Terminal endpoints ─────────────────────────────────────
 
 pub async fn terminal_agents(
     _user: AuthUser,
-    State(_state): State<Arc<AppState>>,
+    State(state): State<Arc<AppState>>,
 ) -> impl IntoResponse {
-    Json(json!({"agents": []})).into_response()
+    let agents = sqlx::query_as::<_, (String, String, String, String, String, String, Option<i32>, Option<String>)>(
+        "SELECT id, name, COALESCE(hostname,''), COALESCE(ip_address,''), COALESCE(platform,'linux'), COALESCE(status,'offline'), ssh_port, ssh_username FROM agents LIMIT 50"
+    )
+    .fetch_all(&state.db)
+    .await
+    .unwrap_or_default();
+
+    let list: Vec<serde_json::Value> = agents.iter().map(|(id, name, host, ip, platform, status, port, user)| {
+        json!({
+            "id": id,
+            "name": name,
+            "hostname": host,
+            "ip_address": ip,
+            "platform": platform,
+            "status": status,
+            "ssh_host": ip,
+            "ssh_port": port.unwrap_or(22),
+            "ssh_username": user.as_deref().unwrap_or("root"),
+            "connection_type": "ssh"
+        })
+    }).collect();
+
+    Json(json!({"agents": list})).into_response()
 }
 
 pub async fn terminal_execute(

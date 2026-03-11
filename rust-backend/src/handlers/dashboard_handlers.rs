@@ -163,7 +163,7 @@ pub async fn analytics_overview(
 
     // Scans per day (last 30 days)
     let daily: Vec<(String, i64)> = sqlx::query_as(
-        "SELECT created_at::date as day, COUNT(*) FROM scans WHERE organization_id = $1 AND created_at >= NOW() - INTERVAL '30 days' GROUP BY day ORDER BY day"
+        "SELECT CAST(created_at::date AS TEXT), COUNT(*) FROM scans WHERE organization_id = $1 AND created_at >= NOW() - INTERVAL '30 days' GROUP BY created_at::date ORDER BY created_at::date"
     )
     .bind(org_id)
     .fetch_all(&state.db)
@@ -188,9 +188,22 @@ pub async fn analytics_overview(
     .await
     .unwrap_or_default();
 
+    let mut status_dist = serde_json::Map::new();
+    for (s, c) in &status_breakdown {
+        status_dist.insert(s.as_deref().unwrap_or("unknown").to_string(), json!(c));
+    }
+
+    let total: i64 = status_breakdown.iter().map(|(_, c)| c).sum();
+    let completed: i64 = status_breakdown.iter().filter(|(s, _)| s.as_deref() == Some("completed")).map(|(_, c)| *c).sum();
+    let success_rate = if total > 0 { (completed as f64 / total as f64 * 100.0).round() } else { 0.0 };
+
     (StatusCode::OK, Json(json!({
-        "daily_scans": daily.iter().map(|(d, c)| json!({"date": d, "count": c})).collect::<Vec<_>>(),
-        "top_tools": top_tools.iter().map(|(t, c)| json!({"tool": t, "count": c})).collect::<Vec<_>>(),
-        "status_breakdown": status_breakdown.iter().map(|(s, c)| json!({"status": s.as_deref().unwrap_or("unknown"), "count": c})).collect::<Vec<_>>()
+        "daily_trend": daily.iter().map(|(d, c)| json!({"date": d, "scans": c})).collect::<Vec<_>>(),
+        "tool_usage": top_tools.iter().map(|(t, c)| json!({"name": t, "count": c})).collect::<Vec<_>>(),
+        "status_distribution": status_dist,
+        "target_distribution": [],
+        "comparison": {"this_week": total, "last_week": 0, "change_pct": 0.0},
+        "performance": {"avg_duration_seconds": 0, "total_scans": total, "success_rate": success_rate},
+        "risk": {"score": 0, "level": "low", "severity_totals": {"critical": 0, "high": 0, "medium": 0, "low": 0, "info": 0}, "total_issues": 0}
     }))).into_response()
 }
