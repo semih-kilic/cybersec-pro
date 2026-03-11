@@ -9,3 +9,4 @@ pub mod health_handlers;
 pub mod notification_handlers;
 pub mod project_handlers;
 pub mod sso_handlers;
+pub mod stub_handlers;

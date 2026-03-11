@@ -13,7 +13,7 @@ use axum::{
 use sqlx::SqlitePool;
 use std::sync::Arc;
 use tokio::sync::broadcast;
-use tower_http::cors::{Any, CorsLayer};
+use tower_http::cors::CorsLayer;
 use tower_http::trace::TraceLayer;
 use tracing_subscriber::{fmt, EnvFilter};
 
@@ -85,10 +85,28 @@ async fn main() -> anyhow::Result<()> {
         .layer(TraceLayer::new_for_http())
         .layer(
             CorsLayer::new()
-                .allow_origin(Any)
-                .allow_methods(Any)
-                .allow_headers(Any)
-                .allow_credentials(false),
+                .allow_origin([
+                    "http://localhost:3000".parse().unwrap(),
+                    "http://localhost:3001".parse().unwrap(),
+                    "http://localhost:5001".parse().unwrap(),
+                    "https://semihkilic.com".parse().unwrap(),
+                ])
+                .allow_methods([
+                    axum::http::Method::GET,
+                    axum::http::Method::POST,
+                    axum::http::Method::PUT,
+                    axum::http::Method::DELETE,
+                    axum::http::Method::PATCH,
+                    axum::http::Method::OPTIONS,
+                ])
+                .allow_headers([
+                    axum::http::header::CONTENT_TYPE,
+                    axum::http::header::AUTHORIZATION,
+                    axum::http::header::ACCEPT,
+                    axum::http::header::ORIGIN,
+                    axum::http::header::COOKIE,
+                ])
+                .allow_credentials(true),
         )
         .layer(Extension(state));
 
@@ -158,7 +176,7 @@ fn build_router(state: Arc<AppState>) -> Router {
             get(scan_handlers::list_scans).post(scan_handlers::start_scan),
         )
         .route("/api/v1/scans/create", post(scan_handlers::create_scan))
-        .route("/api/v1/scans/:scan_id", get(scan_handlers::get_scan))
+        .route("/api/v1/scans/:scan_id", get(scan_handlers::get_scan).delete(stub_handlers::scan_delete))
         .route(
             "/api/v1/scans/:scan_id/output",
             get(scan_handlers::scan_output_stream),
@@ -253,8 +271,86 @@ fn build_router(state: Arc<AppState>) -> Router {
                 .delete(sso_handlers::delete_sso_config),
         )
         .route("/api/v1/sso/toggle", post(sso_handlers::toggle_sso))
+        .route("/api/v1/sso/test", post(stub_handlers::sso_test))
         // ── Plan Config ───────────────────────────────────────
         .route("/api/v1/plans", get(plan_config_handler))
+        .route("/api/v1/plan/info", get(stub_handlers::plan_info))
+        .route("/api/v1/plan/features", get(stub_handlers::plan_features))
+        // ── Auth extras ───────────────────────────────────────
+        .route("/api/v1/auth/google", post(stub_handlers::social_auth))
+        .route("/api/v1/auth/github", post(stub_handlers::social_auth))
+        .route("/api/v1/auth/resend-verification", post(stub_handlers::resend_verification))
+        .route("/api/v1/auth/verify-email", get(stub_handlers::verify_email))
+        .route("/api/v1/auth/avatar", post(stub_handlers::upload_avatar))
+        .route("/api/v1/auth/mfa/verify-setup", post(stub_handlers::mfa_verify_setup))
+        .route("/api/v1/auth/mfa/regenerate-backup", post(stub_handlers::mfa_regenerate_backup))
+        // ── Tool extras ───────────────────────────────────────
+        .route("/api/v1/tools/catalog", get(stub_handlers::tools_catalog))
+        .route("/api/v1/tools/:tool_id/config", get(stub_handlers::tool_config))
+        .route("/api/v1/tools/:tool_id/execution-mode", get(stub_handlers::tool_execution_mode))
+        .route("/api/v1/tools/:slug/build-command", get(stub_handlers::tool_build_command))
+        .route("/api/v2/tools", get(stub_handlers::v2_tools))
+        .route("/api/v2/tools/:tool_id", get(stub_handlers::v2_tool_detail))
+        // ── Scan singular variants ────────────────────────────
+        .route("/api/v1/scan/start", post(stub_handlers::scan_start))
+        .route("/api/v1/scan/:scan_id/output", get(scan_handlers::scan_output_stream))
+        .route("/api/v1/scan/:scan_id/result", get(stub_handlers::scan_result))
+        .route("/api/v1/scan/:scan_id/stop", post(stub_handlers::scan_stop))
+        .route("/api/v1/scans/:scan_id/rerun", post(stub_handlers::scan_rerun))
+        .route("/api/v1/scans/:scan_id/business-report", get(stub_handlers::scan_business_report))
+        .route("/api/v1/scans/:scan_id/status", get(stub_handlers::scan_status))
+        .route("/api/v1/scans/execute", post(stub_handlers::scans_execute))
+        // ── Agent extras ──────────────────────────────────────
+        .route("/api/v1/agents/:agent_id/update", put(stub_handlers::update_agent))
+        .route("/api/v1/agents/:agent_id/test", post(stub_handlers::test_agent))
+        .route("/api/v1/agents/dashboard", get(stub_handlers::agents_dashboard))
+        // ── Scheduled scans ───────────────────────────────────
+        .route("/api/v1/schedules", get(stub_handlers::list_schedules).post(stub_handlers::create_schedule))
+        .route("/api/v1/schedules/:id", put(stub_handlers::update_schedule).delete(stub_handlers::delete_schedule))
+        .route("/api/v1/schedules/:schedule_id/toggle", post(stub_handlers::toggle_schedule))
+        // ── Targets ───────────────────────────────────────────
+        .route("/api/v1/targets", get(stub_handlers::list_targets))
+        .route("/api/v1/target-groups", get(stub_handlers::list_target_groups))
+        // ── Analytics / Activity ──────────────────────────────
+        .route("/api/v1/analytics/overview", get(stub_handlers::analytics_overview))
+        .route("/api/v1/activity", get(stub_handlers::activity_feed))
+        // ── Usage ─────────────────────────────────────────────
+        .route("/api/v1/usage/stats", get(stub_handlers::usage_stats))
+        // ── Billing extras ────────────────────────────────────
+        .route("/api/v1/billing/create-checkout", post(stub_handlers::create_checkout_session))
+        .route("/api/create-checkout-session", post(stub_handlers::create_checkout_session))
+        // ── Admin ─────────────────────────────────────────────
+        .route("/api/v1/admin/overview", get(stub_handlers::admin_overview))
+        .route("/api/v1/admin/impersonate", post(stub_handlers::admin_impersonate))
+        .route("/api/v1/admin/change-plan", post(stub_handlers::admin_change_plan))
+        .route("/api/v1/admin/service-manager/dashboard", get(stub_handlers::admin_service_dashboard))
+        .route("/api/v1/admin/service-manager/services", get(stub_handlers::admin_service_list))
+        .route("/api/v1/admin/service-manager/services/:service_id/action", post(stub_handlers::admin_service_action))
+        .route("/api/v1/admin/service-manager/system", get(stub_handlers::admin_system_info))
+        .route("/api/v1/admin/service-manager/processes", get(stub_handlers::admin_processes))
+        .route("/api/v1/admin/service-manager/alerts", get(stub_handlers::admin_alerts))
+        .route("/api/v1/admin/service-manager/alerts/:alert_id/acknowledge", post(stub_handlers::admin_ack_alert))
+        // ── AI ────────────────────────────────────────────────
+        .route("/api/v1/ai/suggest", post(stub_handlers::ai_suggest))
+        .route("/api/v1/ai/remediation", post(stub_handlers::ai_remediation))
+        .route("/api/v1/ai/report-summary", post(stub_handlers::ai_report_summary))
+        // ── Purple Team ───────────────────────────────────────
+        .route("/api/v1/purple-team/dashboard", get(stub_handlers::purple_team_dashboard))
+        .route("/api/v1/purple-team/chains", get(stub_handlers::purple_team_chains))
+        .route("/api/v1/purple-team/playbooks", get(stub_handlers::purple_team_playbooks))
+        .route("/api/v1/purple-team/exercises", get(stub_handlers::purple_team_exercises).post(stub_handlers::purple_team_create_exercise))
+        .route("/api/v1/purple-team/exercises/:id", get(stub_handlers::purple_team_exercise_detail))
+        .route("/api/v1/purple-team/mitre-matrix", get(stub_handlers::purple_team_mitre))
+        // ── Terminal ──────────────────────────────────────────
+        .route("/api/v1/terminal/agents", get(stub_handlers::terminal_agents))
+        .route("/api/v1/terminal/execute", post(stub_handlers::terminal_execute))
+        .route("/api/v1/terminal/test-connection", post(stub_handlers::terminal_test_connection))
+        // ── Chatbot / Feedback ────────────────────────────────
+        .route("/api/v1/chatbot/message", post(stub_handlers::chatbot_message))
+        .route("/api/v1/feedback", post(stub_handlers::feedback))
+        // ── GDPR ──────────────────────────────────────────────
+        .route("/api/v1/gdpr/export", post(stub_handlers::gdpr_export))
+        .route("/api/v1/gdpr/delete-account", post(stub_handlers::gdpr_delete_account))
         .with_state(state)
 }
 
