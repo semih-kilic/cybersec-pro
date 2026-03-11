@@ -99,8 +99,10 @@ export function ToolDetailPage() {
         });
         if (res.ok) {
           const data = await res.json();
-          if (!category && data.tool?.category) category = data.tool.category;
-          return { tool: data.tool, category, config: null };
+          if (data.tool) {
+            if (!category && data.tool.category) category = data.tool.category;
+            return { tool: data.tool, category, config: null };
+          }
         }
       } catch { /* fallback below */ }
 
