@@ -44,11 +44,11 @@
     "signOut": "Sign Out"
   },
   "landing": {
-    "badge": "682 Professional Security Tools • GDPR Compliant 🇪🇺",
+    "badge": "401 Professional Security Tools • GDPR Compliant 🇪🇺",
     "headline": "The Most Advanced Kali Linux Platform in Europe",
     "headlinePart1": "The Most Advanced",
     "headlinePart2": "Platform in Europe",
-    "subheadline": "682 penetration testing tools in your browser. No installation required. Enterprise-grade security testing platform, built for European compliance standards.",
+    "subheadline": "401 penetration testing tools in your browser. No installation required. Enterprise-grade security testing platform, built for European compliance standards.",
     "startTrial": "Start Free Trial",
     "startTrial14": "Start Free Trial - 14 Days",
     "startTrialNow": "Start Your Free Trial Now",
@@ -148,7 +148,7 @@
   },
   "tools": {
     "title": "Security Tools",
-    "subtitle": "682 professional penetration testing tools",
+    "subtitle": "401 professional penetration testing tools",
     "searchPlaceholder": "Search tools...",
     "allCategories": "All Categories",
     "runTool": "Run Tool",

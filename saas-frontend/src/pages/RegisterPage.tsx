@@ -186,7 +186,7 @@ export function RegisterPage() {
           {/* Trust Points */}
           <div className="space-y-5">
             {[
-              { icon: '✅', text: '682 security tests, continuously updated' },
+              { icon: '✅', text: '401 security tests, continuously updated' },
               { icon: '✅', text: 'Business-language reports, no jargon' },
               { icon: '✅', text: 'GDPR & OWASP compliance built-in' },
               { icon: '✅', text: '14-day free trial, no credit card' },

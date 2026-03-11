@@ -224,7 +224,7 @@
     <div class="kali-gradient py-2">
         <div class="max-w-7xl mx-auto px-4 text-center text-sm font-medium">
             <span>� Free security scan for Nordic SMEs — limited spots</span>
-            <a href="/login.html#register" class="underline ml-2 font-bold hover:no-underline">Claim Your Scan →</a>
+            <a href="/app/register" class="underline ml-2 font-bold hover:no-underline">Claim Your Scan →</a>
         </div>
     </div>
     
@@ -287,8 +287,8 @@
                         </div>
                     </div>
                     <!-- Default: Not logged in -->
-                    <a href="/login.html" id="navLoginBtn" class="text-gray-400 hover:text-white transition font-medium">Sign in</a>
-                    <a href="/login.html#register" id="navTrialBtn" class="btn-kali px-6 py-2.5 rounded-full text-white font-semibold">
+                    <a href="/app/login" id="navLoginBtn" class="text-gray-400 hover:text-white transition font-medium">Sign in</a>
+                    <a href="/app/register" id="navTrialBtn" class="btn-kali px-6 py-2.5 rounded-full text-white font-semibold">
                         Free Security Scan
                     </a>
                     <!-- Logged in state (hidden by default) -->
@@ -362,7 +362,7 @@
             
             <!-- CTA Buttons -->
             <div class="flex flex-col sm:flex-row gap-4 justify-center mb-10">
-                <a href="/login.html#register" class="btn-kali px-10 py-4 rounded-xl text-lg font-bold inline-flex items-center justify-center gap-2">
+                <a href="/app/register" class="btn-kali px-10 py-4 rounded-xl text-lg font-bold inline-flex items-center justify-center gap-2">
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/>
                     </svg>
@@ -570,7 +570,7 @@
             
             <!-- Section CTA -->
             <div class="text-center">
-                <a href="/login.html#register" class="btn-kali px-8 py-3.5 rounded-xl font-bold inline-flex items-center gap-2">
+                <a href="/app/register" class="btn-kali px-8 py-3.5 rounded-xl font-bold inline-flex items-center gap-2">
                     Don't become a statistic — Scan your business free
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6"/></svg>
                 </a>
@@ -876,7 +876,7 @@
 
             <!-- Bottom CTA -->
             <div class="text-center mt-16">
-                <a href="/login" class="inline-flex items-center gap-2 px-8 py-4 rounded-xl bg-gradient-to-r from-cyan-500 to-blue-500 text-white font-bold text-lg hover:shadow-lg hover:shadow-cyan-500/25 transition-all duration-300 hover:-translate-y-0.5">
+                <a href="/app/login" class="inline-flex items-center gap-2 px-8 py-4 rounded-xl bg-gradient-to-r from-cyan-500 to-blue-500 text-white font-bold text-lg hover:shadow-lg hover:shadow-cyan-500/25 transition-all duration-300 hover:-translate-y-0.5">
                     Start Your Free Scan Now
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M13 7l5 5m0 0l-5 5m5-5H6"/></svg>
                 </a>
@@ -1378,7 +1378,7 @@
                     </div>
                     
                     <div class="mt-auto">
-                        <a href="/login.html?plan=starter" class="block w-full py-3 rounded-xl border border-emerald-500/50 text-emerald-400 font-semibold text-center hover:bg-emerald-500/10 transition">
+                        <a href="/app/login?plan=starter" class="block w-full py-3 rounded-xl border border-emerald-500/50 text-emerald-400 font-semibold text-center hover:bg-emerald-500/10 transition">
                             Start Free Scan
                         </a>
                     </div>
@@ -1656,7 +1656,7 @@
                         </div>
                         
                         <div class="text-center pt-4">
-                            <a href="/login.html#register" class="btn-kali px-8 py-3 rounded-xl font-semibold inline-flex items-center gap-2">
+                            <a href="/app/register" class="btn-kali px-8 py-3 rounded-xl font-semibold inline-flex items-center gap-2">
                                 Get Your Free Report
                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6"/></svg>
                             </a>
@@ -2249,7 +2249,7 @@
             e.preventDefault();
             const email = document.getElementById('cta-email').value;
             const url = document.getElementById('cta-url').value;
-            window.location.href = '/login.html?plan=starter&email=' + encodeURIComponent(email) + '&url=' + encodeURIComponent(url);
+            window.location.href = '/app/login?plan=starter&email=' + encodeURIComponent(email) + '&url=' + encodeURIComponent(url);
         }
 
         // ROI Calculator
@@ -2333,10 +2333,10 @@
                 } else if (data.error) {
                     alert(data.error);
                 } else {
-                    window.location.href = '/login.html?plan=' + plan;
+                    window.location.href = '/app/login?plan=' + plan;
                 }
             } catch (error) {
-                window.location.href = '/login.html?plan=' + plan;
+                window.location.href = '/app/login?plan=' + plan;
             }
         }
         
@@ -2399,7 +2399,7 @@
                     }
                     
                     // UPDATE ALL "Start Free Trial" buttons to "Go to Dashboard"
-                    document.querySelectorAll('a[href*="login.html"], a[href*="register"]').forEach(link => {
+                    document.querySelectorAll('a[href*="app/login"], a[href*="app/register"]').forEach(link => {
                         if (link.textContent.includes('Start Free') || link.textContent.includes('Free Security Scan') || link.textContent.includes('Free Trial')) {
                             link.href = '/app/';
                             link.innerHTML = link.innerHTML.replace(/Start Free Security Scan|Free Security Scan|Start Free Trial|Free Trial/g, 'Go to Dashboard');

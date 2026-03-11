@@ -43,11 +43,11 @@
     "signOut": "Cerrar sesión"
   },
   "landing": {
-    "badge": "682 herramientas de seguridad profesionales • Cumple con RGPD 🇪🇺",
+    "badge": "401 herramientas de seguridad profesionales • Cumple con RGPD 🇪🇺",
     "headline": "La plataforma Kali Linux más avanzada de Europa",
     "headlinePart1": "La Más Avanzada",
     "headlinePart2": "Plataforma en Europa",
-    "subheadline": "682 herramientas de pruebas de penetración en tu navegador. Sin instalación. Plataforma de seguridad empresarial para estándares europeos.",
+    "subheadline": "401 herramientas de pruebas de penetración en tu navegador. Sin instalación. Plataforma de seguridad empresarial para estándares europeos.",
     "startTrial": "Prueba Gratuita",
     "startTrial14": "Prueba Gratuita - 14 Días",
     "startTrialNow": "Comienza tu prueba gratuita ahora",
@@ -147,7 +147,7 @@
   },
   "tools": {
     "title": "Herramientas de seguridad",
-    "subtitle": "682 herramientas profesionales de pruebas de penetración",
+    "subtitle": "401 herramientas profesionales de pruebas de penetración",
     "searchPlaceholder": "Buscar herramientas...",
     "allCategories": "Todas las categorías",
     "runTool": "Ejecutar herramienta",

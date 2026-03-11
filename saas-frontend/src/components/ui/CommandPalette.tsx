@@ -57,7 +57,7 @@ export function CommandPalette({ isOpen, onClose }: CommandPaletteProps) {
     return [
       // Navigation
       { id: 'nav-dashboard', label: t('nav.dashboard', 'Dashboard'), description: 'Overview & statistics', icon: <NavIcon />, action: nav('/dashboard'), category: 'navigation' as const, keywords: ['home', 'overview', 'stats'] },
-      { id: 'nav-tools', label: t('nav.tools', 'Tools'), description: '682 security tools', icon: <NavIcon />, action: nav('/dashboard/tools'), category: 'navigation' as const, keywords: ['kali', 'security', 'catalog'] },
+      { id: 'nav-tools', label: t('nav.tools', 'Tools'), description: '401 security tools', icon: <NavIcon />, action: nav('/dashboard/tools'), category: 'navigation' as const, keywords: ['kali', 'security', 'catalog'] },
       { id: 'nav-scans', label: t('nav.scans', 'Scans'), description: 'View scan history', icon: <NavIcon />, action: nav('/dashboard/scans'), category: 'navigation' as const, keywords: ['scan', 'history', 'results'] },
       { id: 'nav-targets', label: t('nav.targets', 'Targets'), description: 'Manage scan targets', icon: <NavIcon />, action: nav('/dashboard/targets'), category: 'navigation' as const, keywords: ['ip', 'host', 'domain'] },
       { id: 'nav-reports', label: t('nav.reports', 'Reports'), description: 'Security reports', icon: <NavIcon />, action: nav('/dashboard/reports'), category: 'navigation' as const, keywords: ['report', 'pdf', 'export'] },

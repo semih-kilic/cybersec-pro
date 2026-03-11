@@ -43,11 +43,11 @@
     "signOut": "Abmelden"
   },
   "landing": {
-    "badge": "682 Professionelle Sicherheitstools • DSGVO-konform 🇪🇺",
+    "badge": "401 Professionelle Sicherheitstools • DSGVO-konform 🇪🇺",
     "headline": "Die fortschrittlichste Kali Linux Plattform in Europa",
     "headlinePart1": "Die fortschrittlichste",
     "headlinePart2": "Plattform in Europa",
-    "subheadline": "682 Penetrationstest-Tools in Ihrem Browser. Keine Installation erforderlich. Enterprise-Sicherheitsplattform für europäische Compliance-Standards.",
+    "subheadline": "401 Penetrationstest-Tools in Ihrem Browser. Keine Installation erforderlich. Enterprise-Sicherheitsplattform für europäische Compliance-Standards.",
     "startTrial": "Kostenlos testen",
     "startTrial14": "Kostenlos testen - 14 Tage",
     "startTrialNow": "Jetzt kostenlos testen",
@@ -147,7 +147,7 @@
   },
   "tools": {
     "title": "Sicherheitstools",
-    "subtitle": "682 professionelle Penetrationstest-Tools",
+    "subtitle": "401 professionelle Penetrationstest-Tools",
     "searchPlaceholder": "Tools suchen...",
     "allCategories": "Alle Kategorien",
     "runTool": "Tool ausführen",
