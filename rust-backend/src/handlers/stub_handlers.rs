@@ -6,7 +6,6 @@ use axum::{
     response::IntoResponse,
     Json,
 };
-use serde::Deserialize;
 use serde_json::json;
 
 use crate::middleware::auth_middleware::{AuthUser, AdminUser};
@@ -16,7 +15,7 @@ use crate::AppState;
 
 pub async fn social_auth(
     State(_state): State<Arc<AppState>>,
-    Json(body): Json<serde_json::Value>,
+    Json(_body): Json<serde_json::Value>,
 ) -> impl IntoResponse {
     Json(json!({"error": "Social auth not yet implemented in Rust backend"})).into_response()
 }
@@ -30,20 +29,20 @@ pub async fn resend_verification(
 
 pub async fn verify_email(
     State(_state): State<Arc<AppState>>,
-    Query(params): Query<std::collections::HashMap<String, String>>,
+    Query(_params): Query<std::collections::HashMap<String, String>>,
 ) -> impl IntoResponse {
     Json(json!({"message": "Email verified", "verified": true})).into_response()
 }
 
 pub async fn upload_avatar(
-    user: AuthUser,
+    _user: AuthUser,
     State(_state): State<Arc<AppState>>,
 ) -> impl IntoResponse {
     Json(json!({"message": "Avatar upload not yet implemented", "avatar_url": null})).into_response()
 }
 
 pub async fn mfa_verify_setup(
-    user: AuthUser,
+    _user: AuthUser,
     State(_state): State<Arc<AppState>>,
     Json(_body): Json<serde_json::Value>,
 ) -> impl IntoResponse {
@@ -51,7 +50,7 @@ pub async fn mfa_verify_setup(
 }
 
 pub async fn mfa_regenerate_backup(
-    user: AuthUser,
+    _user: AuthUser,
     State(_state): State<Arc<AppState>>,
 ) -> impl IntoResponse {
     Json(json!({"backup_codes": [], "message": "Backup codes regenerated"})).into_response()
@@ -61,7 +60,7 @@ pub async fn mfa_regenerate_backup(
 
 pub async fn tool_config(
     Path(tool_id): Path<String>,
-    user: AuthUser,
+    _user: AuthUser,
     State(state): State<Arc<AppState>>,
 ) -> impl IntoResponse {
     let tool = sqlx::query_as::<_, (String, String, String)>(
@@ -88,7 +87,7 @@ pub async fn tool_config(
 
 pub async fn tool_execution_mode(
     Path(tool_id): Path<String>,
-    user: AuthUser,
+    _user: AuthUser,
     State(_state): State<Arc<AppState>>,
 ) -> impl IntoResponse {
     Json(json!({"execution_mode": "direct", "tool_id": tool_id})).into_response()
@@ -96,7 +95,7 @@ pub async fn tool_execution_mode(
 
 pub async fn tool_build_command(
     Path(slug): Path<String>,
-    user: AuthUser,
+    _user: AuthUser,
     State(_state): State<Arc<AppState>>,
     Query(params): Query<std::collections::HashMap<String, String>>,
 ) -> impl IntoResponse {
@@ -129,7 +128,7 @@ pub async fn v2_tools(
     State(state): State<Arc<AppState>>,
     Query(params): Query<std::collections::HashMap<String, String>>,
 ) -> impl IntoResponse {
-    let plan = params.get("plan").cloned().unwrap_or_default();
+    let _plan = params.get("plan").cloned().unwrap_or_default();
 
     let tools = sqlx::query_as::<_, (String, String, String, String, bool)>(
         "SELECT id, name, category, COALESCE(plan_required,'starter'), is_active FROM tools WHERE is_active = 1 ORDER BY name LIMIT 1000"
@@ -228,16 +227,16 @@ pub async fn scan_stop(
 
 pub async fn scan_rerun(
     Path(scan_id): Path<String>,
-    user: AuthUser,
-    State(state): State<Arc<AppState>>,
+    _user: AuthUser,
+    State(_state): State<Arc<AppState>>,
 ) -> impl IntoResponse {
     Json(json!({"message": "Scan rerun queued", "scan_id": scan_id})).into_response()
 }
 
 pub async fn scan_business_report(
     Path(scan_id): Path<String>,
-    user: AuthUser,
-    State(state): State<Arc<AppState>>,
+    _user: AuthUser,
+    State(_state): State<Arc<AppState>>,
 ) -> impl IntoResponse {
     Json(json!({
         "scan_id": scan_id,
@@ -289,7 +288,7 @@ pub async fn scan_delete(
 
 pub async fn update_agent(
     Path(agent_id): Path<String>,
-    user: AuthUser,
+    _user: AuthUser,
     State(_state): State<Arc<AppState>>,
     Json(_body): Json<serde_json::Value>,
 ) -> impl IntoResponse {
@@ -298,7 +297,7 @@ pub async fn update_agent(
 
 pub async fn test_agent(
     Path(agent_id): Path<String>,
-    user: AuthUser,
+    _user: AuthUser,
     State(_state): State<Arc<AppState>>,
 ) -> impl IntoResponse {
     Json(json!({"status": "ok", "agent_id": agent_id, "connected": false})).into_response()
@@ -374,7 +373,7 @@ pub async fn create_schedule(
 
 pub async fn update_schedule(
     Path(schedule_id): Path<String>,
-    user: AuthUser,
+    _user: AuthUser,
     State(_state): State<Arc<AppState>>,
     Json(_body): Json<serde_json::Value>,
 ) -> impl IntoResponse {
@@ -430,7 +429,7 @@ pub async fn list_targets(
 }
 
 pub async fn list_target_groups(
-    user: AuthUser,
+    _user: AuthUser,
     State(_state): State<Arc<AppState>>,
 ) -> impl IntoResponse {
     Json(json!({"target_groups": []})).into_response()
@@ -524,7 +523,7 @@ pub async fn plan_info(
 }
 
 pub async fn plan_features(
-    user: AuthUser,
+    _user: AuthUser,
     State(_state): State<Arc<AppState>>,
 ) -> impl IntoResponse {
     Json(json!({
@@ -552,7 +551,7 @@ pub async fn create_checkout_session(
 // ── SSO test ───────────────────────────────────────────────
 
 pub async fn sso_test(
-    user: AuthUser,
+    _user: AuthUser,
     State(_state): State<Arc<AppState>>,
 ) -> impl IntoResponse {
     Json(json!({"status": "ok", "message": "SSO test not implemented"})).into_response()
@@ -561,7 +560,7 @@ pub async fn sso_test(
 // ── Admin endpoints ────────────────────────────────────────
 
 pub async fn admin_overview(
-    admin: AdminUser,
+    _admin: AdminUser,
     State(state): State<Arc<AppState>>,
 ) -> impl IntoResponse {
     let users = sqlx::query_as::<_, (i64,)>("SELECT COUNT(*) FROM users").fetch_one(&state.db).await.unwrap_or((0,));
@@ -580,7 +579,7 @@ pub async fn admin_overview(
 }
 
 pub async fn admin_impersonate(
-    admin: AdminUser,
+    _admin: AdminUser,
     State(_state): State<Arc<AppState>>,
     Json(_body): Json<serde_json::Value>,
 ) -> impl IntoResponse {
@@ -588,7 +587,7 @@ pub async fn admin_impersonate(
 }
 
 pub async fn admin_change_plan(
-    admin: AdminUser,
+    _admin: AdminUser,
     State(_state): State<Arc<AppState>>,
     Json(_body): Json<serde_json::Value>,
 ) -> impl IntoResponse {
@@ -596,7 +595,7 @@ pub async fn admin_change_plan(
 }
 
 pub async fn admin_service_dashboard(
-    admin: AdminUser,
+    _admin: AdminUser,
     State(_state): State<Arc<AppState>>,
 ) -> impl IntoResponse {
     Json(json!({
@@ -607,7 +606,7 @@ pub async fn admin_service_dashboard(
 }
 
 pub async fn admin_service_list(
-    admin: AdminUser,
+    _admin: AdminUser,
     State(_state): State<Arc<AppState>>,
 ) -> impl IntoResponse {
     Json(json!({"services": [
@@ -618,7 +617,7 @@ pub async fn admin_service_list(
 
 pub async fn admin_service_action(
     Path(service_id): Path<String>,
-    admin: AdminUser,
+    _admin: AdminUser,
     State(_state): State<Arc<AppState>>,
     Json(_body): Json<serde_json::Value>,
 ) -> impl IntoResponse {
@@ -626,7 +625,7 @@ pub async fn admin_service_action(
 }
 
 pub async fn admin_system_info(
-    admin: AdminUser,
+    _admin: AdminUser,
     State(_state): State<Arc<AppState>>,
 ) -> impl IntoResponse {
     Json(json!({
@@ -638,14 +637,14 @@ pub async fn admin_system_info(
 }
 
 pub async fn admin_processes(
-    admin: AdminUser,
+    _admin: AdminUser,
     State(_state): State<Arc<AppState>>,
 ) -> impl IntoResponse {
     Json(json!({"processes": []})).into_response()
 }
 
 pub async fn admin_alerts(
-    admin: AdminUser,
+    _admin: AdminUser,
     State(_state): State<Arc<AppState>>,
 ) -> impl IntoResponse {
     Json(json!({"alerts": []})).into_response()
@@ -653,7 +652,7 @@ pub async fn admin_alerts(
 
 pub async fn admin_ack_alert(
     Path(alert_id): Path<String>,
-    admin: AdminUser,
+    _admin: AdminUser,
     State(_state): State<Arc<AppState>>,
 ) -> impl IntoResponse {
     Json(json!({"message": "Alert acknowledged", "id": alert_id})).into_response()
@@ -662,7 +661,7 @@ pub async fn admin_ack_alert(
 // ── AI endpoints ───────────────────────────────────────────
 
 pub async fn ai_suggest(
-    user: AuthUser,
+    _user: AuthUser,
     State(_state): State<Arc<AppState>>,
     Json(_body): Json<serde_json::Value>,
 ) -> impl IntoResponse {
@@ -670,7 +669,7 @@ pub async fn ai_suggest(
 }
 
 pub async fn ai_remediation(
-    user: AuthUser,
+    _user: AuthUser,
     State(_state): State<Arc<AppState>>,
     Json(_body): Json<serde_json::Value>,
 ) -> impl IntoResponse {
@@ -678,7 +677,7 @@ pub async fn ai_remediation(
 }
 
 pub async fn ai_report_summary(
-    user: AuthUser,
+    _user: AuthUser,
     State(_state): State<Arc<AppState>>,
     Json(_body): Json<serde_json::Value>,
 ) -> impl IntoResponse {
@@ -688,7 +687,7 @@ pub async fn ai_report_summary(
 // ── Purple Team endpoints ──────────────────────────────────
 
 pub async fn purple_team_dashboard(
-    user: AuthUser,
+    _user: AuthUser,
     State(_state): State<Arc<AppState>>,
 ) -> impl IntoResponse {
     Json(json!({
@@ -700,21 +699,21 @@ pub async fn purple_team_dashboard(
 }
 
 pub async fn purple_team_chains(
-    user: AuthUser,
+    _user: AuthUser,
     State(_state): State<Arc<AppState>>,
 ) -> impl IntoResponse {
     Json(json!({"chains": []})).into_response()
 }
 
 pub async fn purple_team_playbooks(
-    user: AuthUser,
+    _user: AuthUser,
     State(_state): State<Arc<AppState>>,
 ) -> impl IntoResponse {
     Json(json!({"playbooks": []})).into_response()
 }
 
 pub async fn purple_team_exercises(
-    user: AuthUser,
+    _user: AuthUser,
     State(_state): State<Arc<AppState>>,
 ) -> impl IntoResponse {
     Json(json!({"exercises": []})).into_response()
@@ -722,14 +721,14 @@ pub async fn purple_team_exercises(
 
 pub async fn purple_team_exercise_detail(
     Path(exercise_id): Path<String>,
-    user: AuthUser,
+    _user: AuthUser,
     State(_state): State<Arc<AppState>>,
 ) -> impl IntoResponse {
     Json(json!({"id": exercise_id, "name": "Exercise", "status": "not_found"})).into_response()
 }
 
 pub async fn purple_team_create_exercise(
-    user: AuthUser,
+    _user: AuthUser,
     State(_state): State<Arc<AppState>>,
     Json(_body): Json<serde_json::Value>,
 ) -> impl IntoResponse {
@@ -737,7 +736,7 @@ pub async fn purple_team_create_exercise(
 }
 
 pub async fn purple_team_mitre(
-    user: AuthUser,
+    _user: AuthUser,
     State(_state): State<Arc<AppState>>,
 ) -> impl IntoResponse {
     Json(json!({"matrix": [], "tactics": [], "techniques": []})).into_response()
@@ -746,14 +745,14 @@ pub async fn purple_team_mitre(
 // ── Terminal endpoints ─────────────────────────────────────
 
 pub async fn terminal_agents(
-    user: AuthUser,
+    _user: AuthUser,
     State(_state): State<Arc<AppState>>,
 ) -> impl IntoResponse {
     Json(json!({"agents": []})).into_response()
 }
 
 pub async fn terminal_execute(
-    user: AuthUser,
+    _user: AuthUser,
     State(_state): State<Arc<AppState>>,
     Json(_body): Json<serde_json::Value>,
 ) -> impl IntoResponse {
@@ -761,7 +760,7 @@ pub async fn terminal_execute(
 }
 
 pub async fn terminal_test_connection(
-    user: AuthUser,
+    _user: AuthUser,
     State(_state): State<Arc<AppState>>,
     Json(_body): Json<serde_json::Value>,
 ) -> impl IntoResponse {
@@ -771,7 +770,7 @@ pub async fn terminal_test_connection(
 // ── Chatbot / Feedback ─────────────────────────────────────
 
 pub async fn chatbot_message(
-    user: AuthUser,
+    _user: AuthUser,
     State(_state): State<Arc<AppState>>,
     Json(body): Json<serde_json::Value>,
 ) -> impl IntoResponse {
@@ -780,7 +779,7 @@ pub async fn chatbot_message(
 }
 
 pub async fn feedback(
-    user: AuthUser,
+    _user: AuthUser,
     State(_state): State<Arc<AppState>>,
     Json(_body): Json<serde_json::Value>,
 ) -> impl IntoResponse {
@@ -790,14 +789,14 @@ pub async fn feedback(
 // ── GDPR ───────────────────────────────────────────────────
 
 pub async fn gdpr_export(
-    user: AuthUser,
+    _user: AuthUser,
     State(_state): State<Arc<AppState>>,
 ) -> impl IntoResponse {
     Json(json!({"message": "GDPR export queued", "status": "processing"})).into_response()
 }
 
 pub async fn gdpr_delete_account(
-    user: AuthUser,
+    _user: AuthUser,
     State(_state): State<Arc<AppState>>,
 ) -> impl IntoResponse {
     Json(json!({"message": "Account deletion not implemented in Rust backend for safety"})).into_response()

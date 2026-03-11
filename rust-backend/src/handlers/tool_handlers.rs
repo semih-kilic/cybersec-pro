@@ -13,6 +13,7 @@ use crate::models::Tool;
 use crate::AppState;
 
 #[derive(Deserialize)]
+#[allow(dead_code)]
 pub struct ToolQuery {
     pub page: Option<u32>,
     pub per_page: Option<u32>,
@@ -25,7 +26,7 @@ pub struct ToolQuery {
 
 pub async fn list_tools(
     State(state): State<Arc<AppState>>,
-    auth: AuthUser,
+    _auth: AuthUser,
     Query(q): Query<ToolQuery>,
 ) -> impl IntoResponse {
     let page = q.page.unwrap_or(1).max(1);
@@ -61,7 +62,7 @@ pub async fn list_tools(
 
 pub async fn get_tool(
     State(state): State<Arc<AppState>>,
-    auth: AuthUser,
+    _auth: AuthUser,
     Path(tool_id): Path<String>,
 ) -> impl IntoResponse {
     let tool: Option<Tool> = sqlx::query_as(

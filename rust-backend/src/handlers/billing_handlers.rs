@@ -44,6 +44,7 @@ pub async fn get_subscription(
 // ── Create Checkout Session ────────────────────────────────
 
 #[derive(Deserialize)]
+#[allow(dead_code)]
 pub struct CheckoutRequest {
     pub plan: String,
     pub success_url: Option<String>,
@@ -51,13 +52,13 @@ pub struct CheckoutRequest {
 }
 
 pub async fn create_checkout(
-    State(state): State<Arc<AppState>>,
+    State(_state): State<Arc<AppState>>,
     auth: AuthUser,
     Json(body): Json<CheckoutRequest>,
 ) -> impl IntoResponse {
     // This is a stub — full Stripe integration requires stripe-rust
     // In production, create a Stripe checkout session here
-    let org_id = auth.org_id.as_deref().unwrap_or("");
+    let _org_id = auth.org_id.as_deref().unwrap_or("");
 
     // Get or create Stripe customer
     let price_id = match body.plan.as_str() {
@@ -93,7 +94,7 @@ pub async fn stripe_webhook(
     }
 
     // Verify Stripe signature
-    let sig = headers.get("stripe-signature")
+    let _sig = headers.get("stripe-signature")
         .and_then(|v| v.to_str().ok())
         .unwrap_or("");
 

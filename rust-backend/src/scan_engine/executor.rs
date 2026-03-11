@@ -9,6 +9,7 @@ use tokio::time::{timeout, Duration};
 use super::parsers::parse_output;
 use super::tool_registry::build_command;
 
+#[allow(dead_code)]
 pub struct ScanResult {
     pub output: String,
     pub findings: Option<JsonValue>,

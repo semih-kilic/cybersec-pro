@@ -7,13 +7,11 @@ use axum::{
     },
     Json,
 };
-use chrono::Utc;
 use futures::stream::Stream;
 use serde::Deserialize;
 use serde_json::json;
 use std::sync::Arc;
 use std::time::Duration;
-use tokio::sync::broadcast;
 use tokio_stream::wrappers::BroadcastStream;
 use tokio_stream::StreamExt;
 use uuid::Uuid;
@@ -116,6 +114,7 @@ pub async fn get_scan(
 // ── Create / Start Scan ────────────────────────────────────
 
 #[derive(Deserialize)]
+#[allow(dead_code)]
 pub struct StartScanRequest {
     pub tool: Option<String>,
     pub tool_id: Option<String>,

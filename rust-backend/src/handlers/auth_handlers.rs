@@ -4,8 +4,7 @@ use axum::{
     response::IntoResponse,
     Json,
 };
-use chrono::Utc;
-use serde::{Deserialize, Serialize};
+use serde::Deserialize;
 use serde_json::json;
 use std::sync::Arc;
 use uuid::Uuid;

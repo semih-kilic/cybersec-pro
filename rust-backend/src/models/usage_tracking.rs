@@ -1,3 +1,4 @@
+#[allow(dead_code)]
 use chrono::{NaiveDate, NaiveDateTime};
 use serde::{Deserialize, Serialize};
 use sqlx::FromRow;

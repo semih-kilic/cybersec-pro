@@ -81,9 +81,6 @@ fn extract_token(parts: &Parts) -> Option<String> {
     None
 }
 
-/// Helper: require admin role
-pub fn auth_extractor() -> () {}
-
 /// Admin-only auth check
 pub struct AdminUser(pub AuthUser);
 
