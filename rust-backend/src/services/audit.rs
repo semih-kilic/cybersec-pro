@@ -1,11 +1,11 @@
 use axum::http::HeaderMap;
 use serde_json::Value as JsonValue;
-use sqlx::SqlitePool;
+use sqlx::PgPool;
 use uuid::Uuid;
 
 /// Record an audit log entry.
 pub async fn log_audit(
-    pool: &SqlitePool,
+    pool: &PgPool,
     action: &str,
     category: &str,
     severity: &str,
@@ -30,7 +30,7 @@ pub async fn log_audit(
 
     let result = sqlx::query(
         "INSERT INTO audit_logs (id, organization_id, user_id, action, category, severity, ip_address, user_agent, details, resource_type, resource_id, status)
-         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
+         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)"
     )
     .bind(&id)
     .bind(org_id)

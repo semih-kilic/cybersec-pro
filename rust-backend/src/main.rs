@@ -11,7 +11,7 @@ use axum::{
     routing::{delete, get, post, put},
     Router,
 };
-use sqlx::SqlitePool;
+use sqlx::PgPool;
 use std::sync::Arc;
 use tokio::sync::broadcast;
 use tower_http::cors::CorsLayer;
@@ -24,7 +24,7 @@ use services::service_manager::ServiceManager;
 
 /// Shared application state available in all handlers.
 pub struct AppState {
-    pub db: SqlitePool,
+    pub db: PgPool,
     pub jwt_secret: String,
     pub rate_limiter: RateLimiter,
     pub scan_output_tx: broadcast::Sender<String>,
@@ -43,9 +43,9 @@ async fn main() -> anyhow::Result<()> {
         )
         .init();
 
-    // Database — use existing Flask SQLite database
+    // Database — PostgreSQL
     let database_url = std::env::var("DATABASE_URL").unwrap_or_else(|_| {
-        "sqlite:../saas-backend/instance/cybersec_saas.db?mode=rwc".to_string()
+        "postgres://cybersec:***REDACTED_PG_PASSWORD***@localhost:5432/cybersec_pro".to_string()
     });
     let db = services::db::init_db(&database_url).await?;
 
