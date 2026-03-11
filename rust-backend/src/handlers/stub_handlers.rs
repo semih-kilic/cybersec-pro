@@ -652,7 +652,8 @@ pub async fn admin_ack_alert(
     _admin: AdminUser,
     State(state): State<Arc<AppState>>,
 ) -> impl IntoResponse {
-    let ok = state.service_manager.acknowledge_alert(&alert_id).await;
+    let id = alert_id.parse::<u64>().unwrap_or(0);
+    let ok = state.service_manager.acknowledge_alert(id).await;
     Json(json!({"success": ok, "id": alert_id})).into_response()
 }
 
