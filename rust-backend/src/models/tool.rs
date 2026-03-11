@@ -70,11 +70,11 @@ impl Tool {
 
         ToolResponse {
             id: self.id.clone(),
-            name: self.business_name.clone().filter(|s| !s.is_empty()).unwrap_or_else(|| self.name.clone()),
+            name: self.name.clone(),
             category: self.category.clone(),
             business_category: self.business_category.clone().unwrap_or_else(|| "web_application_security".into()),
             subcategory: self.subcategory.clone().unwrap_or_default(),
-            description: self.business_description.clone().filter(|s| !s.is_empty()).or_else(|| self.description.clone()),
+            description: self.description.clone(),
             risk_context: self.risk_context.clone().unwrap_or_default(),
             parameters: self.parameters.clone(),
             plan_required: self.plan_required.clone().unwrap_or_else(|| "starter".into()),
