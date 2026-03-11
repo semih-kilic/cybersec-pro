@@ -64,7 +64,7 @@ pub async fn tool_config(
     State(state): State<Arc<AppState>>,
 ) -> impl IntoResponse {
     let tool = sqlx::query_as::<_, (String, String, String, String, String, String, Option<String>, Option<String>, Option<String>)>(
-        "SELECT id, name, COALESCE(parameters, '{}'), COALESCE(description,''), category, COALESCE(plan_required,'starter'), command_template, binary_name, tool_group FROM tools WHERE id = ? OR name = ? AND is_active = 1"
+        "SELECT id, name, COALESCE(parameters, '{}'), COALESCE(description,''), category, COALESCE(plan_required,'starter'), command_template, binary_name, tool_group FROM tools WHERE (id = ? OR name = ?) AND is_active = 1"
     )
     .bind(&tool_id)
     .bind(&tool_id)
