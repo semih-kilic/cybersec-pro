@@ -33,7 +33,7 @@ r#"CREATE TABLE IF NOT EXISTS organizations (
     slug TEXT UNIQUE NOT NULL,
     plan_type TEXT DEFAULT 'starter',
     stripe_customer_id TEXT,
-    created_at TIMESTAMPTZ DEFAULT NOW(),
+    created_at TIMESTAMP DEFAULT NOW(),
     is_active BOOLEAN DEFAULT TRUE
 )"#,
 
@@ -45,19 +45,19 @@ r#"CREATE TABLE IF NOT EXISTS users (
     last_name TEXT,
     role TEXT DEFAULT 'user',
     organization_id TEXT REFERENCES organizations(id),
-    created_at TIMESTAMPTZ DEFAULT NOW(),
-    last_login TIMESTAMPTZ,
+    created_at TIMESTAMP DEFAULT NOW(),
+    last_login TIMESTAMP,
     is_active BOOLEAN DEFAULT TRUE,
     email_verified BOOLEAN DEFAULT FALSE,
     verification_token TEXT,
-    verification_sent_at TIMESTAMPTZ,
+    verification_sent_at TIMESTAMP,
     oauth_provider TEXT,
     oauth_id TEXT,
     avatar_url TEXT,
     mfa_enabled BOOLEAN DEFAULT FALSE,
     mfa_secret TEXT,
     mfa_backup_codes JSONB,
-    mfa_enabled_at TIMESTAMPTZ
+    mfa_enabled_at TIMESTAMP
 )"#,
 
 r#"CREATE TABLE IF NOT EXISTS audit_logs (
@@ -73,7 +73,7 @@ r#"CREATE TABLE IF NOT EXISTS audit_logs (
     resource_type TEXT,
     resource_id TEXT,
     status TEXT DEFAULT 'success',
-    created_at TIMESTAMPTZ DEFAULT NOW()
+    created_at TIMESTAMP DEFAULT NOW()
 )"#,
 
 "CREATE INDEX IF NOT EXISTS idx_audit_logs_created_at ON audit_logs(created_at)",
@@ -85,9 +85,9 @@ r#"CREATE TABLE IF NOT EXISTS subscriptions (
     stripe_subscription_id TEXT UNIQUE,
     plan_type TEXT NOT NULL,
     status TEXT DEFAULT 'active',
-    current_period_start TIMESTAMPTZ,
-    current_period_end TIMESTAMPTZ,
-    created_at TIMESTAMPTZ DEFAULT NOW()
+    current_period_start TIMESTAMP,
+    current_period_end TIMESTAMP,
+    created_at TIMESTAMP DEFAULT NOW()
 )"#,
 
 r#"CREATE TABLE IF NOT EXISTS agents (
@@ -118,7 +118,7 @@ r#"CREATE TABLE IF NOT EXISTS agents (
     auto_update BOOLEAN DEFAULT TRUE,
     registration_token TEXT UNIQUE,
     api_key TEXT UNIQUE,
-    last_heartbeat TIMESTAMPTZ,
+    last_heartbeat TIMESTAMP,
     cpu_usage REAL DEFAULT 0,
     memory_usage REAL DEFAULT 0,
     active_scans INTEGER DEFAULT 0,
@@ -126,8 +126,8 @@ r#"CREATE TABLE IF NOT EXISTS agents (
     max_concurrent_scans INTEGER DEFAULT 5,
     location TEXT,
     network_zone TEXT DEFAULT 'public',
-    created_at TIMESTAMPTZ DEFAULT NOW(),
-    updated_at TIMESTAMPTZ DEFAULT NOW()
+    created_at TIMESTAMP DEFAULT NOW(),
+    updated_at TIMESTAMP DEFAULT NOW()
 )"#,
 
 r#"CREATE TABLE IF NOT EXISTS tools (
@@ -139,7 +139,7 @@ r#"CREATE TABLE IF NOT EXISTS tools (
     parameters JSONB,
     plan_required TEXT DEFAULT 'starter',
     is_active BOOLEAN DEFAULT TRUE,
-    created_at TIMESTAMPTZ DEFAULT NOW(),
+    created_at TIMESTAMP DEFAULT NOW(),
     tool_type TEXT DEFAULT 'cli',
     hardware_required JSONB,
     gui_required BOOLEAN DEFAULT FALSE,
@@ -165,8 +165,8 @@ r#"CREATE TABLE IF NOT EXISTS projects (
     target_url TEXT,
     target_ip TEXT,
     status TEXT DEFAULT 'active',
-    created_at TIMESTAMPTZ DEFAULT NOW(),
-    updated_at TIMESTAMPTZ DEFAULT NOW()
+    created_at TIMESTAMP DEFAULT NOW(),
+    updated_at TIMESTAMP DEFAULT NOW()
 )"#,
 
 r#"CREATE TABLE IF NOT EXISTS scans (
@@ -183,9 +183,9 @@ r#"CREATE TABLE IF NOT EXISTS scans (
     error_log TEXT,
     findings JSONB,
     report_path TEXT,
-    started_at TIMESTAMPTZ,
-    completed_at TIMESTAMPTZ,
-    created_at TIMESTAMPTZ DEFAULT NOW()
+    started_at TIMESTAMP,
+    completed_at TIMESTAMP,
+    created_at TIMESTAMP DEFAULT NOW()
 )"#,
 
 "CREATE INDEX IF NOT EXISTS idx_scans_org ON scans(organization_id)",
@@ -197,7 +197,7 @@ r#"CREATE TABLE IF NOT EXISTS usage_tracking (
     tool_id TEXT NOT NULL REFERENCES tools(id),
     scan_id TEXT REFERENCES scans(id),
     usage_date DATE DEFAULT CURRENT_DATE,
-    created_at TIMESTAMPTZ DEFAULT NOW()
+    created_at TIMESTAMP DEFAULT NOW()
 )"#,
 
 r#"CREATE TABLE IF NOT EXISTS reports (
@@ -221,8 +221,8 @@ r#"CREATE TABLE IF NOT EXISTS reports (
     content TEXT,
     file_path TEXT,
     file_size INTEGER,
-    created_at TIMESTAMPTZ DEFAULT NOW(),
-    completed_at TIMESTAMPTZ
+    created_at TIMESTAMP DEFAULT NOW(),
+    completed_at TIMESTAMP
 )"#,
 
 r#"CREATE TABLE IF NOT EXISTS sso_configs (
@@ -251,9 +251,9 @@ r#"CREATE TABLE IF NOT EXISTS sso_configs (
     enforce_sso BOOLEAN DEFAULT FALSE,
     jit_provisioning BOOLEAN DEFAULT TRUE,
     default_role TEXT DEFAULT 'user',
-    created_at TIMESTAMPTZ DEFAULT NOW(),
-    updated_at TIMESTAMPTZ DEFAULT NOW(),
-    last_login_at TIMESTAMPTZ
+    created_at TIMESTAMP DEFAULT NOW(),
+    updated_at TIMESTAMP DEFAULT NOW(),
+    last_login_at TIMESTAMP
 )"#,
 
 r#"CREATE TABLE IF NOT EXISTS scheduled_scans (
@@ -271,12 +271,12 @@ r#"CREATE TABLE IF NOT EXISTS scheduled_scans (
     day_of_week TEXT,
     day_of_month INTEGER,
     is_active BOOLEAN DEFAULT TRUE,
-    last_run TIMESTAMPTZ,
-    next_run TIMESTAMPTZ,
+    last_run TIMESTAMP,
+    next_run TIMESTAMP,
     run_count INTEGER DEFAULT 0,
     agent_id TEXT REFERENCES agents(id),
     project_id INTEGER REFERENCES projects(id),
-    created_at TIMESTAMPTZ DEFAULT NOW(),
-    updated_at TIMESTAMPTZ DEFAULT NOW()
+    created_at TIMESTAMP DEFAULT NOW(),
+    updated_at TIMESTAMP DEFAULT NOW()
 )"#,
 ];
