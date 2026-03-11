@@ -675,8 +675,24 @@ pub async fn list_schedules(
     .await
     .unwrap_or_default();
 
-    let list: Vec<serde_json::Value> = schedules.iter().map(|(id, name, cron, tool, active, target)| {
-        json!({"id": id, "name": name, "cron_expression": cron, "tool_id": tool, "is_active": active, "target": target})
+    let list: Vec<serde_json::Value> = schedules.iter().map(|(id, name, cron, tool_id, active, target)| {
+        let status = if *active { "active" } else { "paused" };
+        json!({
+            "id": id,
+            "name": name,
+            "cron_expression": cron,
+            "tool_id": tool_id,
+            "tool_name": tool_id,
+            "tool": tool_id,
+            "is_active": active,
+            "status": status,
+            "target": target,
+            "next_run": "",
+            "last_run": "",
+            "run_count": 0,
+            "schedule_type": "cron",
+            "created_at": ""
+        })
     }).collect();
 
     Json(json!({"schedules": list})).into_response()
@@ -810,12 +826,56 @@ pub async fn analytics_overview(
         "SELECT COUNT(*) FROM scans WHERE user_id = $1 AND status = 'completed'"
     ).bind(&user.user_id).fetch_one(&state.db).await.unwrap_or((0,));
 
+    let failed = sqlx::query_as::<_, (i64,)>(
+        "SELECT COUNT(*) FROM scans WHERE user_id = $1 AND status = 'failed'"
+    ).bind(&user.user_id).fetch_one(&state.db).await.unwrap_or((0,));
+
+    let success_rate = if total_scans.0 > 0 {
+        (completed.0 as f64 / total_scans.0 as f64 * 100.0).round()
+    } else { 0.0 };
+
+    // Build daily_trend from scans table
+    let trend_rows = sqlx::query_as::<_, (String, i64)>(
+        "SELECT CAST(created_at::date AS TEXT), COUNT(*) FROM scans WHERE user_id = $1 AND created_at > NOW() - INTERVAL '30 days' GROUP BY created_at::date ORDER BY created_at::date"
+    ).bind(&user.user_id).fetch_all(&state.db).await.unwrap_or_default();
+    let daily_trend: Vec<serde_json::Value> = trend_rows.iter().map(|(d, c)| json!({"date": d, "scans": c})).collect();
+
+    // Build tool_usage from scans
+    let tool_rows = sqlx::query_as::<_, (String, i64)>(
+        "SELECT COALESCE(tool_name,'unknown'), COUNT(*) FROM scans WHERE user_id = $1 GROUP BY tool_name ORDER BY COUNT(*) DESC LIMIT 10"
+    ).bind(&user.user_id).fetch_all(&state.db).await.unwrap_or_default();
+    let tool_usage: Vec<serde_json::Value> = tool_rows.iter().map(|(n, c)| json!({"name": n, "count": c})).collect();
+
+    // Status distribution
+    let status_rows = sqlx::query_as::<_, (String, i64)>(
+        "SELECT COALESCE(status,'unknown'), COUNT(*) FROM scans WHERE user_id = $1 GROUP BY status"
+    ).bind(&user.user_id).fetch_all(&state.db).await.unwrap_or_default();
+    let mut status_dist = serde_json::Map::new();
+    for (s, c) in &status_rows {
+        status_dist.insert(s.clone(), json!(c));
+    }
+
     Json(json!({
-        "total_scans": total_scans.0,
-        "completed_scans": completed.0,
-        "scan_trend": [],
-        "top_tools": [],
-        "risk_distribution": {"critical": 0, "high": 0, "medium": 0, "low": 0, "info": 0}
+        "daily_trend": daily_trend,
+        "tool_usage": tool_usage,
+        "status_distribution": status_dist,
+        "target_distribution": [],
+        "comparison": {
+            "this_week": total_scans.0,
+            "last_week": 0,
+            "change_pct": 0.0
+        },
+        "performance": {
+            "avg_duration_seconds": 0,
+            "total_scans": total_scans.0,
+            "success_rate": success_rate
+        },
+        "risk": {
+            "score": 0,
+            "level": "low",
+            "severity_totals": {"critical": 0, "high": 0, "medium": 0, "low": 0, "info": 0},
+            "total_issues": 0
+        }
     })).into_response()
 }
 
