@@ -1,6 +1,6 @@
 #!/bin/bash
 # 🚀 CyberSec Pro - Production Startup Script
-# Single Server Deployment
+# Rust/Axum Backend + React Frontend
 
 set -e
 
@@ -8,11 +8,7 @@ echo "🛡️ CyberSec Pro - Production Startup"
 echo "======================================"
 
 BASEDIR="/home/cybersec/cybersec-pro"
-BACKEND_DIR="$BASEDIR/saas-backend"
-LOGS_DIR="$BASEDIR/logs"
-
-# Create logs directory
-mkdir -p $LOGS_DIR
+RUST_DIR="$BASEDIR/rust-backend"
 
 # Colors
 RED='\033[0;31m'
@@ -35,64 +31,48 @@ if ! pgrep -x "redis-server" > /dev/null; then
 fi
 print_status $? "Redis"
 
-# 2. Kill existing Python processes on our ports
+# 2. Stop existing services
 echo -e "\n${YELLOW}2. Stopping existing services...${NC}"
-pkill -f "gunicorn.*cybersec" 2>/dev/null || true
-pkill -f "celery.*cybersec" 2>/dev/null || true
+pkill -f "cybersec-pro-backend" 2>/dev/null || true
 fuser -k 5001/tcp 2>/dev/null || true
-fuser -k 5002/tcp 2>/dev/null || true
 sleep 2
 print_status 0 "Old processes stopped"
 
-# 3. Start Gunicorn (Main API)
-echo -e "\n${YELLOW}3. Starting Gunicorn API Server...${NC}"
-cd $BACKEND_DIR
-source venv/bin/activate
-
-nohup gunicorn \
-    --config gunicorn.conf.py \
-    app:app \
-    > $LOGS_DIR/gunicorn-stdout.log 2>&1 &
+# 3. Start Rust Backend
+echo -e "\n${YELLOW}3. Starting Rust API Backend...${NC}"
+cd $RUST_DIR
+DATABASE_URL='postgres://cybersec:***REDACTED_PG_PASSWORD***@localhost:5432/cybersec_pro' \
+JWT_SECRET_KEY='***REDACTED_JWT_SECRET***' \
+GITHUB_CLIENT_ID='***REDACTED_GH_OAUTH_CLIENT_ID***' \
+GITHUB_CLIENT_SECRET='***REDACTED_GH_OAUTH_SECRET***' \
+RUST_LOG=info \
+nohup ./target/release/cybersec-pro-backend > /tmp/rust-backend.log 2>&1 &
 
 sleep 3
-if pgrep -f "gunicorn.*app:app" > /dev/null; then
-    print_status 0 "Gunicorn (5 workers, gevent)"
+if curl -s http://localhost:5001/health | grep -q "healthy"; then
+    print_status 0 "Rust Backend (Axum v4.0.0 on port 5001)"
 else
-    print_status 1 "Gunicorn failed to start"
-    cat $LOGS_DIR/gunicorn-stderr.log
+    print_status 1 "Rust Backend failed to start"
+    tail -5 /tmp/rust-backend.log
 fi
 
-# 4. Start Celery Worker
-echo -e "\n${YELLOW}4. Starting Celery Worker...${NC}"
-cd $BACKEND_DIR
-source venv/bin/activate
-nohup $BACKEND_DIR/venv/bin/celery -A celery_tasks worker \
-    --loglevel=info \
-    --concurrency=4 \
-    --max-tasks-per-child=50 \
-    > $LOGS_DIR/celery-worker.log 2>&1 &
-
-sleep 2
-if pgrep -f "celery.*worker" > /dev/null; then
-    print_status 0 "Celery Worker (4 concurrent tasks)"
+# 4. Ensure Frontend is running
+echo -e "\n${YELLOW}4. Checking React Frontend...${NC}"
+if curl -s http://localhost:3001 > /dev/null 2>&1; then
+    print_status 0 "React Frontend already running (port 3001)"
 else
-    print_status 1 "Celery Worker failed to start"
+    cd $BASEDIR/saas-frontend
+    nohup npm run dev -- --port 3001 > /tmp/frontend.log 2>&1 &
+    sleep 5
+    if curl -s http://localhost:3001 > /dev/null 2>&1; then
+        print_status 0 "React Frontend started (port 3001)"
+    else
+        print_status 1 "React Frontend failed to start"
+    fi
 fi
 
-# 5. Start Sales Backend (optional - if needed)
-echo -e "\n${YELLOW}5. Starting Sales Backend...${NC}"
-cd $BASEDIR/cybersec-sales/backend
-if [ -d "venv" ]; then
-    source venv/bin/activate
-    nohup python app.py > $LOGS_DIR/sales-backend.log 2>&1 &
-    sleep 2
-    print_status $? "Sales Backend (Port 5002)"
-else
-    echo "   Sales backend venv not found, skipping..."
-fi
-
-# 6. Reload Nginx
-echo -e "\n${YELLOW}6. Reloading Nginx...${NC}"
+# 5. Reload Nginx
+echo -e "\n${YELLOW}5. Reloading Nginx...${NC}"
 sudo nginx -t && sudo systemctl reload nginx
 print_status $? "Nginx"
 
@@ -102,20 +82,15 @@ echo -e "${GREEN}🚀 CyberSec Pro Production Ready!${NC}"
 echo "======================================"
 echo ""
 echo "📊 Server Status:"
-echo "   API:     http://localhost:5001"
-echo "   Sales:   http://localhost:5002"
-echo "   Web:     https://semihkilic.com"
-echo ""
-echo "📈 Capacity:"
-echo "   • API Requests: ~500 concurrent"
-echo "   • Scan Tasks:   ~30-50 concurrent"
-echo "   • Users:        ~50-100 simultaneous"
+echo "   API:     http://localhost:5001 (Rust/Axum)"
+echo "   Web:     http://localhost:3001 (React/Vite)"
+echo "   Site:    https://semihkilic.com"
 echo ""
 echo "📁 Logs:"
-echo "   • $LOGS_DIR/gunicorn-*.log"
-echo "   • $LOGS_DIR/celery-worker.log"
+echo "   • /tmp/rust-backend.log"
+echo "   • /tmp/frontend.log"
 echo ""
 echo "🔧 Commands:"
-echo "   • Status:  ps aux | grep -E 'gunicorn|celery'"
+echo "   • Status:  curl -s http://localhost:5001/health"
 echo "   • Restart: $BASEDIR/start-production.sh"
-echo "   • Stop:    pkill -f gunicorn; pkill -f celery"
+echo "   • Stop:    pkill -f cybersec-pro-backend"
