@@ -313,10 +313,10 @@ fn build_router(state: Arc<AppState>) -> Router {
         .route("/api/v2/tools", get(stub_handlers::v2_tools))
         .route("/api/v2/tools/:tool_id", get(stub_handlers::v2_tool_detail))
         // ── Scan singular variants ────────────────────────────
-        .route("/api/v1/scan/start", post(stub_handlers::scan_start))
+        .route("/api/v1/scan/start", post(scan_handlers::start_scan))
         .route("/api/v1/scan/:scan_id/output", get(scan_handlers::scan_output_stream))
         .route("/api/v1/scan/:scan_id/result", get(stub_handlers::scan_result))
-        .route("/api/v1/scan/:scan_id/stop", post(stub_handlers::scan_stop))
+        .route("/api/v1/scan/:scan_id/stop", post(scan_handlers::cancel_scan))
         .route("/api/v1/scans/:scan_id/rerun", post(stub_handlers::scan_rerun))
         .route("/api/v1/scans/:scan_id/business-report", get(stub_handlers::scan_business_report))
         .route("/api/v1/scans/:scan_id/status", get(stub_handlers::scan_status))

@@ -17,7 +17,7 @@ use crate::AppState;
 
 pub async fn social_auth(
     State(state): State<Arc<AppState>>,
-    axum::extract::Path(provider): axum::extract::Path<String>,
+    uri: axum::http::Uri,
     Json(body): Json<serde_json::Value>,
 ) -> impl IntoResponse {
     let code = match body.get("code").and_then(|c| c.as_str()) {
@@ -26,7 +26,10 @@ pub async fn social_auth(
     };
     let redirect_uri = body.get("redirect_uri").and_then(|r| r.as_str()).unwrap_or("").to_string();
 
-    // Only GitHub implemented for now
+    // Detect provider from URI path
+    let path = uri.path();
+    let provider = if path.contains("/github") { "github" } else if path.contains("/google") { "google" } else { "unknown" };
+
     if provider != "github" {
         return (StatusCode::BAD_REQUEST, Json(json!({"error": format!("{} OAuth not yet implemented", provider)}))).into_response();
     }
@@ -149,8 +152,8 @@ pub async fn social_auth(
         .await;
 
         let _ = sqlx::query(
-            "INSERT INTO users (id, email, password_hash, first_name, last_name, role, organization_id, email_verified, avatar_url, github_id)
-             VALUES (?, ?, '', ?, ?, 'admin', ?, 1, ?, ?)"
+            "INSERT INTO users (id, email, password_hash, first_name, last_name, role, organization_id, email_verified, avatar_url)
+             VALUES (?, ?, '', ?, ?, 'admin', ?, 1, ?)"
         )
         .bind(&new_user_id)
         .bind(&email)
@@ -158,7 +161,6 @@ pub async fn social_auth(
         .bind(&last_name)
         .bind(&new_org_id)
         .bind(gh_avatar)
-        .bind(gh_id)
         .execute(&state.db)
         .await;
 
