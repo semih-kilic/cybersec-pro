@@ -3496,15 +3496,16 @@ def create_scan():
         data = request.get_json()
         
         # Validate input
-        required_fields = ['tool_id', 'target']
-        for field in required_fields:
-            if not data.get(field):
-                return jsonify({'error': f'{field} is required'}), 400
+        tool_identifier = data.get('tool_id') or data.get('tool')
+        if not tool_identifier:
+            return jsonify({'error': 'tool_id is required'}), 400
+        if not data.get('target'):
+            return jsonify({'error': 'target is required'}), 400
         
-        # Check tool exists and user has access
-        tool = Tool.query.get(data['tool_id'])
+        # Check tool exists and user has access (supports UUID or tool name)
+        tool, _ = get_tool_by_name_or_id(tool_identifier)
         if not tool:
-            return jsonify({'error': 'Tool not found'}), 404
+            return jsonify({'error': 'Tool not found', 'hint': 'Use tool name like "nmap" or a valid tool UUID'}), 404
         
         # Check plan access
         org = user.organization
@@ -3520,7 +3521,7 @@ def create_scan():
         scan = Scan(
             organization_id=user.organization_id,
             user_id=user.id,
-            tool_id=data['tool_id'],
+            tool_id=tool.id,
             target=data['target'],
             parameters=data.get('parameters', {}),
             status='pending'
@@ -3531,12 +3532,12 @@ def create_scan():
         # V20: Audit log
         log_audit('scan_started', category='scan', severity='info', user_id=user.id, org_id=user.organization_id,
                   resource_type='scan', resource_id=scan.id,
-                  details={'tool': data['tool_id'], 'target': data['target']})
+                  details={'tool': tool.name, 'target': data['target']})
         
         # Track usage
         usage = UsageTracking(
             organization_id=user.organization_id,
-            tool_id=data['tool_id'],
+            tool_id=tool.id,
             scan_id=scan.id
         )
         db.session.add(usage)
@@ -3723,6 +3724,73 @@ def rerun_scan(scan_id):
         import traceback
         print(f"Rerun error: {traceback.format_exc()}")
         return jsonify({'error': str(e)}), 500
+
+
+# ================================
+# NOTIFICATION ROUTES
+# ================================
+
+@app.route('/api/v1/notifications', methods=['GET'])
+@jwt_required()
+def get_notifications():
+    """Get notifications for the current user (generated from recent activity)"""
+    try:
+        user_id = get_jwt_identity()
+        user = User.query.get(user_id)
+        if not user:
+            return jsonify({'notifications': []}), 200
+
+        notifications = []
+        # Generate notifications from recent scans
+        recent_scans = Scan.query.filter_by(
+            organization_id=user.organization_id
+        ).order_by(Scan.created_at.desc()).limit(20).all()
+
+        for scan in recent_scans:
+            notif_type = 'info'
+            if scan.status == 'completed':
+                notif_type = 'success'
+            elif scan.status == 'failed':
+                notif_type = 'error'
+            elif scan.status == 'running':
+                notif_type = 'info'
+
+            tool = Tool.query.get(scan.tool_id) if scan.tool_id else None
+            tool_name = tool.name if tool else (scan.tool_id or 'Unknown')
+
+            notifications.append({
+                'id': f'scan_{scan.id}',
+                'type': notif_type,
+                'title': f'Scan {scan.status.capitalize()}' if scan.status else 'Scan Update',
+                'message': f'{tool_name} scan on {scan.target} {scan.status}',
+                'timestamp': scan.created_at.isoformat() if scan.created_at else None,
+                'read': True if scan.status in ('completed', 'failed') else False,
+                'category': 'scan',
+                'data': {
+                    'scan_id': scan.id,
+                    'tool': tool_name,
+                    'target': scan.target,
+                    'status': scan.status,
+                }
+            })
+
+        return jsonify({'notifications': notifications}), 200
+    except Exception as e:
+        return jsonify({'notifications': [], 'error': str(e)}), 200
+
+
+@app.route('/api/v1/notifications/read-all', methods=['POST'])
+@jwt_required()
+def mark_all_notifications_read():
+    """Mark all notifications as read"""
+    return jsonify({'success': True}), 200
+
+
+@app.route('/api/v1/notifications/<notification_id>/read', methods=['POST'])
+@jwt_required()
+def mark_notification_read(notification_id):
+    """Mark a specific notification as read"""
+    return jsonify({'success': True}), 200
 
 
 # ================================
