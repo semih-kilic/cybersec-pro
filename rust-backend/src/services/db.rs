@@ -150,7 +150,10 @@ r#"CREATE TABLE IF NOT EXISTS tools (
     business_description TEXT DEFAULT '',
     business_category TEXT DEFAULT '',
     subcategory TEXT DEFAULT '',
-    risk_context TEXT DEFAULT ''
+    risk_context TEXT DEFAULT '',
+    tool_group TEXT DEFAULT 'misc',
+    binary_name TEXT DEFAULT '',
+    kali_package TEXT DEFAULT ''
 )"#,
 
 r#"CREATE TABLE IF NOT EXISTS projects (

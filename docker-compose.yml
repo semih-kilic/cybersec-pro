@@ -49,33 +49,23 @@ services:
       - cybersec-network
 
   # ============================================
-  # Main SaaS Backend API
+  # Rust API Backend (Axum)
   # ============================================
-  saas-backend:
+  rust-backend:
     build:
-      context: ./saas-backend
+      context: ./rust-backend
       dockerfile: Dockerfile
-    container_name: cybersec-saas
+    container_name: cybersec-api
     restart: always
     environment:
-      - FLASK_ENV=production
-      - DATABASE_URL=postgresql://cybersec:${DB_PASSWORD:-***REDACTED_PG_PASSWORD***}@postgres:5432/cybersec_pro
+      - DATABASE_URL=postgres://cybersec:${DB_PASSWORD:-***REDACTED_PG_PASSWORD***}@postgres:5432/cybersec_pro
       - REDIS_URL=redis://redis:6379/0
-      - SECRET_KEY=${SECRET_KEY:-cybersec-pro-saas-secret-2026-production}
       - JWT_SECRET_KEY=${JWT_SECRET_KEY:-jwt-secret-cybersec-2026-production}
-      - STRIPE_SECRET_KEY=${STRIPE_SECRET_KEY}
-      - STRIPE_WEBHOOK_SECRET=${STRIPE_WEBHOOK_SECRET}
-      - GOOGLE_CLIENT_ID=${GOOGLE_CLIENT_ID}
-      - GOOGLE_CLIENT_SECRET=${GOOGLE_CLIENT_SECRET}
+      - RUST_LOG=info
       - GITHUB_CLIENT_ID=${GITHUB_CLIENT_ID}
       - GITHUB_CLIENT_SECRET=${GITHUB_CLIENT_SECRET}
-      - SMTP_HOST=${SMTP_HOST:-smtp.yandex.com}
-      - SMTP_PORT=${SMTP_PORT:-465}
-      - SMTP_USER=${SMTP_USER}
-      - SMTP_PASSWORD=${SMTP_PASSWORD}
-    volumes:
-      - ./saas-backend:/app
-      - saas_logs:/app/logs
+      - GOOGLE_CLIENT_ID=${GOOGLE_CLIENT_ID}
+      - GOOGLE_CLIENT_SECRET=${GOOGLE_CLIENT_SECRET}
     ports:
       - "5001:5001"
     depends_on:
@@ -88,7 +78,7 @@ services:
       interval: 30s
       timeout: 10s
       retries: 3
-      start_period: 40s
+      start_period: 30s
     networks:
       - cybersec-network
 
@@ -104,7 +94,7 @@ services:
     ports:
       - "3000:80"
     depends_on:
-      - saas-backend
+      - rust-backend
     healthcheck:
       test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:80/health"]
       interval: 30s
@@ -128,7 +118,7 @@ services:
       - ./nginx/ssl:/etc/nginx/ssl:ro
       - nginx_logs:/var/log/nginx
     depends_on:
-      - saas-backend
+      - rust-backend
       - saas-frontend
     healthcheck:
       test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:80/health"]
@@ -235,8 +225,6 @@ volumes:
   postgres_data:
     driver: local
   redis_data:
-    driver: local
-  saas_logs:
     driver: local
   kali_home:
     driver: local
