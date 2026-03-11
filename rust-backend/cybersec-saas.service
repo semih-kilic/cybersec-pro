@@ -1,0 +1,21 @@
+[Unit]
+Description=CyberSec Pro SaaS API (Rust/Axum)
+After=network.target
+
+[Service]
+Type=simple
+User=cybersec
+WorkingDirectory=/home/cybersec/cybersec-pro/rust-backend
+Environment=DATABASE_URL=sqlite:../saas-backend/instance/cybersec_saas.db?mode=rwc
+Environment=JWT_SECRET_KEY=***REDACTED_JWT_SECRET***
+Environment=RUST_LOG=info
+Environment=HOST=0.0.0.0
+Environment=PORT=5001
+ExecStart=/home/cybersec/cybersec-pro/rust-backend/target/release/cybersec-pro-backend
+Restart=always
+RestartSec=5
+StandardOutput=journal
+StandardError=journal
+
+[Install]
+WantedBy=multi-user.target
