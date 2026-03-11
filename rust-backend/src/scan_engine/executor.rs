@@ -41,6 +41,7 @@ pub async fn execute_scan(
         "type": "output",
         "scan_id": scan_id,
         "phase": "executing",
+        "line": format!("Starting {} on {}", tool_name, target),
         "data": format!("Starting {} on {}", tool_name, target)
     }).to_string());
 

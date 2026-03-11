@@ -113,7 +113,7 @@ pub async fn social_auth(
     let gh_name = gh_user.get("name").and_then(|n| n.as_str()).unwrap_or("");
     let gh_login = gh_user.get("login").and_then(|l| l.as_str()).unwrap_or("");
     let gh_avatar = gh_user.get("avatar_url").and_then(|a| a.as_str()).unwrap_or("");
-    let gh_id = gh_user.get("id").and_then(|i| i.as_i64()).unwrap_or(0);
+    let _gh_id = gh_user.get("id").and_then(|i| i.as_i64()).unwrap_or(0);
 
     let name_parts: Vec<&str> = gh_name.split_whitespace().collect();
     let first_name = if !name_parts.is_empty() { name_parts[0] } else { gh_login };
@@ -266,7 +266,7 @@ pub async fn tool_execution_mode(
     _user: AuthUser,
     State(_state): State<Arc<AppState>>,
 ) -> impl IntoResponse {
-    Json(json!({"execution_mode": "direct", "tool_id": tool_id})).into_response()
+    Json(json!({"execution_mode": "direct", "supports_streaming": true, "tool_id": tool_id})).into_response()
 }
 
 pub async fn tool_build_command(
@@ -451,8 +451,8 @@ pub async fn scan_result(
     user: AuthUser,
     State(state): State<Arc<AppState>>,
 ) -> impl IntoResponse {
-    let scan = sqlx::query_as::<_, (String, String, Option<String>, Option<String>)>(
-        "SELECT id, status, COALESCE(result,''), COALESCE(findings_summary,'') FROM scans WHERE id = ? AND user_id = ?"
+    let scan = sqlx::query_as::<_, (String, String, Option<String>, Option<String>, Option<String>)>(
+        "SELECT id, status, output, findings, error_log FROM scans WHERE id = ? AND user_id = ?"
     )
     .bind(&scan_id)
     .bind(&user.user_id)
@@ -460,12 +460,24 @@ pub async fn scan_result(
     .await;
 
     match scan {
-        Ok(Some((id, status, result, findings))) => {
-            let result_val: serde_json::Value = result.and_then(|r| serde_json::from_str(&r).ok()).unwrap_or(json!(null));
+        Ok(Some((id, status, output, findings, error_log))) => {
             let findings_val: serde_json::Value = findings.and_then(|f| serde_json::from_str(&f).ok()).unwrap_or(json!(null));
-            Json(json!({"scan_id": id, "status": status, "result": result_val, "findings_summary": findings_val})).into_response()
+            let output_str = output.unwrap_or_default();
+            Json(json!({
+                "scan": {
+                    "id": id,
+                    "status": status,
+                    "output": output_str,
+                    "error_log": error_log,
+                },
+                "execution_result": {
+                    "status": status,
+                    "output": output_str,
+                    "findings": findings_val
+                }
+            })).into_response()
         }
-        _ => Json(json!({"error": "Scan not found"})).into_response()
+        _ => (StatusCode::NOT_FOUND, Json(json!({"error": "Scan not found"}))).into_response()
     }
 }
 
