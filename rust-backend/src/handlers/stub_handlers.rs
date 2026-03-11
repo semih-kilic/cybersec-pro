@@ -578,7 +578,7 @@ pub async fn agents_dashboard(
 ) -> impl IntoResponse {
     let org_id = user.org_id.as_deref().unwrap_or("");
     let rows = sqlx::query(
-        "SELECT id, name, hostname, ip_address, COALESCE(status,'offline') as status, os_info, platform, version, cpu_usage, memory_usage, active_scans, total_scans, location, connection_type, ssh_port, ssh_username, last_heartbeat FROM agents WHERE organization_id = $1 ORDER BY created_at DESC"
+        "SELECT id, name, hostname, ip_address, COALESCE(status,'offline') as status, os_info, platform, version, cpu_usage, memory_usage, active_scans, total_scans, location, connection_type, ssh_port, ssh_username, CAST(last_heartbeat AS TEXT) as last_heartbeat FROM agents WHERE organization_id = $1 ORDER BY created_at DESC"
     )
     .bind(org_id)
     .fetch_all(&state.db)

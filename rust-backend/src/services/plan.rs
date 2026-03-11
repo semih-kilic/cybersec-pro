@@ -111,7 +111,7 @@ pub fn get_plan_configs() -> HashMap<&'static str, PlanConfig> {
     plans.insert("enterprise", PlanConfig {
         level: 3,
         price_eur: 799,
-        tool_limit: 682,
+        tool_limit: 401,
         daily_scan_limit: 0,
         max_projects: 0,
         max_team_members: 0,

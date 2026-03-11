@@ -137,9 +137,15 @@ export default function UpgradePage() {
         return;
       }
       
-      toast.error('Payment system is temporarily unavailable. Please contact cybersecpro@semihkilic.com for manual upgrade.');
-    } catch (error) {
-      toast.error('Connection error. Please try again or contact cybersecpro@semihkilic.com for assistance.');
+      // Stripe not configured yet — show contact info
+      toast.success('Please contact cybersecpro@semihkilic.com to upgrade your plan. We will assist you personally!');
+    } catch (error: any) {
+      const msg = error?.response?.data?.error || error?.message || '';
+      if (msg.includes('not configured') || msg.includes('Stripe')) {
+        toast.success('Please contact cybersecpro@semihkilic.com to upgrade your plan. We will assist you personally!');
+      } else {
+        toast.error('Connection error. Please try again or contact cybersecpro@semihkilic.com for assistance.');
+      }
     } finally {
       setLoading(null);
     }
