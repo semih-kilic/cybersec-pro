@@ -18,8 +18,10 @@ pub struct ToolQuery {
     pub page: Option<u32>,
     pub per_page: Option<u32>,
     pub category: Option<String>,
+    pub group: Option<String>,
     pub search: Option<String>,
     pub plan: Option<String>,
+    pub tool_type: Option<String>,
 }
 
 // ── List Tools ─────────────────────────────────────────────
@@ -33,19 +35,50 @@ pub async fn list_tools(
     let per_page = q.per_page.unwrap_or(50).min(200);
     let offset = (page - 1) * per_page;
 
-    let tools: Vec<Tool> = sqlx::query_as(
-        "SELECT * FROM tools WHERE is_active = 1 ORDER BY name LIMIT ? OFFSET ?"
-    )
-    .bind(per_page as i64)
-    .bind(offset as i64)
-    .fetch_all(&state.db)
-    .await
-    .unwrap_or_default();
+    // Build dynamic WHERE clause
+    let mut where_clauses = vec!["is_active = 1".to_string()];
+    let mut bind_values: Vec<String> = vec![];
 
-    let total: (i64,) = sqlx::query_as("SELECT COUNT(*) FROM tools WHERE is_active = 1")
-        .fetch_one(&state.db)
-        .await
-        .unwrap_or((0,));
+    if let Some(ref cat) = q.category {
+        where_clauses.push("(business_category = ? OR category = ?)".to_string());
+        bind_values.push(cat.clone());
+        bind_values.push(cat.clone());
+    }
+    if let Some(ref group) = q.group {
+        where_clauses.push("tool_group = ?".to_string());
+        bind_values.push(group.clone());
+    }
+    if let Some(ref search) = q.search {
+        where_clauses.push("(name LIKE ? OR business_name LIKE ? OR description LIKE ? OR business_description LIKE ?)".to_string());
+        let pattern = format!("%{search}%");
+        bind_values.push(pattern.clone());
+        bind_values.push(pattern.clone());
+        bind_values.push(pattern.clone());
+        bind_values.push(pattern.clone());
+    }
+    if let Some(ref tt) = q.tool_type {
+        where_clauses.push("tool_type = ?".to_string());
+        bind_values.push(tt.clone());
+    }
+
+    let where_sql = where_clauses.join(" AND ");
+    let count_sql = format!("SELECT COUNT(*) FROM tools WHERE {}", where_sql);
+    let query_sql = format!("SELECT * FROM tools WHERE {} ORDER BY name LIMIT ? OFFSET ?", where_sql);
+
+    // Build count query
+    let mut count_q = sqlx::query_as::<_, (i64,)>(&count_sql);
+    for v in &bind_values {
+        count_q = count_q.bind(v);
+    }
+    let total: (i64,) = count_q.fetch_one(&state.db).await.unwrap_or((0,));
+
+    // Build data query
+    let mut data_q = sqlx::query_as::<_, Tool>(&query_sql);
+    for v in &bind_values {
+        data_q = data_q.bind(v);
+    }
+    data_q = data_q.bind(per_page as i64).bind(offset as i64);
+    let tools: Vec<Tool> = data_q.fetch_all(&state.db).await.unwrap_or_default();
 
     let response: Vec<_> = tools.iter().map(|t| t.to_response()).collect();
 
@@ -298,6 +331,111 @@ pub async fn business_category_tools(
 
     Json(json!({
         "category": category_id,
+        "tools": response,
+        "total": response.len()
+    }))
+}
+
+// ── Tool Groups ────────────────────────────────────────────
+
+pub async fn tool_groups(
+    State(state): State<Arc<AppState>>,
+    _auth: AuthUser,
+) -> impl IntoResponse {
+    let groups: Vec<(String, i64)> = sqlx::query_as(
+        "SELECT COALESCE(tool_group, 'misc') as grp, COUNT(*) FROM tools WHERE is_active = 1 GROUP BY grp ORDER BY COUNT(*) DESC"
+    )
+    .fetch_all(&state.db)
+    .await
+    .unwrap_or_default();
+
+    let group_names: std::collections::HashMap<&str, &str> = [
+        ("web", "Web Application Security"),
+        ("network", "Network Security"),
+        ("recon", "Reconnaissance"),
+        ("password", "Password & Credentials"),
+        ("exploitation", "Exploitation"),
+        ("forensics", "Digital Forensics"),
+        ("wireless", "Wireless Security"),
+        ("voip", "VoIP Security"),
+        ("database", "Database Security"),
+        ("ad", "Active Directory"),
+        ("email", "Email Security"),
+        ("crypto", "Cryptography"),
+        ("defense", "Defense & Compliance"),
+        ("reporting", "Reporting"),
+        ("system", "System Security"),
+        ("vulnerability", "Vulnerability Assessment"),
+        ("misc", "Miscellaneous"),
+    ].into_iter().collect();
+
+    let result: Vec<_> = groups.iter().map(|(grp, count)| {
+        json!({
+            "id": grp,
+            "name": group_names.get(grp.as_str()).unwrap_or(&grp.as_str()),
+            "tool_count": count
+        })
+    }).collect();
+
+    let total: i64 = groups.iter().map(|(_, c)| c).sum();
+
+    Json(json!({
+        "groups": result,
+        "total": total
+    }))
+}
+
+// ── Group Tools ────────────────────────────────────────────
+
+pub async fn group_tools(
+    State(state): State<Arc<AppState>>,
+    _auth: AuthUser,
+    Path(group_id): Path<String>,
+) -> impl IntoResponse {
+    let tools: Vec<Tool> = sqlx::query_as(
+        "SELECT * FROM tools WHERE tool_group = ? AND is_active = 1 ORDER BY name"
+    )
+    .bind(&group_id)
+    .fetch_all(&state.db)
+    .await
+    .unwrap_or_default();
+
+    let response: Vec<_> = tools.iter().map(|t| t.to_response()).collect();
+
+    Json(json!({
+        "group": group_id,
+        "tools": response,
+        "total": response.len()
+    }))
+}
+
+// ── Search Tools ───────────────────────────────────────────
+
+pub async fn search_tools(
+    State(state): State<Arc<AppState>>,
+    _auth: AuthUser,
+    Query(q): Query<ToolQuery>,
+) -> impl IntoResponse {
+    let search = q.search.unwrap_or_default();
+    if search.is_empty() {
+        return Json(json!({"tools": [], "total": 0}));
+    }
+    let pattern = format!("%{search}%");
+
+    let tools: Vec<Tool> = sqlx::query_as(
+        "SELECT * FROM tools WHERE is_active = 1 AND (name LIKE ? OR business_name LIKE ? OR description LIKE ? OR binary_name LIKE ?) ORDER BY name LIMIT 50"
+    )
+    .bind(&pattern)
+    .bind(&pattern)
+    .bind(&pattern)
+    .bind(&pattern)
+    .fetch_all(&state.db)
+    .await
+    .unwrap_or_default();
+
+    let response: Vec<_> = tools.iter().map(|t| t.to_response()).collect();
+
+    Json(json!({
         "tools": response,
         "total": response.len()
     }))

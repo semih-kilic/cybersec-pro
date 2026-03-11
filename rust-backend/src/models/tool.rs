@@ -25,6 +25,9 @@ pub struct Tool {
     pub business_category: Option<String>,
     pub subcategory: Option<String>,
     pub risk_context: Option<String>,
+    pub tool_group: Option<String>,
+    pub binary_name: Option<String>,
+    pub kali_package: Option<String>,
 }
 
 #[derive(Debug, Serialize)]
@@ -42,6 +45,8 @@ pub struct ToolResponse {
     pub tool_type: String,
     pub hardware_required: Vec<String>,
     pub gui_required: bool,
+    pub group: String,
+    pub binary_name: String,
 }
 
 #[derive(Debug, Serialize)]
@@ -52,6 +57,8 @@ pub struct ToolDetailResponse {
     pub install_command: Option<String>,
     pub example_usage: Option<String>,
     pub official_url: Option<String>,
+    pub command_template: Option<String>,
+    pub kali_package: Option<String>,
 }
 
 impl Tool {
@@ -75,6 +82,8 @@ impl Tool {
             tool_type: self.tool_type.clone().unwrap_or_else(|| "cli".into()),
             hardware_required: hw,
             gui_required: self.gui_required.unwrap_or(false),
+            group: self.tool_group.clone().unwrap_or_else(|| "misc".into()),
+            binary_name: self.binary_name.clone().unwrap_or_else(|| self.name.clone()),
         }
     }
 
@@ -85,6 +94,8 @@ impl Tool {
             install_command: self.install_command.clone(),
             example_usage: self.example_usage.clone(),
             official_url: self.official_url.clone(),
+            command_template: self.command_template.clone(),
+            kali_package: self.kali_package.clone(),
         }
     }
 }

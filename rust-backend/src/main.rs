@@ -183,6 +183,9 @@ fn build_router(state: Arc<AppState>) -> Router {
             "/api/v1/tools/business-categories/:category",
             get(tool_handlers::business_category_tools),
         )
+        .route("/api/v1/tools/groups", get(tool_handlers::tool_groups))
+        .route("/api/v1/tools/groups/:group_id", get(tool_handlers::group_tools))
+        .route("/api/v1/tools/search", get(tool_handlers::search_tools))
         .route("/api/v1/tools/:tool_id", get(tool_handlers::get_tool))
         .route(
             "/api/v1/tools/:tool_id/health",
