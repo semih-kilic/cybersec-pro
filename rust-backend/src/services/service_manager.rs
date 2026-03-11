@@ -449,7 +449,7 @@ fn get_service_configs() -> Vec<ServiceConfig> {
             description: "CyberSec Pro Sales & Billing API".into(),
             port: Some(5002),
             health_endpoint: Some("http://localhost:5002/health".into()),
-            start_command: "systemctl start cybersec-sales".into(),
+            start_command: "cd /home/cybersec/cybersec-pro/cybersec-sales/backend && nohup python3 app.py > /tmp/sales-api.log 2>&1 &".into(),
             working_dir: "/home/cybersec/cybersec-pro/cybersec-sales/backend".into(),
             auto_restart: true,
             max_restarts: 50,
@@ -463,10 +463,10 @@ fn get_service_configs() -> Vec<ServiceConfig> {
             description: "TLS termination & reverse proxy".into(),
             port: Some(443),
             health_endpoint: None,
-            start_command: "systemctl start nginx".into(),
+            start_command: "echo 'nginx requires systemctl — skipping auto-restart'".into(),
             working_dir: "/etc/nginx".into(),
-            auto_restart: true,
-            max_restarts: 50,
+            auto_restart: false,
+            max_restarts: 0,
             restart_delay_secs: 2,
             priority: "critical".into(),
             category: "infrastructure".into(),
@@ -477,7 +477,7 @@ fn get_service_configs() -> Vec<ServiceConfig> {
             description: "In-memory cache & session store".into(),
             port: Some(6379),
             health_endpoint: None,
-            start_command: "systemctl start redis-server".into(),
+            start_command: "redis-server --daemonize yes".into(),
             working_dir: "/var/lib/redis".into(),
             auto_restart: true,
             max_restarts: 50,
@@ -572,16 +572,24 @@ async fn kill_process_on_port(port: u16) {
 }
 
 async fn restart_service(cmd: &str, _working_dir: &str) -> bool {
-    let result = Command::new("sh")
-        .arg("-c")
-        .arg(cmd)
-        .output()
-        .await;
+    // Wrap in a timeout so we never hang on password prompts (systemctl etc.)
+    let result = tokio::time::timeout(Duration::from_secs(10), async {
+        Command::new("sh")
+            .arg("-c")
+            .arg(cmd)
+            .output()
+            .await
+    })
+    .await;
 
     match result {
-        Ok(o) => o.status.success() || o.status.code().is_none(), // background processes return immediately
-        Err(e) => {
+        Ok(Ok(o)) => o.status.success() || o.status.code().is_none(), // background processes return immediately
+        Ok(Err(e)) => {
             tracing::error!("Failed to restart service: {}", e);
+            false
+        }
+        Err(_) => {
+            tracing::error!("Service restart command timed out (likely needs sudo)");
             false
         }
     }
@@ -596,8 +604,8 @@ pub async fn get_system_metrics() -> SystemMetrics {
 
     let cpu_count = std::thread::available_parallelism().map(|n| n.get()).unwrap_or(1);
 
-    // CPU usage
-    let cpu_str = run_cmd("top -bn1 2>/dev/null | grep 'Cpu(s)' | awk '{print $2}' | head -1").await;
+    // CPU usage (fast: read from /proc/stat instead of top)
+    let cpu_str = run_cmd("awk '/^cpu /{u=$2+$4; t=$2+$4+$5; if(t>0) printf \"%.1f\", u*100/t}' /proc/stat 2>/dev/null").await;
     let cpu_percent = cpu_str.parse::<f64>().unwrap_or(0.0);
 
     // Memory
