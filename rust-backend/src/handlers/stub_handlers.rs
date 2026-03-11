@@ -596,66 +596,64 @@ pub async fn admin_change_plan(
 
 pub async fn admin_service_dashboard(
     _admin: AdminUser,
-    State(_state): State<Arc<AppState>>,
+    State(state): State<Arc<AppState>>,
 ) -> impl IntoResponse {
-    Json(json!({
-        "services": [],
-        "system": {"cpu": 0, "memory": 0, "disk": 0},
-        "uptime": 0
-    })).into_response()
+    let dashboard = state.service_manager.get_dashboard().await;
+    Json(json!(dashboard)).into_response()
 }
 
 pub async fn admin_service_list(
     _admin: AdminUser,
-    State(_state): State<Arc<AppState>>,
+    State(state): State<Arc<AppState>>,
 ) -> impl IntoResponse {
-    Json(json!({"services": [
-        {"id": "rust-backend", "name": "Rust Backend", "status": "running", "port": 5001},
-        {"id": "frontend", "name": "React Frontend", "status": "running", "port": 3000}
-    ]})).into_response()
+    let services = state.service_manager.get_services().await;
+    Json(json!({"services": services})).into_response()
 }
 
 pub async fn admin_service_action(
     Path(service_id): Path<String>,
     _admin: AdminUser,
-    State(_state): State<Arc<AppState>>,
-    Json(_body): Json<serde_json::Value>,
+    State(state): State<Arc<AppState>>,
+    Json(body): Json<serde_json::Value>,
 ) -> impl IntoResponse {
-    Json(json!({"message": format!("Action on {} not implemented", service_id)})).into_response()
+    let action = body.get("action").and_then(|a| a.as_str()).unwrap_or("restart");
+    match state.service_manager.service_action(&service_id, action).await {
+        Ok(msg) => Json(json!({"success": true, "message": msg})).into_response(),
+        Err(e) => Json(json!({"success": false, "error": e})).into_response(),
+    }
 }
 
 pub async fn admin_system_info(
     _admin: AdminUser,
     State(_state): State<Arc<AppState>>,
 ) -> impl IntoResponse {
-    Json(json!({
-        "os": "Linux",
-        "cpu_count": std::thread::available_parallelism().map(|n| n.get()).unwrap_or(1),
-        "engine": "rust-axum",
-        "version": "4.0.0"
-    })).into_response()
+    let system = crate::services::service_manager::get_system_metrics().await;
+    Json(json!(system)).into_response()
 }
 
 pub async fn admin_processes(
     _admin: AdminUser,
     State(_state): State<Arc<AppState>>,
 ) -> impl IntoResponse {
-    Json(json!({"processes": []})).into_response()
+    let procs = crate::services::service_manager::get_processes().await;
+    Json(json!({"processes": procs})).into_response()
 }
 
 pub async fn admin_alerts(
     _admin: AdminUser,
-    State(_state): State<Arc<AppState>>,
+    State(state): State<Arc<AppState>>,
 ) -> impl IntoResponse {
-    Json(json!({"alerts": []})).into_response()
+    let alerts = state.service_manager.get_alerts().await;
+    Json(json!({"alerts": alerts})).into_response()
 }
 
 pub async fn admin_ack_alert(
     Path(alert_id): Path<String>,
     _admin: AdminUser,
-    State(_state): State<Arc<AppState>>,
+    State(state): State<Arc<AppState>>,
 ) -> impl IntoResponse {
-    Json(json!({"message": "Alert acknowledged", "id": alert_id})).into_response()
+    let ok = state.service_manager.acknowledge_alert(&alert_id).await;
+    Json(json!({"success": ok, "id": alert_id})).into_response()
 }
 
 // ── AI endpoints ───────────────────────────────────────────

@@ -20,6 +20,7 @@ use tracing_subscriber::{fmt, EnvFilter};
 
 use middleware::rate_limiter::RateLimiter;
 use middleware::security_headers::security_headers;
+use services::service_manager::ServiceManager;
 
 /// Shared application state available in all handlers.
 pub struct AppState {
@@ -27,6 +28,7 @@ pub struct AppState {
     pub jwt_secret: String,
     pub rate_limiter: RateLimiter,
     pub scan_output_tx: broadcast::Sender<String>,
+    pub service_manager: Arc<ServiceManager>,
 }
 
 #[tokio::main]
@@ -58,13 +60,28 @@ async fn main() -> anyhow::Result<()> {
     // Broadcast channel for scan SSE streaming
     let (scan_output_tx, _rx) = broadcast::channel::<String>(1024);
 
+    // Initialize Service Manager (auto-recovery watchdog)
+    let service_manager = ServiceManager::new();
+
     // Build shared state
     let state = Arc::new(AppState {
         db,
         jwt_secret,
         rate_limiter,
         scan_output_tx,
+        service_manager: service_manager.clone(),
     });
+
+    // Spawn Service Manager monitoring loop (every 10s — auto-recovers crashed services)
+    {
+        let mgr = service_manager.clone();
+        tokio::spawn(async move {
+            // Give services a moment to start
+            tokio::time::sleep(std::time::Duration::from_secs(5)).await;
+            tracing::info!("🛡️  Service Manager watchdog started — monitoring all services");
+            mgr.monitor_loop().await;
+        });
+    }
 
     // Spawn rate limiter cleanup task (every 5 minutes)
     {
