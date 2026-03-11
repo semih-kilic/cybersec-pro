@@ -283,8 +283,10 @@ export function ScanExecutionPage() {
     }
 
     if (response.data) {
-      setCurrentScanId(response.data.scan_id);
-      setCommand(response.data.command || '');
+      // Backend returns {scan: {id, tool, target, status}} or {scan_id: "..."}
+      const scanId = response.data.scan_id || (response.data as any).scan?.id;
+      setCurrentScanId(scanId);
+      setCommand(response.data.command || (response.data as any).scan?.command || '');
       
       // Set execution info
       const mode = response.data.execution_mode || 'local';

@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useAuth } from '../../hooks/useAuth';
 import { useNavigate, Link } from 'react-router-dom';
 import { ConnectionStatus } from '../ui/ConnectionStatus';
+import { NotificationCenter } from '../ui/NotificationCenter';
 
 interface BreadcrumbItem {
   label: string;
@@ -19,7 +20,6 @@ export function Header({ title, subtitle, actions, breadcrumb }: HeaderProps) {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
   const [showUserMenu, setShowUserMenu] = useState(false);
-  const [showNotifications, setShowNotifications] = useState(false);
 
   const handleLogout = () => {
     logout();
@@ -75,58 +75,7 @@ export function Header({ title, subtitle, actions, breadcrumb }: HeaderProps) {
         </div>
 
         {/* Notifications */}
-        <div className="relative">
-          <button 
-            onClick={() => setShowNotifications(!showNotifications)}
-            className="relative p-2 text-gray-400 hover:text-white hover:bg-gray-800 rounded-lg transition"
-          >
-            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
-            </svg>
-            <span className="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full"></span>
-          </button>
-
-          {showNotifications && (
-            <div className="absolute right-0 mt-2 w-80 bg-gray-800 border border-gray-700 rounded-xl shadow-2xl overflow-hidden">
-              <div className="p-4 border-b border-gray-700">
-                <h3 className="font-semibold text-white">Notifications</h3>
-              </div>
-              <div className="max-h-96 overflow-y-auto">
-                <div className="p-4 border-b border-gray-700/50 hover:bg-gray-700/30 transition cursor-pointer">
-                  <div className="flex gap-3">
-                    <div className="w-8 h-8 rounded-full bg-green-500/20 flex items-center justify-center flex-shrink-0">
-                      <svg className="w-4 h-4 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                      </svg>
-                    </div>
-                    <div>
-                      <p className="text-sm text-white">Scan completed</p>
-                      <p className="text-xs text-gray-400">Nmap scan on 192.168.1.1 finished</p>
-                      <p className="text-xs text-gray-500 mt-1">2 minutes ago</p>
-                    </div>
-                  </div>
-                </div>
-                <div className="p-4 hover:bg-gray-700/30 transition cursor-pointer">
-                  <div className="flex gap-3">
-                    <div className="w-8 h-8 rounded-full bg-kali-blue/20 flex items-center justify-center flex-shrink-0">
-                      <svg className="w-4 h-4 text-kali-blue" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                      </svg>
-                    </div>
-                    <div>
-                      <p className="text-sm text-white">New tool available</p>
-                      <p className="text-xs text-gray-400">SQLMap updated to v1.8</p>
-                      <p className="text-xs text-gray-500 mt-1">1 hour ago</p>
-                    </div>
-                  </div>
-                </div>
-              </div>
-              <div className="p-3 border-t border-gray-700 text-center">
-                <button className="text-sm text-kali-blue hover:underline">View all notifications</button>
-              </div>
-            </div>
-          )}
-        </div>
+        <NotificationCenter />
 
         {/* User Menu */}
         <div className="relative">

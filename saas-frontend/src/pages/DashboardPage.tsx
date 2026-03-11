@@ -164,7 +164,7 @@ export function DashboardPage() {
                   <div className="text-sm text-gray-400">See scan history</div>
                 </button>
                 <a 
-                  href="/#pricing"
+                  href="/dashboard/upgrade"
                   className="p-4 bg-gradient-to-r from-cyan-500/20 to-blue-500/20 rounded-lg hover:from-cyan-500/30 hover:to-blue-500/30 transition text-left border border-cyan-500/30"
                 >
                   <div className="text-2xl mb-2">⬆️</div>

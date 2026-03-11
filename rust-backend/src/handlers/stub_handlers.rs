@@ -3,21 +3,185 @@
 use std::sync::Arc;
 use axum::{
     extract::{Path, Query, State},
+    http::StatusCode,
     response::IntoResponse,
     Json,
 };
 use serde_json::json;
 
 use crate::middleware::auth_middleware::{AuthUser, AdminUser};
+use crate::services::auth::{create_access_token, create_refresh_token};
 use crate::AppState;
 
-// ── Auth stubs ─────────────────────────────────────────────
+// ── GitHub / Google OAuth ──────────────────────────────────
 
 pub async fn social_auth(
-    State(_state): State<Arc<AppState>>,
-    Json(_body): Json<serde_json::Value>,
+    State(state): State<Arc<AppState>>,
+    axum::extract::Path(provider): axum::extract::Path<String>,
+    Json(body): Json<serde_json::Value>,
 ) -> impl IntoResponse {
-    Json(json!({"error": "Social auth not yet implemented in Rust backend"})).into_response()
+    let code = match body.get("code").and_then(|c| c.as_str()) {
+        Some(c) => c.to_string(),
+        None => return (StatusCode::BAD_REQUEST, Json(json!({"error": "Authorization code required"}))).into_response(),
+    };
+    let redirect_uri = body.get("redirect_uri").and_then(|r| r.as_str()).unwrap_or("").to_string();
+
+    // Only GitHub implemented for now
+    if provider != "github" {
+        return (StatusCode::BAD_REQUEST, Json(json!({"error": format!("{} OAuth not yet implemented", provider)}))).into_response();
+    }
+
+    let client_id = std::env::var("GITHUB_CLIENT_ID").unwrap_or_else(|_| "***REDACTED_GH_OAUTH_CLIENT_ID***".to_string());
+    let client_secret = match std::env::var("GITHUB_CLIENT_SECRET") {
+        Ok(s) => s,
+        Err(_) => return (StatusCode::INTERNAL_SERVER_ERROR, Json(json!({"error": "GitHub OAuth not configured (missing GITHUB_CLIENT_SECRET)"}))).into_response(),
+    };
+
+    // Exchange code for access token
+    let http = reqwest::Client::new();
+    let token_res = http.post("https://github.com/login/oauth/access_token")
+        .header("Accept", "application/json")
+        .json(&serde_json::json!({
+            "client_id": client_id,
+            "client_secret": client_secret,
+            "code": code,
+            "redirect_uri": redirect_uri,
+        }))
+        .send()
+        .await;
+
+    let token_data: serde_json::Value = match token_res {
+        Ok(resp) => match resp.json().await {
+            Ok(d) => d,
+            Err(_) => return (StatusCode::BAD_GATEWAY, Json(json!({"error": "Failed to parse GitHub token response"}))).into_response(),
+        },
+        Err(_) => return (StatusCode::BAD_GATEWAY, Json(json!({"error": "Failed to contact GitHub"}))).into_response(),
+    };
+
+    let gh_token = match token_data.get("access_token").and_then(|t| t.as_str()) {
+        Some(t) => t.to_string(),
+        None => {
+            let err = token_data.get("error_description").and_then(|e| e.as_str()).unwrap_or("Unknown error");
+            return (StatusCode::UNAUTHORIZED, Json(json!({"error": format!("GitHub OAuth failed: {}", err)}))).into_response();
+        }
+    };
+
+    // Get GitHub user info
+    let user_res = http.get("https://api.github.com/user")
+        .header("Authorization", format!("Bearer {}", gh_token))
+        .header("User-Agent", "CyberSec-Pro")
+        .send()
+        .await;
+
+    let gh_user: serde_json::Value = match user_res {
+        Ok(resp) => match resp.json().await {
+            Ok(d) => d,
+            Err(_) => return (StatusCode::BAD_GATEWAY, Json(json!({"error": "Failed to parse GitHub user info"}))).into_response(),
+        },
+        Err(_) => return (StatusCode::BAD_GATEWAY, Json(json!({"error": "Failed to get GitHub user info"}))).into_response(),
+    };
+
+    // Get primary email if not public  
+    let mut email = gh_user.get("email").and_then(|e| e.as_str()).unwrap_or("").to_string();
+    if email.is_empty() {
+        let emails_res = http.get("https://api.github.com/user/emails")
+            .header("Authorization", format!("Bearer {}", gh_token))
+            .header("User-Agent", "CyberSec-Pro")
+            .send()
+            .await;
+        if let Ok(resp) = emails_res {
+            if let Ok(emails) = resp.json::<Vec<serde_json::Value>>().await {
+                for e in &emails {
+                    if e.get("primary").and_then(|p| p.as_bool()) == Some(true) {
+                        if let Some(addr) = e.get("email").and_then(|a| a.as_str()) {
+                            email = addr.to_string();
+                            break;
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    if email.is_empty() {
+        return (StatusCode::BAD_REQUEST, Json(json!({"error": "Could not retrieve email from GitHub. Please make email public or grant email scope."}))).into_response();
+    }
+
+    let gh_name = gh_user.get("name").and_then(|n| n.as_str()).unwrap_or("");
+    let gh_login = gh_user.get("login").and_then(|l| l.as_str()).unwrap_or("");
+    let gh_avatar = gh_user.get("avatar_url").and_then(|a| a.as_str()).unwrap_or("");
+    let gh_id = gh_user.get("id").and_then(|i| i.as_i64()).unwrap_or(0);
+
+    let name_parts: Vec<&str> = gh_name.split_whitespace().collect();
+    let first_name = if !name_parts.is_empty() { name_parts[0] } else { gh_login };
+    let last_name = if name_parts.len() > 1 { name_parts[1..].join(" ") } else { String::new() };
+
+    // Check if user already exists
+    let existing: Option<(String, String, Option<String>)> = sqlx::query_as(
+        "SELECT id, role, organization_id FROM users WHERE email = ?"
+    )
+    .bind(&email)
+    .fetch_optional(&state.db)
+    .await
+    .unwrap_or(None);
+
+    let (user_id, org_id, role) = if let Some((uid, r, oid)) = existing {
+        // Update last login + avatar
+        let _ = sqlx::query("UPDATE users SET last_login = CURRENT_TIMESTAMP, avatar_url = ? WHERE id = ?")
+            .bind(gh_avatar)
+            .bind(&uid)
+            .execute(&state.db)
+            .await;
+        (uid, oid.unwrap_or_default(), r)
+    } else {
+        // Create new user + organization
+        let new_org_id = uuid::Uuid::new_v4().to_string();
+        let new_user_id = uuid::Uuid::new_v4().to_string();
+        let slug = email.split('@').next().unwrap_or("user").to_string();
+
+        let _ = sqlx::query(
+            "INSERT INTO organizations (id, name, slug, plan_type) VALUES (?, ?, ?, 'trial')"
+        )
+        .bind(&new_org_id)
+        .bind(&format!("{}'s Organization", first_name))
+        .bind(&slug)
+        .execute(&state.db)
+        .await;
+
+        let _ = sqlx::query(
+            "INSERT INTO users (id, email, password_hash, first_name, last_name, role, organization_id, email_verified, avatar_url, github_id)
+             VALUES (?, ?, '', ?, ?, 'admin', ?, 1, ?, ?)"
+        )
+        .bind(&new_user_id)
+        .bind(&email)
+        .bind(first_name)
+        .bind(&last_name)
+        .bind(&new_org_id)
+        .bind(gh_avatar)
+        .bind(gh_id)
+        .execute(&state.db)
+        .await;
+
+        (new_user_id, new_org_id, "admin".to_string())
+    };
+
+    // Generate JWT tokens
+    let access_token = create_access_token(&state.jwt_secret, &user_id, Some(&org_id), &role).unwrap_or_default();
+    let refresh_token = create_refresh_token(&state.jwt_secret, &user_id).unwrap_or_default();
+
+    (StatusCode::OK, Json(json!({
+        "access_token": access_token,
+        "refresh_token": refresh_token,
+        "message": "GitHub login successful",
+        "user": {
+            "id": user_id,
+            "email": email,
+            "first_name": first_name,
+            "last_name": last_name,
+            "avatar_url": gh_avatar,
+            "role": role
+        }
+    }))).into_response()
 }
 
 pub async fn resend_verification(

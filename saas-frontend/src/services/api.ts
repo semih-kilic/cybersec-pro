@@ -396,9 +396,9 @@ class ApiService {
       try {
         const data = JSON.parse(event.data);
         if (data.type === 'output') {
-          onOutput(data.line);
+          onOutput(data.line || data.data || '');
         } else if (data.type === 'complete') {
-          onComplete(data.result);
+          onComplete(data.result || { status: data.status || 'completed', exit_code: data.exit_code });
           eventSource.close();
         }
       } catch (e) {

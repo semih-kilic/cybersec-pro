@@ -127,7 +127,7 @@ export function OverviewPage() {
                 <p className="text-gray-400 text-sm">Unlock unlimited scans and compliance reports</p>
               </div>
             </div>
-            <Link to="/dashboard/billing/upgrade" className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium transition text-sm">
+            <Link to="/dashboard/upgrade" className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium transition text-sm">
               Upgrade Now
             </Link>
           </div>

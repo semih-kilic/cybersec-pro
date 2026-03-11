@@ -78,6 +78,7 @@ pub async fn execute_scan(
                             let _ = tx_clone.send(serde_json::json!({
                                 "type": "output",
                                 "scan_id": scan_id_owned,
+                                "line": line,
                                 "data": line
                             }).to_string());
                         }
@@ -124,8 +125,14 @@ pub async fn execute_scan(
     let _ = tx.send(serde_json::json!({
         "type": "complete",
         "scan_id": scan_id,
+        "status": "completed",
         "exit_code": exit_code,
-        "output_length": output.len()
+        "output_length": output.len(),
+        "result": {
+            "status": if exit_code == Some(0) { "completed" } else { "failed" },
+            "exit_code": exit_code,
+            "output_length": output.len()
+        }
     }).to_string());
 
     Ok(ScanResult {

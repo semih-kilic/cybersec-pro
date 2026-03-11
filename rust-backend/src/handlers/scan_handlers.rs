@@ -270,8 +270,19 @@ pub async fn start_scan(
         }).to_string());
     });
 
+    // Build command string for response
+    let (program, args) = crate::scan_engine::tool_registry::build_command(&tool.name, target, tool.command_template.as_deref())
+        .unwrap_or_else(|_| (tool.name.clone(), vec![target.to_string()]));
+    let command_str = format!("{} {}", program, args.join(" "));
+
     (StatusCode::CREATED, Json(json!({
+        "success": true,
         "message": "Scan started",
+        "scan_id": scan_id,
+        "command": command_str,
+        "status": "running",
+        "execution_mode": "local",
+        "engine": "rust-axum",
         "scan": {
             "id": scan_id,
             "tool": tool.name,
