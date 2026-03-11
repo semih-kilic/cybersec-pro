@@ -18,7 +18,7 @@ function buildPlans(counts: { starter: number; professional: number; enterprise:
       description: 'Test drive the platform',
       features: [
         '1 comprehensive security scan',
-        'Full 682-test coverage',
+        'Full 401-tool coverage',
         'PDF report with findings',
         'No credit card required',
       ],
@@ -108,7 +108,7 @@ export default function UpgradePage() {
   const plans = useMemo(() => buildPlans({
     starter: toolCounts?.plans?.starter ?? 50,
     professional: toolCounts?.plans?.professional ?? 200,
-    enterprise: toolCounts?.plans?.enterprise ?? 682,
+    enterprise: toolCounts?.plans?.enterprise ?? 401,
   }), [toolCounts]);
 
   const handleUpgrade = async (planId: string) => {

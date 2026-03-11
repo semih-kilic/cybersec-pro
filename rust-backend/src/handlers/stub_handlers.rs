@@ -63,8 +63,8 @@ pub async fn tool_config(
     _user: AuthUser,
     State(state): State<Arc<AppState>>,
 ) -> impl IntoResponse {
-    let tool = sqlx::query_as::<_, (String, String, String)>(
-        "SELECT id, name, COALESCE(parameters, '{}') FROM tools WHERE id = ? OR slug = ?"
+    let tool = sqlx::query_as::<_, (String, String, String, String, String, String, Option<String>, Option<String>, Option<String>)>(
+        "SELECT id, name, COALESCE(parameters, '{}'), COALESCE(description,''), category, COALESCE(plan_required,'starter'), command_template, binary_name, tool_group FROM tools WHERE id = ? OR name = ? AND is_active = 1"
     )
     .bind(&tool_id)
     .bind(&tool_id)
@@ -72,12 +72,22 @@ pub async fn tool_config(
     .await;
 
     match tool {
-        Ok(Some((id, name, params))) => {
+        Ok(Some((id, name, params, desc, cat, plan, cmd_tpl, binary, group))) => {
             let params_val: serde_json::Value = serde_json::from_str(&params).unwrap_or(json!({}));
             Json(json!({
-                "id": id,
-                "name": name,
-                "parameters": params_val,
+                "tool": {
+                    "id": id,
+                    "name": name,
+                    "slug": name,
+                    "description": desc,
+                    "category": cat,
+                    "plan_required": plan,
+                    "is_active": true,
+                    "parameters": params_val,
+                    "command_template": cmd_tpl,
+                    "binary_name": binary,
+                    "group": group,
+                },
                 "config": {}
             })).into_response()
         }
@@ -213,16 +223,32 @@ pub async fn v2_tool_detail(
     Path(tool_id): Path<String>,
     State(state): State<Arc<AppState>>,
 ) -> impl IntoResponse {
-    let tool = sqlx::query_as::<_, (String, String, String, String, String, bool)>(
-        "SELECT id, name, COALESCE(description,''), category, COALESCE(plan_required,'starter'), is_active FROM tools WHERE id = ?"
+    let tool = sqlx::query_as::<_, (String, String, String, String, String, bool, Option<String>, Option<String>, Option<String>, Option<String>)>(
+        "SELECT id, name, COALESCE(description,''), category, COALESCE(plan_required,'starter'), is_active, command_template, binary_name, tool_group, kali_package FROM tools WHERE (id = ? OR name = ?) AND is_active = 1"
     )
+    .bind(&tool_id)
     .bind(&tool_id)
     .fetch_optional(&state.db)
     .await;
 
     match tool {
-        Ok(Some((id, name, desc, cat, plan, active))) => {
-            Json(json!({"id": id, "name": name, "description": desc, "category": cat, "plan_required": plan, "is_active": active})).into_response()
+        Ok(Some((id, name, desc, cat, plan, active, cmd_tpl, binary, group, kali_pkg))) => {
+            Json(json!({
+                "success": true,
+                "tool": {
+                    "id": id,
+                    "name": name,
+                    "slug": name,
+                    "description": desc,
+                    "category": cat,
+                    "plan_required": plan,
+                    "is_active": active,
+                    "command_template": cmd_tpl,
+                    "binary_name": binary,
+                    "group": group,
+                    "kali_package": kali_pkg,
+                }
+            })).into_response()
         }
         _ => Json(json!({"error": "Tool not found"})).into_response()
     }
@@ -372,19 +398,87 @@ pub async fn agents_dashboard(
     user: AuthUser,
     State(state): State<Arc<AppState>>,
 ) -> impl IntoResponse {
-    let count = sqlx::query_as::<_, (i64,)>(
-        "SELECT COUNT(*) FROM agents WHERE organization_id = ?"
+    let org_id = user.org_id.as_deref().unwrap_or("");
+    let rows = sqlx::query(
+        "SELECT id, name, hostname, ip_address, COALESCE(status,'offline') as status, os_info, platform, version, cpu_usage, memory_usage, active_scans, total_scans, location, connection_type, ssh_port, ssh_username, last_heartbeat FROM agents WHERE organization_id = ? ORDER BY created_at DESC"
     )
-    .bind(&user.org_id.as_deref().unwrap_or(""))
-    .fetch_one(&state.db)
+    .bind(org_id)
+    .fetch_all(&state.db)
     .await
-    .unwrap_or((0,));
+    .unwrap_or_default();
+
+    let mut online = 0i64;
+    let mut offline = 0i64;
+    let mut busy = 0i64;
+    let mut total_active_scans = 0i64;
+
+    let agent_list: Vec<serde_json::Value> = rows.iter().map(|row| {
+        use sqlx::Row;
+        let id: String = row.get("id");
+        let name: String = row.get("name");
+        let hostname: Option<String> = row.get("hostname");
+        let ip: Option<String> = row.get("ip_address");
+        let status: String = row.get("status");
+        let os: Option<String> = row.get("os_info");
+        let platform: Option<String> = row.get("platform");
+        let version: Option<String> = row.get("version");
+        let cpu: Option<f64> = row.get("cpu_usage");
+        let mem: Option<f64> = row.get("memory_usage");
+        let active: Option<i32> = row.get("active_scans");
+        let total: Option<i32> = row.get("total_scans");
+        let location: Option<String> = row.get("location");
+        let conn_type: Option<String> = row.get("connection_type");
+        let ssh_port: Option<i32> = row.get("ssh_port");
+        let ssh_user: Option<String> = row.get("ssh_username");
+        let heartbeat: Option<String> = row.get("last_heartbeat");
+
+        match status.as_str() {
+            "online" => online += 1,
+            "busy" => { busy += 1; online += 1; },
+            _ => offline += 1,
+        }
+        total_active_scans += active.unwrap_or(0) as i64;
+
+        let emoji = match status.as_str() {
+            "online" => "\u{1f7e2}",
+            "busy" => "\u{1f7e1}",
+            "error" => "\u{1f534}",
+            "pending" => "\u{1f7e0}",
+            _ => "\u{26ab}",
+        };
+
+        json!({
+            "id": id,
+            "name": name,
+            "hostname": hostname.unwrap_or_default(),
+            "ip_address": ip.unwrap_or_default(),
+            "status": status,
+            "status_emoji": emoji,
+            "os": os.unwrap_or_else(|| "Linux".into()),
+            "platform": platform.unwrap_or_else(|| "linux".into()),
+            "version": version.unwrap_or_else(|| "1.0.0".into()),
+            "last_seen": &heartbeat,
+            "last_heartbeat": &heartbeat,
+            "cpu_usage": cpu.unwrap_or(0.0),
+            "memory_usage": mem.unwrap_or(0.0),
+            "active_scans": active.unwrap_or(0),
+            "total_scans": total.unwrap_or(0),
+            "location": location.unwrap_or_default(),
+            "connection_type": conn_type.unwrap_or_else(|| "direct".into()),
+            "ssh_port": ssh_port.unwrap_or(22),
+            "ssh_username": ssh_user.unwrap_or_default(),
+        })
+    }).collect();
 
     Json(json!({
-        "total_agents": count.0,
-        "online": 0,
-        "offline": count.0,
-        "active_scans": 0
+        "total_agents": rows.len(),
+        "online": online,
+        "offline": offline,
+        "busy": busy,
+        "pending": 0,
+        "total_scans_completed": 0,
+        "active_scans": total_active_scans,
+        "agents": agent_list
     })).into_response()
 }
 
@@ -477,17 +571,40 @@ pub async fn list_targets(
     user: AuthUser,
     State(state): State<Arc<AppState>>,
 ) -> impl IntoResponse {
-    // Derive targets from scans
-    let targets = sqlx::query_as::<_, (String, i64)>(
-        "SELECT target, COUNT(*) as cnt FROM scans WHERE user_id = ? GROUP BY target ORDER BY cnt DESC LIMIT 50"
+    // Derive targets from scans with full details
+    let targets = sqlx::query_as::<_, (String, i64, Option<String>, Option<String>)>(
+        "SELECT target, COUNT(*) as cnt, MAX(created_at) as last_scan, MIN(created_at) as first_scan FROM scans WHERE user_id = ? GROUP BY target ORDER BY cnt DESC LIMIT 50"
     )
     .bind(&user.user_id)
     .fetch_all(&state.db)
     .await
     .unwrap_or_default();
 
-    let list: Vec<serde_json::Value> = targets.iter().map(|(t, c)| {
-        json!({"target": t, "scan_count": c})
+    let list: Vec<serde_json::Value> = targets.iter().enumerate().map(|(i, (t, c, last, first))| {
+        // Detect target type
+        let target_type = if t.contains('/') && t.chars().any(|c| c.is_numeric()) {
+            "cidr"
+        } else if t.starts_with("http://") || t.starts_with("https://") {
+            "url"
+        } else if t.chars().all(|c| c.is_numeric() || c == '.') {
+            "ip"
+        } else if t.contains('-') && t.chars().all(|c| c.is_numeric() || c == '.' || c == '-') {
+            "range"
+        } else {
+            "domain"
+        };
+        json!({
+            "id": format!("target-{}", i+1),
+            "name": t,
+            "value": t,
+            "type": target_type,
+            "tags": [],
+            "last_scan": last,
+            "scans_count": c,
+            "risk_score": null,
+            "created_at": first.clone().unwrap_or_default(),
+            "notes": null,
+        })
     }).collect();
 
     Json(json!({"targets": list})).into_response()
@@ -628,16 +745,49 @@ pub async fn admin_overview(
     _admin: AdminUser,
     State(state): State<Arc<AppState>>,
 ) -> impl IntoResponse {
-    let users = sqlx::query_as::<_, (i64,)>("SELECT COUNT(*) FROM users").fetch_one(&state.db).await.unwrap_or((0,));
-    let orgs = sqlx::query_as::<_, (i64,)>("SELECT COUNT(*) FROM organizations").fetch_one(&state.db).await.unwrap_or((0,));
-    let scans = sqlx::query_as::<_, (i64,)>("SELECT COUNT(*) FROM scans").fetch_one(&state.db).await.unwrap_or((0,));
-    let tools = sqlx::query_as::<_, (i64,)>("SELECT COUNT(*) FROM tools").fetch_one(&state.db).await.unwrap_or((0,));
+    let total_users = sqlx::query_as::<_, (i64,)>("SELECT COUNT(*) FROM users").fetch_one(&state.db).await.unwrap_or((0,)).0;
+    let active_users = sqlx::query_as::<_, (i64,)>("SELECT COUNT(*) FROM users WHERE is_active = 1").fetch_one(&state.db).await.unwrap_or((0,)).0;
+    let total_orgs = sqlx::query_as::<_, (i64,)>("SELECT COUNT(*) FROM organizations").fetch_one(&state.db).await.unwrap_or((0,)).0;
+    let total_scans = sqlx::query_as::<_, (i64,)>("SELECT COUNT(*) FROM scans").fetch_one(&state.db).await.unwrap_or((0,)).0;
+    let running_scans = sqlx::query_as::<_, (i64,)>("SELECT COUNT(*) FROM scans WHERE status IN ('running','pending')").fetch_one(&state.db).await.unwrap_or((0,)).0;
+    let total_agents = sqlx::query_as::<_, (i64,)>("SELECT COUNT(*) FROM agents").fetch_one(&state.db).await.unwrap_or((0,)).0;
+    let online_agents = sqlx::query_as::<_, (i64,)>("SELECT COUNT(*) FROM agents WHERE status = 'online'").fetch_one(&state.db).await.unwrap_or((0,)).0;
+
+    // Plan distribution
+    let plans = sqlx::query_as::<_, (String, i64)>("SELECT COALESCE(plan_type,'trial'), COUNT(*) FROM organizations GROUP BY plan_type")
+        .fetch_all(&state.db).await.unwrap_or_default();
+    let plans_dist: serde_json::Map<String, serde_json::Value> = plans.into_iter().map(|(p, c)| (p, json!(c))).collect();
+
+    // Recent users
+    let recent_users = sqlx::query_as::<_, (String, String, String, String, Option<String>, bool, String)>(
+        "SELECT id, email, COALESCE(first_name,''), COALESCE(role,'user'), organization_id, is_active, created_at FROM users ORDER BY created_at DESC LIMIT 10"
+    ).fetch_all(&state.db).await.unwrap_or_default();
+    let user_list: Vec<serde_json::Value> = recent_users.iter().map(|(id, email, name, role, org, active, created)| {
+        json!({"id": id, "email": email, "first_name": name, "last_name": "", "role": role, "organization_id": org, "is_active": active, "created_at": created})
+    }).collect();
+
+    // Recent orgs
+    let recent_orgs = sqlx::query_as::<_, (String, String, Option<String>, Option<String>, bool)>(
+        "SELECT id, name, slug, plan_type, is_active FROM organizations ORDER BY created_at DESC LIMIT 10"
+    ).fetch_all(&state.db).await.unwrap_or_default();
+    let org_list: Vec<serde_json::Value> = recent_orgs.iter().map(|(id, name, slug, plan, active)| {
+        json!({"id": id, "name": name, "slug": slug, "plan_type": plan.clone().unwrap_or_else(|| "trial".into()), "is_active": active})
+    }).collect();
+
+    // Recent scans
+    let recent_scans = sqlx::query_as::<_, (String, String, String, String)>(
+        "SELECT id, target, status, created_at FROM scans ORDER BY created_at DESC LIMIT 5"
+    ).fetch_all(&state.db).await.unwrap_or_default();
+    let scan_list: Vec<serde_json::Value> = recent_scans.iter().map(|(id, target, status, created)| {
+        json!({"id": id, "target": target, "status": status, "created_at": created})
+    }).collect();
 
     Json(json!({
-        "total_users": users.0,
-        "total_organizations": orgs.0,
-        "total_scans": scans.0,
-        "total_tools": tools.0,
+        "users": { "total": total_users, "active": active_users, "list": user_list },
+        "organizations": { "total": total_orgs, "plans_distribution": plans_dist, "list": org_list },
+        "scans": { "total": total_scans, "running": running_scans, "recent": scan_list },
+        "agents": { "total": total_agents, "online": online_agents },
+        "revenue": { "mrr": 0, "arr": 0 },
         "system_health": "healthy",
         "engine": "rust-axum"
     })).into_response()

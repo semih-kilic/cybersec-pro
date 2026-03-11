@@ -225,7 +225,7 @@ export function LandingPage() {
                   <span className="text-green-400">✓</span> 1 free security scan
                 </li>
                 <li className="flex items-center gap-2">
-                  <span className="text-green-400">✓</span> Full 682-test coverage
+                  <span className="text-green-400">✓</span> Full 401-tool coverage
                 </li>
                 <li className="flex items-center gap-2">
                   <span className="text-green-400">✓</span> PDF report with findings
@@ -316,7 +316,7 @@ export function LandingPage() {
               </div>
               <ul className="space-y-2 mb-6 text-gray-300 text-sm">
                 <li className="flex items-center gap-2">
-                  <span className="text-purple-400">✓</span> <strong>682</strong> All Tools
+                  <span className="text-purple-400">✓</span> <strong>401</strong> All Tools
                 </li>
                 <li className="flex items-center gap-2">
                   <span className="text-purple-400">✓</span> Unlimited everything

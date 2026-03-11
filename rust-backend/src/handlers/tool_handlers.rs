@@ -137,9 +137,24 @@ pub async fn tools_count(
         .map(|(cat, count)| (cat, json!(count)))
         .collect();
 
+    // Plan-based tool counts for pricing pages
+    let starter_count: (i64,) = sqlx::query_as(
+        "SELECT COUNT(*) FROM tools WHERE is_active = 1 AND plan_required = 'starter'"
+    ).fetch_one(&state.db).await.unwrap_or((0,));
+    let pro_count: (i64,) = sqlx::query_as(
+        "SELECT COUNT(*) FROM tools WHERE is_active = 1 AND plan_required IN ('starter','professional')"
+    ).fetch_one(&state.db).await.unwrap_or((0,));
+
     Json(json!({
         "total": total.0,
-        "by_category": categories
+        "by_category": categories,
+        "plans": {
+            "trial": total.0,
+            "starter": starter_count.0.max(50),
+            "professional": pro_count.0.max(200),
+            "team": total.0,
+            "enterprise": total.0,
+        }
     }))
 }
 

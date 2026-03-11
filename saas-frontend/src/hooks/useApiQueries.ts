@@ -43,18 +43,16 @@ export interface PlanToolCounts {
   total: number;
 }
 
-/** Fetches dynamic tool counts per plan from /api/v1/tools/count (public, no auth) */
+/** Fetches dynamic tool counts per plan from /api/v1/tools/count */
 export function useToolCounts() {
+  const { token } = useAuth();
   return useQuery<PlanToolCounts>({
     queryKey: ['toolCounts'],
-    queryFn: async () => {
-      const res = await fetch('/api/v1/tools/count');
-      if (!res.ok) throw new Error('Failed to fetch tool counts');
-      return res.json();
-    },
+    queryFn: () => authFetch<PlanToolCounts>('/api/v1/tools/count', token),
     staleTime: CACHE_TIMES.tools.staleTime,   // 5 minutes - counts rarely change
     gcTime: CACHE_TIMES.tools.gcTime,          // 30 min cache
     refetchOnWindowFocus: false,
+    enabled: !!token,
   });
 }
 
@@ -580,10 +578,26 @@ export function useReports() {
 export function useReportTemplates() {
   const { token } = useAuth();
 
+  // Default template metadata for merging with API data
+  const templateDefaults: Record<string, { icon: string; sections: string[]; formats: string[] }> = {
+    executive: { icon: '📊', sections: ['Risk Overview', 'Key Findings', 'Recommendations'], formats: ['html', 'pdf', 'json'] },
+    technical: { icon: '🔧', sections: ['Vulnerability Details', 'CVE References', 'Technical Remediation'], formats: ['html', 'pdf', 'json'] },
+    compliance: { icon: '📋', sections: ['Compliance Status', 'Control Mapping', 'Gap Analysis'], formats: ['html', 'pdf'] },
+    owasp: { icon: '🛡️', sections: ['OWASP Top 10 Mapping', 'Vulnerability Details', 'Remediation'], formats: ['html', 'pdf', 'json'] },
+    pci: { icon: '💳', sections: ['PCI DSS Requirements', 'Assessment', 'Gaps'], formats: ['html', 'pdf'] },
+    iso: { icon: '🏢', sections: ['ISO 27001 Controls', 'Risk Assessment', 'Statement of Applicability'], formats: ['html', 'pdf'] },
+    full: { icon: '📑', sections: ['Executive Summary', 'Technical Details', 'Vulnerabilities', 'Recommendations', 'Appendix'], formats: ['html', 'pdf', 'json', 'csv', 'markdown'] },
+  };
+
   return useQuery({
     queryKey: queryKeys.reports.templates(),
-    queryFn: () => authFetch<{ templates: { id: string; name: string; description: string; icon: string; sections: string[]; formats: string[]; frameworks?: string[] }[] }>('/api/v1/reports/templates', token),
-    select: (data) => data.templates || [],
+    queryFn: () => authFetch<{ templates: { id: string; name: string; description: string; icon?: string; sections?: string[]; formats?: string[] }[] }>('/api/v1/reports/templates', token),
+    select: (data) => (data.templates || []).map(t => ({
+      ...t,
+      icon: t.icon || templateDefaults[t.id]?.icon || '📄',
+      sections: t.sections || templateDefaults[t.id]?.sections || ['Summary'],
+      formats: t.formats || templateDefaults[t.id]?.formats || ['html', 'pdf'],
+    })),
     ...CACHE_TIMES.reports,
     enabled: !!token,
   });
