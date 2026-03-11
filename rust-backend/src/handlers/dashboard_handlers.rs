@@ -92,7 +92,7 @@ pub async fn security_summary(
     let mut high: i64 = 0;
     let mut medium: i64 = 0;
     let mut low: i64 = 0;
-    let mut info: i64 = 0;
+    let info: i64 = 0;
 
     let findings_rows: Vec<(Option<serde_json::Value>,)> = sqlx::query_as(
         "SELECT findings FROM scans WHERE organization_id = $1 AND findings IS NOT NULL AND status = 'completed' ORDER BY created_at DESC LIMIT 50"

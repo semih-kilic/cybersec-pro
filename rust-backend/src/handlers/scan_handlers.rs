@@ -92,7 +92,7 @@ pub async fn list_scans(
         }
     }
 
-    let enriched: Vec<_> = response.into_iter().zip(scans.iter()).map(|(mut resp, scan)| {
+    let enriched: Vec<_> = response.into_iter().zip(scans.iter()).map(|(resp, scan)| {
         let mut val = serde_json::to_value(&resp).unwrap_or(json!({}));
         if let serde_json::Value::Object(ref mut map) = val {
             let tname = tool_names.get(&scan.tool_id).cloned().unwrap_or_default();
