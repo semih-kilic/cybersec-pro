@@ -211,7 +211,7 @@ export function NewScanPage() {
               <div className="mb-6">
                 <h3 className="text-sm text-gray-400 mb-3">Popular Tools</h3>
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-                  {['nmap', 'sqlmap', 'nikto', 'hydra', 'gobuster', 'wpscan', 'john', 'dirb'].map(tool => (
+                  {['nmap', 'nikto', 'sqlmap', 'hydra', 'gobuster', 'nuclei', 'wpscan', 'john'].map(tool => (
                     <button
                       key={tool}
                       onClick={() => setSelectedTool(tool)}
