@@ -117,5 +117,5 @@ pub async fn delete_project(
         .execute(&state.db)
         .await;
 
-    Json(json!({"message": "Project deleted"}))
+    Json(json!({"message": "Project deleted"})).into_response()
 }

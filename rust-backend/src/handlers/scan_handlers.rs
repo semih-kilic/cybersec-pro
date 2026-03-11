@@ -292,7 +292,7 @@ pub async fn scan_output_stream(
     let scan_id_filter = scan_id.clone();
 
     let stream = BroadcastStream::new(rx)
-        .filter_map(move |msg| {
+        .filter_map(move |msg: Result<String, tokio_stream::wrappers::errors::BroadcastStreamRecvError>| {
             match msg {
                 Ok(data) => {
                     // Filter messages for this scan
@@ -362,8 +362,8 @@ pub async fn delete_scan(
     .await;
 
     match result {
-        Ok(r) if r.rows_affected() > 0 => Json(json!({"message": "Scan deleted"})),
-        _ => Json(json!({"error": "Scan not found"})),
+        Ok(r) if r.rows_affected() > 0 => Json(json!({"message": "Scan deleted"})).into_response(),
+        _ => Json(json!({"error": "Scan not found"})).into_response(),
     }
 }
 

@@ -15,8 +15,10 @@ pub fn generate_totp_uri(secret: &str, email: &str) -> Result<String> {
         1,
         30,
         Secret::Encoded(secret.to_string()).to_bytes()?,
+        Some("CyberSec Pro".to_string()),
+        email.to_string(),
     )?;
-    Ok(totp.get_url(email, "CyberSec Pro"))
+    Ok(totp.get_url())
 }
 
 /// Verify a TOTP code against a secret.
@@ -27,6 +29,8 @@ pub fn verify_totp(secret: &str, code: &str) -> Result<bool> {
         1,
         30,
         Secret::Encoded(secret.to_string()).to_bytes()?,
+        Some("CyberSec Pro".to_string()),
+        "user@cybersec.pro".to_string(),
     )?;
     Ok(totp.check_current(code)?)
 }

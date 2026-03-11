@@ -1,11 +1,12 @@
 use axum::{
+    body::Body,
     http::{HeaderValue, Request},
     middleware::Next,
     response::Response,
 };
 
 /// Add security headers to all responses (mirrors Flask after_request).
-pub async fn security_headers<B>(request: Request<B>, next: Next<B>) -> Response {
+pub async fn security_headers(request: Request<Body>, next: Next) -> Response {
     let mut response = next.run(request).await;
     let headers = response.headers_mut();
 

@@ -182,7 +182,7 @@ pub async fn delete_report(
         .execute(&state.db)
         .await;
 
-    Json(json!({"message": "Report deleted"}))
+    Json(json!({"message": "Report deleted"})).into_response()
 }
 
 pub async fn report_templates() -> impl IntoResponse {

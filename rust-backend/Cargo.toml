@@ -25,6 +25,7 @@ serde_json = "1"
 jsonwebtoken = "9"
 argon2 = "0.5"
 pbkdf2 = { version = "0.12", features = ["simple"] }
+scrypt = "0.11"
 sha2 = "0.10"
 hmac = "0.12"
 rand = "0.8"
@@ -50,12 +51,12 @@ tracing = "0.1"
 tracing-subscriber = { version = "0.3", features = ["env-filter", "json"] }
 
 # Process management (scan engine)
-nix = { version = "0.28", features = ["process", "signal", "pty"] }
+nix = { version = "0.28", features = ["process", "signal"] }
 portable-pty = "0.8"
 lazy_static = "1"
 
-# Stripe
-stripe-rust = "0.34"
+# Stripe (stubs for now)
+# async-stripe = "1.0.0-rc.3"
 
 # Redis (optional rate limiting)
 redis = { version = "0.25", features = ["tokio-comp"] }
@@ -67,7 +68,7 @@ dotenvy = "0.15"
 regex = "1"
 async-trait = "0.1"
 futures = "0.3"
-tokio-stream = "0.1"
+tokio-stream = { version = "0.1", features = ["sync"] }
 parking_lot = "0.12"
 dashmap = "5"
 

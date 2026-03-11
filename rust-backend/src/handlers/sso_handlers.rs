@@ -139,7 +139,7 @@ pub async fn delete_sso_config(
         .execute(&state.db)
         .await;
 
-    Json(json!({"message": "SSO configuration deleted"}))
+    Json(json!({"message": "SSO configuration deleted"})).into_response()
 }
 
 pub async fn toggle_sso(
@@ -168,5 +168,5 @@ pub async fn toggle_sso(
 
     Json(json!({
         "is_enabled": enabled.and_then(|e| e.0).unwrap_or(false)
-    }))
+    })).into_response()
 }

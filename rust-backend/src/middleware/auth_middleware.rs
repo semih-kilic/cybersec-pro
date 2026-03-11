@@ -1,13 +1,13 @@
 use axum::{
-    extract::{FromRequestParts, Query},
+    extract::FromRequestParts,
     http::{request::Parts, StatusCode},
     response::{IntoResponse, Response},
     Json,
 };
-use serde::Deserialize;
+use async_trait::async_trait;
 use std::sync::Arc;
 
-use crate::services::auth::{Claims, decode_token};
+use crate::services::auth::decode_token;
 use crate::AppState;
 
 /// Authenticated user extracted from JWT (cookie or header).
@@ -18,31 +18,13 @@ pub struct AuthUser {
     pub role: String,
 }
 
-#[derive(Deserialize)]
-struct TokenQuery {
-    token: Option<String>,
-}
-
-impl<S> FromRequestParts<S> for AuthUser
-where
-    S: Send + Sync,
-    Arc<AppState>: FromRequestParts<S>,
+#[async_trait]
+impl FromRequestParts<Arc<AppState>> for AuthUser
 {
     type Rejection = Response;
 
-    async fn from_request_parts(parts: &mut Parts, state: &S) -> Result<Self, Self::Rejection> {
-        // Get app state for JWT secret
-        let app_state = parts
-            .extensions
-            .get::<Arc<AppState>>()
-            .cloned()
-            .ok_or_else(|| {
-                (StatusCode::INTERNAL_SERVER_ERROR, Json(serde_json::json!({"error": "Internal server error"}))).into_response()
-            })?;
-
-        let jwt_secret = &app_state.jwt_secret;
-
-        // Try multiple token sources (same as Flask: cookies, headers, query)
+    async fn from_request_parts(parts: &mut Parts, state: &Arc<AppState>) -> Result<Self, Self::Rejection> {
+        let jwt_secret = &state.jwt_secret;
         let token = extract_token(parts);
 
         let token = token.ok_or_else(|| {
@@ -105,18 +87,18 @@ pub fn auth_extractor() -> () {}
 /// Admin-only auth check
 pub struct AdminUser(pub AuthUser);
 
-impl<S> FromRequestParts<S> for AdminUser
-where
-    S: Send + Sync,
-    Arc<AppState>: FromRequestParts<S>,
+#[async_trait]
+impl FromRequestParts<Arc<AppState>> for AdminUser
 {
     type Rejection = Response;
 
-    async fn from_request_parts(parts: &mut Parts, state: &S) -> Result<Self, Self::Rejection> {
+    async fn from_request_parts(parts: &mut Parts, state: &Arc<AppState>) -> Result<Self, Self::Rejection> {
         let user = AuthUser::from_request_parts(parts, state).await?;
+
         if user.role != "admin" && user.role != "superadmin" {
             return Err((StatusCode::FORBIDDEN, Json(serde_json::json!({"error": "Admin access required"}))).into_response());
         }
+
         Ok(AdminUser(user))
     }
 }

@@ -23,7 +23,7 @@ pub struct Scan {
     pub created_at: Option<NaiveDateTime>,
 }
 
-#[derive(Debug, Serialize)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct FindingsSummary {
     pub total: i64,
     pub critical: i64,

@@ -145,7 +145,7 @@ pub async fn delete_agent(
         .execute(&state.db)
         .await;
 
-    Json(json!({"message": "Agent deleted"}))
+    Json(json!({"message": "Agent deleted"})).into_response()
 }
 
 pub async fn agent_heartbeat(

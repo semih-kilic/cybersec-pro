@@ -268,7 +268,7 @@ pub async fn refresh(
 
     (StatusCode::OK, Json(json!({
         "access_token": access_token
-    })))
+    }))).into_response()
 }
 
 fn extract_refresh_token(headers: &HeaderMap) -> Option<String> {
@@ -302,7 +302,7 @@ pub async fn logout(
     headers: HeaderMap,
 ) -> impl IntoResponse {
     log_audit(&state.db, "logout", "auth", "info", Some(&auth.user_id), auth.org_id.as_deref(), None, Some("user"), Some(&auth.user_id), "success", Some(&headers)).await;
-    Json(json!({"message": "Logged out successfully"}))
+    Json(json!({"message": "Logged out successfully"})).into_response()
 }
 
 // ── Get Current User ───────────────────────────────────────
