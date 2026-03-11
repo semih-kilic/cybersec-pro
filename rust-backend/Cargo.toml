@@ -50,9 +50,9 @@ tracing = "0.1"
 tracing-subscriber = { version = "0.3", features = ["env-filter", "json"] }
 
 # Process management (scan engine)
-tokio-process = "0.2"
 nix = { version = "0.28", features = ["process", "signal", "pty"] }
 portable-pty = "0.8"
+lazy_static = "1"
 
 # Stripe
 stripe-rust = "0.34"
@@ -79,3 +79,4 @@ opt-level = 3
 lto = true
 codegen-units = 1
 strip = true
+panic = "abort"
