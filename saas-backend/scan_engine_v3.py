@@ -504,10 +504,8 @@ class ScanEngineV3:
         # Track active processes for cleanup
         self._active_pids: set = set()
         
-        # Register cleanup handlers
+        # Register cleanup handler (no signal handlers - conflicts with eventlet)
         atexit.register(self._cleanup_all)
-        signal.signal(signal.SIGTERM, self._signal_handler)
-        signal.signal(signal.SIGINT, self._signal_handler)
         
         logger.info(f"ScanEngineV3 initialized with {max_workers} workers")
     
@@ -1441,7 +1439,7 @@ _engine_v3: Optional[ScanEngineV3] = None
 def get_engine_v3(socketio=None, app=None) -> ScanEngineV3:
     """Get or create global engine instance"""
     global _engine_v3
-    if _engine_v3 is None:
+    if _engine_v3 is None or _engine_v3._shutdown:
         _engine_v3 = ScanEngineV3(max_workers=3, socketio=socketio, app=app)
     elif socketio and _engine_v3.socketio is None:
         _engine_v3.socketio = socketio
