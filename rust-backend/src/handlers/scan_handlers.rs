@@ -165,10 +165,10 @@ pub async fn start_scan(
 ) -> impl IntoResponse {
     let org_id = auth.org_id.clone().unwrap_or_else(|| auth.user_id.clone());
 
-    // Rate limit (temporarily disabled for bulk testing)
-    // if state.rate_limiter.is_limited(&format!("scan:{}", auth.user_id), 50, Duration::from_secs(60)) {
-    //     return (StatusCode::TOO_MANY_REQUESTS, Json(json!({"error": "Too many scan requests"}))).into_response();
-    // }
+    // Rate limit
+    if state.rate_limiter.is_limited(&format!("scan:{}", auth.user_id), 5, Duration::from_secs(60)) {
+        return (StatusCode::TOO_MANY_REQUESTS, Json(json!({"error": "Too many scan requests"}))).into_response();
+    }
 
     // Resolve tool by name or ID
     let tool_identifier = body.tool.as_deref()

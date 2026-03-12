@@ -73,7 +73,7 @@ pub async fn execute_scan(
     let scan_id_owned = scan_id.to_string();
 
     // Read stdout and stderr concurrently with timeout
-    let result = timeout(Duration::from_secs(30), async {
+    let result = timeout(Duration::from_secs(300), async {
         loop {
             if stderr_done {
                 // Only read stdout
@@ -137,7 +137,7 @@ pub async fn execute_scan(
             let _ = killpg(Pid::from_raw(child_pid), Signal::SIGKILL);
         }
         let _ = child.kill().await;
-        return Err(anyhow!("Scan timed out after 30 seconds"));
+        return Err(anyhow!("Scan timed out after 300 seconds"));
     }
 
     let status = child.wait().await?;
