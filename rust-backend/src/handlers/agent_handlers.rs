@@ -17,18 +17,26 @@ pub async fn list_agents(
     State(state): State<Arc<AppState>>,
     auth: AuthUser,
 ) -> impl IntoResponse {
-    let org_id = match &auth.org_id {
-        Some(id) => id,
-        None => return (StatusCode::FORBIDDEN, Json(json!({"error": "Organization required"}))).into_response(),
+    let agents: Vec<Agent> = match &auth.org_id {
+        Some(org_id) => {
+            sqlx::query_as(
+                "SELECT * FROM agents WHERE organization_id = $1 ORDER BY created_at DESC"
+            )
+            .bind(org_id)
+            .fetch_all(&state.db)
+            .await
+            .unwrap_or_default()
+        }
+        None => {
+            // Admin users without org see all agents
+            sqlx::query_as(
+                "SELECT * FROM agents ORDER BY created_at DESC"
+            )
+            .fetch_all(&state.db)
+            .await
+            .unwrap_or_default()
+        }
     };
-
-    let agents: Vec<Agent> = sqlx::query_as(
-        "SELECT * FROM agents WHERE organization_id = $1 ORDER BY created_at DESC"
-    )
-    .bind(org_id)
-    .fetch_all(&state.db)
-    .await
-    .unwrap_or_default();
 
     let response: Vec<_> = agents.iter().map(|a| a.to_response()).collect();
     (StatusCode::OK, Json(json!({"agents": response}))).into_response()

@@ -727,11 +727,9 @@ export default function AgentsPage() {
 
             {/* Actions */}
             <div className="mt-6 space-y-3">
-              {selectedAgent.ssh_host && (
-                <button onClick={() => testConnection(selectedAgent.id)} disabled={testingConnection} className="w-full py-2.5 bg-cyan-600 hover:bg-cyan-700 text-white rounded-lg font-medium transition disabled:opacity-50">
-                  {testingConnection ? 'Testing...' : 'Test Connection'}
-                </button>
-              )}
+              <button onClick={() => testConnection(selectedAgent.id)} disabled={testingConnection} className="w-full py-2.5 bg-cyan-600 hover:bg-cyan-700 text-white rounded-lg font-medium transition disabled:opacity-50">
+                {testingConnection ? 'Testing...' : 'Test Connection'}
+              </button>
               {testResult && <div className={`p-3 rounded-lg text-sm ${testResult.success ? 'bg-green-900/30 text-green-400' : 'bg-red-900/30 text-red-400'}`}>{testResult.message}</div>}
               <button onClick={() => setShowEditModal(true)} className="w-full py-2.5 bg-gray-800 hover:bg-gray-700 text-white rounded-lg font-medium transition">Edit</button>
               <button onClick={() => deleteAgent(selectedAgent.id)} className="w-full py-2.5 bg-red-600/20 hover:bg-red-600/30 text-red-400 rounded-lg font-medium transition border border-red-500/20">Delete Agent</button>
@@ -916,16 +914,14 @@ function AgentCard({
           )}
         </div>
         {/* Quick Actions on Card */}
-        {agent.ssh_host && (
-          <button 
-            onClick={(e) => { e.stopPropagation(); onTestConnection(); }}
-            disabled={testingConnection}
-            className="w-full py-1.5 bg-cyan-600/10 hover:bg-cyan-600/20 text-cyan-400 rounded-lg text-xs font-medium transition border border-cyan-600/20 disabled:opacity-50 flex items-center justify-center gap-1.5"
-          >
-            <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" /></svg>
-            {testingConnection ? 'Testing...' : 'Test Connection'}
-          </button>
-        )}
+        <button 
+          onClick={(e) => { e.stopPropagation(); onTestConnection(); }}
+          disabled={testingConnection}
+          className="w-full py-1.5 bg-cyan-600/10 hover:bg-cyan-600/20 text-cyan-400 rounded-lg text-xs font-medium transition border border-cyan-600/20 disabled:opacity-50 flex items-center justify-center gap-1.5"
+        >
+          <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" /></svg>
+          {testingConnection ? 'Testing...' : 'Test Connection'}
+        </button>
       </div>
     </div>
   );

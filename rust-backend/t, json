@@ -1,0 +1,8 @@
+                  id                  |     name      | status  |           organization_id            
+--------------------------------------+---------------+---------+--------------------------------------
+ 1eadef1a-1ad9-4c63-9e7e-a0e40e673a99 | Kali-Lab-01   | offline | 2bff2239-169f-4140-8826-d90bb2292967
+ e1ed75e5-f75e-47b3-ade4-c86e8c9d72fe | Kali-Office   | offline | 2bff2239-169f-4140-8826-d90bb2292967
+ 0ab36cae-d3da-464b-baf5-647392b774cc | Cloud-Scanner | offline | 2bff2239-169f-4140-8826-d90bb2292967
+ df9e511b-ded2-4bd2-b775-80252006ebc1 | Local_PC      | pending | a7c9c30f-9bac-4101-b043-bf511f956356
+(4 rows)
+
