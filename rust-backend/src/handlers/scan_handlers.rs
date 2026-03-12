@@ -277,14 +277,17 @@ pub async fn start_scan(
     tokio::spawn(async move {
         let result = execute_scan(&tool_name, &target_owned, command_template.as_deref(), &scan_tx, &scan_id_clone).await;
 
-        let (status, output, findings, error_log) = match result {
-            Ok(r) => ("completed".to_string(), r.output, r.findings, None),
-            Err(e) => ("failed".to_string(), String::new(), None, Some(e.to_string())),
+        let (status, output, findings, error_log) = match &result {
+            Ok(r) => ("completed".to_string(), r.output.clone(), r.findings.clone(), None),
+            Err(e) => {
+                tracing::error!("Scan {} failed: {}", scan_id_clone, e);
+                ("failed".to_string(), String::new(), None, Some(e.to_string()))
+            }
         };
 
         let findings_str = findings.map(|f| f.to_string());
 
-        let _ = sqlx::query(
+        if let Err(e) = sqlx::query(
             "UPDATE scans SET status = $1, output = $2, findings = $3, error_log = $4, completed_at = CURRENT_TIMESTAMP WHERE id = $5"
         )
         .bind(&status)
@@ -293,7 +296,9 @@ pub async fn start_scan(
         .bind(&error_log)
         .bind(&scan_id_clone)
         .execute(&db)
-        .await;
+        .await {
+            tracing::error!("Failed to update scan {}: {}", scan_id_clone, e);
+        }
 
         // Notify via broadcast
         let _ = scan_tx.send(json!({

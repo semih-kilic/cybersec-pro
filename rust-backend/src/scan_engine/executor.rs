@@ -62,6 +62,7 @@ pub async fn execute_scan(
 
     let mut output = String::new();
     let mut stderr_output = String::new();
+    let mut stderr_done = false;
 
     let tx_clone = tx.clone();
     let scan_id_owned = scan_id.to_string();
@@ -69,35 +70,55 @@ pub async fn execute_scan(
     // Read stdout and stderr concurrently with timeout
     let result = timeout(Duration::from_secs(300), async {
         loop {
-            tokio::select! {
-                line = stdout_reader.next_line() => {
-                    match line {
-                        Ok(Some(line)) => {
-                            output.push_str(&line);
-                            output.push('\n');
-                            // Stream to SSE
-                            let _ = tx_clone.send(serde_json::json!({
-                                "type": "output",
-                                "scan_id": scan_id_owned,
-                                "line": line,
-                                "data": line
-                            }).to_string());
-                        }
-                        Ok(None) => break, // EOF
-                        Err(e) => {
-                            tracing::warn!("stdout read error: {}", e);
-                            break;
-                        }
+            if stderr_done {
+                // Only read stdout
+                match stdout_reader.next_line().await {
+                    Ok(Some(line)) => {
+                        output.push_str(&line);
+                        output.push('\n');
+                        let _ = tx_clone.send(serde_json::json!({
+                            "type": "output",
+                            "scan_id": scan_id_owned,
+                            "line": line,
+                            "data": line
+                        }).to_string());
+                    }
+                    Ok(None) => break,
+                    Err(e) => {
+                        tracing::warn!("stdout read error: {}", e);
+                        break;
                     }
                 }
-                line = stderr_reader.next_line() => {
-                    match line {
-                        Ok(Some(line)) => {
-                            stderr_output.push_str(&line);
-                            stderr_output.push('\n');
+            } else {
+                tokio::select! {
+                    line = stdout_reader.next_line() => {
+                        match line {
+                            Ok(Some(line)) => {
+                                output.push_str(&line);
+                                output.push('\n');
+                                let _ = tx_clone.send(serde_json::json!({
+                                    "type": "output",
+                                    "scan_id": scan_id_owned,
+                                    "line": line,
+                                    "data": line
+                                }).to_string());
+                            }
+                            Ok(None) => break,
+                            Err(e) => {
+                                tracing::warn!("stdout read error: {}", e);
+                                break;
+                            }
                         }
-                        Ok(None) => {} // stderr EOF
-                        Err(_) => {}
+                    }
+                    line = stderr_reader.next_line() => {
+                        match line {
+                            Ok(Some(line)) => {
+                                stderr_output.push_str(&line);
+                                stderr_output.push('\n');
+                            }
+                            Ok(None) => { stderr_done = true; }
+                            Err(_) => { stderr_done = true; }
+                        }
                     }
                 }
             }
