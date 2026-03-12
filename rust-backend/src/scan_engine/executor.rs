@@ -68,7 +68,7 @@ pub async fn execute_scan(
     let scan_id_owned = scan_id.to_string();
 
     // Read stdout and stderr concurrently with timeout
-    let result = timeout(Duration::from_secs(300), async {
+    let result = timeout(Duration::from_secs(30), async {
         loop {
             if stderr_done {
                 // Only read stdout
