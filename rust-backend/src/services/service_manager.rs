@@ -122,7 +122,8 @@ impl ServiceManager {
                         // Calculate uptime from last_started
                         if let Some(ref started_str) = s.last_started {
                             if let Ok(started_dt) = chrono::DateTime::parse_from_rfc3339(started_str) {
-                                s.uptime_secs = (chrono::Utc::now() - started_dt).num_seconds().max(0) as u64;
+                                let started_utc = started_dt.with_timezone(&chrono::Utc);
+                                s.uptime_secs = (chrono::Utc::now() - started_utc).num_seconds().max(0) as u64;
                             }
                         }
                     }
