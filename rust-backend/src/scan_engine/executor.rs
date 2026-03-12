@@ -5,6 +5,8 @@ use tokio::io::{AsyncBufReadExt, BufReader};
 use tokio::process::Command;
 use tokio::sync::broadcast;
 use tokio::time::{timeout, Duration};
+use nix::sys::signal::{killpg, Signal};
+use nix::unistd::Pid;
 
 use super::parsers::parse_output;
 use super::tool_registry::build_command;
@@ -45,14 +47,17 @@ pub async fn execute_scan(
         "data": format!("Starting {} on {}", tool_name, target)
     }).to_string());
 
-    // Spawn process
+    // Spawn process in its own process group for clean cleanup
     let mut child = Command::new(&program)
         .args(&args)
         .stdout(Stdio::piped())
         .stderr(Stdio::piped())
         .kill_on_drop(true)
+        .process_group(0)  // Create new process group so we can kill entire tree
         .spawn()
         .map_err(|e| anyhow!("Failed to spawn {}: {}", program, e))?;
+
+    let child_pid = child.id().unwrap_or(0) as i32;
 
     let stdout = child.stdout.take().ok_or_else(|| anyhow!("No stdout"))?;
     let stderr = child.stderr.take().ok_or_else(|| anyhow!("No stderr"))?;
@@ -127,9 +132,12 @@ pub async fn execute_scan(
     .await;
 
     if result.is_err() {
-        // Timeout — kill the process
+        // Timeout — kill the entire process group (not just direct child)
+        if child_pid > 0 {
+            let _ = killpg(Pid::from_raw(child_pid), Signal::SIGKILL);
+        }
         let _ = child.kill().await;
-        return Err(anyhow!("Scan timed out after 300 seconds"));
+        return Err(anyhow!("Scan timed out after 30 seconds"));
     }
 
     let status = child.wait().await?;
