@@ -230,7 +230,7 @@ fn build_router(state: Arc<AppState>) -> Router {
         )
         .route(
             "/api/v1/agents/:agent_id",
-            get(agent_handlers::get_agent).delete(agent_handlers::delete_agent),
+            get(agent_handlers::get_agent).put(stub_handlers::update_agent).delete(agent_handlers::delete_agent),
         )
         .route(
             "/api/v1/agents/:agent_id/heartbeat",
@@ -322,7 +322,6 @@ fn build_router(state: Arc<AppState>) -> Router {
         .route("/api/v1/scans/:scan_id/status", get(stub_handlers::scan_status))
         .route("/api/v1/scans/execute", post(stub_handlers::scans_execute))
         // ── Agent extras ──────────────────────────────────────
-        .route("/api/v1/agents/:agent_id/update", put(stub_handlers::update_agent))
         .route("/api/v1/agents/:agent_id/test", post(stub_handlers::test_agent))
         .route("/api/v1/agents/dashboard", get(stub_handlers::agents_dashboard))
         // ── Scheduled scans ───────────────────────────────────

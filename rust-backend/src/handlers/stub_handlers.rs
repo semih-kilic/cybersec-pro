@@ -558,19 +558,113 @@ pub async fn scan_delete(
 
 pub async fn update_agent(
     Path(agent_id): Path<String>,
-    _user: AuthUser,
-    State(_state): State<Arc<AppState>>,
-    Json(_body): Json<serde_json::Value>,
+    user: AuthUser,
+    State(state): State<Arc<AppState>>,
+    Json(body): Json<serde_json::Value>,
 ) -> impl IntoResponse {
-    Json(json!({"message": "Agent updated", "agent_id": agent_id})).into_response()
+    let org_id = user.org_id.as_deref().unwrap_or("");
+
+    let name = body.get("name").and_then(|v| v.as_str());
+    let ssh_host = body.get("ssh_host").and_then(|v| v.as_str());
+    let ssh_port = body.get("ssh_port").and_then(|v| v.as_i64()).map(|v| v as i32);
+    let ssh_username = body.get("ssh_username").and_then(|v| v.as_str());
+    let location = body.get("location").and_then(|v| v.as_str());
+    let connection_type = body.get("connection_type").and_then(|v| v.as_str());
+
+    let result = sqlx::query(
+        "UPDATE agents SET \
+         name = COALESCE($1, name), \
+         ssh_host = COALESCE($2, ssh_host), \
+         ssh_port = COALESCE($3, ssh_port), \
+         ssh_username = COALESCE($4, ssh_username), \
+         location = COALESCE($5, location), \
+         connection_type = COALESCE($6, connection_type) \
+         WHERE id = $7 AND organization_id = $8"
+    )
+    .bind(name)
+    .bind(ssh_host)
+    .bind(ssh_port)
+    .bind(ssh_username)
+    .bind(location)
+    .bind(connection_type)
+    .bind(&agent_id)
+    .bind(org_id)
+    .execute(&state.db)
+    .await;
+
+    match result {
+        Ok(r) if r.rows_affected() > 0 => {
+            Json(json!({"message": "Agent updated", "agent_id": agent_id})).into_response()
+        }
+        Ok(_) => {
+            (axum::http::StatusCode::NOT_FOUND, Json(json!({"error": "Agent not found"}))).into_response()
+        }
+        Err(e) => {
+            (axum::http::StatusCode::INTERNAL_SERVER_ERROR, Json(json!({"error": format!("Update failed: {}", e)}))).into_response()
+        }
+    }
 }
 
 pub async fn test_agent(
     Path(agent_id): Path<String>,
-    _user: AuthUser,
-    State(_state): State<Arc<AppState>>,
+    user: AuthUser,
+    State(state): State<Arc<AppState>>,
 ) -> impl IntoResponse {
-    Json(json!({"status": "ok", "agent_id": agent_id, "connected": false})).into_response()
+    let org_id = user.org_id.as_deref().unwrap_or("");
+
+    // Fetch agent SSH details
+    let agent = sqlx::query(
+        "SELECT ssh_host, ssh_port, ssh_username, connection_type, platform FROM agents WHERE id = $1 AND organization_id = $2"
+    )
+    .bind(&agent_id)
+    .bind(org_id)
+    .fetch_optional(&state.db)
+    .await
+    .unwrap_or(None);
+
+    let agent = match agent {
+        Some(a) => a,
+        None => return (axum::http::StatusCode::NOT_FOUND, Json(json!({"success": false, "error": "Agent not found"}))).into_response(),
+    };
+
+    use sqlx::Row;
+    let ssh_host: Option<String> = agent.get("ssh_host");
+    let ssh_port: Option<i32> = agent.get("ssh_port");
+    let platform: Option<String> = agent.get("platform");
+
+    let host = match ssh_host {
+        Some(h) if !h.is_empty() => h,
+        _ => return Json(json!({"success": false, "error": "No SSH host configured"})).into_response(),
+    };
+    let port = ssh_port.unwrap_or(22);
+
+    // Try TCP connection to the SSH port
+    let addr = format!("{}:{}", host, port);
+    match tokio::time::timeout(
+        std::time::Duration::from_secs(5),
+        tokio::net::TcpStream::connect(&addr),
+    ).await {
+        Ok(Ok(_)) => {
+            // Update agent status to online
+            let _ = sqlx::query("UPDATE agents SET status = 'online', last_heartbeat = CURRENT_TIMESTAMP WHERE id = $1")
+                .bind(&agent_id)
+                .execute(&state.db)
+                .await;
+            Json(json!({
+                "success": true,
+                "os_info": platform.unwrap_or_else(|| "Linux".to_string()),
+                "agent_id": agent_id,
+                "message": format!("SSH port {} reachable on {}", port, host)
+            })).into_response()
+        }
+        _ => {
+            Json(json!({
+                "success": false,
+                "error": format!("Cannot reach {}:{} — check firewall/SSH service", host, port),
+                "agent_id": agent_id
+            })).into_response()
+        }
+    }
 }
 
 pub async fn agents_dashboard(

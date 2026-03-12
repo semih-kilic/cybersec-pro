@@ -199,10 +199,10 @@ export function useDashboardData() {
           tool_name: s.tool?.name || s.tool_name || 'Unknown',
           target: s.target,
           status: s.status,
-          started_at: s.created_at || s.started_at,
+          started_at: s.created_at || s.started_at || '',
           findings: s.findings_count || s.findings_summary?.total || 0,
         })),
-        totalTargets: usageData.scans_used || usageData.usage?.total_scans || scans.length,
+        totalTargets: (usageData as any).scans_used || usageData.usage?.total_scans || scans.length,
       };
     },
     ...CACHE_TIMES.dashboard,

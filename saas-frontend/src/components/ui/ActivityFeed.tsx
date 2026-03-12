@@ -68,7 +68,7 @@ export function ActivityFeed({ limit = 20, compact = false, className = '', filt
   useEffect(() => {
     const fetchActivities = async () => {
       try {
-        const token = localStorage.getItem('auth_token');
+        const token = localStorage.getItem('token');
         const params = new URLSearchParams();
         if (limit) params.set('limit', String(limit));
         if (filter?.length) params.set('types', filter.join(','));

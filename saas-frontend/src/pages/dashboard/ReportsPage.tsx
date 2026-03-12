@@ -559,9 +559,9 @@ export function ReportsPage() {
                       <div className="text-2xl mb-2">{template.icon}</div>
                       <div className="text-white font-medium text-sm">{template.name}</div>
                       <div className="text-gray-400 text-xs mt-1 line-clamp-2">{template.description}</div>
-                      {template.frameworks && template.frameworks.length > 0 && (
+                      {(template as any).frameworks && (template as any).frameworks.length > 0 && (
                         <div className="mt-2 flex flex-wrap gap-1">
-                          {template.frameworks.map(fw => (
+                          {(template as any).frameworks.map((fw: string) => (
                             <span key={fw} className="text-[10px] px-1.5 py-0.5 bg-purple-500/20 text-purple-300 rounded">
                               {fw}
                             </span>
