@@ -1205,6 +1205,12 @@ pub async fn admin_delete_user(
         return (StatusCode::BAD_REQUEST, Json(json!({"error": "Cannot delete yourself"}))).into_response();
     }
 
+    // Delete related records first to avoid FK constraint violations
+    let _ = sqlx::query("DELETE FROM audit_logs WHERE user_id = $1").bind(&user_id).execute(&state.db).await;
+    let _ = sqlx::query("DELETE FROM reports WHERE user_id = $1").bind(&user_id).execute(&state.db).await;
+    let _ = sqlx::query("DELETE FROM scheduled_scans WHERE user_id = $1").bind(&user_id).execute(&state.db).await;
+    let _ = sqlx::query("UPDATE scans SET user_id = NULL WHERE user_id = $1").bind(&user_id).execute(&state.db).await;
+
     let result = sqlx::query("DELETE FROM users WHERE id = $1")
         .bind(&user_id)
         .execute(&state.db)
@@ -1328,8 +1334,7 @@ pub async fn admin_ack_alert(
     _admin: AdminUser,
     State(state): State<Arc<AppState>>,
 ) -> impl IntoResponse {
-    let id = alert_id.parse::<u64>().unwrap_or(0);
-    let ok = state.service_manager.acknowledge_alert(id).await;
+    let ok = state.service_manager.acknowledge_alert(&alert_id).await;
     Json(json!({"success": ok, "id": alert_id})).into_response()
 }
 

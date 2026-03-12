@@ -15,30 +15,35 @@ pub struct ServiceConfig {
     pub id: String, pub name: String, pub description: String,
     pub port: Option<u16>, pub start_command: Option<String>,
     pub auto_restart: bool, pub max_restarts: u32,
-    pub priority: String, pub category: String,
+    pub priority: u8, pub category: String,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct ServiceState {
     pub config: ServiceConfig, pub status: ServiceStatus,
-    pub pid: Option<u32>, pub uptime_secs: u64, pub memory_mb: f64,
-    pub restart_count: u32, pub last_check: u64,
-    pub last_started: Option<u64>, pub error_message: Option<String>,
+    pub pid: Option<u32>, pub uptime_secs: u64, pub cpu_percent: f64,
+    pub memory_mb: f64, pub restart_count: u32, pub last_check: u64,
+    pub last_started: Option<String>, pub last_health_check: Option<String>,
+    pub health_ok: bool, pub error_message: Option<String>,
+    pub logs_tail: Vec<String>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct SystemMetrics {
     pub hostname: String, pub os: String, pub kernel: String,
     pub uptime_secs: u64, pub cpu_count: usize, pub cpu_percent: f64,
+    pub cpu_usage_percent: f64,
     pub memory_total_mb: u64, pub memory_used_mb: u64, pub memory_percent: f64,
     pub disk_total_gb: u64, pub disk_used_gb: u64, pub disk_percent: f64,
     pub load_avg: [f64; 3],
+    pub network_rx_bytes: u64, pub network_tx_bytes: u64,
+    pub timestamp: String,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Alert {
-    pub id: u64, pub severity: String, pub service_id: String,
-    pub message: String, pub timestamp: u64, pub acknowledged: bool,
+    pub id: String, pub severity: String, pub service_id: String,
+    pub message: String, pub timestamp: String, pub acknowledged: bool,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -51,6 +56,8 @@ pub struct ServiceDashboard {
 pub struct DashboardSummary {
     pub total_services: usize, pub running: usize, pub stopped: usize,
     pub failed: usize, pub auto_recovered: u32, pub uptime_percent: f64,
+    pub total_cpu_percent: f64, pub total_memory_mb: f64,
+    pub uptime_formatted: String, pub overall_health: String,
 }
 
 pub struct ServiceManager {
@@ -66,8 +73,9 @@ impl ServiceManager {
         let now = now_epoch();
         let services: Vec<ServiceState> = configs.into_iter().map(|config| ServiceState {
             config, status: ServiceStatus::Unknown, pid: None,
-            uptime_secs: 0, memory_mb: 0.0, restart_count: 0,
-            last_check: now, last_started: None, error_message: None,
+            uptime_secs: 0, cpu_percent: 0.0, memory_mb: 0.0, restart_count: 0,
+            last_check: now, last_started: None, last_health_check: None,
+            health_ok: false, error_message: None, logs_tail: Vec::new(),
         }).collect();
         Arc::new(Self {
             services: RwLock::new(services),
@@ -106,14 +114,24 @@ impl ServiceManager {
                 let s = &mut svc[i];
                 let was_running = s.status == ServiceStatus::Running;
                 s.last_check = now;
-                s.status = new_status;
+                s.last_health_check = Some(chrono::Utc::now().to_rfc3339());
+                s.status = new_status.clone();
                 if is_up {
-                    if let Some(started) = s.last_started {
-                        s.uptime_secs = now.saturating_sub(started);
+                    s.health_ok = true;
+                    if s.last_started.is_some() {
+                        // Calculate uptime from last_started
+                        if let Some(ref started_str) = s.last_started {
+                            if let Ok(started_dt) = chrono::DateTime::parse_from_rfc3339(started_str) {
+                                s.uptime_secs = (chrono::Utc::now() - started_dt).num_seconds().max(0) as u64;
+                            }
+                        }
                     }
                     s.error_message = None;
-                } else if was_running {
-                    s.error_message = Some(format!("Service went down at {}", now));
+                } else {
+                    s.health_ok = false;
+                    if was_running {
+                        s.error_message = Some(format!("Service went down at {}", chrono::Utc::now().to_rfc3339()));
+                    }
                 }
                 !is_up && auto_restart && s.restart_count < max_restarts && start_cmd.is_some()
             };
@@ -132,7 +150,7 @@ impl ServiceManager {
                     }).await.unwrap_or(false);
                     if success {
                         self.services.write().await[i].status = ServiceStatus::Starting;
-                        self.services.write().await[i].last_started = Some(now_epoch());
+                        self.services.write().await[i].last_started = Some(chrono::Utc::now().to_rfc3339());
                         *self.auto_recovered.write().await += 1;
                         self.push_alert("info", &svc_id, "Auto-restarted successfully").await;
                         tracing::info!("Service {} auto-restarted", svc_id);
@@ -149,13 +167,14 @@ impl ServiceManager {
     async fn push_alert(&self, severity: &str, service_id: &str, message: &str) {
         let mut counter = self.alert_counter.write().await;
         *counter += 1;
-        let id = *counter;
+        let id = counter.to_string();
         drop(counter);
         let mut alerts = self.alerts.write().await;
         if alerts.len() >= 100 { alerts.remove(0); }
+        let timestamp = chrono::Utc::now().to_rfc3339();
         alerts.push(Alert {
             id, severity: severity.into(), service_id: service_id.into(),
-            message: message.into(), timestamp: now_epoch(), acknowledged: false,
+            message: message.into(), timestamp, acknowledged: false,
         });
     }
 
@@ -170,16 +189,29 @@ impl ServiceManager {
         let failed = services.iter().filter(|s| s.status == ServiceStatus::Failed).count();
         let total = services.len();
         let uptime_percent = if total > 0 { (running as f64 / total as f64) * 100.0 } else { 0.0 };
+        let total_cpu_percent = services.iter().map(|s| s.cpu_percent).sum::<f64>();
+        let total_memory_mb = services.iter().map(|s| s.memory_mb).sum::<f64>();
+        let overall_health = if failed > 0 { "critical" } else if stopped > 0 { "warning" } else { "healthy" };
+        let uptime_secs = system.uptime_secs;
+        let days = uptime_secs / 86400;
+        let hours = (uptime_secs % 86400) / 3600;
+        let mins = (uptime_secs % 3600) / 60;
+        let uptime_formatted = if days > 0 { format!("{}d {}h {}m", days, hours, mins) }
+            else if hours > 0 { format!("{}h {}m", hours, mins) }
+            else { format!("{}m", mins) };
         ServiceDashboard {
             services, system, alerts,
-            summary: DashboardSummary { total_services: total, running, stopped, failed, auto_recovered, uptime_percent },
+            summary: DashboardSummary {
+                total_services: total, running, stopped, failed, auto_recovered, uptime_percent,
+                total_cpu_percent, total_memory_mb, uptime_formatted, overall_health: overall_health.into(),
+            },
         }
     }
 
     pub async fn get_services(&self) -> Vec<ServiceState> { self.services.read().await.clone() }
     pub async fn get_alerts(&self) -> Vec<Alert> { self.alerts.read().await.clone() }
 
-    pub async fn acknowledge_alert(&self, alert_id: u64) -> bool {
+    pub async fn acknowledge_alert(&self, alert_id: &str) -> bool {
         let mut alerts = self.alerts.write().await;
         if let Some(a) = alerts.iter_mut().find(|a| a.id == alert_id) { a.acknowledged = true; true } else { false }
     }
@@ -212,7 +244,7 @@ impl ServiceManager {
                 if ok {
                     let mut svc = self.services.write().await;
                     svc[idx].status = ServiceStatus::Starting;
-                    svc[idx].last_started = Some(now_epoch());
+                    svc[idx].last_started = Some(chrono::Utc::now().to_rfc3339());
                     Ok(format!("{} {}ed", service_id, action))
                 } else { Err(format!("Failed to {} {}", action, service_id)) }
             }
@@ -239,7 +271,7 @@ fn get_service_configs() -> Vec<ServiceConfig> {
             port: Some(5001),
             start_command: Some("cd /home/cybersec/cybersec-pro/rust-backend && DATABASE_URL='postgres://cybersec:***REDACTED_PG_PASSWORD***@localhost:5432/cybersec_pro' JWT_SECRET_KEY='***REDACTED_JWT_SECRET***' GITHUB_CLIENT_ID='***REDACTED_GH_OAUTH_CLIENT_ID***' GITHUB_CLIENT_SECRET='***REDACTED_GH_OAUTH_SECRET***' RUST_LOG=info nohup ./target/release/cybersec-pro-backend > /tmp/rust-backend.log 2>&1 &".into()),
             auto_restart: true, max_restarts: 100,
-            priority: "critical".into(), category: "backend".into(),
+            priority: 1, category: "backend".into(),
         },
         ServiceConfig {
             id: "frontend".into(), name: "React Frontend".into(),
@@ -247,21 +279,21 @@ fn get_service_configs() -> Vec<ServiceConfig> {
             port: Some(3001),
             start_command: Some("cd /home/cybersec/cybersec-pro/saas-frontend && nohup npm run dev -- --port 3001 > /tmp/frontend.log 2>&1 &".into()),
             auto_restart: true, max_restarts: 50,
-            priority: "high".into(), category: "frontend".into(),
+            priority: 2, category: "frontend".into(),
         },
         ServiceConfig {
             id: "sales-api".into(), name: "Sales API (Stripe)".into(),
             description: "CyberSec Pro Sales & Billing API".into(),
             port: Some(5002), start_command: None,
             auto_restart: false, max_restarts: 0,
-            priority: "high".into(), category: "backend".into(),
+            priority: 2, category: "backend".into(),
         },
         ServiceConfig {
             id: "nginx".into(), name: "Nginx Reverse Proxy".into(),
             description: "TLS termination & reverse proxy".into(),
             port: Some(443), start_command: None,
             auto_restart: false, max_restarts: 0,
-            priority: "critical".into(), category: "infrastructure".into(),
+            priority: 1, category: "infrastructure".into(),
         },
         ServiceConfig {
             id: "redis".into(), name: "Redis Cache".into(),
@@ -269,7 +301,7 @@ fn get_service_configs() -> Vec<ServiceConfig> {
             port: Some(6379),
             start_command: Some("redis-server --daemonize yes".into()),
             auto_restart: true, max_restarts: 50,
-            priority: "critical".into(), category: "infrastructure".into(),
+            priority: 1, category: "infrastructure".into(),
         },
     ]
 }
@@ -319,18 +351,34 @@ fn get_system_metrics_sync() -> SystemMetrics {
     ];
     SystemMetrics {
         hostname, os, kernel, uptime_secs, cpu_count, cpu_percent,
+        cpu_usage_percent: cpu_percent,
         memory_total_mb, memory_used_mb, memory_percent,
         disk_total_gb, disk_used_gb, disk_percent, load_avg,
+        network_rx_bytes: get_network_bytes("rx"),
+        network_tx_bytes: get_network_bytes("tx"),
+        timestamp: chrono::Utc::now().to_rfc3339(),
     }
+}
+
+fn get_network_bytes(direction: &str) -> u64 {
+    let field = if direction == "rx" { "1" } else { "9" };
+    std::process::Command::new("sh")
+        .arg("-c")
+        .arg(format!("awk 'NR>2{{s+=${}}} END{{print s}}' /proc/net/dev", field))
+        .output().ok()
+        .and_then(|o| String::from_utf8_lossy(&o.stdout).trim().parse().ok())
+        .unwrap_or(0)
 }
 
 fn default_metrics() -> SystemMetrics {
     SystemMetrics {
         hostname: String::new(), os: String::new(), kernel: String::new(),
-        uptime_secs: 0, cpu_count: 1, cpu_percent: 0.0,
+        uptime_secs: 0, cpu_count: 1, cpu_percent: 0.0, cpu_usage_percent: 0.0,
         memory_total_mb: 0, memory_used_mb: 0, memory_percent: 0.0,
         disk_total_gb: 0, disk_used_gb: 0, disk_percent: 0.0,
         load_avg: [0.0; 3],
+        network_rx_bytes: 0, network_tx_bytes: 0,
+        timestamp: chrono::Utc::now().to_rfc3339(),
     }
 }
 

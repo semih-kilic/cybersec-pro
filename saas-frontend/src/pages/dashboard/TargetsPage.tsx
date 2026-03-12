@@ -127,8 +127,8 @@ export function TargetsPage() {
 
   const filteredTargets = targets.filter(target => {
     const matchesSearch = 
-      target.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      target.value.toLowerCase().includes(searchQuery.toLowerCase());
+      (target.name || '').toLowerCase().includes(searchQuery.toLowerCase()) ||
+      (target.value || '').toLowerCase().includes(searchQuery.toLowerCase());
     const matchesGroup = !selectedGroup || target.group_id === selectedGroup;
     const matchesType = !selectedType || target.type === selectedType;
     return matchesSearch && matchesGroup && matchesType;

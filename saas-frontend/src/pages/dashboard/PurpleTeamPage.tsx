@@ -151,7 +151,7 @@ function SeverityBadge({ severity }: { severity: string }) {
   };
   return (
     <span className={`px-2 py-0.5 text-xs font-bold rounded border ${colors[severity] || colors.info}`}>
-      {severity.toUpperCase()}
+      {(severity || 'unknown').toUpperCase()}
     </span>
   );
 }
@@ -166,7 +166,7 @@ function StatusBadge({ status }: { status: string }) {
   };
   return (
     <span className={`px-2 py-0.5 text-xs font-bold rounded ${colors[status] || colors.pending}`}>
-      {status.toUpperCase()}
+      {(status || 'unknown').toUpperCase()}
     </span>
   );
 }
@@ -725,8 +725,8 @@ export default function PurpleTeamPage() {
             <StatCard label="Running" value={stats.running} icon="⚡" color="cyan" />
             <StatCard label="Detection Rate" value={`${stats.detection_rate}%`} icon="🛡️"
               color={stats.detection_rate >= 70 ? 'green' : stats.detection_rate >= 40 ? 'yellow' : 'red'} />
-            <StatCard label="Avg Risk Score" value={stats.average_risk_score.toFixed(1)} icon="⚠️"
-              color={stats.average_risk_score <= 30 ? 'green' : stats.average_risk_score <= 60 ? 'yellow' : 'red'} />
+            <StatCard label="Avg Risk Score" value={(stats.average_risk_score ?? 0).toFixed(1)} icon="⚠️"
+              color={(stats.average_risk_score ?? 0) <= 30 ? 'green' : (stats.average_risk_score ?? 0) <= 60 ? 'yellow' : 'red'} />
             <StatCard label="Attack Steps" value={stats.total_attack_steps} icon="💣" color="red" />
           </div>
 

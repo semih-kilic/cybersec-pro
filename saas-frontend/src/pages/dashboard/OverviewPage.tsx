@@ -226,7 +226,7 @@ export function OverviewPage() {
                       <td className="px-5 py-4">
                         <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium ${getStatusColor(scan.status)}`}>
                           {scan.status === 'running' && <span className="w-1.5 h-1.5 rounded-full bg-current animate-pulse" />}
-                          {scan.status.charAt(0).toUpperCase() + scan.status.slice(1)}
+                          {(scan.status || 'unknown').charAt(0).toUpperCase() + (scan.status || 'unknown').slice(1)}
                         </span>
                       </td>
                       <td className="px-5 py-4">
