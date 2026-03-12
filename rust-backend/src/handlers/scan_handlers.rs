@@ -285,14 +285,12 @@ pub async fn start_scan(
             }
         };
 
-        let findings_str = findings.map(|f| f.to_string());
-
         if let Err(e) = sqlx::query(
-            "UPDATE scans SET status = $1, output = $2, findings = $3, error_log = $4, completed_at = CURRENT_TIMESTAMP WHERE id = $5"
+            "UPDATE scans SET status = $1, output = $2, findings = $3::jsonb, error_log = $4, completed_at = CURRENT_TIMESTAMP WHERE id = $5"
         )
         .bind(&status)
         .bind(&output)
-        .bind(&findings_str)
+        .bind(&findings)
         .bind(&error_log)
         .bind(&scan_id_clone)
         .execute(&db)
