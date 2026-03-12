@@ -36,20 +36,20 @@ pub async fn list_scans(
     auth: AuthUser,
     Query(q): Query<ScanQuery>,
 ) -> impl IntoResponse {
-    let org_id = match &auth.org_id {
-        Some(id) => id,
-        None => return (StatusCode::FORBIDDEN, Json(json!({"error": "Organization required"}))).into_response(),
-    };
-
     let page = q.page.unwrap_or(1).max(1);
     let per_page = q.per_page.unwrap_or(20).min(100);
     let offset = (page - 1) * per_page;
 
+    let (filter_col, filter_val) = match &auth.org_id {
+        Some(id) => ("organization_id", id.clone()),
+        None => ("user_id", auth.user_id.clone()),
+    };
+
     let scans: Vec<Scan> = if let Some(status) = &q.status {
         sqlx::query_as(
-            "SELECT * FROM scans WHERE organization_id = $1 AND status = $2 ORDER BY created_at DESC LIMIT $3 OFFSET $4"
+            &format!("SELECT * FROM scans WHERE {} = $1 AND status = $2 ORDER BY created_at DESC LIMIT $3 OFFSET $4", filter_col)
         )
-        .bind(org_id)
+        .bind(&filter_val)
         .bind(status)
         .bind(per_page as i64)
         .bind(offset as i64)
@@ -58,9 +58,9 @@ pub async fn list_scans(
         .unwrap_or_default()
     } else {
         sqlx::query_as(
-            "SELECT * FROM scans WHERE organization_id = $1 ORDER BY created_at DESC LIMIT $2 OFFSET $3"
+            &format!("SELECT * FROM scans WHERE {} = $1 ORDER BY created_at DESC LIMIT $2 OFFSET $3", filter_col)
         )
-        .bind(org_id)
+        .bind(&filter_val)
         .bind(per_page as i64)
         .bind(offset as i64)
         .fetch_all(&state.db)
@@ -68,8 +68,10 @@ pub async fn list_scans(
         .unwrap_or_default()
     };
 
-    let total: (i64,) = sqlx::query_as("SELECT COUNT(*) FROM scans WHERE organization_id = $1")
-        .bind(org_id)
+    let total: (i64,) = sqlx::query_as(
+        &format!("SELECT COUNT(*) FROM scans WHERE {} = $1", filter_col)
+    )
+        .bind(&filter_val)
         .fetch_one(&state.db)
         .await
         .unwrap_or((0,));
@@ -116,19 +118,24 @@ pub async fn get_scan(
     auth: AuthUser,
     Path(scan_id): Path<String>,
 ) -> impl IntoResponse {
-    let org_id = match &auth.org_id {
-        Some(id) => id,
-        None => return (StatusCode::FORBIDDEN, Json(json!({"error": "Organization required"}))).into_response(),
+    let scan: Option<Scan> = match &auth.org_id {
+        Some(org_id) => sqlx::query_as(
+            "SELECT * FROM scans WHERE id = $1 AND organization_id = $2"
+        )
+        .bind(&scan_id)
+        .bind(org_id)
+        .fetch_optional(&state.db)
+        .await
+        .unwrap_or(None),
+        None => sqlx::query_as(
+            "SELECT * FROM scans WHERE id = $1 AND user_id = $2"
+        )
+        .bind(&scan_id)
+        .bind(&auth.user_id)
+        .fetch_optional(&state.db)
+        .await
+        .unwrap_or(None),
     };
-
-    let scan: Option<Scan> = sqlx::query_as(
-        "SELECT * FROM scans WHERE id = $1 AND organization_id = $2"
-    )
-    .bind(&scan_id)
-    .bind(org_id)
-    .fetch_optional(&state.db)
-    .await
-    .unwrap_or(None);
 
     match scan {
         Some(s) => (StatusCode::OK, Json(json!({"scan": s.to_response()}))).into_response(),
@@ -156,10 +163,7 @@ pub async fn start_scan(
     headers: HeaderMap,
     Json(body): Json<StartScanRequest>,
 ) -> impl IntoResponse {
-    let org_id = match &auth.org_id {
-        Some(id) => id.clone(),
-        None => return (StatusCode::FORBIDDEN, Json(json!({"error": "Organization required"}))).into_response(),
-    };
+    let org_id = auth.org_id.clone().unwrap_or_else(|| auth.user_id.clone());
 
     // Rate limit
     if state.rate_limiter.is_limited(&format!("scan:{}", auth.user_id), 5, Duration::from_secs(60)) {
@@ -228,20 +232,24 @@ pub async fn start_scan(
 
     // Create scan record
     let scan_id = Uuid::new_v4().to_string();
-    let _ = sqlx::query(
+    let params_json = body.parameters.as_ref().cloned().unwrap_or(serde_json::json!({}));
+    if let Err(e) = sqlx::query(
         "INSERT INTO scans (id, organization_id, user_id, tool_id, target, parameters, status, agent_id, project_id, started_at)
-         VALUES ($1, $2, $3, $4, $5, $6, 'running', $7, $8, CURRENT_TIMESTAMP)"
+         VALUES ($1, $2, $3, $4, $5, $6::jsonb, 'running', $7, $8, CURRENT_TIMESTAMP)"
     )
     .bind(&scan_id)
     .bind(&org_id)
     .bind(&auth.user_id)
     .bind(&tool.id)
     .bind(target)
-    .bind(body.parameters.as_ref().map(|p| p.to_string()))
+    .bind(&params_json)
     .bind(&body.agent_id)
     .bind(&body.project_id)
     .execute(&state.db)
-    .await;
+    .await {
+        tracing::error!("Failed to insert scan: {}", e);
+        return (StatusCode::INTERNAL_SERVER_ERROR, Json(json!({"error": format!("Failed to create scan: {}", e)}))).into_response();
+    }
 
     // Track usage
     let usage_id = Uuid::new_v4().to_string();
@@ -355,18 +363,22 @@ pub async fn cancel_scan(
     auth: AuthUser,
     Path(scan_id): Path<String>,
 ) -> impl IntoResponse {
-    let org_id = match &auth.org_id {
-        Some(id) => id,
-        None => return (StatusCode::FORBIDDEN, Json(json!({"error": "Organization required"}))).into_response(),
+    let result = match &auth.org_id {
+        Some(org_id) => sqlx::query(
+            "UPDATE scans SET status = 'cancelled', completed_at = CURRENT_TIMESTAMP WHERE id = $1 AND organization_id = $2 AND status IN ('pending', 'running')"
+        )
+        .bind(&scan_id)
+        .bind(org_id)
+        .execute(&state.db)
+        .await,
+        None => sqlx::query(
+            "UPDATE scans SET status = 'cancelled', completed_at = CURRENT_TIMESTAMP WHERE id = $1 AND user_id = $2 AND status IN ('pending', 'running')"
+        )
+        .bind(&scan_id)
+        .bind(&auth.user_id)
+        .execute(&state.db)
+        .await,
     };
-
-    let result = sqlx::query(
-        "UPDATE scans SET status = 'cancelled', completed_at = CURRENT_TIMESTAMP WHERE id = $1 AND organization_id = $2 AND status IN ('pending', 'running')"
-    )
-    .bind(&scan_id)
-    .bind(org_id)
-    .execute(&state.db)
-    .await;
 
     match result {
         Ok(r) if r.rows_affected() > 0 => {
@@ -383,18 +395,22 @@ pub async fn delete_scan(
     auth: AuthUser,
     Path(scan_id): Path<String>,
 ) -> impl IntoResponse {
-    let org_id = match &auth.org_id {
-        Some(id) => id,
-        None => return (StatusCode::FORBIDDEN, Json(json!({"error": "Organization required"}))).into_response(),
+    let result = match &auth.org_id {
+        Some(org_id) => sqlx::query(
+            "DELETE FROM scans WHERE id = $1 AND organization_id = $2"
+        )
+        .bind(&scan_id)
+        .bind(org_id)
+        .execute(&state.db)
+        .await,
+        None => sqlx::query(
+            "DELETE FROM scans WHERE id = $1 AND user_id = $2"
+        )
+        .bind(&scan_id)
+        .bind(&auth.user_id)
+        .execute(&state.db)
+        .await,
     };
-
-    let result = sqlx::query(
-        "DELETE FROM scans WHERE id = $1 AND organization_id = $2"
-    )
-    .bind(&scan_id)
-    .bind(org_id)
-    .execute(&state.db)
-    .await;
 
     match result {
         Ok(r) if r.rows_affected() > 0 => Json(json!({"message": "Scan deleted"})).into_response(),
