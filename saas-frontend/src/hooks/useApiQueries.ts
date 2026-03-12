@@ -22,8 +22,18 @@ async function authFetch<T>(url: string, token: string | null, options?: Request
     },
   });
   if (!res.ok) {
-    const error = await res.json().catch(() => ({ error: `HTTP ${res.status}` }));
+    let error: any = { error: `HTTP ${res.status}` };
+    try {
+      const ct = res.headers.get('content-type') || '';
+      if (ct.includes('application/json')) {
+        error = await res.json();
+      }
+    } catch {}
     throw new Error(error.error || error.message || `Request failed: ${res.status}`);
+  }
+  const ct = res.headers.get('content-type') || '';
+  if (!ct.includes('application/json')) {
+    throw new Error('Server returned non-JSON response');
   }
   return res.json();
 }
@@ -180,8 +190,8 @@ export function useDashboardData() {
     queryKey: queryKeys.dashboard.overview(),
     queryFn: async (): Promise<DashboardData> => {
       const [toolsData, scansData, usageData] = await Promise.all([
-        authFetch<DashboardToolsResponse>('/api/v1/tools', token),
-        authFetch<DashboardScansResponse>('/api/v1/scans', token),
+        authFetch<DashboardToolsResponse>('/api/v1/tools', token).catch((): DashboardToolsResponse => ({ total_tools: 0, total: 0 })),
+        authFetch<DashboardScansResponse>('/api/v1/scans', token).catch((): DashboardScansResponse => ({ scans: [] })),
         authFetch<UsageStatsResponse>('/api/v1/usage/stats', token).catch(() => ({ usage: { total_scans: 0 } })),
       ]);
 
@@ -763,13 +773,15 @@ export function useChangePlan() {
   const qc = useQueryClient();
 
   return useMutation({
-    mutationFn: (planType: string) =>
+    mutationFn: ({ organizationId, planType }: { organizationId: string; planType: string }) =>
       authFetch('/api/v1/admin/change-plan', token, {
         method: 'POST',
-        body: JSON.stringify({ plan_type: planType }),
+        body: JSON.stringify({ organization_id: organizationId, plan_type: planType }),
       }),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: queryKeys.admin.all });
+      qc.invalidateQueries({ queryKey: ['auth'] });
+      qc.invalidateQueries({ queryKey: ['user'] });
     },
   });
 }

@@ -709,7 +709,8 @@ export function ReportsPage() {
                 <pre className="p-6 overflow-auto h-full text-gray-300 text-sm font-mono whitespace-pre-wrap">
                   {previewContent}
                 </pre>
-              )}n            </div>
+              )}
+            </div>
           </div>
         </div>
       )}

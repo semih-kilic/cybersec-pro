@@ -225,7 +225,7 @@ pub async fn login(
             .fetch_optional(&state.db)
             .await
             .unwrap_or(None);
-        org.map(|o| json!(o.to_response()))
+        org.map(|o: Organization| json!(o.to_response()))
     } else {
         None
     };
@@ -337,7 +337,7 @@ pub async fn me(
                     .fetch_optional(&state.db)
                     .await
                     .unwrap_or(None);
-                org.map(|o| json!(o.to_response()))
+                org.map(|o: Organization| json!(o.to_response()))
             } else {
                 None
             };

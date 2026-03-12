@@ -1201,7 +1201,7 @@ pub async fn admin_delete_user(
     Path(user_id): Path<String>,
 ) -> impl IntoResponse {
     // Don't allow deleting yourself
-    if user_id == _admin.user_id {
+    if user_id == _admin.0.user_id {
         return (StatusCode::BAD_REQUEST, Json(json!({"error": "Cannot delete yourself"}))).into_response();
     }
 

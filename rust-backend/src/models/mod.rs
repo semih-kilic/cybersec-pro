@@ -12,6 +12,7 @@ pub mod project;
 pub mod scheduled_scan;
 
 pub use user::User;
+pub use organization::Organization;
 pub use agent::Agent;
 pub use tool::Tool;
 pub use scan::Scan;

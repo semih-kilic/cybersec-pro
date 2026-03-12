@@ -120,7 +120,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     });
 
     if (!response.ok) {
-      const error = await response.json();
+      let error: any = {};
+      try {
+        const ct = response.headers.get('content-type') || '';
+        if (ct.includes('application/json')) {
+          error = await response.json();
+        } else {
+          error = { error: `Server error (${response.status})` };
+        }
+      } catch { error = { error: 'Login failed' }; }
       // V13: Handle email verification requirement
       if (error.requires_verification) {
         const e: any = new Error(error.error || 'Please verify your email first.');
@@ -160,7 +168,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     });
 
     if (!response.ok) {
-      const error = await response.json();
+      let error: any = {};
+      try {
+        const ct = response.headers.get('content-type') || '';
+        if (ct.includes('application/json')) {
+          error = await response.json();
+        } else {
+          error = { error: `Server error (${response.status})` };
+        }
+      } catch { error = { error: 'Registration failed' }; }
       throw new Error(error.error || 'Registration failed');
     }
 
