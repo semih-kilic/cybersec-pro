@@ -10,7 +10,7 @@ use std::sync::Arc;
 use uuid::Uuid;
 
 use crate::middleware::auth_middleware::AuthUser;
-use crate::models::User;
+use crate::models::{User, Organization};
 use crate::services::audit::log_audit;
 use crate::services::auth::{
     create_access_token, create_refresh_token, hash_password, verify_password,
@@ -218,9 +218,22 @@ pub async fn login(
     let access_token = create_access_token(&state.jwt_secret, &user.id, org_id, role).unwrap_or_default();
     let refresh_token = create_refresh_token(&state.jwt_secret, &user.id).unwrap_or_default();
 
+    // Fetch organization for the response
+    let org_response = if let Some(oid) = org_id {
+        let org: Option<Organization> = sqlx::query_as("SELECT * FROM organizations WHERE id = $1")
+            .bind(oid)
+            .fetch_optional(&state.db)
+            .await
+            .unwrap_or(None);
+        org.map(|o| json!(o.to_response()))
+    } else {
+        None
+    };
+
     (StatusCode::OK, Json(json!({
         "message": "Login successful",
         "user": user.to_response(),
+        "organization": org_response,
         "access_token": access_token,
         "refresh_token": refresh_token
     }))).into_response()
@@ -317,7 +330,19 @@ pub async fn me(
         .unwrap_or(None);
 
     match user {
-        Some(u) => (StatusCode::OK, Json(json!({"user": u.to_response()}))).into_response(),
+        Some(u) => {
+            let org_response = if let Some(ref oid) = u.organization_id {
+                let org: Option<Organization> = sqlx::query_as("SELECT * FROM organizations WHERE id = $1")
+                    .bind(oid)
+                    .fetch_optional(&state.db)
+                    .await
+                    .unwrap_or(None);
+                org.map(|o| json!(o.to_response()))
+            } else {
+                None
+            };
+            (StatusCode::OK, Json(json!({"user": u.to_response(), "organization": org_response}))).into_response()
+        },
         None => (StatusCode::NOT_FOUND, Json(json!({"error": "User not found"}))).into_response(),
     }
 }

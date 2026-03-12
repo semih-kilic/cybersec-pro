@@ -44,7 +44,30 @@ pub async fn list_reports(
     .unwrap_or_default();
 
     let response: Vec<_> = reports.iter().map(|r| r.to_response()).collect();
-    (StatusCode::OK, Json(json!({"reports": response}))).into_response()
+
+    // Fetch completed scans available for report generation
+    let available_scans: Vec<(String, String, String, Option<String>, Option<chrono::NaiveDateTime>)> = sqlx::query_as(
+        "SELECT s.id, s.tool_id, s.target, t.name as tool_name, s.completed_at \
+         FROM scans s LEFT JOIN tools t ON s.tool_id = t.id \
+         WHERE s.organization_id = $1 AND s.status = 'completed' \
+         ORDER BY s.completed_at DESC NULLS LAST LIMIT 100"
+    )
+    .bind(org_id)
+    .fetch_all(&state.db)
+    .await
+    .unwrap_or_default();
+
+    let available_scans_json: Vec<_> = available_scans.iter().map(|(id, tool_id, target, tool_name, completed_at)| {
+        json!({
+            "id": id,
+            "tool_id": tool_id,
+            "target": target,
+            "tool_name": tool_name.as_deref().unwrap_or("Unknown"),
+            "completed_at": completed_at
+        })
+    }).collect();
+
+    (StatusCode::OK, Json(json!({"reports": response, "available_scans": available_scans_json}))).into_response()
 }
 
 #[derive(Deserialize)]

@@ -1128,18 +1128,146 @@ pub async fn admin_overview(
 
 pub async fn admin_impersonate(
     _admin: AdminUser,
-    State(_state): State<Arc<AppState>>,
-    Json(_body): Json<serde_json::Value>,
+    State(state): State<Arc<AppState>>,
+    Json(body): Json<serde_json::Value>,
 ) -> impl IntoResponse {
-    Json(json!({"error": "Impersonation not implemented in Rust backend"})).into_response()
+    let email = match body.get("email").and_then(|e| e.as_str()) {
+        Some(e) => e.to_string(),
+        None => return (StatusCode::BAD_REQUEST, Json(json!({"error": "email is required"}))).into_response(),
+    };
+
+    let user: Option<crate::models::User> = sqlx::query_as("SELECT * FROM users WHERE email = $1")
+        .bind(&email)
+        .fetch_optional(&state.db)
+        .await
+        .unwrap_or(None);
+
+    let user = match user {
+        Some(u) => u,
+        None => return (StatusCode::NOT_FOUND, Json(json!({"error": "User not found"}))).into_response(),
+    };
+
+    let org_id = user.organization_id.as_deref();
+    let role = user.role.as_deref().unwrap_or("user");
+    let token = create_access_token(&state.jwt_secret, &user.id, org_id, role).unwrap_or_default();
+    let refresh = create_refresh_token(&state.jwt_secret, &user.id).unwrap_or_default();
+
+    (StatusCode::OK, Json(json!({
+        "token": token,
+        "refresh_token": refresh,
+        "user": user.to_response()
+    }))).into_response()
 }
 
 pub async fn admin_change_plan(
     _admin: AdminUser,
-    State(_state): State<Arc<AppState>>,
-    Json(_body): Json<serde_json::Value>,
+    State(state): State<Arc<AppState>>,
+    Json(body): Json<serde_json::Value>,
 ) -> impl IntoResponse {
-    Json(json!({"message": "Plan change not implemented"})).into_response()
+    let org_id = match body.get("organization_id").and_then(|o| o.as_str()) {
+        Some(id) => id.to_string(),
+        None => return (StatusCode::BAD_REQUEST, Json(json!({"error": "organization_id is required"}))).into_response(),
+    };
+    let plan_type = match body.get("plan_type").and_then(|p| p.as_str()) {
+        Some(p) => p.to_string(),
+        None => return (StatusCode::BAD_REQUEST, Json(json!({"error": "plan_type is required"}))).into_response(),
+    };
+
+    let valid_plans = ["free", "starter", "professional", "enterprise"];
+    if !valid_plans.contains(&plan_type.as_str()) {
+        return (StatusCode::BAD_REQUEST, Json(json!({"error": "Invalid plan_type. Must be one of: free, starter, professional, enterprise"}))).into_response();
+    }
+
+    let result = sqlx::query("UPDATE organizations SET plan_type = $1 WHERE id = $2")
+        .bind(&plan_type)
+        .bind(&org_id)
+        .execute(&state.db)
+        .await;
+
+    match result {
+        Ok(r) if r.rows_affected() > 0 => {
+            (StatusCode::OK, Json(json!({"message": format!("Plan changed to {}", plan_type), "plan_type": plan_type}))).into_response()
+        },
+        Ok(_) => (StatusCode::NOT_FOUND, Json(json!({"error": "Organization not found"}))).into_response(),
+        Err(e) => (StatusCode::INTERNAL_SERVER_ERROR, Json(json!({"error": format!("Database error: {}", e)}))).into_response(),
+    }
+}
+
+// ── Admin User Management ──────────────────────────────────
+
+pub async fn admin_delete_user(
+    _admin: AdminUser,
+    State(state): State<Arc<AppState>>,
+    Path(user_id): Path<String>,
+) -> impl IntoResponse {
+    // Don't allow deleting yourself
+    if user_id == _admin.user_id {
+        return (StatusCode::BAD_REQUEST, Json(json!({"error": "Cannot delete yourself"}))).into_response();
+    }
+
+    let result = sqlx::query("DELETE FROM users WHERE id = $1")
+        .bind(&user_id)
+        .execute(&state.db)
+        .await;
+
+    match result {
+        Ok(r) if r.rows_affected() > 0 => {
+            (StatusCode::OK, Json(json!({"message": "User deleted"}))).into_response()
+        },
+        Ok(_) => (StatusCode::NOT_FOUND, Json(json!({"error": "User not found"}))).into_response(),
+        Err(e) => (StatusCode::INTERNAL_SERVER_ERROR, Json(json!({"error": format!("Database error: {}", e)}))).into_response(),
+    }
+}
+
+pub async fn admin_toggle_user(
+    _admin: AdminUser,
+    State(state): State<Arc<AppState>>,
+    Path(user_id): Path<String>,
+) -> impl IntoResponse {
+    let result = sqlx::query("UPDATE users SET is_active = NOT COALESCE(is_active, true) WHERE id = $1 RETURNING is_active")
+        .bind(&user_id)
+        .fetch_optional(&state.db)
+        .await;
+
+    match result {
+        Ok(Some(row)) => {
+            let is_active: bool = sqlx::Row::get(&row, "is_active");
+            (StatusCode::OK, Json(json!({"message": if is_active { "User activated" } else { "User deactivated" }, "is_active": is_active}))).into_response()
+        },
+        Ok(None) => (StatusCode::NOT_FOUND, Json(json!({"error": "User not found"}))).into_response(),
+        Err(e) => (StatusCode::INTERNAL_SERVER_ERROR, Json(json!({"error": format!("Database error: {}", e)}))).into_response(),
+    }
+}
+
+pub async fn admin_change_role(
+    _admin: AdminUser,
+    State(state): State<Arc<AppState>>,
+    Path(user_id): Path<String>,
+    Json(body): Json<serde_json::Value>,
+) -> impl IntoResponse {
+    let role = match body.get("role").and_then(|r| r.as_str()) {
+        Some(r) => r.to_string(),
+        None => return (StatusCode::BAD_REQUEST, Json(json!({"error": "role is required"}))).into_response(),
+    };
+
+    let valid_roles = ["user", "admin", "superadmin"];
+    if !valid_roles.contains(&role.as_str()) {
+        return (StatusCode::BAD_REQUEST, Json(json!({"error": "Invalid role. Must be one of: user, admin, superadmin"}))).into_response();
+    }
+
+    let result = sqlx::query("UPDATE users SET role = $1 WHERE id = $2")
+        .bind(&role)
+        .bind(&user_id)
+        .execute(&state.db)
+        .await;
+
+    match result {
+        Ok(r) if r.rows_affected() > 0 => {
+            (StatusCode::OK, Json(json!({"message": format!("Role changed to {}", role), "role": role}))).into_response()
+        },
+        Ok(_) => (StatusCode::NOT_FOUND, Json(json!({"error": "User not found"}))).into_response(),
+        Err(e) => (StatusCode::INTERNAL_SERVER_ERROR, Json(json!({"error": format!("Database error: {}", e)}))).into_response(),
+    }
 }
 
 pub async fn admin_service_dashboard(
