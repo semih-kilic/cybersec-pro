@@ -10,6 +10,7 @@ import { getToolConfig, getSmartDefaults, ToolConfig } from '../../config/toolCo
 import { useTarget } from '../../contexts/TargetContext';
 import { useQuery } from '@tanstack/react-query';
 import { queryKeys, CACHE_TIMES } from '../../lib/queryClient';
+import { useAgentsList } from '../../hooks/useApiQueries';
 
 // Target Memory - now uses global TargetContext for cross-tool persistence
 const TARGET_STORAGE_KEY = 'cybersec_recent_targets';
@@ -75,6 +76,11 @@ export function ToolDetailPage() {
   // New: One-Click Scan and Target Memory
   const [recentTargets, setRecentTargets] = useState<string[]>([]);
   const [showTargetDropdown, setShowTargetDropdown] = useState(false);
+  const [selectedAgentId, setSelectedAgentId] = useState<string>('server');
+
+  // Fetch agents for execution selector
+  const { data: agentsList } = useAgentsList();
+  const agents = (agentsList || []) as { id: string | number; name: string; ip_address?: string; status: string; platform?: string }[];
 
   // React Query: fetch tool data with caching
   const { data: toolQueryData, isLoading: loading } = useQuery({
@@ -234,6 +240,9 @@ export function ToolDetailPage() {
     queryParams.set('target', scanTarget);
     queryParams.set('mode', mode);
     queryParams.set('params', JSON.stringify(allParams));
+    if (selectedAgentId && selectedAgentId !== 'server') {
+      queryParams.set('agent', selectedAgentId);
+    }
     
     // Navigate directly to scan execution
     navigate(`/dashboard/tools/${toolId}/run?${queryParams.toString()}`);
@@ -265,6 +274,9 @@ export function ToolDetailPage() {
     // Pass all parameters as JSON
     const allParams = { ...paramValues };
     queryParams.set('params', JSON.stringify(allParams));
+    if (selectedAgentId && selectedAgentId !== 'server') {
+      queryParams.set('agent', selectedAgentId);
+    }
     
     // Navigate to scan execution page with parameters
     navigate(`/dashboard/tools/${toolId}/run?${queryParams.toString()}`);
@@ -570,6 +582,33 @@ export function ToolDetailPage() {
                 <code className="text-green-400 font-mono text-sm break-all">
                   {generatedCommand || getToolSlug(tool)}
                 </code>
+              </div>
+
+              {/* Execution Agent Selector */}
+              <div className="mb-4">
+                <label className="block text-sm text-gray-400 mb-2 flex items-center gap-2">
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 3v2m6-2v2M9 19v2m6-2v2M5 9H3m2 6H3m18-6h-2m2 6h-2M7 19h10a2 2 0 002-2V7a2 2 0 00-2-2H7a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                  </svg>
+                  Execution Agent
+                </label>
+                <select
+                  value={selectedAgentId}
+                  onChange={(e) => setSelectedAgentId(e.target.value)}
+                  className="w-full px-3 py-2.5 bg-gray-800 border border-gray-700 rounded-lg text-white focus:outline-none focus:border-kali-blue transition text-sm"
+                >
+                  <option value="server">🖥️ Server (Default)</option>
+                  {agents.map(agent => (
+                    <option key={agent.id} value={String(agent.id)} disabled={agent.status !== 'online'}>
+                      {agent.status === 'online' ? '🟢' : '🔴'} {agent.name} {agent.ip_address ? `(${agent.ip_address})` : ''} — {agent.platform || 'linux'}
+                    </option>
+                  ))}
+                </select>
+                <p className="text-[11px] text-gray-600 mt-1">
+                  {agents.filter(a => a.status === 'online').length > 0 
+                    ? `${agents.filter(a => a.status === 'online').length} agent(s) online`
+                    : 'No agents online — using server'}
+                </p>
               </div>
 
               <button

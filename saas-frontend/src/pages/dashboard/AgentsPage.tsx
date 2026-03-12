@@ -136,9 +136,9 @@ export default function AgentsPage() {
         ssh_password: (connectionType === 'agent_internal' || connectionType === 'agent_dmz') ? sshCredentials.password : undefined,
       });
       
-      setInstallToken(data.registration_token || '');
-      setInstallCommand(data.install_command || `# Agent Registration Token:\n${data.registration_token}\n\n# Install & run:\ncurl -sSL https://cybersecpro.semihkilic.com/api/v1/agent-script | python3 - --token ${data.registration_token}`);
       toast.success(`Agent "${newAgentName}" created successfully`);
+      resetAddForm();
+      fetchDashboard();
     } catch (error: any) {
       toast.error(error.message || 'Failed to create agent');
     } finally {
@@ -252,6 +252,7 @@ export default function AgentsPage() {
 
   const onlineAgents = agents.filter(a => a.status === 'online');
   const offlineAgents = agents.filter(a => a.status === 'offline');
+  const pendingAgents = agents.filter(a => a.status === 'pending' || a.status === 'pending-registration' as any);
 
   return (
     <PageTransition>
@@ -486,6 +487,8 @@ export default function AgentsPage() {
                     key={agent.id} 
                     agent={agent} 
                     onSelect={() => setSelectedAgent(agent)}
+                    onTestConnection={() => testConnection(agent.id)}
+                    testingConnection={testingConnection}
                     getStatusDot={getStatusDot}
                     getPlatformIcon={getPlatformIcon}
                     getCpuColor={getCpuColor}
@@ -509,6 +512,8 @@ export default function AgentsPage() {
                     key={agent.id} 
                     agent={agent} 
                     onSelect={() => setSelectedAgent(agent)}
+                    onTestConnection={() => testConnection(agent.id)}
+                    testingConnection={testingConnection}
                     getStatusDot={getStatusDot}
                     getPlatformIcon={getPlatformIcon}
                     getCpuColor={getCpuColor}
@@ -520,18 +525,20 @@ export default function AgentsPage() {
           )}
 
           {/* Pending Agents */}
-          {agents.filter(a => a.status === 'pending').length > 0 && (
+          {pendingAgents.length > 0 && (
             <div>
               <h2 className="text-sm font-semibold text-blue-400 uppercase tracking-wider mb-3 flex items-center gap-2">
                 <div className="w-2 h-2 rounded-full bg-blue-400" />
-                Pending Registration ({agents.filter(a => a.status === 'pending').length})
+                Pending Registration ({pendingAgents.length})
               </h2>
               <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
-                {agents.filter(a => a.status === 'pending').map(agent => (
+                {pendingAgents.map(agent => (
                   <AgentCard 
                     key={agent.id} 
                     agent={agent} 
                     onSelect={() => setSelectedAgent(agent)}
+                    onTestConnection={() => testConnection(agent.id)}
+                    testingConnection={testingConnection}
                     getStatusDot={getStatusDot}
                     getPlatformIcon={getPlatformIcon}
                     getCpuColor={getCpuColor}
@@ -549,11 +556,10 @@ export default function AgentsPage() {
         <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50 p-4">
           <div className="bg-gray-900 rounded-2xl max-w-lg w-full max-h-[90vh] overflow-y-auto border border-gray-700 shadow-2xl">
             <div className="p-6 border-b border-gray-700 flex items-center justify-between">
-              <h2 className="text-xl font-bold text-white">{installToken ? 'Agent Created!' : 'Add New Agent'}</h2>
+              <h2 className="text-xl font-bold text-white">Add New Agent</h2>
               <button onClick={resetAddForm} className="p-2 hover:bg-gray-800 rounded-lg transition text-gray-400">✕</button>
             </div>
             <div className="p-6 space-y-4">
-              {!installToken ? (
                 <>
                   <div>
                     <label className="block text-gray-400 text-sm mb-2">Agent Name</label>
@@ -619,39 +625,10 @@ export default function AgentsPage() {
                     </div>
                   )}
                 </>
-              ) : (
-                <div className="space-y-4">
-                  <div className="p-4 bg-green-900/30 border border-green-500/30 rounded-lg flex items-center gap-3">
-                    <span className="text-green-400 text-xl">✓</span>
-                    <p className="text-green-400">Agent "<span className="font-medium">{newAgentName}</span>" successfully created!</p>
-                  </div>
-                  <div>
-                    <label className="block text-gray-400 text-sm mb-2">
-                      {(connectionType === 'agent_internal' || connectionType === 'agent_dmz') ? 'SSH / Agent Configuration' : connectionType === 'agent_airgapped' ? 'Air-Gap Setup Instructions' : 'Setup Instructions'}
-                    </label>
-                    <div className="bg-gray-950 rounded-lg p-4 font-mono text-sm text-green-400 relative border border-gray-700">
-                      <pre className="whitespace-pre-wrap">{installCommand}</pre>
-                      <button onClick={() => copyToClipboard(installCommand)} className="absolute top-2 right-2 p-2 hover:bg-gray-800 rounded transition text-gray-500 hover:text-white" title="Copy">📋</button>
-                    </div>
-                  </div>
-                  {(connectionType === 'agent_internal' || connectionType === 'agent_dmz') && (
-                    <button onClick={() => testConnection(agents[agents.length - 1]?.id)} disabled={testingConnection} className="w-full py-3 bg-cyan-600 hover:bg-cyan-700 text-white rounded-lg font-medium transition disabled:opacity-50">
-                      {testingConnection ? 'Testing connection...' : 'Test Agent Connection'}
-                    </button>
-                  )}
-                  {testResult && (
-                    <div className={`p-4 rounded-lg ${testResult.success ? 'bg-green-900/30 border border-green-500/30' : 'bg-red-900/30 border border-red-500/30'}`}>
-                      <p className={testResult.success ? 'text-green-400' : 'text-red-400'}>{testResult.success ? '✓' : '✗'} {testResult.message}</p>
-                    </div>
-                  )}
-                </div>
-              )}
             </div>
             <div className="p-6 border-t border-gray-700 flex justify-end gap-3">
-              <button onClick={resetAddForm} className="px-4 py-2 text-gray-400 hover:text-white transition">{installToken ? 'Done' : 'Cancel'}</button>
-              {!installToken && (
-                <button onClick={addAgent} disabled={creatingAgent || !newAgentName.trim() || ((connectionType === 'agent_internal' || connectionType === 'agent_dmz') && !sshCredentials.host)} className="px-6 py-2 bg-gradient-to-r from-kali-blue to-cyan-600 text-white rounded-lg font-medium transition disabled:opacity-50 shadow-lg shadow-kali-blue/20">{creatingAgent ? 'Creating...' : 'Create Agent'}</button>
-              )}
+              <button onClick={resetAddForm} className="px-4 py-2 text-gray-400 hover:text-white transition">Cancel</button>
+              <button onClick={addAgent} disabled={creatingAgent || !newAgentName.trim() || ((connectionType === 'agent_internal' || connectionType === 'agent_dmz') && !sshCredentials.host)} className="px-6 py-2 bg-gradient-to-r from-kali-blue to-cyan-600 text-white rounded-lg font-medium transition disabled:opacity-50 shadow-lg shadow-kali-blue/20">{creatingAgent ? 'Creating...' : 'Create Agent'}</button>
             </div>
           </div>
         </div>
@@ -854,6 +831,8 @@ export default function AgentsPage() {
 function AgentCard({ 
   agent, 
   onSelect, 
+  onTestConnection,
+  testingConnection,
   getStatusDot, 
   getPlatformIcon, 
   getCpuColor, 
@@ -861,6 +840,8 @@ function AgentCard({
 }: { 
   agent: Agent;
   onSelect: () => void;
+  onTestConnection: () => void;
+  testingConnection: boolean;
   getStatusDot: (s: AgentStatus) => string;
   getPlatformIcon: (p: AgentPlatform) => string;
   getCpuColor: (n: number) => string;
@@ -919,18 +900,31 @@ function AgentCard({
       )}
 
       {/* Footer */}
-      <div className="pt-3 border-t border-gray-700/50 flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          {agent.active_scans > 0 && (
-            <span className="text-yellow-400 text-xs flex items-center gap-1">
-              <svg className="w-3 h-3 animate-spin" fill="none" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path></svg>
-              {agent.active_scans} active
-            </span>
+      <div className="pt-3 border-t border-gray-700/50 space-y-2">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            {agent.active_scans > 0 && (
+              <span className="text-yellow-400 text-xs flex items-center gap-1">
+                <svg className="w-3 h-3 animate-spin" fill="none" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path></svg>
+                {agent.active_scans} active
+              </span>
+            )}
+            <span className="text-gray-600 text-xs">{agent.total_scans} scans</span>
+          </div>
+          {agent.last_seen && (
+            <span className="text-gray-600 text-[10px]">{agent.last_seen}</span>
           )}
-          <span className="text-gray-600 text-xs">{agent.total_scans} scans</span>
         </div>
-        {agent.last_seen && (
-          <span className="text-gray-600 text-[10px]">{agent.last_seen}</span>
+        {/* Quick Actions on Card */}
+        {agent.ssh_host && (
+          <button 
+            onClick={(e) => { e.stopPropagation(); onTestConnection(); }}
+            disabled={testingConnection}
+            className="w-full py-1.5 bg-cyan-600/10 hover:bg-cyan-600/20 text-cyan-400 rounded-lg text-xs font-medium transition border border-cyan-600/20 disabled:opacity-50 flex items-center justify-center gap-1.5"
+          >
+            <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" /></svg>
+            {testingConnection ? 'Testing...' : 'Test Connection'}
+          </button>
         )}
       </div>
     </div>
