@@ -1,6 +1,6 @@
 /**
  * CyberSec Pro - Complete Tools Database
- * 350+ Security Tools from Kali Linux and beyond
+ * 401 Security Tools from Kali Linux and beyond
  * Every tool documented with parameters, examples, and presets
  */
 
