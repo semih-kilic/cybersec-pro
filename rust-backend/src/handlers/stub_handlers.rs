@@ -568,8 +568,13 @@ pub async fn update_agent(
     let ssh_host = body.get("ssh_host").and_then(|v| v.as_str());
     let ssh_port = body.get("ssh_port").and_then(|v| v.as_i64()).map(|v| v as i32);
     let ssh_username = body.get("ssh_username").and_then(|v| v.as_str());
+    let ssh_key_path = body.get("ssh_key_path").and_then(|v| v.as_str());
     let location = body.get("location").and_then(|v| v.as_str());
     let connection_type = body.get("connection_type").and_then(|v| v.as_str());
+    let hostname = body.get("hostname").and_then(|v| v.as_str());
+    let ip_address = body.get("ip_address").and_then(|v| v.as_str());
+    let platform = body.get("platform").and_then(|v| v.as_str());
+    let max_concurrent = body.get("max_concurrent_scans").and_then(|v| v.as_i64()).map(|v| v as i32);
 
     let result = sqlx::query(
         "UPDATE agents SET \
@@ -578,8 +583,14 @@ pub async fn update_agent(
          ssh_port = COALESCE($3, ssh_port), \
          ssh_username = COALESCE($4, ssh_username), \
          location = COALESCE($5, location), \
-         connection_type = COALESCE($6, connection_type) \
-         WHERE id = $7 AND organization_id = $8"
+         connection_type = COALESCE($6, connection_type), \
+         ssh_key_path = COALESCE($7, ssh_key_path), \
+         hostname = COALESCE($8, hostname), \
+         ip_address = COALESCE($9, ip_address), \
+         platform = COALESCE($10, platform), \
+         max_concurrent_scans = COALESCE($11, max_concurrent_scans), \
+         updated_at = CURRENT_TIMESTAMP \
+         WHERE id = $12 AND organization_id = $13"
     )
     .bind(name)
     .bind(ssh_host)
@@ -587,6 +598,11 @@ pub async fn update_agent(
     .bind(ssh_username)
     .bind(location)
     .bind(connection_type)
+    .bind(ssh_key_path)
+    .bind(hostname)
+    .bind(ip_address)
+    .bind(platform)
+    .bind(max_concurrent)
     .bind(&agent_id)
     .bind(org_id)
     .execute(&state.db)
@@ -683,6 +699,7 @@ pub async fn agents_dashboard(
     let mut online = 0i64;
     let mut offline = 0i64;
     let mut busy = 0i64;
+    let mut pending = 0i64;
     let mut total_active_scans = 0i64;
 
     let agent_list: Vec<serde_json::Value> = rows.iter().map(|row| {
@@ -707,7 +724,8 @@ pub async fn agents_dashboard(
 
         match status.as_str() {
             "online" => online += 1,
-            "busy" => { busy += 1; online += 1; },
+            "busy" => { busy += 1; },
+            "pending" => { pending += 1; },
             _ => offline += 1,
         }
         total_active_scans += active.unwrap_or(0) as i64;
@@ -743,13 +761,18 @@ pub async fn agents_dashboard(
         })
     }).collect();
 
+    // Total scans completed across all agents
+    let total_scans_completed: i64 = sqlx::query_as::<_, (Option<i64>,)>(
+        "SELECT SUM(COALESCE(total_scans, 0)) FROM agents WHERE organization_id = $1"
+    ).bind(org_id).fetch_one(&state.db).await.map(|r| r.0.unwrap_or(0)).unwrap_or(0);
+
     Json(json!({
         "total_agents": rows.len(),
         "online": online,
         "offline": offline,
         "busy": busy,
-        "pending": 0,
-        "total_scans_completed": 0,
+        "pending": pending,
+        "total_scans_completed": total_scans_completed,
         "active_scans": total_active_scans,
         "agents": agent_list
     })).into_response()

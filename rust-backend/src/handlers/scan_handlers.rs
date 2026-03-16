@@ -18,7 +18,7 @@ use uuid::Uuid;
 
 use crate::middleware::auth_middleware::AuthUser;
 use crate::models::{Scan, Tool};
-use crate::scan_engine::executor::execute_scan;
+use crate::scan_engine::executor::{execute_scan, AgentSshInfo};
 use crate::services::audit::log_audit;
 use crate::AppState;
 
@@ -274,8 +274,45 @@ pub async fn start_scan(
     let scan_id_clone = scan_id.clone();
     let scan_tx = state.scan_output_tx.clone();
 
+    // Look up agent SSH info for remote execution
+    let agent_ssh: Option<AgentSshInfo> = if let Some(ref aid) = body.agent_id {
+        let agent_row: Option<(Option<String>, Option<i32>, Option<String>, Option<String>)> = sqlx::query_as(
+            "SELECT ssh_host, ssh_port, ssh_username, ssh_key_path FROM agents WHERE id = $1 AND organization_id = $2"
+        )
+        .bind(aid)
+        .bind(&org_id)
+        .fetch_optional(&state.db)
+        .await
+        .unwrap_or(None);
+        agent_row.and_then(|(host, port, user, key)| {
+            match (host, user) {
+                (Some(h), Some(u)) if !h.is_empty() && !u.is_empty() => Some(AgentSshInfo {
+                    ssh_host: h,
+                    ssh_port: port.unwrap_or(22),
+                    ssh_username: u,
+                    ssh_key_path: key,
+                }),
+                _ => None,
+            }
+        })
+    } else {
+        None
+    };
+
+    // Update agent status to busy if dispatching remotely
+    if agent_ssh.is_some() {
+        if let Some(ref aid) = body.agent_id {
+            let _ = sqlx::query("UPDATE agents SET status = 'busy', active_scans = COALESCE(active_scans, 0) + 1 WHERE id = $1")
+                .bind(aid)
+                .execute(&state.db)
+                .await;
+        }
+    }
+
+    let agent_id_for_spawn = body.agent_id.clone();
+
     tokio::spawn(async move {
-        let result = execute_scan(&tool_name, &target_owned, command_template.as_deref(), &scan_tx, &scan_id_clone).await;
+        let result = execute_scan(&tool_name, &target_owned, command_template.as_deref(), &scan_tx, &scan_id_clone, agent_ssh).await;
 
         let (status, output, findings, error_log) = match &result {
             Ok(r) => ("completed".to_string(), r.output.clone(), r.findings.clone(), None),
@@ -304,6 +341,13 @@ pub async fn start_scan(
             "scan_id": scan_id_clone,
             "status": status
         }).to_string());
+
+        // Update agent: decrement active_scans, increment total_scans, set status back to online
+        if let Some(aid) = agent_id_for_spawn {
+            let _ = sqlx::query(
+                "UPDATE agents SET active_scans = GREATEST(COALESCE(active_scans, 1) - 1, 0), total_scans = COALESCE(total_scans, 0) + 1, status = CASE WHEN COALESCE(active_scans, 1) - 1 <= 0 THEN 'online' ELSE 'busy' END WHERE id = $1"
+            ).bind(&aid).execute(&db).await;
+        }
     });
 
     // Build command string for response
@@ -311,13 +355,15 @@ pub async fn start_scan(
         .unwrap_or_else(|_| (tool.name.clone(), vec![target.to_string()]));
     let command_str = format!("{} {}", program, args.join(" "));
 
+    let exec_mode = if body.agent_id.is_some() { "remote" } else { "local" };
+
     (StatusCode::CREATED, Json(json!({
         "success": true,
         "message": "Scan started",
         "scan_id": scan_id,
         "command": command_str,
         "status": "running",
-        "execution_mode": "local",
+        "execution_mode": exec_mode,
         "engine": "rust-axum",
         "scan": {
             "id": scan_id,
