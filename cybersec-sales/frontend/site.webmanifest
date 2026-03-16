@@ -1,7 +1,7 @@
 {
     "name": "CyberSec Pro",
     "short_name": "CyberSec",
-    "description": "Professional Penetration Testing & Security Platform with 230+ Tools",
+    "description": "Enterprise Penetration Testing Platform with 401 Kali Linux Security Tools",
     "start_url": "/",
     "display": "standalone",
     "background_color": "#0a0a0f",

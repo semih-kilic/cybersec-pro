@@ -10,24 +10,24 @@
   const KNOWLEDGE_BASE = {
     platform: {
       name: 'CyberSec Pro',
-      description: 'Cloud-based Kali Linux security platform with 350+ penetration testing tools',
+      description: 'Cloud-based Kali Linux security platform with 401 penetration testing tools',
       website: 'https://semihkilic.com',
       support_email: 'cybersecpro@semihkilic.com',
       sales_email: 'cybersecpro@semihkilic.com',
     },
     pricing: {
-      starter: { price: 0, period: '14 days trial', tools: 7, scans: 10, projects: 1 },
-      professional: { price: 29, period: '/month', tools: 120, scans: 50, projects: 5 },
-      team: { price: 79, period: '/month', tools: 200, scans: 100, projects: 20, agents: 1 },
-      enterprise: { price: 149, period: '/month', tools: '350+', scans: 'Unlimited', projects: 'Unlimited', agents: 'Unlimited' },
+      free_trial: { price: 0, period: '14 days trial', tools: 401, scans: 1, projects: 1 },
+      starter: { price: 99, period: '/month', tools: 401, scans: 'Weekly', projects: 1 },
+      professional: { price: 299, period: '/month', tools: 401, scans: 'Daily', projects: 5, api: true },
+      enterprise: { price: 799, period: '/month', tools: 401, scans: 'Continuous', projects: 'Unlimited', agents: 'Unlimited' },
     },
     features: {
-      tools: '350+ Kali Linux security tools including Nmap, Metasploit, Burp Suite, SQLMap, Nikto, and more',
+      tools: '401 Kali Linux security tools including Nmap, Metasploit, Burp Suite, SQLMap, Nikto, and more',
       terminal: 'Browser-based Kali Linux terminal with full command-line access',
-      agents: 'Remote scanning agents for internal network testing (Team & Enterprise plans)',
-      reports: 'PDF/HTML/JSON reports with compliance templates (OWASP, PCI-DSS)',
-      api: 'RESTful API for automation and integration (Professional+ plans)',
-      sso: 'SSO/SAML/LDAP integration (Enterprise plan)',
+      agents: 'Remote scanning agents for internal network testing (Enterprise plan)',
+      reports: 'PDF/HTML compliance reports (SOC 2, ISO 27001, GDPR, HIPAA, PCI DSS)',
+      api: 'RESTful API for CI/CD integration (Professional & Enterprise plans)',
+      sso: 'SSO/SAML/OAuth integration (Enterprise plan)',
     },
     tools: [
       'Nmap', 'Metasploit', 'Burp Suite', 'SQLMap', 'Nikto', 'Dirb', 'Gobuster', 
@@ -38,7 +38,7 @@
     faq: [
       {
         q: 'What is CyberSec Pro?',
-        a: 'CyberSec Pro is a cloud-based cybersecurity platform that gives you access to 350+ Kali Linux security tools directly from your browser. No installation required.'
+        a: 'CyberSec Pro is a cloud-based penetration testing platform that gives you access to 401 Kali Linux security tools directly from your browser. No installation required.'
       },
       {
         q: 'Is it legal?',
@@ -75,11 +75,11 @@
         "Hello! Welcome to CyberSec Pro. I'm here to answer any questions about our security platform.",
         "Hey there! 🔐 Ready to help you with CyberSec Pro. What would you like to know?"
       ],
-      pricing: "💰 **Our Plans:**\n\n• **Starter (Free Trial)**: €0 for 14 days - 50 tools, 10 scans/day\n• **Professional**: €29/month - 200 tools, 50 scans/day, API access\n• **Team**: €59/month - 400 tools, 200 scans/day, 3 remote agents\n• **Enterprise**: €99/month - All 401 tools, unlimited everything\n\nWant me to explain any plan in detail?",
+      pricing: "💰 **Our Plans:**\n\n• **Free Trial**: €0 for 14 days - All 401 tools, 1 comprehensive scan\n• **Starter**: €99/month - 1 domain, weekly scans, email alerts\n• **Professional**: €299/month - 5 domains, daily scans, API access, compliance reports\n• **Enterprise**: €799/month - Unlimited domains, continuous monitoring, dedicated support\n\nWant me to explain any plan in detail?",
       tools: "🛠️ We have **401 Kali Linux security tools** including:\n\n• **Reconnaissance**: Nmap, Recon-ng, theHarvester, Amass\n• **Web Testing**: Burp Suite, OWASP ZAP, Nikto, SQLMap\n• **Password Attacks**: Hydra, John the Ripper, Hashcat\n• **Exploitation**: Metasploit Framework\n• **Wireless**: Aircrack-ng, Wifite\n\nAll tools run in the cloud - no installation needed!",
-      trial: "🎉 **Free Trial Details:**\n\n• 14 days full access\n• 50 security tools\n• 10 scans per day\n• No credit card required\n• Basic JSON reports\n\n[Start Free Trial →](https://semihkilic.com/dashboard)",
+      trial: "🎉 **Free Trial Details:**\n\n• 14 days full access\n• All 401 security tools\n• 1 comprehensive scan\n• No credit card required\n• PDF report with findings\n\n[Start Free Trial →](https://semihkilic.com/dashboard/login)",
       support: "📞 **Contact Support:**\n\n• **Email**: cybersecpro@semihkilic.com\n• **Live Chat**: Available Mon-Fri, 9AM-6PM CET (Pro & Team users)\n• **Priority Support**: 24/7 for Enterprise users\n\nI can also help answer most questions right here!",
-      enterprise: "🏢 **Enterprise Plan (€99/month):**\n\n• All 401 Kali tools\n• Unlimited scans & projects\n• Unlimited remote agents\n• Unlimited team members\n• SSO / SAML / LDAP\n• Compliance reports (OWASP, PCI)\n• 24/7 priority support\n• Custom integrations\n\n[Contact Sales →](mailto:cybersecpro@semihkilic.com)",
+      enterprise: "🏢 **Enterprise Plan (€799/month):**\n\n• All 401 Kali tools\n• Unlimited domains & applications\n• Continuous hourly monitoring\n• Dedicated account manager\n• SSO / SAML / OAuth\n• Compliance reports (SOC 2, ISO 27001, GDPR, HIPAA, PCI DSS)\n• 24/7 priority support (2h response)\n• 99.9% uptime SLA\n\n[Contact Sales →](mailto:cybersecpro@semihkilic.com)",
       agents: "🖥️ **Remote Agents:**\n\nDeploy scanning agents inside your network for:\n• Internal vulnerability scanning\n• Private asset discovery\n• Continuous monitoring\n• Distributed scanning\n\nSupported on: Linux, Windows, macOS, Docker\n\nAvailable on Team (1 agent) and Enterprise (unlimited) plans.",
       notFound: "🤔 I'm not sure about that. Here's what I can help with:\n\n• 💰 Pricing & plans\n• 🛠️ Tools & features\n• 🎉 Free trial info\n• 📞 Contact support\n• 🖥️ Remote agents\n\nOr contact us at cybersecpro@semihkilic.com"
     }

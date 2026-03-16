@@ -1,0 +1,477 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>401 Security Tools - CyberSec Pro | Kali Linux in Browser</title>
+    <meta name="description" content="Access 401 Kali Linux security tools directly from your browser. Network scanning, web testing, exploitation, forensics, and more.">
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'kali': { 'blue': '#367bf0', 'dark': '#1a1a2e', 'darker': '#0f0f1a', 'purple': '#9b59b6', 'cyan': '#00d4ff', 'green': '#2ecc71', 'red': '#e74c3c', 'orange': '#f39c12' }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body { font-family: 'Inter', sans-serif; background: #0a0a12; }
+        code { font-family: 'JetBrains Mono', monospace; }
+        .kali-gradient { background: linear-gradient(135deg, #367bf0 0%, #9b59b6 50%, #367bf0 100%); background-size: 200% 200%; animation: gradientMove 5s ease infinite; }
+        @keyframes gradientMove { 0%, 100% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } }
+        .kali-text { background: linear-gradient(135deg, #367bf0, #9b59b6, #00d4ff); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; }
+        .dragon-bg { background: radial-gradient(ellipse 100% 80% at 50% 20%, rgba(54, 123, 240, 0.15), transparent), #0a0a12; }
+        .kali-card { background: linear-gradient(145deg, rgba(26, 26, 46, 0.8), rgba(15, 15, 26, 0.9)); border: 1px solid rgba(54, 123, 240, 0.2); transition: all 0.3s ease; }
+        .kali-card:hover { border-color: rgba(54, 123, 240, 0.5); transform: translateY(-2px); }
+        .btn-kali { background: linear-gradient(135deg, #367bf0 0%, #2563eb 100%); box-shadow: 0 10px 40px rgba(54, 123, 240, 0.4); }
+        @keyframes pulse-glow { 0%, 100% { box-shadow: 0 0 0 0 rgba(54, 123, 240, 0.7); } 50% { box-shadow: 0 0 0 15px rgba(54, 123, 240, 0); } }
+        .pulse-kali { animation: pulse-glow 2s infinite; }
+        .category-btn.active { background: linear-gradient(135deg, #367bf0 0%, #9b59b6 100%); color: white; }
+        .tool-card { display: block; }
+        .tool-card.hidden { display: none; }
+    </style>
+</head>
+<body class="text-white antialiased">
+    <!-- Navigation -->
+    <nav class="sticky top-0 z-50 bg-kali-darker/95 backdrop-blur-xl border-b border-kali-blue/10">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6">
+            <div class="flex justify-between items-center h-16">
+                <a href="/" class="flex items-center gap-3">
+                    <div class="relative">
+                        <div class="w-10 h-10 rounded-xl kali-gradient flex items-center justify-center">
+                            <svg class="w-6 h-6 text-white" viewBox="0 0 24 24" fill="currentColor">
+                                <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z"/>
+                            </svg>
+                        </div>
+                        <div class="absolute -top-1 -right-1 w-3 h-3 bg-kali-green rounded-full pulse-kali"></div>
+                    </div>
+                    <span class="text-xl font-bold">CyberSec Pro</span>
+                </a>
+                <div class="hidden md:flex items-center gap-8">
+                    <a href="/#platform" class="text-gray-400 hover:text-kali-blue transition">Platform</a>
+                    <a href="/tools.html" class="text-kali-blue font-medium">Tools</a>
+                    <a href="/careers.html" class="text-gray-400 hover:text-kali-blue transition">Learning Path</a>
+                </div>
+                <a href="/app/register" class="btn-kali px-6 py-2.5 rounded-full text-white font-semibold">Start Free Trial</a>
+            </div>
+        </div>
+    </nav>
+    
+    <!-- Hero -->
+    <section class="dragon-bg py-16 px-4">
+        <div class="max-w-7xl mx-auto text-center">
+            <div class="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-kali-blue/10 border border-kali-blue/30 mb-6">
+                <span class="text-kali-blue font-medium">🛠️ 401 Tools</span>
+            </div>
+            <h1 class="text-4xl sm:text-5xl font-black mb-6">
+                <span class="kali-text">Kali Linux</span> Security Tools
+            </h1>
+            <p class="text-xl text-gray-400 max-w-3xl mx-auto mb-8">
+                Access the full power of Kali Linux security tools directly from your browser. 
+                No installation, no configuration—just security testing.
+            </p>
+            
+            <!-- Search -->
+            <div class="max-w-xl mx-auto">
+                <div class="relative">
+                    <input type="text" id="searchInput" placeholder="Search tools..." 
+                        class="w-full px-6 py-4 rounded-2xl bg-kali-dark border border-kali-blue/20 focus:border-kali-blue focus:outline-none text-white placeholder-gray-500">
+                    <svg class="w-6 h-6 text-gray-500 absolute right-4 top-1/2 -translate-y-1/2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+                    </svg>
+                </div>
+            </div>
+        </div>
+    </section>
+    
+    <!-- Category Filter -->
+    <section class="py-6 px-4 bg-kali-darker border-b border-kali-blue/10 sticky top-16 z-40">
+        <div class="max-w-7xl mx-auto">
+            <div class="flex flex-wrap gap-2 justify-center" id="categoryFilters">
+                <button class="category-btn active px-4 py-2 rounded-full text-sm font-medium border border-kali-blue/30 hover:border-kali-blue transition" data-category="all">
+                    All Tools
+                </button>
+                <button class="category-btn px-4 py-2 rounded-full text-sm font-medium text-gray-400 border border-kali-blue/20 hover:border-kali-blue transition" data-category="info-gathering">
+                    🔍 Information Gathering
+                </button>
+                <button class="category-btn px-4 py-2 rounded-full text-sm font-medium text-gray-400 border border-kali-blue/20 hover:border-kali-blue transition" data-category="vuln-analysis">
+                    🎯 Vulnerability Analysis
+                </button>
+                <button class="category-btn px-4 py-2 rounded-full text-sm font-medium text-gray-400 border border-kali-blue/20 hover:border-kali-blue transition" data-category="web-apps">
+                    🌐 Web Applications
+                </button>
+                <button class="category-btn px-4 py-2 rounded-full text-sm font-medium text-gray-400 border border-kali-blue/20 hover:border-kali-blue transition" data-category="exploitation">
+                    💥 Exploitation
+                </button>
+                <button class="category-btn px-4 py-2 rounded-full text-sm font-medium text-gray-400 border border-kali-blue/20 hover:border-kali-blue transition" data-category="wireless">
+                    📡 Wireless
+                </button>
+                <button class="category-btn px-4 py-2 rounded-full text-sm font-medium text-gray-400 border border-kali-blue/20 hover:border-kali-blue transition" data-category="forensics">
+                    🔬 Forensics
+                </button>
+                <button class="category-btn px-4 py-2 rounded-full text-sm font-medium text-gray-400 border border-kali-blue/20 hover:border-kali-blue transition" data-category="passwords">
+                    🔑 Password Attacks
+                </button>
+            </div>
+        </div>
+    </section>
+    
+    <!-- Tools Grid -->
+    <section class="py-12 px-4 dragon-bg">
+        <div class="max-w-7xl mx-auto">
+            <div class="grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4" id="toolsGrid">
+                
+                <!-- Information Gathering Tools -->
+                <div class="tool-card kali-card rounded-xl p-5" data-category="info-gathering" data-name="nmap">
+                    <div class="flex items-start justify-between mb-3">
+                        <div class="w-10 h-10 rounded-lg bg-kali-blue/20 flex items-center justify-center">
+                            <span class="text-lg">🔍</span>
+                        </div>
+                        <span class="text-xs px-2 py-1 rounded-full bg-kali-blue/20 text-kali-blue">Popular</span>
+                    </div>
+                    <h3 class="font-bold text-lg mb-1">Nmap</h3>
+                    <p class="text-gray-400 text-sm mb-3">Network discovery and security auditing tool.</p>
+                    <code class="text-xs text-kali-cyan bg-kali-darker/50 px-2 py-1 rounded">nmap -sV target</code>
+                    <a href="https://nmap.org/docs.html" target="_blank" class="block mt-3 text-sm text-kali-blue hover:underline">Learn more →</a>
+                </div>
+                
+                <div class="tool-card kali-card rounded-xl p-5" data-category="info-gathering" data-name="gobuster">
+                    <div class="w-10 h-10 rounded-lg bg-kali-blue/20 flex items-center justify-center mb-3">
+                        <span class="text-lg">📁</span>
+                    </div>
+                    <h3 class="font-bold text-lg mb-1">Gobuster</h3>
+                    <p class="text-gray-400 text-sm mb-3">Directory/file & DNS busting tool.</p>
+                    <code class="text-xs text-kali-cyan bg-kali-darker/50 px-2 py-1 rounded">gobuster dir -u URL -w wordlist</code>
+                    <a href="https://github.com/OJ/gobuster" target="_blank" class="block mt-3 text-sm text-kali-blue hover:underline">Learn more →</a>
+                </div>
+                
+                <div class="tool-card kali-card rounded-xl p-5" data-category="info-gathering" data-name="dig">
+                    <div class="w-10 h-10 rounded-lg bg-kali-blue/20 flex items-center justify-center mb-3">
+                        <span class="text-lg">🌐</span>
+                    </div>
+                    <h3 class="font-bold text-lg mb-1">dig</h3>
+                    <p class="text-gray-400 text-sm mb-3">DNS lookup utility for querying DNS servers.</p>
+                    <code class="text-xs text-kali-cyan bg-kali-darker/50 px-2 py-1 rounded">dig example.com MX</code>
+                    <a href="https://linux.die.net/man/1/dig" target="_blank" class="block mt-3 text-sm text-kali-blue hover:underline">Learn more →</a>
+                </div>
+                
+                <div class="tool-card kali-card rounded-xl p-5" data-category="info-gathering" data-name="whois">
+                    <div class="w-10 h-10 rounded-lg bg-kali-blue/20 flex items-center justify-center mb-3">
+                        <span class="text-lg">📋</span>
+                    </div>
+                    <h3 class="font-bold text-lg mb-1">Whois</h3>
+                    <p class="text-gray-400 text-sm mb-3">Domain registration information lookup.</p>
+                    <code class="text-xs text-kali-cyan bg-kali-darker/50 px-2 py-1 rounded">whois example.com</code>
+                    <a href="https://linux.die.net/man/1/whois" target="_blank" class="block mt-3 text-sm text-kali-blue hover:underline">Learn more →</a>
+                </div>
+                
+                <div class="tool-card kali-card rounded-xl p-5" data-category="info-gathering" data-name="theHarvester">
+                    <div class="w-10 h-10 rounded-lg bg-kali-blue/20 flex items-center justify-center mb-3">
+                        <span class="text-lg">🌾</span>
+                    </div>
+                    <h3 class="font-bold text-lg mb-1">theHarvester</h3>
+                    <p class="text-gray-400 text-sm mb-3">Email, subdomain and name harvester.</p>
+                    <code class="text-xs text-kali-cyan bg-kali-darker/50 px-2 py-1 rounded">theHarvester -d domain -b google</code>
+                    <a href="https://github.com/laramies/theHarvester" target="_blank" class="block mt-3 text-sm text-kali-blue hover:underline">Learn more →</a>
+                </div>
+                
+                <div class="tool-card kali-card rounded-xl p-5" data-category="info-gathering" data-name="masscan">
+                    <div class="w-10 h-10 rounded-lg bg-kali-blue/20 flex items-center justify-center mb-3">
+                        <span class="text-lg">⚡</span>
+                    </div>
+                    <h3 class="font-bold text-lg mb-1">Masscan</h3>
+                    <p class="text-gray-400 text-sm mb-3">Fastest internet port scanner.</p>
+                    <code class="text-xs text-kali-cyan bg-kali-darker/50 px-2 py-1 rounded">masscan -p1-65535 10.0.0.0/8</code>
+                    <a href="https://github.com/robertdavidgraham/masscan" target="_blank" class="block mt-3 text-sm text-kali-blue hover:underline">Learn more →</a>
+                </div>
+                
+                <!-- Vulnerability Analysis -->
+                <div class="tool-card kali-card rounded-xl p-5" data-category="vuln-analysis" data-name="nikto">
+                    <div class="flex items-start justify-between mb-3">
+                        <div class="w-10 h-10 rounded-lg bg-kali-purple/20 flex items-center justify-center">
+                            <span class="text-lg">🎯</span>
+                        </div>
+                        <span class="text-xs px-2 py-1 rounded-full bg-kali-purple/20 text-kali-purple">Popular</span>
+                    </div>
+                    <h3 class="font-bold text-lg mb-1">Nikto</h3>
+                    <p class="text-gray-400 text-sm mb-3">Web server scanner for vulnerabilities.</p>
+                    <code class="text-xs text-kali-cyan bg-kali-darker/50 px-2 py-1 rounded">nikto -h target</code>
+                    <a href="https://cirt.net/Nikto2" target="_blank" class="block mt-3 text-sm text-kali-blue hover:underline">Learn more →</a>
+                </div>
+                
+                <div class="tool-card kali-card rounded-xl p-5" data-category="vuln-analysis" data-name="wpscan">
+                    <div class="w-10 h-10 rounded-lg bg-kali-purple/20 flex items-center justify-center mb-3">
+                        <span class="text-lg">📝</span>
+                    </div>
+                    <h3 class="font-bold text-lg mb-1">WPScan</h3>
+                    <p class="text-gray-400 text-sm mb-3">WordPress vulnerability scanner.</p>
+                    <code class="text-xs text-kali-cyan bg-kali-darker/50 px-2 py-1 rounded">wpscan --url target</code>
+                    <a href="https://wpscan.com/" target="_blank" class="block mt-3 text-sm text-kali-blue hover:underline">Learn more →</a>
+                </div>
+                
+                <div class="tool-card kali-card rounded-xl p-5" data-category="vuln-analysis" data-name="nessus">
+                    <div class="w-10 h-10 rounded-lg bg-kali-purple/20 flex items-center justify-center mb-3">
+                        <span class="text-lg">🛡️</span>
+                    </div>
+                    <h3 class="font-bold text-lg mb-1">OpenVAS</h3>
+                    <p class="text-gray-400 text-sm mb-3">Open source vulnerability scanner.</p>
+                    <code class="text-xs text-kali-cyan bg-kali-darker/50 px-2 py-1 rounded">openvas-start</code>
+                    <a href="https://www.openvas.org/" target="_blank" class="block mt-3 text-sm text-kali-blue hover:underline">Learn more →</a>
+                </div>
+                
+                <!-- Web Application Tools -->
+                <div class="tool-card kali-card rounded-xl p-5" data-category="web-apps" data-name="burp suite">
+                    <div class="flex items-start justify-between mb-3">
+                        <div class="w-10 h-10 rounded-lg bg-kali-cyan/20 flex items-center justify-center">
+                            <span class="text-lg">🕷️</span>
+                        </div>
+                        <span class="text-xs px-2 py-1 rounded-full bg-kali-cyan/20 text-kali-cyan">Popular</span>
+                    </div>
+                    <h3 class="font-bold text-lg mb-1">Burp Suite</h3>
+                    <p class="text-gray-400 text-sm mb-3">Web application security testing.</p>
+                    <code class="text-xs text-kali-cyan bg-kali-darker/50 px-2 py-1 rounded">burpsuite</code>
+                    <a href="https://portswigger.net/burp" target="_blank" class="block mt-3 text-sm text-kali-blue hover:underline">Learn more →</a>
+                </div>
+                
+                <div class="tool-card kali-card rounded-xl p-5" data-category="web-apps" data-name="sqlmap">
+                    <div class="flex items-start justify-between mb-3">
+                        <div class="w-10 h-10 rounded-lg bg-kali-cyan/20 flex items-center justify-center">
+                            <span class="text-lg">💉</span>
+                        </div>
+                        <span class="text-xs px-2 py-1 rounded-full bg-kali-cyan/20 text-kali-cyan">Popular</span>
+                    </div>
+                    <h3 class="font-bold text-lg mb-1">SQLMap</h3>
+                    <p class="text-gray-400 text-sm mb-3">Automatic SQL injection tool.</p>
+                    <code class="text-xs text-kali-cyan bg-kali-darker/50 px-2 py-1 rounded">sqlmap -u "url?id=1"</code>
+                    <a href="https://sqlmap.org/" target="_blank" class="block mt-3 text-sm text-kali-blue hover:underline">Learn more →</a>
+                </div>
+                
+                <div class="tool-card kali-card rounded-xl p-5" data-category="web-apps" data-name="dirb">
+                    <div class="w-10 h-10 rounded-lg bg-kali-cyan/20 flex items-center justify-center mb-3">
+                        <span class="text-lg">📂</span>
+                    </div>
+                    <h3 class="font-bold text-lg mb-1">DIRB</h3>
+                    <p class="text-gray-400 text-sm mb-3">Web content scanner.</p>
+                    <code class="text-xs text-kali-cyan bg-kali-darker/50 px-2 py-1 rounded">dirb http://target</code>
+                    <a href="https://tools.kali.org/web-applications/dirb" target="_blank" class="block mt-3 text-sm text-kali-blue hover:underline">Learn more →</a>
+                </div>
+                
+                <div class="tool-card kali-card rounded-xl p-5" data-category="web-apps" data-name="xsstrike">
+                    <div class="w-10 h-10 rounded-lg bg-kali-cyan/20 flex items-center justify-center mb-3">
+                        <span class="text-lg">✖️</span>
+                    </div>
+                    <h3 class="font-bold text-lg mb-1">XSStrike</h3>
+                    <p class="text-gray-400 text-sm mb-3">Advanced XSS detection suite.</p>
+                    <code class="text-xs text-kali-cyan bg-kali-darker/50 px-2 py-1 rounded">xsstrike -u "url"</code>
+                    <a href="https://github.com/s0md3v/XSStrike" target="_blank" class="block mt-3 text-sm text-kali-blue hover:underline">Learn more →</a>
+                </div>
+                
+                <!-- Exploitation -->
+                <div class="tool-card kali-card rounded-xl p-5" data-category="exploitation" data-name="metasploit">
+                    <div class="flex items-start justify-between mb-3">
+                        <div class="w-10 h-10 rounded-lg bg-kali-red/20 flex items-center justify-center">
+                            <span class="text-lg">💥</span>
+                        </div>
+                        <span class="text-xs px-2 py-1 rounded-full bg-kali-red/20 text-kali-red">Pro</span>
+                    </div>
+                    <h3 class="font-bold text-lg mb-1">Metasploit</h3>
+                    <p class="text-gray-400 text-sm mb-3">Penetration testing framework.</p>
+                    <code class="text-xs text-kali-cyan bg-kali-darker/50 px-2 py-1 rounded">msfconsole</code>
+                    <a href="https://www.metasploit.com/" target="_blank" class="block mt-3 text-sm text-kali-blue hover:underline">Learn more →</a>
+                </div>
+                
+                <div class="tool-card kali-card rounded-xl p-5" data-category="exploitation" data-name="searchsploit">
+                    <div class="w-10 h-10 rounded-lg bg-kali-red/20 flex items-center justify-center mb-3">
+                        <span class="text-lg">📚</span>
+                    </div>
+                    <h3 class="font-bold text-lg mb-1">SearchSploit</h3>
+                    <p class="text-gray-400 text-sm mb-3">Exploit database search tool.</p>
+                    <code class="text-xs text-kali-cyan bg-kali-darker/50 px-2 py-1 rounded">searchsploit apache 2.4</code>
+                    <a href="https://www.exploit-db.com/searchsploit" target="_blank" class="block mt-3 text-sm text-kali-blue hover:underline">Learn more →</a>
+                </div>
+                
+                <div class="tool-card kali-card rounded-xl p-5" data-category="exploitation" data-name="beef">
+                    <div class="w-10 h-10 rounded-lg bg-kali-red/20 flex items-center justify-center mb-3">
+                        <span class="text-lg">🥩</span>
+                    </div>
+                    <h3 class="font-bold text-lg mb-1">BeEF</h3>
+                    <p class="text-gray-400 text-sm mb-3">Browser exploitation framework.</p>
+                    <code class="text-xs text-kali-cyan bg-kali-darker/50 px-2 py-1 rounded">beef-xss</code>
+                    <a href="https://beefproject.com/" target="_blank" class="block mt-3 text-sm text-kali-blue hover:underline">Learn more →</a>
+                </div>
+                
+                <!-- Wireless -->
+                <div class="tool-card kali-card rounded-xl p-5" data-category="wireless" data-name="aircrack">
+                    <div class="flex items-start justify-between mb-3">
+                        <div class="w-10 h-10 rounded-lg bg-kali-green/20 flex items-center justify-center">
+                            <span class="text-lg">📡</span>
+                        </div>
+                        <span class="text-xs px-2 py-1 rounded-full bg-kali-green/20 text-kali-green">Popular</span>
+                    </div>
+                    <h3 class="font-bold text-lg mb-1">Aircrack-ng</h3>
+                    <p class="text-gray-400 text-sm mb-3">WiFi security auditing tools.</p>
+                    <code class="text-xs text-kali-cyan bg-kali-darker/50 px-2 py-1 rounded">aircrack-ng capture.cap</code>
+                    <a href="https://www.aircrack-ng.org/" target="_blank" class="block mt-3 text-sm text-kali-blue hover:underline">Learn more →</a>
+                </div>
+                
+                <div class="tool-card kali-card rounded-xl p-5" data-category="wireless" data-name="wifite">
+                    <div class="w-10 h-10 rounded-lg bg-kali-green/20 flex items-center justify-center mb-3">
+                        <span class="text-lg">📶</span>
+                    </div>
+                    <h3 class="font-bold text-lg mb-1">Wifite</h3>
+                    <p class="text-gray-400 text-sm mb-3">Automated wireless auditor.</p>
+                    <code class="text-xs text-kali-cyan bg-kali-darker/50 px-2 py-1 rounded">wifite</code>
+                    <a href="https://github.com/derv82/wifite2" target="_blank" class="block mt-3 text-sm text-kali-blue hover:underline">Learn more →</a>
+                </div>
+                
+                <!-- Forensics -->
+                <div class="tool-card kali-card rounded-xl p-5" data-category="forensics" data-name="volatility">
+                    <div class="w-10 h-10 rounded-lg bg-kali-orange/20 flex items-center justify-center mb-3">
+                        <span class="text-lg">🔬</span>
+                    </div>
+                    <h3 class="font-bold text-lg mb-1">Volatility</h3>
+                    <p class="text-gray-400 text-sm mb-3">Memory forensics framework.</p>
+                    <code class="text-xs text-kali-cyan bg-kali-darker/50 px-2 py-1 rounded">volatility -f dump.raw imageinfo</code>
+                    <a href="https://www.volatilityfoundation.org/" target="_blank" class="block mt-3 text-sm text-kali-blue hover:underline">Learn more →</a>
+                </div>
+                
+                <div class="tool-card kali-card rounded-xl p-5" data-category="forensics" data-name="autopsy">
+                    <div class="w-10 h-10 rounded-lg bg-kali-orange/20 flex items-center justify-center mb-3">
+                        <span class="text-lg">🔎</span>
+                    </div>
+                    <h3 class="font-bold text-lg mb-1">Autopsy</h3>
+                    <p class="text-gray-400 text-sm mb-3">Digital forensics platform.</p>
+                    <code class="text-xs text-kali-cyan bg-kali-darker/50 px-2 py-1 rounded">autopsy</code>
+                    <a href="https://www.autopsy.com/" target="_blank" class="block mt-3 text-sm text-kali-blue hover:underline">Learn more →</a>
+                </div>
+                
+                <div class="tool-card kali-card rounded-xl p-5" data-category="forensics" data-name="binwalk">
+                    <div class="w-10 h-10 rounded-lg bg-kali-orange/20 flex items-center justify-center mb-3">
+                        <span class="text-lg">📦</span>
+                    </div>
+                    <h3 class="font-bold text-lg mb-1">Binwalk</h3>
+                    <p class="text-gray-400 text-sm mb-3">Firmware analysis tool.</p>
+                    <code class="text-xs text-kali-cyan bg-kali-darker/50 px-2 py-1 rounded">binwalk firmware.bin</code>
+                    <a href="https://github.com/ReFirmLabs/binwalk" target="_blank" class="block mt-3 text-sm text-kali-blue hover:underline">Learn more →</a>
+                </div>
+                
+                <!-- Password Attacks -->
+                <div class="tool-card kali-card rounded-xl p-5" data-category="passwords" data-name="john">
+                    <div class="flex items-start justify-between mb-3">
+                        <div class="w-10 h-10 rounded-lg bg-yellow-500/20 flex items-center justify-center">
+                            <span class="text-lg">🔑</span>
+                        </div>
+                        <span class="text-xs px-2 py-1 rounded-full bg-yellow-500/20 text-yellow-400">Popular</span>
+                    </div>
+                    <h3 class="font-bold text-lg mb-1">John the Ripper</h3>
+                    <p class="text-gray-400 text-sm mb-3">Password cracker.</p>
+                    <code class="text-xs text-kali-cyan bg-kali-darker/50 px-2 py-1 rounded">john --wordlist=rockyou.txt hash</code>
+                    <a href="https://www.openwall.com/john/" target="_blank" class="block mt-3 text-sm text-kali-blue hover:underline">Learn more →</a>
+                </div>
+                
+                <div class="tool-card kali-card rounded-xl p-5" data-category="passwords" data-name="hashcat">
+                    <div class="flex items-start justify-between mb-3">
+                        <div class="w-10 h-10 rounded-lg bg-yellow-500/20 flex items-center justify-center">
+                            <span class="text-lg">⚡</span>
+                        </div>
+                        <span class="text-xs px-2 py-1 rounded-full bg-yellow-500/20 text-yellow-400">Popular</span>
+                    </div>
+                    <h3 class="font-bold text-lg mb-1">Hashcat</h3>
+                    <p class="text-gray-400 text-sm mb-3">GPU-powered password cracker.</p>
+                    <code class="text-xs text-kali-cyan bg-kali-darker/50 px-2 py-1 rounded">hashcat -m 0 hash wordlist</code>
+                    <a href="https://hashcat.net/hashcat/" target="_blank" class="block mt-3 text-sm text-kali-blue hover:underline">Learn more →</a>
+                </div>
+                
+                <div class="tool-card kali-card rounded-xl p-5" data-category="passwords" data-name="hydra">
+                    <div class="w-10 h-10 rounded-lg bg-yellow-500/20 flex items-center justify-center mb-3">
+                        <span class="text-lg">🐍</span>
+                    </div>
+                    <h3 class="font-bold text-lg mb-1">Hydra</h3>
+                    <p class="text-gray-400 text-sm mb-3">Network logon cracker.</p>
+                    <code class="text-xs text-kali-cyan bg-kali-darker/50 px-2 py-1 rounded">hydra -l user -P pass.txt ssh://target</code>
+                    <a href="https://github.com/vanhauser-thc/thc-hydra" target="_blank" class="block mt-3 text-sm text-kali-blue hover:underline">Learn more →</a>
+                </div>
+                
+            </div>
+            
+            <!-- More Tools Notice -->
+            <div class="text-center mt-12">
+                <p class="text-gray-400 mb-6">
+                    And <span class="text-kali-blue font-bold">375+ more tools</span> available in your browser
+                </p>
+                <a href="/app/register" class="btn-kali px-8 py-4 rounded-xl text-lg font-bold inline-flex items-center gap-2">
+                    Start Free Trial
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6"/>
+                    </svg>
+                </a>
+            </div>
+        </div>
+    </section>
+    
+    <!-- Footer -->
+    <footer class="py-12 px-4 border-t border-kali-blue/10 bg-kali-darker">
+        <div class="max-w-7xl mx-auto text-center text-gray-500 text-sm">
+            <div class="flex flex-wrap justify-center gap-6 mb-6">
+                <a href="/privacy.html" class="hover:text-kali-blue transition">Privacy</a>
+                <a href="/terms.html" class="hover:text-kali-blue transition">Terms</a>
+                <a href="/security.html" class="hover:text-kali-blue transition">Security</a>
+                <a href="/contact.html" class="hover:text-kali-blue transition">Contact</a>
+            </div>
+            © 2026 CyberSec Pro. Powered by Kali Linux.
+        </div>
+    </footer>
+    
+    <script>
+        // Category filtering
+        const categoryBtns = document.querySelectorAll('.category-btn');
+        const toolCards = document.querySelectorAll('.tool-card');
+        const searchInput = document.getElementById('searchInput');
+        
+        categoryBtns.forEach(btn => {
+            btn.addEventListener('click', () => {
+                // Update active state
+                categoryBtns.forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                
+                const category = btn.dataset.category;
+                
+                toolCards.forEach(card => {
+                    if (category === 'all' || card.dataset.category === category) {
+                        card.classList.remove('hidden');
+                    } else {
+                        card.classList.add('hidden');
+                    }
+                });
+            });
+        });
+        
+        // Search filtering
+        searchInput.addEventListener('input', (e) => {
+            const query = e.target.value.toLowerCase();
+            
+            // Reset category filter
+            categoryBtns.forEach(b => b.classList.remove('active'));
+            categoryBtns[0].classList.add('active');
+            
+            toolCards.forEach(card => {
+                const name = card.dataset.name.toLowerCase();
+                const text = card.textContent.toLowerCase();
+                
+                if (name.includes(query) || text.includes(query)) {
+                    card.classList.remove('hidden');
+                } else {
+                    card.classList.add('hidden');
+                }
+            });
+        });
+    </script>
+</body>
+</html>
