@@ -53,6 +53,13 @@ class ApiService {
       const data = await response.json();
 
       if (!response.ok) {
+        // Auto-logout on expired/invalid token
+        if (response.status === 401) {
+          this.clearToken();
+          if (typeof window !== 'undefined' && !window.location.pathname.includes('/login')) {
+            window.location.href = '/dashboard/login';
+          }
+        }
         return { error: data.error || 'Request failed' };
       }
 

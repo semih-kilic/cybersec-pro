@@ -256,7 +256,7 @@ function AppRoutes() {
   return (
     <Routes>
       {/* Public Routes */}
-      <Route path="/" element={<Suspense fallback={<LoadingSpinner />}><LandingPage /></Suspense>} />
+      <Route path="/" element={<Navigate to="/login" replace />} />
       
       {/* Legal & GDPR Routes (under /dashboard/ for nginx SPA routing) */}
       <Route path="/dashboard/privacy" element={<Suspense fallback={<LoadingSpinner />}><PrivacyPolicyPage /></Suspense>} />

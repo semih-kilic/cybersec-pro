@@ -22,6 +22,13 @@ async function authFetch<T>(url: string, token: string | null, options?: Request
     },
   });
   if (!res.ok) {
+    // Auto-logout on expired/invalid token
+    if (res.status === 401) {
+      localStorage.removeItem('token');
+      if (typeof window !== 'undefined' && !window.location.pathname.includes('/login')) {
+        window.location.href = '/dashboard/login';
+      }
+    }
     let error: any = { error: `HTTP ${res.status}` };
     try {
       const ct = res.headers.get('content-type') || '';
