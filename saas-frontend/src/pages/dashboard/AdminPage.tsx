@@ -102,6 +102,19 @@ export function AdminPage() {
     }
   };
 
+  const handleDeleteOrg = async (orgId: string, orgName: string) => {
+    if (!confirm(`Delete organization "${orgName}" and ALL related data (users, scans, reports, projects, agents)? This cannot be undone.`)) return;
+    setActionLoading(orgId);
+    try {
+      await adminAction(`${API_URL}/admin/organizations/${orgId}`, 'DELETE');
+      refetch();
+    } catch (e: any) {
+      setError(e.message);
+    } finally {
+      setActionLoading(null);
+    }
+  };
+
   const handleDeleteUser = async (userId: string, email: string) => {
     if (!confirm(`Delete user ${email}? This cannot be undone.`)) return;
     setActionLoading(userId);
@@ -414,7 +427,15 @@ export function AdminPage() {
                       </select>
                     </td>
                     <td className="py-2 text-xs">{o.is_active ? '✅' : '❌'}</td>
-                    <td className="py-2 text-xs text-gray-500">{o.id.slice(0, 8)}...</td>
+                    <td className="py-2 text-xs">
+                      <button
+                        onClick={() => handleDeleteOrg(o.id, o.name)}
+                        disabled={actionLoading === o.id}
+                        className="px-2 py-0.5 bg-red-600 hover:bg-red-700 text-white rounded text-xs font-medium disabled:opacity-50"
+                      >
+                        {actionLoading === o.id ? '...' : '🗑️ Delete'}
+                      </button>
+                    </td>
                   </tr>
                 ))}
               </tbody>

@@ -117,6 +117,8 @@ export function NewScanPage() {
         tool: toolName,
         target: useCustomTarget ? customTarget : selectedTarget,
         parameters: getSmartDefaults(toolName, 'standard'),
+        agent_id: selectedAgent,
+        project_id: selectedProject,
       });
       
       if (result.success) {

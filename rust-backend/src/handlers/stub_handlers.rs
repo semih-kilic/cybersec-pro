@@ -979,21 +979,109 @@ pub async fn activity_feed(
     Query(params): Query<std::collections::HashMap<String, String>>,
 ) -> impl IntoResponse {
     let limit: i64 = params.get("limit").and_then(|v| v.parse().ok()).unwrap_or(20);
+    let org_id = user.org_id.clone().unwrap_or_else(|| user.user_id.clone());
 
-    let activities = sqlx::query_as::<_, (String, String, String, String)>(
-        "SELECT id, action, COALESCE(details::text, '{}'), CAST(created_at AS TEXT) FROM audit_logs WHERE user_id = $1 ORDER BY created_at DESC LIMIT $2"
+    let mut activities: Vec<serde_json::Value> = Vec::new();
+
+    // 1) Recent scans
+    let scans = sqlx::query_as::<_, (String, String, String, Option<String>, String)>(
+        "SELECT id, COALESCE(target,''), status, tool_id, CAST(created_at AS TEXT) FROM scans WHERE organization_id = $1 ORDER BY created_at DESC LIMIT $2"
     )
-    .bind(&user.user_id)
+    .bind(&org_id)
     .bind(limit)
     .fetch_all(&state.db)
     .await
     .unwrap_or_default();
 
-    let list: Vec<serde_json::Value> = activities.iter().map(|(id, action, details, ts)| {
-        json!({"id": id, "action": action, "details": details, "created_at": ts, "type": "system"})
-    }).collect();
+    for (id, target, status, tool_id, ts) in &scans {
+        let (act_type, title, severity) = match status.as_str() {
+            "running" => ("scan_started", format!("Scan started on {}", target), "info"),
+            "completed" => ("scan_completed", format!("Scan completed on {}", target), "success"),
+            "failed" => ("scan_failed", format!("Scan failed on {}", target), "critical"),
+            "cancelled" => ("scan_failed", format!("Scan cancelled on {}", target), "warning"),
+            _ => ("scan_started", format!("Scan on {}", target), "info"),
+        };
+        activities.push(json!({
+            "id": format!("scan-{}", id),
+            "type": act_type,
+            "title": title,
+            "description": format!("Tool: {} • Target: {}", tool_id.as_deref().unwrap_or("unknown"), target),
+            "timestamp": ts,
+            "severity": severity,
+            "link": format!("/dashboard/scans/{}", id),
+            "meta": { "target": target, "status": status }
+        }));
+    }
 
-    Json(json!({"activities": list})).into_response()
+    // 2) Recent reports
+    let reports = sqlx::query_as::<_, (String, String, String, i32, String)>(
+        "SELECT id, COALESCE(name,'Report'), COALESCE(template,''), total_findings, CAST(created_at AS TEXT) FROM reports WHERE organization_id = $1 ORDER BY created_at DESC LIMIT $2"
+    )
+    .bind(&org_id)
+    .bind(limit / 2)
+    .fetch_all(&state.db)
+    .await
+    .unwrap_or_default();
+
+    for (id, name, template, findings, ts) in &reports {
+        activities.push(json!({
+            "id": format!("report-{}", id),
+            "type": "report_generated",
+            "title": format!("Report generated: {}", name),
+            "description": format!("{} template • {} findings", template, findings),
+            "timestamp": ts,
+            "severity": if *findings > 10 { "warning" } else { "success" },
+            "link": format!("/dashboard/reports?id={}", id),
+            "meta": { "template": template, "findings": findings }
+        }));
+    }
+
+    // 3) Audit log entries (login, settings changes, etc.)
+    let audit = sqlx::query_as::<_, (String, String, String, String)>(
+        "SELECT id, action, COALESCE(details::text, '{}'), CAST(created_at AS TEXT) FROM audit_logs WHERE user_id = $1 ORDER BY created_at DESC LIMIT $2"
+    )
+    .bind(&user.user_id)
+    .bind(limit / 2)
+    .fetch_all(&state.db)
+    .await
+    .unwrap_or_default();
+
+    for (id, action, details, ts) in &audit {
+        let (act_type, severity) = match action.as_str() {
+            "login" | "login_success" => ("user_action", "info"),
+            "logout" => ("user_action", "info"),
+            "scan_start" | "scan_started" => continue, // already covered
+            "mfa_enabled" | "mfa_disabled" => ("system", "warning"),
+            "plan_change" => ("system", "info"),
+            _ => ("system", "info"),
+        };
+        let title = match action.as_str() {
+            "login" | "login_success" => "User logged in".to_string(),
+            "logout" => "User logged out".to_string(),
+            "mfa_enabled" => "MFA enabled".to_string(),
+            "mfa_disabled" => "MFA disabled".to_string(),
+            "plan_change" => "Plan changed".to_string(),
+            _ => format!("Action: {}", action),
+        };
+        activities.push(json!({
+            "id": format!("audit-{}", id),
+            "type": act_type,
+            "title": title,
+            "description": if details.len() > 2 { Some(details.clone()) } else { None::<String> },
+            "timestamp": ts,
+            "severity": severity
+        }));
+    }
+
+    // Sort by timestamp descending and limit
+    activities.sort_by(|a, b| {
+        let ts_a = a["timestamp"].as_str().unwrap_or("");
+        let ts_b = b["timestamp"].as_str().unwrap_or("");
+        ts_b.cmp(ts_a)
+    });
+    activities.truncate(limit as usize);
+
+    Json(json!({"activities": activities})).into_response()
 }
 
 // ── Usage stats ────────────────────────────────────────────
@@ -1187,6 +1275,47 @@ pub async fn admin_change_plan(
     match result {
         Ok(r) if r.rows_affected() > 0 => {
             (StatusCode::OK, Json(json!({"message": format!("Plan changed to {}", plan_type), "plan_type": plan_type}))).into_response()
+        },
+        Ok(_) => (StatusCode::NOT_FOUND, Json(json!({"error": "Organization not found"}))).into_response(),
+        Err(e) => (StatusCode::INTERNAL_SERVER_ERROR, Json(json!({"error": format!("Database error: {}", e)}))).into_response(),
+    }
+}
+
+// ── Admin Organization Deletion (Hard Delete + Cascade) ────
+
+pub async fn admin_delete_organization(
+    _admin: AdminUser,
+    State(state): State<Arc<AppState>>,
+    Path(org_id): Path<String>,
+) -> impl IntoResponse {
+    // Verify org exists
+    let org_exists: Option<(String,)> = sqlx::query_as("SELECT id FROM organizations WHERE id = $1")
+        .bind(&org_id)
+        .fetch_optional(&state.db)
+        .await
+        .unwrap_or(None);
+
+    if org_exists.is_none() {
+        return (StatusCode::NOT_FOUND, Json(json!({"error": "Organization not found"}))).into_response();
+    }
+
+    // Cascade delete all related data
+    let _ = sqlx::query("DELETE FROM audit_logs WHERE user_id IN (SELECT id FROM users WHERE organization_id = $1)").bind(&org_id).execute(&state.db).await;
+    let _ = sqlx::query("DELETE FROM scheduled_scans WHERE user_id IN (SELECT id FROM users WHERE organization_id = $1)").bind(&org_id).execute(&state.db).await;
+    let _ = sqlx::query("DELETE FROM reports WHERE organization_id = $1").bind(&org_id).execute(&state.db).await;
+    let _ = sqlx::query("DELETE FROM scans WHERE organization_id = $1").bind(&org_id).execute(&state.db).await;
+    let _ = sqlx::query("DELETE FROM projects WHERE organization_id = $1").bind(&org_id).execute(&state.db).await;
+    let _ = sqlx::query("DELETE FROM agents WHERE organization_id = $1").bind(&org_id).execute(&state.db).await;
+    let _ = sqlx::query("DELETE FROM users WHERE organization_id = $1").bind(&org_id).execute(&state.db).await;
+
+    let result = sqlx::query("DELETE FROM organizations WHERE id = $1")
+        .bind(&org_id)
+        .execute(&state.db)
+        .await;
+
+    match result {
+        Ok(r) if r.rows_affected() > 0 => {
+            (StatusCode::OK, Json(json!({"message": "Organization and all related data deleted"}))).into_response()
         },
         Ok(_) => (StatusCode::NOT_FOUND, Json(json!({"error": "Organization not found"}))).into_response(),
         Err(e) => (StatusCode::INTERNAL_SERVER_ERROR, Json(json!({"error": format!("Database error: {}", e)}))).into_response(),

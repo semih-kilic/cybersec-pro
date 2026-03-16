@@ -346,6 +346,7 @@ fn build_router(state: Arc<AppState>) -> Router {
         .route("/api/v1/admin/users/:user_id", delete(stub_handlers::admin_delete_user))
         .route("/api/v1/admin/users/:user_id/toggle", put(stub_handlers::admin_toggle_user))
         .route("/api/v1/admin/users/:user_id/role", put(stub_handlers::admin_change_role))
+        .route("/api/v1/admin/organizations/:org_id", delete(stub_handlers::admin_delete_organization))
         .route("/api/v1/admin/service-manager/dashboard", get(stub_handlers::admin_service_dashboard))
         .route("/api/v1/admin/service-manager/services", get(stub_handlers::admin_service_list))
         .route("/api/v1/admin/service-manager/services/:service_id/action", post(stub_handlers::admin_service_action))

@@ -979,11 +979,17 @@ export function useStartScan() {
   const qc = useQueryClient();
 
   return useMutation({
-    mutationFn: (data: { tool: string; target: string; parameters?: Record<string, unknown> }) =>
+    mutationFn: (data: { tool: string; target: string; parameters?: Record<string, unknown>; agent_id?: number | null; project_id?: number | null }) =>
       authFetch<{ success: boolean; scan_id: string; error?: string; hint?: string; requires_confirmation?: boolean }>(
         '/api/v1/scan/start', token, {
           method: 'POST',
-          body: JSON.stringify(data),
+          body: JSON.stringify({
+            tool: data.tool,
+            target: data.target,
+            parameters: data.parameters,
+            ...(data.agent_id ? { agent_id: String(data.agent_id) } : {}),
+            ...(data.project_id ? { project_id: data.project_id } : {}),
+          }),
         }
       ),
     onSuccess: () => {
