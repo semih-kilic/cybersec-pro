@@ -155,23 +155,21 @@ pub async fn tools_count(
         .map(|(cat, count)| (cat, json!(count)))
         .collect();
 
-    // Plan-based tool counts for pricing pages
-    let starter_count: (i64,) = sqlx::query_as(
-        "SELECT COUNT(*) FROM tools WHERE is_active = TRUE AND plan_required = 'starter'"
-    ).fetch_one(&state.db).await.unwrap_or((0,));
-    let pro_count: (i64,) = sqlx::query_as(
-        "SELECT COUNT(*) FROM tools WHERE is_active = TRUE AND plan_required IN ('starter','professional')"
-    ).fetch_one(&state.db).await.unwrap_or((0,));
+    // Plan-based tool counts — tiered access: Free=50, Starter=100, Pro=250, Enterprise=all
+    let total_tools = total.0;
+    let trial_limit = 50i64.min(total_tools);
+    let starter_limit = 100i64.min(total_tools);
+    let pro_limit = 250i64.min(total_tools);
 
     Json(json!({
-        "total": total.0,
+        "total": total_tools,
         "by_category": categories,
         "plans": {
-            "trial": total.0,
-            "starter": starter_count.0.max(50),
-            "professional": pro_count.0.max(200),
-            "team": total.0,
-            "enterprise": total.0,
+            "trial": trial_limit,
+            "starter": starter_limit,
+            "professional": pro_limit,
+            "team": total_tools,
+            "enterprise": total_tools,
         }
     }))
 }

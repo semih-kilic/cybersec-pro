@@ -7,7 +7,7 @@ import { useToast } from '../../components/ui/Toast';
 import { PageTransition } from '../../components/ui';
 import { useDocumentTitle } from '../../hooks/useUtilities';
 
-function buildPlans(counts: { starter: number; professional: number; enterprise: number }) {
+function buildPlans(counts: { trial: number; starter: number; professional: number; enterprise: number }) {
   return [
     {
       id: 'trial',
@@ -17,9 +17,10 @@ function buildPlans(counts: { starter: number; professional: number; enterprise:
       period: '14 days',
       description: 'Test drive the platform',
       features: [
+        `${counts.trial} security tools`,
         '1 comprehensive security scan',
-        'Full 401-tool coverage',
         'PDF report with findings',
+        'Email support',
         'No credit card required',
       ],
       color: 'green',
@@ -57,8 +58,8 @@ function buildPlans(counts: { starter: number; professional: number; enterprise:
         'Daily automated scans',
         'API access for CI/CD',
         'Slack / Teams / Email notifications',
-        'Compliance reports (OWASP, GDPR)',
-        'White-label PDF reports',
+        'Compliance reports (NIST, OWASP, GDPR, PCI DSS, HIPAA, SOC 2)',
+        'White-label PDF reports with company logo',
         'Priority support (24h)',
         '12-month vulnerability tracking',
       ],
@@ -77,7 +78,8 @@ function buildPlans(counts: { starter: number; professional: number; enterprise:
         'Unlimited domains/applications',
         'Continuous monitoring (hourly)',
         'Dedicated account manager',
-        'Custom compliance (PCI, HIPAA, SOC2)',
+        'All compliance frameworks (NIST, OWASP, GDPR, PCI DSS, HIPAA, SOC 2)',
+        'White-label reports with company logo',
         'SSO / SAML / LDAP',
         'Unlimited users & team collaboration',
         'Advanced API (webhooks, integrations)',
@@ -106,8 +108,9 @@ export default function UpgradePage() {
   // Dynamic tool counts from API
   const { data: toolCounts } = useToolCounts();
   const plans = useMemo(() => buildPlans({
-    starter: toolCounts?.plans?.starter ?? 50,
-    professional: toolCounts?.plans?.professional ?? 200,
+    trial: toolCounts?.plans?.trial ?? 50,
+    starter: toolCounts?.plans?.starter ?? 100,
+    professional: toolCounts?.plans?.professional ?? 250,
     enterprise: toolCounts?.plans?.enterprise ?? 401,
   }), [toolCounts]);
 
@@ -117,9 +120,22 @@ export default function UpgradePage() {
     // Free trial doesn't need checkout
     if (planId === 'trial') return;
     
-    // Enterprise -> Contact sales
+    // Enterprise -> offer both checkout and contact options
     if (planId === 'enterprise') {
-      window.open('/contact.html', '_blank');
+      setLoading(planId);
+      try {
+        const checkoutData = { plan: planId, billing: billingCycle };
+        const data: any = await checkoutMutation.mutateAsync(checkoutData);
+        if (data.checkout_url || data.url) {
+          window.location.href = data.checkout_url || data.url;
+          return;
+        }
+        toast.success('For Enterprise activation, contact cybersecpro@semihkilic.com or use the checkout link above.');
+      } catch {
+        toast.success('Enterprise plan available! Contact cybersecpro@semihkilic.com for activation or custom pricing.');
+      } finally {
+        setLoading(null);
+      }
       return;
     }
     
