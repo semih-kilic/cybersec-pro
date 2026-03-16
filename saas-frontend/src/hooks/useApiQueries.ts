@@ -1263,7 +1263,6 @@ export function useCreateCheckout() {
   const { token } = useAuth();
   return useMutation({
     mutationFn: async (data: { plan: string; billing: string }) => {
-      // Try primary endpoint first
       const res = await fetch('/api/v1/billing/create-checkout', {
         method: 'POST',
         headers: {
@@ -1271,27 +1270,17 @@ export function useCreateCheckout() {
           ...(token ? { 'Authorization': `Bearer ${token}` } : {}),
         },
         body: JSON.stringify({
-          ...data,
+          plan: data.plan,
+          billing: data.billing,
           success_url: `${window.location.origin}/dashboard/settings?tab=billing&success=true`,
           cancel_url: `${window.location.origin}/dashboard/upgrade`,
         }),
       });
-      if (res.ok) {
-        const json = await res.json();
-        if (json.checkout_url) return json as { checkout_url: string };
-      }
-      // Fallback endpoint
-      const fallback = await fetch('/api/create-checkout-session', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ plan_id: data.plan, billing: data.billing }),
-      });
-      if (fallback.ok) {
-        const json = await fallback.json();
-        const url = json.url || json.checkout_url;
-        if (url) return { checkout_url: url } as { checkout_url: string };
-      }
-      throw new Error('Payment system is temporarily unavailable');
+      const json = await res.json();
+      if (!res.ok) throw new Error(json.error || 'Payment request failed');
+      const url = json.checkout_url || json.url;
+      if (url) return { checkout_url: url } as { checkout_url: string };
+      throw new Error('No checkout URL received');
     },
   });
 }
