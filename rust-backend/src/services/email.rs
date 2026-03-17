@@ -108,6 +108,49 @@ pub async fn send_payment_confirmation(
     .await
 }
 
+pub async fn send_verification_email(
+    cfg: &EmailConfig,
+    to_email: &str,
+    name: &str,
+    verify_url: &str,
+) -> Result<(), String> {
+    let html = format!(
+        r#"<!DOCTYPE html><html><body style="margin:0;padding:0;font-family:Arial,sans-serif;background:#0a0a0a">
+        <table style="width:100%;max-width:600px;margin:0 auto;background:#1a1a2e;border-radius:12px">
+        <tr><td style="padding:40px;text-align:center">
+        <h1 style="color:#00ff88">🛡️ Verify Your Email</h1>
+        <p style="color:#ccd6f6;font-size:16px">Hi {},</p>
+        <p style="color:#8892b0;font-size:14px">Please verify your email to activate your CyberSec Pro account.</p>
+        <a href="{}" style="display:inline-block;padding:16px 40px;background:linear-gradient(135deg,#00ff88,#00d4ff);color:#0a0a0a;text-decoration:none;font-weight:bold;border-radius:50px;margin:20px 0">Verify Email</a>
+        <p style="color:#4a5568;font-size:12px;margin-top:20px">© 2026 CyberSec Professional</p>
+        </td></tr></table></body></html>"#,
+        name, verify_url
+    );
+    let plain = format!("Hi {},\n\nVerify your email: {}\n\n© 2026 CyberSec Professional", name, verify_url);
+    send_email(cfg, to_email, "🛡️ Verify Your Email - CyberSec Pro", &plain, &html).await
+}
+
+pub async fn send_team_invite_email(
+    cfg: &EmailConfig,
+    to_email: &str,
+    invite_url: &str,
+    role: &str,
+) -> Result<(), String> {
+    let html = format!(
+        r#"<!DOCTYPE html><html><body style="margin:0;padding:0;font-family:Arial,sans-serif;background:#0a0a0a">
+        <table style="width:100%;max-width:600px;margin:0 auto;background:#1a1a2e;border-radius:12px">
+        <tr><td style="padding:40px;text-align:center">
+        <h1 style="color:#00ff88">🛡️ Team Invitation</h1>
+        <p style="color:#ccd6f6;font-size:16px">You've been invited to join a CyberSec Pro team as <strong style="color:#00d4ff">{}</strong>.</p>
+        <a href="{}" style="display:inline-block;padding:16px 40px;background:linear-gradient(135deg,#00ff88,#00d4ff);color:#0a0a0a;text-decoration:none;font-weight:bold;border-radius:50px;margin:20px 0">Accept Invitation</a>
+        <p style="color:#4a5568;font-size:12px;margin-top:20px">© 2026 CyberSec Professional</p>
+        </td></tr></table></body></html>"#,
+        role, invite_url
+    );
+    let plain = format!("You've been invited to CyberSec Pro as {}.\n\nAccept: {}\n\n© 2026 CyberSec Professional", role, invite_url);
+    send_email(cfg, to_email, "🛡️ Team Invitation - CyberSec Pro", &plain, &html).await
+}
+
 async fn send_email(
     cfg: &EmailConfig,
     to: &str,

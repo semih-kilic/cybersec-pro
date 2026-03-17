@@ -358,28 +358,27 @@ pub async fn mfa_verify_setup(
     };
 
     if totp.check_current(code).unwrap_or(false) {
-        // Generate 10 backup codes
-        use rand::Rng;
-        let mut rng = rand::thread_rng();
-        let mut backup_codes: Vec<String> = Vec::new();
-        let mut hashed_codes: Vec<String> = Vec::new();
-
-        for _ in 0..10 {
-            let code_val: u32 = rng.gen_range(10000000..99999999);
-            let code_str = format!("{}", code_val);
-            backup_codes.push(code_str.clone());
-            // Hash backup code with argon2
-            let salt = argon2::password_hash::SaltString::generate(&mut argon2::password_hash::rand_core::OsRng);
-            if let Ok(hash) = argon2::PasswordHasher::hash_password(
-                &argon2::Argon2::default(),
-                code_str.as_bytes(),
-                &salt,
-            ) {
-                hashed_codes.push(hash.to_string());
+        // Generate 10 backup codes (scope rng to avoid !Send across await)
+        let (backup_codes, hashed_json) = {
+            use rand::Rng;
+            let mut rng = rand::thread_rng();
+            let mut codes: Vec<String> = Vec::new();
+            let mut hashed: Vec<String> = Vec::new();
+            for _ in 0..10 {
+                let code_val: u32 = rng.gen_range(10000000..99999999);
+                let code_str = format!("{}", code_val);
+                codes.push(code_str.clone());
+                let salt = argon2::password_hash::SaltString::generate(&mut argon2::password_hash::rand_core::OsRng);
+                if let Ok(hash) = argon2::PasswordHasher::hash_password(
+                    &argon2::Argon2::default(),
+                    code_str.as_bytes(),
+                    &salt,
+                ) {
+                    hashed.push(hash.to_string());
+                }
             }
-        }
-
-        let hashed_json = serde_json::to_string(&hashed_codes).unwrap_or_else(|_| "[]".to_string());
+            (codes, serde_json::to_string(&hashed).unwrap_or_else(|_| "[]".to_string()))
+        };
 
         // Enable MFA + store hashed backup codes
         let _ = sqlx::query("UPDATE users SET mfa_enabled = true, mfa_backup_codes = $1 WHERE id = $2")
@@ -432,27 +431,27 @@ pub async fn mfa_regenerate_backup(
         return (StatusCode::UNAUTHORIZED, Json(json!({"error": "Invalid password"}))).into_response();
     }
 
-    // Generate 10 new backup codes
-    use rand::Rng;
-    let mut rng = rand::thread_rng();
-    let mut backup_codes: Vec<String> = Vec::new();
-    let mut hashed_codes: Vec<String> = Vec::new();
-
-    for _ in 0..10 {
-        let code_val: u32 = rng.gen_range(10000000..99999999);
-        let code_str = format!("{}", code_val);
-        backup_codes.push(code_str.clone());
-        let salt = argon2::password_hash::SaltString::generate(&mut argon2::password_hash::rand_core::OsRng);
-        if let Ok(hash) = argon2::PasswordHasher::hash_password(
-            &argon2::Argon2::default(),
-            code_str.as_bytes(),
-            &salt,
-        ) {
-            hashed_codes.push(hash.to_string());
+    // Generate 10 new backup codes (scope rng to avoid !Send across await)
+    let (backup_codes, hashed_json) = {
+        use rand::Rng;
+        let mut rng = rand::thread_rng();
+        let mut codes: Vec<String> = Vec::new();
+        let mut hashed: Vec<String> = Vec::new();
+        for _ in 0..10 {
+            let code_val: u32 = rng.gen_range(10000000..99999999);
+            let code_str = format!("{}", code_val);
+            codes.push(code_str.clone());
+            let salt = argon2::password_hash::SaltString::generate(&mut argon2::password_hash::rand_core::OsRng);
+            if let Ok(hash) = argon2::PasswordHasher::hash_password(
+                &argon2::Argon2::default(),
+                code_str.as_bytes(),
+                &salt,
+            ) {
+                hashed.push(hash.to_string());
+            }
         }
-    }
-
-    let hashed_json = serde_json::to_string(&hashed_codes).unwrap_or_else(|_| "[]".to_string());
+        (codes, serde_json::to_string(&hashed).unwrap_or_else(|_| "[]".to_string()))
+    };
 
     let _ = sqlx::query("UPDATE users SET mfa_backup_codes = $1 WHERE id = $2")
         .bind(&hashed_json)

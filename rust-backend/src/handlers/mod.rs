@@ -12,3 +12,4 @@ pub mod sso_handlers;
 pub mod stub_handlers;
 pub mod email_handlers;
 pub mod monitor_handlers;
+pub mod settings_handlers;

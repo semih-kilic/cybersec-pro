@@ -353,6 +353,7 @@ pub async fn me(
 pub struct UpdateProfileRequest {
     pub first_name: Option<String>,
     pub last_name: Option<String>,
+    pub company: Option<String>,
 }
 
 pub async fn update_profile(
@@ -366,6 +367,17 @@ pub async fn update_profile(
         .bind(&auth.user_id)
         .execute(&state.db)
         .await;
+
+    // Update organization name (company) if provided
+    if let Some(ref company) = body.company {
+        if let Some(ref org_id) = auth.org_id {
+            let _ = sqlx::query("UPDATE organizations SET name = $1 WHERE id = $2")
+                .bind(company)
+                .bind(org_id)
+                .execute(&state.db)
+                .await;
+        }
+    }
 
     let user: Option<User> = sqlx::query_as("SELECT * FROM users WHERE id = $1")
         .bind(&auth.user_id)

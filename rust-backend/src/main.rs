@@ -309,6 +309,18 @@ fn build_router(state: Arc<AppState>) -> Router {
         )
         .route("/api/v1/sso/toggle", post(sso_handlers::toggle_sso))
         .route("/api/v1/sso/test", post(stub_handlers::sso_test))
+        // ── Settings: Notification Preferences ────────────────
+        .route("/api/v1/settings/notifications", get(settings_handlers::get_notification_preferences).put(settings_handlers::update_notification_preferences))
+        // ── Settings: API Keys ────────────────────────────────
+        .route("/api/v1/settings/api-keys", get(settings_handlers::list_api_keys).post(settings_handlers::create_api_key))
+        .route("/api/v1/settings/api-keys/:key_id", delete(settings_handlers::delete_api_key))
+        // ── Settings: Team Management ─────────────────────────
+        .route("/api/v1/settings/team", get(settings_handlers::list_team_members))
+        .route("/api/v1/settings/team/invite", post(settings_handlers::invite_team_member))
+        .route("/api/v1/settings/team/:member_id", delete(settings_handlers::remove_team_member))
+        .route("/api/v1/settings/team/:member_id/role", put(settings_handlers::change_member_role))
+        // ── Settings: Password Change ─────────────────────────
+        .route("/api/v1/auth/change-password", post(settings_handlers::change_password))
         // ── Plan Config ───────────────────────────────────────
         .route("/api/v1/plans", get(plan_config_handler))
         .route("/api/v1/plan/info", get(stub_handlers::plan_info))
