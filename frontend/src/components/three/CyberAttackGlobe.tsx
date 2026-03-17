@@ -168,8 +168,8 @@ function SpaceParticles() {
 /* ─── Main Export ─── */
 export default function CyberAttackGlobe() {
   return (
-    <div className="pointer-events-none fixed inset-0 z-0">
-      <Canvas camera={{ position: [0, 0, 7], fov: 50 }} gl={{ antialias: true, alpha: true }} style={{ background: "transparent" }}>
+    <div className="pointer-events-none fixed inset-0 -z-10">
+      <Canvas camera={{ position: [0, 0, 7], fov: 50 }} gl={{ antialias: true, alpha: true }} style={{ background: "transparent", pointerEvents: "none" }}>
         <GlobeWireframe />
         <CityDots />
         <AttackSystem />

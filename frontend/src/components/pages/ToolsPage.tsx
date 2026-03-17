@@ -43,17 +43,23 @@ export default function ToolsPage() {
         if (cancelled) return;
 
         const tools: Tool[] = [];
+        const catNames: string[] = [];
         const catEntries = data.categories || {};
-        for (const [cat, catTools] of Object.entries(catEntries)) {
+        for (const [cat, catData] of Object.entries(catEntries)) {
+          const catObj = catData as { info?: { name?: string }; tools?: Tool[] };
+          const catTools = catObj.tools || [];
+          const catName = catObj.info?.name || cat;
+          catNames.push(catName);
           for (const tool of catTools) {
-            tools.push({ ...tool, category: cat });
+            tools.push({ ...tool, category: catName });
           }
         }
         // Sort alphabetically
         tools.sort((a, b) => a.name.localeCompare(b.name));
+        catNames.sort();
 
         setAllTools(tools);
-        setCategories(data.category_list || Object.keys(catEntries).sort());
+        setCategories(catNames);
         setTotalTools(data.total_tools || tools.length);
         setLoading(false);
       } catch {

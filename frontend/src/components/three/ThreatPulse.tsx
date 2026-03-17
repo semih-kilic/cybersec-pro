@@ -120,7 +120,7 @@ export default function ThreatPulse() {
   return (
     <canvas
       ref={canvasRef}
-      className="pointer-events-none fixed inset-0 z-0 opacity-40"
+      className="pointer-events-none fixed inset-0 -z-10 opacity-40"
       aria-hidden="true"
     />
   );
