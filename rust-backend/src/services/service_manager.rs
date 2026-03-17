@@ -283,14 +283,6 @@ fn get_service_configs() -> Vec<ServiceConfig> {
             priority: 2, category: "frontend".into(),
         },
         ServiceConfig {
-            id: "sales-api".into(), name: "Sales API (Stripe)".into(),
-            description: "CyberSec Pro Sales & Billing API".into(),
-            port: Some(5002),
-            start_command: Some("cd /home/cybersec/cybersec-pro/rust-backend && DATABASE_URL='postgres://cybersec:***REDACTED_PG_PASSWORD***@localhost:5432/cybersec_pro' JWT_SECRET_KEY='***REDACTED_JWT_SECRET***' STRIPE_SECRET_KEY='***REDACTED_STRIPE_SECRET***' STRIPE_STARTER_PRICE_ID='price_1T1eh20ed3IDKXcnWZVJA9ur' STRIPE_PROFESSIONAL_PRICE_ID='price_1T1ei40ed3IDKXcnZDCi88tv' STRIPE_ENTERPRISE_PRICE_ID='price_1T1eir0ed3IDKXcn3ILBR48o' STRIPE_WEBHOOK_SECRET='***REDACTED_STRIPE_WEBHOOK***' DOMAIN='https://semihkilic.com' RUST_LOG=info nohup ./target/release/cybersec-pro-backend --port 5002 > /tmp/sales-api.log 2>&1 &".into()),
-            auto_restart: true, max_restarts: 100,
-            priority: 2, category: "backend".into(),
-        },
-        ServiceConfig {
             id: "nginx".into(), name: "Nginx Reverse Proxy".into(),
             description: "TLS termination & reverse proxy".into(),
             port: Some(80),
