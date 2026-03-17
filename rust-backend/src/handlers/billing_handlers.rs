@@ -4,6 +4,8 @@ use axum::{
     response::IntoResponse,
     Json,
 };
+use hmac::{Hmac, Mac};
+use sha2::Sha256;
 use serde::Deserialize;
 use serde_json::json;
 use std::sync::Arc;
@@ -223,12 +225,52 @@ pub async fn stripe_webhook(
     }
 
     // Verify Stripe signature
-    let _sig = headers.get("stripe-signature")
+    let sig_header = headers.get("stripe-signature")
         .and_then(|v| v.to_str().ok())
         .unwrap_or("");
 
-    // TODO: Verify signature using stripe_webhook_secret
-    // For now, parse the event
+    if sig_header.is_empty() {
+        return (StatusCode::BAD_REQUEST, Json(json!({"error": "Missing signature"}))).into_response();
+    }
+
+    // Parse signature header: t=timestamp,v1=signature
+    let mut timestamp = "";
+    let mut sig_v1 = "";
+    for part in sig_header.split(',') {
+        let part = part.trim();
+        if let Some(t) = part.strip_prefix("t=") {
+            timestamp = t;
+        } else if let Some(v) = part.strip_prefix("v1=") {
+            sig_v1 = v;
+        }
+    }
+
+    if timestamp.is_empty() || sig_v1.is_empty() {
+        return (StatusCode::BAD_REQUEST, Json(json!({"error": "Invalid signature format"}))).into_response();
+    }
+
+    // Verify HMAC-SHA256: signed_payload = timestamp + "." + body
+    let signed_payload = format!("{}.{}", timestamp, &body);
+    let mut mac = match Hmac::<Sha256>::new_from_slice(webhook_secret.as_bytes()) {
+        Ok(m) => m,
+        Err(_) => return (StatusCode::INTERNAL_SERVER_ERROR, Json(json!({"error": "Webhook config error"}))).into_response(),
+    };
+    mac.update(signed_payload.as_bytes());
+    let expected = hex::encode(mac.finalize().into_bytes());
+
+    if expected != sig_v1 {
+        tracing::warn!("Stripe webhook signature mismatch");
+        return (StatusCode::BAD_REQUEST, Json(json!({"error": "Invalid signature"}))).into_response();
+    }
+
+    // Check timestamp tolerance (5 minutes)
+    if let Ok(ts) = timestamp.parse::<i64>() {
+        let now = chrono::Utc::now().timestamp();
+        if (now - ts).abs() > 300 {
+            return (StatusCode::BAD_REQUEST, Json(json!({"error": "Timestamp too old"}))).into_response();
+        }
+    }
+
     let event: serde_json::Value = match serde_json::from_str(&body) {
         Ok(e) => e,
         Err(_) => return (StatusCode::BAD_REQUEST, Json(json!({"error": "Invalid JSON"}))).into_response(),
@@ -238,11 +280,59 @@ pub async fn stripe_webhook(
 
     match event_type {
         "checkout.session.completed" => {
-            // Update organization plan
+            // Update organization plan based on metadata
             if let Some(data) = event.get("data").and_then(|d| d.get("object")) {
                 let customer_id = data.get("customer").and_then(|c| c.as_str()).unwrap_or("");
-                let _metadata = data.get("metadata");
-                tracing::info!("Checkout completed for customer: {}", customer_id);
+                let metadata = data.get("metadata");
+
+                // Get plan_type and org_id from checkout metadata
+                let plan_type = metadata
+                    .and_then(|m| m.get("plan_type"))
+                    .and_then(|p| p.as_str())
+                    .unwrap_or("");
+                let org_id = metadata
+                    .and_then(|m| m.get("org_id"))
+                    .and_then(|o| o.as_str())
+                    .unwrap_or("");
+
+                if !plan_type.is_empty() && !org_id.is_empty() {
+                    // Update org plan and store stripe_customer_id
+                    let _ = sqlx::query(
+                        "UPDATE organizations SET plan_type = $1, stripe_customer_id = $2 WHERE id = $3"
+                    )
+                    .bind(plan_type)
+                    .bind(customer_id)
+                    .bind(org_id)
+                    .execute(&state.db)
+                    .await;
+                    tracing::info!("Plan updated: org={} plan={} customer={}", org_id, plan_type, customer_id);
+                } else if !customer_id.is_empty() {
+                    // Fallback: resolve plan from price in line_items
+                    let starter_price = std::env::var("STRIPE_STARTER_PRICE_ID").unwrap_or_default();
+                    let pro_price = std::env::var("STRIPE_PROFESSIONAL_PRICE_ID").unwrap_or_default();
+                    let ent_price = std::env::var("STRIPE_ENTERPRISE_PRICE_ID").unwrap_or_default();
+
+                    // Try to get price from session line items or amount
+                    if let Some(amount) = data.get("amount_total").and_then(|a| a.as_i64()) {
+                        let resolved_plan = match amount {
+                            9900 => "starter",
+                            29900 => "professional",
+                            79900 => "enterprise",
+                            _ => ""
+                        };
+                        if !resolved_plan.is_empty() {
+                            let _ = sqlx::query(
+                                "UPDATE organizations SET plan_type = $1, stripe_customer_id = $2 WHERE stripe_customer_id = $2 OR id IN (SELECT organization_id FROM users WHERE email = $3)"
+                            )
+                            .bind(resolved_plan)
+                            .bind(customer_id)
+                            .bind(data.get("customer_email").and_then(|e| e.as_str()).unwrap_or(""))
+                            .execute(&state.db)
+                            .await;
+                            tracing::info!("Plan resolved from amount: {} -> {}", amount, resolved_plan);
+                        }
+                    }
+                }
             }
         }
         "customer.subscription.updated" => {

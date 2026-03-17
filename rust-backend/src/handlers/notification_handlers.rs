@@ -20,18 +20,18 @@ pub async fn list_notifications(
     };
 
     // Notifications from audit logs (recent activity)
-    let logs: Vec<(String, String, Option<String>, Option<String>, Option<String>, Option<String>, Option<String>)> = sqlx::query_as(
-        "SELECT id, action, category, severity, created_at, resource_type, resource_id FROM audit_logs WHERE organization_id = $1 ORDER BY created_at DESC LIMIT 50"
+    let logs: Vec<(String, String, Option<String>, Option<String>, Option<String>, Option<String>, Option<String>, Option<bool>)> = sqlx::query_as(
+        "SELECT id, action, category, severity, created_at, resource_type, resource_id, is_read FROM audit_logs WHERE organization_id = $1 ORDER BY created_at DESC LIMIT 50"
     )
     .bind(org_id)
     .fetch_all(&state.db)
     .await
     .unwrap_or_default();
 
-    let notifications: Vec<_> = logs.iter().map(|(id, action, cat, sev, created, res_type, res_id)| {
+    let notifications: Vec<_> = logs.iter().map(|(id, action, cat, sev, created, res_type, res_id, read_flag)| {
         let category = cat.as_deref().unwrap_or("system");
         let severity = sev.as_deref().unwrap_or("info");
-        let is_read = severity == "read";
+        let is_read = read_flag.unwrap_or(false);
         let resource = res_type.as_deref().unwrap_or("");
         let resource_id_val = res_id.as_deref().unwrap_or("");
 
@@ -103,10 +103,10 @@ pub async fn read_all_notifications(
     State(state): State<Arc<AppState>>,
     auth: AuthUser,
 ) -> impl IntoResponse {
-    // Mark all audit logs as read for this org (using a "read" flag approach)
+    // Mark all audit logs as read for this org
     if let Some(org_id) = &auth.org_id {
         let _ = sqlx::query(
-            "UPDATE audit_logs SET severity = 'read' WHERE organization_id = $1 AND (severity IS NULL OR severity != 'read')"
+            "UPDATE audit_logs SET is_read = true WHERE organization_id = $1 AND (is_read IS NULL OR is_read = false)"
         )
         .bind(org_id)
         .execute(&state.db)
@@ -117,13 +117,15 @@ pub async fn read_all_notifications(
 
 pub async fn read_notification(
     State(state): State<Arc<AppState>>,
-    _auth: AuthUser,
+    auth: AuthUser,
     Path(notification_id): Path<String>,
 ) -> impl IntoResponse {
+    let org_id = auth.org_id.as_deref().unwrap_or("");
     let _ = sqlx::query(
-        "UPDATE audit_logs SET severity = 'read' WHERE id = $1"
+        "UPDATE audit_logs SET is_read = true WHERE id = $1 AND organization_id = $2"
     )
     .bind(&notification_id)
+    .bind(org_id)
     .execute(&state.db)
     .await;
     Json(json!({"message": "Notification marked as read", "success": true}))

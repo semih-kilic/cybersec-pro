@@ -194,10 +194,30 @@ pub async fn resend_verification(
 }
 
 pub async fn verify_email(
-    State(_state): State<Arc<AppState>>,
-    Query(_params): Query<std::collections::HashMap<String, String>>,
+    State(state): State<Arc<AppState>>,
+    Query(params): Query<std::collections::HashMap<String, String>>,
 ) -> impl IntoResponse {
-    Json(json!({"message": "Email verified", "verified": true})).into_response()
+    let token = params.get("token").map(|s| s.as_str()).unwrap_or("");
+    if token.is_empty() {
+        return (StatusCode::BAD_REQUEST, Json(json!({"error": "Missing verification token", "verified": false}))).into_response();
+    }
+
+    // Verify token matches a user and mark email verified
+    let result = sqlx::query(
+        "UPDATE users SET email_verified = true, verification_token = NULL WHERE verification_token = $1"
+    )
+    .bind(token)
+    .execute(&state.db)
+    .await;
+
+    match result {
+        Ok(r) if r.rows_affected() > 0 => {
+            Json(json!({"message": "Email verified", "verified": true})).into_response()
+        }
+        _ => {
+            (StatusCode::BAD_REQUEST, Json(json!({"error": "Invalid or expired token", "verified": false}))).into_response()
+        }
+    }
 }
 
 pub async fn upload_avatar(
@@ -208,11 +228,50 @@ pub async fn upload_avatar(
 }
 
 pub async fn mfa_verify_setup(
-    _user: AuthUser,
-    State(_state): State<Arc<AppState>>,
-    Json(_body): Json<serde_json::Value>,
+    user: AuthUser,
+    State(state): State<Arc<AppState>>,
+    Json(body): Json<serde_json::Value>,
 ) -> impl IntoResponse {
-    Json(json!({"message": "MFA verified", "verified": true})).into_response()
+    let code = body.get("code").and_then(|c| c.as_str()).unwrap_or("");
+    if code.is_empty() {
+        return (StatusCode::BAD_REQUEST, Json(json!({"error": "TOTP code required", "verified": false}))).into_response();
+    }
+
+    // Fetch user's MFA secret
+    let secret: Option<(Option<String>,)> = sqlx::query_as(
+        "SELECT mfa_secret FROM users WHERE id = $1"
+    )
+    .bind(&user.user_id)
+    .fetch_optional(&state.db)
+    .await
+    .unwrap_or(None);
+
+    let mfa_secret = match secret.and_then(|s| s.0) {
+        Some(s) if !s.is_empty() => s,
+        _ => return (StatusCode::BAD_REQUEST, Json(json!({"error": "MFA not set up", "verified": false}))).into_response(),
+    };
+
+    // Verify TOTP code
+    use totp_rs::{Algorithm, TOTP, Secret};
+    let totp = match TOTP::new(Algorithm::SHA1, 6, 1, 30,
+        Secret::Encoded(mfa_secret.clone()).to_bytes().unwrap_or_default(),
+        Some("CyberSec Pro".to_string()),
+        user.user_id.clone())
+    {
+        Ok(t) => t,
+        Err(_) => return (StatusCode::INTERNAL_SERVER_ERROR, Json(json!({"error": "MFA config error", "verified": false}))).into_response(),
+    };
+
+    if totp.check_current(code).unwrap_or(false) {
+        // Enable MFA
+        let _ = sqlx::query("UPDATE users SET mfa_enabled = true WHERE id = $1")
+            .bind(&user.user_id)
+            .execute(&state.db)
+            .await;
+        Json(json!({"message": "MFA verified and enabled", "verified": true})).into_response()
+    } else {
+        (StatusCode::BAD_REQUEST, Json(json!({"error": "Invalid TOTP code", "verified": false}))).into_response()
+    }
 }
 
 pub async fn mfa_regenerate_backup(
@@ -453,10 +512,10 @@ pub async fn scan_result(
     State(state): State<Arc<AppState>>,
 ) -> impl IntoResponse {
     let scan = sqlx::query_as::<_, (String, String, Option<String>, Option<String>, Option<String>)>(
-        "SELECT id, status, output, CAST(findings AS TEXT), error_log FROM scans WHERE id = $1 AND user_id = $2"
+        "SELECT id, status, output, CAST(findings AS TEXT), error_log FROM scans WHERE id = $1 AND organization_id = $2"
     )
     .bind(&scan_id)
-    .bind(&user.user_id)
+    .bind(&user.org_id.as_deref().unwrap_or(""))
     .fetch_optional(&state.db)
     .await;
 
@@ -487,9 +546,9 @@ pub async fn scan_stop(
     user: AuthUser,
     State(state): State<Arc<AppState>>,
 ) -> impl IntoResponse {
-    let _ = sqlx::query("UPDATE scans SET status = 'cancelled' WHERE id = $1 AND user_id = $2")
+    let _ = sqlx::query("UPDATE scans SET status = 'cancelled' WHERE id = $1 AND organization_id = $2")
         .bind(&scan_id)
-        .bind(&user.user_id)
+        .bind(&user.org_id.as_deref().unwrap_or(""))
         .execute(&state.db)
         .await;
     Json(json!({"message": "Scan stopped", "scan_id": scan_id})).into_response()
@@ -520,10 +579,10 @@ pub async fn scan_status(
     State(state): State<Arc<AppState>>,
 ) -> impl IntoResponse {
     let status = sqlx::query_as::<_, (String,)>(
-        "SELECT status FROM scans WHERE id = $1 AND user_id = $2"
+        "SELECT status FROM scans WHERE id = $1 AND organization_id = $2"
     )
     .bind(&scan_id)
-    .bind(&user.user_id)
+    .bind(&user.org_id.as_deref().unwrap_or(""))
     .fetch_optional(&state.db)
     .await;
 
@@ -546,9 +605,9 @@ pub async fn scan_delete(
     user: AuthUser,
     State(state): State<Arc<AppState>>,
 ) -> impl IntoResponse {
-    let _ = sqlx::query("DELETE FROM scans WHERE id = $1 AND user_id = $2")
+    let _ = sqlx::query("DELETE FROM scans WHERE id = $1 AND organization_id = $2")
         .bind(&scan_id)
-        .bind(&user.user_id)
+        .bind(&user.org_id.as_deref().unwrap_or(""))
         .execute(&state.db)
         .await;
     Json(json!({"message": "Scan deleted"})).into_response()
@@ -785,9 +844,9 @@ pub async fn list_schedules(
     State(state): State<Arc<AppState>>,
 ) -> impl IntoResponse {
     let schedules = sqlx::query_as::<_, (String, String, String, String, bool, String)>(
-        "SELECT id, name, cron_expression, COALESCE(tool_id,''), is_active, COALESCE(target,'') FROM scheduled_scans WHERE user_id = $1 ORDER BY created_at DESC"
+        "SELECT id, name, cron_expression, COALESCE(tool_id,''), is_active, COALESCE(target,'') FROM scheduled_scans WHERE organization_id = $1 ORDER BY created_at DESC"
     )
-    .bind(&user.user_id)
+    .bind(&user.org_id.as_deref().unwrap_or(""))
     .fetch_all(&state.db)
     .await
     .unwrap_or_default();
@@ -844,10 +903,43 @@ pub async fn create_schedule(
 
 pub async fn update_schedule(
     Path(schedule_id): Path<String>,
-    _user: AuthUser,
-    State(_state): State<Arc<AppState>>,
-    Json(_body): Json<serde_json::Value>,
+    user: AuthUser,
+    State(state): State<Arc<AppState>>,
+    Json(body): Json<serde_json::Value>,
 ) -> impl IntoResponse {
+    let name = body.get("name").and_then(|v| v.as_str());
+    let cron = body.get("cron_expression").and_then(|v| v.as_str());
+    let tool_id = body.get("tool_id").and_then(|v| v.as_str());
+    let target = body.get("target").and_then(|v| v.as_str());
+
+    // Build dynamic update
+    let mut sets = Vec::new();
+    let mut idx = 1;
+    if name.is_some() { sets.push(format!("name = ${}", idx)); idx += 1; }
+    if cron.is_some() { sets.push(format!("cron_expression = ${}", idx)); idx += 1; }
+    if tool_id.is_some() { sets.push(format!("tool_id = ${}", idx)); idx += 1; }
+    if target.is_some() { sets.push(format!("target = ${}", idx)); idx += 1; }
+
+    if sets.is_empty() {
+        return Json(json!({"message": "Nothing to update", "id": schedule_id})).into_response();
+    }
+
+    let user_param = idx;
+    let id_param = idx + 1;
+    let sql = format!(
+        "UPDATE scheduled_scans SET {} WHERE id = ${} AND user_id = ${}",
+        sets.join(", "), id_param, user_param
+    );
+
+    let mut query = sqlx::query(&sql);
+    if let Some(v) = name { query = query.bind(v); }
+    if let Some(v) = cron { query = query.bind(v); }
+    if let Some(v) = tool_id { query = query.bind(v); }
+    if let Some(v) = target { query = query.bind(v); }
+    query = query.bind(&user.user_id);
+    query = query.bind(&schedule_id);
+
+    let _ = query.execute(&state.db).await;
     Json(json!({"message": "Schedule updated", "id": schedule_id})).into_response()
 }
 
