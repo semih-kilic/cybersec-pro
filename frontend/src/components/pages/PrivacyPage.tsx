@@ -2,6 +2,7 @@
 
 import { useTranslations } from "next-intl";
 import RevealOnScroll from "@/components/animations/RevealOnScroll";
+import MatrixRain from "@/components/three/MatrixRain";
 
 const sections = [
   { title: "Information We Collect", content: "We collect information you provide directly (email, name, company) and automatically (IP address, browser type, usage patterns). We use cookies for session management and analytics." },
@@ -17,7 +18,9 @@ export default function PrivacyPage() {
   const t = useTranslations("privacy");
 
   return (
-    <section className="mx-auto max-w-3xl px-6 pb-28 pt-32">
+    <>
+      <MatrixRain />
+      <section className="mx-auto max-w-3xl px-6 pb-28 pt-32">
       <RevealOnScroll>
         <h1 className="text-4xl font-extrabold md:text-5xl">{t("title")}</h1>
         <p className="mt-2 text-sm text-white/40">{t("lastUpdated")}</p>
@@ -31,5 +34,6 @@ export default function PrivacyPage() {
         ))}
       </div>
     </section>
+    </>
   );
 }

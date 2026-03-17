@@ -1,16 +1,20 @@
 "use client";
 
 import { useTranslations } from "next-intl";
+import dynamic from "next/dynamic";
 import RevealOnScroll from "@/components/animations/RevealOnScroll";
 import GlitchText from "@/components/animations/GlitchText";
 import Link from "next/link";
 import { Mail, ArrowRight, Headphones, Handshake } from "lucide-react";
+
+const ParticleField = dynamic(() => import("@/components/three/ParticleField"), { ssr: false });
 
 export default function ContactPage() {
   const t = useTranslations("contact");
 
   return (
     <>
+      <ParticleField />
       {/* Hero */}
       <section className="relative pb-16 pt-32 text-center">
         <RevealOnScroll>

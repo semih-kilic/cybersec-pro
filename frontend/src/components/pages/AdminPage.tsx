@@ -1,12 +1,15 @@
 "use client";
 
 import RevealOnScroll from "@/components/animations/RevealOnScroll";
+import MatrixRain from "@/components/three/MatrixRain";
 import { ShieldAlert } from "lucide-react";
 import Link from "next/link";
 
 export default function AdminPage() {
   return (
-    <section className="flex min-h-[70vh] items-center justify-center px-6 pt-32 pb-28">
+    <>
+      <MatrixRain />
+      <section className="flex min-h-[70vh] items-center justify-center px-6 pt-32 pb-28">
       <RevealOnScroll>
         <div className="mx-auto max-w-lg text-center">
           <div className="mx-auto mb-6 flex h-20 w-20 items-center justify-center rounded-full bg-[--color-red]/15">
@@ -24,5 +27,6 @@ export default function AdminPage() {
         </div>
       </RevealOnScroll>
     </section>
+    </>
   );
 }

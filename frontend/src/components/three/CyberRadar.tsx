@@ -60,11 +60,7 @@ export default function CyberRadar() {
       ctx.moveTo(cx, cy - maxR); ctx.lineTo(cx, cy + maxR);
       ctx.stroke();
 
-      // Sweep
-      const gradient = ctx.createConicalGradient
-        ? null
-        : ctx.createRadialGradient(cx, cy, 0, cx, cy, maxR);
-
+      // Sweep cone
       ctx.save();
       ctx.globalAlpha = 0.3;
       ctx.beginPath();

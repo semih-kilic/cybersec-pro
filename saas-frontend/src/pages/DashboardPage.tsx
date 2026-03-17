@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
 import { useDashboardTools, useDashboardScans } from '../hooks/useApiQueries';
+import CyberPulseBg from '../components/ui/CyberPulseBg';
 
 interface _Tool {
   id: string;
@@ -63,6 +64,7 @@ export function DashboardPage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900">
+      <CyberPulseBg />
       {/* Header */}
       <header className="bg-gray-800/50 border-b border-gray-700">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">

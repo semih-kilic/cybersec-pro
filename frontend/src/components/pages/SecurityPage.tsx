@@ -1,8 +1,11 @@
 "use client";
 
 import { useTranslations } from "next-intl";
+import dynamic from "next/dynamic";
 import RevealOnScroll from "@/components/animations/RevealOnScroll";
 import { Lock, Server, Shield, Eye, KeyRound, RefreshCcw } from "lucide-react";
+
+const CyberAttackGlobe = dynamic(() => import("@/components/three/CyberAttackGlobe"), { ssr: false });
 
 const features = [
   { icon: Lock, title: "End-to-End Encryption", description: "All data encrypted at rest (AES-256) and in transit (TLS 1.3). Zero-knowledge architecture for scan results.", color: "var(--color-neon)" },
@@ -18,6 +21,7 @@ export default function SecurityPage() {
 
   return (
     <>
+      <CyberAttackGlobe />
       <section className="relative pb-16 pt-32 text-center">
         <RevealOnScroll>
           <span className="badge mb-6">{t("badge")}</span>

@@ -1,15 +1,20 @@
 "use client";
 
 import { useTranslations } from "next-intl";
+import dynamic from "next/dynamic";
 import RevealOnScroll from "@/components/animations/RevealOnScroll";
 import { CheckCircle, BookOpen, LayoutDashboard } from "lucide-react";
 import Link from "next/link";
+
+const ParticleField = dynamic(() => import("@/components/three/ParticleField"), { ssr: false });
 
 export default function SuccessPage() {
   const t = useTranslations("success");
 
   return (
-    <section className="flex min-h-[70vh] items-center justify-center px-6 pt-32 pb-28">
+    <>
+      <ParticleField />
+      <section className="flex min-h-[70vh] items-center justify-center px-6 pt-32 pb-28">
       <RevealOnScroll>
         <div className="mx-auto max-w-lg text-center">
           <div className="mx-auto mb-6 flex h-20 w-20 items-center justify-center rounded-full bg-[--color-neon]/15">
@@ -30,5 +35,6 @@ export default function SuccessPage() {
         </div>
       </RevealOnScroll>
     </section>
+    </>
   );
 }

@@ -2,6 +2,7 @@
 
 import { useTranslations } from "next-intl";
 import RevealOnScroll from "@/components/animations/RevealOnScroll";
+import CyberRadar from "@/components/three/CyberRadar";
 import { Shield, Wifi, Globe, Bug, Database, Lock, Terminal, FileSearch, Radio, Server, Code2, Zap } from "lucide-react";
 
 const assessmentTypes = [
@@ -24,6 +25,7 @@ export default function TestsPage() {
 
   return (
     <>
+      <CyberRadar />
       <section className="relative pb-16 pt-32 text-center">
         <RevealOnScroll>
           <span className="badge mb-6">{t("badge")}</span>

@@ -7,7 +7,7 @@ import { motion } from "framer-motion";
 import { ArrowRight, Shield } from "lucide-react";
 import MatrixRain from "@/components/three/MatrixRain";
 
-const CyberScene = dynamic(() => import("@/components/three/CyberScene"), { ssr: false });
+const CyberAttackGlobe = dynamic(() => import("@/components/three/CyberAttackGlobe"), { ssr: false });
 
 export default function HeroSection() {
   const t = useTranslations("hero");
@@ -22,7 +22,7 @@ export default function HeroSection() {
   return (
     <section className="relative min-h-screen overflow-hidden">
       <MatrixRain />
-      <CyberScene />
+      <CyberAttackGlobe />
 
       <div className="relative z-10 mx-auto flex min-h-screen max-w-7xl flex-col items-center justify-center px-6 text-center">
         <motion.span

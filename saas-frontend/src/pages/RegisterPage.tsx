@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
 import { useTranslation } from 'react-i18next';
+import MatrixRainBg from '../components/ui/MatrixRainBg';
 
 // OAuth Configuration
 const GOOGLE_CLIENT_ID = '547951331800-kqkuc6aohfr7ptt26p38mnqfdvt7b6mu.apps.googleusercontent.com';
@@ -100,6 +101,7 @@ export function RegisterPage() {
 
   return (
     <div className="min-h-screen flex">
+      <MatrixRainBg />
       {/* Verification Sent Screen */}
       {verificationSent && (
         <div className="fixed inset-0 bg-gray-950 z-50 flex items-center justify-center p-6">

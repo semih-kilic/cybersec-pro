@@ -2,6 +2,7 @@
 
 import { useTranslations } from "next-intl";
 import RevealOnScroll from "@/components/animations/RevealOnScroll";
+import ThreatPulse from "@/components/three/ThreatPulse";
 
 const sections = [
   { title: "Acceptance of Terms", content: "By accessing or using CyberSec Pro, you agree to be bound by these Terms of Service. If you do not agree, do not use our services." },
@@ -18,7 +19,9 @@ export default function TermsPage() {
   const t = useTranslations("terms");
 
   return (
-    <section className="mx-auto max-w-3xl px-6 pb-28 pt-32">
+    <>
+      <ThreatPulse />
+      <section className="mx-auto max-w-3xl px-6 pb-28 pt-32">
       <RevealOnScroll>
         <h1 className="text-4xl font-extrabold md:text-5xl">{t("title")}</h1>
         <p className="mt-2 text-sm text-white/40">{t("lastUpdated")}</p>
@@ -32,5 +35,6 @@ export default function TermsPage() {
         ))}
       </div>
     </section>
+    </>
   );
 }

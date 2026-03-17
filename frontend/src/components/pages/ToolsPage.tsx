@@ -2,8 +2,11 @@
 
 import { useState, useMemo } from "react";
 import { useTranslations } from "next-intl";
+import dynamic from "next/dynamic";
 import RevealOnScroll from "@/components/animations/RevealOnScroll";
 import { Search, Terminal, Play } from "lucide-react";
+
+const NetworkMesh = dynamic(() => import("@/components/three/NetworkMesh"), { ssr: false });
 
 const categories = [
   "All", "Network", "Web", "Exploitation", "Wireless", "Forensics", "Password",
@@ -47,6 +50,7 @@ export default function ToolsPage() {
 
   return (
     <>
+      <NetworkMesh />
       <section className="relative pb-8 pt-32 text-center">
         <RevealOnScroll>
           <span className="badge mb-6">{t("badge")}</span>

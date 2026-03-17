@@ -1,15 +1,19 @@
 "use client";
 
 import { useTranslations } from "next-intl";
+import dynamic from "next/dynamic";
 import RevealOnScroll from "@/components/animations/RevealOnScroll";
 import GlitchText from "@/components/animations/GlitchText";
 import { Target, BookOpen, User } from "lucide-react";
+
+const ParticleField = dynamic(() => import("@/components/three/ParticleField"), { ssr: false });
 
 export default function AboutPage() {
   const t = useTranslations("about");
 
   return (
     <>
+      <ParticleField />
       <section className="relative pb-16 pt-32 text-center">
         <RevealOnScroll>
           <span className="badge mb-6">{t("badge")}</span>

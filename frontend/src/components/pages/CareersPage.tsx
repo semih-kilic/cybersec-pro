@@ -2,6 +2,7 @@
 
 import { useTranslations } from "next-intl";
 import RevealOnScroll from "@/components/animations/RevealOnScroll";
+import CyberRadar from "@/components/three/CyberRadar";
 import { MapPin, Briefcase, Laptop, Coins, GraduationCap, Monitor } from "lucide-react";
 
 const jobs = [
@@ -23,6 +24,7 @@ export default function CareersPage() {
 
   return (
     <>
+      <CyberRadar />
       <section className="relative pb-16 pt-32 text-center">
         <RevealOnScroll>
           <span className="badge mb-6">{t("badge")}</span>

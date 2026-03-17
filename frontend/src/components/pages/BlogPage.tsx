@@ -2,6 +2,7 @@
 
 import { useTranslations } from "next-intl";
 import RevealOnScroll from "@/components/animations/RevealOnScroll";
+import MatrixRain from "@/components/three/MatrixRain";
 import { Clock, ArrowRight } from "lucide-react";
 
 const posts = [
@@ -18,6 +19,7 @@ export default function BlogPage() {
 
   return (
     <>
+      <MatrixRain />
       <section className="relative pb-16 pt-32 text-center">
         <RevealOnScroll>
           <span className="badge mb-6">{t("badge")}</span>

@@ -2,6 +2,7 @@
 
 import { useTranslations } from "next-intl";
 import RevealOnScroll from "@/components/animations/RevealOnScroll";
+import ThreatPulse from "@/components/three/ThreatPulse";
 import { BookOpen, Rocket, Code2, FileText, Shield, Settings } from "lucide-react";
 
 const docCards = [
@@ -18,6 +19,7 @@ export default function DocsPage() {
 
   return (
     <>
+      <ThreatPulse />
       <section className="relative pb-16 pt-32 text-center">
         <RevealOnScroll>
           <span className="badge mb-6">{t("badge")}</span>

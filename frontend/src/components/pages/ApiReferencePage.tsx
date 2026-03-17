@@ -1,7 +1,10 @@
 "use client";
 
 import { useTranslations } from "next-intl";
+import dynamic from "next/dynamic";
 import RevealOnScroll from "@/components/animations/RevealOnScroll";
+
+const NetworkMesh = dynamic(() => import("@/components/three/NetworkMesh"), { ssr: false });
 
 const endpoints = [
   { method: "GET", path: "/api/v1/tools", description: "List all available security tools" },
@@ -28,6 +31,7 @@ export default function ApiReferencePage() {
 
   return (
     <>
+      <NetworkMesh />
       <section className="relative pb-16 pt-32 text-center">
         <RevealOnScroll>
           <span className="badge mb-6">{t("badge")}</span>

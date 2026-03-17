@@ -82,6 +82,7 @@ function AttackArc({ from, to, color, progress }: {
 
   if (!geometry) return null;
   return (
+    // @ts-expect-error R3F line element conflicts with SVG line type
     <line geometry={geometry}>
       <lineBasicMaterial color={color} transparent opacity={0.7} linewidth={1} />
     </line>
@@ -167,7 +168,7 @@ function SpaceParticles() {
 /* ─── Main Export ─── */
 export default function CyberAttackGlobe() {
   return (
-    <div className="pointer-events-none absolute inset-0 z-0">
+    <div className="pointer-events-none fixed inset-0 z-0">
       <Canvas camera={{ position: [0, 0, 7], fov: 50 }} gl={{ antialias: true, alpha: true }} style={{ background: "transparent" }}>
         <GlobeWireframe />
         <CityDots />
