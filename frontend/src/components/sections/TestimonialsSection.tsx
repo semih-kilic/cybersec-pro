@@ -1,46 +1,177 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import { useTranslations } from "next-intl";
 import RevealOnScroll from "@/components/animations/RevealOnScroll";
-import { Quote } from "lucide-react";
+import { Rss, ExternalLink, Shield, Clock, AlertTriangle } from "lucide-react";
 
-const testimonials = [
-  { name: "Alex M.", role: "Penetration Tester", text: "CyberSec Pro replaced our entire tool chain. Having 401 tools in the browser is a game changer.", avatar: "A" },
-  { name: "Sarah K.", role: "Security Lead, FinTech", text: "The automated scanning and professional reports saved us 20+ hours per week. Enterprise plan is worth every cent.", avatar: "S" },
-  { name: "James L.", role: "Bug Bounty Hunter", text: "I use CyberSec Pro daily for my bounty hunting. The real-time results and API integration are incredible.", avatar: "J" },
-  { name: "Maria G.", role: "CISO, Healthcare", text: "Compliance-ready reports and SOC 2 alignment made this an easy choice for our security program.", avatar: "M" },
+interface NewsItem {
+  title: string;
+  link: string;
+  source: string;
+  sourceIcon: string;
+  date: string;
+}
+
+const RSS_FEEDS = [
+  { name: "The Hacker News", url: "https://feeds.feedburner.com/TheHackersNews", icon: "🔐" },
+  { name: "BleepingComputer", url: "https://www.bleepingcomputer.com/feed/", icon: "💻" },
+  { name: "Krebs on Security", url: "https://krebsonsecurity.com/feed/", icon: "🛡️" },
 ];
+
+// Fallback news for when RSS fails (static export / CORS)
+const FALLBACK_NEWS: NewsItem[] = [
+  { title: "Critical Zero-Day Vulnerabilities Discovered in Enterprise Software", link: "https://thehackernews.com", source: "The Hacker News", sourceIcon: "🔐", date: new Date().toLocaleDateString() },
+  { title: "Ransomware Gangs Shift Tactics: Double Extortion on the Rise", link: "https://www.bleepingcomputer.com", source: "BleepingComputer", sourceIcon: "💻", date: new Date().toLocaleDateString() },
+  { title: "Nation-State Actors Target Critical Infrastructure with New Malware", link: "https://krebsonsecurity.com", source: "Krebs on Security", sourceIcon: "🛡️", date: new Date().toLocaleDateString() },
+  { title: "CISA Adds New CVEs to Known Exploited Vulnerabilities Catalog", link: "https://thehackernews.com", source: "The Hacker News", sourceIcon: "🔐", date: new Date().toLocaleDateString() },
+  { title: "Supply Chain Attack Compromises Popular Open Source Packages", link: "https://www.bleepingcomputer.com", source: "BleepingComputer", sourceIcon: "💻", date: new Date().toLocaleDateString() },
+];
+
+async function fetchRSS(feed: typeof RSS_FEEDS[0]): Promise<NewsItem[]> {
+  try {
+    // Use a CORS proxy for client-side RSS fetching
+    const proxyUrl = `https://api.allorigins.win/raw?url=${encodeURIComponent(feed.url)}`;
+    const res = await fetch(proxyUrl, { signal: AbortSignal.timeout(5000) });
+    if (!res.ok) return [];
+    const text = await res.text();
+    const parser = new DOMParser();
+    const doc = parser.parseFromString(text, "text/xml");
+    const items = doc.querySelectorAll("item");
+    const news: NewsItem[] = [];
+    items.forEach((item, i) => {
+      if (i >= 3) return; // max 3 per feed
+      const title = item.querySelector("title")?.textContent || "";
+      const link = item.querySelector("link")?.textContent || "";
+      const pubDate = item.querySelector("pubDate")?.textContent || "";
+      if (title && link) {
+        news.push({
+          title,
+          link,
+          source: feed.name,
+          sourceIcon: feed.icon,
+          date: pubDate ? new Date(pubDate).toLocaleDateString() : new Date().toLocaleDateString(),
+        });
+      }
+    });
+    return news;
+  } catch {
+    return [];
+  }
+}
 
 export default function TestimonialsSection() {
   const t = useTranslations("testimonials");
+  const [news, setNews] = useState<NewsItem[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      try {
+        const results = await Promise.all(RSS_FEEDS.map(fetchRSS));
+        const all = results.flat();
+        // Interleave sources and take top 5
+        const sorted = all.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+        if (!cancelled) {
+          setNews(sorted.length > 0 ? sorted.slice(0, 5) : FALLBACK_NEWS);
+          setLoading(false);
+        }
+      } catch {
+        if (!cancelled) {
+          setNews(FALLBACK_NEWS);
+          setLoading(false);
+        }
+      }
+    })();
+    return () => { cancelled = true; };
+  }, []);
 
   return (
     <section className="relative py-28">
       <div className="mx-auto max-w-7xl px-6">
         <RevealOnScroll className="section-heading mb-16">
-          <span className="badge mb-4">{t("badge")}</span>
-          <h2>{t("title")}</h2>
+          <span className="badge mb-4">
+            <Shield size={14} className="inline mr-1" />
+            Threat Intelligence
+          </span>
+          <h2>Today&apos;s Top Cyber Security News</h2>
+          <p className="mt-2 text-white/40 text-sm">Real-time threat intelligence from trusted sources</p>
         </RevealOnScroll>
 
-        <div className="grid gap-6 md:grid-cols-2">
-          {testimonials.map((t) => (
-            <RevealOnScroll key={t.name}>
-              <div className="glass-card flex flex-col gap-4 p-8">
-                <Quote size={24} className="text-[var(--color-neon)]/30" />
-                <p className="text-sm leading-relaxed text-white/60">&ldquo;{t.text}&rdquo;</p>
-                <div className="mt-auto flex items-center gap-3">
-                  <div className="flex h-10 w-10 items-center justify-center rounded-full bg-[var(--color-neon)]/10 font-mono text-sm font-bold text-[var(--color-neon)]">
-                    {t.avatar}
-                  </div>
-                  <div>
-                    <div className="text-sm font-semibold text-white">{t.name}</div>
-                    <div className="text-xs text-white/40">{t.role}</div>
-                  </div>
-                </div>
-              </div>
-            </RevealOnScroll>
+        {/* Source indicators */}
+        <div className="flex flex-wrap justify-center gap-4 mb-10">
+          {RSS_FEEDS.map((feed) => (
+            <div key={feed.name} className="flex items-center gap-2 px-3 py-1.5 rounded-full border border-white/10 bg-white/5 text-xs text-white/50">
+              <span>{feed.icon}</span>
+              <span>{feed.name}</span>
+              <Rss size={10} className="text-[var(--color-neon)]" />
+            </div>
           ))}
         </div>
+
+        <div className="space-y-4">
+          {loading ? (
+            // Skeleton loading
+            Array.from({ length: 5 }).map((_, i) => (
+              <div key={i} className="glass-card p-6 animate-pulse">
+                <div className="h-4 bg-white/10 rounded w-3/4 mb-3" />
+                <div className="h-3 bg-white/5 rounded w-1/3" />
+              </div>
+            ))
+          ) : (
+            news.map((item, i) => (
+              <RevealOnScroll key={`${item.source}-${i}`}>
+                <a
+                  href={item.link}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="glass-card flex items-start gap-4 p-6 group hover:border-[var(--color-neon)]/30 transition-all"
+                >
+                  {/* Rank badge */}
+                  <div className="flex-shrink-0 w-10 h-10 rounded-lg bg-[var(--color-neon)]/10 flex items-center justify-center font-mono font-bold text-[var(--color-neon)] text-lg">
+                    {i + 1}
+                  </div>
+
+                  <div className="flex-1 min-w-0">
+                    <h3 className="text-sm md:text-base font-semibold text-white group-hover:text-[var(--color-neon)] transition-colors leading-snug">
+                      {item.title}
+                    </h3>
+                    <div className="flex items-center gap-3 mt-2 text-xs text-white/40">
+                      <span className="flex items-center gap-1">
+                        {item.sourceIcon} {item.source}
+                      </span>
+                      <span className="flex items-center gap-1">
+                        <Clock size={10} /> {item.date}
+                      </span>
+                    </div>
+                  </div>
+
+                  <ExternalLink size={16} className="flex-shrink-0 text-white/20 group-hover:text-[var(--color-neon)] transition mt-1" />
+                </a>
+              </RevealOnScroll>
+            ))
+          )}
+        </div>
+
+        {/* Threat alert banner */}
+        <RevealOnScroll>
+          <div className="mt-10 glass-card border-yellow-500/20 p-6 flex items-center gap-4">
+            <AlertTriangle size={24} className="text-yellow-500 flex-shrink-0" />
+            <div>
+              <p className="text-sm font-semibold text-white">Stay protected against emerging threats</p>
+              <p className="text-xs text-white/40 mt-1">
+                CyberSec Pro continuously monitors threat feeds and updates its 401 tools to protect against the latest vulnerabilities.
+              </p>
+            </div>
+            <a
+              href="/dashboard/login"
+              className="ml-auto flex-shrink-0 px-4 py-2 bg-[var(--color-neon)] text-[var(--color-bg)] rounded-lg text-xs font-bold hover:shadow-[0_0_20px_var(--color-neon-glow)] transition"
+            >
+              Start Scanning
+            </a>
+          </div>
+        </RevealOnScroll>
       </div>
     </section>
   );

@@ -1,11 +1,15 @@
 "use client";
 
 import Link from "next/link";
-import { useTranslations } from "next-intl";
+import { useTranslations, useLocale } from "next-intl";
 
 export default function Footer() {
   const t = useTranslations("footer");
   const nav = useTranslations("nav");
+  const locale = useLocale();
+
+  /** Prefix a path with the current locale */
+  const l = (path: string) => `/${locale}${path}`;
 
   return (
     <footer className="border-t border-white/5 bg-[var(--color-bg)]">
@@ -27,11 +31,11 @@ export default function Footer() {
           <div>
             <h5 className="mb-3 text-sm font-semibold text-white/80">{t("platform")}</h5>
             <div className="flex flex-col gap-2">
-              <Link href="/#features" className="text-sm text-white/40 hover:text-[var(--color-neon)]">{nav("features")}</Link>
-              <Link href="/tools" className="text-sm text-white/40 hover:text-[var(--color-neon)]">{nav("arsenal")}</Link>
-              <Link href="/#pricing" className="text-sm text-white/40 hover:text-[var(--color-neon)]">{nav("pricing")}</Link>
-              <Link href="/docs" className="text-sm text-white/40 hover:text-[var(--color-neon)]">{nav("docs")}</Link>
-              <Link href="/api-reference" className="text-sm text-white/40 hover:text-[var(--color-neon)]">{nav("api")}</Link>
+              <Link href={l("/#features")} className="text-sm text-white/40 hover:text-[var(--color-neon)]">{nav("features")}</Link>
+              <Link href={l("/tools")} className="text-sm text-white/40 hover:text-[var(--color-neon)]">{nav("arsenal")}</Link>
+              <Link href={l("/#pricing")} className="text-sm text-white/40 hover:text-[var(--color-neon)]">{nav("pricing")}</Link>
+              <Link href={l("/docs")} className="text-sm text-white/40 hover:text-[var(--color-neon)]">{nav("docs")}</Link>
+              <Link href={l("/api-reference")} className="text-sm text-white/40 hover:text-[var(--color-neon)]">{nav("api")}</Link>
             </div>
           </div>
 
@@ -39,10 +43,10 @@ export default function Footer() {
           <div>
             <h5 className="mb-3 text-sm font-semibold text-white/80">{t("company")}</h5>
             <div className="flex flex-col gap-2">
-              <Link href="/about" className="text-sm text-white/40 hover:text-[var(--color-neon)]">{nav("about")}</Link>
-              <Link href="/blog" className="text-sm text-white/40 hover:text-[var(--color-neon)]">{nav("blog")}</Link>
-              <Link href="/careers" className="text-sm text-white/40 hover:text-[var(--color-neon)]">{nav("careers")}</Link>
-              <Link href="/contact" className="text-sm text-white/40 hover:text-[var(--color-neon)]">{nav("contact")}</Link>
+              <Link href={l("/about")} className="text-sm text-white/40 hover:text-[var(--color-neon)]">{nav("about")}</Link>
+              <Link href={l("/blog")} className="text-sm text-white/40 hover:text-[var(--color-neon)]">{nav("blog")}</Link>
+              <Link href={l("/careers")} className="text-sm text-white/40 hover:text-[var(--color-neon)]">{nav("careers")}</Link>
+              <Link href={l("/contact")} className="text-sm text-white/40 hover:text-[var(--color-neon)]">{nav("contact")}</Link>
             </div>
           </div>
 
@@ -50,8 +54,8 @@ export default function Footer() {
           <div>
             <h5 className="mb-3 text-sm font-semibold text-white/80">{t("legal")}</h5>
             <div className="flex flex-col gap-2">
-              <Link href="/privacy" className="text-sm text-white/40 hover:text-[var(--color-neon)]">{t("privacyPolicy")}</Link>
-              <Link href="/terms" className="text-sm text-white/40 hover:text-[var(--color-neon)]">{t("termsOfService")}</Link>
+              <Link href={l("/privacy")} className="text-sm text-white/40 hover:text-[var(--color-neon)]">{t("privacyPolicy")}</Link>
+              <Link href={l("/terms")} className="text-sm text-white/40 hover:text-[var(--color-neon)]">{t("termsOfService")}</Link>
               <a href="mailto:cybersecpro@semihkilic.com" className="text-sm text-white/40 hover:text-[var(--color-neon)]">{t("support")}</a>
             </div>
           </div>

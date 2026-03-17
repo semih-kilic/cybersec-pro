@@ -2,27 +2,31 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { useTranslations } from "next-intl";
+import { useTranslations, useLocale } from "next-intl";
 import { Menu, X } from "lucide-react";
 import LanguageSwitcher from "./LanguageSwitcher";
 
 export default function Header() {
   const t = useTranslations("nav");
+  const locale = useLocale();
   const [open, setOpen] = useState(false);
 
+  /** Prefix a path with the current locale */
+  const lp = (path: string) => `/${locale}${path}`;
+
   const links = [
-    { href: "/#features", label: t("features") },
-    { href: "/tools", label: t("arsenal") },
-    { href: "/#pricing", label: t("pricing") },
-    { href: "/docs", label: t("docs") },
-    { href: "/api-reference", label: t("api") },
+    { href: lp("/#features"), label: t("features") },
+    { href: lp("/tools"), label: t("arsenal") },
+    { href: lp("/#pricing"), label: t("pricing") },
+    { href: lp("/docs"), label: t("docs") },
+    { href: lp("/api-reference"), label: t("api") },
   ];
 
   return (
     <header className="fixed top-0 z-50 w-full border-b border-white/5 bg-[var(--color-bg)]/80 backdrop-blur-xl">
       <nav className="mx-auto flex max-w-7xl items-center justify-between px-6 py-3">
         {/* Brand */}
-        <Link href="/" className="flex items-center gap-2 font-bold text-white">
+        <Link href={lp("/")} className="flex items-center gap-2 font-bold text-white">
           <svg width="24" height="24" viewBox="0 0 26 26" fill="none">
             <rect width="26" height="26" rx="3" fill="#9fef00" />
             <path d="M7.5 13l3 3 8-8" stroke="#0a0e14" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
