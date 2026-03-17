@@ -10,3 +10,5 @@ pub mod notification_handlers;
 pub mod project_handlers;
 pub mod sso_handlers;
 pub mod stub_handlers;
+pub mod email_handlers;
+pub mod monitor_handlers;

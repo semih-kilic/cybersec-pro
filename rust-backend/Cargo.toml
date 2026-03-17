@@ -61,6 +61,9 @@ lazy_static = "1"
 # Redis (optional rate limiting)
 redis = { version = "0.25", features = ["tokio-comp"] }
 
+# Email (SMTP)
+lettre = { version = "0.11", features = ["tokio1-native-tls", "builder", "hostname"] }
+
 # Misc
 anyhow = "1"
 thiserror = "1"
@@ -78,6 +81,14 @@ async-stream = "0.3"
 [profile.release]
 opt-level = 3
 lto = true
+
+[[bin]]
+name = "cybersec-pro-backend"
+path = "src/main.rs"
+
+[[bin]]
+name = "translate"
+path = "src/bin/translate.rs"
 codegen-units = 1
 strip = true
 panic = "abort"

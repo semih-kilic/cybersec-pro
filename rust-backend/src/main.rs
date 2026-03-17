@@ -21,6 +21,7 @@ use tracing_subscriber::{fmt, EnvFilter};
 use middleware::rate_limiter::RateLimiter;
 use middleware::security_headers::security_headers;
 use services::service_manager::ServiceManager;
+use services::monitor::SiteMonitor;
 
 /// Shared application state available in all handlers.
 pub struct AppState {
@@ -29,6 +30,7 @@ pub struct AppState {
     pub rate_limiter: RateLimiter,
     pub scan_output_tx: broadcast::Sender<String>,
     pub service_manager: Arc<ServiceManager>,
+    pub site_monitor: Arc<SiteMonitor>,
 }
 
 #[tokio::main]
@@ -63,6 +65,9 @@ async fn main() -> anyhow::Result<()> {
     // Initialize Service Manager (auto-recovery watchdog)
     let service_manager = ServiceManager::new();
 
+    // Initialize Site Monitor
+    let site_monitor = SiteMonitor::new();
+
     // Build shared state
     let state = Arc::new(AppState {
         db,
@@ -70,6 +75,7 @@ async fn main() -> anyhow::Result<()> {
         rate_limiter,
         scan_output_tx,
         service_manager: service_manager.clone(),
+        site_monitor: site_monitor.clone(),
     });
 
     // Spawn Service Manager monitoring loop (every 10s — auto-recovers crashed services)
@@ -80,6 +86,16 @@ async fn main() -> anyhow::Result<()> {
             tokio::time::sleep(std::time::Duration::from_secs(5)).await;
             tracing::info!("🛡️  Service Manager watchdog started — monitoring all services");
             mgr.monitor_loop().await;
+        });
+    }
+
+    // Spawn Site Monitor loop (every 60s — checks HTTP endpoints)
+    {
+        let mon = site_monitor.clone();
+        tokio::spawn(async move {
+            tokio::time::sleep(std::time::Duration::from_secs(10)).await;
+            tracing::info!("📡 Site Monitor started — checking service endpoints");
+            mon.monitor_loop().await;
         });
     }
 
@@ -372,6 +388,15 @@ fn build_router(state: Arc<AppState>) -> Router {
         // ── Chatbot / Feedback ────────────────────────────────
         .route("/api/v1/chatbot/message", post(stub_handlers::chatbot_message))
         .route("/api/v1/feedback", post(stub_handlers::feedback))
+        // ── Email ─────────────────────────────────────────────
+        .route("/api/v1/email/send-license", post(email_handlers::send_license_email))
+        .route("/api/v1/email/send-welcome", post(email_handlers::send_welcome_email))
+        .route("/api/v1/email/config", get(email_handlers::email_config_status))
+        // ── Site Monitor ──────────────────────────────────────
+        .route("/api/v1/monitor/status", get(monitor_handlers::monitor_status))
+        // ── Sales API (replaces Python cybersec-sales) ────────
+        .route("/api/health", get(health_handlers::health))
+        .route("/api/plans", get(sales_plans_handler))
         // ── GDPR ──────────────────────────────────────────────
         .route("/api/v1/gdpr/export", post(stub_handlers::gdpr_export))
         .route("/api/v1/gdpr/delete-account", post(stub_handlers::gdpr_delete_account))
@@ -382,5 +407,43 @@ fn build_router(state: Arc<AppState>) -> Router {
 async fn plan_config_handler() -> impl axum::response::IntoResponse {
     axum::Json(serde_json::json!({
         "plans": services::plan::get_plan_configs()
+    }))
+}
+
+/// Sales-site compatible plans endpoint (replaces Python /api/plans).
+async fn sales_plans_handler() -> impl axum::response::IntoResponse {
+    let plans = services::plan::get_plan_configs();
+    let sales_plans: std::collections::HashMap<&str, serde_json::Value> = plans
+        .iter()
+        .map(|(name, cfg)| {
+            (
+                *name,
+                serde_json::json!({
+                    "name": match *name {
+                        "trial" => "Trial",
+                        "starter" => "Starter",
+                        "professional" => "Professional",
+                        "enterprise" => "Enterprise",
+                        _ => name,
+                    },
+                    "price": cfg.price_eur,
+                    "currency": "eur",
+                    "interval": "month",
+                    "tool_limit": cfg.tool_limit,
+                    "daily_scan_limit": cfg.daily_scan_limit,
+                    "stripe_price_id": match *name {
+                        "starter" => std::env::var("STRIPE_STARTER_PRICE_ID").unwrap_or_default(),
+                        "professional" => std::env::var("STRIPE_PROFESSIONAL_PRICE_ID").unwrap_or_default(),
+                        "enterprise" => std::env::var("STRIPE_ENTERPRISE_PRICE_ID").unwrap_or_default(),
+                        _ => String::new(),
+                    },
+                }),
+            )
+        })
+        .collect();
+    axum::Json(serde_json::json!({
+        "plans": sales_plans,
+        "currency": "eur",
+        "billing_cycle": "monthly"
     }))
 }
