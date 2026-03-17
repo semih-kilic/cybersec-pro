@@ -195,18 +195,25 @@ pub async fn create_report(
     let file_size = content.len() as i32;
 
     // ── Persist to DB ───────────────────────────────────
-    let _ = sqlx::query(
+    let scan_ids_value: serde_json::Value = serde_json::from_str(&scan_ids_json).unwrap_or(json!([]));
+    let sections_value: Option<serde_json::Value> = sections_json
+        .as_ref()
+        .and_then(|s| serde_json::from_str(s).ok());
+
+    if let Err(e) = sqlx::query(
         "INSERT INTO reports (id, organization_id, user_id, name, template, format, status, \
          scan_ids, sections, total_findings, critical_count, high_count, medium_count, low_count, \
          info_count, risk_score, risk_level, content, file_size, completed_at) \
          VALUES ($1,$2,$3,$4,$5,$6,'ready',$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,NOW())"
     )
     .bind(&report_id).bind(org_id).bind(&auth.user_id).bind(&body.name)
-    .bind(template).bind(format).bind(&scan_ids_json).bind(&sections_json)
+    .bind(template).bind(format).bind(&scan_ids_value).bind(&sections_value)
     .bind(total_findings).bind(critical).bind(high).bind(medium).bind(low)
     .bind(info).bind(risk_score).bind(risk_level).bind(&content).bind(file_size)
     .execute(&state.db)
-    .await;
+    .await {
+        tracing::error!("Failed to insert report: {}", e);
+    }
 
     // ── Return response based on format ─────────────────
     if format == "pdf" {
@@ -214,12 +221,14 @@ pub async fn create_report(
         match html_to_pdf(&html_content).await {
             Ok(pdf_bytes) => {
                 // Update file_size in DB with actual PDF size
-                let _ = sqlx::query("UPDATE reports SET file_size = $1, content = $2 WHERE id = $3")
+                if let Err(e) = sqlx::query("UPDATE reports SET file_size = $1, content = $2 WHERE id = $3")
                     .bind(pdf_bytes.len() as i32)
                     .bind(&html_content)
                     .bind(&report_id)
                     .execute(&state.db)
-                    .await;
+                    .await {
+                    tracing::error!("Failed to update PDF report: {}", e);
+                }
 
                 return (
                     StatusCode::OK,
