@@ -1,4 +1,4 @@
-import { BrowserRouter as Router, Routes, Route, Navigate, Outlet } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Navigate, Outlet, useLocation } from 'react-router-dom';
 import { HelmetProvider } from 'react-helmet-async';
 import { Suspense, lazy, useEffect } from 'react';
 import { QueryClientProvider } from '@tanstack/react-query';
@@ -94,7 +94,7 @@ function LoadingSpinner() {
 }
 
 /** Route-level error boundary fallback for individual page crashes */
-function RouteErrorFallback() {
+function RouteErrorFallback({ error }: { error?: Error | null }) {
   return (
     <div className="min-h-[60vh] flex items-center justify-center px-6">
       <div className="max-w-md w-full text-center">
@@ -105,6 +105,9 @@ function RouteErrorFallback() {
         </div>
         <h2 className="text-lg font-semibold text-white mb-2">Page failed to load</h2>
         <p className="text-sm text-gray-400 mb-5">Something went wrong loading this page.</p>
+        {error && (
+          <p className="text-xs text-red-400/70 mb-4 font-mono break-all">{error.message}</p>
+        )}
         <div className="flex items-center justify-center gap-3">
           <button onClick={() => window.location.reload()} className="px-4 py-2 text-sm rounded-lg bg-cyan-600 text-white hover:bg-cyan-500 transition">
             Reload
@@ -160,6 +163,7 @@ function PublicRoute({ children }: { children: React.ReactNode }) {
 function DashboardLayout() {
   const { isPaletteOpen, closePalette, showShortcutsHelp, setShowShortcutsHelp } = useKeyboardShortcuts();
   const { requestPermission } = useBrowserNotifications();
+  const location = useLocation();
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(() => {
     try { return localStorage.getItem('cybersecpro_sidebar_collapsed') === 'true'; }
@@ -233,7 +237,7 @@ function DashboardLayout() {
           </div>
 
           <Suspense fallback={<OverviewSkeleton />}>
-            <ErrorBoundary fallback={<RouteErrorFallback />}>
+            <ErrorBoundary key={location.pathname} fallback={<RouteErrorFallback />}>
               <div className="px-4 pt-3 lg:px-6 lg:pt-4">
                 <Breadcrumb />
               </div>

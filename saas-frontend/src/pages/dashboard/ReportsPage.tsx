@@ -128,14 +128,14 @@ const defaultTemplates: ReportTemplate[] = [
 export function ReportsPage() {
   useDocumentTitle('Reports — CyberSec Pro');
   const toast = useToast();
-  const { data: reportsData, isLoading: reportsLoading } = useReports();
+  const { data: reportsData, isLoading: reportsLoading, isError: reportsError } = useReports();
   const generateMutation = useGenerateReport();
   const fetchReportMutation = useFetchReport();
   const deleteMutation = useDeleteReport();
   const reports = reportsData?.reports || [];
   const availableScans = reportsData?.available_scans || [];
-  const { data: fetchedTemplates = [], isLoading: templatesLoading } = useReportTemplates();
-  const templates = fetchedTemplates.length > 0 ? fetchedTemplates : defaultTemplates;
+  const { data: fetchedTemplates = [], isLoading: templatesLoading, isError: templatesError } = useReportTemplates();
+  const templates = (fetchedTemplates && fetchedTemplates.length > 0) ? fetchedTemplates : defaultTemplates;
   const loading = reportsLoading || templatesLoading;
   const [generating, setGenerating] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');

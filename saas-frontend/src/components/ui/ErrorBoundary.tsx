@@ -2,7 +2,7 @@
  * 🐉 CyberSec Pro — ErrorBoundary Component
  * Global and per-route error boundaries with crash recovery
  */
-import { Component, type ReactNode, type ErrorInfo } from 'react';
+import { Component, type ReactNode, type ErrorInfo, isValidElement, cloneElement } from 'react';
 
 interface Props {
   children: ReactNode;
@@ -32,7 +32,13 @@ export class ErrorBoundary extends Component<Props, State> {
 
   render() {
     if (this.state.hasError) {
-      if (this.props.fallback) return this.props.fallback;
+      if (this.props.fallback) {
+        // Clone the fallback element to pass the error prop
+        if (isValidElement(this.props.fallback)) {
+          return cloneElement(this.props.fallback as React.ReactElement<{ error?: Error | null }>, { error: this.state.error });
+        }
+        return this.props.fallback;
+      }
       return <ErrorFallback error={this.state.error} onRetry={() => this.setState({ hasError: false, error: null })} />;
     }
     return this.props.children;
