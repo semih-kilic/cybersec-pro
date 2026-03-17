@@ -212,7 +212,9 @@
       "remote": "100% Remote",
       "equity": "Equity Package",
       "learning": "Learning Budget",
-      "hardware": "Latest Hardware"
+      "hardware": "Latest Hardware",
+      "health": "Health & Wellness",
+      "security": "Security Lab Access"
     }
   },
   "docs": {
