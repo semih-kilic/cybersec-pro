@@ -212,7 +212,9 @@
       "remote": "100 % remoto",
       "equity": "Participación accionaria",
       "learning": "Presupuesto de formación",
-      "hardware": "Último hardware"
+      "hardware": "Último hardware",
+      "health": "Salud y Bienestar",
+      "security": "Acceso al Lab de Seguridad"
     }
   },
   "docs": {

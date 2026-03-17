@@ -212,7 +212,9 @@
       "remote": "%100 Uzaktan",
       "equity": "Hisse Paketi",
       "learning": "Eğitim Bütçesi",
-      "hardware": "En Son Donanım"
+      "hardware": "En Son Donanım",
+      "health": "Sağlık & Wellness",
+      "security": "Güvenlik Lab Erişimi"
     }
   },
   "docs": {

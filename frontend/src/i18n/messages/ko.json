@@ -212,7 +212,9 @@
       "remote": "100% 원격근무",
       "equity": "스톡옵션",
       "learning": "교육 예산",
-      "hardware": "최신 장비"
+      "hardware": "최신 장비",
+      "health": "건강 & 웰니스",
+      "security": "보안 연구소 접근"
     }
   },
   "docs": {

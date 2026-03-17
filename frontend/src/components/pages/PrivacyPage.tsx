@@ -2,7 +2,7 @@
 
 import { useTranslations } from "next-intl";
 import RevealOnScroll from "@/components/animations/RevealOnScroll";
-import MatrixRain from "@/components/three/MatrixRain";
+import CyberScene from "@/components/three/CyberScene";
 import { Shield, Database, Lock, Eye, Cookie, Users, Clock, Mail } from "lucide-react";
 
 export default function PrivacyPage() {
@@ -10,7 +10,7 @@ export default function PrivacyPage() {
 
   return (
     <>
-      <MatrixRain />
+      <CyberScene />
       <section className="mx-auto max-w-4xl px-6 pb-28 pt-32">
         <RevealOnScroll>
           <h1 className="text-4xl font-extrabold md:text-5xl">{t("title")}</h1>

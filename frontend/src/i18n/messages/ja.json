@@ -212,7 +212,9 @@
       "remote": "完全リモート",
       "equity": "ストックオプション",
       "learning": "学習予算",
-      "hardware": "最新ハードウェア"
+      "hardware": "最新ハードウェア",
+      "health": "健康＆ウェルネス",
+      "security": "セキュリティラボアクセス"
     }
   },
   "docs": {

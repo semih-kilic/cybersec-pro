@@ -212,7 +212,9 @@
       "remote": "100 % Remote",
       "equity": "Beteiligung",
       "learning": "Weiterbildungsbudget",
-      "hardware": "Neueste Hardware"
+      "hardware": "Neueste Hardware",
+      "health": "Gesundheit & Wellness",
+      "security": "Security Lab Zugang"
     }
   },
   "docs": {

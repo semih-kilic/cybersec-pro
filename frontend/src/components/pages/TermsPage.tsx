@@ -2,7 +2,7 @@
 
 import { useTranslations } from "next-intl";
 import RevealOnScroll from "@/components/animations/RevealOnScroll";
-import ThreatPulse from "@/components/three/ThreatPulse";
+import DataShield from "@/components/three/DataShield";
 import { AlertTriangle } from "lucide-react";
 
 export default function TermsPage() {
@@ -10,7 +10,7 @@ export default function TermsPage() {
 
   return (
     <>
-      <ThreatPulse />
+      <DataShield />
       <section className="mx-auto max-w-4xl px-6 pb-28 pt-32">
         <RevealOnScroll>
           <h1 className="text-4xl font-extrabold md:text-5xl">{t("title")}</h1>

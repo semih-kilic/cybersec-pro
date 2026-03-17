@@ -212,7 +212,9 @@
       "remote": "100%远程办公",
       "equity": "股权激励",
       "learning": "学习预算",
-      "hardware": "最新硬件"
+      "hardware": "最新硬件",
+      "health": "健康保障",
+      "security": "安全实验室访问"
     }
   },
   "docs": {
