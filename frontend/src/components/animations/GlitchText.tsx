@@ -16,7 +16,7 @@ export default function GlitchText({ text, className = "" }: { text: string; cla
         yoyo: true,
         repeat: 3,
         ease: "power2.inOut",
-        onComplete: () => gsap.set(el, { skewX: 0 }),
+        onComplete: () => { gsap.set(el, { skewX: 0 }); },
       });
     };
     el.addEventListener("mouseenter", handleMouseEnter);

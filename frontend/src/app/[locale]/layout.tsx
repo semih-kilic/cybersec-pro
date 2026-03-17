@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { NextIntlClientProvider } from "next-intl";
 import { getMessages, setRequestLocale } from "next-intl/server";
 import { notFound } from "next/navigation";
+import { GoogleAnalytics } from "@next/third-parties/google";
 import { locales, rtlLocales, type Locale } from "@/i18n/config";
 import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
@@ -48,6 +49,7 @@ export default async function LocaleLayout({
   return (
     <html lang={locale} dir={dir}>
       <body className="bg-[var(--color-bg)] text-white antialiased">
+        <GoogleAnalytics gaId="G-XXXXXXXXXX" />
         <NextIntlClientProvider messages={messages}>
           <Header />
           <main className="min-h-screen pt-16">{children}</main>
