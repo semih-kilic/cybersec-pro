@@ -55,8 +55,8 @@ header{position:fixed;inset:0 0 auto;z-index:100;background:rgba(10,10,10,.75);b
 
 /* ═══ HERO ═══ */
 .hero{min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:160px 32px 100px;position:relative;overflow:hidden}
-.hero::before{content:'';position:absolute;top:-200px;left:50%;transform:translateX(-50%);width:1000px;height:600px;background:radial-gradient(ellipse 60% 50%,rgba(16,185,129,.08),transparent 70%);pointer-events:none}
-.hero::after{content:'';position:absolute;top:0;left:50%;transform:translateX(-50%);width:600px;height:400px;background:radial-gradient(ellipse,rgba(6,182,212,.05),transparent 70%);pointer-events:none}
+.hero::before{content:'';position:absolute;top:-200px;left:50%;transform:translateX(-50%);width:1000px;height:600px;background:radial-gradient(ellipse 60% 50%,rgba(139,92,246,.1),rgba(99,102,241,.05),transparent 70%);pointer-events:none}
+.hero::after{content:'';position:absolute;top:0;left:50%;transform:translateX(-50%);width:600px;height:400px;background:radial-gradient(ellipse,rgba(236,72,153,.06),rgba(168,85,247,.03),transparent 70%);pointer-events:none}
 .hero-badge{display:inline-flex;align-items:center;gap:8px;padding:6px 16px 6px 8px;background:var(--s2);border:1px solid var(--b2);border-radius:100px;font-size:.75rem;font-weight:600;color:var(--accent);margin-bottom:40px;letter-spacing:.02em;text-transform:uppercase}
 .hero-badge i{width:8px;height:8px;border-radius:50%;background:var(--accent);display:block;animation:pulse 2s infinite}
 @keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
@@ -115,7 +115,7 @@ header{position:fixed;inset:0 0 auto;z-index:100;background:rgba(10,10,10,.75);b
 
 /* ═══ MOCKUP ═══ */
 .mockup-section{padding:120px 32px;position:relative;overflow:hidden}
-.mockup-section::before{content:'';position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:900px;height:500px;background:radial-gradient(ellipse,rgba(16,185,129,.06),transparent 70%);pointer-events:none}
+.mockup-section::before{content:'';position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:900px;height:500px;background:radial-gradient(ellipse,rgba(139,92,246,.06),rgba(99,102,241,.03),transparent 70%);pointer-events:none}
 .mockup-wrap{max-width:960px;margin:48px auto 0;position:relative}
 .mockup-browser{background:var(--s1);border:1px solid var(--b2);border-radius:12px;overflow:hidden;box-shadow:0 25px 60px rgba(0,0,0,.5),0 0 80px rgba(16,185,129,.05)}
 .mockup-bar{display:flex;align-items:center;gap:8px;padding:12px 16px;background:var(--s2);border-bottom:1px solid var(--b1)}
@@ -200,7 +200,7 @@ header{position:fixed;inset:0 0 auto;z-index:100;background:rgba(10,10,10,.75);b
 
 /* ═══ CTA ═══ */
 .cta-section{padding:120px 32px;text-align:center;position:relative;overflow:hidden}
-.cta-section::before{content:'';position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:800px;height:400px;background:radial-gradient(ellipse,rgba(16,185,129,.08),transparent 70%);pointer-events:none}
+.cta-section::before{content:'';position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:800px;height:400px;background:radial-gradient(ellipse,rgba(139,92,246,.08),rgba(236,72,153,.04),transparent 70%);pointer-events:none}
 .cta-section h2{font-size:clamp(2rem,4vw,3rem);font-weight:800;letter-spacing:-.03em;margin-bottom:16px}
 .cta-section p{color:var(--t2);font-size:1rem;margin-bottom:36px;font-weight:300}
 
@@ -221,9 +221,34 @@ footer{border-top:1px solid var(--b1);padding:60px 32px 40px}
 .reveal-d2{transition-delay:.2s}
 .reveal-d3{transition-delay:.3s}
 .divider{height:1px;background:var(--b1);max-width:var(--max);margin:0 auto}
+
+/* ═══ AURORA BOREALIS ═══ */
+.aurora{position:fixed;inset:0;z-index:0;overflow:hidden;pointer-events:none}
+.aurora-orb{position:absolute;border-radius:50%;filter:blur(100px);will-change:transform}
+.aurora-orb:nth-child(1){width:700px;height:700px;background:radial-gradient(circle,rgba(139,92,246,.18),transparent 70%);top:-15%;left:-8%;animation:aur1 25s ease-in-out infinite}
+.aurora-orb:nth-child(2){width:550px;height:550px;background:radial-gradient(circle,rgba(236,72,153,.14),transparent 70%);top:15%;right:-12%;animation:aur2 30s ease-in-out infinite}
+.aurora-orb:nth-child(3){width:800px;height:800px;background:radial-gradient(circle,rgba(99,102,241,.12),transparent 70%);bottom:-20%;left:25%;animation:aur3 22s ease-in-out infinite}
+.aurora-orb:nth-child(4){width:450px;height:450px;background:radial-gradient(circle,rgba(6,182,212,.1),transparent 70%);top:50%;left:5%;animation:aur4 28s ease-in-out infinite}
+.aurora-orb:nth-child(5){width:500px;height:500px;background:radial-gradient(circle,rgba(168,85,247,.1),transparent 70%);top:60%;right:10%;animation:aur5 35s ease-in-out infinite}
+@keyframes aur1{0%,100%{transform:translate(0,0) scale(1);opacity:.8}33%{transform:translate(100px,80px) scale(1.15);opacity:1}66%{transform:translate(-50px,40px) scale(.95);opacity:.7}}
+@keyframes aur2{0%,100%{transform:translate(0,0) scale(1);opacity:.7}33%{transform:translate(-80px,50px) scale(1.2);opacity:1}66%{transform:translate(50px,-60px) scale(.85);opacity:.6}}
+@keyframes aur3{0%,100%{transform:translate(0,0) scale(1);opacity:.6}50%{transform:translate(70px,-50px) scale(1.1);opacity:.9}}
+@keyframes aur4{0%,100%{transform:translate(0,0) scale(1);opacity:.5}40%{transform:translate(-60px,-70px) scale(1.25);opacity:.8}70%{transform:translate(40px,50px) scale(.9);opacity:.4}}
+@keyframes aur5{0%,100%{transform:translate(0,0) scale(1);opacity:.5}50%{transform:translate(-80px,-40px) scale(1.15);opacity:.8}}
+header,.hero,.stats,.trusted,.sc,.tm-section,.mockup-section,.cta-section,footer,.divider{position:relative;z-index:1}
+@media(prefers-reduced-motion:reduce){.aurora-orb{animation:none!important}}
 </style>
 </head>
 <body>
+
+<!-- AURORA BOREALIS BACKGROUND -->
+<div class="aurora" aria-hidden="true">
+<div class="aurora-orb"></div>
+<div class="aurora-orb"></div>
+<div class="aurora-orb"></div>
+<div class="aurora-orb"></div>
+<div class="aurora-orb"></div>
+</div>
 
 <!-- NAV -->
 <header>
