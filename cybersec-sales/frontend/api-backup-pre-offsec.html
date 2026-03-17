@@ -1,0 +1,351 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>API Documentation - CyberSec Pro REST API</title>
+    <meta name="description" content="Complete REST API documentation for CyberSec Pro. Integrate Kali Linux tools into your workflow programmatically.">
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'kali': { 'blue': '#367bf0', 'dark': '#1a1a2e', 'darker': '#0f0f1a', 'purple': '#9b59b6', 'cyan': '#00d4ff', 'green': '#2ecc71', 'red': '#e74c3c', 'orange': '#f39c12' }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body { font-family: 'Inter', sans-serif; background: #0a0a12; }
+        code { font-family: 'JetBrains Mono', monospace; }
+        .kali-gradient { background: linear-gradient(135deg, #367bf0 0%, #9b59b6 50%, #367bf0 100%); }
+        .kali-text { background: linear-gradient(135deg, #367bf0, #9b59b6, #00d4ff); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; }
+        .dragon-bg { background: radial-gradient(ellipse 100% 80% at 50% 20%, rgba(54, 123, 240, 0.15), transparent), #0a0a12; }
+        .kali-card { background: linear-gradient(145deg, rgba(26, 26, 46, 0.8), rgba(15, 15, 26, 0.9)); border: 1px solid rgba(54, 123, 240, 0.2); }
+        .code-block { background: #0d1117; border: 1px solid rgba(54, 123, 240, 0.2); font-family: 'JetBrains Mono', monospace; }
+        .method-get { background: #2ecc71; }
+        .method-post { background: #367bf0; }
+        .method-delete { background: #e74c3c; }
+        .method-put { background: #f39c12; }
+        .pulse-kali { animation: pulse-glow 2s infinite; }
+        @keyframes pulse-glow { 0%, 100% { box-shadow: 0 0 0 0 rgba(54, 123, 240, 0.7); } 50% { box-shadow: 0 0 0 15px rgba(54, 123, 240, 0); } }
+    </style>
+</head>
+<body class="text-white antialiased">
+    <!-- Navigation -->
+    <nav class="sticky top-0 z-50 bg-kali-darker/95 backdrop-blur-xl border-b border-kali-blue/10">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6">
+            <div class="flex justify-between items-center h-16">
+                <a href="/" class="flex items-center gap-3">
+                    <div class="relative">
+                        <div class="w-10 h-10 rounded-xl kali-gradient flex items-center justify-center">
+                            <svg class="w-6 h-6 text-white" viewBox="0 0 24 24" fill="currentColor">
+                                <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z"/>
+                            </svg>
+                        </div>
+                        <div class="absolute -top-1 -right-1 w-3 h-3 bg-kali-green rounded-full pulse-kali"></div>
+                    </div>
+                    <span class="text-xl font-bold">CyberSec Pro</span>
+                </a>
+                <div class="hidden md:flex items-center gap-8">
+                    <a href="/#platform" class="text-gray-400 hover:text-kali-blue transition">Platform</a>
+                    <a href="/tools.html" class="text-gray-400 hover:text-kali-blue transition">Tools</a>
+                    <a href="/api.html" class="text-kali-blue font-medium">API</a>
+                </div>
+                <a href="/dashboard/login" class="bg-gradient-to-r from-kali-blue to-kali-purple px-6 py-2.5 rounded-full text-white font-semibold">
+                    Start Free Trial
+                </a>
+            </div>
+        </div>
+    </nav>
+    
+    <!-- Hero -->
+    <section class="dragon-bg py-16 px-4">
+        <div class="max-w-7xl mx-auto">
+            <div class="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-kali-purple/10 border border-kali-purple/30 mb-6">
+                <span class="text-kali-purple font-medium">📡 REST API</span>
+            </div>
+            <h1 class="text-4xl sm:text-5xl font-black mb-6">
+                API <span class="kali-text">Documentation</span>
+            </h1>
+            <p class="text-xl text-gray-400 max-w-3xl mb-8">
+                Integrate 401 Kali Linux security tools into your applications with our powerful REST API.
+            </p>
+            
+            <div class="code-block rounded-xl p-4 inline-block">
+                <code class="text-kali-cyan">Base URL: <span class="text-kali-green">https://semihkilic.com/api/v1</span></code>
+            </div>
+        </div>
+    </section>
+    
+    <!-- Authentication -->
+    <section class="py-16 px-4 bg-kali-darker">
+        <div class="max-w-7xl mx-auto">
+            <h2 class="text-2xl font-bold mb-8">🔐 Authentication</h2>
+            <div class="kali-card rounded-2xl p-6 mb-6">
+                <p class="text-gray-300 mb-4">
+                    All API requests require authentication using an API key. Include your key in the request header:
+                </p>
+                <div class="code-block rounded-xl p-4 overflow-x-auto">
+<pre class="text-sm"><code class="text-gray-300"><span class="text-kali-purple">Authorization:</span> Bearer <span class="text-kali-green">YOUR_API_KEY</span>
+
+<span class="text-gray-500"># Example with cURL</span>
+<span class="text-kali-cyan">curl</span> -H <span class="text-kali-orange">"Authorization: Bearer sk_live_abc123..."</span> \
+     <span class="text-kali-green">https://semihkilic.com/api/v1/tools</span></code></pre>
+                </div>
+            </div>
+            
+            <div class="kali-card rounded-2xl p-6">
+                <h3 class="text-lg font-bold mb-4">Get Your API Key</h3>
+                <ol class="list-decimal list-inside space-y-2 text-gray-400">
+                    <li>Login to your <a href="/app" class="text-kali-blue hover:underline">dashboard</a></li>
+                    <li>Navigate to Settings → API Keys</li>
+                    <li>Click "Generate New Key"</li>
+                    <li>Copy and store your key securely</li>
+                </ol>
+            </div>
+        </div>
+    </section>
+    
+    <!-- Endpoints -->
+    <section class="py-16 px-4 dragon-bg">
+        <div class="max-w-7xl mx-auto">
+            <h2 class="text-2xl font-bold mb-8">📋 Endpoints</h2>
+            
+            <!-- Tools -->
+            <div class="mb-12">
+                <h3 class="text-xl font-bold mb-4 text-kali-blue">Tools</h3>
+                
+                <!-- GET /tools -->
+                <div class="kali-card rounded-2xl p-6 mb-4">
+                    <div class="flex items-center gap-4 mb-4">
+                        <span class="method-get px-3 py-1 rounded-lg text-sm font-bold text-white">GET</span>
+                        <code class="text-kali-cyan">/tools</code>
+                    </div>
+                    <p class="text-gray-400 mb-4">List all available security tools with categories.</p>
+                    <div class="code-block rounded-xl p-4 overflow-x-auto">
+<pre class="text-sm"><code><span class="text-gray-500">// Response</span>
+{
+  <span class="text-kali-purple">"tools"</span>: [
+    {
+      <span class="text-kali-cyan">"id"</span>: <span class="text-kali-orange">"nmap"</span>,
+      <span class="text-kali-cyan">"name"</span>: <span class="text-kali-orange">"Nmap"</span>,
+      <span class="text-kali-cyan">"category"</span>: <span class="text-kali-orange">"information-gathering"</span>,
+      <span class="text-kali-cyan">"description"</span>: <span class="text-kali-orange">"Network discovery and security auditing"</span>
+    }
+  ],
+  <span class="text-kali-purple">"total": 401</span>
+}</code></pre>
+                    </div>
+                </div>
+                
+                <!-- POST /tools/run -->
+                <div class="kali-card rounded-2xl p-6 mb-4">
+                    <div class="flex items-center gap-4 mb-4">
+                        <span class="method-post px-3 py-1 rounded-lg text-sm font-bold text-white">POST</span>
+                        <code class="text-kali-cyan">/tools/{tool_id}/run</code>
+                    </div>
+                    <p class="text-gray-400 mb-4">Execute a security tool with specified parameters.</p>
+                    <div class="code-block rounded-xl p-4 overflow-x-auto mb-4">
+<pre class="text-sm"><code><span class="text-gray-500">// Request Body</span>
+{
+  <span class="text-kali-cyan">"args"</span>: [<span class="text-kali-orange">"-sV"</span>, <span class="text-kali-orange">"-p"</span>, <span class="text-kali-orange">"1-1000"</span>],
+  <span class="text-kali-cyan">"target"</span>: <span class="text-kali-orange">"scanme.nmap.org"</span>,
+  <span class="text-kali-cyan">"timeout"</span>: <span class="text-kali-green">300</span>
+}</code></pre>
+                    </div>
+                    <div class="code-block rounded-xl p-4 overflow-x-auto">
+<pre class="text-sm"><code><span class="text-gray-500">// Response</span>
+{
+  <span class="text-kali-cyan">"job_id"</span>: <span class="text-kali-orange">"job_abc123"</span>,
+  <span class="text-kali-cyan">"status"</span>: <span class="text-kali-orange">"running"</span>,
+  <span class="text-kali-cyan">"started_at"</span>: <span class="text-kali-orange">"2026-01-23T10:00:00Z"</span>
+}</code></pre>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Jobs -->
+            <div class="mb-12">
+                <h3 class="text-xl font-bold mb-4 text-kali-purple">Jobs</h3>
+                
+                <!-- GET /jobs/:id -->
+                <div class="kali-card rounded-2xl p-6 mb-4">
+                    <div class="flex items-center gap-4 mb-4">
+                        <span class="method-get px-3 py-1 rounded-lg text-sm font-bold text-white">GET</span>
+                        <code class="text-kali-cyan">/jobs/{job_id}</code>
+                    </div>
+                    <p class="text-gray-400 mb-4">Get the status and results of a job.</p>
+                    <div class="code-block rounded-xl p-4 overflow-x-auto">
+<pre class="text-sm"><code><span class="text-gray-500">// Response</span>
+{
+  <span class="text-kali-cyan">"job_id"</span>: <span class="text-kali-orange">"job_abc123"</span>,
+  <span class="text-kali-cyan">"status"</span>: <span class="text-kali-orange">"completed"</span>,
+  <span class="text-kali-cyan">"output"</span>: <span class="text-kali-orange">"Starting Nmap scan..."</span>,
+  <span class="text-kali-cyan">"exit_code"</span>: <span class="text-kali-green">0</span>,
+  <span class="text-kali-cyan">"completed_at"</span>: <span class="text-kali-orange">"2026-01-23T10:02:30Z"</span>
+}</code></pre>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Scans -->
+            <div class="mb-12">
+                <h3 class="text-xl font-bold mb-4 text-kali-cyan">Quick Scans</h3>
+                
+                <!-- POST /scan/url -->
+                <div class="kali-card rounded-2xl p-6 mb-4">
+                    <div class="flex items-center gap-4 mb-4">
+                        <span class="method-post px-3 py-1 rounded-lg text-sm font-bold text-white">POST</span>
+                        <code class="text-kali-cyan">/scan/url</code>
+                    </div>
+                    <p class="text-gray-400 mb-4">Perform a quick security scan on a URL.</p>
+                    <div class="code-block rounded-xl p-4 overflow-x-auto">
+<pre class="text-sm"><code><span class="text-gray-500">// Request</span>
+{ <span class="text-kali-cyan">"url"</span>: <span class="text-kali-orange">"https://example.com"</span> }
+
+<span class="text-gray-500">// Response</span>
+{
+  <span class="text-kali-cyan">"url"</span>: <span class="text-kali-orange">"https://example.com"</span>,
+  <span class="text-kali-cyan">"security_headers"</span>: { ... },
+  <span class="text-kali-cyan">"ssl_info"</span>: { ... },
+  <span class="text-kali-cyan">"risk_score"</span>: <span class="text-kali-green">85</span>
+}</code></pre>
+                    </div>
+                </div>
+                
+                <!-- GET /scan/mx -->
+                <div class="kali-card rounded-2xl p-6">
+                    <div class="flex items-center gap-4 mb-4">
+                        <span class="method-get px-3 py-1 rounded-lg text-sm font-bold text-white">GET</span>
+                        <code class="text-kali-cyan">/scan/mx/{domain}</code>
+                    </div>
+                    <p class="text-gray-400 mb-4">Lookup MX records and email security for a domain.</p>
+                    <div class="code-block rounded-xl p-4 overflow-x-auto">
+<pre class="text-sm"><code><span class="text-gray-500">// Response</span>
+{
+  <span class="text-kali-cyan">"domain"</span>: <span class="text-kali-orange">"example.com"</span>,
+  <span class="text-kali-cyan">"mx_records"</span>: [<span class="text-kali-orange">"mail.example.com"</span>],
+  <span class="text-kali-cyan">"spf"</span>: <span class="text-kali-green">true</span>,
+  <span class="text-kali-cyan">"dkim"</span>: <span class="text-kali-green">true</span>,
+  <span class="text-kali-cyan">"dmarc"</span>: <span class="text-kali-green">true</span>
+}</code></pre>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Projects -->
+            <div>
+                <h3 class="text-xl font-bold mb-4 text-kali-green">Projects</h3>
+                
+                <div class="kali-card rounded-2xl p-6 mb-4">
+                    <div class="flex items-center gap-4 mb-4">
+                        <span class="method-get px-3 py-1 rounded-lg text-sm font-bold text-white">GET</span>
+                        <code class="text-kali-cyan">/projects</code>
+                    </div>
+                    <p class="text-gray-400">List all projects in your workspace.</p>
+                </div>
+                
+                <div class="kali-card rounded-2xl p-6 mb-4">
+                    <div class="flex items-center gap-4 mb-4">
+                        <span class="method-post px-3 py-1 rounded-lg text-sm font-bold text-white">POST</span>
+                        <code class="text-kali-cyan">/projects</code>
+                    </div>
+                    <p class="text-gray-400">Create a new project.</p>
+                </div>
+                
+                <div class="kali-card rounded-2xl p-6">
+                    <div class="flex items-center gap-4 mb-4">
+                        <span class="method-delete px-3 py-1 rounded-lg text-sm font-bold text-white">DELETE</span>
+                        <code class="text-kali-cyan">/projects/{project_id}</code>
+                    </div>
+                    <p class="text-gray-400">Delete a project and all associated data.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+    
+    <!-- Rate Limits -->
+    <section class="py-16 px-4 bg-kali-darker">
+        <div class="max-w-7xl mx-auto">
+            <h2 class="text-2xl font-bold mb-8">⚡ Rate Limits</h2>
+            <div class="kali-card rounded-2xl p-6">
+                <table class="w-full text-left">
+                    <thead>
+                        <tr class="border-b border-kali-blue/20">
+                            <th class="py-3 text-gray-400 font-medium">Plan</th>
+                            <th class="py-3 text-gray-400 font-medium">Requests/min</th>
+                            <th class="py-3 text-gray-400 font-medium">Concurrent Jobs</th>
+                        </tr>
+                    </thead>
+                    <tbody class="text-gray-300">
+                        <tr class="border-b border-kali-blue/10">
+                            <td class="py-3">Starter (Trial)</td>
+                            <td class="py-3">10</td>
+                            <td class="py-3">1</td>
+                        </tr>
+                        <tr class="border-b border-kali-blue/10">
+                            <td class="py-3">Professional</td>
+                            <td class="py-3">60</td>
+                            <td class="py-3">5</td>
+                        </tr>
+                        <tr class="border-b border-kali-blue/10">
+                            <td class="py-3">Team</td>
+                            <td class="py-3">300</td>
+                            <td class="py-3">20</td>
+                        </tr>
+                        <tr>
+                            <td class="py-3">Enterprise</td>
+                            <td class="py-3">Unlimited</td>
+                            <td class="py-3">Unlimited</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </section>
+    
+    <!-- SDKs -->
+    <section class="py-16 px-4 dragon-bg">
+        <div class="max-w-7xl mx-auto">
+            <h2 class="text-2xl font-bold mb-8">📦 SDKs & Libraries</h2>
+            <div class="grid md:grid-cols-3 gap-6">
+                <div class="kali-card rounded-2xl p-6">
+                    <div class="text-3xl mb-4">🐍</div>
+                    <h3 class="font-bold mb-2">Python</h3>
+                    <div class="code-block rounded-lg p-3 text-sm">
+                        <code class="text-kali-green">pip install cybersecpro</code>
+                    </div>
+                </div>
+                <div class="kali-card rounded-2xl p-6">
+                    <div class="text-3xl mb-4">🟢</div>
+                    <h3 class="font-bold mb-2">Node.js</h3>
+                    <div class="code-block rounded-lg p-3 text-sm">
+                        <code class="text-kali-green">npm i @cybersecpro/sdk</code>
+                    </div>
+                </div>
+                <div class="kali-card rounded-2xl p-6">
+                    <div class="text-3xl mb-4">🔵</div>
+                    <h3 class="font-bold mb-2">Go</h3>
+                    <div class="code-block rounded-lg p-3 text-sm">
+                        <code class="text-kali-green">go get cybersecpro</code>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+    
+    <!-- Footer -->
+    <footer class="py-12 px-4 border-t border-kali-blue/10">
+        <div class="max-w-7xl mx-auto text-center text-gray-500 text-sm">
+            © 2026 CyberSec Pro. Powered by Kali Linux.
+        </div>
+    </footer>
+</body>
+</html>
