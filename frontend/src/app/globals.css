@@ -1,26 +1,114 @@
 @import "tailwindcss";
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600;700&display=swap");
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
+@theme {
+  --color-bg: #0a0e14;
+  --color-bg-secondary: #0d1117;
+  --color-bg-card: rgba(255, 255, 255, 0.03);
+  --color-border: rgba(255, 255, 255, 0.06);
+  --color-border-hover: rgba(159, 239, 0, 0.25);
+  --color-neon: #9fef00;
+  --color-neon-dim: rgba(159, 239, 0, 0.15);
+  --color-neon-glow: rgba(159, 239, 0, 0.35);
+  --color-cyan: #00d4ff;
+  --color-purple: #b44aff;
+  --color-red: #ff3e3e;
+  --color-orange: #ff9f1c;
+  --color-text: #ffffff;
+  --color-text-muted: rgba(255, 255, 255, 0.55);
+  --color-text-dim: rgba(255, 255, 255, 0.35);
+  --font-sans: "Inter", system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", "Fira Code", monospace;
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+@layer base {
+  * {
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+  html {
+    scroll-behavior: smooth;
+    background: var(--color-bg);
+    color: var(--color-text);
+  }
+  body {
+    font-family: var(--font-sans);
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+  ::selection {
+    background: rgba(159, 239, 0, 0.3);
+    color: #fff;
+  }
+  ::-webkit-scrollbar { width: 8px; }
+  ::-webkit-scrollbar-track { background: var(--color-bg); }
+  ::-webkit-scrollbar-thumb { background: rgba(159, 239, 0, 0.2); border-radius: 4px; }
+  ::-webkit-scrollbar-thumb:hover { background: rgba(159, 239, 0, 0.4); }
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+@layer components {
+  .badge {
+    @apply inline-block rounded-full border px-4 py-1.5 font-mono text-xs font-semibold tracking-wider;
+    color: var(--color-neon);
+    border-color: var(--color-neon-dim);
+    background: rgba(159, 239, 0, 0.06);
+  }
+  .glass-card {
+    background: var(--color-bg-card);
+    border: 1px solid var(--color-border);
+    border-radius: 16px;
+    backdrop-filter: blur(12px);
+    transition: border-color 0.3s, transform 0.3s, box-shadow 0.3s;
+  }
+  .glass-card:hover {
+    border-color: var(--color-border-hover);
+    transform: translateY(-4px);
+    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.3);
+  }
+  .btn-primary {
+    @apply inline-flex items-center gap-2 rounded-xl font-mono text-sm font-bold transition-all;
+    background: var(--color-neon);
+    color: var(--color-bg);
+    padding: 0.75rem 1.75rem;
+  }
+  .btn-primary:hover {
+    background: #b8ff4a;
+    box-shadow: 0 0 30px var(--color-neon-glow);
+    transform: translateY(-2px);
+  }
+  .btn-outline {
+    @apply inline-flex items-center gap-2 rounded-xl font-mono text-sm font-semibold transition-all;
+    background: transparent;
+    color: var(--color-neon);
+    border: 1px solid var(--color-neon-dim);
+    padding: 0.75rem 1.75rem;
+  }
+  .btn-outline:hover {
+    background: rgba(159, 239, 0, 0.08);
+    border-color: var(--color-neon);
+  }
+  .section-heading h2 {
+    @apply text-3xl font-extrabold leading-tight md:text-4xl lg:text-5xl;
+    background: linear-gradient(135deg, #fff 0%, rgba(255, 255, 255, 0.7) 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+  .section-heading p {
+    @apply mx-auto mt-4 max-w-xl text-base leading-relaxed;
+    color: var(--color-text-muted);
+  }
+  .neon-text {
+    color: var(--color-neon);
+    text-shadow: 0 0 20px var(--color-neon-glow);
   }
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+@keyframes float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-10px); }
+}
+@keyframes pulse-neon {
+  0%, 100% { box-shadow: 0 0 5px var(--color-neon-dim); }
+  50% { box-shadow: 0 0 20px var(--color-neon-glow), 0 0 40px rgba(159, 239, 0, 0.15); }
 }

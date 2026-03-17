@@ -1,0 +1,264 @@
+{
+  "meta": {
+    "title": "CyberSec Pro — Saldırı Güvenliği Platformu",
+    "description": "401 Kali Linux aracıyla bulut tabanlı saldırı güvenliği platformu. Otomatik güvenlik açığı taraması, penetrasyon testi ve güvenlik değerlendirmeleri."
+  },
+  "nav": {
+    "features": "Özellikler",
+    "arsenal": "Araç Deposu",
+    "pricing": "Fiyatlandırma",
+    "docs": "Dokümanlar",
+    "api": "API",
+    "login": "$ giriş",
+    "getAccess": "Erişim Al",
+    "about": "Hakkında",
+    "blog": "Blog",
+    "careers": "Kariyer",
+    "contact": "İletişim",
+    "security": "Güvenlik",
+    "tests": "Değerlendirmeler"
+  },
+  "hero": {
+    "badge": "Bulut Tabanlı Saldırı Güvenliği",
+    "title": "Saldırı Güvenliği\nPlatformu",
+    "titleHighlight": "401 Araç.",
+    "subtitle": "401 Kali Linux aracını 61 kategoride tarayıcınızdan çalıştırın. Kurulum yok. Altyapı yok. Sadece sonuçlar.",
+    "cta": "Ücretsiz Taramayı Başlat",
+    "ctaSecondary": "Araç Deposunu Gör",
+    "stats": {
+      "tools": "401",
+      "toolsLabel": "Güvenlik Aracı",
+      "categories": "61",
+      "categoriesLabel": "Kategori",
+      "uptime": "%99.9",
+      "uptimeLabel": "Çalışma Süresi",
+      "scans": "1M+",
+      "scansLabel": "Tarama Yapıldı"
+    }
+  },
+  "features": {
+    "badge": "Platform Özellikleri",
+    "title": "Saldırı Güvenliği için\nİhtiyacınız Olan Her Şey",
+    "subtitle": "Tarayıcınızdan erişilebilen kurumsal düzeyde güvenlik test altyapısı.",
+    "items": {
+      "scanning": {
+        "title": "Otomatik Tarama",
+        "description": "Birkaç tıklamayla karmaşık güvenlik taramalarını yapılandırın ve çalıştırın. Tekrarlayan değerlendirmeler planlayın."
+      },
+      "tools": {
+        "title": "401 Kali Aracı",
+        "description": "Nmap'ten Metasploit'e, Burp Suite'ten SQLMap'e — tam Kali Linux cephaneliğine erişin."
+      },
+      "reports": {
+        "title": "Profesyonel Raporlar",
+        "description": "PDF, HTML, JSON, CSV ve Markdown formatlarında uyumluluk raporları oluşturun."
+      },
+      "realtime": {
+        "title": "Gerçek Zamanlı Sonuçlar",
+        "description": "WebSocket ile tarama sonuçlarını canlı izleyin. Terminal tarzı çıktı ile tam etkileşim."
+      },
+      "api": {
+        "title": "RESTful API",
+        "description": "CI/CD hattınızla entegre edin. Otomasyon ve özel iş akışları için tam API erişimi."
+      },
+      "team": {
+        "title": "Ekip İş Birliği",
+        "description": "Rol tabanlı erişimli çok kiracılı çalışma alanları. Bulguları paylaşın ve değerlendirmeleri koordine edin."
+      }
+    }
+  },
+  "pricing": {
+    "badge": "Fiyat Planları",
+    "title": "Planınızı Seçin",
+    "subtitle": "Ücretsiz denemeyle başlayın. Hazır olduğunuzda yükseltin.",
+    "monthly": "Aylık",
+    "annual": "Yıllık",
+    "annualSave": "%20 Tasarruf",
+    "popular": "En Popüler",
+    "cta": "Başla",
+    "ctaEnterprise": "Satışla İletişime Geç",
+    "plans": {
+      "trial": {
+        "name": "Deneme",
+        "price": "Ücretsiz",
+        "period": "14 gün",
+        "features": ["Günde 5 tarama", "Temel araçlar", "E-posta raporları", "Topluluk desteği"]
+      },
+      "starter": {
+        "name": "Başlangıç",
+        "price": "€99",
+        "period": "/ay",
+        "features": ["Günde 50 tarama", "200+ araç", "Tüm rapor formatları", "E-posta desteği", "API erişimi"]
+      },
+      "professional": {
+        "name": "Profesyonel",
+        "price": "€299",
+        "period": "/ay",
+        "features": ["Sınırsız tarama", "401 araç", "Öncelikli destek", "Ekip iş birliği", "Özel şablonlar", "Zamanlanmış taramalar"]
+      },
+      "enterprise": {
+        "name": "Kurumsal",
+        "price": "€799",
+        "period": "/ay",
+        "features": ["Pro'daki her şey", "Özel altyapı", "SLA garantisi", "Özel entegrasyonlar", "Yerinde kurulum", "7/24 telefon desteği"]
+      }
+    }
+  },
+  "tools": {
+    "badge": "Güvenlik Cephaneliği",
+    "title": "401 Araç. 61 Kategori.",
+    "subtitle": "Kali Linux dağıtımındaki her araç, tarayıcınızda çalışmaya hazır.",
+    "searchPlaceholder": "Araç ara...",
+    "allCategories": "Tümü",
+    "runTool": "Aracı Çalıştır",
+    "viewDetails": "Detayları Gör"
+  },
+  "testimonials": {
+    "badge": "Güvenlik Ekipleri Tarafından Güvenilen",
+    "title": "Kullanıcılarımız Ne Diyor"
+  },
+  "faq": {
+    "badge": "SSS",
+    "title": "Sıkça Sorulan Sorular",
+    "items": {
+      "q1": { "q": "CyberSec Pro'yu kullanmak yasal mı?", "a": "Evet. CyberSec Pro yalnızca yetkili güvenlik testleri için tasarlanmıştır. Herhangi bir hedefi test etmek için açık izniniz olmalıdır." },
+      "q2": { "q": "Bir şey yüklemem gerekiyor mu?", "a": "Hayır. Her şey tarayıcınızda çalışır. Yerel kurulum, VM veya yapılandırma gerekmez." },
+      "q3": { "q": "Şirketim için kullanabilir miyim?", "a": "Kesinlikle. Profesyonel ve Kurumsal planlarımız ekip iş birliği, çok kiracılı çalışma alanları ve rol tabanlı erişim kontrolleri içerir." },
+      "q4": { "q": "Hangi rapor formatları destekleniyor?", "a": "PDF, HTML, JSON, CSV ve Markdown destekliyoruz. Kurumsal müşteriler özel rapor şablonları da oluşturabilir." },
+      "q5": { "q": "Verilerim güvende mi?", "a": "Evet. Tüm veriler hareketsiz ve aktarım sırasında şifrelenir. SOC 2 uyumluluk standartlarını takip ediyor ve altyapımızı düzenli olarak denetliyoruz." }
+    }
+  },
+  "cta": {
+    "title": "Altyapınızı Güvence Altına Almaya Hazır mısınız?",
+    "subtitle": "Bugün ücretsiz taramanızı başlatın. Kredi kartı gerekmez.",
+    "button": "Ücretsiz Taramayı Başlat"
+  },
+  "footer": {
+    "description": "Bulut tabanlı saldırı güvenliği platformu. 61 kategoride 401 Kali Linux aracı.",
+    "platform": "Platform",
+    "company": "Şirket",
+    "legal": "Yasal",
+    "privacyPolicy": "Gizlilik Politikası",
+    "termsOfService": "Hizmet Şartları",
+    "support": "Destek",
+    "copyright": "© 2026 CyberSec Pro"
+  },
+  "contact": {
+    "badge": "İletişim",
+    "title": "Bize Ulaşın",
+    "subtitle": "Platformumuz hakkında sorunuz mu var? Demo ister misiniz? Desteğe mi ihtiyacınız var? Yardımcı olmak için buradayız.",
+    "sales": {
+      "title": "Satış & Demo",
+      "description": "Ekibiniz için CyberSec Pro ile ilgileniyor musunuz? Platformun kişiselleştirilmiş bir turunu alın.",
+      "response": "Yanıt < 4 saat",
+      "cta": "Demo Planla"
+    },
+    "support": {
+      "title": "Teknik Destek",
+      "description": "Bir sorunla mı karşılaştınız veya tarama yapılandırması konusunda yardıma mı ihtiyacınız var?",
+      "enterprise": "Kurumsal — 2 saat SLA",
+      "professional": "Profesyonel — 24 saat SLA",
+      "trial": "Deneme — 48 saat SLA",
+      "cta": "Yardım Merkezine Eriş"
+    },
+    "partnerships": {
+      "title": "Ortaklıklar",
+      "description": "Beyaz etiketleme ve bayi fırsatlarını keşfedin. CyberSec Pro'yu güvenlik tekliflerinize entegre edin.",
+      "response": "Yanıt < 2 iş günü",
+      "cta": "Ortaklıkları Keşfet"
+    },
+    "ctaSection": {
+      "title": "Beklemek istemiyor musunuz? Ücretsiz taramanızı şimdi başlatın.",
+      "subtitle": "Kredi kartı gerekmez. 30 dakikada sonuç alın.",
+      "button": "Ücretsiz Taramayı Başlat"
+    }
+  },
+  "about": {
+    "badge": "Hakkımızda",
+    "title": "Güvenlik Mühendisleri Tarafından,\nGüvenlik Mühendisleri İçin Yapıldı",
+    "subtitle": "CyberSec Pro, farklı ortamlarda düzinelerce güvenlik aracını yönetme sıkıntısından doğdu.",
+    "mission": {
+      "title": "Misyonumuz",
+      "description": "Profesyonel düzeyde araçları boyut veya bütçe ne olursa olsun her güvenlik ekibine erişilebilir kılarak saldırı güvenliğini demokratikleştirmek."
+    },
+    "story": {
+      "title": "Hikayemiz",
+      "description": "2024'te kurulan CyberSec Pro, penetrasyon testi iş akışlarını düzene sokmak için dahili bir araç olarak başladı. Bugün dünya çapında güvenlik ekiplerine hizmet veriyor."
+    },
+    "team": {
+      "title": "Ekip",
+      "founder": {
+        "name": "Semih Kılıç",
+        "role": "Kurucu & CEO",
+        "bio": "Saldırı güvenliği, penetrasyon testi ve güvenlik araç geliştirme konusunda 10+ yıllık deneyime sahip güvenlik mühendisi."
+      }
+    }
+  },
+  "blog": {
+    "badge": "Blog & Eğitimler",
+    "title": "Güvenlik İçgörüleri & Kılavuzlar",
+    "subtitle": "Saldırı güvenliği teknikleri, araç eğitimleri ve sektör en iyi uygulamalarını öğrenin.",
+    "readMore": "Devamını Oku",
+    "minRead": "dk okuma"
+  },
+  "careers": {
+    "badge": "Ekibimize Katılın",
+    "title": "Saldırı Güvenliğinin\nGeleceğini İnşa Edin",
+    "subtitle": "Misyonumuza katılmak isteyen tutkulu güvenlik mühendisleri ve geliştiriciler arıyoruz.",
+    "openPositions": "Açık Pozisyonlar",
+    "apply": "Başvur",
+    "perks": {
+      "title": "Neden CyberSec Pro?",
+      "remote": "%100 Uzaktan",
+      "equity": "Hisse Paketi",
+      "learning": "Eğitim Bütçesi",
+      "hardware": "En Son Donanım"
+    }
+  },
+  "docs": {
+    "badge": "Dokümanlar",
+    "title": "CyberSec Pro ile Başlayın",
+    "subtitle": "Tarama kurulumu, araç kullanımı ve rapor oluşturma hakkında bilmeniz gereken her şey.",
+    "quickStart": "Hızlı Başlangıç",
+    "guides": "Kılavuzlar",
+    "apiReference": "API Referansı"
+  },
+  "api": {
+    "badge": "API Referansı",
+    "title": "RESTful API",
+    "subtitle": "Kapsamlı API'miz ile CyberSec Pro'yu iş akışlarınıza entegre edin.",
+    "baseUrl": "Temel URL",
+    "authentication": "Kimlik Doğrulama",
+    "endpoints": "Uç Noktalar"
+  },
+  "privacy": {
+    "title": "Gizlilik Politikası",
+    "lastUpdated": "Son güncelleme: Mart 2026"
+  },
+  "terms": {
+    "title": "Hizmet Şartları",
+    "lastUpdated": "Son güncelleme: Mart 2026"
+  },
+  "security": {
+    "badge": "Güvenlik",
+    "title": "Önce Güvenlik",
+    "subtitle": "Platformumuzun ve verilerinizin güvenliğini ciddiye alıyoruz."
+  },
+  "tests": {
+    "badge": "Güvenlik Değerlendirmesi",
+    "title": "Kapsamlı Güvenlik Testi",
+    "subtitle": "Endüstri standardı araçlarla desteklenen profesyonel güvenlik değerlendirmeleri çalıştırın."
+  },
+  "success": {
+    "title": "Ödeme Başarılı!",
+    "subtitle": "CyberSec Pro'ya hoş geldiniz. Hesabınız aktifleştirildi.",
+    "dashboard": "Panele Git",
+    "docs": "Belgeleri Oku"
+  },
+  "common": {
+    "email": "cybersecpro@semihkilic.com",
+    "learnMore": "Daha Fazla Bilgi",
+    "getStarted": "Başla",
+    "backToHome": "Ana Sayfaya Dön"
+  }
+}
