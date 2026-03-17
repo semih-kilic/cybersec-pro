@@ -2,15 +2,34 @@
  * API Keys Settings Tab
  * Generate, manage, and revoke API keys
  */
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import type { SettingsTabProps, ApiKey } from './types';
+import api from '../../../services/api';
 
 export function ApiKeysTab({ loading, setLoading, setMessage }: SettingsTabProps) {
   const [apiKeys, setApiKeys] = useState<ApiKey[]>([]);
   const [newKeyName, setNewKeyName] = useState('');
   const [showNewKey, setShowNewKey] = useState<string | null>(null);
   const [deleteConfirm, setDeleteConfirm] = useState<string | null>(null);
+
+  useEffect(() => {
+    loadKeys();
+  }, []);
+
+  const loadKeys = async () => {
+    const res = await api.getApiKeys();
+    if (res.data?.api_keys) {
+      setApiKeys(res.data.api_keys.map(k => ({
+        id: k.id,
+        name: k.name,
+        key_preview: k.key,
+        created_at: k.created_at,
+        last_used: k.last_used,
+        permissions: k.permissions,
+      })));
+    }
+  };
 
   const generateApiKey = async () => {
     if (!newKeyName.trim()) {
@@ -19,27 +38,38 @@ export function ApiKeysTab({ loading, setLoading, setMessage }: SettingsTabProps
     }
     setLoading(true);
     try {
-      const fakeKey = `csp_${Array.from(crypto.getRandomValues(new Uint8Array(32))).map(b => b.toString(16).padStart(2, '0')).join('')}`;
-      setShowNewKey(fakeKey);
-      setApiKeys([...apiKeys, {
-        id: crypto.randomUUID(),
-        name: newKeyName,
-        key_preview: `csp_...${fakeKey.slice(-8)}`,
-        created_at: new Date().toISOString(),
-        last_used: null,
-        permissions: ['read', 'write'],
-      }]);
-      setNewKeyName('');
-      setMessage({ type: 'success', text: 'API key generated! Copy it now — you won\'t see it again.' });
+      const res = await api.createApiKey(newKeyName.trim());
+      if (res.error) {
+        setMessage({ type: 'error', text: res.error });
+        return;
+      }
+      if (res.data?.api_key) {
+        setShowNewKey(res.data.api_key.key);
+        setApiKeys(prev => [{
+          id: res.data!.api_key.id,
+          name: res.data!.api_key.name,
+          key_preview: `csp_...${res.data!.api_key.key_preview}`,
+          created_at: res.data!.api_key.created_at,
+          last_used: null,
+          permissions: res.data!.api_key.permissions,
+        }, ...prev]);
+        setNewKeyName('');
+        setMessage({ type: 'success', text: 'API key generated! Copy it now — you won\'t see it again.' });
+      }
     } finally {
       setLoading(false);
     }
   };
 
-  const deleteApiKey = (keyId: string) => {
-    setApiKeys(apiKeys.filter(k => k.id !== keyId));
+  const deleteApiKey = async (keyId: string) => {
+    const res = await api.deleteApiKey(keyId);
+    if (res.error) {
+      setMessage({ type: 'error', text: res.error });
+    } else {
+      setApiKeys(apiKeys.filter(k => k.id !== keyId));
+      setMessage({ type: 'success', text: 'API key deleted' });
+    }
     setDeleteConfirm(null);
-    setMessage({ type: 'success', text: 'API key deleted' });
   };
 
   const copyToClipboard = (text: string) => {

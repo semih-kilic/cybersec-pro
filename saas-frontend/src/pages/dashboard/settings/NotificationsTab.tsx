@@ -2,9 +2,10 @@
  * Notifications Settings Tab
  * Email, browser, in-app notification preferences
  */
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import type { SettingsTabProps, UserSettings } from './types';
+import type { SettingsTabProps } from './types';
+import api from '../../../services/api';
 
 function Toggle({ checked, onChange, label }: { checked: boolean; onChange: (v: boolean) => void; label?: string }) {
   return (
@@ -21,18 +22,25 @@ function Toggle({ checked, onChange, label }: { checked: boolean; onChange: (v: 
 }
 
 export function NotificationsTab({ setMessage }: SettingsTabProps) {
-  const [settings, setSettings] = useState<UserSettings>({
-    notifications: {
-      email_scan_complete: true,
-      email_weekly_report: true,
-      browser_notifications: true,
-    },
-    theme: 'dark',
-    timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
-    language: 'en',
+  const [prefs, setPrefs] = useState({
+    email_scan_complete: true,
+    email_weekly_report: true,
+    email_security_alerts: true,
+    browser_notifications: true,
+    quiet_hours: { enabled: false, from: '22:00', to: '08:00' },
   });
 
   const [saving, setSaving] = useState(false);
+  const [loaded, setLoaded] = useState(false);
+
+  useEffect(() => {
+    api.getNotificationPreferences().then(res => {
+      if (res.data) {
+        setPrefs(res.data);
+      }
+      setLoaded(true);
+    });
+  }, []);
 
   const notificationOptions = [
     {
@@ -48,6 +56,12 @@ export function NotificationsTab({ setMessage }: SettingsTabProps) {
       icon: '📊',
     },
     {
+      key: 'email_security_alerts' as const,
+      title: 'Security Alerts',
+      desc: 'Get notified about critical security events',
+      icon: '🚨',
+    },
+    {
       key: 'browser_notifications' as const,
       title: 'Browser Notifications',
       desc: 'Show desktop notifications for important events',
@@ -58,13 +72,20 @@ export function NotificationsTab({ setMessage }: SettingsTabProps) {
   const handleSave = async () => {
     setSaving(true);
     try {
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 500));
-      setMessage({ type: 'success', text: 'Notification preferences saved!' });
+      const res = await api.updateNotificationPreferences(prefs);
+      if (res.error) {
+        setMessage({ type: 'error', text: res.error });
+      } else {
+        setMessage({ type: 'success', text: 'Notification preferences saved!' });
+      }
     } finally {
       setSaving(false);
     }
   };
+
+  if (!loaded) {
+    return <div className="text-gray-400 py-8 text-center">Loading preferences...</div>;
+  }
 
   return (
     <motion.div
@@ -86,11 +107,8 @@ export function NotificationsTab({ setMessage }: SettingsTabProps) {
               </div>
             </div>
             <Toggle
-              checked={settings.notifications[opt.key]}
-              onChange={(v) => setSettings({
-                ...settings,
-                notifications: { ...settings.notifications, [opt.key]: v }
-              })}
+              checked={prefs[opt.key as keyof typeof prefs] as boolean}
+              onChange={(v) => setPrefs({ ...prefs, [opt.key]: v })}
               label={opt.title}
             />
           </div>
@@ -101,25 +119,43 @@ export function NotificationsTab({ setMessage }: SettingsTabProps) {
       <div className="border-t border-gray-800 pt-6">
         <h3 className="text-lg font-semibold text-white mb-3">Quiet Hours</h3>
         <p className="text-gray-400 text-sm mb-4">Pause non-critical notifications during specific hours</p>
-        <div className="flex items-center gap-4">
-          <div>
-            <label className="block text-gray-500 text-xs mb-1">From</label>
-            <select className="px-3 py-2 bg-gray-800 border border-gray-700 rounded-lg text-white text-sm">
-              <option>10:00 PM</option>
-              <option>11:00 PM</option>
-              <option>12:00 AM</option>
-            </select>
-          </div>
-          <span className="text-gray-500 mt-4">→</span>
-          <div>
-            <label className="block text-gray-500 text-xs mb-1">To</label>
-            <select className="px-3 py-2 bg-gray-800 border border-gray-700 rounded-lg text-white text-sm">
-              <option>7:00 AM</option>
-              <option>8:00 AM</option>
-              <option>9:00 AM</option>
-            </select>
-          </div>
+        <div className="flex items-center gap-4 mb-3">
+          <Toggle
+            checked={prefs.quiet_hours.enabled}
+            onChange={(v) => setPrefs({ ...prefs, quiet_hours: { ...prefs.quiet_hours, enabled: v } })}
+            label="Enable quiet hours"
+          />
+          <span className="text-gray-400 text-sm">{prefs.quiet_hours.enabled ? 'Enabled' : 'Disabled'}</span>
         </div>
+        {prefs.quiet_hours.enabled && (
+          <div className="flex items-center gap-4">
+            <div>
+              <label className="block text-gray-500 text-xs mb-1">From</label>
+              <select
+                value={prefs.quiet_hours.from}
+                onChange={(e) => setPrefs({ ...prefs, quiet_hours: { ...prefs.quiet_hours, from: e.target.value } })}
+                className="px-3 py-2 bg-gray-800 border border-gray-700 rounded-lg text-white text-sm"
+              >
+                {Array.from({ length: 24 }, (_, i) => `${String(i).padStart(2, '0')}:00`).map(t => (
+                  <option key={t} value={t}>{t}</option>
+                ))}
+              </select>
+            </div>
+            <span className="text-gray-500 mt-4">→</span>
+            <div>
+              <label className="block text-gray-500 text-xs mb-1">To</label>
+              <select
+                value={prefs.quiet_hours.to}
+                onChange={(e) => setPrefs({ ...prefs, quiet_hours: { ...prefs.quiet_hours, to: e.target.value } })}
+                className="px-3 py-2 bg-gray-800 border border-gray-700 rounded-lg text-white text-sm"
+              >
+                {Array.from({ length: 24 }, (_, i) => `${String(i).padStart(2, '0')}:00`).map(t => (
+                  <option key={t} value={t}>{t}</option>
+                ))}
+              </select>
+            </div>
+          </div>
+        )}
       </div>
 
       <div className="pt-4">

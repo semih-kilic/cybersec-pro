@@ -2,10 +2,87 @@
  * Team Management Settings Tab
  * Members, invitations, role management
  */
-import { motion } from 'framer-motion';
+import { useState, useEffect } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import type { SettingsTabProps } from './types';
+import api from '../../../services/api';
 
-export function TeamTab({ user, userPlan }: SettingsTabProps) {
+interface TeamMember {
+  id: string;
+  email: string;
+  first_name: string | null;
+  last_name: string | null;
+  role: string;
+  is_active: boolean;
+  created_at: string;
+  last_login: string | null;
+}
+
+interface TeamInvitation {
+  id: string;
+  email: string;
+  role: string;
+  status: string;
+  created_at: string;
+}
+
+export function TeamTab({ user, userPlan, setMessage }: SettingsTabProps) {
+  const [members, setMembers] = useState<TeamMember[]>([]);
+  const [invitations, setInvitations] = useState<TeamInvitation[]>([]);
+  const [showInvite, setShowInvite] = useState(false);
+  const [inviteEmail, setInviteEmail] = useState('');
+  const [inviteRole, setInviteRole] = useState('user');
+  const [inviting, setInviting] = useState(false);
+
+  useEffect(() => {
+    loadTeam();
+  }, []);
+
+  const loadTeam = async () => {
+    const res = await api.getTeamMembers();
+    if (res.data) {
+      setMembers(res.data.members);
+      setInvitations(res.data.invitations);
+    }
+  };
+
+  const handleInvite = async () => {
+    if (!inviteEmail.trim()) return;
+    setInviting(true);
+    try {
+      const res = await api.inviteTeamMember(inviteEmail.trim(), inviteRole);
+      if (res.error) {
+        setMessage({ type: 'error', text: res.error });
+      } else {
+        setMessage({ type: 'success', text: `Invitation sent to ${inviteEmail}` });
+        setInviteEmail('');
+        setShowInvite(false);
+        loadTeam();
+      }
+    } finally {
+      setInviting(false);
+    }
+  };
+
+  const handleRemove = async (memberId: string) => {
+    const res = await api.removeTeamMember(memberId);
+    if (res.error) {
+      setMessage({ type: 'error', text: res.error });
+    } else {
+      setMessage({ type: 'success', text: res.data?.message || 'Member removed' });
+      loadTeam();
+    }
+  };
+
+  const getRoleBadge = (role: string) => {
+    const colors: Record<string, string> = {
+      superadmin: 'bg-red-500/20 text-red-400',
+      admin: 'bg-purple-500/20 text-purple-400',
+      user: 'bg-blue-500/20 text-blue-400',
+    };
+    return colors[role] || colors.user;
+  };
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 8 }}
@@ -18,32 +95,115 @@ export function TeamTab({ user, userPlan }: SettingsTabProps) {
           <h2 className="text-xl font-bold text-white mb-1">Team Management</h2>
           <p className="text-gray-400 text-sm">Invite team members and manage roles</p>
         </div>
-        <button className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm font-medium transition flex items-center gap-2 btn-micro">
+        <button
+          onClick={() => setShowInvite(!showInvite)}
+          className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm font-medium transition flex items-center gap-2 btn-micro"
+        >
           <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" /></svg>
           Invite Member
         </button>
       </div>
 
+      {/* Invite Form */}
+      <AnimatePresence>
+        {showInvite && (
+          <motion.div
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: 'auto' }}
+            exit={{ opacity: 0, height: 0 }}
+            className="bg-gray-800/80 rounded-xl border border-gray-700 p-5 space-y-4"
+          >
+            <h3 className="text-white font-medium">Invite Team Member</h3>
+            <div className="flex gap-3">
+              <input
+                type="email"
+                value={inviteEmail}
+                onChange={(e) => setInviteEmail(e.target.value)}
+                placeholder="team@example.com"
+                className="flex-1 px-4 py-2 bg-gray-900 border border-gray-700 rounded-lg text-white focus:border-kali-blue transition"
+              />
+              <select
+                value={inviteRole}
+                onChange={(e) => setInviteRole(e.target.value)}
+                className="px-3 py-2 bg-gray-900 border border-gray-700 rounded-lg text-white"
+              >
+                <option value="user">User</option>
+                <option value="admin">Admin</option>
+              </select>
+              <button
+                onClick={handleInvite}
+                disabled={inviting || !inviteEmail.trim()}
+                className="px-5 py-2 bg-kali-blue text-white rounded-lg font-medium hover:bg-kali-blue/80 transition disabled:opacity-50"
+              >
+                {inviting ? 'Sending...' : 'Send Invite'}
+              </button>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
       {/* Members */}
       <div className="bg-gray-800/50 rounded-xl border border-gray-700 overflow-hidden">
         <div className="p-4 border-b border-gray-700">
-          <h3 className="text-white font-medium">Team Members</h3>
+          <h3 className="text-white font-medium">Team Members ({members.length})</h3>
         </div>
         <div className="divide-y divide-gray-700/50">
-          <div className="p-4 flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-full bg-gradient-to-r from-blue-500 to-cyan-500 flex items-center justify-center text-white text-sm font-bold">
-                {user?.first_name?.[0] || user?.email?.[0]?.toUpperCase() || 'U'}
+          {members.map(member => (
+            <div key={member.id} className="p-4 flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-full bg-gradient-to-r from-blue-500 to-cyan-500 flex items-center justify-center text-white text-sm font-bold">
+                  {member.first_name?.[0] || member.email[0].toUpperCase()}
+                </div>
+                <div>
+                  <p className="text-white font-medium">{member.first_name || ''} {member.last_name || ''}</p>
+                  <p className="text-gray-500 text-sm">{member.email}</p>
+                </div>
               </div>
-              <div>
-                <p className="text-white font-medium">{user?.first_name} {user?.last_name || ''}</p>
-                <p className="text-gray-500 text-sm">{user?.email}</p>
+              <div className="flex items-center gap-3">
+                <span className={`px-3 py-1 rounded-full text-xs font-medium ${getRoleBadge(member.role)}`}>
+                  {member.role === 'superadmin' ? 'Owner' : member.role.charAt(0).toUpperCase() + member.role.slice(1)}
+                </span>
+                {member.id !== user?.id && member.role !== 'superadmin' && (
+                  <button
+                    onClick={() => handleRemove(member.id)}
+                    className="text-red-400 hover:text-red-300 text-sm"
+                  >
+                    Remove
+                  </button>
+                )}
               </div>
             </div>
-            <span className="px-3 py-1 bg-purple-500/20 text-purple-400 rounded-full text-xs font-medium">Owner</span>
-          </div>
+          ))}
         </div>
       </div>
+
+      {/* Pending Invitations */}
+      {invitations.length > 0 && (
+        <div className="bg-gray-800/50 rounded-xl border border-gray-700 overflow-hidden">
+          <div className="p-4 border-b border-gray-700">
+            <h3 className="text-white font-medium">Pending Invitations</h3>
+          </div>
+          <div className="divide-y divide-gray-700/50">
+            {invitations.map(inv => (
+              <div key={inv.id} className="p-4 flex items-center justify-between">
+                <div>
+                  <p className="text-white">{inv.email}</p>
+                  <p className="text-gray-500 text-xs">Invited {new Date(inv.created_at).toLocaleDateString()} · Role: {inv.role}</p>
+                </div>
+                <div className="flex items-center gap-3">
+                  <span className="px-3 py-1 bg-yellow-500/20 text-yellow-400 rounded-full text-xs">Pending</span>
+                  <button
+                    onClick={() => handleRemove(inv.id)}
+                    className="text-gray-400 hover:text-red-400 text-sm"
+                  >
+                    Cancel
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
 
       {/* Roles */}
       <div className="bg-gray-800/50 rounded-xl border border-gray-700 p-5">

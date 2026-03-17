@@ -178,6 +178,132 @@ class ApiService {
   }
 
   // ================================
+  // PASSWORD
+  // ================================
+
+  async changePassword(currentPassword: string, newPassword: string) {
+    return this.request<{ message: string }>('/auth/change-password', {
+      method: 'POST',
+      body: JSON.stringify({ current_password: currentPassword, new_password: newPassword }),
+    });
+  }
+
+  // ================================
+  // NOTIFICATION PREFERENCES
+  // ================================
+
+  async getNotificationPreferences() {
+    return this.request<{
+      email_scan_complete: boolean;
+      email_weekly_report: boolean;
+      email_security_alerts: boolean;
+      browser_notifications: boolean;
+      quiet_hours: { enabled: boolean; from: string; to: string };
+    }>('/settings/notifications');
+  }
+
+  async updateNotificationPreferences(prefs: {
+    email_scan_complete: boolean;
+    email_weekly_report: boolean;
+    email_security_alerts: boolean;
+    browser_notifications: boolean;
+    quiet_hours: { enabled: boolean; from: string; to: string };
+  }) {
+    return this.request<typeof prefs & { message: string }>('/settings/notifications', {
+      method: 'PUT',
+      body: JSON.stringify(prefs),
+    });
+  }
+
+  // ================================
+  // API KEYS
+  // ================================
+
+  async getApiKeys() {
+    return this.request<{
+      api_keys: Array<{
+        id: string;
+        name: string;
+        key: string;
+        permissions: string[];
+        last_used: string | null;
+        is_active: boolean;
+        created_at: string;
+      }>;
+    }>('/settings/api-keys');
+  }
+
+  async createApiKey(name: string, permissions: string[] = ['read']) {
+    return this.request<{
+      message: string;
+      api_key: {
+        id: string;
+        name: string;
+        key: string;
+        key_preview: string;
+        permissions: string[];
+        created_at: string;
+      };
+    }>('/settings/api-keys', {
+      method: 'POST',
+      body: JSON.stringify({ name, permissions }),
+    });
+  }
+
+  async deleteApiKey(keyId: string) {
+    return this.request<{ message: string }>(`/settings/api-keys/${keyId}`, {
+      method: 'DELETE',
+    });
+  }
+
+  // ================================
+  // TEAM MANAGEMENT
+  // ================================
+
+  async getTeamMembers() {
+    return this.request<{
+      members: Array<{
+        id: string;
+        email: string;
+        first_name: string | null;
+        last_name: string | null;
+        role: string;
+        is_active: boolean;
+        created_at: string;
+        last_login: string | null;
+      }>;
+      invitations: Array<{
+        id: string;
+        email: string;
+        role: string;
+        status: string;
+        created_at: string;
+      }>;
+      total: number;
+    }>('/settings/team');
+  }
+
+  async inviteTeamMember(email: string, role: string = 'user') {
+    return this.request<{ message: string; invitation_id: string }>('/settings/team/invite', {
+      method: 'POST',
+      body: JSON.stringify({ email, role }),
+    });
+  }
+
+  async removeTeamMember(memberId: string) {
+    return this.request<{ message: string }>(`/settings/team/${memberId}`, {
+      method: 'DELETE',
+    });
+  }
+
+  async changeTeamMemberRole(memberId: string, role: string) {
+    return this.request<{ message: string; role: string }>(`/settings/team/${memberId}/role`, {
+      method: 'PUT',
+      body: JSON.stringify({ role }),
+    });
+  }
+
+  // ================================
   // TOOLS
   // ================================
 

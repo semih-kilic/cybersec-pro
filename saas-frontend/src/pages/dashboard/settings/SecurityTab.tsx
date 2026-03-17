@@ -131,10 +131,15 @@ export function SecurityTab({ loading, setLoading, setMessage }: SettingsTabProp
     }
     setLoading(true);
     try {
-      setMessage({ type: 'success', text: 'Password changed successfully!' });
-      setCurrentPassword('');
-      setNewPassword('');
-      setConfirmPassword('');
+      const res = await api.changePassword(currentPassword, newPassword);
+      if (res.error) {
+        setMessage({ type: 'error', text: res.error });
+      } else {
+        setMessage({ type: 'success', text: 'Password changed successfully!' });
+        setCurrentPassword('');
+        setNewPassword('');
+        setConfirmPassword('');
+      }
     } finally {
       setLoading(false);
     }
