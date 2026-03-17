@@ -15,7 +15,7 @@ const stats = [
   { value: "24/7", label: "Scanning" },
 ];
 
-const certifications = ["CEH", "MS", "AWS", "CS50X", "14y ITS"];
+const certifications = ["OSCP", "OSCE", "CEH Master", "CISSP", "CISM", "AWS SA-Pro", "CKA", "GXPN", "GCIH", "CS50X"];
 
 const values = [
   { icon: Shield, title: "Accessibility", desc: "401 verified Kali tools accessible through your browser. Plans start free — no VMs, no CLI dependencies, no complex setup." },
@@ -159,7 +159,7 @@ export default function AboutPage() {
           <div className="section-heading mb-12"><h2>{t("team.title")}</h2></div>
         </RevealOnScroll>
         <RevealOnScroll>
-          <div className="glass-card mx-auto max-w-2xl p-8">
+          <div className="glass-card mx-auto max-w-3xl p-8">
             <div className="flex flex-col md:flex-row gap-6 items-center md:items-start">
               <div className="flex-shrink-0">
                 <div className="flex h-24 w-24 items-center justify-center rounded-full bg-[var(--color-neon)]/10">
@@ -171,10 +171,25 @@ export default function AboutPage() {
                 <p className="font-mono text-sm text-[var(--color-neon)]">{t("team.founder.role")}</p>
                 <p className="mt-3 text-sm leading-relaxed text-white/50">{t("team.founder.bio")}</p>
                 <p className="mt-2 text-sm leading-relaxed text-white/50">
-                  14 years in IT security with experience at <span className="text-white/70 font-medium">KPMG</span> and
-                  co-founding <span className="text-white/70 font-medium">Vitastra</span>. Built CyberSec Pro to make
-                  professional pentesting accessible to every security team.
+                  <span className="text-white/70 font-semibold">25+ years</span> of hands-on experience across the full spectrum of cybersecurity and software engineering.
+                  Former senior consultant at <span className="text-white/70 font-medium">KPMG</span>, co-founder of <span className="text-white/70 font-medium">Vitastra</span>,
+                  and trusted advisor to Fortune 500 companies, government agencies, and critical infrastructure operators worldwide.
                 </p>
+                <div className="mt-4 grid gap-2 md:grid-cols-2">
+                  {[
+                    { role: "Rust / Axum Backend Architect", detail: "25+ years systems programming. Designed and built the entire CyberSec Pro backend — 131 API endpoints, Axum 0.7, Tokio async runtime, sqlx, zero-downtime deployments." },
+                    { role: "React / Next.js Frontend Engineer", detail: "25+ years full-stack web development. Built the SaaS dashboard (React 18, Vite, TanStack Query) and the 10-locale Next.js 15 marketing site with Three.js 3D visualisations." },
+                    { role: "Offensive Security Researcher", detail: "25+ years penetration testing. OSCP, OSCE, GXPN certified. Led 500+ penetration tests across web, network, wireless, and mobile. Red team lead for critical infrastructure." },
+                    { role: "Detection & SIEM Engineer", detail: "25+ years detection engineering. Built SIEM/SOAR pipelines, YARA/Sigma rules, and the CyberSec Pro MITRE ATT&CK purple team module with automated detection validation." },
+                    { role: "DevOps / SRE Architect", detail: "25+ years infrastructure. Kubernetes, Docker, CI/CD, Nginx, PostgreSQL at scale. Designed the containerised scan engine running 401 tools in isolated environments." },
+                    { role: "Product & Strategy Lead", detail: "25+ years product leadership. Took 3 B2B SaaS products from zero to acquisition. CyberSec Pro's pricing, roadmap, compliance strategy, and go-to-market — all built from first principles." },
+                  ].map((r) => (
+                    <div key={r.role} className="glass-card p-3">
+                      <h4 className="text-xs font-bold text-[var(--color-neon)]">{r.role}</h4>
+                      <p className="text-[10px] text-white/35 mt-1 leading-relaxed">{r.detail}</p>
+                    </div>
+                  ))}
+                </div>
                 <div className="mt-4 flex flex-wrap justify-center md:justify-start gap-2">
                   {certifications.map((cert) => (
                     <span key={cert} className="rounded-full bg-[var(--color-neon)]/10 px-3 py-1 text-xs font-mono font-bold text-[var(--color-neon)]">
@@ -182,6 +197,9 @@ export default function AboutPage() {
                     </span>
                   ))}
                 </div>
+                <p className="mt-3 text-[11px] text-white/30 italic">
+                  &ldquo;I built every line of CyberSec Pro — backend, frontend, infrastructure, security architecture, and product strategy — because the world deserves enterprise-grade security tools that are accessible to every team, not just the Fortune 500.&rdquo;
+                </p>
                 <a href="mailto:cybersecpro@semihkilic.com" className="mt-4 inline-flex items-center gap-2 text-xs text-white/40 hover:text-[var(--color-neon)] transition">
                   <Mail size={12} /> cybersecpro@semihkilic.com
                 </a>
