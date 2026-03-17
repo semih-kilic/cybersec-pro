@@ -58,11 +58,14 @@ pub async fn list_reports(
     .unwrap_or_default();
 
     let available_scans_json: Vec<_> = available_scans.iter().map(|(id, tool_id, target, tool_name, completed_at)| {
+        let tool = tool_name.as_deref().unwrap_or("Unknown");
         json!({
             "id": id,
+            "name": format!("{} scan", tool),
+            "tool": tool,
             "tool_id": tool_id,
             "target": target,
-            "tool_name": tool_name.as_deref().unwrap_or("Unknown"),
+            "tool_name": tool,
             "completed_at": completed_at
         })
     }).collect();
