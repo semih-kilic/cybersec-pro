@@ -1,264 +1,264 @@
 {
   "meta": {
-    "title": "CyberSec Pro — Offensive Security Platform",
-    "description": "Cloud-based offensive security platform with 401 Kali Linux tools. Automated vulnerability scanning, penetration testing, and security assessments."
+    "title": "CyberSec Pro — Платформа наступательной безопасности",
+    "description": "Облачная платформа наступательной безопасности с 401 инструментом Kali Linux. Автоматическое сканирование уязвимостей, тестирование на проникновение и оценка безопасности."
   },
   "nav": {
-    "features": "Features",
-    "arsenal": "Arsenal",
-    "pricing": "Pricing",
-    "docs": "Docs",
+    "features": "Возможности",
+    "arsenal": "Арсенал",
+    "pricing": "Цены",
+    "docs": "Документация",
     "api": "API",
     "login": "$ login",
-    "getAccess": "Get Access",
-    "about": "About",
-    "blog": "Blog",
-    "careers": "Careers",
-    "contact": "Contact",
-    "security": "Security",
-    "tests": "Assessments"
+    "getAccess": "Получить доступ",
+    "about": "О нас",
+    "blog": "Блог",
+    "careers": "Карьера",
+    "contact": "Контакты",
+    "security": "Безопасность",
+    "tests": "Оценки"
   },
   "hero": {
-    "badge": "Cloud-Based Offensive Security",
-    "title": "Offensive Security\nPlatform",
-    "titleHighlight": "401 Tools.",
-    "subtitle": "Run 401 Kali Linux tools across 61 categories from your browser. No setup. No infrastructure. Just results.",
-    "cta": "Start Free Scan",
-    "ctaSecondary": "View Arsenal",
+    "badge": "Облачная наступательная безопасность",
+    "title": "Платформа\nнаступательной безопасности",
+    "titleHighlight": "401 инструмент.",
+    "subtitle": "Запускайте 401 инструмент Kali Linux в 61 категории прямо из браузера. Без настройки. Без инфраструктуры. Только результаты.",
+    "cta": "Начать бесплатное сканирование",
+    "ctaSecondary": "Посмотреть арсенал",
     "stats": {
       "tools": "401",
-      "toolsLabel": "Security Tools",
+      "toolsLabel": "Инструментов безопасности",
       "categories": "61",
-      "categoriesLabel": "Categories",
-      "uptime": "99.9%",
-      "uptimeLabel": "Uptime",
-      "scans": "1M+",
-      "scansLabel": "Scans Run"
+      "categoriesLabel": "Категория",
+      "uptime": "99,9%",
+      "uptimeLabel": "Время работы",
+      "scans": "1М+",
+      "scansLabel": "Выполненных сканирований"
     }
   },
   "features": {
-    "badge": "Platform Features",
-    "title": "Everything You Need for\nOffensive Security",
-    "subtitle": "Enterprise-grade security testing infrastructure, accessible from your browser.",
+    "badge": "Возможности платформы",
+    "title": "Всё, что нужно для\nнаступательной безопасности",
+    "subtitle": "Инфраструктура тестирования безопасности корпоративного уровня, доступная из вашего браузера.",
     "items": {
       "scanning": {
-        "title": "Automated Scanning",
-        "description": "Configure and run complex security scans with a few clicks. Schedule recurring assessments."
+        "title": "Автоматическое сканирование",
+        "description": "Настраивайте и запускайте сложные сканирования безопасности в несколько кликов. Планируйте регулярные оценки."
       },
       "tools": {
-        "title": "401 Kali Tools",
-        "description": "Access the complete Kali Linux arsenal — from Nmap to Metasploit, Burp Suite to SQLMap."
+        "title": "401 инструмент Kali",
+        "description": "Доступ к полному арсеналу Kali Linux — от Nmap до Metasploit, от Burp Suite до SQLMap."
       },
       "reports": {
-        "title": "Professional Reports",
-        "description": "Generate compliance-ready reports in PDF, HTML, JSON, CSV, and Markdown formats."
+        "title": "Профессиональные отчёты",
+        "description": "Создавайте отчёты, соответствующие требованиям, в форматах PDF, HTML, JSON, CSV и Markdown."
       },
       "realtime": {
-        "title": "Real-Time Results",
-        "description": "Watch scan results stream live via WebSocket. Terminal-style output with full interactivity."
+        "title": "Результаты в реальном времени",
+        "description": "Наблюдайте за результатами сканирования в прямом эфире через WebSocket. Терминальный вывод с полной интерактивностью."
       },
       "api": {
         "title": "RESTful API",
-        "description": "Integrate with your CI/CD pipeline. Full API access for automation and custom workflows."
+        "description": "Интеграция с вашим CI/CD пайплайном. Полный доступ к API для автоматизации и пользовательских рабочих процессов."
       },
       "team": {
-        "title": "Team Collaboration",
-        "description": "Multi-tenant workspaces with role-based access. Share findings and coordinate assessments."
+        "title": "Командная работа",
+        "description": "Мультитенантные рабочие пространства с ролевым контролем доступа. Делитесь находками и координируйте оценки."
       }
     }
   },
   "pricing": {
-    "badge": "Pricing Plans",
-    "title": "Choose Your Plan",
-    "subtitle": "Start with a free trial. Upgrade when you're ready.",
-    "monthly": "Monthly",
-    "annual": "Annual",
-    "annualSave": "Save 20%",
-    "popular": "Most Popular",
-    "cta": "Get Started",
-    "ctaEnterprise": "Contact Sales",
+    "badge": "Тарифные планы",
+    "title": "Выберите ваш план",
+    "subtitle": "Начните с бесплатной пробной версии. Обновите, когда будете готовы.",
+    "monthly": "Ежемесячно",
+    "annual": "Ежегодно",
+    "annualSave": "Экономия 20%",
+    "popular": "Самый популярный",
+    "cta": "Начать",
+    "ctaEnterprise": "Связаться с отделом продаж",
     "plans": {
       "trial": {
-        "name": "Trial",
-        "price": "Free",
-        "period": "14 days",
-        "features": ["5 scans/day", "Basic tools", "Email reports", "Community support"]
+        "name": "Пробная версия",
+        "price": "Бесплатно",
+        "period": "14 дней",
+        "features": ["5 сканирований/день", "Базовые инструменты", "Отчёты по email", "Поддержка сообщества"]
       },
       "starter": {
-        "name": "Starter",
+        "name": "Стартовый",
         "price": "€99",
-        "period": "/month",
-        "features": ["50 scans/day", "200+ tools", "All report formats", "Email support", "API access"]
+        "period": "/месяц",
+        "features": ["50 сканирований/день", "200+ инструментов", "Все форматы отчётов", "Email-поддержка", "Доступ к API"]
       },
       "professional": {
-        "name": "Professional",
+        "name": "Профессиональный",
         "price": "€299",
-        "period": "/month",
-        "features": ["Unlimited scans", "401 tools", "Priority support", "Team collaboration", "Custom templates", "Scheduled scans"]
+        "period": "/месяц",
+        "features": ["Безлимитные сканирования", "401 инструмент", "Приоритетная поддержка", "Командная работа", "Пользовательские шаблоны", "Запланированные сканирования"]
       },
       "enterprise": {
-        "name": "Enterprise",
+        "name": "Корпоративный",
         "price": "€799",
-        "period": "/month",
-        "features": ["Everything in Pro", "Dedicated infrastructure", "SLA guarantee", "Custom integrations", "On-premise option", "24/7 phone support"]
+        "period": "/месяц",
+        "features": ["Всё из Pro", "Выделенная инфраструктура", "Гарантия SLA", "Пользовательские интеграции", "Вариант on-premise", "Телефонная поддержка 24/7"]
       }
     }
   },
   "tools": {
-    "badge": "Security Arsenal",
-    "title": "401 Tools. 61 Categories.",
-    "subtitle": "Every tool from the Kali Linux distribution, ready to run in your browser.",
-    "searchPlaceholder": "Search tools...",
-    "allCategories": "All",
-    "runTool": "Run Tool",
-    "viewDetails": "View Details"
+    "badge": "Арсенал безопасности",
+    "title": "401 инструмент. 61 категория.",
+    "subtitle": "Каждый инструмент дистрибутива Kali Linux, готовый к запуску в вашем браузере.",
+    "searchPlaceholder": "Поиск инструментов...",
+    "allCategories": "Все",
+    "runTool": "Запустить инструмент",
+    "viewDetails": "Подробнее"
   },
   "testimonials": {
-    "badge": "Trusted by Security Teams",
-    "title": "What Our Users Say"
+    "badge": "Нам доверяют команды безопасности",
+    "title": "Отзывы наших пользователей"
   },
   "faq": {
-    "badge": "FAQ",
-    "title": "Frequently Asked Questions",
+    "badge": "Вопросы и ответы",
+    "title": "Часто задаваемые вопросы",
     "items": {
-      "q1": { "q": "Is CyberSec Pro legal to use?", "a": "Yes. CyberSec Pro is designed for authorized security testing only. You must have explicit permission to test any target." },
-      "q2": { "q": "Do I need to install anything?", "a": "No. Everything runs in your browser. No local installation, no VMs, no configuration required." },
-      "q3": { "q": "Can I use it for my company?", "a": "Absolutely. Our Professional and Enterprise plans include team collaboration, multi-tenant workspaces, and role-based access controls." },
-      "q4": { "q": "What report formats are supported?", "a": "We support PDF, HTML, JSON, CSV, and Markdown. Enterprise customers can also create custom report templates." },
-      "q5": { "q": "Is my data secure?", "a": "Yes. All data is encrypted at rest and in transit. We follow SOC 2 compliance standards and regularly audit our infrastructure." }
+      "q1": { "q": "Законно ли использование CyberSec Pro?", "a": "Да. CyberSec Pro предназначен исключительно для авторизованного тестирования безопасности. Вы должны иметь явное разрешение на тестирование любой цели." },
+      "q2": { "q": "Нужно ли что-то устанавливать?", "a": "Нет. Всё работает в вашем браузере. Никакой локальной установки, виртуальных машин или настройки не требуется." },
+      "q3": { "q": "Могу ли я использовать это для своей компании?", "a": "Конечно. Наши планы Professional и Enterprise включают командную работу, мультитенантные рабочие пространства и ролевой контроль доступа." },
+      "q4": { "q": "Какие форматы отчётов поддерживаются?", "a": "Мы поддерживаем PDF, HTML, JSON, CSV и Markdown. Корпоративные клиенты также могут создавать пользовательские шаблоны отчётов." },
+      "q5": { "q": "Мои данные в безопасности?", "a": "Да. Все данные зашифрованы в состоянии покоя и при передаче. Мы следуем стандартам соответствия SOC 2 и регулярно проводим аудит нашей инфраструктуры." }
     }
   },
   "cta": {
-    "title": "Ready to Secure Your Infrastructure?",
-    "subtitle": "Start your free scan today. No credit card required.",
-    "button": "Start Free Scan"
+    "title": "Готовы защитить свою инфраструктуру?",
+    "subtitle": "Начните бесплатное сканирование сегодня. Кредитная карта не требуется.",
+    "button": "Начать бесплатное сканирование"
   },
   "footer": {
-    "description": "Cloud-based offensive security platform. 401 Kali Linux tools across 61 categories.",
-    "platform": "Platform",
-    "company": "Company",
-    "legal": "Legal",
-    "privacyPolicy": "Privacy Policy",
-    "termsOfService": "Terms of Service",
-    "support": "Support",
+    "description": "Облачная платформа наступательной безопасности. 401 инструмент Kali Linux в 61 категории.",
+    "platform": "Платформа",
+    "company": "Компания",
+    "legal": "Юридическая информация",
+    "privacyPolicy": "Политика конфиденциальности",
+    "termsOfService": "Условия использования",
+    "support": "Поддержка",
     "copyright": "© 2026 CyberSec Pro"
   },
   "contact": {
-    "badge": "Get in Touch",
-    "title": "Get in Touch",
-    "subtitle": "Have a question about our platform? Want a demo? Need support? We're here to help.",
+    "badge": "Свяжитесь с нами",
+    "title": "Свяжитесь с нами",
+    "subtitle": "Есть вопрос о нашей платформе? Хотите демонстрацию? Нужна поддержка? Мы рады помочь.",
     "sales": {
-      "title": "Sales & Demos",
-      "description": "Interested in CyberSec Pro for your team? Get a personalized walkthrough of the platform.",
-      "response": "Response < 4 hours",
-      "cta": "Schedule a Demo"
+      "title": "Продажи и демо",
+      "description": "Заинтересованы в CyberSec Pro для вашей команды? Получите персональную демонстрацию платформы.",
+      "response": "Ответ < 4 часов",
+      "cta": "Запланировать демо"
     },
     "support": {
-      "title": "Technical Support",
-      "description": "Running into an issue or need help configuring a scan? Our engineering team has you covered.",
-      "enterprise": "Enterprise — 2-hour SLA",
-      "professional": "Professional — 24-hour SLA",
-      "trial": "Trial — 48-hour SLA",
-      "cta": "Access Help Center"
+      "title": "Техническая поддержка",
+      "description": "Столкнулись с проблемой или нужна помощь в настройке сканирования? Наша инженерная команда поможет.",
+      "enterprise": "Корпоративный — SLA 2 часа",
+      "professional": "Профессиональный — SLA 24 часа",
+      "trial": "Пробный — SLA 48 часов",
+      "cta": "Перейти в центр помощи"
     },
     "partnerships": {
-      "title": "Partnerships",
-      "description": "Explore white-labeling and reselling opportunities. Integrate CyberSec Pro into your security offerings.",
-      "response": "Response < 2 business days",
-      "cta": "Explore Partnerships"
+      "title": "Партнёрство",
+      "description": "Изучите возможности white-label и реселлинга. Интегрируйте CyberSec Pro в свои предложения по безопасности.",
+      "response": "Ответ < 2 рабочих дней",
+      "cta": "Изучить партнёрство"
     },
     "ctaSection": {
-      "title": "Don't want to wait? Start your free scan now.",
-      "subtitle": "No credit card required. Get results in 30 minutes.",
-      "button": "Start Free Scan"
+      "title": "Не хотите ждать? Начните бесплатное сканирование прямо сейчас.",
+      "subtitle": "Кредитная карта не требуется. Результаты за 30 минут.",
+      "button": "Начать бесплатное сканирование"
     }
   },
   "about": {
-    "badge": "About Us",
-    "title": "Built by Security Engineers,\nfor Security Engineers",
-    "subtitle": "CyberSec Pro was born from the frustration of managing dozens of security tools across different environments.",
+    "badge": "О нас",
+    "title": "Создано инженерами безопасности\nдля инженеров безопасности",
+    "subtitle": "CyberSec Pro родился из-за неудобства управления десятками инструментов безопасности в разных средах.",
     "mission": {
-      "title": "Our Mission",
-      "description": "To democratize offensive security by making professional-grade tools accessible to every security team, regardless of size or budget."
+      "title": "Наша миссия",
+      "description": "Демократизировать наступательную безопасность, сделав профессиональные инструменты доступными для каждой команды безопасности, независимо от размера или бюджета."
     },
     "story": {
-      "title": "Our Story",
-      "description": "Founded in 2024, CyberSec Pro started as an internal tool for streamlining penetration testing workflows. Today, it serves security teams worldwide."
+      "title": "Наша история",
+      "description": "Основанная в 2024 году, CyberSec Pro начиналась как внутренний инструмент для оптимизации рабочих процессов тестирования на проникновение. Сегодня она обслуживает команды безопасности по всему миру."
     },
     "team": {
-      "title": "The Team",
+      "title": "Команда",
       "founder": {
         "name": "Semih Kılıç",
-        "role": "Founder & CEO",
-        "bio": "Security engineer with 10+ years of experience in offensive security, penetration testing, and security tool development."
+        "role": "Основатель и генеральный директор",
+        "bio": "Инженер безопасности с более чем 10-летним опытом в наступательной безопасности, тестировании на проникновение и разработке инструментов безопасности."
       }
     }
   },
   "blog": {
-    "badge": "Blog & Tutorials",
-    "title": "Security Insights & Guides",
-    "subtitle": "Learn offensive security techniques, tool tutorials, and industry best practices.",
-    "readMore": "Read More",
-    "minRead": "min read"
+    "badge": "Блог и уроки",
+    "title": "Аналитика и руководства по безопасности",
+    "subtitle": "Изучайте техники наступательной безопасности, обучающие материалы по инструментам и лучшие практики отрасли.",
+    "readMore": "Читать далее",
+    "minRead": "мин. чтения"
   },
   "careers": {
-    "badge": "Join Our Team",
-    "title": "Build the Future of\nOffensive Security",
-    "subtitle": "We're looking for passionate security engineers and developers to join our mission.",
-    "openPositions": "Open Positions",
-    "apply": "Apply Now",
+    "badge": "Присоединяйтесь",
+    "title": "Стройте будущее\nнаступательной безопасности",
+    "subtitle": "Мы ищем увлечённых инженеров безопасности и разработчиков для нашей миссии.",
+    "openPositions": "Открытые вакансии",
+    "apply": "Подать заявку",
     "perks": {
-      "title": "Why CyberSec Pro?",
-      "remote": "100% Remote",
-      "equity": "Equity Package",
-      "learning": "Learning Budget",
-      "hardware": "Latest Hardware"
+      "title": "Почему CyberSec Pro?",
+      "remote": "100% удалённая работа",
+      "equity": "Доля в компании",
+      "learning": "Бюджет на обучение",
+      "hardware": "Новейшее оборудование"
     }
   },
   "docs": {
-    "badge": "Documentation",
-    "title": "Get Started with CyberSec Pro",
-    "subtitle": "Everything you need to know about setting up scans, using tools, and generating reports.",
-    "quickStart": "Quick Start",
-    "guides": "Guides",
-    "apiReference": "API Reference"
+    "badge": "Документация",
+    "title": "Начало работы с CyberSec Pro",
+    "subtitle": "Всё, что вам нужно знать о настройке сканирований, использовании инструментов и формировании отчётов.",
+    "quickStart": "Быстрый старт",
+    "guides": "Руководства",
+    "apiReference": "Справочник API"
   },
   "api": {
-    "badge": "API Reference",
+    "badge": "Справочник API",
     "title": "RESTful API",
-    "subtitle": "Integrate CyberSec Pro into your workflows with our comprehensive API.",
-    "baseUrl": "Base URL",
-    "authentication": "Authentication",
-    "endpoints": "Endpoints"
+    "subtitle": "Интегрируйте CyberSec Pro в свои рабочие процессы с помощью нашего полного API.",
+    "baseUrl": "Базовый URL",
+    "authentication": "Аутентификация",
+    "endpoints": "Конечные точки"
   },
   "privacy": {
-    "title": "Privacy Policy",
-    "lastUpdated": "Last updated: March 2026"
+    "title": "Политика конфиденциальности",
+    "lastUpdated": "Последнее обновление: март 2026"
   },
   "terms": {
-    "title": "Terms of Service",
-    "lastUpdated": "Last updated: March 2026"
+    "title": "Условия использования",
+    "lastUpdated": "Последнее обновление: март 2026"
   },
   "security": {
-    "badge": "Security",
-    "title": "Security First",
-    "subtitle": "We take the security of our platform and your data seriously."
+    "badge": "Безопасность",
+    "title": "Безопасность прежде всего",
+    "subtitle": "Мы серьёзно относимся к безопасности нашей платформы и ваших данных."
   },
   "tests": {
-    "badge": "Security Assessment",
-    "title": "Comprehensive Security Testing",
-    "subtitle": "Run professional security assessments powered by industry-standard tools."
+    "badge": "Оценка безопасности",
+    "title": "Комплексное тестирование безопасности",
+    "subtitle": "Проводите профессиональные оценки безопасности с помощью стандартных инструментов отрасли."
   },
   "success": {
-    "title": "Payment Successful!",
-    "subtitle": "Welcome to CyberSec Pro. Your account has been activated.",
-    "dashboard": "Go to Dashboard",
-    "docs": "Read Documentation"
+    "title": "Оплата успешна!",
+    "subtitle": "Добро пожаловать в CyberSec Pro. Ваш аккаунт активирован.",
+    "dashboard": "Перейти в панель управления",
+    "docs": "Читать документацию"
   },
   "common": {
     "email": "cybersecpro@semihkilic.com",
-    "learnMore": "Learn More",
-    "getStarted": "Get Started",
-    "backToHome": "Back to Home"
+    "learnMore": "Узнать больше",
+    "getStarted": "Начать",
+    "backToHome": "Вернуться на главную"
   }
 }

@@ -1,264 +1,264 @@
 {
   "meta": {
-    "title": "CyberSec Pro — Offensive Security Platform",
-    "description": "Cloud-based offensive security platform with 401 Kali Linux tools. Automated vulnerability scanning, penetration testing, and security assessments."
+    "title": "CyberSec Pro — 공격적 보안 플랫폼",
+    "description": "401개의 Kali Linux 도구를 갖춘 클라우드 기반 공격적 보안 플랫폼. 자동화된 취약점 스캔, 침투 테스트 및 보안 평가."
   },
   "nav": {
-    "features": "Features",
-    "arsenal": "Arsenal",
-    "pricing": "Pricing",
-    "docs": "Docs",
+    "features": "기능",
+    "arsenal": "도구 목록",
+    "pricing": "요금",
+    "docs": "문서",
     "api": "API",
     "login": "$ login",
-    "getAccess": "Get Access",
-    "about": "About",
-    "blog": "Blog",
-    "careers": "Careers",
-    "contact": "Contact",
-    "security": "Security",
-    "tests": "Assessments"
+    "getAccess": "액세스 받기",
+    "about": "소개",
+    "blog": "블로그",
+    "careers": "채용",
+    "contact": "문의",
+    "security": "보안",
+    "tests": "평가"
   },
   "hero": {
-    "badge": "Cloud-Based Offensive Security",
-    "title": "Offensive Security\nPlatform",
-    "titleHighlight": "401 Tools.",
-    "subtitle": "Run 401 Kali Linux tools across 61 categories from your browser. No setup. No infrastructure. Just results.",
-    "cta": "Start Free Scan",
-    "ctaSecondary": "View Arsenal",
+    "badge": "클라우드 기반 공격적 보안",
+    "title": "공격적 보안\n플랫폼",
+    "titleHighlight": "401개 도구.",
+    "subtitle": "브라우저에서 61개 카테고리의 401개 Kali Linux 도구를 실행하세요. 설정 불필요. 인프라 불필요. 결과만 있습니다.",
+    "cta": "무료 스캔 시작",
+    "ctaSecondary": "도구 목록 보기",
     "stats": {
       "tools": "401",
-      "toolsLabel": "Security Tools",
+      "toolsLabel": "보안 도구",
       "categories": "61",
-      "categoriesLabel": "Categories",
+      "categoriesLabel": "카테고리",
       "uptime": "99.9%",
-      "uptimeLabel": "Uptime",
-      "scans": "1M+",
-      "scansLabel": "Scans Run"
+      "uptimeLabel": "가동률",
+      "scans": "100만+",
+      "scansLabel": "실행된 스캔"
     }
   },
   "features": {
-    "badge": "Platform Features",
-    "title": "Everything You Need for\nOffensive Security",
-    "subtitle": "Enterprise-grade security testing infrastructure, accessible from your browser.",
+    "badge": "플랫폼 기능",
+    "title": "공격적 보안에\n필요한 모든 것",
+    "subtitle": "브라우저에서 접근 가능한 엔터프라이즈급 보안 테스트 인프라.",
     "items": {
       "scanning": {
-        "title": "Automated Scanning",
-        "description": "Configure and run complex security scans with a few clicks. Schedule recurring assessments."
+        "title": "자동 스캔",
+        "description": "몇 번의 클릭으로 복잡한 보안 스캔을 구성하고 실행하세요. 정기적인 평가를 예약하세요."
       },
       "tools": {
-        "title": "401 Kali Tools",
-        "description": "Access the complete Kali Linux arsenal — from Nmap to Metasploit, Burp Suite to SQLMap."
+        "title": "401개 Kali 도구",
+        "description": "Kali Linux의 전체 도구에 접근 — Nmap에서 Metasploit, Burp Suite에서 SQLMap까지."
       },
       "reports": {
-        "title": "Professional Reports",
-        "description": "Generate compliance-ready reports in PDF, HTML, JSON, CSV, and Markdown formats."
+        "title": "전문 보고서",
+        "description": "PDF, HTML, JSON, CSV, Markdown 형식의 컴플라이언스 준수 보고서를 생성하세요."
       },
       "realtime": {
-        "title": "Real-Time Results",
-        "description": "Watch scan results stream live via WebSocket. Terminal-style output with full interactivity."
+        "title": "실시간 결과",
+        "description": "WebSocket을 통해 스캔 결과를 실시간으로 확인하세요. 완전한 대화형 기능을 갖춘 터미널 스타일 출력."
       },
       "api": {
         "title": "RESTful API",
-        "description": "Integrate with your CI/CD pipeline. Full API access for automation and custom workflows."
+        "description": "CI/CD 파이프라인과 통합하세요. 자동화 및 커스텀 워크플로를 위한 완전한 API 액세스."
       },
       "team": {
-        "title": "Team Collaboration",
-        "description": "Multi-tenant workspaces with role-based access. Share findings and coordinate assessments."
+        "title": "팀 협업",
+        "description": "역할 기반 접근 제어를 갖춘 멀티테넌트 워크스페이스. 발견 사항을 공유하고 평가를 조율하세요."
       }
     }
   },
   "pricing": {
-    "badge": "Pricing Plans",
-    "title": "Choose Your Plan",
-    "subtitle": "Start with a free trial. Upgrade when you're ready.",
-    "monthly": "Monthly",
-    "annual": "Annual",
-    "annualSave": "Save 20%",
-    "popular": "Most Popular",
-    "cta": "Get Started",
-    "ctaEnterprise": "Contact Sales",
+    "badge": "요금제",
+    "title": "플랜을 선택하세요",
+    "subtitle": "무료 체험으로 시작하세요. 준비되면 업그레이드하세요.",
+    "monthly": "월간",
+    "annual": "연간",
+    "annualSave": "20% 할인",
+    "popular": "가장 인기",
+    "cta": "시작하기",
+    "ctaEnterprise": "영업팀 연락",
     "plans": {
       "trial": {
-        "name": "Trial",
-        "price": "Free",
-        "period": "14 days",
-        "features": ["5 scans/day", "Basic tools", "Email reports", "Community support"]
+        "name": "체험판",
+        "price": "무료",
+        "period": "14일",
+        "features": ["하루 5회 스캔", "기본 도구", "이메일 보고서", "커뮤니티 지원"]
       },
       "starter": {
-        "name": "Starter",
+        "name": "스타터",
         "price": "€99",
-        "period": "/month",
-        "features": ["50 scans/day", "200+ tools", "All report formats", "Email support", "API access"]
+        "period": "/월",
+        "features": ["하루 50회 스캔", "200+ 도구", "모든 보고서 형식", "이메일 지원", "API 액세스"]
       },
       "professional": {
-        "name": "Professional",
+        "name": "프로페셔널",
         "price": "€299",
-        "period": "/month",
-        "features": ["Unlimited scans", "401 tools", "Priority support", "Team collaboration", "Custom templates", "Scheduled scans"]
+        "period": "/월",
+        "features": ["무제한 스캔", "401개 도구", "우선 지원", "팀 협업", "맞춤 템플릿", "예약 스캔"]
       },
       "enterprise": {
-        "name": "Enterprise",
+        "name": "엔터프라이즈",
         "price": "€799",
-        "period": "/month",
-        "features": ["Everything in Pro", "Dedicated infrastructure", "SLA guarantee", "Custom integrations", "On-premise option", "24/7 phone support"]
+        "period": "/월",
+        "features": ["Pro의 모든 기능", "전용 인프라", "SLA 보장", "맞춤 통합", "온프레미스 옵션", "24/7 전화 지원"]
       }
     }
   },
   "tools": {
-    "badge": "Security Arsenal",
-    "title": "401 Tools. 61 Categories.",
-    "subtitle": "Every tool from the Kali Linux distribution, ready to run in your browser.",
-    "searchPlaceholder": "Search tools...",
-    "allCategories": "All",
-    "runTool": "Run Tool",
-    "viewDetails": "View Details"
+    "badge": "보안 도구 목록",
+    "title": "401개 도구. 61개 카테고리.",
+    "subtitle": "Kali Linux 배포판의 모든 도구, 브라우저에서 바로 실행 가능.",
+    "searchPlaceholder": "도구 검색...",
+    "allCategories": "전체",
+    "runTool": "도구 실행",
+    "viewDetails": "상세 보기"
   },
   "testimonials": {
-    "badge": "Trusted by Security Teams",
-    "title": "What Our Users Say"
+    "badge": "보안 팀이 신뢰하는",
+    "title": "사용자 후기"
   },
   "faq": {
-    "badge": "FAQ",
-    "title": "Frequently Asked Questions",
+    "badge": "자주 묻는 질문",
+    "title": "자주 묻는 질문",
     "items": {
-      "q1": { "q": "Is CyberSec Pro legal to use?", "a": "Yes. CyberSec Pro is designed for authorized security testing only. You must have explicit permission to test any target." },
-      "q2": { "q": "Do I need to install anything?", "a": "No. Everything runs in your browser. No local installation, no VMs, no configuration required." },
-      "q3": { "q": "Can I use it for my company?", "a": "Absolutely. Our Professional and Enterprise plans include team collaboration, multi-tenant workspaces, and role-based access controls." },
-      "q4": { "q": "What report formats are supported?", "a": "We support PDF, HTML, JSON, CSV, and Markdown. Enterprise customers can also create custom report templates." },
-      "q5": { "q": "Is my data secure?", "a": "Yes. All data is encrypted at rest and in transit. We follow SOC 2 compliance standards and regularly audit our infrastructure." }
+      "q1": { "q": "CyberSec Pro 사용은 합법인가요?", "a": "네. CyberSec Pro는 승인된 보안 테스트만을 위해 설계되었습니다. 대상을 테스트하려면 명시적인 허가가 필요합니다." },
+      "q2": { "q": "설치해야 할 것이 있나요?", "a": "아니요. 모든 것이 브라우저에서 실행됩니다. 로컬 설치, VM, 구성이 필요 없습니다." },
+      "q3": { "q": "회사에서 사용할 수 있나요?", "a": "물론입니다. Professional 및 Enterprise 플랜에는 팀 협업, 멀티테넌트 워크스페이스, 역할 기반 접근 제어가 포함됩니다." },
+      "q4": { "q": "어떤 보고서 형식을 지원하나요?", "a": "PDF, HTML, JSON, CSV, Markdown을 지원합니다. Enterprise 고객은 맞춤 보고서 템플릿도 만들 수 있습니다." },
+      "q5": { "q": "데이터는 안전한가요?", "a": "네. 모든 데이터는 저장 시와 전송 시 암호화됩니다. SOC 2 컴플라이언스 표준을 따르며 인프라를 정기적으로 감사합니다." }
     }
   },
   "cta": {
-    "title": "Ready to Secure Your Infrastructure?",
-    "subtitle": "Start your free scan today. No credit card required.",
-    "button": "Start Free Scan"
+    "title": "인프라를 보호할 준비가 되셨나요?",
+    "subtitle": "오늘 무료 스캔을 시작하세요. 신용카드가 필요 없습니다.",
+    "button": "무료 스캔 시작"
   },
   "footer": {
-    "description": "Cloud-based offensive security platform. 401 Kali Linux tools across 61 categories.",
-    "platform": "Platform",
-    "company": "Company",
-    "legal": "Legal",
-    "privacyPolicy": "Privacy Policy",
-    "termsOfService": "Terms of Service",
-    "support": "Support",
+    "description": "클라우드 기반 공격적 보안 플랫폼. 61개 카테고리의 401개 Kali Linux 도구.",
+    "platform": "플랫폼",
+    "company": "회사",
+    "legal": "법적 정보",
+    "privacyPolicy": "개인정보 보호정책",
+    "termsOfService": "서비스 이용약관",
+    "support": "지원",
     "copyright": "© 2026 CyberSec Pro"
   },
   "contact": {
-    "badge": "Get in Touch",
-    "title": "Get in Touch",
-    "subtitle": "Have a question about our platform? Want a demo? Need support? We're here to help.",
+    "badge": "문의하기",
+    "title": "문의하기",
+    "subtitle": "플랫폼에 대해 궁금한 점이 있으신가요? 데모를 원하시나요? 지원이 필요하신가요? 도와드리겠습니다.",
     "sales": {
-      "title": "Sales & Demos",
-      "description": "Interested in CyberSec Pro for your team? Get a personalized walkthrough of the platform.",
-      "response": "Response < 4 hours",
-      "cta": "Schedule a Demo"
+      "title": "영업 & 데모",
+      "description": "팀을 위한 CyberSec Pro에 관심이 있으신가요? 플랫폼의 맞춤형 안내를 받으세요.",
+      "response": "4시간 이내 응답",
+      "cta": "데모 예약"
     },
     "support": {
-      "title": "Technical Support",
-      "description": "Running into an issue or need help configuring a scan? Our engineering team has you covered.",
-      "enterprise": "Enterprise — 2-hour SLA",
-      "professional": "Professional — 24-hour SLA",
-      "trial": "Trial — 48-hour SLA",
-      "cta": "Access Help Center"
+      "title": "기술 지원",
+      "description": "문제가 발생했거나 스캔 구성에 도움이 필요하신가요? 엔지니어링 팀이 도와드립니다.",
+      "enterprise": "Enterprise — 2시간 SLA",
+      "professional": "Professional — 24시간 SLA",
+      "trial": "Trial — 48시간 SLA",
+      "cta": "도움말 센터 접속"
     },
     "partnerships": {
-      "title": "Partnerships",
-      "description": "Explore white-labeling and reselling opportunities. Integrate CyberSec Pro into your security offerings.",
-      "response": "Response < 2 business days",
-      "cta": "Explore Partnerships"
+      "title": "파트너십",
+      "description": "화이트라벨 및 리셀링 기회를 탐색하세요. CyberSec Pro를 보안 서비스에 통합하세요.",
+      "response": "2영업일 이내 응답",
+      "cta": "파트너십 탐색"
     },
     "ctaSection": {
-      "title": "Don't want to wait? Start your free scan now.",
-      "subtitle": "No credit card required. Get results in 30 minutes.",
-      "button": "Start Free Scan"
+      "title": "기다리고 싶지 않으시다면? 지금 무료 스캔을 시작하세요.",
+      "subtitle": "신용카드가 필요 없습니다. 30분 내 결과 확인.",
+      "button": "무료 스캔 시작"
     }
   },
   "about": {
-    "badge": "About Us",
-    "title": "Built by Security Engineers,\nfor Security Engineers",
-    "subtitle": "CyberSec Pro was born from the frustration of managing dozens of security tools across different environments.",
+    "badge": "소개",
+    "title": "보안 엔지니어가 만든\n보안 엔지니어를 위한",
+    "subtitle": "CyberSec Pro는 다양한 환경에서 수십 가지 보안 도구를 관리하는 불편함에서 탄생했습니다.",
     "mission": {
-      "title": "Our Mission",
-      "description": "To democratize offensive security by making professional-grade tools accessible to every security team, regardless of size or budget."
+      "title": "우리의 미션",
+      "description": "규모나 예산에 관계없이 모든 보안 팀이 전문가급 도구를 사용할 수 있도록 하여 공격적 보안을 민주화합니다."
     },
     "story": {
-      "title": "Our Story",
-      "description": "Founded in 2024, CyberSec Pro started as an internal tool for streamlining penetration testing workflows. Today, it serves security teams worldwide."
+      "title": "우리의 이야기",
+      "description": "2024년 설립된 CyberSec Pro는 침투 테스트 워크플로를 효율화하기 위한 내부 도구로 시작했습니다. 현재 전 세계 보안 팀에 서비스를 제공하고 있습니다."
     },
     "team": {
-      "title": "The Team",
+      "title": "팀",
       "founder": {
         "name": "Semih Kılıç",
-        "role": "Founder & CEO",
-        "bio": "Security engineer with 10+ years of experience in offensive security, penetration testing, and security tool development."
+        "role": "설립자 & CEO",
+        "bio": "공격적 보안, 침투 테스트, 보안 도구 개발 분야에서 10년 이상의 경험을 가진 보안 엔지니어."
       }
     }
   },
   "blog": {
-    "badge": "Blog & Tutorials",
-    "title": "Security Insights & Guides",
-    "subtitle": "Learn offensive security techniques, tool tutorials, and industry best practices.",
-    "readMore": "Read More",
-    "minRead": "min read"
+    "badge": "블로그 & 튜토리얼",
+    "title": "보안 인사이트 & 가이드",
+    "subtitle": "공격적 보안 기법, 도구 튜토리얼, 업계 모범 사례를 배워보세요.",
+    "readMore": "더 보기",
+    "minRead": "분 읽기"
   },
   "careers": {
-    "badge": "Join Our Team",
-    "title": "Build the Future of\nOffensive Security",
-    "subtitle": "We're looking for passionate security engineers and developers to join our mission.",
-    "openPositions": "Open Positions",
-    "apply": "Apply Now",
+    "badge": "함께하세요",
+    "title": "공격적 보안의\n미래를 만들어가세요",
+    "subtitle": "우리의 미션에 합류할 열정적인 보안 엔지니어와 개발자를 찾고 있습니다.",
+    "openPositions": "채용 포지션",
+    "apply": "지원하기",
     "perks": {
-      "title": "Why CyberSec Pro?",
-      "remote": "100% Remote",
-      "equity": "Equity Package",
-      "learning": "Learning Budget",
-      "hardware": "Latest Hardware"
+      "title": "왜 CyberSec Pro인가요?",
+      "remote": "100% 원격근무",
+      "equity": "스톡옵션",
+      "learning": "교육 예산",
+      "hardware": "최신 장비"
     }
   },
   "docs": {
-    "badge": "Documentation",
-    "title": "Get Started with CyberSec Pro",
-    "subtitle": "Everything you need to know about setting up scans, using tools, and generating reports.",
-    "quickStart": "Quick Start",
-    "guides": "Guides",
-    "apiReference": "API Reference"
+    "badge": "문서",
+    "title": "CyberSec Pro 시작하기",
+    "subtitle": "스캔 설정, 도구 사용, 보고서 생성에 대해 알아야 할 모든 것.",
+    "quickStart": "빠른 시작",
+    "guides": "가이드",
+    "apiReference": "API 레퍼런스"
   },
   "api": {
-    "badge": "API Reference",
+    "badge": "API 레퍼런스",
     "title": "RESTful API",
-    "subtitle": "Integrate CyberSec Pro into your workflows with our comprehensive API.",
-    "baseUrl": "Base URL",
-    "authentication": "Authentication",
-    "endpoints": "Endpoints"
+    "subtitle": "포괄적인 API로 CyberSec Pro를 워크플로에 통합하세요.",
+    "baseUrl": "기본 URL",
+    "authentication": "인증",
+    "endpoints": "엔드포인트"
   },
   "privacy": {
-    "title": "Privacy Policy",
-    "lastUpdated": "Last updated: March 2026"
+    "title": "개인정보 보호정책",
+    "lastUpdated": "최종 업데이트: 2026년 3월"
   },
   "terms": {
-    "title": "Terms of Service",
-    "lastUpdated": "Last updated: March 2026"
+    "title": "서비스 이용약관",
+    "lastUpdated": "최종 업데이트: 2026년 3월"
   },
   "security": {
-    "badge": "Security",
-    "title": "Security First",
-    "subtitle": "We take the security of our platform and your data seriously."
+    "badge": "보안",
+    "title": "보안 최우선",
+    "subtitle": "플랫폼과 고객 데이터의 보안을 최우선으로 생각합니다."
   },
   "tests": {
-    "badge": "Security Assessment",
-    "title": "Comprehensive Security Testing",
-    "subtitle": "Run professional security assessments powered by industry-standard tools."
+    "badge": "보안 평가",
+    "title": "종합적인 보안 테스트",
+    "subtitle": "업계 표준 도구를 사용한 전문적인 보안 평가를 수행하세요."
   },
   "success": {
-    "title": "Payment Successful!",
-    "subtitle": "Welcome to CyberSec Pro. Your account has been activated.",
-    "dashboard": "Go to Dashboard",
-    "docs": "Read Documentation"
+    "title": "결제 완료!",
+    "subtitle": "CyberSec Pro에 오신 것을 환영합니다. 계정이 활성화되었습니다.",
+    "dashboard": "대시보드로 이동",
+    "docs": "문서 읽기"
   },
   "common": {
     "email": "cybersecpro@semihkilic.com",
-    "learnMore": "Learn More",
-    "getStarted": "Get Started",
-    "backToHome": "Back to Home"
+    "learnMore": "자세히 보기",
+    "getStarted": "시작하기",
+    "backToHome": "홈으로 돌아가기"
   }
 }

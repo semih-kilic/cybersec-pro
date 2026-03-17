@@ -1,264 +1,264 @@
 {
   "meta": {
-    "title": "CyberSec Pro — Offensive Security Platform",
-    "description": "Cloud-based offensive security platform with 401 Kali Linux tools. Automated vulnerability scanning, penetration testing, and security assessments."
+    "title": "CyberSec Pro — オフェンシブセキュリティプラットフォーム",
+    "description": "401のKali Linuxツールを備えたクラウドベースのオフェンシブセキュリティプラットフォーム。自動脆弱性スキャン、ペネトレーションテスト、セキュリティ評価。"
   },
   "nav": {
-    "features": "Features",
-    "arsenal": "Arsenal",
-    "pricing": "Pricing",
-    "docs": "Docs",
+    "features": "機能",
+    "arsenal": "ツール一覧",
+    "pricing": "料金",
+    "docs": "ドキュメント",
     "api": "API",
     "login": "$ login",
-    "getAccess": "Get Access",
-    "about": "About",
-    "blog": "Blog",
-    "careers": "Careers",
-    "contact": "Contact",
-    "security": "Security",
-    "tests": "Assessments"
+    "getAccess": "アクセスを取得",
+    "about": "会社概要",
+    "blog": "ブログ",
+    "careers": "採用情報",
+    "contact": "お問い合わせ",
+    "security": "セキュリティ",
+    "tests": "アセスメント"
   },
   "hero": {
-    "badge": "Cloud-Based Offensive Security",
-    "title": "Offensive Security\nPlatform",
-    "titleHighlight": "401 Tools.",
-    "subtitle": "Run 401 Kali Linux tools across 61 categories from your browser. No setup. No infrastructure. Just results.",
-    "cta": "Start Free Scan",
-    "ctaSecondary": "View Arsenal",
+    "badge": "クラウドベースのオフェンシブセキュリティ",
+    "title": "オフェンシブセキュリティ\nプラットフォーム",
+    "titleHighlight": "401ツール。",
+    "subtitle": "ブラウザから61カテゴリの401のKali Linuxツールを実行。セットアップ不要。インフラ不要。結果だけ。",
+    "cta": "無料スキャンを開始",
+    "ctaSecondary": "ツール一覧を見る",
     "stats": {
       "tools": "401",
-      "toolsLabel": "Security Tools",
+      "toolsLabel": "セキュリティツール",
       "categories": "61",
-      "categoriesLabel": "Categories",
+      "categoriesLabel": "カテゴリ",
       "uptime": "99.9%",
-      "uptimeLabel": "Uptime",
-      "scans": "1M+",
-      "scansLabel": "Scans Run"
+      "uptimeLabel": "稼働率",
+      "scans": "100万+",
+      "scansLabel": "スキャン実行数"
     }
   },
   "features": {
-    "badge": "Platform Features",
-    "title": "Everything You Need for\nOffensive Security",
-    "subtitle": "Enterprise-grade security testing infrastructure, accessible from your browser.",
+    "badge": "プラットフォーム機能",
+    "title": "オフェンシブセキュリティに\n必要なすべて",
+    "subtitle": "ブラウザからアクセスできるエンタープライズグレードのセキュリティテストインフラ。",
     "items": {
       "scanning": {
-        "title": "Automated Scanning",
-        "description": "Configure and run complex security scans with a few clicks. Schedule recurring assessments."
+        "title": "自動スキャン",
+        "description": "数クリックで複雑なセキュリティスキャンを設定・実行。定期的なアセスメントをスケジュール。"
       },
       "tools": {
-        "title": "401 Kali Tools",
-        "description": "Access the complete Kali Linux arsenal — from Nmap to Metasploit, Burp Suite to SQLMap."
+        "title": "401のKaliツール",
+        "description": "Kali Linuxの完全なツール群にアクセス — NmapからMetasploit、Burp SuiteからSQLMapまで。"
       },
       "reports": {
-        "title": "Professional Reports",
-        "description": "Generate compliance-ready reports in PDF, HTML, JSON, CSV, and Markdown formats."
+        "title": "プロフェッショナルレポート",
+        "description": "PDF、HTML、JSON、CSV、Markdown形式でコンプライアンス準拠レポートを生成。"
       },
       "realtime": {
-        "title": "Real-Time Results",
-        "description": "Watch scan results stream live via WebSocket. Terminal-style output with full interactivity."
+        "title": "リアルタイム結果",
+        "description": "WebSocketでスキャン結果をライブ表示。完全なインタラクティブ機能を備えたターミナル形式の出力。"
       },
       "api": {
         "title": "RESTful API",
-        "description": "Integrate with your CI/CD pipeline. Full API access for automation and custom workflows."
+        "description": "CI/CDパイプラインとの統合。自動化やカスタムワークフローのための完全なAPIアクセス。"
       },
       "team": {
-        "title": "Team Collaboration",
-        "description": "Multi-tenant workspaces with role-based access. Share findings and coordinate assessments."
+        "title": "チームコラボレーション",
+        "description": "ロールベースのアクセス制御を備えたマルチテナントワークスペース。結果を共有し、アセスメントを調整。"
       }
     }
   },
   "pricing": {
-    "badge": "Pricing Plans",
-    "title": "Choose Your Plan",
-    "subtitle": "Start with a free trial. Upgrade when you're ready.",
-    "monthly": "Monthly",
-    "annual": "Annual",
-    "annualSave": "Save 20%",
-    "popular": "Most Popular",
-    "cta": "Get Started",
-    "ctaEnterprise": "Contact Sales",
+    "badge": "料金プラン",
+    "title": "プランを選択",
+    "subtitle": "無料トライアルから始めましょう。準備ができたらアップグレード。",
+    "monthly": "月額",
+    "annual": "年額",
+    "annualSave": "20%お得",
+    "popular": "一番人気",
+    "cta": "始める",
+    "ctaEnterprise": "営業に問い合わせ",
     "plans": {
       "trial": {
-        "name": "Trial",
-        "price": "Free",
-        "period": "14 days",
-        "features": ["5 scans/day", "Basic tools", "Email reports", "Community support"]
+        "name": "トライアル",
+        "price": "無料",
+        "period": "14日間",
+        "features": ["1日5スキャン", "基本ツール", "メールレポート", "コミュニティサポート"]
       },
       "starter": {
-        "name": "Starter",
+        "name": "スターター",
         "price": "€99",
-        "period": "/month",
-        "features": ["50 scans/day", "200+ tools", "All report formats", "Email support", "API access"]
+        "period": "/月",
+        "features": ["1日50スキャン", "200+ツール", "全レポート形式", "メールサポート", "APIアクセス"]
       },
       "professional": {
-        "name": "Professional",
+        "name": "プロフェッショナル",
         "price": "€299",
-        "period": "/month",
-        "features": ["Unlimited scans", "401 tools", "Priority support", "Team collaboration", "Custom templates", "Scheduled scans"]
+        "period": "/月",
+        "features": ["無制限スキャン", "401ツール", "優先サポート", "チームコラボレーション", "カスタムテンプレート", "スケジュールスキャン"]
       },
       "enterprise": {
-        "name": "Enterprise",
+        "name": "エンタープライズ",
         "price": "€799",
-        "period": "/month",
-        "features": ["Everything in Pro", "Dedicated infrastructure", "SLA guarantee", "Custom integrations", "On-premise option", "24/7 phone support"]
+        "period": "/月",
+        "features": ["Proのすべて", "専用インフラ", "SLA保証", "カスタム統合", "オンプレミスオプション", "24時間電話サポート"]
       }
     }
   },
   "tools": {
-    "badge": "Security Arsenal",
-    "title": "401 Tools. 61 Categories.",
-    "subtitle": "Every tool from the Kali Linux distribution, ready to run in your browser.",
-    "searchPlaceholder": "Search tools...",
-    "allCategories": "All",
-    "runTool": "Run Tool",
-    "viewDetails": "View Details"
+    "badge": "セキュリティツール群",
+    "title": "401ツール。61カテゴリ。",
+    "subtitle": "Kali Linuxディストリビューションのすべてのツール。ブラウザで即実行可能。",
+    "searchPlaceholder": "ツールを検索...",
+    "allCategories": "すべて",
+    "runTool": "ツールを実行",
+    "viewDetails": "詳細を見る"
   },
   "testimonials": {
-    "badge": "Trusted by Security Teams",
-    "title": "What Our Users Say"
+    "badge": "セキュリティチームの信頼",
+    "title": "ユーザーの声"
   },
   "faq": {
-    "badge": "FAQ",
-    "title": "Frequently Asked Questions",
+    "badge": "よくある質問",
+    "title": "よくある質問",
     "items": {
-      "q1": { "q": "Is CyberSec Pro legal to use?", "a": "Yes. CyberSec Pro is designed for authorized security testing only. You must have explicit permission to test any target." },
-      "q2": { "q": "Do I need to install anything?", "a": "No. Everything runs in your browser. No local installation, no VMs, no configuration required." },
-      "q3": { "q": "Can I use it for my company?", "a": "Absolutely. Our Professional and Enterprise plans include team collaboration, multi-tenant workspaces, and role-based access controls." },
-      "q4": { "q": "What report formats are supported?", "a": "We support PDF, HTML, JSON, CSV, and Markdown. Enterprise customers can also create custom report templates." },
-      "q5": { "q": "Is my data secure?", "a": "Yes. All data is encrypted at rest and in transit. We follow SOC 2 compliance standards and regularly audit our infrastructure." }
+      "q1": { "q": "CyberSec Proの使用は合法ですか？", "a": "はい。CyberSec Proは認可されたセキュリティテスト専用に設計されています。ターゲットをテストするには明示的な許可が必要です。" },
+      "q2": { "q": "何かインストールする必要はありますか？", "a": "いいえ。すべてブラウザで動作します。ローカルインストール不要、VM不要、設定不要です。" },
+      "q3": { "q": "会社で使用できますか？", "a": "もちろんです。Professional・Enterpriseプランにはチームコラボレーション、マルチテナントワークスペース、ロールベースのアクセス制御が含まれます。" },
+      "q4": { "q": "対応しているレポート形式は？", "a": "PDF、HTML、JSON、CSV、Markdownに対応しています。Enterpriseのお客様はカスタムレポートテンプレートも作成できます。" },
+      "q5": { "q": "データは安全ですか？", "a": "はい。すべてのデータは保存時と転送時に暗号化されます。SOC 2コンプライアンス基準に準拠し、インフラを定期的に監査しています。" }
     }
   },
   "cta": {
-    "title": "Ready to Secure Your Infrastructure?",
-    "subtitle": "Start your free scan today. No credit card required.",
-    "button": "Start Free Scan"
+    "title": "インフラを守る準備はできましたか？",
+    "subtitle": "今すぐ無料スキャンを開始。クレジットカード不要。",
+    "button": "無料スキャンを開始"
   },
   "footer": {
-    "description": "Cloud-based offensive security platform. 401 Kali Linux tools across 61 categories.",
-    "platform": "Platform",
-    "company": "Company",
-    "legal": "Legal",
-    "privacyPolicy": "Privacy Policy",
-    "termsOfService": "Terms of Service",
-    "support": "Support",
+    "description": "クラウドベースのオフェンシブセキュリティプラットフォーム。61カテゴリの401のKali Linuxツール。",
+    "platform": "プラットフォーム",
+    "company": "会社情報",
+    "legal": "法的情報",
+    "privacyPolicy": "プライバシーポリシー",
+    "termsOfService": "利用規約",
+    "support": "サポート",
     "copyright": "© 2026 CyberSec Pro"
   },
   "contact": {
-    "badge": "Get in Touch",
-    "title": "Get in Touch",
-    "subtitle": "Have a question about our platform? Want a demo? Need support? We're here to help.",
+    "badge": "お問い合わせ",
+    "title": "お問い合わせ",
+    "subtitle": "プラットフォームについてご質問はありますか？デモをご希望ですか？サポートが必要ですか？お気軽にご連絡ください。",
     "sales": {
-      "title": "Sales & Demos",
-      "description": "Interested in CyberSec Pro for your team? Get a personalized walkthrough of the platform.",
-      "response": "Response < 4 hours",
-      "cta": "Schedule a Demo"
+      "title": "営業・デモ",
+      "description": "チームでCyberSec Proの導入に興味がありますか？プラットフォームの個別デモをご案内します。",
+      "response": "4時間以内に返信",
+      "cta": "デモを予約"
     },
     "support": {
-      "title": "Technical Support",
-      "description": "Running into an issue or need help configuring a scan? Our engineering team has you covered.",
-      "enterprise": "Enterprise — 2-hour SLA",
-      "professional": "Professional — 24-hour SLA",
-      "trial": "Trial — 48-hour SLA",
-      "cta": "Access Help Center"
+      "title": "テクニカルサポート",
+      "description": "問題が発生した場合やスキャンの設定にお困りの場合は、エンジニアリングチームがサポートします。",
+      "enterprise": "Enterprise — 2時間SLA",
+      "professional": "Professional — 24時間SLA",
+      "trial": "Trial — 48時間SLA",
+      "cta": "ヘルプセンターにアクセス"
     },
     "partnerships": {
-      "title": "Partnerships",
-      "description": "Explore white-labeling and reselling opportunities. Integrate CyberSec Pro into your security offerings.",
-      "response": "Response < 2 business days",
-      "cta": "Explore Partnerships"
+      "title": "パートナーシップ",
+      "description": "ホワイトラベルや再販の機会をご検討ください。CyberSec Proをセキュリティサービスに統合しましょう。",
+      "response": "2営業日以内に返信",
+      "cta": "パートナーシップを探る"
     },
     "ctaSection": {
-      "title": "Don't want to wait? Start your free scan now.",
-      "subtitle": "No credit card required. Get results in 30 minutes.",
-      "button": "Start Free Scan"
+      "title": "待てない？今すぐ無料スキャンを始めましょう。",
+      "subtitle": "クレジットカード不要。30分で結果を確認。",
+      "button": "無料スキャンを開始"
     }
   },
   "about": {
-    "badge": "About Us",
-    "title": "Built by Security Engineers,\nfor Security Engineers",
-    "subtitle": "CyberSec Pro was born from the frustration of managing dozens of security tools across different environments.",
+    "badge": "会社概要",
+    "title": "セキュリティエンジニアが作った\nセキュリティエンジニアのための",
+    "subtitle": "CyberSec Proは、異なる環境で数十のセキュリティツールを管理する不満から生まれました。",
     "mission": {
-      "title": "Our Mission",
-      "description": "To democratize offensive security by making professional-grade tools accessible to every security team, regardless of size or budget."
+      "title": "私たちのミッション",
+      "description": "プロフェッショナルグレードのツールをあらゆるセキュリティチームに提供し、規模や予算に関係なくオフェンシブセキュリティを民主化すること。"
     },
     "story": {
-      "title": "Our Story",
-      "description": "Founded in 2024, CyberSec Pro started as an internal tool for streamlining penetration testing workflows. Today, it serves security teams worldwide."
+      "title": "私たちのストーリー",
+      "description": "2024年に設立されたCyberSec Proは、ペネトレーションテストのワークフローを効率化する社内ツールとして始まりました。現在、世界中のセキュリティチームにサービスを提供しています。"
     },
     "team": {
-      "title": "The Team",
+      "title": "チーム",
       "founder": {
         "name": "Semih Kılıç",
-        "role": "Founder & CEO",
-        "bio": "Security engineer with 10+ years of experience in offensive security, penetration testing, and security tool development."
+        "role": "創設者 & CEO",
+        "bio": "オフェンシブセキュリティ、ペネトレーションテスト、セキュリティツール開発で10年以上の経験を持つセキュリティエンジニア。"
       }
     }
   },
   "blog": {
-    "badge": "Blog & Tutorials",
-    "title": "Security Insights & Guides",
-    "subtitle": "Learn offensive security techniques, tool tutorials, and industry best practices.",
-    "readMore": "Read More",
-    "minRead": "min read"
+    "badge": "ブログ & チュートリアル",
+    "title": "セキュリティの洞察とガイド",
+    "subtitle": "オフェンシブセキュリティの技術、ツールチュートリアル、業界のベストプラクティスを学びましょう。",
+    "readMore": "続きを読む",
+    "minRead": "分で読める"
   },
   "careers": {
-    "badge": "Join Our Team",
-    "title": "Build the Future of\nOffensive Security",
-    "subtitle": "We're looking for passionate security engineers and developers to join our mission.",
-    "openPositions": "Open Positions",
-    "apply": "Apply Now",
+    "badge": "採用情報",
+    "title": "オフェンシブセキュリティの\n未来を一緒に",
+    "subtitle": "私たちのミッションに参加する情熱的なセキュリティエンジニアとデベロッパーを募集しています。",
+    "openPositions": "募集中のポジション",
+    "apply": "応募する",
     "perks": {
-      "title": "Why CyberSec Pro?",
-      "remote": "100% Remote",
-      "equity": "Equity Package",
-      "learning": "Learning Budget",
-      "hardware": "Latest Hardware"
+      "title": "CyberSec Proで働く理由",
+      "remote": "完全リモート",
+      "equity": "ストックオプション",
+      "learning": "学習予算",
+      "hardware": "最新ハードウェア"
     }
   },
   "docs": {
-    "badge": "Documentation",
-    "title": "Get Started with CyberSec Pro",
-    "subtitle": "Everything you need to know about setting up scans, using tools, and generating reports.",
-    "quickStart": "Quick Start",
-    "guides": "Guides",
-    "apiReference": "API Reference"
+    "badge": "ドキュメント",
+    "title": "CyberSec Proを始める",
+    "subtitle": "スキャンの設定、ツールの使い方、レポート生成について知っておくべきすべてのこと。",
+    "quickStart": "クイックスタート",
+    "guides": "ガイド",
+    "apiReference": "APIリファレンス"
   },
   "api": {
-    "badge": "API Reference",
+    "badge": "APIリファレンス",
     "title": "RESTful API",
-    "subtitle": "Integrate CyberSec Pro into your workflows with our comprehensive API.",
-    "baseUrl": "Base URL",
-    "authentication": "Authentication",
-    "endpoints": "Endpoints"
+    "subtitle": "包括的なAPIでCyberSec Proをワークフローに統合。",
+    "baseUrl": "ベースURL",
+    "authentication": "認証",
+    "endpoints": "エンドポイント"
   },
   "privacy": {
-    "title": "Privacy Policy",
-    "lastUpdated": "Last updated: March 2026"
+    "title": "プライバシーポリシー",
+    "lastUpdated": "最終更新：2026年3月"
   },
   "terms": {
-    "title": "Terms of Service",
-    "lastUpdated": "Last updated: March 2026"
+    "title": "利用規約",
+    "lastUpdated": "最終更新：2026年3月"
   },
   "security": {
-    "badge": "Security",
-    "title": "Security First",
-    "subtitle": "We take the security of our platform and your data seriously."
+    "badge": "セキュリティ",
+    "title": "セキュリティファースト",
+    "subtitle": "プラットフォームとお客様のデータのセキュリティを真剣に考えています。"
   },
   "tests": {
-    "badge": "Security Assessment",
-    "title": "Comprehensive Security Testing",
-    "subtitle": "Run professional security assessments powered by industry-standard tools."
+    "badge": "セキュリティアセスメント",
+    "title": "包括的セキュリティテスト",
+    "subtitle": "業界標準のツールによるプロフェッショナルなセキュリティアセスメントを実行。"
   },
   "success": {
-    "title": "Payment Successful!",
-    "subtitle": "Welcome to CyberSec Pro. Your account has been activated.",
-    "dashboard": "Go to Dashboard",
-    "docs": "Read Documentation"
+    "title": "お支払い完了！",
+    "subtitle": "CyberSec Proへようこそ。アカウントが有効化されました。",
+    "dashboard": "ダッシュボードへ",
+    "docs": "ドキュメントを読む"
   },
   "common": {
     "email": "cybersecpro@semihkilic.com",
-    "learnMore": "Learn More",
-    "getStarted": "Get Started",
-    "backToHome": "Back to Home"
+    "learnMore": "詳しく見る",
+    "getStarted": "始める",
+    "backToHome": "ホームに戻る"
   }
 }

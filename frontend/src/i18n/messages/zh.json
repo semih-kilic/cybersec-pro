@@ -1,264 +1,264 @@
 {
   "meta": {
-    "title": "CyberSec Pro — Offensive Security Platform",
-    "description": "Cloud-based offensive security platform with 401 Kali Linux tools. Automated vulnerability scanning, penetration testing, and security assessments."
+    "title": "CyberSec Pro — 进攻性安全平台",
+    "description": "基于云的进攻性安全平台，拥有401个Kali Linux工具。自动化漏洞扫描、渗透测试和安全评估。"
   },
   "nav": {
-    "features": "Features",
-    "arsenal": "Arsenal",
-    "pricing": "Pricing",
-    "docs": "Docs",
+    "features": "功能",
+    "arsenal": "工具库",
+    "pricing": "定价",
+    "docs": "文档",
     "api": "API",
     "login": "$ login",
-    "getAccess": "Get Access",
-    "about": "About",
-    "blog": "Blog",
-    "careers": "Careers",
-    "contact": "Contact",
-    "security": "Security",
-    "tests": "Assessments"
+    "getAccess": "获取访问权限",
+    "about": "关于我们",
+    "blog": "博客",
+    "careers": "招聘",
+    "contact": "联系我们",
+    "security": "安全",
+    "tests": "评估"
   },
   "hero": {
-    "badge": "Cloud-Based Offensive Security",
-    "title": "Offensive Security\nPlatform",
-    "titleHighlight": "401 Tools.",
-    "subtitle": "Run 401 Kali Linux tools across 61 categories from your browser. No setup. No infrastructure. Just results.",
-    "cta": "Start Free Scan",
-    "ctaSecondary": "View Arsenal",
+    "badge": "基于云的进攻性安全",
+    "title": "进攻性安全\n平台",
+    "titleHighlight": "401个工具。",
+    "subtitle": "在浏览器中运行61个类别的401个Kali Linux工具。无需设置。无需基础设施。只需结果。",
+    "cta": "开始免费扫描",
+    "ctaSecondary": "查看工具库",
     "stats": {
       "tools": "401",
-      "toolsLabel": "Security Tools",
+      "toolsLabel": "安全工具",
       "categories": "61",
-      "categoriesLabel": "Categories",
+      "categoriesLabel": "类别",
       "uptime": "99.9%",
-      "uptimeLabel": "Uptime",
-      "scans": "1M+",
-      "scansLabel": "Scans Run"
+      "uptimeLabel": "正常运行时间",
+      "scans": "100万+",
+      "scansLabel": "已执行扫描"
     }
   },
   "features": {
-    "badge": "Platform Features",
-    "title": "Everything You Need for\nOffensive Security",
-    "subtitle": "Enterprise-grade security testing infrastructure, accessible from your browser.",
+    "badge": "平台功能",
+    "title": "进攻性安全\n所需的一切",
+    "subtitle": "企业级安全测试基础设施，可通过浏览器访问。",
     "items": {
       "scanning": {
-        "title": "Automated Scanning",
-        "description": "Configure and run complex security scans with a few clicks. Schedule recurring assessments."
+        "title": "自动化扫描",
+        "description": "通过几次点击即可配置和运行复杂的安全扫描。安排定期评估。"
       },
       "tools": {
-        "title": "401 Kali Tools",
-        "description": "Access the complete Kali Linux arsenal — from Nmap to Metasploit, Burp Suite to SQLMap."
+        "title": "401个Kali工具",
+        "description": "访问完整的Kali Linux工具库——从Nmap到Metasploit，从Burp Suite到SQLMap。"
       },
       "reports": {
-        "title": "Professional Reports",
-        "description": "Generate compliance-ready reports in PDF, HTML, JSON, CSV, and Markdown formats."
+        "title": "专业报告",
+        "description": "生成符合合规要求的PDF、HTML、JSON、CSV和Markdown格式报告。"
       },
       "realtime": {
-        "title": "Real-Time Results",
-        "description": "Watch scan results stream live via WebSocket. Terminal-style output with full interactivity."
+        "title": "实时结果",
+        "description": "通过WebSocket实时查看扫描结果。具有完全交互功能的终端式输出。"
       },
       "api": {
         "title": "RESTful API",
-        "description": "Integrate with your CI/CD pipeline. Full API access for automation and custom workflows."
+        "description": "与您的CI/CD管道集成。完整的API访问，用于自动化和自定义工作流。"
       },
       "team": {
-        "title": "Team Collaboration",
-        "description": "Multi-tenant workspaces with role-based access. Share findings and coordinate assessments."
+        "title": "团队协作",
+        "description": "具有基于角色的访问控制的多租户工作空间。共享发现结果并协调评估。"
       }
     }
   },
   "pricing": {
-    "badge": "Pricing Plans",
-    "title": "Choose Your Plan",
-    "subtitle": "Start with a free trial. Upgrade when you're ready.",
-    "monthly": "Monthly",
-    "annual": "Annual",
-    "annualSave": "Save 20%",
-    "popular": "Most Popular",
-    "cta": "Get Started",
-    "ctaEnterprise": "Contact Sales",
+    "badge": "定价方案",
+    "title": "选择您的方案",
+    "subtitle": "从免费试用开始。准备好后升级。",
+    "monthly": "月付",
+    "annual": "年付",
+    "annualSave": "节省20%",
+    "popular": "最受欢迎",
+    "cta": "立即开始",
+    "ctaEnterprise": "联系销售",
     "plans": {
       "trial": {
-        "name": "Trial",
-        "price": "Free",
-        "period": "14 days",
-        "features": ["5 scans/day", "Basic tools", "Email reports", "Community support"]
+        "name": "试用",
+        "price": "免费",
+        "period": "14天",
+        "features": ["每天5次扫描", "基础工具", "邮件报告", "社区支持"]
       },
       "starter": {
-        "name": "Starter",
+        "name": "入门版",
         "price": "€99",
-        "period": "/month",
-        "features": ["50 scans/day", "200+ tools", "All report formats", "Email support", "API access"]
+        "period": "/月",
+        "features": ["每天50次扫描", "200+工具", "所有报告格式", "邮件支持", "API访问"]
       },
       "professional": {
-        "name": "Professional",
+        "name": "专业版",
         "price": "€299",
-        "period": "/month",
-        "features": ["Unlimited scans", "401 tools", "Priority support", "Team collaboration", "Custom templates", "Scheduled scans"]
+        "period": "/月",
+        "features": ["无限扫描", "401个工具", "优先支持", "团队协作", "自定义模板", "计划扫描"]
       },
       "enterprise": {
-        "name": "Enterprise",
+        "name": "企业版",
         "price": "€799",
-        "period": "/month",
-        "features": ["Everything in Pro", "Dedicated infrastructure", "SLA guarantee", "Custom integrations", "On-premise option", "24/7 phone support"]
+        "period": "/月",
+        "features": ["Pro的所有功能", "专用基础设施", "SLA保证", "自定义集成", "本地部署选项", "24/7电话支持"]
       }
     }
   },
   "tools": {
-    "badge": "Security Arsenal",
-    "title": "401 Tools. 61 Categories.",
-    "subtitle": "Every tool from the Kali Linux distribution, ready to run in your browser.",
-    "searchPlaceholder": "Search tools...",
-    "allCategories": "All",
-    "runTool": "Run Tool",
-    "viewDetails": "View Details"
+    "badge": "安全工具库",
+    "title": "401个工具。61个类别。",
+    "subtitle": "Kali Linux发行版中的每个工具，随时可在浏览器中运行。",
+    "searchPlaceholder": "搜索工具...",
+    "allCategories": "全部",
+    "runTool": "运行工具",
+    "viewDetails": "查看详情"
   },
   "testimonials": {
-    "badge": "Trusted by Security Teams",
-    "title": "What Our Users Say"
+    "badge": "安全团队的信赖之选",
+    "title": "用户评价"
   },
   "faq": {
-    "badge": "FAQ",
-    "title": "Frequently Asked Questions",
+    "badge": "常见问题",
+    "title": "常见问题",
     "items": {
-      "q1": { "q": "Is CyberSec Pro legal to use?", "a": "Yes. CyberSec Pro is designed for authorized security testing only. You must have explicit permission to test any target." },
-      "q2": { "q": "Do I need to install anything?", "a": "No. Everything runs in your browser. No local installation, no VMs, no configuration required." },
-      "q3": { "q": "Can I use it for my company?", "a": "Absolutely. Our Professional and Enterprise plans include team collaboration, multi-tenant workspaces, and role-based access controls." },
-      "q4": { "q": "What report formats are supported?", "a": "We support PDF, HTML, JSON, CSV, and Markdown. Enterprise customers can also create custom report templates." },
-      "q5": { "q": "Is my data secure?", "a": "Yes. All data is encrypted at rest and in transit. We follow SOC 2 compliance standards and regularly audit our infrastructure." }
+      "q1": { "q": "使用CyberSec Pro合法吗？", "a": "合法。CyberSec Pro仅用于授权的安全测试。您必须获得明确许可才能测试任何目标。" },
+      "q2": { "q": "需要安装任何东西吗？", "a": "不需要。一切都在浏览器中运行。无需本地安装、无需虚拟机、无需任何配置。" },
+      "q3": { "q": "我的公司可以使用吗？", "a": "当然可以。我们的专业版和企业版包含团队协作、多租户工作空间和基于角色的访问控制。" },
+      "q4": { "q": "支持哪些报告格式？", "a": "我们支持PDF、HTML、JSON、CSV和Markdown。企业版客户还可以创建自定义报告模板。" },
+      "q5": { "q": "我的数据安全吗？", "a": "安全。所有数据在静态和传输中均已加密。我们遵循SOC 2合规标准，并定期审计基础设施。" }
     }
   },
   "cta": {
-    "title": "Ready to Secure Your Infrastructure?",
-    "subtitle": "Start your free scan today. No credit card required.",
-    "button": "Start Free Scan"
+    "title": "准备好保护您的基础设施了吗？",
+    "subtitle": "立即开始免费扫描。无需信用卡。",
+    "button": "开始免费扫描"
   },
   "footer": {
-    "description": "Cloud-based offensive security platform. 401 Kali Linux tools across 61 categories.",
-    "platform": "Platform",
-    "company": "Company",
-    "legal": "Legal",
-    "privacyPolicy": "Privacy Policy",
-    "termsOfService": "Terms of Service",
-    "support": "Support",
+    "description": "基于云的进攻性安全平台。61个类别的401个Kali Linux工具。",
+    "platform": "平台",
+    "company": "公司",
+    "legal": "法律信息",
+    "privacyPolicy": "隐私政策",
+    "termsOfService": "服务条款",
+    "support": "支持",
     "copyright": "© 2026 CyberSec Pro"
   },
   "contact": {
-    "badge": "Get in Touch",
-    "title": "Get in Touch",
-    "subtitle": "Have a question about our platform? Want a demo? Need support? We're here to help.",
+    "badge": "联系我们",
+    "title": "联系我们",
+    "subtitle": "对我们的平台有疑问？想要演示？需要支持？我们随时为您提供帮助。",
     "sales": {
-      "title": "Sales & Demos",
-      "description": "Interested in CyberSec Pro for your team? Get a personalized walkthrough of the platform.",
-      "response": "Response < 4 hours",
-      "cta": "Schedule a Demo"
+      "title": "销售与演示",
+      "description": "对为您的团队引入CyberSec Pro感兴趣？获取平台的个性化演示。",
+      "response": "4小时内回复",
+      "cta": "预约演示"
     },
     "support": {
-      "title": "Technical Support",
-      "description": "Running into an issue or need help configuring a scan? Our engineering team has you covered.",
-      "enterprise": "Enterprise — 2-hour SLA",
-      "professional": "Professional — 24-hour SLA",
-      "trial": "Trial — 48-hour SLA",
-      "cta": "Access Help Center"
+      "title": "技术支持",
+      "description": "遇到问题或需要帮助配置扫描？我们的工程团队随时为您服务。",
+      "enterprise": "企业版 — 2小时SLA",
+      "professional": "专业版 — 24小时SLA",
+      "trial": "试用版 — 48小时SLA",
+      "cta": "访问帮助中心"
     },
     "partnerships": {
-      "title": "Partnerships",
-      "description": "Explore white-labeling and reselling opportunities. Integrate CyberSec Pro into your security offerings.",
-      "response": "Response < 2 business days",
-      "cta": "Explore Partnerships"
+      "title": "合作伙伴",
+      "description": "探索白标和分销机会。将CyberSec Pro整合到您的安全产品中。",
+      "response": "2个工作日内回复",
+      "cta": "探索合作"
     },
     "ctaSection": {
-      "title": "Don't want to wait? Start your free scan now.",
-      "subtitle": "No credit card required. Get results in 30 minutes.",
-      "button": "Start Free Scan"
+      "title": "不想等待？立即开始免费扫描。",
+      "subtitle": "无需信用卡。30分钟内获得结果。",
+      "button": "开始免费扫描"
     }
   },
   "about": {
-    "badge": "About Us",
-    "title": "Built by Security Engineers,\nfor Security Engineers",
-    "subtitle": "CyberSec Pro was born from the frustration of managing dozens of security tools across different environments.",
+    "badge": "关于我们",
+    "title": "由安全工程师打造，\n为安全工程师服务",
+    "subtitle": "CyberSec Pro诞生于在不同环境中管理数十种安全工具的困扰。",
     "mission": {
-      "title": "Our Mission",
-      "description": "To democratize offensive security by making professional-grade tools accessible to every security team, regardless of size or budget."
+      "title": "我们的使命",
+      "description": "通过让专业级工具对每个安全团队可及，无论规模或预算，实现进攻性安全的民主化。"
     },
     "story": {
-      "title": "Our Story",
-      "description": "Founded in 2024, CyberSec Pro started as an internal tool for streamlining penetration testing workflows. Today, it serves security teams worldwide."
+      "title": "我们的故事",
+      "description": "成立于2024年，CyberSec Pro最初是一个优化渗透测试工作流的内部工具。如今，它为全球的安全团队提供服务。"
     },
     "team": {
-      "title": "The Team",
+      "title": "团队",
       "founder": {
         "name": "Semih Kılıç",
-        "role": "Founder & CEO",
-        "bio": "Security engineer with 10+ years of experience in offensive security, penetration testing, and security tool development."
+        "role": "创始人兼CEO",
+        "bio": "在进攻性安全、渗透测试和安全工具开发方面拥有10年以上经验的安全工程师。"
       }
     }
   },
   "blog": {
-    "badge": "Blog & Tutorials",
-    "title": "Security Insights & Guides",
-    "subtitle": "Learn offensive security techniques, tool tutorials, and industry best practices.",
-    "readMore": "Read More",
-    "minRead": "min read"
+    "badge": "博客与教程",
+    "title": "安全洞察与指南",
+    "subtitle": "学习进攻性安全技术、工具教程和行业最佳实践。",
+    "readMore": "阅读更多",
+    "minRead": "分钟阅读"
   },
   "careers": {
-    "badge": "Join Our Team",
-    "title": "Build the Future of\nOffensive Security",
-    "subtitle": "We're looking for passionate security engineers and developers to join our mission.",
-    "openPositions": "Open Positions",
-    "apply": "Apply Now",
+    "badge": "加入我们",
+    "title": "构建进攻性安全\n的未来",
+    "subtitle": "我们正在寻找充满热情的安全工程师和开发者加入我们的使命。",
+    "openPositions": "开放职位",
+    "apply": "立即申请",
     "perks": {
-      "title": "Why CyberSec Pro?",
-      "remote": "100% Remote",
-      "equity": "Equity Package",
-      "learning": "Learning Budget",
-      "hardware": "Latest Hardware"
+      "title": "为什么选择CyberSec Pro？",
+      "remote": "100%远程办公",
+      "equity": "股权激励",
+      "learning": "学习预算",
+      "hardware": "最新硬件"
     }
   },
   "docs": {
-    "badge": "Documentation",
-    "title": "Get Started with CyberSec Pro",
-    "subtitle": "Everything you need to know about setting up scans, using tools, and generating reports.",
-    "quickStart": "Quick Start",
-    "guides": "Guides",
-    "apiReference": "API Reference"
+    "badge": "文档",
+    "title": "开始使用CyberSec Pro",
+    "subtitle": "关于配置扫描、使用工具和生成报告，您需要了解的一切。",
+    "quickStart": "快速入门",
+    "guides": "指南",
+    "apiReference": "API参考"
   },
   "api": {
-    "badge": "API Reference",
+    "badge": "API参考",
     "title": "RESTful API",
-    "subtitle": "Integrate CyberSec Pro into your workflows with our comprehensive API.",
-    "baseUrl": "Base URL",
-    "authentication": "Authentication",
-    "endpoints": "Endpoints"
+    "subtitle": "通过我们全面的API将CyberSec Pro集成到您的工作流中。",
+    "baseUrl": "基础URL",
+    "authentication": "认证",
+    "endpoints": "端点"
   },
   "privacy": {
-    "title": "Privacy Policy",
-    "lastUpdated": "Last updated: March 2026"
+    "title": "隐私政策",
+    "lastUpdated": "最后更新：2026年3月"
   },
   "terms": {
-    "title": "Terms of Service",
-    "lastUpdated": "Last updated: March 2026"
+    "title": "服务条款",
+    "lastUpdated": "最后更新：2026年3月"
   },
   "security": {
-    "badge": "Security",
-    "title": "Security First",
-    "subtitle": "We take the security of our platform and your data seriously."
+    "badge": "安全",
+    "title": "安全第一",
+    "subtitle": "我们非常重视平台和您数据的安全。"
   },
   "tests": {
-    "badge": "Security Assessment",
-    "title": "Comprehensive Security Testing",
-    "subtitle": "Run professional security assessments powered by industry-standard tools."
+    "badge": "安全评估",
+    "title": "全面的安全测试",
+    "subtitle": "使用行业标准工具运行专业的安全评估。"
   },
   "success": {
-    "title": "Payment Successful!",
-    "subtitle": "Welcome to CyberSec Pro. Your account has been activated.",
-    "dashboard": "Go to Dashboard",
-    "docs": "Read Documentation"
+    "title": "支付成功！",
+    "subtitle": "欢迎使用CyberSec Pro。您的账户已激活。",
+    "dashboard": "前往控制面板",
+    "docs": "阅读文档"
   },
   "common": {
     "email": "cybersecpro@semihkilic.com",
-    "learnMore": "Learn More",
-    "getStarted": "Get Started",
-    "backToHome": "Back to Home"
+    "learnMore": "了解更多",
+    "getStarted": "立即开始",
+    "backToHome": "返回首页"
   }
 }

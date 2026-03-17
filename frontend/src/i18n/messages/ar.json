@@ -1,264 +1,264 @@
 {
   "meta": {
-    "title": "CyberSec Pro — Offensive Security Platform",
-    "description": "Cloud-based offensive security platform with 401 Kali Linux tools. Automated vulnerability scanning, penetration testing, and security assessments."
+    "title": "CyberSec Pro — منصة الأمن الهجومي",
+    "description": "منصة أمن هجومي سحابية مع 401 أداة من Kali Linux. فحص تلقائي للثغرات واختبارات اختراق وتقييمات أمنية."
   },
   "nav": {
-    "features": "Features",
-    "arsenal": "Arsenal",
-    "pricing": "Pricing",
-    "docs": "Docs",
+    "features": "الميزات",
+    "arsenal": "الترسانة",
+    "pricing": "الأسعار",
+    "docs": "التوثيق",
     "api": "API",
     "login": "$ login",
-    "getAccess": "Get Access",
-    "about": "About",
-    "blog": "Blog",
-    "careers": "Careers",
-    "contact": "Contact",
-    "security": "Security",
-    "tests": "Assessments"
+    "getAccess": "الحصول على الوصول",
+    "about": "من نحن",
+    "blog": "المدونة",
+    "careers": "الوظائف",
+    "contact": "اتصل بنا",
+    "security": "الأمان",
+    "tests": "التقييمات"
   },
   "hero": {
-    "badge": "Cloud-Based Offensive Security",
-    "title": "Offensive Security\nPlatform",
-    "titleHighlight": "401 Tools.",
-    "subtitle": "Run 401 Kali Linux tools across 61 categories from your browser. No setup. No infrastructure. Just results.",
-    "cta": "Start Free Scan",
-    "ctaSecondary": "View Arsenal",
+    "badge": "أمن هجومي سحابي",
+    "title": "منصة\nالأمن الهجومي",
+    "titleHighlight": "401 أداة.",
+    "subtitle": "شغّل 401 أداة من Kali Linux في 61 فئة مباشرة من متصفحك. بدون إعداد. بدون بنية تحتية. فقط نتائج.",
+    "cta": "ابدأ فحصاً مجانياً",
+    "ctaSecondary": "عرض الترسانة",
     "stats": {
       "tools": "401",
-      "toolsLabel": "Security Tools",
+      "toolsLabel": "أدوات أمنية",
       "categories": "61",
-      "categoriesLabel": "Categories",
+      "categoriesLabel": "فئة",
       "uptime": "99.9%",
-      "uptimeLabel": "Uptime",
-      "scans": "1M+",
-      "scansLabel": "Scans Run"
+      "uptimeLabel": "وقت التشغيل",
+      "scans": "+1M",
+      "scansLabel": "عمليات فحص"
     }
   },
   "features": {
-    "badge": "Platform Features",
-    "title": "Everything You Need for\nOffensive Security",
-    "subtitle": "Enterprise-grade security testing infrastructure, accessible from your browser.",
+    "badge": "ميزات المنصة",
+    "title": "كل ما تحتاجه\nللأمن الهجومي",
+    "subtitle": "بنية تحتية لاختبارات الأمان بمستوى المؤسسات، يمكن الوصول إليها من متصفحك.",
     "items": {
       "scanning": {
-        "title": "Automated Scanning",
-        "description": "Configure and run complex security scans with a few clicks. Schedule recurring assessments."
+        "title": "فحص تلقائي",
+        "description": "قم بتكوين وتشغيل عمليات فحص أمنية معقدة ببضع نقرات. جدولة التقييمات المتكررة."
       },
       "tools": {
-        "title": "401 Kali Tools",
-        "description": "Access the complete Kali Linux arsenal — from Nmap to Metasploit, Burp Suite to SQLMap."
+        "title": "401 أداة Kali",
+        "description": "الوصول إلى ترسانة Kali Linux الكاملة — من Nmap إلى Metasploit، من Burp Suite إلى SQLMap."
       },
       "reports": {
-        "title": "Professional Reports",
-        "description": "Generate compliance-ready reports in PDF, HTML, JSON, CSV, and Markdown formats."
+        "title": "تقارير احترافية",
+        "description": "إنشاء تقارير متوافقة مع المعايير بتنسيقات PDF و HTML و JSON و CSV و Markdown."
       },
       "realtime": {
-        "title": "Real-Time Results",
-        "description": "Watch scan results stream live via WebSocket. Terminal-style output with full interactivity."
+        "title": "نتائج فورية",
+        "description": "تابع نتائج الفحص مباشرة عبر WebSocket. إخراج بنمط الطرفية مع تفاعل كامل."
       },
       "api": {
-        "title": "RESTful API",
-        "description": "Integrate with your CI/CD pipeline. Full API access for automation and custom workflows."
+        "title": "واجهة RESTful API",
+        "description": "ادمج مع خط أنابيب CI/CD الخاص بك. وصول كامل لـ API للأتمتة وسير العمل المخصص."
       },
       "team": {
-        "title": "Team Collaboration",
-        "description": "Multi-tenant workspaces with role-based access. Share findings and coordinate assessments."
+        "title": "التعاون الجماعي",
+        "description": "مساحات عمل متعددة المستأجرين مع التحكم في الوصول المبني على الأدوار. شارك النتائج ونسّق التقييمات."
       }
     }
   },
   "pricing": {
-    "badge": "Pricing Plans",
-    "title": "Choose Your Plan",
-    "subtitle": "Start with a free trial. Upgrade when you're ready.",
-    "monthly": "Monthly",
-    "annual": "Annual",
-    "annualSave": "Save 20%",
-    "popular": "Most Popular",
-    "cta": "Get Started",
-    "ctaEnterprise": "Contact Sales",
+    "badge": "خطط الأسعار",
+    "title": "اختر خطتك",
+    "subtitle": "ابدأ بتجربة مجانية. قم بالترقية عندما تكون جاهزاً.",
+    "monthly": "شهري",
+    "annual": "سنوي",
+    "annualSave": "وفّر 20%",
+    "popular": "الأكثر شعبية",
+    "cta": "ابدأ الآن",
+    "ctaEnterprise": "تواصل مع المبيعات",
     "plans": {
       "trial": {
-        "name": "Trial",
-        "price": "Free",
-        "period": "14 days",
-        "features": ["5 scans/day", "Basic tools", "Email reports", "Community support"]
+        "name": "تجريبي",
+        "price": "مجاني",
+        "period": "14 يوماً",
+        "features": ["5 فحوصات/يوم", "أدوات أساسية", "تقارير بالبريد", "دعم مجتمعي"]
       },
       "starter": {
-        "name": "Starter",
-        "price": "€99",
-        "period": "/month",
-        "features": ["50 scans/day", "200+ tools", "All report formats", "Email support", "API access"]
+        "name": "المبتدئ",
+        "price": "99 €",
+        "period": "/شهر",
+        "features": ["50 فحص/يوم", "200+ أداة", "جميع تنسيقات التقارير", "دعم بالبريد", "وصول API"]
       },
       "professional": {
-        "name": "Professional",
-        "price": "€299",
-        "period": "/month",
-        "features": ["Unlimited scans", "401 tools", "Priority support", "Team collaboration", "Custom templates", "Scheduled scans"]
+        "name": "الاحترافي",
+        "price": "299 €",
+        "period": "/شهر",
+        "features": ["فحوصات غير محدودة", "401 أداة", "دعم ذو أولوية", "تعاون جماعي", "قوالب مخصصة", "فحوصات مجدولة"]
       },
       "enterprise": {
-        "name": "Enterprise",
-        "price": "€799",
-        "period": "/month",
-        "features": ["Everything in Pro", "Dedicated infrastructure", "SLA guarantee", "Custom integrations", "On-premise option", "24/7 phone support"]
+        "name": "المؤسسات",
+        "price": "799 €",
+        "period": "/شهر",
+        "features": ["كل ما في Pro", "بنية تحتية مخصصة", "ضمان SLA", "تكاملات مخصصة", "خيار محلي", "دعم هاتفي 24/7"]
       }
     }
   },
   "tools": {
-    "badge": "Security Arsenal",
-    "title": "401 Tools. 61 Categories.",
-    "subtitle": "Every tool from the Kali Linux distribution, ready to run in your browser.",
-    "searchPlaceholder": "Search tools...",
-    "allCategories": "All",
-    "runTool": "Run Tool",
-    "viewDetails": "View Details"
+    "badge": "ترسانة الأمان",
+    "title": "401 أداة. 61 فئة.",
+    "subtitle": "كل أداة من توزيعة Kali Linux، جاهزة للتشغيل في متصفحك.",
+    "searchPlaceholder": "البحث عن أدوات...",
+    "allCategories": "الكل",
+    "runTool": "تشغيل الأداة",
+    "viewDetails": "عرض التفاصيل"
   },
   "testimonials": {
-    "badge": "Trusted by Security Teams",
-    "title": "What Our Users Say"
+    "badge": "موثوق من فرق الأمان",
+    "title": "ماذا يقول مستخدمونا"
   },
   "faq": {
-    "badge": "FAQ",
-    "title": "Frequently Asked Questions",
+    "badge": "الأسئلة الشائعة",
+    "title": "الأسئلة المتكررة",
     "items": {
-      "q1": { "q": "Is CyberSec Pro legal to use?", "a": "Yes. CyberSec Pro is designed for authorized security testing only. You must have explicit permission to test any target." },
-      "q2": { "q": "Do I need to install anything?", "a": "No. Everything runs in your browser. No local installation, no VMs, no configuration required." },
-      "q3": { "q": "Can I use it for my company?", "a": "Absolutely. Our Professional and Enterprise plans include team collaboration, multi-tenant workspaces, and role-based access controls." },
-      "q4": { "q": "What report formats are supported?", "a": "We support PDF, HTML, JSON, CSV, and Markdown. Enterprise customers can also create custom report templates." },
-      "q5": { "q": "Is my data secure?", "a": "Yes. All data is encrypted at rest and in transit. We follow SOC 2 compliance standards and regularly audit our infrastructure." }
+      "q1": { "q": "هل استخدام CyberSec Pro قانوني؟", "a": "نعم. تم تصميم CyberSec Pro لاختبارات الأمان المصرح بها فقط. يجب أن يكون لديك إذن صريح لاختبار أي هدف." },
+      "q2": { "q": "هل أحتاج لتثبيت أي شيء؟", "a": "لا. كل شيء يعمل في متصفحك. لا تثبيت محلي، لا أجهزة افتراضية، لا إعدادات مطلوبة." },
+      "q3": { "q": "هل يمكنني استخدامه لشركتي؟", "a": "بالتأكيد. تشمل خططنا الاحترافية والمؤسسية التعاون الجماعي ومساحات العمل المتعددة والتحكم في الوصول." },
+      "q4": { "q": "ما تنسيقات التقارير المدعومة؟", "a": "ندعم PDF و HTML و JSON و CSV و Markdown. يمكن لعملاء المؤسسات أيضاً إنشاء قوالب تقارير مخصصة." },
+      "q5": { "q": "هل بياناتي آمنة؟", "a": "نعم. جميع البيانات مشفرة في حالة السكون وأثناء النقل. نتبع معايير الامتثال SOC 2 ونراجع بنيتنا التحتية بانتظام." }
     }
   },
   "cta": {
-    "title": "Ready to Secure Your Infrastructure?",
-    "subtitle": "Start your free scan today. No credit card required.",
-    "button": "Start Free Scan"
+    "title": "هل أنت مستعد لتأمين بنيتك التحتية؟",
+    "subtitle": "ابدأ فحصك المجاني اليوم. لا حاجة لبطاقة ائتمان.",
+    "button": "ابدأ فحصاً مجانياً"
   },
   "footer": {
-    "description": "Cloud-based offensive security platform. 401 Kali Linux tools across 61 categories.",
-    "platform": "Platform",
-    "company": "Company",
-    "legal": "Legal",
-    "privacyPolicy": "Privacy Policy",
-    "termsOfService": "Terms of Service",
-    "support": "Support",
+    "description": "منصة أمن هجومي سحابية. 401 أداة Kali Linux في 61 فئة.",
+    "platform": "المنصة",
+    "company": "الشركة",
+    "legal": "القانونية",
+    "privacyPolicy": "سياسة الخصوصية",
+    "termsOfService": "شروط الخدمة",
+    "support": "الدعم",
     "copyright": "© 2026 CyberSec Pro"
   },
   "contact": {
-    "badge": "Get in Touch",
-    "title": "Get in Touch",
-    "subtitle": "Have a question about our platform? Want a demo? Need support? We're here to help.",
+    "badge": "تواصل معنا",
+    "title": "تواصل معنا",
+    "subtitle": "لديك سؤال عن منصتنا؟ تريد عرضاً توضيحياً؟ تحتاج دعماً؟ نحن هنا لمساعدتك.",
     "sales": {
-      "title": "Sales & Demos",
-      "description": "Interested in CyberSec Pro for your team? Get a personalized walkthrough of the platform.",
-      "response": "Response < 4 hours",
-      "cta": "Schedule a Demo"
+      "title": "المبيعات والعروض",
+      "description": "مهتم بـ CyberSec Pro لفريقك؟ احصل على جولة شخصية في المنصة.",
+      "response": "الرد < 4 ساعات",
+      "cta": "حجز عرض توضيحي"
     },
     "support": {
-      "title": "Technical Support",
-      "description": "Running into an issue or need help configuring a scan? Our engineering team has you covered.",
-      "enterprise": "Enterprise — 2-hour SLA",
-      "professional": "Professional — 24-hour SLA",
-      "trial": "Trial — 48-hour SLA",
-      "cta": "Access Help Center"
+      "title": "الدعم الفني",
+      "description": "تواجه مشكلة أو تحتاج مساعدة في إعداد فحص؟ فريقنا الهندسي جاهز لمساعدتك.",
+      "enterprise": "المؤسسات — SLA ساعتان",
+      "professional": "الاحترافي — SLA 24 ساعة",
+      "trial": "التجريبي — SLA 48 ساعة",
+      "cta": "الوصول لمركز المساعدة"
     },
     "partnerships": {
-      "title": "Partnerships",
-      "description": "Explore white-labeling and reselling opportunities. Integrate CyberSec Pro into your security offerings.",
-      "response": "Response < 2 business days",
-      "cta": "Explore Partnerships"
+      "title": "الشراكات",
+      "description": "استكشف فرص العلامة البيضاء وإعادة البيع. ادمج CyberSec Pro في عروضك الأمنية.",
+      "response": "الرد < يومي عمل",
+      "cta": "استكشاف الشراكات"
     },
     "ctaSection": {
-      "title": "Don't want to wait? Start your free scan now.",
-      "subtitle": "No credit card required. Get results in 30 minutes.",
-      "button": "Start Free Scan"
+      "title": "لا تريد الانتظار؟ ابدأ فحصك المجاني الآن.",
+      "subtitle": "لا حاجة لبطاقة ائتمان. النتائج في 30 دقيقة.",
+      "button": "ابدأ فحصاً مجانياً"
     }
   },
   "about": {
-    "badge": "About Us",
-    "title": "Built by Security Engineers,\nfor Security Engineers",
-    "subtitle": "CyberSec Pro was born from the frustration of managing dozens of security tools across different environments.",
+    "badge": "من نحن",
+    "title": "بُني بواسطة مهندسي الأمان،\nلمهندسي الأمان",
+    "subtitle": "وُلد CyberSec Pro من الإحباط الناتج عن إدارة عشرات أدوات الأمان في بيئات مختلفة.",
     "mission": {
-      "title": "Our Mission",
-      "description": "To democratize offensive security by making professional-grade tools accessible to every security team, regardless of size or budget."
+      "title": "مهمتنا",
+      "description": "دمقرطة الأمن الهجومي بجعل الأدوات المهنية متاحة لكل فريق أمني، بغض النظر عن الحجم أو الميزانية."
     },
     "story": {
-      "title": "Our Story",
-      "description": "Founded in 2024, CyberSec Pro started as an internal tool for streamlining penetration testing workflows. Today, it serves security teams worldwide."
+      "title": "قصتنا",
+      "description": "تأسست في 2024، بدأ CyberSec Pro كأداة داخلية لتبسيط سير عمل اختبارات الاختراق. واليوم يخدم فرق الأمان حول العالم."
     },
     "team": {
-      "title": "The Team",
+      "title": "الفريق",
       "founder": {
         "name": "Semih Kılıç",
-        "role": "Founder & CEO",
-        "bio": "Security engineer with 10+ years of experience in offensive security, penetration testing, and security tool development."
+        "role": "المؤسس والرئيس التنفيذي",
+        "bio": "مهندس أمان يتمتع بخبرة تزيد عن 10 سنوات في الأمن الهجومي واختبارات الاختراق وتطوير أدوات الأمان."
       }
     }
   },
   "blog": {
-    "badge": "Blog & Tutorials",
-    "title": "Security Insights & Guides",
-    "subtitle": "Learn offensive security techniques, tool tutorials, and industry best practices.",
-    "readMore": "Read More",
-    "minRead": "min read"
+    "badge": "المدونة والدروس",
+    "title": "رؤى وأدلة أمنية",
+    "subtitle": "تعلم تقنيات الأمن الهجومي ودروس الأدوات وأفضل ممارسات الصناعة.",
+    "readMore": "اقرأ المزيد",
+    "minRead": "دقيقة قراءة"
   },
   "careers": {
-    "badge": "Join Our Team",
-    "title": "Build the Future of\nOffensive Security",
-    "subtitle": "We're looking for passionate security engineers and developers to join our mission.",
-    "openPositions": "Open Positions",
-    "apply": "Apply Now",
+    "badge": "انضم لفريقنا",
+    "title": "ابنِ مستقبل\nالأمن الهجومي",
+    "subtitle": "نبحث عن مهندسي أمان ومطورين شغوفين للانضمام إلى مهمتنا.",
+    "openPositions": "الوظائف المتاحة",
+    "apply": "تقدم الآن",
     "perks": {
-      "title": "Why CyberSec Pro?",
-      "remote": "100% Remote",
-      "equity": "Equity Package",
-      "learning": "Learning Budget",
-      "hardware": "Latest Hardware"
+      "title": "لماذا CyberSec Pro؟",
+      "remote": "عمل عن بعد 100%",
+      "equity": "حصة ملكية",
+      "learning": "ميزانية تعليمية",
+      "hardware": "أحدث الأجهزة"
     }
   },
   "docs": {
-    "badge": "Documentation",
-    "title": "Get Started with CyberSec Pro",
-    "subtitle": "Everything you need to know about setting up scans, using tools, and generating reports.",
-    "quickStart": "Quick Start",
-    "guides": "Guides",
-    "apiReference": "API Reference"
+    "badge": "التوثيق",
+    "title": "ابدأ مع CyberSec Pro",
+    "subtitle": "كل ما تحتاج معرفته حول إعداد الفحوصات واستخدام الأدوات وإنشاء التقارير.",
+    "quickStart": "البداية السريعة",
+    "guides": "الأدلة",
+    "apiReference": "مرجع API"
   },
   "api": {
-    "badge": "API Reference",
-    "title": "RESTful API",
-    "subtitle": "Integrate CyberSec Pro into your workflows with our comprehensive API.",
-    "baseUrl": "Base URL",
-    "authentication": "Authentication",
-    "endpoints": "Endpoints"
+    "badge": "مرجع API",
+    "title": "واجهة RESTful API",
+    "subtitle": "ادمج CyberSec Pro في سير عملك مع واجهتنا البرمجية الشاملة.",
+    "baseUrl": "الرابط الأساسي",
+    "authentication": "المصادقة",
+    "endpoints": "نقاط النهاية"
   },
   "privacy": {
-    "title": "Privacy Policy",
-    "lastUpdated": "Last updated: March 2026"
+    "title": "سياسة الخصوصية",
+    "lastUpdated": "آخر تحديث: مارس 2026"
   },
   "terms": {
-    "title": "Terms of Service",
-    "lastUpdated": "Last updated: March 2026"
+    "title": "شروط الخدمة",
+    "lastUpdated": "آخر تحديث: مارس 2026"
   },
   "security": {
-    "badge": "Security",
-    "title": "Security First",
-    "subtitle": "We take the security of our platform and your data seriously."
+    "badge": "الأمان",
+    "title": "الأمان أولاً",
+    "subtitle": "نأخذ أمان منصتنا وبياناتك على محمل الجد."
   },
   "tests": {
-    "badge": "Security Assessment",
-    "title": "Comprehensive Security Testing",
-    "subtitle": "Run professional security assessments powered by industry-standard tools."
+    "badge": "التقييم الأمني",
+    "title": "اختبارات أمنية شاملة",
+    "subtitle": "قم بإجراء تقييمات أمنية احترافية بأدوات معيارية في الصناعة."
   },
   "success": {
-    "title": "Payment Successful!",
-    "subtitle": "Welcome to CyberSec Pro. Your account has been activated.",
-    "dashboard": "Go to Dashboard",
-    "docs": "Read Documentation"
+    "title": "تم الدفع بنجاح!",
+    "subtitle": "مرحباً بك في CyberSec Pro. تم تفعيل حسابك.",
+    "dashboard": "الذهاب إلى لوحة التحكم",
+    "docs": "قراءة التوثيق"
   },
   "common": {
     "email": "cybersecpro@semihkilic.com",
-    "learnMore": "Learn More",
-    "getStarted": "Get Started",
-    "backToHome": "Back to Home"
+    "learnMore": "اعرف المزيد",
+    "getStarted": "ابدأ الآن",
+    "backToHome": "العودة للرئيسية"
   }
 }
