@@ -1,18 +1,26 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Login - CyberSec Pro</title>
-    <meta http-equiv="refresh" content="0;url=/dashboard/login">
-    <link rel="icon" type="image/svg+xml" href="/favicon.svg">
-    <script>
-        // Preserve hash/query params during redirect
-        var target = '/dashboard/login' + window.location.search + window.location.hash;
-        window.location.replace(target);
-    </script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Login — CyberSec Pro</title>
+<meta http-equiv="refresh" content="1;url=/dashboard/login">
+<link rel="icon" type="image/svg+xml" href="/favicon.svg">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/css/offsec.css">
 </head>
-<body style="background:#0a0a12;color:#fff;font-family:sans-serif;display:flex;align-items:center;justify-content:center;height:100vh;margin:0;">
-    <p>Redirecting to <a href="/dashboard/login" style="color:#367bf0;">login</a>...</p>
+<body>
+<canvas id="matrix-bg" aria-hidden="true"></canvas>
+<div style="display:flex;align-items:center;justify-content:center;height:100vh;flex-direction:column;position:relative;z-index:1">
+<div class="nv-brand" style="margin-bottom:24px;font-size:1.2rem">
+<svg width="28" height="28" viewBox="0 0 26 26" fill="none"><rect width="26" height="26" rx="3" fill="#9fef00"/><path d="M7.5 13l3 3 8-8" stroke="#0a0e14" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+CyberSec Pro
+</div>
+<p style="color:var(--t3);font-family:var(--m);font-size:.85rem">Redirecting to <a href="/dashboard/login" style="color:var(--neon)">login</a>...</p>
+</div>
+<script>var target='/dashboard/login'+window.location.search+window.location.hash;window.location.replace(target);</script>
+<script src="/js/offsec.js"></script>
 </body>
 </html>
