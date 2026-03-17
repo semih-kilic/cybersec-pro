@@ -279,4 +279,45 @@ r#"CREATE TABLE IF NOT EXISTS scheduled_scans (
     created_at TIMESTAMP DEFAULT NOW(),
     updated_at TIMESTAMP DEFAULT NOW()
 )"#,
+
+r#"CREATE TABLE IF NOT EXISTS notification_preferences (
+    id TEXT PRIMARY KEY,
+    user_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    email_scan_complete BOOLEAN DEFAULT TRUE,
+    email_weekly_report BOOLEAN DEFAULT TRUE,
+    email_security_alerts BOOLEAN DEFAULT TRUE,
+    browser_notifications BOOLEAN DEFAULT TRUE,
+    quiet_hours_enabled BOOLEAN DEFAULT FALSE,
+    quiet_hours_from TEXT DEFAULT '22:00',
+    quiet_hours_to TEXT DEFAULT '08:00',
+    created_at TIMESTAMP DEFAULT NOW(),
+    updated_at TIMESTAMP DEFAULT NOW(),
+    UNIQUE(user_id)
+)"#,
+
+r#"CREATE TABLE IF NOT EXISTS api_keys (
+    id TEXT PRIMARY KEY,
+    organization_id TEXT NOT NULL REFERENCES organizations(id) ON DELETE CASCADE,
+    user_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    name TEXT NOT NULL,
+    key_hash TEXT NOT NULL,
+    key_preview TEXT NOT NULL,
+    permissions JSONB DEFAULT '["read"]'::jsonb,
+    last_used_at TIMESTAMP,
+    expires_at TIMESTAMP,
+    is_active BOOLEAN DEFAULT TRUE,
+    created_at TIMESTAMP DEFAULT NOW()
+)"#,
+
+r#"CREATE TABLE IF NOT EXISTS team_invitations (
+    id TEXT PRIMARY KEY,
+    organization_id TEXT NOT NULL REFERENCES organizations(id) ON DELETE CASCADE,
+    email TEXT NOT NULL,
+    role TEXT DEFAULT 'user',
+    invited_by TEXT NOT NULL REFERENCES users(id),
+    status TEXT DEFAULT 'pending',
+    token TEXT NOT NULL,
+    created_at TIMESTAMP DEFAULT NOW(),
+    expires_at TIMESTAMP DEFAULT NOW() + INTERVAL '7 days'
+)"#,
 ];

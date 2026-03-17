@@ -492,8 +492,8 @@ pub async fn mfa_status(
     State(state): State<Arc<AppState>>,
     auth: AuthUser,
 ) -> impl IntoResponse {
-    let row: Option<(Option<bool>, Option<String>)> = sqlx::query_as(
-        "SELECT mfa_enabled, mfa_enabled_at FROM users WHERE id = $1"
+    let row: Option<(Option<bool>, Option<String>, Option<String>)> = sqlx::query_as(
+        "SELECT mfa_enabled, mfa_enabled_at, mfa_backup_codes FROM users WHERE id = $1"
     )
     .bind(&auth.user_id)
     .fetch_optional(&state.db)
@@ -501,10 +501,17 @@ pub async fn mfa_status(
     .unwrap_or(None);
 
     match row {
-        Some((enabled, enabled_at)) => Json(json!({
-            "mfa_enabled": enabled.unwrap_or(false),
-            "mfa_enabled_at": enabled_at
-        })),
-        None => Json(json!({"mfa_enabled": false})),
+        Some((enabled, enabled_at, backup_codes_json)) => {
+            let backup_codes_remaining = backup_codes_json
+                .and_then(|j| serde_json::from_str::<Vec<String>>(&j).ok())
+                .map(|codes| codes.len())
+                .unwrap_or(0);
+            Json(json!({
+                "mfa_enabled": enabled.unwrap_or(false),
+                "mfa_enabled_at": enabled_at,
+                "backup_codes_remaining": backup_codes_remaining
+            }))
+        },
+        None => Json(json!({"mfa_enabled": false, "backup_codes_remaining": 0})),
     }
 }

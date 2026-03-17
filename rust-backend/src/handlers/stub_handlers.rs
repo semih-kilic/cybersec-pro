@@ -187,10 +187,59 @@ pub async fn social_auth(
 }
 
 pub async fn resend_verification(
-    State(_state): State<Arc<AppState>>,
-    Json(_body): Json<serde_json::Value>,
+    State(state): State<Arc<AppState>>,
+    Json(body): Json<serde_json::Value>,
 ) -> impl IntoResponse {
-    Json(json!({"message": "Verification email sent"})).into_response()
+    let email = match body.get("email").and_then(|e| e.as_str()) {
+        Some(e) => e.to_string(),
+        None => return (StatusCode::BAD_REQUEST, Json(json!({"error": "Email required"}))).into_response(),
+    };
+
+    // Find user and generate new token
+    let user: Option<(String, Option<String>)> = sqlx::query_as(
+        "SELECT id, first_name FROM users WHERE email = $1 AND (email_verified IS NULL OR email_verified = false)"
+    )
+    .bind(&email)
+    .fetch_optional(&state.db)
+    .await
+    .unwrap_or(None);
+
+    let (user_id, first_name) = match user {
+        Some((uid, name)) => (uid, name.unwrap_or_else(|| "User".to_string())),
+        None => {
+            // Don't reveal whether email exists
+            return Json(json!({"message": "If that email exists, a verification email has been sent"})).into_response();
+        }
+    };
+
+    let token = uuid::Uuid::new_v4().to_string();
+    let _ = sqlx::query("UPDATE users SET verification_token = $1 WHERE id = $2")
+        .bind(&token)
+        .bind(&user_id)
+        .execute(&state.db)
+        .await;
+
+    // Send verification email
+    if let Some(cfg) = crate::services::email::EmailConfig::from_env() {
+        let verify_url = format!("https://semihkilic.com/dashboard/verify-email?token={}", token);
+        let html = format!(
+            r#"<!DOCTYPE html><html><body style="margin:0;padding:0;font-family:Arial,sans-serif;background:#0a0a0a">
+            <table style="width:100%;max-width:600px;margin:0 auto;background:#1a1a2e;border-radius:12px">
+            <tr><td style="padding:40px;text-align:center">
+            <h1 style="color:#00ff88">🛡️ Verify Your Email</h1>
+            <p style="color:#ccd6f6;font-size:16px">Hi {},</p>
+            <p style="color:#8892b0;font-size:14px">Please verify your email to activate your CyberSec Pro account.</p>
+            <a href="{}" style="display:inline-block;padding:16px 40px;background:linear-gradient(135deg,#00ff88,#00d4ff);color:#0a0a0a;text-decoration:none;font-weight:bold;border-radius:50px;margin:20px 0">Verify Email</a>
+            <p style="color:#4a5568;font-size:12px;margin-top:20px">© 2026 CyberSec Professional</p>
+            </td></tr></table></body></html>"#,
+            first_name, verify_url
+        );
+        let plain = format!("Hi {},\n\nVerify your email: {}\n\n© 2026 CyberSec Professional", first_name, verify_url);
+        let _ = crate::services::email::send_verification_email(&cfg, &email, &first_name, &verify_url).await;
+        let _ = plain; let _ = html; // sent via the dedicated function
+    }
+
+    Json(json!({"message": "If that email exists, a verification email has been sent"})).into_response()
 }
 
 pub async fn verify_email(
@@ -221,10 +270,56 @@ pub async fn verify_email(
 }
 
 pub async fn upload_avatar(
-    _user: AuthUser,
-    State(_state): State<Arc<AppState>>,
+    user: AuthUser,
+    State(state): State<Arc<AppState>>,
+    body: axum::body::Bytes,
 ) -> impl IntoResponse {
-    Json(json!({"message": "Avatar upload not yet implemented", "avatar_url": null})).into_response()
+    // Validate file size (max 2MB)
+    if body.len() > 2 * 1024 * 1024 {
+        return (StatusCode::BAD_REQUEST, Json(json!({"error": "File too large. Max 2MB"}))).into_response();
+    }
+
+    if body.is_empty() {
+        return (StatusCode::BAD_REQUEST, Json(json!({"error": "No file data received"}))).into_response();
+    }
+
+    // Detect image type from magic bytes
+    let ext = if body.starts_with(&[0x89, 0x50, 0x4E, 0x47]) {
+        "png"
+    } else if body.starts_with(&[0xFF, 0xD8, 0xFF]) {
+        "jpg"
+    } else if body.starts_with(b"GIF8") {
+        "gif"
+    } else if body.starts_with(b"RIFF") && body.len() > 12 && &body[8..12] == b"WEBP" {
+        "webp"
+    } else {
+        return (StatusCode::BAD_REQUEST, Json(json!({"error": "Invalid image format. Accepted: PNG, JPG, GIF, WebP"}))).into_response();
+    };
+
+    // Save to disk
+    let upload_dir = std::path::Path::new("/home/cybersec/cybersec-pro/uploads/avatars");
+    if let Err(e) = tokio::fs::create_dir_all(upload_dir).await {
+        tracing::error!("Failed to create avatar dir: {}", e);
+        return (StatusCode::INTERNAL_SERVER_ERROR, Json(json!({"error": "Server storage error"}))).into_response();
+    }
+
+    let filename = format!("{}.{}", user.user_id, ext);
+    let filepath = upload_dir.join(&filename);
+
+    if let Err(e) = tokio::fs::write(&filepath, &body).await {
+        tracing::error!("Failed to write avatar: {}", e);
+        return (StatusCode::INTERNAL_SERVER_ERROR, Json(json!({"error": "Failed to save avatar"}))).into_response();
+    }
+
+    // Update user avatar URL in DB
+    let avatar_url = format!("/uploads/avatars/{}", filename);
+    let _ = sqlx::query("UPDATE users SET avatar_url = $1 WHERE id = $2")
+        .bind(&avatar_url)
+        .bind(&user.user_id)
+        .execute(&state.db)
+        .await;
+
+    Json(json!({"message": "Avatar uploaded", "avatar_url": avatar_url})).into_response()
 }
 
 pub async fn mfa_verify_setup(
@@ -263,22 +358,109 @@ pub async fn mfa_verify_setup(
     };
 
     if totp.check_current(code).unwrap_or(false) {
-        // Enable MFA
-        let _ = sqlx::query("UPDATE users SET mfa_enabled = true WHERE id = $1")
+        // Generate 10 backup codes
+        use rand::Rng;
+        let mut rng = rand::thread_rng();
+        let mut backup_codes: Vec<String> = Vec::new();
+        let mut hashed_codes: Vec<String> = Vec::new();
+
+        for _ in 0..10 {
+            let code_val: u32 = rng.gen_range(10000000..99999999);
+            let code_str = format!("{}", code_val);
+            backup_codes.push(code_str.clone());
+            // Hash backup code with argon2
+            let salt = argon2::password_hash::SaltString::generate(&mut argon2::password_hash::rand_core::OsRng);
+            if let Ok(hash) = argon2::PasswordHasher::hash_password(
+                &argon2::Argon2::default(),
+                code_str.as_bytes(),
+                &salt,
+            ) {
+                hashed_codes.push(hash.to_string());
+            }
+        }
+
+        let hashed_json = serde_json::to_string(&hashed_codes).unwrap_or_else(|_| "[]".to_string());
+
+        // Enable MFA + store hashed backup codes
+        let _ = sqlx::query("UPDATE users SET mfa_enabled = true, mfa_backup_codes = $1 WHERE id = $2")
+            .bind(&hashed_json)
             .bind(&user.user_id)
             .execute(&state.db)
             .await;
-        Json(json!({"message": "MFA verified and enabled", "verified": true})).into_response()
+
+        Json(json!({"message": "MFA verified and enabled", "verified": true, "backup_codes": backup_codes})).into_response()
     } else {
         (StatusCode::BAD_REQUEST, Json(json!({"error": "Invalid TOTP code", "verified": false}))).into_response()
     }
 }
 
 pub async fn mfa_regenerate_backup(
-    _user: AuthUser,
-    State(_state): State<Arc<AppState>>,
+    user: AuthUser,
+    State(state): State<Arc<AppState>>,
+    Json(body): Json<serde_json::Value>,
 ) -> impl IntoResponse {
-    Json(json!({"backup_codes": [], "message": "Backup codes regenerated"})).into_response()
+    let password = match body.get("password").and_then(|p| p.as_str()) {
+        Some(p) => p.to_string(),
+        None => return (StatusCode::BAD_REQUEST, Json(json!({"error": "Password required"}))).into_response(),
+    };
+
+    // Verify password
+    let row: Option<(String, Option<bool>)> = sqlx::query_as(
+        "SELECT password_hash, mfa_enabled FROM users WHERE id = $1"
+    )
+    .bind(&user.user_id)
+    .fetch_optional(&state.db)
+    .await
+    .unwrap_or(None);
+
+    let (pw_hash, mfa_enabled) = match row {
+        Some(r) => r,
+        None => return (StatusCode::NOT_FOUND, Json(json!({"error": "User not found"}))).into_response(),
+    };
+
+    if !mfa_enabled.unwrap_or(false) {
+        return (StatusCode::BAD_REQUEST, Json(json!({"error": "MFA is not enabled"}))).into_response();
+    }
+
+    // Verify password
+    use argon2::PasswordVerifier;
+    let parsed_hash = match argon2::PasswordHash::new(&pw_hash) {
+        Ok(h) => h,
+        Err(_) => return (StatusCode::INTERNAL_SERVER_ERROR, Json(json!({"error": "Password verification error"}))).into_response(),
+    };
+    if argon2::Argon2::default().verify_password(password.as_bytes(), &parsed_hash).is_err() {
+        return (StatusCode::UNAUTHORIZED, Json(json!({"error": "Invalid password"}))).into_response();
+    }
+
+    // Generate 10 new backup codes
+    use rand::Rng;
+    let mut rng = rand::thread_rng();
+    let mut backup_codes: Vec<String> = Vec::new();
+    let mut hashed_codes: Vec<String> = Vec::new();
+
+    for _ in 0..10 {
+        let code_val: u32 = rng.gen_range(10000000..99999999);
+        let code_str = format!("{}", code_val);
+        backup_codes.push(code_str.clone());
+        let salt = argon2::password_hash::SaltString::generate(&mut argon2::password_hash::rand_core::OsRng);
+        if let Ok(hash) = argon2::PasswordHasher::hash_password(
+            &argon2::Argon2::default(),
+            code_str.as_bytes(),
+            &salt,
+        ) {
+            hashed_codes.push(hash.to_string());
+        }
+    }
+
+    let hashed_json = serde_json::to_string(&hashed_codes).unwrap_or_else(|_| "[]".to_string());
+
+    let _ = sqlx::query("UPDATE users SET mfa_backup_codes = $1 WHERE id = $2")
+        .bind(&hashed_json)
+        .bind(&user.user_id)
+        .execute(&state.db)
+        .await;
+
+    Json(json!({"backup_codes": backup_codes, "message": "Backup codes regenerated"})).into_response()
 }
 
 // ── Tool stubs ─────────────────────────────────────────────
