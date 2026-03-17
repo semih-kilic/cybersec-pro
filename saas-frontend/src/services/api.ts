@@ -130,6 +130,43 @@ class ApiService {
     }>('/auth/me');
   }
 
+  // Public get helper
+  async get<T = Record<string, unknown>>(endpoint: string) {
+    return this.request<T>(endpoint);
+  }
+
+  // ================================
+  // PROFILE
+  // ================================
+
+  async updateProfile(data: { first_name?: string; last_name?: string; company?: string }) {
+    return this.request<{ message: string }>('/auth/profile', {
+      method: 'PUT',
+      body: JSON.stringify(data),
+    });
+  }
+
+  async uploadAvatar(file: File) {
+    const formData = new FormData();
+    formData.append('file', file);
+    const headers: Record<string, string> = {};
+    if (this.token) {
+      headers['Authorization'] = `Bearer ${this.token}`;
+    }
+    try {
+      const response = await fetch(`${API_BASE}/auth/upload-avatar`, {
+        method: 'POST',
+        headers,
+        body: formData,
+      });
+      const data = await response.json();
+      if (!response.ok) return { error: data.error || 'Upload failed' };
+      return { data };
+    } catch {
+      return { error: 'Network error during upload' };
+    }
+  }
+
   // ================================
   // MFA — V20
   // ================================

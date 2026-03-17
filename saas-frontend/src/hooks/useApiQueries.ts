@@ -1094,8 +1094,8 @@ export function useUploadAvatar() {
   return useMutation({
     mutationFn: async (file: File) => {
       const formData = new FormData();
-      formData.append('avatar', file);
-      const res = await fetch('/api/v1/auth/avatar', {
+      formData.append('file', file);
+      const res = await fetch('/api/v1/auth/upload-avatar', {
         method: 'POST',
         headers: { ...(token ? { 'Authorization': `Bearer ${token}` } : {}) },
         body: formData,
@@ -1407,3 +1407,5 @@ export function useDashboardScans() {
     enabled: !!token,
   });
 }
+
+
