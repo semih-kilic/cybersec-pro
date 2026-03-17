@@ -293,8 +293,8 @@ fn get_service_configs() -> Vec<ServiceConfig> {
         ServiceConfig {
             id: "nginx".into(), name: "Nginx Reverse Proxy".into(),
             description: "TLS termination & reverse proxy".into(),
-            port: Some(443),
-            start_command: Some("nginx".into()),
+            port: Some(80),
+            start_command: Some("sudo systemctl restart nginx".into()),
             auto_restart: true, max_restarts: 100,
             priority: 1, category: "infrastructure".into(),
         },

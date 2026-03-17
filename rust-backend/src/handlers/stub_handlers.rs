@@ -1322,11 +1322,14 @@ pub async fn admin_delete_organization(
         return (StatusCode::NOT_FOUND, Json(json!({"error": "Organization not found"}))).into_response();
     }
 
-    // Cascade delete all related data
+    // Cascade delete all related data (respecting FK constraint order)
     let _ = sqlx::query("DELETE FROM audit_logs WHERE user_id IN (SELECT id FROM users WHERE organization_id = $1)").bind(&org_id).execute(&state.db).await;
     let _ = sqlx::query("DELETE FROM scheduled_scans WHERE user_id IN (SELECT id FROM users WHERE organization_id = $1)").bind(&org_id).execute(&state.db).await;
+    let _ = sqlx::query("DELETE FROM usage_tracking WHERE organization_id = $1").bind(&org_id).execute(&state.db).await;
     let _ = sqlx::query("DELETE FROM reports WHERE organization_id = $1").bind(&org_id).execute(&state.db).await;
     let _ = sqlx::query("DELETE FROM scans WHERE organization_id = $1").bind(&org_id).execute(&state.db).await;
+    let _ = sqlx::query("DELETE FROM sso_configs WHERE organization_id = $1").bind(&org_id).execute(&state.db).await;
+    let _ = sqlx::query("DELETE FROM subscriptions WHERE organization_id = $1").bind(&org_id).execute(&state.db).await;
     let _ = sqlx::query("DELETE FROM projects WHERE organization_id = $1").bind(&org_id).execute(&state.db).await;
     let _ = sqlx::query("DELETE FROM agents WHERE organization_id = $1").bind(&org_id).execute(&state.db).await;
     let _ = sqlx::query("DELETE FROM users WHERE organization_id = $1").bind(&org_id).execute(&state.db).await;

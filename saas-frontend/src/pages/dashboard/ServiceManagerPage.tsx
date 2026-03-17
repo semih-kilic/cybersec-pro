@@ -67,6 +67,7 @@ export default function ServiceManagerPage() {
   const [actionLoading, setActionLoading] = useState<string | null>(null);
   const [selectedService, setSelectedService] = useState<ServiceState | null>(null);
   const [autoRefresh, setAutoRefresh] = useState(true);
+  const [alertsOpen, setAlertsOpen] = useState(false);
 
   const fetchDashboard = useCallback(async () => {
     try {
@@ -189,13 +190,30 @@ export default function ServiceManagerPage() {
         <SummaryCard label="Uptime" value={summary.uptime_formatted} color="text-gray-300" icon={<UptimeIcon />} sub={`Net: ↓${formatBytes(system.network_rx_bytes)} ↑${formatBytes(system.network_tx_bytes)}`} />
       </div>
 
-      {/* Alerts */}
+      {/* Alerts — collapsible */}
       {activeAlerts.length > 0 && (
-        <div className="space-y-2">
-          <h2 className="text-sm font-semibold text-gray-400 uppercase tracking-wider">Active Alerts</h2>
-          {activeAlerts.map(alert => (
-            <AlertBanner key={alert.id} alert={alert} onAcknowledge={handleAcknowledge} />
-          ))}
+        <div className="rounded-xl border border-red-500/30 bg-red-500/5 overflow-hidden">
+          <button
+            onClick={() => setAlertsOpen(!alertsOpen)}
+            className="w-full flex items-center justify-between px-4 py-2.5 hover:bg-red-500/10 transition"
+          >
+            <div className="flex items-center gap-2">
+              <span className="w-2 h-2 rounded-full bg-red-500 animate-pulse" />
+              <span className="text-sm font-semibold text-red-400">
+                {activeAlerts.length} Active Alert{activeAlerts.length !== 1 ? 's' : ''}
+              </span>
+            </div>
+            <svg className={`w-4 h-4 text-gray-400 transition-transform ${alertsOpen ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+            </svg>
+          </button>
+          {alertsOpen && (
+            <div className="px-4 pb-3 space-y-1.5 max-h-60 overflow-y-auto">
+              {activeAlerts.map(alert => (
+                <AlertBanner key={alert.id} alert={alert} onAcknowledge={handleAcknowledge} />
+              ))}
+            </div>
+          )}
         </div>
       )}
 
