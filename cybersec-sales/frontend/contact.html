@@ -1,162 +1,110 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Contact Us — CyberSec Pro | Sales, Support &amp; Partnerships</title>
-    <meta name="description" content="Contact CyberSec Pro for sales demos, technical support, or partnership inquiries. Enterprise penetration testing platform with 401 Kali Linux tools. Response within 4 business hours.">
-    <meta name="robots" content="index, follow">
-    <link rel="canonical" href="https://semihkilic.com/contact">
-    <link rel="icon" type="image/svg+xml" href="/favicon.svg">
-    <meta property="og:title" content="Contact CyberSec Pro — Sales, Support &amp; Partnerships">
-    <meta property="og:description" content="Get a demo, technical help, or explore partnership opportunities with CyberSec Pro.">
-    <meta property="og:type" content="website">
-    <meta property="og:url" content="https://semihkilic.com/contact">
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script>
-        tailwind.config = { theme: { extend: { colors: { 'kali': { 'blue': '#367bf0', 'dark': '#1a1a2e', 'darker': '#0f0f1a', 'purple': '#9b59b6', 'cyan': '#00d4ff', 'green': '#2ecc71', 'red': '#e74c3c', 'orange': '#f39c12' } } } } }
-    </script>
-    <style>
-        body { font-family: 'Inter', sans-serif; background: #0a0a12; }
-        .kali-gradient { background: linear-gradient(135deg, #367bf0 0%, #9b59b6 50%, #367bf0 100%); }
-        .btn-kali { background: linear-gradient(135deg, #367bf0, #9b59b6); transition: all 0.3s ease; }
-        .btn-kali:hover { transform: translateY(-2px); box-shadow: 0 10px 40px rgba(54,123,240,0.3); }
-        .glow-card { transition: all 0.3s ease; }
-        .glow-card:hover { transform: translateY(-4px); box-shadow: 0 20px 60px rgba(54,123,240,0.1); }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Contact Us &mdash; CyberSec Pro</title>
+<meta name="description" content="Get in touch with CyberSec Pro. Sales inquiries, technical support, partnership opportunities. We're here to help.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/css/offsec.css">
+<style>
+.contact-hero{text-align:center;padding:8rem 0 4rem;position:relative;z-index:1}
+.contact-hero .badge{display:inline-block;padding:.35rem 1rem;border-radius:999px;font-size:.8rem;font-weight:600;letter-spacing:.04em;color:#9fef00;border:1px solid rgba(159,239,0,.25);background:rgba(159,239,0,.06);margin-bottom:1.5rem;font-family:'JetBrains Mono',monospace}
+.contact-hero h1{font-size:clamp(2.4rem,5vw,3.8rem);font-weight:800;line-height:1.1;margin-bottom:1.25rem}
+.contact-hero .subtitle{font-size:1.15rem;color:rgba(255,255,255,.6);max-width:560px;margin:0 auto;line-height:1.6}
+.contact-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:2rem;max-width:1100px;margin:0 auto 6rem;padding:0 1.5rem;position:relative;z-index:1}
+.contact-card{background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.06);border-radius:16px;padding:2.5rem 2rem;transition:border-color .3s,transform .3s,box-shadow .3s}
+.contact-card:hover{border-color:rgba(159,239,0,.25);transform:translateY(-4px);box-shadow:0 12px 40px rgba(0,0,0,.3)}
+.contact-card .card-icon{font-size:2.2rem;margin-bottom:1.25rem;display:block}
+.contact-card h3{font-size:1.3rem;font-weight:700;margin-bottom:.75rem;color:#fff}
+.contact-card p{color:rgba(255,255,255,.55);font-size:.92rem;line-height:1.65;margin-bottom:.5rem}
+.contact-card .card-detail{display:flex;align-items:center;gap:.5rem;margin:.6rem 0;font-size:.88rem;color:rgba(255,255,255,.5);font-family:'JetBrains Mono',monospace}
+.contact-card .card-detail .label{color:rgba(255,255,255,.35);font-size:.78rem;text-transform:uppercase;letter-spacing:.04em}
+.contact-card .card-detail a{color:#9fef00;text-decoration:none;word-break:break-all}
+.contact-card .card-detail a:hover{text-decoration:underline}
+.contact-card .sla-list{list-style:none;padding:0;margin:.75rem 0 1rem}
+.contact-card .sla-list li{padding:.4rem 0;font-size:.88rem;color:rgba(255,255,255,.5);border-bottom:1px solid rgba(255,255,255,.04);display:flex;align-items:center;gap:.5rem}
+.contact-card .sla-list li:last-child{border-bottom:none}
+.contact-card .sla-list .plan{color:#9fef00;font-family:'JetBrains Mono',monospace;font-size:.8rem;font-weight:600;min-width:90px}
+.contact-card .response-tag{display:inline-block;padding:.2rem .65rem;border-radius:999px;font-size:.75rem;font-weight:600;font-family:'JetBrains Mono',monospace;background:rgba(159,239,0,.08);color:#9fef00;border:1px solid rgba(159,239,0,.15);margin:.5rem 0 1.25rem}
+.contact-card .card-btn{display:inline-flex;align-items:center;gap:.5rem;padding:.7rem 1.4rem;border-radius:10px;font-size:.88rem;font-weight:600;text-decoration:none;transition:all .25s;margin-top:auto;font-family:'JetBrains Mono',monospace}
+.contact-card .card-btn.primary{background:#9fef00;color:#0a0e14;border:1px solid #9fef00}
+.contact-card .card-btn.primary:hover{background:#b8ff4a;box-shadow:0 0 20px rgba(159,239,0,.3)}
+.contact-card .card-btn.secondary{background:transparent;color:#9fef00;border:1px solid rgba(159,239,0,.3)}
+.contact-card .card-btn.secondary:hover{background:rgba(159,239,0,.08);border-color:#9fef00}
+.contact-cta{text-align:center;padding:4rem 1.5rem 6rem;position:relative;z-index:1}
+.contact-cta .cta-box{max-width:620px;margin:0 auto;padding:3rem 2.5rem;background:rgba(159,239,0,.03);border:1px solid rgba(159,239,0,.12);border-radius:18px}
+.contact-cta h2{font-size:1.6rem;font-weight:700;margin-bottom:.6rem;color:#fff}
+.contact-cta p{color:rgba(255,255,255,.5);font-size:.95rem;margin-bottom:1.5rem;line-height:1.6}
+.contact-cta .cta-btn{display:inline-flex;align-items:center;gap:.5rem;padding:.85rem 2rem;border-radius:12px;background:#9fef00;color:#0a0e14;font-weight:700;font-size:.95rem;text-decoration:none;font-family:'JetBrains Mono',monospace;transition:all .25s}
+.contact-cta .cta-btn:hover{background:#b8ff4a;box-shadow:0 0 30px rgba(159,239,0,.35);transform:translateY(-2px)}
+@media(max-width:900px){.contact-grid{grid-template-columns:1fr;max-width:480px}}
+@media(max-width:600px){.contact-hero{padding:6rem 1.5rem 3rem}.contact-hero h1{font-size:2rem}.contact-card{padding:2rem 1.5rem}}
+</style>
 </head>
-<body class="text-white antialiased">
-    <nav class="sticky top-0 z-50 bg-[#0a0a12]/95 backdrop-blur-xl border-b border-white/5">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6">
-            <div class="flex justify-between items-center h-16">
-                <a href="/" class="flex items-center gap-3">
-                    <div class="relative">
-                        <div class="w-10 h-10 rounded-xl kali-gradient flex items-center justify-center"><svg class="w-6 h-6 text-white" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z"/></svg></div>
-                        <div class="absolute -top-1 -right-1 w-3 h-3 bg-kali-green rounded-full animate-pulse"></div>
-                    </div>
-                    <span class="text-xl font-bold">CyberSec Pro</span>
-                </a>
-                <div class="hidden md:flex items-center gap-8">
-                    <a href="/#platform" class="text-gray-400 hover:text-white transition font-medium">Platform</a>
-                    <a href="/tools.html" class="text-gray-400 hover:text-white transition font-medium">Tools</a>
-                    <a href="/#pricing" class="text-gray-400 hover:text-white transition font-medium">Pricing</a>
-                    <a href="/about.html" class="text-gray-400 hover:text-white transition font-medium">About</a>
-                    <a href="/contact.html" class="text-kali-blue font-medium">Contact</a>
-                </div>
-                <div class="flex items-center gap-4">
-                    <a href="/dashboard/login" class="hidden sm:block text-gray-400 hover:text-white transition font-medium">Sign in</a>
-                    <a href="/dashboard/login" class="btn-kali px-6 py-2.5 rounded-full text-white font-semibold">Start Free Scan</a>
-                </div>
-            </div>
-        </div>
-    </nav>
+<body>
+<canvas id="matrix-bg" aria-hidden="true"></canvas>
 
-    <section class="pt-24 pb-12 px-4 relative overflow-hidden">
-        <div class="absolute inset-0 bg-gradient-to-b from-[#0c1929] via-[#0a0a12] to-[#0a0a12]"></div>
-        <div class="max-w-4xl mx-auto text-center relative z-10">
-            <div class="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-kali-blue/10 border border-kali-blue/30 mb-8">
-                <span class="text-kali-blue font-medium">Contact Us</span>
-            </div>
-            <h1 class="text-4xl sm:text-5xl md:text-6xl font-bold mb-6 leading-tight">
-                <span class="bg-gradient-to-r from-kali-blue to-kali-cyan bg-clip-text text-transparent">Get in Touch</span>
-            </h1>
-            <p class="text-xl text-gray-400 max-w-2xl mx-auto">Whether you need a demo, technical support, or want to explore partnerships — we're here to help.</p>
-        </div>
-    </section>
+<header><nav class="nv"><a href="/" class="nv-brand"><svg width="24" height="24" viewBox="0 0 26 26" fill="none"><rect width="26" height="26" rx="3" fill="#9fef00"/><path d="M7.5 13l3 3 8-8" stroke="#0a0e14" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg> CyberSec Pro</a><div class="nv-links"><a href="/#features">Features</a><a href="/#tools">Arsenal</a><a href="/#pricing">Pricing</a><a href="/docs.html">Docs</a><a href="/api.html">API</a></div><div class="nv-end"><a href="/dashboard/login" class="nv-login" id="nav-login">$ login</a><a href="/dashboard/login" class="nv-btn" id="nav-cta">Get Access</a></div><button class="nv-mob" aria-label="Menu" onclick="toggleMobileMenu()"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg></button></nav></header>
 
-    <section class="py-12 px-4">
-        <div class="max-w-6xl mx-auto">
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <div class="bg-white/[0.02] border border-white/10 rounded-2xl p-8 glow-card flex flex-col">
-                    <div class="w-12 h-12 rounded-xl bg-kali-blue/10 border border-kali-blue/20 flex items-center justify-center mb-5">
-                        <svg class="w-6 h-6 text-kali-blue" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 13.125C3 12.504 3.504 12 4.125 12h2.25c.621 0 1.125.504 1.125 1.125v6.75C7.5 20.496 6.996 21 6.375 21h-2.25A1.125 1.125 0 013 19.875v-6.75zM9.75 8.625c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125v11.25c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V8.625zM16.5 4.125c0-.621.504-1.125 1.125-1.125h2.25C20.496 3 21 3.504 21 4.125v15.75c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V4.125z"/></svg>
-                    </div>
-                    <h3 class="text-xl font-bold text-white mb-2">Sales &amp; Demos</h3>
-                    <p class="text-gray-400 text-sm mb-6">Want a demo or have questions about pricing?</p>
-                    <div class="space-y-4 mb-8 flex-grow">
-                        <div>
-                            <div class="text-[11px] text-gray-500 uppercase tracking-wider mb-1">Email</div>
-                            <a href="mailto:cybersecpro@semihkilic.com?subject=Demo%20Request" class="text-kali-blue hover:text-kali-cyan text-sm font-medium transition">cybersecpro@semihkilic.com</a>
-                        </div>
-                        <div>
-                            <div class="text-[11px] text-gray-500 uppercase tracking-wider mb-1">Response Time</div>
-                            <div class="flex items-center gap-2"><div class="w-2 h-2 rounded-full bg-kali-green"></div><span class="text-white text-sm font-medium">Within 4 business hours</span></div>
-                        </div>
-                    </div>
-                    <a href="mailto:cybersecpro@semihkilic.com?subject=Demo%20Request%20%E2%80%93%20CyberSec%20Pro" class="w-full text-center btn-kali text-white font-semibold px-6 py-3 rounded-xl block">Schedule a Demo</a>
-                </div>
+<main>
+<section class="contact-hero reveal">
+<span class="badge">Get in Touch</span>
+<h1 class="glitch" data-text="Get in Touch">Get in Touch</h1>
+<p class="subtitle">Have a question about our platform? Want a demo? Need support? We&#x27;re here to help.</p>
+</section>
 
-                <div class="bg-white/[0.02] border border-white/10 rounded-2xl p-8 glow-card flex flex-col">
-                    <div class="w-12 h-12 rounded-xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center mb-5">
-                        <svg class="w-6 h-6 text-emerald-400" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75m-3-7.036A11.959 11.959 0 013.598 6 11.99 11.99 0 003 9.749c0 5.592 3.824 10.29 9 11.623 5.176-1.332 9-6.03 9-11.622 0-1.31-.21-2.571-.598-3.751h-.152c-3.196 0-6.1-1.248-8.25-3.285z"/></svg>
-                    </div>
-                    <h3 class="text-xl font-bold text-white mb-2">Technical Support</h3>
-                    <p class="text-gray-400 text-sm mb-6">Need help with your scans or account?</p>
-                    <div class="space-y-4 mb-8 flex-grow">
-                        <div class="bg-white/[0.02] border border-white/5 rounded-xl p-4">
-                            <div class="text-[11px] text-emerald-400/70 uppercase tracking-wider font-medium mb-2">Paid Customers</div>
-                            <a href="mailto:cybersecpro@semihkilic.com?subject=Support%20Request" class="text-emerald-400 hover:text-emerald-300 text-sm font-medium transition block mb-2">cybersecpro@semihkilic.com</a>
-                            <div class="flex flex-col gap-1 text-xs text-gray-400">
-                                <div class="flex items-center gap-2"><div class="w-1.5 h-1.5 rounded-full bg-emerald-500"></div>Professional: <span class="text-white font-medium">24h response</span></div>
-                                <div class="flex items-center gap-2"><div class="w-1.5 h-1.5 rounded-full bg-kali-purple"></div>Enterprise: <span class="text-white font-medium">2h response</span></div>
-                            </div>
-                        </div>
-                        <div class="bg-white/[0.02] border border-white/5 rounded-xl p-4">
-                            <div class="text-[11px] text-gray-500 uppercase tracking-wider font-medium mb-2">Trial Users</div>
-                            <a href="mailto:cybersecpro@semihkilic.com?subject=Trial%20Support" class="text-gray-300 hover:text-white text-sm font-medium transition block mb-2">cybersecpro@semihkilic.com</a>
-                            <div class="flex items-center gap-2 text-xs text-gray-400"><div class="w-1.5 h-1.5 rounded-full bg-amber-500"></div>Response time: <span class="text-white font-medium">48h</span></div>
-                        </div>
-                    </div>
-                    <a href="/docs.html" class="w-full text-center border border-emerald-500/30 text-emerald-400 font-semibold px-6 py-3 rounded-xl hover:bg-emerald-500/10 transition block">Access Help Center</a>
-                </div>
+<section class="contact-grid">
+<div class="contact-card reveal">
+<span class="card-icon">&#x1F4E7;</span>
+<h3>Sales &amp; Demos</h3>
+<p>Interested in CyberSec Pro for your team? Get a personalized walkthrough of the platform and see how it fits your workflow.</p>
+<div class="card-detail">
+<span class="label">Email</span>
+<a href="mailto:cybersecpro@semihkilic.com">cybersecpro@semihkilic.com</a>
+</div>
+<span class="response-tag">Response &lt; 4 hours</span>
+<a href="mailto:cybersecpro@semihkilic.com?subject=Demo%20Request" class="card-btn primary">Schedule a Demo &#x2192;</a>
+</div>
 
-                <div class="bg-white/[0.02] border border-white/10 rounded-2xl p-8 glow-card flex flex-col">
-                    <div class="w-12 h-12 rounded-xl bg-kali-purple/10 border border-kali-purple/20 flex items-center justify-center mb-5">
-                        <svg class="w-6 h-6 text-kali-purple" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19.128a9.38 9.38 0 002.625.372 9.337 9.337 0 004.121-.952 4.125 4.125 0 00-7.533-2.493M15 19.128v-.003c0-1.113-.285-2.16-.786-3.07M15 19.128v.106A12.318 12.318 0 018.624 21c-2.331 0-4.512-.645-6.374-1.766l-.001-.109a6.375 6.375 0 0111.964-3.07M12 6.375a3.375 3.375 0 11-6.75 0 3.375 3.375 0 016.75 0zm8.25 2.25a2.625 2.625 0 11-5.25 0 2.625 2.625 0 015.25 0z"/></svg>
-                    </div>
-                    <h3 class="text-xl font-bold text-white mb-2">Partnerships</h3>
-                    <p class="text-gray-400 text-sm mb-6">Interested in white-labeling or reselling?</p>
-                    <div class="space-y-4 mb-8 flex-grow">
-                        <div>
-                            <div class="text-[11px] text-gray-500 uppercase tracking-wider mb-1">Email</div>
-                            <a href="mailto:cybersecpro@semihkilic.com?subject=Partnership%20Inquiry" class="text-kali-purple hover:text-kali-cyan text-sm font-medium transition">cybersecpro@semihkilic.com</a>
-                        </div>
-                        <div>
-                            <div class="text-[11px] text-gray-500 uppercase tracking-wider mb-1">Response Time</div>
-                            <div class="flex items-center gap-2"><div class="w-2 h-2 rounded-full bg-kali-purple"></div><span class="text-white text-sm font-medium">Within 2 business days</span></div>
-                        </div>
-                    </div>
-                    <a href="mailto:cybersecpro@semihkilic.com?subject=Partnership%20Inquiry%20%E2%80%93%20CyberSec%20Pro" class="w-full text-center border border-kali-purple/30 text-kali-purple font-semibold px-6 py-3 rounded-xl hover:bg-kali-purple/10 transition block">Explore Partnerships</a>
-                </div>
-            </div>
-        </div>
-    </section>
+<div class="contact-card reveal">
+<span class="card-icon">&#x1F6E0;&#xFE0F;</span>
+<h3>Technical Support</h3>
+<p>Running into an issue or need help configuring a scan? Our engineering team has you covered.</p>
+<ul class="sla-list">
+<li><span class="plan">Enterprise</span> 2-hour SLA</li>
+<li><span class="plan">Professional</span> 24-hour SLA</li>
+<li><span class="plan">Trial</span> 48-hour SLA</li>
+</ul>
+<a href="/docs.html" class="card-btn secondary">Access Help Center &#x2192;</a>
+</div>
 
-    <section class="py-16 px-4">
-        <div class="max-w-3xl mx-auto text-center">
-            <div class="bg-gradient-to-r from-kali-blue/5 via-kali-purple/5 to-kali-blue/5 border border-white/10 rounded-2xl p-10">
-                <h2 class="text-2xl font-bold text-white mb-3">Don't want to wait? Start your free scan now.</h2>
-                <p class="text-gray-400 mb-6">No credit card required. Results in under 30 minutes.</p>
-                <a href="/dashboard/login" class="inline-flex items-center gap-2 btn-kali text-white font-bold px-8 py-4 rounded-xl">Start Free Security Scan →</a>
-            </div>
-        </div>
-    </section>
+<div class="contact-card reveal">
+<span class="card-icon">&#x1F91D;</span>
+<h3>Partnerships</h3>
+<p>Explore white-labeling and reselling opportunities. Integrate CyberSec Pro into your existing security offerings.</p>
+<div class="card-detail">
+<span class="label">Email</span>
+<a href="mailto:cybersecpro@semihkilic.com">cybersecpro@semihkilic.com</a>
+</div>
+<span class="response-tag">Response &lt; 2 business days</span>
+<a href="mailto:cybersecpro@semihkilic.com?subject=Partnership%20Inquiry" class="card-btn primary">Explore Partnerships &#x2192;</a>
+</div>
+</section>
 
-    <footer class="py-12 px-4 border-t border-white/5 bg-kali-darker">
-        <div class="max-w-5xl mx-auto flex flex-col md:flex-row justify-between items-center gap-6">
-            <div class="flex items-center gap-3"><div class="w-8 h-8 rounded-lg kali-gradient flex items-center justify-center"><svg class="w-5 h-5 text-white" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z"/></svg></div><span class="text-white font-bold">CyberSec Pro</span></div>
-            <div class="flex items-center gap-6 text-sm text-gray-500">
-                <a href="/" class="hover:text-white transition">Home</a>
-                <a href="/#pricing" class="hover:text-white transition">Pricing</a>
-                <a href="/about.html" class="hover:text-white transition">About</a>
-                <a href="/privacy.html" class="hover:text-white transition">Privacy</a>
-                <a href="/terms.html" class="hover:text-white transition">Terms</a>
-            </div>
-            <div class="text-gray-600 text-sm">&copy; 2026 CyberSec Pro. All rights reserved.</div>
-        </div>
-    </footer>
+<section class="contact-cta reveal">
+<div class="cta-box">
+<h2>Don&#x27;t want to wait? Start your free scan now.</h2>
+<p>No credit card required. Get results in 30 minutes.</p>
+<a href="/dashboard/login" class="cta-btn">Start Free Scan &#x2192;</a>
+</div>
+</section>
+</main>
+
+<footer><div class="ft"><div class="ft-grid"><div class="ft-brand"><div class="nv-brand" style="margin-bottom:0"><svg width="22" height="22" viewBox="0 0 26 26" fill="none"><rect width="26" height="26" rx="3" fill="#9fef00"/><path d="M7.5 13l3 3 8-8" stroke="#0a0e14" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg> CyberSec Pro</div><p>Cloud-based offensive security platform. 401 Kali Linux tools across 61 categories.</p></div><div class="ft-col"><h5>Platform</h5><a href="/#features">Features</a><a href="/#tools">Arsenal</a><a href="/#pricing">Pricing</a><a href="/docs.html">Documentation</a><a href="/api.html">API</a></div><div class="ft-col"><h5>Company</h5><a href="/about.html">About</a><a href="/blog.html">Blog</a><a href="/careers.html">Careers</a><a href="/contact.html">Contact</a></div><div class="ft-col"><h5>Legal</h5><a href="/privacy.html">Privacy Policy</a><a href="/terms.html">Terms of Service</a><a href="mailto:cybersecpro@semihkilic.com">Support</a></div></div><div class="ft-bot"><span>&copy; 2026 CyberSec Pro</span><span>cybersecpro@semihkilic.com</span></div></div></footer>
+
+<script src="/js/offsec.js"></script>
 </body>
 </html>
