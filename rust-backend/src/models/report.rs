@@ -81,4 +81,29 @@ impl Report {
             completed_at: self.completed_at.map(|d| d.format("%Y-%m-%dT%H:%M:%S").to_string()),
         }
     }
+
+    pub fn to_response_json(&self) -> serde_json::Value {
+        serde_json::json!({
+            "id": self.id,
+            "name": self.name,
+            "template": self.template.clone().unwrap_or_else(|| "full".into()),
+            "format": self.format.clone().unwrap_or_else(|| "html".into()),
+            "status": self.status.clone().unwrap_or_else(|| "generating".into()),
+            "scan_ids": self.scan_ids,
+            "sections": self.sections,
+            "total_findings": self.total_findings.unwrap_or(0),
+            "severity_breakdown": {
+                "critical": self.critical_count.unwrap_or(0),
+                "high": self.high_count.unwrap_or(0),
+                "medium": self.medium_count.unwrap_or(0),
+                "low": self.low_count.unwrap_or(0),
+                "info": self.info_count.unwrap_or(0),
+            },
+            "risk_score": self.risk_score.unwrap_or(0),
+            "risk_level": self.risk_level.clone().unwrap_or_else(|| "None".into()),
+            "file_size": self.file_size,
+            "created_at": self.created_at.map(|d| d.format("%Y-%m-%dT%H:%M:%S").to_string()),
+            "completed_at": self.completed_at.map(|d| d.format("%Y-%m-%dT%H:%M:%S").to_string()),
+        })
+    }
 }
