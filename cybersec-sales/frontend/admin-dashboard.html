@@ -1,231 +1,98 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CyberSec Pro - Admin Dashboard</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    colors: {
-                        dark: { bg: '#0a0a0f', card: '#12121a', border: '#1f1f2e' },
-                        cyber: { cyan: '#00d4ff', blue: '#0066ff' }
-                    }
-                }
-            }
-        }
-    </script>
-</head>
-<body class="bg-dark-bg text-white min-h-screen">
-    <div class="container mx-auto px-6 py-8">
-        <!-- Header -->
-        <div class="mb-8">
-            <h1 class="text-3xl font-bold mb-2">CyberSec Pro - Admin Dashboard</h1>
-            <p class="text-gray-400">Phase 1: Monthly Subscription Monitoring</p>
-        </div>
-
-        <!-- Stats Cards -->
-        <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-            <div class="bg-dark-card rounded-xl p-6 border border-dark-border">
-                <div class="text-gray-400 text-sm">Total Customers</div>
-                <div id="totalCustomers" class="text-3xl font-bold text-cyber-cyan">-</div>
-            </div>
-            <div class="bg-dark-card rounded-xl p-6 border border-dark-border">
-                <div class="text-gray-400 text-sm">Active Licenses</div>
-                <div id="activeLicenses" class="text-3xl font-bold text-green-400">-</div>
-            </div>
-            <div class="bg-dark-card rounded-xl p-6 border border-dark-border">
-                <div class="text-gray-400 text-sm">Total Revenue</div>
-                <div id="totalRevenue" class="text-3xl font-bold text-yellow-400">$0</div>
-            </div>
-            <div class="bg-dark-card rounded-xl p-6 border border-dark-border">
-                <div class="text-gray-400 text-sm">System Status</div>
-                <div id="systemStatus" class="text-3xl font-bold text-gray-400">-</div>
-            </div>
-        </div>
-
-        <!-- Phase 1 Progress -->
-        <div class="bg-dark-card rounded-xl p-6 border border-dark-border mb-8">
-            <h2 class="text-xl font-bold mb-4">Phase 1 Implementation Status</h2>
-            <div class="space-y-4">
-                <div class="flex items-center justify-between">
-                    <span>✅ Backend Updated (Monthly Pricing)</span>
-                    <span class="text-green-400 font-semibold">Complete</span>
-                </div>
-                <div class="flex items-center justify-between">
-                    <span>✅ Frontend Updated (New Pricing Page)</span>
-                    <span class="text-green-400 font-semibold">Complete</span>
-                </div>
-                <div class="flex items-center justify-between">
-                    <span>✅ Nginx Configuration Updated</span>
-                    <span class="text-green-400 font-semibold">Complete</span>
-                </div>
-                <div class="flex items-center justify-between">
-                    <span>✅ Stripe Integration Working</span>
-                    <span class="text-green-400 font-semibold">Complete</span>
-                </div>
-                <div class="flex items-center justify-between">
-                    <span>🔄 Legacy Customer Migration</span>
-                    <span class="text-yellow-400 font-semibold">In Progress</span>
-                </div>
-            </div>
-        </div>
-
-        <!-- Recent Licenses -->
-        <div class="bg-dark-card rounded-xl p-6 border border-dark-border">
-            <h2 class="text-xl font-bold mb-4">Recent Licenses</h2>
-            <div class="overflow-x-auto">
-                <table class="w-full">
-                    <thead>
-                        <tr class="border-b border-dark-border">
-                            <th class="text-left py-3 text-gray-400">License Key</th>
-                            <th class="text-left py-3 text-gray-400">Customer</th>
-                            <th class="text-left py-3 text-gray-400">Plan</th>
-                            <th class="text-left py-3 text-gray-400">Status</th>
-                            <th class="text-left py-3 text-gray-400">Expires</th>
-                        </tr>
-                    </thead>
-                    <tbody id="licensesTable">
-                        <tr>
-                            <td colspan="5" class="py-4 text-center text-gray-400">Loading...</td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
-        </div>
-
-        <!-- Actions -->
-        <div class="mt-8 flex gap-4">
-            <button onclick="refreshData()" class="px-6 py-3 bg-cyber-cyan text-black rounded-lg font-semibold hover:opacity-90 transition">
-                Refresh Data
-            </button>
-            <button onclick="testCheckout()" class="px-6 py-3 bg-green-600 rounded-lg font-semibold hover:bg-green-700 transition">
-                Test Checkout
-            </button>
-            <a href="/" class="px-6 py-3 bg-gray-700 rounded-lg font-semibold hover:bg-gray-600 transition">
-                Back to Site
-            </a>
-        </div>
-    </div>
-
-    <script>
-        const API_URL = '/api';
-        const ADMIN_TOKEN = 'cybersec-admin-2026';
-
-        async function fetchWithAuth(url) {
-            const response = await fetch(url, {
-                headers: { 'X-Admin-Token': ADMIN_TOKEN }
-            });
-            return response.json();
-        }
-
-        async function loadStats() {
-            try {
-                const stats = await fetchWithAuth(`${API_URL}/admin/stats`);
-                document.getElementById('totalCustomers').textContent = stats.customers;
-                document.getElementById('activeLicenses').textContent = stats.licenses.active;
-                document.getElementById('totalRevenue').textContent = `$${stats.revenue.toFixed(2)}`;
-            } catch (err) {
-                console.error('Failed to load stats:', err);
-            }
-        }
-
-        async function loadSystemHealth() {
-            try {
-                const health = await fetch(`${API_URL}/health`).then(r => r.json());
-                const status = health.status === 'healthy' ? '🟢 Healthy' : '🟡 Degraded';
-                document.getElementById('systemStatus').textContent = status;
-            } catch (err) {
-                document.getElementById('systemStatus').textContent = '🔴 Error';
-            }
-        }
-
-        async function loadLicenses() {
-            try {
-                const data = await fetchWithAuth(`${API_URL}/admin/licenses`);
-                const tbody = document.getElementById('licensesTable');
-                
-                if (data.licenses.length === 0) {
-                    tbody.innerHTML = '<tr><td colspan="5" class="py-4 text-center text-gray-400">No licenses found</td></tr>';
-                    return;
-                }
-
-                tbody.innerHTML = data.licenses.map(license => `
-                    <tr class="border-b border-dark-border/50">
-                        <td class="py-3 font-mono text-sm">${license.key}</td>
-                        <td class="py-3">${license.customer_email || 'N/A'}</td>
-                        <td class="py-3">
-                            <span class="px-2 py-1 rounded text-xs ${getPlanColor(license.plan)}">${license.plan}</span>
-                        </td>
-                        <td class="py-3">
-                            <span class="px-2 py-1 rounded text-xs ${getStatusColor(license.status)}">${license.status}</span>
-                        </td>
-                        <td class="py-3 text-sm">${formatDate(license.expires_at)} (${license.days_left} days)</td>
-                    </tr>
-                `).join('');
-            } catch (err) {
-                console.error('Failed to load licenses:', err);
-                document.getElementById('licensesTable').innerHTML = 
-                    '<tr><td colspan="5" class="py-4 text-center text-red-400">Failed to load licenses</td></tr>';
-            }
-        }
-
-        function getPlanColor(plan) {
-            const colors = {
-                'starter': 'bg-blue-500/20 text-blue-400',
-                'professional': 'bg-cyber-cyan/20 text-cyber-cyan',
-                'enterprise': 'bg-yellow-500/20 text-yellow-400',
-                'basic': 'bg-gray-500/20 text-gray-400'
-            };
-            return colors[plan] || 'bg-gray-500/20 text-gray-400';
-        }
-
-        function getStatusColor(status) {
-            const colors = {
-                'active': 'bg-green-500/20 text-green-400',
-                'expired': 'bg-red-500/20 text-red-400',
-                'revoked': 'bg-red-500/20 text-red-400'
-            };
-            return colors[status] || 'bg-gray-500/20 text-gray-400';
-        }
-
-        function formatDate(dateStr) {
-            if (!dateStr) return 'N/A';
-            return new Date(dateStr).toLocaleDateString('en-US', {
-                year: 'numeric', month: 'short', day: 'numeric'
-            });
-        }
-
-        async function refreshData() {
-            await Promise.all([loadStats(), loadSystemHealth(), loadLicenses()]);
-        }
-
-        async function testCheckout() {
-            try {
-                const response = await fetch(`${API_URL}/create-checkout-session`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ plan: 'professional', email: 'admin@test.com' })
-                });
-                const data = await response.json();
-                
-                if (data.url) {
-                    window.open(data.url, '_blank');
-                } else {
-                    alert('Failed to create checkout session: ' + (data.error || 'Unknown error'));
-                }
-            } catch (err) {
-                alert('Error: ' + err.message);
-            }
-        }
-
-        // Load data on page load
-        refreshData();
-        
-        // Auto-refresh every 30 seconds
-        setInterval(refreshData, 30000);
-    </script>
-</body>
-</html>
+<!DOCTYPE html><html lang="en"><head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Admin Dashboard &mdash; CyberSec Pro</title>
+<meta name="description" content="CyberSec Pro system administration panel.">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+:root{--bg:#0a0e14;--s1:#0d1117;--s2:#111927;--s3:#1a2332;--b1:rgba(159,239,0,.06);--b2:rgba(159,239,0,.1);--b3:rgba(159,239,0,.18);--t1:#e2e8f0;--t2:#a4b1cd;--t3:#6b7fa3;--t4:#3d5178;--neon:#9fef00;--cyan:#00d4ff;--purple:#b44aff;--red:#ff3e3e;--orange:#ff9f1c;--f:'Inter',system-ui,sans-serif;--m:'JetBrains Mono',monospace;--max:1200px}
+html{scroll-behavior:smooth}body{font-family:var(--f);background:var(--bg);color:var(--t1);overflow-x:hidden;line-height:1.6}a{color:inherit;text-decoration:none}::selection{background:rgba(159,239,0,.25)}
+body::after{content:'';position:fixed;inset:0;z-index:9999;pointer-events:none;background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,0,0,.03) 2px,rgba(0,0,0,.03) 4px);opacity:.4}
+header{position:fixed;inset:0 0 auto;z-index:100;background:rgba(10,14,20,.85);backdrop-filter:blur(20px);border-bottom:1px solid var(--b1)}
+.nv{max-width:var(--max);margin:0 auto;padding:0 32px;height:64px;display:flex;align-items:center;justify-content:space-between}
+.nv-brand{display:flex;align-items:center;gap:12px;font-weight:800;font-size:1rem;color:var(--neon);font-family:var(--m)}
+.nv-links{display:flex;gap:32px;font-size:.82rem;font-weight:500;color:var(--t3);font-family:var(--m)}.nv-links a:hover{color:var(--neon)}
+.nv-end{display:flex;align-items:center;gap:16px}
+.nv-login{font-size:.82rem;font-weight:500;color:var(--t2);font-family:var(--m)}.nv-login:hover{color:var(--neon)}
+.nv-btn{font-size:.82rem;font-weight:700;padding:9px 22px;background:var(--neon);color:#0a0e14;border-radius:4px;font-family:var(--m);text-transform:uppercase;letter-spacing:.05em}.nv-btn:hover{box-shadow:0 0 20px rgba(159,239,0,.4);transform:translateY(-1px)}
+@media(max-width:768px){.nv-links{display:none}}
+.page-hero{padding:140px 32px 60px;text-align:center;position:relative;z-index:1}
+.page-hero::before{content:'';position:absolute;top:-100px;left:50%;transform:translateX(-50%);width:800px;height:400px;background:radial-gradient(ellipse,rgba(159,239,0,.04),transparent 70%);pointer-events:none}
+.page-hero .badge{display:inline-flex;align-items:center;gap:8px;padding:6px 16px;background:rgba(159,239,0,.06);border:1px solid var(--b2);border-radius:2px;font-size:.72rem;font-weight:700;color:var(--neon);margin-bottom:24px;letter-spacing:.1em;text-transform:uppercase;font-family:var(--m)}
+.page-hero h1{font-size:clamp(2.2rem,5vw,3.5rem);font-weight:900;letter-spacing:-.03em;color:var(--t1);margin-bottom:16px}
+.page-hero p{font-size:1.05rem;color:var(--t2);max-width:600px;margin:0 auto}
+.content{max-width:800px;margin:0 auto;padding:60px 32px 120px;position:relative;z-index:1}
+.content h2{font-size:1.4rem;font-weight:800;color:var(--neon);margin:48px 0 16px;font-family:var(--m);display:flex;align-items:center;gap:10px}
+.content h2::before{content:'>';color:var(--neon)}
+.content h3{font-size:1.1rem;font-weight:700;color:var(--t1);margin:32px 0 12px}
+.content p,.content li{font-size:.95rem;color:var(--t2);line-height:1.8;margin-bottom:12px}
+.content ul,.content ol{padding-left:24px;list-style:none}
+.content a{color:var(--neon);border-bottom:1px solid rgba(159,239,0,.2)}.content a:hover{border-color:var(--neon)}
+.content .info-box{background:rgba(159,239,0,.04);border:1px solid var(--b2);border-radius:4px;padding:20px 24px;margin:24px 0;font-size:.9rem}
+.admin-grid{max-width:var(--max);margin:0 auto;padding:0 32px 80px;display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:20px;position:relative;z-index:1}
+.admin-card{background:var(--s1);border:1px solid var(--b1);border-radius:4px;padding:28px;transition:all .3s;cursor:pointer}
+.admin-card:hover{border-color:var(--b3);transform:translateY(-2px)}
+.admin-card .icon{font-size:1.5rem;margin-bottom:12px}
+.admin-card h3{font-size:1rem;font-weight:700;color:var(--t1);margin-bottom:6px;font-family:var(--m)}
+.admin-card p{font-size:.82rem;color:var(--t3)}
+.admin-card .val{font-size:1.8rem;font-weight:900;color:var(--neon);font-family:var(--m);margin-bottom:4px}
+.admin-stats{max-width:var(--max);margin:0 auto;padding:0 32px 40px;display:grid;grid-template-columns:repeat(4,1fr);gap:20px;position:relative;z-index:1}
+.admin-stat{background:var(--s1);border:1px solid var(--b1);border-radius:4px;padding:24px;text-align:center}
+.admin-stat .num{font-size:2rem;font-weight:900;color:var(--neon);font-family:var(--m)}
+.admin-stat .lbl{font-size:.75rem;color:var(--t3);font-family:var(--m);margin-top:4px}
+@media(max-width:768px){.admin-stats{grid-template-columns:1fr 1fr}}
+footer{border-top:1px solid var(--b1);padding:60px 32px 40px;position:relative;z-index:1}
+.ft{max-width:var(--max);margin:0 auto}
+.ft-grid{display:grid;grid-template-columns:2fr 1fr 1fr 1fr;gap:48px;margin-bottom:48px}
+.ft-brand p{font-size:.82rem;color:var(--t3);line-height:1.6;margin-top:12px;max-width:280px}
+.ft-col h5{font-size:.68rem;text-transform:uppercase;letter-spacing:.12em;font-weight:700;color:var(--neon);margin-bottom:16px;font-family:var(--m)}
+.ft-col a{display:block;font-size:.82rem;color:var(--t2);padding:4px 0}.ft-col a:hover{color:var(--neon)}
+.ft-bot{display:flex;justify-content:space-between;align-items:center;padding-top:24px;border-top:1px solid var(--b1);font-size:.75rem;color:var(--t3);font-family:var(--m)}
+@media(max-width:768px){.ft-grid{grid-template-columns:1fr 1fr;gap:32px}.ft-bot{flex-direction:column;gap:8px}}
+</style></head><body>
+<header><nav class="nv">
+<a href="/" class="nv-brand"><svg width="24" height="24" viewBox="0 0 26 26" fill="none"><rect width="26" height="26" rx="3" fill="#9fef00"/><path d="M7.5 13l3 3 8-8" stroke="#0a0e14" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg>CyberSec Pro</a>
+<div class="nv-links"><a href="/">Home</a><a href="/tools.html">Arsenal</a><a href="/new-pricing.html">Pricing</a><a href="/docs.html">Docs</a><a href="/api.html">API</a></div>
+<div class="nv-end"><a href="/dashboard/login" class="nv-login">$ login</a><a href="/dashboard/login" class="nv-btn">Get Access</a></div>
+</nav></header>
+<section class="page-hero"><div class="badge">// system/admin-panel</div><h1>Admin Dashboard</h1><p>CyberSec Pro system administration panel.</p></section>
+<div class="admin-stats" id="stats">
+<div class="admin-stat"><div class="num" id="stat-users">--</div><div class="lbl">Total Users</div></div>
+<div class="admin-stat"><div class="num" id="stat-orgs">--</div><div class="lbl">Organizations</div></div>
+<div class="admin-stat"><div class="num" id="stat-scans">--</div><div class="lbl">Total Scans</div></div>
+<div class="admin-stat"><div class="num" id="stat-revenue">--</div><div class="lbl">MRR</div></div>
+</div>
+<div class="admin-grid">
+<div class="admin-card" onclick="location.href='/dashboard/'"><div class="icon">&#x1f465;</div><h3>User Management</h3><p>View, edit, and manage all platform users and their permissions.</p></div>
+<div class="admin-card" onclick="location.href='/dashboard/'"><div class="icon">&#x1f3e2;</div><h3>Organizations</h3><p>Manage organization accounts, plans, and billing.</p></div>
+<div class="admin-card" onclick="location.href='/dashboard/'"><div class="icon">&#x1f50d;</div><h3>Scan Monitor</h3><p>Real-time monitoring of all active scans across the platform.</p></div>
+<div class="admin-card" onclick="location.href='/dashboard/'"><div class="icon">&#x1f6e0;</div><h3>Tool Management</h3><p>Configure tools, update definitions, and manage categories.</p></div>
+<div class="admin-card" onclick="location.href='/dashboard/'"><div class="icon">&#x1f4ca;</div><h3>Analytics</h3><p>Platform usage statistics, growth metrics, and trend analysis.</p></div>
+<div class="admin-card" onclick="location.href='/dashboard/'"><div class="icon">&#x1f4b3;</div><h3>Billing &amp; Revenue</h3><p>Stripe integration, subscription management, and revenue tracking.</p></div>
+<div class="admin-card" onclick="location.href='/dashboard/'"><div class="icon">&#x1f512;</div><h3>Security Logs</h3><p>Audit logs, failed login attempts, and security events.</p></div>
+<div class="admin-card" onclick="location.href='/dashboard/'"><div class="icon">&#x2699;</div><h3>System Settings</h3><p>Platform configuration, API keys, and environment settings.</p></div>
+</div>
+<script>
+// Check admin auth
+const token = localStorage.getItem('auth_token');
+if (!token) window.location.href = '/admin.html';
+// Load stats
+async function loadStats() {
+  try {
+    const r = await fetch('/api/v1/admin/stats', {headers:{'Authorization':'Bearer '+token}});
+    if (r.status === 401) { localStorage.removeItem('auth_token'); window.location.href='/admin.html'; return; }
+    const d = await r.json();
+    if (d.total_users) document.getElementById('stat-users').textContent = d.total_users;
+    if (d.total_orgs) document.getElementById('stat-orgs').textContent = d.total_orgs;
+    if (d.total_scans) document.getElementById('stat-scans').textContent = d.total_scans;
+  } catch(e) {}
+}
+loadStats();
+</script>
+<footer><div class="ft"><div class="ft-grid">
+<div class="ft-brand"><div class="nv-brand" style="margin-bottom:0"><svg width="22" height="22" viewBox="0 0 26 26" fill="none"><rect width="26" height="26" rx="3" fill="#9fef00"/><path d="M7.5 13l3 3 8-8" stroke="#0a0e14" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg> CyberSec Pro</div><p>Cloud-based offensive security platform. 401 Kali Linux tools across 61 categories.</p></div>
+<div class="ft-col"><h5>Platform</h5><a href="/#features">Features</a><a href="/tools.html">Arsenal</a><a href="/new-pricing.html">Pricing</a><a href="/docs.html">Documentation</a><a href="/api.html">API</a></div>
+<div class="ft-col"><h5>Company</h5><a href="/about.html">About</a><a href="/blog.html">Blog</a><a href="/careers.html">Careers</a><a href="/contact.html">Contact</a></div>
+<div class="ft-col"><h5>Legal</h5><a href="/privacy.html">Privacy Policy</a><a href="/terms.html">Terms of Service</a><a href="/security.html">Security</a></div>
+</div><div class="ft-bot"><span>&copy; 2026 CyberSec Pro</span><span>cybersecpro@semihkilic.com</span></div></div></footer>
+</body></html>
