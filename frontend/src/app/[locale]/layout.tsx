@@ -49,7 +49,7 @@ export default async function LocaleLayout({
   return (
     <html lang={locale} dir={dir}>
       <body className="bg-[var(--color-bg)] text-white antialiased">
-        <GoogleAnalytics gaId="G-XXXXXXXXXX" />
+        <GoogleAnalytics gaId="G-DKRDP2WS88" />
         <NextIntlClientProvider messages={messages}>
           <Header />
           <main className="min-h-screen pt-16">{children}</main>
