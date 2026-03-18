@@ -187,6 +187,16 @@ function DashboardLayout() {
     return () => { /* keep connection alive across route changes */ };
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
+  // Google Analytics — track SPA route changes
+  useEffect(() => {
+    if (typeof window.gtag === 'function') {
+      window.gtag('event', 'page_view', {
+        page_path: location.pathname + location.search,
+        page_title: document.title,
+      });
+    }
+  }, [location.pathname, location.search]);
+
   return (
     <TargetProvider>
       <ScrollToTop />

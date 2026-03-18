@@ -83,25 +83,25 @@
         "name": "Trial",
         "price": "Free",
         "period": "14 days",
-        "features": ["5 scans/day", "Basic tools", "Email reports", "Community support"]
+        "features": ["50 security tools", "1 comprehensive scan", "PDF report with findings", "Email support", "No credit card required"]
       },
       "starter": {
         "name": "Starter",
         "price": "€99",
         "period": "/month",
-        "features": ["50 scans/day", "200+ tools", "All report formats", "Email support", "API access"]
+        "features": ["100 security tools", "1 domain/application", "Weekly automated scans", "Email alerts for vulnerabilities", "PDF & HTML reports", "Priority email support (48h)", "3-month vulnerability history"]
       },
       "professional": {
         "name": "Professional",
         "price": "€299",
         "period": "/month",
-        "features": ["Unlimited scans", "401 tools", "Priority support", "Team collaboration", "Custom templates", "Scheduled scans"]
+        "features": ["250 security tools", "Up to 5 domains", "Daily automated scans", "API access for CI/CD", "Compliance reports (NIST, OWASP, GDPR)", "White-label PDF reports", "Priority support (24h)", "12-month vulnerability tracking"]
       },
       "enterprise": {
         "name": "Enterprise",
         "price": "€799",
         "period": "/month",
-        "features": ["Everything in Pro", "Dedicated infrastructure", "SLA guarantee", "Custom integrations", "On-premise option", "24/7 phone support"]
+        "features": ["All 401 security tools", "Unlimited domains", "Continuous monitoring (hourly)", "Dedicated account manager", "All compliance frameworks", "SSO / SAML / LDAP", "Unlimited users & teams", "SLA guarantee (99.9%)", "24/7 priority support (2h)", "Quarterly security reviews"]
       }
     }
   },

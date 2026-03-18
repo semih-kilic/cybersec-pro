@@ -83,50 +83,25 @@
         "name": "Testversion",
         "price": "Kostenlos",
         "period": "14 Tage",
-        "features": [
-          "5 Scans/Tag",
-          "Basis-Tools",
-          "E-Mail-Berichte",
-          "Community-Support"
-        ]
+        "features": ["50 Sicherheitstools", "1 umfassender Scan", "PDF-Bericht mit Ergebnissen", "E-Mail-Support", "Keine Kreditkarte erforderlich"]
       },
       "starter": {
         "name": "Starter",
         "price": "99 €",
         "period": "/Monat",
-        "features": [
-          "50 Scans/Tag",
-          "200+ Tools",
-          "Alle Berichtsformate",
-          "E-Mail-Support",
-          "API-Zugang"
-        ]
+        "features": ["100 Sicherheitstools", "1 Domain/Anwendung", "Wöchentliche automatische Scans", "E-Mail-Warnungen bei Schwachstellen", "PDF & HTML Berichte", "Prioritäts-E-Mail-Support (48h)", "3-monatige Schwachstellen-Historie"]
       },
       "professional": {
         "name": "Professional",
         "price": "299 €",
         "period": "/Monat",
-        "features": [
-          "Unbegrenzte Scans",
-          "401 Tools",
-          "Prioritäts-Support",
-          "Team-Zusammenarbeit",
-          "Eigene Vorlagen",
-          "Geplante Scans"
-        ]
+        "features": ["250 Sicherheitstools", "Bis zu 5 Domains", "Tägliche automatische Scans", "API-Zugang für CI/CD", "Compliance-Berichte (NIST, OWASP, GDPR)", "White-Label PDF-Berichte", "Prioritäts-Support (24h)", "12-monatiges Schwachstellen-Tracking"]
       },
       "enterprise": {
         "name": "Enterprise",
         "price": "799 €",
         "period": "/Monat",
-        "features": [
-          "Alles aus Pro",
-          "Dedizierte Infrastruktur",
-          "SLA-Garantie",
-          "Individuelle Integrationen",
-          "On-Premise-Option",
-          "24/7-Telefonsupport"
-        ]
+        "features": ["Alle 401 Sicherheitstools", "Unbegrenzte Domains", "Kontinuierliches Monitoring (stündlich)", "Dedizierter Account Manager", "Alle Compliance-Frameworks", "SSO / SAML / LDAP", "Unbegrenzte Benutzer & Teams", "SLA-Garantie (99,9%)", "24/7 Prioritäts-Support (2h)", "Vierteljährliche Sicherheitsreviews"]
       }
     }
   },

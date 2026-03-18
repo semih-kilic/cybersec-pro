@@ -83,50 +83,25 @@
         "name": "Prueba",
         "price": "Gratis",
         "period": "14 días",
-        "features": [
-          "5 escaneos/día",
-          "Herramientas básicas",
-          "Informes por email",
-          "Soporte comunitario"
-        ]
+        "features": ["50 herramientas de seguridad", "1 escaneo completo", "Informe PDF con hallazgos", "Soporte por email", "Sin tarjeta de crédito"]
       },
       "starter": {
         "name": "Starter",
         "price": "99 €",
         "period": "/mes",
-        "features": [
-          "50 escaneos/día",
-          "200+ herramientas",
-          "Todos los formatos",
-          "Soporte por email",
-          "Acceso API"
-        ]
+        "features": ["100 herramientas de seguridad", "1 dominio/aplicación", "Escaneos automáticos semanales", "Alertas de vulnerabilidades por email", "Informes PDF & HTML", "Soporte email prioritario (48h)", "Historial de vulnerabilidades 3 meses"]
       },
       "professional": {
         "name": "Professional",
         "price": "299 €",
         "period": "/mes",
-        "features": [
-          "Escaneos ilimitados",
-          "401 herramientas",
-          "Soporte prioritario",
-          "Colaboración en equipo",
-          "Plantillas personalizadas",
-          "Escaneos programados"
-        ]
+        "features": ["250 herramientas de seguridad", "Hasta 5 dominios", "Escaneos automáticos diarios", "Acceso API para CI/CD", "Informes de cumplimiento (NIST, OWASP, GDPR)", "Informes PDF marca blanca", "Soporte prioritario (24h)", "Seguimiento de vulnerabilidades 12 meses"]
       },
       "enterprise": {
         "name": "Enterprise",
         "price": "799 €",
         "period": "/mes",
-        "features": [
-          "Todo del plan Pro",
-          "Infraestructura dedicada",
-          "Garantía SLA",
-          "Integraciones personalizadas",
-          "Opción on-premise",
-          "Soporte telefónico 24/7"
-        ]
+        "features": ["Las 401 herramientas de seguridad", "Dominios ilimitados", "Monitoreo continuo (cada hora)", "Gerente de cuenta dedicado", "Todos los marcos de cumplimiento", "SSO / SAML / LDAP", "Usuarios y equipos ilimitados", "Garantía SLA (99,9%)", "Soporte prioritario 24/7 (2h)", "Revisiones de seguridad trimestrales"]
       }
     }
   },

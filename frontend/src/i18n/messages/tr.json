@@ -83,50 +83,25 @@
         "name": "Deneme",
         "price": "Ücretsiz",
         "period": "14 gün",
-        "features": [
-          "Günde 5 tarama",
-          "Temel araçlar",
-          "E-posta raporları",
-          "Topluluk desteği"
-        ]
+        "features": ["50 güvenlik aracı", "1 kapsamlı tarama", "PDF bulgular raporu", "E-posta desteği", "Kredi kartı gerekmez"]
       },
       "starter": {
         "name": "Başlangıç",
         "price": "€99",
         "period": "/ay",
-        "features": [
-          "Günde 50 tarama",
-          "200+ araç",
-          "Tüm rapor formatları",
-          "E-posta desteği",
-          "API erişimi"
-        ]
+        "features": ["100 güvenlik aracı", "1 domain/uygulama", "Haftalık otomatik taramalar", "Güvenlik açığı e-posta uyarıları", "PDF & HTML raporlar", "Öncelikli e-posta desteği (48s)", "3 aylık güvenlik açığı geçmişi"]
       },
       "professional": {
         "name": "Profesyonel",
         "price": "€299",
         "period": "/ay",
-        "features": [
-          "Sınırsız tarama",
-          "401 araç",
-          "Öncelikli destek",
-          "Ekip iş birliği",
-          "Özel şablonlar",
-          "Zamanlanmış taramalar"
-        ]
+        "features": ["250 güvenlik aracı", "5 domain'e kadar", "Günlük otomatik taramalar", "CI/CD için API erişimi", "Uyumluluk raporları (NIST, OWASP, GDPR)", "Beyaz etiket PDF raporlar", "Öncelikli destek (24s)", "12 aylık güvenlik açığı takibi"]
       },
       "enterprise": {
         "name": "Kurumsal",
         "price": "€799",
         "period": "/ay",
-        "features": [
-          "Pro'daki her şey",
-          "Özel altyapı",
-          "SLA garantisi",
-          "Özel entegrasyonlar",
-          "Yerinde kurulum",
-          "7/24 telefon desteği"
-        ]
+        "features": ["Tüm 401 güvenlik aracı", "Sınırsız domain", "Sürekli izleme (saatlik)", "Özel hesap yöneticisi", "Tüm uyumluluk çerçeveleri", "SSO / SAML / LDAP", "Sınırsız kullanıcı & ekip", "SLA garantisi (%99.9)", "7/24 öncelikli destek (2s)", "Üç aylık güvenlik incelemeleri"]
       }
     }
   },
