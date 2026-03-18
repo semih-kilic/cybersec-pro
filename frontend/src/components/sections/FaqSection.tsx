@@ -6,7 +6,7 @@ import RevealOnScroll from "@/components/animations/RevealOnScroll";
 import { ChevronDown } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
-const faqKeys = ["q1", "q2", "q3", "q4", "q5"] as const;
+const faqKeys = ["q1", "q2", "q3", "q4", "q5", "q6", "q7", "q8", "q9", "q10", "q11", "q12"] as const;
 
 export default function FaqSection() {
   const t = useTranslations("faq");

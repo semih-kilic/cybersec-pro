@@ -5,7 +5,7 @@
   },
   "nav": {
     "features": "功能",
-    "arsenal": "工具库",
+    "arsenal": "安全工具",
     "pricing": "定价",
     "docs": "文档",
     "api": "API",
@@ -25,7 +25,7 @@
     "titleHighlight": "401个工具。",
     "subtitle": "在浏览器中运行61个类别的401个Kali Linux工具。无需设置。无需基础设施。只需结果。",
     "cta": "开始免费扫描",
-    "ctaSecondary": "查看工具库",
+    "ctaSecondary": "查看安全工具",
     "stats": {
       "tools": "401",
       "toolsLabel": "安全工具",

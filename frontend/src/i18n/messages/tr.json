@@ -5,7 +5,7 @@
   },
   "nav": {
     "features": "Özellikler",
-    "arsenal": "Araç Deposu",
+    "arsenal": "Güvenlik Araçları",
     "pricing": "Fiyatlandırma",
     "docs": "Dokümanlar",
     "api": "API",
@@ -25,7 +25,7 @@
     "titleHighlight": "401 Araç.",
     "subtitle": "401 Kali Linux aracını 61 kategoride tarayıcınızdan çalıştırın. Kurulum yok. Altyapı yok. Sadece sonuçlar.",
     "cta": "Ücretsiz Taramayı Başlat",
-    "ctaSecondary": "Araç Deposunu Gör",
+    "ctaSecondary": "Güvenlik Araçlarını Gör",
     "stats": {
       "tools": "401",
       "toolsLabel": "Güvenlik Aracı",

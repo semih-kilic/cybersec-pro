@@ -43,9 +43,9 @@ export default function PricingSection() {
             const features: string[] = t.raw(`plans.${key}.features`);
             const isPopular = key === "professional";
             return (
-              <RevealOnScroll key={key}>
+              <RevealOnScroll key={key} className="h-full">
                 <div
-                  className={`glass-card relative flex flex-col p-8 ${
+                  className={`glass-card relative flex h-full flex-col p-8 ${
                     isPopular ? "border-[var(--color-neon)]/30 shadow-[0_0_40px_rgba(159,239,0,0.08)]" : ""
                   }`}
                 >
@@ -77,24 +77,20 @@ export default function PricingSection() {
                         : "border border-white/10 text-white/70 hover:border-[var(--color-neon-dim)] hover:text-[var(--color-neon)]"
                     }`}
                     onClick={() => {
-                      if (key === "enterprise") {
-                        window.location.href = "mailto:cybersecpro@semihkilic.com?subject=Enterprise%20Plan%20Inquiry";
-                      } else {
-                        fetch("/api/create-checkout-session", {
-                          method: "POST",
-                          headers: { "Content-Type": "application/json" },
-                          body: JSON.stringify({ plan: key, billing: annual ? "annual" : "monthly" }),
+                      fetch("/api/create-checkout-session", {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({ plan: key, billing: annual ? "annual" : "monthly" }),
+                      })
+                        .then((r) => r.json())
+                        .then((d) => {
+                          if (d.url || d.checkout_url) window.location.href = d.url || d.checkout_url;
+                          else window.location.href = "/dashboard/login";
                         })
-                          .then((r) => r.json())
-                          .then((d) => {
-                            if (d.url || d.checkout_url) window.location.href = d.url || d.checkout_url;
-                            else window.location.href = "/dashboard/login";
-                          })
-                          .catch(() => (window.location.href = "/dashboard/login"));
-                      }
+                        .catch(() => (window.location.href = "/dashboard/login"));
                     }}
                   >
-                    {key === "enterprise" ? t("ctaEnterprise") : t("cta")}
+                    {t("cta")}
                   </button>
                 </div>
               </RevealOnScroll>

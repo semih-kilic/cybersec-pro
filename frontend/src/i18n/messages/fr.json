@@ -5,7 +5,7 @@
   },
   "nav": {
     "features": "Fonctionnalités",
-    "arsenal": "Arsenal",
+    "arsenal": "Outils de sécurité",
     "pricing": "Tarifs",
     "docs": "Documentation",
     "api": "API",
@@ -25,7 +25,7 @@
     "titleHighlight": "401 Outils.",
     "subtitle": "Exécutez 401 outils Kali Linux dans 61 catégories depuis votre navigateur. Aucune configuration. Aucune infrastructure. Que des résultats.",
     "cta": "Lancer un scan gratuit",
-    "ctaSecondary": "Voir l'arsenal",
+    "ctaSecondary": "Voir les outils",
     "stats": {
       "tools": "401",
       "toolsLabel": "Outils de sécurité",

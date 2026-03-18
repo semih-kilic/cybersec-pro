@@ -5,7 +5,7 @@
   },
   "nav": {
     "features": "Features",
-    "arsenal": "Arsenal",
+    "arsenal": "Security Tools",
     "pricing": "Pricing",
     "docs": "Docs",
     "api": "API",
@@ -25,7 +25,7 @@
     "titleHighlight": "401 Tools.",
     "subtitle": "Run 401 Kali Linux tools across 61 categories from your browser. No setup. No infrastructure. Just results.",
     "cta": "Start Free Scan",
-    "ctaSecondary": "View Arsenal",
+    "ctaSecondary": "View Security Tools",
     "stats": {
       "tools": "401",
       "toolsLabel": "Security Tools",
@@ -122,11 +122,18 @@
     "badge": "FAQ",
     "title": "Frequently Asked Questions",
     "items": {
-      "q1": { "q": "Is CyberSec Pro legal to use?", "a": "Yes. CyberSec Pro is designed for authorized security testing only. You must have explicit permission to test any target." },
-      "q2": { "q": "Do I need to install anything?", "a": "No. Everything runs in your browser. No local installation, no VMs, no configuration required." },
-      "q3": { "q": "Can I use it for my company?", "a": "Absolutely. Our Professional and Enterprise plans include team collaboration, multi-tenant workspaces, and role-based access controls." },
-      "q4": { "q": "What report formats are supported?", "a": "We support PDF, HTML, JSON, CSV, and Markdown. Enterprise customers can also create custom report templates." },
-      "q5": { "q": "Is my data secure?", "a": "Yes. All data is encrypted at rest and in transit. We follow SOC 2 compliance standards and regularly audit our infrastructure." }
+      "q1": { "q": "Is CyberSec Pro legal to use?", "a": "Yes. CyberSec Pro is designed for authorized security testing only. You must have explicit written permission to scan any target. Unauthorized testing is illegal and violates our Terms of Service." },
+      "q2": { "q": "Do I need to install anything?", "a": "No. Everything runs in your browser — no local installation, no VMs, no configuration. Just sign up, add a target, and start scanning." },
+      "q3": { "q": "How many tools are available?", "a": "CyberSec Pro provides 401 Kali Linux tools across 61 categories, including Nmap, Metasploit, Burp Suite, SQLMap, Nikto, Hydra, and many more. Tool availability depends on your plan tier." },
+      "q4": { "q": "What scan types are available?", "a": "We offer Quick Scan (top 20 tools, 5-15 min), Full Scan (all tools in your plan, 1-4 hours), Custom Scan (hand-picked tools with custom parameters), and Scheduled Scan (recurring daily/weekly/monthly)." },
+      "q5": { "q": "What report formats are supported?", "a": "We support PDF, HTML, JSON, CSV, and Markdown formats. All reports include CVSS scoring, remediation guidance, and compliance mapping (OWASP, PCI-DSS, ISO 27001, NIST)." },
+      "q6": { "q": "Is my data secure?", "a": "Absolutely. All data is encrypted with AES-256 at rest and TLS 1.3 in transit. We follow SOC 2 compliance standards, perform regular security audits, and never share your scan results with third parties." },
+      "q7": { "q": "Can I use it for my company?", "a": "Yes. Professional and Enterprise plans include team collaboration, multi-tenant workspaces, role-based access controls (Owner, Admin, Analyst), and centralized billing." },
+      "q8": { "q": "How does target verification work?", "a": "Before scanning, you must verify target ownership via DNS TXT record, HTTP file upload, or HTML meta tag. This prevents unauthorized scanning and ensures compliance with security testing laws." },
+      "q9": { "q": "What happens if a scan finds vulnerabilities?", "a": "Each vulnerability is categorized by CVSS severity (Critical, High, Medium, Low, Info) with detailed remediation steps, affected components, and references to CVE databases. You can export findings directly to your ticketing system." },
+      "q10": { "q": "Can I cancel or change my plan anytime?", "a": "Yes. You can upgrade, downgrade, or cancel your subscription at any time from your dashboard. Downgrades take effect at the end of the current billing cycle. No long-term contracts." },
+      "q11": { "q": "Do you offer API access?", "a": "Yes. Our REST API supports 130+ endpoints for programmatic access to scans, results, reports, and team management. Available on Starter plans and above with full API documentation." },
+      "q12": { "q": "What compliance frameworks are supported?", "a": "CyberSec Pro maps findings to OWASP Top 10 (2021), PCI-DSS v4.0, ISO 27001, NIST CSF, CIS Controls v8, MITRE ATT&CK, SOC 2, HIPAA, and GDPR frameworks." }
     }
   },
   "cta": {

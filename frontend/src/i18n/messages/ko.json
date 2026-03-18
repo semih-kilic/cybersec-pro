@@ -5,7 +5,7 @@
   },
   "nav": {
     "features": "기능",
-    "arsenal": "도구 목록",
+    "arsenal": "보안 도구",
     "pricing": "요금",
     "docs": "문서",
     "api": "API",
@@ -25,7 +25,7 @@
     "titleHighlight": "401개 도구.",
     "subtitle": "브라우저에서 61개 카테고리의 401개 Kali Linux 도구를 실행하세요. 설정 불필요. 인프라 불필요. 결과만 있습니다.",
     "cta": "무료 스캔 시작",
-    "ctaSecondary": "도구 목록 보기",
+    "ctaSecondary": "보안 도구 보기",
     "stats": {
       "tools": "401",
       "toolsLabel": "보안 도구",

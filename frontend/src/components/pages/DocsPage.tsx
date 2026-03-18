@@ -4,7 +4,7 @@ import { useState } from "react";
 import { useTranslations } from "next-intl";
 import RevealOnScroll from "@/components/animations/RevealOnScroll";
 import ThreatPulse from "@/components/three/ThreatPulse";
-import { BookOpen, Rocket, Code2, FileText, Shield, Terminal, AlertTriangle, CheckCircle, Settings, Cpu, Zap, Globe, Lock, Users, BarChart3, Clock, Wifi } from "lucide-react";
+import { BookOpen, Rocket, Code2, FileText, Shield, Terminal, AlertTriangle, CheckCircle, Check, Settings, Cpu, Zap, Globe, Lock, Users, BarChart3, Clock, Wifi } from "lucide-react";
 
 export default function DocsPage() {
   const t = useTranslations("docs");
@@ -117,16 +117,27 @@ export default function DocsPage() {
             {/* Account Types */}
             <RevealOnScroll>
               <div className="glass-card p-8">
-                <h2 className="text-xl font-bold text-white mb-4">Account Types & Roles</h2>
-                <div className="grid gap-3 md:grid-cols-3">
+                <h2 className="text-xl font-bold text-white mb-6">Account Types & Roles</h2>
+                <div className="grid gap-4 md:grid-cols-3">
                   {[
-                    { role: "Owner", desc: "Full platform access. Manage billing, team members, and all settings. One per organisation.", color: "var(--color-neon)" },
-                    { role: "Admin", desc: "Create scans, manage targets, generate reports. Can invite team members. Cannot modify billing.", color: "var(--color-cyan)" },
-                    { role: "Analyst", desc: "Run scans, view results, generate reports. Cannot manage targets or team settings.", color: "var(--color-purple)" },
+                    { role: "Owner", desc: "Full platform access. Manage billing, team members, and all settings. One per organisation.", color: "var(--color-neon)", permissions: ["Billing & Subscriptions", "Team Management", "All Scans & Reports", "API Keys", "Organisation Settings"] },
+                    { role: "Admin", desc: "Create scans, manage targets, generate reports. Can invite team members. Cannot modify billing.", color: "var(--color-cyan)", permissions: ["Create & Run Scans", "Manage Targets", "Generate Reports", "Invite Members", "View Analytics"] },
+                    { role: "Analyst", desc: "Run scans, view results, generate reports. Cannot manage targets or team settings.", color: "var(--color-purple)", permissions: ["Run Assigned Scans", "View Results", "Generate Reports", "Export Data", "Dashboard Access"] },
                   ].map((r) => (
-                    <div key={r.role} className="glass-card p-4">
-                      <h4 className="font-bold text-sm" style={{ color: r.color }}>{r.role}</h4>
-                      <p className="text-xs text-white/40 mt-1">{r.desc}</p>
+                    <div key={r.role} className="glass-card p-5 flex flex-col">
+                      <div className="flex items-center gap-3 mb-3">
+                        <div className="h-2.5 w-2.5 rounded-full" style={{ background: r.color }} />
+                        <h4 className="font-bold text-sm" style={{ color: r.color }}>{r.role}</h4>
+                      </div>
+                      <p className="text-xs text-white/40 mb-4">{r.desc}</p>
+                      <div className="mt-auto space-y-1.5">
+                        {r.permissions.map((p) => (
+                          <div key={p} className="flex items-center gap-2 text-[11px] text-white/30">
+                            <Check size={10} className="shrink-0" style={{ color: r.color }} />
+                            {p}
+                          </div>
+                        ))}
+                      </div>
                     </div>
                   ))}
                 </div>
@@ -167,16 +178,37 @@ export default function DocsPage() {
             {/* Scan Lifecycle */}
             <RevealOnScroll>
               <div className="glass-card p-8">
-                <h2 className="text-xl font-bold text-white mb-4">Scan Lifecycle</h2>
-                <div className="flex flex-wrap gap-2 items-center justify-center">
-                  {["Created", "Queued", "Initializing", "Running", "Analyzing", "Completed"].map((s, i) => (
-                    <div key={s} className="flex items-center gap-2">
-                      <span className="rounded-full bg-[var(--color-neon)]/10 px-3 py-1.5 text-xs font-mono text-[var(--color-neon)]">{s}</span>
-                      {i < 5 && <span className="text-white/20">→</span>}
+                <h2 className="text-xl font-bold text-white mb-6">Scan Lifecycle</h2>
+                <div className="flex flex-wrap gap-3 items-center justify-center">
+                  {[
+                    { name: "Created", desc: "Scan configured and saved", color: "var(--color-neon)" },
+                    { name: "Queued", desc: "Waiting for available slot", color: "var(--color-neon)" },
+                    { name: "Initializing", desc: "Loading tools & targets", color: "var(--color-cyan)" },
+                    { name: "Running", desc: "Active tool execution", color: "var(--color-cyan)" },
+                    { name: "Analyzing", desc: "Processing results", color: "var(--color-purple)" },
+                    { name: "Completed", desc: "Report ready", color: "var(--color-neon)" },
+                  ].map((s, i) => (
+                    <div key={s.name} className="flex items-center gap-3">
+                      <div className="flex flex-col items-center">
+                        <span className="rounded-full border px-4 py-2 text-xs font-mono font-bold" style={{ borderColor: `color-mix(in srgb, ${s.color} 30%, transparent)`, color: s.color, background: `color-mix(in srgb, ${s.color} 8%, transparent)` }}>{s.name}</span>
+                        <span className="mt-1 text-[10px] text-white/25">{s.desc}</span>
+                      </div>
+                      {i < 5 && <span className="text-white/20 text-lg mb-4">→</span>}
                     </div>
                   ))}
                 </div>
-                <p className="mt-4 text-xs text-white/40 text-center">Scans can be paused, resumed, or stopped at any stage. Results are saved incrementally — you never lose data mid-scan.</p>
+                <div className="mt-6 grid gap-3 md:grid-cols-3">
+                  {[
+                    { label: "Pause & Resume", desc: "Pause any running scan and resume later without losing progress." },
+                    { label: "Incremental Results", desc: "Results are saved as each tool completes — never lose data mid-scan." },
+                    { label: "Real-Time Streaming", desc: "Watch tool output live via WebSocket in a terminal-style interface." },
+                  ].map((f) => (
+                    <div key={f.label} className="glass-card p-4">
+                      <h4 className="text-xs font-bold text-white/70">{f.label}</h4>
+                      <p className="text-[11px] text-white/35 mt-1">{f.desc}</p>
+                    </div>
+                  ))}
+                </div>
               </div>
             </RevealOnScroll>
 

@@ -5,7 +5,7 @@
   },
   "nav": {
     "features": "機能",
-    "arsenal": "ツール一覧",
+    "arsenal": "セキュリティツール",
     "pricing": "料金",
     "docs": "ドキュメント",
     "api": "API",
@@ -25,7 +25,7 @@
     "titleHighlight": "401ツール。",
     "subtitle": "ブラウザから61カテゴリの401のKali Linuxツールを実行。セットアップ不要。インフラ不要。結果だけ。",
     "cta": "無料スキャンを開始",
-    "ctaSecondary": "ツール一覧を見る",
+    "ctaSecondary": "ツールを見る",
     "stats": {
       "tools": "401",
       "toolsLabel": "セキュリティツール",
