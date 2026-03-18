@@ -15,7 +15,7 @@ const stats = [
   { value: "24/7", label: "Scanning" },
 ];
 
-const certifications = ["OSCP", "OSCE", "CEH Master", "CISSP", "CISM", "AWS SA-Pro", "CKA", "GXPN", "GCIH", "CS50X"];
+const certifications = ["CEH", "MS Azure", "AWS", "CS50X", "15y ITS"];
 
 const values = [
   { icon: Shield, title: "Accessibility", desc: "401 verified Kali tools accessible through your browser. Plans start free — no VMs, no CLI dependencies, no complex setup." },

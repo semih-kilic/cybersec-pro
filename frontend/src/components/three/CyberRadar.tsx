@@ -168,7 +168,7 @@ export default function CyberRadar() {
   return (
     <canvas
       ref={canvasRef}
-      className="pointer-events-none fixed inset-0 -z-10 opacity-50"
+      className="pointer-events-none fixed inset-0 z-0 opacity-50"
       aria-hidden="true"
     />
   );

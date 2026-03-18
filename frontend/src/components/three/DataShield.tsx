@@ -96,7 +96,7 @@ export default function DataShield() {
   return (
     <canvas
       ref={canvasRef}
-      className="pointer-events-none fixed inset-0 -z-10"
+      className="pointer-events-none fixed inset-0 z-0"
       style={{ opacity: 0.7 }}
     />
   );

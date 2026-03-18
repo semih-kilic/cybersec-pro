@@ -127,7 +127,7 @@ function NetworkGraph() {
 /* ─── Main Export ─── */
 export default function NetworkMesh() {
   return (
-    <div className="pointer-events-none fixed inset-0 -z-10">
+    <div className="pointer-events-none fixed inset-0 z-0">
       <Canvas camera={{ position: [0, 0, 10], fov: 55 }} gl={{ antialias: true, alpha: true }} style={{ background: "transparent", pointerEvents: "none" }}>
         <ambientLight intensity={0.3} />
         <NetworkGraph />
