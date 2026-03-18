@@ -1,0 +1,50 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512">
+  <defs>
+    <radialGradient id="bg" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#141d2b"/>
+      <stop offset="100%" stop-color="#0a0e14"/>
+    </radialGradient>
+    <radialGradient id="glow" cx="50%" cy="40%" r="45%">
+      <stop offset="0%" stop-color="#9fef00" stop-opacity="0.15"/>
+      <stop offset="100%" stop-color="#9fef00" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+  <!-- Background circle -->
+  <circle cx="256" cy="256" r="250" fill="url(#bg)" stroke="#9fef00" stroke-width="4"/>
+  <!-- Glow -->
+  <circle cx="256" cy="256" r="220" fill="url(#glow)"/>
+  <!-- Globe outline -->
+  <circle cx="256" cy="256" r="160" fill="none" stroke="#9fef00" stroke-width="3" opacity="0.8"/>
+  <!-- Longitude lines -->
+  <ellipse cx="256" cy="256" rx="80" ry="160" fill="none" stroke="#9fef00" stroke-width="2" opacity="0.5"/>
+  <ellipse cx="256" cy="256" rx="40" ry="160" fill="none" stroke="#9fef00" stroke-width="1.5" opacity="0.3"/>
+  <ellipse cx="256" cy="256" rx="130" ry="160" fill="none" stroke="#9fef00" stroke-width="1.5" opacity="0.3"/>
+  <!-- Latitude lines -->
+  <ellipse cx="256" cy="256" rx="160" ry="40" fill="none" stroke="#9fef00" stroke-width="2" opacity="0.4"/>
+  <ellipse cx="256" cy="200" rx="145" ry="30" fill="none" stroke="#9fef00" stroke-width="1.5" opacity="0.3"/>
+  <ellipse cx="256" cy="312" rx="145" ry="30" fill="none" stroke="#9fef00" stroke-width="1.5" opacity="0.3"/>
+  <!-- Network nodes -->
+  <circle cx="200" cy="190" r="8" fill="#9fef00"/>
+  <circle cx="310" cy="210" r="6" fill="#9fef00" opacity="0.8"/>
+  <circle cx="256" cy="150" r="5" fill="#9fef00" opacity="0.7"/>
+  <circle cx="180" cy="280" r="7" fill="#9fef00" opacity="0.9"/>
+  <circle cx="330" cy="300" r="6" fill="#9fef00" opacity="0.7"/>
+  <circle cx="256" cy="350" r="5" fill="#9fef00" opacity="0.6"/>
+  <circle cx="150" cy="240" r="5" fill="#9fef00" opacity="0.6"/>
+  <circle cx="360" cy="250" r="5" fill="#9fef00" opacity="0.5"/>
+  <!-- Network connections -->
+  <line x1="200" y1="190" x2="310" y2="210" stroke="#9fef00" stroke-width="1.5" opacity="0.4"/>
+  <line x1="200" y1="190" x2="256" y2="150" stroke="#9fef00" stroke-width="1.5" opacity="0.3"/>
+  <line x1="310" y1="210" x2="330" y2="300" stroke="#9fef00" stroke-width="1.5" opacity="0.3"/>
+  <line x1="180" y1="280" x2="330" y2="300" stroke="#9fef00" stroke-width="1.5" opacity="0.3"/>
+  <line x1="200" y1="190" x2="180" y2="280" stroke="#9fef00" stroke-width="1.5" opacity="0.35"/>
+  <line x1="180" y1="280" x2="256" y2="350" stroke="#9fef00" stroke-width="1.5" opacity="0.3"/>
+  <line x1="330" y1="300" x2="256" y2="350" stroke="#9fef00" stroke-width="1.5" opacity="0.25"/>
+  <line x1="150" y1="240" x2="200" y2="190" stroke="#9fef00" stroke-width="1.5" opacity="0.3"/>
+  <line x1="310" y1="210" x2="360" y2="250" stroke="#9fef00" stroke-width="1.5" opacity="0.3"/>
+  <line x1="360" y1="250" x2="330" y2="300" stroke="#9fef00" stroke-width="1.5" opacity="0.25"/>
+  <line x1="150" y1="240" x2="180" y2="280" stroke="#9fef00" stroke-width="1.5" opacity="0.25"/>
+  <!-- Shield overlay in center -->
+  <path d="M256 195 L295 215 L295 265 Q295 300 256 320 Q217 300 217 265 L217 215 Z" fill="none" stroke="#9fef00" stroke-width="3" opacity="0.6"/>
+  <path d="M243 260 L253 270 L273 245" fill="none" stroke="#9fef00" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" opacity="0.8"/>
+</svg>

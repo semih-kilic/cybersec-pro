@@ -59,13 +59,13 @@ export default function DonatePage() {
           </div>
         </RevealOnScroll>
 
-        <RevealOnScroll delay={0.1}>
+        <RevealOnScroll>
           <h1 className="text-4xl font-bold leading-tight text-white md:text-5xl lg:text-6xl">
-            <GlitchText>{t("title")}</GlitchText>
+            <GlitchText text={t("title")} />
           </h1>
         </RevealOnScroll>
 
-        <RevealOnScroll delay={0.2}>
+        <RevealOnScroll>
           <p className="mx-auto mt-6 max-w-2xl text-lg leading-relaxed text-white/60">
             {t("subtitle")}
           </p>
@@ -74,7 +74,7 @@ export default function DonatePage() {
 
       {/* Story */}
       <section className="relative z-10 mx-auto mt-16 max-w-3xl px-6">
-        <RevealOnScroll delay={0.3}>
+        <RevealOnScroll>
           <div className="rounded-2xl border border-white/5 bg-white/[0.02] p-8 backdrop-blur-sm">
             <div className="mb-4 flex items-center gap-3">
               <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-[var(--color-neon)]/10">
@@ -91,13 +91,13 @@ export default function DonatePage() {
 
       {/* Donation Platforms */}
       <section className="relative z-10 mx-auto mt-16 max-w-5xl px-6">
-        <RevealOnScroll delay={0.4}>
+        <RevealOnScroll>
           <h2 className="mb-8 text-center text-2xl font-bold text-white">{t("platformsTitle")}</h2>
         </RevealOnScroll>
 
         <div className="grid gap-6 sm:grid-cols-2">
           {donationPlatforms.map((platform, i) => (
-            <RevealOnScroll key={platform.id} delay={0.5 + i * 0.1}>
+            <RevealOnScroll key={platform.id}>
               <a
                 href={platform.url}
                 target="_blank"
@@ -125,7 +125,7 @@ export default function DonatePage() {
 
       {/* Bottom CTA */}
       <section className="relative z-10 mx-auto mt-20 max-w-2xl px-6 text-center">
-        <RevealOnScroll delay={0.9}>
+        <RevealOnScroll>
           <p className="text-sm text-white/30">{t("thankYou")}</p>
         </RevealOnScroll>
       </section>

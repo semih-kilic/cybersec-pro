@@ -47,6 +47,7 @@ export default function Footer() {
               <Link href={l("/blog")} className="text-sm text-white/40 hover:text-[var(--color-neon)]">{nav("blog")}</Link>
               <Link href={l("/careers")} className="text-sm text-white/40 hover:text-[var(--color-neon)]">{nav("careers")}</Link>
               <Link href={l("/contact")} className="text-sm text-white/40 hover:text-[var(--color-neon)]">{nav("contact")}</Link>
+              <Link href={l("/donate")} className="text-sm text-white/40 hover:text-[var(--color-neon)]">{nav("donate")}</Link>
             </div>
           </div>
 
