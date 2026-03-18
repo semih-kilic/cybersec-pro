@@ -83,25 +83,50 @@
         "name": "Deneme",
         "price": "Ücretsiz",
         "period": "14 gün",
-        "features": ["Günde 5 tarama", "Temel araçlar", "E-posta raporları", "Topluluk desteği"]
+        "features": [
+          "Günde 5 tarama",
+          "Temel araçlar",
+          "E-posta raporları",
+          "Topluluk desteği"
+        ]
       },
       "starter": {
         "name": "Başlangıç",
         "price": "€99",
         "period": "/ay",
-        "features": ["Günde 50 tarama", "200+ araç", "Tüm rapor formatları", "E-posta desteği", "API erişimi"]
+        "features": [
+          "Günde 50 tarama",
+          "200+ araç",
+          "Tüm rapor formatları",
+          "E-posta desteği",
+          "API erişimi"
+        ]
       },
       "professional": {
         "name": "Profesyonel",
         "price": "€299",
         "period": "/ay",
-        "features": ["Sınırsız tarama", "401 araç", "Öncelikli destek", "Ekip iş birliği", "Özel şablonlar", "Zamanlanmış taramalar"]
+        "features": [
+          "Sınırsız tarama",
+          "401 araç",
+          "Öncelikli destek",
+          "Ekip iş birliği",
+          "Özel şablonlar",
+          "Zamanlanmış taramalar"
+        ]
       },
       "enterprise": {
         "name": "Kurumsal",
         "price": "€799",
         "period": "/ay",
-        "features": ["Pro'daki her şey", "Özel altyapı", "SLA garantisi", "Özel entegrasyonlar", "Yerinde kurulum", "7/24 telefon desteği"]
+        "features": [
+          "Pro'daki her şey",
+          "Özel altyapı",
+          "SLA garantisi",
+          "Özel entegrasyonlar",
+          "Yerinde kurulum",
+          "7/24 telefon desteği"
+        ]
       }
     }
   },
@@ -122,11 +147,54 @@
     "badge": "SSS",
     "title": "Sıkça Sorulan Sorular",
     "items": {
-      "q1": { "q": "CyberSec Pro'yu kullanmak yasal mı?", "a": "Evet. CyberSec Pro yalnızca yetkili güvenlik testleri için tasarlanmıştır. Herhangi bir hedefi test etmek için açık izniniz olmalıdır." },
-      "q2": { "q": "Bir şey yüklemem gerekiyor mu?", "a": "Hayır. Her şey tarayıcınızda çalışır. Yerel kurulum, VM veya yapılandırma gerekmez." },
-      "q3": { "q": "Şirketim için kullanabilir miyim?", "a": "Kesinlikle. Profesyonel ve Kurumsal planlarımız ekip iş birliği, çok kiracılı çalışma alanları ve rol tabanlı erişim kontrolleri içerir." },
-      "q4": { "q": "Hangi rapor formatları destekleniyor?", "a": "PDF, HTML, JSON, CSV ve Markdown destekliyoruz. Kurumsal müşteriler özel rapor şablonları da oluşturabilir." },
-      "q5": { "q": "Verilerim güvende mi?", "a": "Evet. Tüm veriler hareketsiz ve aktarım sırasında şifrelenir. SOC 2 uyumluluk standartlarını takip ediyor ve altyapımızı düzenli olarak denetliyoruz." }
+      "q1": {
+        "q": "CyberSec Pro'yu kullanmak yasal mı?",
+        "a": "Evet. CyberSec Pro yalnızca yetkili güvenlik testleri için tasarlanmıştır. Herhangi bir hedefi test etmek için açık izniniz olmalıdır."
+      },
+      "q2": {
+        "q": "Bir şey yüklemem gerekiyor mu?",
+        "a": "Hayır. Her şey tarayıcınızda çalışır. Yerel kurulum, VM veya yapılandırma gerekmez."
+      },
+      "q3": {
+        "q": "Kaç araç mevcut?",
+        "a": "CyberSec Pro, Nmap, Metasploit, Burp Suite, SQLMap, Nikto, Hydra ve daha fazlası dahil 61 kategoride 401 Kali Linux aracı sunar."
+      },
+      "q4": {
+        "q": "Hangi tarama türleri mevcut?",
+        "a": "Hızlı Tarama (ilk 20 araç, 5-15 dk), Tam Tarama (tüm araçlar, 1-4 saat), Özel Tarama (seçilmiş araçlar) ve Zamanlanmış Tarama (günlük/haftalık/aylık) sunuyoruz."
+      },
+      "q5": {
+        "q": "Hangi rapor formatları destekleniyor?",
+        "a": "PDF, HTML, JSON, CSV ve Markdown formatlarını destekliyoruz. Tüm raporlar CVSS puanlama, düzeltme rehberliği ve uyumluluk eşlemesi içerir."
+      },
+      "q6": {
+        "q": "Verilerim güvende mi?",
+        "a": "Kesinlikle. Tüm veriler AES-256 ile şifrelenir ve TLS 1.3 ile iletilir. SOC 2 uyumluluk standartlarını takip ediyoruz."
+      },
+      "q7": {
+        "q": "Şirketim için kullanabilir miyim?",
+        "a": "Evet. Professional ve Enterprise planlar ekip işbirliği, rol tabanlı erişim kontrolleri ve merkezi faturalandırma içerir."
+      },
+      "q8": {
+        "q": "Hedef doğrulama nasıl çalışır?",
+        "a": "Taramadan önce DNS TXT kaydı, HTTP dosya yükleme veya HTML meta etiketi ile hedef sahipliğini doğrulamanız gerekir."
+      },
+      "q9": {
+        "q": "Güvenlik açığı bulunursa ne olur?",
+        "a": "Her güvenlik açığı CVSS önem derecesine göre sınıflandırılır ve düzeltme adımları, CVE referansları içerir."
+      },
+      "q10": {
+        "q": "Planımı istediğim zaman değiştirebilir miyim?",
+        "a": "Evet. Aboneliğinizi istediğiniz zaman yükseltebilir, düşürebilir veya iptal edebilirsiniz."
+      },
+      "q11": {
+        "q": "API erişimi sunuyor musunuz?",
+        "a": "Evet. REST API 130+ uç nokta ile tarama, sonuç, rapor ve ekip yönetimi desteği sunar."
+      },
+      "q12": {
+        "q": "Hangi uyumluluk çerçeveleri destekleniyor?",
+        "a": "OWASP Top 10, PCI-DSS v4.0, ISO 27001, NIST CSF, MITRE ATT&CK, SOC 2, HIPAA ve GDPR."
+      }
     }
   },
   "cta": {

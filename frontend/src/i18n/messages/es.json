@@ -83,25 +83,50 @@
         "name": "Prueba",
         "price": "Gratis",
         "period": "14 días",
-        "features": ["5 escaneos/día", "Herramientas básicas", "Informes por email", "Soporte comunitario"]
+        "features": [
+          "5 escaneos/día",
+          "Herramientas básicas",
+          "Informes por email",
+          "Soporte comunitario"
+        ]
       },
       "starter": {
         "name": "Starter",
         "price": "99 €",
         "period": "/mes",
-        "features": ["50 escaneos/día", "200+ herramientas", "Todos los formatos", "Soporte por email", "Acceso API"]
+        "features": [
+          "50 escaneos/día",
+          "200+ herramientas",
+          "Todos los formatos",
+          "Soporte por email",
+          "Acceso API"
+        ]
       },
       "professional": {
         "name": "Professional",
         "price": "299 €",
         "period": "/mes",
-        "features": ["Escaneos ilimitados", "401 herramientas", "Soporte prioritario", "Colaboración en equipo", "Plantillas personalizadas", "Escaneos programados"]
+        "features": [
+          "Escaneos ilimitados",
+          "401 herramientas",
+          "Soporte prioritario",
+          "Colaboración en equipo",
+          "Plantillas personalizadas",
+          "Escaneos programados"
+        ]
       },
       "enterprise": {
         "name": "Enterprise",
         "price": "799 €",
         "period": "/mes",
-        "features": ["Todo del plan Pro", "Infraestructura dedicada", "Garantía SLA", "Integraciones personalizadas", "Opción on-premise", "Soporte telefónico 24/7"]
+        "features": [
+          "Todo del plan Pro",
+          "Infraestructura dedicada",
+          "Garantía SLA",
+          "Integraciones personalizadas",
+          "Opción on-premise",
+          "Soporte telefónico 24/7"
+        ]
       }
     }
   },
@@ -122,11 +147,54 @@
     "badge": "FAQ",
     "title": "Preguntas frecuentes",
     "items": {
-      "q1": { "q": "¿Es legal usar CyberSec Pro?", "a": "Sí. CyberSec Pro está diseñado exclusivamente para pruebas de seguridad autorizadas. Debe tener permiso explícito para probar cualquier objetivo." },
-      "q2": { "q": "¿Necesito instalar algo?", "a": "No. Todo funciona en su navegador. Sin instalación local, sin máquinas virtuales, sin configuración requerida." },
-      "q3": { "q": "¿Puedo usarlo para mi empresa?", "a": "Por supuesto. Nuestros planes Professional y Enterprise incluyen colaboración en equipo, espacios multitenant y controles de acceso basados en roles." },
-      "q4": { "q": "¿Qué formatos de informe se admiten?", "a": "Admitimos PDF, HTML, JSON, CSV y Markdown. Los clientes Enterprise también pueden crear plantillas de informes personalizadas." },
-      "q5": { "q": "¿Están seguros mis datos?", "a": "Sí. Todos los datos se cifran en reposo y en tránsito. Seguimos los estándares de cumplimiento SOC 2 y auditamos regularmente nuestra infraestructura." }
+      "q1": {
+        "q": "¿Es legal usar CyberSec Pro?",
+        "a": "Sí. CyberSec Pro está diseñado exclusivamente para pruebas de seguridad autorizadas. Debe tener permiso explícito para probar cualquier objetivo."
+      },
+      "q2": {
+        "q": "¿Necesito instalar algo?",
+        "a": "No. Todo funciona en su navegador. Sin instalación local, sin máquinas virtuales, sin configuración requerida."
+      },
+      "q3": {
+        "q": "¿Cuántas herramientas hay disponibles?",
+        "a": "401 herramientas Kali Linux en 61 categorías, incluyendo Nmap, Metasploit, Burp Suite y SQLMap."
+      },
+      "q4": {
+        "q": "¿Qué tipos de escaneo hay?",
+        "a": "Quick Scan (top 20, 5-15 min), Full Scan (todas, 1-4 hrs), Custom Scan y Scheduled Scan."
+      },
+      "q5": {
+        "q": "¿Qué formatos de reporte?",
+        "a": "PDF, HTML, JSON, CSV y Markdown con puntuación CVSS y mapeo de cumplimiento."
+      },
+      "q6": {
+        "q": "¿Están seguros mis datos?",
+        "a": "Sí. AES-256 en reposo, TLS 1.3 en tránsito. Cumplimiento SOC 2."
+      },
+      "q7": {
+        "q": "¿Para mi empresa?",
+        "a": "Sí. Los planes Pro y Enterprise incluyen colaboración y controles de acceso basados en roles."
+      },
+      "q8": {
+        "q": "¿Cómo funciona la verificación?",
+        "a": "Registro DNS TXT, carga HTTP o meta tag HTML para verificar propiedad del objetivo."
+      },
+      "q9": {
+        "q": "¿Si se encuentran vulnerabilidades?",
+        "a": "Categorización CVSS con pasos de remediación detallados y referencias CVE."
+      },
+      "q10": {
+        "q": "¿Puedo cambiar mi plan?",
+        "a": "Sí. Actualizar, degradar o cancelar en cualquier momento. Sin contratos."
+      },
+      "q11": {
+        "q": "¿Tienen acceso API?",
+        "a": "Sí. API REST con 130+ endpoints para escaneos, resultados y reportes."
+      },
+      "q12": {
+        "q": "¿Marcos de cumplimiento?",
+        "a": "OWASP Top 10, PCI-DSS v4.0, ISO 27001, NIST CSF, MITRE ATT&CK, SOC 2, HIPAA, GDPR."
+      }
     }
   },
   "cta": {
