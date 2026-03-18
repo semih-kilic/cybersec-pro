@@ -66,6 +66,12 @@ const AIAssistantPage = lazy(() => import('./pages/dashboard/AIAssistantPage'));
 const PurpleTeamPage = lazy(() => import('./pages/dashboard/PurpleTeamPage'));
 const AdminPage = lazy(() => import('./pages/dashboard/AdminPage'));
 const ServiceManagerPage = lazy(() => import('./pages/dashboard/ServiceManagerPage'));
+const ThreatIntelPage = lazy(() => import('./pages/dashboard/ThreatIntelPage'));
+const VulnerabilityDBPage = lazy(() => import('./pages/dashboard/VulnerabilityDBPage'));
+const SecurityNewsPage = lazy(() => import('./pages/dashboard/SecurityNewsPage'));
+const LearningCenterPage = lazy(() => import('./pages/dashboard/LearningCenterPage'));
+const ComplianceDashboardPage = lazy(() => import('./pages/dashboard/ComplianceDashboardPage'));
+const CommunityPage = lazy(() => import('./pages/dashboard/CommunityPage'));
 
 // Legal/GDPR Pages (lazy loaded)
 const PrivacyPolicyPage = lazy(() => import('./pages/PrivacyPolicyPage'));
@@ -325,6 +331,12 @@ function AppRoutes() {
         <Route path="purple-team" element={<PurpleTeamPage />} />
         <Route path="admin" element={<AdminPage />} />
         <Route path="service-manager" element={<ServiceManagerPage />} />
+        <Route path="threat-intel" element={<ThreatIntelPage />} />
+        <Route path="vulnerabilities" element={<VulnerabilityDBPage />} />
+        <Route path="news" element={<SecurityNewsPage />} />
+        <Route path="learning" element={<LearningCenterPage />} />
+        <Route path="compliance" element={<ComplianceDashboardPage />} />
+        <Route path="community" element={<CommunityPage />} />
       </Route>
       
       {/* Legacy dashboard route for backwards compatibility */}
