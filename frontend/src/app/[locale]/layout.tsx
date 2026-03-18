@@ -6,6 +6,7 @@ import { GoogleAnalytics } from "@next/third-parties/google";
 import { locales, rtlLocales, type Locale } from "@/i18n/config";
 import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
+import HashScrollHandler from "@/components/HashScrollHandler";
 
 export function generateStaticParams() {
   return locales.map((locale) => ({ locale }));
@@ -22,6 +23,10 @@ export async function generateMetadata({
     title: messages.meta.title,
     description: messages.meta.description,
     metadataBase: new URL("https://semihkilic.com"),
+    icons: {
+      icon: "/icon.svg",
+      apple: "/icon.svg",
+    },
     openGraph: {
       title: messages.meta.title,
       description: messages.meta.description,
@@ -51,6 +56,7 @@ export default async function LocaleLayout({
       <body className="bg-[var(--color-bg)] text-white antialiased">
         <GoogleAnalytics gaId="G-DKRDP2WS88" />
         <NextIntlClientProvider messages={messages}>
+          <HashScrollHandler />
           <Header />
           <main className="min-h-screen pt-16">{children}</main>
           <Footer />

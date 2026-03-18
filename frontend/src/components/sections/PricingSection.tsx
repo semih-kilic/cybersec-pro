@@ -80,7 +80,12 @@ export default function PricingSection() {
                       fetch("/api/create-checkout-session", {
                         method: "POST",
                         headers: { "Content-Type": "application/json" },
-                        body: JSON.stringify({ plan: key, billing: annual ? "annual" : "monthly" }),
+                        body: JSON.stringify({
+                          plan: key,
+                          billing: annual ? "annual" : "monthly",
+                          success_url: `${window.location.origin}/dashboard/settings?tab=billing&success=true`,
+                          cancel_url: window.location.href,
+                        }),
                       })
                         .then((r) => r.json())
                         .then((d) => {

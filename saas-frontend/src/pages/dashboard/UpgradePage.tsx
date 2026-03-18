@@ -170,7 +170,6 @@ export default function UpgradePage() {
   const getButtonText = (planId: string) => {
     if (loading === planId) return 'Processing...';
     if (planId === currentPlan) return 'Current Plan';
-    if (planId === 'enterprise') return 'Contact Sales';
     if (planId === 'trial') return 'Free Trial';
     const planLevels = ['trial', 'starter', 'professional', 'enterprise'];
     const currentLevel = planLevels.indexOf(currentPlan);

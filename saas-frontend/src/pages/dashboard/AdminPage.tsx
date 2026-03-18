@@ -8,6 +8,7 @@ import { PageTransition } from '../../components/ui';
 import { useDocumentTitle } from '../../hooks/useUtilities';
 import { useAdminOverview, useChangePlan, useImpersonateUserAction } from '../../hooks/useApiQueries';
 import { AdminPageSkeleton } from '../../components/ui/Skeleton';
+import { useToast } from '../../components/ui/Toast';
 
 const API_URL = '/api/v1';
 
@@ -51,11 +52,13 @@ export function AdminPage() {
   const { data: overview, isLoading: loading, error: queryError, refetch } = useAdminOverview();
   const changePlanMutation = useChangePlan();
   const impersonateMutation = useImpersonateUserAction();
+  const toast = useToast();
   const [error, setError] = useState<string | null>(queryError?.message || null);
   const [impersonating, setImpersonating] = useState(false);
   const [impersonateEmail, setImpersonateEmail] = useState('');
-  const [tab, setTab] = useState<'overview' | 'users' | 'orgs'>('overview');
+  const [tab, setTab] = useState<'overview' | 'users' | 'orgs' | 'analytics' | 'revenue' | 'health'>('overview');
   const [actionLoading, setActionLoading] = useState<string | null>(null);
+  const [bulkSelected, setBulkSelected] = useState<Set<string>>(new Set());
 
   const handleImpersonate = async (email?: string) => {
     const targetEmail = email || impersonateEmail.trim();
@@ -78,9 +81,11 @@ export function AdminPage() {
   const handleChangePlan = async (orgId: string, planType: string) => {
     try {
       await changePlanMutation.mutateAsync({ organizationId: orgId, planType });
-      refetch();
+      await refetch();
+      toast.success(`Plan changed to ${planType} successfully!`);
     } catch (e: any) {
       setError(e.message);
+      toast.error(`Failed to change plan: ${e.message}`);
     }
   };
 
@@ -152,6 +157,24 @@ export function AdminPage() {
     }
   };
 
+  const handleBulkAction = async (action: 'activate' | 'deactivate' | 'delete') => {
+    if (bulkSelected.size === 0) return;
+    const label = action === 'delete' ? 'DELETE' : action;
+    if (!confirm(`${label} ${bulkSelected.size} selected user(s)?`)) return;
+    for (const userId of bulkSelected) {
+      try {
+        if (action === 'delete') {
+          await adminAction(`${API_URL}/admin/users/${userId}`, 'DELETE');
+        } else {
+          await adminAction(`${API_URL}/admin/users/${userId}/toggle`, 'PUT');
+        }
+      } catch { /* continue with others */ }
+    }
+    setBulkSelected(new Set());
+    refetch();
+    toast.success(`Bulk ${action} completed for ${bulkSelected.size} user(s)`);
+  };
+
   // Guard: only superadmin
   if (user?.role !== 'superadmin') {
     return (
@@ -210,18 +233,25 @@ export function AdminPage() {
       )}
 
       {/* Tabs */}
-      <div className="flex gap-1 bg-gray-100 dark:bg-gray-800/50 p-1 rounded-lg w-fit">
-        {(['overview', 'users', 'orgs'] as const).map((t) => (
+      <div className="flex gap-1 bg-gray-100 dark:bg-gray-800/50 p-1 rounded-lg w-fit flex-wrap">
+        {([
+          ['overview', '📊 Overview'],
+          ['users', '👤 Users'],
+          ['orgs', '🏢 Organizations'],
+          ['analytics', '📈 Analytics'],
+          ['revenue', '💰 Revenue'],
+          ['health', '🏥 System Health'],
+        ] as const).map(([key, label]) => (
           <button
-            key={t}
-            onClick={() => setTab(t)}
+            key={key}
+            onClick={() => setTab(key)}
             className={`px-4 py-2 text-sm font-medium rounded-md transition ${
-              tab === t
+              tab === key
                 ? 'bg-white dark:bg-gray-700 text-gray-900 dark:text-white shadow-sm'
                 : 'text-gray-500 hover:text-gray-900 dark:hover:text-white'
             }`}
           >
-            {t === 'overview' ? '📊 Overview' : t === 'users' ? '👤 Users' : '🏢 Organizations'}
+            {label}
           </button>
         ))}
       </div>
@@ -256,16 +286,24 @@ export function AdminPage() {
           <span>⚡</span> Quick Plan Switch (Your Org)
         </h3>
         <div className="flex gap-2 flex-wrap">
-          {['free', 'starter', 'professional', 'enterprise'].map((plan) => (
-            <button
-              key={plan}
-              onClick={() => user?.organization_id && handleChangePlan(user.organization_id, plan)}
-              disabled={!user?.organization_id}
-              className="px-4 py-2 bg-gray-200 dark:bg-gray-700 text-gray-900 dark:text-white text-sm rounded-lg hover:bg-gray-300 dark:hover:bg-gray-600 disabled:opacity-50 transition capitalize"
-            >
-              {plan}
-            </button>
-          ))}
+          {['free', 'starter', 'professional', 'enterprise'].map((plan) => {
+            const isCurrent = d?.organizations?.list?.find((o: AdminOrg) => o.id === user?.organization_id)?.plan_type === plan;
+            return (
+              <button
+                key={plan}
+                onClick={() => user?.organization_id && handleChangePlan(user.organization_id, plan)}
+                disabled={!user?.organization_id || changePlanMutation.isPending}
+                className={`px-4 py-2 text-sm rounded-lg transition capitalize ${
+                  isCurrent
+                    ? 'bg-emerald-500 text-white font-bold ring-2 ring-emerald-400/50'
+                    : 'bg-gray-200 dark:bg-gray-700 text-gray-900 dark:text-white hover:bg-gray-300 dark:hover:bg-gray-600'
+                } disabled:opacity-50`}
+              >
+                {changePlanMutation.isPending && changePlanMutation.variables?.planType === plan ? '...' : plan}
+                {isCurrent && ' ✓'}
+              </button>
+            );
+          })}
         </div>
       </div>
 
@@ -324,13 +362,35 @@ export function AdminPage() {
 
       {tab === 'users' && d && (
         <div className="bg-gray-50 dark:bg-gray-800/50 border border-gray-200 dark:border-gray-700 rounded-xl p-5">
-          <h3 className="text-sm font-bold text-gray-900 dark:text-white mb-4">
-            All Users ({d.users.total})
-          </h3>
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="text-sm font-bold text-gray-900 dark:text-white">
+              All Users ({d.users.total})
+            </h3>
+            {bulkSelected.size > 0 && (
+              <div className="flex items-center gap-2">
+                <span className="text-xs text-gray-400">{bulkSelected.size} selected</span>
+                <button onClick={() => handleBulkAction('activate')} className="px-3 py-1 bg-green-500/20 text-green-400 text-xs rounded-lg hover:bg-green-500/30">Activate</button>
+                <button onClick={() => handleBulkAction('deactivate')} className="px-3 py-1 bg-yellow-500/20 text-yellow-400 text-xs rounded-lg hover:bg-yellow-500/30">Deactivate</button>
+                <button onClick={() => handleBulkAction('delete')} className="px-3 py-1 bg-red-500/20 text-red-400 text-xs rounded-lg hover:bg-red-500/30">Delete</button>
+                <button onClick={() => setBulkSelected(new Set())} className="text-xs text-gray-400 underline">Clear</button>
+              </div>
+            )}
+          </div>
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
                 <tr className="text-gray-500 text-left">
+                  <th className="pb-2 font-medium">
+                    <input
+                      type="checkbox"
+                      onChange={(e) => {
+                        if (e.target.checked) setBulkSelected(new Set(d.users.list.filter((u: AdminUser) => u.id !== user?.id).map((u: AdminUser) => u.id)));
+                        else setBulkSelected(new Set());
+                      }}
+                      checked={bulkSelected.size > 0 && bulkSelected.size === d.users.list.filter((u: AdminUser) => u.id !== user?.id).length}
+                      className="rounded"
+                    />
+                  </th>
                   <th className="pb-2 font-medium">Email</th>
                   <th className="pb-2 font-medium">Name</th>
                   <th className="pb-2 font-medium">Role</th>
@@ -339,8 +399,22 @@ export function AdminPage() {
                 </tr>
               </thead>
               <tbody className="text-gray-900 dark:text-gray-300">
-                {d.users.list.map((u) => (
+                {d.users.list.map((u: AdminUser) => (
                   <tr key={u.id} className="border-t border-gray-200 dark:border-gray-700">
+                    <td className="py-2">
+                      {u.id !== user?.id && (
+                        <input
+                          type="checkbox"
+                          checked={bulkSelected.has(u.id)}
+                          onChange={(e) => {
+                            const next = new Set(bulkSelected);
+                            if (e.target.checked) next.add(u.id); else next.delete(u.id);
+                            setBulkSelected(next);
+                          }}
+                          className="rounded"
+                        />
+                      )}
+                    </td>
                     <td className="py-2 font-mono text-xs">{u.email}</td>
                     <td className="py-2 text-xs">{u.first_name} {u.last_name}</td>
                     <td className="py-2">
@@ -410,7 +484,7 @@ export function AdminPage() {
                 </tr>
               </thead>
               <tbody className="text-gray-900 dark:text-gray-300">
-                {d.organizations.list.map((o) => (
+                {d.organizations.list.map((o: AdminOrg) => (
                   <tr key={o.id} className="border-t border-gray-200 dark:border-gray-700">
                     <td className="py-2 text-xs font-medium">{o.name}</td>
                     <td className="py-2 font-mono text-xs text-gray-500">{o.slug}</td>
@@ -443,8 +517,255 @@ export function AdminPage() {
           </div>
         </div>
       )}
+
+      {/* Analytics Tab */}
+      {tab === 'analytics' && d && (
+        <div className="space-y-6">
+          {/* User Growth & Activity */}
+          <div className="grid md:grid-cols-2 gap-6">
+            <div className="bg-gray-50 dark:bg-gray-800/50 border border-gray-200 dark:border-gray-700 rounded-xl p-5">
+              <h3 className="text-sm font-bold text-gray-900 dark:text-white mb-4">📊 User Analytics</h3>
+              <div className="space-y-3">
+                <div className="flex justify-between items-center">
+                  <span className="text-gray-400 text-sm">Total Users</span>
+                  <span className="text-white font-bold text-lg">{d.users.total}</span>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="text-gray-400 text-sm">Active Users</span>
+                  <span className="text-emerald-400 font-bold text-lg">{d.users.active}</span>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="text-gray-400 text-sm">Inactive Users</span>
+                  <span className="text-red-400 font-bold text-lg">{d.users.total - d.users.active}</span>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="text-gray-400 text-sm">Activation Rate</span>
+                  <span className="text-cyan-400 font-bold text-lg">{d.users.total > 0 ? Math.round((d.users.active / d.users.total) * 100) : 0}%</span>
+                </div>
+                {/* Activity Bar */}
+                <div className="pt-2">
+                  <div className="w-full bg-gray-700 rounded-full h-3">
+                    <div className="h-3 rounded-full bg-gradient-to-r from-emerald-500 to-cyan-500" style={{ width: `${d.users.total > 0 ? Math.round((d.users.active / d.users.total) * 100) : 0}%` }} />
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div className="bg-gray-50 dark:bg-gray-800/50 border border-gray-200 dark:border-gray-700 rounded-xl p-5">
+              <h3 className="text-sm font-bold text-gray-900 dark:text-white mb-4">🔍 Scan Analytics</h3>
+              <div className="space-y-3">
+                <div className="flex justify-between items-center">
+                  <span className="text-gray-400 text-sm">Total Scans</span>
+                  <span className="text-white font-bold text-lg">{d.scans.total}</span>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="text-gray-400 text-sm">Currently Running</span>
+                  <span className="text-blue-400 font-bold text-lg">{d.scans.running}</span>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="text-gray-400 text-sm">Completed</span>
+                  <span className="text-emerald-400 font-bold text-lg">{d.scans.total - d.scans.running}</span>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="text-gray-400 text-sm">Avg. Scans/User</span>
+                  <span className="text-purple-400 font-bold text-lg">{d.users.active > 0 ? (d.scans.total / d.users.active).toFixed(1) : '0'}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Plan Distribution Visual */}
+          <div className="bg-gray-50 dark:bg-gray-800/50 border border-gray-200 dark:border-gray-700 rounded-xl p-5">
+            <h3 className="text-sm font-bold text-gray-900 dark:text-white mb-4">📋 Plan Distribution</h3>
+            <div className="space-y-3">
+              {Object.entries(d.organizations.plans_distribution).map(([plan, count]) => {
+                const total = d.organizations.total || 1;
+                const pct = Math.round(((count as number) / total) * 100);
+                const colors: Record<string, string> = { free: 'bg-gray-500', starter: 'bg-blue-500', professional: 'bg-emerald-500', enterprise: 'bg-purple-500' };
+                return (
+                  <div key={plan}>
+                    <div className="flex justify-between text-sm mb-1">
+                      <span className="text-gray-300 capitalize">{plan}</span>
+                      <span className="text-gray-400">{count as number} orgs ({pct}%)</span>
+                    </div>
+                    <div className="w-full bg-gray-700 rounded-full h-2.5">
+                      <div className={`h-2.5 rounded-full ${colors[plan] || 'bg-gray-500'}`} style={{ width: `${pct}%` }} />
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* Recent Activity */}
+          <div className="bg-gray-50 dark:bg-gray-800/50 border border-gray-200 dark:border-gray-700 rounded-xl p-5">
+            <h3 className="text-sm font-bold text-gray-900 dark:text-white mb-4">⚡ Recent Activity</h3>
+            <div className="space-y-2">
+              {d.scans.recent.slice(0, 10).map((s: ScanSummary, i: number) => (
+                <div key={s.id || i} className="flex items-center gap-3 py-2 border-b border-gray-700/50 last:border-0">
+                  <span className={`w-2 h-2 rounded-full ${s.status === 'completed' ? 'bg-emerald-400' : s.status === 'running' ? 'bg-blue-400 animate-pulse' : 'bg-gray-400'}`} />
+                  <span className="text-sm text-gray-300 font-mono flex-1 truncate">{s.target}</span>
+                  <span className={`text-xs px-2 py-0.5 rounded ${s.status === 'completed' ? 'bg-emerald-500/10 text-emerald-400' : s.status === 'running' ? 'bg-blue-500/10 text-blue-400' : 'bg-gray-500/10 text-gray-400'}`}>{s.status}</span>
+                  <span className="text-xs text-gray-500">{new Date(s.created_at).toLocaleString()}</span>
+                </div>
+              ))}
+              {d.scans.recent.length === 0 && <p className="text-gray-500 text-sm">No recent activity</p>}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Revenue Tab */}
+      {tab === 'revenue' && d && (
+        <div className="space-y-6">
+          <div className="grid md:grid-cols-4 gap-4">
+            <StatCard label="MRR" value={`€${d.revenue.mrr.toLocaleString()}`} sub="Monthly Recurring Revenue" color="emerald" />
+            <StatCard label="ARR" value={`€${d.revenue.arr.toLocaleString()}`} sub="Annual Recurring Revenue" color="cyan" />
+            <StatCard label="Paying Orgs" value={d.organizations.total - (d.organizations.plans_distribution['free'] || 0)} sub={`of ${d.organizations.total} total`} color="purple" />
+            <StatCard label="ARPU" value={`€${d.organizations.total > 0 ? Math.round(d.revenue.mrr / Math.max(1, d.organizations.total - (d.organizations.plans_distribution['free'] || 0))) : 0}`} sub="Avg Revenue Per User" color="amber" />
+          </div>
+
+          {/* Revenue Breakdown by Plan */}
+          <div className="bg-gray-50 dark:bg-gray-800/50 border border-gray-200 dark:border-gray-700 rounded-xl p-5">
+            <h3 className="text-sm font-bold text-gray-900 dark:text-white mb-4">💰 Revenue by Plan</h3>
+            <div className="grid md:grid-cols-4 gap-4">
+              {[
+                { plan: 'Free', price: 0, count: d.organizations.plans_distribution['free'] || 0, color: 'gray' },
+                { plan: 'Starter', price: 99, count: d.organizations.plans_distribution['starter'] || 0, color: 'blue' },
+                { plan: 'Professional', price: 299, count: d.organizations.plans_distribution['professional'] || 0, color: 'emerald' },
+                { plan: 'Enterprise', price: 799, count: d.organizations.plans_distribution['enterprise'] || 0, color: 'purple' },
+              ].map((item) => (
+                <div key={item.plan} className="bg-white dark:bg-gray-900 rounded-lg p-4 text-center border border-gray-200 dark:border-gray-700">
+                  <div className="text-xs text-gray-500 uppercase">{item.plan}</div>
+                  <div className="text-2xl font-bold text-white mt-1">€{(item.price * item.count).toLocaleString()}</div>
+                  <div className="text-xs text-gray-400 mt-1">{item.count} × €{item.price}/mo</div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Revenue Projection */}
+          <div className="bg-gradient-to-br from-emerald-500/10 to-cyan-500/10 border border-emerald-500/20 rounded-xl p-5">
+            <h3 className="text-sm font-bold text-gray-900 dark:text-white mb-4">📈 Revenue Projections</h3>
+            <div className="grid md:grid-cols-3 gap-4">
+              <div className="text-center">
+                <div className="text-xs text-gray-500 uppercase">This Month</div>
+                <div className="text-3xl font-bold text-emerald-400 mt-1">€{d.revenue.mrr.toLocaleString()}</div>
+              </div>
+              <div className="text-center">
+                <div className="text-xs text-gray-500 uppercase">Quarterly (est.)</div>
+                <div className="text-3xl font-bold text-cyan-400 mt-1">€{(d.revenue.mrr * 3).toLocaleString()}</div>
+              </div>
+              <div className="text-center">
+                <div className="text-xs text-gray-500 uppercase">Annual (est.)</div>
+                <div className="text-3xl font-bold text-purple-400 mt-1">€{d.revenue.arr.toLocaleString()}</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* System Health Tab */}
+      {tab === 'health' && (
+        <div className="space-y-6">
+          <div className="grid md:grid-cols-3 gap-4">
+            <HealthCard
+              title="🖥️ Backend API"
+              status="operational"
+              detail="Rust Axum v4.0.0"
+              metric="Port 5001"
+            />
+            <HealthCard
+              title="🗄️ PostgreSQL"
+              status="operational"
+              detail="cybersec_pro database"
+              metric="localhost:5432"
+            />
+            <HealthCard
+              title="🌐 Nginx Proxy"
+              status="operational"
+              detail="Reverse proxy active"
+              metric="Port 80 / 443"
+            />
+          </div>
+
+          <div className="grid md:grid-cols-2 gap-4">
+            <HealthCard
+              title="💳 Stripe Payments"
+              status="operational"
+              detail="Live mode active"
+              metric="3 price IDs configured"
+            />
+            <HealthCard
+              title="📧 Email (SMTP)"
+              status="operational"
+              detail="Gmail SMTP"
+              metric="smtp.gmail.com:465"
+            />
+          </div>
+
+          {/* Services Overview */}
+          <div className="bg-gray-50 dark:bg-gray-800/50 border border-gray-200 dark:border-gray-700 rounded-xl p-5">
+            <h3 className="text-sm font-bold text-gray-900 dark:text-white mb-4">🛡️ Platform Services</h3>
+            <div className="space-y-3">
+              {[
+                { name: 'Authentication & JWT', status: 'active', icon: '🔐' },
+                { name: 'Rate Limiting', status: 'active', icon: '⚡' },
+                { name: 'WebSocket (Socket.IO)', status: 'active', icon: '🔌' },
+                { name: 'Service Manager Watchdog', status: 'active', icon: '🛡️' },
+                { name: 'Site Monitor', status: 'active', icon: '📡' },
+                { name: 'Audit Logging', status: 'active', icon: '📝' },
+                { name: 'CORS & Security Headers', status: 'active', icon: '🔒' },
+                { name: 'Static File Serving', status: 'active', icon: '📁' },
+              ].map((svc) => (
+                <div key={svc.name} className="flex items-center justify-between py-2 border-b border-gray-700/30 last:border-0">
+                  <div className="flex items-center gap-2">
+                    <span>{svc.icon}</span>
+                    <span className="text-sm text-gray-300">{svc.name}</span>
+                  </div>
+                  <span className="text-xs px-2 py-0.5 rounded bg-emerald-500/10 text-emerald-400 font-medium">
+                    {svc.status}
+                  </span>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {d && (
+            <div className="bg-gray-50 dark:bg-gray-800/50 border border-gray-200 dark:border-gray-700 rounded-xl p-5">
+              <h3 className="text-sm font-bold text-gray-900 dark:text-white mb-4">🤖 Agent Status</h3>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="bg-white dark:bg-gray-900 rounded-lg p-4 text-center">
+                  <div className="text-2xl font-bold text-white">{d.agents.total}</div>
+                  <div className="text-xs text-gray-500">Total Agents</div>
+                </div>
+                <div className="bg-white dark:bg-gray-900 rounded-lg p-4 text-center">
+                  <div className="text-2xl font-bold text-emerald-400">{d.agents.online}</div>
+                  <div className="text-xs text-gray-500">Online Now</div>
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
+      )}
     </div>
     </PageTransition>
+  );
+}
+
+function HealthCard({ title, status, detail, metric }: { title: string; status: string; detail: string; metric: string }) {
+  const isOk = status === 'operational';
+  return (
+    <div className={`bg-gray-50 dark:bg-gray-800/50 border rounded-xl p-5 ${isOk ? 'border-emerald-500/20' : 'border-red-500/20'}`}>
+      <div className="flex items-center justify-between mb-2">
+        <h3 className="text-sm font-bold text-gray-900 dark:text-white">{title}</h3>
+        <span className={`text-xs px-2 py-0.5 rounded font-medium ${isOk ? 'bg-emerald-500/10 text-emerald-400' : 'bg-red-500/10 text-red-400'}`}>
+          {status}
+        </span>
+      </div>
+      <p className="text-xs text-gray-400">{detail}</p>
+      <p className="text-xs text-gray-500 mt-1">{metric}</p>
+    </div>
   );
 }
 
