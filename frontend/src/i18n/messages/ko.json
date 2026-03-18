@@ -16,7 +16,8 @@
     "careers": "채용",
     "contact": "문의",
     "security": "보안",
-    "tests": "평가"
+    "tests": "평가",
+    "donate": "후원"
   },
   "hero": {
     "badge": "클라우드 기반 공격적 보안",
@@ -186,11 +187,11 @@
       "description": "2024년 설립된 CyberSec Pro는 침투 테스트 워크플로를 효율화하기 위한 내부 도구로 시작했습니다. 현재 전 세계 보안 팀에 서비스를 제공하고 있습니다."
     },
     "team": {
-      "title": "팀",
+      "title": "설립자",
       "founder": {
         "name": "Semih Kılıç",
-        "role": "설립자 & CEO",
-        "bio": "공격적 보안, 침투 테스트, 보안 도구 개발 분야에서 10년 이상의 경험을 가진 보안 엔지니어."
+        "role": "설립자 & 개발자",
+        "bio": "IT 시스템 분야에서 15년의 경험을 보유한 IT 전문가 — 시스템 관리, ERP, 네트워크, 가상화 및 IT 운영. 캐나다 토론토에서 CyberSec Pro를 독자적으로 개발 중."
       }
     }
   },
@@ -256,6 +257,19 @@
     "subtitle": "CyberSec Pro에 오신 것을 환영합니다. 계정이 활성화되었습니다.",
     "dashboard": "대시보드로 이동",
     "docs": "문서 읽기"
+  },
+  "donate": {
+    "badge": "프로젝트 후원",
+    "title": "CyberSec Pro 후원하기",
+    "subtitle": "CyberSec Pro는 캐나다 토론토의 독립 개발자가 혼자 구축하고 유지하고 있습니다. 여러분의 후원이 프로젝트를 유지하고 성장시키는 데 도움이 됩니다.",
+    "storyTitle": "후원이 중요한 이유",
+    "storyText": "저는 Semih Kılıç이며, IT 시스템 분야에서 15년의 경험을 가진 독립 개발자입니다. CyberSec Pro를 완전히 혼자 구축하고 있습니다 — 백엔드부터 프론트엔드, 인프라부터 보안 도구까지. 캐나다에서 실직 상태인 개발자로서, 모든 후원은 이 플랫폼 개발을 직접 지원합니다.",
+    "platformsTitle": "후원 방법",
+    "buymeacoffeeDesc": "커피 기부로 일회성 또는 월간 후원.",
+    "githubDesc": "GitHub을 통해 직접 스폰서하여 정기적으로 후원.",
+    "kofiDesc": "Ko-fi로 일회성 또는 월간 기부 후원.",
+    "paypalDesc": "PayPal을 통해 직접 기여하기.",
+    "thankYou": "크기에 관계없이 모든 후원은 진정한 변화를 만듭니다. 이 프로젝트를 믿어주셔서 감사합니다."
   },
   "common": {
     "email": "cybersecpro@semihkilic.com",

@@ -169,20 +169,24 @@ export default function AboutPage() {
               <div className="text-center md:text-left">
                 <h3 className="text-xl font-bold">{t("team.founder.name")}</h3>
                 <p className="font-mono text-sm text-[var(--color-neon)]">{t("team.founder.role")}</p>
-                <p className="mt-3 text-sm leading-relaxed text-white/50">{t("team.founder.bio")}</p>
+                <p className="mt-3 text-sm leading-relaxed text-white/50">
+                  Independent developer and IT professional based in <span className="text-white/70 font-medium">Toronto, Canada</span>.
+                  Building CyberSec Pro solo — every line of code, every deployment, every design decision.
+                </p>
                 <p className="mt-2 text-sm leading-relaxed text-white/50">
-                  <span className="text-white/70 font-semibold">25+ years</span> of hands-on experience across the full spectrum of cybersecurity and software engineering.
-                  Former senior consultant at <span className="text-white/70 font-medium">KPMG</span>, co-founder of <span className="text-white/70 font-medium">Vitastra</span>,
-                  and trusted advisor to Fortune 500 companies, government agencies, and critical infrastructure operators worldwide.
+                  <span className="text-white/70 font-semibold">15 years</span> of experience in IT Systems (ITS) — System Administration, 
+                  ERP systems, Network infrastructure, Virtualization, and IT operations management. 
+                  Previously at <span className="text-white/70 font-medium">KPMG</span> and 
+                  co-founder of <span className="text-white/70 font-medium">Vitastra</span>.
                 </p>
                 <div className="mt-4 grid gap-2 md:grid-cols-2">
                   {[
-                    { role: "Rust / Axum Backend Architect", detail: "25+ years systems programming. Designed and built the entire CyberSec Pro backend — 131 API endpoints, Axum 0.7, Tokio async runtime, sqlx, zero-downtime deployments." },
-                    { role: "React / Next.js Frontend Engineer", detail: "25+ years full-stack web development. Built the SaaS dashboard (React 18, Vite, TanStack Query) and the 10-locale Next.js 15 marketing site with Three.js 3D visualisations." },
-                    { role: "Offensive Security Researcher", detail: "25+ years penetration testing. OSCP, OSCE, GXPN certified. Led 500+ penetration tests across web, network, wireless, and mobile. Red team lead for critical infrastructure." },
-                    { role: "Detection & SIEM Engineer", detail: "25+ years detection engineering. Built SIEM/SOAR pipelines, YARA/Sigma rules, and the CyberSec Pro MITRE ATT&CK purple team module with automated detection validation." },
-                    { role: "DevOps / SRE Architect", detail: "25+ years infrastructure. Kubernetes, Docker, CI/CD, Nginx, PostgreSQL at scale. Designed the containerised scan engine running 401 tools in isolated environments." },
-                    { role: "Product & Strategy Lead", detail: "25+ years product leadership. Took 3 B2B SaaS products from zero to acquisition. CyberSec Pro's pricing, roadmap, compliance strategy, and go-to-market — all built from first principles." },
+                    { role: "System Administration", detail: "Windows Server, Linux, Active Directory, Group Policy, DNS, DHCP, Exchange. Full enterprise infrastructure lifecycle management." },
+                    { role: "ERP Systems", detail: "SAP, Microsoft Dynamics, enterprise resource planning deployment and administration. End-to-end business process integration." },
+                    { role: "Network & Security", detail: "Cisco, Fortinet, VPN, firewall management, network architecture, monitoring and troubleshooting at enterprise scale." },
+                    { role: "Virtualization & Cloud", detail: "VMware vSphere, Hyper-V, Azure, AWS. Data centre virtualisation, migration projects, and hybrid cloud deployments." },
+                    { role: "IT Operations", detail: "ITIL-aligned service management, helpdesk operations, vendor management, procurement, and technical team leadership." },
+                    { role: "Development (Self-taught)", detail: "Built CyberSec Pro from scratch: Rust/Axum backend, React/Next.js frontend, PostgreSQL, Nginx, Docker. Entirely self-taught in programming." },
                   ].map((r) => (
                     <div key={r.role} className="glass-card p-3">
                       <h4 className="text-xs font-bold text-[var(--color-neon)]">{r.role}</h4>
@@ -198,7 +202,7 @@ export default function AboutPage() {
                   ))}
                 </div>
                 <p className="mt-3 text-[11px] text-white/30 italic">
-                  &ldquo;I built every line of CyberSec Pro — backend, frontend, infrastructure, security architecture, and product strategy — because the world deserves enterprise-grade security tools that are accessible to every team, not just the Fortune 500.&rdquo;
+                  &ldquo;I&apos;m building CyberSec Pro entirely on my own — no team, no investors, just one person&apos;s vision to make professional-grade security testing accessible to everyone. If you believe in this mission, your support means the world.&rdquo;
                 </p>
                 <a href="mailto:cybersecpro@semihkilic.com" className="mt-4 inline-flex items-center gap-2 text-xs text-white/40 hover:text-[var(--color-neon)] transition">
                   <Mail size={12} /> cybersecpro@semihkilic.com

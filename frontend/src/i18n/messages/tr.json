@@ -16,7 +16,8 @@
     "careers": "Kariyer",
     "contact": "İletişim",
     "security": "Güvenlik",
-    "tests": "Değerlendirmeler"
+    "tests": "Değerlendirmeler",
+    "donate": "Bağış"
   },
   "hero": {
     "badge": "Bulut Tabanlı Saldırı Güvenliği",
@@ -186,11 +187,11 @@
       "description": "2024'te kurulan CyberSec Pro, penetrasyon testi iş akışlarını düzene sokmak için dahili bir araç olarak başladı. Bugün dünya çapında güvenlik ekiplerine hizmet veriyor."
     },
     "team": {
-      "title": "Ekip",
+      "title": "Kurucu",
       "founder": {
         "name": "Semih Kılıç",
-        "role": "Kurucu & CEO",
-        "bio": "Saldırı güvenliği, penetrasyon testi ve güvenlik araç geliştirme konusunda 10+ yıllık deneyime sahip güvenlik mühendisi."
+        "role": "Kurucu & Geliştirici",
+        "bio": "15 yıllık BT Sistemleri deneyimine sahip BT profesyoneli — Sistem Yönetimi, ERP, Ağ, Sanallaştırma ve BT operasyonları. CyberSec Pro'yu Toronto, Kanada'dan tek başına geliştiriyor."
       }
     }
   },
@@ -256,6 +257,19 @@
     "subtitle": "CyberSec Pro'ya hoş geldiniz. Hesabınız aktifleştirildi.",
     "dashboard": "Panele Git",
     "docs": "Belgeleri Oku"
+  },
+  "donate": {
+    "badge": "Projeyi Destekle",
+    "title": "CyberSec Pro'yu Destekle",
+    "subtitle": "CyberSec Pro, Toronto, Kanada'da yaşayan bağımsız bir geliştirici tarafından tek başına geliştirilmektedir. Desteğiniz projenin yaşamaya ve büyümeye devam etmesine yardımcı olur.",
+    "storyTitle": "Desteğiniz Neden Önemli",
+    "storyText": "Ben Semih Kılıç, 15 yıllık BT Sistemleri deneyimine sahip bağımsız bir geliştiriciyim. CyberSec Pro'yu tamamen tek başıma geliştiriyorum — backend'den frontend'e, altyapıdan güvenlik araçlarına kadar. Kanada'da işsiz bir geliştirici olarak, her katkı doğrudan bu platformun geliştirilmesini destekler.",
+    "platformsTitle": "Destek Yöntemleri",
+    "buymeacoffeeDesc": "Tek seferlik veya aylık kahve bağışı ile destek olun.",
+    "githubDesc": "Düzenli destek için doğrudan GitHub üzerinden sponsor olun.",
+    "kofiDesc": "Tek seferlik veya aylık Ko-fi bağışı ile destek olun.",
+    "paypalDesc": "PayPal üzerinden doğrudan katkıda bulunun.",
+    "thankYou": "Miktarı ne olursa olsun, her katkı gerçek bir fark yaratır. Bu projeye inandığınız için teşekkürler."
   },
   "common": {
     "email": "cybersecpro@semihkilic.com",

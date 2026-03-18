@@ -16,7 +16,8 @@
     "careers": "Karriere",
     "contact": "Kontakt",
     "security": "Sicherheit",
-    "tests": "Bewertungen"
+    "tests": "Bewertungen",
+    "donate": "Spenden"
   },
   "hero": {
     "badge": "Cloud-basierte Offensive Security",
@@ -186,11 +187,11 @@
       "description": "Gegründet 2024, begann CyberSec Pro als internes Tool zur Optimierung von Penetrationstest-Workflows. Heute dient es Sicherheitsteams weltweit."
     },
     "team": {
-      "title": "Das Team",
+      "title": "Der Gründer",
       "founder": {
         "name": "Semih Kılıç",
-        "role": "Gründer & CEO",
-        "bio": "Sicherheitsingenieur mit über 10 Jahren Erfahrung in Offensive Security, Penetrationstests und Sicherheitstool-Entwicklung."
+        "role": "Gründer & Entwickler",
+        "bio": "IT-Fachmann mit 15 Jahren Erfahrung in IT-Systemen — Systemadministration, ERP, Netzwerk, Virtualisierung und IT-Betrieb. Entwickelt CyberSec Pro als Solo-Entwickler aus Toronto, Kanada."
       }
     }
   },
@@ -256,6 +257,19 @@
     "subtitle": "Willkommen bei CyberSec Pro. Ihr Konto wurde aktiviert.",
     "dashboard": "Zum Dashboard",
     "docs": "Dokumentation lesen"
+  },
+  "donate": {
+    "badge": "Projekt unterstützen",
+    "title": "CyberSec Pro unterstützen",
+    "subtitle": "CyberSec Pro wird von einem einzelnen Entwickler in Toronto, Kanada, entwickelt und gepflegt. Ihre Unterstützung hilft, das Projekt am Leben zu halten.",
+    "storyTitle": "Warum Ihre Unterstützung zählt",
+    "storyText": "Ich bin Semih Kılıç, ein unabhängiger Entwickler mit 15 Jahren IT-Systemerfahrung. Ich entwickle CyberSec Pro komplett allein — vom Backend bis zum Frontend, von der Infrastruktur bis zu den Sicherheitstools. Als arbeitsloser Entwickler in Kanada unterstützt jeder Beitrag direkt die Entwicklung dieser Plattform.",
+    "platformsTitle": "Möglichkeiten zur Unterstützung",
+    "buymeacoffeeDesc": "Einmalige oder monatliche Unterstützung mit einer Kaffee-Spende.",
+    "githubDesc": "Sponsoren Sie direkt über GitHub für wiederkehrende Unterstützung.",
+    "kofiDesc": "Unterstützen Sie mit einer einmaligen oder monatlichen Ko-fi-Spende.",
+    "paypalDesc": "Senden Sie einen direkten Beitrag über PayPal.",
+    "thankYou": "Jeder Beitrag, egal wie groß, macht einen echten Unterschied. Danke, dass Sie an dieses Projekt glauben."
   },
   "common": {
     "email": "cybersecpro@semihkilic.com",
