@@ -200,9 +200,14 @@ pub async fn execute_scan(
     let status = child.wait().await?;
     let exit_code = status.code();
 
-    // Combine stderr into output if stdout is empty
-    if output.trim().is_empty() && !stderr_output.trim().is_empty() {
-        output = stderr_output;
+    // Combine stderr into output — append after stdout (many tools write to stderr)
+    if !stderr_output.trim().is_empty() {
+        if output.trim().is_empty() {
+            output = stderr_output;
+        } else {
+            output.push_str("\n--- STDERR ---\n");
+            output.push_str(&stderr_output);
+        }
     }
 
     // Parse output for structured findings

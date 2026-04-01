@@ -152,8 +152,21 @@ impl ScanEngine {
         let scan_id_clone = scan_id.clone();
 
         tokio::spawn(async move {
-            // Acquire worker slot
-            let _permit = semaphore.acquire().await.unwrap();
+            // Acquire worker slot (semaphore is never closed, so unwrap is safe here,
+            // but we handle the error gracefully anyway)
+            let _permit = match semaphore.acquire().await {
+                Ok(p) => p,
+                Err(e) => {
+                    tracing::error!("Semaphore acquire failed for scan {}: {}", scan_id_clone, e);
+                    let mut s = scans.write().await;
+                    if let Some(scan) = s.get_mut(&scan_id_clone) {
+                        scan.status = ScanState::Failed;
+                        scan.error = Some("Worker pool unavailable".to_string());
+                        scan.finished_at = Some(Utc::now());
+                    }
+                    return;
+                }
+            };
 
             // Update status to running
             {
