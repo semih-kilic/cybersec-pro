@@ -103,7 +103,7 @@ pub async fn create_checkout(
         ("success_url", success_url),
         ("cancel_url", cancel_url),
         ("metadata[org_id]", org_id.to_string()),
-        ("metadata[plan]", body.plan.clone()),
+        ("metadata[plan_type]", body.plan.clone()),   // was "plan" — webhook reads "plan_type"
         ("metadata[user_id]", auth.user_id.clone()),
     ];
 
@@ -182,7 +182,7 @@ pub async fn create_checkout_public(
         ("line_items[0][quantity]", "1".to_string()),
         ("success_url", success_url),
         ("cancel_url", cancel_url),
-        ("metadata[plan]", plan.to_string()),
+        ("metadata[plan_type]", plan.to_string()),   // consistent with webhook handler
     ];
 
     let res = client
@@ -277,6 +277,32 @@ pub async fn stripe_webhook(
     };
 
     let event_type = event.get("type").and_then(|t| t.as_str()).unwrap_or("");
+    let event_id = event.get("id").and_then(|i| i.as_str()).unwrap_or("");
+
+    // Idempotency: skip already-processed events
+    if !event_id.is_empty() {
+        let already_processed: Option<(String,)> = sqlx::query_as(
+            "SELECT id FROM stripe_events WHERE event_id = $1"
+        )
+        .bind(event_id)
+        .fetch_optional(&state.db)
+        .await
+        .unwrap_or(None);
+
+        if already_processed.is_some() {
+            tracing::info!("Stripe event {} already processed, skipping", event_id);
+            return (StatusCode::OK, Json(json!({"received": true, "duplicate": true}))).into_response();
+        }
+
+        // Record event as processed
+        let _ = sqlx::query(
+            "INSERT INTO stripe_events (event_id, event_type, processed_at) VALUES ($1, $2, CURRENT_TIMESTAMP) ON CONFLICT (event_id) DO NOTHING"
+        )
+        .bind(event_id)
+        .bind(event_type)
+        .execute(&state.db)
+        .await;
+    }
 
     match event_type {
         "checkout.session.completed" => {

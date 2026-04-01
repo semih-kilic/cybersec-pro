@@ -69,14 +69,8 @@ fn extract_token(parts: &Parts) -> Option<String> {
         }
     }
 
-    // 3. Try query parameter: ?token=<token>
-    if let Some(query) = parts.uri.query() {
-        for pair in query.split('&') {
-            if let Some(token) = pair.strip_prefix("token=") {
-                return Some(token.to_string());
-            }
-        }
-    }
+    // NOTE: Query parameter token support intentionally removed — tokens in URLs
+    // appear in server logs, browser history, and Referer headers (security risk).
 
     None
 }

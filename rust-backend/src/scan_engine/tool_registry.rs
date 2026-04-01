@@ -23,9 +23,18 @@ pub struct KaliTool {
 }
 
 lazy_static::lazy_static! {
-    /// All 518 Kali tools indexed by multiple keys for fast lookup
+    /// All Kali tools indexed by multiple keys for fast lookup
     static ref KALI_REGISTRY: Vec<KaliTool> = {
-        serde_json::from_str(KALI_TOOLS_JSON).unwrap_or_default()
+        match serde_json::from_str::<Vec<KaliTool>>(KALI_TOOLS_JSON) {
+            Ok(tools) => {
+                tracing::info!("Loaded {} tools from kali_tools.json", tools.len());
+                tools
+            }
+            Err(e) => {
+                // Panic at startup — a broken tool registry is a critical misconfiguration
+                panic!("FATAL: Failed to parse kali_tools.json: {}. The server cannot start without a valid tool registry.", e);
+            }
+        }
     };
 
     /// Lookup by tool id (lowercase-hyphenated name)
@@ -338,25 +347,52 @@ fn resolve_binary(tool_name: &str) -> String {
 }
 
 /// Parse a command_template like "nikto -h {target}" into program + args.
+/// SECURITY: target is always treated as a single atomic argument — never split.
 fn parse_template(program: &str, template: &str, target: &str) -> Result<(String, Vec<String>)> {
-    let filled = template
-        .replace("{target}", target)
-        .replace("{TARGET}", target)
-        .replace("{host}", target)
-        .replace("{url}", target)
-        .replace("{ip}", target)
-        .replace("{domain}", target);
-
-    let parts: Vec<&str> = filled.split_whitespace().collect();
-    if parts.is_empty() {
+    if template.trim().is_empty() {
         return Err(anyhow!("Empty command template"));
     }
 
-    let args: Vec<String> = if parts[0] == program || parts[0].ends_with(&format!("/{}", program)) {
-        parts[1..].iter().map(|s| s.to_string()).collect()
+    // Split the template on whitespace, but replace {target} placeholder with a sentinel
+    // then substitute back — this ensures target is never split on spaces.
+    const SENTINEL: &str = "\x00TARGET\x00";
+    let templated = template
+        .replace("{target}", SENTINEL)
+        .replace("{TARGET}", SENTINEL)
+        .replace("{host}", SENTINEL)
+        .replace("{url}", SENTINEL)
+        .replace("{ip}", SENTINEL)
+        .replace("{domain}", SENTINEL);
+
+    let parts: Vec<&str> = templated.split_whitespace().collect();
+    if parts.is_empty() {
+        return Err(anyhow!("Empty command template after parsing"));
+    }
+
+    // Determine if template starts with the program name (skip it to avoid duplication)
+    let start = if parts[0] == program || parts[0].ends_with(&format!("/{}", program)) {
+        1
     } else {
-        parts.iter().map(|s| s.to_string()).collect()
+        0
     };
 
-    Ok((program.to_string(), args))
+    let args: Vec<String> = parts[start..]
+        .iter()
+        .map(|s| {
+            if *s == SENTINEL {
+                target.to_string()  // target as single atomic arg — never split
+            } else {
+                s.to_string()
+            }
+        })
+        .collect();
+
+    // If no sentinel was found in template, append target at end
+    let has_target = args.iter().any(|a| a == target);
+    let mut final_args = args;
+    if !has_target {
+        final_args.push(target.to_string());
+    }
+
+    Ok((program.to_string(), final_args))
 }

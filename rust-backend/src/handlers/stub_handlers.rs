@@ -296,6 +296,11 @@ pub async fn upload_avatar(
         return (StatusCode::BAD_REQUEST, Json(json!({"error": "Invalid image format. Accepted: PNG, JPG, GIF, WebP"}))).into_response();
     };
 
+    // Validate user_id is a valid UUID to prevent path traversal
+    if uuid::Uuid::parse_str(&user.user_id).is_err() {
+        return (StatusCode::BAD_REQUEST, Json(json!({"error": "Invalid user session"}))).into_response();
+    }
+
     // Save to disk
     let upload_dir = std::path::Path::new("/home/cybersec/cybersec-pro/uploads/avatars");
     if let Err(e) = tokio::fs::create_dir_all(upload_dir).await {

@@ -24,6 +24,9 @@ pub struct AgentSshInfo {
     pub ssh_port: i32,
     pub ssh_username: String,
     pub ssh_key_path: Option<String>,
+    /// Known host fingerprint stored at agent registration time.
+    /// If Some, StrictHostKeyChecking is enabled and fingerprint is verified.
+    pub ssh_fingerprint: Option<String>,
 }
 
 /// Execute a security scan tool as a subprocess with real-time output streaming.
@@ -43,11 +46,32 @@ pub async fn execute_scan(
         // Remote execution via SSH
         let remote_cmd = format!("{} {}", shell_escape(&program), args.iter().map(|a| shell_escape(a)).collect::<Vec<_>>().join(" "));
         let mut ssh_args = vec![
-            "-o".to_string(), "StrictHostKeyChecking=no".to_string(),
             "-o".to_string(), "ConnectTimeout=10".to_string(),
             "-o".to_string(), "BatchMode=yes".to_string(),
             "-p".to_string(), ssh.ssh_port.to_string(),
         ];
+
+        // Use stored fingerprint for host verification (prevents MITM)
+        if let Some(fp) = &ssh.ssh_fingerprint {
+            ssh_args.push("-o".to_string());
+            ssh_args.push("StrictHostKeyChecking=yes".to_string());
+            ssh_args.push("-o".to_string());
+            ssh_args.push(format!("FingerprintHash=sha256"));
+            // Write known_hosts entry to a temp file
+            let known_hosts_content = format!("[{}]:{} {}", ssh.ssh_host, ssh.ssh_port, fp);
+            let tmp_path = format!("/tmp/cybersec_known_hosts_{}", uuid::Uuid::new_v4());
+            if tokio::fs::write(&tmp_path, known_hosts_content).await.is_ok() {
+                ssh_args.push("-o".to_string());
+                ssh_args.push(format!("UserKnownHostsFile={}", tmp_path));
+            }
+        } else {
+            // No fingerprint stored — refuse connection for security
+            return Err(anyhow!(
+                "Agent {} has no stored SSH fingerprint. Re-register the agent to store its fingerprint.",
+                ssh.ssh_host
+            ));
+        }
+
         if let Some(key_path) = &ssh.ssh_key_path {
             ssh_args.push("-i".to_string());
             ssh_args.push(key_path.clone());
@@ -163,8 +187,11 @@ pub async fn execute_scan(
 
     if result.is_err() {
         // Timeout — kill the entire process group (not just direct child)
+        // Guard: never send signal to PID 0 (would kill entire process group of the server)
         if child_pid > 0 {
             let _ = killpg(Pid::from_raw(child_pid), Signal::SIGKILL);
+        } else {
+            tracing::warn!("Could not get child PID for scan {}, attempting direct kill", scan_id);
         }
         let _ = child.kill().await;
         return Err(anyhow!("Scan timed out after 300 seconds"));

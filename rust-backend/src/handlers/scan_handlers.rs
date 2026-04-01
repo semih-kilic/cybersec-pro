@@ -40,41 +40,52 @@ pub async fn list_scans(
     let per_page = q.per_page.unwrap_or(20).min(100);
     let offset = (page - 1) * per_page;
 
-    let (filter_col, filter_val) = match &auth.org_id {
-        Some(id) => ("organization_id", id.clone()),
-        None => ("user_id", auth.user_id.clone()),
+    let (scans, total): (Vec<Scan>, i64) = match (&auth.org_id, &q.status) {
+        (Some(org_id), Some(status)) => {
+            let rows = sqlx::query_as(
+                "SELECT * FROM scans WHERE organization_id = $1 AND status = $2 ORDER BY created_at DESC LIMIT $3 OFFSET $4"
+            )
+            .bind(org_id).bind(status).bind(per_page as i64).bind(offset as i64)
+            .fetch_all(&state.db).await.unwrap_or_default();
+            let count: (i64,) = sqlx::query_as(
+                "SELECT COUNT(*) FROM scans WHERE organization_id = $1 AND status = $2"
+            ).bind(org_id).bind(status).fetch_one(&state.db).await.unwrap_or((0,));
+            (rows, count.0)
+        }
+        (Some(org_id), None) => {
+            let rows = sqlx::query_as(
+                "SELECT * FROM scans WHERE organization_id = $1 ORDER BY created_at DESC LIMIT $2 OFFSET $3"
+            )
+            .bind(org_id).bind(per_page as i64).bind(offset as i64)
+            .fetch_all(&state.db).await.unwrap_or_default();
+            let count: (i64,) = sqlx::query_as(
+                "SELECT COUNT(*) FROM scans WHERE organization_id = $1"
+            ).bind(org_id).fetch_one(&state.db).await.unwrap_or((0,));
+            (rows, count.0)
+        }
+        (None, Some(status)) => {
+            let rows = sqlx::query_as(
+                "SELECT * FROM scans WHERE user_id = $1 AND status = $2 ORDER BY created_at DESC LIMIT $3 OFFSET $4"
+            )
+            .bind(&auth.user_id).bind(status).bind(per_page as i64).bind(offset as i64)
+            .fetch_all(&state.db).await.unwrap_or_default();
+            let count: (i64,) = sqlx::query_as(
+                "SELECT COUNT(*) FROM scans WHERE user_id = $1 AND status = $2"
+            ).bind(&auth.user_id).bind(status).fetch_one(&state.db).await.unwrap_or((0,));
+            (rows, count.0)
+        }
+        (None, None) => {
+            let rows = sqlx::query_as(
+                "SELECT * FROM scans WHERE user_id = $1 ORDER BY created_at DESC LIMIT $2 OFFSET $3"
+            )
+            .bind(&auth.user_id).bind(per_page as i64).bind(offset as i64)
+            .fetch_all(&state.db).await.unwrap_or_default();
+            let count: (i64,) = sqlx::query_as(
+                "SELECT COUNT(*) FROM scans WHERE user_id = $1"
+            ).bind(&auth.user_id).fetch_one(&state.db).await.unwrap_or((0,));
+            (rows, count.0)
+        }
     };
-
-    let scans: Vec<Scan> = if let Some(status) = &q.status {
-        sqlx::query_as(
-            &format!("SELECT * FROM scans WHERE {} = $1 AND status = $2 ORDER BY created_at DESC LIMIT $3 OFFSET $4", filter_col)
-        )
-        .bind(&filter_val)
-        .bind(status)
-        .bind(per_page as i64)
-        .bind(offset as i64)
-        .fetch_all(&state.db)
-        .await
-        .unwrap_or_default()
-    } else {
-        sqlx::query_as(
-            &format!("SELECT * FROM scans WHERE {} = $1 ORDER BY created_at DESC LIMIT $2 OFFSET $3", filter_col)
-        )
-        .bind(&filter_val)
-        .bind(per_page as i64)
-        .bind(offset as i64)
-        .fetch_all(&state.db)
-        .await
-        .unwrap_or_default()
-    };
-
-    let total: (i64,) = sqlx::query_as(
-        &format!("SELECT COUNT(*) FROM scans WHERE {} = $1", filter_col)
-    )
-        .bind(&filter_val)
-        .fetch_one(&state.db)
-        .await
-        .unwrap_or((0,));
 
     let response: Vec<_> = scans.iter().map(|s| s.to_response()).collect();
 
@@ -105,7 +116,7 @@ pub async fn list_scans(
 
     (StatusCode::OK, Json(json!({
         "scans": enriched,
-        "total": total.0,
+        "total": total,
         "page": page,
         "per_page": per_page
     }))).into_response()
@@ -276,21 +287,22 @@ pub async fn start_scan(
 
     // Look up agent SSH info for remote execution
     let agent_ssh: Option<AgentSshInfo> = if let Some(ref aid) = body.agent_id {
-        let agent_row: Option<(Option<String>, Option<i32>, Option<String>, Option<String>)> = sqlx::query_as(
-            "SELECT ssh_host, ssh_port, ssh_username, ssh_key_path FROM agents WHERE id = $1 AND organization_id = $2"
+        let agent_row: Option<(Option<String>, Option<i32>, Option<String>, Option<String>, Option<String>)> = sqlx::query_as(
+            "SELECT ssh_host, ssh_port, ssh_username, ssh_key_path, ssh_fingerprint FROM agents WHERE id = $1 AND organization_id = $2"
         )
         .bind(aid)
         .bind(&org_id)
         .fetch_optional(&state.db)
         .await
         .unwrap_or(None);
-        agent_row.and_then(|(host, port, user, key)| {
+        agent_row.and_then(|(host, port, user, key, fingerprint)| {
             match (host, user) {
                 (Some(h), Some(u)) if !h.is_empty() && !u.is_empty() => Some(AgentSshInfo {
                     ssh_host: h,
                     ssh_port: port.unwrap_or(22),
                     ssh_username: u,
                     ssh_key_path: key,
+                    ssh_fingerprint: fingerprint,
                 }),
                 _ => None,
             }
@@ -378,8 +390,37 @@ pub async fn start_scan(
 
 pub async fn scan_output_stream(
     State(state): State<Arc<AppState>>,
+    auth: AuthUser,
     Path(scan_id): Path<String>,
-) -> Sse<impl Stream<Item = Result<Event, std::convert::Infallible>>> {
+) -> impl IntoResponse {
+    // Verify the scan belongs to this user/org before streaming
+    let owns_scan: bool = match &auth.org_id {
+        Some(org_id) => sqlx::query_scalar(
+            "SELECT EXISTS(SELECT 1 FROM scans WHERE id = $1 AND organization_id = $2)"
+        )
+        .bind(&scan_id)
+        .bind(org_id)
+        .fetch_one(&state.db)
+        .await
+        .unwrap_or(false),
+        None => sqlx::query_scalar(
+            "SELECT EXISTS(SELECT 1 FROM scans WHERE id = $1 AND user_id = $2)"
+        )
+        .bind(&scan_id)
+        .bind(&auth.user_id)
+        .fetch_one(&state.db)
+        .await
+        .unwrap_or(false),
+    };
+
+    if !owns_scan {
+        return (
+            axum::http::StatusCode::FORBIDDEN,
+            Json(json!({"error": "Access denied"})),
+        )
+            .into_response();
+    }
+
     let rx = state.scan_output_tx.subscribe();
     let scan_id_filter = scan_id.clone();
 
@@ -387,7 +428,6 @@ pub async fn scan_output_stream(
         .filter_map(move |msg: Result<String, tokio_stream::wrappers::errors::BroadcastStreamRecvError>| {
             match msg {
                 Ok(data) => {
-                    // Filter messages for this scan
                     if data.contains(&scan_id_filter) {
                         Some(Ok(Event::default().data(data)))
                     } else {
@@ -398,11 +438,13 @@ pub async fn scan_output_stream(
             }
         });
 
-    Sse::new(stream).keep_alive(
-        axum::response::sse::KeepAlive::new()
-            .interval(Duration::from_secs(15))
-            .text("ping")
-    )
+    Sse::new(stream)
+        .keep_alive(
+            axum::response::sse::KeepAlive::new()
+                .interval(Duration::from_secs(15))
+                .text("ping"),
+        )
+        .into_response()
 }
 
 // ── Cancel Scan ────────────────────────────────────────────

@@ -8,10 +8,20 @@ pub fn parse_output(tool_name: &str, output: &str) -> Option<JsonValue> {
         "nikto" => parse_nikto(output),
         "sqlmap" => parse_sqlmap(output),
         "nuclei" => parse_nuclei(output),
-        "gobuster" | "dirb" | "ffuf" => parse_directory_scan(output),
+        "gobuster" | "dirb" | "ffuf" | "feroxbuster" => parse_directory_scan(output),
         "sslscan" => parse_sslscan(output),
         "whatweb" => parse_whatweb(output),
         "wpscan" => parse_wpscan(output),
+        "amass" | "subfinder" | "dnsrecon" | "fierce" | "dnsenum" | "dnsmap" => parse_subdomain_enum(output),
+        "theharvester" => parse_theharvester(output),
+        "masscan" => parse_masscan(output),
+        "hydra" | "medusa" | "ncrack" => parse_brute_force(output),
+        "enum4linux" | "smbmap" | "smbclient" => parse_smb(output),
+        "testssl" | "testssl.sh" => parse_testssl(output),
+        "wapiti" => parse_wapiti(output),
+        "dmitry" => parse_dmitry(output),
+        "httpx" => parse_httpx(output),
+        "crackmapexec" | "netexec" => parse_cme(output),
         _ => parse_generic(output),
     }
 }
@@ -347,5 +357,212 @@ fn parse_generic(output: &str) -> Option<JsonValue> {
             "low": warning_count, "open_ports": 0
         },
         "raw_lines": total
+    }))
+}
+
+// ── New Parsers ────────────────────────────────────────────
+
+fn parse_subdomain_enum(output: &str) -> Option<JsonValue> {
+    let mut subdomains: Vec<String> = Vec::new();
+    let host_re = Regex::new(r"(?i)([a-z0-9]([a-z0-9\-]{0,61}[a-z0-9])?\.)+[a-z]{2,}").ok()?;
+    for line in output.lines() {
+        let line = line.trim();
+        if line.is_empty() || line.starts_with('#') || line.starts_with('[') { continue; }
+        if let Some(m) = host_re.find(line) {
+            let host = m.as_str().to_string();
+            if !subdomains.contains(&host) { subdomains.push(host); }
+        }
+    }
+    Some(json!({
+        "summary": {"total": subdomains.len(), "critical": 0, "high": 0, "medium": 0, "low": subdomains.len(), "open_ports": 0},
+        "subdomains": subdomains
+    }))
+}
+
+fn parse_theharvester(output: &str) -> Option<JsonValue> {
+    let mut emails: Vec<String> = Vec::new();
+    let mut hosts: Vec<String> = Vec::new();
+    let mut ips: Vec<String> = Vec::new();
+    let email_re = Regex::new(r"[a-zA-Z0-9._%+\-]+@[a-zA-Z0-9.\-]+\.[a-zA-Z]{2,}").ok()?;
+    let ip_re = Regex::new(r"\b(\d{1,3}\.){3}\d{1,3}\b").ok()?;
+    let host_re = Regex::new(r"(?i)([a-z0-9]([a-z0-9\-]{0,61}[a-z0-9])?\.)+[a-z]{2,}").ok()?;
+    for line in output.lines() {
+        if let Some(m) = email_re.find(line) {
+            let e = m.as_str().to_string();
+            if !emails.contains(&e) { emails.push(e); }
+        } else if let Some(m) = ip_re.find(line) {
+            let ip = m.as_str().to_string();
+            if !ips.contains(&ip) { ips.push(ip); }
+        } else if let Some(m) = host_re.find(line) {
+            let h = m.as_str().to_string();
+            if !hosts.contains(&h) { hosts.push(h); }
+        }
+    }
+    let total = emails.len() + hosts.len() + ips.len();
+    Some(json!({
+        "summary": {"total": total, "critical": 0, "high": 0, "medium": 0, "low": total, "open_ports": 0},
+        "emails": emails, "hosts": hosts, "ips": ips
+    }))
+}
+
+fn parse_masscan(output: &str) -> Option<JsonValue> {
+    let mut open_ports: Vec<JsonValue> = Vec::new();
+    let re = Regex::new(r"Discovered open port (\d+)/(tcp|udp) on ([\d.]+)").ok()?;
+    for line in output.lines() {
+        if let Some(caps) = re.captures(line) {
+            open_ports.push(json!({
+                "port": caps[1].parse::<u16>().unwrap_or(0),
+                "protocol": &caps[2], "ip": &caps[3], "state": "open"
+            }));
+        }
+    }
+    Some(json!({
+        "summary": {"total": open_ports.len(), "critical": 0, "high": 0, "medium": 0, "low": open_ports.len(), "open_ports": open_ports.len()},
+        "open_ports": open_ports
+    }))
+}
+
+fn parse_brute_force(output: &str) -> Option<JsonValue> {
+    let mut credentials: Vec<JsonValue> = Vec::new();
+    let hydra_re = Regex::new(r"\[(\d+)\]\[(\w+)\] host: ([\S]+)\s+login: (\S+)\s+password: (\S+)").ok()?;
+    let medusa_re = Regex::new(r"ACCOUNT FOUND.*Host: (\S+) User: (\S+) Password: (\S+)").ok()?;
+    for line in output.lines() {
+        if let Some(caps) = hydra_re.captures(line) {
+            credentials.push(json!({"port": &caps[1], "service": &caps[2], "host": &caps[3], "username": &caps[4], "password": &caps[5], "severity": "critical"}));
+        } else if let Some(caps) = medusa_re.captures(line) {
+            credentials.push(json!({"host": &caps[1], "username": &caps[2], "password": &caps[3], "severity": "critical"}));
+        }
+    }
+    Some(json!({
+        "summary": {"total": credentials.len(), "critical": credentials.len(), "high": 0, "medium": 0, "low": 0, "open_ports": 0},
+        "credentials_found": credentials
+    }))
+}
+
+fn parse_smb(output: &str) -> Option<JsonValue> {
+    let mut shares: Vec<JsonValue> = Vec::new();
+    let mut findings: Vec<JsonValue> = Vec::new();
+    let share_re = Regex::new(r"(?i)\s+(\S+)\s+(READ|WRITE|NO ACCESS|READ, WRITE)").ok()?;
+    for line in output.lines() {
+        if let Some(caps) = share_re.captures(line) {
+            let access = &caps[2];
+            let severity = if access.contains("WRITE") { "high" } else if access.contains("READ") { "medium" } else { "info" };
+            shares.push(json!({"share": &caps[1], "access": access, "severity": severity}));
+        }
+        if line.contains("[+]") {
+            findings.push(json!({"description": line.trim().trim_start_matches("[+]").trim(), "severity": "info"}));
+        }
+    }
+    let high = shares.iter().filter(|s| s["severity"] == "high").count();
+    let medium = shares.iter().filter(|s| s["severity"] == "medium").count();
+    Some(json!({
+        "summary": {"total": shares.len() + findings.len(), "critical": 0, "high": high, "medium": medium, "low": 0, "open_ports": 0},
+        "shares": shares, "findings": findings
+    }))
+}
+
+fn parse_testssl(output: &str) -> Option<JsonValue> {
+    let mut findings: Vec<JsonValue> = Vec::new();
+    let vuln_re = Regex::new(r"(?i)(VULNERABLE|NOT ok|WARN|CRITICAL)").ok()?;
+    let ok_re = Regex::new(r"(?i)(not vulnerable|OK|offered)").ok()?;
+    for line in output.lines() {
+        let line = line.trim();
+        if line.is_empty() || line.starts_with('#') { continue; }
+        if vuln_re.is_match(line) && !ok_re.is_match(line) {
+            let severity = if line.to_lowercase().contains("critical") { "critical" }
+                else if line.to_lowercase().contains("vulnerable") { "high" }
+                else { "medium" };
+            findings.push(json!({"description": line, "severity": severity}));
+        }
+    }
+    let critical = findings.iter().filter(|f| f["severity"] == "critical").count();
+    let high = findings.iter().filter(|f| f["severity"] == "high").count();
+    let medium = findings.iter().filter(|f| f["severity"] == "medium").count();
+    Some(json!({
+        "summary": {"total": findings.len(), "critical": critical, "high": high, "medium": medium, "low": 0, "open_ports": 0},
+        "findings": findings
+    }))
+}
+
+fn parse_wapiti(output: &str) -> Option<JsonValue> {
+    let mut findings: Vec<JsonValue> = Vec::new();
+    let section_re = Regex::new(r"---\s+(.+?)\s+---").ok()?;
+    let vuln_re = Regex::new(r"(?i)(Found|Vulnerable|Injection|XSS|CSRF|Traversal)").ok()?;
+    let mut current_type = String::new();
+    for line in output.lines() {
+        if let Some(caps) = section_re.captures(line) {
+            current_type = caps[1].to_string();
+        } else if vuln_re.is_match(line) {
+            let severity = if line.to_lowercase().contains("sql") || line.to_lowercase().contains("injection") { "critical" }
+                else if line.to_lowercase().contains("xss") { "high" }
+                else { "medium" };
+            findings.push(json!({"type": current_type.clone(), "description": line.trim(), "severity": severity}));
+        }
+    }
+    let critical = findings.iter().filter(|f| f["severity"] == "critical").count();
+    let high = findings.iter().filter(|f| f["severity"] == "high").count();
+    Some(json!({
+        "summary": {"total": findings.len(), "critical": critical, "high": high, "medium": 0, "low": 0, "open_ports": 0},
+        "findings": findings
+    }))
+}
+
+fn parse_dmitry(output: &str) -> Option<JsonValue> {
+    let mut emails: Vec<String> = Vec::new();
+    let mut subdomains: Vec<String> = Vec::new();
+    let mut ports: Vec<JsonValue> = Vec::new();
+    let email_re = Regex::new(r"[a-zA-Z0-9._%+\-]+@[a-zA-Z0-9.\-]+\.[a-zA-Z]{2,}").ok()?;
+    let port_re = Regex::new(r"Port\s+(\d+)\s+tcp\s+open").ok()?;
+    for line in output.lines() {
+        if let Some(m) = email_re.find(line) {
+            let e = m.as_str().to_string();
+            if !emails.contains(&e) { emails.push(e); }
+        }
+        if let Some(caps) = port_re.captures(line) {
+            ports.push(json!({"port": caps[1].parse::<u16>().unwrap_or(0), "state": "open"}));
+        }
+        if line.trim().starts_with("Found:") || (line.contains('.') && !line.contains(' ') && line.len() < 100) {
+            let s = line.trim().to_string();
+            if !subdomains.contains(&s) { subdomains.push(s); }
+        }
+    }
+    let total = emails.len() + subdomains.len() + ports.len();
+    Some(json!({
+        "summary": {"total": total, "critical": 0, "high": 0, "medium": 0, "low": total, "open_ports": ports.len()},
+        "emails": emails, "subdomains": subdomains, "open_ports": ports
+    }))
+}
+
+fn parse_httpx(output: &str) -> Option<JsonValue> {
+    let mut results: Vec<JsonValue> = Vec::new();
+    let re = Regex::new(r"(https?://\S+)\s+\[(\d+)\](.*)").ok()?;
+    for line in output.lines() {
+        if let Some(caps) = re.captures(line) {
+            let status: u16 = caps[2].parse().unwrap_or(0);
+            results.push(json!({"url": &caps[1], "status_code": status, "extra": caps[3].trim(), "severity": "info"}));
+        }
+    }
+    Some(json!({
+        "summary": {"total": results.len(), "critical": 0, "high": 0, "medium": 0, "low": 0, "open_ports": 0},
+        "results": results
+    }))
+}
+
+fn parse_cme(output: &str) -> Option<JsonValue> {
+    let mut findings: Vec<JsonValue> = Vec::new();
+    let pwned_re = Regex::new(r"\[\+\].*\(Pwn3d!\)").ok()?;
+    let success_re = Regex::new(r"\[\+\]\s+(\S+)\s+\d+\s+\S+\s+(.+)").ok()?;
+    for line in output.lines() {
+        if pwned_re.is_match(line) {
+            findings.push(json!({"description": line.trim(), "severity": "critical"}));
+        } else if success_re.is_match(line) && line.contains("[+]") {
+            findings.push(json!({"description": line.trim(), "severity": "high"}));
+        }
+    }
+    let critical = findings.iter().filter(|f| f["severity"] == "critical").count();
+    let high = findings.iter().filter(|f| f["severity"] == "high").count();
+    Some(json!({
+        "summary": {"total": findings.len(), "critical": critical, "high": high, "medium": 0, "low": 0, "open_ports": 0},
+        "findings": findings
     }))
 }

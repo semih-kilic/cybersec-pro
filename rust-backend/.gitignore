@@ -1,1 +1,14 @@
 /target/
+.env
+*.env
+*.env.local
+*.env.production
+dump.rdb
+hts-cache/
+hts-log.txt
+output/
+tmp/
+scanme.nmap.org/
+backblue.gif
+fade.gif
+index.html

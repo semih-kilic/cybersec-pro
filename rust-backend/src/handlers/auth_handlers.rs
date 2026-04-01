@@ -43,8 +43,22 @@ pub async fn register(
         return (StatusCode::TOO_MANY_REQUESTS, Json(json!({"error": "Too many registration attempts"}))).into_response();
     }
 
-    // Validate email
-    if !body.email.contains('@') || body.email.len() < 5 {
+    // Validate email — RFC 5322 basic check
+    let email = body.email.trim().to_lowercase();
+    let at_pos = email.find('@');
+    let valid_email = at_pos.map(|pos| {
+        let local = &email[..pos];
+        let domain = &email[pos + 1..];
+        !local.is_empty()
+            && !domain.is_empty()
+            && domain.contains('.')
+            && domain.len() >= 3
+            && !email.contains(' ')
+            && email.len() >= 6
+            && email.len() <= 254
+    }).unwrap_or(false);
+
+    if !valid_email {
         return (StatusCode::BAD_REQUEST, Json(json!({"error": "Valid email required"}))).into_response();
     }
 
@@ -55,7 +69,7 @@ pub async fn register(
 
     // Check existing
     let existing: Option<(String,)> = sqlx::query_as("SELECT id FROM users WHERE email = $1")
-        .bind(&body.email)
+        .bind(&email)
         .fetch_optional(&state.db)
         .await
         .unwrap_or(None);
@@ -64,46 +78,53 @@ pub async fn register(
         return (StatusCode::CONFLICT, Json(json!({"error": "Email already registered"}))).into_response();
     }
 
-    // Create organization
-    let org_id = Uuid::new_v4().to_string();
-    let org_name = body.organization_name.as_deref().unwrap_or("My Organization");
-    let slug = org_name.to_lowercase().replace(' ', "-");
-    let slug = format!("{}-{}", slug, &org_id[..8]);
-
-    let _ = sqlx::query(
-        "INSERT INTO organizations (id, name, slug, plan_type) VALUES ($1, $2, $3, 'trial')"
-    )
-    .bind(&org_id)
-    .bind(org_name)
-    .bind(&slug)
-    .execute(&state.db)
-    .await;
-
-    // Create user
-    let user_id = Uuid::new_v4().to_string();
+    // Hash password before transaction
     let pw_hash = match hash_password(&body.password) {
         Ok(h) => h,
         Err(_) => return (StatusCode::INTERNAL_SERVER_ERROR, Json(json!({"error": "Password hashing failed"}))).into_response(),
     };
 
+    // Create org + user atomically in a transaction
+    let org_id = Uuid::new_v4().to_string();
+    let org_name = body.organization_name.as_deref().unwrap_or("My Organization");
+    let slug = format!("{}-{}", org_name.to_lowercase().replace(' ', "-"), &org_id[..8]);
+    let user_id = Uuid::new_v4().to_string();
     let verification_token = Uuid::new_v4().to_string();
 
-    let result = sqlx::query(
+    let mut tx = match state.db.begin().await {
+        Ok(t) => t,
+        Err(e) => {
+            tracing::error!("Failed to begin transaction: {}", e);
+            return (StatusCode::INTERNAL_SERVER_ERROR, Json(json!({"error": "Registration failed"}))).into_response();
+        }
+    };
+
+    if let Err(e) = sqlx::query(
+        "INSERT INTO organizations (id, name, slug, plan_type) VALUES ($1, $2, $3, 'trial')"
+    )
+    .bind(&org_id).bind(org_name).bind(&slug)
+    .execute(&mut *tx).await {
+        let _ = tx.rollback().await;
+        tracing::error!("Failed to create organization: {}", e);
+        return (StatusCode::INTERNAL_SERVER_ERROR, Json(json!({"error": "Registration failed"}))).into_response();
+    }
+
+    if let Err(e) = sqlx::query(
         "INSERT INTO users (id, email, password_hash, first_name, last_name, role, organization_id, email_verified, verification_token, verification_sent_at)
          VALUES ($1, $2, $3, $4, $5, 'admin', $6, 0, $7, CURRENT_TIMESTAMP)"
     )
-    .bind(&user_id)
-    .bind(&body.email)
-    .bind(&pw_hash)
-    .bind(&body.first_name)
-    .bind(&body.last_name)
-    .bind(&org_id)
-    .bind(&verification_token)
-    .execute(&state.db)
-    .await;
+    .bind(&user_id).bind(&email).bind(&pw_hash)
+    .bind(&body.first_name).bind(&body.last_name)
+    .bind(&org_id).bind(&verification_token)
+    .execute(&mut *tx).await {
+        let _ = tx.rollback().await;
+        tracing::error!("Failed to create user: {}", e);
+        return (StatusCode::INTERNAL_SERVER_ERROR, Json(json!({"error": "Registration failed"}))).into_response();
+    }
 
-    if let Err(e) = result {
-        return (StatusCode::INTERNAL_SERVER_ERROR, Json(json!({"error": format!("Registration failed: {}", e)}))).into_response();
+    if let Err(e) = tx.commit().await {
+        tracing::error!("Transaction commit failed: {}", e);
+        return (StatusCode::INTERNAL_SERVER_ERROR, Json(json!({"error": "Registration failed"}))).into_response();
     }
 
     log_audit(&state.db, "register", "auth", "info", Some(&user_id), Some(&org_id), None, Some("user"), Some(&user_id), "success", Some(&headers)).await;
@@ -116,7 +137,7 @@ pub async fn register(
         "message": "Registration successful",
         "user": {
             "id": user_id,
-            "email": body.email,
+            "email": email,
             "first_name": body.first_name,
             "last_name": body.last_name,
             "role": "admin",
@@ -188,16 +209,25 @@ pub async fn login(
             let valid = verify_totp(secret, mfa_code).unwrap_or(false);
             if !valid {
                 // Try backup codes
-                let backup_valid = if let Some(serde_json::Value::Array(codes)) = &user.mfa_backup_codes {
+                if let Some(serde_json::Value::Array(codes)) = &user.mfa_backup_codes {
                     let string_codes: Vec<String> = codes.iter()
                         .filter_map(|v| v.as_str().map(|s| s.to_string()))
                         .collect();
-                    verify_backup_code(mfa_code, &string_codes).is_some()
+                    if let Some(used_idx) = verify_backup_code(mfa_code, &string_codes) {
+                        // Remove used backup code (one-time use)
+                        let mut remaining = string_codes.clone();
+                        remaining.remove(used_idx);
+                        let updated = serde_json::to_string(&remaining).unwrap_or_default();
+                        let _ = sqlx::query("UPDATE users SET mfa_backup_codes = $1 WHERE id = $2")
+                            .bind(&updated)
+                            .bind(&user.id)
+                            .execute(&state.db)
+                            .await;
+                        // backup code valid — continue to login
+                    } else {
+                        return (StatusCode::UNAUTHORIZED, Json(json!({"error": "Invalid MFA code"}))).into_response();
+                    }
                 } else {
-                    false
-                };
-
-                if !valid && !backup_valid {
                     return (StatusCode::UNAUTHORIZED, Json(json!({"error": "Invalid MFA code"}))).into_response();
                 }
             }
@@ -483,15 +513,41 @@ pub async fn mfa_verify(
 
 // ── MFA Disable ────────────────────────────────────────────
 
+#[derive(Deserialize)]
+pub struct MfaDisableRequest {
+    pub password: String,
+}
+
 pub async fn mfa_disable(
     State(state): State<Arc<AppState>>,
     auth: AuthUser,
     headers: HeaderMap,
+    Json(body): Json<MfaDisableRequest>,
 ) -> impl IntoResponse {
-    let _ = sqlx::query("UPDATE users SET mfa_enabled = FALSE, mfa_secret = NULL, mfa_backup_codes = NULL, mfa_enabled_at = NULL WHERE id = $1")
-        .bind(&auth.user_id)
-        .execute(&state.db)
-        .await;
+    // Require current password to disable MFA
+    let row: Option<(Option<String>,)> = sqlx::query_as(
+        "SELECT password_hash FROM users WHERE id = $1"
+    )
+    .bind(&auth.user_id)
+    .fetch_optional(&state.db)
+    .await
+    .unwrap_or(None);
+
+    let pw_hash = match row.and_then(|r| r.0) {
+        Some(h) => h,
+        None => return (StatusCode::NOT_FOUND, Json(json!({"error": "User not found"}))).into_response(),
+    };
+
+    if !verify_password(&body.password, &pw_hash) {
+        return (StatusCode::UNAUTHORIZED, Json(json!({"error": "Invalid password"}))).into_response();
+    }
+
+    let _ = sqlx::query(
+        "UPDATE users SET mfa_enabled = FALSE, mfa_secret = NULL, mfa_backup_codes = NULL, mfa_enabled_at = NULL WHERE id = $1"
+    )
+    .bind(&auth.user_id)
+    .execute(&state.db)
+    .await;
 
     log_audit(&state.db, "mfa_disable", "security", "warning", Some(&auth.user_id), auth.org_id.as_deref(), None, Some("user"), Some(&auth.user_id), "success", Some(&headers)).await;
 

@@ -45,16 +45,18 @@ async fn main() -> anyhow::Result<()> {
         )
         .init();
 
-    // Database — PostgreSQL
-    let database_url = std::env::var("DATABASE_URL").unwrap_or_else(|_| {
-        "postgres://cybersec:***REDACTED_PG_PASSWORD***@localhost:5432/cybersec_pro".to_string()
-    });
+    // Database — PostgreSQL (DATABASE_URL is required)
+    let database_url = std::env::var("DATABASE_URL")
+        .expect("DATABASE_URL environment variable must be set");
     let db = services::db::init_db(&database_url).await?;
 
-    // JWT secret
+    // JWT secret (required — must be at least 32 chars)
     let jwt_secret = std::env::var("JWT_SECRET_KEY")
         .or_else(|_| std::env::var("SECRET_KEY"))
-        .unwrap_or_else(|_| "cybersec-pro-secret-key-change-in-production".to_string());
+        .expect("JWT_SECRET_KEY environment variable must be set");
+    if jwt_secret.len() < 32 {
+        panic!("JWT_SECRET_KEY must be at least 32 characters long");
+    }
 
     // Rate limiter
     let rate_limiter = RateLimiter::new();
