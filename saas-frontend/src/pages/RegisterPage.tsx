@@ -158,7 +158,7 @@ export function RegisterPage() {
           </div>
         </div>
       )}
-      {/* Left Panel - Social Proof (40%) */}
+      {/* Left Panel - Cybersecurity Awareness (40%) */}
       <div className="hidden lg:flex lg:w-[40%] bg-gradient-to-br from-gray-900 via-blue-950 to-gray-900 flex-col justify-between p-12 relative overflow-hidden">
         {/* Background Effect */}
         <div className="absolute inset-0 opacity-10">
@@ -179,25 +179,49 @@ export function RegisterPage() {
 
           {/* Main Headline */}
           <h2 className="text-3xl font-bold text-white leading-tight mb-4">
-            Trusted by Companies<br />Across 30+ Countries
+            Your Digital Assets<br />Are Under Threat
           </h2>
           <p className="text-gray-400 text-lg mb-10">
-            Enterprise-grade security testing, made simple for businesses worldwide.
+            Cybersecurity isn't just an IT concern — it's a business survival issue.
           </p>
 
-          {/* Trust Points */}
-          <div className="space-y-5">
-            {[
-              { icon: '✅', text: '401 security tests, continuously updated' },
-              { icon: '✅', text: 'Business-language reports, no jargon' },
-              { icon: '✅', text: 'GDPR, SOC 2 & OWASP compliance built-in' },
-              { icon: '✅', text: '14-day free trial, no credit card' },
-            ].map((item, i) => (
-              <div key={i} className="flex items-center gap-3">
-                <span className="text-lg">{item.icon}</span>
-                <span className="text-gray-300">{item.text}</span>
+          {/* Threat Awareness Cards */}
+          <div className="space-y-4">
+            <div className="bg-white/5 rounded-xl p-5 border border-red-500/20 backdrop-blur">
+              <div className="flex items-start gap-3">
+                <div className="w-10 h-10 rounded-lg bg-red-500/10 flex items-center justify-center flex-shrink-0">
+                  <svg className="w-5 h-5 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z" /></svg>
+                </div>
+                <div>
+                  <p className="text-white font-semibold text-sm mb-1">Ransomware Surge</p>
+                  <p className="text-gray-400 text-xs leading-relaxed">A ransomware attack hits a business every 11 seconds. Average ransom payments have exceeded $1.5 million.</p>
+                </div>
               </div>
-            ))}
+            </div>
+
+            <div className="bg-white/5 rounded-xl p-5 border border-amber-500/20 backdrop-blur">
+              <div className="flex items-start gap-3">
+                <div className="w-10 h-10 rounded-lg bg-amber-500/10 flex items-center justify-center flex-shrink-0">
+                  <svg className="w-5 h-5 text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                </div>
+                <div>
+                  <p className="text-white font-semibold text-sm mb-1">The Human Factor</p>
+                  <p className="text-gray-400 text-xs leading-relaxed">68% of breaches involve a non-malicious human element — phishing, misconfigurations, and weak credentials.</p>
+                </div>
+              </div>
+            </div>
+
+            <div className="bg-white/5 rounded-xl p-5 border border-cyan-500/20 backdrop-blur">
+              <div className="flex items-start gap-3">
+                <div className="w-10 h-10 rounded-lg bg-cyan-500/10 flex items-center justify-center flex-shrink-0">
+                  <svg className="w-5 h-5 text-cyan-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" /></svg>
+                </div>
+                <div>
+                  <p className="text-white font-semibold text-sm mb-1">Prevention Works</p>
+                  <p className="text-gray-400 text-xs leading-relaxed">Organizations with proactive security testing reduce breach costs by an average of $1.76 million.</p>
+                </div>
+              </div>
+            </div>
           </div>
 
           {/* Country flags */}
@@ -218,48 +242,15 @@ export function RegisterPage() {
           </div>
         </div>
 
-        {/* Testimonials */}
-        <div className="relative z-10 mt-12 space-y-4">
+        {/* Bottom quote */}
+        <div className="relative z-10 mt-12">
           <div className="bg-white/5 rounded-xl p-5 border border-white/10 backdrop-blur">
-            <p className="text-gray-300 text-sm italic mb-3">
-              "We switched from manual annual pentests to CyberSec Pro's continuous monitoring. Game changer for our security posture."
+            <p className="text-gray-300 text-sm leading-relaxed">
+              <span className="text-cyan-400 font-semibold">"</span>
+              The question is not whether you will be breached, but when. The only defense is preparation.
+              <span className="text-cyan-400 font-semibold">"</span>
             </p>
-            <div className="flex items-center gap-3">
-              <div className="w-9 h-9 rounded-full bg-gradient-to-r from-cyan-500 to-blue-500 flex items-center justify-center text-white text-xs font-bold">JR</div>
-              <div>
-                <p className="text-white font-medium text-sm">James R.</p>
-                <p className="text-gray-500 text-xs">VP of Engineering, Tech Startup — Austin, TX</p>
-              </div>
-              <div className="ml-auto flex gap-0.5">
-                {[1,2,3,4,5].map(s => (
-                  <svg key={s} className="w-3.5 h-3.5 text-yellow-400" fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/></svg>
-                ))}
-              </div>
-            </div>
-          </div>
-
-          <div className="bg-white/5 rounded-xl p-5 border border-white/10 backdrop-blur">
-            <p className="text-gray-300 text-sm italic mb-3">
-              "KVKK ve GDPR uyumluluğu bizim için kritikti. CyberSec Pro her iki standardı da tek platformda karşılıyor."
-            </p>
-            <div className="flex items-center gap-3">
-              <div className="w-9 h-9 rounded-full bg-gradient-to-r from-emerald-500 to-teal-500 flex items-center justify-center text-white text-xs font-bold">AY</div>
-              <div>
-                <p className="text-white font-medium text-sm">Ahmet Y.</p>
-                <p className="text-gray-500 text-xs">CISO, Fintech — Istanbul, TR</p>
-              </div>
-              <div className="ml-auto flex gap-0.5">
-                {[1,2,3,4,5].map(s => (
-                  <svg key={s} className="w-3.5 h-3.5 text-yellow-400" fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/></svg>
-                ))}
-              </div>
-            </div>
-          </div>
-          
-          {/* Global trust badge */}
-          <div className="mt-4 flex items-center gap-2 text-gray-500 text-sm">
-            <span>🌍</span>
-            <span>EU & US Data Centers • GDPR & SOC 2 Compliant • ISO 27001</span>
+            <p className="text-gray-500 text-xs mt-3">— Cybersecurity Awareness Principle</p>
           </div>
         </div>
       </div>

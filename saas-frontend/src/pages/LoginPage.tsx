@@ -285,40 +285,40 @@ export function LoginPage() {
           </a>
 
           <h1 className="lp-h">
-            Offensive security,<br/>
-            <span>delivered as a service</span>
+            Cyber threats don't sleep.<br/>
+            <span>Neither should your defense.</span>
           </h1>
           <p className="lp-sub">
-            Access 401 Kali Linux tools from your browser. No installation, no VMs,
-            no configuration. Trusted by security teams in 30+ countries.
+            Every 39 seconds, a cyber attack occurs somewhere in the world.
+            Proactive security testing is no longer optional — it's essential.
           </p>
 
           <div className="lp-features">
+            <div className="lp-feat">
+              <div className="lp-feat-icon" style={{ background: 'rgba(239,68,68,.08)' }}>
+                <svg viewBox="0 0 20 20" width="18" height="18" fill="none" stroke="#ef4444" strokeWidth="1.5"><path d="M10 2l7 3.5v5c0 4-3 7.2-7 8.5-4-1.3-7-4.5-7-8.5v-5L10 2z"/><path d="M10 7v4M10 13h.01"/></svg>
+              </div>
+              <div>
+                <h4>Why It Matters</h4>
+                <p>Cybercrime damages are projected to reach $10.5 trillion annually by 2025 — more than the GDP of most countries</p>
+              </div>
+            </div>
+            <div className="lp-feat">
+              <div className="lp-feat-icon" style={{ background: 'rgba(245,158,11,.08)' }}>
+                <svg viewBox="0 0 20 20" width="18" height="18" fill="none" stroke="#f59e0b" strokeWidth="1.5"><circle cx="10" cy="10" r="8"/><path d="M10 6v4l3 3"/></svg>
+              </div>
+              <div>
+                <h4>Time Is Critical</h4>
+                <p>Organizations take an average of 197 days to identify a breach and 69 days to contain it</p>
+              </div>
+            </div>
             <div className="lp-feat">
               <div className="lp-feat-icon" style={{ background: 'rgba(16,185,129,.08)' }}>
                 <svg viewBox="0 0 20 20" width="18" height="18" fill="none" stroke="#10b981" strokeWidth="1.5"><path d="M10 2l7 3.5v5c0 4-3 7.2-7 8.5-4-1.3-7-4.5-7-8.5v-5L10 2z"/></svg>
               </div>
               <div>
-                <h4>401 Verified Tools</h4>
-                <p>Real Kali tools across 61 categories — nmap, Metasploit, Burp Suite, and more</p>
-              </div>
-            </div>
-            <div className="lp-feat">
-              <div className="lp-feat-icon" style={{ background: 'rgba(6,182,212,.08)' }}>
-                <svg viewBox="0 0 20 20" width="18" height="18" fill="none" stroke="#06b6d4" strokeWidth="1.5"><rect x="2" y="3" width="16" height="14" rx="2"/><path d="M2 7h16"/></svg>
-              </div>
-              <div>
-                <h4>Browser-Based Access</h4>
-                <p>Full terminal access from any modern browser, on any device</p>
-              </div>
-            </div>
-            <div className="lp-feat">
-              <div className="lp-feat-icon" style={{ background: 'rgba(59,130,246,.08)' }}>
-                <svg viewBox="0 0 20 20" width="18" height="18" fill="none" stroke="#3b82f6" strokeWidth="1.5"><rect x="3" y="4" width="14" height="12" rx="2"/><path d="M7 8h6M7 12h4"/></svg>
-              </div>
-              <div>
-                <h4>Compliance Reports</h4>
-                <p>NIST, OWASP, GDPR, PCI DSS, HIPAA, SOC 2 — all six frameworks</p>
+                <h4>Stay Ahead</h4>
+                <p>Continuous security testing helps you find vulnerabilities before attackers do</p>
               </div>
             </div>
           </div>

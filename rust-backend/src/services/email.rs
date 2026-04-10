@@ -3,6 +3,7 @@
 use lettre::{
     message::{header::ContentType, Mailbox, MultiPart, SinglePart},
     transport::smtp::authentication::Credentials,
+    transport::smtp::client::{Tls, TlsParameters},
     AsyncSmtpTransport, AsyncTransport, Message,
 };
 
@@ -213,11 +214,23 @@ async fn send_email(
 
     let creds = Credentials::new(cfg.smtp_email.clone(), cfg.smtp_password.clone());
 
-    let mailer = AsyncSmtpTransport::<lettre::Tokio1Executor>::relay(&cfg.smtp_server)
-        .map_err(|e| format!("SMTP relay error: {}", e))?
-        .port(cfg.smtp_port)
-        .credentials(creds)
-        .build();
+    let mailer = if cfg.smtp_port == 465 {
+        // Port 465: Implicit TLS (SMTPS) — required for Gmail/Yandex port 465
+        let tls_params = TlsParameters::new(cfg.smtp_server.clone())
+            .map_err(|e| format!("TLS params error: {}", e))?;
+        AsyncSmtpTransport::<lettre::Tokio1Executor>::builder_dangerous(&cfg.smtp_server)
+            .port(cfg.smtp_port)
+            .tls(Tls::Wrapper(tls_params))
+            .credentials(creds)
+            .build()
+    } else {
+        // Port 587 or others: STARTTLS
+        AsyncSmtpTransport::<lettre::Tokio1Executor>::relay(&cfg.smtp_server)
+            .map_err(|e| format!("SMTP relay error: {}", e))?
+            .port(cfg.smtp_port)
+            .credentials(creds)
+            .build()
+    };
 
     mailer
         .send(email)

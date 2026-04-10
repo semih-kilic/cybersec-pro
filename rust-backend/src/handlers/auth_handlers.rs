@@ -19,6 +19,7 @@ use crate::services::auth::{
     generate_backup_codes, hash_backup_code, verify_backup_code,
 };
 use crate::AppState;
+use crate::services::email::{EmailConfig, send_welcome_email};
 
 // ── Register ───────────────────────────────────────────────
 
@@ -129,6 +130,14 @@ pub async fn register(
     }
 
     log_audit(&state.db, "register", "auth", "info", Some(&user_id), Some(&org_id), None, Some("user"), Some(&user_id), "success", Some(&headers)).await;
+
+    // Send welcome email (best-effort, don't block registration)
+    let welcome_name = body.first_name.as_deref().unwrap_or("there");
+    if let Some(cfg) = EmailConfig::from_env() {
+        if let Err(e) = send_welcome_email(&cfg, &email, welcome_name).await {
+            tracing::error!("Failed to send welcome email to {}: {}", email, e);
+        }
+    }
 
     // Generate tokens
     let access_token = create_access_token(&state.jwt_secret, &user_id, Some(&org_id), "admin").unwrap_or_default();
