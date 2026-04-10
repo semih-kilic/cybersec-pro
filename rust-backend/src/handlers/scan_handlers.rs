@@ -429,7 +429,7 @@ pub async fn scan_output_stream(
             match msg {
                 Ok(data) => {
                     if data.contains(&scan_id_filter) {
-                        Some(Ok(Event::default().data(data)))
+                        Some(Ok::<_, std::convert::Infallible>(Event::default().data(data)))
                     } else {
                         None
                     }
