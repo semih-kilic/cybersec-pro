@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
+import { CountryFlags } from '../components/CountryFlags';
 
 export function ResetPasswordPage() {
   const [searchParams] = useSearchParams();
@@ -182,6 +183,10 @@ export function ResetPasswordPage() {
               </Link>
             </>
           )}
+
+          <div style={{ marginTop: '32px' }}>
+            <CountryFlags />
+          </div>
         </div>
       </div>
     </>

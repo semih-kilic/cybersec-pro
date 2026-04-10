@@ -3,6 +3,7 @@ import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
 import { useTranslation } from 'react-i18next';
 import MatrixRainBg from '../components/ui/MatrixRainBg';
+import { CountryFlags } from '../components/CountryFlags';
 
 // OAuth Configuration
 const GOOGLE_CLIENT_ID = '547951331800-kqkuc6aohfr7ptt26p38mnqfdvt7b6mu.apps.googleusercontent.com';
@@ -225,20 +226,8 @@ export function RegisterPage() {
           </div>
 
           {/* Country flags */}
-          <div className="mt-8 flex items-center gap-3">
-            <span className="text-gray-500 text-xs">Serving teams in</span>
-            <div className="flex gap-1.5 text-lg">
-              <span title="USA">🇺🇸</span>
-              <span title="Canada">🇨🇦</span>
-              <span title="UK">🇬🇧</span>
-              <span title="Germany">🇩🇪</span>
-              <span title="Turkey">🇹🇷</span>
-              <span title="France">🇫🇷</span>
-              <span title="Netherlands">🇳🇱</span>
-              <span title="Sweden">🇸🇪</span>
-              <span title="Finland">🇫🇮</span>
-              <span className="text-gray-500 text-xs ml-1">+21 more</span>
-            </div>
+          <div className="mt-8">
+            <CountryFlags />
           </div>
         </div>
 
@@ -256,8 +245,10 @@ export function RegisterPage() {
       </div>
 
       {/* Right Panel - Registration Form (60%) */}
-      <div className="w-full lg:w-[60%] bg-gray-950 flex items-center justify-center p-6 md:p-12">
-        <div className="w-full max-w-md">
+      <div className="w-full lg:w-[60%] bg-gray-950 flex items-center justify-center p-6 md:p-12 relative">
+        {/* Subtle glow effect behind form */}
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-cyan-500/5 rounded-full blur-[120px] pointer-events-none" />
+        <div className="w-full max-w-md relative z-10">
           {/* Mobile Logo */}
           <div className="lg:hidden text-center mb-8">
             <Link to="/" className="inline-flex items-center gap-2">
@@ -271,7 +262,7 @@ export function RegisterPage() {
           </div>
 
           <h1 className="text-2xl font-bold text-white mb-1">Create your account</h1>
-          <p className="text-gray-400 mb-8">Start your 14-day free trial. No credit card required.</p>
+          <p className="text-gray-300 mb-8">Start your 14-day free trial. No credit card required.</p>
 
           {/* OAuth Buttons */}
           <div className="grid grid-cols-2 gap-3 mb-6">
@@ -324,7 +315,7 @@ export function RegisterPage() {
                   name="first_name"
                   value={formData.first_name}
                   onChange={handleChange}
-                  className="w-full px-4 py-2.5 bg-gray-900 border border-gray-800 rounded-lg text-white placeholder-gray-600 focus:outline-none focus:border-blue-500 transition text-sm"
+                  className="w-full px-4 py-2.5 bg-gray-900/80 border border-gray-700 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500/30 transition text-sm"
                   placeholder="John"
                 />
               </div>
@@ -335,7 +326,7 @@ export function RegisterPage() {
                   name="last_name"
                   value={formData.last_name}
                   onChange={handleChange}
-                  className="w-full px-4 py-2.5 bg-gray-900 border border-gray-800 rounded-lg text-white placeholder-gray-600 focus:outline-none focus:border-blue-500 transition text-sm"
+                  className="w-full px-4 py-2.5 bg-gray-900/80 border border-gray-700 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500/30 transition text-sm"
                   placeholder="Doe"
                 />
               </div>
@@ -349,7 +340,7 @@ export function RegisterPage() {
                 required
                 value={formData.email}
                 onChange={handleChange}
-                className="w-full px-4 py-2.5 bg-gray-900 border border-gray-800 rounded-lg text-white placeholder-gray-600 focus:outline-none focus:border-blue-500 transition text-sm"
+                className="w-full px-4 py-2.5 bg-gray-900/80 border border-gray-700 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500/30 transition text-sm"
                 placeholder="you@company.com"
               />
             </div>
@@ -362,7 +353,7 @@ export function RegisterPage() {
                 required
                 value={formData.organization_name}
                 onChange={handleChange}
-                className="w-full px-4 py-2.5 bg-gray-900 border border-gray-800 rounded-lg text-white placeholder-gray-600 focus:outline-none focus:border-blue-500 transition text-sm"
+                className="w-full px-4 py-2.5 bg-gray-900/80 border border-gray-700 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500/30 transition text-sm"
                 placeholder="Acme Security Oy"
               />
             </div>
@@ -375,7 +366,7 @@ export function RegisterPage() {
                 required
                 value={formData.password}
                 onChange={handleChange}
-                className="w-full px-4 py-2.5 bg-gray-900 border border-gray-800 rounded-lg text-white placeholder-gray-600 focus:outline-none focus:border-blue-500 transition text-sm"
+                className="w-full px-4 py-2.5 bg-gray-900/80 border border-gray-700 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500/30 transition text-sm"
                 placeholder="Min. 8 characters"
               />
             </div>
@@ -388,7 +379,7 @@ export function RegisterPage() {
                 required
                 value={formData.confirmPassword}
                 onChange={handleChange}
-                className="w-full px-4 py-2.5 bg-gray-900 border border-gray-800 rounded-lg text-white placeholder-gray-600 focus:outline-none focus:border-blue-500 transition text-sm"
+                className="w-full px-4 py-2.5 bg-gray-900/80 border border-gray-700 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500/30 transition text-sm"
                 placeholder="••••••••"
               />
             </div>
@@ -401,11 +392,11 @@ export function RegisterPage() {
                 onChange={(e) => setAgreedTerms(e.target.checked)}
                 className="mt-1 w-4 h-4 rounded border-gray-700 bg-gray-900 text-blue-500 focus:ring-blue-500 focus:ring-offset-0"
               />
-              <span className="text-gray-500 text-xs leading-relaxed">
+              <span className="text-gray-400 text-xs leading-relaxed">
                 I agree to the{' '}
-                <a href="/terms" className="text-blue-400 hover:underline">Terms of Service</a>
+                <a href="/terms" className="text-cyan-400 hover:underline">Terms of Service</a>
                 {' '}and{' '}
-                <a href="/privacy" className="text-blue-400 hover:underline">Privacy Policy</a>.
+                <a href="/privacy" className="text-cyan-400 hover:underline">Privacy Policy</a>.
                 Your data is stored in EU (Finland) and processed per GDPR.
               </span>
             </label>
@@ -413,15 +404,15 @@ export function RegisterPage() {
             <button
               type="submit"
               disabled={loading || !agreedTerms}
-              className="w-full py-3 bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-500 hover:to-cyan-500 text-white font-semibold rounded-lg transition disabled:opacity-50 disabled:cursor-not-allowed text-sm"
+              className="w-full py-3 bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-500 hover:to-cyan-500 text-white font-bold rounded-lg transition disabled:opacity-50 disabled:cursor-not-allowed text-sm shadow-lg shadow-cyan-500/20 hover:shadow-cyan-500/30"
             >
               {loading ? 'Creating account...' : 'Start Free Trial →'}
             </button>
           </form>
 
-          <p className="mt-6 text-center text-gray-500 text-sm">
+          <p className="mt-6 text-center text-gray-400 text-sm">
             Already have an account?{' '}
-            <Link to="/login" className="text-blue-400 hover:text-blue-300 font-medium">
+            <Link to="/login" className="text-cyan-400 hover:text-cyan-300 font-medium">
               Sign in
             </Link>
           </p>

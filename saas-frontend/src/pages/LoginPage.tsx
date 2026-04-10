@@ -3,6 +3,7 @@ import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
 import { useTranslation } from 'react-i18next';
 import { LanguageSwitcher } from '../components/LanguageSwitcher';
+import { CountryFlags } from '../components/CountryFlags';
 
 const GOOGLE_CLIENT_ID = '547951331800-kqkuc6aohfr7ptt26p38mnqfdvt7b6mu.apps.googleusercontent.com';
 const GITHUB_CLIENT_ID = '***REDACTED_GH_OAUTH_CLIENT_ID***';
@@ -324,13 +325,7 @@ export function LoginPage() {
           </div>
 
           {/* Country flags */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '24px' }}>
-            <span style={{ fontSize: '.75rem', color: '#4b5563' }}>Serving teams in</span>
-            <span style={{ fontSize: '1.1rem', display: 'flex', gap: '4px' }}>
-              <span title="USA">🇺🇸</span><span title="Canada">🇨🇦</span><span title="UK">🇬🇧</span><span title="Germany">🇩🇪</span><span title="Turkey">🇹🇷</span><span title="France">🇫🇷</span><span title="Netherlands">🇳🇱</span><span title="Sweden">🇸🇪</span>
-            </span>
-            <span style={{ fontSize: '.7rem', color: '#374151' }}>+22 more</span>
-          </div>
+          <CountryFlags />
 
           <div className="lp-terminal">
             <div><span className="grn">$</span> <span className="wht">nmap</span> <span className="cyn">-sC -sV -A</span> target.example.com</div>

@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
+import { CountryFlags } from '../components/CountryFlags';
 
 export function ForgotPasswordPage() {
   const [email, setEmail] = useState('');
@@ -124,6 +125,10 @@ export function ForgotPasswordPage() {
               </Link>
             </>
           )}
+
+          <div style={{ marginTop: '32px' }}>
+            <CountryFlags />
+          </div>
         </div>
       </div>
     </>
