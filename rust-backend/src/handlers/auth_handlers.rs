@@ -6,6 +6,7 @@ use axum::{
 };
 use serde::Deserialize;
 use serde_json::json;
+use sha2::Digest;
 use std::sync::Arc;
 use uuid::Uuid;
 
@@ -111,7 +112,7 @@ pub async fn register(
 
     if let Err(e) = sqlx::query(
         "INSERT INTO users (id, email, password_hash, first_name, last_name, role, organization_id, email_verified, verification_token, verification_sent_at)
-         VALUES ($1, $2, $3, $4, $5, 'admin', $6, 0, $7, CURRENT_TIMESTAMP)"
+         VALUES ($1, $2, $3, $4, $5, 'admin', $6, FALSE, $7, CURRENT_TIMESTAMP)"
     )
     .bind(&user_id).bind(&email).bind(&pw_hash)
     .bind(&body.first_name).bind(&body.last_name)
@@ -551,7 +552,7 @@ pub async fn mfa_disable(
 
     log_audit(&state.db, "mfa_disable", "security", "warning", Some(&auth.user_id), auth.org_id.as_deref(), None, Some("user"), Some(&auth.user_id), "success", Some(&headers)).await;
 
-    Json(json!({"message": "MFA disabled"}))
+    Json(json!({"message": "MFA disabled"})).into_response()
 }
 
 // ── MFA Status ─────────────────────────────────────────────
@@ -582,4 +583,152 @@ pub async fn mfa_status(
         },
         None => Json(json!({"mfa_enabled": false, "backup_codes_remaining": 0})),
     }
+}
+
+// ── Forgot Password ────────────────────────────────────────
+
+#[derive(Deserialize)]
+pub struct ForgotPasswordRequest {
+    pub email: String,
+}
+
+pub async fn forgot_password(
+    State(state): State<Arc<AppState>>,
+    headers: HeaderMap,
+    Json(body): Json<ForgotPasswordRequest>,
+) -> impl IntoResponse {
+    let ip = headers.get("x-forwarded-for")
+        .and_then(|v| v.to_str().ok())
+        .unwrap_or("unknown");
+    if state.rate_limiter.is_limited(&format!("forgot_password:{}", ip), 3, std::time::Duration::from_secs(300)) {
+        return (StatusCode::TOO_MANY_REQUESTS, Json(json!({"error": "Too many requests. Please try again later."}))).into_response();
+    }
+
+    let email = body.email.trim().to_lowercase();
+
+    // Always return success to prevent email enumeration
+    let success_response = Json(json!({
+        "message": "If an account with that email exists, a password reset link has been sent."
+    }));
+
+    // Look up user
+    let user: Option<(String, Option<String>, Option<String>)> = sqlx::query_as(
+        "SELECT id, first_name, email FROM users WHERE email = $1 AND is_active = TRUE"
+    )
+    .bind(&email)
+    .fetch_optional(&state.db)
+    .await
+    .unwrap_or(None);
+
+    let (user_id, first_name, user_email) = match user {
+        Some(u) => u,
+        None => return success_response.into_response(),
+    };
+
+    // Generate secure reset token
+    let reset_token = Uuid::new_v4().to_string();
+    let expires = chrono::Utc::now().naive_utc() + chrono::Duration::hours(1);
+
+    // Store the token (hashed for security)
+    let token_hash = format!("{:x}", sha2::Sha256::digest(reset_token.as_bytes()));
+    if let Err(e) = sqlx::query(
+        "UPDATE users SET password_reset_token = $1, password_reset_expires = $2 WHERE id = $3"
+    )
+    .bind(&token_hash)
+    .bind(&expires)
+    .bind(&user_id)
+    .execute(&state.db)
+    .await
+    {
+        tracing::error!("Failed to store reset token: {}", e);
+        return success_response.into_response();
+    }
+
+    // Send reset email (best-effort; don't reveal failure to client)
+    let base_url = std::env::var("FRONTEND_URL")
+        .unwrap_or_else(|_| "https://semihkilic.com".to_string());
+    let reset_url = format!("{}/reset-password?token={}", base_url, reset_token);
+    let name = first_name.as_deref().unwrap_or("there");
+
+    if let Some(cfg) = crate::services::email::EmailConfig::from_env() {
+        if let Err(e) = crate::services::email::send_password_reset_email(
+            &cfg,
+            &user_email.unwrap_or(email),
+            name,
+            &reset_url,
+        ).await {
+            tracing::error!("Failed to send reset email: {}", e);
+        }
+    } else {
+        tracing::warn!("SMTP not configured — reset token generated but email not sent");
+    }
+
+    log_audit(&state.db, "forgot_password", "auth", "info", Some(&user_id), None, None, Some("user"), Some(&user_id), "success", Some(&headers)).await;
+
+    success_response.into_response()
+}
+
+// ── Reset Password ─────────────────────────────────────────
+
+#[derive(Deserialize)]
+pub struct ResetPasswordRequest {
+    pub token: String,
+    pub new_password: String,
+}
+
+pub async fn reset_password(
+    State(state): State<Arc<AppState>>,
+    headers: HeaderMap,
+    Json(body): Json<ResetPasswordRequest>,
+) -> impl IntoResponse {
+    let ip = headers.get("x-forwarded-for")
+        .and_then(|v| v.to_str().ok())
+        .unwrap_or("unknown");
+    if state.rate_limiter.is_limited(&format!("reset_password:{}", ip), 5, std::time::Duration::from_secs(300)) {
+        return (StatusCode::TOO_MANY_REQUESTS, Json(json!({"error": "Too many attempts. Please try again later."}))).into_response();
+    }
+
+    if body.new_password.len() < 8 {
+        return (StatusCode::BAD_REQUEST, Json(json!({"error": "Password must be at least 8 characters"}))).into_response();
+    }
+
+    // Hash the submitted token to compare with DB
+    let token_hash = format!("{:x}", sha2::Sha256::digest(body.token.as_bytes()));
+
+    // Find user with this reset token that hasn't expired
+    let user: Option<(String,)> = sqlx::query_as(
+        "SELECT id FROM users WHERE password_reset_token = $1 AND password_reset_expires > NOW() AND is_active = TRUE"
+    )
+    .bind(&token_hash)
+    .fetch_optional(&state.db)
+    .await
+    .unwrap_or(None);
+
+    let (user_id,) = match user {
+        Some(u) => u,
+        None => return (StatusCode::BAD_REQUEST, Json(json!({"error": "Invalid or expired reset token"}))).into_response(),
+    };
+
+    // Hash the new password
+    let pw_hash = match hash_password(&body.new_password) {
+        Ok(h) => h,
+        Err(_) => return (StatusCode::INTERNAL_SERVER_ERROR, Json(json!({"error": "Password hashing failed"}))).into_response(),
+    };
+
+    // Update password and clear reset token atomically
+    if let Err(e) = sqlx::query(
+        "UPDATE users SET password_hash = $1, password_reset_token = NULL, password_reset_expires = NULL WHERE id = $2"
+    )
+    .bind(&pw_hash)
+    .bind(&user_id)
+    .execute(&state.db)
+    .await
+    {
+        tracing::error!("Failed to update password: {}", e);
+        return (StatusCode::INTERNAL_SERVER_ERROR, Json(json!({"error": "Password reset failed"}))).into_response();
+    }
+
+    log_audit(&state.db, "password_reset", "auth", "info", Some(&user_id), None, None, Some("user"), Some(&user_id), "success", Some(&headers)).await;
+
+    Json(json!({"message": "Password has been reset successfully. You can now log in with your new password."})).into_response()
 }

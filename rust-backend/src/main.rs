@@ -180,6 +180,9 @@ fn build_router(state: Arc<AppState>) -> Router {
             post(auth_handlers::mfa_disable),
         )
         .route("/api/v1/auth/mfa/status", get(auth_handlers::mfa_status))
+        // ── Password Reset ────────────────────────────────────
+        .route("/api/v1/auth/forgot-password", post(auth_handlers::forgot_password))
+        .route("/api/v1/auth/reset-password", post(auth_handlers::reset_password))
         // ── Tools ─────────────────────────────────────────────
         .route("/api/v1/tools", get(tool_handlers::list_tools))
         .route("/api/v1/tools/count", get(tool_handlers::tools_count))

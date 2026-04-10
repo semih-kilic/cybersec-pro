@@ -130,6 +130,32 @@ pub async fn send_verification_email(
     send_email(cfg, to_email, "🛡️ Verify Your Email - CyberSec Pro", &plain, &html).await
 }
 
+pub async fn send_password_reset_email(
+    cfg: &EmailConfig,
+    to_email: &str,
+    name: &str,
+    reset_url: &str,
+) -> Result<(), String> {
+    let html = format!(
+        r#"<!DOCTYPE html><html><body style="margin:0;padding:0;font-family:Arial,sans-serif;background:#0a0a0a">
+        <table style="width:100%;max-width:600px;margin:0 auto;background:#1a1a2e;border-radius:12px">
+        <tr><td style="padding:40px;text-align:center">
+        <h1 style="color:#00ff88">🔑 Password Reset</h1>
+        <p style="color:#ccd6f6;font-size:16px">Hi {},</p>
+        <p style="color:#8892b0;font-size:14px">We received a request to reset your password. Click the button below to set a new password. This link expires in 1 hour.</p>
+        <a href="{}" style="display:inline-block;padding:16px 40px;background:linear-gradient(135deg,#00ff88,#00d4ff);color:#0a0a0a;text-decoration:none;font-weight:bold;border-radius:50px;margin:20px 0">Reset Password</a>
+        <p style="color:#8892b0;font-size:12px;margin-top:20px">If you didn't request this, you can safely ignore this email.</p>
+        <p style="color:#4a5568;font-size:12px;margin-top:20px">© 2026 CyberSec Professional</p>
+        </td></tr></table></body></html>"#,
+        name, reset_url
+    );
+    let plain = format!(
+        "Hi {},\n\nReset your password: {}\n\nThis link expires in 1 hour.\nIf you didn't request this, ignore this email.\n\n© 2026 CyberSec Professional",
+        name, reset_url
+    );
+    send_email(cfg, to_email, "🔑 Password Reset - CyberSec Pro", &plain, &html).await
+}
+
 pub async fn send_team_invite_email(
     cfg: &EmailConfig,
     to_email: &str,

@@ -320,4 +320,8 @@ r#"CREATE TABLE IF NOT EXISTS team_invitations (
     created_at TIMESTAMP DEFAULT NOW(),
     expires_at TIMESTAMP DEFAULT NOW() + INTERVAL '7 days'
 )"#,
+
+// Add password_reset columns to existing users table (idempotent)
+"ALTER TABLE users ADD COLUMN IF NOT EXISTS password_reset_token TEXT",
+"ALTER TABLE users ADD COLUMN IF NOT EXISTS password_reset_expires TIMESTAMP",
 ];
