@@ -290,7 +290,7 @@ export function LoginPage() {
           </h1>
           <p className="lp-sub">
             Access 401 Kali Linux tools from your browser. No installation, no VMs,
-            no configuration. Enterprise-grade penetration testing in minutes.
+            no configuration. Trusted by security teams in 30+ countries.
           </p>
 
           <div className="lp-features">
@@ -321,6 +321,15 @@ export function LoginPage() {
                 <p>NIST, OWASP, GDPR, PCI DSS, HIPAA, SOC 2 — all six frameworks</p>
               </div>
             </div>
+          </div>
+
+          {/* Country flags */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '24px' }}>
+            <span style={{ fontSize: '.75rem', color: '#4b5563' }}>Serving teams in</span>
+            <span style={{ fontSize: '1.1rem', display: 'flex', gap: '4px' }}>
+              <span title="USA">🇺🇸</span><span title="Canada">🇨🇦</span><span title="UK">🇬🇧</span><span title="Germany">🇩🇪</span><span title="Turkey">🇹🇷</span><span title="France">🇫🇷</span><span title="Netherlands">🇳🇱</span><span title="Sweden">🇸🇪</span>
+            </span>
+            <span style={{ fontSize: '.7rem', color: '#374151' }}>+22 more</span>
           </div>
 
           <div className="lp-terminal">
@@ -440,7 +449,7 @@ export function LoginPage() {
                   <div className="rf-field">
                     <div className="rf-label">
                       <label htmlFor="password">{t('auth.password', 'Password')}</label>
-                      <a href="/dashboard/forgot-password">Forgot?</a>
+                      <Link to="/forgot-password">Forgot?</Link>
                     </div>
                     <div className="rf-input-wrap">
                       <input

@@ -179,10 +179,10 @@ export function RegisterPage() {
 
           {/* Main Headline */}
           <h2 className="text-3xl font-bold text-white leading-tight mb-4">
-            Join 50+ Nordic<br />Companies Securing<br />Their Business
+            Trusted by Companies<br />Across 30+ Countries
           </h2>
           <p className="text-gray-400 text-lg mb-10">
-            Enterprise-grade security testing, made simple for SMEs.
+            Enterprise-grade security testing, made simple for businesses worldwide.
           </p>
 
           {/* Trust Points */}
@@ -190,7 +190,7 @@ export function RegisterPage() {
             {[
               { icon: '✅', text: '401 security tests, continuously updated' },
               { icon: '✅', text: 'Business-language reports, no jargon' },
-              { icon: '✅', text: 'GDPR & OWASP compliance built-in' },
+              { icon: '✅', text: 'GDPR, SOC 2 & OWASP compliance built-in' },
               { icon: '✅', text: '14-day free trial, no credit card' },
             ].map((item, i) => (
               <div key={i} className="flex items-center gap-3">
@@ -199,34 +199,67 @@ export function RegisterPage() {
               </div>
             ))}
           </div>
+
+          {/* Country flags */}
+          <div className="mt-8 flex items-center gap-3">
+            <span className="text-gray-500 text-xs">Serving teams in</span>
+            <div className="flex gap-1.5 text-lg">
+              <span title="USA">🇺🇸</span>
+              <span title="Canada">🇨🇦</span>
+              <span title="UK">🇬🇧</span>
+              <span title="Germany">🇩🇪</span>
+              <span title="Turkey">🇹🇷</span>
+              <span title="France">🇫🇷</span>
+              <span title="Netherlands">🇳🇱</span>
+              <span title="Sweden">🇸🇪</span>
+              <span title="Finland">🇫🇮</span>
+              <span className="text-gray-500 text-xs ml-1">+21 more</span>
+            </div>
+          </div>
         </div>
 
-        {/* Testimonial */}
-        <div className="relative z-10 mt-12">
-          <div className="bg-white/5 rounded-xl p-6 border border-white/10 backdrop-blur">
-            <p className="text-gray-300 text-sm italic mb-4">
-              "CyberSec Pro replaced our annual pentest with continuous monitoring.
-              We found 3 critical vulnerabilities in the first week that would have
-              gone undetected for months."
+        {/* Testimonials */}
+        <div className="relative z-10 mt-12 space-y-4">
+          <div className="bg-white/5 rounded-xl p-5 border border-white/10 backdrop-blur">
+            <p className="text-gray-300 text-sm italic mb-3">
+              "We switched from manual annual pentests to CyberSec Pro's continuous monitoring. Game changer for our security posture."
             </p>
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-full bg-gradient-to-r from-cyan-500 to-blue-500 flex items-center justify-center text-white text-sm font-bold">MK</div>
+              <div className="w-9 h-9 rounded-full bg-gradient-to-r from-cyan-500 to-blue-500 flex items-center justify-center text-white text-xs font-bold">JR</div>
               <div>
-                <p className="text-white font-medium text-sm">Mikael K.</p>
-                <p className="text-gray-500 text-xs">CTO, Finnish SaaS Company</p>
+                <p className="text-white font-medium text-sm">James R.</p>
+                <p className="text-gray-500 text-xs">VP of Engineering, Tech Startup — Austin, TX</p>
               </div>
               <div className="ml-auto flex gap-0.5">
                 {[1,2,3,4,5].map(s => (
-                  <svg key={s} className="w-4 h-4 text-yellow-400" fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/></svg>
+                  <svg key={s} className="w-3.5 h-3.5 text-yellow-400" fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/></svg>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          <div className="bg-white/5 rounded-xl p-5 border border-white/10 backdrop-blur">
+            <p className="text-gray-300 text-sm italic mb-3">
+              "KVKK ve GDPR uyumluluğu bizim için kritikti. CyberSec Pro her iki standardı da tek platformda karşılıyor."
+            </p>
+            <div className="flex items-center gap-3">
+              <div className="w-9 h-9 rounded-full bg-gradient-to-r from-emerald-500 to-teal-500 flex items-center justify-center text-white text-xs font-bold">AY</div>
+              <div>
+                <p className="text-white font-medium text-sm">Ahmet Y.</p>
+                <p className="text-gray-500 text-xs">CISO, Fintech — Istanbul, TR</p>
+              </div>
+              <div className="ml-auto flex gap-0.5">
+                {[1,2,3,4,5].map(s => (
+                  <svg key={s} className="w-3.5 h-3.5 text-yellow-400" fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/></svg>
                 ))}
               </div>
             </div>
           </div>
           
-          {/* Made in Finland badge */}
-          <div className="mt-6 flex items-center gap-2 text-gray-500 text-sm">
-            <span>🇫🇮</span>
-            <span>Made in Finland • EU Data Residency • GDPR Compliant</span>
+          {/* Global trust badge */}
+          <div className="mt-4 flex items-center gap-2 text-gray-500 text-sm">
+            <span>🌍</span>
+            <span>EU & US Data Centers • GDPR & SOC 2 Compliant • ISO 27001</span>
           </div>
         </div>
       </div>

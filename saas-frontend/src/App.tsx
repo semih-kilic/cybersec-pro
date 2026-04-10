@@ -39,6 +39,8 @@ const LandingPage = lazy(() => import('./pages/LandingPage').then(m => ({ defaul
 const LoginPage = lazy(() => import('./pages/LoginPage').then(m => ({ default: m.LoginPage })));
 const RegisterPage = lazy(() => import('./pages/RegisterPage').then(m => ({ default: m.RegisterPage })));
 const VerifyEmailPage = lazy(() => import('./pages/VerifyEmailPage').then(m => ({ default: m.VerifyEmailPage })));
+const ForgotPasswordPage = lazy(() => import('./pages/ForgotPasswordPage').then(m => ({ default: m.ForgotPasswordPage })));
+const ResetPasswordPage = lazy(() => import('./pages/ResetPasswordPage').then(m => ({ default: m.ResetPasswordPage })));
 const OAuthCallback = lazy(() => import('./pages/OAuthCallback'));
 const DashboardPage = lazy(() => import('./pages/DashboardPage').then(m => ({ default: m.DashboardPage })));
 const ToolsCatalogPage = lazy(() => import('./pages/ToolsCatalogPage'));
@@ -300,6 +302,16 @@ function AppRoutes() {
       } />
       <Route path="/auth/callback" element={<Suspense fallback={<LoadingSpinner />}><OAuthCallback /></Suspense>} />
       <Route path="/verify-email" element={<Suspense fallback={<LoadingSpinner />}><VerifyEmailPage /></Suspense>} />
+      <Route path="/forgot-password" element={
+        <PublicRoute>
+          <Suspense fallback={<LoadingSpinner />}><ForgotPasswordPage /></Suspense>
+        </PublicRoute>
+      } />
+      <Route path="/reset-password" element={
+        <PublicRoute>
+          <Suspense fallback={<LoadingSpinner />}><ResetPasswordPage /></Suspense>
+        </PublicRoute>
+      } />
       
       {/* Protected Dashboard Routes */}
       <Route path="/dashboard" element={
