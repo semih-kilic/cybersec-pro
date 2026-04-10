@@ -142,7 +142,7 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
   }
   
   if (!isAuthenticated) {
-    return <Navigate to="/login" replace />;
+    return <Navigate to="/dashboard/login" replace />;
   }
   
   return <>{children}</>;
@@ -278,7 +278,7 @@ function AppRoutes() {
   return (
     <Routes>
       {/* Public Routes */}
-      <Route path="/" element={<Navigate to="/login" replace />} />
+      <Route path="/" element={<Navigate to="/dashboard/login" replace />} />
       
       {/* Legal & GDPR Routes (under /dashboard/ for nginx SPA routing) */}
       <Route path="/dashboard/privacy" element={<Suspense fallback={<LoadingSpinner />}><PrivacyPolicyPage /></Suspense>} />
@@ -312,6 +312,30 @@ function AppRoutes() {
           <Suspense fallback={<LoadingSpinner />}><ResetPasswordPage /></Suspense>
         </PublicRoute>
       } />
+
+      {/* Auth Routes - /dashboard/ prefixed (nginx serves SPA at /dashboard/) */}
+      <Route path="/dashboard/login" element={
+        <PublicRoute>
+          <Suspense fallback={<LoadingSpinner />}><LoginPage /></Suspense>
+        </PublicRoute>
+      } />
+      <Route path="/dashboard/register" element={
+        <PublicRoute>
+          <Suspense fallback={<LoadingSpinner />}><RegisterPage /></Suspense>
+        </PublicRoute>
+      } />
+      <Route path="/dashboard/forgot-password" element={
+        <PublicRoute>
+          <Suspense fallback={<LoadingSpinner />}><ForgotPasswordPage /></Suspense>
+        </PublicRoute>
+      } />
+      <Route path="/dashboard/reset-password" element={
+        <PublicRoute>
+          <Suspense fallback={<LoadingSpinner />}><ResetPasswordPage /></Suspense>
+        </PublicRoute>
+      } />
+      <Route path="/dashboard/verify-email" element={<Suspense fallback={<LoadingSpinner />}><VerifyEmailPage /></Suspense>} />
+      <Route path="/dashboard/auth/callback" element={<Suspense fallback={<LoadingSpinner />}><OAuthCallback /></Suspense>} />
       
       {/* Protected Dashboard Routes */}
       <Route path="/dashboard" element={
@@ -381,7 +405,7 @@ function App() {
         <ColorModeProvider>
           <ToastProvider>
             <QueryErrorBridge />
-            <Router basename="/dashboard">
+            <Router>
               <AuthProvider>
                 <div className="min-h-screen cyberpunk-theme">
                   <AppRoutes />
