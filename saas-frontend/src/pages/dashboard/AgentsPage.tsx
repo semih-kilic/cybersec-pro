@@ -1,928 +1,816 @@
-import { useState } from 'react';
-import { useAgentsDashboard, useCreateAgent, useUpdateAgent, useDeleteAgent, useTestAgentConnection } from '../../hooks/useApiQueries';
+import { useState, useCallback } from 'react';
+import { useAgentsDashboard, useCreateAgent, useDeleteAgent, useTestAgentConnection } from '../../hooks/useApiQueries';
 import { useDocumentTitle } from '../../hooks/useUtilities';
 import { useTranslation } from 'react-i18next';
 import { AgentsPageSkeleton } from '../../components/ui/Skeleton';
 import { useToast } from '../../components/ui/Toast';
 import { PageTransition } from '../../components/ui';
+import { motion, AnimatePresence } from 'framer-motion';
 
-type AgentPlatform = 'linux' | 'windows' | 'macos' | 'docker';
-type ConnectionType = 'cloud_to_target' | 'agent_internal' | 'agent_dmz' | 'agent_airgapped' | 'hybrid';
-type AgentStatus = 'online' | 'offline' | 'busy' | 'error' | 'pending';
-
-// 5 Network Modes matching backend agent_manager.py
-const NETWORK_MODES: Record<ConnectionType, { name: string; description: string; icon: string; emoji: string; needsAgent: boolean }> = {
-  cloud_to_target: {
-    name: 'Cloud → Target',
-    description: 'Our cloud scanners test your external-facing systems directly. No installation needed.',
-    icon: 'cloud',
-    emoji: '☁️',
-    needsAgent: false
-  },
-  agent_internal: {
-    name: 'Internal Agent',
-    description: 'Install a lightweight agent inside your network for internal vulnerability scanning.',
-    icon: 'agent',
-    emoji: '🔒',
-    needsAgent: true
-  },
-  agent_dmz: {
-    name: 'DMZ Agent',
-    description: 'Deploy an agent in your DMZ to scan both internal and external attack surfaces.',
-    icon: 'dmz',
-    emoji: '🛡️',
-    needsAgent: true
-  },
-  agent_airgapped: {
-    name: 'Air-Gapped',
-    description: 'For isolated networks: export scan configs via USB, import results back securely.',
-    icon: 'airgap',
-    emoji: '🔌',
-    needsAgent: true
-  },
-  hybrid: {
-    name: 'Hybrid Mode',
-    description: 'Combine cloud scanning with an internal agent for comprehensive coverage.',
-    icon: 'hybrid',
-    emoji: '🔄',
-    needsAgent: true
-  },
-};
+/* ═══════════════════════════════════════════════════════════
+   TYPES & CONFIG
+   ═══════════════════════════════════════════════════════════ */
 
 interface Agent {
   id: string;
   name: string;
   hostname: string;
   ip_address: string;
-  status: AgentStatus;
-  status_emoji?: string;
+  status: string;
   os: string;
-  platform: AgentPlatform;
-  version?: string;
-  last_seen: string | null;
-  last_heartbeat?: string | null;
+  platform: string;
+  version: string;
+  last_seen: string;
+  last_heartbeat: string;
   cpu_usage: number;
   memory_usage: number;
   active_scans: number;
   total_scans: number;
-  location?: string;
-  connection_type: ConnectionType;
-  ssh_host?: string;
-  ssh_port?: number;
-  ssh_username?: string;
-  registration_token?: string;
-  created_at?: string;
+  location: string;
+  connection_type: string;
+  ssh_port: number;
+  ssh_username: string;
 }
 
-interface DashboardData {
-  total_agents: number;
-  online: number;
-  offline: number;
-  busy: number;
-  pending: number;
-  total_scans_completed: number;
-  agents: Agent[];
+interface TestResult {
+  success: boolean;
+  connection?: {
+    type: string;
+    host: string;
+    port: number;
+    username: string;
+    latency_ms: number;
+    ssh_banner: string;
+  };
+  system?: {
+    hostname: string;
+    os: string;
+    kernel: string;
+    uptime: string;
+    cpu_cores: number;
+    memory_total_mb: number;
+    memory_used_mb: number;
+    disk_total_gb: number;
+    disk_used_gb: number;
+    ip_addresses: string[];
+  };
+  diagnostics?: {
+    tcp_port_reachable: boolean;
+    host: string;
+    port: number;
+    hint: string;
+  };
+  error?: string;
+  message?: string;
 }
 
-export default function AgentsPage() {
-  useDocumentTitle('Agents — CyberSec Pro');
-  const { t: _t } = useTranslation();
-  const toast = useToast();
-  const [autoRefresh, setAutoRefresh] = useState(true);
-  const { data: dashboardData, isLoading: loading, dataUpdatedAt, refetch: fetchDashboard } = useAgentsDashboard(autoRefresh);
-  const dashboard = dashboardData as DashboardData | undefined;
-  const agents: Agent[] = (dashboard?.agents as Agent[]) || [];
-  const [showAddModal, setShowAddModal] = useState(false);
-  const [selectedAgent, setSelectedAgent] = useState<Agent | null>(null);
-  const [showEditModal, setShowEditModal] = useState(false);
-  const [testingConnection, setTestingConnection] = useState(false);
-  const [testResult, setTestResult] = useState<{ success: boolean; message: string } | null>(null);
-  const [showExplainer, setShowExplainer] = useState(false);
-  const [setupStep, setSetupStep] = useState(1);
-  const [setupMethod, setSetupMethod] = useState<'docker' | 'windows' | 'kubernetes'>('docker');
-  
-  // Form state
-  const [newAgentName, setNewAgentName] = useState('');
-  const [installToken, setInstallToken] = useState<string | null>(null);
-  const [installCommand, setInstallCommand] = useState<string>('');
-  const [selectedPlatform, setSelectedPlatform] = useState<AgentPlatform>('linux');
-  const [connectionType, setConnectionType] = useState<ConnectionType>('cloud_to_target');
-  const [sshCredentials, setSshCredentials] = useState({ 
-    host: '', 
-    port: '22', 
-    username: 'root', 
-    password: '' 
-  });
-  const [creatingAgent, setCreatingAgent] = useState(false);
+type WizardStep = 'type' | 'connection' | 'credentials' | 'review';
 
-  const createAgentMutation = useCreateAgent();
-  const updateAgentMutation = useUpdateAgent();
-  const deleteAgentMutation = useDeleteAgent();
-  const testConnectionMutation = useTestAgentConnection();
+const CONNECTION_TYPES = [
+  { id: 'ssh', name: 'SSH', icon: '\u{1F510}', desc: 'Linux, macOS, routers, firewalls', platforms: ['linux', 'macos', 'router', 'firewall'] },
+  { id: 'winrm', name: 'WinRM', icon: '\u{1FA9F}', desc: 'Windows servers and workstations', platforms: ['windows'] },
+  { id: 'snmp', name: 'SNMP', icon: '\u{1F4E1}', desc: 'Switches, routers, printers', platforms: ['network'] },
+  { id: 'docker', name: 'Docker', icon: '\u{1F433}', desc: 'Container environments', platforms: ['docker'] },
+  { id: 'cloud', name: 'Cloud API', icon: '\u2601\uFE0F', desc: 'AWS, Azure, GCP', platforms: ['cloud'] },
+] as const;
 
-  const addAgent = async () => {
-    if (!newAgentName.trim()) return;
-    setCreatingAgent(true);
-    
-    try {
-      const data = await createAgentMutation.mutateAsync({
-        name: newAgentName,
-        platform: selectedPlatform,
-        connection_type: connectionType,
-        network_mode: connectionType,
-        ssh_host: (connectionType === 'agent_internal' || connectionType === 'agent_dmz') ? sshCredentials.host : undefined,
-        ssh_port: (connectionType === 'agent_internal' || connectionType === 'agent_dmz') ? parseInt(sshCredentials.port) : undefined,
-        ssh_username: (connectionType === 'agent_internal' || connectionType === 'agent_dmz') ? sshCredentials.username : undefined,
-        ssh_password: (connectionType === 'agent_internal' || connectionType === 'agent_dmz') ? sshCredentials.password : undefined,
-      });
-      
-      toast.success(`Agent "${newAgentName}" created successfully`);
-      resetAddForm();
-      fetchDashboard();
-    } catch (error: any) {
-      toast.error(error.message || 'Failed to create agent');
-    } finally {
-      setCreatingAgent(false);
-    }
-  };
+const PLATFORM_ICONS: Record<string, string> = {
+  linux: '\u{1F427}', windows: '\u{1FA9F}', macos: '\u{1F34E}', docker: '\u{1F433}',
+  router: '\u{1F4E1}', firewall: '\u{1F6E1}\uFE0F', network: '\u{1F4E1}', cloud: '\u2601\uFE0F',
+  server: '\u{1F5A5}\uFE0F', unknown: '\u2753',
+};
 
-  const updateAgent = async () => {
-    if (!selectedAgent) return;
-    
-    const agentData = selectedAgent as Agent & { ssh_password?: string; ssh_key_path?: string };
-    
-    try {
-      const body: Record<string, unknown> = {
-        name: selectedAgent.name,
-        ssh_host: selectedAgent.ssh_host,
-        ssh_port: selectedAgent.ssh_port,
-        ssh_username: selectedAgent.ssh_username,
-        location: selectedAgent.location,
-        connection_type: selectedAgent.connection_type,
-      };
-      
-      if (agentData.ssh_password) body.ssh_password = agentData.ssh_password;
-      if (agentData.ssh_key_path) body.ssh_key_path = agentData.ssh_key_path;
-      
-      await updateAgentMutation.mutateAsync({ id: selectedAgent.id, data: body });
-      setShowEditModal(false);
-      setSelectedAgent(null);
-      setTestResult(null);
-    } catch (error: any) {
-      toast.error('Update Failed', error.message || 'Failed to update agent');
-    }
-  };
+const STATUS_CONFIG: Record<string, { color: string; bg: string; dot: string; label: string }> = {
+  online:  { color: 'text-emerald-400', bg: 'bg-emerald-500/10 border-emerald-500/30', dot: 'bg-emerald-400', label: 'Online' },
+  offline: { color: 'text-gray-500', bg: 'bg-gray-500/10 border-gray-500/30', dot: 'bg-gray-500', label: 'Offline' },
+  busy:    { color: 'text-amber-400', bg: 'bg-amber-500/10 border-amber-500/30', dot: 'bg-amber-400', label: 'Scanning' },
+  error:   { color: 'text-red-400', bg: 'bg-red-500/10 border-red-500/30', dot: 'bg-red-400', label: 'Error' },
+  pending: { color: 'text-blue-400', bg: 'bg-blue-500/10 border-blue-500/30', dot: 'bg-blue-400', label: 'Pending' },
+};
 
-  const deleteAgent = async (agentId: string) => {
-    if (!confirm('Are you sure you want to delete this agent?')) return;
-    
-    try {
-      await deleteAgentMutation.mutateAsync(agentId);
-      setSelectedAgent(null);
-    } catch (error: any) {
-      toast.error('Delete Failed', error.message || 'Failed to delete agent');
-    }
-  };
+/* ═══════════════════════════════════════════════════════════
+   HELPER FUNCTIONS
+   ═══════════════════════════════════════════════════════════ */
 
-  const testConnection = async (agentId: string) => {
-    setTestingConnection(true);
-    setTestResult(null);
-    
-    try {
-      const data = await testConnectionMutation.mutateAsync(agentId);
-      setTestResult({
-        success: data.success,
-        message: data.success ? `Connection successful! OS: ${data.os_info || 'Unknown'}` : data.error || 'Test failed'
-      });
-    } catch (error) {
-      setTestResult({ success: false, message: 'Connection test failed' });
-    } finally {
-      setTestingConnection(false);
-    }
-  };
-
-  const getStatusColor = (status: AgentStatus) => {
-    const colors: Record<string, string> = {
-      online: 'text-green-400 bg-green-400/20',
-      busy: 'text-yellow-400 bg-yellow-400/20',
-      offline: 'text-gray-400 bg-gray-400/20',
-      error: 'text-red-400 bg-red-400/20',
-      pending: 'text-blue-400 bg-blue-400/20',
-    };
-    return colors[status] || 'text-gray-400 bg-gray-400/20';
-  };
-
-  const getStatusDot = (status: AgentStatus) => {
-    const colors: Record<string, string> = {
-      online: 'bg-green-400 shadow-green-400/50',
-      busy: 'bg-yellow-400 shadow-yellow-400/50',
-      offline: 'bg-gray-500',
-      error: 'bg-red-400 shadow-red-400/50',
-      pending: 'bg-blue-400 shadow-blue-400/50',
-    };
-    const pulse = status === 'online' ? 'animate-pulse' : '';
-    return `w-2.5 h-2.5 rounded-full ${colors[status] || 'bg-gray-500'} shadow-lg ${pulse}`;
-  };
-
-  const getPlatformIcon = (platform: AgentPlatform) => {
-    const icons: Record<string, string> = { windows: '🪟', macos: '🍎', docker: '🐳', linux: '🐧' };
-    return icons[platform] || '🐧';
-  };
-
-  const getCpuColor = (cpu: number) => cpu > 80 ? 'bg-red-500' : cpu > 50 ? 'bg-yellow-500' : 'bg-green-500';
-  const getMemColor = (mem: number) => mem > 80 ? 'bg-red-500' : mem > 50 ? 'bg-yellow-500' : 'bg-cyan-500';
-
-  const copyToClipboard = (text: string) => {
-    navigator.clipboard.writeText(text);
-  };
-
-  const resetAddForm = () => {
-    setNewAgentName('');
-    setInstallToken(null);
-    setInstallCommand('');
-    setSelectedPlatform('linux');
-    setConnectionType('cloud_to_target');
-    setSshCredentials({ host: '', port: '22', username: 'root', password: '' });
-    setShowAddModal(false);
-  };
-
-  if (loading) {
-    return <AgentsPageSkeleton />;
+function formatTimeSince(dateStr: string): string {
+  try {
+    const date = new Date(dateStr.replace(' ', 'T') + (dateStr.includes('Z') ? '' : 'Z'));
+    const now = new Date();
+    const diffMs = now.getTime() - date.getTime();
+    const diffMins = Math.floor(diffMs / 60000);
+    if (diffMins < 1) return 'Just now';
+    if (diffMins < 60) return diffMins + 'm ago';
+    const diffHours = Math.floor(diffMins / 60);
+    if (diffHours < 24) return diffHours + 'h ago';
+    const diffDays = Math.floor(diffHours / 24);
+    return diffDays + 'd ago';
+  } catch {
+    return 'Unknown';
   }
+}
 
-  const onlineAgents = agents.filter(a => a.status === 'online');
-  const offlineAgents = agents.filter(a => a.status === 'offline');
-  const pendingAgents = agents.filter(a => a.status === 'pending' || a.status === 'pending-registration' as any);
+function useAuth() {
+  const token = localStorage.getItem('token') || '';
+  return { token };
+}
 
+/* ═══════════════════════════════════════════════════════════
+   SMALL COMPONENTS
+   ═══════════════════════════════════════════════════════════ */
+
+function ResourceBar({ label, value, color, showPercent }: { label: string; value: number; color: 'cyan' | 'violet' | 'amber' | 'red'; showPercent?: boolean }) {
+  const colors = { cyan: 'bg-cyan-500', violet: 'bg-violet-500', amber: 'bg-amber-500', red: 'bg-red-500' };
   return (
-    <PageTransition>
-    <div className="p-6 space-y-6">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold text-white mb-1">Agent Management</h1>
-          <p className="text-gray-400 text-sm">
-            Manage and monitor your security agents
-            <span className="text-gray-600 ml-2">
-              Last update: {dataUpdatedAt ? new Date(dataUpdatedAt).toLocaleTimeString('en-GB') : '—'}
-            </span>
-          </p>
-        </div>
-        <div className="flex items-center gap-3">
-          <button 
-            onClick={() => setAutoRefresh(!autoRefresh)}
-            className={`px-3 py-1.5 rounded-lg text-xs font-medium transition ${autoRefresh ? 'bg-green-500/20 text-green-400 border border-green-500/30' : 'bg-gray-800 text-gray-400 border border-gray-700'}`}
-          >
-            {autoRefresh ? '● LIVE' : '○ PAUSED'}
-          </button>
-          <button onClick={() => fetchDashboard()} className="p-2 hover:bg-gray-800 rounded-lg transition text-gray-400 hover:text-white" title="Refresh">
-            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" /></svg>
-          </button>
-          <button onClick={() => setShowAddModal(true)} className="px-4 py-2 bg-gradient-to-r from-kali-blue to-cyan-600 hover:from-kali-blue/90 hover:to-cyan-600/90 text-white rounded-lg font-medium transition flex items-center gap-2 shadow-lg shadow-kali-blue/20">
-            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" /></svg>
-            Add Agent
-          </button>
-        </div>
+    <div className="flex items-center gap-2 text-[10px]">
+      <span className="text-gray-500 w-8">{label}</span>
+      <div className="flex-1 h-1.5 bg-gray-800 rounded-full overflow-hidden">
+        <div className={`h-full ${colors[color]} rounded-full transition-all duration-500`}
+          style={{ width: Math.min(100, Math.max(0, value)) + '%' }} />
       </div>
-
-      {/* What are Agents? Explainer */}
-      <div className="bg-gradient-to-r from-blue-500/10 to-cyan-500/10 rounded-xl border border-blue-500/20 overflow-hidden">
-        <button 
-          onClick={() => setShowExplainer(!showExplainer)}
-          className="w-full p-4 flex items-center justify-between text-left"
-        >
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-lg bg-blue-500/20 flex items-center justify-center">
-              <span className="text-xl">💡</span>
-            </div>
-            <div>
-              <h3 className="text-white font-semibold">What are Agents?</h3>
-              <p className="text-gray-400 text-sm">Learn how agents extend your scanning capabilities</p>
-            </div>
-          </div>
-          <svg className={`w-5 h-5 text-gray-400 transition-transform ${showExplainer ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" /></svg>
-        </button>
-        {showExplainer && (
-          <div className="px-4 pb-5 space-y-4">
-            <p className="text-gray-300 text-sm leading-relaxed">
-              Agents are lightweight software that runs inside your network, enabling internal vulnerability scanning 
-              that cloud-based tools cannot reach. They securely connect to CyberSec Pro and execute scans on your behalf.
-            </p>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-              <div className="bg-gray-900/50 rounded-lg p-4 border border-gray-700/50">
-                <div className="text-2xl mb-2">☁️</div>
-                <h4 className="text-white font-medium text-sm">Cloud Scanning</h4>
-                <p className="text-gray-500 text-xs mt-1">No agent needed. We scan your external-facing systems from our cloud.</p>
-              </div>
-              <div className="bg-gray-900/50 rounded-lg p-4 border border-blue-500/20">
-                <div className="text-2xl mb-2">🔒</div>
-                <h4 className="text-white font-medium text-sm">Internal Agent</h4>
-                <p className="text-gray-500 text-xs mt-1">Deploy inside your network to scan internal systems and databases.</p>
-              </div>
-              <div className="bg-gray-900/50 rounded-lg p-4 border border-gray-700/50">
-                <div className="text-2xl mb-2">🔄</div>
-                <h4 className="text-white font-medium text-sm">Hybrid Mode</h4>
-                <p className="text-gray-500 text-xs mt-1">Combine cloud + agent for complete internal and external coverage.</p>
-              </div>
-            </div>
-          </div>
-        )}
-      </div>
-
-      {/* Stats Cards */}
-      <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
-        <div className="bg-gray-800/50 rounded-xl p-4 border border-gray-700">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-lg bg-blue-500/20 flex items-center justify-center">
-              <svg className="w-5 h-5 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" /></svg>
-            </div>
-            <div>
-              <p className="text-2xl font-bold text-white">{dashboard?.total_agents || 0}</p>
-              <p className="text-gray-500 text-xs">Total Agents</p>
-            </div>
-          </div>
-        </div>
-        <div className="bg-gray-800/50 rounded-xl p-4 border border-green-500/20">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-lg bg-green-500/20 flex items-center justify-center">
-              <div className="w-3 h-3 rounded-full bg-green-400 animate-pulse" />
-            </div>
-            <div>
-              <p className="text-2xl font-bold text-green-400">{dashboard?.online || 0}</p>
-              <p className="text-gray-500 text-xs">Online</p>
-            </div>
-          </div>
-        </div>
-        <div className="bg-gray-800/50 rounded-xl p-4 border border-gray-700">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-lg bg-red-500/20 flex items-center justify-center">
-              <div className="w-3 h-3 rounded-full bg-red-400" />
-            </div>
-            <div>
-              <p className="text-2xl font-bold text-red-400">{dashboard?.offline || 0}</p>
-              <p className="text-gray-500 text-xs">Offline</p>
-            </div>
-          </div>
-        </div>
-        <div className="bg-gray-800/50 rounded-xl p-4 border border-yellow-500/20">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-lg bg-yellow-500/20 flex items-center justify-center">
-              <svg className="w-5 h-5 text-yellow-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" /></svg>
-            </div>
-            <div>
-              <p className="text-2xl font-bold text-yellow-400">{dashboard?.busy || 0}</p>
-              <p className="text-gray-500 text-xs">Scanning</p>
-            </div>
-          </div>
-        </div>
-        <div className="bg-gray-800/50 rounded-xl p-4 border border-gray-700">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-lg bg-purple-500/20 flex items-center justify-center">
-              <svg className="w-5 h-5 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" /></svg>
-            </div>
-            <div>
-              <p className="text-2xl font-bold text-purple-400">{dashboard?.total_scans_completed || 0}</p>
-              <p className="text-gray-500 text-xs">Total Scans</p>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Agent Grid */}
-      {agents.length === 0 ? (
-        <div className="text-center py-20 bg-gray-800/30 rounded-xl border border-gray-700 border-dashed">
-          <div className="w-20 h-20 mx-auto mb-6 rounded-full bg-gray-800 flex items-center justify-center">
-            <svg className="w-10 h-10 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" /></svg>
-          </div>
-          <h3 className="text-xl font-semibold text-white mb-2">No Agents Yet</h3>
-          <p className="text-gray-400 mb-6 max-w-md mx-auto">
-            Deploy an agent inside your network to scan internal systems, or use cloud scanning for external targets.
-          </p>
-          
-          {/* 3-Step Quick Setup */}
-          <div className="max-w-2xl mx-auto mb-6">
-            <div className="flex items-center justify-center gap-2 mb-6">
-              {[1, 2, 3].map(s => (
-                <div key={s} className="flex items-center gap-2">
-                  <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold transition ${setupStep === s ? 'bg-blue-600 text-white' : setupStep > s ? 'bg-green-500 text-white' : 'bg-gray-700 text-gray-400'}`}>
-                    {setupStep > s ? '✓' : s}
-                  </div>
-                  <span className={`text-xs ${setupStep === s ? 'text-white' : 'text-gray-500'}`}>
-                    {s === 1 ? 'Choose Method' : s === 2 ? 'Install' : 'Verify'}
-                  </span>
-                  {s < 3 && <div className={`w-12 h-0.5 ${setupStep > s ? 'bg-green-500' : 'bg-gray-700'}`} />}
-                </div>
-              ))}
-            </div>
-            
-            {setupStep === 1 && (
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-left">
-                <button onClick={() => { setSetupMethod('docker'); setSetupStep(2); }} className={`p-4 rounded-xl border transition hover:border-blue-500/50 ${setupMethod === 'docker' ? 'border-blue-500 bg-blue-500/10' : 'border-gray-700 bg-gray-800/50'}`}>
-                  <div className="text-3xl mb-2">🐳</div>
-                  <h4 className="text-white font-semibold text-sm">Docker</h4>
-                  <p className="text-gray-500 text-xs mt-1">Recommended. One command to start.</p>
-                  <span className="text-green-400 text-xs mt-2 inline-block">✓ Fastest setup</span>
-                </button>
-                <button onClick={() => { setSetupMethod('windows'); setSetupStep(2); }} className="p-4 rounded-xl border border-gray-700 bg-gray-800/50 transition hover:border-blue-500/50">
-                  <div className="text-3xl mb-2">🪟</div>
-                  <h4 className="text-white font-semibold text-sm">Windows</h4>
-                  <p className="text-gray-500 text-xs mt-1">Windows Service. Run as background service.</p>
-                </button>
-                <button onClick={() => { setSetupMethod('kubernetes'); setSetupStep(2); }} className="p-4 rounded-xl border border-gray-700 bg-gray-800/50 transition hover:border-blue-500/50">
-                  <div className="text-3xl mb-2">☸️</div>
-                  <h4 className="text-white font-semibold text-sm">Kubernetes</h4>
-                  <p className="text-gray-500 text-xs mt-1">Helm chart for K8s clusters.</p>
-                </button>
-              </div>
-            )}
-            
-            {setupStep === 2 && (
-              <div className="bg-gray-800/50 rounded-xl border border-gray-700 p-5 text-left">
-                <div className="flex items-center justify-between mb-4">
-                  <h4 className="text-white font-semibold">Install Agent ({setupMethod === 'docker' ? 'Docker' : setupMethod === 'windows' ? 'Windows' : 'Kubernetes'})</h4>
-                  <button onClick={() => setSetupStep(1)} className="text-xs text-gray-400 hover:text-white transition">← Change method</button>
-                </div>
-                <div className="bg-gray-950 rounded-lg p-4 font-mono text-sm text-green-400 relative border border-gray-700">
-                  <pre className="whitespace-pre-wrap">{setupMethod === 'docker' 
-                    ? 'docker run -d --name cybersec-agent \\\n  -e AGENT_TOKEN=<your-token> \\\n  -e API_URL=https://semihkilic.com/api \\\n  --restart unless-stopped \\\n  cybersecpro/agent:latest'
-                    : setupMethod === 'windows'
-                    ? '# Download installer\nInvoke-WebRequest -Uri "https://semihkilic.com/api/v1/agent-installer.exe" -OutFile agent-setup.exe\n\n# Install with token\n.\\agent-setup.exe --token <your-token>'
-                    : '# Add Helm repo\nhelm repo add cybersecpro https://charts.semihkilic.com\n\n# Install\nhelm install cybersec-agent cybersecpro/agent \\\n  --set token=<your-token> \\\n  --set apiUrl=https://semihkilic.com/api'
-                  }</pre>
-                  <button onClick={() => navigator.clipboard.writeText(setupMethod === 'docker' ? 'docker run -d ...' : 'helm install ...')} className="absolute top-2 right-2 p-2 hover:bg-gray-800 rounded transition text-gray-500 hover:text-white" title="Copy">📋</button>
-                </div>
-                <p className="text-gray-500 text-xs mt-3">Replace &lt;your-token&gt; with the token generated when you click "Add Agent" above.</p>
-                <div className="flex gap-3 mt-4">
-                  <button onClick={() => setSetupStep(3)} className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm font-medium transition">I've installed it →</button>
-                  <button onClick={() => setShowAddModal(true)} className="px-4 py-2 bg-gray-700 hover:bg-gray-600 text-white rounded-lg text-sm font-medium transition">Generate Token First</button>
-                </div>
-              </div>
-            )}
-            
-            {setupStep === 3 && (
-              <div className="bg-gray-800/50 rounded-xl border border-gray-700 p-5 text-center">
-                <div className="w-16 h-16 mx-auto rounded-full bg-blue-500/10 flex items-center justify-center mb-4">
-                  <svg className="w-8 h-8 text-blue-400 animate-spin" fill="none" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path></svg>
-                </div>
-                <h4 className="text-white font-semibold mb-2">Waiting for Agent Connection...</h4>
-                <p className="text-gray-400 text-sm mb-4">Your agent should appear here within 30 seconds after installation.</p>
-                <button onClick={() => { fetchDashboard(); }} className="px-4 py-2 bg-gray-700 hover:bg-gray-600 text-white rounded-lg text-sm font-medium transition">🔄 Refresh Now</button>
-                <button onClick={() => setSetupStep(1)} className="ml-3 px-4 py-2 text-gray-400 hover:text-white text-sm transition">Start Over</button>
-              </div>
-            )}
-          </div>
-        </div>
-      ) : (
-        <div className="space-y-4">
-          {/* Online Agents */}
-          {onlineAgents.length > 0 && (
-            <div>
-              <h2 className="text-sm font-semibold text-green-400 uppercase tracking-wider mb-3 flex items-center gap-2">
-                <div className="w-2 h-2 rounded-full bg-green-400 animate-pulse" />
-                Online ({onlineAgents.length})
-              </h2>
-              <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
-                {onlineAgents.map(agent => (
-                  <AgentCard 
-                    key={agent.id} 
-                    agent={agent} 
-                    onSelect={() => setSelectedAgent(agent)}
-                    onTestConnection={() => testConnection(agent.id)}
-                    testingConnection={testingConnection}
-                    getStatusDot={getStatusDot}
-                    getPlatformIcon={getPlatformIcon}
-                    getCpuColor={getCpuColor}
-                    getMemColor={getMemColor}
-                  />
-                ))}
-              </div>
-            </div>
-          )}
-
-          {/* Offline/Pending Agents */}
-          {offlineAgents.length > 0 && (
-            <div>
-              <h2 className="text-sm font-semibold text-gray-500 uppercase tracking-wider mb-3 flex items-center gap-2">
-                <div className="w-2 h-2 rounded-full bg-gray-500" />
-                Offline ({offlineAgents.length})
-              </h2>
-              <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
-                {offlineAgents.map(agent => (
-                  <AgentCard 
-                    key={agent.id} 
-                    agent={agent} 
-                    onSelect={() => setSelectedAgent(agent)}
-                    onTestConnection={() => testConnection(agent.id)}
-                    testingConnection={testingConnection}
-                    getStatusDot={getStatusDot}
-                    getPlatformIcon={getPlatformIcon}
-                    getCpuColor={getCpuColor}
-                    getMemColor={getMemColor}
-                  />
-                ))}
-              </div>
-            </div>
-          )}
-
-          {/* Pending Agents */}
-          {pendingAgents.length > 0 && (
-            <div>
-              <h2 className="text-sm font-semibold text-blue-400 uppercase tracking-wider mb-3 flex items-center gap-2">
-                <div className="w-2 h-2 rounded-full bg-blue-400" />
-                Pending Registration ({pendingAgents.length})
-              </h2>
-              <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
-                {pendingAgents.map(agent => (
-                  <AgentCard 
-                    key={agent.id} 
-                    agent={agent} 
-                    onSelect={() => setSelectedAgent(agent)}
-                    onTestConnection={() => testConnection(agent.id)}
-                    testingConnection={testingConnection}
-                    getStatusDot={getStatusDot}
-                    getPlatformIcon={getPlatformIcon}
-                    getCpuColor={getCpuColor}
-                    getMemColor={getMemColor}
-                  />
-                ))}
-              </div>
-            </div>
-          )}
-        </div>
-      )}
-
-      {/* Add Agent Modal */}
-      {showAddModal && (
-        <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-          <div className="bg-gray-900 rounded-2xl max-w-lg w-full max-h-[90vh] overflow-y-auto border border-gray-700 shadow-2xl">
-            <div className="p-6 border-b border-gray-700 flex items-center justify-between">
-              <h2 className="text-xl font-bold text-white">Add New Agent</h2>
-              <button onClick={resetAddForm} className="p-2 hover:bg-gray-800 rounded-lg transition text-gray-400">✕</button>
-            </div>
-            <div className="p-6 space-y-4">
-                <>
-                  <div>
-                    <label className="block text-gray-400 text-sm mb-2">Agent Name</label>
-                    <input type="text" value={newAgentName} onChange={(e) => setNewAgentName(e.target.value)} placeholder="E.g.: Office-Scanner, DMZ-Agent-01" className="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2.5 text-white focus:border-kali-blue focus:outline-none focus:ring-1 focus:ring-kali-blue/50" />
-                  </div>
-                  <div>
-                    <label className="block text-gray-400 text-sm mb-2">Network Mode</label>
-                    <div className="grid grid-cols-1 gap-2">
-                      {(Object.entries(NETWORK_MODES) as [ConnectionType, typeof NETWORK_MODES[ConnectionType]][]).map(([key, mode]) => (
-                        <button
-                          key={key}
-                          onClick={() => setConnectionType(key)}
-                          className={`p-3 rounded-lg border transition text-left flex items-start gap-3 ${connectionType === key ? 'border-kali-blue bg-kali-blue/10 ring-1 ring-kali-blue/30' : 'border-gray-700 bg-gray-800 hover:border-gray-600'}`}
-                        >
-                          <span className="text-xl mt-0.5">{mode.emoji}</span>
-                          <div className="flex-1 min-w-0">
-                            <div className="text-white font-medium text-sm">{mode.name}</div>
-                            <div className="text-gray-500 text-xs mt-0.5 leading-relaxed">{mode.description}</div>
-                          </div>
-                          {connectionType === key && (
-                            <div className="w-5 h-5 rounded-full bg-kali-blue flex items-center justify-center shrink-0 mt-0.5">
-                              <svg className="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" /></svg>
-                            </div>
-                          )}
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-                  {(connectionType === 'agent_internal' || connectionType === 'agent_dmz') && (
-                    <div className="space-y-3 p-4 bg-gray-800/50 rounded-lg border border-gray-700/50">
-                      <h4 className="text-white font-medium text-sm">SSH Details</h4>
-                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                        <div className="col-span-2">
-                          <label className="block text-gray-500 text-xs mb-1">Host / IP</label>
-                          <input type="text" value={sshCredentials.host} onChange={(e) => setSshCredentials({...sshCredentials, host: e.target.value})} placeholder="10.0.0.115" className="w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white text-sm focus:border-kali-blue focus:outline-none" />
-                        </div>
-                        <div>
-                          <label className="block text-gray-500 text-xs mb-1">Port</label>
-                          <input type="text" value={sshCredentials.port} onChange={(e) => setSshCredentials({...sshCredentials, port: e.target.value})} placeholder="22" className="w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white text-sm focus:border-kali-blue focus:outline-none" />
-                        </div>
-                      </div>
-                      <div>
-                        <label className="block text-gray-500 text-xs mb-1">Username</label>
-                        <input type="text" value={sshCredentials.username} onChange={(e) => setSshCredentials({...sshCredentials, username: e.target.value})} placeholder="root" className="w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white text-sm focus:border-kali-blue focus:outline-none" />
-                      </div>
-                      <div>
-                        <label className="block text-gray-500 text-xs mb-1">Password</label>
-                        <input type="password" value={sshCredentials.password} onChange={(e) => setSshCredentials({...sshCredentials, password: e.target.value})} placeholder="••••••••" className="w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white text-sm focus:border-kali-blue focus:outline-none" />
-                      </div>
-                    </div>
-                  )}
-                  {NETWORK_MODES[connectionType]?.needsAgent && connectionType !== 'agent_internal' && connectionType !== 'agent_dmz' && (
-                    <div>
-                      <label className="block text-gray-400 text-sm mb-2">Platform</label>
-                      <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
-                        {(['linux', 'windows', 'macos', 'docker'] as AgentPlatform[]).map(p => (
-                          <button key={p} onClick={() => setSelectedPlatform(p)} className={`p-3 rounded-lg border transition ${selectedPlatform === p ? 'border-kali-blue bg-kali-blue/10' : 'border-gray-700 bg-gray-800 hover:border-gray-600'}`}>
-                            <div className="text-2xl mb-1">{getPlatformIcon(p)}</div>
-                            <div className="text-xs text-gray-400 capitalize">{p}</div>
-                          </button>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-                </>
-            </div>
-            <div className="p-6 border-t border-gray-700 flex justify-end gap-3">
-              <button onClick={resetAddForm} className="px-4 py-2 text-gray-400 hover:text-white transition">Cancel</button>
-              <button onClick={addAgent} disabled={creatingAgent || !newAgentName.trim() || ((connectionType === 'agent_internal' || connectionType === 'agent_dmz') && !sshCredentials.host)} className="px-6 py-2 bg-gradient-to-r from-kali-blue to-cyan-600 text-white rounded-lg font-medium transition disabled:opacity-50 shadow-lg shadow-kali-blue/20">{creatingAgent ? 'Creating...' : 'Create Agent'}</button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Agent Detail Sidebar */}
-      {selectedAgent && !showEditModal && (
-        <div className="fixed inset-y-0 right-0 w-[420px] bg-gray-900 border-l border-gray-700 shadow-2xl z-40 overflow-y-auto">
-          <div className="p-6">
-            <div className="flex items-center justify-between mb-6">
-              <div className="flex items-center gap-3">
-                <span className="text-3xl">{getPlatformIcon(selectedAgent.platform)}</span>
-                <div>
-                  <h2 className="text-xl font-bold text-white">{selectedAgent.name}</h2>
-                  <p className="text-gray-500 text-sm">{selectedAgent.hostname || 'pending-registration'}</p>
-                </div>
-              </div>
-              <button onClick={() => setSelectedAgent(null)} className="p-2 hover:bg-gray-800 rounded-lg transition text-gray-400">✕</button>
-            </div>
-
-            {/* Status Badge */}
-            <div className="flex items-center gap-2 mb-6">
-              <div className={getStatusDot(selectedAgent.status)} />
-              <span className={`px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider ${getStatusColor(selectedAgent.status)}`}>
-                {selectedAgent.status}
-              </span>
-              {selectedAgent.last_seen && (
-                <span className="text-gray-500 text-xs ml-auto">{selectedAgent.last_seen}</span>
-              )}
-            </div>
-
-            {/* CPU & RAM Bars */}
-            {selectedAgent.status !== 'pending' && (
-              <div className="space-y-3 mb-6">
-                <div>
-                  <div className="flex items-center justify-between mb-1">
-                    <span className="text-gray-400 text-xs font-medium">CPU</span>
-                    <span className="text-white text-xs font-mono">{selectedAgent.cpu_usage}%</span>
-                  </div>
-                  <div className="w-full bg-gray-800 rounded-full h-2">
-                    <div className={`h-2 rounded-full transition-all duration-500 ${getCpuColor(selectedAgent.cpu_usage)}`} style={{ width: `${Math.min(selectedAgent.cpu_usage, 100)}%` }} />
-                  </div>
-                </div>
-                <div>
-                  <div className="flex items-center justify-between mb-1">
-                    <span className="text-gray-400 text-xs font-medium">RAM</span>
-                    <span className="text-white text-xs font-mono">{selectedAgent.memory_usage}%</span>
-                  </div>
-                  <div className="w-full bg-gray-800 rounded-full h-2">
-                    <div className={`h-2 rounded-full transition-all duration-500 ${getMemColor(selectedAgent.memory_usage)}`} style={{ width: `${Math.min(selectedAgent.memory_usage, 100)}%` }} />
-                  </div>
-                </div>
-              </div>
-            )}
-
-            {/* Info Grid */}
-            <div className="space-y-3">
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                <div className="bg-gray-800/50 rounded-lg p-3">
-                  <p className="text-gray-500 text-xs mb-1">IP Address</p>
-                  <p className="text-cyan-400 font-mono text-sm">{selectedAgent.ip_address || 'N/A'}</p>
-                </div>
-                <div className="bg-gray-800/50 rounded-lg p-3">
-                  <p className="text-gray-500 text-xs mb-1">Location</p>
-                  <p className="text-white text-sm">{selectedAgent.location || 'Unknown'}</p>
-                </div>
-              </div>
-              <div className="bg-gray-800/50 rounded-lg p-3">
-                <p className="text-gray-500 text-xs mb-1">Operating System</p>
-                <p className="text-white text-sm">{selectedAgent.os || 'Awaiting registration...'}</p>
-              </div>
-              <div className="bg-gray-800/50 rounded-lg p-3">
-                <p className="text-gray-500 text-xs mb-1">Network Mode</p>
-                <div className="flex items-center gap-2">
-                  <span>{NETWORK_MODES[selectedAgent.connection_type]?.emoji || '☁️'}</span>
-                  <p className="text-white text-sm">{NETWORK_MODES[selectedAgent.connection_type]?.name || selectedAgent.connection_type}</p>
-                </div>
-              </div>
-              {selectedAgent.ssh_host && (
-                <div className="bg-gray-800/50 rounded-lg p-3">
-                  <p className="text-gray-500 text-xs mb-1">Agent Connection</p>
-                  <p className="text-white font-mono text-sm">{selectedAgent.ssh_username}@{selectedAgent.ssh_host}:{selectedAgent.ssh_port}</p>
-                </div>
-              )}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                <div className="bg-gray-800/50 rounded-lg p-3">
-                  <p className="text-gray-500 text-xs mb-1">Active Scans</p>
-                  <p className="text-yellow-400 text-lg font-bold">{selectedAgent.active_scans}</p>
-                </div>
-                <div className="bg-gray-800/50 rounded-lg p-3">
-                  <p className="text-gray-500 text-xs mb-1">Total Scans</p>
-                  <p className="text-purple-400 text-lg font-bold">{selectedAgent.total_scans}</p>
-                </div>
-              </div>
-            </div>
-
-            {/* Actions */}
-            <div className="mt-6 space-y-3">
-              <button onClick={() => testConnection(selectedAgent.id)} disabled={testingConnection} className="w-full py-2.5 bg-cyan-600 hover:bg-cyan-700 text-white rounded-lg font-medium transition disabled:opacity-50">
-                {testingConnection ? 'Testing...' : 'Test Connection'}
-              </button>
-              {testResult && <div className={`p-3 rounded-lg text-sm ${testResult.success ? 'bg-green-900/30 text-green-400' : 'bg-red-900/30 text-red-400'}`}>{testResult.message}</div>}
-              <button onClick={() => setShowEditModal(true)} className="w-full py-2.5 bg-gray-800 hover:bg-gray-700 text-white rounded-lg font-medium transition">Edit</button>
-              <button onClick={() => deleteAgent(selectedAgent.id)} className="w-full py-2.5 bg-red-600/20 hover:bg-red-600/30 text-red-400 rounded-lg font-medium transition border border-red-500/20">Delete Agent</button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Edit Modal */}
-      {showEditModal && selectedAgent && (
-        <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-          <div className="bg-gray-900 rounded-2xl max-w-lg w-full border border-gray-700 shadow-2xl max-h-[90vh] overflow-y-auto">
-            <div className="p-6 border-b border-gray-700"><h2 className="text-xl font-bold text-white">Edit Agent</h2></div>
-            <div className="p-6 space-y-4">
-              <div>
-                <label className="block text-gray-400 text-sm mb-2">Agent Name</label>
-                <input type="text" value={selectedAgent.name} onChange={(e) => setSelectedAgent({...selectedAgent, name: e.target.value})} className="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2.5 text-white focus:border-kali-blue focus:outline-none" />
-              </div>
-
-              {/* Connection Type */}
-              <div>
-                <label className="block text-gray-400 text-sm mb-2">Network Mode</label>
-                <select
-                  value={selectedAgent.connection_type}
-                  onChange={(e) => setSelectedAgent({...selectedAgent, connection_type: e.target.value as ConnectionType})}
-                  className="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2.5 text-white focus:border-kali-blue focus:outline-none"
-                >
-                  {Object.entries(NETWORK_MODES).map(([key, mode]) => (
-                    <option key={key} value={key}>{mode.emoji} {mode.name}</option>
-                  ))}
-                </select>
-              </div>
-
-              {/* SSH Configuration - always shown for agent types */}
-              <div className="border border-gray-700 rounded-lg p-4 space-y-3">
-                <h3 className="text-white text-sm font-medium flex items-center gap-2">
-                  <svg className="w-4 h-4 text-cyan-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" /></svg>
-                  SSH Connection
-                </h3>
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                  <div className="col-span-2">
-                    <label className="block text-gray-400 text-xs mb-1">Host / IP</label>
-                    <input type="text" value={selectedAgent.ssh_host || ''} onChange={(e) => setSelectedAgent({...selectedAgent, ssh_host: e.target.value})} placeholder="192.168.1.100" className="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-white text-sm focus:border-kali-blue focus:outline-none" />
-                  </div>
-                  <div>
-                    <label className="block text-gray-400 text-xs mb-1">Port</label>
-                    <input type="number" value={selectedAgent.ssh_port || 22} onChange={(e) => setSelectedAgent({...selectedAgent, ssh_port: parseInt(e.target.value)})} className="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-white text-sm focus:border-kali-blue focus:outline-none" />
-                  </div>
-                </div>
-                <div>
-                  <label className="block text-gray-400 text-xs mb-1">Username</label>
-                  <input type="text" value={selectedAgent.ssh_username || ''} onChange={(e) => setSelectedAgent({...selectedAgent, ssh_username: e.target.value})} placeholder="root" className="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-white text-sm focus:border-kali-blue focus:outline-none" />
-                </div>
-                <div>
-                  <label className="block text-gray-400 text-xs mb-1">Password</label>
-                  <input type="password" value={(selectedAgent as Agent & { ssh_password?: string }).ssh_password || ''} onChange={(e) => setSelectedAgent({...selectedAgent, ssh_password: e.target.value} as Agent)} placeholder="Leave empty to keep existing" className="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-white text-sm focus:border-kali-blue focus:outline-none" />
-                </div>
-                <div>
-                  <label className="block text-gray-400 text-xs mb-1">SSH Key Path (optional)</label>
-                  <input type="text" value={(selectedAgent as Agent & { ssh_key_path?: string }).ssh_key_path || ''} onChange={(e) => setSelectedAgent({...selectedAgent, ssh_key_path: e.target.value} as Agent)} placeholder="/home/user/.ssh/id_rsa" className="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-white text-sm focus:border-kali-blue focus:outline-none" />
-                </div>
-
-                {/* Test Connection Button */}
-                <button
-                  onClick={() => testConnection(selectedAgent.id)}
-                  disabled={testingConnection || !selectedAgent.ssh_host}
-                  className="w-full py-2 bg-cyan-600/20 hover:bg-cyan-600/30 text-cyan-400 rounded-lg text-sm font-medium transition border border-cyan-600/30 disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center gap-2"
-                >
-                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" /></svg>
-                  {testingConnection ? 'Testing...' : 'Test Connection'}
-                </button>
-                {testResult && (
-                  <div className={`p-2 rounded-lg text-xs ${testResult.success ? 'bg-green-900/30 text-green-400' : 'bg-red-900/30 text-red-400'}`}>
-                    {testResult.message}
-                  </div>
-                )}
-              </div>
-
-              <div>
-                <label className="block text-gray-400 text-sm mb-2">Location</label>
-                <input type="text" value={selectedAgent.location || ''} onChange={(e) => setSelectedAgent({...selectedAgent, location: e.target.value})} placeholder="E.g.: Office, Home Lab, AWS EU" className="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2.5 text-white focus:border-kali-blue focus:outline-none" />
-              </div>
-            </div>
-            <div className="p-6 border-t border-gray-700 flex justify-end gap-3">
-              <button onClick={() => { setShowEditModal(false); setSelectedAgent(null); setTestResult(null); }} className="px-4 py-2 text-gray-400 hover:text-white transition">Cancel</button>
-              <button onClick={updateAgent} className="px-6 py-2 bg-gradient-to-r from-kali-blue to-cyan-600 text-white rounded-lg font-medium transition shadow-lg shadow-kali-blue/20">Save</button>
-            </div>
-          </div>
-        </div>
-      )}
+      {showPercent && <span className="text-gray-400 w-8 text-right">{Math.round(value)}%</span>}
     </div>
-    </PageTransition>
   );
 }
 
-// ── Agent Card Component ─────────────────────────────
-function AgentCard({ 
-  agent, 
-  onSelect, 
-  onTestConnection,
-  testingConnection,
-  getStatusDot, 
-  getPlatformIcon, 
-  getCpuColor, 
-  getMemColor 
-}: { 
-  agent: Agent;
-  onSelect: () => void;
-  onTestConnection: () => void;
-  testingConnection: boolean;
-  getStatusDot: (s: AgentStatus) => string;
-  getPlatformIcon: (p: AgentPlatform) => string;
-  getCpuColor: (n: number) => string;
-  getMemColor: (n: number) => string;
+function WizardInput({ label, placeholder, value, onChange, type = 'text' }: {
+  label: string; placeholder: string; value: string; onChange: (v: string) => void; type?: string;
 }) {
   return (
-    <div 
-      onClick={onSelect}
-      className="bg-gray-800/50 rounded-xl p-4 border border-gray-700 hover:border-gray-500 transition-all cursor-pointer group hover:shadow-lg hover:shadow-black/20"
-    >
+    <div>
+      <label className="block text-xs text-gray-400 mb-1.5">{label}</label>
+      <input type={type} value={value} onChange={e => onChange(e.target.value)} placeholder={placeholder}
+        className="w-full px-3 py-2 rounded-lg bg-gray-900 border border-gray-700 text-sm text-white placeholder-gray-600 focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500/30 focus:outline-none transition-all" />
+    </div>
+  );
+}
+
+function ReviewRow({ label, value, mono }: { label: string; value: string; mono?: boolean }) {
+  return (
+    <div className="flex justify-between text-xs">
+      <span className="text-gray-500">{label}</span>
+      <span className={'text-white ' + (mono ? 'font-mono' : '')}>{value}</span>
+    </div>
+  );
+}
+
+function DetailSection({ title, children }: { title: string; children: React.ReactNode }) {
+  return (
+    <div>
+      <h4 className="text-[10px] font-bold uppercase tracking-wider text-gray-600 mb-2">{title}</h4>
+      <div className="space-y-1.5">{children}</div>
+    </div>
+  );
+}
+
+function DetailRow({ label, value, mono }: { label: string; value: string; mono?: boolean }) {
+  return (
+    <div className="flex justify-between text-xs">
+      <span className="text-gray-500">{label}</span>
+      <span className={'text-gray-300 ' + (mono ? 'font-mono' : '')}>{value}</span>
+    </div>
+  );
+}
+
+function StatBadge({ label, value, color }: { label: string; value: number; color?: string }) {
+  const colorMap: Record<string, string> = {
+    emerald: 'text-emerald-400', gray: 'text-gray-400', amber: 'text-amber-400',
+    blue: 'text-blue-400', cyan: 'text-cyan-400', violet: 'text-violet-400',
+  };
+  const textColor = color ? (colorMap[color] || 'text-white') : 'text-white';
+  return (
+    <div className="flex items-center gap-1.5 flex-shrink-0">
+      <span className={'text-sm font-bold ' + textColor}>{value}</span>
+      <span className="text-[10px] text-gray-500 uppercase tracking-wider">{label}</span>
+    </div>
+  );
+}
+
+/* ═══════════════════════════════════════════════════════════
+   AGENT CARD
+   ═══════════════════════════════════════════════════════════ */
+
+function AgentCard({ agent, onSelect, onTest, isSelected, isTesting }: {
+  agent: Agent; onSelect: () => void; onTest: () => void; isSelected: boolean; isTesting: boolean;
+}) {
+  const status = STATUS_CONFIG[agent.status] || STATUS_CONFIG.offline;
+  const icon = PLATFORM_ICONS[agent.platform] || PLATFORM_ICONS.unknown;
+  const timeSince = agent.last_heartbeat ? formatTimeSince(agent.last_heartbeat) : 'Never';
+
+  return (
+    <motion.div layout initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, scale: 0.95 }}
+      whileHover={{ y: -2 }} onClick={onSelect}
+      className={'relative cursor-pointer rounded-xl border p-4 transition-all duration-200 ' +
+        (isSelected ? 'border-cyan-500/60 bg-cyan-500/5 shadow-lg shadow-cyan-500/10' : 'border-gray-800 bg-gray-900/60 hover:border-gray-700 hover:bg-gray-900/80')}>
+      {/* Status */}
+      <div className="absolute top-3 right-3 flex items-center gap-1.5">
+        <span className={'h-2 w-2 rounded-full ' + status.dot + (agent.status === 'online' ? ' animate-pulse' : '')} />
+        <span className={'text-[10px] font-medium uppercase tracking-wider ' + status.color}>{status.label}</span>
+      </div>
+
       {/* Header */}
-      <div className="flex items-start justify-between mb-3">
-        <div className="flex items-center gap-3">
-          <span className="text-2xl">{getPlatformIcon(agent.platform)}</span>
-          <div>
-            <h3 className="text-white font-medium group-hover:text-kali-blue transition">{agent.name}</h3>
-            <p className="text-gray-500 text-xs font-mono">{agent.hostname || 'pending-registration'}</p>
-          </div>
-        </div>
-        <div className="flex items-center gap-2">
-          <div className={getStatusDot(agent.status)} />
-          <span className="text-xs text-gray-500 uppercase font-medium">{agent.status}</span>
+      <div className="flex items-center gap-3 mb-3">
+        <div className="flex-shrink-0 w-10 h-10 rounded-lg bg-gray-800 flex items-center justify-center text-lg">{icon}</div>
+        <div className="min-w-0">
+          <h3 className="text-sm font-semibold text-white truncate">{agent.name}</h3>
+          <p className="text-[11px] text-gray-500 truncate">{agent.hostname || agent.ip_address || 'No host'}</p>
         </div>
       </div>
 
-      {/* IP & OS */}
-      <div className="space-y-1.5 text-sm mb-3">
-        <div className="flex justify-between">
-          <span className="text-gray-500 text-xs">IP</span>
-          <span className="text-cyan-400 font-mono text-xs">{agent.ip_address || 'N/A'}</span>
-        </div>
-        <div className="flex justify-between">
-          <span className="text-gray-500 text-xs">OS</span>
-          <span className="text-gray-300 text-xs truncate max-w-[180px]">{agent.os || 'Awaiting...'}</span>
-        </div>
+      {/* Info */}
+      <div className="grid grid-cols-2 gap-x-4 gap-y-1 mb-3">
+        <div className="flex justify-between text-[11px]"><span className="text-gray-500">IP</span><span className="text-gray-300 font-mono">{agent.ip_address || 'N/A'}</span></div>
+        <div className="flex justify-between text-[11px]"><span className="text-gray-500">OS</span><span className="text-gray-300 truncate ml-1">{agent.os || agent.platform}</span></div>
+        <div className="flex justify-between text-[11px]"><span className="text-gray-500">Port</span><span className="text-gray-300 font-mono">{agent.ssh_port || 22}</span></div>
+        <div className="flex justify-between text-[11px]"><span className="text-gray-500">Seen</span><span className="text-gray-300">{timeSince}</span></div>
       </div>
 
-      {/* CPU & RAM Mini Bars */}
-      {agent.status !== 'pending' && (
-        <div className="space-y-2 mb-3">
-          <div className="flex items-center gap-2">
-            <span className="text-gray-500 text-[10px] w-8">CPU</span>
-            <div className="flex-1 bg-gray-700 rounded-full h-1.5">
-              <div className={`h-1.5 rounded-full transition-all ${getCpuColor(agent.cpu_usage)}`} style={{ width: `${Math.min(agent.cpu_usage, 100)}%` }} />
-            </div>
-            <span className="text-gray-400 text-[10px] font-mono w-8 text-right">{agent.cpu_usage}%</span>
-          </div>
-          <div className="flex items-center gap-2">
-            <span className="text-gray-500 text-[10px] w-8">RAM</span>
-            <div className="flex-1 bg-gray-700 rounded-full h-1.5">
-              <div className={`h-1.5 rounded-full transition-all ${getMemColor(agent.memory_usage)}`} style={{ width: `${Math.min(agent.memory_usage, 100)}%` }} />
-            </div>
-            <span className="text-gray-400 text-[10px] font-mono w-8 text-right">{agent.memory_usage}%</span>
-          </div>
+      {/* Resource bars */}
+      {agent.status === 'online' && (
+        <div className="space-y-1.5 mb-3">
+          <ResourceBar label="CPU" value={agent.cpu_usage} color="cyan" />
+          <ResourceBar label="RAM" value={agent.memory_usage} color="violet" />
         </div>
       )}
 
-      {/* Footer */}
-      <div className="pt-3 border-t border-gray-700/50 space-y-2">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            {agent.active_scans > 0 && (
-              <span className="text-yellow-400 text-xs flex items-center gap-1">
-                <svg className="w-3 h-3 animate-spin" fill="none" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path></svg>
-                {agent.active_scans} active
-              </span>
+      {/* Scans */}
+      <div className="flex items-center justify-between text-[11px] text-gray-500">
+        <span>{agent.total_scans} scans</span>
+        {agent.active_scans > 0 && <span className="text-amber-400 font-medium">{agent.active_scans} active</span>}
+      </div>
+
+      {/* Test button */}
+      <button onClick={e => { e.stopPropagation(); onTest(); }} disabled={isTesting}
+        className="mt-3 w-full py-1.5 rounded-lg text-xs font-medium border transition-all border-cyan-500/30 text-cyan-400 hover:bg-cyan-500/10 hover:border-cyan-500/50 disabled:opacity-50 disabled:cursor-not-allowed">
+        {isTesting ? (
+          <span className="flex items-center justify-center gap-1.5">
+            <span className="h-3 w-3 border-2 border-cyan-400 border-t-transparent rounded-full animate-spin" />Connecting...</span>
+        ) : (
+          <span className="flex items-center justify-center gap-1.5">{'\u26A1'} Test Connection</span>
+        )}
+      </button>
+    </motion.div>
+  );
+}
+
+/* ═══════════════════════════════════════════════════════════
+   ADD DEVICE WIZARD
+   ═══════════════════════════════════════════════════════════ */
+
+function AddDeviceWizard({ onClose, onCreate }: { onClose: () => void; onCreate: (data: Record<string, unknown>) => void }) {
+  const [step, setStep] = useState<WizardStep>('type');
+  const [connType, setConnType] = useState('ssh');
+  const [form, setForm] = useState({
+    name: '', ssh_host: '', ssh_port: 22, ssh_username: 'root', ssh_password: '',
+    platform: 'linux', network_zone: 'internal', location: '',
+  });
+
+  const updateForm = (key: string, value: string | number) => setForm(prev => ({ ...prev, [key]: value }));
+
+  const steps: { id: WizardStep; label: string; num: number }[] = [
+    { id: 'type', label: 'Connection', num: 1 },
+    { id: 'connection', label: 'Host Details', num: 2 },
+    { id: 'credentials', label: 'Credentials', num: 3 },
+    { id: 'review', label: 'Confirm', num: 4 },
+  ];
+
+  const canNext = () => {
+    if (step === 'type') return true;
+    if (step === 'connection') return form.ssh_host.trim().length > 0 && form.name.trim().length > 0;
+    if (step === 'credentials') return form.ssh_username.trim().length > 0;
+    return true;
+  };
+
+  const handleNext = () => { const idx = steps.findIndex(s => s.id === step); if (idx < steps.length - 1) setStep(steps[idx + 1].id); };
+  const handleBack = () => { const idx = steps.findIndex(s => s.id === step); if (idx > 0) setStep(steps[idx - 1].id); };
+
+  const handleCreate = () => {
+    onCreate({
+      name: form.name, connection_type: connType, ssh_host: form.ssh_host, ssh_port: form.ssh_port,
+      ssh_username: form.ssh_username, ssh_password: form.ssh_password, platform: form.platform,
+      network_zone: form.network_zone, location: form.location,
+    });
+  };
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm" onClick={onClose}>
+      <motion.div initial={{ opacity: 0, scale: 0.95, y: 20 }} animate={{ opacity: 1, scale: 1, y: 0 }}
+        exit={{ opacity: 0, scale: 0.95, y: 20 }} onClick={e => e.stopPropagation()}
+        className="w-full max-w-lg bg-gray-950 border border-gray-800 rounded-2xl shadow-2xl overflow-hidden">
+
+        {/* Header */}
+        <div className="px-6 py-4 border-b border-gray-800 flex items-center justify-between">
+          <div><h2 className="text-lg font-bold text-white">Add Device</h2>
+            <p className="text-xs text-gray-500 mt-0.5">Connect a new device to your security network</p></div>
+          <button onClick={onClose} className="text-gray-500 hover:text-gray-300 text-xl">{'\u2715'}</button>
+        </div>
+
+        {/* Step indicator */}
+        <div className="px-6 pt-4 flex items-center gap-1">
+          {steps.map((s, i) => (
+            <div key={s.id} className="flex items-center flex-1">
+              <div className={'flex items-center justify-center w-6 h-6 rounded-full text-[10px] font-bold transition-all ' +
+                (step === s.id ? 'bg-cyan-500 text-white' :
+                  steps.findIndex(x => x.id === step) > i ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30' :
+                  'bg-gray-800 text-gray-500')}>
+                {steps.findIndex(x => x.id === step) > i ? '\u2713' : s.num}
+              </div>
+              <span className={'ml-1.5 text-[10px] font-medium ' + (step === s.id ? 'text-cyan-400' : 'text-gray-600')}>{s.label}</span>
+              {i < steps.length - 1 && <div className="flex-1 h-px bg-gray-800 mx-2" />}
+            </div>
+          ))}
+        </div>
+
+        {/* Content */}
+        <div className="px-6 py-5 min-h-[280px]">
+          <AnimatePresence mode="wait">
+            {step === 'type' && (
+              <motion.div key="type" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} className="space-y-2">
+                {CONNECTION_TYPES.map(ct => (
+                  <button key={ct.id} onClick={() => setConnType(ct.id)}
+                    className={'w-full flex items-center gap-3 p-3 rounded-xl border transition-all text-left ' +
+                      (connType === ct.id ? 'border-cyan-500/50 bg-cyan-500/5' : 'border-gray-800 bg-gray-900/50 hover:border-gray-700')}>
+                    <span className="text-2xl w-8">{ct.icon}</span>
+                    <div className="flex-1 min-w-0">
+                      <div className="text-sm font-semibold text-white">{ct.name}</div>
+                      <div className="text-[11px] text-gray-500 truncate">{ct.desc}</div>
+                    </div>
+                    {connType === ct.id && <span className="text-cyan-400">{'\u2713'}</span>}
+                  </button>
+                ))}
+              </motion.div>
             )}
-            <span className="text-gray-600 text-xs">{agent.total_scans} scans</span>
-          </div>
-          {agent.last_seen && (
-            <span className="text-gray-600 text-[10px]">{agent.last_seen}</span>
+
+            {step === 'connection' && (
+              <motion.div key="conn" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} className="space-y-4">
+                <WizardInput label="Device Name" placeholder="e.g. Production Server" value={form.name} onChange={v => updateForm('name', v)} />
+                <div className="grid grid-cols-3 gap-3">
+                  <div className="col-span-2"><WizardInput label="Host / IP" placeholder="10.0.0.115 or hostname" value={form.ssh_host} onChange={v => updateForm('ssh_host', v)} /></div>
+                  <WizardInput label="Port" placeholder="22" value={String(form.ssh_port)} onChange={v => updateForm('ssh_port', parseInt(v) || 22)} type="number" />
+                </div>
+                <div>
+                  <label className="block text-xs text-gray-400 mb-2">Platform</label>
+                  <div className="flex gap-2 flex-wrap">
+                    {['linux', 'windows', 'macos', 'router', 'firewall', 'docker'].map(p => (
+                      <button key={p} onClick={() => updateForm('platform', p)}
+                        className={'flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium border transition-all ' +
+                          (form.platform === p ? 'border-cyan-500/50 bg-cyan-500/10 text-cyan-400' : 'border-gray-800 text-gray-400 hover:border-gray-700')}>
+                        <span>{PLATFORM_ICONS[p]}</span><span className="capitalize">{p}</span>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+                <WizardInput label="Location (optional)" placeholder="e.g. Office HQ, DC-1, Cloud-EU" value={form.location} onChange={v => updateForm('location', v)} />
+              </motion.div>
+            )}
+
+            {step === 'credentials' && (
+              <motion.div key="cred" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} className="space-y-4">
+                <WizardInput label="Username" placeholder="root" value={form.ssh_username} onChange={v => updateForm('ssh_username', v)} />
+                <WizardInput label="Password" placeholder="password" value={form.ssh_password} onChange={v => updateForm('ssh_password', v)} type="password" />
+                <div className="p-3 rounded-lg bg-blue-500/5 border border-blue-500/20">
+                  <p className="text-[11px] text-blue-400">{'\u{1F512}'} Password is encrypted with AES-256-GCM before storage. SSH key auth coming soon.</p>
+                </div>
+              </motion.div>
+            )}
+
+            {step === 'review' && (
+              <motion.div key="review" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} className="space-y-3">
+                <div className="rounded-xl bg-gray-900 border border-gray-800 p-4 space-y-2">
+                  <ReviewRow label="Name" value={form.name} />
+                  <ReviewRow label="Type" value={CONNECTION_TYPES.find(c => c.id === connType)?.name || connType} />
+                  <ReviewRow label="Host" value={form.ssh_host + ':' + form.ssh_port} mono />
+                  <ReviewRow label="Username" value={form.ssh_username} mono />
+                  <ReviewRow label="Password" value={form.ssh_password ? '\u2022\u2022\u2022\u2022\u2022\u2022\u2022\u2022' : 'Not set'} />
+                  <ReviewRow label="Platform" value={(PLATFORM_ICONS[form.platform] || '') + ' ' + form.platform} />
+                  {form.location && <ReviewRow label="Location" value={form.location} />}
+                </div>
+                <p className="text-[11px] text-gray-500 text-center">After creating, use "Test Connection" to verify SSH access and auto-detect system info.</p>
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </div>
+
+        {/* Footer */}
+        <div className="px-6 py-4 border-t border-gray-800 flex items-center justify-between">
+          <button onClick={step === 'type' ? onClose : handleBack}
+            className="px-4 py-2 text-xs font-medium text-gray-400 hover:text-white transition-colors">
+            {step === 'type' ? 'Cancel' : '\u2190 Back'}
+          </button>
+          {step === 'review' ? (
+            <button onClick={handleCreate}
+              className="px-6 py-2 rounded-lg text-xs font-bold bg-cyan-500 text-gray-950 hover:bg-cyan-400 transition-colors shadow-lg shadow-cyan-500/20">
+              Create Device
+            </button>
+          ) : (
+            <button onClick={handleNext} disabled={!canNext()}
+              className="px-5 py-2 rounded-lg text-xs font-medium bg-gray-800 text-white hover:bg-gray-700 transition-colors disabled:opacity-40">
+              Next {'\u2192'}
+            </button>
           )}
         </div>
-        {/* Quick Actions on Card */}
-        <button 
-          onClick={(e) => { e.stopPropagation(); onTestConnection(); }}
-          disabled={testingConnection}
-          className="w-full py-1.5 bg-cyan-600/10 hover:bg-cyan-600/20 text-cyan-400 rounded-lg text-xs font-medium transition border border-cyan-600/20 disabled:opacity-50 flex items-center justify-center gap-1.5"
-        >
-          <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" /></svg>
-          {testingConnection ? 'Testing...' : 'Test Connection'}
+      </motion.div>
+    </div>
+  );
+}
+
+/* ═══════════════════════════════════════════════════════════
+   DEVICE DETAIL PANEL
+   ═══════════════════════════════════════════════════════════ */
+
+function DeviceDetail({ agent, testResult, isTesting, onTest, onDelete, onClose }: {
+  agent: Agent; testResult: TestResult | null; isTesting: boolean; onTest: () => void; onDelete: () => void; onClose: () => void;
+}) {
+  const status = STATUS_CONFIG[agent.status] || STATUS_CONFIG.offline;
+  const icon = PLATFORM_ICONS[agent.platform] || '\u2753';
+
+  return (
+    <motion.div initial={{ opacity: 0, x: 30 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 30 }} className="h-full flex flex-col">
+      {/* Header */}
+      <div className="px-5 py-4 border-b border-gray-800 flex items-center justify-between">
+        <div className="flex items-center gap-3">
+          <span className="text-2xl">{icon}</span>
+          <div><h3 className="text-sm font-bold text-white">{agent.name}</h3>
+            <p className="text-[11px] text-gray-500">{agent.hostname || 'No hostname'}</p></div>
+        </div>
+        <button onClick={onClose} className="text-gray-500 hover:text-gray-300">{'\u2715'}</button>
+      </div>
+
+      <div className="flex-1 overflow-y-auto px-5 py-4 space-y-4">
+        <div className={'inline-flex items-center gap-2 px-3 py-1.5 rounded-full border text-xs font-medium ' + status.bg + ' ' + status.color}>
+          <span className={'h-2 w-2 rounded-full ' + status.dot + (agent.status === 'online' ? ' animate-pulse' : '')} />{status.label}
+        </div>
+
+        <DetailSection title="Connection">
+          <DetailRow label="Host / IP" value={agent.ip_address || 'N/A'} mono />
+          <DetailRow label="SSH Port" value={String(agent.ssh_port || 22)} mono />
+          <DetailRow label="Username" value={agent.ssh_username || 'N/A'} mono />
+          <DetailRow label="Type" value={agent.connection_type || 'SSH'} />
+          {agent.location && <DetailRow label="Location" value={agent.location} />}
+        </DetailSection>
+
+        <DetailSection title="System">
+          <DetailRow label="OS" value={agent.os || 'Unknown'} />
+          <DetailRow label="Platform" value={icon + ' ' + agent.platform} />
+          <DetailRow label="Version" value={agent.version || 'N/A'} />
+          <DetailRow label="Last Seen" value={agent.last_heartbeat ? formatTimeSince(agent.last_heartbeat) : 'Never'} />
+        </DetailSection>
+
+        {agent.status === 'online' && (
+          <DetailSection title="Resources">
+            <ResourceBar label="CPU" value={agent.cpu_usage} color="cyan" showPercent />
+            <ResourceBar label="Memory" value={agent.memory_usage} color="violet" showPercent />
+          </DetailSection>
+        )}
+
+        <DetailSection title="Scanning">
+          <DetailRow label="Active Scans" value={String(agent.active_scans)} />
+          <DetailRow label="Total Scans" value={String(agent.total_scans)} />
+        </DetailSection>
+
+        {/* Test Results Display */}
+        {testResult && (
+          <DetailSection title="Connection Test">
+            {testResult.success ? (
+              <div className="space-y-2">
+                <div className="flex items-center gap-2 text-emerald-400 text-xs font-medium">
+                  <span className="h-2 w-2 rounded-full bg-emerald-400" /> Connected Successfully
+                </div>
+                {testResult.connection && (
+                  <div className="text-[11px] space-y-1 text-gray-400">
+                    <p>Latency: <span className="text-white font-mono">{testResult.connection.latency_ms.toFixed(1)}ms</span></p>
+                    {testResult.connection.ssh_banner && <p className="font-mono text-[10px] text-gray-600 truncate">{testResult.connection.ssh_banner}</p>}
+                  </div>
+                )}
+                {testResult.system && (
+                  <div className="mt-2 p-3 rounded-lg bg-gray-900 border border-gray-800 text-[11px] space-y-1">
+                    {testResult.system.hostname && <p className="text-gray-400">Hostname: <span className="text-white">{testResult.system.hostname}</span></p>}
+                    {testResult.system.os && <p className="text-gray-400">OS: <span className="text-white">{testResult.system.os}</span></p>}
+                    {testResult.system.kernel && <p className="text-gray-400">Kernel: <span className="text-white font-mono">{testResult.system.kernel}</span></p>}
+                    {testResult.system.uptime && <p className="text-gray-400">Uptime: <span className="text-white">{testResult.system.uptime}</span></p>}
+                    {testResult.system.cpu_cores > 0 && <p className="text-gray-400">CPU Cores: <span className="text-white">{testResult.system.cpu_cores}</span></p>}
+                    {testResult.system.memory_total_mb > 0 && (<p className="text-gray-400">Memory: <span className="text-white">{testResult.system.memory_used_mb}MB / {testResult.system.memory_total_mb}MB</span></p>)}
+                    {testResult.system.disk_total_gb > 0 && (<p className="text-gray-400">Disk: <span className="text-white">{testResult.system.disk_used_gb}GB / {testResult.system.disk_total_gb}GB</span></p>)}
+                    {testResult.system.ip_addresses && testResult.system.ip_addresses.length > 0 && (
+                      <p className="text-gray-400">IPs: <span className="text-white font-mono">{testResult.system.ip_addresses.join(', ')}</span></p>
+                    )}
+                  </div>
+                )}
+              </div>
+            ) : (
+              <div className="space-y-2">
+                <div className="flex items-center gap-2 text-red-400 text-xs font-medium">
+                  <span className="h-2 w-2 rounded-full bg-red-400" /> Connection Failed
+                </div>
+                <p className="text-[11px] text-red-400/80">{testResult.error}</p>
+                {testResult.diagnostics && (
+                  <div className="p-3 rounded-lg bg-red-500/5 border border-red-500/20 text-[11px]">
+                    <p className="text-gray-400">Port reachable: <span className={testResult.diagnostics.tcp_port_reachable ? 'text-emerald-400' : 'text-red-400'}>{testResult.diagnostics.tcp_port_reachable ? 'Yes' : 'No'}</span></p>
+                    <p className="text-yellow-400/80 mt-1">{'\u{1F4A1}'} {testResult.diagnostics.hint}</p>
+                  </div>
+                )}
+              </div>
+            )}
+          </DetailSection>
+        )}
+      </div>
+
+      {/* Actions */}
+      <div className="px-5 py-4 border-t border-gray-800 space-y-2">
+        <button onClick={onTest} disabled={isTesting}
+          className="w-full py-2.5 rounded-lg text-xs font-bold bg-cyan-500 text-gray-950 hover:bg-cyan-400 transition-all shadow-lg shadow-cyan-500/20 disabled:opacity-50">
+          {isTesting ? '\u23F3 Testing...' : '\u26A1 Test Connection'}
+        </button>
+        <button onClick={onDelete}
+          className="w-full py-2 rounded-lg text-xs font-medium border border-red-500/30 text-red-400 hover:bg-red-500/10 transition-all">
+          Delete Device
         </button>
       </div>
+    </motion.div>
+  );
+}
+
+/* ═══════════════════════════════════════════════════════════
+   NETWORK DISCOVERY PANEL
+   ═══════════════════════════════════════════════════════════ */
+
+function NetworkDiscovery({ onClose }: { onClose: () => void }) {
+  const { token } = useAuth();
+  const [subnet, setSubnet] = useState('10.0.0.0/24');
+  const [scanning, setScanning] = useState(false);
+  const [results, setResults] = useState<any[]>([]);
+  const [error, setError] = useState('');
+
+  const doScan = async () => {
+    setScanning(true); setError(''); setResults([]);
+    try {
+      const res = await fetch('/api/v1/agents/discover', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+        body: JSON.stringify({ subnet, timeout_ms: 2000 }),
+      });
+      const data = await res.json();
+      if (data.success) { setResults(data.hosts || []); }
+      else { setError(data.error || 'Discovery failed'); }
+    } catch (e: any) { setError(e.message || 'Network error'); }
+    finally { setScanning(false); }
+  };
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm" onClick={onClose}>
+      <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.95 }}
+        onClick={e => e.stopPropagation()}
+        className="w-full max-w-2xl max-h-[80vh] bg-gray-950 border border-gray-800 rounded-2xl shadow-2xl flex flex-col overflow-hidden">
+        <div className="px-6 py-4 border-b border-gray-800 flex items-center justify-between">
+          <div><h2 className="text-lg font-bold text-white">{'\u{1F50D}'} Network Discovery</h2>
+            <p className="text-xs text-gray-500">Scan a subnet to find devices</p></div>
+          <button onClick={onClose} className="text-gray-500 hover:text-gray-300 text-xl">{'\u2715'}</button>
+        </div>
+
+        <div className="px-6 py-4 border-b border-gray-800 flex gap-3">
+          <input type="text" value={subnet} onChange={e => setSubnet(e.target.value)} placeholder="10.0.0.0/24"
+            className="flex-1 px-3 py-2 rounded-lg bg-gray-900 border border-gray-700 text-sm text-white font-mono focus:border-cyan-500 focus:outline-none" />
+          <button onClick={doScan} disabled={scanning}
+            className="px-5 py-2 rounded-lg text-xs font-bold bg-cyan-500 text-gray-950 hover:bg-cyan-400 disabled:opacity-50 transition-all">
+            {scanning ? '\u23F3 Scanning...' : '\u{1F50D} Scan'}
+          </button>
+        </div>
+
+        <div className="flex-1 overflow-y-auto px-6 py-4">
+          {error && <p className="text-red-400 text-sm mb-3">{error}</p>}
+          {results.length > 0 ? (
+            <div className="space-y-2">
+              <p className="text-xs text-gray-500 mb-2">{results.length} devices found</p>
+              {results.map((host: any, i: number) => (
+                <div key={i} className="flex items-center gap-3 p-3 rounded-lg bg-gray-900 border border-gray-800 hover:border-gray-700 transition-all">
+                  <span className="text-lg">{PLATFORM_ICONS[host.device_type] || '\u2753'}</span>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2">
+                      <span className="text-sm font-mono text-white">{host.ip}</span>
+                      {host.hostname && <span className="text-xs text-gray-500">({host.hostname})</span>}
+                    </div>
+                    <div className="flex items-center gap-2 mt-0.5">
+                      {host.os_guess && <span className="text-[10px] text-gray-400">{host.os_guess}</span>}
+                      <span className="text-[10px] text-gray-600">{host.latency_ms?.toFixed(0)}ms</span>
+                    </div>
+                  </div>
+                  <div className="flex gap-1 flex-wrap justify-end">
+                    {host.open_ports?.map((p: any) => (
+                      <span key={p.port} className="px-1.5 py-0.5 rounded text-[9px] font-mono bg-gray-800 text-gray-400 border border-gray-700">
+                        {p.port}/{p.service}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : !scanning && (
+            <div className="text-center py-12 text-gray-600 text-sm">Enter a subnet and click Scan to discover devices</div>
+          )}
+          {scanning && (
+            <div className="text-center py-12">
+              <div className="h-8 w-8 border-2 border-cyan-500 border-t-transparent rounded-full animate-spin mx-auto mb-3" />
+              <p className="text-sm text-gray-400">Scanning {subnet}...</p>
+              <p className="text-xs text-gray-600 mt-1">This may take a moment</p>
+            </div>
+          )}
+        </div>
+      </motion.div>
     </div>
+  );
+}
+
+/* ═══════════════════════════════════════════════════════════
+   DEVICE GROUP
+   ═══════════════════════════════════════════════════════════ */
+
+function DeviceGroup({ title, count, color, agents, selectedId, testingId, onSelect, onTest }: {
+  title: string; count: number; color: string; agents: Agent[];
+  selectedId: string | null; testingId: string | null;
+  onSelect: (id: string) => void; onTest: (id: string) => void;
+}) {
+  const dotColor: Record<string, string> = {
+    emerald: 'bg-emerald-400', amber: 'bg-amber-400', blue: 'bg-blue-400',
+    gray: 'bg-gray-500', red: 'bg-red-400', cyan: 'bg-cyan-400',
+  };
+  return (
+    <div>
+      <div className="flex items-center gap-2 mb-3">
+        <span className={'h-2 w-2 rounded-full ' + (dotColor[color] || 'bg-gray-500')} />
+        <h2 className="text-xs font-bold uppercase tracking-wider text-gray-400">{title}</h2>
+        <span className="text-[10px] text-gray-600">({count})</span>
+      </div>
+      <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-3">
+        {agents.map(agent => (
+          <AgentCard key={agent.id} agent={agent} isSelected={selectedId === agent.id} isTesting={testingId === agent.id}
+            onSelect={() => onSelect(agent.id)} onTest={() => onTest(agent.id)} />
+        ))}
+      </div>
+    </div>
+  );
+}
+
+/* ═══════════════════════════════════════════════════════════
+   EMPTY STATE
+   ═══════════════════════════════════════════════════════════ */
+
+function EmptyState({ onAdd, onDiscover }: { onAdd: () => void; onDiscover: () => void }) {
+  return (
+    <div className="flex items-center justify-center h-full min-h-[400px]">
+      <div className="text-center max-w-md">
+        <div className="text-5xl mb-4">{'\u{1F6E1}\uFE0F'}</div>
+        <h2 className="text-xl font-bold text-white mb-2">No Devices Connected</h2>
+        <p className="text-sm text-gray-500 mb-6">
+          Add your servers, workstations, and network devices to start scanning for vulnerabilities.
+          CyberSec Pro connects via SSH, WinRM, or SNMP — no agent installation required.
+        </p>
+        <div className="flex items-center justify-center gap-3">
+          <button onClick={onDiscover}
+            className="px-5 py-2.5 rounded-lg text-xs font-medium border border-gray-700 text-gray-300 hover:bg-gray-800 transition-all">
+            {'\u{1F50D}'} Discover Network
+          </button>
+          <button onClick={onAdd}
+            className="px-5 py-2.5 rounded-lg text-xs font-bold bg-cyan-500 text-gray-950 hover:bg-cyan-400 transition-all shadow-lg shadow-cyan-500/20">
+            + Add Your First Device
+          </button>
+        </div>
+        <div className="mt-8 grid grid-cols-3 gap-4 text-center">
+          <div><div className="text-2xl mb-1">{'\u{1F510}'}</div><p className="text-[11px] text-gray-500">AES-256 encrypted credentials</p></div>
+          <div><div className="text-2xl mb-1">{'\u26A1'}</div><p className="text-[11px] text-gray-500">Real SSH connection testing</p></div>
+          <div><div className="text-2xl mb-1">{'\u{1F310}'}</div><p className="text-[11px] text-gray-500">Subnet discovery scanning</p></div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* ═══════════════════════════════════════════════════════════
+   MAIN AGENTS PAGE
+   ═══════════════════════════════════════════════════════════ */
+
+export default function AgentsPage() {
+  useDocumentTitle('Devices \u2014 CyberSec Pro');
+  const { t } = useTranslation();
+  const toast = useToast();
+
+  const { data: dashboard, isLoading, isError } = useAgentsDashboard();
+  const createAgent = useCreateAgent();
+  const deleteAgent = useDeleteAgent();
+  const testAgent = useTestAgentConnection();
+
+  const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [showWizard, setShowWizard] = useState(false);
+  const [showDiscovery, setShowDiscovery] = useState(false);
+  const [testingId, setTestingId] = useState<string | null>(null);
+  const [testResults, setTestResults] = useState<Record<string, TestResult>>({});
+
+  const agents: Agent[] = (dashboard as any)?.agents || [];
+  const selectedAgent = agents.find(a => a.id === selectedId);
+
+  const online = agents.filter(a => a.status === 'online');
+  const offline = agents.filter(a => a.status === 'offline');
+  const pending = agents.filter(a => a.status === 'pending');
+  const busy = agents.filter(a => a.status === 'busy');
+  const errored = agents.filter(a => a.status === 'error');
+
+  const handleTest = useCallback(async (agentId: string) => {
+    setTestingId(agentId);
+    try {
+      const result = await testAgent.mutateAsync(agentId);
+      setTestResults(prev => ({ ...prev, [agentId]: result as unknown as TestResult }));
+      if ((result as any).success) { toast.success('Connection successful \u2014 system info updated'); }
+      else { toast.error((result as any).error || 'Connection failed'); }
+    } catch (e: any) { toast.error('Test failed: ' + (e.message || 'Unknown error')); }
+    finally { setTestingId(null); }
+  }, [testAgent, toast]);
+
+  const handleCreate = useCallback(async (data: Record<string, unknown>) => {
+    try {
+      await createAgent.mutateAsync(data);
+      toast.success('Device added successfully');
+      setShowWizard(false);
+    } catch (e: any) { toast.error('Failed to create device: ' + (e.message || 'Unknown error')); }
+  }, [createAgent, toast]);
+
+  const handleDelete = useCallback(async (agentId: string) => {
+    if (!confirm('Are you sure you want to delete this device?')) return;
+    try {
+      await deleteAgent.mutateAsync(agentId);
+      toast.success('Device deleted');
+      setSelectedId(null);
+    } catch (e: any) { toast.error('Failed to delete: ' + (e.message || 'Unknown error')); }
+  }, [deleteAgent, toast]);
+
+  if (isLoading) return <AgentsPageSkeleton />;
+  if (isError) return <div className="p-6 text-red-400">Failed to load devices dashboard</div>;
+
+  return (
+    <PageTransition>
+      <div className="h-full flex flex-col">
+        {/* Top Bar */}
+        <div className="px-6 py-4 border-b border-gray-800 flex items-center justify-between flex-shrink-0">
+          <div>
+            <h1 className="text-xl font-bold text-white">Devices</h1>
+            <p className="text-xs text-gray-500 mt-0.5">Manage your connected devices, servers, and network infrastructure</p>
+          </div>
+          <div className="flex items-center gap-2">
+            <button onClick={() => setShowDiscovery(true)}
+              className="px-4 py-2 rounded-lg text-xs font-medium border border-gray-700 text-gray-300 hover:bg-gray-800 transition-all">
+              {'\u{1F50D}'} Discover Network
+            </button>
+            <button onClick={() => setShowWizard(true)}
+              className="px-4 py-2 rounded-lg text-xs font-bold bg-cyan-500 text-gray-950 hover:bg-cyan-400 transition-all shadow-lg shadow-cyan-500/20">
+              + Add Device
+            </button>
+          </div>
+        </div>
+
+        {/* Stats Bar */}
+        <div className="px-6 py-3 border-b border-gray-800/50 flex items-center gap-3 flex-shrink-0 overflow-x-auto">
+          <StatBadge label="Total" value={(dashboard as any)?.total_agents || 0} />
+          <StatBadge label="Online" value={(dashboard as any)?.online || 0} color="emerald" />
+          <StatBadge label="Offline" value={(dashboard as any)?.offline || 0} color="gray" />
+          <StatBadge label="Scanning" value={(dashboard as any)?.busy || 0} color="amber" />
+          <StatBadge label="Pending" value={(dashboard as any)?.pending || 0} color="blue" />
+          <div className="h-4 w-px bg-gray-800" />
+          <StatBadge label="Active Scans" value={(dashboard as any)?.active_scans || 0} color="cyan" />
+          <StatBadge label="Total Scans" value={(dashboard as any)?.total_scans_completed || 0} color="violet" />
+        </div>
+
+        {/* Main Content */}
+        <div className="flex-1 flex overflow-hidden">
+          <div className={'flex-1 overflow-y-auto p-6 transition-all ' + (selectedAgent ? 'pr-0' : '')}>
+            {agents.length === 0 ? (
+              <EmptyState onAdd={() => setShowWizard(true)} onDiscover={() => setShowDiscovery(true)} />
+            ) : (
+              <div className="space-y-6">
+                {online.length > 0 && <DeviceGroup title="Online" count={online.length} color="emerald" agents={online} selectedId={selectedId} testingId={testingId} onSelect={setSelectedId} onTest={handleTest} />}
+                {busy.length > 0 && <DeviceGroup title="Scanning" count={busy.length} color="amber" agents={busy} selectedId={selectedId} testingId={testingId} onSelect={setSelectedId} onTest={handleTest} />}
+                {pending.length > 0 && <DeviceGroup title="Pending" count={pending.length} color="blue" agents={pending} selectedId={selectedId} testingId={testingId} onSelect={setSelectedId} onTest={handleTest} />}
+                {offline.length > 0 && <DeviceGroup title="Offline" count={offline.length} color="gray" agents={offline} selectedId={selectedId} testingId={testingId} onSelect={setSelectedId} onTest={handleTest} />}
+                {errored.length > 0 && <DeviceGroup title="Error" count={errored.length} color="red" agents={errored} selectedId={selectedId} testingId={testingId} onSelect={setSelectedId} onTest={handleTest} />}
+              </div>
+            )}
+          </div>
+
+          {/* Detail Sidebar */}
+          <AnimatePresence>
+            {selectedAgent && (
+              <motion.div initial={{ width: 0, opacity: 0 }} animate={{ width: 380, opacity: 1 }} exit={{ width: 0, opacity: 0 }}
+                className="flex-shrink-0 border-l border-gray-800 bg-gray-950 overflow-hidden">
+                <DeviceDetail agent={selectedAgent} testResult={testResults[selectedAgent.id] || null}
+                  isTesting={testingId === selectedAgent.id} onTest={() => handleTest(selectedAgent.id)}
+                  onDelete={() => handleDelete(selectedAgent.id)} onClose={() => setSelectedId(null)} />
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </div>
+
+        {/* Modals */}
+        <AnimatePresence>
+          {showWizard && <AddDeviceWizard onClose={() => setShowWizard(false)} onCreate={handleCreate} />}
+          {showDiscovery && <NetworkDiscovery onClose={() => setShowDiscovery(false)} />}
+        </AnimatePresence>
+      </div>
+    </PageTransition>
   );
 }
