@@ -381,7 +381,7 @@ function App() {
         <ColorModeProvider>
           <ToastProvider>
             <QueryErrorBridge />
-            <Router>
+            <Router basename="/dashboard">
               <AuthProvider>
                 <div className="min-h-screen cyberpunk-theme">
                   <AppRoutes />
