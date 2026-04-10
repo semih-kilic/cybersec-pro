@@ -55,6 +55,10 @@ pub struct CreateAgentRequest {
     pub ssh_host: Option<String>,
     pub ssh_port: Option<i32>,
     pub ssh_username: Option<String>,
+    pub ssh_password: Option<String>,
+    pub ssh_key: Option<String>,
+    // Location
+    pub location: Option<String>,
     // VPN
     pub vpn_config_path: Option<String>,
     // Proxy
@@ -76,9 +80,16 @@ pub async fn create_agent(
     let api_key = format!("ak_{}", Uuid::new_v4().to_string().replace('-', ""));
     let conn_type = body.connection_type.as_deref().unwrap_or("direct");
 
+    // Encrypt SSH password if provided
+    let encrypted_password = body.ssh_password.as_ref().and_then(|pwd| {
+        if pwd.is_empty() { return None; }
+        let secret = std::env::var("JWT_SECRET").unwrap_or_else(|_| "default-secret".into());
+        crate::services::connection_engine::crypto::encrypt_password(pwd, &secret).ok()
+    });
+
     let _ = sqlx::query(
-        "INSERT INTO agents (id, organization_id, name, connection_type, hostname, ip_address, platform, network_zone, max_concurrent_scans, ssh_host, ssh_port, ssh_username, vpn_config_path, proxy_endpoint, registration_token, api_key, status)
-         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, 'pending')"
+        "INSERT INTO agents (id, organization_id, name, connection_type, hostname, ip_address, platform, network_zone, max_concurrent_scans, ssh_host, ssh_port, ssh_username, ssh_password_encrypted, ssh_key_path, location, vpn_config_path, proxy_endpoint, registration_token, api_key, status)
+         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, 'pending')"
     )
     .bind(&agent_id)
     .bind(org_id)
@@ -92,6 +103,9 @@ pub async fn create_agent(
     .bind(&body.ssh_host)
     .bind(body.ssh_port.unwrap_or(22))
     .bind(&body.ssh_username)
+    .bind(&encrypted_password)
+    .bind(&body.ssh_key)
+    .bind(&body.location)
     .bind(&body.vpn_config_path)
     .bind(&body.proxy_endpoint)
     .bind(&reg_token)
@@ -176,4 +190,106 @@ pub async fn agent_heartbeat(
     .await;
 
     Json(json!({"status": "ok"}))
+}
+
+/// Execute a command on agent via SSH
+pub async fn agent_execute(
+    State(state): State<Arc<AppState>>,
+    auth: AuthUser,
+    Path(agent_id): Path<String>,
+    Json(body): Json<serde_json::Value>,
+) -> impl IntoResponse {
+    let org_id = match &auth.org_id {
+        Some(id) => id,
+        None => return (StatusCode::FORBIDDEN, Json(json!({"error": "Organization required"}))).into_response(),
+    };
+
+    let command = match body.get("command").and_then(|v| v.as_str()) {
+        Some(cmd) => cmd.to_string(),
+        None => return (StatusCode::BAD_REQUEST, Json(json!({"error": "command is required"}))).into_response(),
+    };
+
+    // Fetch agent SSH details
+    let agent: Option<Agent> = sqlx::query_as(
+        "SELECT * FROM agents WHERE id = $1 AND organization_id = $2"
+    )
+    .bind(&agent_id)
+    .bind(org_id.as_str())
+    .fetch_optional(&state.db)
+    .await
+    .unwrap_or(None);
+
+    let agent = match agent {
+        Some(a) => a,
+        None => return (StatusCode::NOT_FOUND, Json(json!({"error": "Agent not found"}))).into_response(),
+    };
+
+    let host = match &agent.ssh_host {
+        Some(h) if !h.is_empty() => h.clone(),
+        _ => return (StatusCode::BAD_REQUEST, Json(json!({"error": "No SSH host configured"}))).into_response(),
+    };
+
+    let password = agent.ssh_password_encrypted.as_ref().and_then(|enc| {
+        let secret = std::env::var("JWT_SECRET").unwrap_or_else(|_| "default-secret".into());
+        crate::services::connection_engine::crypto::decrypt_password(enc, &secret).ok()
+    });
+
+    let params = crate::services::connection_engine::SshConnParams {
+        host,
+        port: agent.ssh_port.unwrap_or(22) as u16,
+        username: agent.ssh_username.unwrap_or_else(|| "root".into()),
+        password,
+        private_key: agent.ssh_key_path.clone(),
+        passphrase: None,
+        timeout_secs: 30,
+    };
+
+    match crate::services::connection_engine::ssh_execute(&params, &command).await {
+        Ok(result) => Json(json!({
+            "success": true,
+            "exit_code": result.exit_code,
+            "stdout": result.stdout,
+            "stderr": result.stderr,
+            "duration_ms": result.duration_ms,
+        })).into_response(),
+        Err(e) => (StatusCode::INTERNAL_SERVER_ERROR, Json(json!({
+            "success": false,
+            "error": e,
+        }))).into_response(),
+    }
+}
+
+/// Discover devices on a subnet via an agent or directly
+pub async fn network_discover(
+    State(_state): State<Arc<AppState>>,
+    auth: AuthUser,
+    Json(body): Json<serde_json::Value>,
+) -> impl IntoResponse {
+    let _org_id = match &auth.org_id {
+        Some(id) => id,
+        None => return (StatusCode::FORBIDDEN, Json(json!({"error": "Organization required"}))).into_response(),
+    };
+
+    let subnet = body.get("subnet").and_then(|v| v.as_str()).unwrap_or("10.0.0.0/24");
+    let timeout_ms = body.get("timeout_ms").and_then(|v| v.as_u64()).unwrap_or(1500);
+
+    let options = crate::services::network_discovery::DiscoveryOptions {
+        subnet: subnet.to_string(),
+        port_scan: true,
+        timeout_ms,
+        ..Default::default()
+    };
+
+    match crate::services::network_discovery::discover_subnet(&options).await {
+        Ok(hosts) => Json(json!({
+            "success": true,
+            "subnet": subnet,
+            "hosts_found": hosts.len(),
+            "hosts": hosts,
+        })).into_response(),
+        Err(e) => (StatusCode::BAD_REQUEST, Json(json!({
+            "success": false,
+            "error": e,
+        }))).into_response(),
+    }
 }

@@ -75,6 +75,11 @@ tokio-stream = { version = "0.1", features = ["sync"] }
 parking_lot = "0.12"
 dashmap = "5"
 
+# SSH & Network
+ssh2 = "0.9"
+ipnet = "2"
+aes-gcm = "0.10"
+
 # SSE
 async-stream = "0.3"
 

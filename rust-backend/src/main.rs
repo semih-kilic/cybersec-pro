@@ -355,7 +355,9 @@ fn build_router(state: Arc<AppState>) -> Router {
         .route("/api/v1/scans/execute", post(stub_handlers::scans_execute))
         // ── Agent extras ──────────────────────────────────────
         .route("/api/v1/agents/:agent_id/test", post(stub_handlers::test_agent))
+        .route("/api/v1/agents/:agent_id/execute", post(agent_handlers::agent_execute))
         .route("/api/v1/agents/dashboard", get(stub_handlers::agents_dashboard))
+        .route("/api/v1/agents/discover", post(agent_handlers::network_discover))
         // ── Scheduled scans ───────────────────────────────────
         .route("/api/v1/schedules", get(stub_handlers::list_schedules).post(stub_handlers::create_schedule))
         .route("/api/v1/schedules/:id", put(stub_handlers::update_schedule).delete(stub_handlers::delete_schedule))

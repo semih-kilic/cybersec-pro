@@ -821,6 +821,13 @@ pub async fn update_agent(
     let platform = body.get("platform").and_then(|v| v.as_str());
     let max_concurrent = body.get("max_concurrent_scans").and_then(|v| v.as_i64()).map(|v| v as i32);
 
+    // Encrypt SSH password if provided
+    let ssh_password_enc = body.get("ssh_password").and_then(|v| v.as_str()).and_then(|pwd| {
+        if pwd.is_empty() { return None; }
+        let secret = std::env::var("JWT_SECRET").unwrap_or_else(|_| "default-secret".into());
+        crate::services::connection_engine::crypto::encrypt_password(pwd, &secret).ok()
+    });
+
     let result = sqlx::query(
         "UPDATE agents SET \
          name = COALESCE($1, name), \
@@ -834,8 +841,9 @@ pub async fn update_agent(
          ip_address = COALESCE($9, ip_address), \
          platform = COALESCE($10, platform), \
          max_concurrent_scans = COALESCE($11, max_concurrent_scans), \
+         ssh_password_encrypted = COALESCE($12, ssh_password_encrypted), \
          updated_at = CURRENT_TIMESTAMP \
-         WHERE id = $12 AND organization_id = $13"
+         WHERE id = $13 AND organization_id = $14"
     )
     .bind(name)
     .bind(ssh_host)
@@ -848,6 +856,7 @@ pub async fn update_agent(
     .bind(ip_address)
     .bind(platform)
     .bind(max_concurrent)
+    .bind(ssh_password_enc.as_deref())
     .bind(&agent_id)
     .bind(org_id)
     .execute(&state.db)
@@ -873,9 +882,9 @@ pub async fn test_agent(
 ) -> impl IntoResponse {
     let org_id = user.org_id.as_deref().unwrap_or("");
 
-    // Fetch agent SSH details
+    // Fetch agent details
     let agent = sqlx::query(
-        "SELECT ssh_host, ssh_port, ssh_username, connection_type, platform FROM agents WHERE id = $1 AND organization_id = $2"
+        "SELECT ssh_host, ssh_port, ssh_username, ssh_password_encrypted, ssh_key_path, connection_type, platform FROM agents WHERE id = $1 AND organization_id = $2"
     )
     .bind(&agent_id)
     .bind(org_id)
@@ -891,40 +900,97 @@ pub async fn test_agent(
     use sqlx::Row;
     let ssh_host: Option<String> = agent.get("ssh_host");
     let ssh_port: Option<i32> = agent.get("ssh_port");
+    let ssh_username: Option<String> = agent.get("ssh_username");
+    let ssh_password_enc: Option<String> = agent.get("ssh_password_encrypted");
+    let ssh_key_path: Option<String> = agent.get("ssh_key_path");
     let platform: Option<String> = agent.get("platform");
 
     let host = match ssh_host {
         Some(h) if !h.is_empty() => h,
         _ => return Json(json!({"success": false, "error": "No SSH host configured"})).into_response(),
     };
-    let port = ssh_port.unwrap_or(22);
+    let port = ssh_port.unwrap_or(22) as u16;
+    let username = ssh_username.unwrap_or_else(|| "root".into());
 
-    // Try TCP connection to the SSH port
-    let addr = format!("{}:{}", host, port);
-    match tokio::time::timeout(
-        std::time::Duration::from_secs(5),
-        tokio::net::TcpStream::connect(&addr),
-    ).await {
-        Ok(Ok(_)) => {
-            // Update agent status to online
-            let _ = sqlx::query("UPDATE agents SET status = 'online', last_heartbeat = CURRENT_TIMESTAMP WHERE id = $1")
-                .bind(&agent_id)
-                .execute(&state.db)
-                .await;
-            Json(json!({
-                "success": true,
-                "os_info": platform.unwrap_or_else(|| "Linux".to_string()),
-                "agent_id": agent_id,
-                "message": format!("SSH port {} reachable on {}", port, host)
-            })).into_response()
-        }
-        _ => {
-            Json(json!({
-                "success": false,
-                "error": format!("Cannot reach {}:{} — check firewall/SSH service", host, port),
-                "agent_id": agent_id
-            })).into_response()
-        }
+    // Decrypt password if stored
+    let password = ssh_password_enc.and_then(|enc| {
+        let secret = std::env::var("JWT_SECRET").unwrap_or_else(|_| "default-secret".into());
+        crate::services::connection_engine::crypto::decrypt_password(&enc, &secret).ok()
+    });
+
+    // Real SSH connection test
+    let params = crate::services::connection_engine::SshConnParams {
+        host: host.clone(),
+        port,
+        username: username.clone(),
+        password,
+        private_key: ssh_key_path,
+        passphrase: None,
+        timeout_secs: 10,
+    };
+
+    let result = crate::services::connection_engine::test_ssh_connection(&params).await;
+
+    if result.success {
+        // Update agent with discovered info
+        let _ = sqlx::query(
+            "UPDATE agents SET status = 'online', last_heartbeat = CURRENT_TIMESTAMP, \
+             hostname = COALESCE($1, hostname), os_info = COALESCE($2, os_info), \
+             ip_address = COALESCE($3, ip_address), \
+             cpu_usage = 0, memory_usage = 0 \
+             WHERE id = $4"
+        )
+        .bind(&result.hostname)
+        .bind(&result.os_info)
+        .bind(result.ip_addresses.first())
+        .bind(&agent_id)
+        .execute(&state.db)
+        .await;
+
+        Json(json!({
+            "success": true,
+            "agent_id": agent_id,
+            "connection": {
+                "type": "ssh",
+                "host": host,
+                "port": port,
+                "username": username,
+                "latency_ms": result.latency_ms,
+                "ssh_banner": result.ssh_banner,
+            },
+            "system": {
+                "hostname": result.hostname,
+                "os": result.os_info,
+                "kernel": result.kernel,
+                "uptime": result.uptime,
+                "cpu_cores": result.cpu_cores,
+                "memory_total_mb": result.memory_total_mb,
+                "memory_used_mb": result.memory_used_mb,
+                "disk_total_gb": result.disk_total_gb,
+                "disk_used_gb": result.disk_used_gb,
+                "ip_addresses": result.ip_addresses,
+            },
+            "message": format!("✅ SSH connected to {}@{}:{}", username, host, port)
+        })).into_response()
+    } else {
+        // Try TCP-only fallback for error diagnostics
+        let tcp_reachable = crate::services::connection_engine::scan_port(&host, port, 5000).await;
+
+        Json(json!({
+            "success": false,
+            "agent_id": agent_id,
+            "error": result.error.unwrap_or_else(|| "Connection failed".into()),
+            "diagnostics": {
+                "tcp_port_reachable": tcp_reachable,
+                "host": host,
+                "port": port,
+                "hint": if !tcp_reachable {
+                    "Port is not reachable. Check: 1) Host IP is correct 2) SSH service is running 3) Firewall allows port"
+                } else {
+                    "Port is reachable but SSH auth failed. Check: 1) Username 2) Password/Key 3) SSH config (AllowUsers, PermitRootLogin)"
+                }
+            }
+        })).into_response()
     }
 }
 

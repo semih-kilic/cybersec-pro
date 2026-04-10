@@ -5,3 +5,5 @@ pub mod audit;
 pub mod service_manager;
 pub mod email;
 pub mod monitor;
+pub mod connection_engine;
+pub mod network_discovery;
