@@ -1,5 +1,5 @@
 import { useState, useCallback } from 'react';
-import { useAgentsDashboard, useCreateAgent, useDeleteAgent, useTestAgentConnection } from '../../hooks/useApiQueries';
+import { useAgentsDashboard, useCreateAgent, useUpdateAgent, useDeleteAgent, useTestAgentConnection } from '../../hooks/useApiQueries';
 import { useDocumentTitle } from '../../hooks/useUtilities';
 import { useTranslation } from 'react-i18next';
 import { AgentsPageSkeleton } from '../../components/ui/Skeleton';
@@ -414,11 +414,86 @@ function AddDeviceWizard({ onClose, onCreate }: { onClose: () => void; onCreate:
 }
 
 /* ═══════════════════════════════════════════════════════════
+   EDIT DEVICE MODAL
+   ═══════════════════════════════════════════════════════════ */
+
+function EditDeviceModal({ agent, onClose, onSave }: {
+  agent: Agent; onClose: () => void; onSave: (id: string, data: Record<string, unknown>) => void;
+}) {
+  const [form, setForm] = useState({
+    name: agent.name || '',
+    ssh_host: agent.ip_address || '',
+    ssh_port: agent.ssh_port || 22,
+    ssh_username: agent.ssh_username || 'root',
+    ssh_password: '',
+    platform: agent.platform || 'linux',
+    location: agent.location || '',
+    hostname: agent.hostname || '',
+    connection_type: agent.connection_type || 'ssh',
+  });
+  const updateForm = (key: string, value: string | number) => setForm(prev => ({ ...prev, [key]: value }));
+
+  const handleSave = () => {
+    const data: Record<string, unknown> = {
+      name: form.name, ssh_host: form.ssh_host, ssh_port: form.ssh_port,
+      ssh_username: form.ssh_username, platform: form.platform,
+      location: form.location, hostname: form.hostname, connection_type: form.connection_type,
+    };
+    if (form.ssh_password.trim()) data.ssh_password = form.ssh_password;
+    onSave(agent.id, data);
+  };
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm" onClick={onClose}>
+      <motion.div initial={{ opacity: 0, scale: 0.95, y: 20 }} animate={{ opacity: 1, scale: 1, y: 0 }}
+        exit={{ opacity: 0, scale: 0.95, y: 20 }} onClick={e => e.stopPropagation()}
+        className="w-full max-w-lg bg-gray-950 border border-gray-800 rounded-2xl shadow-2xl overflow-hidden">
+        <div className="px-6 py-4 border-b border-gray-800 flex items-center justify-between">
+          <div><h2 className="text-lg font-bold text-white">Edit Device</h2>
+            <p className="text-xs text-gray-500 mt-0.5">Update connection settings for {agent.name}</p></div>
+          <button onClick={onClose} className="text-gray-500 hover:text-gray-300 text-xl">{'\u2715'}</button>
+        </div>
+        <div className="px-6 py-5 space-y-4 max-h-[60vh] overflow-y-auto">
+          <WizardInput label="Device Name" placeholder="e.g. Production Server" value={form.name} onChange={v => updateForm('name', v)} />
+          <WizardInput label="Hostname" placeholder="server.local" value={form.hostname} onChange={v => updateForm('hostname', v)} />
+          <div className="grid grid-cols-3 gap-3">
+            <div className="col-span-2"><WizardInput label="SSH Host / IP" placeholder="10.0.0.115" value={form.ssh_host} onChange={v => updateForm('ssh_host', v)} /></div>
+            <WizardInput label="Port" placeholder="22" value={String(form.ssh_port)} onChange={v => updateForm('ssh_port', parseInt(v) || 22)} type="number" />
+          </div>
+          <WizardInput label="Username" placeholder="root" value={form.ssh_username} onChange={v => updateForm('ssh_username', v)} />
+          <WizardInput label="New Password (leave blank to keep)" placeholder="leave blank to keep current" value={form.ssh_password} onChange={v => updateForm('ssh_password', v)} type="password" />
+          <div>
+            <label className="block text-xs text-gray-400 mb-2">Platform</label>
+            <div className="flex gap-2 flex-wrap">
+              {['linux', 'windows', 'macos', 'router', 'firewall', 'docker'].map(p => (
+                <button key={p} onClick={() => updateForm('platform', p)}
+                  className={'flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium border transition-all ' +
+                    (form.platform === p ? 'border-cyan-500/50 bg-cyan-500/10 text-cyan-400' : 'border-gray-800 text-gray-400 hover:border-gray-700')}>
+                  <span>{PLATFORM_ICONS[p]}</span><span className="capitalize">{p}</span>
+                </button>
+              ))}
+            </div>
+          </div>
+          <WizardInput label="Location" placeholder="e.g. Office HQ, DC-1" value={form.location} onChange={v => updateForm('location', v)} />
+        </div>
+        <div className="px-6 py-4 border-t border-gray-800 flex items-center justify-between">
+          <button onClick={onClose} className="px-4 py-2 text-xs font-medium text-gray-400 hover:text-white transition-colors">Cancel</button>
+          <button onClick={handleSave}
+            className="px-6 py-2 rounded-lg text-xs font-bold bg-cyan-500 text-gray-950 hover:bg-cyan-400 transition-colors shadow-lg shadow-cyan-500/20">
+            Save Changes
+          </button>
+        </div>
+      </motion.div>
+    </div>
+  );
+}
+
+/* ═══════════════════════════════════════════════════════════
    DEVICE DETAIL PANEL
    ═══════════════════════════════════════════════════════════ */
 
-function DeviceDetail({ agent, testResult, isTesting, onTest, onDelete, onClose }: {
-  agent: Agent; testResult: TestResult | null; isTesting: boolean; onTest: () => void; onDelete: () => void; onClose: () => void;
+function DeviceDetail({ agent, testResult, isTesting, onTest, onEdit, onDelete, onClose }: {
+  agent: Agent; testResult: TestResult | null; isTesting: boolean; onTest: () => void; onEdit: () => void; onDelete: () => void; onClose: () => void;
 }) {
   const status = STATUS_CONFIG[agent.status] || STATUS_CONFIG.offline;
   const icon = PLATFORM_ICONS[agent.platform] || '\u2753';
@@ -519,6 +594,10 @@ function DeviceDetail({ agent, testResult, isTesting, onTest, onDelete, onClose 
         <button onClick={onTest} disabled={isTesting}
           className="w-full py-2.5 rounded-lg text-xs font-bold bg-cyan-500 text-gray-950 hover:bg-cyan-400 transition-all shadow-lg shadow-cyan-500/20 disabled:opacity-50">
           {isTesting ? '\u23F3 Testing...' : '\u26A1 Test Connection'}
+        </button>
+        <button onClick={onEdit}
+          className="w-full py-2 rounded-lg text-xs font-medium border border-gray-600 text-gray-300 hover:bg-gray-800 hover:border-gray-500 transition-all">
+          {'\u270F\uFE0F'} Edit Device
         </button>
         <button onClick={onDelete}
           className="w-full py-2 rounded-lg text-xs font-medium border border-red-500/30 text-red-400 hover:bg-red-500/10 transition-all">
@@ -694,12 +773,14 @@ export default function AgentsPage() {
 
   const { data: dashboard, isLoading, isError } = useAgentsDashboard();
   const createAgent = useCreateAgent();
+  const updateAgent = useUpdateAgent();
   const deleteAgent = useDeleteAgent();
   const testAgent = useTestAgentConnection();
 
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [showWizard, setShowWizard] = useState(false);
   const [showDiscovery, setShowDiscovery] = useState(false);
+  const [editingAgent, setEditingAgent] = useState<Agent | null>(null);
   const [testingId, setTestingId] = useState<string | null>(null);
   const [testResults, setTestResults] = useState<Record<string, TestResult>>({});
 
@@ -730,6 +811,14 @@ export default function AgentsPage() {
       setShowWizard(false);
     } catch (e: any) { toast.error('Failed to create device: ' + (e.message || 'Unknown error')); }
   }, [createAgent, toast]);
+
+  const handleUpdate = useCallback(async (agentId: string, data: Record<string, unknown>) => {
+    try {
+      await updateAgent.mutateAsync({ id: agentId, data } as any);
+      toast.success('Device updated successfully');
+      setEditingAgent(null);
+    } catch (e: any) { toast.error('Failed to update: ' + (e.message || 'Unknown error')); }
+  }, [updateAgent, toast]);
 
   const handleDelete = useCallback(async (agentId: string) => {
     if (!confirm('Are you sure you want to delete this device?')) return;
@@ -799,6 +888,7 @@ export default function AgentsPage() {
                 className="flex-shrink-0 border-l border-gray-800 bg-gray-950 overflow-hidden">
                 <DeviceDetail agent={selectedAgent} testResult={testResults[selectedAgent.id] || null}
                   isTesting={testingId === selectedAgent.id} onTest={() => handleTest(selectedAgent.id)}
+                  onEdit={() => setEditingAgent(selectedAgent)}
                   onDelete={() => handleDelete(selectedAgent.id)} onClose={() => setSelectedId(null)} />
               </motion.div>
             )}
@@ -809,6 +899,7 @@ export default function AgentsPage() {
         <AnimatePresence>
           {showWizard && <AddDeviceWizard onClose={() => setShowWizard(false)} onCreate={handleCreate} />}
           {showDiscovery && <NetworkDiscovery onClose={() => setShowDiscovery(false)} />}
+          {editingAgent && <EditDeviceModal agent={editingAgent} onClose={() => setEditingAgent(null)} onSave={handleUpdate} />}
         </AnimatePresence>
       </div>
     </PageTransition>

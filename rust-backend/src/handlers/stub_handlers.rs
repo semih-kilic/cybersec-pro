@@ -1963,19 +1963,167 @@ pub async fn terminal_agents(
 }
 
 pub async fn terminal_execute(
-    _user: AuthUser,
-    State(_state): State<Arc<AppState>>,
-    Json(_body): Json<serde_json::Value>,
+    user: AuthUser,
+    State(state): State<Arc<AppState>>,
+    Json(body): Json<serde_json::Value>,
 ) -> impl IntoResponse {
-    Json(json!({"error": "Remote terminal execution not available in Rust backend"})).into_response()
+    let org_id = user.org_id.as_deref().unwrap_or("");
+    let agent_id = body.get("agent_id").and_then(|v| v.as_str()).or_else(|| body.get("agent_id").and_then(|v| v.as_i64()).map(|_| "")).unwrap_or("");
+    let agent_id_str = body.get("agent_id").map(|v| v.to_string().replace('"', "")).unwrap_or_default();
+    let agent_id_val = if agent_id.is_empty() { &agent_id_str } else { agent_id };
+    let command = match body.get("command").and_then(|v| v.as_str()) {
+        Some(c) if !c.is_empty() => c.to_string(),
+        _ => return Json(json!({"error": "No command provided"})).into_response(),
+    };
+
+    // Block dangerous commands
+    let blocked = ["rm -rf /", "mkfs", "dd if=/dev/zero", "> /dev/sda", ":(){ :|:& };:"];
+    for b in &blocked {
+        if command.contains(b) {
+            return Json(json!({"error": "Command blocked for safety", "output": "", "exit_code": -1})).into_response();
+        }
+    }
+
+    // Fetch agent
+    use sqlx::Row;
+    let agent = sqlx::query(
+        "SELECT ssh_host, ssh_port, ssh_username, ssh_password_encrypted, ssh_key_path FROM agents WHERE id = $1 AND organization_id = $2"
+    )
+    .bind(agent_id_val)
+    .bind(org_id)
+    .fetch_optional(&state.db)
+    .await
+    .unwrap_or(None);
+
+    let agent = match agent {
+        Some(a) => a,
+        None => return Json(json!({"error": "Agent not found", "output": "", "exit_code": -1})).into_response(),
+    };
+
+    let ssh_host: Option<String> = agent.get("ssh_host");
+    let ssh_port: Option<i32> = agent.get("ssh_port");
+    let ssh_username: Option<String> = agent.get("ssh_username");
+    let ssh_password_enc: Option<String> = agent.get("ssh_password_encrypted");
+    let ssh_key_path: Option<String> = agent.get("ssh_key_path");
+
+    let host = match ssh_host {
+        Some(h) if !h.is_empty() => h,
+        _ => return Json(json!({"error": "No SSH host configured for this agent", "output": "", "exit_code": -1})).into_response(),
+    };
+
+    let password = ssh_password_enc.and_then(|enc| {
+        let secret = std::env::var("JWT_SECRET").unwrap_or_else(|_| "default-secret".into());
+        crate::services::connection_engine::crypto::decrypt_password(&enc, &secret).ok()
+    });
+
+    let params = crate::services::connection_engine::SshConnParams {
+        host: host.clone(),
+        port: ssh_port.unwrap_or(22) as u16,
+        username: ssh_username.unwrap_or_else(|| "root".into()),
+        password,
+        private_key: ssh_key_path,
+        passphrase: None,
+        timeout_secs: 30,
+    };
+
+    match crate::services::connection_engine::ssh_execute(&params, &command).await {
+        Ok(res) => {
+            let output = if !res.stdout.is_empty() {
+                if !res.stderr.is_empty() { format!("{}\n{}", res.stdout, res.stderr) } else { res.stdout }
+            } else {
+                res.stderr
+            };
+            Json(json!({
+                "output": output,
+                "exit_code": res.exit_code,
+                "duration_ms": res.duration_ms
+            })).into_response()
+        }
+        Err(e) => {
+            Json(json!({"error": e, "output": "", "exit_code": -1})).into_response()
+        }
+    }
 }
 
 pub async fn terminal_test_connection(
-    _user: AuthUser,
-    State(_state): State<Arc<AppState>>,
-    Json(_body): Json<serde_json::Value>,
+    user: AuthUser,
+    State(state): State<Arc<AppState>>,
+    Json(body): Json<serde_json::Value>,
 ) -> impl IntoResponse {
-    Json(json!({"connected": false, "message": "Terminal test not implemented"})).into_response()
+    let org_id = user.org_id.as_deref().unwrap_or("");
+    let agent_id = body.get("agent_id").and_then(|v| v.as_str()).or_else(|| body.get("agent_id").and_then(|v| v.as_i64()).map(|_| "")).unwrap_or("");
+    let agent_id_str = body.get("agent_id").map(|v| v.to_string().replace('"', "")).unwrap_or_default();
+    let agent_id_val = if agent_id.is_empty() { &agent_id_str } else { agent_id };
+
+    use sqlx::Row;
+    let agent = sqlx::query(
+        "SELECT ssh_host, ssh_port, ssh_username, ssh_password_encrypted, ssh_key_path, name, platform FROM agents WHERE id = $1 AND organization_id = $2"
+    )
+    .bind(agent_id_val)
+    .bind(org_id)
+    .fetch_optional(&state.db)
+    .await
+    .unwrap_or(None);
+
+    let agent = match agent {
+        Some(a) => a,
+        None => return Json(json!({"connected": false, "error": "Agent not found"})).into_response(),
+    };
+
+    let ssh_host: Option<String> = agent.get("ssh_host");
+    let ssh_port: Option<i32> = agent.get("ssh_port");
+    let ssh_username: Option<String> = agent.get("ssh_username");
+    let ssh_password_enc: Option<String> = agent.get("ssh_password_encrypted");
+    let ssh_key_path: Option<String> = agent.get("ssh_key_path");
+    let agent_name: Option<String> = agent.get("name");
+    let platform: Option<String> = agent.get("platform");
+
+    let host = match ssh_host {
+        Some(h) if !h.is_empty() => h,
+        _ => return Json(json!({"connected": false, "error": "No SSH host configured. Edit the agent and set SSH host/IP."})).into_response(),
+    };
+
+    let password = ssh_password_enc.and_then(|enc| {
+        let secret = std::env::var("JWT_SECRET").unwrap_or_else(|_| "default-secret".into());
+        crate::services::connection_engine::crypto::decrypt_password(&enc, &secret).ok()
+    });
+
+    let params = crate::services::connection_engine::SshConnParams {
+        host: host.clone(),
+        port: ssh_port.unwrap_or(22) as u16,
+        username: ssh_username.clone().unwrap_or_else(|| "root".into()),
+        password,
+        private_key: ssh_key_path,
+        passphrase: None,
+        timeout_secs: 10,
+    };
+
+    let result = crate::services::connection_engine::test_ssh_connection(&params).await;
+
+    if result.success {
+        // Update agent status
+        let _ = sqlx::query("UPDATE agents SET status = 'online', last_heartbeat = CURRENT_TIMESTAMP WHERE id = $1")
+            .bind(agent_id_val).execute(&state.db).await;
+
+        let sys_info = format!("{} | {} | {}",
+            result.hostname.as_deref().unwrap_or("unknown"),
+            result.os_info.as_deref().unwrap_or("unknown"),
+            result.kernel.as_deref().unwrap_or(""));
+
+        Json(json!({
+            "connected": true,
+            "system_info": sys_info,
+            "agent_name": agent_name,
+            "platform": platform,
+            "hostname": result.hostname,
+            "latency_ms": result.latency_ms,
+        })).into_response()
+    } else {
+        Json(json!({
+            "connected": false,
+            "error": result.error.unwrap_or_else(|| "SSH connection failed".into()),
+        })).into_response()
+    }
 }
 
 // ── Chatbot / Feedback ─────────────────────────────────────
