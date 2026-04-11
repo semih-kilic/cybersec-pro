@@ -43,7 +43,7 @@ pub fn openapi_spec() -> utoipa::openapi::OpenApi {
 
 fn register_paths(doc: &mut utoipa::openapi::OpenApi) {
     use utoipa::openapi::*;
-    use utoipa::openapi::path::*;
+    use utoipa::openapi::security::SecurityScheme;
 
     let bearer = SecurityScheme::Http(
         security::HttpBuilder::new()
@@ -52,8 +52,8 @@ fn register_paths(doc: &mut utoipa::openapi::OpenApi) {
             .description(Some("JWT access token"))
             .build()
     );
-    doc.components.get_or_insert_with(ComponentsBuilder::new().into)
-        .security_schemes.insert("bearerAuth".to_string(), RefOr::T(bearer));
+    doc.components.get_or_insert_with(|| ComponentsBuilder::new().into())
+        .security_schemes.insert("bearerAuth".to_string(), bearer);
 
     let paths = vec![
         // ── Auth ──
@@ -160,25 +160,26 @@ fn register_paths(doc: &mut utoipa::openapi::OpenApi) {
     ];
 
     for (path_str, item) in paths {
-        doc.paths.paths.insert(path_str.to_string(), RefOr::T(item));
+        doc.paths.paths.insert(path_str.to_string(), item);
     }
 }
 
-fn path_item(
+fn path_item<'a>(
     method: &str,
-    path: &str,
+    path: &'a str,
     tag: &str,
     summary: &str,
     body_example: Option<&str>,
     response_desc: &str,
-) -> (&str, utoipa::openapi::path::PathItem) {
+) -> (&'a str, utoipa::openapi::path::PathItem) {
     use utoipa::openapi::*;
     use utoipa::openapi::path::*;
+    use utoipa::openapi::security::SecurityRequirement;
 
     let mut op = OperationBuilder::new()
         .tag(tag)
         .summary(Some(summary.to_string()))
-        .security(Some(vec![SecurityRequirement::new::<&str, [&str; 0], &str>("bearerAuth", [])]))
+        .security(SecurityRequirement::new("bearerAuth", Vec::<String>::new()))
         .response(
             "200",
             ResponseBuilder::new().description(response_desc).build()

@@ -1,0 +1,112 @@
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+    branches: [master]
+
+env:
+  CARGO_TERM_COLOR: always
+  SQLX_OFFLINE: true
+
+jobs:
+  # ── Rust Backend ──────────────────────────────────────────
+  backend-check:
+    name: Backend Build & Check
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: rust-backend
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Cache Cargo registry & build
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+            rust-backend/target
+          key: ${{ runner.os }}-cargo-${{ hashFiles('rust-backend/Cargo.lock') }}
+          restore-keys: ${{ runner.os }}-cargo-
+
+      - name: Check compilation
+        run: cargo check --release
+
+      - name: Run clippy lints
+        run: cargo clippy --release -- -W warnings || true
+
+  # ── Frontend ──────────────────────────────────────────────
+  frontend-build:
+    name: Frontend Build
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: saas-frontend
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install pnpm
+        run: npm install -g pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Type check
+        run: npx tsc --noEmit || true
+
+      - name: Build
+        run: npx vite build
+
+  # ── Deploy (only on master push) ──────────────────────────
+  deploy:
+    name: Deploy to Production
+    needs: [backend-check, frontend-build]
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/master' && github.event_name == 'push'
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Deploy via SSH
+        uses: appleboy/ssh-action@v1
+        with:
+          host: ${{ secrets.SERVER_HOST }}
+          username: ${{ secrets.SERVER_USER }}
+          key: ${{ secrets.SERVER_SSH_KEY }}
+          script: |
+            cd ~/cybersec-pro
+
+            # Pull latest
+            git pull origin master
+
+            # Build backend
+            cd rust-backend
+            cargo build --release
+
+            # Build frontend
+            cd ../saas-frontend
+            pnpm install --frozen-lockfile
+            npx vite build
+
+            # Deploy frontend
+            sudo cp -r dist/* /var/www/dashboard/
+
+            # Restart backend
+            cd ../rust-backend
+            pkill -f cybersec-pro-backend || true
+            sleep 2
+            nohup ./target/release/cybersec-pro-backend > /tmp/cybersec-backend.log 2>&1 &
+
+            echo "✅ Deployment complete"

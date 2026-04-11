@@ -172,6 +172,9 @@ async fn main() -> anyhow::Result<()> {
 fn build_router(state: Arc<AppState>) -> Router {
     use handlers::*;
 
+    let swagger_ui = utoipa_swagger_ui::SwaggerUi::new("/api/docs")
+        .url("/api/docs/openapi.json", openapi::openapi_spec());
+
     Router::new()
         // ── Health / Root ─────────────────────────────────────
         .route("/", get(health_handlers::index))
@@ -435,6 +438,7 @@ fn build_router(state: Arc<AppState>) -> Router {
         .route("/api/v1/integrations/:id", put(stub_handlers::update_integration).delete(stub_handlers::delete_integration))
         .route("/api/v1/integrations/:id/toggle", post(stub_handlers::toggle_integration))
         .route("/api/v1/integrations/:id/test", post(stub_handlers::test_integration))
+        .merge(swagger_ui)
         .with_state(state)
 }
 

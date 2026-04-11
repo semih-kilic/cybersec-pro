@@ -1,7 +1,6 @@
 /// CyberSec Pro — Email Notification Service
 /// Sends email notifications based on user preferences (notification_preferences table)
 use sqlx::PgPool;
-use serde_json::Value as JsonValue;
 
 use super::email::EmailConfig;
 
