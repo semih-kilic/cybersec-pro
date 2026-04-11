@@ -7,3 +7,5 @@ pub mod email;
 pub mod monitor;
 pub mod connection_engine;
 pub mod network_discovery;
+pub mod scheduler;
+pub mod integrations;

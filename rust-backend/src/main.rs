@@ -114,6 +114,16 @@ async fn main() -> anyhow::Result<()> {
         });
     }
 
+    // Spawn Scheduled Scan Engine (checks every 30s for due cron scans)
+    {
+        let db = state.db.clone();
+        let scan_tx = state.scan_output_tx.clone();
+        tokio::spawn(async move {
+            tokio::time::sleep(std::time::Duration::from_secs(15)).await;
+            services::scheduler::run_scheduler(db, scan_tx).await;
+        });
+    }
+
     // Build router
     let app = build_router(state.clone())
         .layer(axum_middleware::from_fn(security_headers))

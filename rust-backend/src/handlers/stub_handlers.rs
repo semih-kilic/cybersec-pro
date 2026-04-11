@@ -1095,31 +1095,37 @@ pub async fn list_schedules(
     user: AuthUser,
     State(state): State<Arc<AppState>>,
 ) -> impl IntoResponse {
-    let schedules = sqlx::query_as::<_, (String, String, String, String, bool, String)>(
-        "SELECT id, name, cron_expression, COALESCE(tool_id,''), is_active, COALESCE(target,'') FROM scheduled_scans WHERE organization_id = $1 ORDER BY created_at DESC"
+    let schedules = sqlx::query_as::<_, (
+        String, String, Option<String>, String, bool, String,
+        Option<String>, Option<String>, Option<i32>, i32,
+        Option<String>, String,
+    )>(
+        "SELECT id, name, cron_expression, COALESCE(tool_name,''), is_active, COALESCE(target,''),
+                CAST(last_run AS TEXT), CAST(next_run AS TEXT), run_count, COALESCE(hour,0),
+                schedule_type, CAST(created_at AS TEXT)
+         FROM scheduled_scans WHERE organization_id = $1 ORDER BY created_at DESC"
     )
     .bind(&user.org_id.as_deref().unwrap_or(""))
     .fetch_all(&state.db)
     .await
     .unwrap_or_default();
 
-    let list: Vec<serde_json::Value> = schedules.iter().map(|(id, name, cron, tool_id, active, target)| {
+    let list: Vec<serde_json::Value> = schedules.iter().map(|(id, name, cron, tool_name, active, target, last_run, next_run, run_count, _hour, sched_type, created)| {
         let status = if *active { "active" } else { "paused" };
         json!({
             "id": id,
             "name": name,
             "cron_expression": cron,
-            "tool_id": tool_id,
-            "tool_name": tool_id,
-            "tool": tool_id,
+            "tool_name": tool_name,
+            "tool": tool_name,
             "is_active": active,
             "status": status,
             "target": target,
-            "next_run": "",
-            "last_run": "",
-            "run_count": 0,
-            "schedule_type": "cron",
-            "created_at": ""
+            "next_run": next_run,
+            "last_run": last_run,
+            "run_count": run_count.unwrap_or(0),
+            "schedule_type": sched_type,
+            "created_at": created
         })
     }).collect();
 
@@ -1134,23 +1140,42 @@ pub async fn create_schedule(
     let id = uuid::Uuid::new_v4().to_string();
     let name = body.get("name").and_then(|v| v.as_str()).unwrap_or("New Schedule");
     let cron = body.get("cron_expression").and_then(|v| v.as_str()).unwrap_or("0 0 * * *");
-    let tool_id = body.get("tool_id").and_then(|v| v.as_str()).unwrap_or("");
+    let tool_name = body.get("tool_name").and_then(|v| v.as_str())
+        .or_else(|| body.get("tool").and_then(|v| v.as_str()))
+        .unwrap_or("");
     let target = body.get("target").and_then(|v| v.as_str()).unwrap_or("");
+    let schedule_type = body.get("schedule_type").and_then(|v| v.as_str()).unwrap_or("cron");
+    let agent_id = body.get("agent_id").and_then(|v| v.as_str());
+    let params = body.get("parameters").cloned().unwrap_or(json!({}));
 
-    let _ = sqlx::query(
-        "INSERT INTO scheduled_scans (id, user_id, organization_id, name, cron_expression, tool_id, target, is_active, created_at) VALUES ($1, $2, $3, $4, $5, $6, $7, 1, CURRENT_TIMESTAMP)"
+    // Compute first next_run
+    let next_run = crate::services::scheduler::next_cron_fire(cron, chrono::Utc::now());
+
+    let result = sqlx::query(
+        "INSERT INTO scheduled_scans (id, user_id, organization_id, name, cron_expression, tool_name, target, schedule_type, parameters, agent_id, is_active, next_run, created_at, updated_at)
+         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9::jsonb, $10, TRUE, $11, NOW(), NOW())"
     )
     .bind(&id)
     .bind(&user.user_id)
     .bind(&user.org_id.as_deref().unwrap_or(""))
     .bind(name)
     .bind(cron)
-    .bind(tool_id)
+    .bind(tool_name)
     .bind(target)
+    .bind(schedule_type)
+    .bind(&params)
+    .bind(agent_id)
+    .bind(next_run)
     .execute(&state.db)
     .await;
 
-    Json(json!({"id": id, "message": "Schedule created"})).into_response()
+    match result {
+        Ok(_) => Json(json!({"id": id, "message": "Schedule created", "next_run": next_run})).into_response(),
+        Err(e) => {
+            tracing::error!("Failed to create schedule: {}", e);
+            (StatusCode::INTERNAL_SERVER_ERROR, Json(json!({"error": format!("Failed to create schedule: {}", e)}))).into_response()
+        }
+    }
 }
 
 pub async fn update_schedule(
@@ -1161,20 +1186,23 @@ pub async fn update_schedule(
 ) -> impl IntoResponse {
     let name = body.get("name").and_then(|v| v.as_str());
     let cron = body.get("cron_expression").and_then(|v| v.as_str());
-    let tool_id = body.get("tool_id").and_then(|v| v.as_str());
+    let tool_name = body.get("tool_name").and_then(|v| v.as_str())
+        .or_else(|| body.get("tool").and_then(|v| v.as_str()));
     let target = body.get("target").and_then(|v| v.as_str());
 
-    // Build dynamic update
     let mut sets = Vec::new();
     let mut idx = 1;
     if name.is_some() { sets.push(format!("name = ${}", idx)); idx += 1; }
     if cron.is_some() { sets.push(format!("cron_expression = ${}", idx)); idx += 1; }
-    if tool_id.is_some() { sets.push(format!("tool_id = ${}", idx)); idx += 1; }
+    if tool_name.is_some() { sets.push(format!("tool_name = ${}", idx)); idx += 1; }
     if target.is_some() { sets.push(format!("target = ${}", idx)); idx += 1; }
 
     if sets.is_empty() {
         return Json(json!({"message": "Nothing to update", "id": schedule_id})).into_response();
     }
+
+    // Always update updated_at
+    sets.push("updated_at = NOW()".to_string());
 
     let user_param = idx;
     let id_param = idx + 1;
@@ -1186,12 +1214,20 @@ pub async fn update_schedule(
     let mut query = sqlx::query(&sql);
     if let Some(v) = name { query = query.bind(v); }
     if let Some(v) = cron { query = query.bind(v); }
-    if let Some(v) = tool_id { query = query.bind(v); }
+    if let Some(v) = tool_name { query = query.bind(v); }
     if let Some(v) = target { query = query.bind(v); }
     query = query.bind(&user.user_id);
     query = query.bind(&schedule_id);
 
     let _ = query.execute(&state.db).await;
+
+    // Recompute next_run if cron changed
+    if let Some(new_cron) = cron {
+        let next = crate::services::scheduler::next_cron_fire(new_cron, chrono::Utc::now());
+        let _ = sqlx::query("UPDATE scheduled_scans SET next_run = $1 WHERE id = $2")
+            .bind(next).bind(&schedule_id).execute(&state.db).await;
+    }
+
     Json(json!({"message": "Schedule updated", "id": schedule_id})).into_response()
 }
 
@@ -2148,15 +2184,270 @@ pub async fn feedback(
 // ── GDPR ───────────────────────────────────────────────────
 
 pub async fn gdpr_export(
-    _user: AuthUser,
-    State(_state): State<Arc<AppState>>,
+    user: AuthUser,
+    State(state): State<Arc<AppState>>,
 ) -> impl IntoResponse {
-    Json(json!({"message": "GDPR export queued", "status": "processing"})).into_response()
+    let org_id = user.org_id.as_deref().unwrap_or("");
+
+    // Collect user's data
+    let scans = sqlx::query_as::<_, (String, String, String, String)>(
+        "SELECT id, target, status, CAST(created_at AS TEXT) FROM scans WHERE user_id = $1 ORDER BY created_at DESC"
+    ).bind(&user.user_id).fetch_all(&state.db).await.unwrap_or_default();
+
+    let scan_list: Vec<serde_json::Value> = scans.iter().map(|(id, target, status, created)| {
+        json!({"id": id, "target": target, "status": status, "created_at": created})
+    }).collect();
+
+    let audits = sqlx::query_as::<_, (String, String, String)>(
+        "SELECT action, COALESCE(status,''), CAST(created_at AS TEXT) FROM audit_logs WHERE user_id = $1 ORDER BY created_at DESC LIMIT 200"
+    ).bind(&user.user_id).fetch_all(&state.db).await.unwrap_or_default();
+
+    let audit_list: Vec<serde_json::Value> = audits.iter().map(|(action, status, created)| {
+        json!({"action": action, "status": status, "created_at": created})
+    }).collect();
+
+    let user_data: Option<(String, Option<String>, Option<String>, Option<String>)> = sqlx::query_as(
+        "SELECT email, first_name, last_name, role FROM users WHERE id = $1"
+    ).bind(&user.user_id).fetch_optional(&state.db).await.unwrap_or(None);
+
+    let profile = user_data.map(|(email, first, last, role)| json!({
+        "email": email, "first_name": first, "last_name": last, "role": role
+    })).unwrap_or(json!({}));
+
+    Json(json!({
+        "status": "complete",
+        "exported_at": chrono::Utc::now().to_rfc3339(),
+        "data": {
+            "profile": profile,
+            "scans": scan_list,
+            "audit_logs": audit_list,
+            "organization_id": org_id
+        }
+    })).into_response()
 }
 
 pub async fn gdpr_delete_account(
-    _user: AuthUser,
-    State(_state): State<Arc<AppState>>,
+    user: AuthUser,
+    State(state): State<Arc<AppState>>,
 ) -> impl IntoResponse {
-    Json(json!({"message": "Account deletion not implemented in Rust backend for safety"})).into_response()
+    // Anonymize user data instead of hard delete (preserves referential integrity)
+    let anon_email = format!("deleted-{}@deleted.local", &user.user_id[..8]);
+    let result = sqlx::query(
+        "UPDATE users SET email = $1, first_name = 'Deleted', last_name = 'User', is_active = FALSE, mfa_enabled = FALSE, mfa_secret = NULL, password_hash = 'DELETED' WHERE id = $2"
+    )
+    .bind(&anon_email)
+    .bind(&user.user_id)
+    .execute(&state.db)
+    .await;
+
+    match result {
+        Ok(_) => {
+            // Delete personal audit logs
+            let _ = sqlx::query("DELETE FROM audit_logs WHERE user_id = $1").bind(&user.user_id).execute(&state.db).await;
+            Json(json!({"message": "Account data deleted and anonymized", "status": "complete"})).into_response()
+        }
+        Err(e) => (StatusCode::INTERNAL_SERVER_ERROR, Json(json!({"error": format!("Failed: {}", e)}))).into_response(),
+    }
+}
+
+// ── Integrations ───────────────────────────────────────────
+
+pub async fn list_integrations(
+    user: AuthUser,
+    State(state): State<Arc<AppState>>,
+) -> impl IntoResponse {
+    let org_id = user.org_id.as_deref().unwrap_or("");
+    let rows = sqlx::query_as::<_, (String, String, String, Option<String>, bool, Option<String>, Option<String>, Option<String>, String)>(
+        "SELECT id, name, integration_type, webhook_url, is_active, CAST(last_triggered_at AS TEXT), last_error, config::text, CAST(created_at AS TEXT) FROM integrations WHERE organization_id = $1 ORDER BY created_at DESC"
+    )
+    .bind(org_id)
+    .fetch_all(&state.db)
+    .await
+    .unwrap_or_default();
+
+    let list: Vec<serde_json::Value> = rows.iter().map(|(id, name, itype, url, active, last_trig, last_err, config, created)| {
+        let config_val: serde_json::Value = config.as_deref().and_then(|c| serde_json::from_str(c).ok()).unwrap_or(json!({}));
+        json!({
+            "id": id,
+            "name": name,
+            "integration_type": itype,
+            "webhook_url": url,
+            "is_active": active,
+            "last_triggered_at": last_trig,
+            "last_error": last_err,
+            "config": config_val,
+            "created_at": created
+        })
+    }).collect();
+
+    Json(json!({"integrations": list})).into_response()
+}
+
+pub async fn create_integration(
+    user: AuthUser,
+    State(state): State<Arc<AppState>>,
+    Json(body): Json<serde_json::Value>,
+) -> impl IntoResponse {
+    let org_id = user.org_id.as_deref().unwrap_or("");
+    let id = uuid::Uuid::new_v4().to_string();
+
+    let name = body.get("name").and_then(|v| v.as_str()).unwrap_or("New Integration");
+    let int_type = body.get("integration_type").and_then(|v| v.as_str()).unwrap_or("webhook");
+    let webhook_url = body.get("webhook_url").and_then(|v| v.as_str()).unwrap_or("");
+    let config = body.get("config").cloned().unwrap_or(json!({}));
+    let events = body.get("events").cloned().unwrap_or(json!(["scan_completed","scan_failed","vulnerability_critical"]));
+
+    // Validate integration type
+    let valid_types = ["slack", "teams", "jira", "github", "webhook"];
+    if !valid_types.contains(&int_type) {
+        return (StatusCode::BAD_REQUEST, Json(json!({"error": format!("Invalid type. Must be one of: {:?}", valid_types)}))).into_response();
+    }
+
+    // Validate webhook URL format
+    if !webhook_url.is_empty() && !webhook_url.starts_with("https://") {
+        return (StatusCode::BAD_REQUEST, Json(json!({"error": "Webhook URL must use HTTPS"}))).into_response();
+    }
+
+    let events_vec: Vec<String> = events.as_array()
+        .map(|arr| arr.iter().filter_map(|v| v.as_str().map(|s| s.to_string())).collect())
+        .unwrap_or_default();
+
+    let result = sqlx::query(
+        "INSERT INTO integrations (id, organization_id, name, integration_type, webhook_url, config, events, is_active, created_by, created_at, updated_at)
+         VALUES ($1, $2, $3, $4, $5, $6::jsonb, $7, TRUE, $8, NOW(), NOW())"
+    )
+    .bind(&id)
+    .bind(org_id)
+    .bind(name)
+    .bind(int_type)
+    .bind(webhook_url)
+    .bind(&config)
+    .bind(&events_vec)
+    .bind(&user.user_id)
+    .execute(&state.db)
+    .await;
+
+    match result {
+        Ok(_) => (StatusCode::CREATED, Json(json!({"id": id, "message": "Integration created"}))).into_response(),
+        Err(e) => (StatusCode::INTERNAL_SERVER_ERROR, Json(json!({"error": format!("Failed: {}", e)}))).into_response(),
+    }
+}
+
+pub async fn update_integration(
+    Path(integration_id): Path<String>,
+    user: AuthUser,
+    State(state): State<Arc<AppState>>,
+    Json(body): Json<serde_json::Value>,
+) -> impl IntoResponse {
+    let org_id = user.org_id.as_deref().unwrap_or("");
+
+    let name = body.get("name").and_then(|v| v.as_str());
+    let webhook_url = body.get("webhook_url").and_then(|v| v.as_str());
+    let config = body.get("config");
+
+    if let Some(url) = webhook_url {
+        if !url.is_empty() && !url.starts_with("https://") {
+            return (StatusCode::BAD_REQUEST, Json(json!({"error": "Webhook URL must use HTTPS"}))).into_response();
+        }
+    }
+
+    let _ = sqlx::query(
+        "UPDATE integrations SET name = COALESCE($1, name), webhook_url = COALESCE($2, webhook_url), config = COALESCE($3::jsonb, config), updated_at = NOW() WHERE id = $4 AND organization_id = $5"
+    )
+    .bind(name)
+    .bind(webhook_url)
+    .bind(config)
+    .bind(&integration_id)
+    .bind(org_id)
+    .execute(&state.db)
+    .await;
+
+    Json(json!({"message": "Integration updated", "id": integration_id})).into_response()
+}
+
+pub async fn delete_integration(
+    Path(integration_id): Path<String>,
+    user: AuthUser,
+    State(state): State<Arc<AppState>>,
+) -> impl IntoResponse {
+    let org_id = user.org_id.as_deref().unwrap_or("");
+    let _ = sqlx::query("DELETE FROM integrations WHERE id = $1 AND organization_id = $2")
+        .bind(&integration_id)
+        .bind(org_id)
+        .execute(&state.db)
+        .await;
+    Json(json!({"message": "Integration deleted"})).into_response()
+}
+
+pub async fn toggle_integration(
+    Path(integration_id): Path<String>,
+    user: AuthUser,
+    State(state): State<Arc<AppState>>,
+) -> impl IntoResponse {
+    let org_id = user.org_id.as_deref().unwrap_or("");
+    let _ = sqlx::query("UPDATE integrations SET is_active = NOT is_active, updated_at = NOW() WHERE id = $1 AND organization_id = $2")
+        .bind(&integration_id)
+        .bind(org_id)
+        .execute(&state.db)
+        .await;
+    Json(json!({"message": "Integration toggled", "id": integration_id})).into_response()
+}
+
+pub async fn test_integration(
+    Path(integration_id): Path<String>,
+    user: AuthUser,
+    State(state): State<Arc<AppState>>,
+) -> impl IntoResponse {
+    let org_id = user.org_id.as_deref().unwrap_or("");
+
+    let row = sqlx::query_as::<_, (String, Option<String>)>(
+        "SELECT integration_type, webhook_url FROM integrations WHERE id = $1 AND organization_id = $2"
+    )
+    .bind(&integration_id)
+    .bind(org_id)
+    .fetch_optional(&state.db)
+    .await
+    .unwrap_or(None);
+
+    let (int_type, webhook_url) = match row {
+        Some(r) => r,
+        None => return (StatusCode::NOT_FOUND, Json(json!({"error": "Integration not found"}))).into_response(),
+    };
+
+    let url = match webhook_url {
+        Some(u) if !u.is_empty() => u,
+        _ => return (StatusCode::BAD_REQUEST, Json(json!({"error": "No webhook URL configured"}))).into_response(),
+    };
+
+    let test_payload = json!({
+        "target": "test.example.com",
+        "tool": "test-scan",
+        "status": "completed",
+        "message": "This is a test notification from CyberSec Pro"
+    });
+
+    // Use the integration service to send
+    let result = match int_type.as_str() {
+        "slack" => {
+            let client = reqwest::Client::new();
+            let payload = json!({
+                "text": "🧪 *Test notification from CyberSec Pro*\nYour Slack integration is working correctly!"
+            });
+            client.post(&url).json(&payload).timeout(std::time::Duration::from_secs(10)).send().await
+                .map(|r| r.status().is_success())
+                .map_err(|e| e.to_string())
+        }
+        _ => {
+            let client = reqwest::Client::new();
+            client.post(&url).json(&json!({"event": "test", "data": test_payload})).timeout(std::time::Duration::from_secs(10)).send().await
+                .map(|r| r.status().is_success())
+                .map_err(|e| e.to_string())
+        }
+    };
+
+    match result {
+        Ok(true) => Json(json!({"success": true, "message": "Test notification sent successfully"})).into_response(),
+        Ok(false) => Json(json!({"success": false, "error": "Remote server returned error status"})).into_response(),
+        Err(e) => Json(json!({"success": false, "error": e})).into_response(),
+    }
 }

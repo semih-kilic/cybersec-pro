@@ -80,6 +80,9 @@ ssh2 = "0.9"
 ipnet = "2"
 aes-gcm = "0.10"
 
+# Cron scheduling
+cron = "0.12"
+
 # SSE
 async-stream = "0.3"
 

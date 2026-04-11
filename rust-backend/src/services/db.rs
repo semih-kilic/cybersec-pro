@@ -324,4 +324,25 @@ r#"CREATE TABLE IF NOT EXISTS team_invitations (
 // Add password_reset columns to existing users table (idempotent)
 "ALTER TABLE users ADD COLUMN IF NOT EXISTS password_reset_token TEXT",
 "ALTER TABLE users ADD COLUMN IF NOT EXISTS password_reset_expires TIMESTAMP",
+
+// Integrations table
+r#"CREATE TABLE IF NOT EXISTS integrations (
+    id TEXT PRIMARY KEY,
+    organization_id TEXT NOT NULL REFERENCES organizations(id) ON DELETE CASCADE,
+    name TEXT NOT NULL,
+    integration_type TEXT NOT NULL,
+    webhook_url TEXT,
+    config JSONB DEFAULT '{}',
+    events TEXT[] DEFAULT ARRAY['scan_completed','scan_failed','vulnerability_critical'],
+    is_active BOOLEAN DEFAULT TRUE,
+    last_triggered_at TIMESTAMP,
+    last_error TEXT,
+    created_by TEXT REFERENCES users(id),
+    created_at TIMESTAMP DEFAULT NOW(),
+    updated_at TIMESTAMP DEFAULT NOW()
+)"#,
+
+// Add role column if missing (for RBAC expansion)
+"ALTER TABLE users ADD COLUMN IF NOT EXISTS role TEXT DEFAULT 'user'",
+"ALTER TABLE users ADD COLUMN IF NOT EXISTS permissions JSONB DEFAULT '[]'",
 ];
