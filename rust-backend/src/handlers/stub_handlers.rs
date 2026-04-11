@@ -30,94 +30,24 @@ pub async fn social_auth(
     let path = uri.path();
     let provider = if path.contains("/github") { "github" } else if path.contains("/google") { "google" } else { "unknown" };
 
-    if provider != "github" {
-        return (StatusCode::BAD_REQUEST, Json(json!({"error": format!("{} OAuth not yet implemented", provider)}))).into_response();
-    }
-
-    let client_id = std::env::var("GITHUB_CLIENT_ID").unwrap_or_else(|_| "***REDACTED_GH_OAUTH_CLIENT_ID***".to_string());
-    let client_secret = match std::env::var("GITHUB_CLIENT_SECRET") {
-        Ok(s) => s,
-        Err(_) => return (StatusCode::INTERNAL_SERVER_ERROR, Json(json!({"error": "GitHub OAuth not configured (missing GITHUB_CLIENT_SECRET)"}))).into_response(),
-    };
-
-    // Exchange code for access token
     let http = reqwest::Client::new();
-    let token_res = http.post("https://github.com/login/oauth/access_token")
-        .header("Accept", "application/json")
-        .json(&serde_json::json!({
-            "client_id": client_id,
-            "client_secret": client_secret,
-            "code": code,
-            "redirect_uri": redirect_uri,
-        }))
-        .send()
-        .await;
 
-    let token_data: serde_json::Value = match token_res {
-        Ok(resp) => match resp.json().await {
-            Ok(d) => d,
-            Err(_) => return (StatusCode::BAD_GATEWAY, Json(json!({"error": "Failed to parse GitHub token response"}))).into_response(),
-        },
-        Err(_) => return (StatusCode::BAD_GATEWAY, Json(json!({"error": "Failed to contact GitHub"}))).into_response(),
-    };
-
-    let gh_token = match token_data.get("access_token").and_then(|t| t.as_str()) {
-        Some(t) => t.to_string(),
-        None => {
-            let err = token_data.get("error_description").and_then(|e| e.as_str()).unwrap_or("Unknown error");
-            return (StatusCode::UNAUTHORIZED, Json(json!({"error": format!("GitHub OAuth failed: {}", err)}))).into_response();
-        }
-    };
-
-    // Get GitHub user info
-    let user_res = http.get("https://api.github.com/user")
-        .header("Authorization", format!("Bearer {}", gh_token))
-        .header("User-Agent", "CyberSec-Pro")
-        .send()
-        .await;
-
-    let gh_user: serde_json::Value = match user_res {
-        Ok(resp) => match resp.json().await {
-            Ok(d) => d,
-            Err(_) => return (StatusCode::BAD_GATEWAY, Json(json!({"error": "Failed to parse GitHub user info"}))).into_response(),
-        },
-        Err(_) => return (StatusCode::BAD_GATEWAY, Json(json!({"error": "Failed to get GitHub user info"}))).into_response(),
-    };
-
-    // Get primary email if not public  
-    let mut email = gh_user.get("email").and_then(|e| e.as_str()).unwrap_or("").to_string();
-    if email.is_empty() {
-        let emails_res = http.get("https://api.github.com/user/emails")
-            .header("Authorization", format!("Bearer {}", gh_token))
-            .header("User-Agent", "CyberSec-Pro")
-            .send()
-            .await;
-        if let Ok(resp) = emails_res {
-            if let Ok(emails) = resp.json::<Vec<serde_json::Value>>().await {
-                for e in &emails {
-                    if e.get("primary").and_then(|p| p.as_bool()) == Some(true) {
-                        if let Some(addr) = e.get("email").and_then(|a| a.as_str()) {
-                            email = addr.to_string();
-                            break;
-                        }
-                    }
-                }
+    // ── Resolve email, name, avatar from provider ──
+    let (email, first_name, last_name, avatar_url, provider_label) = match provider {
+        "github" => {
+            match github_oauth(&http, &code, &redirect_uri).await {
+                Ok(info) => info,
+                Err(resp) => return resp,
             }
         }
-    }
-
-    if email.is_empty() {
-        return (StatusCode::BAD_REQUEST, Json(json!({"error": "Could not retrieve email from GitHub. Please make email public or grant email scope."}))).into_response();
-    }
-
-    let gh_name = gh_user.get("name").and_then(|n| n.as_str()).unwrap_or("");
-    let gh_login = gh_user.get("login").and_then(|l| l.as_str()).unwrap_or("");
-    let gh_avatar = gh_user.get("avatar_url").and_then(|a| a.as_str()).unwrap_or("");
-    let _gh_id = gh_user.get("id").and_then(|i| i.as_i64()).unwrap_or(0);
-
-    let name_parts: Vec<&str> = gh_name.split_whitespace().collect();
-    let first_name = if !name_parts.is_empty() { name_parts[0] } else { gh_login };
-    let last_name = if name_parts.len() > 1 { name_parts[1..].join(" ") } else { String::new() };
+        "google" => {
+            match google_oauth(&http, &code, &redirect_uri).await {
+                Ok(info) => info,
+                Err(resp) => return resp,
+            }
+        }
+        _ => return (StatusCode::BAD_REQUEST, Json(json!({"error": "Unknown OAuth provider"}))).into_response(),
+    };
 
     // Check if user already exists
     let existing: Option<(String, String, Option<String>)> = sqlx::query_as(
@@ -131,7 +61,7 @@ pub async fn social_auth(
     let (user_id, org_id, role) = if let Some((uid, r, oid)) = existing {
         // Update last login + avatar
         let _ = sqlx::query("UPDATE users SET last_login = CURRENT_TIMESTAMP, avatar_url = $1 WHERE id = $2")
-            .bind(gh_avatar)
+            .bind(&avatar_url)
             .bind(&uid)
             .execute(&state.db)
             .await;
@@ -153,14 +83,14 @@ pub async fn social_auth(
 
         let _ = sqlx::query(
             "INSERT INTO users (id, email, password_hash, first_name, last_name, role, organization_id, email_verified, avatar_url)
-             VALUES ($1, $2, '', $3, $4, 'admin', $5, 1, $6)"
+             VALUES ($1, $2, '', $3, $4, 'admin', $5, true, $6)"
         )
         .bind(&new_user_id)
         .bind(&email)
-        .bind(first_name)
+        .bind(&first_name)
         .bind(&last_name)
         .bind(&new_org_id)
-        .bind(gh_avatar)
+        .bind(&avatar_url)
         .execute(&state.db)
         .await;
 
@@ -174,16 +104,184 @@ pub async fn social_auth(
     (StatusCode::OK, Json(json!({
         "access_token": access_token,
         "refresh_token": refresh_token,
-        "message": "GitHub login successful",
+        "message": format!("{} login successful", provider_label),
         "user": {
             "id": user_id,
             "email": email,
             "first_name": first_name,
             "last_name": last_name,
-            "avatar_url": gh_avatar,
+            "avatar_url": avatar_url,
             "role": role
         }
     }))).into_response()
+}
+
+// ── GitHub OAuth helper ──
+async fn github_oauth(
+    http: &reqwest::Client,
+    code: &str,
+    redirect_uri: &str,
+) -> Result<(String, String, String, String, &'static str), axum::response::Response> {
+    let client_id = std::env::var("GITHUB_CLIENT_ID").unwrap_or_else(|_| "***REDACTED_GH_OAUTH_CLIENT_ID***".to_string());
+    let client_secret = match std::env::var("GITHUB_CLIENT_SECRET") {
+        Ok(s) => s,
+        Err(_) => return Err((StatusCode::INTERNAL_SERVER_ERROR, Json(json!({"error": "GitHub OAuth not configured"}))).into_response()),
+    };
+
+    let token_res = http.post("https://github.com/login/oauth/access_token")
+        .header("Accept", "application/json")
+        .json(&serde_json::json!({
+            "client_id": client_id,
+            "client_secret": client_secret,
+            "code": code,
+            "redirect_uri": redirect_uri,
+        }))
+        .send()
+        .await;
+
+    let token_data: serde_json::Value = match token_res {
+        Ok(resp) => resp.json().await.unwrap_or_default(),
+        Err(_) => return Err((StatusCode::BAD_GATEWAY, Json(json!({"error": "Failed to contact GitHub"}))).into_response()),
+    };
+
+    let gh_token = match token_data.get("access_token").and_then(|t| t.as_str()) {
+        Some(t) => t.to_string(),
+        None => {
+            let err = token_data.get("error_description").and_then(|e| e.as_str()).unwrap_or("Unknown error");
+            return Err((StatusCode::UNAUTHORIZED, Json(json!({"error": format!("GitHub OAuth failed: {}", err)}))).into_response());
+        }
+    };
+
+    let gh_user: serde_json::Value = http.get("https://api.github.com/user")
+        .header("Authorization", format!("Bearer {}", gh_token))
+        .header("User-Agent", "CyberSec-Pro")
+        .send().await
+        .map_err(|_| (StatusCode::BAD_GATEWAY, Json(json!({"error": "Failed to get GitHub user info"}))).into_response())?
+        .json().await
+        .map_err(|_| (StatusCode::BAD_GATEWAY, Json(json!({"error": "Failed to parse GitHub user info"}))).into_response())?;
+
+    let mut email = gh_user.get("email").and_then(|e| e.as_str()).unwrap_or("").to_string();
+    if email.is_empty() {
+        if let Ok(resp) = http.get("https://api.github.com/user/emails")
+            .header("Authorization", format!("Bearer {}", gh_token))
+            .header("User-Agent", "CyberSec-Pro")
+            .send().await
+        {
+            if let Ok(emails) = resp.json::<Vec<serde_json::Value>>().await {
+                for e in &emails {
+                    if e.get("primary").and_then(|p| p.as_bool()) == Some(true) {
+                        if let Some(addr) = e.get("email").and_then(|a| a.as_str()) {
+                            email = addr.to_string();
+                            break;
+                        }
+                    }
+                }
+            }
+        }
+    }
+    if email.is_empty() {
+        return Err((StatusCode::BAD_REQUEST, Json(json!({"error": "Could not retrieve email from GitHub"}))).into_response());
+    }
+
+    let gh_name = gh_user.get("name").and_then(|n| n.as_str()).unwrap_or("");
+    let gh_login = gh_user.get("login").and_then(|l| l.as_str()).unwrap_or("");
+    let avatar = gh_user.get("avatar_url").and_then(|a| a.as_str()).unwrap_or("").to_string();
+    let name_parts: Vec<&str> = gh_name.split_whitespace().collect();
+    let first = if !name_parts.is_empty() { name_parts[0].to_string() } else { gh_login.to_string() };
+    let last = if name_parts.len() > 1 { name_parts[1..].join(" ") } else { String::new() };
+
+    Ok((email, first, last, avatar, "GitHub"))
+}
+
+// ── Google OAuth helper ──
+async fn google_oauth(
+    http: &reqwest::Client,
+    code: &str,
+    redirect_uri: &str,
+) -> Result<(String, String, String, String, &'static str), axum::response::Response> {
+    let client_id = std::env::var("GOOGLE_CLIENT_ID").unwrap_or_else(|_|
+        "547951331800-kqkuc6aohfr7ptt26p38mnqfdvt7b6mu.apps.googleusercontent.com".to_string()
+    );
+    let client_secret = match std::env::var("GOOGLE_CLIENT_SECRET") {
+        Ok(s) => s,
+        Err(_) => return Err((StatusCode::INTERNAL_SERVER_ERROR, Json(json!({"error": "Google OAuth not configured (missing GOOGLE_CLIENT_SECRET)"}))).into_response()),
+    };
+
+    // Exchange authorization code for tokens
+    let token_res = http.post("https://oauth2.googleapis.com/token")
+        .form(&[
+            ("code", code),
+            ("client_id", &client_id),
+            ("client_secret", &client_secret),
+            ("redirect_uri", redirect_uri),
+            ("grant_type", "authorization_code"),
+        ])
+        .send()
+        .await;
+
+    let token_data: serde_json::Value = match token_res {
+        Ok(resp) => resp.json().await.unwrap_or_default(),
+        Err(_) => return Err((StatusCode::BAD_GATEWAY, Json(json!({"error": "Failed to contact Google"}))).into_response()),
+    };
+
+    let id_token = token_data.get("id_token").and_then(|t| t.as_str()).unwrap_or("");
+    let access_token = token_data.get("access_token").and_then(|t| t.as_str()).unwrap_or("");
+
+    if access_token.is_empty() {
+        let err = token_data.get("error_description").and_then(|e| e.as_str()).unwrap_or("Token exchange failed");
+        return Err((StatusCode::UNAUTHORIZED, Json(json!({"error": format!("Google OAuth failed: {}", err)}))).into_response());
+    }
+
+    // Try id_token first (contains user info as JWT), fallback to userinfo endpoint
+    let (email, first, last, picture) = if !id_token.is_empty() {
+        // Decode JWT payload (id_token is base64url: header.payload.signature)
+        let parts: Vec<&str> = id_token.split('.').collect();
+        if parts.len() >= 2 {
+            use base64::Engine;
+            let engine = base64::engine::general_purpose::URL_SAFE_NO_PAD;
+            if let Ok(payload_bytes) = engine.decode(parts[1]) {
+                if let Ok(claims) = serde_json::from_slice::<serde_json::Value>(&payload_bytes) {
+                    let em = claims.get("email").and_then(|e| e.as_str()).unwrap_or("").to_string();
+                    let gn = claims.get("given_name").and_then(|n| n.as_str()).unwrap_or("").to_string();
+                    let fn_ = claims.get("family_name").and_then(|n| n.as_str()).unwrap_or("").to_string();
+                    let pic = claims.get("picture").and_then(|p| p.as_str()).unwrap_or("").to_string();
+                    (em, gn, fn_, pic)
+                } else {
+                    (String::new(), String::new(), String::new(), String::new())
+                }
+            } else {
+                (String::new(), String::new(), String::new(), String::new())
+            }
+        } else {
+            (String::new(), String::new(), String::new(), String::new())
+        }
+    } else {
+        (String::new(), String::new(), String::new(), String::new())
+    };
+
+    // Fallback: use userinfo endpoint if id_token decoding failed
+    let (email, first, last, picture) = if email.is_empty() {
+        let user_info: serde_json::Value = http.get("https://www.googleapis.com/oauth2/v2/userinfo")
+            .header("Authorization", format!("Bearer {}", access_token))
+            .send().await
+            .map_err(|_| (StatusCode::BAD_GATEWAY, Json(json!({"error": "Failed to get Google user info"}))).into_response())?
+            .json().await
+            .map_err(|_| (StatusCode::BAD_GATEWAY, Json(json!({"error": "Failed to parse Google user info"}))).into_response())?;
+
+        let em = user_info.get("email").and_then(|e| e.as_str()).unwrap_or("").to_string();
+        let gn = user_info.get("given_name").and_then(|n| n.as_str()).unwrap_or("").to_string();
+        let fn_ = user_info.get("family_name").and_then(|n| n.as_str()).unwrap_or("").to_string();
+        let pic = user_info.get("picture").and_then(|p| p.as_str()).unwrap_or("").to_string();
+        (em, gn, fn_, pic)
+    } else {
+        (email, first, last, picture)
+    };
+
+    if email.is_empty() {
+        return Err((StatusCode::BAD_REQUEST, Json(json!({"error": "Could not retrieve email from Google"}))).into_response());
+    }
+
+    Ok((email, first, last, picture, "Google"))
 }
 
 pub async fn resend_verification(

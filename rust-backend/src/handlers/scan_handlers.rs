@@ -323,6 +323,7 @@ pub async fn start_scan(
 
     let agent_id_for_spawn = body.agent_id.clone();
     let org_id_for_spawn = org_id.clone();
+    let user_id_for_spawn = auth.user_id.clone();
     let tool_name_for_notify = tool.name.clone();
     let target_for_notify = target.to_string();
 
@@ -366,6 +367,17 @@ pub async fn start_scan(
             "status": status
         });
         crate::services::integrations::notify_integrations(&db, &org_id_for_spawn, event_type, &payload).await;
+
+        // Email notification to user (respects notification_preferences)
+        let findings_count = findings.as_ref()
+            .and_then(|f| serde_json::from_str::<serde_json::Value>(f).ok())
+            .and_then(|v| v.as_array().map(|a| a.len()))
+            .unwrap_or(0);
+        crate::services::notifications::notify_scan_complete(
+            &db, &user_id_for_spawn, &scan_id_clone,
+            &tool_name_for_notify, &target_for_notify,
+            &status, findings_count,
+        ).await;
 
         // Update agent: decrement active_scans, increment total_scans, set status back to online
         if let Some(aid) = agent_id_for_spawn {

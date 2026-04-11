@@ -1,6 +1,7 @@
 mod handlers;
 mod middleware;
 mod models;
+mod openapi;
 mod scan_engine;
 mod services;
 

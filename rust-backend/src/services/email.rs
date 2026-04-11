@@ -241,6 +241,17 @@ async fn send_email(
     Ok(())
 }
 
+/// Public wrapper for notifications module
+pub async fn send_email_public(
+    cfg: &EmailConfig,
+    to: &str,
+    subject: &str,
+    plain: &str,
+    html: &str,
+) -> Result<(), String> {
+    send_email(cfg, to, subject, plain, html).await
+}
+
 // ── HTML Templates ─────────────────────────────────────────
 
 fn license_email_html(name: &str, email: &str, key: &str, plan: &str, expiry: &str) -> String {
