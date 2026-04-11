@@ -1509,6 +1509,20 @@ pub async fn usage_stats(
 
 // ── Plan info / features ───────────────────────────────────
 
+pub async fn roles_list(
+    _user: AuthUser,
+) -> impl IntoResponse {
+    Json(json!({
+        "roles": [
+            {"id": "viewer", "name": "Viewer", "level": 1, "description": "Read-only access to dashboards and reports"},
+            {"id": "user", "name": "User", "level": 2, "description": "Can run scans, manage own agents and view results"},
+            {"id": "analyst", "name": "Analyst", "level": 3, "description": "Can manage all scans, reports, and team resources"},
+            {"id": "admin", "name": "Admin", "level": 4, "description": "Full organization management, billing, and team control"},
+            {"id": "superadmin", "name": "Super Admin", "level": 5, "description": "Platform-level access, can impersonate and manage all orgs"}
+        ]
+    })).into_response()
+}
+
 pub async fn plan_info(
     user: AuthUser,
     State(state): State<Arc<AppState>>,
@@ -1791,9 +1805,9 @@ pub async fn admin_change_role(
         None => return (StatusCode::BAD_REQUEST, Json(json!({"error": "role is required"}))).into_response(),
     };
 
-    let valid_roles = ["user", "admin", "superadmin"];
+    let valid_roles = crate::middleware::auth_middleware::VALID_ROLES;
     if !valid_roles.contains(&role.as_str()) {
-        return (StatusCode::BAD_REQUEST, Json(json!({"error": "Invalid role. Must be one of: user, admin, superadmin"}))).into_response();
+        return (StatusCode::BAD_REQUEST, Json(json!({"error": format!("Invalid role. Must be one of: {:?}", valid_roles)}))).into_response();
     }
 
     let result = sqlx::query("UPDATE users SET role = $1 WHERE id = $2")

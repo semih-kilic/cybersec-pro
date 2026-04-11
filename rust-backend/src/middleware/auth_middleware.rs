@@ -93,3 +93,43 @@ impl FromRequestParts<Arc<AppState>> for AdminUser
         Ok(AdminUser(user))
     }
 }
+
+/// Analyst or higher auth check (analyst, admin, superadmin)
+pub struct AnalystUser(pub AuthUser);
+
+#[async_trait]
+impl FromRequestParts<Arc<AppState>> for AnalystUser
+{
+    type Rejection = Response;
+
+    async fn from_request_parts(parts: &mut Parts, state: &Arc<AppState>) -> Result<Self, Self::Rejection> {
+        let user = AuthUser::from_request_parts(parts, state).await?;
+
+        if !matches!(user.role.as_str(), "analyst" | "admin" | "superadmin") {
+            return Err((StatusCode::FORBIDDEN, Json(serde_json::json!({"error": "Analyst access required"}))).into_response());
+        }
+
+        Ok(AnalystUser(user))
+    }
+}
+
+/// Role hierarchy for permission checks.
+/// superadmin > admin > analyst > user > viewer
+pub fn role_level(role: &str) -> u8 {
+    match role {
+        "superadmin" => 5,
+        "admin" => 4,
+        "analyst" => 3,
+        "user" => 2,
+        "viewer" => 1,
+        _ => 0,
+    }
+}
+
+/// Check if a role has at least the required permission level.
+pub fn has_role_access(user_role: &str, required_role: &str) -> bool {
+    role_level(user_role) >= role_level(required_role)
+}
+
+/// Valid roles for the system
+pub const VALID_ROLES: [&str; 5] = ["viewer", "user", "analyst", "admin", "superadmin"];

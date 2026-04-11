@@ -78,7 +78,9 @@ export function TeamTab({ user, userPlan, setMessage }: SettingsTabProps) {
     const colors: Record<string, string> = {
       superadmin: 'bg-red-500/20 text-red-400',
       admin: 'bg-purple-500/20 text-purple-400',
+      analyst: 'bg-cyan-500/20 text-cyan-400',
       user: 'bg-blue-500/20 text-blue-400',
+      viewer: 'bg-gray-500/20 text-gray-400',
     };
     return colors[role] || colors.user;
   };
@@ -127,7 +129,9 @@ export function TeamTab({ user, userPlan, setMessage }: SettingsTabProps) {
                 onChange={(e) => setInviteRole(e.target.value)}
                 className="px-3 py-2 bg-gray-900 border border-gray-700 rounded-lg text-white"
               >
+                <option value="viewer">Viewer</option>
                 <option value="user">User</option>
+                <option value="analyst">Analyst</option>
                 <option value="admin">Admin</option>
               </select>
               <button

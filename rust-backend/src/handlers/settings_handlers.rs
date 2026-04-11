@@ -310,9 +310,9 @@ pub async fn invite_team_member(
     };
 
     let role = body.get("role").and_then(|r| r.as_str()).unwrap_or("user").to_string();
-    let valid_roles = ["user", "admin"];
+    let valid_roles = crate::middleware::auth_middleware::VALID_ROLES;
     if !valid_roles.contains(&role.as_str()) {
-        return (StatusCode::BAD_REQUEST, Json(json!({"error": "Invalid role"}))).into_response();
+        return (StatusCode::BAD_REQUEST, Json(json!({"error": format!("Invalid role. Must be one of: {:?}", valid_roles)}))).into_response();
     }
 
     // Check if user already exists in org
@@ -415,9 +415,9 @@ pub async fn change_member_role(
         None => return (StatusCode::BAD_REQUEST, Json(json!({"error": "Role required"}))).into_response(),
     };
 
-    let valid_roles = ["user", "admin"];
+    let valid_roles = crate::middleware::auth_middleware::VALID_ROLES;
     if !valid_roles.contains(&role.as_str()) {
-        return (StatusCode::BAD_REQUEST, Json(json!({"error": "Invalid role"}))).into_response();
+        return (StatusCode::BAD_REQUEST, Json(json!({"error": format!("Invalid role. Must be one of: {:?}", valid_roles)}))).into_response();
     }
 
     let result = sqlx::query("UPDATE users SET role = $1 WHERE id = $2 AND organization_id = $3")

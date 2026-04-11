@@ -339,6 +339,7 @@ fn build_router(state: Arc<AppState>) -> Router {
         .route("/api/v1/plans", get(plan_config_handler))
         .route("/api/v1/plan/info", get(stub_handlers::plan_info))
         .route("/api/v1/plan/features", get(stub_handlers::plan_features))
+        .route("/api/v1/roles", get(stub_handlers::roles_list))
         // ── Auth extras ───────────────────────────────────────
         .route("/api/v1/auth/google", post(stub_handlers::social_auth))
         .route("/api/v1/auth/github", post(stub_handlers::social_auth))
@@ -428,6 +429,11 @@ fn build_router(state: Arc<AppState>) -> Router {
         // ── GDPR ──────────────────────────────────────────────
         .route("/api/v1/gdpr/export", post(stub_handlers::gdpr_export))
         .route("/api/v1/gdpr/delete-account", post(stub_handlers::gdpr_delete_account))
+        // ── Integrations ──────────────────────────────────────
+        .route("/api/v1/integrations", get(stub_handlers::list_integrations).post(stub_handlers::create_integration))
+        .route("/api/v1/integrations/:id", put(stub_handlers::update_integration).delete(stub_handlers::delete_integration))
+        .route("/api/v1/integrations/:id/toggle", post(stub_handlers::toggle_integration))
+        .route("/api/v1/integrations/:id/test", post(stub_handlers::test_integration))
         .with_state(state)
 }
 

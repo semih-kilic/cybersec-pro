@@ -1408,4 +1408,87 @@ export function useDashboardScans() {
   });
 }
 
+// ── Integrations ────────────────────────────────────────────
+
+export interface Integration {
+  id: string;
+  name: string;
+  integration_type: string;
+  webhook_url?: string;
+  is_active: boolean;
+  last_triggered_at?: string;
+  last_error?: string;
+  config?: Record<string, unknown>;
+  created_at: string;
+}
+
+export function useIntegrations() {
+  const { token } = useAuth();
+  return useQuery({
+    queryKey: ['integrations'],
+    queryFn: () => authFetch<{ integrations: Integration[] }>('/api/v1/integrations', token),
+    select: (data) => data.integrations || [],
+    enabled: !!token,
+  });
+}
+
+export function useCreateIntegration() {
+  const { token } = useAuth();
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (data: Record<string, unknown>) =>
+      authFetch('/api/v1/integrations', token, { method: 'POST', body: JSON.stringify(data) }),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['integrations'] }),
+  });
+}
+
+export function useUpdateIntegration() {
+  const { token } = useAuth();
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, data }: { id: string; data: Record<string, unknown> }) =>
+      authFetch(`/api/v1/integrations/${id}`, token, { method: 'PUT', body: JSON.stringify(data) }),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['integrations'] }),
+  });
+}
+
+export function useDeleteIntegration() {
+  const { token } = useAuth();
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (id: string) =>
+      authFetch(`/api/v1/integrations/${id}`, token, { method: 'DELETE' }),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['integrations'] }),
+  });
+}
+
+export function useToggleIntegration() {
+  const { token } = useAuth();
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (id: string) =>
+      authFetch(`/api/v1/integrations/${id}/toggle`, token, { method: 'POST' }),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['integrations'] }),
+  });
+}
+
+export function useTestIntegration() {
+  const { token } = useAuth();
+  return useMutation({
+    mutationFn: (id: string) =>
+      authFetch<{ success: boolean; message?: string; error?: string }>(`/api/v1/integrations/${id}/test`, token, { method: 'POST' }),
+  });
+}
+
+// ── Roles ───────────────────────────────────────────────────
+
+export function useRoles() {
+  const { token } = useAuth();
+  return useQuery({
+    queryKey: ['roles'],
+    queryFn: () => authFetch<{ roles: Array<{ id: string; name: string; level: number; description: string }> }>('/api/v1/roles', token),
+    select: (data) => data.roles || [],
+    enabled: !!token,
+  });
+}
 

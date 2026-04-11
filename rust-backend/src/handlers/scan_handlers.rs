@@ -322,6 +322,9 @@ pub async fn start_scan(
     }
 
     let agent_id_for_spawn = body.agent_id.clone();
+    let org_id_for_spawn = org_id.clone();
+    let tool_name_for_notify = tool.name.clone();
+    let target_for_notify = target.to_string();
 
     tokio::spawn(async move {
         let result = execute_scan(&tool_name, &target_owned, command_template.as_deref(), &scan_tx, &scan_id_clone, agent_ssh).await;
@@ -353,6 +356,16 @@ pub async fn start_scan(
             "scan_id": scan_id_clone,
             "status": status
         }).to_string());
+
+        // Notify integrations (Slack, Teams, Webhooks)
+        let event_type = if status == "completed" { "scan_completed" } else { "scan_failed" };
+        let payload = json!({
+            "scan_id": scan_id_clone,
+            "tool": tool_name_for_notify,
+            "target": target_for_notify,
+            "status": status
+        });
+        crate::services::integrations::notify_integrations(&db, &org_id_for_spawn, event_type, &payload).await;
 
         // Update agent: decrement active_scans, increment total_scans, set status back to online
         if let Some(aid) = agent_id_for_spawn {
