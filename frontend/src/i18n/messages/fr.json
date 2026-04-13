@@ -83,25 +83,59 @@
         "name": "Essai",
         "price": "Gratuit",
         "period": "14 jours",
-        "features": ["50 outils de sécurité", "1 scan complet", "Rapport PDF avec résultats", "Support par e-mail", "Sans carte bancaire"]
+        "features": [
+          "50 outils de sécurité",
+          "1 scan complet",
+          "Rapport PDF avec résultats",
+          "Support par e-mail",
+          "Sans carte bancaire"
+        ]
       },
       "starter": {
         "name": "Starter",
         "price": "99 €",
         "period": "/mois",
-        "features": ["100 outils de sécurité", "1 domaine/application", "Scans automatiques hebdomadaires", "Alertes e-mail vulnérabilités", "Rapports PDF & HTML", "Support e-mail prioritaire (48h)", "Historique vulnérabilités 3 mois"]
+        "features": [
+          "100 outils de sécurité",
+          "1 domaine/application",
+          "Scans automatiques hebdomadaires",
+          "Alertes e-mail vulnérabilités",
+          "Rapports PDF & HTML",
+          "Support e-mail prioritaire (48h)",
+          "Historique vulnérabilités 3 mois"
+        ]
       },
       "professional": {
         "name": "Professional",
         "price": "299 €",
         "period": "/mois",
-        "features": ["250 outils de sécurité", "Jusqu'à 5 domaines", "Scans automatiques quotidiens", "Accès API pour CI/CD", "Rapports conformité (NIST, OWASP, GDPR)", "Rapports PDF marque blanche", "Support prioritaire (24h)", "Suivi vulnérabilités 12 mois"]
+        "features": [
+          "250 outils de sécurité",
+          "Jusqu'à 5 domaines",
+          "Scans automatiques quotidiens",
+          "Accès API pour CI/CD",
+          "Rapports conformité (NIST, OWASP, GDPR)",
+          "Rapports PDF marque blanche",
+          "Support prioritaire (24h)",
+          "Suivi vulnérabilités 12 mois"
+        ]
       },
       "enterprise": {
         "name": "Enterprise",
         "price": "799 €",
         "period": "/mois",
-        "features": ["Les 401 outils de sécurité", "Domaines illimités", "Surveillance continue (horaire)", "Gestionnaire de compte dédié", "Tous les cadres de conformité", "SSO / SAML / LDAP", "Utilisateurs & équipes illimités", "Garantie SLA (99,9%)", "Support prioritaire 24/7 (2h)", "Revues de sécurité trimestrielles"]
+        "features": [
+          "Les 401 outils de sécurité",
+          "Domaines illimités",
+          "Surveillance continue (horaire)",
+          "Gestionnaire de compte dédié",
+          "Tous les cadres de conformité",
+          "SSO / SAML / LDAP",
+          "Utilisateurs & équipes illimités",
+          "Garantie SLA (99,9%)",
+          "Support prioritaire 24/7 (2h)",
+          "Revues de sécurité trimestrielles"
+        ]
       }
     }
   },
@@ -185,7 +219,8 @@
     "privacyPolicy": "Politique de confidentialité",
     "termsOfService": "Conditions d'utilisation",
     "support": "Support",
-    "copyright": "© 2026 CyberSec Pro"
+    "copyright": "© 2026 CyberSec Pro",
+    "tagline": "Start completely on the free plan"
   },
   "contact": {
     "badge": "Nous contacter",

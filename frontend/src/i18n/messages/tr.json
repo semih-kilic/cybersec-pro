@@ -83,25 +83,59 @@
         "name": "Deneme",
         "price": "Ücretsiz",
         "period": "14 gün",
-        "features": ["50 güvenlik aracı", "1 kapsamlı tarama", "PDF bulgular raporu", "E-posta desteği", "Kredi kartı gerekmez"]
+        "features": [
+          "50 güvenlik aracı",
+          "1 kapsamlı tarama",
+          "PDF bulgular raporu",
+          "E-posta desteği",
+          "Kredi kartı gerekmez"
+        ]
       },
       "starter": {
         "name": "Başlangıç",
         "price": "€99",
         "period": "/ay",
-        "features": ["100 güvenlik aracı", "1 domain/uygulama", "Haftalık otomatik taramalar", "Güvenlik açığı e-posta uyarıları", "PDF & HTML raporlar", "Öncelikli e-posta desteği (48s)", "3 aylık güvenlik açığı geçmişi"]
+        "features": [
+          "100 güvenlik aracı",
+          "1 domain/uygulama",
+          "Haftalık otomatik taramalar",
+          "Güvenlik açığı e-posta uyarıları",
+          "PDF & HTML raporlar",
+          "Öncelikli e-posta desteği (48s)",
+          "3 aylık güvenlik açığı geçmişi"
+        ]
       },
       "professional": {
         "name": "Profesyonel",
         "price": "€299",
         "period": "/ay",
-        "features": ["250 güvenlik aracı", "5 domain'e kadar", "Günlük otomatik taramalar", "CI/CD için API erişimi", "Uyumluluk raporları (NIST, OWASP, GDPR)", "Beyaz etiket PDF raporlar", "Öncelikli destek (24s)", "12 aylık güvenlik açığı takibi"]
+        "features": [
+          "250 güvenlik aracı",
+          "5 domain'e kadar",
+          "Günlük otomatik taramalar",
+          "CI/CD için API erişimi",
+          "Uyumluluk raporları (NIST, OWASP, GDPR)",
+          "Beyaz etiket PDF raporlar",
+          "Öncelikli destek (24s)",
+          "12 aylık güvenlik açığı takibi"
+        ]
       },
       "enterprise": {
         "name": "Kurumsal",
         "price": "€799",
         "period": "/ay",
-        "features": ["Tüm 401 güvenlik aracı", "Sınırsız domain", "Sürekli izleme (saatlik)", "Özel hesap yöneticisi", "Tüm uyumluluk çerçeveleri", "SSO / SAML / LDAP", "Sınırsız kullanıcı & ekip", "SLA garantisi (%99.9)", "7/24 öncelikli destek (2s)", "Üç aylık güvenlik incelemeleri"]
+        "features": [
+          "Tüm 401 güvenlik aracı",
+          "Sınırsız domain",
+          "Sürekli izleme (saatlik)",
+          "Özel hesap yöneticisi",
+          "Tüm uyumluluk çerçeveleri",
+          "SSO / SAML / LDAP",
+          "Sınırsız kullanıcı & ekip",
+          "SLA garantisi (%99.9)",
+          "7/24 öncelikli destek (2s)",
+          "Üç aylık güvenlik incelemeleri"
+        ]
       }
     }
   },
@@ -174,7 +208,7 @@
   },
   "cta": {
     "title": "Altyapınızı Güvence Altına Almaya Hazır mısınız?",
-    "subtitle": "Bugün ücretsiz taramanızı başlatın. Kredi kartı gerekmez.",
+    "subtitle": "Kali Linux araçlarınızı başlatın, canlı taramalar ve raporlar.",
     "button": "Ücretsiz Taramayı Başlat"
   },
   "footer": {
@@ -185,7 +219,8 @@
     "privacyPolicy": "Gizlilik Politikası",
     "termsOfService": "Hizmet Şartları",
     "support": "Destek",
-    "copyright": "© 2026 CyberSec Pro"
+    "copyright": "© 2026 CyberSec Pro",
+    "tagline": "Ücretsiz plandan hemen başlayın"
   },
   "contact": {
     "badge": "İletişim",

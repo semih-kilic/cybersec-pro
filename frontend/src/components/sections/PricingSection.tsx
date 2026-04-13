@@ -14,10 +14,9 @@ export default function PricingSection() {
   return (
     <section id="pricing" className="relative py-28">
       <div className="mx-auto max-w-7xl px-6">
-        <RevealOnScroll className="section-heading mb-12">
-          <span className="badge mb-4">{t("badge")}</span>
-          <h2>{t("title")}</h2>
-          <p>{t("subtitle")}</p>
+        <RevealOnScroll className="mb-12 text-center">
+          <h2 className="text-3xl font-extrabold text-white md:text-4xl lg:text-5xl">{t("title")}</h2>
+          <p className="mx-auto mt-4 max-w-xl text-base text-white/50">{t("subtitle")}</p>
         </RevealOnScroll>
 
         {/* Toggle */}
@@ -45,8 +44,8 @@ export default function PricingSection() {
             return (
               <RevealOnScroll key={key} className="h-full">
                 <div
-                  className={`glass-card relative flex h-full flex-col p-8 ${
-                    isPopular ? "border-[var(--color-neon)]/30 shadow-[0_0_40px_rgba(159,239,0,0.08)]" : ""
+                  className={`neon-border-card relative flex h-full flex-col p-8 ${
+                    isPopular ? "!border-[var(--color-neon)]/40 !shadow-[0_0_40px_rgba(159,239,0,0.12)]" : ""
                   }`}
                 >
                   {isPopular && (

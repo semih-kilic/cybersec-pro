@@ -83,25 +83,59 @@
         "name": "Testversion",
         "price": "Kostenlos",
         "period": "14 Tage",
-        "features": ["50 Sicherheitstools", "1 umfassender Scan", "PDF-Bericht mit Ergebnissen", "E-Mail-Support", "Keine Kreditkarte erforderlich"]
+        "features": [
+          "50 Sicherheitstools",
+          "1 umfassender Scan",
+          "PDF-Bericht mit Ergebnissen",
+          "E-Mail-Support",
+          "Keine Kreditkarte erforderlich"
+        ]
       },
       "starter": {
         "name": "Starter",
         "price": "99 €",
         "period": "/Monat",
-        "features": ["100 Sicherheitstools", "1 Domain/Anwendung", "Wöchentliche automatische Scans", "E-Mail-Warnungen bei Schwachstellen", "PDF & HTML Berichte", "Prioritäts-E-Mail-Support (48h)", "3-monatige Schwachstellen-Historie"]
+        "features": [
+          "100 Sicherheitstools",
+          "1 Domain/Anwendung",
+          "Wöchentliche automatische Scans",
+          "E-Mail-Warnungen bei Schwachstellen",
+          "PDF & HTML Berichte",
+          "Prioritäts-E-Mail-Support (48h)",
+          "3-monatige Schwachstellen-Historie"
+        ]
       },
       "professional": {
         "name": "Professional",
         "price": "299 €",
         "period": "/Monat",
-        "features": ["250 Sicherheitstools", "Bis zu 5 Domains", "Tägliche automatische Scans", "API-Zugang für CI/CD", "Compliance-Berichte (NIST, OWASP, GDPR)", "White-Label PDF-Berichte", "Prioritäts-Support (24h)", "12-monatiges Schwachstellen-Tracking"]
+        "features": [
+          "250 Sicherheitstools",
+          "Bis zu 5 Domains",
+          "Tägliche automatische Scans",
+          "API-Zugang für CI/CD",
+          "Compliance-Berichte (NIST, OWASP, GDPR)",
+          "White-Label PDF-Berichte",
+          "Prioritäts-Support (24h)",
+          "12-monatiges Schwachstellen-Tracking"
+        ]
       },
       "enterprise": {
         "name": "Enterprise",
         "price": "799 €",
         "period": "/Monat",
-        "features": ["Alle 401 Sicherheitstools", "Unbegrenzte Domains", "Kontinuierliches Monitoring (stündlich)", "Dedizierter Account Manager", "Alle Compliance-Frameworks", "SSO / SAML / LDAP", "Unbegrenzte Benutzer & Teams", "SLA-Garantie (99,9%)", "24/7 Prioritäts-Support (2h)", "Vierteljährliche Sicherheitsreviews"]
+        "features": [
+          "Alle 401 Sicherheitstools",
+          "Unbegrenzte Domains",
+          "Kontinuierliches Monitoring (stündlich)",
+          "Dedizierter Account Manager",
+          "Alle Compliance-Frameworks",
+          "SSO / SAML / LDAP",
+          "Unbegrenzte Benutzer & Teams",
+          "SLA-Garantie (99,9%)",
+          "24/7 Prioritäts-Support (2h)",
+          "Vierteljährliche Sicherheitsreviews"
+        ]
       }
     }
   },
@@ -185,7 +219,8 @@
     "privacyPolicy": "Datenschutzrichtlinie",
     "termsOfService": "Nutzungsbedingungen",
     "support": "Support",
-    "copyright": "© 2026 CyberSec Pro"
+    "copyright": "© 2026 CyberSec Pro",
+    "tagline": "Start completely on the free plan"
   },
   "contact": {
     "badge": "Kontakt aufnehmen",

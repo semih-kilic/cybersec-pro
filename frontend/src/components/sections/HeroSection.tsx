@@ -4,7 +4,7 @@ import dynamic from "next/dynamic";
 import Link from "next/link";
 import { useTranslations } from "next-intl";
 import { motion } from "framer-motion";
-import { ArrowRight, Shield } from "lucide-react";
+import { ArrowRight, Cloud } from "lucide-react";
 import MatrixRain from "@/components/three/MatrixRain";
 
 const CyberAttackGlobe = dynamic(() => import("@/components/three/CyberAttackGlobe"), { ssr: false });
@@ -31,7 +31,7 @@ export default function HeroSection() {
           transition={{ duration: 0.5 }}
           className="badge mb-6"
         >
-          <Shield size={14} className="mr-1 inline" />
+          <Cloud size={14} className="mr-1 inline" />
           {t("badge")}
         </motion.span>
 
@@ -39,11 +39,9 @@ export default function HeroSection() {
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, delay: 0.1 }}
-          className="text-5xl font-extrabold leading-tight tracking-tight md:text-7xl lg:text-8xl"
+          className="whitespace-pre-line text-5xl font-extrabold leading-tight tracking-tight md:text-7xl lg:text-8xl"
         >
-          <span className="neon-text">{t("titleHighlight")}</span>
-          <br />
-          <span className="whitespace-pre-line bg-gradient-to-b from-white to-white/60 bg-clip-text text-transparent">
+          <span className="bg-gradient-to-b from-[var(--color-neon)] to-[var(--color-neon)]/60 bg-clip-text text-transparent drop-shadow-[0_0_30px_var(--color-neon-glow)]">
             {t("title")}
           </span>
         </motion.h1>
@@ -61,13 +59,10 @@ export default function HeroSection() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, delay: 0.3 }}
-          className="mt-10 flex flex-wrap items-center justify-center gap-4"
+          className="mt-10"
         >
           <Link href="/dashboard/login" className="btn-primary text-base">
             {t("cta")} <ArrowRight size={16} />
-          </Link>
-          <Link href="/tools" className="btn-outline text-base">
-            {t("ctaSecondary")}
           </Link>
         </motion.div>
 

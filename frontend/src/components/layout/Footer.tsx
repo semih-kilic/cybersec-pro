@@ -64,7 +64,7 @@ export default function Footer() {
 
         <div className="mt-12 flex flex-col items-center justify-between gap-4 border-t border-white/5 pt-8 md:flex-row">
           <span className="text-xs text-white/30">{t("copyright")}</span>
-          <span className="font-mono text-xs text-white/30">cybersecpro@semihkilic.com</span>
+          <span className="text-xs text-white/30">{t("tagline")}</span>
         </div>
       </div>
     </footer>
