@@ -358,5 +358,13 @@
   "terminal": {
     "title": "实时演示",
     "subtitle": "观看真实的Nmap网络发现扫描实时运行。通过我们的专业界面实时查看结果。"
+  },
+  "blogSection": {
+    "badge": "最新资讯",
+    "title": "安全新闻与教程",
+    "subtitle": "通过最新的攻击性安全研究、工具教程和行业分析，始终领先于威胁。",
+    "readMore": "阅读更多",
+    "minRead": "分钟阅读",
+    "viewAll": "查看所有文章"
   }
 }

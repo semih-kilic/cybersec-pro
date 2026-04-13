@@ -358,5 +358,13 @@
   "terminal": {
     "title": "See It In Action",
     "subtitle": "Watch a real Nmap network discovery scan run live. View results stream in real-time through our professional interface."
+  },
+  "blogSection": {
+    "badge": "Latest Insights",
+    "title": "Security News & Tutorials",
+    "subtitle": "Stay ahead of threats with the latest offensive security research, tool tutorials, and industry analysis.",
+    "readMore": "Read More",
+    "minRead": "min read",
+    "viewAll": "View All Articles"
   }
 }

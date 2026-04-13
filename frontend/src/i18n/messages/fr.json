@@ -358,5 +358,13 @@
   "terminal": {
     "title": "Voyez-le en action",
     "subtitle": "Regardez un vrai scan Nmap en direct. Les résultats sont diffusés en temps réel."
+  },
+  "blogSection": {
+    "badge": "Dernières Actualités",
+    "title": "Actualités Sécurité & Tutoriels",
+    "subtitle": "Gardez une longueur d'avance sur les menaces avec les dernières recherches et tutoriels en sécurité offensive.",
+    "readMore": "Lire la suite",
+    "minRead": "min de lecture",
+    "viewAll": "Voir tous les articles"
   }
 }

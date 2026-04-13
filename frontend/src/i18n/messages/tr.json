@@ -358,5 +358,13 @@
   "terminal": {
     "title": "Çalışırken Görün",
     "subtitle": "Gerçek bir Nmap ağ keşif taramasını canlı izleyin. Sonuçları profesyonel arayüzümüzde gerçek zamanlı görün."
+  },
+  "blogSection": {
+    "badge": "Güncel Haberler",
+    "title": "Güvenlik Haberleri & Eğitimler",
+    "subtitle": "En son saldırı güvenliği araştırmaları, araç eğitimleri ve sektör analizleriyle tehditlerin önünde olun.",
+    "readMore": "Devamını Oku",
+    "minRead": "dk okuma",
+    "viewAll": "Tüm Yazıları Gör"
   }
 }

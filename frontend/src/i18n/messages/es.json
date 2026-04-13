@@ -358,5 +358,13 @@
   "terminal": {
     "title": "Véalo en acción",
     "subtitle": "Vea un escaneo Nmap real en vivo. Los resultados se transmiten en tiempo real."
+  },
+  "blogSection": {
+    "badge": "Últimas Novedades",
+    "title": "Noticias de Seguridad & Tutoriales",
+    "subtitle": "Mantente al día con las últimas investigaciones de seguridad ofensiva, tutoriales y análisis del sector.",
+    "readMore": "Leer más",
+    "minRead": "min de lectura",
+    "viewAll": "Ver todos los artículos"
   }
 }

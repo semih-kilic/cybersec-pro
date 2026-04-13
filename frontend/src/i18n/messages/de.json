@@ -358,5 +358,13 @@
   "terminal": {
     "title": "Live-Demo ansehen",
     "subtitle": "Sehen Sie einen echten Nmap-Netzwerkscan live. Ergebnisse werden in Echtzeit gestreamt."
+  },
+  "blogSection": {
+    "badge": "Neueste Einblicke",
+    "title": "Sicherheitsnachrichten & Tutorials",
+    "subtitle": "Bleiben Sie mit den neuesten Forschungen, Tool-Tutorials und Branchenanalysen Bedrohungen voraus.",
+    "readMore": "Weiterlesen",
+    "minRead": "Min. Lesezeit",
+    "viewAll": "Alle Artikel anzeigen"
   }
 }

@@ -358,5 +358,13 @@
   "terminal": {
     "title": "실시간 데모",
     "subtitle": "실제 Nmap 네트워크 스캔을 실시간으로 확인하세요."
+  },
+  "blogSection": {
+    "badge": "최신 인사이트",
+    "title": "보안 뉴스 & 튜토리얼",
+    "subtitle": "최신 공격적 보안 연구, 도구 튜토리얼 및 산업 분석으로 위협에 앞서세요.",
+    "readMore": "더 읽기",
+    "minRead": "분 소요",
+    "viewAll": "모든 기사 보기"
   }
 }
