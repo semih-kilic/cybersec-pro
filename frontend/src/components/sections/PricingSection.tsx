@@ -2,10 +2,20 @@
 
 import { useState } from "react";
 import { useTranslations } from "next-intl";
-import RevealOnScroll from "@/components/animations/RevealOnScroll";
+import { motion } from "framer-motion";
 import { Check, Star } from "lucide-react";
 
 const planKeys = ["trial", "starter", "professional", "enterprise"] as const;
+
+const container = {
+  hidden: {},
+  show: { transition: { staggerChildren: 0.12 } },
+};
+
+const cardVariant = {
+  hidden: { opacity: 0, y: 40 },
+  show: { opacity: 1, y: 0, transition: { duration: 0.5, ease: "easeOut" } },
+};
 
 export default function PricingSection() {
   const t = useTranslations("pricing");
@@ -14,10 +24,16 @@ export default function PricingSection() {
   return (
     <section id="pricing" className="relative py-28">
       <div className="mx-auto max-w-7xl px-6">
-        <RevealOnScroll className="mb-12 text-center">
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, margin: "-80px" }}
+          transition={{ duration: 0.5 }}
+          className="mb-12 text-center"
+        >
           <h2 className="text-3xl font-extrabold text-white md:text-4xl lg:text-5xl">{t("title")}</h2>
           <p className="mx-auto mt-4 max-w-xl text-base text-white/50">{t("subtitle")}</p>
-        </RevealOnScroll>
+        </motion.div>
 
         {/* Toggle */}
         <div className="mb-16 flex items-center justify-center gap-3">
@@ -37,14 +53,20 @@ export default function PricingSection() {
           </span>
         </div>
 
-        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
+        <motion.div
+          variants={container}
+          initial="hidden"
+          whileInView="show"
+          viewport={{ once: true, margin: "-80px" }}
+          className="grid gap-6 md:grid-cols-2 lg:grid-cols-4"
+        >
           {planKeys.map((key) => {
             const features: string[] = t.raw(`plans.${key}.features`);
             const isPopular = key === "professional";
             return (
-              <RevealOnScroll key={key} className="h-full">
+              <motion.div key={key} variants={cardVariant} className="h-full">
                 <div
-                  className={`neon-border-card relative flex h-full flex-col p-8 ${
+                  className={`neon-border-card group relative flex h-full flex-col p-8 ${
                     isPopular ? "!border-[var(--color-neon)]/40 !shadow-[0_0_40px_rgba(159,239,0,0.12)]" : ""
                   }`}
                 >
@@ -97,10 +119,10 @@ export default function PricingSection() {
                     {t("cta")}
                   </button>
                 </div>
-              </RevealOnScroll>
+              </motion.div>
             );
           })}
-        </div>
+        </motion.div>
       </div>
     </section>
   );

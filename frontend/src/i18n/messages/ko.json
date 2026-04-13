@@ -354,5 +354,9 @@
     "learnMore": "자세히 보기",
     "getStarted": "시작하기",
     "backToHome": "홈으로 돌아가기"
+  },
+  "terminal": {
+    "title": "실시간 데모",
+    "subtitle": "실제 Nmap 네트워크 스캔을 실시간으로 확인하세요."
   }
 }

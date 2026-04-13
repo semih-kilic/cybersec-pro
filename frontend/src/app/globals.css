@@ -102,19 +102,45 @@
     color: var(--color-neon);
     text-shadow: 0 0 20px var(--color-neon-glow);
   }
+  .hero-neon-title {
+    background: linear-gradient(180deg, #9fef00 0%, #7cc800 40%, #5a9600 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    filter: drop-shadow(0 0 40px rgba(159, 239, 0, 0.3)) drop-shadow(0 0 80px rgba(159, 239, 0, 0.1));
+    animation: neonPulseText 3s ease-in-out infinite;
+  }
   .neon-border-card {
     position: relative;
     background: rgba(255, 255, 255, 0.02);
     border: 1px solid rgba(159, 239, 0, 0.15);
     border-radius: 16px;
     backdrop-filter: blur(12px);
-    transition: border-color 0.3s, transform 0.3s, box-shadow 0.3s;
+    transition: border-color 0.4s, transform 0.4s, box-shadow 0.4s;
     box-shadow: 0 0 15px rgba(159, 239, 0, 0.04), inset 0 1px 0 rgba(159, 239, 0, 0.06);
+  }
+  .neon-border-card::before {
+    content: "";
+    position: absolute;
+    inset: -1px;
+    border-radius: 17px;
+    padding: 1px;
+    background: linear-gradient(135deg, rgba(159, 239, 0, 0.2) 0%, transparent 40%, transparent 60%, rgba(159, 239, 0, 0.1) 100%);
+    -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    -webkit-mask-composite: xor;
+    mask-composite: exclude;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.4s;
+  }
+  .neon-border-card:hover::before {
+    opacity: 1;
   }
   .neon-border-card:hover {
     border-color: rgba(159, 239, 0, 0.35);
-    transform: translateY(-4px);
-    box-shadow: 0 0 30px rgba(159, 239, 0, 0.1), 0 12px 40px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(159, 239, 0, 0.1);
+    transform: translateY(-6px);
+    box-shadow: 0 0 40px rgba(159, 239, 0, 0.12), 0 20px 60px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(159, 239, 0, 0.1);
   }
 }
 
@@ -125,4 +151,16 @@
 @keyframes pulse-neon {
   0%, 100% { box-shadow: 0 0 5px var(--color-neon-dim); }
   50% { box-shadow: 0 0 20px var(--color-neon-glow), 0 0 40px rgba(159, 239, 0, 0.15); }
+}
+@keyframes neonPulseText {
+  0%, 100% { filter: drop-shadow(0 0 40px rgba(159, 239, 0, 0.3)) drop-shadow(0 0 80px rgba(159, 239, 0, 0.1)); }
+  50% { filter: drop-shadow(0 0 60px rgba(159, 239, 0, 0.45)) drop-shadow(0 0 120px rgba(159, 239, 0, 0.2)); }
+}
+@keyframes scanline {
+  0% { transform: translateY(-100%); }
+  100% { transform: translateY(100vh); }
+}
+@keyframes terminalBlink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0; }
 }

@@ -208,7 +208,7 @@
   },
   "cta": {
     "title": "Ready to Secure Your Infrastructure?",
-    "subtitle": "Start your Kali Linux tools, live scans and regulated.",
+    "subtitle": "Start your Kali Linux tools, live scans and regulated reports. No credit card required.",
     "button": "Start Free Scan"
   },
   "footer": {
@@ -354,5 +354,9 @@
     "learnMore": "Learn More",
     "getStarted": "Get Started",
     "backToHome": "Back to Home"
+  },
+  "terminal": {
+    "title": "See It In Action",
+    "subtitle": "Watch a real Nmap network discovery scan run live. View results stream in real-time through our professional interface."
   }
 }

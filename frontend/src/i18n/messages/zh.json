@@ -354,5 +354,9 @@
     "learnMore": "了解更多",
     "getStarted": "立即开始",
     "backToHome": "返回首页"
+  },
+  "terminal": {
+    "title": "实时演示",
+    "subtitle": "观看真实的Nmap网络发现扫描实时运行。通过我们的专业界面实时查看结果。"
   }
 }

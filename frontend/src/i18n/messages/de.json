@@ -354,5 +354,9 @@
     "learnMore": "Mehr erfahren",
     "getStarted": "Jetzt starten",
     "backToHome": "Zurück zur Startseite"
+  },
+  "terminal": {
+    "title": "Live-Demo ansehen",
+    "subtitle": "Sehen Sie einen echten Nmap-Netzwerkscan live. Ergebnisse werden in Echtzeit gestreamt."
   }
 }

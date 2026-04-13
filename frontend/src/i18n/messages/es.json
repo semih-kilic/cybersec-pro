@@ -354,5 +354,9 @@
     "learnMore": "Más información",
     "getStarted": "Comenzar",
     "backToHome": "Volver al inicio"
+  },
+  "terminal": {
+    "title": "Véalo en acción",
+    "subtitle": "Vea un escaneo Nmap real en vivo. Los resultados se transmiten en tiempo real."
   }
 }

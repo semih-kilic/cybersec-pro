@@ -28,6 +28,23 @@ function latLngToVec3(lat: number, lng: number, r: number): THREE.Vector3 {
   );
 }
 
+/* ─── Inner glow sphere ─── */
+function GlobeGlow() {
+  const ref = useRef<THREE.Mesh>(null!);
+  useFrame(() => {
+    if (ref.current) {
+      const mat = ref.current.material as THREE.MeshBasicMaterial;
+      mat.opacity = 0.03 + Math.sin(Date.now() * 0.001) * 0.01;
+    }
+  });
+  return (
+    <mesh ref={ref}>
+      <sphereGeometry args={[2.48, 64, 64]} />
+      <meshBasicMaterial color="#9fef00" transparent opacity={0.03} />
+    </mesh>
+  );
+}
+
 /* ─── Wireframe Globe ─── */
 function GlobeWireframe() {
   const ref = useRef<THREE.Mesh>(null!);
@@ -36,6 +53,80 @@ function GlobeWireframe() {
     <mesh ref={ref}>
       <sphereGeometry args={[2.5, 64, 64]} />
       <meshBasicMaterial color="#9fef00" wireframe transparent opacity={0.06} />
+    </mesh>
+  );
+}
+
+/* ─── Shield (3D shield shape) ─── */
+function Shield3D() {
+  const groupRef = useRef<THREE.Group>(null!);
+
+  const shieldShape = useMemo(() => {
+    const shape = new THREE.Shape();
+    const s = 0.9;
+    shape.moveTo(0, s * 1.1);
+    shape.bezierCurveTo(s * 0.55, s * 0.95, s * 0.85, s * 0.5, s * 0.85, 0);
+    shape.bezierCurveTo(s * 0.85, -s * 0.55, s * 0.45, -s * 0.95, 0, -s * 1.15);
+    shape.bezierCurveTo(-s * 0.45, -s * 0.95, -s * 0.85, -s * 0.55, -s * 0.85, 0);
+    shape.bezierCurveTo(-s * 0.85, s * 0.5, -s * 0.55, s * 0.95, 0, s * 1.1);
+    return shape;
+  }, []);
+
+  const edgeGeometry = useMemo(() => {
+    const points = shieldShape.getPoints(80);
+    return new THREE.BufferGeometry().setFromPoints(points.map(p => new THREE.Vector3(p.x, p.y, 0)));
+  }, [shieldShape]);
+
+  useFrame(() => {
+    if (groupRef.current) {
+      groupRef.current.rotation.y = Math.sin(Date.now() * 0.0003) * 0.1;
+    }
+  });
+
+  // Checkmark points
+  const checkGeometry = useMemo(() => {
+    const points = [
+      new THREE.Vector3(-0.3, -0.05, 0.01),
+      new THREE.Vector3(-0.08, -0.35, 0.01),
+      new THREE.Vector3(0.35, 0.3, 0.01),
+    ];
+    return new THREE.BufferGeometry().setFromPoints(points);
+  }, []);
+
+  return (
+    <group ref={groupRef} position={[0, 0, 0.5]}>
+      {/* Shield glow (behind) */}
+      <mesh position={[0, -0.025, -0.1]}>
+        <planeGeometry args={[2.2, 2.8]} />
+        <meshBasicMaterial color="#9fef00" transparent opacity={0.02} />
+      </mesh>
+      {/* Shield outline - outer */}
+      {/* @ts-expect-error R3F line element */}
+      <line geometry={edgeGeometry}>
+        <lineBasicMaterial color="#9fef00" transparent opacity={0.6} linewidth={2} />
+      </line>
+      {/* Shield outline - glow layer */}
+      {/* @ts-expect-error R3F line element */}
+      <line geometry={edgeGeometry} position={[0, 0, -0.02]}>
+        <lineBasicMaterial color="#9fef00" transparent opacity={0.15} linewidth={4} />
+      </line>
+      {/* Checkmark inside shield */}
+      {/* @ts-expect-error R3F line element */}
+      <line geometry={checkGeometry}>
+        <lineBasicMaterial color="#9fef00" transparent opacity={0.8} linewidth={2} />
+      </line>
+    </group>
+  );
+}
+
+/* ─── Orbiting ring ─── */
+function OrbitRing({ radius, speed, opacity, tilt }: { radius: number; speed: number; opacity: number; tilt: number }) {
+  const ref = useRef<THREE.Mesh>(null!);
+  useFrame((_, d) => { if (ref.current) ref.current.rotation.z += d * speed; });
+  return (
+    <mesh ref={ref} rotation={[tilt, 0, 0]}>
+      <torusGeometry args={[radius, 0.005, 8, 128]} />
+      <meshBasicMaterial color="#9fef00" transparent opacity={opacity} />
     </mesh>
   );
 }
@@ -51,7 +142,7 @@ function CityDots() {
         const pos = latLngToVec3(lat, lng, 2.52);
         return (
           <mesh key={name + i} position={pos}>
-            <sphereGeometry args={[0.03, 8, 8]} />
+            <sphereGeometry args={[0.035, 8, 8]} />
             <meshBasicMaterial color="#9fef00" />
           </mesh>
         );
@@ -112,7 +203,7 @@ function AttackSystem() {
           color: colors[Math.floor(Math.random() * colors.length)],
           startTime: Date.now(),
         }];
-        return next.slice(-15); // max 15 active arcs
+        return next.slice(-15);
       });
     };
     spawn();
@@ -170,7 +261,11 @@ export default function CyberAttackGlobe() {
   return (
     <div className="pointer-events-none fixed inset-0 z-0">
       <Canvas camera={{ position: [0, 0, 7], fov: 50 }} gl={{ antialias: true, alpha: true }} style={{ background: "transparent", pointerEvents: "none" }}>
+        <GlobeGlow />
         <GlobeWireframe />
+        <Shield3D />
+        <OrbitRing radius={3.0} speed={0.15} opacity={0.08} tilt={1.2} />
+        <OrbitRing radius={3.3} speed={-0.1} opacity={0.05} tilt={0.8} />
         <CityDots />
         <AttackSystem />
         <SpaceParticles />

@@ -354,5 +354,9 @@
     "learnMore": "詳しく見る",
     "getStarted": "始める",
     "backToHome": "ホームに戻る"
+  },
+  "terminal": {
+    "title": "実際の動作を見る",
+    "subtitle": "リアルなNmapスキャンをライブでご覧ください。結果はリアルタイムでストリーミングされます。"
   }
 }

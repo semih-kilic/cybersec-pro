@@ -207,8 +207,8 @@
     }
   },
   "cta": {
-    "title": "Altyapınızı Güvence Altına Almaya Hazır mısınız?",
-    "subtitle": "Kali Linux araçlarınızı başlatın, canlı taramalar ve raporlar.",
+    "title": "Altyapınızı Güvence Altına Almaya Hazır Mısınız?",
+    "subtitle": "Kali Linux araçlarınızı başlatın, canlı taramalar ve düzenlenmiş raporlar. Kredi kartı gerekmez.",
     "button": "Ücretsiz Taramayı Başlat"
   },
   "footer": {
@@ -354,5 +354,9 @@
     "learnMore": "Daha Fazla Bilgi",
     "getStarted": "Başla",
     "backToHome": "Ana Sayfaya Dön"
+  },
+  "terminal": {
+    "title": "Çalışırken Görün",
+    "subtitle": "Gerçek bir Nmap ağ keşif taramasını canlı izleyin. Sonuçları profesyonel arayüzümüzde gerçek zamanlı görün."
   }
 }

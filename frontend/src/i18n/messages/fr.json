@@ -354,5 +354,9 @@
     "learnMore": "En savoir plus",
     "getStarted": "Commencer",
     "backToHome": "Retour à l'accueil"
+  },
+  "terminal": {
+    "title": "Voyez-le en action",
+    "subtitle": "Regardez un vrai scan Nmap en direct. Les résultats sont diffusés en temps réel."
   }
 }
