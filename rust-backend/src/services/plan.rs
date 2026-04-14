@@ -36,7 +36,7 @@ pub fn get_plan_configs() -> HashMap<&'static str, PlanConfig> {
     plans.insert("trial", PlanConfig {
         level: 0,
         price_eur: 0,
-        tool_limit: 3,
+        tool_limit: 50,
         daily_scan_limit: 5,
         max_projects: 1,
         max_team_members: 1,
@@ -61,10 +61,10 @@ pub fn get_plan_configs() -> HashMap<&'static str, PlanConfig> {
     plans.insert("starter", PlanConfig {
         level: 1,
         price_eur: 99,
-        tool_limit: 50,
+        tool_limit: 100,
         daily_scan_limit: 30,
         max_projects: 3,
-        max_team_members: 1,
+        max_team_members: 3,
         max_agents: 1,
         multi_tool_scan: 2,
         features: PlanFeatures {
@@ -86,10 +86,10 @@ pub fn get_plan_configs() -> HashMap<&'static str, PlanConfig> {
     plans.insert("professional", PlanConfig {
         level: 2,
         price_eur: 299,
-        tool_limit: 200,
+        tool_limit: 250,
         daily_scan_limit: 100,
         max_projects: 10,
-        max_team_members: 5,
+        max_team_members: 10,
         max_agents: 5,
         multi_tool_scan: 5,
         features: PlanFeatures {
@@ -138,12 +138,11 @@ pub fn get_plan_configs() -> HashMap<&'static str, PlanConfig> {
 
 pub fn get_plan_level(plan_type: &str) -> u8 {
     match plan_type {
-        "trial" => 0,
+        "trial" | "free" => 0,
         "starter" => 1,
         "professional" => 2,
-        "team" => 3,
-        "enterprise" => 4,
-        _ => 1,
+        "enterprise" => 3,
+        _ => 0,
     }
 }
 
