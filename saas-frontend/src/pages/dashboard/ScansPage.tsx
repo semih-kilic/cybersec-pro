@@ -18,7 +18,7 @@ import { useTranslation } from 'react-i18next';
 import { ScansPageSkeleton } from '../../components/ui/Skeleton';
 import { PageTransition } from '../../components/ui';
 import { useToast } from '../../components/ui/Toast';
-import { useScans, useCancelScan, useRerunScan, useDeleteScan, type Scan } from '../../hooks/useApiQueries';
+import { useScans, useCancelScan, useRerunScan, useDeleteScan, usePlanInfo, type Scan } from '../../hooks/useApiQueries';
 import { motion, AnimatePresence } from 'framer-motion';
 
 // ---- Helpers ----
@@ -133,6 +133,7 @@ export function ScansPage() {
 
   // --- React Query hooks (cached, auto-refetching) ---
   const { data: scans = [], isLoading, isFetching } = useScans();
+  const { data: planInfo } = usePlanInfo();
   const cancelMutation = useCancelScan();
   const rerunMutation = useRerunScan();
   const deleteMutation = useDeleteScan();
@@ -206,6 +207,48 @@ export function ScansPage() {
       <Header title="Scans" subtitle="View and manage your security scans" />
 
       <div className="p-4 sm:p-6">
+        {/* Plan Usage Banner */}
+        {planInfo && planInfo.config?.daily_scan_limit > 0 && (
+          <motion.div
+            initial={{ opacity: 0, y: -8 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="mb-4 flex items-center justify-between bg-gray-900 border border-gray-800 rounded-xl p-4"
+          >
+            <div className="flex items-center gap-3">
+              <div className="w-8 h-8 rounded-lg bg-kali-blue/20 flex items-center justify-center">
+                <svg className="w-4 h-4 text-kali-blue" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+                </svg>
+              </div>
+              <div>
+                <p className="text-sm text-gray-400">Daily Scan Limit</p>
+                <p className="text-white font-medium">
+                  {planInfo.usage?.scans_today ?? 0} / {planInfo.config.daily_scan_limit} scans used today
+                </p>
+              </div>
+            </div>
+            <div className="flex items-center gap-3">
+              <div className="w-32 h-2 bg-gray-800 rounded-full overflow-hidden">
+                <div
+                  className={`h-full rounded-full transition-all ${
+                    (planInfo.usage?.scans_today ?? 0) >= planInfo.config.daily_scan_limit
+                      ? 'bg-red-500'
+                      : (planInfo.usage?.scans_today ?? 0) >= planInfo.config.daily_scan_limit * 0.8
+                      ? 'bg-yellow-500'
+                      : 'bg-kali-blue'
+                  }`}
+                  style={{ width: `${Math.min(100, ((planInfo.usage?.scans_today ?? 0) / planInfo.config.daily_scan_limit) * 100)}%` }}
+                />
+              </div>
+              {(planInfo.usage?.scans_today ?? 0) >= planInfo.config.daily_scan_limit && (
+                <Link to="/dashboard/upgrade" className="text-xs text-kali-green hover:underline whitespace-nowrap">
+                  Upgrade Plan
+                </Link>
+              )}
+            </div>
+          </motion.div>
+        )}
+
         {/* Stats Row */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6" role="region" aria-label="Scan statistics">
           {[

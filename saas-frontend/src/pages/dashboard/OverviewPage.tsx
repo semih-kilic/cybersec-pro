@@ -98,7 +98,7 @@ export function OverviewPage() {
         onComplete={handleOnboardingComplete}
         userName={user?.first_name || 'User'}
         planType={currentPlan}
-        toolsCount={401}
+        toolsCount={currentPlan === 'enterprise' ? 401 : currentPlan === 'professional' ? 250 : currentPlan === 'starter' ? 100 : 50}
         scansPerDay={currentPlan === 'enterprise' ? -1 : currentPlan === 'professional' ? 100 : currentPlan === 'starter' ? 30 : 5}
         trialDaysLeft={currentPlan === 'trial' ? trialDaysLeft : undefined}
       />

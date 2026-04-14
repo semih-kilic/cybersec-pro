@@ -137,6 +137,46 @@ export function useTools(plan: string) {
 }
 
 // ==========================================
+// PLAN INFO HOOK
+// ==========================================
+
+export interface PlanInfo {
+  plan: string;
+  config: {
+    level: number;
+    price_eur: number;
+    tool_limit: number;
+    daily_scan_limit: number;
+    max_projects: number;
+    max_team_members: number;
+    max_agents: number;
+    multi_tool_scan: number;
+    features: Record<string, boolean>;
+  };
+  usage: {
+    scans_today: number;
+    scans_remaining: number;
+    total_scans: number;
+    team_members: number;
+    online_agents: number;
+    tools_accessible: number;
+    tools_total: number;
+  };
+}
+
+export function usePlanInfo() {
+  const { token } = useAuth();
+
+  return useQuery({
+    queryKey: queryKeys.plan.info(),
+    queryFn: () => authFetch<PlanInfo>('/api/v1/plan/info', token),
+    staleTime: 60_000,
+    gcTime: 5 * 60_000,
+    enabled: !!token,
+  });
+}
+
+// ==========================================
 // DASHBOARD / OVERVIEW HOOKS
 // ==========================================
 
