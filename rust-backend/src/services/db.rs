@@ -33,9 +33,12 @@ r#"CREATE TABLE IF NOT EXISTS organizations (
     slug TEXT UNIQUE NOT NULL,
     plan_type TEXT DEFAULT 'starter',
     stripe_customer_id TEXT,
+    logo_url TEXT,
     created_at TIMESTAMP DEFAULT NOW(),
     is_active BOOLEAN DEFAULT TRUE
 )"#,
+
+r#"ALTER TABLE organizations ADD COLUMN IF NOT EXISTS logo_url TEXT"#,
 
 r#"CREATE TABLE IF NOT EXISTS users (
     id TEXT PRIMARY KEY,

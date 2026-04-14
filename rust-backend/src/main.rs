@@ -257,6 +257,13 @@ fn build_router(state: Arc<AppState>) -> Router {
             "/api/v1/reports/:report_id",
             get(report_handlers::get_report).delete(report_handlers::delete_report),
         )
+        // ── Organization Logo ─────────────────────────────────
+        .route(
+            "/api/v1/organization/logo",
+            get(report_handlers::get_org_logo)
+                .post(report_handlers::upload_org_logo)
+                .delete(report_handlers::delete_org_logo),
+        )
         // ── Agents ────────────────────────────────────────────
         .route(
             "/api/v1/agents",

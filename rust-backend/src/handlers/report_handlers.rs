@@ -173,10 +173,20 @@ pub async fn create_report(
     let now = chrono::Utc::now().format("%Y-%m-%d %H:%M UTC").to_string();
     let date_short = chrono::Utc::now().format("%Y-%m-%d").to_string();
 
+    // Fetch org logo data URI for embedding in reports
+    let org_logo = load_org_logo_data_uri(&state.db, org_id).await;
+
+    // Fetch org name
+    let org_name: Option<String> = sqlx::query_scalar("SELECT name FROM organizations WHERE id = $1")
+        .bind(org_id)
+        .fetch_optional(&state.db)
+        .await
+        .unwrap_or(None);
+
     let html_content = generate_html_report(
         &body.name, template, &now, &date_short,
         &scan_rows, total_findings, critical, high, medium, low, info,
-        risk_score, risk_level,
+        risk_score, risk_level, org_logo.as_deref(), org_name.as_deref(),
     );
 
     // Convert based on requested format
@@ -397,6 +407,7 @@ fn generate_html_report(
     scans: &[(ScanRow, String)],
     total: i32, crit: i32, high: i32, med: i32, low: i32, info: i32,
     risk_score: i32, risk_level: &str,
+    org_logo_data_uri: Option<&str>, org_name: Option<&str>,
 ) -> String {
     let risk_color = match risk_level {
         "Critical" => "#ef4444",
@@ -462,6 +473,30 @@ fn generate_html_report(
     // Build recommendations
     let recommendations = build_recommendations(crit, high, med, low);
 
+    // Build header logo HTML — org logo + CyberSec Pro logo
+    let cybersec_svg = r##"<svg viewBox="0 0 200 60" xmlns="http://www.w3.org/2000/svg">
+                <rect width="200" height="60" rx="8" fill="#0f172a"/>
+                <circle cx="30" cy="30" r="18" fill="none" stroke="#22d3ee" stroke-width="2.5"/>
+                <path d="M30 16 L30 44 M18 30 L42 30 M21 21 L39 39 M39 21 L21 39" stroke="#22d3ee" stroke-width="1.5" opacity="0.4"/>
+                <circle cx="30" cy="30" r="5" fill="#22d3ee"/>
+                <text x="56" y="26" font-family="system-ui,sans-serif" font-weight="800" font-size="16" fill="#fff">CyberSec</text>
+                <text x="56" y="44" font-family="system-ui,sans-serif" font-weight="700" font-size="14" fill="#22d3ee">Pro</text>
+                <text x="88" y="44" font-family="system-ui,sans-serif" font-weight="400" font-size="8" fill="#64748b">semihkilic.com</text>
+            </svg>"##;
+
+    let logo_html = if let Some(data_uri) = org_logo_data_uri {
+        let org_display = org_name.unwrap_or("Organization");
+        format!(
+            "<div class=\"header-logos\">\
+                <img class=\"org-logo\" src=\"{}\" alt=\"{}\" />\
+                <div class=\"platform-logo\">{}</div>\
+            </div>",
+            data_uri, org_display, cybersec_svg
+        )
+    } else {
+        format!("<div class=\"header-logo\">{}</div>", cybersec_svg)
+    };
+
     format!(r##"<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -480,6 +515,10 @@ body{{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;
 .header .meta span{{display:flex;align-items:center;gap:4px}}
 .header-logo{{width:120px;flex-shrink:0;text-align:right}}
 .header-logo svg{{width:120px;height:auto}}
+.header-logos{{display:flex;flex-direction:column;align-items:flex-end;gap:8px;flex-shrink:0}}
+.header-logos .org-logo{{width:100px;height:auto;max-height:60px;object-fit:contain}}
+.header-logos .platform-logo{{width:100px}}
+.header-logos .platform-logo svg{{width:100px;height:auto}}
 .badge{{display:inline-block;padding:3px 10px;border-radius:4px;font-size:11px;font-weight:700;letter-spacing:.03em}}
 
 .summary-grid{{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:32px}}
@@ -562,17 +601,7 @@ h4{{font-size:12px;font-weight:700;color:#475569;margin:16px 0 8px}}
                 <span class="badge" style="background:{risk_color}20;color:{risk_color}">Risk: {risk_level}</span>
             </div>
         </div>
-        <div class="header-logo">
-            <svg viewBox="0 0 200 60" xmlns="http://www.w3.org/2000/svg">
-                <rect width="200" height="60" rx="8" fill="#0f172a"/>
-                <circle cx="30" cy="30" r="18" fill="none" stroke="#22d3ee" stroke-width="2.5"/>
-                <path d="M30 16 L30 44 M18 30 L42 30 M21 21 L39 39 M39 21 L21 39" stroke="#22d3ee" stroke-width="1.5" opacity="0.4"/>
-                <circle cx="30" cy="30" r="5" fill="#22d3ee"/>
-                <text x="56" y="26" font-family="system-ui,sans-serif" font-weight="800" font-size="16" fill="#fff">CyberSec</text>
-                <text x="56" y="44" font-family="system-ui,sans-serif" font-weight="700" font-size="14" fill="#22d3ee">Pro</text>
-                <text x="88" y="44" font-family="system-ui,sans-serif" font-weight="400" font-size="8" fill="#64748b">semihkilic.com</text>
-            </svg>
-        </div>
+        {logo_html}
     </div>
 
     <div class="summary-grid">
@@ -647,6 +676,7 @@ h4{{font-size:12px;font-weight:700;color:#475569;margin:16px 0 8px}}
         risk_score = risk_score,
         risk_level = risk_level,
         risk_color = risk_color,
+        logo_html = logo_html,
         exec_summary = build_executive_summary(scans, template),
         scan_sections = scan_sections,
         compliance_section = compliance_section,
@@ -960,4 +990,225 @@ fn generate_markdown_report(
         }
     }
     md
+}
+
+// ── Organization Logo Upload ────────────────────────────────────────────
+
+pub async fn upload_org_logo(
+    auth: AuthUser,
+    State(state): State<Arc<AppState>>,
+    body: axum::body::Bytes,
+) -> impl IntoResponse {
+    let org_id = match &auth.org_id {
+        Some(id) => id.clone(),
+        None => return (StatusCode::FORBIDDEN, Json(json!({"error": "Organization required"}))).into_response(),
+    };
+
+    // Max 5MB
+    if body.len() > 5 * 1024 * 1024 {
+        return (StatusCode::BAD_REQUEST, Json(json!({"error": "File too large. Max 5MB"}))).into_response();
+    }
+    if body.is_empty() {
+        return (StatusCode::BAD_REQUEST, Json(json!({"error": "No file data received"}))).into_response();
+    }
+
+    // Detect image type from magic bytes (PNG, JPG, GIF, WebP, SVG)
+    let ext = if body.starts_with(&[0x89, 0x50, 0x4E, 0x47]) {
+        "png"
+    } else if body.starts_with(&[0xFF, 0xD8, 0xFF]) {
+        "jpg"
+    } else if body.starts_with(b"GIF8") {
+        "gif"
+    } else if body.starts_with(b"RIFF") && body.len() > 12 && &body[8..12] == b"WEBP" {
+        "webp"
+    } else if body.starts_with(b"<?xml") || body.starts_with(b"<svg") {
+        "svg"
+    } else {
+        return (StatusCode::BAD_REQUEST, Json(json!({"error": "Invalid image format. Accepted: PNG, JPG, GIF, WebP, SVG"}))).into_response();
+    };
+
+    // Validate org_id is a valid UUID to prevent path traversal
+    if uuid::Uuid::parse_str(&org_id).is_err() {
+        return (StatusCode::BAD_REQUEST, Json(json!({"error": "Invalid organization"}))).into_response();
+    }
+
+    // Save to disk
+    let upload_dir = std::path::Path::new("/home/cybersec/cybersec-pro/uploads/logos");
+    if let Err(e) = tokio::fs::create_dir_all(upload_dir).await {
+        tracing::error!("Failed to create logos dir: {}", e);
+        return (StatusCode::INTERNAL_SERVER_ERROR, Json(json!({"error": "Server storage error"}))).into_response();
+    }
+
+    // Remove old logo files for this org (any extension)
+    if let Ok(mut entries) = tokio::fs::read_dir(upload_dir).await {
+        while let Ok(Some(entry)) = entries.next_entry().await {
+            let name = entry.file_name();
+            let name_str = name.to_string_lossy();
+            if name_str.starts_with(&org_id) {
+                let _ = tokio::fs::remove_file(entry.path()).await;
+            }
+        }
+    }
+
+    let filename = format!("{}.{}", org_id, ext);
+    let filepath = upload_dir.join(&filename);
+
+    if let Err(e) = tokio::fs::write(&filepath, &body).await {
+        tracing::error!("Failed to write logo: {}", e);
+        return (StatusCode::INTERNAL_SERVER_ERROR, Json(json!({"error": "Failed to save logo"}))).into_response();
+    }
+
+    // Update organization logo_url in DB
+    let logo_url = format!("/uploads/logos/{}", filename);
+    let _ = sqlx::query("UPDATE organizations SET logo_url = $1 WHERE id = $2")
+        .bind(&logo_url)
+        .bind(&org_id)
+        .execute(&state.db)
+        .await;
+
+    Json(json!({"message": "Logo uploaded", "logo_url": logo_url})).into_response()
+}
+
+pub async fn delete_org_logo(
+    auth: AuthUser,
+    State(state): State<Arc<AppState>>,
+) -> impl IntoResponse {
+    let org_id = match &auth.org_id {
+        Some(id) => id.clone(),
+        None => return (StatusCode::FORBIDDEN, Json(json!({"error": "Organization required"}))).into_response(),
+    };
+
+    // Remove files from disk
+    let upload_dir = std::path::Path::new("/home/cybersec/cybersec-pro/uploads/logos");
+    if let Ok(mut entries) = tokio::fs::read_dir(upload_dir).await {
+        while let Ok(Some(entry)) = entries.next_entry().await {
+            let name = entry.file_name();
+            let name_str = name.to_string_lossy();
+            if name_str.starts_with(&org_id) {
+                let _ = tokio::fs::remove_file(entry.path()).await;
+            }
+        }
+    }
+
+    // Clear in DB
+    let _ = sqlx::query("UPDATE organizations SET logo_url = NULL WHERE id = $1")
+        .bind(&org_id)
+        .execute(&state.db)
+        .await;
+
+    Json(json!({"message": "Logo removed"})).into_response()
+}
+
+pub async fn get_org_logo(
+    auth: AuthUser,
+    State(state): State<Arc<AppState>>,
+) -> impl IntoResponse {
+    let org_id = match &auth.org_id {
+        Some(id) => id.clone(),
+        None => return (StatusCode::FORBIDDEN, Json(json!({"error": "Organization required"}))).into_response(),
+    };
+
+    let logo_url: Option<String> = sqlx::query_scalar(
+        "SELECT logo_url FROM organizations WHERE id = $1"
+    )
+    .bind(&org_id)
+    .fetch_optional(&state.db)
+    .await
+    .unwrap_or(None)
+    .flatten();
+
+    Json(json!({"logo_url": logo_url})).into_response()
+}
+
+/// Read org logo from disk and return as a base64 data URI for embedding in reports.
+/// Returns None if no logo is set or file can't be read.
+async fn load_org_logo_data_uri(db: &sqlx::PgPool, org_id: &str) -> Option<String> {
+    let logo_url: Option<String> = sqlx::query_scalar(
+        "SELECT logo_url FROM organizations WHERE id = $1"
+    )
+    .bind(org_id)
+    .fetch_optional(db)
+    .await
+    .ok()?
+    .flatten()?;
+
+    // logo_url is like /uploads/logos/{org_id}.png
+    let disk_path = format!("/home/cybersec/cybersec-pro{}", logo_url);
+    let bytes = tokio::fs::read(&disk_path).await.ok()?;
+
+    let ext = logo_url.rsplit('.').next().unwrap_or("png");
+    if ext == "svg" {
+        // For SVG, return the raw SVG markup (it can be embedded directly)
+        let svg_str = String::from_utf8(bytes).ok()?;
+        Some(format!("data:image/svg+xml;base64,{}", base64_encode(&svg_str.as_bytes())))
+    } else {
+        let mime = match ext {
+            "jpg" | "jpeg" => "image/jpeg",
+            "gif" => "image/gif",
+            "webp" => "image/webp",
+            _ => "image/png",
+        };
+        Some(format!("data:{};base64,{}", mime, base64_encode(&bytes)))
+    }
+}
+
+fn base64_encode(data: &[u8]) -> String {
+    use std::io::Write as _;
+    let mut buf = Vec::with_capacity(data.len() * 4 / 3 + 4);
+    {
+        let mut encoder = Base64Encoder::new(&mut buf);
+        let _ = encoder.write_all(data);
+        let _ = encoder.finish();
+    }
+    String::from_utf8(buf).unwrap_or_default()
+}
+
+struct Base64Encoder<W: std::io::Write> {
+    writer: W,
+    buf: [u8; 3],
+    pos: usize,
+}
+
+const B64_CHARS: &[u8; 64] = b"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
+
+impl<W: std::io::Write> Base64Encoder<W> {
+    fn new(writer: W) -> Self { Self { writer, buf: [0; 3], pos: 0 } }
+    fn finish(mut self) -> std::io::Result<()> {
+        if self.pos > 0 {
+            for i in self.pos..3 { self.buf[i] = 0; }
+            let b = self.buf;
+            let out = [
+                B64_CHARS[(b[0] >> 2) as usize],
+                B64_CHARS[((b[0] & 0x03) << 4 | b[1] >> 4) as usize],
+                if self.pos > 1 { B64_CHARS[((b[1] & 0x0f) << 2 | b[2] >> 6) as usize] } else { b'=' },
+                b'=',
+            ];
+            self.writer.write_all(&out)?;
+        }
+        Ok(())
+    }
+}
+
+impl<W: std::io::Write> std::io::Write for Base64Encoder<W> {
+    fn write(&mut self, data: &[u8]) -> std::io::Result<usize> {
+        let mut i = 0;
+        while i < data.len() {
+            self.buf[self.pos] = data[i];
+            self.pos += 1;
+            i += 1;
+            if self.pos == 3 {
+                let b = self.buf;
+                let out = [
+                    B64_CHARS[(b[0] >> 2) as usize],
+                    B64_CHARS[((b[0] & 0x03) << 4 | b[1] >> 4) as usize],
+                    B64_CHARS[((b[1] & 0x0f) << 2 | b[2] >> 6) as usize],
+                    B64_CHARS[(b[2] & 0x3f) as usize],
+                ];
+                self.writer.write_all(&out)?;
+                self.pos = 0;
+            }
+        }
+        Ok(data.len())
+    }
+    fn flush(&mut self) -> std::io::Result<()> { self.writer.flush() }
 }
