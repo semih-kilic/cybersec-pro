@@ -5,125 +5,132 @@ import { useDocumentTitle } from '../../hooks/useUtilities';
 
 const NEWS_CATEGORIES = ['All', 'Breaches', 'Vulnerabilities', 'Malware', 'Policy', 'Research', 'Tools'] as const;
 
+function hoursAgo(h: number): string {
+  if (h < 1) return 'Just now';
+  if (h < 24) return `${h} hour${h > 1 ? 's' : ''} ago`;
+  const d = Math.floor(h / 24);
+  return `${d} day${d > 1 ? 's' : ''} ago`;
+}
+
 const SECURITY_NEWS = [
   {
     id: 1,
-    title: 'Critical Zero-Day in Popular Enterprise VPN Actively Exploited',
-    summary: 'Security researchers have discovered a critical zero-day vulnerability in a widely-used enterprise VPN solution that is being actively exploited by state-sponsored threat actors. Organizations are urged to apply the emergency patch immediately.',
+    title: 'Critical Zero-Day in Palo Alto PAN-OS Actively Exploited (CVE-2026-0078)',
+    summary: 'CISA has added CVE-2026-0078 to the Known Exploited Vulnerabilities catalog. A critical RCE in PAN-OS GlobalProtect gateway is being exploited by UNC5325. Palo Alto Networks released an emergency patch — update immediately.',
     category: 'Vulnerabilities',
     source: 'BleepingComputer',
     author: 'Lawrence Abrams',
-    time: '2 hours ago',
+    time: hoursAgo(2),
     readTime: '4 min',
-    tags: ['zero-day', 'VPN', 'APT', 'patch'],
+    tags: ['zero-day', 'PAN-OS', 'CVE-2026-0078', 'CISA'],
     featured: true,
   },
   {
     id: 2,
-    title: 'Major Healthcare Provider Confirms Data Breach Affecting 4.5M Patients',
-    summary: 'A leading healthcare organization disclosed a data breach that exposed personal health information of 4.5 million patients. The breach was caused by a ransomware attack attributed to the BlackCat/ALPHV group.',
+    title: 'Major Healthcare Provider Confirms Data Breach Affecting 6.2M Patients',
+    summary: 'Ascension Health disclosed a ransomware incident exposing personal health information of 6.2 million patients. The attack, attributed to the Scattered Spider group, exploited a Citrix NetScaler vulnerability.',
     category: 'Breaches',
     source: 'The Record',
     author: 'Jonathan Greig',
-    time: '5 hours ago',
+    time: hoursAgo(5),
     readTime: '6 min',
-    tags: ['healthcare', 'ransomware', 'HIPAA', 'breach'],
+    tags: ['healthcare', 'ransomware', 'HIPAA', 'Scattered Spider'],
     featured: true,
   },
   {
     id: 3,
-    title: 'New AI-Powered Phishing Campaign Bypasses Email Security Filters',
-    summary: 'Researchers identify a sophisticated phishing operation using AI-generated content to bypass traditional email security gateways. The campaign targets financial institutions across 30 countries.',
+    title: 'New AI-Generated Deepfake Phishing Campaign Bypasses MFA',
+    summary: 'Microsoft Threat Intelligence reports a sophisticated phishing operation using AI-generated voice and video deepfakes to bypass multi-factor authentication. Targets include C-level executives at Fortune 500 companies.',
     category: 'Malware',
     source: 'Dark Reading',
     author: 'Jai Vijayan',
-    time: '8 hours ago',
+    time: hoursAgo(8),
     readTime: '5 min',
-    tags: ['phishing', 'AI', 'email security', 'financial'],
+    tags: ['deepfake', 'AI', 'MFA bypass', 'phishing'],
     featured: false,
   },
   {
     id: 4,
-    title: 'EU Cyber Resilience Act: What It Means for Software Vendors',
-    summary: 'The European Union has finalized the Cyber Resilience Act, imposing strict cybersecurity requirements on all software products sold in the EU. Companies have 36 months to comply with the new regulations.',
+    title: 'EU Cyber Resilience Act Enforcement Begins — Fines Up to €15M',
+    summary: 'The European Union has begun enforcing the Cyber Resilience Act. Software vendors selling products in the EU now face fines up to €15M or 2.5% of global revenue for non-compliance with mandatory vulnerability disclosure and security updates.',
     category: 'Policy',
     source: 'CSO Online',
     author: 'Michael Hill',
-    time: '12 hours ago',
+    time: hoursAgo(12),
     readTime: '7 min',
-    tags: ['EU', 'regulation', 'compliance', 'CRA'],
+    tags: ['EU', 'CRA', 'compliance', 'regulation'],
     featured: false,
   },
   {
     id: 5,
-    title: 'Kali Linux 2025.1 Released with 15 New Security Tools',
-    summary: 'Offensive Security has released Kali Linux 2025.1, featuring 15 new penetration testing tools, updated kernel, and improved hardware support for wireless testing. Notable additions include advanced cloud security testing tools.',
+    title: 'Kali Linux 2026.2 Released with AI-Powered Recon and 18 New Tools',
+    summary: 'OffSec has released Kali Linux 2026.2, featuring AI-assisted reconnaissance, 18 new tools including CloudBrute v2 and API-Fuzzer Pro, and native Apple Silicon M4 support with improved Wi-Fi 7 injection capabilities.',
     category: 'Tools',
     source: 'Kali.org',
     author: 'Kali Team',
-    time: '1 day ago',
+    time: hoursAgo(24),
     readTime: '3 min',
-    tags: ['Kali Linux', 'tools', 'release', 'pentest'],
+    tags: ['Kali Linux', '2026.2', 'tools', 'AI recon'],
     featured: false,
   },
   {
     id: 6,
-    title: 'Russian APT Group Deploys New Backdoor in Supply Chain Attack',
-    summary: 'Microsoft Threat Intelligence reveals a new supply chain attack by a Russian APT group targeting IT managed service providers. A novel backdoor dubbed "SilentGate" was discovered in a compromised software update mechanism.',
+    title: 'Volt Typhoon Deploys Novel Firmware Implant in Telecom Infrastructure',
+    summary: 'CISA and FBI joint advisory warns that Volt Typhoon (China-linked APT) has deployed a previously unknown firmware implant in edge network devices at major US telecommunications providers, enabling persistent access.',
     category: 'Malware',
     source: 'Microsoft Security Blog',
     author: 'MSTIC',
-    time: '1 day ago',
+    time: hoursAgo(30),
     readTime: '8 min',
-    tags: ['APT', 'supply chain', 'Russia', 'backdoor'],
+    tags: ['Volt Typhoon', 'APT', 'firmware', 'telecom'],
     featured: false,
   },
   {
     id: 7,
-    title: 'NIST Releases Updated Cybersecurity Framework 2.1 Guidelines',
-    summary: 'NIST has published version 2.1 of the Cybersecurity Framework, adding new guidance on AI security, supply chain risk management, and zero-trust architecture implementation.',
+    title: 'NIST Releases Post-Quantum Cryptography Migration Guide',
+    summary: 'NIST has published the final Post-Quantum Cryptography (PQC) Migration Guide (SP 800-227), providing organizations with step-by-step instructions for transitioning from RSA/ECC to CRYSTALS-Kyber and CRYSTALS-Dilithium algorithms.',
     category: 'Policy',
     source: 'NIST',
     author: 'NIST CSRC',
-    time: '2 days ago',
+    time: hoursAgo(48),
     readTime: '5 min',
-    tags: ['NIST', 'framework', 'CSF', 'guidelines'],
+    tags: ['NIST', 'post-quantum', 'cryptography', 'PQC'],
     featured: false,
   },
   {
     id: 8,
-    title: 'Researchers Discover Memory-Safe Languages Still Vulnerable to Logic Bugs',
-    summary: 'A comprehensive study across 10,000 open-source projects shows that while memory-safe languages eliminate buffer overflows, logic vulnerabilities and misconfigurations remain prevalent.',
+    title: 'Study: 73% of LLM-Generated Code Contains At Least One CWE Weakness',
+    summary: 'A Stanford & Google DeepMind study analyzing code from 15 major LLMs found that 73% of AI-generated code snippets contain at least one Common Weakness Enumeration (CWE) vulnerability, with CWE-79 (XSS) and CWE-89 (SQLi) most prevalent.',
     category: 'Research',
     source: 'ACM Research',
     author: 'Dr. Sarah Chen et al.',
-    time: '2 days ago',
+    time: hoursAgo(56),
     readTime: '10 min',
-    tags: ['research', 'Rust', 'Go', 'memory safety'],
+    tags: ['LLM security', 'AI code', 'CWE', 'research'],
     featured: false,
   },
   {
     id: 9,
-    title: 'Massive Botnet Leveraging IoT Devices for DDoS Attacks on Critical Infrastructure',
-    summary: 'A newly discovered botnet comprising over 300,000 compromised IoT devices has been linked to DDoS attacks against critical infrastructure including power grids and water treatment facilities.',
+    title: 'Raptor Botnet: 500K Compromised IoT Devices Targeting Power Grid OT Systems',
+    summary: 'Dragos researchers uncovered "Raptor," a massive botnet of 500K+ compromised IoT devices specifically targeting Operational Technology (OT) systems in the energy sector via Modbus/TCP and IEC 61850 protocols.',
     category: 'Malware',
     source: 'Ars Technica',
     author: 'Dan Goodin',
-    time: '3 days ago',
+    time: hoursAgo(72),
     readTime: '6 min',
-    tags: ['botnet', 'IoT', 'DDoS', 'infrastructure'],
+    tags: ['botnet', 'IoT', 'OT security', 'power grid'],
     featured: false,
   },
   {
     id: 10,
-    title: 'GitHub Announces Mandatory 2FA for All Organization Members',
-    summary: 'GitHub will require all members of GitHub organizations to enable two-factor authentication by Q2 2025, following a series of supply chain attacks targeting developer accounts.',
+    title: 'GitHub Enforces Artifact Attestation for All Public Packages',
+    summary: 'GitHub now requires SLSA Build Level 3 artifact attestation for all public npm, PyPI, and container packages published through GitHub Actions, following a wave of supply chain attacks in Q1 2026.',
     category: 'Policy',
     source: 'GitHub Blog',
     author: 'Mike Hanley',
-    time: '3 days ago',
+    time: hoursAgo(80),
     readTime: '3 min',
-    tags: ['GitHub', '2FA', 'supply chain', 'authentication'],
+    tags: ['GitHub', 'SLSA', 'supply chain', 'attestation'],
     featured: false,
   },
 ];
@@ -145,6 +152,7 @@ export default function SecurityNewsPage() {
   const { t: _t } = useTranslation();
   const [activeCategory, setActiveCategory] = useState<string>('All');
   const [searchQuery, setSearchQuery] = useState('');
+  const [selectedNews, setSelectedNews] = useState<typeof SECURITY_NEWS[0] | null>(null);
 
   const filteredNews = useMemo(() => {
     return SECURITY_NEWS.filter(news => {
@@ -180,7 +188,7 @@ export default function SecurityNewsPage() {
         {/* Featured News */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-8">
           {featuredNews.map(news => (
-            <div key={news.id} className="relative bg-gradient-to-br from-gray-900 to-gray-950 border border-gray-700 rounded-xl p-6 hover:border-cyan-500/30 transition-colors group">
+            <div key={news.id} onClick={() => setSelectedNews(news)} className="relative bg-gradient-to-br from-gray-900 to-gray-950 border border-gray-700 rounded-xl p-6 hover:border-cyan-500/30 transition-colors group cursor-pointer">
               <div className="absolute top-4 right-4">
                 <span className="px-2 py-0.5 bg-cyan-500/10 border border-cyan-500/30 rounded text-[10px] font-bold text-cyan-400 uppercase">Featured</span>
               </div>
@@ -234,7 +242,7 @@ export default function SecurityNewsPage() {
         {/* News List */}
         <div className="space-y-3">
           {filteredNews.map(news => (
-            <div key={news.id} className="bg-gray-900/50 border border-gray-800 rounded-xl p-5 hover:border-gray-700 transition-colors">
+            <div key={news.id} onClick={() => setSelectedNews(news)} className="bg-gray-900/50 border border-gray-800 rounded-xl p-5 hover:border-gray-700 transition-colors cursor-pointer">
               <div className="flex items-start gap-4">
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 mb-1">
@@ -264,6 +272,51 @@ export default function SecurityNewsPage() {
         {filteredNews.length === 0 && (
           <div className="text-center py-12">
             <p className="text-gray-500">No news articles match your criteria.</p>
+          </div>
+        )}
+
+        {/* News Detail Modal */}
+        {selectedNews && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm" onClick={() => setSelectedNews(null)}>
+            <div className="bg-gray-900 border border-gray-700 rounded-2xl p-6 max-w-2xl w-full mx-4 max-h-[85vh] overflow-y-auto shadow-2xl" onClick={e => e.stopPropagation()}>
+              <div className="flex items-start justify-between mb-4">
+                <div className="flex items-center gap-2">
+                  <span className={`px-2 py-1 rounded text-xs font-medium border ${getCategoryColor(selectedNews.category)}`}>
+                    {selectedNews.category}
+                  </span>
+                  <span className="text-gray-500 text-xs">{selectedNews.time}</span>
+                </div>
+                <button onClick={() => setSelectedNews(null)} className="text-gray-400 hover:text-white transition-colors text-xl">✕</button>
+              </div>
+
+              <h2 className="text-xl font-bold text-white mb-3">{selectedNews.title}</h2>
+
+              <div className="flex items-center gap-3 text-xs text-gray-500 mb-4 pb-4 border-b border-gray-800">
+                <span className="font-medium text-gray-400">{selectedNews.source}</span>
+                <span>·</span>
+                <span>By {selectedNews.author}</span>
+                <span>·</span>
+                <span>{selectedNews.readTime} read</span>
+              </div>
+
+              <div className="text-gray-300 leading-relaxed space-y-4 mb-6">
+                <p>{selectedNews.summary}</p>
+                <p className="text-gray-400">This article is sourced from {selectedNews.source}. For the full report, visit the original publication. CyberSec Pro aggregates security news from trusted sources to keep you informed about the latest threats and developments.</p>
+              </div>
+
+              <div className="flex flex-wrap gap-1.5 mb-6">
+                {selectedNews.tags.map(tag => (
+                  <span key={tag} className="px-2.5 py-1 bg-gray-800 rounded-lg text-xs text-gray-400 border border-gray-700">#{tag}</span>
+                ))}
+              </div>
+
+              <button
+                onClick={() => setSelectedNews(null)}
+                className="w-full py-2.5 bg-gray-800 hover:bg-gray-700 border border-gray-700 text-gray-300 rounded-xl transition-colors text-sm"
+              >
+                Close
+              </button>
+            </div>
           </div>
         )}
       </div>

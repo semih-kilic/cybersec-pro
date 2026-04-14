@@ -264,10 +264,10 @@ export default function FeedbackPage() {
               </label>
               <div className="flex gap-4">
                 {[
-                  { id: 'low', label: 'Low', color: 'green' },
-                  { id: 'medium', label: 'Medium', color: 'yellow' },
-                  { id: 'high', label: 'High', color: 'orange' },
-                  { id: 'critical', label: 'Critical', color: 'red' }
+                  { id: 'low', label: 'Low', active: 'bg-green-500/30 border border-green-500 text-green-400' },
+                  { id: 'medium', label: 'Medium', active: 'bg-yellow-500/30 border border-yellow-500 text-yellow-400' },
+                  { id: 'high', label: 'High', active: 'bg-orange-500/30 border border-orange-500 text-orange-400' },
+                  { id: 'critical', label: 'Critical', active: 'bg-red-500/30 border border-red-500 text-red-400' }
                 ].map((p) => (
                   <button
                     key={p.id}
@@ -275,7 +275,7 @@ export default function FeedbackPage() {
                     onClick={() => setPriority(p.id)}
                     className={`px-4 py-2 rounded-lg text-sm font-medium transition ${
                       priority === p.id
-                        ? `bg-${p.color}-500/30 border border-${p.color}-500 text-${p.color}-400`
+                        ? p.active
                         : 'bg-gray-800 border border-gray-700 text-gray-400 hover:border-gray-600'
                     }`}
                   >

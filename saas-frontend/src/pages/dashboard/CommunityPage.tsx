@@ -9,7 +9,7 @@ const FORUM_CATEGORIES = ['All', 'General', 'Tools & Techniques', 'CTF Write-ups
 const FORUM_POSTS = [
   {
     id: 1,
-    title: 'Best methodology for web application penetration testing in 2025?',
+    title: 'Best methodology for web application penetration testing in 2026?',
     author: 'pen_tester_pro',
     avatar: '🔴',
     category: 'Tools & Techniques',
@@ -143,6 +143,8 @@ export default function CommunityPage() {
   const [activeCategory, setActiveCategory] = useState<string>('All');
   const [searchQuery, setSearchQuery] = useState('');
   const [activeTab, setActiveTab] = useState<'discussions' | 'leaderboard'>('discussions');
+  const [selectedPost, setSelectedPost] = useState<typeof FORUM_POSTS[0] | null>(null);
+  const [showNewPost, setShowNewPost] = useState(false);
 
   const filteredPosts = useMemo(() => {
     return FORUM_POSTS.filter(post => {
@@ -222,7 +224,7 @@ export default function CommunityPage() {
                   className="w-full pl-10 pr-4 py-2.5 bg-gray-900 border border-gray-700 rounded-lg text-white text-sm focus:ring-2 focus:ring-cyan-500 focus:border-transparent"
                 />
               </div>
-              <button className="px-4 py-2.5 bg-purple-500/10 hover:bg-purple-500/20 border border-purple-500/30 rounded-lg text-sm text-purple-400 font-medium transition-colors whitespace-nowrap">
+              <button onClick={() => setShowNewPost(true)} className="px-4 py-2.5 bg-purple-500/10 hover:bg-purple-500/20 border border-purple-500/30 rounded-lg text-sm text-purple-400 font-medium transition-colors whitespace-nowrap">
                 + New Discussion
               </button>
             </div>
@@ -247,7 +249,7 @@ export default function CommunityPage() {
             {/* Posts List */}
             <div className="space-y-3">
               {filteredPosts.map(post => (
-                <div key={post.id} className={`bg-gray-900/50 border rounded-xl p-5 hover:border-gray-700 transition-colors ${post.pinned ? 'border-purple-500/30' : 'border-gray-800'}`}>
+                <div key={post.id} onClick={() => setSelectedPost(post)} className={`bg-gray-900/50 border rounded-xl p-5 hover:border-gray-700 transition-colors cursor-pointer ${post.pinned ? 'border-purple-500/30' : 'border-gray-800'}`}>
                   <div className="flex items-start gap-4">
                     <div className="w-10 h-10 rounded-full bg-gray-800 border border-gray-700 flex items-center justify-center text-lg flex-shrink-0">
                       {post.avatar}
@@ -320,6 +322,87 @@ export default function CommunityPage() {
                     </div>
                   </div>
                 ))}
+              </div>
+            </div>
+          </div>
+        )}
+        {/* Post Detail Modal */}
+        {selectedPost && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm" onClick={() => setSelectedPost(null)}>
+            <div className="bg-gray-900 border border-gray-700 rounded-2xl p-6 max-w-2xl w-full mx-4 max-h-[85vh] overflow-y-auto shadow-2xl" onClick={e => e.stopPropagation()}>
+              <div className="flex items-start justify-between mb-4">
+                <div className="flex items-center gap-2">
+                  <span className="px-2 py-0.5 bg-gray-800 rounded text-xs text-gray-400 border border-gray-700">{selectedPost.category}</span>
+                  {selectedPost.pinned && <span className="text-xs text-purple-400 font-bold">📌 PINNED</span>}
+                </div>
+                <button onClick={() => setSelectedPost(null)} className="text-gray-400 hover:text-white transition-colors text-xl">✕</button>
+              </div>
+
+              <h2 className="text-xl font-bold text-white mb-3">{selectedPost.title}</h2>
+
+              <div className="flex items-center gap-3 mb-4 pb-4 border-b border-gray-800">
+                <div className="w-8 h-8 rounded-full bg-gray-800 border border-gray-700 flex items-center justify-center text-sm">{selectedPost.avatar}</div>
+                <span className="text-gray-300 text-sm font-medium">{selectedPost.author}</span>
+                <span className="text-gray-600 text-sm">·</span>
+                <span className="text-gray-500 text-sm">{selectedPost.time}</span>
+              </div>
+
+              <p className="text-gray-300 leading-relaxed mb-4">{selectedPost.preview}</p>
+
+              <div className="flex flex-wrap gap-1.5 mb-4">
+                {selectedPost.tags.map(tag => (
+                  <span key={tag} className="px-2.5 py-1 bg-gray-800 rounded-lg text-xs text-gray-400 border border-gray-700">#{tag}</span>
+                ))}
+              </div>
+
+              <div className="flex items-center gap-6 text-sm text-gray-500 mb-6 pb-4 border-b border-gray-800">
+                <span>💬 {selectedPost.replies} replies</span>
+                <span>👁 {selectedPost.views.toLocaleString()} views</span>
+                <span>❤️ {selectedPost.likes} likes</span>
+              </div>
+
+              <div className="bg-gray-800/30 border border-gray-800 rounded-lg p-4 mb-4">
+                <p className="text-gray-500 text-sm text-center">Discussion threads are available in the full community portal.</p>
+              </div>
+
+              <button onClick={() => setSelectedPost(null)} className="w-full py-2.5 bg-gray-800 hover:bg-gray-700 border border-gray-700 text-gray-300 rounded-xl transition-colors text-sm">
+                Close
+              </button>
+            </div>
+          </div>
+        )}
+
+        {/* New Discussion Modal */}
+        {showNewPost && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm" onClick={() => setShowNewPost(false)}>
+            <div className="bg-gray-900 border border-gray-700 rounded-2xl p-6 max-w-lg w-full mx-4 shadow-2xl" onClick={e => e.stopPropagation()}>
+              <div className="flex items-center justify-between mb-4">
+                <h2 className="text-lg font-bold text-white">New Discussion</h2>
+                <button onClick={() => setShowNewPost(false)} className="text-gray-400 hover:text-white transition-colors text-xl">✕</button>
+              </div>
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-sm text-gray-400 mb-1">Title</label>
+                  <input type="text" placeholder="What's on your mind?" className="w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded-lg text-white text-sm focus:ring-2 focus:ring-purple-500 focus:border-transparent" />
+                </div>
+                <div>
+                  <label className="block text-sm text-gray-400 mb-1">Category</label>
+                  <select className="w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded-lg text-white text-sm">
+                    {FORUM_CATEGORIES.filter(c => c !== 'All').map(c => <option key={c} value={c}>{c}</option>)}
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-sm text-gray-400 mb-1">Content</label>
+                  <textarea rows={4} placeholder="Share your thoughts, questions, or findings..." className="w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded-lg text-white text-sm focus:ring-2 focus:ring-purple-500 focus:border-transparent resize-none" />
+                </div>
+                <div className="flex gap-3">
+                  <button onClick={() => setShowNewPost(false)} className="flex-1 py-2.5 bg-gradient-to-r from-purple-500 to-cyan-500 hover:from-purple-600 hover:to-cyan-600 text-white font-semibold rounded-xl transition-all text-sm">
+                    Post Discussion
+                  </button>
+                  <button onClick={() => setShowNewPost(false)} className="px-4 py-2.5 bg-gray-800 hover:bg-gray-700 border border-gray-700 text-gray-300 rounded-xl transition-colors text-sm">
+                    Cancel
+                  </button>
+                </div>
               </div>
             </div>
           </div>

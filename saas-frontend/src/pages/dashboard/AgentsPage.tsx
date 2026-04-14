@@ -109,7 +109,7 @@ function formatTimeSince(dateStr: string): string {
   }
 }
 
-function useAuth() {
+function useAuthToken() {
   const token = localStorage.getItem('token') || '';
   return { token };
 }
@@ -613,7 +613,7 @@ function DeviceDetail({ agent, testResult, isTesting, onTest, onEdit, onDelete, 
    ═══════════════════════════════════════════════════════════ */
 
 function NetworkDiscovery({ onClose }: { onClose: () => void }) {
-  const { token } = useAuth();
+  const { token } = useAuthToken();
   const [subnet, setSubnet] = useState('10.0.0.0/24');
   const [scanning, setScanning] = useState(false);
   const [results, setResults] = useState<any[]>([]);
