@@ -28,12 +28,25 @@ pub struct ToolQuery {
 
 pub async fn list_tools(
     State(state): State<Arc<AppState>>,
-    _auth: AuthUser,
+    auth: AuthUser,
     Query(q): Query<ToolQuery>,
 ) -> impl IntoResponse {
     let page = q.page.unwrap_or(1).max(1);
     let per_page = q.per_page.unwrap_or(50).min(200);
     let offset = (page - 1) * per_page;
+
+    // Get user's plan to filter tools by plan_required level
+    let org_plan = if let Some(ref org_id) = auth.org_id {
+        let row: Option<(String,)> = sqlx::query_as("SELECT plan_type FROM organizations WHERE id = $1")
+            .bind(org_id)
+            .fetch_optional(&state.db)
+            .await
+            .unwrap_or(None);
+        row.map(|r| r.0).unwrap_or_else(|| "trial".into())
+    } else {
+        "trial".into()
+    };
+    let user_plan_level = crate::services::plan::get_plan_level(&org_plan);
 
     // Build dynamic WHERE clause with PostgreSQL $N placeholders
     let mut where_clauses = vec!["is_active = TRUE".to_string()];
@@ -74,6 +87,22 @@ pub async fn list_tools(
         param_idx += 1;
         where_clauses.push(format!("tool_type = ${param_idx}"));
         bind_values.push(tt.clone());
+    }
+
+    // Filter tools by plan_required — only show tools the user's plan can access
+    {
+        let accessible_plans: Vec<&str> = match user_plan_level {
+            0 => vec!["trial", "free"],
+            1 => vec!["trial", "free", "starter"],
+            2 => vec!["trial", "free", "starter", "professional"],
+            _ => vec!["trial", "free", "starter", "professional", "enterprise"],
+        };
+        let placeholders: Vec<String> = accessible_plans.iter().map(|p| {
+            param_idx += 1;
+            bind_values.push(p.to_string());
+            format!("${param_idx}")
+        }).collect();
+        where_clauses.push(format!("(COALESCE(plan_required, 'starter') IN ({}))", placeholders.join(", ")));
     }
 
     let where_sql = where_clauses.join(" AND ");

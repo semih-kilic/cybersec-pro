@@ -161,6 +161,22 @@ pub async fn create_api_key(
         None => return (StatusCode::FORBIDDEN, Json(json!({"error": "Organization required"}))).into_response(),
     };
 
+    // Check api_access feature flag
+    let org_plan: Option<(String,)> = sqlx::query_as("SELECT plan_type FROM organizations WHERE id = $1")
+        .bind(&org_id)
+        .fetch_optional(&state.db)
+        .await
+        .unwrap_or(None);
+    let plan = org_plan.map(|p| p.0).unwrap_or_else(|| "trial".into());
+    let plan_configs = crate::services::plan::get_plan_configs();
+    if let Some(config) = plan_configs.get(plan.as_str()) {
+        if !config.features.api_access {
+            return (StatusCode::PAYMENT_REQUIRED, Json(json!({
+                "error": "API access requires Professional or higher plan."
+            }))).into_response();
+        }
+    }
+
     let name = body.get("name").and_then(|n| n.as_str()).unwrap_or("API Key").to_string();
     let permissions = body.get("permissions").cloned().unwrap_or(json!(["read"]));
 
@@ -303,6 +319,29 @@ pub async fn invite_team_member(
         Some(id) => id.clone(),
         None => return (StatusCode::FORBIDDEN, Json(json!({"error": "Organization required"}))).into_response(),
     };
+
+    // Check max_team_members plan limit
+    let org_plan: Option<(String,)> = sqlx::query_as("SELECT plan_type FROM organizations WHERE id = $1")
+        .bind(&org_id)
+        .fetch_optional(&state.db)
+        .await
+        .unwrap_or(None);
+    let plan = org_plan.map(|p| p.0).unwrap_or_else(|| "trial".into());
+    let plan_configs = crate::services::plan::get_plan_configs();
+    if let Some(config) = plan_configs.get(plan.as_str()) {
+        if config.max_team_members > 0 {
+            let count: (i64,) = sqlx::query_as("SELECT COUNT(*) FROM users WHERE organization_id = $1")
+                .bind(&org_id)
+                .fetch_one(&state.db)
+                .await
+                .unwrap_or((0,));
+            if count.0 >= config.max_team_members as i64 {
+                return (StatusCode::PAYMENT_REQUIRED, Json(json!({
+                    "error": format!("Team member limit reached ({}/{}). Upgrade your plan.", count.0, config.max_team_members)
+                }))).into_response();
+            }
+        }
+    }
 
     let email = match body.get("email").and_then(|e| e.as_str()) {
         Some(e) => e.to_string(),

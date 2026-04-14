@@ -1235,6 +1235,23 @@ pub async fn create_schedule(
     State(state): State<Arc<AppState>>,
     Json(body): Json<serde_json::Value>,
 ) -> impl IntoResponse {
+    // Check scheduled_scans feature flag
+    let org_id_str = user.org_id.as_deref().unwrap_or("");
+    let org_plan: Option<(String,)> = sqlx::query_as("SELECT plan_type FROM organizations WHERE id = $1")
+        .bind(org_id_str)
+        .fetch_optional(&state.db)
+        .await
+        .unwrap_or(None);
+    let plan = org_plan.map(|p| p.0).unwrap_or_else(|| "trial".into());
+    let plan_configs = crate::services::plan::get_plan_configs();
+    if let Some(config) = plan_configs.get(plan.as_str()) {
+        if !config.features.scheduled_scans {
+            return (StatusCode::PAYMENT_REQUIRED, Json(json!({
+                "error": "Scheduled scans require Starter or higher plan."
+            }))).into_response();
+        }
+    }
+
     let id = uuid::Uuid::new_v4().to_string();
     let name = body.get("name").and_then(|v| v.as_str()).unwrap_or("New Schedule");
     let cron = body.get("cron_expression").and_then(|v| v.as_str()).unwrap_or("0 0 * * *");

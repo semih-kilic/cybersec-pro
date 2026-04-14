@@ -6,6 +6,7 @@ import { PageTransition } from '../../components/ui';
 import { useToast } from '../../components/ui/Toast';
 import { getSmartDefaults } from '../../config/toolConfigs';
 import { useTools, useTargets, useProjects, useStartScan, useAgentsList } from '../../hooks/useApiQueries';
+import { useAuth, getUserPlan } from '../../hooks/useAuth';
 import { NewScanPageSkeleton } from '../../components/ui/Skeleton';
 
 interface Tool {
@@ -47,9 +48,11 @@ export function NewScanPage() {
   const toast = useToast();
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
+  const { organization } = useAuth();
+  const userPlan = getUserPlan(organization);
   
-  // React Query data fetching
-  const { data: toolsData, isLoading: toolsLoading } = useTools('enterprise');
+  // React Query data fetching — backend filters tools by authenticated user's plan
+  const { data: toolsData, isLoading: toolsLoading } = useTools(userPlan);
   const { data: fetchedTargets = [], isLoading: targetsLoading } = useTargets();
   const { data: fetchedProjects = [], isLoading: projectsLoading } = useProjects();
   const startScanMutation = useStartScan();

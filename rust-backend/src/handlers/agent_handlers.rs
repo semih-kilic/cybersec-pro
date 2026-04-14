@@ -75,6 +75,34 @@ pub async fn create_agent(
         None => return (StatusCode::FORBIDDEN, Json(json!({"error": "Organization required"}))).into_response(),
     };
 
+    // Check remote_agents feature flag and max_agents plan limit
+    let org_plan: Option<(String,)> = sqlx::query_as("SELECT plan_type FROM organizations WHERE id = $1")
+        .bind(org_id)
+        .fetch_optional(&state.db)
+        .await
+        .unwrap_or(None);
+    let plan = org_plan.map(|p| p.0).unwrap_or_else(|| "trial".into());
+    let plan_configs = crate::services::plan::get_plan_configs();
+    if let Some(config) = plan_configs.get(plan.as_str()) {
+        if !config.features.remote_agents {
+            return (StatusCode::PAYMENT_REQUIRED, Json(json!({
+                "error": "Remote agents require Professional or higher plan."
+            }))).into_response();
+        }
+        if config.max_agents >= 0 {
+            let count: (i64,) = sqlx::query_as("SELECT COUNT(*) FROM agents WHERE organization_id = $1")
+                .bind(org_id)
+                .fetch_one(&state.db)
+                .await
+                .unwrap_or((0,));
+            if count.0 >= config.max_agents as i64 {
+                return (StatusCode::PAYMENT_REQUIRED, Json(json!({
+                    "error": format!("Agent limit reached ({}/{}). Upgrade your plan.", count.0, config.max_agents)
+                }))).into_response();
+            }
+        }
+    }
+
     let agent_id = Uuid::new_v4().to_string();
     let reg_token = format!("agt_{}", Uuid::new_v4().to_string().replace('-', ""));
     let api_key = format!("ak_{}", Uuid::new_v4().to_string().replace('-', ""));
