@@ -3,10 +3,24 @@ import { NextIntlClientProvider } from "next-intl";
 import { getMessages, setRequestLocale } from "next-intl/server";
 import { notFound } from "next/navigation";
 import { GoogleAnalytics } from "@next/third-parties/google";
+import { Inter, JetBrains_Mono } from "next/font/google";
 import { locales, rtlLocales, type Locale } from "@/i18n/config";
+import { getOrganizationJsonLd, getWebsiteJsonLd, getSoftwareJsonLd } from "@/lib/seo";
 import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
 import HashScrollHandler from "@/components/HashScrollHandler";
+
+const inter = Inter({
+  subsets: ["latin", "latin-ext"],
+  display: "swap",
+  variable: "--font-inter",
+});
+
+const jetbrainsMono = JetBrains_Mono({
+  subsets: ["latin"],
+  display: "swap",
+  variable: "--font-jetbrains-mono",
+});
 
 export function generateStaticParams() {
   return locales.map((locale) => ({ locale }));
@@ -24,8 +38,16 @@ export async function generateMetadata({
     description: messages.meta.description,
     metadataBase: new URL("https://semihkilic.com"),
     icons: {
-      icon: "/icon.svg",
-      apple: "/icon.svg",
+      icon: [
+        { url: "/icon.svg", type: "image/svg+xml" },
+        { url: "/favicon-32x32.png", sizes: "32x32", type: "image/png" },
+        { url: "/favicon-16x16.png", sizes: "16x16", type: "image/png" },
+      ],
+      apple: "/apple-touch-icon.png",
+    },
+    manifest: "/manifest.json",
+    verification: {
+      google: "SXcu2vQ4tWVSEPyoEQ_P6a8DMaVUP0irVXf2aCiLmRA",
     },
     openGraph: {
       title: messages.meta.title,
@@ -33,6 +55,31 @@ export async function generateMetadata({
       url: "https://semihkilic.com",
       siteName: "CyberSec Pro",
       type: "website",
+      images: [
+        {
+          url: "/og-image.png",
+          width: 1200,
+          height: 630,
+          alt: "CyberSec Pro — Cloud Cybersecurity Platform",
+        },
+      ],
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: messages.meta.title,
+      description: messages.meta.description,
+      images: ["/og-image.png"],
+    },
+    robots: {
+      index: true,
+      follow: true,
+      googleBot: {
+        index: true,
+        follow: true,
+        "max-video-preview": -1,
+        "max-image-preview": "large",
+        "max-snippet": -1,
+      },
     },
   };
 }
@@ -51,10 +98,18 @@ export default async function LocaleLayout({
   const messages = await getMessages();
   const dir = rtlLocales.includes(locale as Locale) ? "rtl" : "ltr";
 
+  const jsonLd = [getOrganizationJsonLd(), getWebsiteJsonLd(), getSoftwareJsonLd()];
+
   return (
     <html lang={locale} dir={dir}>
-      <body className="bg-[var(--color-bg)] text-white antialiased">
+      <body
+        className={`${inter.variable} ${jetbrainsMono.variable} bg-[var(--color-bg)] text-white antialiased`}
+      >
         <GoogleAnalytics gaId="G-DKRDP2WS88" />
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+        />
         <NextIntlClientProvider messages={messages}>
           <HashScrollHandler />
           <Header />

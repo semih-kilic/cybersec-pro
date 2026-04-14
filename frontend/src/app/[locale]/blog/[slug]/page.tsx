@@ -1,4 +1,6 @@
+import type { Metadata } from "next";
 import { setRequestLocale } from "next-intl/server";
+import { getBlogPostMetadata, getBlogPostJsonLd } from "@/lib/seo";
 import BlogPostPage from "@/components/pages/BlogPostPage";
 import { locales } from "@/i18n/config";
 
@@ -17,8 +19,26 @@ export function generateStaticParams() {
   );
 }
 
+export async function generateMetadata({ params }: { params: Promise<{ locale: string; slug: string }> }): Promise<Metadata> {
+  const { locale, slug } = await params;
+  return getBlogPostMetadata(slug, locale);
+}
+
 export default async function Page({ params }: { params: Promise<{ locale: string; slug: string }> }) {
   const { locale, slug } = await params;
   setRequestLocale(locale);
-  return <BlogPostPage slug={slug} />;
+
+  const jsonLd = getBlogPostJsonLd(slug);
+
+  return (
+    <>
+      {jsonLd && (
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+        />
+      )}
+      <BlogPostPage slug={slug} />
+    </>
+  );
 }

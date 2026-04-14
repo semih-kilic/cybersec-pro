@@ -1,5 +1,4 @@
 @import "tailwindcss";
-@import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600;700&display=swap");
 
 @theme {
   --color-bg: #0a0e14;
@@ -17,8 +16,8 @@
   --color-text: #ffffff;
   --color-text-muted: rgba(255, 255, 255, 0.55);
   --color-text-dim: rgba(255, 255, 255, 0.35);
-  --font-sans: "Inter", system-ui, sans-serif;
-  --font-mono: "JetBrains Mono", "Fira Code", monospace;
+  --font-sans: var(--font-inter, "Inter"), system-ui, sans-serif;
+  --font-mono: var(--font-jetbrains-mono, "JetBrains Mono"), "Fira Code", monospace;
 }
 
 @layer base {
