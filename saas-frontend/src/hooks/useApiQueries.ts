@@ -1532,3 +1532,56 @@ export function useRoles() {
   });
 }
 
+// ── Organization Logo ────────────────────────────────────────
+
+export function useOrgLogo() {
+  const { token } = useAuth();
+  return useQuery({
+    queryKey: ['org-logo'],
+    queryFn: () => authFetch<{ logo_url: string | null }>('/api/v1/organization/logo', token),
+    select: (data) => data.logo_url,
+    enabled: !!token,
+  });
+}
+
+export function useUploadOrgLogo() {
+  const { token } = useAuth();
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (file: File) => {
+      const bytes = await file.arrayBuffer();
+      const res = await fetch('/api/v1/organization/logo', {
+        method: 'POST',
+        headers: {
+          ...(token ? { 'Authorization': `Bearer ${token}` } : {}),
+        },
+        body: new Uint8Array(bytes),
+      });
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({ error: 'Upload failed' }));
+        throw new Error(err.error || 'Upload failed');
+      }
+      return res.json();
+    },
+    onSuccess: () => { qc.invalidateQueries({ queryKey: ['org-logo'] }); },
+  });
+}
+
+export function useDeleteOrgLogo() {
+  const { token } = useAuth();
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async () => {
+      const res = await fetch('/api/v1/organization/logo', {
+        method: 'DELETE',
+        headers: {
+          ...(token ? { 'Authorization': `Bearer ${token}` } : {}),
+        },
+      });
+      if (!res.ok) throw new Error('Delete failed');
+      return res.json();
+    },
+    onSuccess: () => { qc.invalidateQueries({ queryKey: ['org-logo'] }); },
+  });
+}
+

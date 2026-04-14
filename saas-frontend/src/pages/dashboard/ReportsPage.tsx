@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { Header } from '../../components/layout/Header';
 import { PageTransition } from '../../components/ui';
-import { useReports, useReportTemplates, useGenerateReport, useFetchReport, useDeleteReport } from '../../hooks/useApiQueries';
+import { useReports, useReportTemplates, useGenerateReport, useFetchReport, useDeleteReport, useOrgLogo, useUploadOrgLogo, useDeleteOrgLogo } from '../../hooks/useApiQueries';
 import { useDocumentTitle } from '../../hooks/useUtilities';
 import { useToast } from '../../components/ui/Toast';
 import { ReportsPageSkeleton } from '../../components/ui/Skeleton';
@@ -20,6 +20,8 @@ import {
   TrashIcon,
   EyeIcon,
   ArrowPathIcon,
+  PhotoIcon,
+  ArrowUpTrayIcon,
 } from '@heroicons/react/24/outline';
 
 interface ReportSummary {
@@ -132,6 +134,10 @@ export function ReportsPage() {
   const generateMutation = useGenerateReport();
   const fetchReportMutation = useFetchReport();
   const deleteMutation = useDeleteReport();
+  const { data: orgLogoUrl } = useOrgLogo();
+  const uploadLogoMutation = useUploadOrgLogo();
+  const deleteLogoMutation = useDeleteOrgLogo();
+  const logoInputRef = useRef<HTMLInputElement>(null);
   const reports = reportsData?.reports || [];
   const availableScans = reportsData?.available_scans || [];
   const { data: fetchedTemplates = [], isLoading: templatesLoading, isError: templatesError } = useReportTemplates();
@@ -265,6 +271,37 @@ export function ReportsPage() {
     }
   };
 
+  const handleLogoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const maxSize = 5 * 1024 * 1024;
+    if (file.size > maxSize) {
+      toast.error('File Too Large', 'Maximum logo size is 5MB');
+      return;
+    }
+    const validTypes = ['image/png', 'image/jpeg', 'image/gif', 'image/webp', 'image/svg+xml'];
+    if (!validTypes.includes(file.type)) {
+      toast.error('Invalid Format', 'Accepted: PNG, JPG, GIF, WebP, SVG');
+      return;
+    }
+    try {
+      await uploadLogoMutation.mutateAsync(file);
+      toast.success('Logo Uploaded', 'Your organization logo will appear on reports');
+    } catch (err: any) {
+      toast.error('Upload Failed', err.message || 'Could not upload logo');
+    }
+    if (logoInputRef.current) logoInputRef.current.value = '';
+  };
+
+  const handleLogoDelete = async () => {
+    try {
+      await deleteLogoMutation.mutateAsync();
+      toast.success('Logo Removed', 'Reports will use the default CyberSec Pro branding');
+    } catch {
+      toast.error('Delete Failed', 'Could not remove logo');
+    }
+  };
+
   const getRiskColor = (level: string) => {
     const colors: Record<string, string> = {
       'Critical': 'text-red-500 bg-red-500/10 border-red-500/30',
@@ -367,6 +404,59 @@ export function ReportsPage() {
                 <p className="text-2xl font-bold text-white">{avgRiskScore}</p>
                 <p className="text-xs text-gray-400">Avg Risk Score</p>
               </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Report Branding */}
+        <div className="bg-gradient-to-br from-gray-900 to-gray-800 rounded-xl border border-gray-700 p-5">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-4">
+              <div className="w-12 h-12 rounded-lg bg-kali-purple/20 flex items-center justify-center">
+                <PhotoIcon className="w-6 h-6 text-kali-purple" />
+              </div>
+              <div>
+                <h3 className="text-white font-semibold text-sm">Report Branding</h3>
+                <p className="text-gray-400 text-xs mt-0.5">Your logo will appear on all generated reports</p>
+              </div>
+            </div>
+            <div className="flex items-center gap-3">
+              {orgLogoUrl && (
+                <div className="flex items-center gap-3">
+                  <img
+                    src={orgLogoUrl}
+                    alt="Organization logo"
+                    className="h-10 w-auto max-w-[120px] object-contain rounded border border-gray-600 bg-white/5 p-1"
+                  />
+                  <button
+                    onClick={handleLogoDelete}
+                    disabled={deleteLogoMutation.isPending}
+                    className="p-2 text-red-400 hover:bg-red-500/10 rounded-lg transition"
+                    title="Remove logo"
+                  >
+                    <TrashIcon className="w-4 h-4" />
+                  </button>
+                </div>
+              )}
+              <input
+                ref={logoInputRef}
+                type="file"
+                accept="image/png,image/jpeg,image/gif,image/webp,image/svg+xml"
+                onChange={handleLogoUpload}
+                className="hidden"
+              />
+              <button
+                onClick={() => logoInputRef.current?.click()}
+                disabled={uploadLogoMutation.isPending}
+                className="px-4 py-2 bg-gray-800 hover:bg-gray-700 border border-gray-600 text-white text-sm font-medium rounded-lg transition flex items-center gap-2"
+              >
+                {uploadLogoMutation.isPending ? (
+                  <ArrowPathIcon className="w-4 h-4 animate-spin" />
+                ) : (
+                  <ArrowUpTrayIcon className="w-4 h-4" />
+                )}
+                {orgLogoUrl ? 'Change Logo' : 'Upload Logo'}
+              </button>
             </div>
           </div>
         </div>

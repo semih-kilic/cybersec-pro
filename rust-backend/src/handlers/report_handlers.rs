@@ -1109,13 +1109,12 @@ pub async fn get_org_logo(
     };
 
     let logo_url: Option<String> = sqlx::query_scalar(
-        "SELECT logo_url FROM organizations WHERE id = $1"
+        "SELECT logo_url FROM organizations WHERE id = $1 AND logo_url IS NOT NULL"
     )
     .bind(&org_id)
     .fetch_optional(&state.db)
     .await
-    .unwrap_or(None)
-    .flatten();
+    .unwrap_or(None);
 
     Json(json!({"logo_url": logo_url})).into_response()
 }
@@ -1123,14 +1122,13 @@ pub async fn get_org_logo(
 /// Read org logo from disk and return as a base64 data URI for embedding in reports.
 /// Returns None if no logo is set or file can't be read.
 async fn load_org_logo_data_uri(db: &sqlx::PgPool, org_id: &str) -> Option<String> {
-    let logo_url: Option<String> = sqlx::query_scalar(
-        "SELECT logo_url FROM organizations WHERE id = $1"
+    let logo_url: String = sqlx::query_scalar(
+        "SELECT logo_url FROM organizations WHERE id = $1 AND logo_url IS NOT NULL"
     )
     .bind(org_id)
     .fetch_optional(db)
     .await
-    .ok()?
-    .flatten()?;
+    .ok()??;
 
     // logo_url is like /uploads/logos/{org_id}.png
     let disk_path = format!("/home/cybersec/cybersec-pro{}", logo_url);
@@ -1138,9 +1136,8 @@ async fn load_org_logo_data_uri(db: &sqlx::PgPool, org_id: &str) -> Option<Strin
 
     let ext = logo_url.rsplit('.').next().unwrap_or("png");
     if ext == "svg" {
-        // For SVG, return the raw SVG markup (it can be embedded directly)
-        let svg_str = String::from_utf8(bytes).ok()?;
-        Some(format!("data:image/svg+xml;base64,{}", base64_encode(&svg_str.as_bytes())))
+        // For SVG, return the raw SVG markup as base64 data URI
+        Some(format!("data:image/svg+xml;base64,{}", base64::Engine::encode(&base64::engine::general_purpose::STANDARD, &bytes)))
     } else {
         let mime = match ext {
             "jpg" | "jpeg" => "image/jpeg",
@@ -1148,67 +1145,6 @@ async fn load_org_logo_data_uri(db: &sqlx::PgPool, org_id: &str) -> Option<Strin
             "webp" => "image/webp",
             _ => "image/png",
         };
-        Some(format!("data:{};base64,{}", mime, base64_encode(&bytes)))
+        Some(format!("data:{};base64,{}", mime, base64::Engine::encode(&base64::engine::general_purpose::STANDARD, &bytes)))
     }
-}
-
-fn base64_encode(data: &[u8]) -> String {
-    use std::io::Write as _;
-    let mut buf = Vec::with_capacity(data.len() * 4 / 3 + 4);
-    {
-        let mut encoder = Base64Encoder::new(&mut buf);
-        let _ = encoder.write_all(data);
-        let _ = encoder.finish();
-    }
-    String::from_utf8(buf).unwrap_or_default()
-}
-
-struct Base64Encoder<W: std::io::Write> {
-    writer: W,
-    buf: [u8; 3],
-    pos: usize,
-}
-
-const B64_CHARS: &[u8; 64] = b"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
-
-impl<W: std::io::Write> Base64Encoder<W> {
-    fn new(writer: W) -> Self { Self { writer, buf: [0; 3], pos: 0 } }
-    fn finish(mut self) -> std::io::Result<()> {
-        if self.pos > 0 {
-            for i in self.pos..3 { self.buf[i] = 0; }
-            let b = self.buf;
-            let out = [
-                B64_CHARS[(b[0] >> 2) as usize],
-                B64_CHARS[((b[0] & 0x03) << 4 | b[1] >> 4) as usize],
-                if self.pos > 1 { B64_CHARS[((b[1] & 0x0f) << 2 | b[2] >> 6) as usize] } else { b'=' },
-                b'=',
-            ];
-            self.writer.write_all(&out)?;
-        }
-        Ok(())
-    }
-}
-
-impl<W: std::io::Write> std::io::Write for Base64Encoder<W> {
-    fn write(&mut self, data: &[u8]) -> std::io::Result<usize> {
-        let mut i = 0;
-        while i < data.len() {
-            self.buf[self.pos] = data[i];
-            self.pos += 1;
-            i += 1;
-            if self.pos == 3 {
-                let b = self.buf;
-                let out = [
-                    B64_CHARS[(b[0] >> 2) as usize],
-                    B64_CHARS[((b[0] & 0x03) << 4 | b[1] >> 4) as usize],
-                    B64_CHARS[((b[1] & 0x0f) << 2 | b[2] >> 6) as usize],
-                    B64_CHARS[(b[2] & 0x3f) as usize],
-                ];
-                self.writer.write_all(&out)?;
-                self.pos = 0;
-            }
-        }
-        Ok(data.len())
-    }
-    fn flush(&mut self) -> std::io::Result<()> { self.writer.flush() }
 }
