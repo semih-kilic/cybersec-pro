@@ -287,15 +287,15 @@ export function OverviewPage() {
                     {/* Severity Breakdown */}
                     <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
                     {[
-                      { label: 'Critical', count: openIssues.critical, color: 'red' },
-                      { label: 'High', count: openIssues.high, color: 'orange' },
-                      { label: 'Medium', count: openIssues.medium, color: 'yellow' },
-                      { label: 'Low', count: openIssues.low, color: 'blue' },
-                      { label: 'Info', count: openIssues.info, color: 'gray' },
+                      { label: 'Critical', count: openIssues.critical, bg: 'bg-red-500/20', text: 'text-red-400' },
+                      { label: 'High', count: openIssues.high, bg: 'bg-orange-500/20', text: 'text-orange-400' },
+                      { label: 'Medium', count: openIssues.medium, bg: 'bg-yellow-500/20', text: 'text-yellow-400' },
+                      { label: 'Low', count: openIssues.low, bg: 'bg-blue-500/20', text: 'text-blue-400' },
+                      { label: 'Info', count: openIssues.info, bg: 'bg-gray-500/20', text: 'text-gray-400' },
                     ].map((sev) => (
                       <div key={sev.label} className="text-center">
-                        <div className={`w-12 h-12 mx-auto rounded-full bg-${sev.color}-500/20 flex items-center justify-center mb-1`}>
-                          <span className={`text-lg font-bold text-${sev.color}-400`}>{sev.count}</span>
+                        <div className={`w-12 h-12 mx-auto rounded-full ${sev.bg} flex items-center justify-center mb-1`}>
+                          <span className={`text-lg font-bold ${sev.text}`}>{sev.count}</span>
                         </div>
                         <p className="text-xs text-gray-400">{sev.label}</p>
                       </div>

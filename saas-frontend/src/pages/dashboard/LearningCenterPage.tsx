@@ -293,6 +293,144 @@ export default function LearningCenterPage() {
             ))}
           </div>
         )}
+        {/* Course Detail Modal */}
+        {selectedCourse && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm" onClick={() => setSelectedCourse(null)}>
+            <div className="bg-gray-900 border border-gray-700 rounded-2xl p-6 max-w-2xl w-full mx-4 max-h-[85vh] overflow-y-auto shadow-2xl" onClick={e => e.stopPropagation()}>
+              <div className="flex items-start justify-between mb-4">
+                <div>
+                  <span className={`px-2 py-0.5 rounded text-xs font-medium border ${getLevelColor(selectedCourse.level)}`}>
+                    {selectedCourse.level}
+                  </span>
+                  <h2 className="text-xl font-bold text-white mt-2">{selectedCourse.title}</h2>
+                  <p className="text-gray-400 text-sm mt-1">{selectedCourse.category}</p>
+                </div>
+                <button onClick={() => setSelectedCourse(null)} className="text-gray-400 hover:text-white transition-colors text-xl">✕</button>
+              </div>
+
+              <p className="text-gray-300 mb-4">{selectedCourse.description}</p>
+
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-6">
+                <div className="bg-gray-800/50 border border-gray-700 rounded-lg p-3 text-center">
+                  <p className="text-lg font-bold text-white">{selectedCourse.modules}</p>
+                  <p className="text-xs text-gray-500">Modules</p>
+                </div>
+                <div className="bg-gray-800/50 border border-gray-700 rounded-lg p-3 text-center">
+                  <p className="text-lg font-bold text-white">{selectedCourse.duration}</p>
+                  <p className="text-xs text-gray-500">Duration</p>
+                </div>
+                <div className="bg-gray-800/50 border border-gray-700 rounded-lg p-3 text-center">
+                  <p className="text-lg font-bold text-cyan-400">{selectedCourse.students.toLocaleString()}</p>
+                  <p className="text-xs text-gray-500">Students</p>
+                </div>
+                <div className="bg-gray-800/50 border border-gray-700 rounded-lg p-3 text-center">
+                  <p className="text-lg font-bold text-yellow-400">★ {selectedCourse.rating}</p>
+                  <p className="text-xs text-gray-500">Rating</p>
+                </div>
+              </div>
+
+              {/* Syllabus */}
+              <h3 className="text-white font-semibold mb-3">Course Syllabus</h3>
+              <div className="space-y-2 mb-6">
+                {Array.from({ length: Math.min(selectedCourse.modules, 8) }, (_, i) => (
+                  <div key={i} className="flex items-center gap-3 p-3 bg-gray-800/30 border border-gray-800 rounded-lg">
+                    <div className="w-7 h-7 rounded-full bg-gray-800 border border-gray-700 flex items-center justify-center text-xs text-gray-400 font-mono flex-shrink-0">
+                      {i + 1}
+                    </div>
+                    <span className="text-gray-300 text-sm">
+                      {['Introduction & Environment Setup', 'Core Concepts & Theory', 'Hands-on: Basic Techniques', 'Intermediate Exploitation Methods', 'Advanced Attack Vectors', 'Defense & Mitigation Strategies', 'Real-world Case Studies', 'Final Assessment & Certification'][i]}
+                    </span>
+                    <span className="ml-auto text-xs text-gray-600">{Math.ceil(parseFloat(selectedCourse.duration) / selectedCourse.modules * (i + 1) * 10) / 10} min</span>
+                  </div>
+                ))}
+                {selectedCourse.modules > 8 && (
+                  <p className="text-center text-gray-500 text-xs py-2">+ {selectedCourse.modules - 8} more modules</p>
+                )}
+              </div>
+
+              {/* Progress bar */}
+              <div className="mb-6">
+                <div className="flex justify-between text-xs mb-1">
+                  <span className="text-gray-400">Progress</span>
+                  <span className="text-emerald-400">{selectedCourse.progress}%</span>
+                </div>
+                <div className="h-2 bg-gray-800 rounded-full overflow-hidden">
+                  <div className="h-full bg-gradient-to-r from-emerald-500 to-cyan-500 rounded-full transition-all" style={{ width: `${selectedCourse.progress}%` }} />
+                </div>
+              </div>
+
+              <div className="flex gap-3">
+                <button
+                  className="flex-1 py-3 bg-gradient-to-r from-emerald-500 to-cyan-500 hover:from-emerald-600 hover:to-cyan-600 text-white font-semibold rounded-xl transition-all"
+                >
+                  Begin Learning
+                </button>
+                <button
+                  onClick={() => setSelectedCourse(null)}
+                  className="px-6 py-3 bg-gray-800 hover:bg-gray-700 border border-gray-700 text-gray-300 rounded-xl transition-colors"
+                >
+                  Close
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* CTF Challenge Detail Modal */}
+        {selectedCtf && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm" onClick={() => setSelectedCtf(null)}>
+            <div className="bg-gray-900 border border-gray-700 rounded-2xl p-6 max-w-lg w-full mx-4 shadow-2xl" onClick={e => e.stopPropagation()}>
+              <div className="flex items-start justify-between mb-4">
+                <div>
+                  <div className="flex items-center gap-2 mb-2">
+                    <span className={`px-2 py-0.5 rounded text-xs font-medium border ${getLevelColor(selectedCtf.difficulty)}`}>
+                      {selectedCtf.difficulty}
+                    </span>
+                    <span className="px-2 py-0.5 bg-gray-800 rounded text-xs text-gray-400 border border-gray-700">{selectedCtf.category}</span>
+                  </div>
+                  <h2 className="text-xl font-bold text-white">{selectedCtf.title}</h2>
+                </div>
+                <button onClick={() => setSelectedCtf(null)} className="text-gray-400 hover:text-white transition-colors text-xl">✕</button>
+              </div>
+
+              <p className="text-gray-300 mb-5">{selectedCtf.description}</p>
+
+              <div className="grid grid-cols-2 gap-3 mb-6">
+                <div className="bg-gray-800/50 border border-gray-700 rounded-lg p-3 text-center">
+                  <p className="text-2xl font-bold text-cyan-400 font-mono">{selectedCtf.points}</p>
+                  <p className="text-xs text-gray-500">Points</p>
+                </div>
+                <div className="bg-gray-800/50 border border-gray-700 rounded-lg p-3 text-center">
+                  <p className="text-2xl font-bold text-gray-300">{selectedCtf.solves.toLocaleString()}</p>
+                  <p className="text-xs text-gray-500">Solves</p>
+                </div>
+              </div>
+
+              <div className="bg-gray-800/30 border border-gray-800 rounded-lg p-4 mb-6">
+                <h4 className="text-white text-sm font-medium mb-2">Challenge Environment</h4>
+                <div className="space-y-1.5 text-sm text-gray-400">
+                  <p>• A dedicated container will be spawned for this challenge</p>
+                  <p>• You have 60 minutes to capture the flag</p>
+                  <p>• Submit the flag in format: <code className="text-cyan-400 bg-gray-800 px-1.5 py-0.5 rounded text-xs">CTF&#123;...&#125;</code></p>
+                </div>
+              </div>
+
+              <div className="flex gap-3">
+                <button
+                  className="flex-1 py-3 bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600 text-white font-semibold rounded-xl transition-all"
+                >
+                  🏴 Launch Challenge
+                </button>
+                <button
+                  onClick={() => setSelectedCtf(null)}
+                  className="px-6 py-3 bg-gray-800 hover:bg-gray-700 border border-gray-700 text-gray-300 rounded-xl transition-colors"
+                >
+                  Close
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </PageTransition>
   );
