@@ -130,6 +130,7 @@ export default function BlogSection() {
             const Icon = CATEGORY_ICONS[post.category] || Shield;
             return (
               <motion.article key={post.slug} variants={card}>
+                <Link href={`/${locale}/blog/${post.slug}`} className="block h-full">
                 <div className="neon-border-card group flex h-full flex-col p-6 transition-all duration-300 hover:translate-y-[-2px]">
                   {/* Category + date row */}
                   <div className="mb-4 flex items-center justify-between">
@@ -163,6 +164,7 @@ export default function BlogSection() {
                     </span>
                   </div>
                 </div>
+                </Link>
               </motion.article>
             );
           })}

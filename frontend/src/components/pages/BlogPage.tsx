@@ -2,6 +2,8 @@
 
 import { useState } from "react";
 import { useTranslations } from "next-intl";
+import { useLocale } from "next-intl";
+import Link from "next/link";
 import RevealOnScroll from "@/components/animations/RevealOnScroll";
 import MatrixRain from "@/components/three/MatrixRain";
 import { Clock, ArrowRight, Mail } from "lucide-react";
@@ -20,22 +22,23 @@ const categoryColors: Record<string, string> = {
 };
 
 const posts = [
-  { title: "Mastering Wireshark: Network Traffic Analysis Deep Dive", category: "Tools" as Category, readTime: 12, date: "Jan 15, 2026", featured: true, excerpt: "Advanced packet capture and analysis techniques — from protocol dissection to identifying malicious traffic patterns in real-time." },
-  { title: "Hashcat vs John the Ripper: Password Cracking Compared", category: "Tools" as Category, readTime: 10, date: "Jan 12, 2026", featured: true, excerpt: "GPU-accelerated password recovery showdown. Benchmarks, rule-based attacks, and choosing the right tool for the job." },
-  { title: "Getting Started with Nmap: A Complete Guide", category: "Tools" as Category, readTime: 8, date: "Jan 10, 2026", excerpt: "Learn how to perform comprehensive network scans using Nmap's most powerful features — from host discovery to NSE scripting." },
-  { title: "OWASP Top 10 in 2026: What's Changed", category: "Security" as Category, readTime: 12, date: "Jan 8, 2026", excerpt: "An updated look at the most critical web application security risks and how to mitigate them with modern tools." },
-  { title: "Metasploit Framework: From Zero to Exploit", category: "Tutorials" as Category, readTime: 15, date: "Jan 5, 2026", featured: true, excerpt: "Hands-on walkthrough of the Metasploit Framework — modules, payloads, encoders, and post-exploitation techniques." },
-  { title: "Automating Penetration Tests with CI/CD", category: "DevSecOps" as Category, readTime: 10, date: "Jan 3, 2026", excerpt: "Integrate security testing into your development pipeline with CyberSec Pro's API and GitHub Actions." },
-  { title: "Burp Suite Professional: Web App Testing Masterclass", category: "Tutorials" as Category, readTime: 14, date: "Dec 28, 2025", excerpt: "Complete guide to intercepting proxies, active scanning, and extending Burp with custom extensions for targeted assessments." },
-  { title: "SQL Injection: From Detection to Exploitation", category: "Tutorials" as Category, readTime: 15, date: "Dec 22, 2025", excerpt: "A hands-on guide to finding and exploiting SQL injection vulnerabilities responsibly — union-based, blind, and time-based techniques." },
-  { title: "Building a Home Lab for Security Testing", category: "Guides" as Category, readTime: 7, date: "Dec 18, 2025", excerpt: "Set up your own security testing environment using VMs, Docker, and vulnerable-by-design applications like DVWA and HackTheBox." },
-  { title: "Wireless Security Assessment Best Practices", category: "Wireless" as Category, readTime: 9, date: "Dec 15, 2025", excerpt: "Comprehensive guide to testing Wi-Fi network security using aircrack-ng, wifite, and bettercap — WPA2/WPA3 coverage." },
+  { slug: "mastering-wireshark", title: "Mastering Wireshark: Network Traffic Analysis Deep Dive", category: "Tools" as Category, readTime: 12, date: "Jan 15, 2026", featured: true, excerpt: "Advanced packet capture and analysis techniques — from protocol dissection to identifying malicious traffic patterns in real-time." },
+  { slug: "hashcat-vs-john", title: "Hashcat vs John the Ripper: Password Cracking Compared", category: "Tools" as Category, readTime: 10, date: "Jan 12, 2026", featured: true, excerpt: "GPU-accelerated password recovery showdown. Benchmarks, rule-based attacks, and choosing the right tool for the job." },
+  { slug: "nmap-complete-guide", title: "Getting Started with Nmap: A Complete Guide", category: "Tools" as Category, readTime: 8, date: "Jan 10, 2026", excerpt: "Learn how to perform comprehensive network scans using Nmap's most powerful features — from host discovery to NSE scripting." },
+  { slug: "owasp-top-10-2026", title: "OWASP Top 10 in 2026: What's Changed", category: "Security" as Category, readTime: 12, date: "Jan 8, 2026", excerpt: "An updated look at the most critical web application security risks and how to mitigate them with modern tools." },
+  { slug: "metasploit-zero-to-exploit", title: "Metasploit Framework: From Zero to Exploit", category: "Tutorials" as Category, readTime: 15, date: "Jan 5, 2026", featured: true, excerpt: "Hands-on walkthrough of the Metasploit Framework — modules, payloads, encoders, and post-exploitation techniques." },
+  { slug: "ci-cd-pentest-automation", title: "Automating Penetration Tests with CI/CD", category: "DevSecOps" as Category, readTime: 10, date: "Jan 3, 2026", excerpt: "Integrate security testing into your development pipeline with CyberSec Pro's API and GitHub Actions." },
+  { slug: "burp-suite-masterclass", title: "Burp Suite Professional: Web App Testing Masterclass", category: "Tutorials" as Category, readTime: 14, date: "Dec 28, 2025", excerpt: "Complete guide to intercepting proxies, active scanning, and extending Burp with custom extensions for targeted assessments." },
+  { slug: "sql-injection-guide", title: "SQL Injection: From Detection to Exploitation", category: "Tutorials" as Category, readTime: 15, date: "Dec 22, 2025", excerpt: "A hands-on guide to finding and exploiting SQL injection vulnerabilities responsibly — union-based, blind, and time-based techniques." },
+  { slug: "home-lab-setup", title: "Building a Home Lab for Security Testing", category: "Guides" as Category, readTime: 7, date: "Dec 18, 2025", excerpt: "Set up your own security testing environment using VMs, Docker, and vulnerable-by-design applications like DVWA and HackTheBox." },
+  { slug: "wireless-security-assessment", title: "Wireless Security Assessment Best Practices", category: "Wireless" as Category, readTime: 9, date: "Dec 15, 2025", excerpt: "Comprehensive guide to testing Wi-Fi network security using aircrack-ng, wifite, and bettercap — WPA2/WPA3 coverage." },
 ];
 
 const INITIAL_COUNT = 6;
 
 export default function BlogPage() {
   const t = useTranslations("blog");
+  const locale = useLocale();
   const [activeFilter, setActiveFilter] = useState<Category>("All");
   const [showAll, setShowAll] = useState(false);
 
@@ -61,7 +64,7 @@ export default function BlogPage() {
             <h2 className="mb-6 text-xl font-bold text-white">Featured Articles</h2>
             <div className="grid gap-4 md:grid-cols-3">
               {featured.map((post) => (
-                <div key={post.title} className="glass-card p-6 border-[var(--color-neon)]/10 hover:border-[var(--color-neon)]/30 transition cursor-pointer">
+                <Link href={`/${locale}/blog/${post.slug}`} key={post.slug} className="glass-card p-6 border-[var(--color-neon)]/10 hover:border-[var(--color-neon)]/30 transition cursor-pointer block">
                   <span className="rounded-full px-2.5 py-0.5 text-[10px] font-semibold" style={{ background: `${categoryColors[post.category]}20`, color: categoryColors[post.category] }}>
                     {post.category}
                   </span>
@@ -72,7 +75,7 @@ export default function BlogPage() {
                     <span>•</span>
                     <span className="flex items-center gap-1"><Clock size={10} /> {post.readTime} min</span>
                   </div>
-                </div>
+                </Link>
               ))}
             </div>
           </RevealOnScroll>
@@ -101,8 +104,8 @@ export default function BlogPage() {
       {/* Articles Grid */}
       <section className="mx-auto grid max-w-6xl gap-6 px-6 pb-12 md:grid-cols-2 lg:grid-cols-3">
         {visible.map((post) => (
-          <RevealOnScroll key={post.title}>
-            <div className="glass-card flex h-full flex-col gap-4 p-6 cursor-pointer hover:border-white/10 transition">
+          <RevealOnScroll key={post.slug}>
+            <Link href={`/${locale}/blog/${post.slug}`} className="glass-card flex h-full flex-col gap-4 p-6 cursor-pointer hover:border-white/10 transition block">
               <div className="flex items-center gap-2">
                 <span className="rounded-full px-2.5 py-0.5 text-[10px] font-semibold" style={{ background: `${categoryColors[post.category]}20`, color: categoryColors[post.category] }}>
                   {post.category}
@@ -119,7 +122,7 @@ export default function BlogPage() {
                   {t("readMore")} <ArrowRight size={12} />
                 </span>
               </div>
-            </div>
+            </Link>
           </RevealOnScroll>
         ))}
       </section>

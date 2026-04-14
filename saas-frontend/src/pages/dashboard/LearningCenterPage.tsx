@@ -51,6 +51,8 @@ export default function LearningCenterPage() {
   useDocumentTitle('Learning Center — CyberSec Pro');
   const { t: _t } = useTranslation();
   const [activeTab, setActiveTab] = useState<string>('Courses');
+  const [selectedCourse, setSelectedCourse] = useState<typeof COURSES[0] | null>(null);
+  const [selectedCtf, setSelectedCtf] = useState<typeof CTF_CHALLENGES[0] | null>(null);
 
   return (
     <PageTransition>
@@ -127,7 +129,10 @@ export default function LearningCenterPage() {
                 </div>
                 <div className="flex items-center justify-between">
                   <span className="px-2 py-0.5 bg-gray-800 rounded text-xs text-gray-400 border border-gray-700">{course.category}</span>
-                  <button className="px-3 py-1.5 bg-emerald-500/10 hover:bg-emerald-500/20 border border-emerald-500/30 rounded-lg text-xs text-emerald-400 font-medium transition-colors">
+                  <button
+                    onClick={() => setSelectedCourse(course)}
+                    className="px-3 py-1.5 bg-emerald-500/10 hover:bg-emerald-500/20 border border-emerald-500/30 rounded-lg text-xs text-emerald-400 font-medium transition-colors"
+                  >
                     Start Course →
                   </button>
                 </div>
@@ -158,7 +163,10 @@ export default function LearningCenterPage() {
                       <span>{ctf.solves.toLocaleString()} solves</span>
                     </div>
                   </div>
-                  <button className="px-4 py-2 bg-cyan-500/10 hover:bg-cyan-500/20 border border-cyan-500/30 rounded-lg text-sm text-cyan-400 font-medium transition-colors whitespace-nowrap">
+                  <button
+                    onClick={() => setSelectedCtf(ctf)}
+                    className="px-4 py-2 bg-cyan-500/10 hover:bg-cyan-500/20 border border-cyan-500/30 rounded-lg text-sm text-cyan-400 font-medium transition-colors whitespace-nowrap"
+                  >
                     Start
                   </button>
                 </div>

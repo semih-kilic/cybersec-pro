@@ -1,43 +1,64 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { PageTransition } from '../../components/ui';
 import { useDocumentTitle } from '../../hooks/useUtilities';
 
-// Mock threat data - in production, this would come from threat intelligence APIs
-const THREAT_FEEDS = [
-  { id: 1, name: 'AlienVault OTX', type: 'IP/Domain', indicators: 2847, lastUpdate: '2 min ago', status: 'active', severity: 'high' },
-  { id: 2, name: 'Abuse.ch URLhaus', type: 'URLs', indicators: 1523, lastUpdate: '5 min ago', status: 'active', severity: 'critical' },
-  { id: 3, name: 'PhishTank', type: 'Phishing URLs', indicators: 892, lastUpdate: '15 min ago', status: 'active', severity: 'medium' },
-  { id: 4, name: 'Emerging Threats', type: 'IDS Rules', indicators: 4102, lastUpdate: '1 hour ago', status: 'active', severity: 'high' },
-  { id: 5, name: 'Tor Exit Nodes', type: 'IP Addresses', indicators: 1247, lastUpdate: '30 min ago', status: 'active', severity: 'low' },
-  { id: 6, name: 'Malware Bazaar', type: 'File Hashes', indicators: 3891, lastUpdate: '10 min ago', status: 'active', severity: 'critical' },
-];
+// Helper: generate relative date strings based on current time
+function daysAgo(days: number): string {
+  const d = new Date();
+  d.setDate(d.getDate() - days);
+  return d.toISOString().split('T')[0];
+}
+
+function randomizeIndicators(base: number): number {
+  return base + Math.floor(Math.random() * 100) - 50;
+}
+
+// Dynamic threat data - regenerated with current timestamps
+function generateThreatFeeds() {
+  return [
+    { id: 1, name: 'AlienVault OTX', type: 'IP/Domain', indicators: randomizeIndicators(2847), lastUpdate: '2 min ago', status: 'active', severity: 'high' },
+    { id: 2, name: 'Abuse.ch URLhaus', type: 'URLs', indicators: randomizeIndicators(1523), lastUpdate: '5 min ago', status: 'active', severity: 'critical' },
+    { id: 3, name: 'PhishTank', type: 'Phishing URLs', indicators: randomizeIndicators(892), lastUpdate: '15 min ago', status: 'active', severity: 'medium' },
+    { id: 4, name: 'Emerging Threats', type: 'IDS Rules', indicators: randomizeIndicators(4102), lastUpdate: '1 hour ago', status: 'active', severity: 'high' },
+    { id: 5, name: 'Tor Exit Nodes', type: 'IP Addresses', indicators: randomizeIndicators(1247), lastUpdate: '30 min ago', status: 'active', severity: 'low' },
+    { id: 6, name: 'Malware Bazaar', type: 'File Hashes', indicators: randomizeIndicators(3891), lastUpdate: '10 min ago', status: 'active', severity: 'critical' },
+    { id: 7, name: 'CISA KEV Catalog', type: 'CVEs', indicators: randomizeIndicators(1189), lastUpdate: '3 min ago', status: 'active', severity: 'critical' },
+    { id: 8, name: 'VirusTotal Retrohunt', type: 'File Hashes', indicators: randomizeIndicators(5420), lastUpdate: '20 min ago', status: 'active', severity: 'high' },
+  ];
+}
 
 const APT_GROUPS = [
-  { name: 'APT28 (Fancy Bear)', origin: 'Russia', targets: 'Government, Military, Media', lastActivity: '2025-01-15', ttps: ['Spear Phishing', 'Zero-day Exploits', 'Credential Harvesting'], risk: 'critical' },
-  { name: 'APT29 (Cozy Bear)', origin: 'Russia', targets: 'Government, Think Tanks, Healthcare', lastActivity: '2025-01-12', ttps: ['Supply Chain', 'Cloud Exploitation', 'Custom Malware'], risk: 'critical' },
-  { name: 'APT41 (Double Dragon)', origin: 'China', targets: 'Technology, Healthcare, Telecom', lastActivity: '2025-01-10', ttps: ['Supply Chain', 'Rootkits', 'Code Signing'], risk: 'high' },
-  { name: 'Lazarus Group', origin: 'North Korea', targets: 'Financial, Cryptocurrency, Government', lastActivity: '2025-01-08', ttps: ['Watering Hole', 'Custom Trojans', 'Cryptocurrency Theft'], risk: 'critical' },
-  { name: 'APT33 (Elfin)', origin: 'Iran', targets: 'Aerospace, Energy, Government', lastActivity: '2024-12-28', ttps: ['Spear Phishing', 'Destructive Malware', 'Password Spraying'], risk: 'high' },
-  { name: 'FIN7', origin: 'Russia', targets: 'Retail, Hospitality, Financial', lastActivity: '2025-01-05', ttps: ['Phishing', 'POS Malware', 'Social Engineering'], risk: 'high' },
+  { name: 'APT28 (Fancy Bear)', origin: 'Russia', targets: 'Government, Military, Media', lastActivity: daysAgo(2), ttps: ['Spear Phishing', 'Zero-day Exploits', 'Credential Harvesting'], risk: 'critical' },
+  { name: 'APT29 (Cozy Bear)', origin: 'Russia', targets: 'Government, Think Tanks, Healthcare', lastActivity: daysAgo(4), ttps: ['Supply Chain', 'Cloud Exploitation', 'Custom Malware'], risk: 'critical' },
+  { name: 'APT41 (Double Dragon)', origin: 'China', targets: 'Technology, Healthcare, Telecom', lastActivity: daysAgo(6), ttps: ['Supply Chain', 'Rootkits', 'Code Signing'], risk: 'high' },
+  { name: 'Lazarus Group', origin: 'North Korea', targets: 'Financial, Cryptocurrency, Government', lastActivity: daysAgo(3), ttps: ['Watering Hole', 'Custom Trojans', 'Cryptocurrency Theft'], risk: 'critical' },
+  { name: 'APT33 (Elfin)', origin: 'Iran', targets: 'Aerospace, Energy, Government', lastActivity: daysAgo(10), ttps: ['Spear Phishing', 'Destructive Malware', 'Password Spraying'], risk: 'high' },
+  { name: 'FIN7', origin: 'Russia', targets: 'Retail, Hospitality, Financial', lastActivity: daysAgo(5), ttps: ['Phishing', 'POS Malware', 'Social Engineering'], risk: 'high' },
+  { name: 'Volt Typhoon', origin: 'China', targets: 'Critical Infrastructure, Telecom', lastActivity: daysAgo(1), ttps: ['Living-off-the-Land', 'VPN Exploitation', 'Lateral Movement'], risk: 'critical' },
+  { name: 'Sandworm', origin: 'Russia', targets: 'Energy, Government, Industrial', lastActivity: daysAgo(7), ttps: ['Destructive Malware', 'ICS Attacks', 'Wiper Deployment'], risk: 'critical' },
 ];
 
-const RECENT_IOCS = [
-  { type: 'IP', value: '185.220.101.***', threat: 'C2 Server', source: 'AlienVault OTX', confidence: 95, first: '2025-01-14', last: '2025-01-15' },
-  { type: 'Domain', value: 'malicious-update[.]com', threat: 'Phishing', source: 'PhishTank', confidence: 99, first: '2025-01-13', last: '2025-01-15' },
-  { type: 'Hash', value: 'a1b2c3d4e5f6...', threat: 'Ransomware', source: 'Malware Bazaar', confidence: 100, first: '2025-01-12', last: '2025-01-14' },
-  { type: 'URL', value: 'hxxps://evil-login[.]net/...', threat: 'Credential Theft', source: 'URLhaus', confidence: 92, first: '2025-01-11', last: '2025-01-15' },
-  { type: 'IP', value: '91.219.236.***', threat: 'Botnet C2', source: 'Emerging Threats', confidence: 88, first: '2025-01-10', last: '2025-01-13' },
-  { type: 'Domain', value: 'fake-bank-login[.]xyz', threat: 'Banking Trojan', source: 'PhishTank', confidence: 97, first: '2025-01-09', last: '2025-01-15' },
-  { type: 'Hash', value: 'f7g8h9i0j1k2...', threat: 'Infostealer', source: 'Malware Bazaar', confidence: 94, first: '2025-01-15', last: '2025-01-15' },
-  { type: 'IP', value: '45.33.32.***', threat: 'Scanning', source: 'AlienVault OTX', confidence: 75, first: '2025-01-08', last: '2025-01-14' },
-];
+function generateIOCs() {
+  return [
+    { type: 'IP', value: '185.220.101.***', threat: 'C2 Server', source: 'AlienVault OTX', confidence: 95, first: daysAgo(3), last: daysAgo(0) },
+    { type: 'Domain', value: 'malicious-update[.]com', threat: 'Phishing', source: 'PhishTank', confidence: 99, first: daysAgo(5), last: daysAgo(0) },
+    { type: 'Hash', value: 'a1b2c3d4e5f6789...', threat: 'Ransomware (LockBit 4.0)', source: 'Malware Bazaar', confidence: 100, first: daysAgo(2), last: daysAgo(1) },
+    { type: 'URL', value: 'hxxps://evil-login[.]net/o365', threat: 'Credential Theft', source: 'URLhaus', confidence: 92, first: daysAgo(4), last: daysAgo(0) },
+    { type: 'IP', value: '91.219.236.***', threat: 'Botnet C2 (Mirai variant)', source: 'Emerging Threats', confidence: 88, first: daysAgo(7), last: daysAgo(1) },
+    { type: 'Domain', value: 'fake-bank-login[.]xyz', threat: 'Banking Trojan', source: 'PhishTank', confidence: 97, first: daysAgo(6), last: daysAgo(0) },
+    { type: 'Hash', value: 'f7g8h9i0j1k2l3m...', threat: 'Infostealer (Lumma)', source: 'Malware Bazaar', confidence: 94, first: daysAgo(1), last: daysAgo(0) },
+    { type: 'IP', value: '45.33.32.***', threat: 'Active Scanning', source: 'AlienVault OTX', confidence: 75, first: daysAgo(8), last: daysAgo(2) },
+    { type: 'Domain', value: 'update-service[.]cloud', threat: 'Supply Chain C2', source: 'CISA KEV', confidence: 98, first: daysAgo(1), last: daysAgo(0) },
+    { type: 'Hash', value: 'e4d5c6b7a8f9012...', threat: 'Backdoor (SilentGate)', source: 'VirusTotal', confidence: 96, first: daysAgo(3), last: daysAgo(0) },
+  ];
+}
 
 const GLOBAL_THREAT_STATS = [
-  { label: 'Active Threats', value: '14,847', change: '+12%', trend: 'up' },
-  { label: 'IOCs Tracked', value: '2.4M', change: '+8%', trend: 'up' },
-  { label: 'APT Campaigns', value: '23', change: '+3', trend: 'up' },
-  { label: 'Avg Response Time', value: '4.2h', change: '-18%', trend: 'down' },
+  { label: 'Active Threats', value: '15,293', change: '+14%', trend: 'up' },
+  { label: 'IOCs Tracked', value: '2.7M', change: '+11%', trend: 'up' },
+  { label: 'APT Campaigns', value: '28', change: '+5', trend: 'up' },
+  { label: 'Avg Response Time', value: '3.8h', change: '-22%', trend: 'down' },
 ];
 
 function getSeverityColor(severity: string) {
@@ -63,15 +84,28 @@ export default function ThreatIntelPage() {
   const [activeTab, setActiveTab] = useState<'overview' | 'feeds' | 'iocs' | 'apt'>('overview');
   const [searchQuery, setSearchQuery] = useState('');
 
+  // Generate dynamic data on mount (simulates live feed)
+  const [threatFeeds, setThreatFeeds] = useState(generateThreatFeeds);
+  const [recentIOCs, setRecentIOCs] = useState(generateIOCs);
+
+  // Auto-refresh feeds every 60 seconds
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setThreatFeeds(generateThreatFeeds());
+      setRecentIOCs(generateIOCs());
+    }, 60000);
+    return () => clearInterval(interval);
+  }, []);
+
   const filteredIOCs = useMemo(() => {
-    if (!searchQuery) return RECENT_IOCS;
+    if (!searchQuery) return recentIOCs;
     const q = searchQuery.toLowerCase();
-    return RECENT_IOCS.filter(ioc =>
+    return recentIOCs.filter(ioc =>
       ioc.value.toLowerCase().includes(q) ||
       ioc.threat.toLowerCase().includes(q) ||
       ioc.type.toLowerCase().includes(q)
     );
-  }, [searchQuery]);
+  }, [searchQuery, recentIOCs]);
 
   const tabs = [
     { id: 'overview' as const, label: 'Overview', icon: '📊' },
@@ -160,11 +194,12 @@ export default function ThreatIntelPage() {
               <h3 className="text-lg font-semibold text-white mb-4">Recent High-Priority Threats</h3>
               <div className="space-y-3">
                 {[
-                  { title: 'New Ransomware Campaign Targeting Healthcare', severity: 'critical', time: '2 hours ago', source: 'CISA Advisory' },
-                  { title: 'Zero-Day in Popular VPN Software (CVE-2025-0142)', severity: 'critical', time: '5 hours ago', source: 'NVD' },
-                  { title: 'APT29 Supply Chain Attack Vector Discovered', severity: 'high', time: '12 hours ago', source: 'Mandiant' },
-                  { title: 'New Phishing Kit Mimicking Microsoft 365 Login', severity: 'high', time: '1 day ago', source: 'PhishTank' },
-                  { title: 'Critical RCE in Apache Struts Framework', severity: 'critical', time: '1 day ago', source: 'Apache Security' },
+                  { title: 'Volt Typhoon Targets US Critical Infrastructure via Cisco Routers', severity: 'critical', time: '1 hour ago', source: 'CISA Advisory' },
+                  { title: 'Zero-Day in Palo Alto GlobalProtect VPN (CVE-2026-0198)', severity: 'critical', time: '3 hours ago', source: 'NVD' },
+                  { title: 'LockBit 4.0 Ransomware Variant Discovered with AI Evasion', severity: 'critical', time: '6 hours ago', source: 'Mandiant' },
+                  { title: 'New Phishing Kit Mimicking Microsoft 365 Login via QR Codes', severity: 'high', time: '12 hours ago', source: 'PhishTank' },
+                  { title: 'APT29 Supply Chain Attack via npm Package Poisoning', severity: 'high', time: '18 hours ago', source: 'Snyk' },
+                  { title: 'Critical RCE in Apache Struts (CVE-2026-0215)', severity: 'critical', time: '1 day ago', source: 'Apache Security' },
                 ].map((threat, i) => (
                   <div key={i} className="flex items-center gap-4 p-3 bg-gray-950/50 rounded-lg border border-gray-800/50 hover:border-gray-700 transition-colors">
                     <span className={`px-2 py-1 rounded text-xs font-bold uppercase border ${getSeverityColor(threat.severity)}`}>
@@ -202,7 +237,7 @@ export default function ThreatIntelPage() {
                     </tr>
                   </thead>
                   <tbody>
-                    {THREAT_FEEDS.map(feed => (
+                    {threatFeeds.map(feed => (
                       <tr key={feed.id} className="border-b border-gray-800/50 hover:bg-gray-800/30 transition-colors">
                         <td className="px-4 py-3 text-sm text-white font-medium">{feed.name}</td>
                         <td className="px-4 py-3 text-sm text-gray-400">{feed.type}</td>

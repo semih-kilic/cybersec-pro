@@ -398,6 +398,17 @@ function QueryErrorBridge() {
   return null;
 }
 
+// Handle stale chunk errors globally (Vite dynamic imports after redeployment)
+window.addEventListener('vite:preloadError', () => {
+  const reloadKey = 'cybersec_chunk_reload';
+  const lastReload = sessionStorage.getItem(reloadKey);
+  const now = Date.now();
+  if (!lastReload || now - parseInt(lastReload, 10) > 30000) {
+    sessionStorage.setItem(reloadKey, String(now));
+    window.location.reload();
+  }
+});
+
 function App() {
   return (
     <HelmetProvider>
