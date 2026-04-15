@@ -80,12 +80,13 @@
     "ctaEnterprise": "Contacter les ventes",
     "plans": {
       "trial": {
-        "name": "Essai",
-        "price": "Gratuit",
+        "name": "Essai Gratuit",
+        "price": "0 €",
         "period": "14 jours",
         "features": [
-          "50 outils de sécurité",
-          "1 scan complet",
+          "Les 401 outils de sécurité",
+          "3 scans par jour",
+          "1 scan simultané",
           "Rapport PDF avec résultats",
           "Support par e-mail",
           "Sans carte bancaire"
@@ -96,13 +97,14 @@
         "price": "99 €",
         "period": "/mois",
         "features": [
-          "100 outils de sécurité",
+          "Les 401 outils de sécurité",
+          "30 scans par mois",
+          "2 scans simultanés",
           "1 domaine/application",
-          "Scans automatiques hebdomadaires",
-          "Alertes e-mail vulnérabilités",
           "Rapports PDF & HTML",
+          "Scans programmés",
           "Support e-mail prioritaire (48h)",
-          "Historique vulnérabilités 3 mois"
+          "3 membres d'équipe"
         ]
       },
       "professional": {
@@ -110,14 +112,17 @@
         "price": "299 €",
         "period": "/mois",
         "features": [
-          "250 outils de sécurité",
-          "Jusqu'à 5 domaines",
-          "Scans automatiques quotidiens",
+          "Les 401 outils de sécurité",
+          "250 scans par mois",
+          "5 scans simultanés",
+          "Jusqu'à 5 domaines/applications",
           "Accès API pour CI/CD",
-          "Rapports conformité (NIST, OWASP, GDPR)",
-          "Rapports PDF marque blanche",
+          "Notifications Slack / Teams / e-mail",
+          "Rapports conformité (NIST, OWASP, GDPR, PCI DSS, HIPAA, SOC 2)",
+          "Rapports PDF marque blanche avec logo",
+          "Scan LDAP / Active Directory",
           "Support prioritaire (24h)",
-          "Suivi vulnérabilités 12 mois"
+          "10 membres d'équipe"
         ]
       },
       "enterprise": {
@@ -126,15 +131,19 @@
         "period": "/mois",
         "features": [
           "Les 401 outils de sécurité",
-          "Domaines illimités",
+          "5 000 scans par mois",
+          "Scans simultanés illimités",
+          "Domaines/applications illimités",
           "Surveillance continue (horaire)",
           "Gestionnaire de compte dédié",
-          "Tous les cadres de conformité",
+          "Tous les cadres de conformité (NIST, OWASP, GDPR, PCI DSS, HIPAA, SOC 2)",
+          "Rapports marque blanche avec logo",
           "SSO / SAML / LDAP",
-          "Utilisateurs & équipes illimités",
-          "Garantie SLA (99,9%)",
-          "Support prioritaire 24/7 (2h)",
-          "Revues de sécurité trimestrielles"
+          "Utilisateurs & collaboration d'équipe illimités",
+          "API avancée (webhooks, intégrations)",
+          "Garantie SLA (99,9% disponibilité)",
+          "Support prioritaire 24/7 (réponse 2h)",
+          "Revues trimestrielles de feuille de route sécurité"
         ]
       }
     }

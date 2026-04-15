@@ -80,12 +80,13 @@
     "ctaEnterprise": "Vertrieb kontaktieren",
     "plans": {
       "trial": {
-        "name": "Testversion",
-        "price": "Kostenlos",
+        "name": "Kostenlose Testversion",
+        "price": "€0",
         "period": "14 Tage",
         "features": [
-          "50 Sicherheitstools",
-          "1 umfassender Scan",
+          "Alle 401 Sicherheitstools",
+          "3 Scans pro Tag",
+          "1 gleichzeitiger Scan",
           "PDF-Bericht mit Ergebnissen",
           "E-Mail-Support",
           "Keine Kreditkarte erforderlich"
@@ -96,13 +97,14 @@
         "price": "99 €",
         "period": "/Monat",
         "features": [
-          "100 Sicherheitstools",
+          "Alle 401 Sicherheitstools",
+          "30 Scans pro Monat",
+          "2 gleichzeitige Scans",
           "1 Domain/Anwendung",
-          "Wöchentliche automatische Scans",
-          "E-Mail-Warnungen bei Schwachstellen",
           "PDF & HTML Berichte",
+          "Geplante Scans",
           "Prioritäts-E-Mail-Support (48h)",
-          "3-monatige Schwachstellen-Historie"
+          "3 Teammitglieder"
         ]
       },
       "professional": {
@@ -110,14 +112,17 @@
         "price": "299 €",
         "period": "/Monat",
         "features": [
-          "250 Sicherheitstools",
-          "Bis zu 5 Domains",
-          "Tägliche automatische Scans",
+          "Alle 401 Sicherheitstools",
+          "250 Scans pro Monat",
+          "5 gleichzeitige Scans",
+          "Bis zu 5 Domains/Anwendungen",
           "API-Zugang für CI/CD",
-          "Compliance-Berichte (NIST, OWASP, GDPR)",
-          "White-Label PDF-Berichte",
+          "Slack / Teams / E-Mail-Benachrichtigungen",
+          "Compliance-Berichte (NIST, OWASP, GDPR, PCI DSS, HIPAA, SOC 2)",
+          "White-Label PDF-Berichte mit Firmenlogo",
+          "LDAP / Active Directory Scan",
           "Prioritäts-Support (24h)",
-          "12-monatiges Schwachstellen-Tracking"
+          "10 Teammitglieder"
         ]
       },
       "enterprise": {
@@ -126,15 +131,19 @@
         "period": "/Monat",
         "features": [
           "Alle 401 Sicherheitstools",
-          "Unbegrenzte Domains",
+          "5.000 Scans pro Monat",
+          "Unbegrenzte gleichzeitige Scans",
+          "Unbegrenzte Domains/Anwendungen",
           "Kontinuierliches Monitoring (stündlich)",
           "Dedizierter Account Manager",
-          "Alle Compliance-Frameworks",
+          "Alle Compliance-Frameworks (NIST, OWASP, GDPR, PCI DSS, HIPAA, SOC 2)",
+          "White-Label Berichte mit Firmenlogo",
           "SSO / SAML / LDAP",
-          "Unbegrenzte Benutzer & Teams",
-          "SLA-Garantie (99,9%)",
-          "24/7 Prioritäts-Support (2h)",
-          "Vierteljährliche Sicherheitsreviews"
+          "Unbegrenzte Benutzer & Team-Zusammenarbeit",
+          "Erweiterte API (Webhooks, Integrationen)",
+          "SLA-Garantie (99,9% Verfügbarkeit)",
+          "24/7 Prioritäts-Support (2h Antwort)",
+          "Vierteljährliche Sicherheits-Roadmap-Reviews"
         ]
       }
     }

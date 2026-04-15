@@ -80,12 +80,13 @@
     "ctaEnterprise": "Contact Sales",
     "plans": {
       "trial": {
-        "name": "Trial",
-        "price": "Free",
+        "name": "Free Trial",
+        "price": "€0",
         "period": "14 days",
         "features": [
-          "50 security tools",
-          "1 comprehensive scan",
+          "All 401 security tools",
+          "3 scans per day",
+          "1 concurrent scan",
           "PDF report with findings",
           "Email support",
           "No credit card required"
@@ -96,13 +97,14 @@
         "price": "€99",
         "period": "/month",
         "features": [
-          "100 security tools",
+          "All 401 security tools",
+          "30 scans per month",
+          "2 concurrent scans",
           "1 domain/application",
-          "Weekly automated scans",
-          "Email alerts for vulnerabilities",
           "PDF & HTML reports",
+          "Scheduled scans",
           "Priority email support (48h)",
-          "3-month vulnerability history"
+          "3 team members"
         ]
       },
       "professional": {
@@ -110,14 +112,17 @@
         "price": "€299",
         "period": "/month",
         "features": [
-          "250 security tools",
-          "Up to 5 domains",
-          "Daily automated scans",
+          "All 401 security tools",
+          "250 scans per month",
+          "5 concurrent scans",
+          "Up to 5 domains/applications",
           "API access for CI/CD",
-          "Compliance reports (NIST, OWASP, GDPR)",
-          "White-label PDF reports",
+          "Slack / Teams / Email notifications",
+          "Compliance reports (NIST, OWASP, GDPR, PCI DSS, HIPAA, SOC 2)",
+          "White-label PDF reports with company logo",
+          "LDAP / Active Directory scan",
           "Priority support (24h)",
-          "12-month vulnerability tracking"
+          "10 team members"
         ]
       },
       "enterprise": {
@@ -126,15 +131,19 @@
         "period": "/month",
         "features": [
           "All 401 security tools",
-          "Unlimited domains",
+          "5,000 scans per month",
+          "Unlimited concurrent scans",
+          "Unlimited domains/applications",
           "Continuous monitoring (hourly)",
           "Dedicated account manager",
-          "All compliance frameworks",
+          "All compliance frameworks (NIST, OWASP, GDPR, PCI DSS, HIPAA, SOC 2)",
+          "White-label reports with company logo",
           "SSO / SAML / LDAP",
-          "Unlimited users & teams",
-          "SLA guarantee (99.9%)",
-          "24/7 priority support (2h)",
-          "Quarterly security reviews"
+          "Unlimited users & team collaboration",
+          "Advanced API (webhooks, integrations)",
+          "SLA guarantee (99.9% uptime)",
+          "24/7 priority support (2h response)",
+          "Quarterly security roadmap reviews"
         ]
       }
     }

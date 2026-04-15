@@ -80,12 +80,13 @@
     "ctaEnterprise": "Satışla İletişime Geç",
     "plans": {
       "trial": {
-        "name": "Deneme",
-        "price": "Ücretsiz",
+        "name": "Ücretsiz Deneme",
+        "price": "€0",
         "period": "14 gün",
         "features": [
-          "50 güvenlik aracı",
-          "1 kapsamlı tarama",
+          "Tüm 401 güvenlik aracı",
+          "Günde 3 tarama",
+          "1 eşzamanlı tarama",
           "PDF bulgular raporu",
           "E-posta desteği",
           "Kredi kartı gerekmez"
@@ -96,13 +97,14 @@
         "price": "€99",
         "period": "/ay",
         "features": [
-          "100 güvenlik aracı",
+          "Tüm 401 güvenlik aracı",
+          "Ayda 30 tarama",
+          "2 eşzamanlı tarama",
           "1 domain/uygulama",
-          "Haftalık otomatik taramalar",
-          "Güvenlik açığı e-posta uyarıları",
           "PDF & HTML raporlar",
+          "Zamanlanmış taramalar",
           "Öncelikli e-posta desteği (48s)",
-          "3 aylık güvenlik açığı geçmişi"
+          "3 ekip üyesi"
         ]
       },
       "professional": {
@@ -110,14 +112,17 @@
         "price": "€299",
         "period": "/ay",
         "features": [
-          "250 güvenlik aracı",
-          "5 domain'e kadar",
-          "Günlük otomatik taramalar",
+          "Tüm 401 güvenlik aracı",
+          "Ayda 250 tarama",
+          "5 eşzamanlı tarama",
+          "5 domain/uygulamaya kadar",
           "CI/CD için API erişimi",
-          "Uyumluluk raporları (NIST, OWASP, GDPR)",
-          "Beyaz etiket PDF raporlar",
+          "Slack / Teams / E-posta bildirimleri",
+          "Uyumluluk raporları (NIST, OWASP, GDPR, PCI DSS, HIPAA, SOC 2)",
+          "Şirket logolu beyaz etiket PDF raporlar",
+          "LDAP / Active Directory taraması",
           "Öncelikli destek (24s)",
-          "12 aylık güvenlik açığı takibi"
+          "10 ekip üyesi"
         ]
       },
       "enterprise": {
@@ -126,15 +131,19 @@
         "period": "/ay",
         "features": [
           "Tüm 401 güvenlik aracı",
-          "Sınırsız domain",
+          "Ayda 5.000 tarama",
+          "Sınırsız eşzamanlı tarama",
+          "Sınırsız domain/uygulama",
           "Sürekli izleme (saatlik)",
           "Özel hesap yöneticisi",
-          "Tüm uyumluluk çerçeveleri",
+          "Tüm uyumluluk çerçeveleri (NIST, OWASP, GDPR, PCI DSS, HIPAA, SOC 2)",
+          "Şirket logolu beyaz etiket raporlar",
           "SSO / SAML / LDAP",
-          "Sınırsız kullanıcı & ekip",
-          "SLA garantisi (%99.9)",
-          "7/24 öncelikli destek (2s)",
-          "Üç aylık güvenlik incelemeleri"
+          "Sınırsız kullanıcı & ekip işbirliği",
+          "Gelişmiş API (webhooks, entegrasyonlar)",
+          "SLA garantisi (%99.9 çalışma süresi)",
+          "7/24 öncelikli destek (2s yanıt)",
+          "Üç aylık güvenlik yol haritası incelemeleri"
         ]
       }
     }
