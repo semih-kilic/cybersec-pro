@@ -35,7 +35,7 @@ pub async fn list_tools(
     let per_page = q.per_page.unwrap_or(50).min(200);
     let offset = (page - 1) * per_page;
 
-    // Get user's plan to filter tools by plan_required level
+    // Get user's plan for informational purposes (no longer filters tools)
     let org_plan = if let Some(ref org_id) = auth.org_id {
         let row: Option<(String,)> = sqlx::query_as("SELECT plan_type FROM organizations WHERE id = $1")
             .bind(org_id)
@@ -46,9 +46,10 @@ pub async fn list_tools(
     } else {
         "trial".into()
     };
-    let user_plan_level = crate::services::plan::get_plan_level(&org_plan);
+    let _user_plan_level = crate::services::plan::get_plan_level(&org_plan);
 
     // Build dynamic WHERE clause with PostgreSQL $N placeholders
+    // All tools are accessible to all plans — no plan-based filtering
     let mut where_clauses = vec!["is_active = TRUE".to_string()];
     let mut bind_values: Vec<String> = vec![];
     let mut param_idx = 0usize;
@@ -87,22 +88,6 @@ pub async fn list_tools(
         param_idx += 1;
         where_clauses.push(format!("tool_type = ${param_idx}"));
         bind_values.push(tt.clone());
-    }
-
-    // Filter tools by plan_required — only show tools the user's plan can access
-    {
-        let accessible_plans: Vec<&str> = match user_plan_level {
-            0 => vec!["trial", "free"],
-            1 => vec!["trial", "free", "starter"],
-            2 => vec!["trial", "free", "starter", "professional"],
-            _ => vec!["trial", "free", "starter", "professional", "enterprise"],
-        };
-        let placeholders: Vec<String> = accessible_plans.iter().map(|p| {
-            param_idx += 1;
-            bind_values.push(p.to_string());
-            format!("${param_idx}")
-        }).collect();
-        where_clauses.push(format!("(COALESCE(plan_required, 'starter') IN ({}))", placeholders.join(", ")));
     }
 
     let where_sql = where_clauses.join(" AND ");
@@ -184,19 +169,16 @@ pub async fn tools_count(
         .map(|(cat, count)| (cat, json!(count)))
         .collect();
 
-    // Plan-based tool counts — tiered access: Free=50, Starter=100, Pro=250, Enterprise=all
+    // All plans now have access to all tools
     let total_tools = total.0;
-    let trial_limit = 50i64.min(total_tools);
-    let starter_limit = 100i64.min(total_tools);
-    let pro_limit = 250i64.min(total_tools);
 
     Json(json!({
         "total": total_tools,
         "by_category": categories,
         "plans": {
-            "trial": trial_limit,
-            "starter": starter_limit,
-            "professional": pro_limit,
+            "trial": total_tools,
+            "starter": total_tools,
+            "professional": total_tools,
             "team": total_tools,
             "enterprise": total_tools,
         }

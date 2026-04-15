@@ -212,20 +212,39 @@ pub async fn start_scan(
     }
 
     // Check plan access
-    let org_plan: Option<(String,)> = sqlx::query_as("SELECT plan_type FROM organizations WHERE id = $1")
+    let org_plan: Option<(String, Option<String>)> = sqlx::query_as("SELECT plan_type, CAST(created_at AS TEXT) FROM organizations WHERE id = $1")
         .bind(&org_id)
         .fetch_optional(&state.db)
         .await
         .unwrap_or(None);
-    let plan = org_plan.map(|p| p.0).unwrap_or_else(|| "trial".into());
-    let tool_plan = tool.plan_required.as_deref().unwrap_or("starter");
-    if !crate::services::plan::check_plan_access(&plan, tool_plan) {
-        return (StatusCode::PAYMENT_REQUIRED, Json(json!({"error": format!("Plan upgrade required. Need {} plan.", tool_plan)}))).into_response();
-    }
+    let plan = org_plan.as_ref().map(|p| p.0.clone()).unwrap_or_else(|| "trial".into());
+    let org_created_at = org_plan.as_ref().and_then(|p| p.1.clone());
 
-    // Check daily scan limit
+    // Check plan limits (no tool-level blocking — all tools accessible to all plans)
     let plan_configs = crate::services::plan::get_plan_configs();
     if let Some(config) = plan_configs.get(plan.as_str()) {
+        // Check trial expiration
+        if config.trial_days > 0 {
+            if let Some(ref created) = org_created_at {
+                if let Ok(created_dt) = chrono::NaiveDateTime::parse_from_str(
+                    created.split('.').next().unwrap_or(created),
+                    "%Y-%m-%d %H:%M:%S"
+                ) {
+                    let now = chrono::Utc::now().naive_utc();
+                    let days_since = (now - created_dt).num_days();
+                    if days_since > config.trial_days as i64 {
+                        return (StatusCode::PAYMENT_REQUIRED, Json(json!({
+                            "error": "Trial period expired. Please upgrade to continue scanning.",
+                            "code": "TRIAL_EXPIRED",
+                            "trial_days": config.trial_days,
+                            "days_elapsed": days_since
+                        }))).into_response();
+                    }
+                }
+            }
+        }
+
+        // Check daily scan limit (trial plan)
         if config.daily_scan_limit > 0 {
             let today_count: (i64,) = sqlx::query_as(
                 "SELECT COUNT(*) FROM scans WHERE organization_id = $1 AND created_at::date = CURRENT_DATE"
@@ -236,7 +255,52 @@ pub async fn start_scan(
             .unwrap_or((0,));
 
             if today_count.0 >= config.daily_scan_limit as i64 {
-                return (StatusCode::TOO_MANY_REQUESTS, Json(json!({"error": "Daily scan limit reached"}))).into_response();
+                return (StatusCode::TOO_MANY_REQUESTS, Json(json!({
+                    "error": format!("Daily scan limit reached ({}/{}). Upgrade for more scans.", today_count.0, config.daily_scan_limit),
+                    "code": "DAILY_LIMIT",
+                    "used": today_count.0,
+                    "limit": config.daily_scan_limit
+                }))).into_response();
+            }
+        }
+
+        // Check monthly scan limit (paid plans)
+        if config.monthly_scan_limit > 0 {
+            let month_count: (i64,) = sqlx::query_as(
+                "SELECT COUNT(*) FROM scans WHERE organization_id = $1 AND created_at >= date_trunc('month', CURRENT_DATE)"
+            )
+            .bind(&org_id)
+            .fetch_one(&state.db)
+            .await
+            .unwrap_or((0,));
+
+            if month_count.0 >= config.monthly_scan_limit as i64 {
+                return (StatusCode::TOO_MANY_REQUESTS, Json(json!({
+                    "error": format!("Monthly scan limit reached ({}/{}). Upgrade for more scans.", month_count.0, config.monthly_scan_limit),
+                    "code": "MONTHLY_LIMIT",
+                    "used": month_count.0,
+                    "limit": config.monthly_scan_limit
+                }))).into_response();
+            }
+        }
+
+        // Check concurrent scan limit
+        if config.concurrent_scans > 0 {
+            let running_count: (i64,) = sqlx::query_as(
+                "SELECT COUNT(*) FROM scans WHERE organization_id = $1 AND status IN ('running', 'pending')"
+            )
+            .bind(&org_id)
+            .fetch_one(&state.db)
+            .await
+            .unwrap_or((0,));
+
+            if running_count.0 >= config.concurrent_scans as i64 {
+                return (StatusCode::TOO_MANY_REQUESTS, Json(json!({
+                    "error": format!("Concurrent scan limit reached ({}/{}). Wait for running scans to complete or upgrade.", running_count.0, config.concurrent_scans),
+                    "code": "CONCURRENT_LIMIT",
+                    "running": running_count.0,
+                    "limit": config.concurrent_scans
+                }))).into_response();
             }
         }
     }

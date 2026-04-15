@@ -15,33 +15,37 @@ pub struct PlanFeatures {
     pub ai_remediation: bool,
     pub priority_support: bool,
     pub purple_team: bool,
+    pub ldap_ad_scan: bool,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct PlanConfig {
     pub level: u8,
     pub price_eur: u32,
-    pub tool_limit: u32,
-    pub daily_scan_limit: u32, // 0 = unlimited
-    pub max_projects: u32,     // 0 = unlimited
-    pub max_team_members: u32, // 0 = unlimited
-    pub max_agents: i32,       // -1 = unlimited
-    pub multi_tool_scan: u32,
+    pub daily_scan_limit: u32,   // 0 = unlimited (trial uses daily)
+    pub monthly_scan_limit: u32, // 0 = unlimited (paid plans use monthly)
+    pub concurrent_scans: u32,   // 0 = unlimited
+    pub max_projects: u32,       // 0 = unlimited
+    pub max_team_members: u32,   // 0 = unlimited
+    pub max_agents: i32,         // -1 = unlimited
+    pub trial_days: u32,         // 0 = no trial period
     pub features: PlanFeatures,
 }
 
 pub fn get_plan_configs() -> HashMap<&'static str, PlanConfig> {
     let mut plans = HashMap::new();
 
+    // Trial: 14 days, 3 scans/day, 1 concurrent, all tools accessible
     plans.insert("trial", PlanConfig {
         level: 0,
         price_eur: 0,
-        tool_limit: 50,
-        daily_scan_limit: 5,
+        daily_scan_limit: 3,
+        monthly_scan_limit: 0,
+        concurrent_scans: 1,
         max_projects: 1,
         max_team_members: 1,
         max_agents: 1,
-        multi_tool_scan: 1,
+        trial_days: 14,
         features: PlanFeatures {
             basic_reports: true,
             pdf_reports: false,
@@ -55,18 +59,21 @@ pub fn get_plan_configs() -> HashMap<&'static str, PlanConfig> {
             ai_remediation: false,
             priority_support: false,
             purple_team: false,
+            ldap_ad_scan: false,
         },
     });
 
+    // Starter: 30 scans/month, 2 concurrent
     plans.insert("starter", PlanConfig {
         level: 1,
         price_eur: 99,
-        tool_limit: 100,
-        daily_scan_limit: 30,
+        daily_scan_limit: 0,
+        monthly_scan_limit: 30,
+        concurrent_scans: 2,
         max_projects: 3,
         max_team_members: 3,
         max_agents: 1,
-        multi_tool_scan: 2,
+        trial_days: 0,
         features: PlanFeatures {
             basic_reports: true,
             pdf_reports: true,
@@ -80,43 +87,49 @@ pub fn get_plan_configs() -> HashMap<&'static str, PlanConfig> {
             ai_remediation: false,
             priority_support: false,
             purple_team: false,
+            ldap_ad_scan: false,
         },
     });
 
+    // Professional: 250 scans/month, 5 concurrent
     plans.insert("professional", PlanConfig {
         level: 2,
         price_eur: 299,
-        tool_limit: 250,
-        daily_scan_limit: 100,
+        daily_scan_limit: 0,
+        monthly_scan_limit: 250,
+        concurrent_scans: 5,
         max_projects: 10,
         max_team_members: 10,
         max_agents: 5,
-        multi_tool_scan: 5,
+        trial_days: 0,
         features: PlanFeatures {
             basic_reports: true,
             pdf_reports: true,
             html_reports: true,
-            api_access: true,
+            api_access: false,
             sso_saml: false,
             compliance_reports: true,
             remote_agents: true,
             scheduled_scans: true,
             ai_suggestions: true,
             ai_remediation: true,
-            priority_support: false,
+            priority_support: true,
             purple_team: false,
+            ldap_ad_scan: true,
         },
     });
 
+    // Enterprise: 5000 scans/month, unlimited concurrent
     plans.insert("enterprise", PlanConfig {
         level: 3,
         price_eur: 799,
-        tool_limit: 401,
         daily_scan_limit: 0,
+        monthly_scan_limit: 5000,
+        concurrent_scans: 0,
         max_projects: 0,
         max_team_members: 0,
         max_agents: -1,
-        multi_tool_scan: 10,
+        trial_days: 0,
         features: PlanFeatures {
             basic_reports: true,
             pdf_reports: true,
@@ -130,6 +143,7 @@ pub fn get_plan_configs() -> HashMap<&'static str, PlanConfig> {
             ai_remediation: true,
             priority_support: true,
             purple_team: true,
+            ldap_ad_scan: true,
         },
     });
 

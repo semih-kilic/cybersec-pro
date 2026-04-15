@@ -1749,19 +1749,131 @@ pub async fn plan_info(
     user: AuthUser,
     State(state): State<Arc<AppState>>,
 ) -> impl IntoResponse {
-    let plan = sqlx::query_as::<_, (String,)>(
-        "SELECT COALESCE(s.plan_type, 'trial') FROM subscriptions s JOIN users u ON u.organization_id = s.organization_id WHERE u.id = $1"
+    let org_id = user.org_id.clone().unwrap_or_else(|| user.user_id.clone());
+
+    // Fetch plan and org created_at
+    let org_row: Option<(String, Option<String>)> = sqlx::query_as(
+        "SELECT COALESCE(plan_type, 'trial'), CAST(created_at AS TEXT) FROM organizations WHERE id = $1"
     )
-    .bind(&user.user_id)
+    .bind(&org_id)
     .fetch_optional(&state.db)
     .await
     .ok()
-    .flatten()
-    .unwrap_or(("trial".to_string(),));
+    .flatten();
+
+    let plan = org_row.as_ref().map(|r| r.0.clone()).unwrap_or_else(|| "trial".to_string());
+    let org_created = org_row.as_ref().and_then(|r| r.1.clone());
 
     let configs = crate::services::plan::get_plan_configs();
-    let config = configs.get(plan.0.as_str());
-    Json(json!({"plan": plan.0, "config": config})).into_response()
+    let config = configs.get(plan.as_str());
+
+    // Calculate usage
+    let scans_today: (i64,) = sqlx::query_as(
+        "SELECT COUNT(*) FROM scans WHERE organization_id = $1 AND created_at::date = CURRENT_DATE"
+    )
+    .bind(&org_id)
+    .fetch_one(&state.db)
+    .await
+    .unwrap_or((0,));
+
+    let scans_this_month: (i64,) = sqlx::query_as(
+        "SELECT COUNT(*) FROM scans WHERE organization_id = $1 AND created_at >= date_trunc('month', CURRENT_DATE)"
+    )
+    .bind(&org_id)
+    .fetch_one(&state.db)
+    .await
+    .unwrap_or((0,));
+
+    let running_scans: (i64,) = sqlx::query_as(
+        "SELECT COUNT(*) FROM scans WHERE organization_id = $1 AND status IN ('running', 'pending')"
+    )
+    .bind(&org_id)
+    .fetch_one(&state.db)
+    .await
+    .unwrap_or((0,));
+
+    let total_scans: (i64,) = sqlx::query_as(
+        "SELECT COUNT(*) FROM scans WHERE organization_id = $1"
+    )
+    .bind(&org_id)
+    .fetch_one(&state.db)
+    .await
+    .unwrap_or((0,));
+
+    let team_members: (i64,) = sqlx::query_as(
+        "SELECT COUNT(*) FROM users WHERE organization_id = $1 AND is_active = TRUE"
+    )
+    .bind(&org_id)
+    .fetch_one(&state.db)
+    .await
+    .unwrap_or((0,));
+
+    let online_agents: (i64,) = sqlx::query_as(
+        "SELECT COUNT(*) FROM agents WHERE organization_id = $1 AND status = 'online'"
+    )
+    .bind(&org_id)
+    .fetch_one(&state.db)
+    .await
+    .unwrap_or((0,));
+
+    let total_tools: (i64,) = sqlx::query_as(
+        "SELECT COUNT(*) FROM tools WHERE is_active = TRUE"
+    )
+    .fetch_one(&state.db)
+    .await
+    .unwrap_or((0,));
+
+    // Calculate trial days remaining
+    let trial_days_remaining = if let Some(ref cfg) = config {
+        if cfg.trial_days > 0 {
+            if let Some(ref created) = org_created {
+                chrono::NaiveDateTime::parse_from_str(
+                    created.split('.').next().unwrap_or(created),
+                    "%Y-%m-%d %H:%M:%S"
+                ).ok().map(|dt| {
+                    let days_elapsed = (chrono::Utc::now().naive_utc() - dt).num_days();
+                    (cfg.trial_days as i64 - days_elapsed).max(0)
+                }).unwrap_or(0)
+            } else { 0 }
+        } else { -1 } // -1 = not a trial plan
+    } else { 0 };
+
+    let daily_limit = config.as_ref().map(|c| c.daily_scan_limit).unwrap_or(0);
+    let monthly_limit = config.as_ref().map(|c| c.monthly_scan_limit).unwrap_or(0);
+    let concurrent_limit = config.as_ref().map(|c| c.concurrent_scans).unwrap_or(0);
+
+    let scans_remaining_daily = if daily_limit > 0 {
+        (daily_limit as i64 - scans_today.0).max(0)
+    } else { -1 };
+
+    let scans_remaining_monthly = if monthly_limit > 0 {
+        (monthly_limit as i64 - scans_this_month.0).max(0)
+    } else { -1 };
+
+    Json(json!({
+        "plan": plan,
+        "config": config,
+        "usage": {
+            "scans_today": scans_today.0,
+            "scans_this_month": scans_this_month.0,
+            "scans_remaining_daily": scans_remaining_daily,
+            "scans_remaining_monthly": scans_remaining_monthly,
+            "running_scans": running_scans.0,
+            "total_scans": total_scans.0,
+            "team_members": team_members.0,
+            "online_agents": online_agents.0,
+            "tools_accessible": total_tools.0,
+            "tools_total": total_tools.0,
+            "concurrent_limit": concurrent_limit,
+            "daily_limit": daily_limit,
+            "monthly_limit": monthly_limit
+        },
+        "trial": {
+            "is_trial": plan == "trial",
+            "days_remaining": trial_days_remaining,
+            "expired": trial_days_remaining == 0 && plan == "trial"
+        }
+    })).into_response()
 }
 
 pub async fn plan_features(

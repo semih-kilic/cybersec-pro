@@ -94,14 +94,13 @@ const categoryDisplayNames: { [key: string]: string } = {
   'misc': 'Miscellaneous',
 };
 
-// Plan hierarchy for access control
-// Trial users get access to starter tools (same level)
+// All plans have access to all tools — no plan-based blocking
 const planHierarchy: { [key: string]: number } = {
   'free': 0,
-  'trial': 2,  // Trial users can access starter tools
-  'starter': 2,
-  'professional': 3,
-  'enterprise': 5,
+  'trial': 10,
+  'starter': 10,
+  'professional': 10,
+  'enterprise': 10,
 };
 
 export function ToolsPage() {
