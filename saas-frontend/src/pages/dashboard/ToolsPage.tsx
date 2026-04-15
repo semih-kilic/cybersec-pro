@@ -629,23 +629,13 @@ function VirtualizedToolGrid({
                 return (
                   <div 
                     key={tool.id}
-                    className={`bg-gray-900 rounded-xl border p-5 transition group relative ${
-                      canUse 
-                        ? 'border-gray-800 hover:border-cyan-500/50 hover:shadow-lg hover:shadow-cyan-500/10' 
-                        : 'border-gray-800/50 opacity-50 hover:opacity-70'
-                    }`}
+                    className="bg-gray-900 rounded-xl border p-5 transition group relative border-gray-800 hover:border-cyan-500/50 hover:shadow-lg hover:shadow-cyan-500/10"
                   >
-                    {canUse && (userPlan === 'trial' || userPlan === 'starter') && (
-                      <div className="absolute -top-2 -right-2 w-6 h-6 bg-gradient-to-r from-green-500 to-emerald-500 rounded-full flex items-center justify-center shadow-lg">
-                        <span className="text-white text-xs">✓</span>
-                      </div>
-                    )}
                     <div className="flex items-start justify-between mb-3">
                       <div className={`w-10 h-10 rounded-lg bg-gradient-to-br ${categoryColors[categoryKey] || 'from-gray-500 to-gray-600'} flex items-center justify-center`}>
                         <span className="text-lg">{categoryIcons[categoryKey] || '🔧'}</span>
                       </div>
                       <div className="flex flex-col items-end gap-1">
-                        {getPlanBadge(tool.plan_required)}
                         {tool.installed && <span className="text-xs text-green-400">✓ Installed</span>}
                         {tool.gui_only && <span className="text-xs text-yellow-400" title="Requires desktop environment (VNC/RDP)">🖥️ GUI Only</span>}
                         {tool.requires_root && <span className="text-xs text-orange-400" title="Runs with elevated privileges">🔐 Root</span>}
@@ -659,25 +649,16 @@ function VirtualizedToolGrid({
                       {tool.description || 'No description available'}
                     </p>
                     <div className="flex gap-2">
-                      {canUse ? (
-                        tool.gui_only ? (
-                          <div className="flex-1 py-2 bg-yellow-900/30 text-yellow-400 text-center rounded-lg text-sm font-medium cursor-not-allowed">
-                            🖥️ Desktop Required
-                          </div>
-                        ) : (
-                          <Link 
-                            to={`/dashboard/tools/${tool.id}`}
-                            className="flex-1 py-2 bg-kali-blue hover:bg-kali-blue/90 text-white text-center rounded-lg text-sm font-medium transition"
-                          >
-                            {tool.requires_root ? '🔐 Run as Root' : '⚡ Run Tool'}
-                          </Link>
-                        )
+                      {tool.gui_only ? (
+                        <div className="flex-1 py-2 bg-yellow-900/30 text-yellow-400 text-center rounded-lg text-sm font-medium cursor-not-allowed">
+                          🖥️ Desktop Required
+                        </div>
                       ) : (
                         <Link 
-                          to="/#pricing"
-                          className="flex-1 py-2 bg-gray-800 hover:bg-gray-700 text-white text-center rounded-lg text-sm font-medium transition"
+                          to={`/dashboard/tools/${tool.id}`}
+                          className="flex-1 py-2 bg-kali-blue hover:bg-kali-blue/90 text-white text-center rounded-lg text-sm font-medium transition"
                         >
-                          🔒 Upgrade to Use
+                          {tool.requires_root ? '🔐 Run as Root' : '⚡ Run Tool'}
                         </Link>
                       )}
                     </div>
@@ -784,7 +765,6 @@ function VirtualizedToolList({
                     <td className="px-5 py-4 text-sm text-gray-400 flex-[2]">
                       {categoryDisplayNames[categoryKey] || categoryKey}
                     </td>
-                    <td className="px-5 py-4 flex-1">{getPlanBadge(tool.plan_required)}</td>
                     <td className="px-5 py-4 flex-1">
                       {tool.installed ? (
                         <span className="text-green-400 text-sm">✓ Installed</span>
@@ -793,21 +773,19 @@ function VirtualizedToolList({
                       )}
                     </td>
                     <td className="px-5 py-4 flex-1">
-                      {canUse ? (
-                        <Link 
-                          to={`/dashboard/tools/${tool.id}`}
-                          className="px-3 py-1.5 bg-kali-blue hover:bg-kali-blue/90 text-white rounded text-sm transition inline-block"
-                        >
-                          Run
-                        </Link>
+                      {tool.installed ? (
+                        <span className="text-green-400 text-sm">✓ Ready</span>
                       ) : (
-                        <Link 
-                          to="/#pricing"
-                          className="px-3 py-1.5 bg-gray-800 text-gray-400 hover:text-white rounded text-sm transition inline-block"
-                        >
-                          Upgrade
-                        </Link>
+                        <span className="text-gray-500 text-sm">—</span>
                       )}
+                    </td>
+                    <td className="px-5 py-4 flex-1">
+                      <Link 
+                        to={`/dashboard/tools/${tool.id}`}
+                        className="px-3 py-1.5 bg-kali-blue hover:bg-kali-blue/90 text-white rounded text-sm transition inline-block"
+                      >
+                        Run
+                      </Link>
                     </td>
                   </tr>
                 );

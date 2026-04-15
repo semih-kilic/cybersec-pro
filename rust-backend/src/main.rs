@@ -475,8 +475,10 @@ async fn sales_plans_handler() -> impl axum::response::IntoResponse {
                     "price": cfg.price_eur,
                     "currency": "eur",
                     "interval": "month",
-                    "tool_limit": cfg.tool_limit,
+                    "monthly_scan_limit": cfg.monthly_scan_limit,
                     "daily_scan_limit": cfg.daily_scan_limit,
+                    "concurrent_scans": cfg.concurrent_scans,
+                    "max_team_members": cfg.max_team_members,
                     "stripe_price_id": match *name {
                         "starter" => std::env::var("STRIPE_STARTER_PRICE_ID").unwrap_or_default(),
                         "professional" => std::env::var("STRIPE_PROFESSIONAL_PRICE_ID").unwrap_or_default(),

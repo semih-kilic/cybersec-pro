@@ -25,6 +25,7 @@ export function OverviewPage() {
   void scanSummary;  // used in template below but TS doesn't detect
   const recentScans = dashData?.recentScans || [];
   const totalTargets = dashData?.totalTargets || 0;
+  const totalTools = dashData?.totalTools || 0;
 
   const securityScore = securityData?.securityScore || 0;
   const openIssues = securityData?.openIssues || { critical: 0, high: 0, medium: 0, low: 0, info: 0, total: 0 };
@@ -98,8 +99,8 @@ export function OverviewPage() {
         onComplete={handleOnboardingComplete}
         userName={user?.first_name || 'User'}
         planType={currentPlan}
-        toolsCount={currentPlan === 'enterprise' ? 401 : currentPlan === 'professional' ? 250 : currentPlan === 'starter' ? 100 : 50}
-        scansPerDay={currentPlan === 'enterprise' ? -1 : currentPlan === 'professional' ? 100 : currentPlan === 'starter' ? 30 : 5}
+        toolsCount={totalTools}
+        scansPerDay={currentPlan === 'trial' ? 3 : currentPlan === 'starter' ? 30 : currentPlan === 'professional' ? 250 : 5000}
         trialDaysLeft={currentPlan === 'trial' ? trialDaysLeft : undefined}
       />
 
@@ -123,8 +124,8 @@ export function OverviewPage() {
                 <span className="text-lg">⏳</span>
               </div>
               <div>
-                <p className="text-white font-semibold">Free Trial — {trialDaysLeft} days remaining</p>
-                <p className="text-gray-400 text-sm">Unlock unlimited scans and compliance reports</p>
+                <p className="text-white font-semibold">Free Trial — {trialDaysLeft} days remaining • 3 scans/day</p>
+                <p className="text-gray-400 text-sm">Upgrade for more scans, PDF reports, and scheduled scans</p>
               </div>
             </div>
             <Link to="/dashboard/upgrade" className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium transition text-sm">
