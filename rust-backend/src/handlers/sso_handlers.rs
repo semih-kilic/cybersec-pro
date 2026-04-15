@@ -72,7 +72,7 @@ pub async fn create_sso_config(
         None => return (StatusCode::FORBIDDEN, Json(json!({"error": "Organization required"}))).into_response(),
     };
 
-    // Check plan (team+ only)
+    // Check plan (enterprise only)
     let plan: Option<(String,)> = sqlx::query_as("SELECT plan_type FROM organizations WHERE id = $1")
         .bind(org_id)
         .fetch_optional(&state.db)
@@ -80,8 +80,8 @@ pub async fn create_sso_config(
         .unwrap_or(None);
 
     let plan = plan.map(|p| p.0).unwrap_or_else(|| "trial".into());
-    if !crate::services::plan::check_plan_access(&plan, "team") {
-        return (StatusCode::PAYMENT_REQUIRED, Json(json!({"error": "SSO requires Team or Enterprise plan"}))).into_response();
+    if !crate::services::plan::check_plan_access(&plan, "enterprise") {
+        return (StatusCode::PAYMENT_REQUIRED, Json(json!({"error": "SSO requires Enterprise plan"}))).into_response();
     }
 
     let id = Uuid::new_v4().to_string();
