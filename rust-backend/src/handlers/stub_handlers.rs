@@ -848,12 +848,119 @@ pub async fn scan_rerun(
 
 pub async fn scan_business_report(
     Path(scan_id): Path<String>,
-    _user: AuthUser,
-    State(_state): State<Arc<AppState>>,
+    user: AuthUser,
+    State(state): State<Arc<AppState>>,
 ) -> impl IntoResponse {
+    // Query the actual scan from DB
+    let row: Option<(Option<serde_json::Value>, Option<String>)> = sqlx::query_as(
+        "SELECT findings, output FROM scans WHERE id = $1 AND organization_id = $2"
+    )
+    .bind(&scan_id)
+    .bind(user.org_id.as_deref().unwrap_or(""))
+    .fetch_optional(&state.db)
+    .await
+    .unwrap_or(None);
+
+    let (findings_json, _raw_output) = match row {
+        Some(r) => r,
+        None => return (StatusCode::NOT_FOUND, Json(json!({"error": "Scan not found"}))).into_response(),
+    };
+
+    let findings_val = findings_json.unwrap_or(json!({}));
+
+    // Extract summary from the parsed findings (parsers store summary as an object)
+    let summary = findings_val.get("summary").cloned().unwrap_or(json!({}));
+    let total = summary.get("total").and_then(|v| v.as_i64()).unwrap_or(0);
+    let critical = summary.get("critical").and_then(|v| v.as_i64()).unwrap_or(0);
+    let high = summary.get("high").and_then(|v| v.as_i64()).unwrap_or(0);
+    let medium = summary.get("medium").and_then(|v| v.as_i64()).unwrap_or(0);
+    let low = summary.get("low").and_then(|v| v.as_i64()).unwrap_or(0);
+    let open_ports = summary.get("open_ports").and_then(|v| v.as_i64()).unwrap_or(0);
+
+    // Calculate security score: 100 minus deductions per severity
+    let score = (100 - (critical * 25) - (high * 10) - (medium * 5) - (low * 2)).max(0);
+
+    // Flatten findings into a display-friendly array
+    let mut all_findings: Vec<serde_json::Value> = Vec::new();
+
+    // Services (open ports)
+    if let Some(services) = findings_val.get("services").and_then(|s| s.as_array()) {
+        for svc in services {
+            let port = svc.get("port").and_then(|p| p.as_u64()).unwrap_or(0);
+            let service_name = svc.get("service").and_then(|s| s.as_str()).unwrap_or("");
+            all_findings.push(json!({
+                "severity": "info",
+                "title": format!("Open Port {}", port),
+                "description": format!("Port {}/{} — {}", port,
+                    svc.get("protocol").and_then(|p| p.as_str()).unwrap_or("tcp"),
+                    service_name),
+                "category": "open_port"
+            }));
+        }
+    }
+
+    // Vulnerabilities
+    if let Some(vulns) = findings_val.get("vulnerabilities").and_then(|v| v.as_array()) {
+        for vuln in vulns {
+            all_findings.push(json!({
+                "severity": vuln.get("severity").and_then(|s| s.as_str()).unwrap_or("medium"),
+                "title": vuln.get("title").or(vuln.get("description")).and_then(|t| t.as_str()).unwrap_or("Vulnerability"),
+                "description": vuln.get("description").and_then(|d| d.as_str()).unwrap_or(""),
+                "category": "vulnerability"
+            }));
+        }
+    }
+
+    // Generic findings array (nikto, nuclei, etc.)
+    if let Some(f_list) = findings_val.get("findings").and_then(|f| f.as_array()) {
+        for f in f_list {
+            all_findings.push(json!({
+                "severity": f.get("severity").and_then(|s| s.as_str()).unwrap_or("info"),
+                "title": f.get("title").or(f.get("description")).and_then(|t| t.as_str()).unwrap_or("Finding"),
+                "description": f.get("description").and_then(|d| d.as_str()).unwrap_or(""),
+                "category": f.get("category").and_then(|c| c.as_str()).unwrap_or("general")
+            }));
+        }
+    }
+
+    // Subdomains
+    if let Some(subs) = findings_val.get("subdomains").and_then(|s| s.as_array()) {
+        for sub in subs {
+            let name = sub.as_str().unwrap_or("");
+            all_findings.push(json!({
+                "severity": "info",
+                "title": format!("Subdomain: {}", name),
+                "description": name,
+                "category": "subdomain"
+            }));
+        }
+    }
+
+    // Directories
+    if let Some(dirs) = findings_val.get("directories").and_then(|d| d.as_array()) {
+        for dir in dirs {
+            all_findings.push(json!({
+                "severity": dir.get("severity").and_then(|s| s.as_str()).unwrap_or("info"),
+                "title": format!("Directory: {}", dir.get("path").and_then(|p| p.as_str()).unwrap_or("")),
+                "description": format!("Status {} — {}", dir.get("status").and_then(|s| s.as_u64()).unwrap_or(0), dir.get("path").and_then(|p| p.as_str()).unwrap_or("")),
+                "category": "directory"
+            }));
+        }
+    }
+
+    // Return flat structure that frontend expects directly
     Json(json!({
         "scan_id": scan_id,
-        "report": {"summary": "No business report generated yet", "findings": [], "risk_score": 0}
+        "summary": {
+            "score": score,
+            "total": total,
+            "critical": critical,
+            "high": high,
+            "medium": medium,
+            "low": low,
+            "open_ports": open_ports
+        },
+        "findings": all_findings
     })).into_response()
 }
 

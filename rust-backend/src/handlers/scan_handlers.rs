@@ -370,9 +370,10 @@ pub async fn start_scan(
 
         // Email notification to user (respects notification_preferences)
         let findings_count = findings.as_ref()
-            .and_then(|f| f.as_array())
-            .map(|a| a.len())
-            .unwrap_or(0);
+            .and_then(|f| f.get("summary"))
+            .and_then(|s| s.get("total"))
+            .and_then(|t| t.as_u64())
+            .unwrap_or(0) as usize;
         crate::services::notifications::notify_scan_complete(
             &db, &user_id_for_spawn, &scan_id_clone,
             &tool_name_for_notify, &target_for_notify,
