@@ -2,7 +2,6 @@ import type { Metadata } from "next";
 import { NextIntlClientProvider } from "next-intl";
 import { getMessages, setRequestLocale } from "next-intl/server";
 import { notFound } from "next/navigation";
-import { GoogleAnalytics } from "@next/third-parties/google";
 import { Inter, JetBrains_Mono } from "next/font/google";
 import { locales, rtlLocales, type Locale } from "@/i18n/config";
 import { getOrganizationJsonLd, getWebsiteJsonLd, getSoftwareJsonLd } from "@/lib/seo";
@@ -102,10 +101,20 @@ export default async function LocaleLayout({
 
   return (
     <html lang={locale} dir={dir}>
+      <head>
+        <script
+          async
+          src="https://www.googletagmanager.com/gtag/js?id=G-DKRDP2WS88"
+        />
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','G-DKRDP2WS88');`,
+          }}
+        />
+      </head>
       <body
         className={`${inter.variable} ${jetbrainsMono.variable} bg-[var(--color-bg)] text-white antialiased`}
       >
-        <GoogleAnalytics gaId="G-DKRDP2WS88" />
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
