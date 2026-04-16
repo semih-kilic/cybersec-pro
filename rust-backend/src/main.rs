@@ -384,6 +384,7 @@ fn build_router(state: Arc<AppState>) -> Router {
         .route("/api/v1/schedules", get(stub_handlers::list_schedules).post(stub_handlers::create_schedule))
         .route("/api/v1/schedules/:id", put(stub_handlers::update_schedule).delete(stub_handlers::delete_schedule))
         .route("/api/v1/schedules/:schedule_id/toggle", post(stub_handlers::toggle_schedule))
+        .route("/api/v1/monitoring/continuous", post(stub_handlers::enable_continuous_monitoring))
         // ── Targets ───────────────────────────────────────────
         .route("/api/v1/targets", get(stub_handlers::list_targets))
         .route("/api/v1/target-groups", get(stub_handlers::list_target_groups))

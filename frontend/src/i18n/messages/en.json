@@ -84,7 +84,7 @@
         "price": "€0",
         "period": "14 days",
         "features": [
-          "All 401 security tools",
+          "All 396 security tools",
           "3 scans per day",
           "1 concurrent scan",
           "PDF report with findings",
@@ -97,7 +97,7 @@
         "price": "€99",
         "period": "/month",
         "features": [
-          "All 401 security tools",
+          "All 396 security tools",
           "30 scans per month",
           "2 concurrent scans",
           "1 domain/application",
@@ -112,7 +112,7 @@
         "price": "€299",
         "period": "/month",
         "features": [
-          "All 401 security tools",
+          "All 396 security tools",
           "250 scans per month",
           "5 concurrent scans",
           "Up to 5 domains/applications",
@@ -130,7 +130,7 @@
         "price": "€799",
         "period": "/month",
         "features": [
-          "All 401 security tools",
+          "All 396 security tools",
           "5,000 scans per month",
           "Unlimited concurrent scans",
           "Unlimited domains/applications",

@@ -114,10 +114,10 @@ export default function UpgradePage() {
   // Dynamic tool counts from API
   const { data: toolCounts } = useToolCounts();
   const plans = useMemo(() => buildPlans({
-    trial: toolCounts?.plans?.trial ?? 401,
-    starter: toolCounts?.plans?.starter ?? 401,
-    professional: toolCounts?.plans?.professional ?? 401,
-    enterprise: toolCounts?.plans?.enterprise ?? 401,
+    trial: toolCounts?.plans?.trial ?? 396,
+    starter: toolCounts?.plans?.starter ?? 396,
+    professional: toolCounts?.plans?.professional ?? 396,
+    enterprise: toolCounts?.plans?.enterprise ?? 396,
   }), [toolCounts]);
 
   const handleUpgrade = async (planId: string) => {

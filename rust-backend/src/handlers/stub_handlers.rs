@@ -1479,6 +1479,77 @@ pub async fn toggle_schedule(
     Json(json!({"message": "Schedule toggled", "id": schedule_id})).into_response()
 }
 
+/// Enable continuous (hourly) monitoring for a project.
+/// Creates scheduled scans with `0 * * * *` cron (every hour) for a set of
+/// security tools against the project targets. Requires Enterprise plan.
+pub async fn enable_continuous_monitoring(
+    user: AuthUser,
+    State(state): State<Arc<AppState>>,
+    Json(body): Json<serde_json::Value>,
+) -> impl IntoResponse {
+    let org_id = match &user.org_id {
+        Some(id) => id.clone(),
+        None => return (StatusCode::FORBIDDEN, Json(json!({"error": "Organization required"}))).into_response(),
+    };
+
+    // Require Enterprise plan
+    let org_plan: Option<(String,)> = sqlx::query_as("SELECT plan_type FROM organizations WHERE id = $1")
+        .bind(&org_id)
+        .fetch_optional(&state.db)
+        .await
+        .unwrap_or(None);
+    let plan = org_plan.map(|p| p.0).unwrap_or_else(|| "trial".into());
+    if plan != "enterprise" {
+        return (StatusCode::PAYMENT_REQUIRED, Json(json!({
+            "error": "Continuous monitoring requires Enterprise plan."
+        }))).into_response();
+    }
+
+    let project_id = body.get("project_id").and_then(|v| v.as_i64());
+    let target = body.get("target").and_then(|v| v.as_str()).unwrap_or("");
+    if target.is_empty() && project_id.is_none() {
+        return (StatusCode::BAD_REQUEST, Json(json!({"error": "Either target or project_id is required"}))).into_response();
+    }
+
+    // Tools for continuous monitoring: run key security checks hourly
+    let monitoring_tools = vec!["nmap", "nuclei", "whatweb", "sslscan", "httpx"];
+    let cron_hourly = "0 * * * *";
+    let mut created = Vec::new();
+
+    for tool_name in &monitoring_tools {
+        let id = uuid::Uuid::new_v4().to_string();
+        let name = format!("Continuous Monitor: {} → {}", tool_name, target);
+        let next_run = crate::services::scheduler::next_cron_fire(cron_hourly, chrono::Utc::now());
+
+        let result = sqlx::query(
+            "INSERT INTO scheduled_scans (id, user_id, organization_id, name, cron_expression, tool_name, target, schedule_type, parameters, is_active, next_run, project_id, created_at, updated_at)
+             VALUES ($1, $2, $3, $4, $5, $6, $7, 'continuous', '{}'::jsonb, TRUE, $8, $9, NOW(), NOW())"
+        )
+        .bind(&id)
+        .bind(&user.user_id)
+        .bind(&org_id)
+        .bind(&name)
+        .bind(cron_hourly)
+        .bind(tool_name)
+        .bind(target)
+        .bind(next_run)
+        .bind(project_id.map(|v| v as i32))
+        .execute(&state.db)
+        .await;
+
+        if result.is_ok() {
+            created.push(json!({"id": id, "tool": tool_name, "next_run": next_run}));
+        }
+    }
+
+    Json(json!({
+        "message": format!("Continuous monitoring enabled with {} tools", created.len()),
+        "schedules": created,
+        "cron": cron_hourly,
+        "target": target
+    })).into_response()
+}
+
 // ── Targets ────────────────────────────────────────────────
 
 pub async fn list_targets(

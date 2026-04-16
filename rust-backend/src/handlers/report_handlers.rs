@@ -115,6 +115,26 @@ pub async fn create_report(
     let scan_ids_json = serde_json::to_string(&body.scan_ids).unwrap_or_default();
     let sections_json = body.sections.as_ref().map(|s| serde_json::to_string(s).unwrap_or_default());
 
+    // Gate compliance report templates by plan
+    let compliance_templates = ["compliance", "owasp", "pci", "iso", "nist", "gdpr", "hipaa", "soc2"];
+    if compliance_templates.contains(&template) {
+        let org_plan: Option<(String,)> = sqlx::query_as("SELECT plan_type FROM organizations WHERE id = $1")
+            .bind(org_id)
+            .fetch_optional(&state.db)
+            .await
+            .unwrap_or(None);
+        let plan = org_plan.map(|p| p.0).unwrap_or_else(|| "trial".into());
+        let plan_configs = crate::services::plan::get_plan_configs();
+        if let Some(config) = plan_configs.get(plan.as_str()) {
+            if !config.features.compliance_reports {
+                return (StatusCode::PAYMENT_REQUIRED, Json(json!({
+                    "error": "Compliance reports require Professional or higher plan.",
+                    "required_plan": "professional"
+                }))).into_response();
+            }
+        }
+    }
+
     // ── Collect full scan data ──────────────────────────
     let mut scan_rows: Vec<(ScanRow, String)> = Vec::new();
     let mut total_findings = 0i32;
@@ -355,7 +375,12 @@ pub async fn report_templates() -> impl IntoResponse {
 // ═══════════════════════════════════════════════════════════
 async fn html_to_pdf(html: &str) -> Result<Vec<u8>, String> {
     use tokio::process::Command;
-    use std::io::Write;
+
+    // Resolve Chromium binary (try multiple common names)
+    let chromium_bin = ["chromium", "chromium-browser", "google-chrome-stable", "google-chrome"]
+        .iter()
+        .find(|bin| std::process::Command::new("which").arg(bin).output().map(|o| o.status.success()).unwrap_or(false))
+        .ok_or_else(|| "No Chromium/Chrome binary found on system. Install chromium or google-chrome.".to_string())?;
 
     // Write HTML to a temp file
     let tmp_html = format!("/tmp/report_{}.html", Uuid::new_v4());
@@ -363,40 +388,61 @@ async fn html_to_pdf(html: &str) -> Result<Vec<u8>, String> {
 
     std::fs::write(&tmp_html, html).map_err(|e| format!("Write HTML: {}", e))?;
 
-    let output = Command::new("chromium")
-        .args([
-            "--headless",
-            "--disable-gpu",
-            "--no-sandbox",
-            "--disable-software-rasterizer",
-            "--run-all-compositor-stages-before-draw",
-            &format!("--print-to-pdf={}", tmp_pdf),
-            "--print-to-pdf-no-header",
-            &tmp_html,
-        ])
-        .output()
-        .await
-        .map_err(|e| format!("Chromium exec: {}", e))?;
+    // Execute with timeout (30 seconds max)
+    let result = tokio::time::timeout(
+        std::time::Duration::from_secs(30),
+        Command::new(chromium_bin)
+            .args([
+                "--headless",
+                "--disable-gpu",
+                "--no-sandbox",
+                "--disable-software-rasterizer",
+                "--disable-dev-shm-usage",
+                "--run-all-compositor-stages-before-draw",
+                &format!("--print-to-pdf={}", tmp_pdf),
+                "--print-to-pdf-no-header",
+                &tmp_html,
+            ])
+            .output()
+    ).await;
+
+    let cleanup = || {
+        let _ = std::fs::remove_file(&tmp_html);
+        let _ = std::fs::remove_file(&tmp_pdf);
+    };
+
+    let output = match result {
+        Ok(Ok(o)) => o,
+        Ok(Err(e)) => {
+            cleanup();
+            return Err(format!("Chromium exec: {}", e));
+        }
+        Err(_) => {
+            cleanup();
+            return Err("PDF generation timed out after 30 seconds".to_string());
+        }
+    };
+
+    // Chromium often returns non-zero exit but still produces a valid PDF
+    if std::path::Path::new(&tmp_pdf).exists() {
+        let pdf_bytes = std::fs::read(&tmp_pdf).map_err(|e| {
+            cleanup();
+            format!("Read PDF: {}", e)
+        })?;
+        cleanup();
+        if pdf_bytes.len() > 500 {
+            return Ok(pdf_bytes);
+        }
+    }
 
     if !output.status.success() {
         let stderr = String::from_utf8_lossy(&output.stderr);
-        // Try to read the file anyway - Chromium often returns non-zero but still produces output
-        if std::path::Path::new(&tmp_pdf).exists() {
-            let pdf_bytes = std::fs::read(&tmp_pdf).map_err(|e| format!("Read PDF: {}", e))?;
-            let _ = std::fs::remove_file(&tmp_html);
-            let _ = std::fs::remove_file(&tmp_pdf);
-            if pdf_bytes.len() > 500 {
-                return Ok(pdf_bytes);
-            }
-        }
-        let _ = std::fs::remove_file(&tmp_html);
-        return Err(format!("Chromium failed: {}", stderr));
+        cleanup();
+        return Err(format!("Chromium failed (exit {}): {}", output.status, stderr));
     }
 
-    let pdf_bytes = std::fs::read(&tmp_pdf).map_err(|e| format!("Read PDF: {}", e))?;
-    let _ = std::fs::remove_file(&tmp_html);
-    let _ = std::fs::remove_file(&tmp_pdf);
-    Ok(pdf_bytes)
+    cleanup();
+    Err("PDF file was not generated".to_string())
 }
 
 // ═══════════════════════════════════════════════════════════
@@ -422,8 +468,12 @@ fn generate_html_report(
         "technical" => "Technical Report",
         "compliance" => "Compliance Assessment",
         "owasp" => "OWASP Top 10 Assessment",
-        "pci" => "PCI DSS Compliance Report",
+        "pci" => "PCI DSS v4.0 Compliance Report",
         "iso" => "ISO 27001 Assessment",
+        "nist" => "NIST CSF 2.0 Compliance Report",
+        "gdpr" => "GDPR Data Protection Assessment",
+        "hipaa" => "HIPAA Security Rule Compliance Report",
+        "soc2" => "SOC 2 Type II Assessment Report",
         _ => "Full Security Assessment",
     };
 
@@ -464,7 +514,7 @@ fn generate_html_report(
     }
 
     // Build compliance section for compliance/owasp/pci/iso templates
-    let compliance_section = if matches!(template, "compliance" | "owasp" | "pci" | "iso" | "full") {
+    let compliance_section = if matches!(template, "compliance" | "owasp" | "pci" | "iso" | "nist" | "gdpr" | "hipaa" | "soc2" | "full") {
         build_compliance_section(template, crit, high, med, low, risk_score)
     } else {
         String::new()
@@ -772,6 +822,10 @@ fn build_compliance_section(template: &str, crit: i32, high: i32, med: i32, low:
         "owasp" => "OWASP Top 10 (2021)",
         "pci" => "PCI DSS v4.0",
         "iso" => "ISO 27001:2022",
+        "nist" => "NIST Cybersecurity Framework (CSF 2.0)",
+        "gdpr" => "GDPR Data Protection",
+        "hipaa" => "HIPAA Security Rule",
+        "soc2" => "SOC 2 Type II — Trust Services Criteria",
         _ => "Multi-Framework Compliance",
     };
 
@@ -789,31 +843,91 @@ fn build_compliance_section(template: &str, crit: i32, high: i32, med: i32, low:
             ("A10:2021", "Server-Side Request Forgery", crit == 0),
         ],
         "pci" => vec![
-            ("Req 1", "Network Security Controls", high == 0),
-            ("Req 2", "Secure Configurations", med < 3),
-            ("Req 5", "Anti-Malware", true),
-            ("Req 6", "Secure Development", crit == 0),
-            ("Req 8", "Access Control", crit == 0 && high == 0),
-            ("Req 10", "Logging & Monitoring", true),
-            ("Req 11", "Security Testing", risk_score < 50),
-            ("Req 12", "Security Policies", true),
+            ("Req 1", "Install and Maintain Network Security Controls", high == 0),
+            ("Req 2", "Apply Secure Configurations to All Components", med < 3),
+            ("Req 3", "Protect Stored Account Data", crit == 0),
+            ("Req 4", "Protect Cardholder Data in Transit (TLS)", crit == 0),
+            ("Req 5", "Protect Against Malicious Software", true),
+            ("Req 6", "Develop and Maintain Secure Systems", crit == 0 && high == 0),
+            ("Req 7", "Restrict Access by Business Need-to-Know", high == 0),
+            ("Req 8", "Identify Users and Authenticate Access", crit == 0 && high == 0),
+            ("Req 10", "Log and Monitor All Access", true),
+            ("Req 11", "Test Security of Systems and Networks Regularly", risk_score < 50),
+            ("Req 12", "Support Infosec with Organizational Policies", true),
         ],
         "iso" => vec![
+            ("A.5", "Information Security Policies", true),
+            ("A.6", "Organization of Information Security", true),
             ("A.8", "Asset Management", true),
             ("A.9", "Access Control", crit == 0 && high == 0),
+            ("A.10", "Cryptography", crit == 0),
             ("A.12", "Operations Security", high == 0),
             ("A.13", "Communications Security", med < 3),
-            ("A.14", "System Acquisition & Development", crit == 0),
-            ("A.16", "Incident Management", true),
+            ("A.14", "System Acquisition, Development & Maintenance", crit == 0),
+            ("A.16", "Information Security Incident Management", true),
             ("A.18", "Compliance", risk_score < 50),
+        ],
+        "nist" => vec![
+            ("GV", "Govern — Establish cybersecurity risk strategy", true),
+            ("ID.AM", "Identify — Asset Management", true),
+            ("ID.RA", "Identify — Risk Assessment", risk_score < 60),
+            ("PR.AC", "Protect — Access Control", crit == 0 && high == 0),
+            ("PR.DS", "Protect — Data Security", crit == 0),
+            ("PR.IP", "Protect — Information Protection Processes", high == 0),
+            ("PR.MA", "Protect — Maintenance", med < 5),
+            ("PR.PT", "Protect — Protective Technology", high == 0),
+            ("DE.AE", "Detect — Anomalies and Events", true),
+            ("DE.CM", "Detect — Continuous Monitoring", true),
+            ("RS.RP", "Respond — Response Planning", true),
+            ("RS.MI", "Respond — Mitigation", crit == 0),
+            ("RC.RP", "Recover — Recovery Planning", true),
+        ],
+        "gdpr" => vec![
+            ("Art. 5", "Principles of Data Processing", crit == 0),
+            ("Art. 25", "Data Protection by Design and by Default", high == 0),
+            ("Art. 30", "Records of Processing Activities", true),
+            ("Art. 32", "Security of Processing — Encryption & Pseudonymisation", crit == 0),
+            ("Art. 32", "Security of Processing — Confidentiality & Integrity", high == 0),
+            ("Art. 32", "Security of Processing — Availability & Resilience", med < 5),
+            ("Art. 33", "Notification of Personal Data Breach", crit == 0),
+            ("Art. 35", "Data Protection Impact Assessment", risk_score < 60),
+            ("Art. 44", "Transfer Safeguards — Adequate Protection", true),
+        ],
+        "hipaa" => vec![
+            ("§164.308(a)(1)", "Security Management Process — Risk Analysis", risk_score < 60),
+            ("§164.308(a)(3)", "Workforce Security", high == 0),
+            ("§164.308(a)(4)", "Information Access Management", crit == 0 && high == 0),
+            ("§164.308(a)(5)", "Security Awareness and Training", true),
+            ("§164.310(a)", "Facility Access Controls", true),
+            ("§164.310(d)", "Device and Media Controls", true),
+            ("§164.312(a)", "Access Control — Unique User ID, Auto-Logoff", crit == 0),
+            ("§164.312(b)", "Audit Controls", true),
+            ("§164.312(c)", "Integrity Controls", crit == 0 && high == 0),
+            ("§164.312(d)", "Person or Entity Authentication", crit == 0),
+            ("§164.312(e)", "Transmission Security — Encryption", crit == 0),
+        ],
+        "soc2" => vec![
+            ("CC1", "Control Environment", true),
+            ("CC2", "Communication and Information", true),
+            ("CC3", "Risk Assessment", risk_score < 60),
+            ("CC5", "Control Activities", high == 0),
+            ("CC6.1", "Logical and Physical Access — Authentication", crit == 0 && high == 0),
+            ("CC6.6", "Security Against Threats Outside System Boundaries", crit == 0),
+            ("CC6.7", "Restrict Data Transmission to Authorized Users", crit == 0),
+            ("CC7.1", "Detect and Monitor Security Events", true),
+            ("CC7.2", "Monitor for Anomalies — Indicators of Compromise", high == 0),
+            ("CC7.3", "Evaluate Security Events", med < 5),
+            ("CC8.1", "Change Management", true),
+            ("CC9.1", "Risk Mitigation", crit == 0),
         ],
         _ => vec![
             ("NIST CSF", "Identify & Protect", high == 0),
             ("OWASP", "Top 10 Controls", crit == 0),
-            ("PCI DSS", "Requirement 11", risk_score < 50),
-            ("GDPR", "Data Protection", crit == 0),
-            ("HIPAA", "Security Rule", crit == 0 && high == 0),
-            ("SOC 2", "Trust Principles", med < 5),
+            ("PCI DSS", "Network & App Security (Req 1, 6, 11)", risk_score < 50),
+            ("GDPR Art.32", "Security of Processing", crit == 0),
+            ("HIPAA §164.312", "Technical Safeguards", crit == 0 && high == 0),
+            ("SOC 2 CC6", "Logical Access & Security", med < 5),
+            ("ISO 27001 A.12", "Operations Security", high == 0),
         ],
     };
 
