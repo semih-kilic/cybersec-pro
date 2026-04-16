@@ -1,0 +1,30 @@
+                                  Table "public.scans"
+     Column      |            Type             | Collation | Nullable |     Default     
+-----------------+-----------------------------+-----------+----------+-----------------
+ id              | text                        |           | not null | 
+ organization_id | text                        |           | not null | 
+ user_id         | text                        |           | not null | 
+ tool_id         | text                        |           | not null | 
+ target          | text                        |           | not null | 
+ parameters      | jsonb                       |           |          | 
+ status          | text                        |           |          | 'pending'::text
+ agent_id        | text                        |           |          | 
+ project_id      | integer                     |           |          | 
+ output          | text                        |           |          | 
+ error_log       | text                        |           |          | 
+ findings        | jsonb                       |           |          | 
+ report_path     | text                        |           |          | 
+ started_at      | timestamp without time zone |           |          | 
+ completed_at    | timestamp without time zone |           |          | 
+ created_at      | timestamp without time zone |           |          | now()
+Indexes:
+    "scans_pkey" PRIMARY KEY, btree (id)
+    "idx_scans_org" btree (organization_id)
+    "idx_scans_status" btree (status)
+Foreign-key constraints:
+    "scans_agent_id_fkey" FOREIGN KEY (agent_id) REFERENCES agents(id)
+    "scans_organization_id_fkey" FOREIGN KEY (organization_id) REFERENCES organizations(id)
+    "scans_project_id_fkey" FOREIGN KEY (project_id) REFERENCES projects(id)
+Referenced by:
+    TABLE "usage_tracking" CONSTRAINT "usage_tracking_scan_id_fkey" FOREIGN KEY (scan_id) REFERENCES scans(id)
+

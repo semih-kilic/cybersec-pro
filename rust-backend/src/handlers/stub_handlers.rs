@@ -796,7 +796,7 @@ pub async fn scan_result(
     State(state): State<Arc<AppState>>,
 ) -> impl IntoResponse {
     let scan = sqlx::query_as::<_, (String, String, Option<String>, Option<String>, Option<String>, Option<String>, Option<String>, Option<String>)>(
-        "SELECT id, status, output, CAST(findings AS TEXT), error_log, target, tool_name, command FROM scans WHERE id = $1 AND organization_id = $2"
+        "SELECT s.id, s.status, s.output, CAST(s.findings AS TEXT), s.error_log, s.target, t.name, t.command_template FROM scans s LEFT JOIN tools t ON s.tool_id = t.id WHERE s.id = $1 AND s.organization_id = $2"
     )
     .bind(&scan_id)
     .bind(&user.org_id.as_deref().unwrap_or(""))
