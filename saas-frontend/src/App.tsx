@@ -148,6 +148,21 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
   return <>{children}</>;
 }
 
+// Superadmin-only Route
+function SuperadminRoute({ children }: { children: React.ReactNode }) {
+  const { isAuthenticated, user, loading } = useAuth();
+  
+  if (loading) {
+    return <div className="min-h-screen bg-gray-900 flex items-center justify-center"><div className="text-cyan-400">Loading...</div></div>;
+  }
+  
+  if (!isAuthenticated || user?.role !== 'superadmin') {
+    return <Navigate to="/dashboard" replace />;
+  }
+  
+  return <>{children}</>;
+}
+
 // Public Route - Redirect to dashboard if authenticated
 function PublicRoute({ children }: { children: React.ReactNode }) {
   const { isAuthenticated, loading } = useAuth();
@@ -366,7 +381,7 @@ function AppRoutes() {
         <Route path="ai" element={<AIAssistantPage />} />
         <Route path="purple-team" element={<PurpleTeamPage />} />
         <Route path="admin" element={<AdminPage />} />
-        <Route path="service-manager" element={<ServiceManagerPage />} />
+        <Route path="service-manager" element={<SuperadminRoute><ServiceManagerPage /></SuperadminRoute>} />
         <Route path="threat-intel" element={<ThreatIntelPage />} />
         <Route path="vulnerabilities" element={<VulnerabilityDBPage />} />
         <Route path="news" element={<SecurityNewsPage />} />

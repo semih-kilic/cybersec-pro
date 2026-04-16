@@ -358,7 +358,7 @@ export function Sidebar({ isOpen = false, onClose, isCollapsed = false, onToggle
         )}
 
         {/* Service Manager (superadmin only) */}
-        {(user?.role === 'superadmin' || user?.role === 'admin') && (
+        {user?.role === 'superadmin' && (
           <NavLink
             to="/dashboard/service-manager"
             onClick={onClose}
