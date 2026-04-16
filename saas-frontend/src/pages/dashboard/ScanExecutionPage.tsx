@@ -155,6 +155,81 @@ export function ScanExecutionPage() {
     if (executionModeData) setExecutionMode(executionModeData as any);
   }, [executionModeData]);
 
+  // ── Load existing scan data when navigated with scanId (from email link, View button, etc.) ──
+  const loadedScanRef = useRef(false);
+  useEffect(() => {
+    if (!scanId || loadedScanRef.current || status !== 'idle') return;
+    loadedScanRef.current = true;
+
+    (async () => {
+      try {
+        // First try the result endpoint
+        const res = await api.getScan(scanId);
+        const scan = res.data?.scan;
+        if (!scan) return;
+
+        // Populate state from existing scan data
+        if (scan.target) setTarget(scan.target);
+        if (scan.tool_name || scan.tool_id) {
+          const toolName = scan.tool_name || scan.tool_id || '';
+          setBusinessName(toolName);
+          setCommand(scan.command || `${toolName} ${scan.target || ''}`);
+        }
+        if (scan.output) {
+          const lines = typeof scan.output === 'string' ? scan.output.split('\n') : [];
+          setOutput(lines);
+        }
+        if (scan.status === 'completed' || scan.status === 'failed') {
+          setStatus(scan.status);
+          setProgress(100);
+          // Fetch business-language results for completed scans
+          if (scan.status === 'completed') {
+            try {
+              const data = await businessReportMutation.mutateAsync(scanId);
+              setBusinessResults(data);
+              setViewMode('results');
+            } catch {
+              // Stay in terminal view if business report fails
+              setViewMode('terminal');
+            }
+          }
+        } else if (scan.status === 'running') {
+          setStatus('running');
+          setScanStartTime(Date.now());
+        }
+      } catch (err) {
+        console.error('Failed to load scan:', err);
+        // Try direct scan endpoint as fallback
+        try {
+          const token = localStorage.getItem('auth_token') || '';
+          const resp = await fetch(`/api/v1/scans/${scanId}`, {
+            headers: { 'Authorization': `Bearer ${token}` }
+          });
+          if (resp.ok) {
+            const data = await resp.json();
+            const scan = data.scan;
+            if (scan) {
+              if (scan.target) setTarget(scan.target);
+              if (scan.output) setOutput(typeof scan.output === 'string' ? scan.output.split('\n') : []);
+              if (scan.status === 'completed' || scan.status === 'failed') {
+                setStatus(scan.status);
+                setProgress(100);
+                if (scan.status === 'completed') {
+                  const brData = await businessReportMutation.mutateAsync(scanId);
+                  setBusinessResults(brData);
+                  setViewMode('results');
+                }
+              } else if (scan.status === 'running') {
+                setStatus('running');
+                setScanStartTime(Date.now());
+              }
+            }
+          }
+        } catch { /* silently fail */ }
+      }
+    })();
+  }, [scanId]);
+
   // Auto-start scan when coming from ToolDetailPage with target pre-filled
   const autoStartedRef = useRef(false);
   useEffect(() => {

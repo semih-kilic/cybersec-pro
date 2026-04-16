@@ -78,7 +78,7 @@ pub async fn notify_scan_complete(
 <tr><td style="padding:10px;color:#8892b0;border-bottom:1px solid #2d2d4e">Target</td><td style="padding:10px;color:#ccd6f6;border-bottom:1px solid #2d2d4e;text-align:right">{target}</td></tr>
 <tr><td style="padding:10px;color:#8892b0">Findings</td><td style="padding:10px;color:{status_color};text-align:right;font-weight:bold">{findings_text}</td></tr>
 </table>
-<a href="https://cybersecpro.semihkilic.com/dashboard/scans/{scan_id}" style="display:inline-block;padding:14px 36px;background:linear-gradient(135deg,#00ff88,#00d4ff);color:#0a0a0a;text-decoration:none;font-weight:bold;border-radius:50px;margin:10px 0">View Results</a>
+<a href="https://semihkilic.com/dashboard/scans/{scan_id}" style="display:inline-block;padding:14px 36px;background:linear-gradient(135deg,#00ff88,#00d4ff);color:#0a0a0a;text-decoration:none;font-weight:bold;border-radius:50px;margin:10px 0">View Results</a>
 <p style="color:#4a5568;font-size:12px;margin-top:20px">You can adjust email preferences in Settings → Notifications</p>
 <p style="color:#4a5568;font-size:12px">© 2026 CyberSec Professional</p>
 </td></tr></table></body></html>"#,
@@ -93,7 +93,7 @@ pub async fn notify_scan_complete(
     );
 
     let plain = format!(
-        "Hi {},\n\nYour {} scan on {} has {}.\nFindings: {}\n\nView: https://cybersecpro.semihkilic.com/dashboard/scans/{}\n\n© 2026 CyberSec Professional",
+        "Hi {},\n\nYour {} scan on {} has {}.\nFindings: {}\n\nView: https://semihkilic.com/dashboard/scans/{}\n\n© 2026 CyberSec Professional",
         name, tool_name, target, status, findings_text, scan_id
     );
 

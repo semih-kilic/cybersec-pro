@@ -795,8 +795,8 @@ pub async fn scan_result(
     user: AuthUser,
     State(state): State<Arc<AppState>>,
 ) -> impl IntoResponse {
-    let scan = sqlx::query_as::<_, (String, String, Option<String>, Option<String>, Option<String>)>(
-        "SELECT id, status, output, CAST(findings AS TEXT), error_log FROM scans WHERE id = $1 AND organization_id = $2"
+    let scan = sqlx::query_as::<_, (String, String, Option<String>, Option<String>, Option<String>, Option<String>, Option<String>, Option<String>)>(
+        "SELECT id, status, output, CAST(findings AS TEXT), error_log, target, tool_name, command FROM scans WHERE id = $1 AND organization_id = $2"
     )
     .bind(&scan_id)
     .bind(&user.org_id.as_deref().unwrap_or(""))
@@ -804,7 +804,7 @@ pub async fn scan_result(
     .await;
 
     match scan {
-        Ok(Some((id, status, output, findings, error_log))) => {
+        Ok(Some((id, status, output, findings, error_log, target, tool_name, command))) => {
             let findings_val: serde_json::Value = findings.and_then(|f| serde_json::from_str(&f).ok()).unwrap_or(json!(null));
             let output_str = output.unwrap_or_default();
             Json(json!({
@@ -812,6 +812,9 @@ pub async fn scan_result(
                     "id": id,
                     "status": status,
                     "output": output_str,
+                    "target": target,
+                    "tool_name": tool_name,
+                    "command": command,
                     "error_log": error_log,
                 },
                 "execution_result": {
