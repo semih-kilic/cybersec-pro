@@ -333,7 +333,12 @@ fn build_router(state: Arc<AppState>) -> Router {
                 .delete(sso_handlers::delete_sso_config),
         )
         .route("/api/v1/sso/toggle", post(sso_handlers::toggle_sso))
-        .route("/api/v1/sso/test", post(stub_handlers::sso_test))
+        .route("/api/v1/sso/test", post(sso_handlers::test_sso_connection))
+        // ── SSO Auth Flows ────────────────────────────────────
+        .route("/api/v1/auth/sso/ldap", post(sso_handlers::sso_ldap_login))
+        .route("/api/v1/auth/sso/saml/init", get(sso_handlers::sso_saml_init))
+        .route("/api/v1/auth/sso/saml/callback", post(sso_handlers::sso_saml_callback))
+        .route("/api/v1/auth/sso/oidc/init", get(sso_handlers::sso_oidc_init))
         // ── Settings: Notification Preferences ────────────────
         .route("/api/v1/settings/notifications", get(settings_handlers::get_notification_preferences).put(settings_handlers::update_notification_preferences))
         // ── Settings: API Keys ────────────────────────────────

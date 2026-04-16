@@ -4,6 +4,7 @@ use axum::{
     response::{IntoResponse, Redirect},
     Json,
 };
+use base64::Engine as _;
 use serde::Deserialize;
 use serde_json::json;
 use std::sync::Arc;
@@ -11,6 +12,7 @@ use uuid::Uuid;
 
 use crate::middleware::auth_middleware::AuthUser;
 use crate::models::SSOConfig;
+use crate::services::auth::{create_access_token, create_refresh_token};
 use crate::AppState;
 
 pub async fn get_sso_config(
@@ -227,13 +229,13 @@ pub async fn sso_ldap_login(
     };
 
     let ldap_result = tokio::task::spawn_blocking(move || -> Result<String, String> {
-        use ldap3::{LdapConn, Scope, SearchEntry};
+        use ldap3::{LdapConn, Scope, SearchEntry, ResultEntry};
 
         let mut ldap = LdapConn::new(&ldap_url)
             .map_err(|e| format!("LDAP connection failed: {}", e))?;
 
         // Search for user DN first (using base_dn)
-        let (rs, _res) = ldap.search(
+        let (rs, _res): (Vec<ResultEntry>, _) = ldap.search(
             &base_dn,
             Scope::Subtree,
             &search_filter,
@@ -312,10 +314,10 @@ pub async fn sso_ldap_login(
         .await;
 
     // Issue JWT tokens
-    let access_token = crate::handlers::auth_handlers::create_access_token(
+    let access_token = create_access_token(
         &state.jwt_secret, &user_id, Some(&org_id), &user_role
     ).unwrap_or_default();
-    let refresh_token = crate::handlers::auth_handlers::create_refresh_token(
+    let refresh_token = create_refresh_token(
         &state.jwt_secret, &user_id
     ).unwrap_or_default();
 
@@ -376,7 +378,7 @@ pub async fn sso_saml_init(
         request_id, issue_instant, sso_url, acs_url
     );
 
-    let encoded = base64::Engine::encode(&base64::engine::general_purpose::STANDARD, authn_request.as_bytes());
+    let encoded = base64::engine::general_purpose::STANDARD.encode(authn_request.as_bytes());
     let redirect_url = format!("{}?SAMLRequest={}", sso_url, urlencoding::encode(&encoded));
 
     Json(json!({
@@ -404,7 +406,7 @@ pub async fn sso_saml_callback(
     };
 
     // Decode SAML Response
-    let decoded = match base64::Engine::decode(&base64::engine::general_purpose::STANDARD, saml_response) {
+    let decoded = match base64::engine::general_purpose::STANDARD.decode(saml_response) {
         Ok(d) => d,
         Err(_) => return (StatusCode::BAD_REQUEST, Json(json!({"error": "Invalid SAMLResponse encoding"}))).into_response(),
     };
@@ -476,10 +478,10 @@ pub async fn sso_saml_callback(
         .execute(&state.db)
         .await;
 
-    let access_token = crate::handlers::auth_handlers::create_access_token(
+    let access_token = create_access_token(
         &state.jwt_secret, &user_id, Some(&org_id), &user_role
     ).unwrap_or_default();
-    let refresh_token = crate::handlers::auth_handlers::create_refresh_token(
+    let refresh_token = create_refresh_token(
         &state.jwt_secret, &user_id
     ).unwrap_or_default();
 
