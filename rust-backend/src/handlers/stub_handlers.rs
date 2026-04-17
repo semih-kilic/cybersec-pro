@@ -795,13 +795,24 @@ pub async fn scan_result(
     user: AuthUser,
     State(state): State<Arc<AppState>>,
 ) -> impl IntoResponse {
-    let scan = sqlx::query_as::<_, (String, String, Option<String>, Option<String>, Option<String>, Option<String>, Option<String>, Option<String>)>(
-        "SELECT s.id, s.status, s.output, CAST(s.findings AS TEXT), s.error_log, s.target, t.name, t.command_template FROM scans s LEFT JOIN tools t ON s.tool_id = t.id WHERE s.id = $1 AND s.organization_id = $2"
-    )
-    .bind(&scan_id)
-    .bind(&user.org_id.as_deref().unwrap_or(""))
-    .fetch_optional(&state.db)
-    .await;
+    let org_id = user.org_id.as_deref().unwrap_or("");
+    let scan = if !org_id.is_empty() {
+        sqlx::query_as::<_, (String, String, Option<String>, Option<String>, Option<String>, Option<String>, Option<String>, Option<String>)>(
+            "SELECT s.id, s.status, s.output, CAST(s.findings AS TEXT), s.error_log, s.target, t.name, t.command_template FROM scans s LEFT JOIN tools t ON s.tool_id = t.id WHERE s.id = $1 AND s.organization_id = $2"
+        )
+        .bind(&scan_id)
+        .bind(org_id)
+        .fetch_optional(&state.db)
+        .await
+    } else {
+        sqlx::query_as::<_, (String, String, Option<String>, Option<String>, Option<String>, Option<String>, Option<String>, Option<String>)>(
+            "SELECT s.id, s.status, s.output, CAST(s.findings AS TEXT), s.error_log, s.target, t.name, t.command_template FROM scans s LEFT JOIN tools t ON s.tool_id = t.id WHERE s.id = $1 AND s.user_id = $2"
+        )
+        .bind(&scan_id)
+        .bind(&user.user_id)
+        .fetch_optional(&state.db)
+        .await
+    };
 
     match scan {
         Ok(Some((id, status, output, findings, error_log, target, tool_name, command))) => {
@@ -855,14 +866,26 @@ pub async fn scan_business_report(
     State(state): State<Arc<AppState>>,
 ) -> impl IntoResponse {
     // Query the actual scan from DB
-    let row: Option<(Option<serde_json::Value>, Option<String>)> = sqlx::query_as(
-        "SELECT findings, output FROM scans WHERE id = $1 AND organization_id = $2"
-    )
-    .bind(&scan_id)
-    .bind(user.org_id.as_deref().unwrap_or(""))
-    .fetch_optional(&state.db)
-    .await
-    .unwrap_or(None);
+    let org_id = user.org_id.as_deref().unwrap_or("");
+    let row: Option<(Option<serde_json::Value>, Option<String>)> = if !org_id.is_empty() {
+        sqlx::query_as(
+            "SELECT findings, output FROM scans WHERE id = $1 AND organization_id = $2"
+        )
+        .bind(&scan_id)
+        .bind(org_id)
+        .fetch_optional(&state.db)
+        .await
+        .unwrap_or(None)
+    } else {
+        sqlx::query_as(
+            "SELECT findings, output FROM scans WHERE id = $1 AND user_id = $2"
+        )
+        .bind(&scan_id)
+        .bind(&user.user_id)
+        .fetch_optional(&state.db)
+        .await
+        .unwrap_or(None)
+    };
 
     let (findings_json, _raw_output) = match row {
         Some(r) => r,
@@ -972,13 +995,24 @@ pub async fn scan_status(
     user: AuthUser,
     State(state): State<Arc<AppState>>,
 ) -> impl IntoResponse {
-    let status = sqlx::query_as::<_, (String,)>(
-        "SELECT status FROM scans WHERE id = $1 AND organization_id = $2"
-    )
-    .bind(&scan_id)
-    .bind(&user.org_id.as_deref().unwrap_or(""))
-    .fetch_optional(&state.db)
-    .await;
+    let org_id = user.org_id.as_deref().unwrap_or("");
+    let status = if !org_id.is_empty() {
+        sqlx::query_as::<_, (String,)>(
+            "SELECT status FROM scans WHERE id = $1 AND organization_id = $2"
+        )
+        .bind(&scan_id)
+        .bind(org_id)
+        .fetch_optional(&state.db)
+        .await
+    } else {
+        sqlx::query_as::<_, (String,)>(
+            "SELECT status FROM scans WHERE id = $1 AND user_id = $2"
+        )
+        .bind(&scan_id)
+        .bind(&user.user_id)
+        .fetch_optional(&state.db)
+        .await
+    };
 
     match status {
         Ok(Some((s,))) => Json(json!({"scan_id": scan_id, "status": s})).into_response(),

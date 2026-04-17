@@ -445,8 +445,13 @@ export function ToolDetailPage() {
                 <code className="text-green-400 font-mono text-sm break-all">{scanCommand || generatedCommand || getToolSlug(tool)}</code>
               </div>
 
+              {scanStatus === 'idle' && (tool as any).gui_required && (
+                <div className="mb-3 p-3 bg-yellow-900/30 border border-yellow-700/50 rounded-lg">
+                  <p className="text-yellow-400 text-sm font-medium">⚠️ GUI Tool — This tool requires a graphical interface and cannot be run as an automated scan. Use it directly on the desktop.</p>
+                </div>
+              )}
               {scanStatus === 'idle' && (
-                <button onClick={handleRunScan} disabled={!getTargetValue().trim()}
+                <button onClick={handleRunScan} disabled={!getTargetValue().trim() || (tool as any).gui_required}
                   className="w-full py-3.5 bg-gradient-to-r from-kali-blue to-kali-purple text-white font-bold rounded-lg hover:opacity-90 transition flex items-center justify-center gap-2 disabled:opacity-40 disabled:cursor-not-allowed text-base">
                   <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
                   Run Scan

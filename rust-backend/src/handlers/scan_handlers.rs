@@ -211,6 +211,15 @@ pub async fn start_scan(
         return (StatusCode::BAD_REQUEST, Json(json!({"error": "Valid target required"}))).into_response();
     }
 
+    // Block GUI-only tools from scan execution
+    if tool.gui_required.unwrap_or(false) {
+        return (StatusCode::BAD_REQUEST, Json(json!({
+            "error": format!("{} is a GUI-based tool and cannot be run as an automated scan. Please use it directly on the desktop.", tool.name),
+            "code": "GUI_TOOL",
+            "hint": "Try a CLI-based alternative tool for automated scanning."
+        }))).into_response();
+    }
+
     // Check plan access
     let org_plan: Option<(String, Option<String>)> = sqlx::query_as("SELECT plan_type, CAST(created_at AS TEXT) FROM organizations WHERE id = $1")
         .bind(&org_id)
@@ -395,7 +404,22 @@ pub async fn start_scan(
         let result = execute_scan(&tool_name, &target_owned, command_template.as_deref(), &scan_tx, &scan_id_clone, agent_ssh).await;
 
         let (status, output, findings, error_log) = match &result {
-            Ok(r) => ("completed".to_string(), r.output.clone(), r.findings.clone(), None),
+            Ok(r) => {
+                // Check exit code: non-zero means the tool reported an error
+                let is_success = r.exit_code == Some(0);
+                let has_output = !r.output.trim().is_empty();
+                let final_status = if is_success || has_output {
+                    "completed".to_string()
+                } else {
+                    "failed".to_string()
+                };
+                let err_log = if !is_success {
+                    Some(format!("Tool exited with code {:?}", r.exit_code))
+                } else {
+                    None
+                };
+                (final_status, r.output.clone(), r.findings.clone(), err_log)
+            }
             Err(e) => {
                 tracing::error!("Scan {} failed: {}", scan_id_clone, e);
                 ("failed".to_string(), String::new(), None, Some(e.to_string()))

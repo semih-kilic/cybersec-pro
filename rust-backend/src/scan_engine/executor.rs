@@ -127,7 +127,7 @@ pub async fn execute_scan(
     let scan_id_owned = scan_id.to_string();
 
     // Read stdout and stderr concurrently with timeout
-    let result = timeout(Duration::from_secs(300), async {
+    let result = timeout(Duration::from_secs(900), async {
         loop {
             if stderr_done {
                 // Only read stdout
@@ -194,7 +194,7 @@ pub async fn execute_scan(
             tracing::warn!("Could not get child PID for scan {}, attempting direct kill", scan_id);
         }
         let _ = child.kill().await;
-        return Err(anyhow!("Scan timed out after 300 seconds"));
+        return Err(anyhow!("Scan timed out after 900 seconds"));
     }
 
     let status = child.wait().await?;

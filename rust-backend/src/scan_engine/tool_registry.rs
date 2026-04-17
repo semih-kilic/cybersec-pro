@@ -259,6 +259,77 @@ fn get_smart_profile(tool_name: &str) -> Option<ToolProfile> {
             pre_args: vec!["-T".into(), "-q".into()],
             post_args: vec![],
         },
+        // ── Additional CLI tool profiles ──────────────────
+        "arjun" => ToolProfile {
+            pre_args: vec!["-u".into()],
+            post_args: vec![],
+        },
+        "commix" => ToolProfile {
+            pre_args: vec!["--url".into()],
+            post_args: vec!["--batch".into()],
+        },
+        "xsser" => ToolProfile {
+            pre_args: vec!["-u".into()],
+            post_args: vec!["--auto".into()],
+        },
+        "skipfish" => ToolProfile {
+            pre_args: vec!["-o".into(), "/tmp/skipfish_out".into()],
+            post_args: vec![],
+        },
+        "sslyze" => ToolProfile {
+            pre_args: vec![],
+            post_args: vec![],
+        },
+        "host" | "nslookup" => ToolProfile {
+            pre_args: vec![],
+            post_args: vec![],
+        },
+        "ping" => ToolProfile {
+            pre_args: vec!["-c".into(), "4".into()],
+            post_args: vec![],
+        },
+        "fping" => ToolProfile {
+            pre_args: vec!["-a".into(), "-g".into()],
+            post_args: vec![],
+        },
+        "onesixtyone" => ToolProfile {
+            pre_args: vec![],
+            post_args: vec!["-c".into(), "public".into()],
+        },
+        "enum4linux-ng" => ToolProfile {
+            pre_args: vec!["-A".into()],
+            post_args: vec![],
+        },
+        "smtp-user-enum" => ToolProfile {
+            pre_args: vec!["-M".into(), "VRFY".into(), "-u".into(), "admin".into(), "-t".into()],
+            post_args: vec![],
+        },
+        "dotdotpwn" => ToolProfile {
+            pre_args: vec!["-m".into(), "http".into(), "-h".into()],
+            post_args: vec!["-q".into()],
+        },
+        "cutycapt" => ToolProfile {
+            pre_args: vec!["--url".into()],
+            post_args: vec!["--out=/tmp/capture.png".into()],
+        },
+        "ike-scan" => ToolProfile {
+            pre_args: vec![],
+            post_args: vec![],
+        },
+        "amap" => ToolProfile {
+            pre_args: vec![],
+            post_args: vec!["1-1024".into()],
+        },
+        "p0f" => ToolProfile {
+            pre_args: vec!["-i".into(), "any".into()],
+            post_args: vec![],
+        },
+        "zenmap" | "ghidra" | "burpsuite" | "maltego" | "armitage" | "autopsy" | "wireshark-gtk"
+        | "ophcrack" | "guymager" | "fwbuilder" | "cutecom" | "jd-gui" | "sqlitebrowser"
+        | "recordmydesktop" | "httrack-qt" | "xplico" | "netsniff-ng" => {
+            // GUI tools — should never reach here (blocked in start_scan), but just in case
+            return None;
+        },
         _ => return None,
     };
     Some(profile)
