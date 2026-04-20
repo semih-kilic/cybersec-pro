@@ -555,32 +555,84 @@ class ApiService {
 
   // SSE for real-time scan output
   streamScanOutput(scanId: string, onOutput: (line: string) => void, onComplete: (result: ScanResult) => void) {
-    // EventSource doesn't support Authorization headers, so we pass token as query param
-    const token = localStorage.getItem('token');
-    const url = token 
-      ? `${API_BASE}/scan/${scanId}/output?token=${encodeURIComponent(token)}`
-      : `${API_BASE}/scan/${scanId}/output`;
-    const eventSource = new EventSource(url);
+    const controller = new AbortController();
+    const token = this.token || localStorage.getItem('token');
 
-    eventSource.onmessage = (event) => {
+    const readSse = async () => {
       try {
-        const data = JSON.parse(event.data);
-        if (data.type === 'output') {
-          onOutput(data.line || data.data || '');
-        } else if (data.type === 'complete') {
-          onComplete(data.result || { status: data.status || 'completed', exit_code: data.exit_code });
-          eventSource.close();
+        const headers: Record<string, string> = {
+          'Accept': 'text/event-stream',
+        };
+        if (token) {
+          headers['Authorization'] = `Bearer ${token}`;
         }
-      } catch (e) {
-        console.error('Error parsing SSE data:', e);
+
+        const response = await fetch(`${API_BASE}/scan/${scanId}/output`, {
+          method: 'GET',
+          headers,
+          signal: controller.signal,
+        });
+
+        if (!response.ok) {
+          const text = await response.text();
+          console.error('SSE connection failed:', response.status, text);
+          onOutput(`Stream connection failed (${response.status})`);
+          return;
+        }
+
+        if (!response.body) {
+          onOutput('Stream unavailable: empty response body');
+          return;
+        }
+
+        const reader = response.body.getReader();
+        const decoder = new TextDecoder();
+        let buffer = '';
+
+        while (true) {
+          const { done, value } = await reader.read();
+          if (done) break;
+
+          buffer += decoder.decode(value, { stream: true });
+          const events = buffer.split('\n\n');
+          buffer = events.pop() || '';
+
+          for (const eventChunk of events) {
+            const dataLines = eventChunk
+              .split('\n')
+              .filter((line) => line.startsWith('data:'))
+              .map((line) => line.slice(5).trim());
+
+            if (dataLines.length === 0) continue;
+
+            const payload = dataLines.join('\n');
+            if (payload === 'ping') continue;
+
+            try {
+              const data = JSON.parse(payload);
+              if (data.type === 'output') {
+                onOutput(data.line || data.data || '');
+              } else if (data.type === 'complete') {
+                onComplete(data.result || { status: data.status || 'completed', exit_code: data.exit_code });
+                controller.abort();
+                return;
+              }
+            } catch (e) {
+              // Ignore non-JSON keep-alive/noise lines.
+              console.error('Error parsing SSE payload:', e);
+            }
+          }
+        }
+      } catch (error) {
+        if ((error as Error).name !== 'AbortError') {
+          console.error('SSE stream failed:', error);
+          onOutput('Stream disconnected unexpectedly');
+        }
       }
     };
 
-    eventSource.onerror = () => {
-      eventSource.close();
-    };
-
-    return () => eventSource.close();
+    void readSse();
+    return () => controller.abort();
   }
 
   // ================================
