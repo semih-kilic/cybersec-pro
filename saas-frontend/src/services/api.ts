@@ -10,6 +10,8 @@ interface ApiResponse<T> {
   error?: string;
 }
 
+export type StreamConnectionStatus = 'connecting' | 'connected' | 'disconnected' | 'error';
+
 class ApiService {
   private token: string | null = null;
 
@@ -554,12 +556,18 @@ class ApiService {
   }
 
   // SSE for real-time scan output
-  streamScanOutput(scanId: string, onOutput: (line: string) => void, onComplete: (result: ScanResult) => void) {
+  streamScanOutput(
+    scanId: string,
+    onOutput: (line: string) => void,
+    onComplete: (result: ScanResult) => void,
+    onStatus?: (status: StreamConnectionStatus) => void,
+  ) {
     const controller = new AbortController();
     const token = this.token || localStorage.getItem('token');
 
     const readSse = async () => {
       try {
+        onStatus?.('connecting');
         const headers: Record<string, string> = {
           'Accept': 'text/event-stream',
         };
@@ -577,6 +585,7 @@ class ApiService {
           const text = await response.text();
           console.error('SSE connection failed:', response.status, text);
           onOutput(`Stream connection failed (${response.status})`);
+          onStatus?.('error');
           return;
         }
 
@@ -588,10 +597,14 @@ class ApiService {
         const reader = response.body.getReader();
         const decoder = new TextDecoder();
         let buffer = '';
+        let markedConnected = false;
 
         while (true) {
           const { done, value } = await reader.read();
-          if (done) break;
+          if (done) {
+            onStatus?.('disconnected');
+            break;
+          }
 
           buffer += decoder.decode(value, { stream: true });
           const events = buffer.split('\n\n');
@@ -609,11 +622,17 @@ class ApiService {
             if (payload === 'ping') continue;
 
             try {
+              if (!markedConnected) {
+                markedConnected = true;
+                onStatus?.('connected');
+              }
+
               const data = JSON.parse(payload);
               if (data.type === 'output') {
                 onOutput(data.line || data.data || '');
               } else if (data.type === 'complete') {
                 onComplete(data.result || { status: data.status || 'completed', exit_code: data.exit_code });
+                onStatus?.('disconnected');
                 controller.abort();
                 return;
               }
@@ -627,6 +646,7 @@ class ApiService {
         if ((error as Error).name !== 'AbortError') {
           console.error('SSE stream failed:', error);
           onOutput('Stream disconnected unexpectedly');
+          onStatus?.('error');
         }
       }
     };

@@ -11,7 +11,7 @@ import { useTarget } from '../../contexts/TargetContext';
 import { useQuery } from '@tanstack/react-query';
 import { queryKeys, CACHE_TIMES } from '../../lib/queryClient';
 import { useAgentsList } from '../../hooks/useApiQueries';
-import api from '../../services/api';
+import api, { StreamConnectionStatus } from '../../services/api';
 
 const TARGET_STORAGE_KEY = 'cybersec_recent_targets';
 function getRecentTargets(): string[] {
@@ -59,6 +59,7 @@ export function ToolDetailPage() {
   const [scanId, setScanId] = useState<string | null>(null);
   const [scanError, setScanError] = useState<string | null>(null);
   const [scanProgress, setScanProgress] = useState(0);
+  const [streamStatus, setStreamStatus] = useState<'idle' | StreamConnectionStatus>('idle');
   const [scanStartTime, setScanStartTime] = useState<number | null>(null);
   const [elapsedSeconds, setElapsedSeconds] = useState(0);
   const [scanCommand, setScanCommand] = useState('');
@@ -165,6 +166,7 @@ export function ToolDetailPage() {
     setScanError(null);
     setScanOutput([]);
     setScanStatus('running');
+    setStreamStatus('connecting');
     setScanProgress(0);
     setScanStartTime(Date.now());
     setScanCommand('');
@@ -201,7 +203,8 @@ export function ToolDetailPage() {
               setScanStatus(finalStatus as 'completed' | 'failed');
               setScanProgress(100);
               setScanStartTime(null);
-            }
+            },
+            (nextStatus) => setStreamStatus(nextStatus)
           );
           sseCleanupRef.current = cleanup;
         }
@@ -226,6 +229,7 @@ export function ToolDetailPage() {
     if (scanId) {
       await api.stopScan(scanId);
       setScanStatus('cancelled');
+      setStreamStatus('idle');
       setScanOutput(prev => [...prev, '', '⏹️ Scan cancelled by user']);
       if (sseCleanupRef.current) { sseCleanupRef.current(); sseCleanupRef.current = null; }
     }
@@ -238,6 +242,7 @@ export function ToolDetailPage() {
     setScanError(null);
     setScanProgress(0);
     setScanCommand('');
+    setStreamStatus('idle');
     if (sseCleanupRef.current) { sseCleanupRef.current(); sseCleanupRef.current = null; }
   };
 
@@ -510,6 +515,22 @@ export function ToolDetailPage() {
                   </div>
                   <div className="flex items-center gap-2">
                     {scanStatus === 'running' && <span className="text-green-400 text-xs flex items-center gap-1"><span className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse" /> LIVE</span>}
+                    {scanStatus === 'running' && (
+                      <span className={`text-xs flex items-center gap-1 ${
+                        streamStatus === 'connected' ? 'text-green-400' :
+                        streamStatus === 'connecting' ? 'text-yellow-400' :
+                        streamStatus === 'error' ? 'text-red-400' : 'text-gray-400'
+                      }`}>
+                        <span className={`w-1.5 h-1.5 rounded-full ${
+                          streamStatus === 'connected' ? 'bg-green-500 animate-pulse' :
+                          streamStatus === 'connecting' ? 'bg-yellow-500 animate-pulse' :
+                          streamStatus === 'error' ? 'bg-red-500' : 'bg-gray-500'
+                        }`} />
+                        {streamStatus === 'connected' ? 'SSE LIVE' :
+                         streamStatus === 'connecting' ? 'SSE CONNECTING' :
+                         streamStatus === 'error' ? 'SSE ERROR' : 'SSE IDLE'}
+                      </span>
+                    )}
                     {scanDone && <span className={`text-xs font-semibold ${scanStatus === 'completed' ? 'text-green-400' : 'text-red-400'}`}>{scanStatus.toUpperCase()}</span>}
                     <button onClick={() => navigator.clipboard.writeText(scanOutput.join('\n'))} className="text-gray-500 hover:text-white transition" title="Copy output">
                       <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" /></svg>

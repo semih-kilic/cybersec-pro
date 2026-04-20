@@ -3,7 +3,7 @@ import { useParams, useSearchParams, Link } from 'react-router-dom';
 import { Header } from '../../components/layout/Header';
 import { useDocumentTitle } from '../../hooks/useUtilities';
 import { PageTransition } from '../../components/ui';
-import api, { ScanResult, ToolConfig } from '../../services/api';
+import api, { ScanResult, StreamConnectionStatus, ToolConfig } from '../../services/api';
 import { useScanSubscription } from '../../hooks/useWebSocket';
 import { useTarget } from '../../contexts/TargetContext';
 import { useAuth } from '../../hooks/useAuth';
@@ -80,6 +80,7 @@ export function ScanExecutionPage() {
   const [command, setCommand] = useState(searchParams.get('command') || '');
   const [error, setError] = useState<string | null>(null);
   const [progress, setProgress] = useState(0);
+  const [streamStatus, setStreamStatus] = useState<'idle' | StreamConnectionStatus>('idle');
   const [scanStartTime, setScanStartTime] = useState<number | null>(null);
   const [elapsedSeconds, setElapsedSeconds] = useState(0);
   
@@ -305,6 +306,7 @@ export function ScanExecutionPage() {
     // SSE will stream output line-by-line in real-time
     if (currentScanId && status === 'running') {
       console.log('📡 Starting SSE stream for scan:', currentScanId);
+      setStreamStatus('connecting');
       const cleanup = api.streamScanOutput(
         currentScanId,
         (line) => {
@@ -316,10 +318,15 @@ export function ScanExecutionPage() {
           setStatus(finalStatus as 'completed' | 'failed');
           setProgress(100);
           setScanStartTime(null);
-        }
+        },
+        (nextStatus) => setStreamStatus(nextStatus)
       );
 
       return cleanup;
+    }
+
+    if (status !== 'running') {
+      setStreamStatus('idle');
     }
   }, [currentScanId, status]);
 
@@ -337,6 +344,7 @@ export function ScanExecutionPage() {
     setStatus('running');
     setExecutionInfo(null);
     setScanStartTime(Date.now());
+    setStreamStatus('connecting');
     
     const agentLabel = selectedAgentId === 'local' 
       ? '(Server)' 
@@ -701,12 +709,20 @@ export function ScanExecutionPage() {
                       style={{ width: `${progress}%` }}
                     />
                   </div>
-                  {ws.connected && (
-                    <p className="text-xs text-green-400 mt-1 flex items-center gap-1">
-                      <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
-                      Real-time updates active
-                    </p>
-                  )}
+                  <p className={`text-xs mt-1 flex items-center gap-1 ${
+                    streamStatus === 'connected' ? 'text-green-400' :
+                    streamStatus === 'connecting' ? 'text-yellow-400' :
+                    streamStatus === 'error' ? 'text-red-400' : 'text-gray-400'
+                  }`}>
+                    <span className={`w-2 h-2 rounded-full ${
+                      streamStatus === 'connected' ? 'bg-green-500 animate-pulse' :
+                      streamStatus === 'connecting' ? 'bg-yellow-500 animate-pulse' :
+                      streamStatus === 'error' ? 'bg-red-500' : 'bg-gray-500'
+                    }`} />
+                    {streamStatus === 'connected' ? 'Live output stream connected' :
+                     streamStatus === 'connecting' ? 'Connecting to live output stream...' :
+                     streamStatus === 'error' ? 'Live output stream error' : 'Live output stream idle'}
+                  </p>
                   {elapsedSeconds > 15 && (
                     <p className="text-xs text-blue-400 mt-2 flex items-center gap-1">
                       <svg className="w-3 h-3 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
@@ -890,10 +906,21 @@ export function ScanExecutionPage() {
                   </span>
                 </div>
                 <div className="flex items-center gap-2">
-                  {/* V11: WS Connection Indicator */}
-                  <span className="flex items-center gap-1 text-xs mr-2" title={ws.connected ? 'WebSocket connected' : 'WebSocket disconnected'}>
-                    <span className={`w-2 h-2 rounded-full ${ws.connected ? 'bg-green-400 animate-pulse' : 'bg-red-400'}`} />
-                    <span className={ws.connected ? 'text-green-500' : 'text-red-500'}>{ws.connected ? 'LIVE' : 'OFFLINE'}</span>
+                  <span className="flex items-center gap-1 text-xs mr-2" title={`SSE stream status: ${streamStatus}`}>
+                    <span className={`w-2 h-2 rounded-full ${
+                      streamStatus === 'connected' ? 'bg-green-400 animate-pulse' :
+                      streamStatus === 'connecting' ? 'bg-yellow-400 animate-pulse' :
+                      streamStatus === 'error' ? 'bg-red-400' : 'bg-gray-400'
+                    }`} />
+                    <span className={
+                      streamStatus === 'connected' ? 'text-green-500' :
+                      streamStatus === 'connecting' ? 'text-yellow-500' :
+                      streamStatus === 'error' ? 'text-red-500' : 'text-gray-500'
+                    }>
+                      {streamStatus === 'connected' ? 'LIVE' :
+                       streamStatus === 'connecting' ? 'CONNECTING' :
+                       streamStatus === 'error' ? 'ERROR' : 'IDLE'}
+                    </span>
                   </span>
                   <button
                     onClick={() => navigator.clipboard.writeText(output.join(''))}
