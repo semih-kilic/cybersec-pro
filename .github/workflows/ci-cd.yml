@@ -64,16 +64,16 @@ jobs:
         run: pnpm install --frozen-lockfile
 
       - name: i18n coverage check
-        run: npm run i18n:check
+        run: pnpm run i18n:check
 
       - name: i18n residual check
-        run: npm run i18n:residual
+        run: pnpm run i18n:residual
 
       - name: Type check
-        run: npx tsc --noEmit || true
+        run: pnpm run type-check
 
       - name: Build
-        run: npx vite build
+        run: pnpm run build
 
   # ── Deploy (only on master push) ──────────────────────────
   deploy:
