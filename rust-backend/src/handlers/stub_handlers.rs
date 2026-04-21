@@ -1,6 +1,6 @@
 /// Stub handlers for frontend endpoints not yet fully implemented.
 /// These return reasonable default / empty responses so the UI doesn't crash.
-use std::sync::Arc;
+use std::{collections::HashMap, sync::{Arc, Mutex, OnceLock}};
 use axum::{
     extract::{Path, Query, State},
     http::StatusCode,
@@ -12,6 +12,64 @@ use serde_json::json;
 use crate::middleware::auth_middleware::{AuthUser, AdminUser};
 use crate::services::auth::{create_access_token, create_refresh_token};
 use crate::AppState;
+
+static PURPLE_TEAM_EXERCISES: OnceLock<Mutex<HashMap<String, Vec<serde_json::Value>>>> = OnceLock::new();
+
+fn purple_team_store() -> &'static Mutex<HashMap<String, Vec<serde_json::Value>>> {
+    PURPLE_TEAM_EXERCISES.get_or_init(|| Mutex::new(HashMap::new()))
+}
+
+fn purple_team_chains_catalog() -> Vec<serde_json::Value> {
+    vec![
+        json!({
+            "id": "chain-initial-access-phishing",
+            "name": "Initial Access Validation",
+            "description": "Simulate a phishing-led foothold and validate whether early detections trigger.",
+            "severity": "high",
+            "steps_count": 5,
+            "mitre_tactics": ["TA0001", "TA0002"],
+            "tools_used": ["social-engineering", "payload-simulation", "http-callback"]
+        }),
+        json!({
+            "id": "chain-credential-access",
+            "name": "Credential Access Drill",
+            "description": "Exercise credential theft and verify blue-team alerting paths.",
+            "severity": "critical",
+            "steps_count": 7,
+            "mitre_tactics": ["TA0006", "TA0003"],
+            "tools_used": ["hash-dump-simulation", "lsass-access", "credential-spray"]
+        }),
+        json!({
+            "id": "chain-lateral-movement",
+            "name": "Lateral Movement Simulation",
+            "description": "Validate segmentation and response workflows for east-west movement.",
+            "severity": "medium",
+            "steps_count": 6,
+            "mitre_tactics": ["TA0008", "TA0007"],
+            "tools_used": ["psexec-simulation", "ssh-pivot", "remote-service-exec"]
+        }),
+    ]
+}
+
+fn purple_team_base_gap_analysis(total_steps: i64) -> serde_json::Value {
+    json!({
+        "total_attacks": total_steps,
+        "detected": 0,
+        "missed": 0,
+        "detection_rate": 0.0,
+        "missed_techniques": [],
+        "recommendations": []
+    })
+}
+
+fn purple_team_risk_score(severity: &str) -> f64 {
+    match severity {
+        "critical" => 82.5,
+        "high" => 64.0,
+        "medium" => 41.0,
+        _ => 25.0,
+    }
+}
 
 // ── GitHub / Google OAuth ──────────────────────────────────
 
@@ -2358,24 +2416,60 @@ pub async fn ai_report_summary(
 // ── Purple Team endpoints ──────────────────────────────────
 
 pub async fn purple_team_dashboard(
-    _user: AuthUser,
+    user: AuthUser,
     State(_state): State<Arc<AppState>>,
 ) -> impl IntoResponse {
+    let org_id = user.org_id.unwrap_or_default();
+    let exercises = purple_team_store()
+        .lock()
+        .ok()
+        .and_then(|store| store.get(&org_id).cloned())
+        .unwrap_or_default();
+
+    let total_exercises = exercises.len() as i64;
+    let running = exercises.iter().filter(|exercise| {
+        matches!(exercise.get("status").and_then(|value| value.as_str()), Some("running") | Some("pending"))
+    }).count() as i64;
+    let completed = exercises.iter().filter(|exercise| {
+        exercise.get("status").and_then(|value| value.as_str()) == Some("completed")
+    }).count() as i64;
+    let total_attack_steps: i64 = exercises.iter().map(|exercise| {
+        exercise.get("total_steps").and_then(|value| value.as_i64()).unwrap_or(0)
+    }).sum();
+    let total_detected: i64 = exercises.iter().map(|exercise| {
+        exercise.get("detected_attacks").and_then(|value| value.as_i64()).unwrap_or(0)
+    }).sum();
+    let total_missed: i64 = exercises.iter().map(|exercise| {
+        exercise.get("missed_attacks").and_then(|value| value.as_i64()).unwrap_or(0)
+    }).sum();
+    let average_risk_score = if total_exercises > 0 {
+        exercises.iter().map(|exercise| {
+            exercise.get("risk_score").and_then(|value| value.as_f64()).unwrap_or(0.0)
+        }).sum::<f64>() / total_exercises as f64
+    } else {
+        0.0
+    };
+    let detection_rate = if total_attack_steps > 0 {
+        (total_detected as f64 / total_attack_steps as f64) * 100.0
+    } else {
+        0.0
+    };
+
     Json(json!({
-        "total_exercises": 0,
-        "running": 0,
-        "completed": 0,
-        "total_attack_steps": 0,
-        "total_detected": 0,
-        "total_missed": 0,
-        "detection_rate": 0.0,
-        "average_risk_score": 0.0,
-        "available_chains": 0,
+        "total_exercises": total_exercises,
+        "running": running,
+        "completed": completed,
+        "total_attack_steps": total_attack_steps,
+        "total_detected": total_detected,
+        "total_missed": total_missed,
+        "detection_rate": detection_rate,
+        "average_risk_score": average_risk_score,
+        "available_chains": purple_team_chains_catalog().len(),
         "available_playbooks": 0,
-        "exercises": 0,
-        "active_chains": 0,
+        "exercises": total_exercises,
+        "active_chains": purple_team_chains_catalog().len(),
         "playbooks": 0,
-        "coverage": 0.0
+        "coverage": detection_rate
     })).into_response()
 }
 
@@ -2383,7 +2477,7 @@ pub async fn purple_team_chains(
     _user: AuthUser,
     State(_state): State<Arc<AppState>>,
 ) -> impl IntoResponse {
-    Json(json!([])).into_response()
+    Json(json!(purple_team_chains_catalog())).into_response()
 }
 
 pub async fn purple_team_playbooks(
@@ -2394,26 +2488,87 @@ pub async fn purple_team_playbooks(
 }
 
 pub async fn purple_team_exercises(
-    _user: AuthUser,
+    user: AuthUser,
     State(_state): State<Arc<AppState>>,
 ) -> impl IntoResponse {
-    Json(json!([])).into_response()
+    let org_id = user.org_id.unwrap_or_default();
+    let exercises = purple_team_store()
+        .lock()
+        .ok()
+        .and_then(|store| store.get(&org_id).cloned())
+        .unwrap_or_default();
+    Json(json!(exercises)).into_response()
 }
 
 pub async fn purple_team_exercise_detail(
     Path(exercise_id): Path<String>,
-    _user: AuthUser,
+    user: AuthUser,
     State(_state): State<Arc<AppState>>,
 ) -> impl IntoResponse {
-    Json(json!({"id": exercise_id, "name": "Exercise", "status": "not_found"})).into_response()
+    let org_id = user.org_id.unwrap_or_default();
+    let exercise = purple_team_store()
+        .lock()
+        .ok()
+        .and_then(|store| store.get(&org_id).cloned())
+        .and_then(|items| items.into_iter().find(|item| item.get("id").and_then(|value| value.as_str()) == Some(exercise_id.as_str())));
+
+    match exercise {
+        Some(item) => Json(item).into_response(),
+        None => (StatusCode::NOT_FOUND, Json(json!({"error": "Exercise not found"}))).into_response(),
+    }
 }
 
 pub async fn purple_team_create_exercise(
-    _user: AuthUser,
+    user: AuthUser,
     State(_state): State<Arc<AppState>>,
-    Json(_body): Json<serde_json::Value>,
+    Json(body): Json<serde_json::Value>,
 ) -> impl IntoResponse {
-    Json(json!({"message": "Purple team exercise creation not implemented"})).into_response()
+    let org_id = user.org_id.unwrap_or_default();
+    let chain_id = match body.get("chain_id").and_then(|value| value.as_str()) {
+        Some(value) if !value.trim().is_empty() => value.trim(),
+        _ => return (StatusCode::BAD_REQUEST, Json(json!({"error": "chain_id is required"}))).into_response(),
+    };
+    let target = match body.get("target").and_then(|value| value.as_str()) {
+        Some(value) if !value.trim().is_empty() => value.trim(),
+        _ => return (StatusCode::BAD_REQUEST, Json(json!({"error": "target is required"}))).into_response(),
+    };
+
+    let chains = purple_team_chains_catalog();
+    let selected_chain = match chains.into_iter().find(|chain| chain.get("id").and_then(|value| value.as_str()) == Some(chain_id)) {
+        Some(chain) => chain,
+        None => return (StatusCode::BAD_REQUEST, Json(json!({"error": "Unknown attack chain"}))).into_response(),
+    };
+
+    let chain_name = selected_chain.get("name").and_then(|value| value.as_str()).unwrap_or("Purple Team Exercise");
+    let severity = selected_chain.get("severity").and_then(|value| value.as_str()).unwrap_or("medium");
+    let total_steps = selected_chain.get("steps_count").and_then(|value| value.as_i64()).unwrap_or(0);
+    let exercise = json!({
+        "id": uuid::Uuid::new_v4().to_string(),
+        "name": body.get("name").and_then(|value| value.as_str()).filter(|value| !value.trim().is_empty()).unwrap_or(chain_name),
+        "attack_chain_id": chain_id,
+        "target": target,
+        "status": "pending",
+        "started_at": chrono::Utc::now().to_rfc3339(),
+        "completed_at": "",
+        "total_steps": total_steps,
+        "completed_steps": 0,
+        "detected_attacks": 0,
+        "missed_attacks": 0,
+        "risk_score": purple_team_risk_score(severity),
+        "red_team_results": [],
+        "blue_team_alerts": [],
+        "gap_analysis": purple_team_base_gap_analysis(total_steps),
+        "coverage_map": {}
+    });
+
+    match purple_team_store().lock() {
+        Ok(mut store) => {
+            let entries = store.entry(org_id).or_default();
+            entries.insert(0, exercise.clone());
+            (StatusCode::CREATED, Json(exercise)).into_response()
+        }
+        Err(_) => (StatusCode::INTERNAL_SERVER_ERROR, Json(json!({"error": "Exercise store unavailable"}))).into_response(),
+    }
 }
 
 pub async fn purple_team_mitre(
