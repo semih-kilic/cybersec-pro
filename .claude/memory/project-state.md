@@ -11,10 +11,10 @@ Last updated: 2026-04-21
 
 ### Current i18n Progress (`saas-frontend`)
 - Locales: `en`, `de`, `es`, `fr`, `it`
-- Completed scopes: 26 / 42
-- Remaining keys: 378 across 23 scopes
-- Latest completed scopes: `login`, `oauth`, `billing`
-- Next high-priority scopes: `sso`, `integrations`, `landing`, `profile`
+- Completed scopes: 49 / 49
+- Remaining keys: 0
+- Latest completed scopes: `sso`, `tools`, `toolsCatalog`, `serviceManager`, `landing`, `overview`, `admin`, `integrations`, `team`, `privacy`
+- Status: Locale parity pass complete (no same-as-English residuals vs `en` baseline)
 
 ### Key Technical Debt
 1. Multiple endpoints in `stub_handlers.rs` remain incomplete.
