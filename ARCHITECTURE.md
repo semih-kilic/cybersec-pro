@@ -1,112 +1,68 @@
-# 🐉 CyberSec Pro - System Architecture
+# CyberSec Pro - Architecture
 
 ## Overview
 
-CyberSec Pro is a cloud-based cybersecurity platform providing 165+ Kali Linux tools through a web interface.
+CyberSec Pro is a containerized multi-service platform composed of:
 
-```
-┌─────────────────────────────────────────────────────────────────┐
-│                     USERS (Browser)                             │
-└─────────────────────────┬───────────────────────────────────────┘
-                          │
-                          ▼
-┌─────────────────────────────────────────────────────────────────┐
-│                    CLOUDFLARE (DNS/CDN)                         │
-│                  cybersecpro.com / semihkilic.com               │
-└─────────────────────────┬───────────────────────────────────────┘
-                          │
-                          ▼
-┌─────────────────────────────────────────────────────────────────┐
-│                      NGINX (Reverse Proxy)                      │
-│  ┌─────────────┐  ┌─────────────┐  ┌─────────────┐             │
-│  │   /        │  │  /api/v1/   │  │   /app/     │             │
-│  │  Frontend  │  │  Backend    │  │  Dashboard  │             │
-│  └─────────────┘  └─────────────┘  └─────────────┘             │
-└─────────────────────────┬───────────────────────────────────────┘
-                          │
-          ┌───────────────┼───────────────┐
-          ▼               ▼               ▼
-┌─────────────────┐ ┌─────────────────┐ ┌─────────────────┐
-│  SAAS-BACKEND   │ │  SALES-BACKEND  │ │  KALI-BACKEND   │
-│  (Flask:5001)   │ │  (Flask:5002)   │ │  (Flask:5003)   │
-│  - Auth/JWT     │ │  - Stripe       │ │  - Tool Exec    │
-│  - Users        │ │  - Payments     │ │  - SSH/WS       │
-│  - Orgs         │ │  - Webhooks     │ │  - Sessions     │
-└────────┬────────┘ └─────────────────┘ └────────┬────────┘
-         │                                        │
-         ▼                                        ▼
-┌─────────────────┐                    ┌─────────────────────────┐
-│   PostgreSQL    │                    │   DOCKER CONTAINER      │
-│   (Database)    │                    │   (Kali Linux)          │
-└─────────────────┘                    │   ┌─────────────────┐   │
-                                       │   │  165+ Tools     │   │
-                                       │   │  - nmap         │   │
-                                       │   │  - sqlmap       │   │
-                                       │   │  - metasploit   │   │
-                                       │   │  - burpsuite    │   │
-                                       │   │  - ...          │   │
-                                       │   └─────────────────┘   │
-                                       └─────────────────────────┘
+- API backend (`rust-backend`, Axum)
+- SaaS dashboard (`saas-frontend`, React + Vite)
+- Marketing site (`frontend`, Next.js)
+- Data services (PostgreSQL + Redis)
+- Security tooling runtime (`kali-tools` container)
+- Nginx edge reverse proxy
+
+## Runtime Topology
+
+```text
+Users/Browser
+    -> Nginx (80/443)
+        -> /api/*                -> rust-backend:5001
+        -> /                     -> saas-frontend:80 (container)
+        -> /app/*                -> saas-frontend:80
+
+rust-backend
+    -> postgres:5432
+    -> redis:6379
+
+kali-tools (privileged)
+    -> Tool execution API:5003
+    -> SSH:22 (host mapped 2222)
+    -> ttyd:7681
+
+web-terminal
+    -> ttyd host-mapped:7682
+
+wireguard
+    -> UDP 51820
 ```
 
-## Service Architecture
+## Services in docker-compose
 
-### 1. Docker Containers
+| Service | Container | Purpose |
+|---|---|---|
+| postgres | cybersec-db | primary relational data store |
+| redis | cybersec-redis | cache/session/rate-limit support |
+| rust-backend | cybersec-api | main REST API and business logic |
+| saas-frontend | cybersec-frontend | dashboard SPA delivery |
+| nginx | cybersec-nginx | public edge routing and TLS mount |
+| kali-tools | cybersec-kali | execution environment for security tools |
+| web-terminal | cybersec-terminal | browser terminal runtime |
+| wireguard | cybersec-vpn | enterprise VPN access |
 
-| Container | Purpose | Port | Auto-restart |
-|-----------|---------|------|--------------|
-| cybersec-saas | Main API | 5001 | always |
-| cybersec-kali | Tool execution | 5003 | always |
-| cybersec-db | PostgreSQL | 5432 | always |
-| cybersec-redis | Session/Cache | 6379 | always |
+## Additional Codebase Services
 
-### 2. User Connection Methods
+- `rust-scan-engine` (port 5002) exists as a separate service but is currently not wired into `docker-compose.yml`.
+- `rust-service-manager` exists as standalone crate for watchdog/super-admin operations.
 
-Users can connect to tools via:
+## Data and Auth Notes
 
-1. **Web Terminal (WebSocket)** - Browser-based terminal
-2. **SSH Tunnel** - Direct SSH access (Pro plan)
-3. **VPN (WireGuard)** - Full network access (Enterprise plan)
-4. **API** - Programmatic tool execution
+- Main DB schema is initialized from backend startup (`rust-backend/src/services/db.rs`).
+- JWT auth and role-based access patterns are enforced in backend middleware/extractors.
+- OAuth exists; parts of SSO/billing/admin flows remain partially stubbed.
 
-### 3. Authentication
+## Documentation Pointers
 
-- **Email/Password** - Standard registration
-- **Google OAuth** - One-click Google login
-- **GitHub OAuth** - One-click GitHub login
-- **JWT Tokens** - Session management
-
-## File Structure
-
-```
-/home/cybersec/cybersec-pro/
-├── docker-compose.yml          # Main orchestration
-├── .env                        # Environment variables
-├── nginx/                      # Nginx configs
-├── saas-backend/              # Main API
-├── saas-frontend/             # React Dashboard
-├── cybersec-kali/             # Kali container & tools
-│   ├── Dockerfile
-│   ├── tools/                 # Tool configs
-│   └── backend/               # Tool execution API
-└── scripts/                   # Deployment scripts
-```
-
-## Deployment
-
-### Development
-```bash
-docker-compose up -d
-```
-
-### Production
-```bash
-docker-compose -f docker-compose.prod.yml up -d
-```
-
-## Monitoring
-
-- **Health Checks**: Every 30 seconds
-- **Auto-restart**: On failure
-- **Logs**: Centralized via Docker
-- **Alerts**: Email on service down
+- `README.md` for quick start
+- `CLAUDE.md` for operational constraints and priorities
+- `SKILLS.md` for execution playbooks
+- `.claude/memory/project-state.md` for latest progress state

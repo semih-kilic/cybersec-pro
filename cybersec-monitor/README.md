@@ -1,32 +1,50 @@
 # CyberSec Monitor
 
-Service manager and health monitor for the CyberSec stack.
+Operational monitor and startup orchestration helpers for CyberSec services.
 
-## Apply systemd units
+## Contents
 
-Use the helper script to sync repo unit files into /etc and restart services:
-- /home/sam/APPS/cybersec-monitor/apply_systemd_units.sh
+- `csctl` helper script
+- systemd unit files:
+	- `cybersec-monitor.service`
+	- `cybersec-startup.service`
+- `apply_systemd_units.sh` deployment helper
+- `monitor.env.example` runtime configuration template
 
-Restart monitor only:
-- sudo systemctl restart cybersec-monitor.service
+## Apply/Refresh systemd Units
 
-View logs:
-- csctl logs
-- csctl startup-logs
-- csctl journal
+From repository root:
 
-Snapshot current status (log-only):
-- sudo systemctl kill -s SIGUSR1 cybersec-monitor.service
+```bash
+cd cybersec-monitor
+sudo ./apply_systemd_units.sh
+```
 
-Reload monitor config:
-- csctl reload
+## Common Operations
+
+```bash
+sudo systemctl restart cybersec-monitor.service
+sudo systemctl status cybersec-monitor.service
+```
+
+Using helper:
+
+```bash
+csctl logs
+csctl startup-logs
+csctl journal
+csctl reload
+```
 
 ## Environment
 
-Optional runtime settings live in /etc/cybersec/monitor.env (600 root:root).
-See monitor.env.example for available keys (HTTP retries/backoff/pool and jitter included).
+Optional runtime overrides are loaded from:
+
+- `/etc/cybersec/monitor.env`
+
+Use `monitor.env.example` as reference.
 
 ## Logs
 
-- /var/log/cybersec/monitor.log
-- /var/log/cybersec/startup.log
+- `/var/log/cybersec/monitor.log`
+- `/var/log/cybersec/startup.log`
