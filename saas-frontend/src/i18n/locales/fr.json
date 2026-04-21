@@ -351,7 +351,6 @@
     "tool": "Outil",
     "status": "Statut",
     "started": "Démarrée",
-    "duration": "Durée",
     "results": "Résultats",
     "vulnerabilities": "Vulnérabilités",
     "noScans": "Aucune analyse",
@@ -481,7 +480,7 @@
     "title": "Gestion des cibles",
     "addTarget": "Ajouter une cible",
     "hostname": "Nom d'hôte / IP",
-    "type": "Type",
+    "type": "Type de cible",
     "lastScanned": "Dernière analyse",
     "vulnCount": "Vulnérabilités",
     "noTargets": "Aucune cible ajoutée",
@@ -692,13 +691,13 @@
     "measuresTitle": "Mesures techniques et organisationnelles",
     "measure": {
       "encryption": "Chiffrement",
-      "encryptionItem1": "TLS 1.3 in transit",
-      "encryptionItem2": "AES-256 at rest",
-      "infrastructure": "Infrastructure",
-      "infrastructureItem1": "EU data centers",
-      "infrastructureItem2": "DDoS protection",
+      "encryptionItem1": "TLS 1.3 en transit",
+      "encryptionItem2": "AES-256 au repos",
+      "infrastructure": "Infrastructure technique",
+      "infrastructureItem1": "Centres de donnees UE",
+      "infrastructureItem2": "Protection DDoS",
       "accessControl": "Controle d'acces",
-      "accessControlItem1": "RBAC",
+      "accessControlItem1": "Controle d'acces base sur les roles (RBAC)",
       "accessControlItem2": "Prise en charge MFA",
       "accessControlItem3": "Journaux d'audit"
     },
@@ -713,7 +712,7 @@
     "deleteModal": {
       "title": "Supprimer votre compte ?",
       "bodyPrefix": "Cette action est",
-      "irreversible": "irreversible",
+      "irreversible": "definitive",
       "bodySuffix": "Toutes vos donnees, y compris les resultats d'analyse, rapports, projets et configurations d'agents, seront supprimees definitivement sous 30 jours.",
       "notice": "Conformement a l'Art. 17 du RGPD, vous disposez d'un droit a l'effacement. Nous traiterons votre demande et enverrons un e-mail de confirmation.",
       "confirmAction": "Supprimer mon compte"
@@ -948,12 +947,12 @@
     "send": "Envoyer"
   },
   "aiAssistant": {
-    "title": "AI Assistant",
-    "couldNotProcess": "Sorry, I could not process that. Please try again.",
-    "connectionError": "Connection error. Please check your internet and try again.",
-    "botName": "CyberBot",
-    "subtitle": "AI Security Assistant — Always here to help",
-    "inputPlaceholder": "Ask CyberBot anything about security, scans, pricing..."
+    "title": "Assistant IA",
+    "couldNotProcess": "Desole, je n'ai pas pu traiter cela. Veuillez reessayer.",
+    "connectionError": "Erreur de connexion. Verifiez votre internet puis reessayez.",
+    "botName": "CyberBot IA",
+    "subtitle": "Assistant securite IA - toujours la pour vous aider",
+    "inputPlaceholder": "Demandez a CyberBot tout sur la securite, les scans et les tarifs..."
   },
   "admin": {
     "title": "Administration",
@@ -1059,10 +1058,10 @@
     }
   },
   "compliance": {
-    "title": "Compliance Dashboard",
-    "dashboardTitle": "Compliance Dashboard",
-    "dashboardSubtitle": "Track compliance across NIST, OWASP, GDPR, PCI DSS, HIPAA & SOC 2 frameworks",
-    "overallPosture": "Overall Compliance Posture"
+    "title": "Tableau de conformite",
+    "dashboardTitle": "Tableau de conformite",
+    "dashboardSubtitle": "Suivez la conformite selon les cadres NIST, OWASP, RGPD, PCI DSS, HIPAA et SOC 2",
+    "overallPosture": "Niveau global de conformite"
   },
   "feedback": {
     "title": "Avis",
@@ -1258,11 +1257,11 @@
     "emailNotifications": "Notifications e-mail à la fin"
   },
   "securityNews": {
-    "title": "Security News",
-    "subtitle": "Latest cybersecurity news, breaches, and industry updates",
-    "featured": "Featured",
-    "searchPlaceholder": "Search news, topics, tags...",
-    "noArticles": "No news articles match your criteria."
+    "title": "Actualites securite",
+    "subtitle": "Dernieres actualites cybersecurite, fuites et mises a jour du secteur",
+    "featured": "En vedette",
+    "searchPlaceholder": "Rechercher des actualites, sujets, etiquettes...",
+    "noArticles": "Aucun article ne correspond a vos criteres."
   },
   "serviceManager": {
     "title": "Gestionnaire de services",

@@ -351,7 +351,6 @@
     "tool": "Werkzeug",
     "status": "Status",
     "started": "Gestartet",
-    "duration": "Dauer",
     "results": "Ergebnisse",
     "vulnerabilities": "Schwachstellen",
     "noScans": "Noch keine Scans",
@@ -692,13 +691,13 @@
     "measuresTitle": "Technische und organisatorische Maßnahmen",
     "measure": {
       "encryption": "Verschlüsselung",
-      "encryptionItem1": "TLS 1.3 in transit",
-      "encryptionItem2": "AES-256 at rest",
+      "encryptionItem1": "TLS 1.3 bei der Uebertragung",
+      "encryptionItem2": "AES-256 bei der Speicherung",
       "infrastructure": "Infrastruktur",
-      "infrastructureItem1": "EU data centers",
-      "infrastructureItem2": "DDoS protection",
+      "infrastructureItem1": "EU-Rechenzentren",
+      "infrastructureItem2": "DDoS-Schutz",
       "accessControl": "Zugriffskontrolle",
-      "accessControlItem1": "RBAC",
+      "accessControlItem1": "Rollenbasierte Zugriffskontrolle (RBAC)",
       "accessControlItem2": "MFA-Unterstützung",
       "accessControlItem3": "Audit-Protokolle"
     },
@@ -948,12 +947,12 @@
     "send": "Senden"
   },
   "aiAssistant": {
-    "title": "AI Assistant",
-    "couldNotProcess": "Sorry, I could not process that. Please try again.",
-    "connectionError": "Connection error. Please check your internet and try again.",
-    "botName": "CyberBot",
-    "subtitle": "AI Security Assistant — Always here to help",
-    "inputPlaceholder": "Ask CyberBot anything about security, scans, pricing..."
+    "title": "KI-Assistent",
+    "couldNotProcess": "Entschuldigung, ich konnte das nicht verarbeiten. Bitte versuchen Sie es erneut.",
+    "connectionError": "Verbindungsfehler. Bitte pruefen Sie Ihr Internet und versuchen Sie es erneut.",
+    "botName": "CyberBot KI",
+    "subtitle": "KI-Sicherheitsassistent - immer fuer Sie da",
+    "inputPlaceholder": "Fragen Sie CyberBot alles zu Sicherheit, Scans und Preisen..."
   },
   "admin": {
     "title": "Verwaltung",
@@ -1059,10 +1058,10 @@
     }
   },
   "compliance": {
-    "title": "Compliance Dashboard",
-    "dashboardTitle": "Compliance Dashboard",
-    "dashboardSubtitle": "Track compliance across NIST, OWASP, GDPR, PCI DSS, HIPAA & SOC 2 frameworks",
-    "overallPosture": "Overall Compliance Posture"
+    "title": "Compliance-Dashboard",
+    "dashboardTitle": "Compliance-Dashboard",
+    "dashboardSubtitle": "Compliance ueber NIST-, OWASP-, DSGVO-, PCI DSS-, HIPAA- und SOC-2-Frameworks verfolgen",
+    "overallPosture": "Gesamte Compliance-Lage"
   },
   "feedback": {
     "title": "Rückmeldung",
@@ -1258,11 +1257,11 @@
     "emailNotifications": "E-Mail-Benachrichtigungen bei Abschluss"
   },
   "securityNews": {
-    "title": "Security News",
-    "subtitle": "Latest cybersecurity news, breaches, and industry updates",
-    "featured": "Featured",
-    "searchPlaceholder": "Search news, topics, tags...",
-    "noArticles": "No news articles match your criteria."
+    "title": "Sicherheitsnachrichten",
+    "subtitle": "Neueste Cybersecurity-News, Vorfaelle und Branchen-Updates",
+    "featured": "Ausgewaehlt",
+    "searchPlaceholder": "Nach News, Themen, Tags suchen...",
+    "noArticles": "Keine Nachrichten passen zu Ihren Kriterien."
   },
   "serviceManager": {
     "title": "Service-Manager",

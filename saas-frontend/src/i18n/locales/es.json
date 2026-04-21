@@ -351,7 +351,6 @@
     "tool": "Herramienta",
     "status": "Estado",
     "started": "Iniciado",
-    "duration": "Duración",
     "results": "Resultados",
     "vulnerabilities": "Vulnerabilidades",
     "noScans": "Sin escaneos",
@@ -692,13 +691,13 @@
     "measuresTitle": "Medidas técnicas y organizativas",
     "measure": {
       "encryption": "Cifrado",
-      "encryptionItem1": "TLS 1.3 in transit",
-      "encryptionItem2": "AES-256 at rest",
+      "encryptionItem1": "TLS 1.3 en transito",
+      "encryptionItem2": "AES-256 en reposo",
       "infrastructure": "Infraestructura",
-      "infrastructureItem1": "EU data centers",
-      "infrastructureItem2": "DDoS protection",
+      "infrastructureItem1": "Centros de datos de la UE",
+      "infrastructureItem2": "Proteccion DDoS",
       "accessControl": "Control de acceso",
-      "accessControlItem1": "RBAC",
+      "accessControlItem1": "Control de acceso basado en roles (RBAC)",
       "accessControlItem2": "Soporte MFA",
       "accessControlItem3": "Registros de auditoría"
     },
@@ -713,7 +712,7 @@
     "deleteModal": {
       "title": "¿Eliminar tu cuenta?",
       "bodyPrefix": "Esta acción es",
-      "irreversible": "irreversible",
+      "irreversible": "permanente",
       "bodySuffix": "Todos tus datos, incluidos resultados de escaneo, informes, proyectos y configuraciones de agentes, se eliminarán permanentemente en un plazo de 30 días.",
       "notice": "Según el Art. 17 del RGPD, tienes derecho de supresión. Procesaremos tu solicitud y enviaremos un correo de confirmación.",
       "confirmAction": "Eliminar mi cuenta"
@@ -948,12 +947,12 @@
     "send": "Enviar"
   },
   "aiAssistant": {
-    "title": "AI Assistant",
-    "couldNotProcess": "Sorry, I could not process that. Please try again.",
-    "connectionError": "Connection error. Please check your internet and try again.",
-    "botName": "CyberBot",
-    "subtitle": "AI Security Assistant — Always here to help",
-    "inputPlaceholder": "Ask CyberBot anything about security, scans, pricing..."
+    "title": "Asistente de IA",
+    "couldNotProcess": "Lo siento, no pude procesar eso. Intentalo de nuevo.",
+    "connectionError": "Error de conexion. Revisa tu internet e intentalo de nuevo.",
+    "botName": "CyberBot IA",
+    "subtitle": "Asistente de seguridad con IA - siempre aqui para ayudarte",
+    "inputPlaceholder": "Pregunta a CyberBot cualquier cosa sobre seguridad, escaneos y precios..."
   },
   "admin": {
     "title": "Administración",
@@ -1059,10 +1058,10 @@
     }
   },
   "compliance": {
-    "title": "Compliance Dashboard",
-    "dashboardTitle": "Compliance Dashboard",
-    "dashboardSubtitle": "Track compliance across NIST, OWASP, GDPR, PCI DSS, HIPAA & SOC 2 frameworks",
-    "overallPosture": "Overall Compliance Posture"
+    "title": "Panel de cumplimiento",
+    "dashboardTitle": "Panel de cumplimiento",
+    "dashboardSubtitle": "Supervisa el cumplimiento en marcos NIST, OWASP, GDPR, PCI DSS, HIPAA y SOC 2",
+    "overallPosture": "Postura general de cumplimiento"
   },
   "feedback": {
     "title": "Comentarios",
@@ -1258,11 +1257,11 @@
     "emailNotifications": "Notificaciones por correo al completarse"
   },
   "securityNews": {
-    "title": "Security News",
-    "subtitle": "Latest cybersecurity news, breaches, and industry updates",
-    "featured": "Featured",
-    "searchPlaceholder": "Search news, topics, tags...",
-    "noArticles": "No news articles match your criteria."
+    "title": "Noticias de seguridad",
+    "subtitle": "Ultimas noticias de ciberseguridad, brechas y novedades del sector",
+    "featured": "Destacado",
+    "searchPlaceholder": "Buscar noticias, temas, etiquetas...",
+    "noArticles": "Ninguna noticia coincide con tus criterios."
   },
   "serviceManager": {
     "title": "Gestor de servicios",
