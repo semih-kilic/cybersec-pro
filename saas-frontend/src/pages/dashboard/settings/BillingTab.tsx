@@ -3,6 +3,7 @@
  * Current plan, upgrade, payment method, billing history
  */
 import { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { motion } from 'framer-motion';
 import type { SettingsTabProps } from './types';
 import api from '../../../services/api';
@@ -31,6 +32,7 @@ interface BillingData {
 }
 
 export function BillingTab({ userPlan }: SettingsTabProps) {
+  const { t } = useTranslation();
   const [billing, setBilling] = useState<BillingData | null>(null);
 
   useEffect(() => {
@@ -56,8 +58,8 @@ export function BillingTab({ userPlan }: SettingsTabProps) {
       className="space-y-6"
     >
       <div>
-        <h2 className="text-xl font-bold text-white mb-1">Billing & Subscription</h2>
-        <p className="text-gray-400 text-sm">Manage your plan, payment method, and billing history</p>
+        <h2 className="text-xl font-bold text-white mb-1">{t('settings.billing.heading', 'Billing & Subscription')}</h2>
+        <p className="text-gray-400 text-sm">{t('settings.billing.subtitle', 'Manage your plan, payment method, and billing history')}</p>
       </div>
 
       {/* Current Plan */}

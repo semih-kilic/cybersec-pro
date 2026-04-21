@@ -3,11 +3,13 @@
  * SAML 2.0, OpenID Connect, LDAP configuration
  */
 import { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { motion } from 'framer-motion';
 import type { SettingsTabProps } from './types';
 import { useSSOConfig, useSaveSSOConfig, useTestSSOConnection, useDeleteSSOConfig, useToggleSSO } from '../../../hooks/useApiQueries';
 
 export function SSOTab({ setMessage, userPlan }: SettingsTabProps) {
+  const { t } = useTranslation();
   const { data: ssoData } = useSSOConfig();
   const ssoConfig = ssoData?.config ?? null;
   const [ssoTestResult, setSsoTestResult] = useState<{ success: boolean; message: string } | null>(null);
@@ -33,9 +35,9 @@ export function SSOTab({ setMessage, userPlan }: SettingsTabProps) {
   const handleSSOSave = async () => {
     try {
       await saveMutation.mutateAsync({ ...ssoForm, provider_type: ssoProviderType });
-      setMessage({ type: 'success', text: 'SSO configuration saved!' });
+      setMessage({ type: 'success', text: t('settings.sso.saved', 'SSO configuration saved!') });
     } catch {
-      setMessage({ type: 'error', text: 'Failed to save SSO configuration' });
+      setMessage({ type: 'error', text: t('settings.sso.saveFailed', 'Failed to save SSO configuration') });
     }
   };
 
@@ -43,27 +45,27 @@ export function SSOTab({ setMessage, userPlan }: SettingsTabProps) {
     setSsoTestResult(null);
     try {
       const data = await testMutation.mutateAsync({ provider_type: ssoProviderType });
-      setSsoTestResult({ success: data.success, message: data.message || (data.success ? 'Connection successful!' : 'Test failed') });
+      setSsoTestResult({ success: data.success, message: data.message || (data.success ? t('settings.sso.connectionSuccessful', 'Connection successful!') : t('settings.sso.testFailed', 'Test failed')) });
     } catch {
-      setSsoTestResult({ success: false, message: 'Network error during test' });
+      setSsoTestResult({ success: false, message: t('settings.sso.networkError', 'Network error during test') });
     }
   };
 
   const handleSSODelete = async () => {
-    if (!confirm('Delete SSO configuration? Users will need to use email/password login.')) return;
+    if (!confirm(t('settings.sso.deleteConfirm', 'Delete SSO configuration? Users will need to use email/password login.'))) return;
     try {
       await deleteMutation.mutateAsync();
       setSsoForm({});
-      setMessage({ type: 'success', text: 'SSO configuration deleted' });
+      setMessage({ type: 'success', text: t('settings.sso.deleted', 'SSO configuration deleted') });
     } catch {
-      setMessage({ type: 'error', text: 'Failed to delete' });
+      setMessage({ type: 'error', text: t('settings.sso.deleteFailed', 'Failed to delete') });
     }
   };
 
   const handleSSOToggle = async () => {
     try {
       await toggleMutation.mutateAsync(!ssoConfig?.is_enabled);
-      setMessage({ type: 'success', text: ssoConfig?.is_enabled ? 'SSO disabled' : 'SSO enabled' });
+      setMessage({ type: 'success', text: ssoConfig?.is_enabled ? t('settings.sso.disabled', 'SSO disabled') : t('settings.sso.enabled', 'SSO enabled') });
     } catch { /* ignore */ }
   };
 
@@ -79,8 +81,8 @@ export function SSOTab({ setMessage, userPlan }: SettingsTabProps) {
     >
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-xl font-bold text-white mb-1">Single Sign-On (SSO)</h2>
-          <p className="text-gray-400 text-sm">Connect your Identity Provider for secure team authentication</p>
+          <h2 className="text-xl font-bold text-white mb-1">{t('settings.sso.heading', 'Single Sign-On (SSO)')}</h2>
+          <p className="text-gray-400 text-sm">{t('settings.sso.subtitle', 'Connect your Identity Provider for secure team authentication')}</p>
         </div>
         {ssoConfig && (
           <div className="flex items-center gap-3">

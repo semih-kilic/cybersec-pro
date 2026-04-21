@@ -108,7 +108,7 @@ export function ForgotPasswordPage() {
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     className="fp-input"
-                    placeholder="you@company.com"
+                    placeholder={t('auth.emailPlaceholder', 'you@company.com')}
                     autoComplete="email"
                     autoFocus
                   />

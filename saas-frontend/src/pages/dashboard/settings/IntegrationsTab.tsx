@@ -3,6 +3,7 @@
  * Third-party tool connections (Slack, Jira, GitHub, Webhooks)
  */
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useIntegrations, useCreateIntegration, useDeleteIntegration, useToggleIntegration, useTestIntegration } from '../../../hooks/useApiQueries';
 import type { SettingsTabProps } from './types';
@@ -16,6 +17,7 @@ const INTEGRATION_TYPES = [
 ];
 
 export function IntegrationsTab(_props: SettingsTabProps) {
+  const { t } = useTranslation();
   const { data: integrations = [], isLoading } = useIntegrations();
   const createIntegration = useCreateIntegration();
   const deleteIntegration = useDeleteIntegration();
@@ -39,9 +41,9 @@ export function IntegrationsTab(_props: SettingsTabProps) {
   const handleTest = async (id: string) => {
     try {
       const res = await testIntegration.mutateAsync(id);
-      setTestResult({ id, msg: res.success ? (res.message || 'Success!') : (res.error || 'Failed'), ok: res.success });
+      setTestResult({ id, msg: res.success ? (res.message || t('settings.integrations.success', 'Success!')) : (res.error || t('common.failed', 'Failed')), ok: res.success });
     } catch {
-      setTestResult({ id, msg: 'Test failed', ok: false });
+      setTestResult({ id, msg: t('settings.integrations.testFailed', 'Test failed'), ok: false });
     }
     setTimeout(() => setTestResult(null), 4000);
   };
@@ -50,11 +52,11 @@ export function IntegrationsTab(_props: SettingsTabProps) {
     <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.2 }} className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-xl font-bold text-white mb-1">Integrations</h2>
-          <p className="text-gray-400 text-sm">Connect CyberSec Pro with your existing tools</p>
+          <h2 className="text-xl font-bold text-white mb-1">{t('settings.integrations.heading', 'Integrations')}</h2>
+          <p className="text-gray-400 text-sm">{t('settings.integrations.subtitle', 'Connect CyberSec Pro with your existing tools')}</p>
         </div>
         <button onClick={() => setShowAdd(true)} className="px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700 transition">
-          + Add Integration
+          + {t('settings.integrations.add', 'Add Integration')}
         </button>
       </div>
 

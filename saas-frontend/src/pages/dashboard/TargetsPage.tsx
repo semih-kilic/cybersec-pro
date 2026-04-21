@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useQueryClient } from '@tanstack/react-query';
+import { useTranslation } from 'react-i18next';
 import { Header } from '../../components/layout/Header';
 import { PageTransition } from '../../components/ui';
 import { useAuth } from '../../hooks/useAuth';
@@ -69,7 +70,8 @@ const typeLabels: { [key: string]: string } = {
 };
 
 export function TargetsPage() {
-  useDocumentTitle('Targets — CyberSec Pro');
+  const { t } = useTranslation();
+  useDocumentTitle(`${t('targets.title', 'Targets')} — CyberSec Pro`);
   const toast = useToast();
   const { token: _token } = useAuth();
   const queryClient = useQueryClient();
@@ -114,7 +116,7 @@ export function TargetsPage() {
       setShowAddModal(false);
       setNewTarget({ name: '', value: '', type: 'ip', group_id: '', tags: '', notes: '' });
     } catch (error) {
-      toast.error('Add Failed', 'Failed to add target');
+      toast.error(t('targets.addFailed', 'Add Failed'), t('targets.addFailedBody', 'Failed to add target'));
     }
   };
 

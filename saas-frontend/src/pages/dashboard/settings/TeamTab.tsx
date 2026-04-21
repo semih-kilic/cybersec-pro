@@ -3,6 +3,7 @@
  * Members, invitations, role management
  */
 import { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { motion, AnimatePresence } from 'framer-motion';
 import type { SettingsTabProps } from './types';
 import api from '../../../services/api';
@@ -27,6 +28,7 @@ interface TeamInvitation {
 }
 
 export function TeamTab({ user, userPlan, setMessage }: SettingsTabProps) {
+  const { t } = useTranslation();
   const [members, setMembers] = useState<TeamMember[]>([]);
   const [invitations, setInvitations] = useState<TeamInvitation[]>([]);
   const [showInvite, setShowInvite] = useState(false);
@@ -54,7 +56,7 @@ export function TeamTab({ user, userPlan, setMessage }: SettingsTabProps) {
       if (res.error) {
         setMessage({ type: 'error', text: res.error });
       } else {
-        setMessage({ type: 'success', text: `Invitation sent to ${inviteEmail}` });
+        setMessage({ type: 'success', text: `${t('settings.team.invitationSent', 'Invitation sent to')} ${inviteEmail}` });
         setInviteEmail('');
         setShowInvite(false);
         loadTeam();
@@ -69,7 +71,7 @@ export function TeamTab({ user, userPlan, setMessage }: SettingsTabProps) {
     if (res.error) {
       setMessage({ type: 'error', text: res.error });
     } else {
-      setMessage({ type: 'success', text: res.data?.message || 'Member removed' });
+      setMessage({ type: 'success', text: res.data?.message || t('settings.team.memberRemoved', 'Member removed') });
       loadTeam();
     }
   };
@@ -94,15 +96,15 @@ export function TeamTab({ user, userPlan, setMessage }: SettingsTabProps) {
     >
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-xl font-bold text-white mb-1">Team Management</h2>
-          <p className="text-gray-400 text-sm">Invite team members and manage roles</p>
+          <h2 className="text-xl font-bold text-white mb-1">{t('settings.team.heading', 'Team Management')}</h2>
+          <p className="text-gray-400 text-sm">{t('settings.team.subtitle', 'Invite team members and manage roles')}</p>
         </div>
         <button
           onClick={() => setShowInvite(!showInvite)}
           className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm font-medium transition flex items-center gap-2 btn-micro"
         >
           <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" /></svg>
-          Invite Member
+          {t('settings.team.inviteMember', 'Invite Member')}
         </button>
       </div>
 

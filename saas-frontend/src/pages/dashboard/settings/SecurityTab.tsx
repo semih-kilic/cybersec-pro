@@ -3,11 +3,13 @@
  * Password change, 2FA/MFA (V20), danger zone
  */
 import { useState, useEffect, FormEvent } from 'react';
+import { useTranslation } from 'react-i18next';
 import { motion } from 'framer-motion';
 import type { SettingsTabProps } from './types';
 import { api } from '../../../services/api';
 
 export function SecurityTab({ loading, setLoading, setMessage }: SettingsTabProps) {
+  const { t } = useTranslation();
   const [currentPassword, setCurrentPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
@@ -46,7 +48,7 @@ export function SecurityTab({ loading, setLoading, setMessage }: SettingsTabProp
       setMfaSecret(res.data.secret);
       setSetupStep('qr');
     } else {
-      setMessage({ type: 'error', text: res.error || 'Failed to start MFA setup' });
+      setMessage({ type: 'error', text: res.error || t('settings.security.mfaSetupFailed', 'Failed to start MFA setup') });
     }
     setMfaLoading(false);
   };
@@ -60,9 +62,9 @@ export function SecurityTab({ loading, setLoading, setMessage }: SettingsTabProp
       setMfaEnabled(true);
       setBackupCodesRemaining(res.data.backup_codes.length);
       setSetupStep('backup');
-      setMessage({ type: 'success', text: 'Two-factor authentication enabled!' });
+      setMessage({ type: 'success', text: t('settings.security.mfaEnabled', 'Two-factor authentication enabled!') });
     } else {
-      setMessage({ type: 'error', text: res.error || 'Invalid verification code' });
+      setMessage({ type: 'error', text: res.error || t('settings.security.invalidCode', 'Invalid verification code') });
     }
     setMfaLoading(false);
     setVerifyCode('');
@@ -77,9 +79,9 @@ export function SecurityTab({ loading, setLoading, setMessage }: SettingsTabProp
       setBackupCodesRemaining(0);
       setMfaEnabledAt(null);
       setSetupStep('idle');
-      setMessage({ type: 'success', text: 'Two-factor authentication disabled' });
+      setMessage({ type: 'success', text: t('settings.security.mfaDisabled', 'Two-factor authentication disabled') });
     } else {
-      setMessage({ type: 'error', text: res.error || 'Failed to disable MFA' });
+      setMessage({ type: 'error', text: res.error || t('settings.security.mfaDisableFailed', 'Failed to disable MFA') });
     }
     setMfaLoading(false);
     setDisablePassword('');
@@ -93,9 +95,9 @@ export function SecurityTab({ loading, setLoading, setMessage }: SettingsTabProp
       setBackupCodes(res.data.backup_codes);
       setBackupCodesRemaining(res.data.backup_codes.length);
       setSetupStep('backup');
-      setMessage({ type: 'success', text: 'New backup codes generated!' });
+      setMessage({ type: 'success', text: t('settings.security.backupCodesGenerated', 'New backup codes generated!') });
     } else {
-      setMessage({ type: 'error', text: res.error || 'Failed to regenerate backup codes' });
+      setMessage({ type: 'error', text: res.error || t('settings.security.backupCodesFailed', 'Failed to regenerate backup codes') });
     }
     setMfaLoading(false);
     setDisablePassword('');

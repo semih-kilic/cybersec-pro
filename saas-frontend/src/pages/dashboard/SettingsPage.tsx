@@ -1,4 +1,5 @@
 import { useState, useCallback } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useAuth } from '../../hooks/useAuth';
 import { useDocumentTitle } from '../../hooks/useUtilities';
 import { useSearchParams } from 'react-router-dom';
@@ -29,7 +30,8 @@ const TABS = [
 type TabId = typeof TABS[number]['id'];
 
 export default function SettingsPage() {
-  useDocumentTitle('Settings — CyberSec Pro');
+  const { t } = useTranslation();
+  useDocumentTitle(`${t('settings.title', 'Settings')} — CyberSec Pro`);
   const { user, organization } = useAuth();
   const [searchParams, setSearchParams] = useSearchParams();
   const userPlan = organization?.plan_type || 'trial';
@@ -66,8 +68,8 @@ export default function SettingsPage() {
     <div className="p-6 max-w-6xl mx-auto">
       {/* Header */}
       <div className="mb-8">
-        <h1 className="text-3xl font-bold text-white mb-2">Settings</h1>
-        <p className="text-gray-400">Manage your account settings and preferences</p>
+        <h1 className="text-3xl font-bold text-white mb-2">{t('settings.title', 'Settings')}</h1>
+        <p className="text-gray-400">{t('settings.subtitle', 'Manage your account settings and preferences')}</p>
       </div>
 
       {/* Message */}

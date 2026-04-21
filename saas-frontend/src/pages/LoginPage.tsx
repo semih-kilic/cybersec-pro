@@ -286,12 +286,11 @@ export function LoginPage() {
           </a>
 
           <h1 className="lp-h">
-            Cyber threats don't sleep.<br/>
-            <span>Neither should your defense.</span>
+            {t('login.heroTitleLine1', "Cyber threats don't sleep.")}<br/>
+            <span>{t('login.heroTitleLine2', 'Neither should your defense.')}</span>
           </h1>
           <p className="lp-sub">
-            Every 39 seconds, a cyber attack occurs somewhere in the world.
-            Proactive security testing is no longer optional — it's essential.
+            {t('login.heroSubtitle', "Every 39 seconds, a cyber attack occurs somewhere in the world. Proactive security testing is no longer optional — it's essential.")}
           </p>
 
           <div className="lp-features">
@@ -300,8 +299,8 @@ export function LoginPage() {
                 <svg viewBox="0 0 20 20" width="18" height="18" fill="none" stroke="#ef4444" strokeWidth="1.5"><path d="M10 2l7 3.5v5c0 4-3 7.2-7 8.5-4-1.3-7-4.5-7-8.5v-5L10 2z"/><path d="M10 7v4M10 13h.01"/></svg>
               </div>
               <div>
-                <h4>Why It Matters</h4>
-                <p>Cybercrime damages are projected to reach $10.5 trillion annually by 2025 — more than the GDP of most countries</p>
+                <h4>{t('login.whyItMatters', 'Why It Matters')}</h4>
+                <p>{t('login.whyItMattersBody', 'Cybercrime damages are projected to reach $10.5 trillion annually by 2025 — more than the GDP of most countries')}</p>
               </div>
             </div>
             <div className="lp-feat">
@@ -309,8 +308,8 @@ export function LoginPage() {
                 <svg viewBox="0 0 20 20" width="18" height="18" fill="none" stroke="#f59e0b" strokeWidth="1.5"><circle cx="10" cy="10" r="8"/><path d="M10 6v4l3 3"/></svg>
               </div>
               <div>
-                <h4>Time Is Critical</h4>
-                <p>Organizations take an average of 197 days to identify a breach and 69 days to contain it</p>
+                <h4>{t('login.timeIsCritical', 'Time Is Critical')}</h4>
+                <p>{t('login.timeIsCriticalBody', 'Organizations take an average of 197 days to identify a breach and 69 days to contain it')}</p>
               </div>
             </div>
             <div className="lp-feat">
@@ -318,8 +317,8 @@ export function LoginPage() {
                 <svg viewBox="0 0 20 20" width="18" height="18" fill="none" stroke="#10b981" strokeWidth="1.5"><path d="M10 2l7 3.5v5c0 4-3 7.2-7 8.5-4-1.3-7-4.5-7-8.5v-5L10 2z"/></svg>
               </div>
               <div>
-                <h4>Stay Ahead</h4>
-                <p>Continuous security testing helps you find vulnerabilities before attackers do</p>
+                <h4>{t('login.stayAhead', 'Stay Ahead')}</h4>
+                <p>{t('login.stayAheadBody', 'Continuous security testing helps you find vulnerabilities before attackers do')}</p>
               </div>
             </div>
           </div>
@@ -329,11 +328,11 @@ export function LoginPage() {
 
           <div className="lp-terminal">
             <div><span className="grn">$</span> <span className="wht">nmap</span> <span className="cyn">-sC -sV -A</span> target.example.com</div>
-            <div style={{ color: '#374151' }}>Starting Nmap 7.94SVN ...</div>
+            <div style={{ color: '#374151' }}>{t('login.terminalStarting', 'Starting Nmap 7.94SVN ...')}</div>
             <div><span className="cyn">PORT</span>     STATE  SERVICE</div>
             <div><span className="grn">22/tcp</span>   open   ssh</div>
             <div><span style={{ color: '#f59e0b' }}>443/tcp</span>  open   ssl <span style={{ color: '#ef4444' }}>VULNERABLE</span></div>
-            <div style={{ color: '#374151', marginTop: '4px' }}>Nmap done — 1 host scanned in 12.4s</div>
+            <div style={{ color: '#374151', marginTop: '4px' }}>{t('login.terminalDone', 'Nmap done — 1 host scanned in 12.4s')}</div>
           </div>
         </div>
 
@@ -436,7 +435,7 @@ export function LoginPage() {
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
                       className="rf-input"
-                      placeholder="you@company.com"
+                      placeholder={t('auth.emailPlaceholder', 'you@company.com')}
                       autoComplete="email"
                     />
                   </div>

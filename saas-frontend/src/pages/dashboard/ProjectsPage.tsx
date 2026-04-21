@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useAuth } from '../../hooks/useAuth';
 import { Link } from 'react-router-dom';
 import { PageTransition } from '../../components/ui';
@@ -25,7 +26,8 @@ interface Project {
 }
 
 export default function ProjectsPage() {
-  useDocumentTitle('Projects — CyberSec Pro');
+  const { t } = useTranslation();
+  useDocumentTitle(`${t('projects.title', 'Projects')} — CyberSec Pro`);
   const toast = useToast();
   const { organization } = useAuth();
   const { data: projects = [], isLoading: loading } = useProjects();
@@ -60,7 +62,7 @@ export default function ProjectsPage() {
         description: newProjectDesc,
       });
     } catch (error) {
-      toast.error('Create Failed', 'Failed to create project');
+      toast.error(t('projects.createFailed', 'Create Failed'), t('projects.createFailedBody', 'Failed to create project'));
     }
     setShowCreateModal(false);
     setNewProjectName('');
@@ -69,11 +71,11 @@ export default function ProjectsPage() {
   };
 
   const deleteProject = async (projectId: string | number) => {
-    if (!confirm('Are you sure you want to delete this project?')) return;
+    if (!confirm(t('projects.deleteConfirm', 'Are you sure you want to delete this project?'))) return;
     try {
       await deleteProjectMutation.mutateAsync(projectId);
     } catch (error) {
-      toast.error('Delete Failed', 'Failed to delete project');
+      toast.error(t('projects.deleteFailed', 'Delete Failed'), t('projects.deleteFailedBody', 'Failed to delete project'));
     }
   };
 
@@ -104,9 +106,9 @@ export default function ProjectsPage() {
       {/* Header */}
       <div className="flex items-center justify-between mb-8">
         <div>
-          <h1 className="text-3xl font-bold text-white mb-2">Projects</h1>
+          <h1 className="text-3xl font-bold text-white mb-2">{t('projects.title', 'Projects')}</h1>
           <p className="text-gray-400">
-            Organize your security assessments into projects
+            {t('projects.subtitle', 'Organize your security assessments into projects')}
           </p>
         </div>
         <div className="flex items-center gap-4">
@@ -121,7 +123,7 @@ export default function ProjectsPage() {
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
             </svg>
-            New Project
+            {t('projects.newProject', 'New Project')}
           </button>
         </div>
       </div>

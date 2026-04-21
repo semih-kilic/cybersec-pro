@@ -1,6 +1,8 @@
 import { useState, useEffect, useCallback } from 'react';
+import { useTranslation } from 'react-i18next';
 import { api, ServiceManagerDashboard, ServiceState, ServiceAlert } from '../../services/api';
 import { toast } from 'react-hot-toast';
+import { useDocumentTitle } from '../../hooks/useUtilities';
 
 // ================================
 // STATUS COLORS & ICONS
@@ -62,6 +64,8 @@ function formatUptime(secs: number | null): string {
 // ================================
 
 export default function ServiceManagerPage() {
+  const { t } = useTranslation();
+  useDocumentTitle(`${t('serviceManager.title', 'Service Manager')} — CyberSec Pro`);
   const [dashboard, setDashboard] = useState<ServiceManagerDashboard | null>(null);
   const [loading, setLoading] = useState(true);
   const [actionLoading, setActionLoading] = useState<string | null>(null);
@@ -95,10 +99,10 @@ export default function ServiceManagerPage() {
         toast.success(`${action} ${serviceId} — ${res.data.message}`);
         setTimeout(fetchDashboard, 2000);
       } else {
-        toast.error(res.error || 'Action failed');
+        toast.error(res.error || t('serviceManager.actionFailed', 'Action failed'));
       }
     } catch {
-      toast.error('Service manager unavailable');
+      toast.error(t('serviceManager.unavailable', 'Service manager unavailable'));
     } finally {
       setActionLoading(null);
     }
@@ -109,7 +113,7 @@ export default function ServiceManagerPage() {
       await api.acknowledgeAlert(alertId);
       fetchDashboard();
     } catch {
-      toast.error('Failed to acknowledge alert');
+      toast.error(t('serviceManager.acknowledgeFailed', 'Failed to acknowledge alert'));
     }
   };
 

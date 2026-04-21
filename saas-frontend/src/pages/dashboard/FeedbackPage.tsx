@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useAuth } from '../../hooks/useAuth';
 import { PageTransition } from '../../components/ui';
 import { useDocumentTitle } from '../../hooks/useUtilities';
@@ -60,7 +61,8 @@ const feedbackTypes: FeedbackType[] = [
 ];
 
 export default function FeedbackPage() {
-  useDocumentTitle('Feedback — CyberSec Pro');
+  const { t } = useTranslation();
+  useDocumentTitle(`${t('feedback.title', 'Feedback')} — CyberSec Pro`);
   const { user } = useAuth();
   const submitFeedback = useSubmitFeedback();
   const [selectedType, setSelectedType] = useState<string>('');
@@ -77,17 +79,17 @@ export default function FeedbackPage() {
     e.preventDefault();
     
     if (!selectedType) {
-      setError('Please select a feedback type');
+      setError(t('feedback.selectType', 'Please select a feedback type'));
       return;
     }
     
     if (!subject.trim() || !message.trim()) {
-      setError('Please fill in all required fields');
+      setError(t('feedback.fillRequired', 'Please fill in all required fields'));
       return;
     }
 
     if (!replyEmail.trim() || !replyEmail.includes('@')) {
-      setError('Please enter a valid email address for reply');
+      setError(t('feedback.validReplyEmail', 'Please enter a valid email address for reply'));
       return;
     }
 
@@ -124,7 +126,7 @@ export default function FeedbackPage() {
       setMessage('');
       setReplyEmail(user?.email || '');
     } catch (err: any) {
-      setError(err.message || 'Network error. Please try again.');
+      setError(err.message || t('feedback.networkError', 'Network error. Please try again.'));
     } finally {
       setSending(false);
     }
@@ -136,7 +138,7 @@ export default function FeedbackPage() {
         <div className="max-w-2xl mx-auto">
           <div className="bg-gradient-to-br from-green-900/50 to-green-800/30 rounded-2xl p-12 text-center border border-green-500/30">
             <CheckCircleIcon className="w-20 h-20 text-green-400 mx-auto mb-6" />
-            <h2 className="text-3xl font-bold text-white mb-4">Thank You!</h2>
+            <h2 className="text-3xl font-bold text-white mb-4">{t('feedback.thankYou', 'Thank You!')}</h2>
             <p className="text-gray-300 text-lg mb-8">
               Your feedback has been sent successfully. We appreciate you taking the time to help us improve CyberSec Pro.
             </p>

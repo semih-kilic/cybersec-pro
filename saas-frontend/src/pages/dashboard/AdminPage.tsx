@@ -3,6 +3,7 @@
  * Impersonate users, view all organizations, MRR stats.
  */
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useAuth } from '../../hooks/useAuth';
 import { PageTransition } from '../../components/ui';
 import { useDocumentTitle } from '../../hooks/useUtilities';
@@ -47,7 +48,8 @@ interface _AdminOverview {
 }
 
 export function AdminPage() {
-  useDocumentTitle('Admin — CyberSec Pro');
+  const { t } = useTranslation();
+  useDocumentTitle(`${t('admin.title', 'Admin')} — CyberSec Pro`);
   const { user, token } = useAuth();
   const { data: overview, isLoading: loading, error: queryError, refetch } = useAdminOverview();
   const changePlanMutation = useChangePlan();
@@ -82,10 +84,10 @@ export function AdminPage() {
     try {
       await changePlanMutation.mutateAsync({ organizationId: orgId, planType });
       await refetch();
-      toast.success(`Plan changed to ${planType} successfully!`);
+      toast.success(`${t('admin.planChanged', 'Plan changed to')} ${planType} ${t('admin.successfully', 'successfully!')}`);
     } catch (e: any) {
       setError(e.message);
-      toast.error(`Failed to change plan: ${e.message}`);
+      toast.error(`${t('admin.changePlanFailed', 'Failed to change plan')}: ${e.message}`);
     }
   };
 
@@ -100,7 +102,7 @@ export function AdminPage() {
         ...(body ? { body: JSON.stringify(body) } : {}),
       });
       const data = await res.json();
-      if (!res.ok) throw new Error(data.error || 'Action failed');
+      if (!res.ok) throw new Error(data.error || t('admin.actionFailed', 'Action failed'));
       return data;
     } catch (e: any) {
       throw e;

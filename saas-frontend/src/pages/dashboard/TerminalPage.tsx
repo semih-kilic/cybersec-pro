@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState, useCallback } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Header } from '../../components/layout/Header';
 import { useAuth } from '../../hooks/useAuth';
 import { PageTransition } from '../../components/ui';
@@ -26,7 +27,8 @@ interface HistoryLine {
 }
 
 export function TerminalPage() {
-  useDocumentTitle('Terminal — CyberSec Pro');
+  const { t } = useTranslation();
+  useDocumentTitle(`${t('terminal.title', 'Terminal')} — CyberSec Pro`);
   const _toast = useToast();
   const { token } = useAuth();
   const terminalRef = useRef<HTMLDivElement>(null);
@@ -101,7 +103,7 @@ export function TerminalPage() {
           { type: 'output', content: `✅ Connected to ${selectedAgent.name} (${selectedAgent.platform})` },
           { type: 'output', content: `📍 System: ${data.system_info}` },
           { type: 'system', content: '' },
-          { type: 'system', content: 'Type "help" for available commands or any shell command.' },
+          { type: 'system', content: t('terminal.helpPrompt', 'Type "help" for available commands or any shell command.') },
           { type: 'system', content: '' }
         ]);
         fetchAgents(); // Refresh agent status
@@ -109,13 +111,13 @@ export function TerminalPage() {
         setIsConnected(false);
         setHistory(prev => [...prev, { 
           type: 'error', 
-          content: `❌ Connection failed: ${data.error}` 
+          content: `❌ ${t('terminal.connectionFailed', 'Connection failed')}: ${data.error}` 
         }]);
       }
     } catch (err) {
       setHistory(prev => [...prev, { 
         type: 'error', 
-        content: `❌ Connection error: ${err}` 
+        content: `❌ ${t('terminal.connectionError', 'Connection error')}: ${err}` 
       }]);
     }
   };

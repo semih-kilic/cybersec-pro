@@ -1,7 +1,11 @@
 import { useEffect, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
+import { useDocumentTitle } from '../hooks/useUtilities';
 
 export function OAuthCallback() {
+  const { t } = useTranslation();
+  useDocumentTitle(`${t('oauth.title', 'OAuth Sign In')} — CyberSec Pro`);
   const [searchParams] = useSearchParams();
   const [error, setError] = useState<string | null>(null);
 
@@ -12,12 +16,12 @@ export function OAuthCallback() {
       const errorParam = searchParams.get('error');
 
       if (errorParam) {
-        setError(`OAuth error: ${errorParam}`);
+        setError(`${t('oauth.errorPrefix', 'OAuth error')}: ${errorParam}`);
         return;
       }
 
       if (!code) {
-        setError('No authorization code received');
+        setError(t('oauth.noCode', 'No authorization code received'));
         return;
       }
 
@@ -37,7 +41,7 @@ export function OAuthCallback() {
         const data = await response.json();
 
         if (!response.ok) {
-          throw new Error(data.error || 'OAuth authentication failed');
+          throw new Error(data.error || t('oauth.failed', 'OAuth authentication failed'));
         }
 
         // Store token and update auth state
@@ -46,7 +50,7 @@ export function OAuthCallback() {
         // Reload the page to update auth state
         window.location.href = '/dashboard';
       } catch (err) {
-        setError(err instanceof Error ? err.message : 'Authentication failed');
+        setError(err instanceof Error ? err.message : t('oauth.authFailed', 'Authentication failed'));
       }
     };
 
@@ -63,13 +67,13 @@ export function OAuthCallback() {
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
               </svg>
             </div>
-            <h2 className="text-xl font-bold text-white mb-2">Authentication Failed</h2>
+            <h2 className="text-xl font-bold text-white mb-2">{t('oauth.authFailed', 'Authentication failed')}</h2>
             <p className="text-red-400 mb-6">{error}</p>
             <a 
               href="/login"
               className="inline-block px-6 py-3 bg-gray-700 text-white rounded-lg hover:bg-gray-600 transition"
             >
-              Back to Login
+              {t('oauth.backToLogin', 'Back to Login')}
             </a>
           </div>
         </div>
@@ -81,8 +85,8 @@ export function OAuthCallback() {
     <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 flex items-center justify-center p-4">
       <div className="text-center">
         <div className="w-16 h-16 border-4 border-cyan-500 border-t-transparent rounded-full animate-spin mx-auto mb-4" />
-        <h2 className="text-xl font-semibold text-white mb-2">Completing Sign In</h2>
-        <p className="text-gray-400">Please wait while we authenticate you...</p>
+        <h2 className="text-xl font-semibold text-white mb-2">{t('oauth.completing', 'Completing Sign In')}</h2>
+        <p className="text-gray-400">{t('oauth.waiting', 'Please wait while we authenticate you...')}</p>
       </div>
     </div>
   );

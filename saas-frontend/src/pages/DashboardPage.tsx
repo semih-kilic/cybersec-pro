@@ -133,49 +133,49 @@ export function DashboardPage() {
             <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
               <div className="bg-gray-800/50 rounded-xl p-6 border border-gray-700">
                 <div className="text-3xl font-bold text-white">{totalTools}</div>
-                <div className="text-gray-400 mt-1">Available Tools</div>
+                <div className="text-gray-400 mt-1">{t('dashboard.availableTools', 'Available Tools')}</div>
               </div>
               <div className="bg-gray-800/50 rounded-xl p-6 border border-gray-700">
                 <div className="text-3xl font-bold text-white">{scans.length}</div>
-                <div className="text-gray-400 mt-1">Total Scans</div>
+                <div className="text-gray-400 mt-1">{t('dashboard.totalScans', 'Total Scans')}</div>
               </div>
               <div className="bg-gray-800/50 rounded-xl p-6 border border-gray-700">
                 <div className="text-3xl font-bold text-white">{Object.keys(tools).length}</div>
-                <div className="text-gray-400 mt-1">Categories</div>
+                <div className="text-gray-400 mt-1">{t('dashboard.categories', 'Categories')}</div>
               </div>
               <div className="bg-gray-800/50 rounded-xl p-6 border border-gray-700">
                 <div className="text-3xl font-bold text-cyan-400">{organization?.plan_type}</div>
-                <div className="text-gray-400 mt-1">Current Plan</div>
+                <div className="text-gray-400 mt-1">{t('dashboard.currentPlan', 'Current Plan')}</div>
               </div>
             </div>
 
             {/* Quick Actions */}
             <div className="bg-gray-800/50 rounded-xl p-6 border border-gray-700">
-              <h3 className="text-lg font-semibold text-white mb-4">Quick Actions</h3>
+              <h3 className="text-lg font-semibold text-white mb-4">{t('dashboard.quickActions', 'Quick Actions')}</h3>
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                 <button 
                   onClick={() => setActiveTab('tools')}
                   className="p-4 bg-gray-700/50 rounded-lg hover:bg-gray-700 transition text-left"
                 >
                   <div className="text-2xl mb-2">🔧</div>
-                  <div className="text-white font-medium">Browse Tools</div>
-                  <div className="text-sm text-gray-400">View all {totalTools} tools</div>
+                  <div className="text-white font-medium">{t('dashboard.browseTools', 'Browse Tools')}</div>
+                  <div className="text-sm text-gray-400">{t('dashboard.viewAllTools', `View all ${totalTools} tools`, { count: totalTools })}</div>
                 </button>
                 <button 
                   onClick={() => setActiveTab('scans')}
                   className="p-4 bg-gray-700/50 rounded-lg hover:bg-gray-700 transition text-left"
                 >
                   <div className="text-2xl mb-2">📊</div>
-                  <div className="text-white font-medium">View Scans</div>
-                  <div className="text-sm text-gray-400">See scan history</div>
+                  <div className="text-white font-medium">{t('dashboard.viewScans', 'View Scans')}</div>
+                  <div className="text-sm text-gray-400">{t('dashboard.scanHistory', 'See scan history')}</div>
                 </button>
                 <a 
                   href="/dashboard/upgrade"
                   className="p-4 bg-gradient-to-r from-cyan-500/20 to-blue-500/20 rounded-lg hover:from-cyan-500/30 hover:to-blue-500/30 transition text-left border border-cyan-500/30"
                 >
                   <div className="text-2xl mb-2">⬆️</div>
-                  <div className="text-white font-medium">Upgrade Plan</div>
-                  <div className="text-sm text-gray-400">Get more tools</div>
+                  <div className="text-white font-medium">{t('dashboard.upgradePlan', 'Upgrade Plan')}</div>
+                  <div className="text-sm text-gray-400">{t('dashboard.getMoreTools', 'Get more tools')}</div>
                 </a>
                 <a 
                   href="https://docs.semihkilic.com" 
@@ -183,17 +183,17 @@ export function DashboardPage() {
                   className="p-4 bg-gray-700/50 rounded-lg hover:bg-gray-700 transition text-left"
                 >
                   <div className="text-2xl mb-2">📚</div>
-                  <div className="text-white font-medium">Documentation</div>
-                  <div className="text-sm text-gray-400">Learn more</div>
+                  <div className="text-white font-medium">{t('dashboard.documentation', 'Documentation')}</div>
+                  <div className="text-sm text-gray-400">{t('dashboard.learnMore', 'Learn more')}</div>
                 </a>
               </div>
             </div>
 
             {/* Recent Scans */}
             <div className="bg-gray-800/50 rounded-xl p-6 border border-gray-700">
-              <h3 className="text-lg font-semibold text-white mb-4">Recent Scans</h3>
+              <h3 className="text-lg font-semibold text-white mb-4">{t('dashboard.recentScans', 'Recent Scans')}</h3>
               {scans.length === 0 ? (
-                <p className="text-gray-400">No scans yet. Run your first scan to see results here.</p>
+                <p className="text-gray-400">{t('dashboard.noScansYet', 'No scans yet. Run your first scan to see results here.')}</p>
               ) : (
                 <div className="space-y-3">
                   {scans.slice(0, 5).map((scan) => (
@@ -217,8 +217,8 @@ export function DashboardPage() {
         {activeTab === 'tools' && (
           <div className="space-y-8">
             <div className="flex justify-between items-center">
-              <h2 className="text-2xl font-bold text-white">Security Tools</h2>
-              <span className="text-gray-400">{totalTools} tools available</span>
+              <h2 className="text-2xl font-bold text-white">{t('dashboard.securityTools', 'Security Tools')}</h2>
+              <span className="text-gray-400">{t('dashboard.toolsAvailable', `${totalTools} tools available`, { count: totalTools })}</span>
             </div>
             
             {Object.entries(tools).map(([category, categoryTools]) => (
@@ -249,22 +249,22 @@ export function DashboardPage() {
         {activeTab === 'scans' && (
           <div className="space-y-6">
             <div className="flex justify-between items-center">
-              <h2 className="text-2xl font-bold text-white">Scan History</h2>
+              <h2 className="text-2xl font-bold text-white">{t('dashboard.scanHistoryTitle', 'Scan History')}</h2>
               <button className="px-4 py-2 bg-gradient-to-r from-cyan-500 to-blue-500 text-white rounded-lg hover:from-cyan-600 hover:to-blue-600 transition">
-                + New Scan
+                + {t('dashboard.newScan', 'New Scan')}
               </button>
             </div>
             
             {scans.length === 0 ? (
               <div className="bg-gray-800/50 rounded-xl p-12 border border-gray-700 text-center">
                 <div className="text-4xl mb-4">🔍</div>
-                <h3 className="text-xl font-semibold text-white mb-2">No scans yet</h3>
-                <p className="text-gray-400 mb-6">Run your first security scan to get started</p>
+                <h3 className="text-xl font-semibold text-white mb-2">{t('dashboard.noScansTitle', 'No scans yet')}</h3>
+                <p className="text-gray-400 mb-6">{t('dashboard.noScansBody', 'Run your first security scan to get started')}</p>
                 <button 
                   onClick={() => setActiveTab('tools')}
                   className="px-6 py-3 bg-gradient-to-r from-cyan-500 to-blue-500 text-white rounded-lg hover:from-cyan-600 hover:to-blue-600 transition"
                 >
-                  Browse Tools
+                  {t('dashboard.browseTools', 'Browse Tools')}
                 </button>
               </div>
             ) : (
@@ -272,10 +272,10 @@ export function DashboardPage() {
                 <table className="w-full">
                   <thead className="bg-gray-700/50">
                     <tr>
-                      <th className="text-left p-4 text-gray-300 font-medium">Tool</th>
-                      <th className="text-left p-4 text-gray-300 font-medium">Target</th>
-                      <th className="text-left p-4 text-gray-300 font-medium">Status</th>
-                      <th className="text-left p-4 text-gray-300 font-medium">Date</th>
+                      <th className="text-left p-4 text-gray-300 font-medium">{t('dashboard.tool', 'Tool')}</th>
+                      <th className="text-left p-4 text-gray-300 font-medium">{t('dashboard.target', 'Target')}</th>
+                      <th className="text-left p-4 text-gray-300 font-medium">{t('dashboard.status', 'Status')}</th>
+                      <th className="text-left p-4 text-gray-300 font-medium">{t('dashboard.date', 'Date')}</th>
                     </tr>
                   </thead>
                   <tbody>

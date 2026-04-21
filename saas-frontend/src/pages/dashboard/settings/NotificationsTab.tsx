@@ -3,6 +3,7 @@
  * Email, browser, in-app notification preferences
  */
 import { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { motion } from 'framer-motion';
 import type { SettingsTabProps } from './types';
 import api from '../../../services/api';
@@ -22,6 +23,7 @@ function Toggle({ checked, onChange, label }: { checked: boolean; onChange: (v: 
 }
 
 export function NotificationsTab({ setMessage }: SettingsTabProps) {
+  const { t } = useTranslation();
   const [prefs, setPrefs] = useState({
     email_scan_complete: true,
     email_weekly_report: true,
@@ -76,7 +78,7 @@ export function NotificationsTab({ setMessage }: SettingsTabProps) {
       if (res.error) {
         setMessage({ type: 'error', text: res.error });
       } else {
-        setMessage({ type: 'success', text: 'Notification preferences saved!' });
+        setMessage({ type: 'success', text: t('settings.notifications.saved', 'Notification preferences saved!') });
       }
     } finally {
       setSaving(false);
@@ -84,7 +86,7 @@ export function NotificationsTab({ setMessage }: SettingsTabProps) {
   };
 
   if (!loaded) {
-    return <div className="text-gray-400 py-8 text-center">Loading preferences...</div>;
+    return <div className="text-gray-400 py-8 text-center">{t('settings.notifications.loading', 'Loading preferences...')}</div>;
   }
 
   return (
@@ -94,7 +96,7 @@ export function NotificationsTab({ setMessage }: SettingsTabProps) {
       transition={{ duration: 0.2 }}
       className="space-y-6"
     >
-      <h2 className="text-xl font-bold text-white mb-4">Notification Preferences</h2>
+      <h2 className="text-xl font-bold text-white mb-4">{t('settings.notifications.heading', 'Notification Preferences')}</h2>
 
       <div className="space-y-3">
         {notificationOptions.map((opt) => (

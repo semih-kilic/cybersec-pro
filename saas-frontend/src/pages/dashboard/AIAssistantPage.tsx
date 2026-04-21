@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useAuth } from '../../hooks/useAuth';
 import { PageTransition } from '../../components/ui';
 import { useDocumentTitle } from '../../hooks/useUtilities';
@@ -35,7 +36,8 @@ Just type your question or use the quick actions below!`,
 };
 
 export default function AIAssistantPage() {
-  useDocumentTitle('AI Assistant — CyberSec Pro');
+  const { t } = useTranslation();
+  useDocumentTitle(`${t('aiAssistant.title', 'AI Assistant')} — CyberSec Pro`);
   const { token: _token } = useAuth();
   const chatMutation = useSendChatMessage();
   const [messages, setMessages] = useState<ChatMessage[]>([WELCOME_MESSAGE]);
@@ -77,7 +79,7 @@ export default function AIAssistantPage() {
       const botMsg: ChatMessage = {
         id: `bot-${Date.now()}`,
         role: 'bot',
-        content: data.response || 'Sorry, I could not process that. Please try again.',
+        content: data.response || t('aiAssistant.couldNotProcess', 'Sorry, I could not process that. Please try again.'),
         timestamp: new Date(),
       };
       setMessages(prev => [...prev, botMsg]);
@@ -89,7 +91,7 @@ export default function AIAssistantPage() {
       const errorMsg: ChatMessage = {
         id: `error-${Date.now()}`,
         role: 'bot',
-        content: 'Connection error. Please check your internet and try again.',
+        content: t('aiAssistant.connectionError', 'Connection error. Please check your internet and try again.'),
         type: 'error',
         timestamp: new Date(),
       };
@@ -125,11 +127,11 @@ export default function AIAssistantPage() {
         </div>
         <div>
           <h1 className="text-xl font-bold text-white">CyberBot</h1>
-          <p className="text-xs text-gray-400">AI Security Assistant — Always here to help</p>
+          <p className="text-xs text-gray-400">{t('aiAssistant.subtitle', 'AI Security Assistant — Always here to help')}</p>
         </div>
         <div className="ml-auto flex items-center gap-2">
           <span className="w-2 h-2 bg-emerald-400 rounded-full animate-pulse" />
-          <span className="text-xs text-emerald-400">Online</span>
+          <span className="text-xs text-emerald-400">{t('common.online', 'Online')}</span>
         </div>
       </div>
 

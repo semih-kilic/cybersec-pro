@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Header } from '../../components/layout/Header';
 import { PageTransition } from '../../components/ui';
 import { useSchedules, useToggleSchedule, useDeleteSchedule, useRunScheduleNow, useSaveSchedule } from '../../hooks/useApiQueries';
@@ -36,7 +37,8 @@ const presetSchedules = [
 ];
 
 export function SchedulePage() {
-  useDocumentTitle('Schedule — CyberSec Pro');
+  const { t } = useTranslation();
+  useDocumentTitle(`${t('schedule.title', 'Schedule')} — CyberSec Pro`);
   const toast = useToast();
   const { data: schedules = [], isLoading: loading } = useSchedules();
   const toggleScheduleMutation = useToggleSchedule();
@@ -60,16 +62,16 @@ export function SchedulePage() {
     try {
       await toggleScheduleMutation.mutateAsync(schedule.id);
     } catch (error) {
-      toast.error('Toggle Failed', 'Failed to toggle schedule');
+      toast.error(t('schedule.toggleFailed', 'Toggle Failed'), t('schedule.toggleFailedBody', 'Failed to toggle schedule'));
     }
   };
 
   const handleDelete = async (scheduleId: string) => {
-    if (!confirm('Delete this scheduled scan?')) return;
+    if (!confirm(t('schedule.deleteConfirm', 'Delete this scheduled scan?'))) return;
     try {
       await deleteScheduleMutation.mutateAsync(scheduleId);
     } catch (error) {
-      toast.error('Delete Failed', 'Failed to delete schedule');
+      toast.error(t('schedule.deleteFailed', 'Delete Failed'), t('schedule.deleteFailedBody', 'Failed to delete schedule'));
     }
   };
 
@@ -79,9 +81,9 @@ export function SchedulePage() {
         tool: schedule.tool_name || schedule.tool || '',
         target: schedule.target,
       });
-      toast.success('Scan Started', `${schedule.name} scan launched successfully`);
+      toast.success(t('schedule.scanStarted', 'Scan Started'), `${schedule.name} ${t('schedule.scanLaunched', 'scan launched successfully')}`);
     } catch (error) {
-      toast.error('Scan Failed', 'Failed to start scheduled scan');
+      toast.error(t('schedule.scanFailed', 'Scan Failed'), t('schedule.scanFailedBody', 'Failed to start scheduled scan'));
     }
   };
 
@@ -105,7 +107,7 @@ export function SchedulePage() {
       
       await saveScheduleMutation.mutateAsync({ id: editingSchedule?.id, data: body });
     } catch (error) {
-      toast.error('Save Failed', 'Failed to save schedule');
+      toast.error(t('schedule.saveFailed', 'Save Failed'), t('schedule.saveFailedBody', 'Failed to save schedule'));
     }
     setShowNewModal(false);
     setEditingSchedule(null);

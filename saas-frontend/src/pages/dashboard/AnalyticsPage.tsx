@@ -3,6 +3,7 @@
  * World-class data visualization with Recharts, stat cards, and interactive charts
  */
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useDocumentTitle } from '../../hooks/useUtilities';
 import {
   AreaChart, Area, BarChart, Bar, PieChart, Pie, Cell,
@@ -59,7 +60,8 @@ function ChartTooltip({ active, payload, label }: any) {
 }
 
 export default function AnalyticsPage() {
-  useDocumentTitle('Analytics — CyberSec Pro');
+  const { t } = useTranslation();
+  useDocumentTitle(`${t('analytics.title', 'Analytics')} — CyberSec Pro`);
   const [timeRange, setTimeRange] = useState<'7d' | '30d' | '90d'>('30d');
   const { data, isLoading: loading, refetch: loadAnalytics } = useAnalyticsOverview(timeRange);
 
@@ -92,8 +94,8 @@ export default function AnalyticsPage() {
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
               </svg>
             }
-            title="No analytics data yet"
-            description="Run security scans to generate analytics and insights about your infrastructure."
+            title={t('analytics.emptyTitle', 'No analytics data yet')}
+            description={t('analytics.emptyDescription', 'Run security scans to generate analytics and insights about your infrastructure.')}
           />
         </div>
       </PageTransition>

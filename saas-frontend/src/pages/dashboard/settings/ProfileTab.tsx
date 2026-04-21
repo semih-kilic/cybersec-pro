@@ -3,11 +3,13 @@
  * Avatar upload, name, email, company
  */
 import { useState, useRef, FormEvent } from 'react';
+import { useTranslation } from 'react-i18next';
 import { motion } from 'framer-motion';
 import type { SettingsTabProps } from './types';
 import { useUploadAvatar, useUpdateProfile } from '../../../hooks/useApiQueries';
 
 export function ProfileTab({ loading, setLoading, setMessage, user }: SettingsTabProps) {
+  const { t } = useTranslation();
   const [firstName, setFirstName] = useState(user?.first_name || '');
   const [lastName, setLastName] = useState(user?.last_name || '');
   const [email] = useState(user?.email || '');
@@ -24,16 +26,16 @@ export function ProfileTab({ loading, setLoading, setMessage, user }: SettingsTa
     if (!file) return;
     
     if (file.size > 2 * 1024 * 1024) {
-      setMessage({ type: 'error', text: 'File too large. Maximum 2MB allowed.' });
+      setMessage({ type: 'error', text: t('settings.profile.fileTooLarge', 'File too large. Maximum 2MB allowed.') });
       return;
     }
 
     try {
       const data = await avatarMutation.mutateAsync(file);
       setAvatarUrl(data.avatar_url || URL.createObjectURL(file));
-      setMessage({ type: 'success', text: 'Avatar updated!' });
+      setMessage({ type: 'success', text: t('settings.profile.avatarUpdated', 'Avatar updated!') });
     } catch {
-      setMessage({ type: 'error', text: 'Failed to upload avatar' });
+      setMessage({ type: 'error', text: t('settings.profile.avatarUploadFailed', 'Failed to upload avatar') });
     }
   };
 
@@ -42,9 +44,9 @@ export function ProfileTab({ loading, setLoading, setMessage, user }: SettingsTa
     setLoading(true);
     try {
       await profileMutation.mutateAsync({ first_name: firstName, last_name: lastName, company });
-      setMessage({ type: 'success', text: 'Profile updated successfully!' });
+      setMessage({ type: 'success', text: t('settings.profile.updated', 'Profile updated successfully!') });
     } catch {
-      setMessage({ type: 'error', text: 'Failed to update profile' });
+      setMessage({ type: 'error', text: t('settings.profile.updateFailed', 'Failed to update profile') });
     } finally {
       setLoading(false);
     }
@@ -58,7 +60,7 @@ export function ProfileTab({ loading, setLoading, setMessage, user }: SettingsTa
       onSubmit={handleProfileUpdate}
       className="space-y-6"
     >
-      <h2 className="text-xl font-bold text-white mb-4">Profile Information</h2>
+      <h2 className="text-xl font-bold text-white mb-4">{t('settings.profile.heading', 'Profile Information')}</h2>
 
       {/* Avatar */}
       <div className="flex items-center gap-6 mb-8">

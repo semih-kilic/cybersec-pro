@@ -3,11 +3,13 @@
  * Generate, manage, and revoke API keys
  */
 import { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { motion, AnimatePresence } from 'framer-motion';
 import type { SettingsTabProps, ApiKey } from './types';
 import api from '../../../services/api';
 
 export function ApiKeysTab({ loading, setLoading, setMessage }: SettingsTabProps) {
+  const { t } = useTranslation();
   const [apiKeys, setApiKeys] = useState<ApiKey[]>([]);
   const [newKeyName, setNewKeyName] = useState('');
   const [showNewKey, setShowNewKey] = useState<string | null>(null);
@@ -33,7 +35,7 @@ export function ApiKeysTab({ loading, setLoading, setMessage }: SettingsTabProps
 
   const generateApiKey = async () => {
     if (!newKeyName.trim()) {
-      setMessage({ type: 'error', text: 'Please enter a key name' });
+      setMessage({ type: 'error', text: t('settings.apiKeys.enterName', 'Please enter a key name') });
       return;
     }
     setLoading(true);
@@ -54,7 +56,7 @@ export function ApiKeysTab({ loading, setLoading, setMessage }: SettingsTabProps
           permissions: res.data!.api_key.permissions,
         }, ...prev]);
         setNewKeyName('');
-        setMessage({ type: 'success', text: 'API key generated! Copy it now — you won\'t see it again.' });
+        setMessage({ type: 'success', text: t('settings.apiKeys.generated', 'API key generated! Copy it now — you won\'t see it again.') });
       }
     } finally {
       setLoading(false);
@@ -67,14 +69,14 @@ export function ApiKeysTab({ loading, setLoading, setMessage }: SettingsTabProps
       setMessage({ type: 'error', text: res.error });
     } else {
       setApiKeys(apiKeys.filter(k => k.id !== keyId));
-      setMessage({ type: 'success', text: 'API key deleted' });
+      setMessage({ type: 'success', text: t('settings.apiKeys.deleted', 'API key deleted') });
     }
     setDeleteConfirm(null);
   };
 
   const copyToClipboard = (text: string) => {
     navigator.clipboard.writeText(text);
-    setMessage({ type: 'success', text: 'Copied to clipboard!' });
+    setMessage({ type: 'success', text: t('settings.apiKeys.copied', 'Copied to clipboard!') });
   };
 
   return (
@@ -86,8 +88,8 @@ export function ApiKeysTab({ loading, setLoading, setMessage }: SettingsTabProps
     >
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-xl font-bold text-white">API Keys</h2>
-          <p className="text-gray-400 text-sm">Manage API keys for programmatic access</p>
+          <h2 className="text-xl font-bold text-white">{t('settings.apiKeys.heading', 'API Keys')}</h2>
+          <p className="text-gray-400 text-sm">{t('settings.apiKeys.subtitle', 'Manage API keys for programmatic access')}</p>
         </div>
         <span className="text-gray-500 text-sm">{apiKeys.length} key{apiKeys.length !== 1 ? 's' : ''}</span>
       </div>
