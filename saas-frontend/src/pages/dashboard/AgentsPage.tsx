@@ -227,7 +227,7 @@ function AgentCard({ agent, onSelect, onTest, isSelected, isTesting }: {
       {/* Resource bars */}
       {agent.status === 'online' && (
         <div className="space-y-1.5 mb-3">
-          <ResourceBar label="CPU" value={agent.cpu_usage} color="cyan" />
+          <ResourceBar label={t('agents.detailCPU', 'CPU')} value={agent.cpu_usage} color="cyan" />
           <ResourceBar label="RAM" value={agent.memory_usage} color="violet" />
         </div>
       )}
@@ -243,9 +243,9 @@ function AgentCard({ agent, onSelect, onTest, isSelected, isTesting }: {
         className="mt-3 w-full py-1.5 rounded-lg text-xs font-medium border transition-all border-cyan-500/30 text-cyan-400 hover:bg-cyan-500/10 hover:border-cyan-500/50 disabled:opacity-50 disabled:cursor-not-allowed">
         {isTesting ? (
           <span className="flex items-center justify-center gap-1.5">
-            <span className="h-3 w-3 border-2 border-cyan-400 border-t-transparent rounded-full animate-spin" />Connecting...</span>
+            <span className="h-3 w-3 border-2 border-cyan-400 border-t-transparent rounded-full animate-spin" />{t('agents.connecting', 'Connecting...')}</span>
         ) : (
-          <span className="flex items-center justify-center gap-1.5">{'\u26A1'} Test Connection</span>
+          <span className="flex items-center justify-center gap-1.5">{'\u26A1'} {t('agents.testConnection', 'Test Connection')}</span>
         )}
       </button>
     </motion.div>
@@ -267,10 +267,10 @@ function AddDeviceWizard({ onClose, onCreate }: { onClose: () => void; onCreate:
   const updateForm = (key: string, value: string | number) => setForm(prev => ({ ...prev, [key]: value }));
 
   const steps: { id: WizardStep; label: string; num: number }[] = [
-    { id: 'type', label: 'Connection', num: 1 },
-    { id: 'connection', label: 'Host Details', num: 2 },
-    { id: 'credentials', label: 'Credentials', num: 3 },
-    { id: 'review', label: 'Confirm', num: 4 },
+    { id: 'type', label: t('agents.stepConnection', 'Connection'), num: 1 },
+    { id: 'connection', label: t('agents.stepHostDetails', 'Host Details'), num: 2 },
+    { id: 'credentials', label: t('agents.stepCredentials', 'Credentials'), num: 3 },
+    { id: 'review', label: t('agents.stepConfirm', 'Confirm'), num: 4 },
   ];
 
   const canNext = () => {
@@ -299,8 +299,8 @@ function AddDeviceWizard({ onClose, onCreate }: { onClose: () => void; onCreate:
 
         {/* Header */}
         <div className="px-6 py-4 border-b border-gray-800 flex items-center justify-between">
-          <div><h2 className="text-lg font-bold text-white">Add Device</h2>
-            <p className="text-xs text-gray-500 mt-0.5">Connect a new device to your security network</p></div>
+          <div><h2 className="text-lg font-bold text-white">{t('agents.addDeviceTitle', 'Add Device')}</h2>
+            <p className="text-xs text-gray-500 mt-0.5">{t('agents.addDeviceSubtitle', 'Connect a new device to your security network')}</p></div>
           <button onClick={onClose} className="text-gray-500 hover:text-gray-300 text-xl">{'\u2715'}</button>
         </div>
 
@@ -342,13 +342,13 @@ function AddDeviceWizard({ onClose, onCreate }: { onClose: () => void; onCreate:
 
             {step === 'connection' && (
               <motion.div key="conn" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} className="space-y-4">
-                <WizardInput label="Device Name" placeholder="e.g. Production Server" value={form.name} onChange={v => updateForm('name', v)} />
+                <WizardInput label={t('agents.labelDeviceName', 'Device Name')} placeholder="e.g. Production Server" value={form.name} onChange={v => updateForm('name', v)} />
                 <div className="grid grid-cols-3 gap-3">
-                  <div className="col-span-2"><WizardInput label="Host / IP" placeholder="10.0.0.115 or hostname" value={form.ssh_host} onChange={v => updateForm('ssh_host', v)} /></div>
-                  <WizardInput label="Port" placeholder="22" value={String(form.ssh_port)} onChange={v => updateForm('ssh_port', parseInt(v) || 22)} type="number" />
+                  <div className="col-span-2"><WizardInput label={t('agents.labelHostIP', 'Host / IP')} placeholder="10.0.0.115 or hostname" value={form.ssh_host} onChange={v => updateForm('ssh_host', v)} /></div>
+                  <WizardInput label={t('agents.labelPort', 'Port')} placeholder="22" value={String(form.ssh_port)} onChange={v => updateForm('ssh_port', parseInt(v) || 22)} type="number" />
                 </div>
                 <div>
-                  <label className="block text-xs text-gray-400 mb-2">Platform</label>
+                  <label className="block text-xs text-gray-400 mb-2">{t('agents.labelPlatform', 'Platform')}</label>
                   <div className="flex gap-2 flex-wrap">
                     {['linux', 'windows', 'macos', 'router', 'firewall', 'docker'].map(p => (
                       <button key={p} onClick={() => updateForm('platform', p)}
@@ -359,14 +359,14 @@ function AddDeviceWizard({ onClose, onCreate }: { onClose: () => void; onCreate:
                     ))}
                   </div>
                 </div>
-                <WizardInput label="Location (optional)" placeholder="e.g. Office HQ, DC-1, Cloud-EU" value={form.location} onChange={v => updateForm('location', v)} />
+                <WizardInput label={t('agents.labelLocationOptional', 'Location (optional)')} placeholder="e.g. Office HQ, DC-1, Cloud-EU" value={form.location} onChange={v => updateForm('location', v)} />
               </motion.div>
             )}
 
             {step === 'credentials' && (
               <motion.div key="cred" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} className="space-y-4">
-                <WizardInput label="Username" placeholder="root" value={form.ssh_username} onChange={v => updateForm('ssh_username', v)} />
-                <WizardInput label="Password" placeholder="password" value={form.ssh_password} onChange={v => updateForm('ssh_password', v)} type="password" />
+                <WizardInput label={t('agents.labelUsername', 'Username')} placeholder="root" value={form.ssh_username} onChange={v => updateForm('ssh_username', v)} />
+                <WizardInput label={t('agents.labelPassword', 'Password')} placeholder="password" value={form.ssh_password} onChange={v => updateForm('ssh_password', v)} type="password" />
                 <div className="p-3 rounded-lg bg-blue-500/5 border border-blue-500/20">
                   <p className="text-[11px] text-blue-400">{'\u{1F512}'} Password is encrypted with AES-256-GCM before storage. SSH key auth coming soon.</p>
                 </div>
@@ -377,14 +377,14 @@ function AddDeviceWizard({ onClose, onCreate }: { onClose: () => void; onCreate:
               <motion.div key="review" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} className="space-y-3">
                 <div className="rounded-xl bg-gray-900 border border-gray-800 p-4 space-y-2">
                   <ReviewRow label="Name" value={form.name} />
-                  <ReviewRow label="Type" value={CONNECTION_TYPES.find(c => c.id === connType)?.name || connType} />
+                  <ReviewRow label={t('agents.detailType', 'Type')} value={CONNECTION_TYPES.find(c => c.id === connType)?.name || connType} />
                   <ReviewRow label="Host" value={form.ssh_host + ':' + form.ssh_port} mono />
-                  <ReviewRow label="Username" value={form.ssh_username} mono />
-                  <ReviewRow label="Password" value={form.ssh_password ? '\u2022\u2022\u2022\u2022\u2022\u2022\u2022\u2022' : 'Not set'} />
-                  <ReviewRow label="Platform" value={(PLATFORM_ICONS[form.platform] || '') + ' ' + form.platform} />
-                  {form.location && <ReviewRow label="Location" value={form.location} />}
+                  <ReviewRow label={t('agents.labelUsername', 'Username')} value={form.ssh_username} mono />
+                  <ReviewRow label={t('agents.labelPassword', 'Password')} value={form.ssh_password ? '\u2022\u2022\u2022\u2022\u2022\u2022\u2022\u2022' : 'Not set'} />
+                  <ReviewRow label={t('agents.detailPlatform', 'Platform')} value={(PLATFORM_ICONS[form.platform] || '') + ' ' + form.platform} />
+                  {form.location && <ReviewRow label={t('agents.labelLocation', 'Location')} value={form.location} />}
                 </div>
-                <p className="text-[11px] text-gray-500 text-center">After creating, use "Test Connection" to verify SSH access and auto-detect system info.</p>
+                <p className="text-[11px] text-gray-500 text-center">After creating, {t('agents.reviewHint', 'After creating, use Test Connection to verify SSH access and auto-detect system info.')}</p>
               </motion.div>
             )}
           </AnimatePresence>
@@ -394,7 +394,7 @@ function AddDeviceWizard({ onClose, onCreate }: { onClose: () => void; onCreate:
         <div className="px-6 py-4 border-t border-gray-800 flex items-center justify-between">
           <button onClick={step === 'type' ? onClose : handleBack}
             className="px-4 py-2 text-xs font-medium text-gray-400 hover:text-white transition-colors">
-            {step === 'type' ? 'Cancel' : '\u2190 Back'}
+            {step === 'type' ? t('common.cancel', 'Cancel') : t('agents.back', 'Back')}
           </button>
           {step === 'review' ? (
             <button onClick={handleCreate}
@@ -449,21 +449,21 @@ function EditDeviceModal({ agent, onClose, onSave }: {
         exit={{ opacity: 0, scale: 0.95, y: 20 }} onClick={e => e.stopPropagation()}
         className="w-full max-w-lg bg-gray-950 border border-gray-800 rounded-2xl shadow-2xl overflow-hidden">
         <div className="px-6 py-4 border-b border-gray-800 flex items-center justify-between">
-          <div><h2 className="text-lg font-bold text-white">Edit Device</h2>
+          <div><h2 className="text-lg font-bold text-white">{t('agents.editDeviceTitle', 'Edit Device')}</h2>
             <p className="text-xs text-gray-500 mt-0.5">Update connection settings for {agent.name}</p></div>
           <button onClick={onClose} className="text-gray-500 hover:text-gray-300 text-xl">{'\u2715'}</button>
         </div>
         <div className="px-6 py-5 space-y-4 max-h-[60vh] overflow-y-auto">
-          <WizardInput label="Device Name" placeholder="e.g. Production Server" value={form.name} onChange={v => updateForm('name', v)} />
-          <WizardInput label="Hostname" placeholder="server.local" value={form.hostname} onChange={v => updateForm('hostname', v)} />
+          <WizardInput label={t('agents.labelDeviceName', 'Device Name')} placeholder="e.g. Production Server" value={form.name} onChange={v => updateForm('name', v)} />
+          <WizardInput label={t('agents.labelHostname', 'Hostname')} placeholder="server.local" value={form.hostname} onChange={v => updateForm('hostname', v)} />
           <div className="grid grid-cols-3 gap-3">
-            <div className="col-span-2"><WizardInput label="SSH Host / IP" placeholder="10.0.0.115" value={form.ssh_host} onChange={v => updateForm('ssh_host', v)} /></div>
-            <WizardInput label="Port" placeholder="22" value={String(form.ssh_port)} onChange={v => updateForm('ssh_port', parseInt(v) || 22)} type="number" />
+            <div className="col-span-2"><WizardInput label={t('agents.labelSSHHostIP', 'SSH Host / IP')} placeholder="10.0.0.115" value={form.ssh_host} onChange={v => updateForm('ssh_host', v)} /></div>
+            <WizardInput label={t('agents.labelPort', 'Port')} placeholder="22" value={String(form.ssh_port)} onChange={v => updateForm('ssh_port', parseInt(v) || 22)} type="number" />
           </div>
-          <WizardInput label="Username" placeholder="root" value={form.ssh_username} onChange={v => updateForm('ssh_username', v)} />
-          <WizardInput label="New Password (leave blank to keep)" placeholder="leave blank to keep current" value={form.ssh_password} onChange={v => updateForm('ssh_password', v)} type="password" />
+          <WizardInput label={t('agents.labelUsername', 'Username')} placeholder="root" value={form.ssh_username} onChange={v => updateForm('ssh_username', v)} />
+          <WizardInput label={t('agents.labelNewPassword', 'New Password (leave blank to keep)')} placeholder="leave blank to keep current" value={form.ssh_password} onChange={v => updateForm('ssh_password', v)} type="password" />
           <div>
-            <label className="block text-xs text-gray-400 mb-2">Platform</label>
+            <label className="block text-xs text-gray-400 mb-2">{t('agents.labelPlatform', 'Platform')}</label>
             <div className="flex gap-2 flex-wrap">
               {['linux', 'windows', 'macos', 'router', 'firewall', 'docker'].map(p => (
                 <button key={p} onClick={() => updateForm('platform', p)}
@@ -474,13 +474,13 @@ function EditDeviceModal({ agent, onClose, onSave }: {
               ))}
             </div>
           </div>
-          <WizardInput label="Location" placeholder="e.g. Office HQ, DC-1" value={form.location} onChange={v => updateForm('location', v)} />
+          <WizardInput label={t('agents.labelLocation', 'Location')} placeholder="e.g. Office HQ, DC-1" value={form.location} onChange={v => updateForm('location', v)} />
         </div>
         <div className="px-6 py-4 border-t border-gray-800 flex items-center justify-between">
-          <button onClick={onClose} className="px-4 py-2 text-xs font-medium text-gray-400 hover:text-white transition-colors">Cancel</button>
+          <button onClick={onClose} className="px-4 py-2 text-xs font-medium text-gray-400 hover:text-white transition-colors">{t('common.cancel', 'Cancel')}</button>
           <button onClick={handleSave}
             className="px-6 py-2 rounded-lg text-xs font-bold bg-cyan-500 text-gray-950 hover:bg-cyan-400 transition-colors shadow-lg shadow-cyan-500/20">
-            Save Changes
+            {t('agents.saveChanges', 'Save Changes')}
           </button>
         </div>
       </motion.div>
@@ -515,36 +515,36 @@ function DeviceDetail({ agent, testResult, isTesting, onTest, onEdit, onDelete, 
           <span className={'h-2 w-2 rounded-full ' + status.dot + (agent.status === 'online' ? ' animate-pulse' : '')} />{status.label}
         </div>
 
-        <DetailSection title="Connection">
-          <DetailRow label="Host / IP" value={agent.ip_address || 'N/A'} mono />
-          <DetailRow label="SSH Port" value={String(agent.ssh_port || 22)} mono />
-          <DetailRow label="Username" value={agent.ssh_username || 'N/A'} mono />
-          <DetailRow label="Type" value={agent.connection_type || 'SSH'} />
-          {agent.location && <DetailRow label="Location" value={agent.location} />}
+        <DetailSection title={t('agents.sectionConnection', 'Connection')}>
+          <DetailRow label={t('agents.labelHostIP', 'Host / IP')} value={agent.ip_address || 'N/A'} mono />
+          <DetailRow label={t('agents.detailSSHPort', 'SSH Port')} value={String(agent.ssh_port || 22)} mono />
+          <DetailRow label={t('agents.labelUsername', 'Username')} value={agent.ssh_username || 'N/A'} mono />
+          <DetailRow label={t('agents.detailType', 'Type')} value={agent.connection_type || 'SSH'} />
+          {agent.location && <DetailRow label={t('agents.labelLocation', 'Location')} value={agent.location} />}
         </DetailSection>
 
-        <DetailSection title="System">
-          <DetailRow label="OS" value={agent.os || 'Unknown'} />
-          <DetailRow label="Platform" value={icon + ' ' + agent.platform} />
-          <DetailRow label="Version" value={agent.version || 'N/A'} />
-          <DetailRow label="Last Seen" value={agent.last_heartbeat ? formatTimeSince(agent.last_heartbeat) : 'Never'} />
+        <DetailSection title={t('agents.sectionSystem', 'System')}>
+          <DetailRow label={t('agents.detailOS', 'OS')} value={agent.os || 'Unknown'} />
+          <DetailRow label={t('agents.detailPlatform', 'Platform')} value={icon + ' ' + agent.platform} />
+          <DetailRow label={t('agents.detailVersion', 'Version')} value={agent.version || 'N/A'} />
+          <DetailRow label={t('agents.detailLastSeen', 'Last Seen')} value={agent.last_heartbeat ? formatTimeSince(agent.last_heartbeat) : 'Never'} />
         </DetailSection>
 
         {agent.status === 'online' && (
-          <DetailSection title="Resources">
-            <ResourceBar label="CPU" value={agent.cpu_usage} color="cyan" showPercent />
-            <ResourceBar label="Memory" value={agent.memory_usage} color="violet" showPercent />
+          <DetailSection title={t('agents.sectionResources', 'Resources')}>
+            <ResourceBar label={t('agents.detailCPU', 'CPU')} value={agent.cpu_usage} color="cyan" showPercent />
+            <ResourceBar label={t('agents.detailMemory', 'Memory')} value={agent.memory_usage} color="violet" showPercent />
           </DetailSection>
         )}
 
-        <DetailSection title="Scanning">
-          <DetailRow label="Active Scans" value={String(agent.active_scans)} />
-          <DetailRow label="Total Scans" value={String(agent.total_scans)} />
+        <DetailSection title={t('agents.sectionScanning', 'Scanning')}>
+          <DetailRow label={t('agents.detailActiveScans', 'Active Scans')} value={String(agent.active_scans)} />
+          <DetailRow label={t('agents.detailTotalScans', 'Total Scans')} value={String(agent.total_scans)} />
         </DetailSection>
 
         {/* Test Results Display */}
         {testResult && (
-          <DetailSection title="Connection Test">
+          <DetailSection title={t('agents.sectionConnectionTest', 'Connection Test')}>
             {testResult.success ? (
               <div className="space-y-2">
                 <div className="flex items-center gap-2 text-emerald-400 text-xs font-medium">
@@ -593,7 +593,7 @@ function DeviceDetail({ agent, testResult, isTesting, onTest, onEdit, onDelete, 
       <div className="px-5 py-4 border-t border-gray-800 space-y-2">
         <button onClick={onTest} disabled={isTesting}
           className="w-full py-2.5 rounded-lg text-xs font-bold bg-cyan-500 text-gray-950 hover:bg-cyan-400 transition-all shadow-lg shadow-cyan-500/20 disabled:opacity-50">
-          {isTesting ? '\u23F3 Testing...' : '\u26A1 Test Connection'}
+          {isTesting ? t('agents.testing', 'Testing...') : t('agents.testConnection', 'Test Connection')}
         </button>
         <button onClick={onEdit}
           className="w-full py-2 rounded-lg text-xs font-medium border border-gray-600 text-gray-300 hover:bg-gray-800 hover:border-gray-500 transition-all">
@@ -640,8 +640,8 @@ function NetworkDiscovery({ onClose }: { onClose: () => void }) {
         onClick={e => e.stopPropagation()}
         className="w-full max-w-2xl max-h-[80vh] bg-gray-950 border border-gray-800 rounded-2xl shadow-2xl flex flex-col overflow-hidden">
         <div className="px-6 py-4 border-b border-gray-800 flex items-center justify-between">
-          <div><h2 className="text-lg font-bold text-white">{'\u{1F50D}'} Network Discovery</h2>
-            <p className="text-xs text-gray-500">Scan a subnet to find devices</p></div>
+          <div><h2 className="text-lg font-bold text-white">{'\u{1F50D}'} {t('agents.networkDiscovery', 'Network Discovery')}</h2>
+            <p className="text-xs text-gray-500">{t('agents.networkDiscoverySubtitle', 'Scan a subnet to find devices')}</p></div>
           <button onClick={onClose} className="text-gray-500 hover:text-gray-300 text-xl">{'\u2715'}</button>
         </div>
 
@@ -650,7 +650,7 @@ function NetworkDiscovery({ onClose }: { onClose: () => void }) {
             className="flex-1 px-3 py-2 rounded-lg bg-gray-900 border border-gray-700 text-sm text-white font-mono focus:border-cyan-500 focus:outline-none" />
           <button onClick={doScan} disabled={scanning}
             className="px-5 py-2 rounded-lg text-xs font-bold bg-cyan-500 text-gray-950 hover:bg-cyan-400 disabled:opacity-50 transition-all">
-            {scanning ? '\u23F3 Scanning...' : '\u{1F50D} Scan'}
+            {scanning ? t('agents.scanning', 'Scanning...') : t('agents.scan', 'Scan')}
           </button>
         </div>
 
@@ -658,7 +658,7 @@ function NetworkDiscovery({ onClose }: { onClose: () => void }) {
           {error && <p className="text-red-400 text-sm mb-3">{error}</p>}
           {results.length > 0 ? (
             <div className="space-y-2">
-              <p className="text-xs text-gray-500 mb-2">{results.length} devices found</p>
+              <p className="text-xs text-gray-500 mb-2">{results.length} {t('agents.devicesFound', 'devices found')}</p>
               {results.map((host: any, i: number) => (
                 <div key={i} className="flex items-center gap-3 p-3 rounded-lg bg-gray-900 border border-gray-800 hover:border-gray-700 transition-all">
                   <span className="text-lg">{PLATFORM_ICONS[host.device_type] || '\u2753'}</span>
@@ -683,13 +683,13 @@ function NetworkDiscovery({ onClose }: { onClose: () => void }) {
               ))}
             </div>
           ) : !scanning && (
-            <div className="text-center py-12 text-gray-600 text-sm">Enter a subnet and click Scan to discover devices</div>
+            <div className="text-center py-12 text-gray-600 text-sm">{t('agents.networkDiscoveryHint', 'Enter a subnet and click Scan to discover devices')}</div>
           )}
           {scanning && (
             <div className="text-center py-12">
               <div className="h-8 w-8 border-2 border-cyan-500 border-t-transparent rounded-full animate-spin mx-auto mb-3" />
-              <p className="text-sm text-gray-400">Scanning {subnet}...</p>
-              <p className="text-xs text-gray-600 mt-1">This may take a moment</p>
+              <p className="text-sm text-gray-400">{t('agents.scanningSubnet', 'Scanning...')}</p>
+              <p className="text-xs text-gray-600 mt-1">{t('agents.scanWait', 'This may take a moment')}</p>
             </div>
           )}
         </div>
@@ -737,7 +737,7 @@ function EmptyState({ onAdd, onDiscover }: { onAdd: () => void; onDiscover: () =
     <div className="flex items-center justify-center h-full min-h-[400px]">
       <div className="text-center max-w-md">
         <div className="text-5xl mb-4">{'\u{1F6E1}\uFE0F'}</div>
-        <h2 className="text-xl font-bold text-white mb-2">No Devices Connected</h2>
+        <h2 className="text-xl font-bold text-white mb-2">{t('agents.noDevicesTitle', 'No Devices Connected')}</h2>
         <p className="text-sm text-gray-500 mb-6">
           Add your servers, workstations, and network devices to start scanning for vulnerabilities.
           CyberSec Pro connects via SSH, WinRM, or SNMP — no agent installation required.

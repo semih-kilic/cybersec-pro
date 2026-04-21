@@ -144,9 +144,9 @@ export default function AnalyticsPage() {
               <svg className="w-6 h-6 text-cyan-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
               </svg>
-              Analytics
+              {t('analytics.title', 'Analytics')}
             </h1>
-            <p className="text-sm text-gray-500 mt-0.5">Security metrics and scan performance insights</p>
+            <p className="text-sm text-gray-500 mt-0.5">{t('analytics.subtitle', 'Security metrics and scan performance insights')}</p>
           </div>
           <div className="flex items-center gap-2">
             <div className="flex bg-gray-800/60 border border-gray-700/50 rounded-lg p-0.5">
@@ -160,7 +160,7 @@ export default function AnalyticsPage() {
                       : 'text-gray-400 hover:text-white'
                   }`}
                 >
-                  {range === '7d' ? '7 Days' : range === '30d' ? '30 Days' : '90 Days'}
+                  {range === '7d' ? t('analytics.range7d', '7 Days') : range === '30d' ? t('analytics.range30d', '30 Days') : t('analytics.range90d', '90 Days')}
                 </button>
               ))}
             </div>
@@ -169,7 +169,7 @@ export default function AnalyticsPage() {
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
               </svg>
             }>
-              Refresh
+              {t('common.refresh', 'Refresh')}
             </Button>
           </div>
         </div>
@@ -177,7 +177,7 @@ export default function AnalyticsPage() {
         {/* KPI Stat Cards */}
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
           <StatCard
-            title="Total Scans"
+            title={t('analytics.totalScans', 'Total Scans')}
             value={data.performance.total_scans.toLocaleString()}
             change={{ value: data.comparison.change_pct, label: 'vs last week' }}
             variant="cyan"
@@ -189,7 +189,7 @@ export default function AnalyticsPage() {
             }
           />
           <StatCard
-            title="Success Rate"
+            title={t('analytics.successRate', 'Success Rate')}
             value={`${data.performance.success_rate}%`}
             variant="green"
             icon={
@@ -199,7 +199,7 @@ export default function AnalyticsPage() {
             }
           />
           <StatCard
-            title="Avg Duration"
+            title={t('analytics.avgDuration', 'Avg Duration')}
             value={`${data.performance.avg_duration_seconds}s`}
             variant="purple"
             icon={
@@ -209,7 +209,7 @@ export default function AnalyticsPage() {
             }
           />
           <StatCard
-            title="Risk Score"
+            title={t('analytics.riskScore', 'Risk Score')}
             value={data.risk.score.toString()}
             variant={data.risk.score >= 70 ? 'red' : data.risk.score >= 40 ? 'amber' : 'green'}
             icon={
@@ -223,7 +223,7 @@ export default function AnalyticsPage() {
         {/* SparklineKPI Detail Row — V18: Premium KPI cards with sparklines */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           <SparklineKPI
-            title="Weekly Scans"
+            title={t('analytics.weeklyScans', 'Weekly Scans')}
             value={data.comparison.this_week}
             change={data.comparison.change_pct}
             changeLabel="vs last week"
@@ -232,14 +232,14 @@ export default function AnalyticsPage() {
             icon={<svg className="w-4 h-4 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" /></svg>}
           />
           <SparklineKPI
-            title="Issues Found"
+            title={t('analytics.issuesFound', 'Issues Found')}
             value={data.risk.total_issues}
             data={Object.values(data.risk.severity_totals)}
             variant={data.risk.total_issues > 10 ? 'danger' : data.risk.total_issues > 0 ? 'warning' : 'success'}
             icon={<svg className="w-4 h-4 text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" /></svg>}
           />
           <SparklineKPI
-            title="Avg Duration"
+            title={t('analytics.avgDuration', 'Avg Duration')}
             value={data.performance.avg_duration_seconds}
             suffix="s"
             data={data.daily_trend.slice(-7).map((_) => data.performance.avg_duration_seconds + Math.random() * 10 - 5)}
@@ -247,7 +247,7 @@ export default function AnalyticsPage() {
             icon={<svg className="w-4 h-4 text-cyan-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>}
           />
           <SparklineKPI
-            title="Success Rate"
+            title={t('analytics.successRate', 'Success Rate')}
             value={data.performance.success_rate}
             suffix="%"
             data={[85, 88, 90, 87, 92, 89, data.performance.success_rate]}
@@ -259,8 +259,8 @@ export default function AnalyticsPage() {
         {/* Scan Trend Area Chart */}
         <Card variant="elevated">
           <CardHeader
-            title="Scan Activity"
-            subtitle="Daily scan volume over time"
+            title={t('analytics.scanActivity', 'Scan Activity')}
+            subtitle={t('analytics.scanActivitySubtitle', 'Daily scan volume over time')}
             icon={
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
@@ -311,8 +311,8 @@ export default function AnalyticsPage() {
           {/* Tool Usage Bar Chart */}
           <Card variant="elevated">
             <CardHeader
-              title="Top Tools"
-              subtitle="Most used scanning tools"
+              title={t('analytics.topTools', 'Top Tools')}
+              subtitle={t('analytics.topToolsSubtitle', 'Most used scanning tools')}
               icon={
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.066 2.573c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.573 1.066c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.066-2.573c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
@@ -340,8 +340,8 @@ export default function AnalyticsPage() {
           {/* Status Distribution Donut */}
           <Card variant="elevated">
             <CardHeader
-              title="Scan Status"
-              subtitle="Distribution by completion status"
+              title={t('analytics.scanStatus', 'Scan Status')}
+              subtitle={t('analytics.scanStatusSubtitle', 'Distribution by completion status')}
               icon={
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 3.055A9.001 9.001 0 1020.945 13H11V3.055z" />
@@ -377,7 +377,7 @@ export default function AnalyticsPage() {
                   </PieChart>
                 </ResponsiveContainer>
               ) : (
-                <p className="text-sm text-gray-500">No scan data</p>
+                <p className="text-sm text-gray-500">{t('analytics.noScanData', 'No scan data')}</p>
               )}
             </div>
           </Card>
@@ -388,7 +388,7 @@ export default function AnalyticsPage() {
           {/* Severity Breakdown */}
           <Card variant="elevated">
             <CardHeader
-              title="Severity Breakdown"
+              title={t('analytics.severityBreakdown', 'Severity Breakdown')}
               subtitle={`${data.risk.total_issues} total issues`}
               icon={
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -420,14 +420,14 @@ export default function AnalyticsPage() {
                   </div>
                 );
               }) : (
-                <p className="text-sm text-gray-500 py-4 text-center">No vulnerabilities found</p>
+                <p className="text-sm text-gray-500 py-4 text-center">{t('analytics.noVulnerabilities', 'No vulnerabilities found')}</p>
               )}
             </div>
           </Card>
 
           {/* Risk Score Gauge */}
           <Card variant="elevated" className="flex flex-col items-center justify-center">
-            <CardHeader title="Risk Assessment" subtitle={data.risk.level} />
+            <CardHeader title={t('analytics.riskAssessment', 'Risk Assessment')} subtitle={data.risk.level} />
             <div className="h-48 w-48">
               <ResponsiveContainer width="100%" height="100%">
                 <RadialBarChart
@@ -475,8 +475,8 @@ export default function AnalyticsPage() {
           {/* Top Targets */}
           <Card variant="elevated">
             <CardHeader
-              title="Top Targets"
-              subtitle="Most scanned hosts"
+              title={t('analytics.topTargets', 'Top Targets')}
+              subtitle={t('analytics.topTargetsSubtitle', 'Most scanned hosts')}
               icon={
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9" />
@@ -497,7 +497,7 @@ export default function AnalyticsPage() {
                   </span>
                 </div>
               )) : (
-                <p className="text-sm text-gray-500 py-4 text-center">No targets scanned</p>
+                <p className="text-sm text-gray-500 py-4 text-center">{t('analytics.noTargets', 'No targets scanned')}</p>
               )}
             </div>
           </Card>
@@ -508,7 +508,7 @@ export default function AnalyticsPage() {
           <div className="flex flex-col sm:flex-row items-center justify-between gap-6 py-2">
             <div className="flex items-center gap-8">
               <div className="text-center">
-                <p className="text-xs text-gray-500 mb-1">This Week</p>
+                <p className="text-xs text-gray-500 mb-1">{t('analytics.thisWeek', 'This Week')}</p>
                 <p className="text-3xl font-bold text-white">{data.comparison.this_week}</p>
               </div>
               <div className="text-gray-700">
@@ -517,7 +517,7 @@ export default function AnalyticsPage() {
                 </svg>
               </div>
               <div className="text-center">
-                <p className="text-xs text-gray-500 mb-1">Last Week</p>
+                <p className="text-xs text-gray-500 mb-1">{t('analytics.lastWeek', 'Last Week')}</p>
                 <p className="text-3xl font-bold text-gray-500">{data.comparison.last_week}</p>
               </div>
             </div>
@@ -527,7 +527,7 @@ export default function AnalyticsPage() {
               <p className={`text-2xl font-bold ${data.comparison.change_pct >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
                 {data.comparison.change_pct >= 0 ? '+' : ''}{data.comparison.change_pct}%
               </p>
-              <p className="text-xs text-gray-400">Week over Week</p>
+              <p className="text-xs text-gray-400">{t('analytics.weekOverWeek', 'Week over Week')}</p>
             </div>
           </div>
         </Card>

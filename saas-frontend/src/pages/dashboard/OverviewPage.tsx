@@ -123,8 +123,8 @@ export function OverviewPage() {
                 <span className="text-lg">⏳</span>
               </div>
               <div>
-                <p className="text-white font-semibold">Free Trial — {trialDaysLeft} days remaining • 3 scans/day</p>
-                <p className="text-gray-400 text-sm">Upgrade for more scans, PDF reports, and scheduled scans</p>
+                <p className="text-white font-semibold">{t('overview.freeTrial', 'Free Trial')} — {trialDaysLeft} {t('overview.daysRemaining', 'days remaining • 3 scans/day')}</p>
+                <p className="text-gray-400 text-sm">{t('overview.upgradeHint', 'Upgrade for more scans, PDF reports, and scheduled scans')}</p>
               </div>
             </div>
             <Link to="/dashboard/upgrade" className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium transition text-sm">
@@ -137,7 +137,7 @@ export function OverviewPage() {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
           <Link to="/dashboard/targets">
             <StatCard
-              title="Protected Assets"
+              title={t('overview.protectedAssets', 'Protected Assets')}
               value={`${totalTargets}`}
               variant="cyan"
               icon={<svg className="w-5 h-5 text-cyan-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" /></svg>}
@@ -147,7 +147,7 @@ export function OverviewPage() {
 
           <Link to="/dashboard/reports">
             <StatCard
-              title="Security Score"
+              title={t('overview.securityScore', 'Security Score')}
               value={securityScore > 0 ? `${securityScore}/100` : '--'}
               variant={securityScore >= 80 ? 'green' : securityScore >= 60 ? 'amber' : 'red'}
               change={securityScore > 0 ? { value: securityScore >= 80 ? 5 : securityScore >= 60 ? -2 : -8, label: 'vs last week' } : undefined}
@@ -158,7 +158,7 @@ export function OverviewPage() {
 
           <Link to={lastScan ? `/dashboard/scans/${lastScan.id}` : '/dashboard/scans/new'}>
             <StatCard
-              title="Last Scan"
+              title={t('overview.lastScan', 'Last Scan')}
               value={lastScanAgo}
               variant="purple"
               change={lastScan ? { value: 0, label: `${lastScan.status}` } : undefined}
@@ -168,7 +168,7 @@ export function OverviewPage() {
 
           <Link to="/dashboard/reports">
             <StatCard
-              title="Open Issues"
+              title={t('overview.openIssues', 'Open Issues')}
               value={`${openIssues.total}`}
               variant={openIssues.total > 0 ? (openIssues.critical > 0 ? 'red' : 'amber') : 'green'}
               change={openIssues.critical > 0 ? { value: -openIssues.critical, label: 'critical' } : undefined}
@@ -181,7 +181,7 @@ export function OverviewPage() {
         {/* Recent Scans Table — V18: Card + EmptyState */}
         <Card variant="elevated" padding="none">
           <CardHeader
-            title="Recent Scans"
+            title={t('overview.recentScans', 'Recent Scans')}
             action={<Link to="/dashboard/scans" className="text-sm text-cyan-400 hover:underline">View all →</Link>}
             className="px-5 pt-5 pb-4 border-b border-gray-700/50"
           />
@@ -189,8 +189,8 @@ export function OverviewPage() {
           {recentScans.length === 0 ? (
             <div className="py-8">
               <EmptyState
-                title="No scans yet"
-                description="Run your first security scan to protect your assets."
+                title={t('overview.noScansTitle', 'No scans yet')}
+                description={t('overview.noScansDesc', 'Run your first security scan to protect your assets.')}
                 icon={<svg className="w-8 h-8 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>}
                 action={
                   <Link to="/dashboard/scans/new" className="inline-flex items-center gap-2 px-5 py-2.5 bg-cyan-600 hover:bg-cyan-700 text-white rounded-lg font-semibold transition shadow-lg shadow-cyan-600/20">
@@ -205,13 +205,13 @@ export function OverviewPage() {
               <table className="w-full">
                 <thead>
                   <tr className="text-left text-sm text-gray-400 border-b border-gray-800">
-                    <th className="px-5 py-3 font-medium">Domain</th>
-                    <th className="px-5 py-3 font-medium">Type</th>
-                    <th className="px-5 py-3 font-medium">Status</th>
-                    <th className="px-5 py-3 font-medium">Score</th>
-                    <th className="px-5 py-3 font-medium">Issues</th>
-                    <th className="px-5 py-3 font-medium">Date</th>
-                    <th className="px-5 py-3 font-medium">Actions</th>
+                    <th className="px-5 py-3 font-medium">{t('overview.colDomain', 'Domain')}</th>
+                    <th className="px-5 py-3 font-medium">{t('overview.colType', 'Type')}</th>
+                    <th className="px-5 py-3 font-medium">{t('overview.colStatus', 'Status')}</th>
+                    <th className="px-5 py-3 font-medium">{t('overview.colScore', 'Score')}</th>
+                    <th className="px-5 py-3 font-medium">{t('overview.colIssues', 'Issues')}</th>
+                    <th className="px-5 py-3 font-medium">{t('overview.colDate', 'Date')}</th>
+                    <th className="px-5 py-3 font-medium">{t('overview.colActions', 'Actions')}</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -240,9 +240,9 @@ export function OverviewPage() {
                       </td>
                       <td className="px-5 py-4">
                         <div className="flex items-center gap-2">
-                          <Link to={`/dashboard/scans/${scan.id}`} className="text-blue-400 hover:underline text-sm">View</Link>
-                          <Link to={`/dashboard/scans/new?target=${encodeURIComponent(scan.target || '')}`} className="text-gray-500 hover:text-white text-sm">Rescan</Link>
-                          <Link to={`/dashboard/reports?scan=${scan.id}`} className="text-gray-500 hover:text-white text-sm">Report</Link>
+                          <Link to={`/dashboard/scans/${scan.id}`} className="text-blue-400 hover:underline text-sm">{t('common.view', 'View')}</Link>
+                          <Link to={`/dashboard/scans/new?target=${encodeURIComponent(scan.target || '')}`} className="text-gray-500 hover:text-white text-sm">{t('overview.rescan', 'Rescan')}</Link>
+                          <Link to={`/dashboard/reports?scan=${scan.id}`} className="text-gray-500 hover:text-white text-sm">{t('overview.report', 'Report')}</Link>
                         </div>
                       </td>
                     </tr>
@@ -258,7 +258,7 @@ export function OverviewPage() {
           {/* Critical Issues */}
           <Card variant="elevated" padding="none" className="lg:col-span-2">
             <CardHeader
-              title="Vulnerability Overview"
+              title={t('overview.vulnOverview', 'Vulnerability Overview')}
               className="px-5 pt-5 pb-4 border-b border-gray-700/50"
             />
             <div className="p-5">
@@ -266,8 +266,8 @@ export function OverviewPage() {
                 <div className="flex items-center gap-6 py-4">
                   <CircularProgress value={securityScore || 100} variant="success" size={90} strokeWidth={7} label="Score" />
                   <div>
-                    <p className="text-green-400 font-medium text-lg">No vulnerabilities found</p>
-                    <p className="text-gray-500 text-sm mt-1">Run a scan to check your security posture</p>
+                    <p className="text-green-400 font-medium text-lg">{t('overview.noVulns', 'No vulnerabilities found')}</p>
+                    <p className="text-gray-500 text-sm mt-1">{t('overview.runScanHint', 'Run a scan to check your security posture')}</p>
                   </div>
                 </div>
               ) : (
@@ -280,7 +280,7 @@ export function OverviewPage() {
                       size={100}
                       strokeWidth={8}
                     />
-                    <span className="text-xs text-gray-500 mt-1.5 font-medium">Security Score</span>
+                    <span className="text-xs text-gray-500 mt-1.5 font-medium">{t('overview.securityScore', 'Security Score')}</span>
                   </div>
 
                   <div className="flex-1 space-y-4">
@@ -355,7 +355,7 @@ export function OverviewPage() {
               <table className="w-full">
                 <thead>
                   <tr className="text-left text-sm text-gray-400 border-b border-gray-800">
-                    <th className="px-5 py-3 font-medium">Domain</th>
+                    <th className="px-5 py-3 font-medium">{t('overview.colDomain', 'Domain')}</th>
                     <th className="px-5 py-3 font-medium">Next Run</th>
                     <th className="px-5 py-3 font-medium">Frequency</th>
                   </tr>

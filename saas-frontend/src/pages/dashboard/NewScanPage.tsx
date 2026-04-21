@@ -197,13 +197,13 @@ export function NewScanPage() {
         {step === 1 && (
           <div className="space-y-6">
             <div className="bg-gray-900 rounded-xl border border-gray-800 p-6">
-              <h2 className="text-lg font-semibold text-white mb-4">Select a Tool</h2>
+              <h2 className="text-lg font-semibold text-white mb-4">{t('newScan.selectTool', 'Select a Tool')}</h2>
               
               {/* Quick Search */}
               <div className="relative mb-6">
                 <input
                   type="text"
-                  placeholder="Search tools..."
+                  placeholder={t('newScan.searchToolsPlaceholder', 'Search tools...')}
                   value={toolSearch}
                   onChange={(e) => setToolSearch(e.target.value)}
                   className="w-full pl-10 pr-4 py-3 bg-gray-800 border border-gray-700 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:border-kali-blue transition"
@@ -216,7 +216,7 @@ export function NewScanPage() {
               {/* Popular Tools - only show when not searching */}
               {!toolSearch && (
               <div className="mb-6">
-                <h3 className="text-sm text-gray-400 mb-3">Popular Tools</h3>
+                <h3 className="text-sm text-gray-400 mb-3">{t('newScan.popularTools', 'Popular Tools')}</h3>
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
                   {['nmap', 'nikto', 'sqlmap', 'hydra', 'gobuster', 'nuclei', 'wpscan', 'john'].map(tool => (
                     <button
@@ -300,11 +300,11 @@ export function NewScanPage() {
         {step === 2 && (
           <div className="space-y-6">
             <div className="bg-gray-900 rounded-xl border border-gray-800 p-6">
-              <h2 className="text-lg font-semibold text-white mb-4">Configure Scan</h2>
+              <h2 className="text-lg font-semibold text-white mb-4">{t('newScan.configureScan', 'Configure Scan')}</h2>
 
               {/* Scan Name */}
               <div className="mb-6">
-                <label className="block text-sm text-gray-400 mb-2">Scan Name (Optional)</label>
+                <label className="block text-sm text-gray-400 mb-2">{t('newScan.scanNameLabel', 'Scan Name (Optional)')}</label>
                 <input
                   type="text"
                   value={scanName}
@@ -316,7 +316,7 @@ export function NewScanPage() {
 
               {/* Target */}
               <div className="mb-6">
-                <label className="block text-sm text-gray-400 mb-2">Target</label>
+                <label className="block text-sm text-gray-400 mb-2">{t('newScan.targetLabel', 'Target')}</label>
                 
                 <div className="flex gap-3 mb-3">
                   <button
@@ -342,7 +342,7 @@ export function NewScanPage() {
                     type="text"
                     value={customTarget}
                     onChange={(e) => setCustomTarget(e.target.value)}
-                    placeholder="scanme.nmap.org, testphp.vulnweb.com, or your public IP"
+                    placeholder={t('newScan.targetPlaceholder', 'scanme.nmap.org, testphp.vulnweb.com, or your public IP')}
                     className="w-full px-4 py-3 bg-gray-800 border border-gray-700 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:border-kali-blue transition"
                   />
                 ) : (
@@ -351,7 +351,7 @@ export function NewScanPage() {
                     onChange={(e) => setSelectedTarget(e.target.value)}
                     className="w-full px-4 py-3 bg-gray-800 border border-gray-700 rounded-xl text-white focus:outline-none focus:border-kali-blue transition"
                   >
-                    <option value="">Select a saved target...</option>
+                    <option value="">{t('newScan.selectSavedTarget', 'Select a saved target...')}</option>
                     {targets.map(target => (
                       <option key={target.id} value={target.value}>
                         {target.name} ({target.value})
@@ -376,7 +376,7 @@ export function NewScanPage() {
                   onChange={(e) => setSelectedAgent(e.target.value ? Number(e.target.value) : null)}
                   className="w-full px-4 py-3 bg-gray-800 border border-gray-700 rounded-xl text-white focus:outline-none focus:border-kali-blue transition"
                 >
-                  <option value="">Server (Default)</option>
+                  <option value="">{t('newScan.serverDefault', 'Server (Default)')}</option>
                   {agents.map(agent => (
                     <option key={agent.id} value={agent.id} disabled={agent.status !== 'online'}>
                       {agent.status === 'online' ? '🟢' : '🔴'} {agent.name} ({agent.ip_address}) - {agent.platform}
@@ -384,7 +384,7 @@ export function NewScanPage() {
                   ))}
                 </select>
                 <p className="text-xs text-gray-500 mt-1">
-                  Select an agent to execute the scan. Use "Server" for built-in execution, or choose an SSH agent.
+                  {t('newScan.agentHint', 'Select an agent to execute the scan. Use Server for built-in execution, or choose an SSH agent.')}
                 </p>
               </div>
 
@@ -437,7 +437,7 @@ export function NewScanPage() {
 
               {/* Priority */}
               <div className="mb-6">
-                <label className="block text-sm text-gray-400 mb-2">Priority</label>
+                <label className="block text-sm text-gray-400 mb-2">{t('newScan.priorityLabel', 'Priority')}</label>
                 <div className="flex gap-3">
                   {(['low', 'normal', 'high'] as const).map(p => (
                     <button
@@ -471,7 +471,7 @@ export function NewScanPage() {
                       <div className={`absolute top-1 w-4 h-4 bg-white rounded-full transition-all ${notifications ? 'left-5' : 'left-1'}`} />
                     </div>
                   </div>
-                  <span className="text-white">Notify me when scan completes</span>
+                  <span className="text-white">{t('newScan.notifyLabel', 'Notify me when scan completes')}</span>
                 </label>
               </div>
             </div>
@@ -498,19 +498,19 @@ export function NewScanPage() {
         {step === 3 && (
           <div className="space-y-6">
             <div className="bg-gray-900 rounded-xl border border-gray-800 p-6">
-              <h2 className="text-lg font-semibold text-white mb-6">Review Scan</h2>
+              <h2 className="text-lg font-semibold text-white mb-6">{t('newScan.reviewScan', 'Review Scan')}</h2>
 
               <div className="space-y-4">
                 <div className="flex items-center justify-between py-3 border-b border-gray-800">
-                  <span className="text-gray-400">Tool</span>
+                  <span className="text-gray-400">{t('newScan.reviewTool', 'Tool')}</span>
                   <span className="text-white font-medium">{selectedTool}</span>
                 </div>
                 <div className="flex items-center justify-between py-3 border-b border-gray-800">
-                  <span className="text-gray-400">Target</span>
+                  <span className="text-gray-400">{t('newScan.reviewTarget', 'Target')}</span>
                   <span className="text-white font-mono">{useCustomTarget ? customTarget : selectedTarget}</span>
                 </div>
                 <div className="flex items-center justify-between py-3 border-b border-gray-800">
-                  <span className="text-gray-400">Priority</span>
+                  <span className="text-gray-400">{t('newScan.reviewPriority', 'Priority')}</span>
                   <span className={`px-2 py-1 rounded text-sm capitalize ${
                     priority === 'high' ? 'bg-red-500/20 text-red-400' :
                     priority === 'normal' ? 'bg-blue-500/20 text-blue-400' :
@@ -520,24 +520,24 @@ export function NewScanPage() {
                   </span>
                 </div>
                 <div className="flex items-center justify-between py-3 border-b border-gray-800">
-                  <span className="text-gray-400">Notifications</span>
-                  <span className="text-white">{notifications ? 'Enabled' : 'Disabled'}</span>
+                  <span className="text-gray-400">{t('newScan.reviewNotifications', 'Notifications')}</span>
+                  <span className="text-white">{notifications ? t('newScan.enabled', 'Enabled') : t('newScan.disabled', 'Disabled')}</span>
                 </div>
                 <div className="flex items-center justify-between py-3 border-b border-gray-800">
-                  <span className="text-gray-400">Execution Agent</span>
+                  <span className="text-gray-400">{t('newScan.reviewAgent', 'Execution Agent')}</span>
                   <span className="text-white">
                     {selectedAgent 
-                      ? agents.find(a => a.id === selectedAgent)?.name || 'Unknown Agent'
+                      ? agents.find(a => a.id === selectedAgent)?.name || t('newScan.unknownAgent', 'Unknown Agent')
                       : 'Server (Default)'
                     }
                   </span>
                 </div>
                 <div className="flex items-center justify-between py-3 border-b border-gray-800">
-                  <span className="text-gray-400">Project</span>
+                  <span className="text-gray-400">{t('newScan.reviewProject', 'Project')}</span>
                   <span className="text-white">
                     {selectedProject 
-                      ? projects.find(p => p.id === selectedProject)?.name || 'Unknown Project'
-                      : 'No Project'
+                      ? projects.find(p => p.id === selectedProject)?.name || t('newScan.unknownProject', 'Unknown Project')
+                      : t('newScan.noProject', 'No Project')
                     }
                   </span>
                 </div>

@@ -261,7 +261,7 @@ export function AdminPage() {
       {/* Impersonate Box */}
       <div className="bg-gray-50 dark:bg-gray-800/50 border border-gray-200 dark:border-gray-700 rounded-xl p-5">
         <h3 className="text-sm font-bold text-gray-900 dark:text-white mb-3 flex items-center gap-2">
-          <span>🎭</span> Impersonate User
+          <span>🎭</span> {t('admin.impersonateUser', 'Impersonate User')}
         </h3>
         <div className="flex gap-3">
           <input
@@ -366,7 +366,7 @@ export function AdminPage() {
         <div className="bg-gray-50 dark:bg-gray-800/50 border border-gray-200 dark:border-gray-700 rounded-xl p-5">
           <div className="flex items-center justify-between mb-4">
             <h3 className="text-sm font-bold text-gray-900 dark:text-white">
-              All Users ({d.users.total})
+              {t('admin.allUsers', 'All Users')} ({d.users.total})
             </h3>
             {bulkSelected.size > 0 && (
               <div className="flex items-center gap-2">
@@ -426,9 +426,9 @@ export function AdminPage() {
                         disabled={u.id === user?.id || actionLoading === u.id}
                         className="px-2 py-0.5 rounded text-xs font-medium bg-gray-100 dark:bg-gray-800 border border-gray-300 dark:border-gray-600 text-gray-900 dark:text-white disabled:opacity-50"
                       >
-                        <option value="user">user</option>
-                        <option value="admin">admin</option>
-                        <option value="superadmin">superadmin</option>
+                        <option value="user">{t('admin.roleUser', 'user')}</option>
+                        <option value="admin">{t('admin.roleAdmin', 'admin')}</option>
+                        <option value="superadmin">{t('admin.roleSuperadmin', 'superadmin')}</option>
                       </select>
                     </td>
                     <td className="py-2 text-xs">
@@ -478,11 +478,11 @@ export function AdminPage() {
             <table className="w-full text-sm">
               <thead>
                 <tr className="text-gray-500 text-left">
-                  <th className="pb-2 font-medium">Name</th>
-                  <th className="pb-2 font-medium">Slug</th>
-                  <th className="pb-2 font-medium">Plan</th>
-                  <th className="pb-2 font-medium">Active</th>
-                  <th className="pb-2 font-medium">Actions</th>
+                  <th className="pb-2 font-medium">{t('admin.colName', 'Name')}</th>
+                  <th className="pb-2 font-medium">{t('admin.colSlug', 'Slug')}</th>
+                  <th className="pb-2 font-medium">{t('admin.colPlan', 'Plan')}</th>
+                  <th className="pb-2 font-medium">{t('admin.colActive', 'Active')}</th>
+                  <th className="pb-2 font-medium">{t('admin.colActions', 'Actions')}</th>
                 </tr>
               </thead>
               <tbody className="text-gray-900 dark:text-gray-300">
@@ -496,10 +496,10 @@ export function AdminPage() {
                         onChange={(e) => handleChangePlan(o.id, e.target.value)}
                         className="px-2 py-0.5 rounded text-xs font-medium bg-gray-100 dark:bg-gray-800 border border-gray-300 dark:border-gray-600 text-gray-900 dark:text-white"
                       >
-                        <option value="free">free</option>
-                        <option value="starter">starter</option>
-                        <option value="professional">professional</option>
-                        <option value="enterprise">enterprise</option>
+                        <option value="free">{t('admin.planFree', 'free')}</option>
+                        <option value="starter">{t('admin.planStarter', 'starter')}</option>
+                        <option value="professional">{t('admin.planProfessional', 'professional')}</option>
+                        <option value="enterprise">{t('admin.planEnterprise', 'enterprise')}</option>
                       </select>
                     </td>
                     <td className="py-2 text-xs">{o.is_active ? '✅' : '❌'}</td>
@@ -529,19 +529,19 @@ export function AdminPage() {
               <h3 className="text-sm font-bold text-gray-900 dark:text-white mb-4">📊 User Analytics</h3>
               <div className="space-y-3">
                 <div className="flex justify-between items-center">
-                  <span className="text-gray-400 text-sm">Total Users</span>
+                  <span className="text-gray-400 text-sm">{t('admin.statTotalUsers', 'Total Users')}</span>
                   <span className="text-white font-bold text-lg">{d.users.total}</span>
                 </div>
                 <div className="flex justify-between items-center">
-                  <span className="text-gray-400 text-sm">Active Users</span>
+                  <span className="text-gray-400 text-sm">{t('admin.statActiveUsers', 'Active Users')}</span>
                   <span className="text-emerald-400 font-bold text-lg">{d.users.active}</span>
                 </div>
                 <div className="flex justify-between items-center">
-                  <span className="text-gray-400 text-sm">Inactive Users</span>
+                  <span className="text-gray-400 text-sm">{t('admin.statInactiveUsers', 'Inactive Users')}</span>
                   <span className="text-red-400 font-bold text-lg">{d.users.total - d.users.active}</span>
                 </div>
                 <div className="flex justify-between items-center">
-                  <span className="text-gray-400 text-sm">Activation Rate</span>
+                  <span className="text-gray-400 text-sm">{t('admin.statActivationRate', 'Activation Rate')}</span>
                   <span className="text-cyan-400 font-bold text-lg">{d.users.total > 0 ? Math.round((d.users.active / d.users.total) * 100) : 0}%</span>
                 </div>
                 {/* Activity Bar */}
@@ -554,22 +554,22 @@ export function AdminPage() {
             </div>
 
             <div className="bg-gray-50 dark:bg-gray-800/50 border border-gray-200 dark:border-gray-700 rounded-xl p-5">
-              <h3 className="text-sm font-bold text-gray-900 dark:text-white mb-4">🔍 Scan Analytics</h3>
+              <h3 className="text-sm font-bold text-gray-900 dark:text-white mb-4">{t('admin.scanAnalytics', 'Scan Analytics')}</h3>
               <div className="space-y-3">
                 <div className="flex justify-between items-center">
-                  <span className="text-gray-400 text-sm">Total Scans</span>
+                  <span className="text-gray-400 text-sm">{t('admin.statTotalScans', 'Total Scans')}</span>
                   <span className="text-white font-bold text-lg">{d.scans.total}</span>
                 </div>
                 <div className="flex justify-between items-center">
-                  <span className="text-gray-400 text-sm">Currently Running</span>
+                  <span className="text-gray-400 text-sm">{t('admin.statRunning', 'Currently Running')}</span>
                   <span className="text-blue-400 font-bold text-lg">{d.scans.running}</span>
                 </div>
                 <div className="flex justify-between items-center">
-                  <span className="text-gray-400 text-sm">Completed</span>
+                  <span className="text-gray-400 text-sm">{t('admin.statCompleted', 'Completed')}</span>
                   <span className="text-emerald-400 font-bold text-lg">{d.scans.total - d.scans.running}</span>
                 </div>
                 <div className="flex justify-between items-center">
-                  <span className="text-gray-400 text-sm">Avg. Scans/User</span>
+                  <span className="text-gray-400 text-sm">{t('admin.statAvgScans', 'Avg. Scans/User')}</span>
                   <span className="text-purple-400 font-bold text-lg">{d.users.active > 0 ? (d.scans.total / d.users.active).toFixed(1) : '0'}</span>
                 </div>
               </div>
@@ -648,18 +648,18 @@ export function AdminPage() {
 
           {/* Revenue Projection */}
           <div className="bg-gradient-to-br from-emerald-500/10 to-cyan-500/10 border border-emerald-500/20 rounded-xl p-5">
-            <h3 className="text-sm font-bold text-gray-900 dark:text-white mb-4">📈 Revenue Projections</h3>
+            <h3 className="text-sm font-bold text-gray-900 dark:text-white mb-4">{t('admin.revenueProjections', 'Revenue Projections')}</h3>
             <div className="grid md:grid-cols-3 gap-4">
               <div className="text-center">
-                <div className="text-xs text-gray-500 uppercase">This Month</div>
+                <div className="text-xs text-gray-500 uppercase">{t('admin.revThisMonth', 'This Month')}</div>
                 <div className="text-3xl font-bold text-emerald-400 mt-1">€{d.revenue.mrr.toLocaleString()}</div>
               </div>
               <div className="text-center">
-                <div className="text-xs text-gray-500 uppercase">Quarterly (est.)</div>
+                <div className="text-xs text-gray-500 uppercase">{t('admin.revQuarterly', 'Quarterly (est.)')}</div>
                 <div className="text-3xl font-bold text-cyan-400 mt-1">€{(d.revenue.mrr * 3).toLocaleString()}</div>
               </div>
               <div className="text-center">
-                <div className="text-xs text-gray-500 uppercase">Annual (est.)</div>
+                <div className="text-xs text-gray-500 uppercase">{t('admin.revAnnual', 'Annual (est.)')}</div>
                 <div className="text-3xl font-bold text-purple-400 mt-1">€{d.revenue.arr.toLocaleString()}</div>
               </div>
             </div>
@@ -739,11 +739,11 @@ export function AdminPage() {
               <div className="grid grid-cols-2 gap-4">
                 <div className="bg-white dark:bg-gray-900 rounded-lg p-4 text-center">
                   <div className="text-2xl font-bold text-white">{d.agents.total}</div>
-                  <div className="text-xs text-gray-500">Total Agents</div>
+                  <div className="text-xs text-gray-500">{t('admin.statTotalAgents', 'Total Agents')}</div>
                 </div>
                 <div className="bg-white dark:bg-gray-900 rounded-lg p-4 text-center">
                   <div className="text-2xl font-bold text-emerald-400">{d.agents.online}</div>
-                  <div className="text-xs text-gray-500">Online Now</div>
+                  <div className="text-xs text-gray-500">{t('admin.statOnlineNow', 'Online Now')}</div>
                 </div>
               </div>
             </div>
