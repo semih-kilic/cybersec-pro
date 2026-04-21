@@ -1,8 +1,12 @@
 import { Link } from 'react-router-dom';
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useAuth } from '../hooks/useAuth';
+import { useDocumentTitle } from '../hooks/useUtilities';
 
 export default function GDPRPage() {
+  const { t } = useTranslation();
+  useDocumentTitle(`${t('gdpr.title', 'GDPR Compliance')} — CyberSec Pro`);
   const { isAuthenticated, token } = useAuth();
   const [exportLoading, setExportLoading] = useState(false);
   const [deleteLoading, setDeleteLoading] = useState(false);
@@ -72,7 +76,7 @@ export default function GDPRPage() {
             </div>
             <span className="text-xl font-bold text-white">CyberSec Pro</span>
           </Link>
-          <Link to="/" className="text-gray-400 hover:text-white transition text-sm">← Back to Home</Link>
+          <Link to="/" className="text-gray-400 hover:text-white transition text-sm">← {t('common.backToHome', 'Back to Home')}</Link>
         </div>
       </nav>
 
@@ -81,9 +85,9 @@ export default function GDPRPage() {
         <div className="bg-gray-800/50 rounded-2xl p-8 md:p-12 border border-gray-700">
           <div className="flex items-center gap-3 mb-2">
             <span className="text-3xl">🇪🇺</span>
-            <h1 className="text-4xl font-bold text-white">GDPR Compliance</h1>
+            <h1 className="text-4xl font-bold text-white">{t('gdpr.title', 'GDPR Compliance')}</h1>
           </div>
-          <p className="text-gray-400 mb-8">Your data protection rights under the General Data Protection Regulation</p>
+          <p className="text-gray-400 mb-8">{t('gdpr.subtitle', 'Your data protection rights under the General Data Protection Regulation')}</p>
 
           <div className="space-y-8">
             {/* Overview */}

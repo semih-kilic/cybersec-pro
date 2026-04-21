@@ -1,8 +1,10 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { useAuth } from '../hooks/useAuth';
 import { useDashboardTools, useDashboardScans } from '../hooks/useApiQueries';
 import CyberPulseBg from '../components/ui/CyberPulseBg';
+import { useDocumentTitle } from '../hooks/useUtilities';
 
 interface _Tool {
   id: string;
@@ -21,6 +23,8 @@ interface _Scan {
 }
 
 export function DashboardPage() {
+  const { t } = useTranslation();
+  useDocumentTitle(`${t('dashboard.title', 'Dashboard')} — CyberSec Pro`);
   const { user, organization, logout } = useAuth();
   const navigate = useNavigate();
   const { data: toolsData, isLoading: toolsLoading } = useDashboardTools();
@@ -57,7 +61,7 @@ export function DashboardPage() {
   if (loading) {
     return (
       <div className="min-h-screen bg-gray-900 flex items-center justify-center">
-        <div className="text-cyan-400 text-xl">Loading dashboard...</div>
+        <div className="text-cyan-400 text-xl">{t('dashboard.loading', 'Loading dashboard...')}</div>
       </div>
     );
   }
@@ -93,7 +97,7 @@ export function DashboardPage() {
                 onClick={handleLogout}
                 className="px-4 py-2 text-sm text-gray-400 hover:text-white transition"
               >
-                Logout
+                {t('common.logout', 'Logout')}
               </button>
             </div>
           </div>
@@ -114,7 +118,7 @@ export function DashboardPage() {
                     : 'border-transparent text-gray-400 hover:text-gray-300'
                 }`}
               >
-                {tab.charAt(0).toUpperCase() + tab.slice(1)}
+                {t(`dashboard.tabs.${tab}`, tab.charAt(0).toUpperCase() + tab.slice(1))}
               </button>
             ))}
           </nav>

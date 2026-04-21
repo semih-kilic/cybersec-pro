@@ -1,8 +1,12 @@
 import { useState, useEffect } from 'react';
 import { useSearchParams, Link, useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { useAuth } from '../hooks/useAuth';
+import { useDocumentTitle } from '../hooks/useUtilities';
 
 export function VerifyEmailPage() {
+  const { t } = useTranslation();
+  useDocumentTitle(`${t('verifyEmail.title', 'Verify Email')} — CyberSec Pro`);
   const [searchParams] = useSearchParams();
   const token = searchParams.get('token');
   const navigate = useNavigate();
@@ -34,7 +38,7 @@ export function VerifyEmailPage() {
 
       if (res.ok && data.access_token) {
         setStatus('success');
-        setMessage(data.message || 'Email verified successfully!');
+        setMessage(data.message || t('verifyEmail.successMessage', 'Email verified successfully!'));
         // Auto-login: store token and redirect
         localStorage.setItem('access_token', data.access_token);
         localStorage.setItem('user', JSON.stringify(data.user));
@@ -44,11 +48,11 @@ export function VerifyEmailPage() {
         setTimeout(() => navigate('/dashboard'), 2000);
       } else {
         setStatus('error');
-        setMessage(data.error || 'Verification failed');
+        setMessage(data.error || t('verifyEmail.failed', 'Verification failed'));
       }
     } catch {
       setStatus('error');
-      setMessage('Network error. Please try again.');
+      setMessage(t('verifyEmail.networkError', 'Network error. Please try again.'));
     }
   };
 
@@ -66,7 +70,7 @@ export function VerifyEmailPage() {
         setResendStatus('sent');
       } else {
         setResendStatus('error');
-        setMessage(data.error || 'Could not resend');
+        setMessage(data.error || t('verifyEmail.couldNotResend', 'Could not resend'));
       }
     } catch {
       setResendStatus('error');
@@ -93,8 +97,8 @@ export function VerifyEmailPage() {
           {status === 'verifying' && (
             <>
               <div className="w-16 h-16 mx-auto mb-6 border-4 border-blue-500 border-t-transparent rounded-full animate-spin" />
-              <h2 className="text-xl font-bold text-white mb-2">Verifying Your Email...</h2>
-              <p className="text-gray-400">Please wait while we confirm your email address.</p>
+              <h2 className="text-xl font-bold text-white mb-2">{t('verifyEmail.verifying', 'Verifying Your Email...')}</h2>
+              <p className="text-gray-400">{t('verifyEmail.verifyingBody', 'Please wait while we confirm your email address.')}</p>
             </>
           )}
 
@@ -106,9 +110,9 @@ export function VerifyEmailPage() {
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                 </svg>
               </div>
-              <h2 className="text-xl font-bold text-white mb-2">Email Verified! ✅</h2>
+              <h2 className="text-xl font-bold text-white mb-2">{t('verifyEmail.verified', 'Email Verified! ✅')}</h2>
               <p className="text-gray-400 mb-4">{message}</p>
-              <p className="text-blue-400 text-sm">Redirecting to dashboard...</p>
+              <p className="text-blue-400 text-sm">{t('verifyEmail.redirecting', 'Redirecting to dashboard...')}</p>
             </>
           )}
 
@@ -120,18 +124,18 @@ export function VerifyEmailPage() {
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                 </svg>
               </div>
-              <h2 className="text-xl font-bold text-white mb-2">Verification Failed</h2>
+              <h2 className="text-xl font-bold text-white mb-2">{t('verifyEmail.failed', 'Verification failed')}</h2>
               <p className="text-gray-400 mb-6">{message}</p>
 
               {/* Resend form */}
               <div className="border-t border-gray-800 pt-6 mt-6">
-                <p className="text-gray-500 text-sm mb-3">Need a new verification link?</p>
+                <p className="text-gray-500 text-sm mb-3">{t('verifyEmail.needNewLink', 'Need a new verification link?')}</p>
                 <div className="flex gap-2">
                   <input
                     type="email"
                     value={resendEmail}
                     onChange={(e) => setResendEmail(e.target.value)}
-                    placeholder="your@email.com"
+                    placeholder={t('verifyEmail.emailPlaceholder', 'your@email.com')}
                     className="flex-1 px-4 py-2.5 bg-gray-800 border border-gray-700 rounded-lg text-white placeholder-gray-600 focus:outline-none focus:border-blue-500 text-sm"
                   />
                   <button
@@ -139,11 +143,11 @@ export function VerifyEmailPage() {
                     disabled={!resendEmail || resendStatus === 'sending'}
                     className="px-4 py-2.5 bg-blue-600 hover:bg-blue-500 disabled:opacity-50 text-white rounded-lg text-sm font-medium transition"
                   >
-                    {resendStatus === 'sending' ? '...' : 'Resend'}
+                    {resendStatus === 'sending' ? '...' : t('verifyEmail.resend', 'Resend')}
                   </button>
                 </div>
                 {resendStatus === 'sent' && (
-                  <p className="text-green-400 text-xs mt-2">New verification link sent! Check your inbox.</p>
+                  <p className="text-green-400 text-xs mt-2">{t('verifyEmail.sent', 'New verification link sent! Check your inbox.')}</p>
                 )}
               </div>
             </>
@@ -157,12 +161,12 @@ export function VerifyEmailPage() {
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z" />
                 </svg>
               </div>
-              <h2 className="text-xl font-bold text-white mb-2">No Verification Token</h2>
-              <p className="text-gray-400 mb-6">This page requires a verification link from your email.</p>
+              <h2 className="text-xl font-bold text-white mb-2">{t('verifyEmail.noToken', 'No Verification Token')}</h2>
+              <p className="text-gray-400 mb-6">{t('verifyEmail.noTokenBody', 'This page requires a verification link from your email.')}</p>
 
               {/* Resend form */}
               <div className="border-t border-gray-800 pt-6 mt-6">
-                <p className="text-gray-500 text-sm mb-3">Enter your email to receive a new verification link:</p>
+                <p className="text-gray-500 text-sm mb-3">{t('verifyEmail.enterEmail', 'Enter your email to receive a new verification link:')}</p>
                 <div className="flex gap-2">
                   <input
                     type="email"

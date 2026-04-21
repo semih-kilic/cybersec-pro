@@ -1,8 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
+import { useDocumentTitle } from '../hooks/useUtilities';
 
 // Tool Detail Page - Like kali.org/tools/nmap
 const ToolDetailPage: React.FC = () => {
+  const { t } = useTranslation();
   const { slug } = useParams<{ slug: string }>();
   const navigate = useNavigate();
   const [tool, setTool] = useState<any>(null);
@@ -13,6 +16,8 @@ const ToolDetailPage: React.FC = () => {
   const [target, setTarget] = useState('');
   const [scanRunning, setScanRunning] = useState(false);
   const [scanOutput, setScanOutput] = useState('');
+
+  useDocumentTitle(`${tool?.name || t('toolDetail.title', 'Tool Details')} — CyberSec Pro`);
 
   useEffect(() => {
     fetchToolDetails();
@@ -142,8 +147,8 @@ const ToolDetailPage: React.FC = () => {
     return (
       <div className="min-h-screen bg-gray-900 text-white p-8">
         <div className="max-w-4xl mx-auto text-center">
-          <h1 className="text-3xl font-bold mb-4">Tool Not Found</h1>
-          <Link to="/tools" className="text-cyan-400 hover:underline">Back to Tools</Link>
+          <h1 className="text-3xl font-bold mb-4">{t('toolDetail.notFound', 'Tool Not Found')}</h1>
+          <Link to="/tools" className="text-cyan-400 hover:underline">{t('toolDetail.backToTools', 'Back to Tools')}</Link>
         </div>
       </div>
     );
@@ -156,7 +161,7 @@ const ToolDetailPage: React.FC = () => {
         <div className="max-w-7xl mx-auto px-4 py-8">
           {/* Breadcrumb */}
           <div className="text-sm text-gray-400 mb-4">
-            <Link to="/tools" className="hover:text-cyan-400">Tools</Link>
+            <Link to="/tools" className="hover:text-cyan-400">{t('toolDetail.tools', 'Tools')}</Link>
             <span className="mx-2">/</span>
             <span className="text-gray-300">{tool.category}</span>
             <span className="mx-2">/</span>

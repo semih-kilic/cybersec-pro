@@ -1,6 +1,10 @@
 import { Link } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
+import { useDocumentTitle } from '../hooks/useUtilities';
 
 export default function PrivacyPolicyPage() {
+  const { t } = useTranslation();
+  useDocumentTitle(`${t('privacy.title', 'Privacy Policy')} — CyberSec Pro`);
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900">
       {/* Nav */}
@@ -14,15 +18,15 @@ export default function PrivacyPolicyPage() {
             </div>
             <span className="text-xl font-bold text-white">CyberSec Pro</span>
           </Link>
-          <Link to="/" className="text-gray-400 hover:text-white transition text-sm">← Back to Home</Link>
+          <Link to="/" className="text-gray-400 hover:text-white transition text-sm">← {t('common.backToHome', 'Back to Home')}</Link>
         </div>
       </nav>
 
       {/* Content */}
       <div className="max-w-4xl mx-auto px-4 pb-20">
         <div className="bg-gray-800/50 rounded-2xl p-8 md:p-12 border border-gray-700">
-          <h1 className="text-4xl font-bold text-white mb-2">Privacy Policy</h1>
-          <p className="text-gray-400 mb-8">Last updated: February 11, 2026</p>
+          <h1 className="text-4xl font-bold text-white mb-2">{t('privacy.title', 'Privacy Policy')}</h1>
+          <p className="text-gray-400 mb-8">{t('common.lastUpdated', 'Last updated')}: February 11, 2026</p>
 
           <div className="prose prose-invert max-w-none space-y-6 text-gray-300">
             <section>
