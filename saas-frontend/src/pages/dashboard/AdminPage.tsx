@@ -183,8 +183,8 @@ export function AdminPage() {
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
           <div className="text-6xl mb-4">🔒</div>
-          <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">Access Denied</h2>
-          <p className="text-gray-500">Superadmin access required.</p>
+            <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">{t('admin.accessDenied', 'Access Denied')}</h2>
+            <p className="text-gray-500">{t('admin.superadminRequired', 'Superadmin access required.')}</p>
         </div>
       </div>
     );
@@ -219,7 +219,7 @@ export function AdminPage() {
       {error && (
         <div className="bg-red-500/10 border border-red-500/30 rounded-lg p-3 text-red-400 text-sm">
           {error}
-          <button onClick={() => setError(null)} className="ml-2 underline">dismiss</button>
+          <button onClick={() => setError(null)} className="ml-2 underline">{t('common.dismiss', 'dismiss')}</button>
         </div>
       )}
 
@@ -266,7 +266,7 @@ export function AdminPage() {
         <div className="flex gap-3">
           <input
             type="email"
-            placeholder="user@example.com"
+              placeholder={t('admin.impersonatePlaceholder', 'user@example.com')}
             value={impersonateEmail}
             onChange={(e) => setImpersonateEmail(e.target.value)}
             className="flex-1 px-4 py-2 bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-600 rounded-lg text-sm text-gray-900 dark:text-white placeholder-gray-400 focus:ring-2 focus:ring-red-500/30 focus:border-red-500 outline-none"
@@ -314,7 +314,7 @@ export function AdminPage() {
         <div className="space-y-6">
           {/* Plans Distribution */}
           <div className="bg-gray-50 dark:bg-gray-800/50 border border-gray-200 dark:border-gray-700 rounded-xl p-5">
-            <h3 className="text-sm font-bold text-gray-900 dark:text-white mb-4">Plans Distribution</h3>
+              <h3 className="text-sm font-bold text-gray-900 dark:text-white mb-4">{t('admin.plansDistribution', 'Plans Distribution')}</h3>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
               {Object.entries(d.organizations.plans_distribution).map(([plan, count]) => (
                 <div key={plan} className="bg-white dark:bg-gray-900 rounded-lg p-4 text-center">
@@ -327,14 +327,14 @@ export function AdminPage() {
 
           {/* Recent Scans */}
           <div className="bg-gray-50 dark:bg-gray-800/50 border border-gray-200 dark:border-gray-700 rounded-xl p-5">
-            <h3 className="text-sm font-bold text-gray-900 dark:text-white mb-4">Recent Scans</h3>
+              <h3 className="text-sm font-bold text-gray-900 dark:text-white mb-4">{t('admin.recentScans', 'Recent Scans')}</h3>
             <div className="overflow-x-auto">
               <table className="w-full text-sm">
                 <thead>
                   <tr className="text-gray-500 text-left">
-                    <th className="pb-2 font-medium">Target</th>
-                    <th className="pb-2 font-medium">Status</th>
-                    <th className="pb-2 font-medium">Created</th>
+                     <th className="pb-2 font-medium">{t('admin.colTarget', 'Target')}</th>
+                     <th className="pb-2 font-medium">{t('admin.colStatus', 'Status')}</th>
+                     <th className="pb-2 font-medium">{t('admin.colCreated', 'Created')}</th>
                   </tr>
                 </thead>
                 <tbody className="text-gray-900 dark:text-gray-300">
@@ -371,10 +371,10 @@ export function AdminPage() {
             {bulkSelected.size > 0 && (
               <div className="flex items-center gap-2">
                 <span className="text-xs text-gray-400">{bulkSelected.size} selected</span>
-                <button onClick={() => handleBulkAction('activate')} className="px-3 py-1 bg-green-500/20 text-green-400 text-xs rounded-lg hover:bg-green-500/30">Activate</button>
-                <button onClick={() => handleBulkAction('deactivate')} className="px-3 py-1 bg-yellow-500/20 text-yellow-400 text-xs rounded-lg hover:bg-yellow-500/30">Deactivate</button>
-                <button onClick={() => handleBulkAction('delete')} className="px-3 py-1 bg-red-500/20 text-red-400 text-xs rounded-lg hover:bg-red-500/30">Delete</button>
-                <button onClick={() => setBulkSelected(new Set())} className="text-xs text-gray-400 underline">Clear</button>
+                  <button onClick={() => handleBulkAction('activate')} className="px-3 py-1 bg-green-500/20 text-green-400 text-xs rounded-lg hover:bg-green-500/30">{t('admin.activate', 'Activate')}</button>
+                  <button onClick={() => handleBulkAction('deactivate')} className="px-3 py-1 bg-yellow-500/20 text-yellow-400 text-xs rounded-lg hover:bg-yellow-500/30">{t('admin.deactivate', 'Deactivate')}</button>
+                  <button onClick={() => handleBulkAction('delete')} className="px-3 py-1 bg-red-500/20 text-red-400 text-xs rounded-lg hover:bg-red-500/30">{t('admin.delete', 'Delete')}</button>
+                  <button onClick={() => setBulkSelected(new Set())} className="text-xs text-gray-400 underline">{t('admin.clear', 'Clear')}</button>
               </div>
             )}
           </div>
@@ -393,11 +393,11 @@ export function AdminPage() {
                       className="rounded"
                     />
                   </th>
-                  <th className="pb-2 font-medium">Email</th>
-                  <th className="pb-2 font-medium">Name</th>
-                  <th className="pb-2 font-medium">Role</th>
-                  <th className="pb-2 font-medium">Active</th>
-                  <th className="pb-2 font-medium">Actions</th>
+                      <th className="pb-2 font-medium">{t('admin.colEmail', 'Email')}</th>
+                      <th className="pb-2 font-medium">{t('admin.colName', 'Name')}</th>
+                      <th className="pb-2 font-medium">{t('admin.colRole', 'Role')}</th>
+                      <th className="pb-2 font-medium">{t('admin.colActive', 'Active')}</th>
+                      <th className="pb-2 font-medium">{t('admin.colActions', 'Actions')}</th>
                 </tr>
               </thead>
               <tbody className="text-gray-900 dark:text-gray-300">

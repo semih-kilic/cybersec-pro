@@ -172,8 +172,8 @@ export default function CommunityPage() {
               </svg>
             </div>
             <div>
-              <h1 className="text-2xl font-bold text-white">Community</h1>
-              <p className="text-gray-400 text-sm">Connect, share knowledge, and grow with fellow security professionals</p>
+                <h1 className="text-2xl font-bold text-white">{t('community.title', 'Community')}</h1>
+                <p className="text-gray-400 text-sm">{t('community.subtitle', 'Connect, share knowledge, and grow with fellow security professionals')}</p>
             </div>
           </div>
         </div>
@@ -218,7 +218,7 @@ export default function CommunityPage() {
                 </svg>
                 <input
                   type="text"
-                  placeholder="Search discussions, tags..."
+                    placeholder={t('community.searchPlaceholder', 'Search discussions, tags...')}
                   value={searchQuery}
                   onChange={e => setSearchQuery(e.target.value)}
                   className="w-full pl-10 pr-4 py-2.5 bg-gray-900 border border-gray-700 rounded-lg text-white text-sm focus:ring-2 focus:ring-cyan-500 focus:border-transparent"
@@ -291,11 +291,11 @@ export default function CommunityPage() {
                 </div>
                 <div className="flex-1">
                   <p className="text-white font-semibold">{user?.first_name ? `${user.first_name} ${user.last_name || ''}`.trim() : 'You'}</p>
-                  <p className="text-gray-400 text-sm">Rank #47 · 2,340 points · 28 contributions</p>
+                    <p className="text-gray-400 text-sm">{t('community.yourRankInfo', 'Rank #47 · 2,340 points · 28 contributions')}</p>
                 </div>
                 <div className="text-right">
                   <p className="text-cyan-400 font-bold text-lg">2,340</p>
-                  <p className="text-gray-500 text-xs">points</p>
+                    <p className="text-gray-500 text-xs">{t('community.points', 'points')}</p>
                 </div>
               </div>
             </div>
@@ -303,7 +303,7 @@ export default function CommunityPage() {
             {/* Top Contributors */}
             <div className="bg-gray-900/50 border border-gray-800 rounded-xl overflow-hidden">
               <div className="p-4 border-b border-gray-800">
-                <h3 className="text-lg font-semibold text-white">Top Contributors</h3>
+                <h3 className="text-lg font-semibold text-white">{t('community.topContributors', 'Top Contributors')}</h3>
               </div>
               <div className="divide-y divide-gray-800/50">
                 {LEADERBOARD.map(user => (
@@ -318,7 +318,7 @@ export default function CommunityPage() {
                     </div>
                     <div className="text-right">
                       <p className="text-cyan-400 font-bold">{user.points.toLocaleString()}</p>
-                      <p className="text-gray-600 text-xs">points</p>
+                      <p className="text-gray-600 text-xs">{t('community.points', 'points')}</p>
                     </div>
                   </div>
                 ))}
@@ -362,12 +362,12 @@ export default function CommunityPage() {
               </div>
 
               <div className="bg-gray-800/30 border border-gray-800 rounded-lg p-4 mb-4">
-                <p className="text-gray-500 text-sm text-center">Discussion threads are available in the full community portal.</p>
+                <p className="text-gray-500 text-sm text-center">{t('community.discussionThreadsNote', 'Discussion threads are available in the full community portal.')}</p>
               </div>
 
-              <button onClick={() => setSelectedPost(null)} className="w-full py-2.5 bg-gray-800 hover:bg-gray-700 border border-gray-700 text-gray-300 rounded-xl transition-colors text-sm">
-                Close
-              </button>
+                <button onClick={() => setSelectedPost(null)} className="w-full py-2.5 bg-gray-800 hover:bg-gray-700 border border-gray-700 text-gray-300 rounded-xl transition-colors text-sm">
+                  {t('common.close', 'Close')}
+                </button>
             </div>
           </div>
         )}
@@ -377,23 +377,23 @@ export default function CommunityPage() {
           <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm" onClick={() => setShowNewPost(false)}>
             <div className="bg-gray-900 border border-gray-700 rounded-2xl p-6 max-w-lg w-full mx-4 shadow-2xl" onClick={e => e.stopPropagation()}>
               <div className="flex items-center justify-between mb-4">
-                <h2 className="text-lg font-bold text-white">New Discussion</h2>
-                <button onClick={() => setShowNewPost(false)} className="text-gray-400 hover:text-white transition-colors text-xl">✕</button>
+                  <h2 className="text-lg font-bold text-white">{t('community.newDiscussion', 'New Discussion')}</h2>
+                  <button onClick={() => setShowNewPost(false)} aria-label={t('common.close', 'Close')} className="text-gray-400 hover:text-white transition-colors text-xl">✕</button>
               </div>
               <div className="space-y-4">
                 <div>
-                  <label className="block text-sm text-gray-400 mb-1">Title</label>
-                  <input type="text" placeholder="What's on your mind?" className="w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded-lg text-white text-sm focus:ring-2 focus:ring-purple-500 focus:border-transparent" />
+                    <label className="block text-sm text-gray-400 mb-1">{t('community.form.titleLabel', 'Title')}</label>
+                    <input type="text" placeholder={t('community.form.titlePlaceholder', "What's on your mind?")} className="w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded-lg text-white text-sm focus:ring-2 focus:ring-purple-500 focus:border-transparent" />
                 </div>
                 <div>
-                  <label className="block text-sm text-gray-400 mb-1">Category</label>
+                    <label className="block text-sm text-gray-400 mb-1">{t('community.form.categoryLabel', 'Category')}</label>
                   <select className="w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded-lg text-white text-sm">
                     {FORUM_CATEGORIES.filter(c => c !== 'All').map(c => <option key={c} value={c}>{c}</option>)}
                   </select>
                 </div>
                 <div>
-                  <label className="block text-sm text-gray-400 mb-1">Content</label>
-                  <textarea rows={4} placeholder="Share your thoughts, questions, or findings..." className="w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded-lg text-white text-sm focus:ring-2 focus:ring-purple-500 focus:border-transparent resize-none" />
+                    <label className="block text-sm text-gray-400 mb-1">{t('community.form.contentLabel', 'Content')}</label>
+                    <textarea rows={4} placeholder={t('community.form.contentPlaceholder', 'Share your thoughts, questions, or findings...')} className="w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded-lg text-white text-sm focus:ring-2 focus:ring-purple-500 focus:border-transparent resize-none" />
                 </div>
                 <div className="flex gap-3">
                   <button onClick={() => setShowNewPost(false)} className="flex-1 py-2.5 bg-gradient-to-r from-purple-500 to-cyan-500 hover:from-purple-600 hover:to-cyan-600 text-white font-semibold rounded-xl transition-all text-sm">
