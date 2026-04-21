@@ -51,6 +51,84 @@ fn purple_team_chains_catalog() -> Vec<serde_json::Value> {
     ]
 }
 
+fn purple_team_playbooks_catalog() -> Vec<serde_json::Value> {
+    vec![
+        json!({
+            "id": "playbook-email-compromise",
+            "name": "Email Compromise Response",
+            "description": "Covers phishing triage, mailbox hardening, and credential reset workflow.",
+            "chain_ids": ["chain-initial-access-phishing"],
+            "estimated_duration_minutes": 45,
+            "difficulty": "medium"
+        }),
+        json!({
+            "id": "playbook-credential-breach",
+            "name": "Credential Breach Containment",
+            "description": "Validates SOC response for credential theft and suspicious auth patterns.",
+            "chain_ids": ["chain-credential-access"],
+            "estimated_duration_minutes": 60,
+            "difficulty": "high"
+        }),
+        json!({
+            "id": "playbook-east-west-movement",
+            "name": "East-West Movement Hunt",
+            "description": "Exercises rapid host isolation and lateral movement detection coverage.",
+            "chain_ids": ["chain-lateral-movement"],
+            "estimated_duration_minutes": 50,
+            "difficulty": "medium"
+        }),
+    ]
+}
+
+fn purple_team_mitre_matrix_data() -> serde_json::Value {
+    json!({
+        "version": "ATT&CK v14",
+        "tactics": [
+            {
+                "id": "TA0001",
+                "name": "Initial Access",
+                "coverage": 72.0,
+                "techniques": ["T1566", "T1190"]
+            },
+            {
+                "id": "TA0002",
+                "name": "Execution",
+                "coverage": 58.0,
+                "techniques": ["T1059", "T1204"]
+            },
+            {
+                "id": "TA0003",
+                "name": "Persistence",
+                "coverage": 44.0,
+                "techniques": ["T1547", "T1136"]
+            },
+            {
+                "id": "TA0006",
+                "name": "Credential Access",
+                "coverage": 63.0,
+                "techniques": ["T1003", "T1110"]
+            },
+            {
+                "id": "TA0007",
+                "name": "Discovery",
+                "coverage": 55.0,
+                "techniques": ["T1018", "T1082"]
+            },
+            {
+                "id": "TA0008",
+                "name": "Lateral Movement",
+                "coverage": 49.0,
+                "techniques": ["T1021", "T1072"]
+            }
+        ],
+        "summary": {
+            "overall_coverage": 56.8,
+            "covered_techniques": 12,
+            "high_risk_gaps": 4
+        }
+    })
+}
+
 fn purple_team_base_gap_analysis(total_steps: i64) -> serde_json::Value {
     json!({
         "total_attacks": total_steps,
@@ -69,6 +147,54 @@ fn purple_team_risk_score(severity: &str) -> f64 {
         "medium" => 41.0,
         _ => 25.0,
     }
+}
+
+fn purple_team_chain_by_id(chain_id: &str) -> Option<serde_json::Value> {
+    purple_team_chains_catalog()
+        .into_iter()
+        .find(|chain| chain.get("id").and_then(|value| value.as_str()) == Some(chain_id))
+}
+
+fn purple_team_build_exercise(
+    selected_chain: &serde_json::Value,
+    chain_id: &str,
+    target: &str,
+    requested_name: Option<&str>,
+) -> serde_json::Value {
+    let chain_name = selected_chain
+        .get("name")
+        .and_then(|value| value.as_str())
+        .unwrap_or("Purple Team Exercise");
+    let severity = selected_chain
+        .get("severity")
+        .and_then(|value| value.as_str())
+        .unwrap_or("medium");
+    let total_steps = selected_chain
+        .get("steps_count")
+        .and_then(|value| value.as_i64())
+        .unwrap_or(0);
+
+    json!({
+        "id": uuid::Uuid::new_v4().to_string(),
+        "name": requested_name
+            .map(str::trim)
+            .filter(|value| !value.is_empty())
+            .unwrap_or(chain_name),
+        "attack_chain_id": chain_id,
+        "target": target,
+        "status": "pending",
+        "started_at": chrono::Utc::now().to_rfc3339(),
+        "completed_at": "",
+        "total_steps": total_steps,
+        "completed_steps": 0,
+        "detected_attacks": 0,
+        "missed_attacks": 0,
+        "risk_score": purple_team_risk_score(severity),
+        "red_team_results": [],
+        "blue_team_alerts": [],
+        "gap_analysis": purple_team_base_gap_analysis(total_steps),
+        "coverage_map": {}
+    })
 }
 
 // ── GitHub / Google OAuth ──────────────────────────────────
@@ -2465,10 +2591,10 @@ pub async fn purple_team_dashboard(
         "detection_rate": detection_rate,
         "average_risk_score": average_risk_score,
         "available_chains": purple_team_chains_catalog().len(),
-        "available_playbooks": 0,
+        "available_playbooks": purple_team_playbooks_catalog().len(),
         "exercises": total_exercises,
         "active_chains": purple_team_chains_catalog().len(),
-        "playbooks": 0,
+        "playbooks": purple_team_playbooks_catalog().len(),
         "coverage": detection_rate
     })).into_response()
 }
@@ -2484,7 +2610,7 @@ pub async fn purple_team_playbooks(
     _user: AuthUser,
     State(_state): State<Arc<AppState>>,
 ) -> impl IntoResponse {
-    Json(json!([])).into_response()
+    Json(json!(purple_team_playbooks_catalog())).into_response()
 }
 
 pub async fn purple_team_exercises(
@@ -2533,33 +2659,16 @@ pub async fn purple_team_create_exercise(
         _ => return (StatusCode::BAD_REQUEST, Json(json!({"error": "target is required"}))).into_response(),
     };
 
-    let chains = purple_team_chains_catalog();
-    let selected_chain = match chains.into_iter().find(|chain| chain.get("id").and_then(|value| value.as_str()) == Some(chain_id)) {
+    let selected_chain = match purple_team_chain_by_id(chain_id) {
         Some(chain) => chain,
         None => return (StatusCode::BAD_REQUEST, Json(json!({"error": "Unknown attack chain"}))).into_response(),
     };
-
-    let chain_name = selected_chain.get("name").and_then(|value| value.as_str()).unwrap_or("Purple Team Exercise");
-    let severity = selected_chain.get("severity").and_then(|value| value.as_str()).unwrap_or("medium");
-    let total_steps = selected_chain.get("steps_count").and_then(|value| value.as_i64()).unwrap_or(0);
-    let exercise = json!({
-        "id": uuid::Uuid::new_v4().to_string(),
-        "name": body.get("name").and_then(|value| value.as_str()).filter(|value| !value.trim().is_empty()).unwrap_or(chain_name),
-        "attack_chain_id": chain_id,
-        "target": target,
-        "status": "pending",
-        "started_at": chrono::Utc::now().to_rfc3339(),
-        "completed_at": "",
-        "total_steps": total_steps,
-        "completed_steps": 0,
-        "detected_attacks": 0,
-        "missed_attacks": 0,
-        "risk_score": purple_team_risk_score(severity),
-        "red_team_results": [],
-        "blue_team_alerts": [],
-        "gap_analysis": purple_team_base_gap_analysis(total_steps),
-        "coverage_map": {}
-    });
+    let exercise = purple_team_build_exercise(
+        &selected_chain,
+        chain_id,
+        target,
+        body.get("name").and_then(|value| value.as_str()),
+    );
 
     match purple_team_store().lock() {
         Ok(mut store) => {
@@ -2575,7 +2684,7 @@ pub async fn purple_team_mitre(
     _user: AuthUser,
     State(_state): State<Arc<AppState>>,
 ) -> impl IntoResponse {
-    Json(json!({})).into_response()
+    Json(purple_team_mitre_matrix_data()).into_response()
 }
 
 // ── Terminal endpoints ─────────────────────────────────────
@@ -3060,5 +3169,68 @@ pub async fn test_integration(
         Ok(true) => Json(json!({"success": true, "message": "Test notification sent successfully"})).into_response(),
         Ok(false) => Json(json!({"success": false, "error": "Remote server returned error status"})).into_response(),
         Err(e) => Json(json!({"success": false, "error": e})).into_response(),
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn purple_team_create_flow_builds_expected_shape() {
+        let chain = purple_team_chain_by_id("chain-credential-access").expect("expected chain catalog entry");
+        let exercise = purple_team_build_exercise(
+            &chain,
+            "chain-credential-access",
+            "10.10.10.5",
+            Some("Credential drill test"),
+        );
+
+        assert_eq!(exercise.get("attack_chain_id").and_then(|v| v.as_str()), Some("chain-credential-access"));
+        assert_eq!(exercise.get("target").and_then(|v| v.as_str()), Some("10.10.10.5"));
+        assert_eq!(exercise.get("name").and_then(|v| v.as_str()), Some("Credential drill test"));
+        assert_eq!(exercise.get("status").and_then(|v| v.as_str()), Some("pending"));
+        assert_eq!(exercise.get("total_steps").and_then(|v| v.as_i64()), Some(7));
+        assert!(exercise.get("id").and_then(|v| v.as_str()).is_some());
+    }
+
+    #[test]
+    fn purple_team_list_and_detail_round_trip_from_store() {
+        let org_id = "test-org-purple";
+
+        let chain = purple_team_chain_by_id("chain-initial-access-phishing").expect("expected chain catalog entry");
+        let exercise = purple_team_build_exercise(
+            &chain,
+            "chain-initial-access-phishing",
+            "mail.target.local",
+            None,
+        );
+        let exercise_id = exercise
+            .get("id")
+            .and_then(|v| v.as_str())
+            .expect("exercise must have id")
+            .to_string();
+
+        {
+            let mut store = purple_team_store().lock().expect("store lock");
+            store.entry(org_id.to_string()).or_default().insert(0, exercise);
+        }
+
+        let listed = {
+            let store = purple_team_store().lock().expect("store lock");
+            store.get(org_id).cloned().unwrap_or_default()
+        };
+        assert_eq!(listed.len(), 1);
+        assert_eq!(listed[0].get("attack_chain_id").and_then(|v| v.as_str()), Some("chain-initial-access-phishing"));
+
+        let fetched = listed
+            .iter()
+            .find(|item| item.get("id").and_then(|v| v.as_str()) == Some(exercise_id.as_str()));
+        assert!(fetched.is_some());
+
+        {
+            let mut store = purple_team_store().lock().expect("store lock");
+            store.remove(org_id);
+        }
     }
 }
