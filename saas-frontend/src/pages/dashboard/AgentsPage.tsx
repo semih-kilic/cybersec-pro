@@ -767,8 +767,8 @@ function EmptyState({ onAdd, onDiscover }: { onAdd: () => void; onDiscover: () =
    ═══════════════════════════════════════════════════════════ */
 
 export default function AgentsPage() {
-  useDocumentTitle('Devices \u2014 CyberSec Pro');
   const { t } = useTranslation();
+  useDocumentTitle(`${t('agents.title', 'Devices')} — CyberSec Pro`);
   const toast = useToast();
 
   const { data: dashboard, isLoading, isError } = useAgentsDashboard();
@@ -798,11 +798,11 @@ export default function AgentsPage() {
     try {
       const result = await testAgent.mutateAsync(agentId);
       setTestResults(prev => ({ ...prev, [agentId]: result as unknown as TestResult }));
-      if ((result as any).success) { toast.success('Connection successful \u2014 system info updated'); }
-      else { toast.error((result as any).error || 'Connection failed'); }
-    } catch (e: any) { toast.error('Test failed: ' + (e.message || 'Unknown error')); }
+      if ((result as any).success) { toast.success(t('agents.connectionSuccess', 'Connection successful — system info updated')); }
+      else { toast.error((result as any).error || t('agents.connectionFailed', 'Connection failed')); }
+    } catch (e: any) { toast.error(`${t('agents.testFailed', 'Test failed')}: ${e.message || t('common.unknown', 'Unknown error')}`); }
     finally { setTestingId(null); }
-  }, [testAgent, toast]);
+  }, [testAgent, toast, t]);
 
   const handleCreate = useCallback(async (data: Record<string, unknown>) => {
     try {
