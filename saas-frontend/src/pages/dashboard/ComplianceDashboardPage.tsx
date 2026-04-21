@@ -142,15 +142,15 @@ export default function ComplianceDashboardPage() {
               </svg>
             </div>
             <div>
-              <h1 className="text-2xl font-bold text-white">Compliance Dashboard</h1>
-              <p className="text-gray-400 text-sm">Track compliance across NIST, OWASP, GDPR, PCI DSS, HIPAA & SOC 2 frameworks</p>
+              <h1 className="text-2xl font-bold text-white">{t('compliance.dashboardTitle', 'Compliance Dashboard')}</h1>
+              <p className="text-gray-400 text-sm">{t('compliance.dashboardSubtitle', 'Track compliance across NIST, OWASP, GDPR, PCI DSS, HIPAA & SOC 2 frameworks')}</p>
             </div>
           </div>
         </div>
 
         {/* Overall Compliance Summary */}
         <div className="bg-gray-900/50 border border-gray-800 rounded-xl p-6 mb-8">
-          <h3 className="text-sm font-medium text-gray-400 mb-4">Overall Compliance Posture</h3>
+          <h3 className="text-sm font-medium text-gray-400 mb-4">{t('compliance.overallPosture', 'Overall Compliance Posture')}</h3>
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4">
             {FRAMEWORKS.map(fw => {
               const totalControls = fw.categories.reduce((a, c) => a + c.controls, 0);

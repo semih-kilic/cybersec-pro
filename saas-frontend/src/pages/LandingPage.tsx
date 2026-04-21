@@ -116,7 +116,7 @@ export function LandingPage() {
                         <div className="w-2.5 h-2.5 rounded-full bg-red-500" />
                         <div className="w-2.5 h-2.5 rounded-full bg-yellow-500" />
                         <div className="w-2.5 h-2.5 rounded-full bg-green-500" />
-                        <span className="text-gray-500 text-xs ml-2">CyberSec Pro Terminal</span>
+                        <span className="text-gray-500 text-xs ml-2">{t('landing.terminalTitle', 'CyberSec Pro Terminal')}</span>
                       </div>
                       <div className="p-4 font-mono text-xs text-left space-y-1">
                         <p className="text-green-400">$ nmap -sV -sC scanme.nmap.org</p>
@@ -380,7 +380,7 @@ export function LandingPage() {
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
               </svg>
             </div>
-            <span className="text-white font-semibold">CyberSec Pro</span>
+            <span className="text-white font-semibold">{t('common.appName', 'CyberSec Pro')}</span>
           </div>
           <p className="text-gray-500 text-sm">
             {t('landing.copyright')}

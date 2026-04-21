@@ -238,7 +238,7 @@ const ToolDetailPage: React.FC = () => {
                     : 'text-gray-400 hover:text-white'
                 }`}
               >
-                {tab.charAt(0).toUpperCase() + tab.slice(1)}
+                {t(`toolDetail.tabs.${tab}`, tab.charAt(0).toUpperCase() + tab.slice(1))}
                 {activeTab === tab && (
                   <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-cyan-400"></div>
                 )}
@@ -256,7 +256,7 @@ const ToolDetailPage: React.FC = () => {
             <div className="lg:col-span-2 space-y-8">
               {/* Description */}
               <section>
-                <h2 className="text-2xl font-bold mb-4">Description</h2>
+                <h2 className="text-2xl font-bold mb-4">{t('toolDetail.description', 'Description')}</h2>
                 <div className="prose prose-invert max-w-none">
                   <p className="text-gray-300 whitespace-pre-line leading-relaxed">
                     {tool.long_description || tool.description}
@@ -267,7 +267,7 @@ const ToolDetailPage: React.FC = () => {
               {/* Installation */}
               {tool.installation && (
                 <section>
-                  <h2 className="text-2xl font-bold mb-4">Installation</h2>
+                  <h2 className="text-2xl font-bold mb-4">{t('toolDetail.installation', 'Installation')}</h2>
                   <div className="bg-gray-800 rounded-lg p-4 font-mono">
                     <code className="text-green-400">$ {tool.installation}</code>
                   </div>
@@ -277,7 +277,7 @@ const ToolDetailPage: React.FC = () => {
               {/* Command Template */}
               {tool.command_template && (
                 <section>
-                  <h2 className="text-2xl font-bold mb-4">Basic Syntax</h2>
+                  <h2 className="text-2xl font-bold mb-4">{t('toolDetail.basicSyntax', 'Basic Syntax')}</h2>
                   <div className="bg-gray-800 rounded-lg p-4 font-mono">
                     <code className="text-cyan-400">{tool.command_template}</code>
                   </div>
@@ -289,36 +289,36 @@ const ToolDetailPage: React.FC = () => {
             <div className="space-y-6">
               {/* Quick Stats */}
               <div className="bg-gray-800 rounded-xl p-6">
-                <h3 className="text-lg font-semibold mb-4">Tool Info</h3>
+                <h3 className="text-lg font-semibold mb-4">{t('toolDetail.toolInfo', 'Tool Info')}</h3>
                 <dl className="space-y-3 text-sm">
                   {tool.author && (
                     <div className="flex justify-between">
-                      <dt className="text-gray-400">Author</dt>
+                      <dt className="text-gray-400">{t('toolDetail.author', 'Author')}</dt>
                       <dd className="text-white">{tool.author}</dd>
                     </div>
                   )}
                   {tool.license && (
                     <div className="flex justify-between">
-                      <dt className="text-gray-400">License</dt>
+                      <dt className="text-gray-400">{t('toolDetail.license', 'License')}</dt>
                       <dd className="text-white">{tool.license}</dd>
                     </div>
                   )}
                   <div className="flex justify-between">
-                    <dt className="text-gray-400">Category</dt>
+                    <dt className="text-gray-400">{t('toolDetail.category', 'Category')}</dt>
                     <dd className="text-white">{tool.category}</dd>
                   </div>
                   {tool.subcategory && (
                     <div className="flex justify-between">
-                      <dt className="text-gray-400">Subcategory</dt>
+                      <dt className="text-gray-400">{t('toolDetail.subcategory', 'Subcategory')}</dt>
                       <dd className="text-white">{tool.subcategory}</dd>
                     </div>
                   )}
                   <div className="flex justify-between">
-                    <dt className="text-gray-400">Parameters</dt>
+                    <dt className="text-gray-400">{t('toolDetail.parameters', 'Parameters')}</dt>
                     <dd className="text-cyan-400 font-bold">{tool.parameter_count}</dd>
                   </div>
                   <div className="flex justify-between">
-                    <dt className="text-gray-400">Presets</dt>
+                    <dt className="text-gray-400">{t('toolDetail.presets', 'Presets')}</dt>
                     <dd className="text-cyan-400 font-bold">{tool.presets?.length || 0}</dd>
                   </div>
                 </dl>
@@ -327,7 +327,7 @@ const ToolDetailPage: React.FC = () => {
               {/* Related Tools */}
               {tool.related_tools?.length > 0 && (
                 <div className="bg-gray-800 rounded-xl p-6">
-                  <h3 className="text-lg font-semibold mb-4">Related Tools</h3>
+                  <h3 className="text-lg font-semibold mb-4">{t('toolDetail.relatedTools', 'Related Tools')}</h3>
                   <div className="flex flex-wrap gap-2">
                     {tool.related_tools.map((related: string) => (
                       <Link
@@ -412,18 +412,18 @@ const ToolDetailPage: React.FC = () => {
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
             {/* Parameter Form */}
             <div className="space-y-6">
-              <h2 className="text-2xl font-bold">Configure Scan</h2>
+              <h2 className="text-2xl font-bold">{t('toolDetail.configureScan', 'Configure Scan')}</h2>
 
               {/* Target Input */}
               <div>
                 <label className="block text-sm font-medium text-gray-300 mb-2">
-                  Target <span className="text-red-400">*</span>
+                  {t('toolDetail.target', 'Target')} <span className="text-red-400">*</span>
                 </label>
                 <input
                   type="text"
                   value={target}
                   onChange={(e) => setTarget(e.target.value)}
-                  placeholder="e.g., 192.168.1.1 or example.com"
+                  placeholder={t('toolDetail.targetPlaceholder', 'e.g., 192.168.1.1 or example.com')}
                   className="w-full px-4 py-3 bg-gray-800 border border-gray-700 rounded-lg focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 text-white"
                 />
               </div>
@@ -431,7 +431,7 @@ const ToolDetailPage: React.FC = () => {
               {/* Quick Presets */}
               {tool.presets?.length > 0 && (
                 <div>
-                  <label className="block text-sm font-medium text-gray-300 mb-2">Quick Presets</label>
+                  <label className="block text-sm font-medium text-gray-300 mb-2">{t('toolDetail.quickPresets', 'Quick Presets')}</label>
                   <div className="flex flex-wrap gap-2">
                     {tool.presets.slice(0, 5).map((preset: any, idx: number) => (
                       <button
@@ -492,7 +492,7 @@ const ToolDetailPage: React.FC = () => {
 
               {/* Generated Command */}
               <div>
-                <label className="block text-sm font-medium text-gray-300 mb-2">Generated Command</label>
+                <label className="block text-sm font-medium text-gray-300 mb-2">{t('toolDetail.generatedCommand', 'Generated Command')}</label>
                 <div className="bg-gray-800 rounded-lg p-4 font-mono text-sm overflow-x-auto">
                   <code className="text-green-400">$ {generatedCommand || `${tool.name.toLowerCase()} [options]`}</code>
                 </div>
@@ -511,20 +511,20 @@ const ToolDetailPage: React.FC = () => {
                 {scanRunning ? (
                   <span className="flex items-center justify-center gap-2">
                     <div className="animate-spin rounded-full h-5 w-5 border-t-2 border-b-2 border-white"></div>
-                    Running Scan...
+                    {t('toolDetail.runningScan', 'Running Scan...')}
                   </span>
                 ) : (
-                  '🚀 Execute Scan'
+                  t('toolDetail.executeScan', '🚀 Execute Scan')
                 )}
               </button>
             </div>
 
             {/* Output */}
             <div className="space-y-4">
-              <h2 className="text-2xl font-bold">Output</h2>
+              <h2 className="text-2xl font-bold">{t('toolDetail.output', 'Output')}</h2>
               <div className="bg-black rounded-xl p-4 h-[600px] overflow-y-auto font-mono text-sm">
                 <pre className="text-green-400 whitespace-pre-wrap">
-                  {scanOutput || '# Output will appear here after running a scan\n# Make sure to enter a target and click Execute'}
+                  {scanOutput || t('toolDetail.outputPlaceholder', '# Output will appear here after running a scan\n# Make sure to enter a target and click Execute')}
                 </pre>
               </div>
             </div>
@@ -534,7 +534,7 @@ const ToolDetailPage: React.FC = () => {
         {/* Examples Tab */}
         {activeTab === 'examples' && (
           <div className="space-y-6">
-            <h2 className="text-2xl font-bold">Usage Examples</h2>
+            <h2 className="text-2xl font-bold">{t('toolDetail.usageExamples', 'Usage Examples')}</h2>
             <div className="grid gap-4">
               {tool.examples?.map((example: any, idx: number) => (
                 <div key={idx} className="bg-gray-800 rounded-xl p-6">
@@ -558,8 +558,8 @@ const ToolDetailPage: React.FC = () => {
         {/* Presets Tab */}
         {activeTab === 'presets' && (
           <div className="space-y-6">
-            <h2 className="text-2xl font-bold">Predefined Presets</h2>
-            <p className="text-gray-400">Ready-to-use parameter combinations for common use cases</p>
+            <h2 className="text-2xl font-bold">{t('toolDetail.predefinedPresets', 'Predefined Presets')}</h2>
+            <p className="text-gray-400">{t('toolDetail.presetsSubtitle', 'Ready-to-use parameter combinations for common use cases')}</p>
             
             <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
               {tool.presets?.map((preset: any, idx: number) => (

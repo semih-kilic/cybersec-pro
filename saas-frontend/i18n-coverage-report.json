@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-04-21T05:48:34.992Z",
+  "generatedAt": "2026-04-21T05:55:54.742Z",
   "report": [
     {
       "filePath": "src/pages/DashboardPage.tsx",
@@ -45,14 +45,7 @@
       "hasUseTranslation": true,
       "hasTCalls": true,
       "probableHardcodedLines": [
-        33,
-        119,
-        124,
-        260,
-        292,
-        295,
-        326,
-        383
+        124
       ]
     },
     {
@@ -98,10 +91,7 @@
       "filePath": "src/pages/RegisterPage.tsx",
       "hasUseTranslation": true,
       "hasTCalls": true,
-      "probableHardcodedLines": [
-        177,
-        259
-      ]
+      "probableHardcodedLines": []
     },
     {
       "filePath": "src/pages/ResetPasswordPage.tsx",
@@ -140,27 +130,7 @@
       "filePath": "src/pages/ToolDetailPage.tsx",
       "hasUseTranslation": true,
       "hasTCalls": true,
-      "probableHardcodedLines": [
-        259,
-        270,
-        280,
-        292,
-        296,
-        302,
-        307,
-        312,
-        317,
-        321,
-        330,
-        415,
-        426,
-        434,
-        495,
-        524,
-        537,
-        561,
-        562
-      ]
+      "probableHardcodedLines": []
     },
     {
       "filePath": "src/pages/ToolsCatalogPage.tsx",
@@ -292,11 +262,7 @@
       "filePath": "src/pages/dashboard/ComplianceDashboardPage.tsx",
       "hasUseTranslation": true,
       "hasTCalls": true,
-      "probableHardcodedLines": [
-        145,
-        146,
-        153
-      ]
+      "probableHardcodedLines": []
     },
     {
       "filePath": "src/pages/dashboard/FeedbackPage.tsx",
