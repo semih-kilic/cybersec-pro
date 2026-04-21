@@ -56,75 +56,94 @@ fn purple_team_playbooks_catalog() -> Vec<serde_json::Value> {
         json!({
             "id": "playbook-email-compromise",
             "name": "Email Compromise Response",
-            "description": "Covers phishing triage, mailbox hardening, and credential reset workflow.",
-            "chain_ids": ["chain-initial-access-phishing"],
-            "estimated_duration_minutes": 45,
-            "difficulty": "medium"
+            "trigger": "Mailbox phishing indicators with anomalous login location.",
+            "severity": "high",
+            "mitre_techniques": ["T1566", "T1078"],
+            "response_actions_count": 5,
+            "auto_actions": 2,
+            "detection_logic": {
+                "signals": ["email_spoofing_score", "impossible_travel", "new_inbox_rule"],
+                "threshold": "medium"
+            }
         }),
         json!({
             "id": "playbook-credential-breach",
             "name": "Credential Breach Containment",
-            "description": "Validates SOC response for credential theft and suspicious auth patterns.",
-            "chain_ids": ["chain-credential-access"],
-            "estimated_duration_minutes": 60,
-            "difficulty": "high"
+            "trigger": "Credential dump or password spray behavior from monitored assets.",
+            "severity": "critical",
+            "mitre_techniques": ["T1003", "T1110"],
+            "response_actions_count": 7,
+            "auto_actions": 3,
+            "detection_logic": {
+                "signals": ["lsass_access_pattern", "auth_fail_burst", "hash_dump_tooling"],
+                "threshold": "high"
+            }
         }),
         json!({
             "id": "playbook-east-west-movement",
             "name": "East-West Movement Hunt",
-            "description": "Exercises rapid host isolation and lateral movement detection coverage.",
-            "chain_ids": ["chain-lateral-movement"],
-            "estimated_duration_minutes": 50,
-            "difficulty": "medium"
+            "trigger": "Suspicious remote execution and lateral authentication chains.",
+            "severity": "medium",
+            "mitre_techniques": ["T1021", "T1072"],
+            "response_actions_count": 4,
+            "auto_actions": 1,
+            "detection_logic": {
+                "signals": ["remote_service_creation", "psexec_signature", "ssh_pivot_sequence"],
+                "threshold": "medium"
+            }
         }),
     ]
 }
 
 fn purple_team_mitre_matrix_data() -> serde_json::Value {
     json!({
-        "version": "ATT&CK v14",
-        "tactics": [
-            {
-                "id": "TA0001",
-                "name": "Initial Access",
-                "coverage": 72.0,
-                "techniques": ["T1566", "T1190"]
-            },
-            {
-                "id": "TA0002",
-                "name": "Execution",
-                "coverage": 58.0,
-                "techniques": ["T1059", "T1204"]
-            },
-            {
-                "id": "TA0003",
-                "name": "Persistence",
-                "coverage": 44.0,
-                "techniques": ["T1547", "T1136"]
-            },
-            {
-                "id": "TA0006",
-                "name": "Credential Access",
-                "coverage": 63.0,
-                "techniques": ["T1003", "T1110"]
-            },
-            {
-                "id": "TA0007",
-                "name": "Discovery",
-                "coverage": 55.0,
-                "techniques": ["T1018", "T1082"]
-            },
-            {
-                "id": "TA0008",
-                "name": "Lateral Movement",
-                "coverage": 49.0,
-                "techniques": ["T1021", "T1072"]
-            }
-        ],
-        "summary": {
-            "overall_coverage": 56.8,
-            "covered_techniques": 12,
-            "high_risk_gaps": 4
+        "TA0001": {
+            "name": "Initial Access",
+            "techniques": [
+                { "id": "T1566", "name": "Phishing", "subtechniques_count": 3 },
+                { "id": "T1190", "name": "Exploit Public-Facing Application", "subtechniques_count": 0 }
+            ],
+            "total": 2
+        },
+        "TA0002": {
+            "name": "Execution",
+            "techniques": [
+                { "id": "T1059", "name": "Command and Scripting Interpreter", "subtechniques_count": 11 },
+                { "id": "T1204", "name": "User Execution", "subtechniques_count": 2 }
+            ],
+            "total": 2
+        },
+        "TA0003": {
+            "name": "Persistence",
+            "techniques": [
+                { "id": "T1547", "name": "Boot or Logon Autostart Execution", "subtechniques_count": 14 },
+                { "id": "T1136", "name": "Create Account", "subtechniques_count": 3 }
+            ],
+            "total": 2
+        },
+        "TA0006": {
+            "name": "Credential Access",
+            "techniques": [
+                { "id": "T1003", "name": "OS Credential Dumping", "subtechniques_count": 8 },
+                { "id": "T1110", "name": "Brute Force", "subtechniques_count": 4 }
+            ],
+            "total": 2
+        },
+        "TA0007": {
+            "name": "Discovery",
+            "techniques": [
+                { "id": "T1018", "name": "Remote System Discovery", "subtechniques_count": 0 },
+                { "id": "T1082", "name": "System Information Discovery", "subtechniques_count": 0 }
+            ],
+            "total": 2
+        },
+        "TA0008": {
+            "name": "Lateral Movement",
+            "techniques": [
+                { "id": "T1021", "name": "Remote Services", "subtechniques_count": 8 },
+                { "id": "T1072", "name": "Software Deployment Tools", "subtechniques_count": 0 }
+            ],
+            "total": 2
         }
     })
 }
