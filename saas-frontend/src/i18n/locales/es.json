@@ -752,25 +752,25 @@
     "date": "Fecha"
   },
   "login": {
-    "heroTitleLine2": "Neither should your defense.",
-    "whyItMatters": "Why It Matters",
-    "whyItMattersBody": "Cybercrime damages are projected to reach $10.5 trillion annually by 2025 — more than the GDP of most countries",
-    "timeIsCritical": "Time Is Critical",
-    "timeIsCriticalBody": "Organizations take an average of 197 days to identify a breach and 69 days to contain it",
-    "stayAhead": "Stay Ahead",
-    "stayAheadBody": "Continuous security testing helps you find vulnerabilities before attackers do",
-    "terminalStarting": "Starting Nmap 7.94SVN ...",
-    "terminalDone": "Nmap done — 1 host scanned in 12.4s"
+    "heroTitleLine2": "Tampoco deberia serlo tu defensa.",
+    "whyItMatters": "Por qué importa",
+    "whyItMattersBody": "Se proyecta que los daños por ciberdelincuencia alcanzarán $10,5 billones anuales para 2025 — más que el PIB de la mayoría de países",
+    "timeIsCritical": "El tiempo es crítico",
+    "timeIsCriticalBody": "Las organizaciones tardan un promedio de 197 días en identificar una brecha y 69 días en contenerla",
+    "stayAhead": "Manténte adelante",
+    "stayAheadBody": "Las pruebas de seguridad continuas te ayudan a encontrar vulnerabilidades antes que los atacantes",
+    "terminalStarting": "Iniciando Nmap 7.94SVN ...",
+    "terminalDone": "Nmap completado — 1 host escaneado en 12,4s"
   },
   "oauth": {
-    "title": "OAuth Sign In",
-    "errorPrefix": "OAuth error",
-    "noCode": "No authorization code received",
-    "failed": "OAuth authentication failed",
-    "authFailed": "Authentication failed",
-    "backToLogin": "Back to Login",
-    "completing": "Completing Sign In",
-    "waiting": "Please wait while we authenticate you..."
+    "title": "Inicio de sesión OAuth",
+    "errorPrefix": "Error de OAuth",
+    "noCode": "No se recibió código de autorización",
+    "failed": "La autenticación de OAuth falló",
+    "authFailed": "La autenticación falló",
+    "backToLogin": "Volver al inicio de sesión",
+    "completing": "Completando el inicio de sesión",
+    "waiting": "Por favor espera mientras te autenticamos..."
   },
   "privacy": {
     "title": "Política de privacidad",
@@ -833,16 +833,16 @@
     }
   },
   "register": {
-    "heroLine1": "Your Digital Assets",
-    "heroLine2": "Are Under Threat",
-    "ransomwareTitle": "Ransomware Surge",
-    "ransomwareBody": "A ransomware attack hits a business every 11 seconds. Average ransom payments have exceeded $1.5 million.",
-    "humanFactorTitle": "The Human Factor",
-    "humanFactorBody": "68% of breaches involve a non-malicious human element — phishing, misconfigurations, and weak credentials.",
-    "preventionTitle": "Prevention Works",
-    "preventionBody": "Organizations with proactive security testing reduce breach costs by an average of $1.76 million.",
-    "quote": "The question is not whether you will be breached, but when. The only defense is preparation.",
-    "quoteAuthor": "Cybersecurity Awareness Principle"
+    "heroLine1": "Tus activos digitales",
+    "heroLine2": "Están bajo amenaza",
+    "ransomwareTitle": "Aumento de ransomware",
+    "ransomwareBody": "Un ataque de ransomware afecta a una empresa cada 11 segundos. Los pagos de rescate promedio han superado $1,5 millones.",
+    "humanFactorTitle": "El factor humano",
+    "humanFactorBody": "El 68% de los incidentes implican un elemento humano no malicioso — phishing, configuraciones incorrectas y credenciales débiles.",
+    "preventionTitle": "La prevención funciona",
+    "preventionBody": "Las organizaciones con pruebas de seguridad proactivas reducen los costos de incidentes en un promedio de $1,76 millones.",
+    "quote": "La pregunta no es si serás comprometido, sino cuándo. La única defensa es la preparación.",
+    "quoteAuthor": "Principio de conciencia sobre ciberseguridad"
   },
   "terms": {
     "title": "Términos del servicio",
@@ -956,7 +956,7 @@
     "inputPlaceholder": "Ask CyberBot anything about security, scans, pricing..."
   },
   "admin": {
-    "title": "Admin",
+    "title": "Administración",
     "planChanged": "Plan cambiado a",
     "successfully": "correctamente!",
     "changePlanFailed": "No se pudo cambiar el plan",
@@ -975,15 +975,15 @@
     "clear": "Limpiar",
     "colEmail": "Correo",
     "colRole": "Rol",
-    "roleUser": "user",
-    "roleAdmin": "admin",
-    "roleSuperadmin": "superadmin",
-    "colSlug": "Slug",
-    "colPlan": "Plan",
-    "planFree": "free",
-    "planStarter": "starter",
-    "planProfessional": "professional",
-    "planEnterprise": "enterprise",
+    "roleUser": "Usuario",
+    "roleAdmin": "Administrador",
+    "roleSuperadmin": "Superadministrador",
+    "colSlug": "Slug/URL",
+    "colPlan": "Plan de tarificación",
+    "planFree": "Gratis",
+    "planStarter": "Plan inicial",
+    "planProfessional": "Profesional",
+    "planEnterprise": "Plan empresarial",
     "statTotalUsers": "Usuarios totales",
     "statActiveUsers": "Usuarios activos",
     "statInactiveUsers": "Usuarios inactivos",
@@ -1032,15 +1032,15 @@
     "weekOverWeek": "Semana a semana"
   },
   "billing": {
-    "title": "Billing",
-    "redirecting": "Redirecting to Billing...",
-    "currentPlan": "Current Plan",
-    "planFeatures": "Plan Features",
-    "payment": "Payment",
-    "stripeActive": "Stripe Payment Active",
-    "stripeManaged": "Managed through Stripe Checkout",
-    "noPayment": "No payment method on file",
-    "addPayment": "Add payment method →"
+    "title": "Facturación",
+    "redirecting": "Redirigiendo a facturación...",
+    "currentPlan": "Plan actual",
+    "planFeatures": "Características del plan",
+    "payment": "Pago",
+    "stripeActive": "Pago de Stripe activo",
+    "stripeManaged": "Gestionado a través de Stripe Checkout",
+    "noPayment": "Sin método de pago registrado",
+    "addPayment": "Añadir método de pago →"
   },
   "community": {
     "title": "Comunidad",
@@ -1317,17 +1317,17 @@
     "ttps": "TTPs/Tácticas:"
   },
   "vulnDB": {
-    "title": "Vulnerability Database",
-    "subtitle": "Search CVEs, track exploits, and monitor vulnerabilities affecting your stack",
-    "severityDistribution": "Severity Distribution",
-    "searchPlaceholder": "Search CVE ID, vendor, product, keywords...",
-    "allSeverities": "All Severities",
-    "critical": "Critical",
-    "high": "High",
-    "medium": "Medium",
-    "low": "Low",
-    "exploit": "EXPLOIT",
-    "noResults": "No vulnerabilities match your search criteria."
+    "title": "Base de datos de vulnerabilidades",
+    "subtitle": "Busca CVEs, realiza un seguimiento de exploits y supervisa las vulnerabilidades que afectan tu stack",
+    "severityDistribution": "Distribución de gravedad",
+    "searchPlaceholder": "Busca ID de CVE, proveedor, producto, palabras clave...",
+    "allSeverities": "Todas las gravedades",
+    "critical": "Crítico",
+    "high": "Alto",
+    "medium": "Medio",
+    "low": "Bajo",
+    "exploit": "EXPLOTACIÓN",
+    "noResults": "No hay vulnerabilidades que coincidan con tus criterios de búsqueda."
   },
   "apiKeys": {
     "namePlaceholder": "Enter key name (e.g., Production API)",
@@ -1418,16 +1418,16 @@
     "deleteAccount": "Eliminar cuenta"
   },
   "team": {
-    "inviteMember": "Invite Team Member",
+    "inviteMember": "Invitar miembro del equipo",
     "emailPlaceholder": "team@example.com",
-    "roleViewer": "Viewer",
-    "roleUser": "User",
-    "roleAnalyst": "Analyst",
-    "roleAdmin": "Admin",
-    "pendingInvitations": "Pending Invitations",
-    "pending": "Pending",
-    "availableRoles": "Available Roles",
-    "upgradeRequired": "Team management requires Professional plan or higher",
-    "upgradeLink": "Upgrade to invite team members →"
+    "roleViewer": "Espectador",
+    "roleUser": "Usuario",
+    "roleAnalyst": "Analista",
+    "roleAdmin": "Administrador",
+    "pendingInvitations": "Invitaciones pendientes",
+    "pending": "Pendiente",
+    "availableRoles": "Roles disponibles",
+    "upgradeRequired": "La gestión de equipos requiere el plan Professional o superior",
+    "upgradeLink": "Actualizar para invitar miembros del equipo →"
   }
 }

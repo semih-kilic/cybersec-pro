@@ -752,25 +752,25 @@
     "date": "Date du scan"
   },
   "login": {
-    "heroTitleLine2": "Neither should your defense.",
-    "whyItMatters": "Why It Matters",
-    "whyItMattersBody": "Cybercrime damages are projected to reach $10.5 trillion annually by 2025 — more than the GDP of most countries",
-    "timeIsCritical": "Time Is Critical",
-    "timeIsCriticalBody": "Organizations take an average of 197 days to identify a breach and 69 days to contain it",
-    "stayAhead": "Stay Ahead",
-    "stayAheadBody": "Continuous security testing helps you find vulnerabilities before attackers do",
-    "terminalStarting": "Starting Nmap 7.94SVN ...",
-    "terminalDone": "Nmap done — 1 host scanned in 12.4s"
+    "heroTitleLine2": "Et votre défense non plus.",
+    "whyItMatters": "Pourquoi c'est important",
+    "whyItMattersBody": "Les pertes dues à la cybercriminalité devraient atteindre 10,5 billions de dollars par an d'ici 2025 — plus que le PIB de la plupart des pays",
+    "timeIsCritical": "Le temps est critique",
+    "timeIsCriticalBody": "Les organisations mettent en moyenne 197 jours pour identifier une violation et 69 jours pour la contenir",
+    "stayAhead": "Restez en avance",
+    "stayAheadBody": "Les tests de sécurité continus vous aident à trouver les vulnérabilités avant les attaquants",
+    "terminalStarting": "Démarrage de Nmap 7.94SVN ...",
+    "terminalDone": "Nmap terminé — 1 hôte scanné en 12,4s"
   },
   "oauth": {
-    "title": "OAuth Sign In",
-    "errorPrefix": "OAuth error",
-    "noCode": "No authorization code received",
-    "failed": "OAuth authentication failed",
-    "authFailed": "Authentication failed",
-    "backToLogin": "Back to Login",
-    "completing": "Completing Sign In",
-    "waiting": "Please wait while we authenticate you..."
+    "title": "Connexion OAuth",
+    "errorPrefix": "Erreur OAuth",
+    "noCode": "Aucun code d'autorisation reçu",
+    "failed": "L'authentification OAuth a échoué",
+    "authFailed": "L'authentification a échoué",
+    "backToLogin": "Retour à la connexion",
+    "completing": "Fin de la connexion",
+    "waiting": "Veuillez patienter pendant que nous vous authentifions..."
   },
   "privacy": {
     "title": "Politique de confidentialité",
@@ -833,16 +833,16 @@
     }
   },
   "register": {
-    "heroLine1": "Your Digital Assets",
-    "heroLine2": "Are Under Threat",
-    "ransomwareTitle": "Ransomware Surge",
-    "ransomwareBody": "A ransomware attack hits a business every 11 seconds. Average ransom payments have exceeded $1.5 million.",
-    "humanFactorTitle": "The Human Factor",
-    "humanFactorBody": "68% of breaches involve a non-malicious human element — phishing, misconfigurations, and weak credentials.",
-    "preventionTitle": "Prevention Works",
-    "preventionBody": "Organizations with proactive security testing reduce breach costs by an average of $1.76 million.",
-    "quote": "The question is not whether you will be breached, but when. The only defense is preparation.",
-    "quoteAuthor": "Cybersecurity Awareness Principle"
+    "heroLine1": "Vos actifs numériques",
+    "heroLine2": "Sont sous menace",
+    "ransomwareTitle": "Hausse des ransaçons",
+    "ransomwareBody": "Une attaque par ransaçon frappe une entreprise tous les 11 secondes. Les paiements de ransaçon moyens dépassent 1,5 million de dollars.",
+    "humanFactorTitle": "Le facteur humain",
+    "humanFactorBody": "68% des violations impliquent un élément humain non malveillant — phishing, mal-configurations et identifiants faibles.",
+    "preventionTitle": "La prévention fonctionne",
+    "preventionBody": "Les organisations ayant des tests de sécurité proactifs réduisent les coûts des violations de 1,76 million de dollars en moyenne.",
+    "quote": "La question n'est pas si vous serez compromis, mais quand. La seule défense est la préparation.",
+    "quoteAuthor": "Principe de sensibilisation à la cybersecurité"
   },
   "terms": {
     "title": "Conditions d'utilisation",
@@ -956,7 +956,7 @@
     "inputPlaceholder": "Ask CyberBot anything about security, scans, pricing..."
   },
   "admin": {
-    "title": "Admin",
+    "title": "Administration",
     "planChanged": "Plan modifié vers",
     "successfully": "avec succès !",
     "changePlanFailed": "Échec du changement de plan",
@@ -975,15 +975,15 @@
     "clear": "Effacer",
     "colEmail": "E-mail",
     "colRole": "Rôle",
-    "roleUser": "user",
-    "roleAdmin": "admin",
-    "roleSuperadmin": "superadmin",
-    "colSlug": "Slug",
-    "colPlan": "Plan",
-    "planFree": "free",
-    "planStarter": "starter",
-    "planProfessional": "professional",
-    "planEnterprise": "enterprise",
+    "roleUser": "Utilisateur",
+    "roleAdmin": "Administrateur",
+    "roleSuperadmin": "Superadministrateur",
+    "colSlug": "Slug/URL",
+    "colPlan": "Plan tarifaire",
+    "planFree": "Gratuit",
+    "planStarter": "Plan de démarrage",
+    "planProfessional": "Professionnel",
+    "planEnterprise": "Plan entreprise",
     "statTotalUsers": "Utilisateurs totaux",
     "statActiveUsers": "Utilisateurs actifs",
     "statInactiveUsers": "Utilisateurs inactifs",
@@ -1032,15 +1032,15 @@
     "weekOverWeek": "Semaine sur semaine"
   },
   "billing": {
-    "title": "Billing",
-    "redirecting": "Redirecting to Billing...",
-    "currentPlan": "Current Plan",
-    "planFeatures": "Plan Features",
-    "payment": "Payment",
-    "stripeActive": "Stripe Payment Active",
-    "stripeManaged": "Managed through Stripe Checkout",
-    "noPayment": "No payment method on file",
-    "addPayment": "Add payment method →"
+    "title": "Facturation",
+    "redirecting": "Redirection vers la facturation...",
+    "currentPlan": "Plan actuel",
+    "planFeatures": "Caractéristiques du plan",
+    "payment": "Paiement",
+    "stripeActive": "Paiement Stripe actif",
+    "stripeManaged": "Géré via Stripe Checkout",
+    "noPayment": "Aucun mode de paiement enregistré",
+    "addPayment": "Ajouter un mode de paiement →"
   },
   "community": {
     "title": "Communauté",
@@ -1317,17 +1317,17 @@
     "ttps": "TTPs :"
   },
   "vulnDB": {
-    "title": "Vulnerability Database",
-    "subtitle": "Search CVEs, track exploits, and monitor vulnerabilities affecting your stack",
-    "severityDistribution": "Severity Distribution",
-    "searchPlaceholder": "Search CVE ID, vendor, product, keywords...",
-    "allSeverities": "All Severities",
-    "critical": "Critical",
-    "high": "High",
-    "medium": "Medium",
-    "low": "Low",
+    "title": "Base de données des vulnérabilités",
+    "subtitle": "Recherchez des CVE, suivez les exploits et surveillez les vulnérabilités affectant votre pile",
+    "severityDistribution": "Distribution de la gravité",
+    "searchPlaceholder": "Recherchez l'ID CVE, le fournisseur, le produit, les mots-clés...",
+    "allSeverities": "Toutes les gravités",
+    "critical": "Critique",
+    "high": "Élevé",
+    "medium": "Moyen",
+    "low": "Faible",
     "exploit": "EXPLOIT",
-    "noResults": "No vulnerabilities match your search criteria."
+    "noResults": "Aucune vulnérabilité ne correspond à vos critères de recherche."
   },
   "apiKeys": {
     "namePlaceholder": "Enter key name (e.g., Production API)",
@@ -1418,16 +1418,16 @@
     "deleteAccount": "Supprimer le compte"
   },
   "team": {
-    "inviteMember": "Invite Team Member",
+    "inviteMember": "Inviter un membre de l'équipe",
     "emailPlaceholder": "team@example.com",
-    "roleViewer": "Viewer",
-    "roleUser": "User",
-    "roleAnalyst": "Analyst",
-    "roleAdmin": "Admin",
-    "pendingInvitations": "Pending Invitations",
-    "pending": "Pending",
-    "availableRoles": "Available Roles",
-    "upgradeRequired": "Team management requires Professional plan or higher",
-    "upgradeLink": "Upgrade to invite team members →"
+    "roleViewer": "Spectateur",
+    "roleUser": "Utilisateur",
+    "roleAnalyst": "Analyste",
+    "roleAdmin": "Administrateur",
+    "pendingInvitations": "Invitations en attente",
+    "pending": "En attente",
+    "availableRoles": "Rôles disponibles",
+    "upgradeRequired": "La gestion d'équipe nécessite le plan Professional ou supérieur",
+    "upgradeLink": "Passer à la version Premium pour inviter les membres de l'équipe →"
   }
 }
