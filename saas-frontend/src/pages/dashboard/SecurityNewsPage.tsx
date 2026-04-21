@@ -180,8 +180,8 @@ export default function SecurityNewsPage() {
               </svg>
             </div>
             <div>
-              <h1 className="text-2xl font-bold text-white">Security News Feed</h1>
-              <p className="text-gray-400 text-sm">Latest cybersecurity news, breaches, and industry updates</p>
+              <h1 className="text-2xl font-bold text-white">{t('securityNews.title', 'Security News Feed')}</h1>
+              <p className="text-gray-400 text-sm">{t('securityNews.subtitle', 'Latest cybersecurity news, breaches, and industry updates')}</p>
             </div>
           </div>
         </div>
@@ -191,7 +191,7 @@ export default function SecurityNewsPage() {
           {featuredNews.map(news => (
             <div key={news.id} onClick={() => setSelectedNews(news)} className="relative bg-gradient-to-br from-gray-900 to-gray-950 border border-gray-700 rounded-xl p-6 hover:border-cyan-500/30 transition-colors group cursor-pointer">
               <div className="absolute top-4 right-4">
-                <span className="px-2 py-0.5 bg-cyan-500/10 border border-cyan-500/30 rounded text-[10px] font-bold text-cyan-400 uppercase">Featured</span>
+                <span className="px-2 py-0.5 bg-cyan-500/10 border border-cyan-500/30 rounded text-[10px] font-bold text-cyan-400 uppercase">{t('securityNews.featured', 'Featured')}</span>
               </div>
               <span className={`inline-block px-2 py-1 rounded text-xs font-medium border ${getCategoryColor(news.category)} mb-3`}>
                 {news.category}
@@ -217,7 +217,7 @@ export default function SecurityNewsPage() {
             </svg>
             <input
               type="text"
-              placeholder="Search news, topics, tags..."
+              placeholder={t('securityNews.searchPlaceholder', 'Search news, topics, tags...')}
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="w-full pl-10 pr-4 py-2.5 bg-gray-900 border border-gray-700 rounded-lg text-white text-sm focus:ring-2 focus:ring-cyan-500 focus:border-transparent"
@@ -272,7 +272,7 @@ export default function SecurityNewsPage() {
 
         {filteredNews.length === 0 && (
           <div className="text-center py-12">
-            <p className="text-gray-500">No news articles match your criteria.</p>
+            <p className="text-gray-500">{t('securityNews.noArticles', 'No news articles match your criteria.')}</p>
           </div>
         )}
 
@@ -287,7 +287,7 @@ export default function SecurityNewsPage() {
                   </span>
                   <span className="text-gray-500 text-xs">{selectedNews.time}</span>
                 </div>
-                <button onClick={() => setSelectedNews(null)} className="text-gray-400 hover:text-white transition-colors text-xl">✕</button>
+                <button onClick={() => setSelectedNews(null)} className="text-gray-400 hover:text-white transition-colors text-xl">{t('common.close', '✕')}</button>
               </div>
 
               <h2 className="text-xl font-bold text-white mb-3">{selectedNews.title}</h2>

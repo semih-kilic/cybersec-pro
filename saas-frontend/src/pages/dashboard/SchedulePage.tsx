@@ -170,8 +170,8 @@ export function SchedulePage() {
     <PageTransition>
     <div className="min-h-screen bg-gray-950">
       <Header 
-        title="Schedule"
-        subtitle="Automate recurring security scans"
+        title={t('schedule.title', 'Schedule')}
+        subtitle={t('schedule.subtitle', 'Automate recurring security scans')}
       />
 
       <div className="p-6">
@@ -181,7 +181,7 @@ export function SchedulePage() {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-2xl font-bold text-white">{schedules.length}</p>
-                <p className="text-sm text-gray-400">Scheduled Scans</p>
+                <p className="text-sm text-gray-400">{t('schedule.scheduledScans', 'Scheduled Scans')}</p>
               </div>
               <div className="w-10 h-10 rounded-lg bg-kali-blue/20 flex items-center justify-center">
                 <svg className="w-5 h-5 text-kali-blue" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -196,7 +196,7 @@ export function SchedulePage() {
                 <p className="text-2xl font-bold text-green-400">
                   {schedules.filter(s => getScheduleStatus(s) === 'active').length}
                 </p>
-                <p className="text-sm text-gray-400">Active</p>
+                <p className="text-sm text-gray-400">{t('schedule.active', 'Active')}</p>
               </div>
               <div className="w-10 h-10 rounded-lg bg-green-500/20 flex items-center justify-center">
                 <svg className="w-5 h-5 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -211,7 +211,7 @@ export function SchedulePage() {
                 <p className="text-2xl font-bold text-white">
                   {schedules.reduce((sum, s) => sum + (s.run_count || 0), 0)}
                 </p>
-                <p className="text-sm text-gray-400">Total Runs</p>
+                <p className="text-sm text-gray-400">{t('schedule.totalRuns', 'Total Runs')}</p>
               </div>
               <div className="w-10 h-10 rounded-lg bg-purple-500/20 flex items-center justify-center">
                 <svg className="w-5 h-5 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -231,7 +231,7 @@ export function SchedulePage() {
                     : '-'
                   }
                 </p>
-                <p className="text-sm text-gray-400">Next Scan</p>
+                <p className="text-sm text-gray-400">{t('schedule.nextScan', 'Next Scan')}</p>
               </div>
               <div className="w-10 h-10 rounded-lg bg-blue-500/20 flex items-center justify-center">
                 <svg className="w-5 h-5 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -295,19 +295,19 @@ export function SchedulePage() {
                       </svg>
                       <span className="font-medium">{formatSchedule(schedule.cron_expression || schedule.schedule_type || '')}</span>
                     </div>
-                    <p className="text-xs text-gray-500 mt-1">Schedule</p>
+                    <p className="text-xs text-gray-500 mt-1">{t('schedule.schedule', 'Schedule')}</p>
                   </div>
 
                   <div className="text-center">
                     <p className="text-white font-medium">
                       {getScheduleStatus(schedule) === 'active' ? formatRelativeTime(schedule.next_run) : '-'}
                     </p>
-                    <p className="text-xs text-gray-500 mt-1">Next Run</p>
+                    <p className="text-xs text-gray-500 mt-1">{t('schedule.nextRun', 'Next Run')}</p>
                   </div>
 
                   <div className="text-center">
                     <p className="text-white font-medium">{schedule.run_count || 0}</p>
-                    <p className="text-xs text-gray-500 mt-1">Runs</p>
+                    <p className="text-xs text-gray-500 mt-1">{t('schedule.runs', 'Runs')}</p>
                   </div>
                 </div>
 
@@ -316,7 +316,7 @@ export function SchedulePage() {
                   <button
                     onClick={() => handleRunNow(schedule)}
                     className="p-2 bg-kali-blue/20 text-kali-blue hover:bg-kali-blue/30 rounded-lg transition"
-                    title="Run Now"
+                    title={t('schedule.runNow', 'Run Now')}
                   >
                     <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" />
@@ -349,7 +349,7 @@ export function SchedulePage() {
                       setShowNewModal(true);
                     }}
                     className="p-2 bg-gray-800 text-gray-400 hover:bg-gray-700 hover:text-white rounded-lg transition"
-                    title="Edit"
+                    title={t('common.edit', 'Edit')}
                   >
                     <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
@@ -358,7 +358,7 @@ export function SchedulePage() {
                   <button
                     onClick={() => handleDelete(schedule.id)}
                     className="p-2 bg-gray-800 text-gray-400 hover:bg-red-500/20 hover:text-red-400 rounded-lg transition"
-                    title="Delete"
+                    title={t('common.delete', 'Delete')}
                   >
                     <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
@@ -377,8 +377,8 @@ export function SchedulePage() {
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
               </svg>
             </div>
-            <h3 className="text-lg font-medium text-white mb-2">No scheduled scans</h3>
-            <p className="text-gray-400 mb-4">Schedule recurring security scans to automate your workflow.</p>
+            <h3 className="text-lg font-medium text-white mb-2">{t('schedule.noScheduledScans', 'No scheduled scans')}</h3>
+            <p className="text-gray-400 mb-4">{t('schedule.noScheduledDesc', 'Schedule recurring security scans to automate your workflow.')}</p>
             <button 
               onClick={() => setShowNewModal(true)}
               className="inline-flex items-center gap-2 px-6 py-2 bg-kali-blue text-white rounded-lg hover:bg-kali-blue/90 transition"
@@ -423,35 +423,35 @@ export function SchedulePage() {
 
               <div className="p-6 space-y-4">
                 <div>
-                  <label className="block text-sm text-gray-400 mb-2">Name</label>
+                  <label className="block text-sm text-gray-400 mb-2">{t('common.name', 'Name')}</label>
                   <input
                     type="text"
                     value={formData.name}
                     onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                    placeholder="Weekly Network Scan"
+                    placeholder={t('schedule.namePlaceholder', 'Weekly Network Scan')}
                     className="w-full px-4 py-3 bg-gray-800 border border-gray-700 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:border-kali-blue transition"
                   />
                 </div>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-sm text-gray-400 mb-2">Tool</label>
+                    <label className="block text-sm text-gray-400 mb-2">{t('common.tool', 'Tool')}</label>
                     <select
                       value={formData.tool}
                       onChange={(e) => setFormData({ ...formData, tool: e.target.value })}
                       className="w-full px-4 py-3 bg-gray-800 border border-gray-700 rounded-xl text-white focus:outline-none focus:border-kali-blue transition"
                     >
-                      <option value="">Select tool...</option>
-                      <option value="nmap">nmap</option>
-                      <option value="nikto">nikto</option>
-                      <option value="sqlmap">sqlmap</option>
-                      <option value="gobuster">gobuster</option>
-                      <option value="wpscan">wpscan</option>
+                      <option value="">{t('schedule.selectTool', 'Select tool...')}</option>
+                      <option value="nmap">{t('tools.nmap', 'nmap')}</option>
+                      <option value="nikto">{t('tools.nikto', 'nikto')}</option>
+                      <option value="sqlmap">{t('tools.sqlmap', 'sqlmap')}</option>
+                      <option value="gobuster">{t('tools.gobuster', 'gobuster')}</option>
+                      <option value="wpscan">{t('tools.wpscan', 'wpscan')}</option>
                     </select>
                   </div>
 
                   <div>
-                    <label className="block text-sm text-gray-400 mb-2">Target</label>
+                    <label className="block text-sm text-gray-400 mb-2">{t('common.target', 'Target')}</label>
                     <input
                       type="text"
                       value={formData.target}
@@ -463,7 +463,7 @@ export function SchedulePage() {
                 </div>
 
                 <div>
-                  <label className="block text-sm text-gray-400 mb-2">Schedule</label>
+                  <label className="block text-sm text-gray-400 mb-2">{t('schedule.scheduleLabel', 'Schedule')}</label>
                   <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
                     {presetSchedules.map(preset => (
                       <button
@@ -484,7 +484,7 @@ export function SchedulePage() {
 
                 {formData.schedulePreset === 'custom' && (
                   <div>
-                    <label className="block text-sm text-gray-400 mb-2">Cron Expression</label>
+                    <label className="block text-sm text-gray-400 mb-2">{t('schedule.cronExpression', 'Cron Expression')}</label>
                     <input
                       type="text"
                       value={formData.customCron}
@@ -511,7 +511,7 @@ export function SchedulePage() {
                         <div className={`absolute top-1 w-4 h-4 bg-white rounded-full transition-all ${formData.notifications ? 'left-5' : 'left-1'}`} />
                       </div>
                     </div>
-                    <span className="text-white">Email notifications on completion</span>
+                    <span className="text-white">{t('schedule.emailNotifications', 'Email notifications on completion')}</span>
                   </label>
                 </div>
               </div>

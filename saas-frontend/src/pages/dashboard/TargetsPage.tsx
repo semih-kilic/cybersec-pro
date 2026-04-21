@@ -163,8 +163,8 @@ export function TargetsPage() {
     <PageTransition>
     <div className="min-h-screen bg-gray-950">
       <Header 
-        title="Targets"
-        subtitle="Manage your scan targets and groups"
+        title={t('targets.title', 'Targets')}
+        subtitle={t('targets.subtitle', 'Manage your scan targets and groups')}
       />
 
       <div className="p-6">
@@ -174,7 +174,7 @@ export function TargetsPage() {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-2xl font-bold text-white">{targets.length}</p>
-                <p className="text-sm text-gray-400">Total Targets</p>
+                <p className="text-sm text-gray-400">{t('targets.totalTargets', 'Total Targets')}</p>
               </div>
               <div className="w-10 h-10 rounded-lg bg-kali-blue/20 flex items-center justify-center">
                 <svg className="w-5 h-5 text-kali-blue" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -187,7 +187,7 @@ export function TargetsPage() {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-2xl font-bold text-white">{groups.length}</p>
-                <p className="text-sm text-gray-400">Groups</p>
+                <p className="text-sm text-gray-400">{t('targets.groups', 'Groups')}</p>
               </div>
               <div className="w-10 h-10 rounded-lg bg-purple-500/20 flex items-center justify-center">
                 <svg className="w-5 h-5 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -200,7 +200,7 @@ export function TargetsPage() {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-2xl font-bold text-white">{targets.reduce((sum, t) => sum + t.scans_count, 0)}</p>
-                <p className="text-sm text-gray-400">Total Scans</p>
+                <p className="text-sm text-gray-400">{t('targets.totalScans', 'Total Scans')}</p>
               </div>
               <div className="w-10 h-10 rounded-lg bg-green-500/20 flex items-center justify-center">
                 <svg className="w-5 h-5 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -215,7 +215,7 @@ export function TargetsPage() {
                 <p className="text-2xl font-bold text-red-400">
                   {targets.filter(t => (t.risk_score || 0) >= 70).length}
                 </p>
-                <p className="text-sm text-gray-400">High Risk</p>
+                <p className="text-sm text-gray-400">{t('targets.highRisk', 'High Risk')}</p>
               </div>
               <div className="w-10 h-10 rounded-lg bg-red-500/20 flex items-center justify-center">
                 <svg className="w-5 h-5 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -232,7 +232,7 @@ export function TargetsPage() {
           <div className="relative flex-1">
             <input
               type="text"
-              placeholder="Search targets..."
+              placeholder={t('targets.searchPlaceholder', 'Search targets...')}
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="w-full pl-10 pr-4 py-3 bg-gray-900 border border-gray-800 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:border-kali-blue transition"
@@ -272,12 +272,12 @@ export function TargetsPage() {
             onChange={(e) => setSelectedType(e.target.value || null)}
             className="px-4 py-2 bg-gray-800 border border-gray-700 rounded-lg text-white focus:outline-none focus:border-kali-blue transition"
           >
-            <option value="">All Types</option>
-            <option value="ip">IP Address</option>
-            <option value="domain">Domain</option>
-            <option value="url">URL</option>
-            <option value="cidr">CIDR Range</option>
-            <option value="range">IP Range</option>
+            <option value="">{t('targets.allTypes', 'All Types')}</option>
+            <option value="ip">{t('targets.ipAddress', 'IP Address')}</option>
+            <option value="domain">{t('targets.domain', 'Domain')}</option>
+            <option value="url">{t('targets.url', 'URL')}</option>
+            <option value="cidr">{t('targets.cidrRange', 'CIDR Range')}</option>
+            <option value="range">{t('targets.ipRange', 'IP Range')}</option>
           </select>
 
           {/* Actions */}
@@ -346,13 +346,13 @@ export function TargetsPage() {
                     className="w-4 h-4 rounded border-gray-600 bg-gray-800 text-kali-blue focus:ring-kali-blue"
                   />
                 </th>
-                <th className="px-5 py-3 font-medium">Target</th>
-                <th className="px-5 py-3 font-medium">Type</th>
-                <th className="px-5 py-3 font-medium">Group</th>
-                <th className="px-5 py-3 font-medium">Tags</th>
-                <th className="px-5 py-3 font-medium">Scans</th>
-                <th className="px-5 py-3 font-medium">Risk</th>
-                <th className="px-5 py-3 font-medium">Actions</th>
+                <th className="px-5 py-3 font-medium">{t('common.target', 'Target')}</th>
+                <th className="px-5 py-3 font-medium">{t('common.type', 'Type')}</th>
+                <th className="px-5 py-3 font-medium">{t('targets.group', 'Group')}</th>
+                <th className="px-5 py-3 font-medium">{t('targets.tags', 'Tags')}</th>
+                <th className="px-5 py-3 font-medium">{t('common.scans', 'Scans')}</th>
+                <th className="px-5 py-3 font-medium">{t('targets.risk', 'Risk')}</th>
+                <th className="px-5 py-3 font-medium">{t('common.actions', 'Actions')}</th>
               </tr>
             </thead>
             <tbody>
@@ -512,11 +512,11 @@ export function TargetsPage() {
                       onChange={(e) => setNewTarget({ ...newTarget, type: e.target.value as Target['type'] })}
                       className="w-full px-4 py-3 bg-gray-800 border border-gray-700 rounded-xl text-white focus:outline-none focus:border-kali-blue transition"
                     >
-                      <option value="ip">IP Address</option>
-                      <option value="domain">Domain</option>
-                      <option value="url">URL</option>
-                      <option value="cidr">CIDR Range</option>
-                      <option value="range">IP Range</option>
+                      <option value="ip">{t('targets.ipAddress', 'IP Address')}</option>
+                      <option value="domain">{t('targets.domain', 'Domain')}</option>
+                      <option value="url">{t('targets.url', 'URL')}</option>
+                      <option value="cidr">{t('targets.cidrRange', 'CIDR Range')}</option>
+                      <option value="range">{t('targets.ipRange', 'IP Range')}</option>
                     </select>
                   </div>
 

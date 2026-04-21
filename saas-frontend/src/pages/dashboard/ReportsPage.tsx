@@ -356,7 +356,7 @@ export function ReportsPage() {
               </div>
               <div>
                 <p className="text-2xl font-bold text-white">{reports.length}</p>
-                <p className="text-xs text-gray-400">Reports</p>
+                <p className="text-xs text-gray-400">{t('reports.statReports', 'Reports')}</p>
               </div>
             </div>
           </div>
@@ -368,7 +368,7 @@ export function ReportsPage() {
               </div>
               <div>
                 <p className="text-2xl font-bold text-white">{availableScans.length}</p>
-                <p className="text-xs text-gray-400">Scans Available</p>
+                <p className="text-xs text-gray-400">{t('reports.statScansAvailable', 'Scans Available')}</p>
               </div>
             </div>
           </div>
@@ -380,7 +380,7 @@ export function ReportsPage() {
               </div>
               <div>
                 <p className="text-2xl font-bold text-red-400">{criticalCount}</p>
-                <p className="text-xs text-gray-400">Critical</p>
+                <p className="text-xs text-gray-400">{t('reports.statCritical', 'Critical')}</p>
               </div>
             </div>
           </div>
@@ -392,7 +392,7 @@ export function ReportsPage() {
               </div>
               <div>
                 <p className="text-2xl font-bold text-orange-400">{highCount}</p>
-                <p className="text-xs text-gray-400">High</p>
+                <p className="text-xs text-gray-400">{t('reports.statHigh', 'High')}</p>
               </div>
             </div>
           </div>
@@ -404,7 +404,7 @@ export function ReportsPage() {
               </div>
               <div>
                 <p className="text-2xl font-bold text-white">{avgRiskScore}</p>
-                <p className="text-xs text-gray-400">Avg Risk Score</p>
+                <p className="text-xs text-gray-400">{t('reports.statAvgRisk', 'Avg Risk Score')}</p>
               </div>
             </div>
           </div>
@@ -418,8 +418,8 @@ export function ReportsPage() {
                 <PhotoIcon className="w-6 h-6 text-kali-purple" />
               </div>
               <div>
-                <h3 className="text-white font-semibold text-sm">Report Branding</h3>
-                <p className="text-gray-400 text-xs mt-0.5">Your logo will appear on all generated reports</p>
+                <h3 className="text-white font-semibold text-sm">{t('reports.brandingTitle', 'Report Branding')}</h3>
+                <p className="text-gray-400 text-xs mt-0.5">{t('reports.brandingSubtitle', 'Your logo will appear on all generated reports')}</p>
               </div>
             </div>
             <div className="flex items-center gap-3">
@@ -434,7 +434,7 @@ export function ReportsPage() {
                     onClick={handleLogoDelete}
                     disabled={deleteLogoMutation.isPending}
                     className="p-2 text-red-400 hover:bg-red-500/10 rounded-lg transition"
-                    title="Remove logo"
+                    title={t('reports.removeLogo', 'Remove logo')}
                   >
                     <TrashIcon className="w-4 h-4" />
                   </button>
@@ -469,7 +469,7 @@ export function ReportsPage() {
             <MagnifyingGlassIcon className="w-5 h-5 text-gray-500 absolute left-3 top-1/2 -translate-y-1/2" />
             <input
               type="text"
-              placeholder="Search reports..."
+              placeholder={t('reports.searchPlaceholder', 'Search reports...')}
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="w-full pl-10 pr-4 py-3 bg-gray-900 border border-gray-800 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:border-kali-blue transition"
@@ -488,8 +488,8 @@ export function ReportsPage() {
         {filteredReports.length === 0 ? (
           <div className="bg-gray-900/50 rounded-2xl border border-gray-800 p-12 text-center">
             <DocumentChartBarIcon className="w-16 h-16 text-gray-600 mx-auto mb-4" />
-            <h3 className="text-xl font-semibold text-white mb-2">No Reports Yet</h3>
-            <p className="text-gray-400 mb-6">Generate your first professional security report from completed scans.</p>
+            <h3 className="text-xl font-semibold text-white mb-2">{t('reports.noReportsTitle', 'No Reports Yet')}</h3>
+            <p className="text-gray-400 mb-6">{t('reports.noReportsDesc', 'Generate your first professional security report from completed scans.')}</p>
             <button
               onClick={() => setShowGenerateModal(true)}
               className="px-6 py-3 bg-kali-blue text-white rounded-xl hover:bg-kali-blue/90 transition inline-flex items-center gap-2"
@@ -522,7 +522,7 @@ export function ReportsPage() {
                   {/* Risk Score Bar */}
                   <div className="mb-4">
                     <div className="flex justify-between text-xs mb-1">
-                      <span className="text-gray-400">Risk Score</span>
+                      <span className="text-gray-400">{t('reports.riskScore', 'Risk Score')}</span>
                       <span className="text-white font-medium">{report.risk_score || 0}/100</span>
                     </div>
                     <div className="h-2 bg-gray-800 rounded-full overflow-hidden">
@@ -604,8 +604,8 @@ export function ReportsPage() {
           <div className="bg-gray-900 rounded-2xl border border-gray-800 w-full max-w-4xl max-h-[90vh] overflow-hidden flex flex-col">
             <div className="p-6 border-b border-gray-800 flex items-center justify-between">
               <div>
-                <h2 className="text-xl font-bold text-white">Generate Report</h2>
-                <p className="text-gray-400 text-sm mt-1">Create a professional security assessment report</p>
+                <h2 className="text-xl font-bold text-white">{t('reports.generateTitle', 'Generate Report')}</h2>
+                <p className="text-gray-400 text-sm mt-1">{t('reports.generateSubtitle', 'Create a professional security assessment report')}</p>
               </div>
               <button
                 onClick={() => setShowGenerateModal(false)}
@@ -618,19 +618,19 @@ export function ReportsPage() {
             <div className="flex-1 overflow-y-auto p-6 space-y-6">
               {/* Report Name */}
               <div>
-                <label className="block text-sm font-medium text-gray-300 mb-2">Report Name</label>
+                <label className="block text-sm font-medium text-gray-300 mb-2">{t('reports.reportNameLabel', 'Report Name')}</label>
                 <input
                   type="text"
                   value={reportName}
                   onChange={(e) => setReportName(e.target.value)}
                   className="w-full px-4 py-3 bg-gray-800 border border-gray-700 rounded-xl text-white focus:outline-none focus:border-kali-blue"
-                  placeholder="Security Assessment Report"
+                  placeholder={t('reports.reportNamePlaceholder', 'Security Assessment Report')}
                 />
               </div>
               
               {/* Template Selection */}
               <div>
-                <label className="block text-sm font-medium text-gray-300 mb-3">Choose Template</label>
+                <label className="block text-sm font-medium text-gray-300 mb-3">{t('reports.chooseTemplate', 'Choose Template')}</label>
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
                   {templates.map((template) => (
                     <button
@@ -667,7 +667,7 @@ export function ReportsPage() {
               
               {/* Format Selection */}
               <div>
-                <label className="block text-sm font-medium text-gray-300 mb-3">Output Format</label>
+                <label className="block text-sm font-medium text-gray-300 mb-3">{t('reports.outputFormat', 'Output Format')}</label>
                 <div className="flex flex-wrap gap-2">
                   {(templates.find(t => t.id === selectedTemplate)?.formats || ['html', 'pdf', 'json', 'csv', 'markdown']).map((format) => (
                     <button
@@ -693,8 +693,8 @@ export function ReportsPage() {
                 {availableScans.length === 0 ? (
                   <div className="bg-gray-800 rounded-xl p-6 text-center">
                     <ClipboardDocumentListIcon className="w-12 h-12 text-gray-600 mx-auto mb-3" />
-                    <p className="text-gray-400">No completed scans available</p>
-                    <p className="text-gray-500 text-sm mt-1">Run some scans first to generate reports</p>
+                    <p className="text-gray-400">{t('reports.noScansAvailable', 'No completed scans available')}</p>
+                    <p className="text-gray-500 text-sm mt-1">{t('reports.runScansFirst', 'Run some scans first to generate reports')}</p>
                   </div>
                 ) : (
                   <div className="bg-gray-800 rounded-xl border border-gray-700 max-h-64 overflow-y-auto">
@@ -795,7 +795,7 @@ export function ReportsPage() {
                   ref={iframeRef}
                   srcDoc={previewContent}
                   className="w-full h-full border-0"
-                  title="Report Preview"
+                  title={t('reports.reportPreview', 'Report Preview')}
                 />
               ) : (
                 <pre className="p-6 overflow-auto h-full text-gray-300 text-sm font-mono whitespace-pre-wrap">

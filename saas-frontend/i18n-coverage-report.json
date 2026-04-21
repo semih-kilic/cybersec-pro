@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-04-21T15:00:01.411Z",
+  "generatedAt": "2026-04-21T15:08:56.552Z",
   "report": [
     {
       "filePath": "src/pages/DashboardPage.tsx",
@@ -137,202 +137,61 @@
       "filePath": "src/pages/dashboard/NewScanPage.tsx",
       "hasUseTranslation": true,
       "hasTCalls": true,
-      "probableHardcodedLines": [
-        406,
-        546,
-        561,
-        612
-      ]
+      "probableHardcodedLines": []
     },
     {
       "filePath": "src/pages/dashboard/OverviewPage.tsx",
       "hasUseTranslation": true,
       "hasTCalls": true,
-      "probableHardcodedLines": [
-        321,
-        350,
-        359,
-        360,
-        380
-      ]
+      "probableHardcodedLines": []
     },
     {
       "filePath": "src/pages/dashboard/ProjectsPage.tsx",
       "hasUseTranslation": true,
       "hasTCalls": true,
-      "probableHardcodedLines": [
-        153,
-        188,
-        238,
-        242,
-        246,
-        250,
-        293,
-        313,
-        326,
-        331,
-        337,
-        341,
-        348,
-        353
-      ]
+      "probableHardcodedLines": []
     },
     {
       "filePath": "src/pages/dashboard/PurpleTeamPage.tsx",
       "hasUseTranslation": true,
       "hasTCalls": true,
-      "probableHardcodedLines": [
-        222,
-        458,
-        471,
-        515,
-        527,
-        531,
-        535,
-        545,
-        809,
-        814,
-        858,
-        878,
-        884,
-        888,
-        892,
-        968,
-        980,
-        987,
-        992,
-        999
-      ]
+      "probableHardcodedLines": []
     },
     {
       "filePath": "src/pages/dashboard/ReportsPage.tsx",
       "hasUseTranslation": true,
       "hasTCalls": true,
-      "probableHardcodedLines": [
-        359,
-        371,
-        383,
-        395,
-        407,
-        421,
-        422,
-        437,
-        472,
-        491,
-        492,
-        525,
-        607,
-        608,
-        621,
-        627,
-        633,
-        670,
-        696,
-        697
-      ]
+      "probableHardcodedLines": []
     },
     {
       "filePath": "src/pages/dashboard/ScanExecutionPage.tsx",
       "hasUseTranslation": true,
       "hasTCalls": true,
-      "probableHardcodedLines": [
-        541,
-        782,
-        786,
-        790,
-        794,
-        805,
-        835,
-        836,
-        846,
-        863,
-        926,
-        935,
-        960,
-        961
-      ]
+      "probableHardcodedLines": []
     },
     {
       "filePath": "src/pages/dashboard/ScansPage.tsx",
       "hasUseTranslation": true,
       "hasTCalls": true,
-      "probableHardcodedLines": [
-        207,
-        224,
-        288,
-        296,
-        300,
-        376,
-        377,
-        378,
-        379,
-        380,
-        381,
-        382,
-        414,
-        467,
-        509,
-        510,
-        579,
-        580,
-        628,
-        635
-      ]
+      "probableHardcodedLines": []
     },
     {
       "filePath": "src/pages/dashboard/SchedulePage.tsx",
       "hasUseTranslation": true,
       "hasTCalls": true,
-      "probableHardcodedLines": [
-        173,
-        174,
-        184,
-        199,
-        214,
-        234,
-        298,
-        305,
-        310,
-        319,
-        352,
-        361,
-        380,
-        381,
-        426,
-        431,
-        438,
-        444,
-        445,
-        446
-      ]
+      "probableHardcodedLines": []
     },
     {
       "filePath": "src/pages/dashboard/SecurityNewsPage.tsx",
       "hasUseTranslation": true,
       "hasTCalls": true,
-      "probableHardcodedLines": [
-        183,
-        184,
-        194,
-        220,
-        275,
-        290
-      ]
+      "probableHardcodedLines": []
     },
     {
       "filePath": "src/pages/dashboard/ServiceManagerPage.tsx",
       "hasUseTranslation": true,
       "hasTCalls": true,
-      "probableHardcodedLines": [
-        125,
-        138,
-        139,
-        161,
-        315,
-        321,
-        325,
-        464
-      ]
+      "probableHardcodedLines": []
     },
     {
       "filePath": "src/pages/dashboard/SettingsPage.tsx",

@@ -538,7 +538,7 @@ export function ScanExecutionPage() {
                    'This tool runs in a restricted environment for safety.'}
                 </p>
                 {!executionMode.can_execute && (
-                  <p className="text-red-400 text-xs mt-2 font-medium">This scan type is not available for remote execution.</p>
+                  <p className="text-red-400 text-xs mt-2 font-medium">{t('scanExecution.notAvailableRemote', 'This scan type is not available for remote execution.')}</p>
                 )}
               </div>
             )}
@@ -779,19 +779,19 @@ export function ScanExecutionPage() {
                         <p className={`text-3xl font-bold ${(businessResults.summary.score || 0) >= 80 ? 'text-green-400' : (businessResults.summary.score || 0) >= 60 ? 'text-yellow-400' : 'text-red-400'}`}>
                           {businessResults.summary.score || '--'}/100
                         </p>
-                        <p className="text-gray-500 text-xs mt-1">Security Score</p>
+                        <p className="text-gray-500 text-xs mt-1">{t('scanExecution.securityScore', 'Security Score')}</p>
                       </div>
                       <div className="text-center">
                         <p className="text-3xl font-bold text-red-400">{businessResults.summary.critical || 0}</p>
-                        <p className="text-gray-500 text-xs mt-1">Critical</p>
+                        <p className="text-gray-500 text-xs mt-1">{t('scanExecution.critical', 'Critical')}</p>
                       </div>
                       <div className="text-center">
                         <p className="text-3xl font-bold text-orange-400">{businessResults.summary.high || 0}</p>
-                        <p className="text-gray-500 text-xs mt-1">High</p>
+                        <p className="text-gray-500 text-xs mt-1">{t('scanExecution.high', 'High')}</p>
                       </div>
                       <div className="text-center">
                         <p className="text-3xl font-bold text-yellow-400">{(businessResults.summary.medium || 0) + (businessResults.summary.low || 0)}</p>
-                        <p className="text-gray-500 text-xs mt-1">Medium/Low</p>
+                        <p className="text-gray-500 text-xs mt-1">{t('scanExecution.mediumLow', 'Medium/Low')}</p>
                       </div>
                     </div>
                   ) : (
@@ -802,7 +802,7 @@ export function ScanExecutionPage() {
                 {/* Vulnerability Cards */}
                 {businessResults?.findings && businessResults.findings.length > 0 ? (
                   <div className="space-y-3">
-                    <h3 className="text-white font-semibold">Findings</h3>
+                    <h3 className="text-white font-semibold">{t('scanExecution.findings', 'Findings')}</h3>
                     {businessResults.findings.map((f: any, i: number) => (
                       <div key={i} className={`rounded-xl p-4 border ${
                         f.severity === 'critical' ? 'border-red-500/30 bg-red-500/5' :
@@ -832,8 +832,8 @@ export function ScanExecutionPage() {
                     <div className="w-14 h-14 mx-auto rounded-full bg-green-500/10 flex items-center justify-center mb-3">
                       <svg className="w-7 h-7 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
                     </div>
-                    <p className="text-green-400 font-medium">Scan completed successfully</p>
-                    <p className="text-gray-500 text-sm mt-1">Review the terminal output for detailed results</p>
+                    <p className="text-green-400 font-medium">{t('scanExecution.completedSuccessfully', 'Scan completed successfully')}</p>
+                    <p className="text-gray-500 text-sm mt-1">{t('scanExecution.reviewOutput', 'Review the terminal output for detailed results')}</p>
                     <button onClick={() => setViewMode('terminal')} className="mt-3 px-4 py-2 bg-gray-800 hover:bg-gray-700 text-gray-300 rounded-lg text-sm transition">
                       View Terminal Output
                     </button>
@@ -843,7 +843,7 @@ export function ScanExecutionPage() {
                 {/* Compliance */}
                 {businessResults?.compliance && (
                   <div>
-                    <h3 className="text-white font-semibold mb-3">Compliance Status</h3>
+                    <h3 className="text-white font-semibold mb-3">{t('scanExecution.complianceStatus', 'Compliance Status')}</h3>
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
                       {Object.entries(businessResults.compliance).map(([std, val]: [string, any]) => (
                         <div key={std} className="bg-gray-800/50 rounded-lg p-3 text-center border border-gray-700">
@@ -860,7 +860,7 @@ export function ScanExecutionPage() {
                 {/* Fix Roadmap */}
                 {businessResults?.roadmap && businessResults.roadmap.length > 0 && (
                   <div>
-                    <h3 className="text-white font-semibold mb-3">Fix Roadmap</h3>
+                    <h3 className="text-white font-semibold mb-3">{t('scanExecution.fixRoadmap', 'Fix Roadmap')}</h3>
                     <div className="space-y-2">
                       {businessResults.roadmap.map((item: any, i: number) => (
                         <div key={i} className="flex items-center gap-3 p-3 bg-gray-800/50 rounded-lg border border-gray-700">
@@ -923,7 +923,7 @@ export function ScanExecutionPage() {
                   <button
                     onClick={() => navigator.clipboard.writeText(output.join(''))}
                     className="p-1.5 text-gray-400 hover:text-white transition"
-                    title="Copy output"
+                    title={t('scanExecution.copyOutput', 'Copy output')}
                   >
                     <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
@@ -932,7 +932,7 @@ export function ScanExecutionPage() {
                   <button
                     onClick={() => setOutput([])}
                     className="p-1.5 text-gray-400 hover:text-white transition"
-                    title="Clear output"
+                    title={t('scanExecution.clearOutput', 'Clear output')}
                   >
                     <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
@@ -957,8 +957,8 @@ export function ScanExecutionPage() {
   ╚═════╝   ╚═╝   ╚═════╝ ╚══════╝╚═╝  ╚═╝╚══════╝╚══════╝ ╚═════╝
                                                                    
 `}</pre>
-                    <p className="mt-4">Ready to execute security scan.</p>
-                    <p className="mt-2">Enter a target and click "Start Scan" to begin.</p>
+                    <p className="mt-4">{t('scanExecution.readyToExecute', 'Ready to execute security scan.')}</p>
+                    <p className="mt-2">{t('scanExecution.enterTarget', 'Enter a target and click "Start Scan" to begin.')}</p>
                     <p className="mt-4 text-yellow-500">⚠️ Only scan systems you have permission to test!</p>
                   </div>
                 ) : (

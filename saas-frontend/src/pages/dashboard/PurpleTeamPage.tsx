@@ -219,7 +219,7 @@ function MitreHeatMap({ coverage, matrix }: { coverage: Record<string, TacticCov
     <div className="bg-gray-900/50 border border-gray-700/50 rounded-xl p-4">
       <div className="flex items-center gap-2 mb-4">
         <span className="text-lg">🗺️</span>
-        <h3 className="text-lg font-bold text-white">MITRE ATT&CK Coverage Matrix</h3>
+        <h3 className="text-lg font-bold text-white">{t('purpleTeam.mitreCoverageMatrix', 'MITRE ATT&CK Coverage Matrix')}</h3>
         <div className="ml-auto flex items-center gap-3 text-xs">
           <span className="flex items-center gap-1"><span className="w-3 h-3 rounded bg-green-500/70 inline-block" /> Detected</span>
           <span className="flex items-center gap-1"><span className="w-3 h-3 rounded bg-red-500/70 inline-block" /> Missed</span>
@@ -455,7 +455,7 @@ function ExerciseDetail({ exercise }: { exercise: Exercise }) {
                 </div>
                 {step.output && (
                   <details className="mt-2">
-                    <summary className="text-xs text-gray-500 cursor-pointer hover:text-gray-300">View Output</summary>
+                    <summary className="text-xs text-gray-500 cursor-pointer hover:text-gray-300">{t('purpleTeam.viewOutput', 'View Output')}</summary>
                     <pre className="mt-1 text-[10px] text-gray-400 bg-gray-900 rounded p-2 max-h-40 overflow-auto whitespace-pre-wrap font-mono">
                       {step.output.substring(0, 3000)}
                     </pre>
@@ -468,7 +468,7 @@ function ExerciseDetail({ exercise }: { exercise: Exercise }) {
                 {exercise.status === 'running' ? (
                   <div className="flex flex-col items-center gap-2">
                     <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-cyan-500" />
-                    <span>Attack chain executing...</span>
+                    <span>{t('purpleTeam.chainExecuting', 'Attack chain executing...')}</span>
                   </div>
                 ) : 'No attack steps yet'}
               </div>
@@ -512,7 +512,7 @@ function ExerciseDetail({ exercise }: { exercise: Exercise }) {
               </div>
             ))}
             {(!exercise.blue_team_alerts || exercise.blue_team_alerts.length === 0) && (
-              <div className="text-center text-gray-500 py-8">No alerts generated</div>
+              <div className="text-center text-gray-500 py-8">{t('purpleTeam.noAlerts', 'No alerts generated')}</div>
             )}
           </div>
         )}
@@ -524,15 +524,15 @@ function ExerciseDetail({ exercise }: { exercise: Exercise }) {
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-center mb-3">
                 <div>
                   <div className="text-2xl font-bold text-white">{exercise.gap_analysis.total_attacks}</div>
-                  <div className="text-xs text-gray-400">Total Attacks</div>
+                  <div className="text-xs text-gray-400">{t('purpleTeam.totalAttacks', 'Total Attacks')}</div>
                 </div>
                 <div>
                   <div className="text-2xl font-bold text-green-400">{exercise.gap_analysis.detected}</div>
-                  <div className="text-xs text-gray-400">Detected</div>
+                  <div className="text-xs text-gray-400">{t('purpleTeam.detected', 'Detected')}</div>
                 </div>
                 <div>
                   <div className="text-2xl font-bold text-red-400">{exercise.gap_analysis.missed}</div>
-                  <div className="text-xs text-gray-400">Missed</div>
+                  <div className="text-xs text-gray-400">{t('purpleTeam.missed', 'Missed')}</div>
                 </div>
               </div>
               <div className="text-center">
@@ -542,7 +542,7 @@ function ExerciseDetail({ exercise }: { exercise: Exercise }) {
                 }`}>
                   {exercise.gap_analysis.detection_rate}%
                 </span>
-                <div className="text-xs text-gray-400">Detection Rate</div>
+                <div className="text-xs text-gray-400">{t('purpleTeam.detectionRate', 'Detection Rate')}</div>
               </div>
             </div>
 
@@ -806,12 +806,12 @@ export default function PurpleTeamPage() {
             <div className="bg-gray-900/50 border border-gray-700/50 rounded-xl p-4">
               <h3 className="text-sm font-bold text-white mb-2">🔴 Available Attack Chains</h3>
               <div className="text-3xl font-bold text-red-400">{stats.available_chains}</div>
-              <p className="text-xs text-gray-500 mt-1">Pre-built multi-step attack scenarios</p>
+              <p className="text-xs text-gray-500 mt-1">{t('purpleTeam.attackScenariosDesc', 'Pre-built multi-step attack scenarios')}</p>
             </div>
             <div className="bg-gray-900/50 border border-gray-700/50 rounded-xl p-4">
               <h3 className="text-sm font-bold text-white mb-2">🔵 Detection Playbooks</h3>
               <div className="text-3xl font-bold text-blue-400">{stats.available_playbooks}</div>
-              <p className="text-xs text-gray-500 mt-1">Automated detection & response rules</p>
+              <p className="text-xs text-gray-500 mt-1">{t('purpleTeam.detectionRulesDesc', 'Automated detection & response rules')}</p>
             </div>
           </div>
         </div>
@@ -855,7 +855,7 @@ export default function PurpleTeamPage() {
               {exercises.length === 0 && (
                 <div className="text-center text-gray-500 py-12">
                   <div className="text-4xl mb-3">🎯</div>
-                  <p>No exercises yet. Launch your first Purple Team operation!</p>
+                  <p>{t('purpleTeam.noExercises', 'No exercises yet. Launch your first Purple Team operation!')}</p>
                 </div>
               )}
             </div>
@@ -875,21 +875,21 @@ export default function PurpleTeamPage() {
             <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
               <div className="text-center p-3 bg-gray-800/30 rounded-lg">
                 <div className="text-2xl font-bold text-white">{Object.keys(mitreMatrix).length}</div>
-                <div className="text-xs text-gray-400">Tactics</div>
+                <div className="text-xs text-gray-400">{t('purpleTeam.tactics', 'Tactics')}</div>
               </div>
               <div className="text-center p-3 bg-gray-800/30 rounded-lg">
                 <div className="text-2xl font-bold text-cyan-400">
                   {Object.values(mitreMatrix).reduce((sum, t) => sum + (t.total || 0), 0)}
                 </div>
-                <div className="text-xs text-gray-400">Techniques</div>
+                <div className="text-xs text-gray-400">{t('purpleTeam.techniques', 'Techniques')}</div>
               </div>
               <div className="text-center p-3 bg-gray-800/30 rounded-lg">
                 <div className="text-2xl font-bold text-red-400">{chains.length}</div>
-                <div className="text-xs text-gray-400">Attack Chains</div>
+                <div className="text-xs text-gray-400">{t('purpleTeam.attackChains', 'Attack Chains')}</div>
               </div>
               <div className="text-center p-3 bg-gray-800/30 rounded-lg">
                 <div className="text-2xl font-bold text-blue-400">{playbooks.length}</div>
-                <div className="text-xs text-gray-400">Detection Rules</div>
+                <div className="text-xs text-gray-400">{t('purpleTeam.detectionRules', 'Detection Rules')}</div>
               </div>
             </div>
           </div>
@@ -965,7 +965,7 @@ export default function PurpleTeamPage() {
             {/* Step 1: Select Chain */}
             {!selectedChain ? (
               <div>
-                <h3 className="text-sm font-bold text-gray-300 mb-3">Select Attack Chain:</h3>
+                <h3 className="text-sm font-bold text-gray-300 mb-3">{t('purpleTeam.selectChain', 'Select Attack Chain:')}</h3>
                 <ChainSelector chains={chains} onSelect={setSelectedChain} />
               </div>
             ) : (
@@ -977,31 +977,31 @@ export default function PurpleTeamPage() {
                       <span className="text-sm font-bold text-white">{selectedChain.name}</span>
                       <SeverityBadge severity={selectedChain.severity} />
                     </div>
-                    <button onClick={() => setSelectedChain(null)} className="text-xs text-gray-400 hover:text-white">Change</button>
+                    <button onClick={() => setSelectedChain(null)} className="text-xs text-gray-400 hover:text-white">{t('common.change', 'Change')}</button>
                   </div>
                   <p className="text-xs text-gray-400 mt-1">{selectedChain.description}</p>
                 </div>
 
                 {/* Target input */}
                 <div>
-                  <label className="block text-sm font-bold text-gray-300 mb-1">Target (IP or Domain):</label>
+                  <label className="block text-sm font-bold text-gray-300 mb-1">{t('purpleTeam.targetLabel', 'Target (IP or Domain):')}</label>
                   <input
                     type="text"
                     value={newTarget}
                     onChange={e => setNewTarget(e.target.value)}
-                    placeholder="e.g. scanme.nmap.org or 192.168.1.1"
+                    placeholder={t('purpleTeam.targetPlaceholder', 'e.g. scanme.nmap.org or 192.168.1.1')}
                     className="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2 text-white placeholder-gray-500 focus:border-purple-500 focus:outline-none"
                   />
                 </div>
 
                 {/* Name input (optional) */}
                 <div>
-                  <label className="block text-sm font-bold text-gray-300 mb-1">Exercise Name (optional):</label>
+                  <label className="block text-sm font-bold text-gray-300 mb-1">{t('purpleTeam.exerciseNameLabel', 'Exercise Name (optional):')}</label>
                   <input
                     type="text"
                     value={newName}
                     onChange={e => setNewName(e.target.value)}
-                    placeholder="My Purple Team Exercise"
+                    placeholder={t('purpleTeam.exerciseNamePlaceholder', 'My Purple Team Exercise')}
                     className="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2 text-white placeholder-gray-500 focus:border-purple-500 focus:outline-none"
                   />
                 </div>

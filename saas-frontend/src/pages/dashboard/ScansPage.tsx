@@ -204,7 +204,7 @@ export function ScansPage() {
   return (
     <PageTransition>
     <div className="min-h-screen bg-gray-950" role="main" aria-label="Scans management">
-      <Header title="Scans" subtitle="View and manage your security scans" />
+      <Header title={t('scans.title', 'Scans')} subtitle={t('scans.subtitle', 'View and manage your security scans')} />
 
       <div className="p-4 sm:p-6">
         {/* Plan Usage Banner */}
@@ -221,7 +221,7 @@ export function ScansPage() {
                 </svg>
               </div>
               <div>
-                <p className="text-sm text-gray-400">Daily Scan Limit</p>
+                <p className="text-sm text-gray-400">{t('scans.dailyScanLimit', 'Daily Scan Limit')}</p>
                 <p className="text-white font-medium">
                   {planInfo.usage?.scans_today ?? 0} / {planInfo.config.daily_scan_limit} scans used today
                 </p>
@@ -285,7 +285,7 @@ export function ScansPage() {
         {isFetching && !isLoading && (
           <div className="flex items-center gap-2 mb-4 text-sm text-gray-500" role="status" aria-live="polite">
             <div className="w-3 h-3 border-2 border-kali-blue border-t-transparent rounded-full animate-spin" />
-            <span>Refreshing...</span>
+            <span>{t('common.refreshing', 'Refreshing...')}</span>
           </div>
         )}
 
@@ -293,11 +293,11 @@ export function ScansPage() {
         <div className="flex flex-col lg:flex-row gap-4 mb-6" role="toolbar" aria-label="Scan filters">
           {/* Search */}
           <div className="relative flex-1">
-            <label htmlFor="scan-search" className="sr-only">Search scans</label>
+            <label htmlFor="scan-search" className="sr-only">{t('scans.searchLabel', 'Search scans')}</label>
             <input
               id="scan-search"
               type="text"
-              placeholder="Search by tool or target..."
+              placeholder={t('scans.searchPlaceholder', 'Search by tool or target...')}
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="w-full pl-10 pr-4 py-3 bg-gray-900 border border-gray-800 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:border-kali-blue focus:ring-2 focus:ring-kali-blue/20 transition"
@@ -373,13 +373,13 @@ export function ScansPage() {
                   <table className="w-full" role="table">
                     <thead>
                       <tr className="text-left text-sm text-gray-400 border-b border-gray-800">
-                        <th className="px-5 py-3 font-medium" scope="col">Status</th>
-                        <th className="px-5 py-3 font-medium" scope="col">Tool</th>
-                        <th className="px-5 py-3 font-medium" scope="col">Target</th>
-                        <th className="px-5 py-3 font-medium" scope="col">Started</th>
-                        <th className="px-5 py-3 font-medium" scope="col">Duration</th>
-                        <th className="px-5 py-3 font-medium" scope="col">Findings</th>
-                        <th className="px-5 py-3 font-medium" scope="col">Actions</th>
+                        <th className="px-5 py-3 font-medium" scope="col">{t('common.status', 'Status')}</th>
+                        <th className="px-5 py-3 font-medium" scope="col">{t('common.tool', 'Tool')}</th>
+                        <th className="px-5 py-3 font-medium" scope="col">{t('common.target', 'Target')}</th>
+                        <th className="px-5 py-3 font-medium" scope="col">{t('common.started', 'Started')}</th>
+                        <th className="px-5 py-3 font-medium" scope="col">{t('common.duration', 'Duration')}</th>
+                        <th className="px-5 py-3 font-medium" scope="col">{t('common.findings', 'Findings')}</th>
+                        <th className="px-5 py-3 font-medium" scope="col">{t('common.actions', 'Actions')}</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -411,7 +411,7 @@ export function ScansPage() {
                           </td>
                           <td className="px-5 py-4 text-sm text-gray-400">
                             {scan.status === 'running' ? (
-                              <span className="text-blue-400 animate-pulse">In progress...</span>
+                              <span className="text-blue-400 animate-pulse">{t('scans.inProgress', 'In progress...')}</span>
                             ) : formatDuration(scan)}
                           </td>
                           <td className="px-5 py-4"><FindingsBadges scan={scan} /></td>
@@ -464,7 +464,7 @@ export function ScansPage() {
                                   onClick={() => setDeleteConfirm(scan.id)}
                                   className="px-2 py-1.5 text-gray-500 hover:text-red-400 hover:bg-red-500/10 rounded text-sm transition focus:outline-none"
                                   aria-label={`Delete ${getToolName(scan)} scan`}
-                                  title="Delete scan"
+                                  title={t('scans.deleteScan', 'Delete scan')}
                                 >
                                   🗑️
                                 </button>
@@ -506,8 +506,8 @@ export function ScansPage() {
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
                       </svg>
                     </div>
-                    <h3 className="text-lg font-medium text-white mb-2">No scans found</h3>
-                    <p className="text-gray-400 mb-4">Start your first security scan to see results here.</p>
+                    <h3 className="text-lg font-medium text-white mb-2">{t('scans.noScansFound', 'No scans found')}</h3>
+                    <p className="text-gray-400 mb-4">{t('scans.startFirstScan', 'Start your first security scan to see results here.')}</p>
                     <Link
                       to="/dashboard/scans/new"
                       className="inline-flex items-center gap-2 px-6 py-2 bg-kali-blue text-white rounded-lg hover:bg-kali-blue/90 transition focus:outline-none focus:ring-2 focus:ring-kali-blue/50"
@@ -576,8 +576,8 @@ export function ScansPage() {
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
                     </svg>
                   </div>
-                  <h3 className="text-lg font-medium text-white mb-2">No running scans</h3>
-                  <p className="text-gray-400">Start a new scan to see live output here.</p>
+                  <h3 className="text-lg font-medium text-white mb-2">{t('scans.noRunningScans', 'No running scans')}</h3>
+                  <p className="text-gray-400">{t('scans.startNewScan', 'Start a new scan to see live output here.')}</p>
                 </div>
               )}
             </motion.div>
@@ -625,29 +625,29 @@ export function ScansPage() {
                 <div className="p-4 sm:p-6 overflow-auto max-h-[calc(90vh-200px)]">
                   <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
                     <div className="bg-gray-800 rounded-lg p-4">
-                      <p className="text-sm text-gray-400 mb-1">Status</p>
+                      <p className="text-sm text-gray-400 mb-1">{t('common.status', 'Status')}</p>
                       <div className={`inline-flex items-center gap-2 px-2.5 py-1 rounded-full text-xs font-medium text-white ${statusColors[selectedScan.status]}`}>
                         <StatusIcon status={selectedScan.status} />
                         <span className="capitalize">{selectedScan.status}</span>
                       </div>
                     </div>
                     <div className="bg-gray-800 rounded-lg p-4">
-                      <p className="text-sm text-gray-400 mb-1">Started</p>
+                      <p className="text-sm text-gray-400 mb-1">{t('common.started', 'Started')}</p>
                       <p className="text-white text-sm">{new Date(selectedScan.started_at).toLocaleString()}</p>
                     </div>
                     <div className="bg-gray-800 rounded-lg p-4">
-                      <p className="text-sm text-gray-400 mb-1">Duration</p>
+                      <p className="text-sm text-gray-400 mb-1">{t('common.duration', 'Duration')}</p>
                       <p className="text-white">{formatDuration(selectedScan)}</p>
                     </div>
                     <div className="bg-gray-800 rounded-lg p-4">
-                      <p className="text-sm text-gray-400 mb-1">Findings</p>
+                      <p className="text-sm text-gray-400 mb-1">{t('common.findings', 'Findings')}</p>
                       <p className="text-white">{selectedScan.findings_count || 0}</p>
                     </div>
                   </div>
 
                   {selectedScan.command && (
                     <div className="mb-6">
-                      <h4 className="text-sm text-gray-400 mb-2">Command</h4>
+                      <h4 className="text-sm text-gray-400 mb-2">{t('common.command', 'Command')}</h4>
                       <div className="bg-gray-950 rounded-lg p-4 overflow-x-auto">
                         <code className="text-green-400 font-mono text-sm">{selectedScan.command}</code>
                       </div>
@@ -655,7 +655,7 @@ export function ScansPage() {
                   )}
 
                   <div>
-                    <h4 className="text-sm text-gray-400 mb-2">Output</h4>
+                    <h4 className="text-sm text-gray-400 mb-2">{t('common.output', 'Output')}</h4>
                     <div className="bg-gray-950 rounded-lg p-4 h-64 overflow-auto" role="log" aria-label="Scan output">
                       <pre className="text-green-400 font-mono text-sm whitespace-pre-wrap">
                         {selectedScan.output || 'Scan output will appear here when available...'}

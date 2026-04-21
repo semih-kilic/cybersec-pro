@@ -122,7 +122,7 @@ export default function ServiceManagerPage() {
       <div className="flex items-center justify-center h-96">
         <div className="flex flex-col items-center gap-4">
           <div className="w-12 h-12 border-4 border-cyan-500/30 border-t-cyan-500 rounded-full animate-spin" />
-          <p className="text-gray-400">Connecting to Service Manager...</p>
+          <p className="text-gray-400">{t('serviceManager.connecting', 'Connecting to Service Manager...')}</p>
         </div>
       </div>
     );
@@ -135,8 +135,8 @@ export default function ServiceManagerPage() {
           <svg className="w-16 h-16 mx-auto text-red-400 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
           </svg>
-          <h3 className="text-xl font-bold text-white mb-2">Service Manager Offline</h3>
-          <p className="text-gray-400">The Rust service manager daemon is not responding on port 9000.</p>
+          <h3 className="text-xl font-bold text-white mb-2">{t('serviceManager.offline', 'Service Manager Offline')}</h3>
+          <p className="text-gray-400">{t('serviceManager.offlineDesc', 'The Rust service manager daemon is not responding on port 9000.')}</p>
           <button onClick={fetchDashboard} className="mt-4 px-4 py-2 bg-cyan-500/20 text-cyan-400 rounded-lg hover:bg-cyan-500/30 transition">
             Retry Connection
           </button>
@@ -158,7 +158,7 @@ export default function ServiceManagerPage() {
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 12h14M5 12a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v4a2 2 0 01-2 2M5 12a2 2 0 00-2 2v4a2 2 0 002 2h14a2 2 0 002-2v-4a2 2 0 00-2-2m-2-4h.01M17 16h.01" />
             </svg>
             Service Manager
-            <span className="px-2 py-0.5 text-xs bg-cyan-500/20 text-cyan-400 rounded font-mono">RUST v1.0</span>
+            <span className="px-2 py-0.5 text-xs bg-cyan-500/20 text-cyan-400 rounded font-mono">{t('serviceManager.rustVersion', 'RUST v1.0')}</span>
           </h1>
           <p className="text-gray-400 mt-1">
             {system.hostname} · {system.os} · Kernel {system.kernel}
@@ -312,17 +312,17 @@ function ServiceCard({
       {/* Metrics */}
       <div className="grid grid-cols-3 gap-2 mb-3 text-center">
         <div className="bg-gray-900/50 rounded-lg p-2">
-          <p className="text-[10px] text-gray-500">CPU</p>
+          <p className="text-[10px] text-gray-500">{t('serviceManager.cpu', 'CPU')}</p>
           <p className={`text-sm font-mono font-bold ${cpu_percent > 80 ? 'text-red-400' : cpu_percent > 50 ? 'text-yellow-400' : 'text-green-400'}`}>
             {cpu_percent.toFixed(1)}%
           </p>
         </div>
         <div className="bg-gray-900/50 rounded-lg p-2">
-          <p className="text-[10px] text-gray-500">MEM</p>
+          <p className="text-[10px] text-gray-500">{t('serviceManager.mem', 'MEM')}</p>
           <p className="text-sm font-mono font-bold text-blue-400">{memory_mb.toFixed(0)} MB</p>
         </div>
         <div className="bg-gray-900/50 rounded-lg p-2">
-          <p className="text-[10px] text-gray-500">UPTIME</p>
+          <p className="text-[10px] text-gray-500">{t('serviceManager.uptime', 'UPTIME')}</p>
           <p className="text-sm font-mono font-bold text-gray-300">{formatUptime(uptime_secs)}</p>
         </div>
       </div>
@@ -461,7 +461,7 @@ function ServiceDetailModal({
           {/* Logs */}
           {logs_tail.length > 0 && (
             <div>
-              <h3 className="text-sm font-medium text-gray-400 mb-2">Recent Logs</h3>
+              <h3 className="text-sm font-medium text-gray-400 mb-2">{t('serviceManager.recentLogs', 'Recent Logs')}</h3>
               <div className="bg-black/50 rounded-lg p-3 max-h-48 overflow-y-auto font-mono text-xs text-gray-400 space-y-0.5">
                 {logs_tail.map((line, i) => (
                   <div key={i} className="whitespace-pre-wrap break-all">{line}</div>

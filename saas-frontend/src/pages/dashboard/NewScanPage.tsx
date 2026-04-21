@@ -403,7 +403,7 @@ export function NewScanPage() {
                   onChange={(e) => setSelectedProject(e.target.value ? Number(e.target.value) : null)}
                   className="w-full px-4 py-3 bg-gray-800 border border-gray-700 rounded-xl text-white focus:outline-none focus:border-kali-blue transition"
                 >
-                  <option value="">No Project</option>
+                  <option value="">{t('newScan.noProject', 'No Project')}</option>
                   {projects.map(project => (
                     <option key={project.id} value={project.id}>
                       {project.name}
@@ -543,7 +543,7 @@ export function NewScanPage() {
                 </div>
                 {customCommand && (
                   <div className="py-3">
-                    <span className="text-gray-400 block mb-2">Command</span>
+                    <span className="text-gray-400 block mb-2">{t('newScan.reviewCommand', 'Command')}</span>
                     <code className="block bg-gray-950 rounded-lg p-4 text-green-400 font-mono text-sm">
                       {customCommand}
                     </code>
@@ -558,9 +558,9 @@ export function NewScanPage() {
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
               </svg>
               <div>
-                <p className="text-yellow-500 font-medium">Authorized Testing Only</p>
+                <p className="text-yellow-500 font-medium">{t('newScan.authorizedOnly', 'Authorized Testing Only')}</p>
                 <p className="text-yellow-500/70 text-sm mt-1">
-                  Only scan targets you have explicit permission to test. Unauthorized scanning is illegal.
+                  {t('newScan.authorizedOnlyDesc', 'Only scan targets you have explicit permission to test. Unauthorized scanning is illegal.')}
                 </p>
               </div>
             </div>
@@ -608,8 +608,8 @@ export function NewScanPage() {
                 </svg>
               </div>
               <div>
-                <h3 className="text-lg font-semibold text-white">⚠️ Dangerous Tool Warning</h3>
-                <p className="text-sm text-gray-400">This action requires confirmation</p>
+                <h3 className="text-lg font-semibold text-white">{t('newScan.dangerWarning', 'Dangerous Tool Warning')}</h3>
+                <p className="text-sm text-gray-400">{t('newScan.confirmationRequired', 'This action requires confirmation')}</p>
               </div>
             </div>
             

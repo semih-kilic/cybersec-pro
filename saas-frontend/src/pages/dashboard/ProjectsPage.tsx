@@ -150,7 +150,7 @@ export default function ProjectsPage() {
             type="text"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            placeholder="Search projects..."
+            placeholder={t('projects.searchPlaceholder', 'Search projects...')}
             className="w-full px-4 py-2 pl-10 bg-gray-800 border border-gray-700 rounded-lg text-white focus:border-kali-blue focus:ring-1 focus:ring-kali-blue"
           />
           <svg className="w-5 h-5 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -162,10 +162,10 @@ export default function ProjectsPage() {
       {/* Stats */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
         {[
-          { label: 'Total Projects', value: projects.length, icon: '📁', color: 'text-white' },
-          { label: 'Active', value: projects.filter(p => p.status === 'active').length, icon: '🟢', color: 'text-green-400' },
-          { label: 'Total Targets', value: projects.reduce((sum, p) => sum + p.target_count, 0), icon: '🎯', color: 'text-kali-blue' },
-          { label: 'Vulnerabilities', value: projects.reduce((sum, p) => sum + p.vulnerability_count, 0), icon: '⚠️', color: 'text-yellow-400' },
+          { label: t('projects.statTotal', 'Total Projects'), value: projects.length, icon: '📁', color: 'text-white' },
+          { label: t('projects.statActive', 'Active'), value: projects.filter(p => p.status === 'active').length, icon: '🟢', color: 'text-green-400' },
+          { label: t('projects.statTargets', 'Total Targets'), value: projects.reduce((sum, p) => sum + p.target_count, 0), icon: '🎯', color: 'text-kali-blue' },
+          { label: t('projects.statVulnerabilities', 'Vulnerabilities'), value: projects.reduce((sum, p) => sum + p.vulnerability_count, 0), icon: '⚠️', color: 'text-yellow-400' },
         ].map((stat, i) => (
           <div key={i} className="bg-gray-900 rounded-xl p-6 border border-gray-800">
             <div className="flex items-center gap-3 mb-2">
@@ -185,9 +185,9 @@ export default function ProjectsPage() {
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z" />
             </svg>
           </div>
-          <h3 className="text-xl font-semibold text-white mb-2">No projects found</h3>
+          <h3 className="text-xl font-semibold text-white mb-2">{t('projects.noProjectsFound', 'No projects found')}</h3>
           <p className="text-gray-400 mb-6">
-            {searchQuery ? 'Try adjusting your search' : 'Create your first project to get started'}
+            {searchQuery ? t('projects.adjustSearch', 'Try adjusting your search') : t('projects.createFirst', 'Create your first project to get started')}
           </p>
           {!searchQuery && canCreateProject && (
             <button
@@ -235,19 +235,19 @@ export default function ProjectsPage() {
               
               <div className="flex items-center gap-8 mb-4">
                 <div className="flex items-center gap-2">
-                  <span className="text-gray-500 text-sm">Targets:</span>
+                  <span className="text-gray-500 text-sm">{t('projects.targets', 'Targets:')}</span>
                   <span className="text-white font-medium">{project.target_count}</span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <span className="text-gray-500 text-sm">Scans:</span>
+                  <span className="text-gray-500 text-sm">{t('projects.scans', 'Scans:')}</span>
                   <span className="text-white font-medium">{project.scan_count}</span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <span className="text-gray-500 text-sm">Vulnerabilities:</span>
+                  <span className="text-gray-500 text-sm">{t('projects.vulnerabilities', 'Vulnerabilities:')}</span>
                   <span className="text-yellow-400 font-medium">{project.vulnerability_count}</span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <span className="text-gray-500 text-sm">Updated:</span>
+                  <span className="text-gray-500 text-sm">{t('projects.updated', 'Updated:')}</span>
                   <span className="text-white">{new Date(project.updated_at || project.created_at).toLocaleDateString()}</span>
                 </div>
               </div>
@@ -290,7 +290,7 @@ export default function ProjectsPage() {
         <div className="mt-8 p-6 bg-gradient-to-r from-kali-blue/20 to-kali-purple/20 rounded-xl border border-kali-blue/30">
           <div className="flex items-center justify-between">
             <div>
-              <h3 className="text-lg font-semibold text-white mb-1">Need more projects?</h3>
+              <h3 className="text-lg font-semibold text-white mb-1">{t('projects.upgradeTitle', 'Need more projects?')}</h3>
               <p className="text-gray-400">
                 Upgrade your plan to create unlimited projects and collaborate with your team.
               </p>
@@ -310,7 +310,7 @@ export default function ProjectsPage() {
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
           <div className="bg-gray-900 rounded-xl p-6 max-w-lg w-full border border-gray-800">
             <div className="flex items-center justify-between mb-6">
-              <h2 className="text-xl font-bold text-white">Create New Project</h2>
+              <h2 className="text-xl font-bold text-white">{t('projects.createNewProject', 'Create New Project')}</h2>
               <button
                 onClick={() => setShowCreateModal(false)}
                 className="text-gray-400 hover:text-white"
@@ -323,34 +323,34 @@ export default function ProjectsPage() {
             
             <div className="space-y-4">
               <div>
-                <label className="block text-gray-400 text-sm mb-2">Project Name *</label>
+                <label className="block text-gray-400 text-sm mb-2">{t('projects.projectNameLabel', 'Project Name *')}</label>
                 <input
                   type="text"
                   value={newProjectName}
                   onChange={(e) => setNewProjectName(e.target.value)}
-                  placeholder="e.g., Q1 Security Audit"
+                  placeholder={t('projects.namePlaceholder', 'e.g., Q1 Security Audit')}
                   className="w-full px-4 py-3 bg-gray-800 border border-gray-700 rounded-lg text-white focus:border-kali-blue focus:ring-1 focus:ring-kali-blue"
                 />
               </div>
               
               <div>
-                <label className="block text-gray-400 text-sm mb-2">Description</label>
+                <label className="block text-gray-400 text-sm mb-2">{t('projects.descriptionLabel', 'Description')}</label>
                 <textarea
                   value={newProjectDesc}
                   onChange={(e) => setNewProjectDesc(e.target.value)}
-                  placeholder="Brief description of the project scope..."
+                  placeholder={t('projects.descPlaceholder', 'Brief description of the project scope...')}
                   rows={3}
                   className="w-full px-4 py-3 bg-gray-800 border border-gray-700 rounded-lg text-white focus:border-kali-blue focus:ring-1 focus:ring-kali-blue resize-none"
                 />
               </div>
               
               <div>
-                <label className="block text-gray-400 text-sm mb-2">Tags (comma-separated)</label>
+                <label className="block text-gray-400 text-sm mb-2">{t('projects.tagsLabel', 'Tags (comma-separated)')}</label>
                 <input
                   type="text"
                   value={newProjectTags}
                   onChange={(e) => setNewProjectTags(e.target.value)}
-                  placeholder="e.g., webapp, pentest, internal"
+                  placeholder={t('projects.tagsPlaceholder', 'e.g., webapp, pentest, internal')}
                   className="w-full px-4 py-3 bg-gray-800 border border-gray-700 rounded-lg text-white focus:border-kali-blue focus:ring-1 focus:ring-kali-blue"
                 />
               </div>

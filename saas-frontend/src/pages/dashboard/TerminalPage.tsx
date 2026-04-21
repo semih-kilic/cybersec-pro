@@ -346,8 +346,8 @@ export function TerminalPage() {
     <PageTransition>
     <div className="min-h-screen bg-gray-950">
       <Header 
-        title="SSH Terminal"
-        subtitle="Real-time SSH connection to your agents"
+        title={t('terminal.title', 'SSH Terminal')}
+        subtitle={t('terminal.subtitle', 'Real-time SSH connection to your agents')}
       />
 
       <div className="p-6">
@@ -355,7 +355,7 @@ export function TerminalPage() {
         <div className="mb-4 bg-gray-900/50 border border-gray-800 rounded-xl p-4">
           <div className="flex flex-wrap items-center gap-4">
             <div className="flex items-center gap-2">
-              <span className="text-gray-400 text-sm">Agent:</span>
+              <span className="text-gray-400 text-sm">{t('terminal.agentLabel', 'Agent:')}</span>
               <select
                 value={selectedAgent?.id || ''}
                 onChange={(e) => {
@@ -365,9 +365,9 @@ export function TerminalPage() {
                 }}
                 className="bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-cyan-500"
               >
-                <option value="">Select an agent...</option>
+                <option value="">{t('terminal.selectAgent', 'Select an agent...')}</option>
                 {agents.length === 0 && (
-                  <option value="" disabled>No agents configured</option>
+                  <option value="" disabled>{t('terminal.noAgents', 'No agents configured')}</option>
                 )}
                 {agents.map(agent => (
                   <option key={String(agent.id)} value={String(agent.id)}>
@@ -407,7 +407,7 @@ export function TerminalPage() {
             <div className="ml-auto flex items-center gap-4">
               {selectedAgent && (
                 <div className="text-sm">
-                  <span className="text-gray-500">Platform:</span>
+                  <span className="text-gray-500">{t('terminal.platform', 'Platform:')}</span>
                   <span className={`ml-2 px-2 py-0.5 rounded ${
                     selectedAgent.platform === 'kali' ? 'bg-purple-600/20 text-purple-400' :
                     selectedAgent.platform === 'windows' ? 'bg-blue-600/20 text-blue-400' :
@@ -459,7 +459,7 @@ export function TerminalPage() {
               <button 
                 onClick={() => setHistory([])}
                 className="text-gray-400 hover:text-white transition p-1"
-                title="Clear terminal"
+                title={t('terminal.clearTerminal', 'Clear terminal')}
               >
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
@@ -524,7 +524,7 @@ export function TerminalPage() {
           <div className="space-y-3">
             {/* Security Scanning */}
             <div>
-              <span className="text-xs text-gray-500 uppercase tracking-wider mb-1.5 block">Security Scanning</span>
+              <span className="text-xs text-gray-500 uppercase tracking-wider mb-1.5 block">{t('terminal.securityScanning', 'Security Scanning')}</span>
               <div className="flex flex-wrap gap-2">
                 {quickCommands.filter(c => c.category === 'scan').map(({ label, cmd }) => (
                   <button
@@ -540,7 +540,7 @@ export function TerminalPage() {
 
             {/* Reconnaissance */}
             <div>
-              <span className="text-xs text-gray-500 uppercase tracking-wider mb-1.5 block">Reconnaissance</span>
+              <span className="text-xs text-gray-500 uppercase tracking-wider mb-1.5 block">{t('terminal.reconnaissance', 'Reconnaissance')}</span>
               <div className="flex flex-wrap gap-2">
                 {quickCommands.filter(c => c.category === 'recon').map(({ label, cmd }) => (
                   <button
@@ -556,7 +556,7 @@ export function TerminalPage() {
 
             {/* System */}
             <div>
-              <span className="text-xs text-gray-500 uppercase tracking-wider mb-1.5 block">System Info</span>
+              <span className="text-xs text-gray-500 uppercase tracking-wider mb-1.5 block">{t('terminal.systemInfo', 'System Info')}</span>
               <div className="flex flex-wrap gap-2">
                 {quickCommands.filter(c => c.category === 'system').map(({ label, cmd }) => (
                   <button

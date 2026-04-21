@@ -318,7 +318,7 @@ export function OverviewPage() {
           {/* Quick Actions */}
           <Card variant="elevated" padding="none">
             <CardHeader
-              title="Quick Actions"
+              title={t('overview.quickActions', 'Quick Actions')}
               className="px-5 pt-5 pb-4 border-b border-gray-700/50"
             />
             <div className="p-4 grid grid-cols-1 sm:grid-cols-2 gap-2">
@@ -347,7 +347,7 @@ export function OverviewPage() {
         {scheduledScans.length > 0 && (
           <Card variant="elevated" padding="none">
             <CardHeader
-              title="Scheduled Scans"
+              title={t('overview.scheduledScans', 'Scheduled Scans')}
               action={<Link to="/dashboard/schedule" className="text-sm text-cyan-400 hover:underline">Manage →</Link>}
               className="px-5 pt-5 pb-4 border-b border-gray-700/50"
             />
@@ -356,8 +356,8 @@ export function OverviewPage() {
                 <thead>
                   <tr className="text-left text-sm text-gray-400 border-b border-gray-800">
                     <th className="px-5 py-3 font-medium">{t('overview.colDomain', 'Domain')}</th>
-                    <th className="px-5 py-3 font-medium">Next Run</th>
-                    <th className="px-5 py-3 font-medium">Frequency</th>
+                    <th className="px-5 py-3 font-medium">{t('overview.colNextRun', 'Next Run')}</th>
+                    <th className="px-5 py-3 font-medium">{t('overview.colFrequency', 'Frequency')}</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -377,7 +377,7 @@ export function OverviewPage() {
         {/* Activity Feed — V18: Real-time timeline */}
         <Card variant="elevated" padding="none">
           <CardHeader
-            title="Recent Activity"
+            title={t('overview.recentActivity', 'Recent Activity')}
             action={<span className="flex items-center gap-1.5 text-xs text-gray-500"><span className="status-dot status-dot-online" /> Live</span>}
             className="px-5 pt-5 pb-4 border-b border-gray-700/50"
           />
