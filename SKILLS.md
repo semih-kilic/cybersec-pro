@@ -17,7 +17,7 @@ Flow:
 3. Translate user-facing strings in `de/es/fr/it`.
 4. Keep technical placeholders stable when appropriate.
 5. Run `npm run i18n:check` and fix syntax/coverage issues.
-6. Run same-as-English residual check before merging locale changes.
+6. Run `npm run i18n:residual` before merging locale changes.
 
 Quality checks:
 - no broken JSON

@@ -63,6 +63,9 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
+      - name: i18n residual check
+        run: npm run i18n:residual
+
       - name: Type check
         run: npx tsc --noEmit || true
 

@@ -80,6 +80,7 @@ Standard translation loop:
 ```bash
 cd saas-frontend
 npm run i18n:check
+npm run i18n:residual
 ```
 6. If needed, run targeted Node comparison scripts for same-as-English keys.
 
