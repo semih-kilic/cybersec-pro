@@ -418,7 +418,7 @@ export function TargetsPage() {
                       <Link
                         to={`/dashboard/scans/new?target=${encodeURIComponent(target.value)}`}
                         className="p-2 bg-kali-blue/20 text-kali-blue hover:bg-kali-blue/30 rounded transition"
-                        title="Scan"
+                        title={t('targets.scanTitle', 'Scan')}
                       >
                         <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" />
@@ -427,7 +427,7 @@ export function TargetsPage() {
                       </Link>
                       <button
                         className="p-2 bg-gray-800 text-gray-400 hover:bg-gray-700 hover:text-white rounded transition"
-                        title="Edit"
+                        title={t('common.edit', 'Edit')}
                       >
                         <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
@@ -447,8 +447,8 @@ export function TargetsPage() {
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
                 </svg>
               </div>
-              <h3 className="text-lg font-medium text-white mb-2">No targets found</h3>
-              <p className="text-gray-400 mb-4">Add your first target to start scanning.</p>
+              <h3 className="text-lg font-medium text-white mb-2">{t('targets.noTargetsFound', 'No targets found')}</h3>
+              <p className="text-gray-400 mb-4">{t('targets.addFirstTarget', 'Add your first target to start scanning.')}</p>
               <button 
                 onClick={() => setShowAddModal(true)}
                 className="inline-flex items-center gap-2 px-6 py-2 bg-kali-blue text-white rounded-lg hover:bg-kali-blue/90 transition"
@@ -473,7 +473,7 @@ export function TargetsPage() {
               onClick={e => e.stopPropagation()}
             >
               <div className="flex items-center justify-between p-6 border-b border-gray-800">
-                <h2 className="text-xl font-semibold text-white">Add Target</h2>
+                <h2 className="text-xl font-semibold text-white">{t('targets.addTarget', 'Add Target')}</h2>
                 <button onClick={() => setShowAddModal(false)} className="text-gray-400 hover:text-white">
                   <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -483,18 +483,18 @@ export function TargetsPage() {
 
               <div className="p-6 space-y-4">
                 <div>
-                  <label className="block text-sm text-gray-400 mb-2">Name</label>
+                  <label className="block text-sm text-gray-400 mb-2">{t('common.name', 'Name')}</label>
                   <input
                     type="text"
                     value={newTarget.name}
                     onChange={(e) => setNewTarget({ ...newTarget, name: e.target.value })}
-                    placeholder="Production Server"
+                    placeholder={t('targets.namePlaceholder', 'Production Server')}
                     className="w-full px-4 py-3 bg-gray-800 border border-gray-700 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:border-kali-blue transition"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-sm text-gray-400 mb-2">Value</label>
+                  <label className="block text-sm text-gray-400 mb-2">{t('targets.value', 'Value')}</label>
                   <input
                     type="text"
                     value={newTarget.value}
@@ -506,7 +506,7 @@ export function TargetsPage() {
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-sm text-gray-400 mb-2">Type</label>
+                    <label className="block text-sm text-gray-400 mb-2">{t('common.type', 'Type')}</label>
                     <select
                       value={newTarget.type}
                       onChange={(e) => setNewTarget({ ...newTarget, type: e.target.value as Target['type'] })}
@@ -521,13 +521,13 @@ export function TargetsPage() {
                   </div>
 
                   <div>
-                    <label className="block text-sm text-gray-400 mb-2">Group</label>
+                    <label className="block text-sm text-gray-400 mb-2">{t('targets.group', 'Group')}</label>
                     <select
                       value={newTarget.group_id}
                       onChange={(e) => setNewTarget({ ...newTarget, group_id: e.target.value })}
                       className="w-full px-4 py-3 bg-gray-800 border border-gray-700 rounded-xl text-white focus:outline-none focus:border-kali-blue transition"
                     >
-                      <option value="">No Group</option>
+                      <option value="">{t('targets.noGroup', 'No Group')}</option>
                       {groups.map(group => (
                         <option key={group.id} value={group.id}>{group.name}</option>
                       ))}
@@ -536,22 +536,22 @@ export function TargetsPage() {
                 </div>
 
                 <div>
-                  <label className="block text-sm text-gray-400 mb-2">Tags (comma separated)</label>
+                  <label className="block text-sm text-gray-400 mb-2">{t('targets.tagsLabel', 'Tags (comma separated)')}</label>
                   <input
                     type="text"
                     value={newTarget.tags}
                     onChange={(e) => setNewTarget({ ...newTarget, tags: e.target.value })}
-                    placeholder="web, production, critical"
+                    placeholder={t('targets.tagsPlaceholder', 'web, production, critical')}
                     className="w-full px-4 py-3 bg-gray-800 border border-gray-700 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:border-kali-blue transition"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-sm text-gray-400 mb-2">Notes</label>
+                  <label className="block text-sm text-gray-400 mb-2">{t('targets.notes', 'Notes')}</label>
                   <textarea
                     value={newTarget.notes}
                     onChange={(e) => setNewTarget({ ...newTarget, notes: e.target.value })}
-                    placeholder="Additional notes about this target..."
+                    placeholder={t('targets.notesPlaceholder', 'Additional notes about this target...')}
                     rows={3}
                     className="w-full px-4 py-3 bg-gray-800 border border-gray-700 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:border-kali-blue transition resize-none"
                   />
@@ -588,7 +588,7 @@ export function TargetsPage() {
               onClick={e => e.stopPropagation()}
             >
               <div className="flex items-center justify-between p-6 border-b border-gray-800">
-                <h2 className="text-xl font-semibold text-white">Import Targets</h2>
+                <h2 className="text-xl font-semibold text-white">{t('targets.importTargets', 'Import Targets')}</h2>
                 <button onClick={() => setShowImportModal(false)} className="text-gray-400 hover:text-white">
                   <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -601,12 +601,12 @@ export function TargetsPage() {
                   <svg className="w-12 h-12 text-gray-500 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
                   </svg>
-                  <p className="text-white mb-2">Drop a file here or click to upload</p>
-                  <p className="text-sm text-gray-500">Supports CSV, TXT, JSON formats</p>
+                  <p className="text-white mb-2">{t('targets.dropFile', 'Drop a file here or click to upload')}</p>
+                  <p className="text-sm text-gray-500">{t('targets.supportedFormats', 'Supports CSV, TXT, JSON formats')}</p>
                 </div>
 
                 <div className="mt-4">
-                  <p className="text-sm text-gray-400 mb-2">Or paste targets (one per line):</p>
+                  <p className="text-sm text-gray-400 mb-2">{t('targets.pasteTargets', 'Or paste targets (one per line):')}</p>
                   <textarea
                     placeholder="192.168.1.1&#10;example.com&#10;10.0.0.0/24"
                     rows={6}

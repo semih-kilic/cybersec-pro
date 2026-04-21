@@ -105,7 +105,7 @@ export function SSOTab({ setMessage, userPlan }: SettingsTabProps) {
           <div className="flex items-start gap-4">
             <span className="text-2xl">🔒</span>
             <div>
-              <h3 className="text-white font-semibold mb-1">SSO requires Enterprise plan</h3>
+              <h3 className="text-white font-semibold mb-1">{t('sso.enterpriseRequired', 'SSO requires Enterprise plan')}</h3>
               <p className="text-gray-400 text-sm mb-3">
                 Upgrade to connect your Identity Provider (Okta, Azure AD, Google Workspace, Active Directory).
               </p>
@@ -121,7 +121,7 @@ export function SSOTab({ setMessage, userPlan }: SettingsTabProps) {
         <>
           {/* Provider Type */}
           <div>
-            <label className="block text-sm font-medium text-gray-300 mb-3">Identity Provider Type</label>
+            <label className="block text-sm font-medium text-gray-300 mb-3">{t('sso.providerType', 'Identity Provider Type')}</label>
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
               {([
                 { id: 'saml' as const, name: 'SAML 2.0', desc: 'Okta, Azure AD, OneLogin', icon: '🛡️' },
@@ -148,12 +148,12 @@ export function SSOTab({ setMessage, userPlan }: SettingsTabProps) {
           {/* Name & Domain */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium text-gray-300 mb-2">Provider Name</label>
-              <input type="text" placeholder="e.g. Okta, Azure AD" value={ssoForm.provider_name || ''} onChange={(e) => setSsoForm({ ...ssoForm, provider_name: e.target.value })} className={inputCls()} />
+              <label className="block text-sm font-medium text-gray-300 mb-2">{t('sso.providerName', 'Provider Name')}</label>
+              <input type="text" placeholder={t('sso.providerPlaceholder', 'e.g. Okta, Azure AD')} value={ssoForm.provider_name || ''} onChange={(e) => setSsoForm({ ...ssoForm, provider_name: e.target.value })} className={inputCls()} />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-300 mb-2">Domain Hint</label>
-              <input type="text" placeholder="e.g. company.com" value={ssoForm.domain_hint || ''} onChange={(e) => setSsoForm({ ...ssoForm, domain_hint: e.target.value })} className={inputCls()} />
+              <label className="block text-sm font-medium text-gray-300 mb-2">{t('sso.domainHint', 'Domain Hint')}</label>
+              <input type="text" placeholder={t('sso.domainPlaceholder', 'e.g. company.com')} value={ssoForm.domain_hint || ''} onChange={(e) => setSsoForm({ ...ssoForm, domain_hint: e.target.value })} className={inputCls()} />
             </div>
           </div>
 
@@ -162,19 +162,19 @@ export function SSOTab({ setMessage, userPlan }: SettingsTabProps) {
             <div className="space-y-4 p-5 bg-blue-500/5 border border-blue-500/20 rounded-xl">
               <h3 className="text-white font-semibold flex items-center gap-2">🛡️ SAML 2.0 Configuration</h3>
               <div>
-                <label className="block text-sm font-medium text-gray-300 mb-2">Entity ID (Issuer)</label>
-                <input type="text" placeholder="https://your-idp.example.com/saml/metadata" value={ssoForm.saml_entity_id || ''} onChange={(e) => setSsoForm({ ...ssoForm, saml_entity_id: e.target.value })} className={inputCls('blue-500')} />
+                <label className="block text-sm font-medium text-gray-300 mb-2">{t('sso.entityId', 'Entity ID (Issuer)')}</label>
+                <input type="text" placeholder={t('sso.entityIdPlaceholder', 'https://your-idp.example.com/saml/metadata')} value={ssoForm.saml_entity_id || ''} onChange={(e) => setSsoForm({ ...ssoForm, saml_entity_id: e.target.value })} className={inputCls('blue-500')} />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-300 mb-2">SSO URL (Login URL)</label>
-                <input type="url" placeholder="https://your-idp.example.com/saml/sso" value={ssoForm.saml_sso_url || ''} onChange={(e) => setSsoForm({ ...ssoForm, saml_sso_url: e.target.value })} className={inputCls('blue-500')} />
+                <label className="block text-sm font-medium text-gray-300 mb-2">{t('sso.ssoUrl', 'SSO URL (Login URL)')}</label>
+                <input type="url" placeholder={t('sso.ssoUrlPlaceholder', 'https://your-idp.example.com/saml/sso')} value={ssoForm.saml_sso_url || ''} onChange={(e) => setSsoForm({ ...ssoForm, saml_sso_url: e.target.value })} className={inputCls('blue-500')} />
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-300 mb-2">X.509 Certificate (PEM)</label>
                 <textarea rows={4} placeholder="-----BEGIN CERTIFICATE-----" value={ssoForm.saml_certificate || ''} onChange={(e) => setSsoForm({ ...ssoForm, saml_certificate: e.target.value })} className="w-full px-4 py-2.5 bg-gray-800 border border-gray-700 rounded-lg text-white placeholder-gray-500 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 font-mono text-xs transition" />
               </div>
               <div className="p-4 bg-gray-800/50 rounded-lg mt-4">
-                <p className="text-gray-400 text-xs mb-2">Your Service Provider (SP) metadata:</p>
+                <p className="text-gray-400 text-xs mb-2">{t('sso.spMetadata', 'Your Service Provider (SP) metadata:')}</p>
                 <div className="space-y-1 text-xs font-mono text-gray-300">
                   <p><span className="text-gray-500">ACS URL:</span> https://app.cybersecpro.com/api/v1/sso/saml/callback</p>
                   <p><span className="text-gray-500">Entity ID:</span> https://app.cybersecpro.com</p>
@@ -189,21 +189,21 @@ export function SSOTab({ setMessage, userPlan }: SettingsTabProps) {
             <div className="space-y-4 p-5 bg-green-500/5 border border-green-500/20 rounded-xl">
               <h3 className="text-white font-semibold flex items-center gap-2">🔗 OpenID Connect Configuration</h3>
               <div>
-                <label className="block text-sm font-medium text-gray-300 mb-2">Issuer URL</label>
-                <input type="url" placeholder="https://accounts.google.com" value={ssoForm.oidc_issuer_url || ''} onChange={(e) => setSsoForm({ ...ssoForm, oidc_issuer_url: e.target.value })} className={inputCls('green-500')} />
+                <label className="block text-sm font-medium text-gray-300 mb-2">{t('sso.issuerUrl', 'Issuer URL')}</label>
+                <input type="url" placeholder={t('sso.issuerUrlPlaceholder', 'https://accounts.google.com')} value={ssoForm.oidc_issuer_url || ''} onChange={(e) => setSsoForm({ ...ssoForm, oidc_issuer_url: e.target.value })} className={inputCls('green-500')} />
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-300 mb-2">Client ID</label>
-                  <input type="text" placeholder="your-client-id" value={ssoForm.oidc_client_id || ''} onChange={(e) => setSsoForm({ ...ssoForm, oidc_client_id: e.target.value })} className={inputCls('green-500')} />
+                  <label className="block text-sm font-medium text-gray-300 mb-2">{t('sso.clientId', 'Client ID')}</label>
+                  <input type="text" placeholder={t('sso.clientIdPlaceholder', 'your-client-id')} value={ssoForm.oidc_client_id || ''} onChange={(e) => setSsoForm({ ...ssoForm, oidc_client_id: e.target.value })} className={inputCls('green-500')} />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-300 mb-2">Client Secret</label>
+                  <label className="block text-sm font-medium text-gray-300 mb-2">{t('sso.clientSecret', 'Client Secret')}</label>
                   <input type="password" placeholder="••••••••" value={ssoForm.oidc_client_secret || ''} onChange={(e) => setSsoForm({ ...ssoForm, oidc_client_secret: e.target.value })} className={inputCls('green-500')} />
                 </div>
               </div>
               <div className="p-4 bg-gray-800/50 rounded-lg">
-                <p className="text-gray-400 text-xs mb-2">Configure in your OIDC provider:</p>
+                <p className="text-gray-400 text-xs mb-2">{t('sso.oidcProviderHint', 'Configure in your OIDC provider:')}</p>
                 <div className="space-y-1 text-xs font-mono text-gray-300">
                   <p><span className="text-gray-500">Redirect URI:</span> https://app.cybersecpro.com/api/v1/sso/oidc/callback</p>
                 </div>
@@ -217,47 +217,47 @@ export function SSOTab({ setMessage, userPlan }: SettingsTabProps) {
               <h3 className="text-white font-semibold flex items-center gap-2">📁 LDAP / Active Directory</h3>
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                 <div className="col-span-1 sm:col-span-2">
-                  <label className="block text-sm font-medium text-gray-300 mb-2">LDAP Host</label>
-                  <input type="text" placeholder="ldap.company.com" value={ssoForm.ldap_host || ''} onChange={(e) => setSsoForm({ ...ssoForm, ldap_host: e.target.value })} className={inputCls('purple-500')} />
+                  <label className="block text-sm font-medium text-gray-300 mb-2">{t('sso.ldapHost', 'LDAP Host')}</label>
+                  <input type="text" placeholder={t('sso.ldapHostPlaceholder', 'ldap.company.com')} value={ssoForm.ldap_host || ''} onChange={(e) => setSsoForm({ ...ssoForm, ldap_host: e.target.value })} className={inputCls('purple-500')} />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-300 mb-2">Port</label>
+                  <label className="block text-sm font-medium text-gray-300 mb-2">{t('sso.port', 'Port')}</label>
                   <input type="number" value={ssoForm.ldap_port || 389} onChange={(e) => setSsoForm({ ...ssoForm, ldap_port: parseInt(e.target.value) })} className={inputCls('purple-500')} />
                 </div>
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-300 mb-2">Bind DN</label>
-                  <input type="text" placeholder="cn=admin,dc=company,dc=com" value={ssoForm.ldap_bind_dn || ''} onChange={(e) => setSsoForm({ ...ssoForm, ldap_bind_dn: e.target.value })} className={inputCls('purple-500')} />
+                  <label className="block text-sm font-medium text-gray-300 mb-2">{t('sso.bindDn', 'Bind DN')}</label>
+                  <input type="text" placeholder={t('sso.bindDnPlaceholder', 'cn=admin,dc=company,dc=com')} value={ssoForm.ldap_bind_dn || ''} onChange={(e) => setSsoForm({ ...ssoForm, ldap_bind_dn: e.target.value })} className={inputCls('purple-500')} />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-300 mb-2">Bind Password</label>
+                  <label className="block text-sm font-medium text-gray-300 mb-2">{t('sso.bindPassword', 'Bind Password')}</label>
                   <input type="password" placeholder="••••••••" value={ssoForm.ldap_bind_password || ''} onChange={(e) => setSsoForm({ ...ssoForm, ldap_bind_password: e.target.value })} className={inputCls('purple-500')} />
                 </div>
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-300 mb-2">Base DN</label>
-                <input type="text" placeholder="dc=company,dc=com" value={ssoForm.ldap_base_dn || ''} onChange={(e) => setSsoForm({ ...ssoForm, ldap_base_dn: e.target.value })} className={inputCls('purple-500')} />
+                <label className="block text-sm font-medium text-gray-300 mb-2">{t('sso.baseDn', 'Base DN')}</label>
+                <input type="text" placeholder={t('sso.baseDnPlaceholder', 'dc=company,dc=com')} value={ssoForm.ldap_base_dn || ''} onChange={(e) => setSsoForm({ ...ssoForm, ldap_base_dn: e.target.value })} className={inputCls('purple-500')} />
               </div>
             </div>
           )}
 
           {/* Advanced */}
           <div className="p-5 bg-gray-800/30 border border-gray-700 rounded-xl space-y-4">
-            <h3 className="text-white font-semibold">Advanced Options</h3>
+            <h3 className="text-white font-semibold">{t('sso.advancedOptions', 'Advanced Options')}</h3>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <label className="flex items-center gap-3 cursor-pointer">
                 <input type="checkbox" checked={ssoForm.enforce_sso ?? false} onChange={(e) => setSsoForm({ ...ssoForm, enforce_sso: e.target.checked })} className="w-4 h-4 rounded border-gray-600 bg-gray-800 text-kali-blue focus:ring-kali-blue" />
                 <div>
-                  <span className="text-gray-300 text-sm font-medium">Enforce SSO</span>
-                  <p className="text-gray-500 text-xs">Block email/password login</p>
+                  <span className="text-gray-300 text-sm font-medium">{t('sso.enforceSSO', 'Enforce SSO')}</span>
+                  <p className="text-gray-500 text-xs">{t('sso.enforceDesc', 'Block email/password login')}</p>
                 </div>
               </label>
               <label className="flex items-center gap-3 cursor-pointer">
                 <input type="checkbox" checked={ssoForm.jit_provisioning ?? true} onChange={(e) => setSsoForm({ ...ssoForm, jit_provisioning: e.target.checked })} className="w-4 h-4 rounded border-gray-600 bg-gray-800 text-kali-blue focus:ring-kali-blue" />
                 <div>
-                  <span className="text-gray-300 text-sm font-medium">JIT Provisioning</span>
-                  <p className="text-gray-500 text-xs">Auto-create accounts on first SSO login</p>
+                  <span className="text-gray-300 text-sm font-medium">{t('sso.jitProvisioning', 'JIT Provisioning')}</span>
+                  <p className="text-gray-500 text-xs">{t('sso.jitDesc', 'Auto-create accounts on first SSO login')}</p>
                 </div>
               </label>
             </div>
@@ -292,7 +292,7 @@ export function SSOTab({ setMessage, userPlan }: SettingsTabProps) {
 
           {/* Supported Providers */}
           <div className="p-5 bg-gray-800/30 border border-gray-700 rounded-xl">
-            <h3 className="text-white font-semibold mb-3">Supported Identity Providers</h3>
+            <h3 className="text-white font-semibold mb-3">{t('sso.supportedProviders', 'Supported Identity Providers')}</h3>
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
               {[
                 { title: 'SAML 2.0', color: 'text-blue-400', items: ['Okta', 'Azure AD', 'OneLogin', 'PingIdentity', 'JumpCloud'] },

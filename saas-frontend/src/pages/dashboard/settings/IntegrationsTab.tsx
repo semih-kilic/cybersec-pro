@@ -62,7 +62,7 @@ export function IntegrationsTab(_props: SettingsTabProps) {
 
       {/* Active integrations */}
       {isLoading ? (
-        <div className="text-gray-500 text-center py-8">Loading integrations...</div>
+        <div className="text-gray-500 text-center py-8">{t('integrations.loading', 'Loading integrations...')}</div>
       ) : integrations.length > 0 ? (
         <div className="space-y-3">
           {integrations.map((int) => {
@@ -104,14 +104,14 @@ export function IntegrationsTab(_props: SettingsTabProps) {
       ) : (
         <div className="text-center py-12 text-gray-500">
           <span className="text-4xl block mb-3">🔗</span>
-          <p>No integrations configured yet.</p>
-          <p className="text-xs mt-1">Add Slack, Teams, Webhooks or more to get real-time notifications.</p>
+          <p>{t('integrations.noIntegrations', 'No integrations configured yet.')}</p>
+          <p className="text-xs mt-1">{t('integrations.addHint', 'Add Slack, Teams, Webhooks or more to get real-time notifications.')}</p>
         </div>
       )}
 
       {/* Available types (not yet configured) */}
       <div>
-        <h3 className="text-sm font-medium text-gray-400 mb-3">Available Integrations</h3>
+        <h3 className="text-sm font-medium text-gray-400 mb-3">{t('integrations.available', 'Available Integrations')}</h3>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
           {INTEGRATION_TYPES.map((t, i) => {
             const configured = integrations.some(int => int.integration_type === t.type);
@@ -138,21 +138,21 @@ export function IntegrationsTab(_props: SettingsTabProps) {
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 z-50 bg-black/60 flex items-center justify-center p-4" onClick={() => setShowAdd(false)}>
             <motion.div initial={{ scale: 0.95 }} animate={{ scale: 1 }} exit={{ scale: 0.95 }} onClick={e => e.stopPropagation()}
               className="bg-gray-800 rounded-xl p-6 w-full max-w-md border border-gray-700 space-y-4">
-              <h3 className="text-lg font-bold text-white">Add Integration</h3>
+              <h3 className="text-lg font-bold text-white">{t('integrations.addIntegration', 'Add Integration')}</h3>
               <div>
-                <label className="text-sm text-gray-400 block mb-1">Type</label>
+                <label className="text-sm text-gray-400 block mb-1">{t('common.type', 'Type')}</label>
                 <select value={newType} onChange={e => setNewType(e.target.value)} className="w-full bg-gray-900 border border-gray-700 rounded-lg px-3 py-2 text-white text-sm">
                   {INTEGRATION_TYPES.map(t => <option key={t.type} value={t.type}>{t.icon} {t.name}</option>)}
                 </select>
               </div>
               <div>
-                <label className="text-sm text-gray-400 block mb-1">Name</label>
-                <input value={newName} onChange={e => setNewName(e.target.value)} placeholder="e.g. Security Alerts Channel" className="w-full bg-gray-900 border border-gray-700 rounded-lg px-3 py-2 text-white text-sm" />
+                <label className="text-sm text-gray-400 block mb-1">{t('common.name', 'Name')}</label>
+                <input value={newName} onChange={e => setNewName(e.target.value)} placeholder={t('integrations.namePlaceholder', 'e.g. Security Alerts Channel')} className="w-full bg-gray-900 border border-gray-700 rounded-lg px-3 py-2 text-white text-sm" />
               </div>
               <div>
-                <label className="text-sm text-gray-400 block mb-1">Webhook URL</label>
-                <input value={newUrl} onChange={e => setNewUrl(e.target.value)} placeholder="https://hooks.slack.com/services/..." className="w-full bg-gray-900 border border-gray-700 rounded-lg px-3 py-2 text-white text-sm" />
-                <p className="text-gray-600 text-xs mt-1">Must start with https://</p>
+                <label className="text-sm text-gray-400 block mb-1">{t('integrations.webhookUrl', 'Webhook URL')}</label>
+                <input value={newUrl} onChange={e => setNewUrl(e.target.value)} placeholder={t('integrations.webhookPlaceholder', 'https://hooks.slack.com/services/...')} className="w-full bg-gray-900 border border-gray-700 rounded-lg px-3 py-2 text-white text-sm" />
+                <p className="text-gray-600 text-xs mt-1">{t('integrations.httpsHint', 'Must start with https://')}</p>
               </div>
               <div className="flex gap-3 pt-2">
                 <button onClick={() => setShowAdd(false)} className="flex-1 px-4 py-2 bg-gray-700 text-gray-300 rounded-lg text-sm hover:bg-gray-600 transition">

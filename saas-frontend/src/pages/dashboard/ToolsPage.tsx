@@ -264,7 +264,7 @@ export function ToolsPage() {
                 to="/dashboard/billing/upgrade"
                 className="px-5 py-2.5 bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-white font-semibold rounded-lg transition flex items-center gap-2"
               >
-                <span>Upgrade Now</span>
+                <span>{t('common.upgradeNow', 'Upgrade Now')}</span>
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
                 </svg>
@@ -280,8 +280,8 @@ export function ToolsPage() {
               <div className="flex items-center gap-3">
                 <span className="text-2xl">✨</span>
                 <div>
-                  <h3 className="text-white font-bold">Quick Access: Popular Security Tools</h3>
-                  <p className="text-gray-400 text-sm">Click any tool to start scanning immediately</p>
+                  <h3 className="text-white font-bold">{t('tools.quickAccessTitle', 'Quick Access: Popular Security Tools')}</h3>
+                  <p className="text-gray-400 text-sm">{t('tools.quickAccessDesc', 'Click any tool to start scanning immediately')}</p>
                 </div>
               </div>
               <button
@@ -334,7 +334,7 @@ export function ToolsPage() {
               </svg>
               <input
                 type="text"
-                placeholder="Search tools by name, description..."
+                placeholder={t('tools.searchPlaceholder', 'Search tools by name, description...')}
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 className="w-full pl-10 pr-4 py-2.5 bg-gray-800 border border-gray-700 rounded-lg text-white placeholder-gray-400 focus:border-kali-blue focus:outline-none"
@@ -372,7 +372,7 @@ export function ToolsPage() {
                 }`}
               >
                 <span>🎯</span>
-                <span>My Plan</span>
+                <span>{t('tools.myPlan', 'My Plan')}</span>
                 {!showOnlyAvailable && (userPlan === 'trial' || userPlan === 'starter') && (
                   <span className="bg-cyan-500/30 text-cyan-300 px-1.5 py-0.5 rounded text-xs">
                     7
@@ -386,9 +386,9 @@ export function ToolsPage() {
                 onChange={(e) => setSortBy(e.target.value as 'name' | 'category' | 'plan')}
                 className="px-4 py-2 bg-gray-800 border border-gray-700 rounded-lg text-white text-sm focus:border-kali-blue focus:outline-none"
               >
-                <option value="category">Sort by Category</option>
-                <option value="name">Sort by Name</option>
-                <option value="plan">Sort by Plan</option>
+                <option value="category">{t('tools.sortByCategory', 'Sort by Category')}</option>
+                <option value="name">{t('tools.sortByName', 'Sort by Name')}</option>
+                <option value="plan">{t('tools.sortByPlan', 'Sort by Plan')}</option>
               </select>
 
               {/* View Toggle */}
@@ -416,7 +416,7 @@ export function ToolsPage() {
           {/* Category Multi-Select */}
           <div className="mt-4">
             <div className="flex items-center gap-2 mb-2">
-              <span className="text-sm text-gray-400">Categories:</span>
+              <span className="text-sm text-gray-400">{t('tools.categoriesLabel', 'Categories:')}</span>
               {selectedCategories.length > 0 && (
                 <button
                   onClick={() => setSelectedCategories([])}
@@ -498,8 +498,8 @@ export function ToolsPage() {
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
               </svg>
             </div>
-            <h3 className="text-lg font-medium text-white mb-2">No tools found</h3>
-            <p className="text-gray-400 mb-4">Try adjusting your search or filter criteria.</p>
+            <h3 className="text-lg font-medium text-white mb-2">{t('tools.noToolsFound', 'No tools found')}</h3>
+            <p className="text-gray-400 mb-4">{t('tools.adjustFilters', 'Try adjusting your search or filter criteria.')}</p>
             <button
               onClick={clearFilters}
               className="px-4 py-2 bg-kali-blue hover:bg-kali-blue/90 text-white rounded-lg transition"
@@ -637,9 +637,9 @@ function VirtualizedToolGrid({
                       </div>
                       <div className="flex flex-col items-end gap-1">
                         {tool.installed && <span className="text-xs text-green-400">✓ Installed</span>}
-                        {tool.gui_only && <span className="text-xs text-yellow-400" title="Requires desktop environment (VNC/RDP)">🖥️ GUI Only</span>}
-                        {tool.requires_root && <span className="text-xs text-orange-400" title="Runs with elevated privileges">🔐 Root</span>}
-                        {tool.dangerous && <span className="text-xs text-red-400" title="Use with caution - may affect target systems">⚠️ Dangerous</span>}
+                        {tool.gui_only && <span className="text-xs text-yellow-400" title={t('tools.guiOnlyTitle', 'Requires desktop environment (VNC/RDP)')}>🖥️ {t('tools.guiOnly', 'GUI Only')}</span>}
+                        {tool.requires_root && <span className="text-xs text-orange-400" title={t('tools.rootTitle', 'Runs with elevated privileges')}>🔐 {t('tools.root', 'Root')}</span>}
+                        {tool.dangerous && <span className="text-xs text-red-400" title={t('tools.dangerousTitle', 'Use with caution - may affect target systems')}>⚠️ {t('tools.dangerous', 'Dangerous')}</span>}
                       </div>
                     </div>
                     <h3 className="text-white font-semibold mb-2 group-hover:text-kali-blue transition">
@@ -716,11 +716,11 @@ function VirtualizedToolList({
       <table className="w-full">
         <thead>
           <tr className="text-left text-sm text-gray-400 border-b border-gray-800">
-            <th className="px-5 py-3 font-medium">Tool</th>
-            <th className="px-5 py-3 font-medium">Category</th>
-            <th className="px-5 py-3 font-medium">Plan</th>
-            <th className="px-5 py-3 font-medium">Status</th>
-            <th className="px-5 py-3 font-medium">Actions</th>
+            <th className="px-5 py-3 font-medium">{t('common.tool', 'Tool')}</th>
+            <th className="px-5 py-3 font-medium">{t('tools.category', 'Category')}</th>
+            <th className="px-5 py-3 font-medium">{t('tools.plan', 'Plan')}</th>
+            <th className="px-5 py-3 font-medium">{t('common.status', 'Status')}</th>
+            <th className="px-5 py-3 font-medium">{t('common.actions', 'Actions')}</th>
           </tr>
         </thead>
       </table>
@@ -769,7 +769,7 @@ function VirtualizedToolList({
                       {tool.installed ? (
                         <span className="text-green-400 text-sm">✓ Installed</span>
                       ) : (
-                        <span className="text-gray-500 text-sm">Not installed</span>
+                        <span className="text-gray-500 text-sm">{t('tools.notInstalled', 'Not installed')}</span>
                       )}
                     </td>
                     <td className="px-5 py-4 flex-1">

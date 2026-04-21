@@ -127,8 +127,8 @@ export default function ThreatIntelPage() {
               </svg>
             </div>
             <div>
-              <h1 className="text-2xl font-bold text-white">Threat Intelligence</h1>
-              <p className="text-gray-400 text-sm">Real-time cyber threat monitoring, IOC tracking & APT analysis</p>
+              <h1 className="text-2xl font-bold text-white">{t('threatIntel.title', 'Threat Intelligence')}</h1>
+              <p className="text-gray-400 text-sm">{t('threatIntel.subtitle', 'Real-time cyber threat monitoring, IOC tracking & APT analysis')}</p>
             </div>
           </div>
         </div>
@@ -171,7 +171,7 @@ export default function ThreatIntelPage() {
 
             {/* World Threat Map placeholder */}
             <div className="bg-gray-900/50 border border-gray-800 rounded-xl p-6">
-              <h3 className="text-lg font-semibold text-white mb-4">Global Threat Landscape</h3>
+              <h3 className="text-lg font-semibold text-white mb-4">{t('threatIntel.globalLandscape', 'Global Threat Landscape')}</h3>
               <div className="relative bg-gray-950 rounded-lg p-8 min-h-[300px] flex items-center justify-center">
                 <div className="text-center">
                   <div className="w-16 h-16 mx-auto mb-4 rounded-2xl bg-gradient-to-br from-red-500/20 to-orange-500/20 border border-red-500/30 flex items-center justify-center">
@@ -179,8 +179,8 @@ export default function ThreatIntelPage() {
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                     </svg>
                   </div>
-                  <p className="text-white font-medium mb-1">Interactive Threat Map</p>
-                  <p className="text-gray-500 text-sm">Visualize global attack origins, target regions, and threat vectors</p>
+                  <p className="text-white font-medium mb-1">{t('threatIntel.interactiveMap', 'Interactive Threat Map')}</p>
+                  <p className="text-gray-500 text-sm">{t('threatIntel.mapDesc', 'Visualize global attack origins, target regions, and threat vectors')}</p>
                   <div className="mt-4 flex flex-wrap gap-3 justify-center">
                     {['🇷🇺 Russia: 2,847', '🇨🇳 China: 1,923', '🇰🇵 N.Korea: 892', '🇮🇷 Iran: 456', '🇺🇸 USA: 1,102'].map(item => (
                       <span key={item} className="px-3 py-1 bg-gray-800 rounded-full text-xs text-gray-300 border border-gray-700">{item}</span>
@@ -192,7 +192,7 @@ export default function ThreatIntelPage() {
 
             {/* Recent High-Priority Threats */}
             <div className="bg-gray-900/50 border border-gray-800 rounded-xl p-6">
-              <h3 className="text-lg font-semibold text-white mb-4">Recent High-Priority Threats</h3>
+              <h3 className="text-lg font-semibold text-white mb-4">{t('threatIntel.recentThreats', 'Recent High-Priority Threats')}</h3>
               <div className="space-y-3">
                 {[
                   { title: 'Volt Typhoon Targets US Critical Infrastructure via Cisco Routers', severity: 'critical', time: '1 hour ago', source: 'CISA Advisory' },
@@ -222,19 +222,19 @@ export default function ThreatIntelPage() {
           <div className="space-y-4">
             <div className="bg-gray-900/50 border border-gray-800 rounded-xl overflow-hidden">
               <div className="p-4 border-b border-gray-800">
-                <h3 className="text-lg font-semibold text-white">Active Threat Feeds</h3>
-                <p className="text-gray-400 text-sm mt-1">Connected intelligence sources providing real-time threat data</p>
+                <h3 className="text-lg font-semibold text-white">{t('threatIntel.activeFeeds', 'Active Threat Feeds')}</h3>
+                <p className="text-gray-400 text-sm mt-1">{t('threatIntel.feedsDesc', 'Connected intelligence sources providing real-time threat data')}</p>
               </div>
               <div className="overflow-x-auto">
                 <table className="w-full">
                   <thead>
                     <tr className="border-b border-gray-800">
-                      <th className="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase">Feed</th>
-                      <th className="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase">Type</th>
-                      <th className="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase">Indicators</th>
-                      <th className="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase">Last Update</th>
-                      <th className="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase">Severity</th>
-                      <th className="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase">Status</th>
+                      <th className="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase">{t('threatIntel.feed', 'Feed')}</th>
+                      <th className="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase">{t('common.type', 'Type')}</th>
+                      <th className="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase">{t('threatIntel.indicators', 'Indicators')}</th>
+                      <th className="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase">{t('threatIntel.lastUpdate', 'Last Update')}</th>
+                      <th className="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase">{t('common.severity', 'Severity')}</th>
+                      <th className="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase">{t('common.status', 'Status')}</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -275,7 +275,7 @@ export default function ThreatIntelPage() {
                 </svg>
                 <input
                   type="text"
-                  placeholder="Search IOCs by IP, domain, hash, or threat type..."
+                  placeholder={t('threatIntel.searchPlaceholder', 'Search IOCs by IP, domain, hash, or threat type...')}
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   className="w-full pl-10 pr-4 py-2.5 bg-gray-900 border border-gray-700 rounded-lg text-white text-sm focus:ring-2 focus:ring-cyan-500 focus:border-transparent"
@@ -288,13 +288,13 @@ export default function ThreatIntelPage() {
                 <table className="w-full">
                   <thead>
                     <tr className="border-b border-gray-800">
-                      <th className="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase">Type</th>
-                      <th className="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase">Indicator</th>
-                      <th className="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase">Threat</th>
-                      <th className="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase">Source</th>
-                      <th className="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase">Confidence</th>
-                      <th className="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase">First Seen</th>
-                      <th className="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase">Last Seen</th>
+                      <th className="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase">{t('common.type', 'Type')}</th>
+                      <th className="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase">{t('threatIntel.indicator', 'Indicator')}</th>
+                      <th className="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase">{t('threatIntel.threat', 'Threat')}</th>
+                      <th className="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase">{t('threatIntel.source', 'Source')}</th>
+                      <th className="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase">{t('threatIntel.confidence', 'Confidence')}</th>
+                      <th className="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase">{t('threatIntel.firstSeen', 'First Seen')}</th>
+                      <th className="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase">{t('threatIntel.lastSeen', 'Last Seen')}</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -338,15 +338,15 @@ export default function ThreatIntelPage() {
                 </div>
                 <div className="space-y-2 text-sm">
                   <div>
-                    <span className="text-gray-500">Targets:</span>
+                    <span className="text-gray-500">{t('threatIntel.targetsLabel', 'Targets:')}</span>
                     <span className="text-gray-300 ml-2">{apt.targets}</span>
                   </div>
                   <div>
-                    <span className="text-gray-500">Last Activity:</span>
+                    <span className="text-gray-500">{t('threatIntel.lastActivity', 'Last Activity:')}</span>
                     <span className="text-gray-300 ml-2">{apt.lastActivity}</span>
                   </div>
                   <div>
-                    <span className="text-gray-500">TTPs:</span>
+                    <span className="text-gray-500">{t('threatIntel.ttps', 'TTPs:')}</span>
                     <div className="flex flex-wrap gap-1.5 mt-1">
                       {apt.ttps.map(ttp => (
                         <span key={ttp} className="px-2 py-0.5 bg-gray-800 rounded text-xs text-gray-400 border border-gray-700">{ttp}</span>

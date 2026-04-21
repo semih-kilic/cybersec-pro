@@ -156,10 +156,10 @@ export function SecurityTab({ loading, setLoading, setMessage }: SettingsTabProp
     >
       {/* Password Change */}
       <div>
-        <h2 className="text-xl font-bold text-white mb-4">Change Password</h2>
+        <h2 className="text-xl font-bold text-white mb-4">{t('security.changePassword', 'Change Password')}</h2>
         <form onSubmit={handlePasswordChange} className="space-y-4">
           <div>
-            <label className="block text-gray-400 text-sm mb-2">Current Password</label>
+            <label className="block text-gray-400 text-sm mb-2">{t('security.currentPassword', 'Current Password')}</label>
             <input
               type="password"
               value={currentPassword}
@@ -169,7 +169,7 @@ export function SecurityTab({ loading, setLoading, setMessage }: SettingsTabProp
             />
           </div>
           <div>
-            <label className="block text-gray-400 text-sm mb-2">New Password</label>
+            <label className="block text-gray-400 text-sm mb-2">{t('security.newPassword', 'New Password')}</label>
             <input
               type="password"
               value={newPassword}
@@ -191,7 +191,7 @@ export function SecurityTab({ loading, setLoading, setMessage }: SettingsTabProp
             )}
           </div>
           <div>
-            <label className="block text-gray-400 text-sm mb-2">Confirm New Password</label>
+            <label className="block text-gray-400 text-sm mb-2">{t('security.confirmPassword', 'Confirm New Password')}</label>
             <input
               type="password"
               value={confirmPassword}
@@ -204,7 +204,7 @@ export function SecurityTab({ loading, setLoading, setMessage }: SettingsTabProp
               autoComplete="new-password"
             />
             {confirmPassword && confirmPassword !== newPassword && (
-              <p className="text-red-400 text-xs mt-1">Passwords do not match</p>
+              <p className="text-red-400 text-xs mt-1">{t('security.passwordMismatch', 'Passwords do not match')}</p>
             )}
           </div>
           <button
@@ -219,25 +219,25 @@ export function SecurityTab({ loading, setLoading, setMessage }: SettingsTabProp
 
       {/* Two-Factor Authentication — V20 */}
       <div className="border-t border-gray-800 pt-8">
-        <h2 className="text-xl font-bold text-white mb-4">Two-Factor Authentication</h2>
+        <h2 className="text-xl font-bold text-white mb-4">{t('security.twoFactor', 'Two-Factor Authentication')}</h2>
 
         {mfaLoading && setupStep === 'idle' ? (
-          <div className="p-4 bg-gray-800 rounded-lg text-gray-400">Loading MFA status...</div>
+          <div className="p-4 bg-gray-800 rounded-lg text-gray-400">{t('security.loadingMfa', 'Loading MFA status...')}</div>
         ) : setupStep === 'qr' ? (
           /* QR Code Setup Step */
           <div className="space-y-4">
             <div className="p-4 bg-gray-800 rounded-lg">
-              <p className="text-white font-medium mb-3">Scan this QR code with your authenticator app</p>
+              <p className="text-white font-medium mb-3">{t('security.scanQr', 'Scan this QR code with your authenticator app')}</p>
               <div className="flex justify-center mb-4">
                 <div className="bg-white p-3 rounded-lg" dangerouslySetInnerHTML={{ __html: qrCode }} />
               </div>
               <div className="bg-gray-900 rounded-lg p-3">
-                <p className="text-gray-400 text-xs mb-1">Manual entry key:</p>
+                <p className="text-gray-400 text-xs mb-1">{t('security.manualEntryKey', 'Manual entry key:')}</p>
                 <code className="text-cyan-400 text-sm font-mono break-all select-all">{mfaSecret}</code>
               </div>
             </div>
             <div>
-              <label className="block text-gray-400 text-sm mb-2">Enter 6-digit code from your app</label>
+              <label className="block text-gray-400 text-sm mb-2">{t('security.enter6Digit', 'Enter 6-digit code from your app')}</label>
               <div className="flex gap-3">
                 <input
                   type="text"
@@ -266,8 +266,8 @@ export function SecurityTab({ loading, setLoading, setMessage }: SettingsTabProp
           /* Backup Codes Display */
           <div className="space-y-4">
             <div className="p-4 bg-yellow-500/10 border border-yellow-500/30 rounded-lg">
-              <p className="text-yellow-400 font-medium mb-2">Save your backup codes</p>
-              <p className="text-gray-400 text-sm mb-4">Store these codes securely. Each code can only be used once. They will not be shown again.</p>
+              <p className="text-yellow-400 font-medium mb-2">{t('security.saveBackupCodes', 'Save your backup codes')}</p>
+              <p className="text-gray-400 text-sm mb-4">{t('security.backupCodesDesc', 'Store these codes securely. Each code can only be used once. They will not be shown again.')}</p>
               <div className="grid grid-cols-2 gap-2 mb-4">
                 {backupCodes.map((code, i) => (
                   <div key={i} className="bg-gray-900 rounded px-3 py-2 text-center">
@@ -296,15 +296,15 @@ export function SecurityTab({ loading, setLoading, setMessage }: SettingsTabProp
           /* Disable MFA Confirmation */
           <div className="space-y-4">
             <div className="p-4 bg-red-500/10 border border-red-500/30 rounded-lg">
-              <p className="text-red-400 font-medium mb-2">Disable two-factor authentication</p>
-              <p className="text-gray-400 text-sm mb-4">Enter your password to confirm. This will remove the extra security layer from your account.</p>
+              <p className="text-red-400 font-medium mb-2">{t('security.disableTwoFactor', 'Disable two-factor authentication')}</p>
+              <p className="text-gray-400 text-sm mb-4">{t('security.disableTwoFactorDesc', 'Enter your password to confirm. This will remove the extra security layer from your account.')}</p>
               <div className="flex gap-3">
                 <input
                   type="password"
                   value={disablePassword}
                   onChange={(e) => setDisablePassword(e.target.value)}
                   className="flex-1 px-4 py-3 bg-gray-900 border border-gray-700 rounded-lg text-white focus:border-red-500 focus:ring-1 focus:ring-red-500 transition"
-                  placeholder="Enter your password"
+                  placeholder={t('security.enterPassword', 'Enter your password')}
                   autoFocus
                 />
                 <button
@@ -324,15 +324,15 @@ export function SecurityTab({ loading, setLoading, setMessage }: SettingsTabProp
           /* Regenerate Backup Codes */
           <div className="space-y-4">
             <div className="p-4 bg-cyan-500/10 border border-cyan-500/30 rounded-lg">
-              <p className="text-cyan-400 font-medium mb-2">Regenerate backup codes</p>
-              <p className="text-gray-400 text-sm mb-4">Enter your password to generate new backup codes. This will invalidate all existing codes.</p>
+              <p className="text-cyan-400 font-medium mb-2">{t('security.regenBackupCodes', 'Regenerate backup codes')}</p>
+              <p className="text-gray-400 text-sm mb-4">{t('security.regenBackupCodesDesc', 'Enter your password to generate new backup codes. This will invalidate all existing codes.')}</p>
               <div className="flex gap-3">
                 <input
                   type="password"
                   value={disablePassword}
                   onChange={(e) => setDisablePassword(e.target.value)}
                   className="flex-1 px-4 py-3 bg-gray-900 border border-gray-700 rounded-lg text-white focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 transition"
-                  placeholder="Enter your password"
+                  placeholder={t('security.enterPassword', 'Enter your password')}
                   autoFocus
                 />
                 <button
@@ -353,7 +353,7 @@ export function SecurityTab({ loading, setLoading, setMessage }: SettingsTabProp
           <div className="space-y-3">
             <div className="flex items-center justify-between p-4 bg-gray-800 rounded-lg">
               <div>
-                <p className="text-white font-medium">TOTP Authenticator</p>
+                <p className="text-white font-medium">{t('security.totpAuth', 'TOTP Authenticator')}</p>
                 <p className="text-gray-400 text-sm">
                   {mfaEnabled
                     ? `Enabled${mfaEnabledAt ? ` on ${new Date(mfaEnabledAt).toLocaleDateString()}` : ''}`
@@ -361,7 +361,7 @@ export function SecurityTab({ loading, setLoading, setMessage }: SettingsTabProp
                 </p>
               </div>
               {mfaEnabled ? (
-                <span className="px-3 py-1 bg-green-500/20 text-green-400 rounded-full text-sm font-medium">Enabled</span>
+                <span className="px-3 py-1 bg-green-500/20 text-green-400 rounded-full text-sm font-medium">{t('common.enabled', 'Enabled')}</span>
               ) : (
                 <button
                   onClick={handleMfaSetup}
@@ -375,7 +375,7 @@ export function SecurityTab({ loading, setLoading, setMessage }: SettingsTabProp
             {mfaEnabled && (
               <div className="flex items-center justify-between p-4 bg-gray-800 rounded-lg">
                 <div>
-                  <p className="text-white font-medium text-sm">Backup Codes</p>
+                  <p className="text-white font-medium text-sm">{t('security.backupCodes', 'Backup Codes')}</p>
                   <p className="text-gray-400 text-xs">{backupCodesRemaining} codes remaining</p>
                 </div>
                 <div className="flex gap-2">
@@ -400,7 +400,7 @@ export function SecurityTab({ loading, setLoading, setMessage }: SettingsTabProp
 
       {/* Sessions */}
       <div className="border-t border-gray-800 pt-8">
-        <h2 className="text-xl font-bold text-white mb-4">Active Sessions</h2>
+        <h2 className="text-xl font-bold text-white mb-4">{t('security.activeSessions', 'Active Sessions')}</h2>
         <div className="space-y-3">
           <div className="flex items-center justify-between p-4 bg-gray-800 rounded-lg">
             <div className="flex items-center gap-3">
@@ -408,20 +408,20 @@ export function SecurityTab({ loading, setLoading, setMessage }: SettingsTabProp
                 <span className="text-green-400">🖥️</span>
               </div>
               <div>
-                <p className="text-white font-medium text-sm">Current Session</p>
+                <p className="text-white font-medium text-sm">{t('security.currentSession', 'Current Session')}</p>
                 <p className="text-gray-500 text-xs">Linux · Chrome · {new Date().toLocaleDateString()}</p>
               </div>
             </div>
-            <span className="px-2 py-1 bg-green-500/20 text-green-400 rounded text-xs">Active</span>
+            <span className="px-2 py-1 bg-green-500/20 text-green-400 rounded text-xs">{t('common.active', 'Active')}</span>
           </div>
         </div>
       </div>
 
       {/* Danger Zone */}
       <div className="border-t border-gray-800 pt-8">
-        <h2 className="text-xl font-bold text-red-400 mb-4">Danger Zone</h2>
+        <h2 className="text-xl font-bold text-red-400 mb-4">{t('security.dangerZone', 'Danger Zone')}</h2>
         <div className="p-4 bg-red-500/10 border border-red-500/30 rounded-lg">
-          <p className="text-white font-medium mb-2">Delete Account</p>
+          <p className="text-white font-medium mb-2">{t('security.deleteAccount', 'Delete Account')}</p>
           <p className="text-gray-400 text-sm mb-4">
             Once you delete your account, there is no going back. Please be certain.
           </p>

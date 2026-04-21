@@ -117,13 +117,13 @@ export function TeamTab({ user, userPlan, setMessage }: SettingsTabProps) {
             exit={{ opacity: 0, height: 0 }}
             className="bg-gray-800/80 rounded-xl border border-gray-700 p-5 space-y-4"
           >
-            <h3 className="text-white font-medium">Invite Team Member</h3>
+            <h3 className="text-white font-medium">{t('team.inviteMember', 'Invite Team Member')}</h3>
             <div className="flex gap-3">
               <input
                 type="email"
                 value={inviteEmail}
                 onChange={(e) => setInviteEmail(e.target.value)}
-                placeholder="team@example.com"
+                placeholder={t('team.emailPlaceholder', 'team@example.com')}
                 className="flex-1 px-4 py-2 bg-gray-900 border border-gray-700 rounded-lg text-white focus:border-kali-blue transition"
               />
               <select
@@ -131,10 +131,10 @@ export function TeamTab({ user, userPlan, setMessage }: SettingsTabProps) {
                 onChange={(e) => setInviteRole(e.target.value)}
                 className="px-3 py-2 bg-gray-900 border border-gray-700 rounded-lg text-white"
               >
-                <option value="viewer">Viewer</option>
-                <option value="user">User</option>
-                <option value="analyst">Analyst</option>
-                <option value="admin">Admin</option>
+                <option value="viewer">{t('team.roleViewer', 'Viewer')}</option>
+                <option value="user">{t('team.roleUser', 'User')}</option>
+                <option value="analyst">{t('team.roleAnalyst', 'Analyst')}</option>
+                <option value="admin">{t('team.roleAdmin', 'Admin')}</option>
               </select>
               <button
                 onClick={handleInvite}
@@ -187,7 +187,7 @@ export function TeamTab({ user, userPlan, setMessage }: SettingsTabProps) {
       {invitations.length > 0 && (
         <div className="bg-gray-800/50 rounded-xl border border-gray-700 overflow-hidden">
           <div className="p-4 border-b border-gray-700">
-            <h3 className="text-white font-medium">Pending Invitations</h3>
+            <h3 className="text-white font-medium">{t('team.pendingInvitations', 'Pending Invitations')}</h3>
           </div>
           <div className="divide-y divide-gray-700/50">
             {invitations.map(inv => (
@@ -197,7 +197,7 @@ export function TeamTab({ user, userPlan, setMessage }: SettingsTabProps) {
                   <p className="text-gray-500 text-xs">Invited {new Date(inv.created_at).toLocaleDateString()} · Role: {inv.role}</p>
                 </div>
                 <div className="flex items-center gap-3">
-                  <span className="px-3 py-1 bg-yellow-500/20 text-yellow-400 rounded-full text-xs">Pending</span>
+                  <span className="px-3 py-1 bg-yellow-500/20 text-yellow-400 rounded-full text-xs">{t('team.pending', 'Pending')}</span>
                   <button
                     onClick={() => handleRemove(inv.id)}
                     className="text-gray-400 hover:text-red-400 text-sm"
@@ -213,7 +213,7 @@ export function TeamTab({ user, userPlan, setMessage }: SettingsTabProps) {
 
       {/* Roles */}
       <div className="bg-gray-800/50 rounded-xl border border-gray-700 p-5">
-        <h3 className="text-white font-medium mb-4">Available Roles</h3>
+        <h3 className="text-white font-medium mb-4">{t('team.availableRoles', 'Available Roles')}</h3>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           {[
             { role: 'Admin', desc: 'Full access to all settings, billing, and team management', icon: '👑', color: 'from-yellow-500/20 to-orange-500/20' },
@@ -233,8 +233,8 @@ export function TeamTab({ user, userPlan, setMessage }: SettingsTabProps) {
 
       {(userPlan === 'trial' || userPlan === 'starter') && (
         <div className="bg-yellow-500/10 border border-yellow-500/20 rounded-xl p-5 text-center">
-          <p className="text-yellow-400 font-medium mb-2">Team management requires Professional plan or higher</p>
-          <a href="/dashboard/billing/upgrade" className="text-blue-400 hover:underline text-sm">Upgrade to invite team members →</a>
+          <p className="text-yellow-400 font-medium mb-2">{t('team.upgradeRequired', 'Team management requires Professional plan or higher')}</p>
+          <a href="/dashboard/billing/upgrade" className="text-blue-400 hover:underline text-sm">{t('team.upgradeLink', 'Upgrade to invite team members →')}</a>
         </div>
       )}
     </motion.div>

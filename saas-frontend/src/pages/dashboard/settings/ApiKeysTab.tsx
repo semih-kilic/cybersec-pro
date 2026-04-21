@@ -100,7 +100,7 @@ export function ApiKeysTab({ loading, setLoading, setMessage }: SettingsTabProps
           type="text"
           value={newKeyName}
           onChange={(e) => setNewKeyName(e.target.value)}
-          placeholder="Enter key name (e.g., Production API)"
+          placeholder={t('apiKeys.namePlaceholder', 'Enter key name (e.g., Production API)')}
           className="flex-1 px-4 py-3 bg-gray-800 border border-gray-700 rounded-lg text-white focus:border-kali-blue focus:ring-1 focus:ring-kali-blue transition"
           onKeyDown={(e) => e.key === 'Enter' && generateApiKey()}
         />
@@ -123,7 +123,7 @@ export function ApiKeysTab({ loading, setLoading, setMessage }: SettingsTabProps
             className="p-4 bg-green-500/10 border border-green-500 rounded-lg"
           >
             <p className="text-green-400 font-medium mb-2">🔑 New API Key Generated</p>
-            <p className="text-gray-400 text-sm mb-3">Copy this key now. You won't be able to see it again!</p>
+            <p className="text-gray-400 text-sm mb-3">{t('apiKeys.copyNow', "Copy this key now. You won't be able to see it again!")}</p>
             <div className="flex items-center gap-2">
               <code className="flex-1 px-4 py-2 bg-gray-800 rounded-lg text-kali-blue font-mono text-sm overflow-x-auto select-all">
                 {showNewKey}
@@ -150,8 +150,8 @@ export function ApiKeysTab({ loading, setLoading, setMessage }: SettingsTabProps
         {apiKeys.length === 0 ? (
           <div className="text-center py-12 text-gray-500">
             <p className="text-4xl mb-4">🔑</p>
-            <p className="font-medium mb-1">No API keys yet</p>
-            <p className="text-sm">Generate one to get started with the API</p>
+            <p className="font-medium mb-1">{t('apiKeys.noKeysTitle', 'No API keys yet')}</p>
+            <p className="text-sm">{t('apiKeys.noKeysDesc', 'Generate one to get started with the API')}</p>
           </div>
         ) : (
           <AnimatePresence>
@@ -174,8 +174,8 @@ export function ApiKeysTab({ loading, setLoading, setMessage }: SettingsTabProps
                 </div>
                 {deleteConfirm === key.id ? (
                   <div className="flex items-center gap-2">
-                    <button onClick={() => deleteApiKey(key.id)} className="px-3 py-1 bg-red-600 text-white rounded text-sm btn-micro">Confirm</button>
-                    <button onClick={() => setDeleteConfirm(null)} className="px-3 py-1 bg-gray-700 text-gray-300 rounded text-sm btn-micro">Cancel</button>
+                    <button onClick={() => deleteApiKey(key.id)} className="px-3 py-1 bg-red-600 text-white rounded text-sm btn-micro">{t('common.confirm', 'Confirm')}</button>
+                    <button onClick={() => setDeleteConfirm(null)} className="px-3 py-1 bg-gray-700 text-gray-300 rounded text-sm btn-micro">{t('common.cancel', 'Cancel')}</button>
                   </div>
                 ) : (
                   <button onClick={() => setDeleteConfirm(key.id)} className="px-3 py-1 text-red-400 hover:bg-red-500/20 rounded transition text-sm">
@@ -191,7 +191,7 @@ export function ApiKeysTab({ loading, setLoading, setMessage }: SettingsTabProps
       {/* Docs */}
       <div className="p-4 bg-gray-800 rounded-lg border border-gray-700">
         <p className="text-white font-medium mb-2">📚 API Documentation</p>
-        <p className="text-gray-400 text-sm mb-3">Learn how to use the CyberSec Pro API in your applications.</p>
+        <p className="text-gray-400 text-sm mb-3">{t('apiKeys.docsHint', 'Learn how to use the CyberSec Pro API in your applications.')}</p>
         <a href="/docs.html#api" target="_blank" rel="noreferrer" className="text-kali-blue hover:underline text-sm">
           View API Documentation →
         </a>

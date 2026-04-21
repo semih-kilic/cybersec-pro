@@ -119,8 +119,8 @@ export function NotificationsTab({ setMessage }: SettingsTabProps) {
 
       {/* Quiet Hours */}
       <div className="border-t border-gray-800 pt-6">
-        <h3 className="text-lg font-semibold text-white mb-3">Quiet Hours</h3>
-        <p className="text-gray-400 text-sm mb-4">Pause non-critical notifications during specific hours</p>
+        <h3 className="text-lg font-semibold text-white mb-3">{t('notifications.quietHours', 'Quiet Hours')}</h3>
+        <p className="text-gray-400 text-sm mb-4">{t('notifications.quietHoursDesc', 'Pause non-critical notifications during specific hours')}</p>
         <div className="flex items-center gap-4 mb-3">
           <Toggle
             checked={prefs.quiet_hours.enabled}
@@ -132,7 +132,7 @@ export function NotificationsTab({ setMessage }: SettingsTabProps) {
         {prefs.quiet_hours.enabled && (
           <div className="flex items-center gap-4">
             <div>
-              <label className="block text-gray-500 text-xs mb-1">From</label>
+              <label className="block text-gray-500 text-xs mb-1">{t('common.from', 'From')}</label>
               <select
                 value={prefs.quiet_hours.from}
                 onChange={(e) => setPrefs({ ...prefs, quiet_hours: { ...prefs.quiet_hours, from: e.target.value } })}
@@ -145,7 +145,7 @@ export function NotificationsTab({ setMessage }: SettingsTabProps) {
             </div>
             <span className="text-gray-500 mt-4">→</span>
             <div>
-              <label className="block text-gray-500 text-xs mb-1">To</label>
+              <label className="block text-gray-500 text-xs mb-1">{t('common.to', 'To')}</label>
               <select
                 value={prefs.quiet_hours.to}
                 onChange={(e) => setPrefs({ ...prefs, quiet_hours: { ...prefs.quiet_hours, to: e.target.value } })}

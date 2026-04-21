@@ -66,7 +66,7 @@ export function BillingTab({ userPlan }: SettingsTabProps) {
       <div className={`p-6 bg-gradient-to-r ${plan.gradient} rounded-xl`}>
         <div className="flex items-center justify-between flex-wrap gap-4">
           <div>
-            <p className="text-white/70 text-xs uppercase tracking-wider font-medium">Current Plan</p>
+            <p className="text-white/70 text-xs uppercase tracking-wider font-medium">{t('billing.currentPlan', 'Current Plan')}</p>
             <h3 className="text-white text-2xl font-bold mt-1">{plan.label}</h3>
             <div className="flex items-center gap-4 mt-3 text-white/80 text-sm flex-wrap">
               <span>🛡️ {toolCount} tools</span>
@@ -86,7 +86,7 @@ export function BillingTab({ userPlan }: SettingsTabProps) {
       {/* Plan Features */}
       {config?.features && (
         <div className="p-5 bg-gray-800/50 border border-gray-700 rounded-xl">
-          <h3 className="text-white font-semibold mb-4">Plan Features</h3>
+          <h3 className="text-white font-semibold mb-4">{t('billing.planFeatures', 'Plan Features')}</h3>
           <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
             {Object.entries(config.features).map(([key, enabled]) => (
               <div key={key} className="flex items-center gap-2">
@@ -103,7 +103,7 @@ export function BillingTab({ userPlan }: SettingsTabProps) {
       {/* Stripe Customer */}
       <div className="p-5 bg-gray-800/50 border border-gray-700 rounded-xl">
         <div className="flex items-center justify-between mb-4">
-          <h3 className="text-white font-semibold">Payment</h3>
+          <h3 className="text-white font-semibold">{t('billing.payment', 'Payment')}</h3>
           {billing?.stripe_customer_id && (
             <span className="text-gray-500 text-xs font-mono">{billing.stripe_customer_id}</span>
           )}
@@ -112,16 +112,16 @@ export function BillingTab({ userPlan }: SettingsTabProps) {
           <div className="flex items-center gap-4 p-4 bg-gray-900/50 rounded-lg border border-gray-700">
             <div className="w-10 h-10 bg-gradient-to-br from-purple-600 to-blue-600 rounded-lg flex items-center justify-center text-white text-sm font-bold">S</div>
             <div>
-              <p className="text-white text-sm font-medium">Stripe Payment Active</p>
-              <p className="text-gray-500 text-xs">Managed through Stripe Checkout</p>
+              <p className="text-white text-sm font-medium">{t('billing.stripeActive', 'Stripe Payment Active')}</p>
+              <p className="text-gray-500 text-xs">{t('billing.stripeManaged', 'Managed through Stripe Checkout')}</p>
             </div>
-            <span className="ml-auto px-2 py-1 bg-green-500/20 text-green-400 rounded text-xs">Active</span>
+            <span className="ml-auto px-2 py-1 bg-green-500/20 text-green-400 rounded text-xs">{t('common.active', 'Active')}</span>
           </div>
         ) : (
           <div className="p-4 bg-gray-900/50 rounded-lg border border-gray-700 text-center">
-            <p className="text-gray-400 text-sm">No payment method on file</p>
+            <p className="text-gray-400 text-sm">{t('billing.noPayment', 'No payment method on file')}</p>
             {planKey === 'trial' && (
-              <a href="/dashboard/upgrade" className="text-blue-400 hover:underline text-sm mt-1 inline-block">Add payment method →</a>
+              <a href="/dashboard/upgrade" className="text-blue-400 hover:underline text-sm mt-1 inline-block">{t('billing.addPayment', 'Add payment method →')}</a>
             )}
           </div>
         )}

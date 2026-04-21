@@ -88,14 +88,14 @@ export function ProfileTab({ loading, setLoading, setMessage, user }: SettingsTa
           >
             {uploadingAvatar ? 'Uploading...' : 'Change Avatar'}
           </button>
-          <p className="text-gray-500 text-sm mt-1">JPG, PNG or GIF. Max 2MB.</p>
+          <p className="text-gray-500 text-sm mt-1">{t('profile.avatarHint', 'JPG, PNG or GIF. Max 2MB.')}</p>
         </div>
       </div>
 
       {/* Name */}
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
         <div>
-          <label className="block text-gray-400 text-sm mb-2">First Name</label>
+          <label className="block text-gray-400 text-sm mb-2">{t('profile.firstName', 'First Name')}</label>
           <input
             type="text"
             value={firstName}
@@ -104,7 +104,7 @@ export function ProfileTab({ loading, setLoading, setMessage, user }: SettingsTa
           />
         </div>
         <div>
-          <label className="block text-gray-400 text-sm mb-2">Last Name</label>
+          <label className="block text-gray-400 text-sm mb-2">{t('profile.lastName', 'Last Name')}</label>
           <input
             type="text"
             value={lastName}
@@ -116,25 +116,25 @@ export function ProfileTab({ loading, setLoading, setMessage, user }: SettingsTa
 
       {/* Email (read-only) */}
       <div>
-        <label className="block text-gray-400 text-sm mb-2">Email</label>
+        <label className="block text-gray-400 text-sm mb-2">{t('profile.email', 'Email')}</label>
         <input
           type="email"
           value={email}
           disabled
           className="w-full px-4 py-3 bg-gray-800/50 border border-gray-700 rounded-lg text-gray-500 cursor-not-allowed"
         />
-        <p className="text-gray-500 text-sm mt-1">Email cannot be changed</p>
+        <p className="text-gray-500 text-sm mt-1">{t('profile.emailReadOnly', 'Email cannot be changed')}</p>
       </div>
 
       {/* Company */}
       <div>
-        <label className="block text-gray-400 text-sm mb-2">Company</label>
+        <label className="block text-gray-400 text-sm mb-2">{t('profile.company', 'Company')}</label>
         <input
           type="text"
           value={company}
           onChange={(e) => setCompany(e.target.value)}
           className="w-full px-4 py-3 bg-gray-800 border border-gray-700 rounded-lg text-white focus:border-kali-blue focus:ring-1 focus:ring-kali-blue transition"
-          placeholder="Your company name"
+          placeholder={t('profile.companyPlaceholder', 'Your company name')}
         />
       </div>
 

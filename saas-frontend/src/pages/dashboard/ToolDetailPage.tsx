@@ -324,9 +324,9 @@ export function ToolDetailPage() {
             <div className="bg-gray-900 rounded-xl border border-gray-800 p-5">
               <div className="flex items-center gap-2 mb-2">
                 <span className="text-lg">🖥️</span>
-                <h3 className="text-white font-semibold">Execution Node</h3>
+                <h3 className="text-white font-semibold">{t('toolDetail.executionNode', 'Execution Node')}</h3>
               </div>
-              <p className="text-gray-500 text-xs mb-3">Choose where to run the scan. Use a private agent to scan internal networks behind your firewall.</p>
+              <p className="text-gray-500 text-xs mb-3">{t('toolDetail.executionHint', 'Choose where to run the scan. Use a private agent to scan internal networks behind your firewall.')}</p>
               <select value={selectedAgentId} onChange={(e) => setSelectedAgentId(e.target.value)} disabled={isScanning}
                 className="w-full px-3 py-2.5 bg-gray-800 border border-gray-700 rounded-lg text-white focus:outline-none focus:border-kali-blue transition text-sm disabled:opacity-50">
                 <option value="server">☁️ Server (Default)</option>
@@ -373,7 +373,7 @@ export function ToolDetailPage() {
                           {param.type === 'number' && <input type="number" placeholder={param.placeholder} value={(paramValues[param.name] as string) || ''} onChange={(e) => handleParamChange(param.name, e.target.value)} disabled={isScanning} className="w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:border-kali-blue transition disabled:opacity-50" />}
                           {param.type === 'select' && (
                             <select value={(paramValues[param.name] as string) || ''} onChange={(e) => handleParamChange(param.name, e.target.value)} disabled={isScanning} className="w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded-lg text-white focus:outline-none focus:border-kali-blue transition disabled:opacity-50">
-                              <option value="">Select...</option>
+                              <option value="">{t('common.selectDots', 'Select...')}</option>
                               {param.options?.map(opt => <option key={opt} value={opt.split(' ')[0]}>{opt}</option>)}
                             </select>
                           )}
