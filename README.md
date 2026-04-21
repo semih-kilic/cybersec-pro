@@ -52,6 +52,11 @@ npm run i18n:check
 npm run i18n:residual
 ```
 
+CI-produced i18n reports:
+
+- `saas-frontend/i18n-coverage-report.json`
+- `saas-frontend/i18n-residual-report.json`
+
 Current localization status:
 
 - Locales: `en`, `de`, `es`, `fr`, `it`
@@ -73,6 +78,16 @@ Localization files live in:
 - `ARCHITECTURE.md` - service topology and routing map
 - `.claude/rules/project.md` - project execution rules
 - `.claude/memory/project-state.md` - current development state
+
+## CI Artifacts
+
+- `i18n-reports` artifact (frontend job):
+  - coverage report
+  - residual parity report
+- `backend-reports` artifact (backend job):
+  - `cargo-check.log`
+  - `cargo-clippy.log`
+  - `cargo-clippy-exit.txt`
 
 ## Important Notes
 

@@ -60,3 +60,14 @@ A change is complete when:
 - implementation is applied,
 - touched files pass syntax/quality checks,
 - and related docs are updated.
+
+## 6) CI Artifact Review Skill
+
+After CI runs, inspect workflow artifacts to triage quickly:
+- `i18n-reports`:
+  - `saas-frontend/i18n-coverage-report.json`
+  - `saas-frontend/i18n-residual-report.json`
+- `backend-reports`:
+  - `rust-backend/ci-reports/cargo-check.log`
+  - `rust-backend/ci-reports/cargo-clippy.log`
+  - `rust-backend/ci-reports/cargo-clippy-exit.txt`

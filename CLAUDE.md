@@ -66,6 +66,14 @@ cd saas-frontend && npm install && npm run dev
 cd frontend && pnpm install && pnpm dev
 ```
 
+### CI quality commands (local parity with pipeline)
+```bash
+cd saas-frontend
+pnpm run i18n:check
+pnpm run i18n:residual
+pnpm run type-check
+```
+
 ## 5) i18n Workflow (SaaS Frontend)
 
 Locale path:
@@ -88,6 +96,15 @@ Current tracked status:
 - Completed: 49 / 49 scopes
 - Remaining: 0 keys
 - Result: parity achieved across `de/es/fr/it` against `en`
+
+CI artifacts for observability:
+- Frontend artifact `i18n-reports`
+  - `saas-frontend/i18n-coverage-report.json`
+  - `saas-frontend/i18n-residual-report.json`
+- Backend artifact `backend-reports`
+  - `rust-backend/ci-reports/cargo-check.log`
+  - `rust-backend/ci-reports/cargo-clippy.log`
+  - `rust-backend/ci-reports/cargo-clippy-exit.txt`
 
 ## 6) Safety Rules (Must Follow)
 
