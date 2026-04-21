@@ -264,7 +264,7 @@
     "high": "Élevé",
     "medium": "Moyen",
     "low": "Faible",
-    "info": "Info",
+    "info": "Informations",
     "freeTrial": "Essai gratuit",
     "daysRemaining": "jours restants • 3 scans/jour",
     "upgradeHint": "Passez à un plan supérieur pour plus de scans, des rapports PDF et des scans planifiés",
@@ -274,9 +274,9 @@
     "noScansTitle": "Aucun scan pour le moment",
     "noScansDesc": "Lancez votre premier scan de sécurité pour protéger vos actifs.",
     "colDomain": "Domaine",
-    "colScore": "Score",
+    "colScore": "Indice",
     "colIssues": "Problèmes",
-    "colDate": "Date",
+    "colDate": "Date du scan",
     "rescan": "Relancer le scan",
     "report": "Rapport",
     "vulnOverview": "Vue d'ensemble des vulnérabilités",
@@ -297,8 +297,8 @@
     "installed": "Installé",
     "available": "Disponible",
     "category": "Catégorie",
-    "version": "Version",
-    "description": "Description",
+    "version": "Version logicielle",
+    "description": "Description de l'outil",
     "usage": "Utilisation",
     "examples": "Exemples",
     "loadingCatalog": "Chargement du catalogue d'outils...",
@@ -773,7 +773,7 @@
   },
   "privacy": {
     "title": "Politique de confidentialité",
-    "section1Title": "1. Introduction",
+    "section1Title": "1. Introduction generale",
     "section1Body": "CyberSec Pro (\"nous\", \"notre\") s'engage à protéger vos données personnelles et à respecter votre vie privée. Cette Politique de confidentialité explique comment nous collectons, utilisons, stockons et protégeons vos informations personnelles conformément au Règlement Général sur la Protection des Données (RGPD) (UE) 2016/679.",
     "section2Title": "2. Responsable du traitement",
     "section2Body": "Le responsable du traitement de vos données personnelles est :",
@@ -820,7 +820,7 @@
     },
     "section10Title": "10. Autorité de contrôle",
     "section10Body": "Si vous estimez que vos droits en matière de protection des données ont été violés, vous avez le droit d'introduire une réclamation auprès d'une autorité de contrôle de l'État membre de l'UE de votre résidence habituelle, de votre lieu de travail ou du lieu de l'infraction présumée.",
-    "section11Title": "11. Contact",
+    "section11Title": "11. Nous contacter",
     "section11Body": "Pour toute question concernant cette Politique de confidentialité ou vos droits sur les données :",
     "section11": {
       "responseTime": "Délai de réponse : sous 30 jours (comme l'exige l'Art. 12 RGPD)"
@@ -923,9 +923,9 @@
     "executionHint": "Choisissez où exécuter le scan. Utilisez un agent privé pour scanner des réseaux internes derrière votre pare-feu."
   },
   "toolsCatalog": {
-    "noToolsFound": "No tools found",
-    "adjustFilters": "Try adjusting your search or filter criteria",
-    "clearFilters": "Clear Filters"
+    "noToolsFound": "Aucun outil trouve",
+    "adjustFilters": "Essayez d'ajuster vos criteres de recherche ou de filtre",
+    "clearFilters": "Effacer les filtres"
   },
   "verifyEmail": {
     "title": "Vérifier l'e-mail",
@@ -1325,7 +1325,7 @@
     "high": "Élevé",
     "medium": "Moyen",
     "low": "Faible",
-    "exploit": "EXPLOIT",
+    "exploit": "Exploitation",
     "noResults": "Aucune vulnérabilité ne correspond à vos critères de recherche."
   },
   "apiKeys": {
@@ -1362,9 +1362,9 @@
     "enterpriseRequired": "SSO nécessite le plan Enterprise",
     "providerType": "Type de fournisseur d'identité",
     "providerName": "Nom du fournisseur",
-    "providerPlaceholder": "e.g. Okta, Azure AD",
+    "providerPlaceholder": "ex. Okta, Azure AD",
     "domainHint": "Indice de domaine",
-    "domainPlaceholder": "e.g. company.com",
+    "domainPlaceholder": "ex. company.com",
     "entityId": "ID d'entité (Issuer)",
     "entityIdPlaceholder": "https://your-idp.example.com/saml/metadata",
     "ssoUrl": "URL SSO (URL de connexion)",
@@ -1373,7 +1373,7 @@
     "issuerUrl": "URL de l'issuer",
     "issuerUrlPlaceholder": "https://accounts.google.com",
     "clientId": "ID client",
-    "clientIdPlaceholder": "your-client-id",
+    "clientIdPlaceholder": "votre-client-id",
     "clientSecret": "Secret client",
     "oidcProviderHint": "Configurer dans votre fournisseur OIDC :",
     "ldapHost": "Hôte LDAP",

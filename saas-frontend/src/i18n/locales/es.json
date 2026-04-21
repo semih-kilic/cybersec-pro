@@ -264,7 +264,7 @@
     "high": "Alto",
     "medium": "Medio",
     "low": "Bajo",
-    "info": "Info",
+    "info": "Informacion",
     "freeTrial": "Prueba gratuita",
     "daysRemaining": "días restantes • 3 escaneos/día",
     "upgradeHint": "Mejora para obtener más escaneos, informes PDF y escaneos programados",
@@ -336,7 +336,7 @@
     "root": "Administrador",
     "dangerousTitle": "Usar con precaución: puede afectar a los sistemas objetivo",
     "dangerous": "Peligroso",
-    "plan": "Plan",
+    "plan": "Suscripcion",
     "notInstalled": "No instalado"
   },
   "scans": {
@@ -923,9 +923,9 @@
     "executionHint": "Elige dónde ejecutar el escaneo. Usa un agente privado para escanear redes internas detrás de tu firewall."
   },
   "toolsCatalog": {
-    "noToolsFound": "No tools found",
-    "adjustFilters": "Try adjusting your search or filter criteria",
-    "clearFilters": "Clear Filters"
+    "noToolsFound": "No se encontraron herramientas",
+    "adjustFilters": "Intenta ajustar tu busqueda o criterios de filtro",
+    "clearFilters": "Limpiar filtros"
   },
   "verifyEmail": {
     "title": "Verificar correo",
@@ -1362,9 +1362,9 @@
     "enterpriseRequired": "SSO requiere el plan Enterprise",
     "providerType": "Tipo de proveedor de identidad",
     "providerName": "Nombre del proveedor",
-    "providerPlaceholder": "e.g. Okta, Azure AD",
+    "providerPlaceholder": "p. ej. Okta, Azure AD",
     "domainHint": "Sugerencia de dominio",
-    "domainPlaceholder": "e.g. company.com",
+    "domainPlaceholder": "p. ej. company.com",
     "entityId": "ID de entidad (Issuer)",
     "entityIdPlaceholder": "https://your-idp.example.com/saml/metadata",
     "ssoUrl": "URL SSO (URL de inicio de sesión)",
@@ -1373,7 +1373,7 @@
     "issuerUrl": "URL del issuer",
     "issuerUrlPlaceholder": "https://accounts.google.com",
     "clientId": "ID de cliente",
-    "clientIdPlaceholder": "your-client-id",
+    "clientIdPlaceholder": "tu-client-id",
     "clientSecret": "Secreto de cliente",
     "oidcProviderHint": "Configurar en tu proveedor OIDC:",
     "ldapHost": "Host LDAP",

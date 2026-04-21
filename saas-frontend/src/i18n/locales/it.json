@@ -184,7 +184,7 @@
     "signInButton": "Accedi",
     "signingIn": "Accesso in corso...",
     "email": "Indirizzo e-mail",
-    "password": "Password",
+    "password": "Password di accesso",
     "forgotPassword": "Password dimenticata?",
     "noAccount": "Non hai un account?",
     "startTrial": "Prova gratuita",
@@ -264,7 +264,7 @@
     "high": "Alto",
     "medium": "Medio",
     "low": "Basso",
-    "info": "Info",
+    "info": "Informazioni",
     "freeTrial": "Prova gratuita",
     "daysRemaining": "giorni rimanenti • 3 scansioni/giorno",
     "upgradeHint": "Passa a un piano superiore per più scansioni, report PDF e scansioni pianificate",
@@ -278,7 +278,7 @@
     "colIssues": "Problemi",
     "colDate": "Data",
     "rescan": "Esegui di nuovo",
-    "report": "Report",
+    "report": "Rapporto",
     "vulnOverview": "Panoramica vulnerabilità",
     "noVulns": "Nessuna vulnerabilità trovata",
     "runScanHint": "Esegui una scansione per verificare la tua postura di sicurezza",
@@ -923,9 +923,9 @@
     "executionHint": "Scegli dove eseguire la scansione. Usa un agente privato per scansionare reti interne dietro il tuo firewall."
   },
   "toolsCatalog": {
-    "noToolsFound": "No tools found",
-    "adjustFilters": "Try adjusting your search or filter criteria",
-    "clearFilters": "Clear Filters"
+    "noToolsFound": "Nessuno strumento trovato",
+    "adjustFilters": "Prova a modificare i criteri di ricerca o filtro",
+    "clearFilters": "Cancella filtri"
   },
   "verifyEmail": {
     "title": "Verifica e-mail",
@@ -1325,7 +1325,7 @@
     "high": "Alto",
     "medium": "Medio",
     "low": "Basso",
-    "exploit": "EXPLOIT",
+    "exploit": "Sfruttamento",
     "noResults": "Nessuna vulnerabilità corrisponde ai tuoi criteri di ricerca."
   },
   "apiKeys": {
@@ -1362,9 +1362,9 @@
     "enterpriseRequired": "SSO richiede il piano Enterprise",
     "providerType": "Tipo di provider di identità",
     "providerName": "Nome provider",
-    "providerPlaceholder": "e.g. Okta, Azure AD",
+    "providerPlaceholder": "es. Okta, Azure AD",
     "domainHint": "Suggerimento dominio",
-    "domainPlaceholder": "e.g. company.com",
+    "domainPlaceholder": "es. company.com",
     "entityId": "ID entità (Issuer)",
     "entityIdPlaceholder": "https://your-idp.example.com/saml/metadata",
     "ssoUrl": "URL SSO (URL di accesso)",
@@ -1373,7 +1373,7 @@
     "issuerUrl": "URL issuer",
     "issuerUrlPlaceholder": "https://accounts.google.com",
     "clientId": "ID client",
-    "clientIdPlaceholder": "your-client-id",
+    "clientIdPlaceholder": "tuo-client-id",
     "clientSecret": "Segreto client",
     "oidcProviderHint": "Configura nel tuo provider OIDC:",
     "ldapHost": "Host LDAP",
