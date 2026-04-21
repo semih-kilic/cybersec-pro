@@ -9,6 +9,7 @@ CyberSec Pro is a multi-service cybersecurity SaaS platform with Rust APIs, a Re
 - Infra orchestration: `docker-compose.yml` + Nginx reverse proxy
 - Localization parity complete (2026-04-21): `saas-frontend/src/i18n/locales`
 - Purple Team backend flow implemented (DB-backed): create, list, detail, chains, playbooks, MITRE
+- Purple Team lifecycle progression enabled: pending -> running -> completed (time-based simulation)
 
 ## Quick Start
 

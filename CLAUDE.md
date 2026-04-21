@@ -117,7 +117,7 @@ CI artifacts for observability:
 
 ## 7) Known Risk Areas
 
-- `rust-backend/src/handlers/stub_handlers.rs` still contains mixed maturity endpoints; Purple Team now has DB-backed persistence but execution telemetry is still mostly placeholder.
+- `rust-backend/src/handlers/stub_handlers.rs` still contains mixed maturity endpoints; Purple Team now has DB-backed persistence with time-based lifecycle simulation, while real execution telemetry is still placeholder.
 - Billing/Stripe flow remains partially stubbed.
 - `rust-scan-engine` is not integrated in `docker-compose.yml`.
 - SQLx version mismatch between backend and scan engine should be resolved before deeper integration.

@@ -25,6 +25,7 @@ Last updated: 2026-04-21
 ### Recent Backend Progress (2026-04-21)
 - Added static Purple Team chain/playbook catalogs and MITRE matrix response.
 - Replaced in-memory exercise state with `purple_team_exercises` PostgreSQL persistence and DB-driven dashboard/list/detail.
+- Added automatic lifecycle progression in Purple Team reads (`pending -> running -> completed`) with payload/metric sync.
 - Added unit tests for purple-team exercise payload shape and chain/default builder behavior in `rust-backend/src/handlers/stub_handlers.rs`.
 
 ### Working Conventions

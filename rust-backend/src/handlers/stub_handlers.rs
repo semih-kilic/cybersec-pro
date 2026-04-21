@@ -210,6 +210,135 @@ fn purple_team_build_exercise(
     })
 }
 
+fn purple_team_apply_completion(payload: &mut serde_json::Value, total_steps: i64) {
+    let safe_total_steps = if total_steps < 0 { 0 } else { total_steps };
+    let detected = (safe_total_steps * 7) / 10;
+    let missed = safe_total_steps - detected;
+    let detection_rate = if safe_total_steps > 0 {
+        (detected as f64 / safe_total_steps as f64) * 100.0
+    } else {
+        0.0
+    };
+
+    payload["status"] = json!("completed");
+    payload["completed_steps"] = json!(safe_total_steps);
+    payload["detected_attacks"] = json!(detected);
+    payload["missed_attacks"] = json!(missed);
+    payload["completed_at"] = json!(chrono::Utc::now().to_rfc3339());
+    payload["gap_analysis"] = json!({
+        "total_attacks": safe_total_steps,
+        "detected": detected,
+        "missed": missed,
+        "detection_rate": detection_rate,
+        "missed_techniques": [],
+        "recommendations": []
+    });
+}
+
+fn purple_team_apply_running_progress(payload: &mut serde_json::Value, total_steps: i64, age_seconds: f64) {
+    let safe_total_steps = if total_steps < 0 { 0 } else { total_steps };
+    let inferred = ((age_seconds / 15.0).floor() as i64 + 1).max(1);
+    let completed_steps = inferred.min(safe_total_steps);
+    payload["status"] = json!("running");
+    payload["completed_steps"] = json!(completed_steps);
+    payload["completed_at"] = json!("");
+}
+
+async fn purple_team_progress_tick(state: &Arc<AppState>, org_id: &str) {
+    let rows = sqlx::query_as::<_, (String, String, i64, String, f64)>(
+        r#"SELECT
+            id,
+            status,
+            total_steps,
+            payload::text,
+            EXTRACT(EPOCH FROM (NOW() - created_at))::double precision
+        FROM purple_team_exercises
+        WHERE organization_id = $1
+          AND status IN ('pending', 'running')"#
+    )
+    .bind(org_id)
+    .fetch_all(&state.db)
+    .await
+    .unwrap_or_default();
+
+    for (id, status, total_steps, payload_text, age_seconds) in rows {
+        let mut payload = match serde_json::from_str::<serde_json::Value>(&payload_text) {
+            Ok(value) => value,
+            Err(_) => continue,
+        };
+
+        let mut next_status = status.clone();
+        let mut completed_steps = payload
+            .get("completed_steps")
+            .and_then(|value| value.as_i64())
+            .unwrap_or(0);
+        let mut detected_attacks = payload
+            .get("detected_attacks")
+            .and_then(|value| value.as_i64())
+            .unwrap_or(0);
+        let mut missed_attacks = payload
+            .get("missed_attacks")
+            .and_then(|value| value.as_i64())
+            .unwrap_or(0);
+
+        if status == "pending" {
+            payload["started_at"] = json!(chrono::Utc::now().to_rfc3339());
+            purple_team_apply_running_progress(&mut payload, total_steps, age_seconds.max(1.0));
+            next_status = "running".to_string();
+        } else if status == "running" && age_seconds >= 90.0 {
+            purple_team_apply_completion(&mut payload, total_steps);
+            next_status = "completed".to_string();
+        } else if status == "running" {
+            purple_team_apply_running_progress(&mut payload, total_steps, age_seconds);
+            next_status = "running".to_string();
+        }
+
+        if next_status == "completed" {
+            completed_steps = payload.get("completed_steps").and_then(|value| value.as_i64()).unwrap_or(total_steps);
+            detected_attacks = payload.get("detected_attacks").and_then(|value| value.as_i64()).unwrap_or(0);
+            missed_attacks = payload.get("missed_attacks").and_then(|value| value.as_i64()).unwrap_or(0);
+        } else if next_status == "running" {
+            completed_steps = payload.get("completed_steps").and_then(|value| value.as_i64()).unwrap_or(0);
+        }
+
+        let started_at_value = payload
+            .get("started_at")
+            .and_then(|value| value.as_str())
+            .unwrap_or("")
+            .to_string();
+        let completed_at_value = payload
+            .get("completed_at")
+            .and_then(|value| value.as_str())
+            .unwrap_or("")
+            .to_string();
+
+        let _ = sqlx::query(
+            r#"UPDATE purple_team_exercises
+            SET
+                status = $1,
+                completed_steps = $2,
+                detected_attacks = $3,
+                missed_attacks = $4,
+                started_at = COALESCE(NULLIF($5, '')::timestamp, started_at),
+                completed_at = COALESCE(NULLIF($6, '')::timestamp, completed_at),
+                payload = $7::jsonb,
+                updated_at = NOW()
+            WHERE id = $8 AND organization_id = $9"#
+        )
+        .bind(&next_status)
+        .bind(completed_steps)
+        .bind(detected_attacks)
+        .bind(missed_attacks)
+        .bind(started_at_value)
+        .bind(completed_at_value)
+        .bind(payload.to_string())
+        .bind(&id)
+        .bind(org_id)
+        .execute(&state.db)
+        .await;
+    }
+}
+
 // ── GitHub / Google OAuth ──────────────────────────────────
 
 pub async fn social_auth(
@@ -2563,6 +2692,8 @@ pub async fn purple_team_dashboard(
         _ => return (StatusCode::BAD_REQUEST, Json(json!({"error": "Organization context required"}))).into_response(),
     };
 
+    purple_team_progress_tick(&state, org_id).await;
+
     let (total_exercises, running, completed, total_attack_steps, total_detected, total_missed, average_risk_score) =
         sqlx::query_as::<_, (i64, i64, i64, i64, i64, i64, f64)>(
             r#"SELECT
@@ -2628,6 +2759,8 @@ pub async fn purple_team_exercises(
         _ => return (StatusCode::BAD_REQUEST, Json(json!({"error": "Organization context required"}))).into_response(),
     };
 
+    purple_team_progress_tick(&state, org_id).await;
+
     let rows = sqlx::query_as::<_, (String,)>(
         r#"SELECT payload::text
         FROM purple_team_exercises
@@ -2655,6 +2788,8 @@ pub async fn purple_team_exercise_detail(
         Some(value) if !value.is_empty() => value,
         _ => return (StatusCode::BAD_REQUEST, Json(json!({"error": "Organization context required"}))).into_response(),
     };
+
+    purple_team_progress_tick(&state, org_id).await;
 
     let row = sqlx::query_as::<_, (String,)>(
         r#"SELECT payload::text
