@@ -45,6 +45,12 @@ Example:
 }
 ```
 
+Runtime source precedence for detection tuning:
+
+1. Organization-level profile from `/api/v1/settings/purple-team/profile` (admin-only, DB-backed)
+2. `PURPLE_TEAM_PROFILE_JSON`
+3. Individual `PURPLE_TEAM_DETECT_*` env vars
+
 ## Quick Start
 
 ```bash

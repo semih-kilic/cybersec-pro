@@ -478,7 +478,11 @@ fn purple_team_build_simulation_data(
     )
 }
 
-fn purple_team_apply_completion(payload: &mut serde_json::Value, total_steps: i64) {
+fn purple_team_apply_completion(
+    payload: &mut serde_json::Value,
+    total_steps: i64,
+    profile: Option<&serde_json::Value>,
+) {
     let safe_total_steps = if total_steps < 0 { 0 } else { total_steps };
     let chain_id = payload
         .get("attack_chain_id")
@@ -490,7 +494,11 @@ fn purple_team_apply_completion(payload: &mut serde_json::Value, total_steps: i6
         .unwrap_or("target.local");
     let chain_id_owned = chain_id.to_string();
     let target_owned = target.to_string();
-    let detection_ratio = purple_team_detection_ratio(&chain_id_owned, &target_owned);
+    let detection_ratio = purple_team_detection_ratio_with_profile(
+        &chain_id_owned,
+        &target_owned,
+        profile,
+    );
     let detected = ((safe_total_steps as f64) * detection_ratio).round() as i64;
     let missed = safe_total_steps - detected;
     let detection_rate = if safe_total_steps > 0 {
@@ -538,6 +546,16 @@ fn purple_team_apply_running_progress(payload: &mut serde_json::Value, total_ste
 }
 
 async fn purple_team_progress_tick(state: &Arc<AppState>, org_id: &str) {
+    let db_profile = sqlx::query_as::<_, (String,)>(
+        "SELECT profile_json::text FROM purple_team_profiles WHERE organization_id = $1 LIMIT 1"
+    )
+    .bind(org_id)
+    .fetch_optional(&state.db)
+    .await
+    .ok()
+    .flatten()
+    .and_then(|(profile_text,)| serde_json::from_str::<serde_json::Value>(&profile_text).ok());
+
     let rows = sqlx::query_as::<_, (String, String, i64, String, f64)>(
         r#"SELECT
             id,
@@ -579,7 +597,7 @@ async fn purple_team_progress_tick(state: &Arc<AppState>, org_id: &str) {
             purple_team_apply_running_progress(&mut payload, total_steps, age_seconds.max(1.0));
             next_status = "running".to_string();
         } else if status == "running" && age_seconds >= 90.0 {
-            purple_team_apply_completion(&mut payload, total_steps);
+            purple_team_apply_completion(&mut payload, total_steps, db_profile.as_ref());
             next_status = "completed".to_string();
         } else if status == "running" {
             purple_team_apply_running_progress(&mut payload, total_steps, age_seconds);

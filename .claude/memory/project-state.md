@@ -30,6 +30,8 @@ Last updated: 2026-04-21
 - Added chain/target-aware detection profile so completion metrics vary by exercise scenario instead of fixed ratios.
 - Added environment-variable controls for Purple Team detection profile tuning without code changes.
 - Added `PURPLE_TEAM_PROFILE_JSON` override support (nested/flat keys) with precedence over individual tuning env vars.
+- Added admin-only runtime profile management endpoint (`/api/v1/settings/purple-team/profile`) backed by `purple_team_profiles` table.
+- Purple Team lifecycle now reads organization profile from DB first, then falls back to `PURPLE_TEAM_PROFILE_JSON`, then `PURPLE_TEAM_DETECT_*` env vars.
 - Added unit tests for purple-team exercise payload shape and chain/default builder behavior in `rust-backend/src/handlers/stub_handlers.rs`.
 
 ### Working Conventions

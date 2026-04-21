@@ -349,6 +349,11 @@ fn build_router(state: Arc<AppState>) -> Router {
         .route("/api/v1/settings/team/invite", post(settings_handlers::invite_team_member))
         .route("/api/v1/settings/team/:member_id", delete(settings_handlers::remove_team_member))
         .route("/api/v1/settings/team/:member_id/role", put(settings_handlers::change_member_role))
+        .route(
+            "/api/v1/settings/purple-team/profile",
+            get(settings_handlers::get_purple_team_profile)
+                .put(settings_handlers::update_purple_team_profile),
+        )
         // ── Settings: Password Change ─────────────────────────
         .route("/api/v1/auth/change-password", post(settings_handlers::change_password))
         // ── Plan Config ───────────────────────────────────────

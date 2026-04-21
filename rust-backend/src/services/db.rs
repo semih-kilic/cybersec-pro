@@ -320,6 +320,17 @@ r#"CREATE TABLE IF NOT EXISTS notification_preferences (
     UNIQUE(user_id)
 )"#,
 
+r#"CREATE TABLE IF NOT EXISTS purple_team_profiles (
+    id TEXT PRIMARY KEY,
+    organization_id TEXT NOT NULL UNIQUE REFERENCES organizations(id) ON DELETE CASCADE,
+    profile_json JSONB NOT NULL DEFAULT '{}'::jsonb,
+    updated_by TEXT REFERENCES users(id),
+    created_at TIMESTAMP DEFAULT NOW(),
+    updated_at TIMESTAMP DEFAULT NOW()
+)"#,
+
+"CREATE INDEX IF NOT EXISTS idx_purple_team_profiles_updated_at ON purple_team_profiles(updated_at)",
+
 r#"CREATE TABLE IF NOT EXISTS api_keys (
     id TEXT PRIMARY KEY,
     organization_id TEXT NOT NULL REFERENCES organizations(id) ON DELETE CASCADE,

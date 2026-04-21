@@ -8,7 +8,7 @@ use axum::{
 use serde_json::json;
 use std::sync::Arc;
 
-use crate::middleware::auth_middleware::AuthUser;
+use crate::middleware::auth_middleware::{AdminUser, AuthUser};
 use crate::AppState;
 
 // ══════════════════════════════════════════════════════════
@@ -536,4 +536,81 @@ pub async fn change_password(
         .await;
 
     Json(json!({"message": "Password changed successfully"})).into_response()
+}
+
+// ══════════════════════════════════════════════════════════
+// PURPLE TEAM PROFILE SETTINGS (ADMIN ONLY)
+// ══════════════════════════════════════════════════════════
+
+pub async fn get_purple_team_profile(
+    user: AdminUser,
+    State(state): State<Arc<AppState>>,
+) -> impl IntoResponse {
+    let org_id = match user.0.org_id.as_deref() {
+        Some(id) if !id.is_empty() => id,
+        _ => return (StatusCode::FORBIDDEN, Json(json!({"error": "Organization required"}))).into_response(),
+    };
+
+    let row: Option<(String,)> = sqlx::query_as(
+        "SELECT profile_json::text FROM purple_team_profiles WHERE organization_id = $1"
+    )
+    .bind(org_id)
+    .fetch_optional(&state.db)
+    .await
+    .unwrap_or(None);
+
+    let has_db_profile = row.is_some();
+
+    let profile = row
+        .and_then(|(profile_text,)| serde_json::from_str::<serde_json::Value>(&profile_text).ok())
+        .unwrap_or_else(|| json!({}));
+
+    Json(json!({
+        "organization_id": org_id,
+        "profile": profile,
+        "source": if has_db_profile { "db" } else { "default" }
+    }))
+    .into_response()
+}
+
+pub async fn update_purple_team_profile(
+    user: AdminUser,
+    State(state): State<Arc<AppState>>,
+    Json(body): Json<serde_json::Value>,
+) -> impl IntoResponse {
+    let org_id = match user.0.org_id.as_deref() {
+        Some(id) if !id.is_empty() => id,
+        _ => return (StatusCode::FORBIDDEN, Json(json!({"error": "Organization required"}))).into_response(),
+    };
+
+    let profile = body.get("profile").cloned().unwrap_or_else(|| body.clone());
+    if !profile.is_object() {
+        return (StatusCode::BAD_REQUEST, Json(json!({"error": "Profile must be a JSON object"}))).into_response();
+    }
+
+    let id = uuid::Uuid::new_v4().to_string();
+    let result = sqlx::query(
+        r#"INSERT INTO purple_team_profiles (id, organization_id, profile_json, updated_by, created_at, updated_at)
+        VALUES ($1, $2, $3::jsonb, $4, NOW(), NOW())
+        ON CONFLICT (organization_id) DO UPDATE SET
+            profile_json = EXCLUDED.profile_json,
+            updated_by = EXCLUDED.updated_by,
+            updated_at = NOW()"#
+    )
+    .bind(&id)
+    .bind(org_id)
+    .bind(profile.to_string())
+    .bind(&user.0.user_id)
+    .execute(&state.db)
+    .await;
+
+    match result {
+        Ok(_) => Json(json!({
+            "message": "Purple Team profile updated",
+            "organization_id": org_id,
+            "profile": profile
+        }))
+        .into_response(),
+        Err(e) => (StatusCode::INTERNAL_SERVER_ERROR, Json(json!({"error": format!("Failed to save profile: {}", e)}))).into_response(),
+    }
 }
