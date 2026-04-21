@@ -102,7 +102,7 @@ function buildPlans(counts: { trial: number; starter: number; professional: numb
 export default function UpgradePage() {
   useDocumentTitle('Upgrade — CyberSec Pro');
   const { organization } = useAuth();
-  const { t: _t } = useTranslation();
+  const { t } = useTranslation();
   const checkoutMutation = useCreateCheckout();
   const [loading, setLoading] = useState<string | null>(null);
   const [billingCycle, setBillingCycle] = useState<'monthly' | 'yearly'>('monthly');
@@ -113,11 +113,12 @@ export default function UpgradePage() {
 
   // Dynamic tool counts from API
   const { data: toolCounts } = useToolCounts();
+  const totalToolsFallback = toolCounts?.total ?? 396;
   const plans = useMemo(() => buildPlans({
-    trial: toolCounts?.plans?.trial ?? 396,
-    starter: toolCounts?.plans?.starter ?? 396,
-    professional: toolCounts?.plans?.professional ?? 396,
-    enterprise: toolCounts?.plans?.enterprise ?? 396,
+    trial: toolCounts?.plans?.trial ?? totalToolsFallback,
+    starter: toolCounts?.plans?.starter ?? totalToolsFallback,
+    professional: toolCounts?.plans?.professional ?? totalToolsFallback,
+    enterprise: toolCounts?.plans?.enterprise ?? totalToolsFallback,
   }), [toolCounts]);
 
   const handleUpgrade = async (planId: string) => {
@@ -196,30 +197,30 @@ export default function UpgradePage() {
 
   return (
     <PageTransition>
-    <div className="p-6 max-w-7xl mx-auto">
+    <div className="p-6 max-w-7xl mx-auto bg-zinc-950 border-2 border-zinc-800">
       {/* Header */}
       <div className="text-center mb-12">
-        <h1 className="text-4xl font-bold text-white mb-4">Upgrade Your Plan</h1>
+        <h1 className="text-4xl font-bold text-white mb-4">{t('upgrade.title')}</h1>
         <p className="text-gray-400 text-lg max-w-2xl mx-auto">
-          Unlock more tools, higher scan limits, and advanced features to supercharge your security testing.
+          {t('upgrade.subtitle')}
         </p>
-        <div className="mt-4 inline-flex items-center gap-2 px-4 py-2 bg-gray-800 rounded-full">
-          <span className="text-gray-400">Current Plan:</span>
+        <div className="mt-4 inline-flex items-center gap-2 px-4 py-2 bg-zinc-900 border border-zinc-700">
+          <span className="text-gray-400">{t('upgrade.currentPlan')}:</span>
           <span className="text-emerald-400 font-semibold capitalize">{currentPlan}</span>
         </div>
         {/* Billing Cycle Toggle */}
-        <div className="mt-6 inline-flex items-center gap-3 bg-gray-800/50 rounded-full p-1">
+        <div className="mt-6 inline-flex items-center gap-3 bg-zinc-900 border border-zinc-700 p-1">
           <button
             onClick={() => setBillingCycle('monthly')}
-            className={`px-5 py-2 rounded-full text-sm font-medium transition ${billingCycle === 'monthly' ? 'bg-emerald-500 text-white' : 'text-gray-400 hover:text-white'}`}
+            className={`px-5 py-2 text-sm font-semibold transition ${billingCycle === 'monthly' ? 'bg-lime-400 text-black' : 'text-gray-400 hover:text-white'}`}
           >
-            Monthly
+            {t('upgrade.monthly')}
           </button>
           <button
             onClick={() => setBillingCycle('yearly')}
-            className={`px-5 py-2 rounded-full text-sm font-medium transition ${billingCycle === 'yearly' ? 'bg-emerald-500 text-white' : 'text-gray-400 hover:text-white'}`}
+            className={`px-5 py-2 text-sm font-semibold transition ${billingCycle === 'yearly' ? 'bg-lime-400 text-black' : 'text-gray-400 hover:text-white'}`}
           >
-            Yearly <span className="text-green-400 text-xs ml-1">Save 17%</span>
+            {t('upgrade.yearly')} <span className="text-green-400 text-xs ml-1">{t('upgrade.savePercent')}</span>
           </button>
         </div>
       </div>
@@ -229,22 +230,22 @@ export default function UpgradePage() {
         {plans.map((plan) => (
           <div
             key={plan.id}
-            className={`relative bg-gray-900 rounded-2xl p-6 border transition-all hover:scale-[1.02] flex flex-col ${
+            className={`relative bg-zinc-900 p-6 border-2 transition-all hover:-translate-y-1 flex flex-col ${
               plan.popular
-                ? 'border-blue-500 shadow-lg shadow-blue-500/10 ring-1 ring-blue-500/30'
+                ? 'border-lime-400 shadow-lg shadow-lime-400/10'
                 : plan.id === currentPlan
-                ? 'border-green-500'
+                ? 'border-lime-500'
                 : 'border-gray-800'
             }`}
           >
             {plan.popular && (
-              <div className="absolute -top-3.5 left-1/2 -translate-x-1/2 inline-flex items-center gap-1.5 px-4 py-1.5 bg-gradient-to-r from-emerald-500 to-cyan-500 text-white text-[11px] font-bold rounded-full z-10 tracking-widest uppercase shadow-lg shadow-emerald-500/30 whitespace-nowrap">
+              <div className="absolute -top-3.5 left-1/2 -translate-x-1/2 inline-flex items-center gap-1.5 px-4 py-1.5 bg-lime-400 text-black text-[11px] font-bold z-10 tracking-widest uppercase whitespace-nowrap border border-lime-300">
                 <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" /></svg>
-                Most Popular
+                {t('upgrade.popular')}
               </div>
             )}
             {plan.id === currentPlan && (
-              <div className="absolute -top-4 left-1/2 -translate-x-1/2 px-4 py-1.5 bg-green-500 text-white text-xs font-bold rounded-full z-10 shadow-lg">
+              <div className="absolute -top-4 left-1/2 -translate-x-1/2 px-4 py-1.5 bg-lime-500 text-black text-xs font-bold z-10 border border-lime-300">
                 ✓ Current Plan
               </div>
             )}

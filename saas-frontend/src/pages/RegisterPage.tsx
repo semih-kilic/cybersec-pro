@@ -91,10 +91,10 @@ export function RegisterPage() {
         localStorage.setItem('user', JSON.stringify(data.user));
         navigate('/dashboard');
       } else {
-        setError(data.error || 'Registration failed');
+        setError(data.error || t('auth.registrationFailed', 'Registration failed'));
       }
     } catch (err: any) {
-      setError(err.message || 'Registration failed');
+      setError(err.message || t('auth.registrationFailed', 'Registration failed'));
     } finally {
       setLoading(false);
     }
@@ -113,18 +113,17 @@ export function RegisterPage() {
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
                 </svg>
               </div>
-              <h2 className="text-2xl font-bold text-white mb-3">Check Your Email 📧</h2>
+              <h2 className="text-2xl font-bold text-white mb-3">{t('auth.checkEmailTitle', 'Check Your Email')} 📧</h2>
               <p className="text-gray-400 mb-2">
-                We sent a verification link to:
+                {t('auth.checkEmailSentTo', 'We sent a verification link to:')}
               </p>
               <p className="text-blue-400 font-medium mb-6">{verificationEmail}</p>
               <p className="text-gray-500 text-sm mb-6">
-                Click the link in the email to verify your account and start your 14-day free trial.
-                The link expires in 24 hours.
+                {t('auth.checkEmailBody', 'Click the link in the email to verify your account and start your 14-day free trial. The link expires in 24 hours.')}
               </p>
 
               <div className="border-t border-gray-800 pt-6 space-y-3">
-                <p className="text-gray-600 text-xs">Didn't receive the email? Check your spam folder or:</p>
+                <p className="text-gray-600 text-xs">{t('auth.checkEmailHint', "Didn't receive the email? Check your spam folder or:")}</p>
                 <button
                   onClick={async () => {
                     setResendStatus('sending');
@@ -145,15 +144,15 @@ export function RegisterPage() {
                   disabled={resendStatus === 'sending' || resendStatus === 'sent'}
                   className="px-6 py-2.5 bg-gray-800 hover:bg-gray-700 text-white rounded-lg text-sm font-medium transition disabled:opacity-50"
                 >
-                  {resendStatus === 'sending' ? 'Sending...' : resendStatus === 'sent' ? '✅ Sent!' : 'Resend Verification Email'}
+                  {resendStatus === 'sending' ? t('auth.sending', 'Sending...') : resendStatus === 'sent' ? t('auth.sent', '✅ Sent!') : t('auth.resendVerification', 'Resend Verification Email')}
                 </button>
                 {resendStatus === 'sent' && (
-                  <p className="text-green-400 text-xs">New verification link sent!</p>
+                  <p className="text-green-400 text-xs">{t('auth.newVerificationSent', 'New verification link sent!')}</p>
                 )}
               </div>
 
               <p className="mt-6 text-gray-600 text-sm">
-                <Link to="/login" className="text-blue-400 hover:text-blue-300">Back to Login</Link>
+                <Link to="/login" className="text-blue-400 hover:text-blue-300">{t('auth.backToLogin', 'Back to Login')}</Link>
               </p>
             </div>
           </div>
@@ -261,8 +260,8 @@ export function RegisterPage() {
             </Link>
           </div>
 
-          <h1 className="text-2xl font-bold text-white mb-1">Create your account</h1>
-          <p className="text-gray-300 mb-8">Start your 14-day free trial. No credit card required.</p>
+          <h1 className="text-2xl font-bold text-white mb-1">{t('auth.createAccount')}</h1>
+          <p className="text-gray-300 mb-8">{t('auth.registerSubtitle')}</p>
 
           {/* OAuth Buttons */}
           <div className="grid grid-cols-2 gap-3 mb-6">
@@ -295,7 +294,7 @@ export function RegisterPage() {
               <div className="w-full border-t border-gray-800"></div>
             </div>
             <div className="relative flex justify-center text-sm">
-              <span className="px-3 bg-gray-950 text-gray-500">or register with email</span>
+              <span className="px-3 bg-gray-950 text-gray-500">{t('auth.orContinueWith')}</span>
             </div>
           </div>
 
@@ -333,7 +332,7 @@ export function RegisterPage() {
             </div>
 
             <div>
-              <label className="block text-sm text-gray-400 mb-1.5">Work Email *</label>
+              <label className="block text-sm text-gray-400 mb-1.5">{t('auth.email')} *</label>
               <input
                 type="email"
                 name="email"
@@ -346,7 +345,7 @@ export function RegisterPage() {
             </div>
 
             <div>
-              <label className="block text-sm text-gray-400 mb-1.5">Company *</label>
+              <label className="block text-sm text-gray-400 mb-1.5">{t('auth.organizationName')} *</label>
               <input
                 type="text"
                 name="organization_name"
@@ -359,7 +358,7 @@ export function RegisterPage() {
             </div>
 
             <div>
-              <label className="block text-sm text-gray-400 mb-1.5">Password *</label>
+              <label className="block text-sm text-gray-400 mb-1.5">{t('auth.password')} *</label>
               <input
                 type="password"
                 name="password"
@@ -372,7 +371,7 @@ export function RegisterPage() {
             </div>
 
             <div>
-              <label className="block text-sm text-gray-400 mb-1.5">Confirm Password *</label>
+              <label className="block text-sm text-gray-400 mb-1.5">{t('auth.confirmPassword')} *</label>
               <input
                 type="password"
                 name="confirmPassword"
@@ -393,11 +392,11 @@ export function RegisterPage() {
                 className="mt-1 w-4 h-4 rounded border-gray-700 bg-gray-900 text-blue-500 focus:ring-blue-500 focus:ring-offset-0"
               />
               <span className="text-gray-400 text-xs leading-relaxed">
-                I agree to the{' '}
+                {t('auth.agreeTermsPrefix', 'I agree to the')} {' '}
                 <a href="/terms" className="text-cyan-400 hover:underline">Terms of Service</a>
-                {' '}and{' '}
+                {' '}{t('auth.and', 'and')}{' '}
                 <a href="/privacy" className="text-cyan-400 hover:underline">Privacy Policy</a>.
-                Your data is stored in EU (Finland) and processed per GDPR.
+                {' '}{t('auth.gdprStorageNote', 'Your data is stored in EU (Finland) and processed per GDPR.')}
               </span>
             </label>
 
@@ -406,21 +405,21 @@ export function RegisterPage() {
               disabled={loading || !agreedTerms}
               className="w-full py-3 bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-500 hover:to-cyan-500 text-white font-bold rounded-lg transition disabled:opacity-50 disabled:cursor-not-allowed text-sm shadow-lg shadow-cyan-500/20 hover:shadow-cyan-500/30"
             >
-              {loading ? 'Creating account...' : 'Start Free Trial →'}
+              {loading ? t('auth.creating') : `${t('auth.startFreeTrial')} ->`}
             </button>
           </form>
 
           <p className="mt-6 text-center text-gray-400 text-sm">
-            Already have an account?{' '}
+            {t('auth.haveAccount')}{' '}
             <Link to="/login" className="text-cyan-400 hover:text-cyan-300 font-medium">
-              Sign in
+              {t('auth.signIn')}
             </Link>
           </p>
 
           {/* Back to Home (mobile) */}
           <div className="mt-4 text-center lg:hidden">
             <Link to="/" className="text-gray-600 hover:text-gray-400 text-xs">
-              ← Back to home
+              <- {t('auth.backToHome')}
             </Link>
           </div>
         </div>

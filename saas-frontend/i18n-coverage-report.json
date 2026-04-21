@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-04-20T20:52:00.677Z",
+  "generatedAt": "2026-04-21T01:34:47.773Z",
   "report": [
     {
       "filePath": "src/pages/DashboardPage.tsx",
@@ -68,20 +68,20 @@
       "hasUseTranslation": true,
       "hasTCalls": true,
       "probableHardcodedLines": [
-        28,
-        114,
-        118,
+        33,
         119,
-        122,
-        136,
-        218,
-        246,
-        249,
-        281,
-        284,
-        312,
-        315,
-        372
+        123,
+        124,
+        127,
+        141,
+        223,
+        251,
+        254,
+        286,
+        289,
+        317,
+        320,
+        377
       ]
     },
     {
@@ -145,26 +145,19 @@
       "hasUseTranslation": true,
       "hasTCalls": true,
       "probableHardcodedLines": [
-        116,
-        127,
-        151,
-        156,
-        178,
-        197,
-        209,
+        177,
+        196,
+        208,
+        220,
         221,
-        222,
-        260,
-        264,
-        265,
-        298,
-        319,
-        330,
-        336,
-        344,
-        349,
-        357,
-        362
+        259,
+        318,
+        329,
+        343,
+        356,
+        369,
+        396,
+        398
       ]
     },
     {
@@ -804,20 +797,18 @@
     {
       "filePath": "src/pages/dashboard/UpgradePage.tsx",
       "hasUseTranslation": true,
-      "hasTCalls": false,
+      "hasTCalls": true,
       "probableHardcodedLines": [
-        202,
-        207,
-        268,
-        313,
+        269,
         314,
-        317,
-        322,
-        331,
-        335,
-        340,
-        351,
-        359
+        315,
+        318,
+        323,
+        332,
+        336,
+        341,
+        352,
+        360
       ]
     },
     {

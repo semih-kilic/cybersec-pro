@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
 import { useTranslation } from 'react-i18next';
+import { useToolCounts } from '../hooks/useApiQueries';
 
 /**
  * 🐉 CyberSec Pro Landing Page
@@ -11,14 +12,18 @@ export function LandingPage() {
   const { isAuthenticated, user } = useAuth();
   const { t } = useTranslation();
   const [isVideoPlaying, setIsVideoPlaying] = useState(false);
+  const { data: toolCounts } = useToolCounts();
+  const totalTools = toolCounts?.total ?? 396;
+  const dynamicBadge = t('landing.badge').replace(/\b(401|396)\b/g, String(totalTools));
+  const dynamicSubheadline = t('landing.subheadline').replace(/\b(401|396)\b/g, String(totalTools));
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900">
+    <div className="min-h-screen bg-zinc-950 text-zinc-100">
       {/* Hero Section */}
       <header className="relative overflow-hidden">
         {/* Nav */}
         <nav className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-          <div className="flex items-center justify-between">
+          <div className="flex items-center justify-between border-2 border-lime-400/40 bg-zinc-900 px-4 py-3">
             <div className="flex items-center space-x-3">
               <div className="w-10 h-10 rounded-full bg-gradient-to-r from-cyan-500 to-blue-500 flex items-center justify-center">
                 <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -33,7 +38,7 @@ export function LandingPage() {
                   <span className="text-gray-400 hidden sm:inline">
                     {t('landing.welcomeUser', { name: user?.first_name || 'User' })}
                   </span>
-                  <Link to="/dashboard" className="px-4 py-2 bg-gradient-to-r from-cyan-500 to-blue-500 text-white rounded-lg hover:from-cyan-600 hover:to-blue-600 transition">
+                  <Link to="/dashboard" className="px-4 py-2 bg-lime-400 text-black font-bold rounded-none hover:bg-lime-300 transition">
                     {t('landing.goToDashboard')}
                   </Link>
                 </>
@@ -42,7 +47,7 @@ export function LandingPage() {
                   <Link to="/login" className="text-gray-300 hover:text-white transition">
                     {t('auth.signIn')}
                   </Link>
-                  <Link to="/register" className="px-4 py-2 bg-gradient-to-r from-cyan-500 to-blue-500 text-white rounded-lg hover:from-cyan-600 hover:to-blue-600 transition">
+                  <Link to="/register" className="px-4 py-2 bg-lime-400 text-black font-bold rounded-none hover:bg-lime-300 transition">
                     {t('landing.startTrial')}
                   </Link>
                 </>
@@ -53,8 +58,8 @@ export function LandingPage() {
 
         {/* Hero Content */}
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 text-center">
-          <div className="inline-block px-4 py-2 bg-cyan-500/10 border border-cyan-500/30 rounded-full text-cyan-400 text-sm font-medium mb-8">
-            {t('landing.badge')}
+          <div className="inline-block px-4 py-2 bg-lime-400/10 border-2 border-lime-400/40 text-lime-300 text-sm font-semibold tracking-wide mb-8">
+            {dynamicBadge}
           </div>
           <h1 className="text-5xl md:text-7xl font-bold text-white mb-6">
             {t('landing.headlinePart1')}<br />
@@ -63,20 +68,20 @@ export function LandingPage() {
             </span><br />
             {t('landing.headlinePart2')}
           </h1>
-          <p className="text-xl text-gray-400 max-w-2xl mx-auto mb-10">
-            {t('landing.subheadline')}
+          <p className="text-xl text-gray-300 max-w-2xl mx-auto mb-10">
+            {dynamicSubheadline}
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             {isAuthenticated ? (
-              <Link to="/dashboard" className="px-8 py-4 bg-gradient-to-r from-cyan-500 to-blue-500 text-white text-lg font-semibold rounded-xl hover:from-cyan-600 hover:to-blue-600 transition shadow-lg shadow-cyan-500/25">
+              <Link to="/dashboard" className="px-8 py-4 bg-lime-400 text-black text-lg font-bold rounded-none border-2 border-lime-300 hover:bg-lime-300 transition">
                 {t('landing.goToDashboard')}
               </Link>
             ) : (
-              <Link to="/register" className="px-8 py-4 bg-gradient-to-r from-cyan-500 to-blue-500 text-white text-lg font-semibold rounded-xl hover:from-cyan-600 hover:to-blue-600 transition shadow-lg shadow-cyan-500/25">
+              <Link to="/register" className="px-8 py-4 bg-lime-400 text-black text-lg font-bold rounded-none border-2 border-lime-300 hover:bg-lime-300 transition">
                 {t('landing.startTrial14')}
               </Link>
             )}
-            <a href="#features" className="px-8 py-4 bg-gray-800 text-white text-lg font-medium rounded-xl hover:bg-gray-700 transition border border-gray-700">
+            <a href="#features" className="px-8 py-4 bg-zinc-900 text-white text-lg font-semibold rounded-none hover:bg-zinc-800 transition border-2 border-zinc-600">
               {t('landing.seeFeatures')}
             </a>
           </div>
@@ -225,7 +230,7 @@ export function LandingPage() {
                   <span className="text-green-400">✓</span> 1 free security scan
                 </li>
                 <li className="flex items-center gap-2">
-                  <span className="text-green-400">✓</span> Full 401-tool coverage
+                  <span className="text-green-400">✓</span> Full {totalTools}-tool coverage
                 </li>
                 <li className="flex items-center gap-2">
                   <span className="text-green-400">✓</span> PDF report with findings
@@ -276,7 +281,7 @@ export function LandingPage() {
             <div className="bg-gray-800/50 rounded-2xl p-6 border-2 border-emerald-500/80 relative shadow-xl shadow-emerald-500/5 flex flex-col">
               <div className="absolute -top-3.5 left-1/2 -translate-x-1/2 inline-flex items-center gap-1.5 px-4 py-1.5 bg-gradient-to-r from-emerald-500 to-cyan-500 text-white text-[11px] font-bold rounded-full z-10 tracking-widest uppercase shadow-lg shadow-emerald-500/30 whitespace-nowrap">
                 <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" /></svg>
-                Most Popular
+                {t('upgrade.popular')}
               </div>
               <div className="text-lg font-medium text-emerald-400 mb-2">Professional</div>
               <div className="flex items-baseline gap-1 mb-4">
@@ -316,7 +321,7 @@ export function LandingPage() {
               </div>
               <ul className="space-y-2 mb-6 text-gray-300 text-sm">
                 <li className="flex items-center gap-2">
-                  <span className="text-purple-400">✓</span> <strong>401</strong> All Tools
+                  <span className="text-purple-400">✓</span> <strong>{totalTools}</strong> All Tools
                 </li>
                 <li className="flex items-center gap-2">
                   <span className="text-purple-400">✓</span> Unlimited everything
