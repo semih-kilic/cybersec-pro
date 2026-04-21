@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { useParams, useSearchParams, Link } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { Header } from '../../components/layout/Header';
 import { useDocumentTitle } from '../../hooks/useUtilities';
 import { PageTransition } from '../../components/ui';
@@ -48,6 +49,7 @@ interface AgentInfo {
 }
 
 export function ScanExecutionPage() {
+  const { t } = useTranslation();
   useDocumentTitle('Scan Execution — CyberSec Pro');
   const { scanId, toolId: routeToolId } = useParams<{ scanId: string; toolId: string }>();
   const [searchParams] = useSearchParams();
@@ -476,7 +478,7 @@ export function ScanExecutionPage() {
     <div className="min-h-screen bg-gray-950">
       <Header 
         title={`Run: ${businessName || tool?.name || toolId}`}
-        subtitle="Execute security assessment"
+        subtitle={t('scans.executeSubtitle', 'Execute security assessment')}
       />
 
       <div className="p-6">
@@ -485,8 +487,8 @@ export function ScanExecutionPage() {
           <div className="lg:col-span-1 space-y-6">
             {/* Target Input */}
             <div className="bg-gray-900 rounded-xl border border-gray-800 p-5">
-              <h3 className="text-white font-semibold mb-2">🎯 Target <span className="text-red-400">*</span></h3>
-              <p className="text-gray-500 text-xs mb-3">Enter the IP address, domain, or URL you want to scan. You must own or have permission to test this target.</p>
+              <h3 className="text-white font-semibold mb-2">🎯 {t('scans.target', 'Target')} <span className="text-red-400">*</span></h3>
+              <p className="text-gray-500 text-xs mb-3">{t('scans.targetHint', 'Enter the IP address, domain, or URL you want to scan. You must own or have permission to test this target.')}</p>
               {businessDescription && (
                 <p className="text-gray-400 text-xs mb-3 leading-relaxed">{businessDescription}</p>
               )}
@@ -494,7 +496,7 @@ export function ScanExecutionPage() {
                 type="text"
                 value={target}
                 onChange={(e) => setTarget(e.target.value)}
-                placeholder="e.g. 192.168.1.0/24, example.com, https://app.example.com"
+                placeholder={t('scans.targetPlaceholder', 'e.g. 192.168.1.0/24, example.com, https://app.example.com')}
                 disabled={status === 'running'}
                 className={`w-full px-4 py-3 bg-gray-800 border rounded-lg text-white placeholder-gray-500 focus:outline-none transition disabled:opacity-50 ${
                   !target && status === 'idle' ? 'border-yellow-600/50 focus:border-yellow-500' : 'border-gray-700 focus:border-kali-blue'
@@ -503,7 +505,7 @@ export function ScanExecutionPage() {
               {!target && status === 'idle' && (
                 <p className="text-yellow-500/80 text-xs mt-2 flex items-center gap-1">
                   <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z" /></svg>
-                  Target is required to start a scan
+                  {t('scans.targetRequired', 'Target is required to start a scan')}
                 </p>
               )}
               {error && (
@@ -543,8 +545,8 @@ export function ScanExecutionPage() {
 
             {/* Agent Selection */}
             <div className="bg-gray-900 rounded-xl border border-gray-800 p-5">
-              <h3 className="text-white font-semibold mb-2">🖥️ Execution Node</h3>
-              <p className="text-gray-500 text-xs mb-3">Choose where to run the scan. Use a private agent to scan internal networks behind your firewall.</p>
+              <h3 className="text-white font-semibold mb-2">🖥️ {t('scans.executionNode', 'Execution Node')}</h3>
+              <p className="text-gray-500 text-xs mb-3">{t('scans.executionHint', 'Choose where to run the scan. Use a private agent to scan internal networks behind your firewall.')}</p>
               <select
                 value={selectedAgentId}
                 onChange={(e) => setSelectedAgentId(e.target.value)}
@@ -564,16 +566,13 @@ export function ScanExecutionPage() {
                   </option>
                 ))}
               </select>
-              
-              {/* Online agents count */}
               <div className="mt-2 flex items-center gap-2">
                 <span className={`w-2 h-2 rounded-full ${agents.filter(a => a.status === 'online').length > 0 ? 'bg-green-500' : 'bg-gray-500'}`} />
                 <span className="text-xs text-gray-400">
                   {agents.filter(a => a.status === 'online').length} agent{agents.filter(a => a.status === 'online').length !== 1 ? 's' : ''} online
                 </span>
               </div>
-              
-              {/* Private network scanning hint */}
+
               {target && (target.startsWith('10.') || target.startsWith('172.') || target.startsWith('192.168.') || target.startsWith('127.')) && selectedAgentId === 'auto' && (
                 <div className="mt-2 p-2 rounded-lg bg-yellow-500/10 border border-yellow-500/30">
                   <p className="text-yellow-400 text-xs">
@@ -581,8 +580,7 @@ export function ScanExecutionPage() {
                   </p>
                 </div>
               )}
-              
-              {/* Execution info */}
+
               {executionInfo && (
                 <div className={`mt-3 p-2 rounded-lg text-xs ${
                   executionInfo.mode === 'agent' 
@@ -631,7 +629,7 @@ export function ScanExecutionPage() {
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" />
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                   </svg>
-                  Start Scan
+                  {t('scans.newScan', 'Start Scan')}
                 </button>
               )}
 
@@ -644,7 +642,7 @@ export function ScanExecutionPage() {
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 10a1 1 0 011-1h4a1 1 0 011 1v4a1 1 0 01-1 1h-4a1 1 0 01-1-1v-4z" />
                   </svg>
-                  Stop Scan
+                  {t('common.cancel', 'Stop Scan')}
                 </button>
               )}
 
@@ -656,25 +654,25 @@ export function ScanExecutionPage() {
                   <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
                   </svg>
-                  New Scan
+                  {t('scans.newScan', 'New Scan')}
                 </button>
               )}
             </div>
 
             {/* Status */}
             <div className="bg-gray-900 rounded-xl border border-gray-800 p-5">
-              <h3 className="text-white font-semibold mb-3">Status</h3>
+              <h3 className="text-white font-semibold mb-3">{t('scans.status', 'Status')}</h3>
               <div className="flex items-center gap-3">
                 {status === 'idle' && (
                   <>
                     <div className="w-3 h-3 rounded-full bg-gray-500" />
-                    <span className="text-gray-400">Ready to scan</span>
+                    <span className="text-gray-400">{t('scans.readyToScan', 'Ready to scan')}</span>
                   </>
                 )}
                 {status === 'running' && (
                   <>
                     <div className="w-3 h-3 rounded-full bg-yellow-500 animate-pulse" />
-                    <span className="text-yellow-500">Scanning... {progress}%</span>
+                    <span className="text-yellow-500">{t('scans.running', 'Running')}... {progress}%</span>
                     <span className="text-gray-500 text-xs ml-auto">
                       {Math.floor(elapsedSeconds / 60)}:{String(elapsedSeconds % 60).padStart(2, '0')}
                     </span>
@@ -683,19 +681,19 @@ export function ScanExecutionPage() {
                 {status === 'completed' && (
                   <>
                     <div className="w-3 h-3 rounded-full bg-green-500" />
-                    <span className="text-green-500">Completed</span>
+                    <span className="text-green-500">{t('scans.completed', 'Completed')}</span>
                   </>
                 )}
                 {status === 'failed' && (
                   <>
                     <div className="w-3 h-3 rounded-full bg-red-500" />
-                    <span className="text-red-500">Failed</span>
+                    <span className="text-red-500">{t('scans.failed', 'Failed')}</span>
                   </>
                 )}
                 {status === 'cancelled' && (
                   <>
                     <div className="w-3 h-3 rounded-full bg-orange-500" />
-                    <span className="text-orange-500">Cancelled</span>
+                    <span className="text-orange-500">{t('scans.cancelled', 'Cancelled')}</span>
                   </>
                 )}
               </div>
@@ -719,14 +717,14 @@ export function ScanExecutionPage() {
                       streamStatus === 'connecting' ? 'bg-yellow-500 animate-pulse' :
                       streamStatus === 'error' ? 'bg-red-500' : 'bg-gray-500'
                     }`} />
-                    {streamStatus === 'connected' ? 'Live output stream connected' :
-                     streamStatus === 'connecting' ? 'Connecting to live output stream...' :
-                     streamStatus === 'error' ? 'Live output stream error' : 'Live output stream idle'}
+                    {streamStatus === 'connected' ? t('scans.streamConnected', 'Live output stream connected') :
+                     streamStatus === 'connecting' ? t('scans.streamConnecting', 'Connecting to live output stream...') :
+                     streamStatus === 'error' ? t('scans.streamError', 'Live output stream error') : t('scans.streamIdle', 'Live output stream idle')}
                   </p>
                   {elapsedSeconds > 15 && (
                     <p className="text-xs text-blue-400 mt-2 flex items-center gap-1">
                       <svg className="w-3 h-3 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
-                      Scan may take several minutes depending on target and parameters. Output will appear when data is available.
+                      {t('scans.longRunningHint', 'Scan may take several minutes depending on target and parameters. Output will appear when data is available.')}
                     </p>
                   )}
                 </div>

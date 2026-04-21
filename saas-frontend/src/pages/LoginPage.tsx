@@ -167,9 +167,9 @@ export function LoginPage() {
       } else if (err.requires_verification) {
         setNeedsVerification(true);
         setVerificationEmail(err.email || email);
-        setError('Please verify your email address before logging in.');
+        setError(t('auth.verifyEmailBeforeLogin', 'Please verify your email address before logging in.'));
       } else {
-        setError(err.message || 'Login failed');
+        setError(err.message || t('auth.loginFailed', 'Login failed'));
       }
     } finally {
       setLoading(false);
@@ -353,7 +353,7 @@ export function LoginPage() {
             <h2 className="rf-title">
               {requiresMfa ? '' : t('auth.signInTitle', 'Sign in to your account')}
             </h2>
-            {!requiresMfa && <p className="rf-subtitle">Access your security dashboard</p>}
+            {!requiresMfa && <p className="rf-subtitle">{t('auth.signInSubtitle', 'Access your security dashboard')}</p>}
 
             {/* Error */}
             {error && (
@@ -366,7 +366,7 @@ export function LoginPage() {
                       onClick={handleResendVerification}
                       disabled={resendStatus === 'sending' || resendStatus === 'sent'}
                     >
-                      {resendStatus === 'sending' ? 'Sending...' : resendStatus === 'sent' ? '✅ Verification email sent!' : '📧 Resend verification email'}
+                      {resendStatus === 'sending' ? t('auth.sending', 'Sending...') : resendStatus === 'sent' ? t('auth.verificationSent', '✅ Verification email sent!') : t('auth.resendVerification', '📧 Resend verification email')}
                     </button>
                   </div>
                 )}
@@ -422,7 +422,7 @@ export function LoginPage() {
                   </button>
                 </div>
 
-                <div className="rf-divider"><span>or sign in with email</span></div>
+                <div className="rf-divider"><span>{t('auth.orSignInWithEmail', 'or sign in with email')}</span></div>
 
                 <form onSubmit={handleSubmit}>
                   <div className="rf-field">
@@ -444,7 +444,7 @@ export function LoginPage() {
                   <div className="rf-field">
                     <div className="rf-label">
                       <label htmlFor="password">{t('auth.password', 'Password')}</label>
-                      <Link to="/forgot-password">Forgot?</Link>
+                      <Link to="/forgot-password">{t('auth.forgotPassword', 'Forgot password?')}</Link>
                     </div>
                     <div className="rf-input-wrap">
                       <input
@@ -470,7 +470,7 @@ export function LoginPage() {
 
                   <div className="rf-remember">
                     <input type="checkbox" id="remember" checked={rememberMe} onChange={(e) => setRememberMe(e.target.checked)} />
-                    <label htmlFor="remember">Remember me</label>
+                    <label htmlFor="remember">{t('auth.rememberMe', 'Remember me')}</label>
                   </div>
 
                   <button type="submit" disabled={loading} className="rf-btn">

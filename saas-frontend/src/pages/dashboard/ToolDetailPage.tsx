@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { useParams, Link } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { Header } from '../../components/layout/Header';
 import { useAuth } from '../../hooks/useAuth';
 import { useDocumentTitle } from '../../hooks/useUtilities';
@@ -42,6 +43,7 @@ interface Tool {
 const getToolSlug = (tool: Tool): string => tool.slug || tool.name?.toLowerCase().replace(/\s+/g, '') || 'unknown';
 
 export function ToolDetailPage() {
+  const { t } = useTranslation();
   const { toolId } = useParams<{ toolId: string }>();
   const toast = useToast();
   const { token: _token } = useAuth();
@@ -256,8 +258,8 @@ export function ToolDetailPage() {
   if (!tool) return (
     <div className="min-h-screen bg-gray-950 flex items-center justify-center">
       <div className="text-center">
-        <h2 className="text-xl font-semibold text-white mb-2">Tool Not Found</h2>
-        <Link to="/dashboard/tools" className="text-kali-blue hover:underline">Back to Tools</Link>
+        <h2 className="text-xl font-semibold text-white mb-2">{t('tools.notFound', 'Tool Not Found')}</h2>
+        <Link to="/dashboard/tools" className="text-kali-blue hover:underline">{t('tools.backToTools', 'Back to Tools')}</Link>
       </div>
     </div>
   );
@@ -286,12 +288,12 @@ export function ToolDetailPage() {
             <div className="bg-gray-900 rounded-xl border border-gray-800 p-5">
               <div className="flex items-center gap-2 mb-3">
                 <span className="text-lg">🎯</span>
-                <h3 className="text-white font-semibold">Target <span className="text-red-400">*</span></h3>
+                <h3 className="text-white font-semibold">{t('scans.target', 'Target')} <span className="text-red-400">*</span></h3>
               </div>
-              <p className="text-gray-500 text-xs mb-3">Enter the IP address, domain, or URL you want to scan. You must own or have permission to test this target.</p>
+              <p className="text-gray-500 text-xs mb-3">{t('scans.targetHint', 'Enter the IP address, domain, or URL you want to scan. You must own or have permission to test this target.')}</p>
               <input
                 type="text"
-                placeholder="e.g. 192.168.1.0/24, example.com, https://app.example.com"
+                placeholder={t('scans.targetPlaceholder', 'e.g. 192.168.1.0/24, example.com, https://app.example.com')}
                 value={getTargetValue()}
                 onChange={(e) => { const tp = findTargetParam(); if (tp) setParamValues(prev => ({ ...prev, [tp.name]: e.target.value })); }}
                 disabled={isScanning}
@@ -299,7 +301,7 @@ export function ToolDetailPage() {
                 className={`w-full px-4 py-3 bg-gray-800 border rounded-lg text-white placeholder-gray-500 focus:outline-none transition disabled:opacity-50 ${!getTargetValue() ? 'border-yellow-600/50 focus:border-yellow-500' : 'border-gray-700 focus:border-kali-blue'}`}
               />
               {!getTargetValue() && scanStatus === 'idle' && (
-                <p className="text-yellow-500/80 text-xs mt-2">⚠️ Target is required to start a scan</p>
+                <p className="text-yellow-500/80 text-xs mt-2">⚠️ {t('scans.targetRequired', 'Target is required to start a scan')}</p>
               )}
               {recentTargets.length > 0 && scanStatus === 'idle' && (
                 <div className="mt-3 relative">
@@ -346,7 +348,7 @@ export function ToolDetailPage() {
               {(['params', 'docs', 'examples'] as const).map(tab => (
                 <button key={tab} onClick={() => setActiveTab(tab)}
                   className={`px-4 py-2 rounded-lg text-sm font-medium transition ${activeTab === tab ? 'bg-kali-blue text-white' : 'text-gray-400 hover:text-white hover:bg-gray-800'}`}>
-                  {tab === 'params' ? '⚙️ Parameters' : tab === 'docs' ? '📖 Docs' : '📋 Examples'}
+                  {tab === 'params' ? `⚙️ ${t('tools.parameters', 'Parameters')}` : tab === 'docs' ? `📖 ${t('tools.docs', 'Docs')}` : `📋 ${t('tools.examples', 'Examples')}`}
                 </button>
               ))}
             </div>
@@ -383,7 +385,7 @@ export function ToolDetailPage() {
                                   <div className={`absolute top-1 w-4 h-4 bg-white rounded-full transition-all ${paramValues[param.name] ? 'left-5' : 'left-1'}`} />
                                 </div>
                               </div>
-                              <span className="text-sm text-gray-300">Enable</span>
+                              <span className="text-sm text-gray-300">{t('common.active', 'Enable')}</span>
                             </label>
                           )}
                           {param.type === 'textarea' && <textarea placeholder={param.placeholder} value={(paramValues[param.name] as string) || ''} onChange={(e) => handleParamChange(param.name, e.target.value)} rows={3} disabled={isScanning} className="w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:border-kali-blue transition resize-none disabled:opacity-50" />}
@@ -441,7 +443,7 @@ export function ToolDetailPage() {
             {/* Command Preview + Run Button */}
             <div className="bg-gray-900 rounded-xl border border-gray-800 p-5">
               <div className="flex items-center justify-between mb-3">
-                <h3 className="text-white font-semibold">Command</h3>
+                <h3 className="text-white font-semibold">{t('tools.command', 'Command')}</h3>
                 <button onClick={() => navigator.clipboard.writeText(generatedCommand)} className="text-gray-400 hover:text-white transition p-1" title="Copy">
                   <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" /></svg>
                 </button>
@@ -459,19 +461,19 @@ export function ToolDetailPage() {
                 <button onClick={handleRunScan} disabled={!getTargetValue().trim() || (tool as any).gui_required}
                   className="w-full py-3.5 bg-gradient-to-r from-kali-blue to-kali-purple text-white font-bold rounded-lg hover:opacity-90 transition flex items-center justify-center gap-2 disabled:opacity-40 disabled:cursor-not-allowed text-base">
                   <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
-                  Run Scan
+                  {t('scans.newScan', 'Run Scan')}
                 </button>
               )}
               {scanStatus === 'running' && (
                 <button onClick={handleStopScan} className="w-full py-3.5 bg-red-600 hover:bg-red-700 text-white font-bold rounded-lg transition flex items-center justify-center gap-2 text-base">
                   <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><rect x="6" y="6" width="12" height="12" rx="1" /></svg>
-                  Stop Scan
+                  {t('common.cancel', 'Stop Scan')}
                 </button>
               )}
               {scanDone && (
                 <button onClick={handleNewScan} className="w-full py-3.5 bg-kali-blue hover:bg-kali-blue/80 text-white font-bold rounded-lg transition flex items-center justify-center gap-2 text-base">
                   <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" /></svg>
-                  New Scan
+                  {t('scans.newScan', 'New Scan')}
                 </button>
               )}
 
@@ -553,8 +555,8 @@ export function ToolDetailPage() {
               <div className="bg-gray-900 rounded-xl border border-gray-800 p-5">
                 <div className="text-center py-8">
                   <div className="text-4xl mb-3">🔍</div>
-                  <h3 className="text-white font-semibold mb-2">Ready to Scan</h3>
-                  <p className="text-gray-500 text-sm">Enter a target and click "Run Scan" to start.</p>
+                  <h3 className="text-white font-semibold mb-2">{t('scans.readyToScan', 'Ready to Scan')}</h3>
+                  <p className="text-gray-500 text-sm">{t('scans.readyHint', 'Enter a target and click "Run Scan" to start.')}</p>
                   <p className="text-yellow-500/70 text-xs mt-3">⚠️ Only scan systems you have permission to test!</p>
                 </div>
                 <div className="mt-4 pt-4 border-t border-gray-800 space-y-2 text-sm text-gray-500">

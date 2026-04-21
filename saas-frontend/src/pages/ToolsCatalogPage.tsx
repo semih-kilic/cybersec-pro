@@ -1,6 +1,7 @@
 import React, { useState, useEffect, memo } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { useToolsCatalog, useToolsStats } from '../hooks/useApiQueries';
+import { useTranslation } from 'react-i18next';
 
 interface Tool {
   slug: string;
@@ -116,6 +117,7 @@ const ToolListRow = memo(function ToolListRow({ tool }: { tool: Tool }) {
 });
 
 const ToolsCatalogPage: React.FC = () => {
+  const { t } = useTranslation();
   const [searchParams, setSearchParams] = useSearchParams();
   const { data: catalogData, isLoading: loading } = useToolsCatalog();
   const { data: stats } = useToolsStats();
@@ -170,24 +172,23 @@ const ToolsCatalogPage: React.FC = () => {
       <div className="min-h-screen bg-gray-900 flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-16 w-16 border-t-2 border-b-2 border-cyan-500 mx-auto mb-4"></div>
-          <p className="text-gray-400">Loading tools catalog...</p>
+          <p className="text-gray-400">{t('tools.loadingCatalog', 'Loading tools catalog...')}</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gray-900 text-white">
+    <div className="min-h-screen bg-zinc-950 text-white">
       {/* Hero Section */}
-      <div className="bg-gradient-to-r from-gray-800 via-gray-900 to-gray-800 border-b border-gray-700">
+      <div className="bg-zinc-900 border-b-2 border-zinc-700">
         <div className="max-w-7xl mx-auto px-4 py-12">
           <div className="text-center mb-8">
-            <h1 className="text-4xl md:text-5xl font-bold mb-4 bg-gradient-to-r from-cyan-400 to-blue-500 bg-clip-text text-transparent">
-              Security Assessment Tools
+            <h1 className="text-4xl md:text-5xl font-bold mb-4 text-lime-300 tracking-tight">
+              {t('tools.catalogTitle', 'Security Assessment Tools')}
             </h1>
             <p className="text-xl text-gray-400 max-w-2xl mx-auto">
-              Enterprise-grade security assessment platform with comprehensive documentation.
-              Every parameter, every option, fully documented and executable.
+              {t('tools.catalogSubtitle', 'Enterprise-grade security assessment platform with comprehensive documentation. Every parameter, every option, fully documented and executable.')}
             </p>
           </div>
 
@@ -196,19 +197,19 @@ const ToolsCatalogPage: React.FC = () => {
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4 max-w-3xl mx-auto mb-8">
               <div className="bg-gray-800/50 rounded-xl p-4 text-center">
                 <div className="text-3xl font-bold text-cyan-400">{stats.total_tools}</div>
-                <div className="text-sm text-gray-400">Total Tools</div>
+                <div className="text-sm text-gray-400">{t('tools.totalTools', 'Total Tools')}</div>
               </div>
               <div className="bg-gray-800/50 rounded-xl p-4 text-center">
                 <div className="text-3xl font-bold text-cyan-400">{stats.total_parameters}</div>
-                <div className="text-sm text-gray-400">Parameters</div>
+                <div className="text-sm text-gray-400">{t('tools.totalParameters', 'Parameters')}</div>
               </div>
               <div className="bg-gray-800/50 rounded-xl p-4 text-center">
                 <div className="text-3xl font-bold text-cyan-400">{stats.total_categories}</div>
-                <div className="text-sm text-gray-400">Categories</div>
+                <div className="text-sm text-gray-400">{t('tools.totalCategories', 'Categories')}</div>
               </div>
               <div className="bg-gray-800/50 rounded-xl p-4 text-center">
                 <div className="text-3xl font-bold text-cyan-400">{stats.total_presets || 0}</div>
-                <div className="text-sm text-gray-400">Presets</div>
+                <div className="text-sm text-gray-400">{t('tools.totalPresets', 'Presets')}</div>
               </div>
             </div>
           )}
@@ -220,7 +221,7 @@ const ToolsCatalogPage: React.FC = () => {
                 type="text"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="Search tools by name, description, or tags..."
+                placeholder={t('tools.searchCatalogPlaceholder', 'Search tools by name, description, or tags...')}
                 className="w-full px-6 py-4 pl-14 bg-gray-800 border border-gray-700 rounded-xl focus:border-cyan-500 focus:ring-2 focus:ring-cyan-500/20 text-white text-lg"
               />
               <span className="absolute left-5 top-1/2 transform -translate-y-1/2 text-gray-400 text-xl">
@@ -244,7 +245,7 @@ const ToolsCatalogPage: React.FC = () => {
           {/* Sidebar - Categories */}
           <div className="lg:w-64 flex-shrink-0">
             <div className="bg-gray-800 rounded-xl p-4 sticky top-4">
-              <h3 className="text-lg font-semibold mb-4">Categories</h3>
+              <h3 className="text-lg font-semibold mb-4">{t('tools.categories', 'Categories')}</h3>
               <nav className="space-y-1">
                 <button
                   onClick={() => setSelectedCategory(null)}
@@ -254,7 +255,7 @@ const ToolsCatalogPage: React.FC = () => {
                 >
                   <span className="flex items-center gap-2">
                     <span>📚</span>
-                    <span>All Tools</span>
+                    <span>{t('tools.allTools', 'All Tools')}</span>
                   </span>
                   <span className="text-sm text-gray-500">{tools.length}</span>
                 </button>

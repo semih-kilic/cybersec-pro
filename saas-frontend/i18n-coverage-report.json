@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-04-21T01:34:47.773Z",
+  "generatedAt": "2026-04-21T04:09:44.204Z",
   "report": [
     {
       "filePath": "src/pages/DashboardPage.tsx",
@@ -98,9 +98,7 @@
         322,
         332,
         336,
-        439,
-        447,
-        473
+        439
       ]
     },
     {
@@ -225,18 +223,10 @@
     },
     {
       "filePath": "src/pages/ToolsCatalogPage.tsx",
-      "hasUseTranslation": false,
-      "hasTCalls": false,
+      "hasUseTranslation": true,
+      "hasTCalls": true,
       "probableHardcodedLines": [
-        173,
-        199,
-        203,
-        207,
-        211,
-        223,
-        247,
-        257,
-        327
+        328
       ]
     },
     {
@@ -562,29 +552,23 @@
     },
     {
       "filePath": "src/pages/dashboard/ScanExecutionPage.tsx",
-      "hasUseTranslation": false,
-      "hasTCalls": false,
+      "hasUseTranslation": true,
+      "hasTCalls": true,
       "probableHardcodedLines": [
-        479,
-        489,
-        497,
-        539,
-        547,
-        666,
-        671,
-        686,
-        692,
-        698,
-        784,
-        788,
-        792,
-        796,
-        807,
-        837,
-        838,
-        848,
-        865,
-        928
+        541,
+        782,
+        786,
+        790,
+        794,
+        805,
+        835,
+        836,
+        846,
+        863,
+        926,
+        935,
+        960,
+        961
       ]
     },
     {
@@ -751,20 +735,12 @@
     },
     {
       "filePath": "src/pages/dashboard/ToolDetailPage.tsx",
-      "hasUseTranslation": false,
-      "hasTCalls": false,
+      "hasUseTranslation": true,
+      "hasTCalls": true,
       "probableHardcodedLines": [
-        259,
-        260,
-        291,
-        294,
-        325,
         327,
-        374,
-        386,
-        444,
-        556,
-        557
+        329,
+        376
       ]
     },
     {
