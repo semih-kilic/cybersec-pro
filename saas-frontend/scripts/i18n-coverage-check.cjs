@@ -74,5 +74,5 @@ if (withHardcoded.length) {
 }
 
 const outPath = path.join(root, 'i18n-coverage-report.json');
-fs.writeFileSync(outPath, JSON.stringify({ generatedAt: new Date().toISOString(), report }, null, 2));
+fs.writeFileSync(outPath, JSON.stringify({ report }, null, 2));
 console.log(`\nDetailed JSON report: ${path.relative(root, outPath)}`);
