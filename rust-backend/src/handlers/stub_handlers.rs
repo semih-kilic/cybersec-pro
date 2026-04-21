@@ -233,6 +233,25 @@ fn purple_team_step_catalog(chain_id: &str) -> Vec<(&'static str, &'static str, 
     }
 }
 
+fn purple_team_detection_ratio(chain_id: &str, target: &str) -> f64 {
+    let base = match chain_id {
+        "chain-credential-access" => 0.55_f64,
+        "chain-lateral-movement" => 0.62_f64,
+        _ => 0.72_f64,
+    };
+
+    let target_lc = target.to_lowercase();
+    let target_adjustment = if target_lc.contains("prod") || target_lc.contains("critical") {
+        -0.10_f64
+    } else if target_lc.contains("dev") || target_lc.contains("staging") {
+        0.08_f64
+    } else {
+        0.0_f64
+    };
+
+    (base + target_adjustment).clamp(0.25_f64, 0.90_f64)
+}
+
 fn purple_team_tactic_name(tactic_id: &str) -> &'static str {
     match tactic_id {
         "TA0001" => "Initial Access",
@@ -362,7 +381,18 @@ fn purple_team_build_simulation_data(
 
 fn purple_team_apply_completion(payload: &mut serde_json::Value, total_steps: i64) {
     let safe_total_steps = if total_steps < 0 { 0 } else { total_steps };
-    let detected = (safe_total_steps * 7) / 10;
+    let chain_id = payload
+        .get("attack_chain_id")
+        .and_then(|value| value.as_str())
+        .unwrap_or("chain-initial-access-phishing");
+    let target = payload
+        .get("target")
+        .and_then(|value| value.as_str())
+        .unwrap_or("target.local");
+    let chain_id_owned = chain_id.to_string();
+    let target_owned = target.to_string();
+    let detection_ratio = purple_team_detection_ratio(&chain_id_owned, &target_owned);
+    let detected = ((safe_total_steps as f64) * detection_ratio).round() as i64;
     let missed = safe_total_steps - detected;
     let detection_rate = if safe_total_steps > 0 {
         (detected as f64 / safe_total_steps as f64) * 100.0
@@ -375,12 +405,8 @@ fn purple_team_apply_completion(payload: &mut serde_json::Value, total_steps: i6
     payload["detected_attacks"] = json!(detected);
     payload["missed_attacks"] = json!(missed);
     payload["completed_at"] = json!(chrono::Utc::now().to_rfc3339());
-    let chain_id = payload
-        .get("attack_chain_id")
-        .and_then(|value| value.as_str())
-        .unwrap_or("chain-initial-access-phishing");
     let (red_results, blue_alerts, coverage_map, extra_gap_data) =
-        purple_team_build_simulation_data(chain_id, safe_total_steps, detected);
+        purple_team_build_simulation_data(&chain_id_owned, safe_total_steps, detected);
     let missed_techniques = extra_gap_data
         .get("missed_techniques")
         .cloned()
@@ -3580,5 +3606,20 @@ mod tests {
         assert_eq!(exercise.get("attack_chain_id").and_then(|v| v.as_str()), Some("chain-initial-access-phishing"));
         assert_eq!(exercise.get("target").and_then(|v| v.as_str()), Some("mail.target.local"));
         assert_eq!(exercise.get("risk_score").and_then(|v| v.as_f64()), Some(64.0));
+    }
+
+    #[test]
+    fn purple_team_detection_ratio_varies_by_chain_and_target() {
+        let phishing_default = purple_team_detection_ratio("chain-initial-access-phishing", "corp.local");
+        let credential_default = purple_team_detection_ratio("chain-credential-access", "corp.local");
+        let lateral_default = purple_team_detection_ratio("chain-lateral-movement", "corp.local");
+        let prod_penalty = purple_team_detection_ratio("chain-initial-access-phishing", "prod-critical-app");
+        let dev_bonus = purple_team_detection_ratio("chain-initial-access-phishing", "dev-staging-node");
+
+        assert!(phishing_default > credential_default);
+        assert!(lateral_default > credential_default);
+        assert!(prod_penalty < phishing_default);
+        assert!(dev_bonus > phishing_default);
+        assert!((0.25..=0.90).contains(&dev_bonus));
     }
 }

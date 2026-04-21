@@ -27,6 +27,7 @@ Last updated: 2026-04-21
 - Replaced in-memory exercise state with `purple_team_exercises` PostgreSQL persistence and DB-driven dashboard/list/detail.
 - Added automatic lifecycle progression in Purple Team reads (`pending -> running -> completed`) with payload/metric sync.
 - Enriched completed Purple Team payload simulation with step timeline, blue-team alerts, gap-analysis details, and MITRE coverage-map entries.
+- Added chain/target-aware detection profile so completion metrics vary by exercise scenario instead of fixed ratios.
 - Added unit tests for purple-team exercise payload shape and chain/default builder behavior in `rust-backend/src/handlers/stub_handlers.rs`.
 
 ### Working Conventions
