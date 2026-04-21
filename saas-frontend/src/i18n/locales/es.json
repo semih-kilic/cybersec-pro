@@ -13,7 +13,7 @@
     "next": "Siguiente",
     "submit": "Enviar",
     "yes": "Sí",
-    "no": "No",
+    "no": "No (negativo)",
     "or": "o",
     "soon": "Próximamente",
     "online": "En línea",
@@ -21,8 +21,8 @@
     "active": "Activo",
     "inactive": "Inactivo",
     "language": "Idioma",
-    "appName": "CyberSec Pro",
-    "logout": "Logout",
+    "appName": "App CyberSec Pro",
+    "logout": "Cerrar sesion",
     "tool": "Herramienta",
     "target": "Objetivo",
     "status": "Estado",
@@ -69,7 +69,7 @@
     "analytics": "Analítica",
     "ai": "Asistente IA",
     "purpleTeam": "Equipo Purple",
-    "terminal": "Terminal",
+    "terminal": "Consola",
     "threatIntel": "Intel. Amenazas",
     "vulnerabilities": "Vulnerabilidades",
     "news": "Noticias Seguridad",
@@ -1329,10 +1329,10 @@
     "noResults": "No hay vulnerabilidades que coincidan con tus criterios de búsqueda."
   },
   "apiKeys": {
-    "namePlaceholder": "Enter key name (e.g., Production API)",
-    "noKeysTitle": "No API keys yet",
-    "noKeysDesc": "Generate one to get started with the API",
-    "docsHint": "Learn how to use the CyberSec Pro API in your applications."
+    "namePlaceholder": "Introduce el nombre de la clave (p. ej., API de produccion)",
+    "noKeysTitle": "Aun no hay claves API",
+    "noKeysDesc": "Genera una para empezar a usar la API",
+    "docsHint": "Aprende a usar la API de CyberSec Pro en tus aplicaciones."
   },
   "integrations": {
     "loading": "Cargando integraciones...",
