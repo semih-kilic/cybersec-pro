@@ -121,7 +121,7 @@ export function LandingPage() {
                       <div className="p-4 font-mono text-xs text-left space-y-1">
                         <p className="text-green-400">$ nmap -sV -sC scanme.nmap.org</p>
                         <p className="text-gray-500">{t('landing.terminalStarting', 'Starting Nmap 7.94 ( https://nmap.org )')}</p>
-                        <p className="text-cyan-400">PORT   STATE SERVICE VERSION</p>
+                        <p className="text-cyan-400">{t('landing.terminalHeader', 'PORT   STATE SERVICE VERSION')}</p>
                         <p className="text-white">22/tcp open  ssh     OpenSSH 6.6p1</p>
                         <p className="text-white">80/tcp open  http    Apache httpd 2.4.7</p>
                         <p className="text-green-400">{t('landing.terminalDone', 'Nmap done: 1 IP address (1 host up)')}</p>

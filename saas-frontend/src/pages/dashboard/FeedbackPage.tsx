@@ -159,16 +159,16 @@ export default function FeedbackPage() {
     <div className="p-6">
       {/* Header */}
       <div className="mb-8">
-        <h1 className="text-2xl font-bold text-white mb-2">Feedback & Support</h1>
+          <h1 className="text-2xl font-bold text-white mb-2">{t('feedback.pageTitle', 'Feedback & Support')}</h1>
         <p className="text-gray-400">
-          Help us improve CyberSec Pro by sharing your thoughts, reporting issues, or just saying hello!
+            {t('feedback.pageSubtitle', 'Help us improve CyberSec Pro by sharing your thoughts, reporting issues, or just saying hello!')}
         </p>
       </div>
 
       <div className="max-w-4xl mx-auto">
         {/* Feedback Type Selection */}
         <div className="mb-8">
-          <h3 className="text-lg font-semibold text-white mb-4">What type of feedback?</h3>
+            <h3 className="text-lg font-semibold text-white mb-4">{t('feedback.typePrompt', 'What type of feedback?')}</h3>
           <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
             {feedbackTypes.map((type) => {
               const Icon = type.icon;
@@ -216,13 +216,13 @@ export default function FeedbackPage() {
           <div className="mb-6">
             <label className="block text-sm font-medium text-gray-300 mb-2">
               Your Email <span className="text-red-400">*</span>
-              <span className="text-gray-500 font-normal ml-2">(for our reply)</span>
+                <span className="text-gray-500 font-normal ml-2">{t('feedback.replyHint', '(for our reply)')}</span>
             </label>
             <input
               type="email"
               value={replyEmail}
               onChange={(e) => setReplyEmail(e.target.value)}
-              placeholder="your@email.com"
+                placeholder={t('feedback.emailPlaceholder', 'your@email.com')}
               className="w-full px-4 py-3 bg-gray-800 border border-gray-700 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:border-cyan-500 transition"
               required
             />
@@ -237,7 +237,7 @@ export default function FeedbackPage() {
               type="text"
               value={subject}
               onChange={(e) => setSubject(e.target.value)}
-              placeholder="Brief description of your feedback"
+                placeholder={t('feedback.subjectPlaceholder', 'Brief description of your feedback')}
               className="w-full px-4 py-3 bg-gray-800 border border-gray-700 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:border-cyan-500 transition"
               required
             />
@@ -251,7 +251,7 @@ export default function FeedbackPage() {
             <textarea
               value={message}
               onChange={(e) => setMessage(e.target.value)}
-              placeholder="Please describe in detail..."
+                placeholder={t('feedback.messagePlaceholder', 'Please describe in detail...')}
               rows={6}
               className="w-full px-4 py-3 bg-gray-800 border border-gray-700 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:border-cyan-500 transition resize-none"
               required

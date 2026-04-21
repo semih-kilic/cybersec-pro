@@ -67,8 +67,8 @@ export default function LearningCenterPage() {
               </svg>
             </div>
             <div>
-              <h1 className="text-2xl font-bold text-white">Learning Center</h1>
-              <p className="text-gray-400 text-sm">Master cybersecurity through courses, CTF challenges, hands-on labs & certification prep</p>
+                <h1 className="text-2xl font-bold text-white">{t('learning.title', 'Learning Center')}</h1>
+                <p className="text-gray-400 text-sm">{t('learning.subtitle', 'Master cybersecurity through courses, CTF challenges, hands-on labs & certification prep')}</p>
             </div>
           </div>
         </div>
@@ -191,7 +191,7 @@ export default function LearningCenterPage() {
                 <div className="flex items-center justify-between mb-3">
                   <h4 className="text-white font-semibold">{lab.name}</h4>
                   {lab.status === 'coming_soon' && (
-                    <span className="px-2 py-0.5 bg-yellow-500/10 border border-yellow-500/30 rounded text-[10px] font-bold text-yellow-400">SOON</span>
+                      <span className="px-2 py-0.5 bg-yellow-500/10 border border-yellow-500/30 rounded text-[10px] font-bold text-yellow-400">{t('learning.soonBadge', 'SOON')}</span>
                   )}
                 </div>
                 <p className="text-gray-400 text-sm mb-3">{lab.description}</p>
@@ -306,7 +306,7 @@ export default function LearningCenterPage() {
                   <h2 className="text-xl font-bold text-white mt-2">{selectedCourse.title}</h2>
                   <p className="text-gray-400 text-sm mt-1">{selectedCourse.category}</p>
                 </div>
-                <button onClick={() => setSelectedCourse(null)} className="text-gray-400 hover:text-white transition-colors text-xl">✕</button>
+                  <button onClick={() => setSelectedCourse(null)} aria-label={t('common.close', 'Close')} className="text-gray-400 hover:text-white transition-colors text-xl">✕</button>
               </div>
 
               <p className="text-gray-300 mb-4">{selectedCourse.description}</p>
@@ -314,24 +314,24 @@ export default function LearningCenterPage() {
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-6">
                 <div className="bg-gray-800/50 border border-gray-700 rounded-lg p-3 text-center">
                   <p className="text-lg font-bold text-white">{selectedCourse.modules}</p>
-                  <p className="text-xs text-gray-500">Modules</p>
+                    <p className="text-xs text-gray-500">{t('learning.modules', 'Modules')}</p>
                 </div>
                 <div className="bg-gray-800/50 border border-gray-700 rounded-lg p-3 text-center">
                   <p className="text-lg font-bold text-white">{selectedCourse.duration}</p>
-                  <p className="text-xs text-gray-500">Duration</p>
+                    <p className="text-xs text-gray-500">{t('learning.duration', 'Duration')}</p>
                 </div>
                 <div className="bg-gray-800/50 border border-gray-700 rounded-lg p-3 text-center">
                   <p className="text-lg font-bold text-cyan-400">{selectedCourse.students.toLocaleString()}</p>
-                  <p className="text-xs text-gray-500">Students</p>
+                    <p className="text-xs text-gray-500">{t('learning.students', 'Students')}</p>
                 </div>
                 <div className="bg-gray-800/50 border border-gray-700 rounded-lg p-3 text-center">
                   <p className="text-lg font-bold text-yellow-400">★ {selectedCourse.rating}</p>
-                  <p className="text-xs text-gray-500">Rating</p>
+                    <p className="text-xs text-gray-500">{t('learning.rating', 'Rating')}</p>
                 </div>
               </div>
 
               {/* Syllabus */}
-              <h3 className="text-white font-semibold mb-3">Course Syllabus</h3>
+                <h3 className="text-white font-semibold mb-3">{t('learning.courseSyllabus', 'Course Syllabus')}</h3>
               <div className="space-y-2 mb-6">
                 {Array.from({ length: Math.min(selectedCourse.modules, 8) }, (_, i) => (
                   <div key={i} className="flex items-center gap-3 p-3 bg-gray-800/30 border border-gray-800 rounded-lg">
@@ -352,7 +352,7 @@ export default function LearningCenterPage() {
               {/* Progress bar */}
               <div className="mb-6">
                 <div className="flex justify-between text-xs mb-1">
-                  <span className="text-gray-400">Progress</span>
+                    <span className="text-gray-400">{t('learning.progress', 'Progress')}</span>
                   <span className="text-emerald-400">{selectedCourse.progress}%</span>
                 </div>
                 <div className="h-2 bg-gray-800 rounded-full overflow-hidden">
@@ -391,7 +391,7 @@ export default function LearningCenterPage() {
                   </div>
                   <h2 className="text-xl font-bold text-white">{selectedCtf.title}</h2>
                 </div>
-                <button onClick={() => setSelectedCtf(null)} className="text-gray-400 hover:text-white transition-colors text-xl">✕</button>
+                  <button onClick={() => setSelectedCtf(null)} aria-label={t('common.close', 'Close')} className="text-gray-400 hover:text-white transition-colors text-xl">✕</button>
               </div>
 
               <p className="text-gray-300 mb-5">{selectedCtf.description}</p>
@@ -399,16 +399,16 @@ export default function LearningCenterPage() {
               <div className="grid grid-cols-2 gap-3 mb-6">
                 <div className="bg-gray-800/50 border border-gray-700 rounded-lg p-3 text-center">
                   <p className="text-2xl font-bold text-cyan-400 font-mono">{selectedCtf.points}</p>
-                  <p className="text-xs text-gray-500">Points</p>
+                    <p className="text-xs text-gray-500">{t('learning.points', 'Points')}</p>
                 </div>
                 <div className="bg-gray-800/50 border border-gray-700 rounded-lg p-3 text-center">
                   <p className="text-2xl font-bold text-gray-300">{selectedCtf.solves.toLocaleString()}</p>
-                  <p className="text-xs text-gray-500">Solves</p>
+                    <p className="text-xs text-gray-500">{t('learning.solves', 'Solves')}</p>
                 </div>
               </div>
 
               <div className="bg-gray-800/30 border border-gray-800 rounded-lg p-4 mb-6">
-                <h4 className="text-white text-sm font-medium mb-2">Challenge Environment</h4>
+                  <h4 className="text-white text-sm font-medium mb-2">{t('learning.challengeEnvironment', 'Challenge Environment')}</h4>
                 <div className="space-y-1.5 text-sm text-gray-400">
                   <p>• A dedicated container will be spawned for this challenge</p>
                   <p>• You have 60 minutes to capture the flag</p>

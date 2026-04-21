@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-04-21T05:55:54.742Z",
+  "generatedAt": "2026-04-21T13:39:30.030Z",
   "report": [
     {
       "filePath": "src/pages/DashboardPage.tsx",
@@ -17,36 +17,13 @@
       "filePath": "src/pages/GDPRPage.tsx",
       "hasUseTranslation": true,
       "hasTCalls": true,
-      "probableHardcodedLines": [
-        77,
-        95,
-        96,
-        101,
-        177,
-        185,
-        186,
-        188,
-        189,
-        190,
-        191,
-        192,
-        199,
-        219,
-        220,
-        223,
-        231,
-        233,
-        235,
-        247
-      ]
+      "probableHardcodedLines": []
     },
     {
       "filePath": "src/pages/LandingPage.tsx",
       "hasUseTranslation": true,
       "hasTCalls": true,
-      "probableHardcodedLines": [
-        124
-      ]
+      "probableHardcodedLines": []
     },
     {
       "filePath": "src/pages/LoginPage.tsx",
@@ -64,28 +41,7 @@
       "filePath": "src/pages/PrivacyPolicyPage.tsx",
       "hasUseTranslation": true,
       "hasTCalls": true,
-      "probableHardcodedLines": [
-        19,
-        34,
-        40,
-        42,
-        43,
-        44,
-        52,
-        53,
-        54,
-        55,
-        60,
-        61,
-        62,
-        63,
-        68,
-        69,
-        70,
-        71,
-        77,
-        88
-      ]
+      "probableHardcodedLines": []
     },
     {
       "filePath": "src/pages/RegisterPage.tsx",
@@ -103,28 +59,7 @@
       "filePath": "src/pages/TermsPage.tsx",
       "hasUseTranslation": true,
       "hasTCalls": true,
-      "probableHardcodedLines": [
-        19,
-        34,
-        39,
-        41,
-        42,
-        43,
-        44,
-        52,
-        53,
-        54,
-        55,
-        56,
-        66,
-        67,
-        68,
-        69,
-        76,
-        77,
-        78,
-        79
-      ]
+      "probableHardcodedLines": []
     },
     {
       "filePath": "src/pages/ToolDetailPage.tsx",
@@ -268,35 +203,13 @@
       "filePath": "src/pages/dashboard/FeedbackPage.tsx",
       "hasUseTranslation": true,
       "hasTCalls": true,
-      "probableHardcodedLines": [
-        162,
-        171,
-        219,
-        225,
-        240,
-        254
-      ]
+      "probableHardcodedLines": []
     },
     {
       "filePath": "src/pages/dashboard/LearningCenterPage.tsx",
       "hasUseTranslation": true,
       "hasTCalls": true,
-      "probableHardcodedLines": [
-        70,
-        71,
-        194,
-        309,
-        317,
-        321,
-        325,
-        329,
-        334,
-        355,
-        394,
-        402,
-        406,
-        411
-      ]
+      "probableHardcodedLines": []
     },
     {
       "filePath": "src/pages/dashboard/NewScanPage.tsx",
