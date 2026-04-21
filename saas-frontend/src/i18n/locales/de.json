@@ -140,7 +140,7 @@
     "demoSubtitle": "Sehen Sie einen echten Security-Scan von Login bis Bericht — wöchentlich mit den neuesten Funktionen aktualisiert.",
     "terminalTitle": "CyberSec Pro-Terminal",
     "terminalStarting": "Starte Nmap 7.94 ( https://nmap.org )",
-    "terminalHeader": "PORT   STATE SERVICE VERSION",
+    "terminalHeader": "PORT   ZUSTAND DIENST VERSION",
     "terminalDone": "Nmap abgeschlossen: 1 IP-Adresse (1 Host aktiv)",
     "watchDemo": "2-Minuten-Demo ansehen",
     "noSignup": "Keine Registrierung erforderlich",
@@ -174,7 +174,7 @@
       "enterprise": "Unternehmen",
       "enterpriseItem1": "Alle Tools",
       "enterpriseItem2": "Unbegrenzt alles",
-      "enterpriseItem3": "SSO / SAML / LDAP",
+      "enterpriseItem3": "SSO / SAML / LDAP-Integration",
       "enterpriseItem4": "Dedizierter Account Manager"
     }
   },
@@ -780,7 +780,7 @@
     "controller": {
       "name": "CyberSec Pro / Semih Kılıç",
       "email": "E-Mail: cybersecpro@semihkilic.com",
-      "website": "Website: https://cybersecpro.semihkilic.com"
+      "website": "Webseite: https://cybersecpro.semihkilic.com"
     },
     "section3Title": "3. Daten, die wir erheben",
     "section3": {
@@ -963,7 +963,7 @@
     "accessDenied": "Zugriff verweigert",
     "superadminRequired": "Superadmin-Zugriff erforderlich.",
     "impersonateUser": "Benutzer imitieren",
-    "impersonatePlaceholder": "user@example.com",
+    "impersonatePlaceholder": "benutzer@beispiel.de",
     "plansDistribution": "Tarifverteilung",
     "recentScans": "Aktuelle Scans",
     "colCreated": "Erstellt",
@@ -1271,8 +1271,8 @@
     "connecting": "Verbindung zum Service-Manager wird hergestellt...",
     "offline": "Service-Manager offline",
     "offlineDesc": "Der Rust-Service-Manager-Daemon antwortet nicht auf Port 9000.",
-    "rustVersion": "RUST v1.0",
-    "cpu": "CPU",
+    "rustVersion": "RUST v1.0 (Dienst)",
+    "cpu": "Prozessor",
     "mem": "RAM",
     "uptime": "LAUFZEIT",
     "recentLogs": "Aktuelle Protokolle"
@@ -1342,7 +1342,7 @@
     "addIntegration": "Integration hinzufügen",
     "namePlaceholder": "z. B. Kanal für Sicherheitswarnungen",
     "webhookUrl": "Webhook-URL",
-    "webhookPlaceholder": "https://hooks.slack.com/services/...",
+    "webhookPlaceholder": "https://hooks.slack.com/services/ihr/webhook/pfad",
     "httpsHint": "Muss mit https:// beginnen"
   },
   "notifications": {
@@ -1418,7 +1418,7 @@
   },
   "team": {
     "inviteMember": "Teamsmitglied einladen",
-    "emailPlaceholder": "team@example.com",
+    "emailPlaceholder": "team@beispiel.de",
     "roleViewer": "Betrachter",
     "roleUser": "Benutzer",
     "roleAnalyst": "Analytiker",
