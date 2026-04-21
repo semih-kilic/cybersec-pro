@@ -48,7 +48,8 @@ function getLevelColor(level: string) {
 }
 
 export default function LearningCenterPage() {
-  useDocumentTitle('Learning Center — CyberSec Pro');
+  const { t } = useTranslation();
+  useDocumentTitle(`${t('learning.title', 'Learning Center')} — CyberSec Pro`);
   const { t: _t } = useTranslation();
   const [activeTab, setActiveTab] = useState<string>('Courses');
   const [selectedCourse, setSelectedCourse] = useState<typeof COURSES[0] | null>(null);

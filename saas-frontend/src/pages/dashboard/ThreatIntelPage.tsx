@@ -79,7 +79,8 @@ function getConfidenceColor(confidence: number) {
 }
 
 export default function ThreatIntelPage() {
-  useDocumentTitle('Threat Intelligence — CyberSec Pro');
+  const { t } = useTranslation();
+  useDocumentTitle(`${t('threatIntel.title', 'Threat Intelligence')} — CyberSec Pro`);
   const { t: _t } = useTranslation();
   const [activeTab, setActiveTab] = useState<'overview' | 'feeds' | 'iocs' | 'apt'>('overview');
   const [searchQuery, setSearchQuery] = useState('');

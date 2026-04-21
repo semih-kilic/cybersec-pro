@@ -5,6 +5,7 @@ import { useReports, useReportTemplates, useGenerateReport, useFetchReport, useD
 import { useDocumentTitle } from '../../hooks/useUtilities';
 import { useToast } from '../../components/ui/Toast';
 import { ReportsPageSkeleton } from '../../components/ui/Skeleton';
+import { useTranslation } from 'react-i18next';
 import {
   DocumentTextIcon,
   DocumentArrowDownIcon,
@@ -128,7 +129,8 @@ const defaultTemplates: ReportTemplate[] = [
 ];
 
 export function ReportsPage() {
-  useDocumentTitle('Reports — CyberSec Pro');
+  const { t } = useTranslation();
+  useDocumentTitle(`${t('reports.title', 'Reports')} — CyberSec Pro`);
   const toast = useToast();
   const { data: reportsData, isLoading: reportsLoading, isError: reportsError } = useReports();
   const generateMutation = useGenerateReport();
@@ -171,7 +173,7 @@ export function ReportsPage() {
 
   const handleGenerateReport = async () => {
     if (selectedScans.length === 0) {
-      toast.warning('No Scans Selected', 'Please select at least one scan');
+      toast.warning(t('reports.noScansSelected', 'No Scans Selected'), t('reports.selectAtLeastOneScan', 'Please select at least one scan'));
       return;
     }
     
@@ -208,7 +210,7 @@ export function ReportsPage() {
       setSelectedScans([]);
       setReportName('Security Assessment Report');
     } catch (error: any) {
-      toast.error('Report Failed', error?.message || 'Failed to generate report');
+      toast.error(t('reports.reportFailed', 'Report Failed'), error?.message || t('reports.failedToGenerateReport', 'Failed to generate report'));
     } finally {
       setGenerating(false);
     }
@@ -340,8 +342,8 @@ export function ReportsPage() {
     <PageTransition>
     <div className="min-h-screen bg-gray-950">
       <Header 
-        title="Security Reports"
-        subtitle="Generate professional security assessment reports"
+        title={t('reports.securityReports', 'Security Reports')}
+        subtitle={t('reports.subtitle', 'Generate professional security assessment reports')}
       />
 
       <div className="p-6 space-y-6">

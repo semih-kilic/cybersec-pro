@@ -124,8 +124,8 @@ function getFrameworkColor(color: string) {
 }
 
 export default function ComplianceDashboardPage() {
-  useDocumentTitle('Compliance Dashboard — CyberSec Pro');
-  const { t: _t } = useTranslation();
+  useDocumentTitle(`${t('compliance.title', 'Compliance Dashboard')} — CyberSec Pro`);
+  const { t } = useTranslation();
   const [selectedFramework, setSelectedFramework] = useState<string | null>(null);
 
   const selected = FRAMEWORKS.find(f => f.id === selectedFramework);

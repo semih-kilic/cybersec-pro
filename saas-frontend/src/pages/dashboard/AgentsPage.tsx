@@ -807,30 +807,30 @@ export default function AgentsPage() {
   const handleCreate = useCallback(async (data: Record<string, unknown>) => {
     try {
       await createAgent.mutateAsync(data);
-      toast.success('Device added successfully');
+      toast.success(t('agents.deviceAdded', 'Device added successfully'));
       setShowWizard(false);
-    } catch (e: any) { toast.error('Failed to create device: ' + (e.message || 'Unknown error')); }
-  }, [createAgent, toast]);
+    } catch (e: any) { toast.error(`${t('agents.createFailed', 'Failed to create device')}: ${e.message || t('common.unknown', 'Unknown error')}`); }
+  }, [createAgent, toast, t]);
 
   const handleUpdate = useCallback(async (agentId: string, data: Record<string, unknown>) => {
     try {
       await updateAgent.mutateAsync({ id: agentId, data } as any);
-      toast.success('Device updated successfully');
+      toast.success(t('agents.deviceUpdated', 'Device updated successfully'));
       setEditingAgent(null);
-    } catch (e: any) { toast.error('Failed to update: ' + (e.message || 'Unknown error')); }
-  }, [updateAgent, toast]);
+    } catch (e: any) { toast.error(`${t('agents.updateFailed', 'Failed to update')}: ${e.message || t('common.unknown', 'Unknown error')}`); }
+  }, [updateAgent, toast, t]);
 
   const handleDelete = useCallback(async (agentId: string) => {
-    if (!confirm('Are you sure you want to delete this device?')) return;
+    if (!confirm(t('agents.deleteConfirm', 'Are you sure you want to delete this device?'))) return;
     try {
       await deleteAgent.mutateAsync(agentId);
-      toast.success('Device deleted');
+      toast.success(t('agents.deviceDeleted', 'Device deleted'));
       setSelectedId(null);
-    } catch (e: any) { toast.error('Failed to delete: ' + (e.message || 'Unknown error')); }
-  }, [deleteAgent, toast]);
+    } catch (e: any) { toast.error(`${t('agents.deleteFailed', 'Failed to delete')}: ${e.message || t('common.unknown', 'Unknown error')}`); }
+  }, [deleteAgent, toast, t]);
 
   if (isLoading) return <AgentsPageSkeleton />;
-  if (isError) return <div className="p-6 text-red-400">Failed to load devices dashboard</div>;
+  if (isError) return <div className="p-6 text-red-400">{t('agents.loadFailed', 'Failed to load devices dashboard')}</div>;
 
   return (
     <PageTransition>
@@ -838,31 +838,31 @@ export default function AgentsPage() {
         {/* Top Bar */}
         <div className="px-6 py-4 border-b border-gray-800 flex items-center justify-between flex-shrink-0">
           <div>
-            <h1 className="text-xl font-bold text-white">Devices</h1>
-            <p className="text-xs text-gray-500 mt-0.5">Manage your connected devices, servers, and network infrastructure</p>
+            <h1 className="text-xl font-bold text-white">{t('agents.title', 'Devices')}</h1>
+            <p className="text-xs text-gray-500 mt-0.5">{t('agents.subtitle', 'Manage your connected devices, servers, and network infrastructure')}</p>
           </div>
           <div className="flex items-center gap-2">
             <button onClick={() => setShowDiscovery(true)}
               className="px-4 py-2 rounded-lg text-xs font-medium border border-gray-700 text-gray-300 hover:bg-gray-800 transition-all">
-              {'\u{1F50D}'} Discover Network
+              {'\u{1F50D}'} {t('agents.discoverNetwork', 'Discover Network')}
             </button>
             <button onClick={() => setShowWizard(true)}
               className="px-4 py-2 rounded-lg text-xs font-bold bg-cyan-500 text-gray-950 hover:bg-cyan-400 transition-all shadow-lg shadow-cyan-500/20">
-              + Add Device
+              + {t('agents.addDevice', 'Add Device')}
             </button>
           </div>
         </div>
 
         {/* Stats Bar */}
         <div className="px-6 py-3 border-b border-gray-800/50 flex items-center gap-3 flex-shrink-0 overflow-x-auto">
-          <StatBadge label="Total" value={(dashboard as any)?.total_agents || 0} />
-          <StatBadge label="Online" value={(dashboard as any)?.online || 0} color="emerald" />
-          <StatBadge label="Offline" value={(dashboard as any)?.offline || 0} color="gray" />
-          <StatBadge label="Scanning" value={(dashboard as any)?.busy || 0} color="amber" />
-          <StatBadge label="Pending" value={(dashboard as any)?.pending || 0} color="blue" />
+          <StatBadge label={t('agents.stats.total', 'Total')} value={(dashboard as any)?.total_agents || 0} />
+          <StatBadge label={t('agents.stats.online', 'Online')} value={(dashboard as any)?.online || 0} color="emerald" />
+          <StatBadge label={t('agents.stats.offline', 'Offline')} value={(dashboard as any)?.offline || 0} color="gray" />
+          <StatBadge label={t('agents.stats.scanning', 'Scanning')} value={(dashboard as any)?.busy || 0} color="amber" />
+          <StatBadge label={t('agents.stats.pending', 'Pending')} value={(dashboard as any)?.pending || 0} color="blue" />
           <div className="h-4 w-px bg-gray-800" />
-          <StatBadge label="Active Scans" value={(dashboard as any)?.active_scans || 0} color="cyan" />
-          <StatBadge label="Total Scans" value={(dashboard as any)?.total_scans_completed || 0} color="violet" />
+          <StatBadge label={t('agents.stats.activeScans', 'Active Scans')} value={(dashboard as any)?.active_scans || 0} color="cyan" />
+          <StatBadge label={t('agents.stats.totalScans', 'Total Scans')} value={(dashboard as any)?.total_scans_completed || 0} color="violet" />
         </div>
 
         {/* Main Content */}
@@ -872,11 +872,11 @@ export default function AgentsPage() {
               <EmptyState onAdd={() => setShowWizard(true)} onDiscover={() => setShowDiscovery(true)} />
             ) : (
               <div className="space-y-6">
-                {online.length > 0 && <DeviceGroup title="Online" count={online.length} color="emerald" agents={online} selectedId={selectedId} testingId={testingId} onSelect={setSelectedId} onTest={handleTest} />}
-                {busy.length > 0 && <DeviceGroup title="Scanning" count={busy.length} color="amber" agents={busy} selectedId={selectedId} testingId={testingId} onSelect={setSelectedId} onTest={handleTest} />}
-                {pending.length > 0 && <DeviceGroup title="Pending" count={pending.length} color="blue" agents={pending} selectedId={selectedId} testingId={testingId} onSelect={setSelectedId} onTest={handleTest} />}
-                {offline.length > 0 && <DeviceGroup title="Offline" count={offline.length} color="gray" agents={offline} selectedId={selectedId} testingId={testingId} onSelect={setSelectedId} onTest={handleTest} />}
-                {errored.length > 0 && <DeviceGroup title="Error" count={errored.length} color="red" agents={errored} selectedId={selectedId} testingId={testingId} onSelect={setSelectedId} onTest={handleTest} />}
+                {online.length > 0 && <DeviceGroup title={t('agents.groups.online', 'Online')} count={online.length} color="emerald" agents={online} selectedId={selectedId} testingId={testingId} onSelect={setSelectedId} onTest={handleTest} />}
+                {busy.length > 0 && <DeviceGroup title={t('agents.groups.scanning', 'Scanning')} count={busy.length} color="amber" agents={busy} selectedId={selectedId} testingId={testingId} onSelect={setSelectedId} onTest={handleTest} />}
+                {pending.length > 0 && <DeviceGroup title={t('agents.groups.pending', 'Pending')} count={pending.length} color="blue" agents={pending} selectedId={selectedId} testingId={testingId} onSelect={setSelectedId} onTest={handleTest} />}
+                {offline.length > 0 && <DeviceGroup title={t('agents.groups.offline', 'Offline')} count={offline.length} color="gray" agents={offline} selectedId={selectedId} testingId={testingId} onSelect={setSelectedId} onTest={handleTest} />}
+                {errored.length > 0 && <DeviceGroup title={t('agents.groups.error', 'Error')} count={errored.length} color="red" agents={errored} selectedId={selectedId} testingId={testingId} onSelect={setSelectedId} onTest={handleTest} />}
               </div>
             )}
           </div>

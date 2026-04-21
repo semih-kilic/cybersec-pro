@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-04-21T04:10:05.759Z",
+  "generatedAt": "2026-04-21T04:38:00.014Z",
   "report": [
     {
       "filePath": "src/pages/DashboardPage.tsx",
@@ -295,7 +295,7 @@
     {
       "filePath": "src/pages/dashboard/AgentsPage.tsx",
       "hasUseTranslation": true,
-      "hasTCalls": false,
+      "hasTCalls": true,
       "probableHardcodedLines": [
         246,
         303,
@@ -357,7 +357,7 @@
     {
       "filePath": "src/pages/dashboard/CommunityPage.tsx",
       "hasUseTranslation": true,
-      "hasTCalls": false,
+      "hasTCalls": true,
       "probableHardcodedLines": [
         175,
         176,
@@ -378,7 +378,7 @@
     {
       "filePath": "src/pages/dashboard/ComplianceDashboardPage.tsx",
       "hasUseTranslation": true,
-      "hasTCalls": false,
+      "hasTCalls": true,
       "probableHardcodedLines": [
         145,
         146,
@@ -402,76 +402,76 @@
     {
       "filePath": "src/pages/dashboard/LearningCenterPage.tsx",
       "hasUseTranslation": true,
-      "hasTCalls": false,
+      "hasTCalls": true,
       "probableHardcodedLines": [
-        69,
         70,
-        193,
-        308,
-        316,
-        320,
-        324,
-        328,
-        333,
-        354,
-        393,
-        401,
-        405,
-        410
+        71,
+        194,
+        309,
+        317,
+        321,
+        325,
+        329,
+        334,
+        355,
+        394,
+        402,
+        406,
+        411
       ]
     },
     {
       "filePath": "src/pages/dashboard/NewScanPage.tsx",
-      "hasUseTranslation": false,
-      "hasTCalls": false,
+      "hasUseTranslation": true,
+      "hasTCalls": true,
       "probableHardcodedLines": [
-        162,
-        163,
-        198,
-        204,
-        217,
-        301,
-        305,
-        317,
-        343,
-        352,
-        377,
-        404,
-        438,
-        472,
-        499,
-        503,
-        507,
-        511,
-        521,
-        525
+        200,
+        206,
+        219,
+        303,
+        307,
+        319,
+        345,
+        354,
+        379,
+        406,
+        440,
+        474,
+        501,
+        505,
+        509,
+        513,
+        523,
+        527,
+        536,
+        546
       ]
     },
     {
       "filePath": "src/pages/dashboard/OverviewPage.tsx",
       "hasUseTranslation": true,
-      "hasTCalls": false,
+      "hasTCalls": true,
       "probableHardcodedLines": [
-        128,
-        141,
-        151,
-        162,
-        172,
-        185,
-        193,
+        127,
+        140,
+        150,
+        161,
+        171,
+        184,
+        192,
+        208,
         209,
         210,
         211,
         212,
         213,
         214,
-        215,
-        244,
-        246,
-        262,
+        243,
+        245,
+        261,
+        269,
         270,
-        271,
-        284
+        283
       ]
     },
     {
@@ -499,7 +499,7 @@
     {
       "filePath": "src/pages/dashboard/PurpleTeamPage.tsx",
       "hasUseTranslation": true,
-      "hasTCalls": false,
+      "hasTCalls": true,
       "probableHardcodedLines": [
         222,
         458,
@@ -525,29 +525,29 @@
     },
     {
       "filePath": "src/pages/dashboard/ReportsPage.tsx",
-      "hasUseTranslation": false,
-      "hasTCalls": false,
+      "hasUseTranslation": true,
+      "hasTCalls": true,
       "probableHardcodedLines": [
-        343,
-        344,
-        357,
-        369,
-        381,
-        393,
-        405,
-        419,
-        420,
-        435,
-        470,
-        489,
-        490,
-        523,
-        605,
-        606,
-        619,
-        625,
-        631,
-        668
+        359,
+        371,
+        383,
+        395,
+        407,
+        421,
+        422,
+        437,
+        472,
+        491,
+        492,
+        525,
+        607,
+        608,
+        621,
+        627,
+        633,
+        670,
+        696,
+        697
       ]
     },
     {
@@ -574,7 +574,7 @@
     {
       "filePath": "src/pages/dashboard/ScansPage.tsx",
       "hasUseTranslation": true,
-      "hasTCalls": false,
+      "hasTCalls": true,
       "probableHardcodedLines": [
         207,
         224,
@@ -628,14 +628,14 @@
     {
       "filePath": "src/pages/dashboard/SecurityNewsPage.tsx",
       "hasUseTranslation": true,
-      "hasTCalls": false,
+      "hasTCalls": true,
       "probableHardcodedLines": [
-        182,
         183,
-        193,
-        219,
-        274,
-        289
+        184,
+        194,
+        220,
+        275,
+        290
       ]
     },
     {
@@ -709,28 +709,28 @@
     {
       "filePath": "src/pages/dashboard/ThreatIntelPage.tsx",
       "hasUseTranslation": true,
-      "hasTCalls": false,
+      "hasTCalls": true,
       "probableHardcodedLines": [
-        129,
         130,
-        173,
-        181,
+        131,
+        174,
         182,
-        194,
-        224,
+        183,
+        195,
         225,
-        231,
+        226,
         232,
         233,
         234,
         235,
         236,
-        277,
-        290,
+        237,
+        278,
         291,
         292,
         293,
-        294
+        294,
+        295
       ]
     },
     {
@@ -790,7 +790,7 @@
     {
       "filePath": "src/pages/dashboard/VulnerabilityDBPage.tsx",
       "hasUseTranslation": true,
-      "hasTCalls": false,
+      "hasTCalls": true,
       "probableHardcodedLines": [
         73,
         74,

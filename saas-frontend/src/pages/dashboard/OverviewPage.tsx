@@ -14,9 +14,8 @@ import { CircularProgress } from '../../components/ui/ProgressBar';
 
 export function OverviewPage() {
   const { organization, user } = useAuth();
-  const { t: _t } = useTranslation();  // reserved for i18n
-  void _t;
-  useDocumentTitle('Dashboard — CyberSec Pro');
+  const { t } = useTranslation();
+  useDocumentTitle(`${t('overview.title', 'Dashboard')} — CyberSec Pro`);
   const { data: dashData, isLoading: loading } = useDashboardData();
   const { data: securityData } = useSecuritySummary();
   const { data: scheduledScans = [] } = useScheduledScans(5);

@@ -148,7 +148,8 @@ function getCategoryColor(category: string) {
 }
 
 export default function SecurityNewsPage() {
-  useDocumentTitle('Security News — CyberSec Pro');
+  const { t } = useTranslation();
+  useDocumentTitle(`${t('securityNews.title', 'Security News')} — CyberSec Pro`);
   const { t: _t } = useTranslation();
   const [activeCategory, setActiveCategory] = useState<string>('All');
   const [searchQuery, setSearchQuery] = useState('');

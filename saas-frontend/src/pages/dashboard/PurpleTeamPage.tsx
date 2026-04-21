@@ -602,8 +602,8 @@ function ExerciseDetail({ exercise }: { exercise: Exercise }) {
 // ═══════════════════════════════════════════════════════════
 
 export default function PurpleTeamPage() {
-  useDocumentTitle('Purple Team — CyberSec Pro');
-  const { t: _t } = useTranslation();
+  const { t } = useTranslation();
+  useDocumentTitle(`${t('purpleTeam.title', 'Purple Team')} — CyberSec Pro`);
   void useQueryClient();
 
   // State

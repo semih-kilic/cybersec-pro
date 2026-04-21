@@ -8,6 +8,7 @@ import { getSmartDefaults } from '../../config/toolConfigs';
 import { useTools, useTargets, useProjects, useStartScan, useAgentsList } from '../../hooks/useApiQueries';
 import { useAuth, getUserPlan } from '../../hooks/useAuth';
 import { NewScanPageSkeleton } from '../../components/ui/Skeleton';
+import { useTranslation } from 'react-i18next';
 
 interface Tool {
   id: string;
@@ -44,7 +45,8 @@ interface Project {
 }
 
 export function NewScanPage() {
-  useDocumentTitle('New Scan — CyberSec Pro');
+  const { t } = useTranslation();
+  useDocumentTitle(`${t('newScan.title', 'New Scan')} — CyberSec Pro`);
   const toast = useToast();
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
@@ -129,10 +131,10 @@ export function NewScanPage() {
       } else if (result.requires_confirmation) {
         setShowDangerousWarning(true);
       } else {
-        toast.error('Scan Failed', result.error || result.hint || 'Failed to start scan');
+        toast.error(t('newScan.scanFailed', 'Scan Failed'), result.error || result.hint || t('newScan.failedToStart', 'Failed to start scan'));
       }
     } catch (error: any) {
-      toast.error('Scan Failed', error.message || 'Failed to start scan');
+      toast.error(t('newScan.scanFailed', 'Scan Failed'), error.message || t('newScan.failedToStart', 'Failed to start scan'));
     } finally {
       setSubmitting(false);
     }
@@ -159,8 +161,8 @@ export function NewScanPage() {
     <PageTransition>
     <div className="min-h-screen bg-gray-950">
       <Header 
-        title="New Scan"
-        subtitle="Configure and start a new security scan"
+        title={t('newScan.title', 'New Scan')}
+        subtitle={t('newScan.subtitle', 'Configure and start a new security scan')}
       />
 
       <div className="max-w-4xl mx-auto p-6">
@@ -186,9 +188,9 @@ export function NewScanPage() {
 
         {/* Step Labels */}
         <div className="flex justify-center mb-8 text-sm">
-          <span className={`w-32 text-center ${step >= 1 ? 'text-white' : 'text-gray-500'}`}>Select Tool</span>
-          <span className={`w-32 text-center ${step >= 2 ? 'text-white' : 'text-gray-500'}`}>Configure</span>
-          <span className={`w-32 text-center ${step >= 3 ? 'text-white' : 'text-gray-500'}`}>Review</span>
+          <span className={`w-32 text-center ${step >= 1 ? 'text-white' : 'text-gray-500'}`}>{t('newScan.steps.selectTool', 'Select Tool')}</span>
+          <span className={`w-32 text-center ${step >= 2 ? 'text-white' : 'text-gray-500'}`}>{t('newScan.steps.configure', 'Configure')}</span>
+          <span className={`w-32 text-center ${step >= 3 ? 'text-white' : 'text-gray-500'}`}>{t('newScan.steps.review', 'Review')}</span>
         </div>
 
         {/* Step 1: Select Tool */}

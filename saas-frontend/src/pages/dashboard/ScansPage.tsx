@@ -126,8 +126,8 @@ FindingsBadges.displayName = 'FindingsBadges';
 // MAIN COMPONENT
 // ========================
 export function ScansPage() {
-  useDocumentTitle('Scans — CyberSec Pro');
-  const { t: _t } = useTranslation();
+  const { t } = useTranslation();
+  useDocumentTitle(`${t('scans.title', 'Scans')} — CyberSec Pro`);
   const [searchParams] = useSearchParams();
   const toast = useToast();
 
