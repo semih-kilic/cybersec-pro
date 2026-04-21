@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-04-21T15:29:55.806Z",
+  "generatedAt": "2026-04-21T15:39:11.269Z",
   "report": [
     {
       "filePath": "src/pages/DashboardPage.tsx",
@@ -287,18 +287,6 @@
       "filePath": "src/pages/dashboard/settings/TeamTab.tsx",
       "hasUseTranslation": true,
       "hasTCalls": true,
-      "probableHardcodedLines": []
-    },
-    {
-      "filePath": "src/pages/dashboard/settings/index.ts",
-      "hasUseTranslation": false,
-      "hasTCalls": false,
-      "probableHardcodedLines": []
-    },
-    {
-      "filePath": "src/pages/dashboard/settings/types.ts",
-      "hasUseTranslation": false,
-      "hasTCalls": false,
       "probableHardcodedLines": []
     }
   ]

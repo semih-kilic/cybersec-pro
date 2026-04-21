@@ -332,8 +332,8 @@ export function AdminPage() {
               <table className="w-full text-sm">
                 <thead>
                   <tr className="text-gray-500 text-left">
-                     <th className="pb-2 font-medium">{t('admin.colTarget', 'Target')}</th>
-                     <th className="pb-2 font-medium">{t('admin.colStatus', 'Status')}</th>
+                     <th className="pb-2 font-medium">{t('common.target', 'Target')}</th>
+                     <th className="pb-2 font-medium">{t('common.status', 'Status')}</th>
                      <th className="pb-2 font-medium">{t('admin.colCreated', 'Created')}</th>
                   </tr>
                 </thead>
@@ -394,10 +394,10 @@ export function AdminPage() {
                     />
                   </th>
                       <th className="pb-2 font-medium">{t('admin.colEmail', 'Email')}</th>
-                      <th className="pb-2 font-medium">{t('admin.colName', 'Name')}</th>
+                      <th className="pb-2 font-medium">{t('common.name', 'Name')}</th>
                       <th className="pb-2 font-medium">{t('admin.colRole', 'Role')}</th>
-                      <th className="pb-2 font-medium">{t('admin.colActive', 'Active')}</th>
-                      <th className="pb-2 font-medium">{t('admin.colActions', 'Actions')}</th>
+                      <th className="pb-2 font-medium">{t('common.active', 'Active')}</th>
+                      <th className="pb-2 font-medium">{t('common.actions', 'Actions')}</th>
                 </tr>
               </thead>
               <tbody className="text-gray-900 dark:text-gray-300">
@@ -478,11 +478,11 @@ export function AdminPage() {
             <table className="w-full text-sm">
               <thead>
                 <tr className="text-gray-500 text-left">
-                  <th className="pb-2 font-medium">{t('admin.colName', 'Name')}</th>
+                  <th className="pb-2 font-medium">{t('common.name', 'Name')}</th>
                   <th className="pb-2 font-medium">{t('admin.colSlug', 'Slug')}</th>
                   <th className="pb-2 font-medium">{t('admin.colPlan', 'Plan')}</th>
-                  <th className="pb-2 font-medium">{t('admin.colActive', 'Active')}</th>
-                  <th className="pb-2 font-medium">{t('admin.colActions', 'Actions')}</th>
+                  <th className="pb-2 font-medium">{t('common.active', 'Active')}</th>
+                  <th className="pb-2 font-medium">{t('common.actions', 'Actions')}</th>
                 </tr>
               </thead>
               <tbody className="text-gray-900 dark:text-gray-300">

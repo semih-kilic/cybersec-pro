@@ -316,7 +316,7 @@ export function NewScanPage() {
 
               {/* Target */}
               <div className="mb-6">
-                <label className="block text-sm text-gray-400 mb-2">{t('newScan.targetLabel', 'Target')}</label>
+                <label className="block text-sm text-gray-400 mb-2">{t('common.target', 'Target')}</label>
                 
                 <div className="flex gap-3 mb-3">
                   <button
@@ -502,11 +502,11 @@ export function NewScanPage() {
 
               <div className="space-y-4">
                 <div className="flex items-center justify-between py-3 border-b border-gray-800">
-                  <span className="text-gray-400">{t('newScan.reviewTool', 'Tool')}</span>
+                  <span className="text-gray-400">{t('common.tool', 'Tool')}</span>
                   <span className="text-white font-medium">{selectedTool}</span>
                 </div>
                 <div className="flex items-center justify-between py-3 border-b border-gray-800">
-                  <span className="text-gray-400">{t('newScan.reviewTarget', 'Target')}</span>
+                  <span className="text-gray-400">{t('common.target', 'Target')}</span>
                   <span className="text-white font-mono">{useCustomTarget ? customTarget : selectedTarget}</span>
                 </div>
                 <div className="flex items-center justify-between py-3 border-b border-gray-800">

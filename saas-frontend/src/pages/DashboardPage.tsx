@@ -272,9 +272,9 @@ export function DashboardPage() {
                 <table className="w-full">
                   <thead className="bg-gray-700/50">
                     <tr>
-                      <th className="text-left p-4 text-gray-300 font-medium">{t('dashboard.tool', 'Tool')}</th>
-                      <th className="text-left p-4 text-gray-300 font-medium">{t('dashboard.target', 'Target')}</th>
-                      <th className="text-left p-4 text-gray-300 font-medium">{t('dashboard.status', 'Status')}</th>
+                      <th className="text-left p-4 text-gray-300 font-medium">{t('common.tool', 'Tool')}</th>
+                      <th className="text-left p-4 text-gray-300 font-medium">{t('common.target', 'Target')}</th>
+                      <th className="text-left p-4 text-gray-300 font-medium">{t('common.status', 'Status')}</th>
                       <th className="text-left p-4 text-gray-300 font-medium">{t('dashboard.date', 'Date')}</th>
                     </tr>
                   </thead>

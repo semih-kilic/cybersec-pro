@@ -487,7 +487,7 @@ export function ScanExecutionPage() {
           <div className="lg:col-span-1 space-y-6">
             {/* Target Input */}
             <div className="bg-gray-900 rounded-xl border border-gray-800 p-5">
-              <h3 className="text-white font-semibold mb-2">🎯 {t('scans.target', 'Target')} <span className="text-red-400">*</span></h3>
+              <h3 className="text-white font-semibold mb-2">🎯 {t('common.target', 'Target')} <span className="text-red-400">*</span></h3>
               <p className="text-gray-500 text-xs mb-3">{t('scans.targetHint', 'Enter the IP address, domain, or URL you want to scan. You must own or have permission to test this target.')}</p>
               {businessDescription && (
                 <p className="text-gray-400 text-xs mb-3 leading-relaxed">{businessDescription}</p>
@@ -661,7 +661,7 @@ export function ScanExecutionPage() {
 
             {/* Status */}
             <div className="bg-gray-900 rounded-xl border border-gray-800 p-5">
-              <h3 className="text-white font-semibold mb-3">{t('scans.status', 'Status')}</h3>
+              <h3 className="text-white font-semibold mb-3">{t('common.status', 'Status')}</h3>
               <div className="flex items-center gap-3">
                 {status === 'idle' && (
                   <>

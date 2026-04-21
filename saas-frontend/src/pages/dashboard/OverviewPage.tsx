@@ -206,12 +206,12 @@ export function OverviewPage() {
                 <thead>
                   <tr className="text-left text-sm text-gray-400 border-b border-gray-800">
                     <th className="px-5 py-3 font-medium">{t('overview.colDomain', 'Domain')}</th>
-                    <th className="px-5 py-3 font-medium">{t('overview.colType', 'Type')}</th>
-                    <th className="px-5 py-3 font-medium">{t('overview.colStatus', 'Status')}</th>
+                    <th className="px-5 py-3 font-medium">{t('common.type', 'Type')}</th>
+                    <th className="px-5 py-3 font-medium">{t('common.status', 'Status')}</th>
                     <th className="px-5 py-3 font-medium">{t('overview.colScore', 'Score')}</th>
                     <th className="px-5 py-3 font-medium">{t('overview.colIssues', 'Issues')}</th>
                     <th className="px-5 py-3 font-medium">{t('overview.colDate', 'Date')}</th>
-                    <th className="px-5 py-3 font-medium">{t('overview.colActions', 'Actions')}</th>
+                    <th className="px-5 py-3 font-medium">{t('common.actions', 'Actions')}</th>
                   </tr>
                 </thead>
                 <tbody>

@@ -377,7 +377,7 @@ function AddDeviceWizard({ onClose, onCreate }: { onClose: () => void; onCreate:
               <motion.div key="review" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} className="space-y-3">
                 <div className="rounded-xl bg-gray-900 border border-gray-800 p-4 space-y-2">
                   <ReviewRow label="Name" value={form.name} />
-                  <ReviewRow label={t('agents.detailType', 'Type')} value={CONNECTION_TYPES.find(c => c.id === connType)?.name || connType} />
+                  <ReviewRow label={t('common.type', 'Type')} value={CONNECTION_TYPES.find(c => c.id === connType)?.name || connType} />
                   <ReviewRow label="Host" value={form.ssh_host + ':' + form.ssh_port} mono />
                   <ReviewRow label={t('agents.labelUsername', 'Username')} value={form.ssh_username} mono />
                   <ReviewRow label={t('agents.labelPassword', 'Password')} value={form.ssh_password ? '\u2022\u2022\u2022\u2022\u2022\u2022\u2022\u2022' : 'Not set'} />
@@ -519,7 +519,7 @@ function DeviceDetail({ agent, testResult, isTesting, onTest, onEdit, onDelete, 
           <DetailRow label={t('agents.labelHostIP', 'Host / IP')} value={agent.ip_address || 'N/A'} mono />
           <DetailRow label={t('agents.detailSSHPort', 'SSH Port')} value={String(agent.ssh_port || 22)} mono />
           <DetailRow label={t('agents.labelUsername', 'Username')} value={agent.ssh_username || 'N/A'} mono />
-          <DetailRow label={t('agents.detailType', 'Type')} value={agent.connection_type || 'SSH'} />
+          <DetailRow label={t('common.type', 'Type')} value={agent.connection_type || 'SSH'} />
           {agent.location && <DetailRow label={t('agents.labelLocation', 'Location')} value={agent.location} />}
         </DetailSection>
 

@@ -196,7 +196,7 @@ export function SchedulePage() {
                 <p className="text-2xl font-bold text-green-400">
                   {schedules.filter(s => getScheduleStatus(s) === 'active').length}
                 </p>
-                <p className="text-sm text-gray-400">{t('schedule.active', 'Active')}</p>
+                <p className="text-sm text-gray-400">{t('common.active', 'Active')}</p>
               </div>
               <div className="w-10 h-10 rounded-lg bg-green-500/20 flex items-center justify-center">
                 <svg className="w-5 h-5 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">

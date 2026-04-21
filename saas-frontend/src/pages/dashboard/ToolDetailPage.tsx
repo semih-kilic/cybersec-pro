@@ -288,7 +288,7 @@ export function ToolDetailPage() {
             <div className="bg-gray-900 rounded-xl border border-gray-800 p-5">
               <div className="flex items-center gap-2 mb-3">
                 <span className="text-lg">🎯</span>
-                <h3 className="text-white font-semibold">{t('scans.target', 'Target')} <span className="text-red-400">*</span></h3>
+                <h3 className="text-white font-semibold">{t('common.target', 'Target')} <span className="text-red-400">*</span></h3>
               </div>
               <p className="text-gray-500 text-xs mb-3">{t('scans.targetHint', 'Enter the IP address, domain, or URL you want to scan. You must own or have permission to test this target.')}</p>
               <input

@@ -417,7 +417,7 @@ const ToolDetailPage: React.FC = () => {
               {/* Target Input */}
               <div>
                 <label className="block text-sm font-medium text-gray-300 mb-2">
-                  {t('toolDetail.target', 'Target')} <span className="text-red-400">*</span>
+                  {t('common.target', 'Target')} <span className="text-red-400">*</span>
                 </label>
                 <input
                   type="text"

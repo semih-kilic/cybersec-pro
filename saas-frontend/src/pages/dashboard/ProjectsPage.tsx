@@ -163,7 +163,7 @@ export default function ProjectsPage() {
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
         {[
           { label: t('projects.statTotal', 'Total Projects'), value: projects.length, icon: '📁', color: 'text-white' },
-          { label: t('projects.statActive', 'Active'), value: projects.filter(p => p.status === 'active').length, icon: '🟢', color: 'text-green-400' },
+          { label: t('common.active', 'Active'), value: projects.filter(p => p.status === 'active').length, icon: '🟢', color: 'text-green-400' },
           { label: t('projects.statTargets', 'Total Targets'), value: projects.reduce((sum, p) => sum + p.target_count, 0), icon: '🎯', color: 'text-kali-blue' },
           { label: t('projects.statVulnerabilities', 'Vulnerabilities'), value: projects.reduce((sum, p) => sum + p.vulnerability_count, 0), icon: '⚠️', color: 'text-yellow-400' },
         ].map((stat, i) => (
