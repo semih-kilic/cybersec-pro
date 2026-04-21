@@ -117,14 +117,14 @@ CI artifacts for observability:
 
 ## 7) Known Risk Areas
 
-- `rust-backend/src/handlers/stub_handlers.rs` still contains mixed maturity endpoints; Purple Team now has a minimal in-memory usable flow but is not persistence-backed.
+- `rust-backend/src/handlers/stub_handlers.rs` still contains mixed maturity endpoints; Purple Team now has DB-backed persistence but execution telemetry is still mostly placeholder.
 - Billing/Stripe flow remains partially stubbed.
 - `rust-scan-engine` is not integrated in `docker-compose.yml`.
 - SQLx version mismatch between backend and scan engine should be resolved before deeper integration.
 
 ## 8) Best-First Priorities
 
-1. Move Purple Team flow from in-memory state to DB-backed persistence with stable contracts.
+1. Expand Purple Team from persistence-only flow to execution telemetry + real detection pipeline updates.
 2. Add/expand automated checks (lint, type-check, backend smoke tests).
 3. Keep i18n parity stable with CI checks for locale drift.
 4. Align scan engine integration strategy with compose and routing.

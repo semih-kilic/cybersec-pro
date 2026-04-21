@@ -17,15 +17,15 @@ Last updated: 2026-04-21
 - Status: Locale parity pass complete (no same-as-English residuals vs `en` baseline)
 
 ### Key Technical Debt
-1. Purple Team endpoints now provide a minimal usable in-memory flow (`chains`, `playbooks`, `mitre`, `dashboard`, `create`, `list`, `detail`), but persistence and production semantics are still pending.
+1. Purple Team endpoints now provide a DB-backed minimal flow (`chains`, `playbooks`, `mitre`, `dashboard`, `create`, `list`, `detail`); remaining debt is production-grade execution and telemetry.
 2. Billing/Stripe is still partially stubbed.
 3. `rust-scan-engine` integration path is pending.
 4. SQLx version mismatch (`0.8` vs `0.7`) remains unresolved.
 
 ### Recent Backend Progress (2026-04-21)
 - Added static Purple Team chain/playbook catalogs and MITRE matrix response.
-- Added in-memory organization-scoped exercise store for create/list/detail/dashboard.
-- Added unit tests for purple-team exercise shape and list/detail round-trip in `rust-backend/src/handlers/stub_handlers.rs`.
+- Replaced in-memory exercise state with `purple_team_exercises` PostgreSQL persistence and DB-driven dashboard/list/detail.
+- Added unit tests for purple-team exercise payload shape and chain/default builder behavior in `rust-backend/src/handlers/stub_handlers.rs`.
 
 ### Working Conventions
 - Scope-based translation workflow for i18n.

@@ -1,6 +1,6 @@
 /// Stub handlers for frontend endpoints not yet fully implemented.
 /// These return reasonable default / empty responses so the UI doesn't crash.
-use std::{collections::HashMap, sync::{Arc, Mutex, OnceLock}};
+use std::sync::Arc;
 use axum::{
     extract::{Path, Query, State},
     http::StatusCode,
@@ -12,12 +12,6 @@ use serde_json::json;
 use crate::middleware::auth_middleware::{AuthUser, AdminUser};
 use crate::services::auth::{create_access_token, create_refresh_token};
 use crate::AppState;
-
-static PURPLE_TEAM_EXERCISES: OnceLock<Mutex<HashMap<String, Vec<serde_json::Value>>>> = OnceLock::new();
-
-fn purple_team_store() -> &'static Mutex<HashMap<String, Vec<serde_json::Value>>> {
-    PURPLE_TEAM_EXERCISES.get_or_init(|| Mutex::new(HashMap::new()))
-}
 
 fn purple_team_chains_catalog() -> Vec<serde_json::Value> {
     vec![
@@ -2562,38 +2556,31 @@ pub async fn ai_report_summary(
 
 pub async fn purple_team_dashboard(
     user: AuthUser,
-    State(_state): State<Arc<AppState>>,
+    State(state): State<Arc<AppState>>,
 ) -> impl IntoResponse {
-    let org_id = user.org_id.unwrap_or_default();
-    let exercises = purple_team_store()
-        .lock()
-        .ok()
-        .and_then(|store| store.get(&org_id).cloned())
-        .unwrap_or_default();
-
-    let total_exercises = exercises.len() as i64;
-    let running = exercises.iter().filter(|exercise| {
-        matches!(exercise.get("status").and_then(|value| value.as_str()), Some("running") | Some("pending"))
-    }).count() as i64;
-    let completed = exercises.iter().filter(|exercise| {
-        exercise.get("status").and_then(|value| value.as_str()) == Some("completed")
-    }).count() as i64;
-    let total_attack_steps: i64 = exercises.iter().map(|exercise| {
-        exercise.get("total_steps").and_then(|value| value.as_i64()).unwrap_or(0)
-    }).sum();
-    let total_detected: i64 = exercises.iter().map(|exercise| {
-        exercise.get("detected_attacks").and_then(|value| value.as_i64()).unwrap_or(0)
-    }).sum();
-    let total_missed: i64 = exercises.iter().map(|exercise| {
-        exercise.get("missed_attacks").and_then(|value| value.as_i64()).unwrap_or(0)
-    }).sum();
-    let average_risk_score = if total_exercises > 0 {
-        exercises.iter().map(|exercise| {
-            exercise.get("risk_score").and_then(|value| value.as_f64()).unwrap_or(0.0)
-        }).sum::<f64>() / total_exercises as f64
-    } else {
-        0.0
+    let org_id = match user.org_id.as_deref() {
+        Some(value) if !value.is_empty() => value,
+        _ => return (StatusCode::BAD_REQUEST, Json(json!({"error": "Organization context required"}))).into_response(),
     };
+
+    let (total_exercises, running, completed, total_attack_steps, total_detected, total_missed, average_risk_score) =
+        sqlx::query_as::<_, (i64, i64, i64, i64, i64, i64, f64)>(
+            r#"SELECT
+                COUNT(*)::bigint,
+                COALESCE(SUM(CASE WHEN status IN ('running', 'pending') THEN 1 ELSE 0 END), 0)::bigint,
+                COALESCE(SUM(CASE WHEN status = 'completed' THEN 1 ELSE 0 END), 0)::bigint,
+                COALESCE(SUM(total_steps), 0)::bigint,
+                COALESCE(SUM(detected_attacks), 0)::bigint,
+                COALESCE(SUM(missed_attacks), 0)::bigint,
+                COALESCE(AVG(risk_score), 0)::double precision
+            FROM purple_team_exercises
+            WHERE organization_id = $1"#
+        )
+        .bind(org_id)
+        .fetch_one(&state.db)
+        .await
+        .unwrap_or((0, 0, 0, 0, 0, 0, 0.0));
+
     let detection_rate = if total_attack_steps > 0 {
         (total_detected as f64 / total_attack_steps as f64) * 100.0
     } else {
@@ -2634,41 +2621,71 @@ pub async fn purple_team_playbooks(
 
 pub async fn purple_team_exercises(
     user: AuthUser,
-    State(_state): State<Arc<AppState>>,
+    State(state): State<Arc<AppState>>,
 ) -> impl IntoResponse {
-    let org_id = user.org_id.unwrap_or_default();
-    let exercises = purple_team_store()
-        .lock()
-        .ok()
-        .and_then(|store| store.get(&org_id).cloned())
-        .unwrap_or_default();
+    let org_id = match user.org_id.as_deref() {
+        Some(value) if !value.is_empty() => value,
+        _ => return (StatusCode::BAD_REQUEST, Json(json!({"error": "Organization context required"}))).into_response(),
+    };
+
+    let rows = sqlx::query_as::<_, (String,)>(
+        r#"SELECT payload::text
+        FROM purple_team_exercises
+        WHERE organization_id = $1
+        ORDER BY created_at DESC"#
+    )
+    .bind(org_id)
+    .fetch_all(&state.db)
+    .await
+    .unwrap_or_default();
+
+    let exercises: Vec<serde_json::Value> = rows
+        .into_iter()
+        .filter_map(|(payload_text,)| serde_json::from_str::<serde_json::Value>(&payload_text).ok())
+        .collect();
     Json(json!(exercises)).into_response()
 }
 
 pub async fn purple_team_exercise_detail(
     Path(exercise_id): Path<String>,
     user: AuthUser,
-    State(_state): State<Arc<AppState>>,
+    State(state): State<Arc<AppState>>,
 ) -> impl IntoResponse {
-    let org_id = user.org_id.unwrap_or_default();
-    let exercise = purple_team_store()
-        .lock()
-        .ok()
-        .and_then(|store| store.get(&org_id).cloned())
-        .and_then(|items| items.into_iter().find(|item| item.get("id").and_then(|value| value.as_str()) == Some(exercise_id.as_str())));
+    let org_id = match user.org_id.as_deref() {
+        Some(value) if !value.is_empty() => value,
+        _ => return (StatusCode::BAD_REQUEST, Json(json!({"error": "Organization context required"}))).into_response(),
+    };
 
-    match exercise {
-        Some(item) => Json(item).into_response(),
+    let row = sqlx::query_as::<_, (String,)>(
+        r#"SELECT payload::text
+        FROM purple_team_exercises
+        WHERE organization_id = $1 AND id = $2
+        LIMIT 1"#
+    )
+    .bind(org_id)
+    .bind(&exercise_id)
+    .fetch_optional(&state.db)
+    .await
+    .unwrap_or(None);
+
+    match row {
+        Some((payload_text,)) => match serde_json::from_str::<serde_json::Value>(&payload_text) {
+            Ok(item) => Json(item).into_response(),
+            Err(_) => (StatusCode::INTERNAL_SERVER_ERROR, Json(json!({"error": "Invalid exercise payload"}))).into_response(),
+        },
         None => (StatusCode::NOT_FOUND, Json(json!({"error": "Exercise not found"}))).into_response(),
     }
 }
 
 pub async fn purple_team_create_exercise(
     user: AuthUser,
-    State(_state): State<Arc<AppState>>,
+    State(state): State<Arc<AppState>>,
     Json(body): Json<serde_json::Value>,
 ) -> impl IntoResponse {
-    let org_id = user.org_id.unwrap_or_default();
+    let org_id = match user.org_id.as_deref() {
+        Some(value) if !value.is_empty() => value,
+        _ => return (StatusCode::BAD_REQUEST, Json(json!({"error": "Organization context required"}))).into_response(),
+    };
     let chain_id = match body.get("chain_id").and_then(|value| value.as_str()) {
         Some(value) if !value.trim().is_empty() => value.trim(),
         _ => return (StatusCode::BAD_REQUEST, Json(json!({"error": "chain_id is required"}))).into_response(),
@@ -2689,13 +2706,44 @@ pub async fn purple_team_create_exercise(
         body.get("name").and_then(|value| value.as_str()),
     );
 
-    match purple_team_store().lock() {
-        Ok(mut store) => {
-            let entries = store.entry(org_id).or_default();
-            entries.insert(0, exercise.clone());
-            (StatusCode::CREATED, Json(exercise)).into_response()
-        }
-        Err(_) => (StatusCode::INTERNAL_SERVER_ERROR, Json(json!({"error": "Exercise store unavailable"}))).into_response(),
+    let exercise_id = exercise.get("id").and_then(|value| value.as_str()).unwrap_or_default().to_string();
+    let exercise_name = exercise.get("name").and_then(|value| value.as_str()).unwrap_or("Purple Team Exercise").to_string();
+    let status = exercise.get("status").and_then(|value| value.as_str()).unwrap_or("pending").to_string();
+    let total_steps = exercise.get("total_steps").and_then(|value| value.as_i64()).unwrap_or(0);
+    let completed_steps = exercise.get("completed_steps").and_then(|value| value.as_i64()).unwrap_or(0);
+    let detected_attacks = exercise.get("detected_attacks").and_then(|value| value.as_i64()).unwrap_or(0);
+    let missed_attacks = exercise.get("missed_attacks").and_then(|value| value.as_i64()).unwrap_or(0);
+    let risk_score = exercise.get("risk_score").and_then(|value| value.as_f64()).unwrap_or(0.0);
+
+    let inserted = sqlx::query(
+        r#"INSERT INTO purple_team_exercises (
+            id, organization_id, name, attack_chain_id, target, status,
+            total_steps, completed_steps, detected_attacks, missed_attacks,
+            risk_score, payload, created_at, updated_at
+        ) VALUES (
+            $1, $2, $3, $4, $5, $6,
+            $7, $8, $9, $10,
+            $11, $12::jsonb, NOW(), NOW()
+        )"#
+    )
+    .bind(&exercise_id)
+    .bind(org_id)
+    .bind(&exercise_name)
+    .bind(chain_id)
+    .bind(target)
+    .bind(&status)
+    .bind(total_steps)
+    .bind(completed_steps)
+    .bind(detected_attacks)
+    .bind(missed_attacks)
+    .bind(risk_score)
+    .bind(exercise.to_string())
+    .execute(&state.db)
+    .await;
+
+    match inserted {
+        Ok(_) => (StatusCode::CREATED, Json(exercise)).into_response(),
+        Err(_) => (StatusCode::INTERNAL_SERVER_ERROR, Json(json!({"error": "Failed to persist exercise"}))).into_response(),
     }
 }
 
@@ -3214,8 +3262,8 @@ mod tests {
     }
 
     #[test]
-    fn purple_team_list_and_detail_round_trip_from_store() {
-        let org_id = "test-org-purple";
+    fn purple_team_builder_defaults_and_chain_lookup_rules() {
+        assert!(purple_team_chain_by_id("unknown-chain").is_none());
 
         let chain = purple_team_chain_by_id("chain-initial-access-phishing").expect("expected chain catalog entry");
         let exercise = purple_team_build_exercise(
@@ -3224,32 +3272,10 @@ mod tests {
             "mail.target.local",
             None,
         );
-        let exercise_id = exercise
-            .get("id")
-            .and_then(|v| v.as_str())
-            .expect("exercise must have id")
-            .to_string();
 
-        {
-            let mut store = purple_team_store().lock().expect("store lock");
-            store.entry(org_id.to_string()).or_default().insert(0, exercise);
-        }
-
-        let listed = {
-            let store = purple_team_store().lock().expect("store lock");
-            store.get(org_id).cloned().unwrap_or_default()
-        };
-        assert_eq!(listed.len(), 1);
-        assert_eq!(listed[0].get("attack_chain_id").and_then(|v| v.as_str()), Some("chain-initial-access-phishing"));
-
-        let fetched = listed
-            .iter()
-            .find(|item| item.get("id").and_then(|v| v.as_str()) == Some(exercise_id.as_str()));
-        assert!(fetched.is_some());
-
-        {
-            let mut store = purple_team_store().lock().expect("store lock");
-            store.remove(org_id);
-        }
+        assert_eq!(exercise.get("name").and_then(|v| v.as_str()), Some("Initial Access Validation"));
+        assert_eq!(exercise.get("attack_chain_id").and_then(|v| v.as_str()), Some("chain-initial-access-phishing"));
+        assert_eq!(exercise.get("target").and_then(|v| v.as_str()), Some("mail.target.local"));
+        assert_eq!(exercise.get("risk_score").and_then(|v| v.as_f64()), Some(64.0));
     }
 }
