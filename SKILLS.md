@@ -7,17 +7,23 @@ This file defines practical, repeatable workflows for this repository.
 Target:
 - `saas-frontend/src/i18n/locales/{en,de,es,fr,it}.json`
 
+Current status:
+- Parity pass completed (`49/49` scopes, `0` same-as-English residual keys)
+- Ongoing work is maintenance mode (prevent drift)
+
 Flow:
 1. Pick one scope from `en.json`.
 2. Read same scope in all locales.
 3. Translate user-facing strings in `de/es/fr/it`.
 4. Keep technical placeholders stable when appropriate.
 5. Run `npm run i18n:check` and fix syntax/coverage issues.
+6. Run same-as-English residual check before merging locale changes.
 
 Quality checks:
 - no broken JSON
 - no accidental key drift
 - no untranslated user-facing high-visibility labels
+- keep proper nouns/technical tokens intentional and consistent
 
 ## 2) Rust API Implementation Skill
 

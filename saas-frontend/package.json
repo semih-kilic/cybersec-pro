@@ -12,6 +12,7 @@
     "lint:fix": "eslint . --ext ts,tsx --fix",
     "type-check": "tsc --noEmit",
     "i18n:check": "node scripts/i18n-coverage-check.cjs",
+    "i18n:residual": "node scripts/i18n-residual-check.cjs",
     "test": "vitest",
     "test:ui": "vitest --ui",
     "test:coverage": "vitest --coverage"

@@ -7,7 +7,7 @@ CyberSec Pro is a multi-service cybersecurity SaaS platform with Rust APIs, a Re
 - Core API runtime: `rust-backend` (Axum, PostgreSQL, Redis)
 - Frontend apps: `saas-frontend` (React/Vite), `frontend` (Next.js)
 - Infra orchestration: `docker-compose.yml` + Nginx reverse proxy
-- Ongoing localization: `saas-frontend/src/i18n/locales`
+- Localization parity complete (2026-04-21): `saas-frontend/src/i18n/locales`
 
 ## Quick Start
 
@@ -49,7 +49,14 @@ pnpm dev
 ```bash
 cd saas-frontend
 npm run i18n:check
+npm run i18n:residual
 ```
+
+Current localization status:
+
+- Locales: `en`, `de`, `es`, `fr`, `it`
+- Scopes checked: `49`
+- Same-as-English residual keys: `0`
 
 Localization files live in:
 

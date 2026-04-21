@@ -14,7 +14,7 @@ Primary goals:
 - secure scan execution (local and remote)
 - organization- and plan-aware SaaS workflows
 - strong auth + auditability
-- multilingual UI (ongoing i18n)
+- multilingual UI (i18n parity completed)
 
 ## 2) Verified Repository Layout
 
@@ -84,9 +84,9 @@ npm run i18n:check
 6. If needed, run targeted Node comparison scripts for same-as-English keys.
 
 Current tracked status:
-- Completed: 26 / 42 scopes
-- Remaining: 378 keys across 23 scopes
-- Highest remaining scopes: `sso`, `integrations`, `landing`, `profile`
+- Completed: 49 / 49 scopes
+- Remaining: 0 keys
+- Result: parity achieved across `de/es/fr/it` against `en`
 
 ## 6) Safety Rules (Must Follow)
 
@@ -106,8 +106,8 @@ Current tracked status:
 
 ## 8) Best-First Priorities
 
-1. Continue i18n completion in `saas-frontend` high-priority scopes.
-2. Convert high-impact stubs in `stub_handlers.rs` into production-grade handlers.
-3. Add/expand automated checks (i18n coverage, lint, type-check, backend smoke tests).
+1. Convert high-impact stubs in `stub_handlers.rs` into production-grade handlers.
+2. Add/expand automated checks (lint, type-check, backend smoke tests).
+3. Keep i18n parity stable with CI checks for locale drift.
 4. Align scan engine integration strategy with compose and routing.
 
