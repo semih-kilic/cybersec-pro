@@ -1379,7 +1379,7 @@
     "oidcProviderHint": "Configura nel tuo provider OIDC:",
     "ldapHost": "Host LDAP",
     "ldapHostPlaceholder": "ldap.company.com",
-    "port": "Port",
+    "port": "Porta",
     "bindDn": "DN di bind",
     "bindDnPlaceholder": "cn=admin,dc=company,dc=com",
     "bindPassword": "Password di bind",
