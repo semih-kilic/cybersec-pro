@@ -210,6 +210,156 @@ fn purple_team_build_exercise(
     })
 }
 
+fn purple_team_step_catalog(chain_id: &str) -> Vec<(&'static str, &'static str, &'static str, &'static str, &'static str)> {
+    match chain_id {
+        "chain-credential-access" => vec![
+            ("credential-access", "T1110", "Brute Force", "TA0006", "credential-spray"),
+            ("credential-access", "T1003", "OS Credential Dumping", "TA0006", "hash-dump-simulation"),
+            ("persistence", "T1547", "Boot or Logon Autostart Execution", "TA0003", "registry-persistence-check"),
+            ("lateral-movement", "T1021", "Remote Services", "TA0008", "ssh-pivot"),
+        ],
+        "chain-lateral-movement" => vec![
+            ("discovery", "T1018", "Remote System Discovery", "TA0007", "network-enum"),
+            ("lateral-movement", "T1021", "Remote Services", "TA0008", "psexec-simulation"),
+            ("lateral-movement", "T1072", "Software Deployment Tools", "TA0008", "remote-service-exec"),
+            ("execution", "T1059", "Command and Scripting Interpreter", "TA0002", "shell-command"),
+        ],
+        _ => vec![
+            ("initial-access", "T1566", "Phishing", "TA0001", "social-engineering"),
+            ("execution", "T1204", "User Execution", "TA0002", "payload-simulation"),
+            ("execution", "T1059", "Command and Scripting Interpreter", "TA0002", "http-callback"),
+            ("credential-access", "T1110", "Brute Force", "TA0006", "credential-spray"),
+        ],
+    }
+}
+
+fn purple_team_tactic_name(tactic_id: &str) -> &'static str {
+    match tactic_id {
+        "TA0001" => "Initial Access",
+        "TA0002" => "Execution",
+        "TA0003" => "Persistence",
+        "TA0006" => "Credential Access",
+        "TA0007" => "Discovery",
+        "TA0008" => "Lateral Movement",
+        _ => "Unknown Tactic",
+    }
+}
+
+fn purple_team_build_simulation_data(
+    chain_id: &str,
+    total_steps: i64,
+    detected_steps: i64,
+) -> (Vec<serde_json::Value>, Vec<serde_json::Value>, serde_json::Value, serde_json::Value) {
+    let catalog = purple_team_step_catalog(chain_id);
+    let safe_steps = total_steps.max(0);
+    let safe_detected = detected_steps.clamp(0, safe_steps);
+
+    let mut red_results = Vec::new();
+    let mut missed_techniques = Vec::new();
+    let mut coverage_map = serde_json::Map::new();
+
+    for i in 0..safe_steps {
+        let index = (i as usize) % catalog.len();
+        let (phase, technique_id, technique_name, tactic_id, tool) = catalog[index];
+        let detected = i < safe_detected;
+        let started_at = chrono::Utc::now() - chrono::Duration::seconds((safe_steps - i) * 12);
+        let completed_at = started_at + chrono::Duration::seconds(8);
+
+        red_results.push(json!({
+            "step_index": i + 1,
+            "phase": phase,
+            "technique_id": technique_id,
+            "technique_name": technique_name,
+            "tool": tool,
+            "command": format!("simulate {} on target", technique_id),
+            "status": "completed",
+            "output": if detected { "Blue team alert triggered and correlated." } else { "Attack simulation completed without correlated blue alert." },
+            "findings": [],
+            "started_at": started_at.to_rfc3339(),
+            "completed_at": completed_at.to_rfc3339(),
+            "duration_seconds": 8.0,
+            "detected_by_blue": detected
+        }));
+
+        if !detected {
+            missed_techniques.push(json!({
+                "technique_id": technique_id,
+                "technique_name": technique_name,
+                "tool": tool,
+                "phase": phase
+            }));
+        }
+
+        let entry = coverage_map.entry(tactic_id.to_string()).or_insert_with(|| {
+            json!({
+                "name": purple_team_tactic_name(tactic_id),
+                "total_techniques": 0,
+                "tested": 0,
+                "detected": 0,
+                "missed": 0,
+                "techniques": {}
+            })
+        });
+
+        let total_techniques = entry.get("total_techniques").and_then(|v| v.as_i64()).unwrap_or(0) + 1;
+        let tested = entry.get("tested").and_then(|v| v.as_i64()).unwrap_or(0) + 1;
+        let detected_count = entry.get("detected").and_then(|v| v.as_i64()).unwrap_or(0) + if detected { 1 } else { 0 };
+        let missed_count = entry.get("missed").and_then(|v| v.as_i64()).unwrap_or(0) + if detected { 0 } else { 1 };
+
+        entry["total_techniques"] = json!(total_techniques);
+        entry["tested"] = json!(tested);
+        entry["detected"] = json!(detected_count);
+        entry["missed"] = json!(missed_count);
+        entry["techniques"][technique_id] = json!({
+            "name": technique_name,
+            "status": if detected { "detected" } else { "missed" },
+            "subtechniques_count": 0
+        });
+    }
+
+    let blue_alerts = if safe_detected > 0 {
+        vec![json!({
+            "id": uuid::Uuid::new_v4().to_string(),
+            "timestamp": chrono::Utc::now().to_rfc3339(),
+            "playbook_name": "Purple Team Correlation Playbook",
+            "severity": "high",
+            "trigger_details": {
+                "tool_detected": "multi-source-correlation",
+                "confidence": 0.78
+            },
+            "response_actions_taken": [
+                {"action": "isolate_host", "description": "Isolated suspicious host segment", "status": "completed", "result": "Host quarantined"}
+            ],
+            "response_actions_pending": [
+                {"action": "credential_reset", "description": "Reset affected service credentials", "status": "pending"}
+            ]
+        })]
+    } else {
+        Vec::new()
+    };
+
+    let recommendations = if missed_techniques.is_empty() {
+        Vec::new()
+    } else {
+        vec![json!({
+            "priority": "high",
+            "area": "Detection Engineering",
+            "description": "Expand correlation rules for missed ATT&CK techniques in this exercise.",
+            "mitre_reference": "TA0006"
+        })]
+    };
+
+    (
+        red_results,
+        blue_alerts,
+        json!(coverage_map),
+        json!({
+            "missed_techniques": missed_techniques,
+            "recommendations": recommendations
+        })
+    )
+}
+
 fn purple_team_apply_completion(payload: &mut serde_json::Value, total_steps: i64) {
     let safe_total_steps = if total_steps < 0 { 0 } else { total_steps };
     let detected = (safe_total_steps * 7) / 10;
@@ -225,13 +375,31 @@ fn purple_team_apply_completion(payload: &mut serde_json::Value, total_steps: i6
     payload["detected_attacks"] = json!(detected);
     payload["missed_attacks"] = json!(missed);
     payload["completed_at"] = json!(chrono::Utc::now().to_rfc3339());
+    let chain_id = payload
+        .get("attack_chain_id")
+        .and_then(|value| value.as_str())
+        .unwrap_or("chain-initial-access-phishing");
+    let (red_results, blue_alerts, coverage_map, extra_gap_data) =
+        purple_team_build_simulation_data(chain_id, safe_total_steps, detected);
+    let missed_techniques = extra_gap_data
+        .get("missed_techniques")
+        .cloned()
+        .unwrap_or_else(|| json!([]));
+    let recommendations = extra_gap_data
+        .get("recommendations")
+        .cloned()
+        .unwrap_or_else(|| json!([]));
+
+    payload["red_team_results"] = json!(red_results);
+    payload["blue_team_alerts"] = json!(blue_alerts);
+    payload["coverage_map"] = coverage_map;
     payload["gap_analysis"] = json!({
         "total_attacks": safe_total_steps,
         "detected": detected,
         "missed": missed,
         "detection_rate": detection_rate,
-        "missed_techniques": [],
-        "recommendations": []
+        "missed_techniques": missed_techniques,
+        "recommendations": recommendations
     });
 }
 
