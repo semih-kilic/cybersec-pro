@@ -11,6 +11,16 @@ CyberSec Pro is a multi-service cybersecurity SaaS platform with Rust APIs, a Re
 - Purple Team backend flow implemented (DB-backed): create, list, detail, chains, playbooks, MITRE
 - Purple Team lifecycle progression enabled: pending -> running -> completed (time-based simulation)
 
+Purple Team simulation tuning (optional env vars):
+
+- `PURPLE_TEAM_DETECT_CHAIN_CREDENTIAL` (default `0.55`)
+- `PURPLE_TEAM_DETECT_CHAIN_LATERAL` (default `0.62`)
+- `PURPLE_TEAM_DETECT_CHAIN_DEFAULT` (default `0.72`)
+- `PURPLE_TEAM_DETECT_PROD_PENALTY` (default `0.10`)
+- `PURPLE_TEAM_DETECT_DEV_BONUS` (default `0.08`)
+- `PURPLE_TEAM_DETECT_MIN` (default `0.25`)
+- `PURPLE_TEAM_DETECT_MAX` (default `0.90`)
+
 ## Quick Start
 
 ```bash

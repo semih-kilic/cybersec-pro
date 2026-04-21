@@ -233,23 +233,38 @@ fn purple_team_step_catalog(chain_id: &str) -> Vec<(&'static str, &'static str, 
     }
 }
 
+fn purple_team_env_f64(key: &str, default: f64) -> f64 {
+    std::env::var(key)
+        .ok()
+        .and_then(|value| value.parse::<f64>().ok())
+        .unwrap_or(default)
+}
+
 fn purple_team_detection_ratio(chain_id: &str, target: &str) -> f64 {
     let base = match chain_id {
-        "chain-credential-access" => 0.55_f64,
-        "chain-lateral-movement" => 0.62_f64,
-        _ => 0.72_f64,
+        "chain-credential-access" => purple_team_env_f64("PURPLE_TEAM_DETECT_CHAIN_CREDENTIAL", 0.55_f64),
+        "chain-lateral-movement" => purple_team_env_f64("PURPLE_TEAM_DETECT_CHAIN_LATERAL", 0.62_f64),
+        _ => purple_team_env_f64("PURPLE_TEAM_DETECT_CHAIN_DEFAULT", 0.72_f64),
     };
 
     let target_lc = target.to_lowercase();
     let target_adjustment = if target_lc.contains("prod") || target_lc.contains("critical") {
-        -0.10_f64
+        -purple_team_env_f64("PURPLE_TEAM_DETECT_PROD_PENALTY", 0.10_f64).abs()
     } else if target_lc.contains("dev") || target_lc.contains("staging") {
-        0.08_f64
+        purple_team_env_f64("PURPLE_TEAM_DETECT_DEV_BONUS", 0.08_f64).abs()
     } else {
         0.0_f64
     };
 
-    (base + target_adjustment).clamp(0.25_f64, 0.90_f64)
+    let min_ratio = purple_team_env_f64("PURPLE_TEAM_DETECT_MIN", 0.25_f64);
+    let max_ratio = purple_team_env_f64("PURPLE_TEAM_DETECT_MAX", 0.90_f64);
+    let (lower, upper) = if min_ratio <= max_ratio {
+        (min_ratio, max_ratio)
+    } else {
+        (max_ratio, min_ratio)
+    };
+
+    (base + target_adjustment).clamp(lower, upper)
 }
 
 fn purple_team_tactic_name(tactic_id: &str) -> &'static str {
