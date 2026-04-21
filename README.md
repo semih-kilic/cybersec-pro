@@ -21,6 +21,30 @@ Purple Team simulation tuning (optional env vars):
 - `PURPLE_TEAM_DETECT_MIN` (default `0.25`)
 - `PURPLE_TEAM_DETECT_MAX` (default `0.90`)
 
+Optional single-blob override (takes precedence over the env vars above):
+
+- `PURPLE_TEAM_PROFILE_JSON`
+
+Example:
+
+```json
+{
+  "chains": {
+    "credential": 0.45,
+    "lateral": 0.58,
+    "default": 0.74
+  },
+  "target": {
+    "prod_penalty": 0.12,
+    "dev_bonus": 0.06
+  },
+  "bounds": {
+    "min": 0.20,
+    "max": 0.92
+  }
+}
+```
+
 ## Quick Start
 
 ```bash

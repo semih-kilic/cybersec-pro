@@ -240,24 +240,103 @@ fn purple_team_env_f64(key: &str, default: f64) -> f64 {
         .unwrap_or(default)
 }
 
-fn purple_team_detection_ratio(chain_id: &str, target: &str) -> f64 {
+fn purple_team_profile_from_env() -> Option<serde_json::Value> {
+    std::env::var("PURPLE_TEAM_PROFILE_JSON")
+        .ok()
+        .and_then(|raw| serde_json::from_str::<serde_json::Value>(&raw).ok())
+}
+
+fn purple_team_profile_get_f64(profile: &serde_json::Value, path: &[&str]) -> Option<f64> {
+    let mut cursor = profile;
+    for segment in path {
+        cursor = cursor.get(*segment)?;
+    }
+    cursor
+        .as_f64()
+        .or_else(|| cursor.as_str().and_then(|value| value.parse::<f64>().ok()))
+}
+
+fn purple_team_profile_or_env(
+    profile: Option<&serde_json::Value>,
+    nested_path: &[&str],
+    flat_key: &str,
+    env_key: &str,
+    default: f64,
+) -> f64 {
+    profile
+        .and_then(|p| {
+            purple_team_profile_get_f64(p, nested_path)
+                .or_else(|| purple_team_profile_get_f64(p, &[flat_key]))
+        })
+        .unwrap_or_else(|| purple_team_env_f64(env_key, default))
+}
+
+fn purple_team_detection_ratio_with_profile(
+    chain_id: &str,
+    target: &str,
+    profile: Option<&serde_json::Value>,
+) -> f64 {
     let base = match chain_id {
-        "chain-credential-access" => purple_team_env_f64("PURPLE_TEAM_DETECT_CHAIN_CREDENTIAL", 0.55_f64),
-        "chain-lateral-movement" => purple_team_env_f64("PURPLE_TEAM_DETECT_CHAIN_LATERAL", 0.62_f64),
-        _ => purple_team_env_f64("PURPLE_TEAM_DETECT_CHAIN_DEFAULT", 0.72_f64),
+        "chain-credential-access" => purple_team_profile_or_env(
+            profile,
+            &["chains", "credential"],
+            "chain_credential",
+            "PURPLE_TEAM_DETECT_CHAIN_CREDENTIAL",
+            0.55_f64,
+        ),
+        "chain-lateral-movement" => purple_team_profile_or_env(
+            profile,
+            &["chains", "lateral"],
+            "chain_lateral",
+            "PURPLE_TEAM_DETECT_CHAIN_LATERAL",
+            0.62_f64,
+        ),
+        _ => purple_team_profile_or_env(
+            profile,
+            &["chains", "default"],
+            "chain_default",
+            "PURPLE_TEAM_DETECT_CHAIN_DEFAULT",
+            0.72_f64,
+        ),
     };
 
     let target_lc = target.to_lowercase();
     let target_adjustment = if target_lc.contains("prod") || target_lc.contains("critical") {
-        -purple_team_env_f64("PURPLE_TEAM_DETECT_PROD_PENALTY", 0.10_f64).abs()
+        -purple_team_profile_or_env(
+            profile,
+            &["target", "prod_penalty"],
+            "prod_penalty",
+            "PURPLE_TEAM_DETECT_PROD_PENALTY",
+            0.10_f64,
+        )
+        .abs()
     } else if target_lc.contains("dev") || target_lc.contains("staging") {
-        purple_team_env_f64("PURPLE_TEAM_DETECT_DEV_BONUS", 0.08_f64).abs()
+        purple_team_profile_or_env(
+            profile,
+            &["target", "dev_bonus"],
+            "dev_bonus",
+            "PURPLE_TEAM_DETECT_DEV_BONUS",
+            0.08_f64,
+        )
+        .abs()
     } else {
         0.0_f64
     };
 
-    let min_ratio = purple_team_env_f64("PURPLE_TEAM_DETECT_MIN", 0.25_f64);
-    let max_ratio = purple_team_env_f64("PURPLE_TEAM_DETECT_MAX", 0.90_f64);
+    let min_ratio = purple_team_profile_or_env(
+        profile,
+        &["bounds", "min"],
+        "min",
+        "PURPLE_TEAM_DETECT_MIN",
+        0.25_f64,
+    );
+    let max_ratio = purple_team_profile_or_env(
+        profile,
+        &["bounds", "max"],
+        "max",
+        "PURPLE_TEAM_DETECT_MAX",
+        0.90_f64,
+    );
     let (lower, upper) = if min_ratio <= max_ratio {
         (min_ratio, max_ratio)
     } else {
@@ -265,6 +344,11 @@ fn purple_team_detection_ratio(chain_id: &str, target: &str) -> f64 {
     };
 
     (base + target_adjustment).clamp(lower, upper)
+}
+
+fn purple_team_detection_ratio(chain_id: &str, target: &str) -> f64 {
+    let profile = purple_team_profile_from_env();
+    purple_team_detection_ratio_with_profile(chain_id, target, profile.as_ref())
 }
 
 fn purple_team_tactic_name(tactic_id: &str) -> &'static str {
@@ -3636,5 +3720,55 @@ mod tests {
         assert!(prod_penalty < phishing_default);
         assert!(dev_bonus > phishing_default);
         assert!((0.25..=0.90).contains(&dev_bonus));
+    }
+
+    #[test]
+    fn purple_team_detection_ratio_supports_profile_json_overrides() {
+        let profile = json!({
+            "chains": {
+                "credential": 0.30,
+                "lateral": 0.44,
+                "default": 0.80
+            },
+            "target": {
+                "prod_penalty": 0.20,
+                "dev_bonus": 0.10
+            },
+            "bounds": {
+                "min": 0.40,
+                "max": 0.85
+            }
+        });
+
+        let credential_prod = purple_team_detection_ratio_with_profile(
+            "chain-credential-access",
+            "prod-critical-node",
+            Some(&profile),
+        );
+        let default_dev = purple_team_detection_ratio_with_profile(
+            "chain-initial-access-phishing",
+            "dev-staging-node",
+            Some(&profile),
+        );
+
+        assert_eq!(credential_prod, 0.40);
+        assert_eq!(default_dev, 0.85);
+    }
+
+    #[test]
+    fn purple_team_detection_ratio_normalizes_profile_bounds() {
+        let profile = json!({
+            "chain_default": 0.95,
+            "min": 0.90,
+            "max": 0.50
+        });
+
+        let ratio = purple_team_detection_ratio_with_profile(
+            "chain-initial-access-phishing",
+            "corp.local",
+            Some(&profile),
+        );
+
+        assert_eq!(ratio, 0.90);
     }
 }
