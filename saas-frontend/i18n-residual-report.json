@@ -1,0 +1,12 @@
+{
+  "baseLocale": "en",
+  "targetLocales": [
+    "de",
+    "es",
+    "fr",
+    "it"
+  ],
+  "scopesScanned": 49,
+  "sameAsEnglishResidualKeys": 0,
+  "topResidualScopes": []
+}

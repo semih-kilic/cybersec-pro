@@ -53,6 +53,7 @@ function run() {
   }
 
   const sortedScopes = Array.from(byScope.entries()).sort((a, b) => b[1] - a[1]);
+  const reportPath = path.join(root, 'i18n-residual-report.json');
 
   console.log('=== i18n Residual Check ===');
   console.log(`Base locale: ${baseLocale}`);
@@ -66,6 +67,22 @@ function run() {
       console.log(`- ${scope}: ${count}`);
     }
   }
+
+  fs.writeFileSync(
+    reportPath,
+    JSON.stringify(
+      {
+        baseLocale,
+        targetLocales,
+        scopesScanned: Object.keys(base).length,
+        sameAsEnglishResidualKeys: remainingTotal,
+        topResidualScopes: sortedScopes.slice(0, 10).map(([scope, count]) => ({ scope, count })),
+      },
+      null,
+      2
+    )
+  );
+  console.log(`\nDetailed JSON report: ${path.relative(root, reportPath)}`);
 
   if (remainingTotal > 0) {
     process.exitCode = 1;
