@@ -126,7 +126,7 @@ export default function AIAssistantPage() {
           🤖
         </div>
         <div>
-          <h1 className="text-xl font-bold text-white">CyberBot</h1>
+          <h1 className="text-xl font-bold text-white">{t('aiAssistant.botName', 'CyberBot')}</h1>
           <p className="text-xs text-gray-400">{t('aiAssistant.subtitle', 'AI Security Assistant — Always here to help')}</p>
         </div>
         <div className="ml-auto flex items-center gap-2">
@@ -154,7 +154,7 @@ export default function AIAssistantPage() {
               {msg.role === 'bot' && (
                 <div className="flex items-center gap-2 mb-2 pb-1 border-b border-gray-700/30">
                   <span className="text-sm">🤖</span>
-                  <span className="text-xs font-medium text-cyan-400">CyberBot</span>
+                  <span className="text-xs font-medium text-cyan-400">{t('aiAssistant.botName', 'CyberBot')}</span>
                   <span className="text-xs text-gray-500">
                     {msg.timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                   </span>
@@ -180,7 +180,7 @@ export default function AIAssistantPage() {
             <div className="bg-gray-800/60 border border-gray-700/50 rounded-2xl px-4 py-3">
               <div className="flex items-center gap-2 mb-2 pb-1 border-b border-gray-700/30">
                 <span className="text-sm">🤖</span>
-                <span className="text-xs font-medium text-cyan-400">CyberBot</span>
+                <span className="text-xs font-medium text-cyan-400">{t('aiAssistant.botName', 'CyberBot')}</span>
               </div>
               <div className="flex items-center gap-2">
                 <div className="flex gap-1">
@@ -188,7 +188,7 @@ export default function AIAssistantPage() {
                   <span className="w-2 h-2 bg-cyan-400 rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
                   <span className="w-2 h-2 bg-cyan-400 rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
                 </div>
-                <span className="text-xs text-gray-400">Thinking...</span>
+                <span className="text-xs text-gray-400">{t('common.thinking', 'Thinking...')}</span>
               </div>
             </div>
           </div>
@@ -220,7 +220,7 @@ export default function AIAssistantPage() {
             value={input}
             onChange={(e) => setInput(e.target.value)}
             onKeyDown={(e) => e.key === 'Enter' && !e.shiftKey && sendMessage(input)}
-            placeholder="Ask CyberBot anything about security, scans, pricing..."
+            placeholder={t('aiAssistant.inputPlaceholder', 'Ask CyberBot anything about security, scans, pricing...')}
             className="flex-1 bg-gray-800/80 border border-gray-600 rounded-xl px-4 py-3 text-white placeholder-gray-500 focus:border-cyan-500 focus:outline-none focus:ring-1 focus:ring-cyan-500/30 text-sm"
             disabled={loading}
           />
@@ -229,7 +229,7 @@ export default function AIAssistantPage() {
             disabled={loading || !input.trim()}
             className="px-5 py-3 bg-gradient-to-r from-cyan-500 to-emerald-500 text-white rounded-xl hover:from-cyan-600 hover:to-emerald-600 disabled:opacity-50 disabled:cursor-not-allowed transition font-medium text-sm"
           >
-            Send
+            {t('common.send', 'Send')}
           </button>
         </div>
         <p className="text-center text-xs text-gray-600 mt-2">

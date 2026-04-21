@@ -174,15 +174,15 @@ export function RegisterPage() {
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
               </svg>
             </div>
-            <span className="text-white font-bold text-xl">CyberSec Pro</span>
+            <span className="text-white font-bold text-xl">{t('common.appName', 'CyberSec Pro')}</span>
           </Link>
 
           {/* Main Headline */}
           <h2 className="text-3xl font-bold text-white leading-tight mb-4">
-            Your Digital Assets<br />Are Under Threat
+            {t('register.heroLine1', 'Your Digital Assets')}<br />{t('register.heroLine2', 'Are Under Threat')}
           </h2>
           <p className="text-gray-400 text-lg mb-10">
-            Cybersecurity isn't just an IT concern — it's a business survival issue.
+            {t('register.heroSubtitle', "Cybersecurity isn't just an IT concern — it's a business survival issue.")}
           </p>
 
           {/* Threat Awareness Cards */}
@@ -193,8 +193,8 @@ export function RegisterPage() {
                   <svg className="w-5 h-5 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z" /></svg>
                 </div>
                 <div>
-                  <p className="text-white font-semibold text-sm mb-1">Ransomware Surge</p>
-                  <p className="text-gray-400 text-xs leading-relaxed">A ransomware attack hits a business every 11 seconds. Average ransom payments have exceeded $1.5 million.</p>
+                  <p className="text-white font-semibold text-sm mb-1">{t('register.ransomwareTitle', 'Ransomware Surge')}</p>
+                  <p className="text-gray-400 text-xs leading-relaxed">{t('register.ransomwareBody', 'A ransomware attack hits a business every 11 seconds. Average ransom payments have exceeded $1.5 million.')}</p>
                 </div>
               </div>
             </div>
@@ -205,8 +205,8 @@ export function RegisterPage() {
                   <svg className="w-5 h-5 text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
                 </div>
                 <div>
-                  <p className="text-white font-semibold text-sm mb-1">The Human Factor</p>
-                  <p className="text-gray-400 text-xs leading-relaxed">68% of breaches involve a non-malicious human element — phishing, misconfigurations, and weak credentials.</p>
+                  <p className="text-white font-semibold text-sm mb-1">{t('register.humanFactorTitle', 'The Human Factor')}</p>
+                  <p className="text-gray-400 text-xs leading-relaxed">{t('register.humanFactorBody', '68% of breaches involve a non-malicious human element — phishing, misconfigurations, and weak credentials.')}</p>
                 </div>
               </div>
             </div>
@@ -217,8 +217,8 @@ export function RegisterPage() {
                   <svg className="w-5 h-5 text-cyan-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" /></svg>
                 </div>
                 <div>
-                  <p className="text-white font-semibold text-sm mb-1">Prevention Works</p>
-                  <p className="text-gray-400 text-xs leading-relaxed">Organizations with proactive security testing reduce breach costs by an average of $1.76 million.</p>
+                  <p className="text-white font-semibold text-sm mb-1">{t('register.preventionTitle', 'Prevention Works')}</p>
+                  <p className="text-gray-400 text-xs leading-relaxed">{t('register.preventionBody', 'Organizations with proactive security testing reduce breach costs by an average of $1.76 million.')}</p>
                 </div>
               </div>
             </div>
@@ -235,10 +235,10 @@ export function RegisterPage() {
           <div className="bg-white/5 rounded-xl p-5 border border-white/10 backdrop-blur">
             <p className="text-gray-300 text-sm leading-relaxed">
               <span className="text-cyan-400 font-semibold">"</span>
-              The question is not whether you will be breached, but when. The only defense is preparation.
+              {t('register.quote', 'The question is not whether you will be breached, but when. The only defense is preparation.')}
               <span className="text-cyan-400 font-semibold">"</span>
             </p>
-            <p className="text-gray-500 text-xs mt-3">— Cybersecurity Awareness Principle</p>
+            <p className="text-gray-500 text-xs mt-3">— {t('register.quoteAuthor', 'Cybersecurity Awareness Principle')}</p>
           </div>
         </div>
       </div>
@@ -256,7 +256,7 @@ export function RegisterPage() {
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
                 </svg>
               </div>
-              <span className="text-white font-bold text-xl">CyberSec Pro</span>
+              <span className="text-white font-bold text-xl">{t('common.appName', 'CyberSec Pro')}</span>
             </Link>
           </div>
 
@@ -315,7 +315,7 @@ export function RegisterPage() {
                   value={formData.first_name}
                   onChange={handleChange}
                   className="w-full px-4 py-2.5 bg-gray-900/80 border border-gray-700 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500/30 transition text-sm"
-                  placeholder="John"
+                  placeholder={t('auth.firstNamePlaceholder', 'John')}
                 />
               </div>
               <div>
@@ -326,7 +326,7 @@ export function RegisterPage() {
                   value={formData.last_name}
                   onChange={handleChange}
                   className="w-full px-4 py-2.5 bg-gray-900/80 border border-gray-700 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500/30 transition text-sm"
-                  placeholder="Doe"
+                  placeholder={t('auth.lastNamePlaceholder', 'Doe')}
                 />
               </div>
             </div>
@@ -340,7 +340,7 @@ export function RegisterPage() {
                 value={formData.email}
                 onChange={handleChange}
                 className="w-full px-4 py-2.5 bg-gray-900/80 border border-gray-700 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500/30 transition text-sm"
-                placeholder="you@company.com"
+                placeholder={t('auth.emailPlaceholder', 'you@company.com')}
               />
             </div>
 
@@ -353,7 +353,7 @@ export function RegisterPage() {
                 value={formData.organization_name}
                 onChange={handleChange}
                 className="w-full px-4 py-2.5 bg-gray-900/80 border border-gray-700 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500/30 transition text-sm"
-                placeholder="Acme Security Oy"
+                placeholder={t('auth.organizationPlaceholder', 'Acme Security Oy')}
               />
             </div>
 
@@ -366,7 +366,7 @@ export function RegisterPage() {
                 value={formData.password}
                 onChange={handleChange}
                 className="w-full px-4 py-2.5 bg-gray-900/80 border border-gray-700 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500/30 transition text-sm"
-                placeholder="Min. 8 characters"
+                placeholder={t('auth.passwordMinLength', 'Min. 8 characters')}
               />
             </div>
 
@@ -393,9 +393,9 @@ export function RegisterPage() {
               />
               <span className="text-gray-400 text-xs leading-relaxed">
                 {t('auth.agreeTermsPrefix', 'I agree to the')} {' '}
-                <a href="/terms" className="text-cyan-400 hover:underline">Terms of Service</a>
+                <a href="/terms" className="text-cyan-400 hover:underline">{t('terms.title', 'Terms of Service')}</a>
                 {' '}{t('auth.and', 'and')}{' '}
-                <a href="/privacy" className="text-cyan-400 hover:underline">Privacy Policy</a>.
+                <a href="/privacy" className="text-cyan-400 hover:underline">{t('privacy.title', 'Privacy Policy')}</a>.
                 {' '}{t('auth.gdprStorageNote', 'Your data is stored in EU (Finland) and processed per GDPR.')}
               </span>
             </label>

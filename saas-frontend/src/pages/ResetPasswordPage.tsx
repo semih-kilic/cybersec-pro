@@ -139,7 +139,7 @@ export function ResetPasswordPage() {
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
                       className="rp-input"
-                      placeholder="Min. 8 characters"
+                      placeholder={t('auth.passwordMinLength', 'Min. 8 characters')}
                       autoFocus
                       style={{ paddingRight: '40px' }}
                     />
@@ -168,7 +168,7 @@ export function ResetPasswordPage() {
                     value={confirmPassword}
                     onChange={(e) => setConfirmPassword(e.target.value)}
                     className="rp-input"
-                    placeholder="Re-enter your password"
+                    placeholder={t('auth.reenterPassword', 'Re-enter your password')}
                   />
                 </div>
 

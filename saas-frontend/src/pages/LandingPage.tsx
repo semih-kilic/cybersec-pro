@@ -30,7 +30,7 @@ export function LandingPage() {
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
                 </svg>
               </div>
-              <span className="text-xl font-bold text-white">CyberSec Pro</span>
+              <span className="text-xl font-bold text-white">{t('common.appName', 'CyberSec Pro')}</span>
             </div>
             <div className="flex items-center space-x-4">
               {isAuthenticated ? (
@@ -93,10 +93,10 @@ export function LandingPage() {
         <div className="max-w-5xl mx-auto">
           <div className="text-center mb-10">
             <div className="inline-block px-3 py-1 bg-red-500/10 border border-red-500/30 rounded-full text-red-400 text-xs font-medium mb-4">
-              🔴 LIVE DEMO
+              {t('landing.demoTitle', 'See CyberSec Pro in Action')}
             </div>
             <h2 className="text-3xl md:text-4xl font-bold text-white mb-3">
-              See It In Action
+              {t('landing.demoSubtitle', 'Watch a real security scan from login to report — updated weekly with latest features.')}
             </h2>
             <p className="text-gray-400 text-lg max-w-2xl mx-auto">
               Watch a real security scan from login to report — updated weekly with latest features.
@@ -120,11 +120,11 @@ export function LandingPage() {
                       </div>
                       <div className="p-4 font-mono text-xs text-left space-y-1">
                         <p className="text-green-400">$ nmap -sV -sC scanme.nmap.org</p>
-                        <p className="text-gray-500">Starting Nmap 7.94 ( https://nmap.org )</p>
+                        <p className="text-gray-500">{t('landing.terminalStarting', 'Starting Nmap 7.94 ( https://nmap.org )')}</p>
                         <p className="text-cyan-400">PORT   STATE SERVICE VERSION</p>
                         <p className="text-white">22/tcp open  ssh     OpenSSH 6.6p1</p>
                         <p className="text-white">80/tcp open  http    Apache httpd 2.4.7</p>
-                        <p className="text-green-400">Nmap done: 1 IP address (1 host up)</p>
+                        <p className="text-green-400">{t('landing.terminalDone', 'Nmap done: 1 IP address (1 host up)')}</p>
                       </div>
                     </div>
 
@@ -136,9 +136,9 @@ export function LandingPage() {
                       <svg className="w-6 h-6 group-hover:scale-110 transition-transform" fill="currentColor" viewBox="0 0 24 24">
                         <path d="M8 5v14l11-7z" />
                       </svg>
-                      Watch 2-Min Demo
+                      {t('landing.watchDemo', 'Watch 2-Min Demo')}
                     </button>
-                    <p className="text-gray-500 text-sm mt-3">No signup required</p>
+                    <p className="text-gray-500 text-sm mt-3">{t('landing.noSignup', 'No signup required')}</p>
                   </div>
                 </div>
               </>
@@ -173,7 +173,13 @@ export function LandingPage() {
 
           {/* Feature pills under video */}
           <div className="flex flex-wrap justify-center gap-3 mt-6">
-            {['Login & Dashboard', 'Live Nmap Scan', 'Real-time Output', 'PDF Reports', 'Remote Agents'].map((feat, i) => (
+            {[
+              t('landing.pill.loginDashboard', 'Login & Dashboard'),
+              t('landing.pill.liveNmap', 'Live Nmap Scan'),
+              t('landing.pill.realtimeOutput', 'Real-time Output'),
+              t('landing.pill.pdfReports', 'PDF Reports'),
+              t('landing.pill.remoteAgents', 'Remote Agents'),
+            ].map((feat, i) => (
               <span key={i} className="px-3 py-1.5 bg-gray-800/50 border border-gray-700 rounded-full text-gray-400 text-xs">
                 {['🔐', '🔍', '📡', '📊', '🖥️'][i]} {feat}
               </span>
@@ -220,59 +226,59 @@ export function LandingPage() {
           <div className="grid md:grid-cols-4 gap-6 max-w-6xl mx-auto">
             {/* Free Trial */}
             <div className="bg-gray-800/50 rounded-2xl p-6 border border-gray-700 flex flex-col">
-              <div className="text-lg font-medium text-green-400 mb-2">Free Trial</div>
+              <div className="text-lg font-medium text-green-400 mb-2">{t('landing.plan.freeTrial', 'Free Trial')}</div>
               <div className="flex items-baseline gap-1 mb-4">
                 <span className="text-4xl font-bold text-white">€0</span>
-                <span className="text-gray-400">/14 days</span>
+                <span className="text-gray-400">{t('landing.plan.freeCycle', '/14 days')}</span>
               </div>
               <ul className="space-y-2 mb-6 text-gray-300 text-sm">
                 <li className="flex items-center gap-2">
-                  <span className="text-green-400">✓</span> 1 free security scan
+                  <span className="text-green-400">✓</span> {t('landing.plan.freeItem1', '1 free security scan')}
                 </li>
                 <li className="flex items-center gap-2">
-                  <span className="text-green-400">✓</span> Full {totalTools}-tool coverage
+                  <span className="text-green-400">✓</span> {t('landing.plan.freeItem2', `Full ${totalTools}-tool coverage`, { count: totalTools })}
                 </li>
                 <li className="flex items-center gap-2">
-                  <span className="text-green-400">✓</span> PDF report with findings
+                  <span className="text-green-400">✓</span> {t('landing.plan.freeItem3', 'PDF report with findings')}
                 </li>
                 <li className="flex items-center gap-2">
-                  <span className="text-green-400">✓</span> No credit card required
+                  <span className="text-green-400">✓</span> {t('landing.plan.freeItem4', 'No credit card required')}
                 </li>
               </ul>
               <div className="mt-auto">
                 <Link to="/register" className="block w-full py-2 bg-gray-700 text-white text-center rounded-xl hover:bg-gray-600 transition text-sm">
-                  Start Free Scan
+                  {t('landing.plan.startFreeScan', 'Start Free Scan')}
                 </Link>
               </div>
             </div>
 
             {/* Starter */}
             <div className="bg-gray-800/50 rounded-2xl p-6 border border-blue-500/50 flex flex-col">
-              <div className="text-lg font-medium text-blue-400 mb-2">Starter</div>
+              <div className="text-lg font-medium text-blue-400 mb-2">{t('landing.plan.starter', 'Starter')}</div>
               <div className="flex items-baseline gap-1 mb-4">
                 <span className="text-4xl font-bold text-white">€99</span>
-                <span className="text-gray-400">/month</span>
+                <span className="text-gray-400">{t('landing.plan.monthly', '/month')}</span>
               </div>
               <ul className="space-y-2 mb-6 text-gray-300 text-sm">
                 <li className="flex items-center gap-2">
-                  <span className="text-blue-400">✓</span> 1 domain/application
+                  <span className="text-blue-400">✓</span> {t('landing.plan.starterItem1', '1 domain/application')}
                 </li>
                 <li className="flex items-center gap-2">
-                  <span className="text-blue-400">✓</span> Weekly automated scans
+                  <span className="text-blue-400">✓</span> {t('landing.plan.starterItem2', 'Weekly automated scans')}
                 </li>
                 <li className="flex items-center gap-2">
-                  <span className="text-blue-400">✓</span> Email vulnerability alerts
+                  <span className="text-blue-400">✓</span> {t('landing.plan.starterItem3', 'Email vulnerability alerts')}
                 </li>
                 <li className="flex items-center gap-2">
-                  <span className="text-blue-400">✓</span> PDF & HTML reports
+                  <span className="text-blue-400">✓</span> {t('landing.plan.starterItem4', 'PDF & HTML reports')}
                 </li>
                 <li className="flex items-center gap-2">
-                  <span className="text-blue-400">✓</span> Email support (48h)
+                  <span className="text-blue-400">✓</span> {t('landing.plan.starterItem5', 'Email support (48h)')}
                 </li>
               </ul>
               <div className="mt-auto">
                 <Link to="/register" className="block w-full py-2 bg-blue-500/20 text-blue-400 border border-blue-500/50 text-center rounded-xl hover:bg-blue-500/30 transition text-sm">
-                  Get Started
+                  {t('common.getStarted', 'Get Started')}
                 </Link>
               </div>
             </div>
@@ -283,54 +289,54 @@ export function LandingPage() {
                 <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" /></svg>
                 {t('upgrade.popular')}
               </div>
-              <div className="text-lg font-medium text-emerald-400 mb-2">Professional</div>
+              <div className="text-lg font-medium text-emerald-400 mb-2">{t('landing.plan.professional', 'Professional')}</div>
               <div className="flex items-baseline gap-1 mb-4">
                 <span className="text-4xl font-bold text-white">€299</span>
-                <span className="text-gray-400">/month</span>
+                <span className="text-gray-400">{t('landing.plan.monthly', '/month')}</span>
               </div>
               <ul className="space-y-2 mb-6 text-gray-300 text-sm">
                 <li className="flex items-center gap-2">
-                  <span className="text-emerald-400">✓</span> Up to 5 domains
+                  <span className="text-emerald-400">✓</span> {t('landing.plan.proItem1', 'Up to 5 domains')}
                 </li>
                 <li className="flex items-center gap-2">
-                  <span className="text-emerald-400">✓</span> Daily automated scans
+                  <span className="text-emerald-400">✓</span> {t('landing.plan.proItem2', 'Daily automated scans')}
                 </li>
                 <li className="flex items-center gap-2">
-                  <span className="text-emerald-400">✓</span> API + CI/CD integration
+                  <span className="text-emerald-400">✓</span> {t('landing.plan.proItem3', 'API + CI/CD integration')}
                 </li>
                 <li className="flex items-center gap-2">
-                  <span className="text-emerald-400">✓</span> Compliance reports
+                  <span className="text-emerald-400">✓</span> {t('landing.plan.proItem4', 'Compliance reports')}
                 </li>
                 <li className="flex items-center gap-2">
-                  <span className="text-emerald-400">✓</span> Priority support (24h)
+                  <span className="text-emerald-400">✓</span> {t('landing.plan.proItem5', 'Priority support (24h)')}
                 </li>
               </ul>
               <div className="mt-auto">
                 <Link to="/register" className="block w-full py-2 bg-gradient-to-r from-emerald-500 to-cyan-500 text-white text-center rounded-xl hover:from-emerald-600 hover:to-cyan-600 transition text-sm">
-                  Get Started
+                  {t('common.getStarted', 'Get Started')}
                 </Link>
               </div>
             </div>
 
             {/* Enterprise */}
             <div className="bg-gray-800/50 rounded-2xl p-6 border border-purple-500/50 flex flex-col">
-              <div className="text-lg font-medium text-purple-400 mb-2">Enterprise</div>
+              <div className="text-lg font-medium text-purple-400 mb-2">{t('landing.plan.enterprise', 'Enterprise')}</div>
               <div className="flex items-baseline gap-1 mb-4">
                 <span className="text-4xl font-bold text-white">€799</span>
-                <span className="text-gray-400">/month</span>
+                <span className="text-gray-400">{t('landing.plan.monthly', '/month')}</span>
               </div>
               <ul className="space-y-2 mb-6 text-gray-300 text-sm">
                 <li className="flex items-center gap-2">
-                  <span className="text-purple-400">✓</span> <strong>{totalTools}</strong> All Tools
+                  <span className="text-purple-400">✓</span> <strong>{totalTools}</strong> {t('landing.plan.enterpriseItem1', 'All Tools')}
                 </li>
                 <li className="flex items-center gap-2">
-                  <span className="text-purple-400">✓</span> Unlimited everything
+                  <span className="text-purple-400">✓</span> {t('landing.plan.enterpriseItem2', 'Unlimited everything')}
                 </li>
                 <li className="flex items-center gap-2">
-                  <span className="text-purple-400">✓</span> SSO / SAML / LDAP
+                  <span className="text-purple-400">✓</span> {t('landing.plan.enterpriseItem3', 'SSO / SAML / LDAP')}
                 </li>
                 <li className="flex items-center gap-2">
-                  <span className="text-purple-400">✓</span> Dedicated account manager
+                  <span className="text-purple-400">✓</span> {t('landing.plan.enterpriseItem4', 'Dedicated account manager')}
                 </li>
                 <li className="flex items-center gap-2">
                   <span className="text-purple-400">✓</span> 24/7 priority support

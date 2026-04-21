@@ -1,13 +1,11 @@
 {
-  "generatedAt": "2026-04-21T04:57:47.998Z",
+  "generatedAt": "2026-04-21T05:48:34.992Z",
   "report": [
     {
       "filePath": "src/pages/DashboardPage.tsx",
       "hasUseTranslation": true,
       "hasTCalls": true,
-      "probableHardcodedLines": [
-        83
-      ]
+      "probableHardcodedLines": []
     },
     {
       "filePath": "src/pages/ForgotPasswordPage.tsx",
@@ -49,18 +47,12 @@
       "probableHardcodedLines": [
         33,
         119,
-        123,
         124,
-        127,
-        141,
-        223,
-        251,
-        254,
-        286,
-        289,
-        317,
-        320,
-        377
+        260,
+        292,
+        295,
+        326,
+        383
       ]
     },
     {
@@ -108,28 +100,14 @@
       "hasTCalls": true,
       "probableHardcodedLines": [
         177,
-        196,
-        208,
-        220,
-        221,
-        259,
-        318,
-        329,
-        343,
-        356,
-        369,
-        396,
-        398
+        259
       ]
     },
     {
       "filePath": "src/pages/ResetPasswordPage.tsx",
       "hasUseTranslation": true,
       "hasTCalls": true,
-      "probableHardcodedLines": [
-        142,
-        171
-      ]
+      "probableHardcodedLines": []
     },
     {
       "filePath": "src/pages/TermsPage.tsx",
@@ -188,32 +166,19 @@
       "filePath": "src/pages/ToolsCatalogPage.tsx",
       "hasUseTranslation": true,
       "hasTCalls": true,
-      "probableHardcodedLines": [
-        328
-      ]
+      "probableHardcodedLines": []
     },
     {
       "filePath": "src/pages/VerifyEmailPage.tsx",
       "hasUseTranslation": true,
       "hasTCalls": true,
-      "probableHardcodedLines": [
-        91,
-        175,
-        187,
-        195
-      ]
+      "probableHardcodedLines": []
     },
     {
       "filePath": "src/pages/dashboard/AIAssistantPage.tsx",
       "hasUseTranslation": true,
       "hasTCalls": true,
-      "probableHardcodedLines": [
-        129,
-        157,
-        183,
-        191,
-        223
-      ]
+      "probableHardcodedLines": []
     },
     {
       "filePath": "src/pages/dashboard/AdminPage.tsx",

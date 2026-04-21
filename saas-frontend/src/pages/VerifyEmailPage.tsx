@@ -88,7 +88,7 @@ export function VerifyEmailPage() {
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
               </svg>
             </div>
-            <span className="text-white font-bold text-xl">CyberSec Pro</span>
+            <span className="text-white font-bold text-xl">{t('common.appName', 'CyberSec Pro')}</span>
           </Link>
         </div>
 
@@ -172,7 +172,7 @@ export function VerifyEmailPage() {
                     type="email"
                     value={resendEmail}
                     onChange={(e) => setResendEmail(e.target.value)}
-                    placeholder="your@email.com"
+                    placeholder={t('verifyEmail.emailPlaceholder', 'your@email.com')}
                     className="flex-1 px-4 py-2.5 bg-gray-800 border border-gray-700 rounded-lg text-white placeholder-gray-600 focus:outline-none focus:border-blue-500 text-sm"
                   />
                   <button
@@ -180,11 +180,11 @@ export function VerifyEmailPage() {
                     disabled={!resendEmail || resendStatus === 'sending'}
                     className="px-4 py-2.5 bg-blue-600 hover:bg-blue-500 disabled:opacity-50 text-white rounded-lg text-sm font-medium transition"
                   >
-                    {resendStatus === 'sending' ? '...' : 'Send'}
+                    {resendStatus === 'sending' ? '...' : t('verifyEmail.send', 'Send')}
                   </button>
                 </div>
                 {resendStatus === 'sent' && (
-                  <p className="text-green-400 text-xs mt-2">Verification link sent! Check your inbox.</p>
+                  <p className="text-green-400 text-xs mt-2">{t('verifyEmail.sent', 'Verification link sent! Check your inbox.')}</p>
                 )}
               </div>
             </>
@@ -192,7 +192,7 @@ export function VerifyEmailPage() {
         </div>
 
         <p className="mt-6 text-center text-gray-600 text-sm">
-          <Link to="/login" className="text-blue-400 hover:text-blue-300">Back to Login</Link>
+          <Link to="/login" className="text-blue-400 hover:text-blue-300">{t('auth.backToLogin', 'Back to Login')}</Link>
         </p>
       </div>
     </div>

@@ -80,14 +80,14 @@ export function DashboardPage() {
                 </svg>
               </div>
               <div>
-                <h1 className="text-xl font-bold text-white">CyberSec Pro</h1>
+                <h1 className="text-xl font-bold text-white">{t('common.appName', 'CyberSec Pro')}</h1>
                 <p className="text-sm text-gray-400">{organization?.name}</p>
               </div>
             </div>
             
             <div className="flex items-center space-x-4">
               <span className={`px-3 py-1 rounded-full text-xs font-medium border ${getPlanBadgeColor(organization?.plan_type || '')}`}>
-                {organization?.plan_type?.toUpperCase()} PLAN
+                {organization?.plan_type?.toUpperCase()} {t('dashboard.plan', 'PLAN')}
               </span>
               <div className="text-right">
                 <p className="text-sm text-white">{user?.first_name} {user?.last_name}</p>

@@ -325,9 +325,9 @@ const ToolsCatalogPage: React.FC = () => {
             {filteredTools.length === 0 && (
               <div className="text-center py-16">
                 <div className="text-6xl mb-4">🔍</div>
-                <h3 className="text-xl font-semibold mb-2">No tools found</h3>
+                <h3 className="text-xl font-semibold mb-2">{t('toolsCatalog.noToolsFound', 'No tools found')}</h3>
                 <p className="text-gray-400 mb-4">
-                  Try adjusting your search or filter criteria
+                  {t('toolsCatalog.adjustFilters', 'Try adjusting your search or filter criteria')}
                 </p>
                 <button
                   onClick={() => {
@@ -336,7 +336,7 @@ const ToolsCatalogPage: React.FC = () => {
                   }}
                   className="px-4 py-2 bg-gray-700 hover:bg-gray-600 rounded-lg transition-colors"
                 >
-                  Clear Filters
+                  {t('toolsCatalog.clearFilters', 'Clear Filters')}
                 </button>
               </div>
             )}
