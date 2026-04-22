@@ -94,7 +94,7 @@ export function ScanExecutionPage() {
   // Agent selection
   const [agents, setAgents] = useState<AgentInfo[]>([]);
   const [selectedAgentId, setSelectedAgentId] = useState<string>('auto');
-  const [executionInfo, setExecutionInfo] = useState<{mode: string; agentName?: string; agentIp?: string; dispatchMethod?: string} | null>(null);
+  const [executionInfo, setExecutionInfo] = useState<{mode: string; agentName?: string; agentIp?: string; dispatchMethod?: string; engineName?: string} | null>(null);
   
   const outputRef = useRef<HTMLDivElement>(null);
   const toolId = routeToolId || searchParams.get('tool') || '';
@@ -386,7 +386,8 @@ export function ScanExecutionPage() {
         mode,
         agentName: response.data.agent?.name,
         agentIp: response.data.agent?.ip,
-        dispatchMethod: response.data.agent?.dispatch_method
+        dispatchMethod: response.data.agent?.dispatch_method,
+        engineName: (response.data as any).engine,
       });
       
       if (mode === 'agent' && response.data.agent) {
@@ -397,6 +398,14 @@ export function ScanExecutionPage() {
           `📝 Command: ${response.data?.command || ''}`,
           '',
           '--- Agent Output ---',
+          ''
+        ]);
+      } else if (mode === 'delegated') {
+        setOutput(prev => [
+          ...prev,
+          `⚙️ Delegated to scan engine (${(response.data as any).engine || 'rust-scan-engine'})`,
+          '',
+          '--- Scan Engine Output ---',
           ''
         ]);
       } else {
@@ -590,15 +599,22 @@ export function ScanExecutionPage() {
 
               {executionInfo && (
                 <div className={`mt-3 p-2 rounded-lg text-xs ${
-                  executionInfo.mode === 'agent' 
-                    ? 'bg-blue-500/10 border border-blue-500/30 text-blue-400' 
-                    : 'bg-purple-500/10 border border-purple-500/30 text-purple-400'
+                  executionInfo.mode === 'agent'
+                    ? 'bg-blue-500/10 border border-blue-500/30 text-blue-400'
+                    : executionInfo.mode === 'delegated'
+                      ? 'bg-cyan-500/10 border border-cyan-500/30 text-cyan-400'
+                      : 'bg-purple-500/10 border border-purple-500/30 text-purple-400'
                 }`}>
                   {executionInfo.mode === 'agent' ? (
                     <>
                       <p className="font-semibold">📡 Running on Agent</p>
                       <p>{executionInfo.agentName} ({executionInfo.agentIp})</p>
                       <p>Via: {executionInfo.dispatchMethod === 'websocket' ? 'WebSocket' : 'Polling'}</p>
+                    </>
+                  ) : executionInfo.mode === 'delegated' ? (
+                    <>
+                      <p className="font-semibold">⚙️ Scan Engine</p>
+                      <p>{executionInfo.engineName || 'rust-scan-engine'}</p>
                     </>
                   ) : (
                     <p className="font-semibold">🖥️ Running on Server</p>
