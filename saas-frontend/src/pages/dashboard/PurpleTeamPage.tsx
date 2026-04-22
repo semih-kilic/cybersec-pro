@@ -426,12 +426,14 @@ function ExerciseDetail({
   onTelemetry,
   aborting,
   telemetryPending,
+  coverageAlert,
 }: {
   exercise: Exercise;
   onAbort: () => void;
   onTelemetry: (payload: { step_index: number; technique_id: string; detected: boolean }) => void;
   aborting: boolean;
   telemetryPending: boolean;
+  coverageAlert?: string;
 }) {
   const { t } = useTranslation();
   const [activeTab, setActiveTab] = useState<'timeline' | 'alerts' | 'gaps' | 'coverage'>('timeline');
@@ -463,6 +465,19 @@ function ExerciseDetail({
           </div>
         </div>
 
+        {/* Detection coverage alert banner */}
+        {coverageAlert === 'high_coverage' && (
+          <div className="mb-3 flex items-center gap-2 rounded-lg border border-green-500/40 bg-green-500/10 px-3 py-2 text-xs text-green-300">
+            <span className="text-base">🟢</span>
+            <span><span className="font-bold">High Detection Coverage</span> — Your Blue Team is catching ≥80% of attacks. Strong defensive posture.</span>
+          </div>
+        )}
+        {coverageAlert === 'low_coverage' && (
+          <div className="mb-3 flex items-center gap-2 rounded-lg border border-red-500/40 bg-red-500/10 px-3 py-2 text-xs text-red-300">
+            <span className="text-base">🔴</span>
+            <span><span className="font-bold">Low Detection Coverage</span> — Blue Team is missing &gt;60% of attacks. Review detection rules and playbooks.</span>
+          </div>
+        )}
         {/* Progress bar */}
         <div className="mb-3">
           <div className="flex justify-between text-xs text-gray-400 mb-1">
@@ -990,6 +1005,7 @@ export default function PurpleTeamPage() {
                 onTelemetry={sendExerciseTelemetry}
                 aborting={aborting}
                 telemetryPending={telemetryPending}
+                coverageAlert={telemetryMutation.data?.detection_coverage_alert}
               />
             </div>
           ) : (
