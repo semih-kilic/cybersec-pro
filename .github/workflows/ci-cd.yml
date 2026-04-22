@@ -88,6 +88,9 @@ jobs:
       - name: Runtime guard tests
         run: npm run test:runtime-guards
 
+      - name: Runtime guard tests (scans)
+        run: npm run test:runtime-guards-scans
+
       - name: Build
         run: npm run build
 
