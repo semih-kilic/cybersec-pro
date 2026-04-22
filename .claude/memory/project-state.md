@@ -16,6 +16,16 @@ Last updated: 2026-04-21
 - Latest completed scopes: `sso`, `tools`, `toolsCatalog`, `serviceManager`, `landing`, `overview`, `admin`, `integrations`, `team`, `privacy`
 - Status: Locale parity pass complete (no same-as-English residuals vs `en` baseline)
 
+### Frontend CI/Gates Status
+- Frontend workflow runs with npm (`npm ci`) and npm scripts, aligned with `saas-frontend/package-lock.json`.
+- Enforced frontend gates:
+	- `npm run i18n:check`
+	- `npm run i18n:residual`
+	- `npm run type-check`
+	- `npm run test:purple-flow`
+	- `npm run build`
+- Current local parity checks: passing (i18n, type-check, Purple Team flow tests, and production build).
+
 ### Key Technical Debt
 1. Purple Team endpoints now provide a DB-backed minimal flow (`chains`, `playbooks`, `mitre`, `dashboard`, `create`, `list`, `detail`); remaining debt is production-grade execution and telemetry.
 2. Billing/Stripe is still partially stubbed.
@@ -33,6 +43,17 @@ Last updated: 2026-04-21
 - Added admin-only runtime profile management endpoint (`/api/v1/settings/purple-team/profile`) backed by `purple_team_profiles` table.
 - Purple Team lifecycle now reads organization profile from DB first, then falls back to `PURPLE_TEAM_PROFILE_JSON`, then `PURPLE_TEAM_DETECT_*` env vars.
 - Added unit tests for purple-team exercise payload shape and chain/default builder behavior in `rust-backend/src/handlers/stub_handlers.rs`.
+
+### Recent Frontend Progress (2026-04-21)
+- Added and stabilized admin Purple Team runtime profile flow:
+	- admin-only settings tab
+	- dashboard tuning summary for admins
+	- bidirectional deep-links between dashboard and settings
+- Added role/guard tests:
+	- `src/pages/dashboard/__tests__/PurpleTeamAdminFlow.test.tsx`
+	- `src/pages/dashboard/__tests__/SettingsPageRoleVisibility.test.tsx`
+- Fixed dashboard compile regressions caused by missing `t` bindings in helper components and `useDocumentTitle` ordering issues.
+- Removed unused deprecated terminal dependencies from `saas-frontend` (`xterm`, `xterm-addon-fit`, `xterm-addon-web-links`) and cleaned stale Vite chunk mapping.
 
 ### Working Conventions
 - Scope-based translation workflow for i18n.

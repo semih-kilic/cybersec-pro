@@ -69,9 +69,11 @@ cd frontend && pnpm install && pnpm dev
 ### CI quality commands (local parity with pipeline)
 ```bash
 cd saas-frontend
-pnpm run i18n:check
-pnpm run i18n:residual
-pnpm run type-check
+npm run i18n:check
+npm run i18n:residual
+npm run type-check
+npm run test:purple-flow
+npm run build
 ```
 
 ## 5) i18n Workflow (SaaS Frontend)
@@ -128,4 +130,11 @@ CI artifacts for observability:
 2. Add/expand automated checks (lint, type-check, backend smoke tests).
 3. Keep i18n parity stable with CI checks for locale drift.
 4. Align scan engine integration strategy with compose and routing.
+
+## 9) Latest Frontend Stability Notes
+
+- Frontend CI/deploy path for `saas-frontend` is npm-based (`npm ci`, `npm run ...`), aligned to `package-lock.json`.
+- Purple Team role/deep-link guard tests are enforced in CI via `npm run test:purple-flow`.
+- Dashboard pages with helper subcomponents were stabilized for i18n hook usage (`useTranslation`) and hook-order correctness (`useDocumentTitle` after `t` binding).
+- Deprecated, unused terminal UI dependencies were removed from `saas-frontend` (`xterm`, `xterm-addon-fit`, `xterm-addon-web-links`) and stale Vite chunk mapping was removed.
 
