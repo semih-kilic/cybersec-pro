@@ -3246,6 +3246,41 @@ pub async fn purple_team_abort_exercise(
     }
 }
 
+fn purple_team_parse_telemetry_payload(
+    body: &serde_json::Value,
+    user: &AuthUser,
+) -> Result<(i64, String, bool, String, f64, serde_json::Value), StatusCode> {
+    let step_index = body.get("step_index").and_then(|v| v.as_i64()).unwrap_or(0);
+    let technique_id = body.get("technique_id").and_then(|v| v.as_str()).unwrap_or("").to_string();
+    let detected = body.get("detected").and_then(|v| v.as_bool()).unwrap_or(false);
+    let source = body.get("source").and_then(|v| v.as_str()).unwrap_or("manual").to_string();
+    let confidence = body.get("confidence").and_then(|v| v.as_f64()).unwrap_or(1.0).clamp(0.0, 1.0);
+
+    if technique_id.is_empty() {
+        return Err(StatusCode::BAD_REQUEST);
+    }
+
+    let event = json!({
+        "step_index": step_index,
+        "technique_id": technique_id,
+        "detected": detected,
+        "source": source,
+        "confidence": confidence,
+        "reported_at": chrono::Utc::now().to_rfc3339(),
+        "reported_by": user.user_id
+    });
+
+    Ok((step_index, technique_id, detected, source, confidence, event))
+}
+
+fn purple_team_detection_rate(detected_attacks: i64, total_steps: i64) -> f64 {
+    if total_steps > 0 {
+        (detected_attacks as f64 / total_steps as f64) * 100.0
+    } else {
+        0.0
+    }
+}
+
 /// Ingest a blue-team detection telemetry event for an exercise step.
 /// Blue team tooling (SIEM, EDR, etc.) posts detection signals here, which updates
 /// the exercise's detected_attacks count and appends an event to the payload.
@@ -3260,25 +3295,16 @@ pub async fn purple_team_ingest_telemetry(
         _ => return (StatusCode::BAD_REQUEST, Json(json!({"error": "Organization context required"}))).into_response(),
     };
 
-    let step_index = body.get("step_index").and_then(|v| v.as_i64()).unwrap_or(0);
-    let technique_id = body.get("technique_id").and_then(|v| v.as_str()).unwrap_or("").to_string();
-    let detected = body.get("detected").and_then(|v| v.as_bool()).unwrap_or(false);
-    let source = body.get("source").and_then(|v| v.as_str()).unwrap_or("manual").to_string();
-    let confidence = body.get("confidence").and_then(|v| v.as_f64()).unwrap_or(1.0).clamp(0.0, 1.0);
-
-    if technique_id.is_empty() {
-        return (StatusCode::BAD_REQUEST, Json(json!({"error": "technique_id is required"}))).into_response();
-    }
-
-    let event = json!({
-        "step_index": step_index,
-        "technique_id": technique_id,
-        "detected": detected,
-        "source": source,
-        "confidence": confidence,
-        "reported_at": chrono::Utc::now().to_rfc3339(),
-        "reported_by": user.user_id
-    });
+    let parsed = purple_team_parse_telemetry_payload(&body, &user);
+    let (_step_index, technique_id, detected, _source, _confidence, event) = match parsed {
+        Ok(values) => values,
+        Err(StatusCode::BAD_REQUEST) => {
+            return (StatusCode::BAD_REQUEST, Json(json!({"error": "technique_id is required"}))).into_response();
+        }
+        Err(_) => {
+            return (StatusCode::INTERNAL_SERVER_ERROR, Json(json!({"error": "Failed to parse telemetry"}))).into_response();
+        }
+    };
 
     // Increment detected_attacks counter if this event reports a detection.
     // The payload telemetry_events array is appended atomically.
@@ -3306,11 +3332,7 @@ pub async fn purple_team_ingest_telemetry(
 
     match result {
         Ok(Some((_, detected_attacks, missed_attacks, total_steps))) => {
-            let detection_rate = if total_steps > 0 {
-                (detected_attacks as f64 / total_steps as f64) * 100.0
-            } else {
-                0.0
-            };
+            let detection_rate = purple_team_detection_rate(detected_attacks, total_steps);
             Json(json!({
                 "message": "Telemetry event recorded",
                 "exercise_id": exercise_id,
@@ -3917,5 +3939,51 @@ mod tests {
         );
 
         assert_eq!(ratio, 0.90);
+    }
+
+    fn mock_auth_user() -> AuthUser {
+        AuthUser {
+            user_id: "user-1".to_string(),
+            email: "test@example.com".to_string(),
+            role: "admin".to_string(),
+            org_id: Some("org-1".to_string()),
+        }
+    }
+
+    #[test]
+    fn purple_team_parse_telemetry_payload_requires_technique_id() {
+        let user = mock_auth_user();
+        let body = json!({
+            "step_index": 1,
+            "detected": true
+        });
+
+        let parsed = purple_team_parse_telemetry_payload(&body, &user);
+        assert!(parsed.is_err());
+    }
+
+    #[test]
+    fn purple_team_parse_telemetry_payload_clamps_confidence_and_defaults_source() {
+        let user = mock_auth_user();
+        let body = json!({
+            "step_index": 2,
+            "technique_id": "T1003",
+            "detected": false,
+            "confidence": 2.4
+        });
+
+        let parsed = purple_team_parse_telemetry_payload(&body, &user).expect("expected payload parse");
+
+        assert_eq!(parsed.0, 2);
+        assert_eq!(parsed.1, "T1003");
+        assert!(!parsed.2);
+        assert_eq!(parsed.3, "manual");
+        assert_eq!(parsed.4, 1.0);
+    }
+
+    #[test]
+    fn purple_team_detection_rate_handles_zero_total_steps() {
+        assert_eq!(purple_team_detection_rate(3, 0), 0.0);
+        assert_eq!(purple_team_detection_rate(3, 6), 50.0);
     }
 }
