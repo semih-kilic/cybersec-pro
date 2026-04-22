@@ -85,6 +85,9 @@ jobs:
       - name: Type check
         run: pnpm run type-check
 
+      - name: Purple Team flow tests
+        run: pnpm run test:purple-flow
+
       - name: Build
         run: pnpm run build
 

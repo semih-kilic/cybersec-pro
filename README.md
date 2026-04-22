@@ -79,6 +79,18 @@ npm install
 npm run dev
 ```
 
+Purple Team frontend flow checks:
+
+```bash
+cd saas-frontend
+npm run test:purple-flow
+```
+
+This script runs:
+
+- `src/pages/dashboard/__tests__/PurpleTeamAdminFlow.test.tsx`
+- `src/pages/dashboard/__tests__/SettingsPageRoleVisibility.test.tsx`
+
 ### Marketing frontend
 
 ```bash
