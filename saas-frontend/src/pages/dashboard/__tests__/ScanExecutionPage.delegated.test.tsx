@@ -66,6 +66,7 @@ vi.mock('../../../services/api', () => ({
     executeScan: vi.fn(),
     getScanResult: vi.fn(),
     stopScan: vi.fn(),
+    streamScanOutput: vi.fn(() => () => {}),
   },
 }));
 
@@ -73,7 +74,8 @@ vi.mock('../../../services/api', () => ({
 const mockedUseAuth = vi.mocked(useAuth);
 const mockedUseToolExecutionMode = vi.mocked(useToolExecutionMode);
 const mockedUseFetchBusinessReport = vi.mocked(useFetchBusinessReport);
-const mockedApi = vi.mocked(api);
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const mockedApi = vi.mocked(api) as any;
 
 function makeQueryClient() {
   return new QueryClient({ defaultOptions: { queries: { retry: false } } });
@@ -101,6 +103,7 @@ beforeEach(() => {
   mockedApi.getToolConfig.mockResolvedValue({ data: { tool: null } } as any);
   mockedApi.getAgents.mockResolvedValue({ data: [] } as any);
   mockedApi.getScanResult.mockResolvedValue({ data: null } as any);
+  mockedApi.streamScanOutput.mockReturnValue(() => {});
 });
 
 // ── Tests ─────────────────────────────────────────────────────────────────────
@@ -177,9 +180,10 @@ describe('ScanExecutionPage — delegated execution mode', () => {
     fireEvent.click(screen.getByRole('button', { name: /start scan/i }));
 
     await waitFor(() => {
-      expect(
-        screen.getByText(/Delegated to scan engine \(rust-scan-engine\)/i),
-      ).toBeInTheDocument();
+      const el = screen.queryByText((content) =>
+        content.includes('Delegated to scan engine') && content.includes('rust-scan-engine'),
+      );
+      expect(el).toBeInTheDocument();
     });
   });
 
