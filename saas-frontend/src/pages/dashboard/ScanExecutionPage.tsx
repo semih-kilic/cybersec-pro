@@ -11,7 +11,7 @@ import { useAuth } from '../../hooks/useAuth';
 import { ScanProgress } from '../../components/dashboard/ScanProgress';
 import { useQuery } from '@tanstack/react-query';
 import { queryKeys, CACHE_TIMES } from '../../lib/queryClient';
-import { useToolExecutionMode, useFetchBusinessReport } from '../../hooks/useApiQueries';
+import { useToolExecutionMode, useFetchBusinessReport, normalizeAgentsPayload } from '../../hooks/useApiQueries';
 
 // Business-friendly category names
 const BUSINESS_CATEGORIES: Record<string, { label: string; emoji: string }> = {
@@ -118,12 +118,7 @@ export function ScanExecutionPage() {
     queryKey: ['agents', 'list'],
     queryFn: async () => {
       const response = await api.getAgents();
-      const data = response.data as unknown;
-      if (Array.isArray(data)) return data;
-      if (Array.isArray((data as { agents?: unknown } | undefined)?.agents)) {
-        return (data as { agents: unknown[] }).agents;
-      }
-      return [];
+      return normalizeAgentsPayload<AgentInfo>(response.data as unknown);
     },
     staleTime: 10_000,
     refetchInterval: 15_000,
@@ -158,23 +153,7 @@ export function ScanExecutionPage() {
   // Sync agents from RQ with a strict array guard to avoid runtime crashes
   // when API responses are temporarily shape-drifted.
   useEffect(() => {
-    if (!agentsData) {
-      setAgents([]);
-      return;
-    }
-
-    if (Array.isArray(agentsData)) {
-      setAgents(agentsData as AgentInfo[]);
-      return;
-    }
-
-    const maybeAgents = (agentsData as { agents?: unknown }).agents;
-    if (Array.isArray(maybeAgents)) {
-      setAgents(maybeAgents as AgentInfo[]);
-      return;
-    }
-
-    setAgents([]);
+    setAgents(normalizeAgentsPayload<AgentInfo>(agentsData as unknown));
   }, [agentsData]);
 
   // Use execution mode from RQ

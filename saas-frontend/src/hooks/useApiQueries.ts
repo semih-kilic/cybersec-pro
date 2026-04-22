@@ -1030,17 +1030,20 @@ export interface TerminalAgent {
   connection_type?: string;
 }
 
+export function normalizeAgentsPayload<T = TerminalAgent>(data: unknown): T[] {
+  if (Array.isArray(data)) return data as T[];
+
+  const maybeAgents = (data as { agents?: unknown } | null | undefined)?.agents;
+  return Array.isArray(maybeAgents) ? (maybeAgents as T[]) : [];
+}
+
 export function useTerminalAgents() {
   const { token } = useAuth();
 
   return useQuery({
     queryKey: queryKeys.terminal.agents(),
     queryFn: () => authFetch<{ agents: TerminalAgent[] }>('/api/v1/terminal/agents', token),
-    select: (data) => {
-      if (Array.isArray(data)) return data;
-      const maybeAgents = (data as { agents?: unknown } | null | undefined)?.agents;
-      return Array.isArray(maybeAgents) ? maybeAgents : [];
-    },
+    select: (data) => normalizeAgentsPayload<TerminalAgent>(data),
     ...CACHE_TIMES.terminal,
     enabled: !!token,
   });
