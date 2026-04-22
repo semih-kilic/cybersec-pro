@@ -1,6 +1,6 @@
 import React from 'react';
 import { describe, it, expect, beforeEach, vi } from 'vitest';
-import { render, screen } from '@testing-library/react';
+import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 
@@ -18,6 +18,8 @@ import {
   usePurpleTeamExercise,
   useMitreMatrix,
   useStartExercise,
+  useAbortExercise,
+  useIngestExerciseTelemetry,
   useUploadAvatar,
   useUpdateProfile,
 } from '../../../hooks/useApiQueries';
@@ -48,6 +50,8 @@ vi.mock('../../../hooks/useApiQueries', () => ({
   usePurpleTeamExercise: vi.fn(),
   useMitreMatrix: vi.fn(),
   useStartExercise: vi.fn(),
+  useAbortExercise: vi.fn(),
+  useIngestExerciseTelemetry: vi.fn(),
   useUploadAvatar: vi.fn(),
   useUpdateProfile: vi.fn(),
 }));
@@ -68,9 +72,14 @@ const mockedUsePurpleTeamExercises = vi.mocked(usePurpleTeamExercises);
 const mockedUsePurpleTeamExercise = vi.mocked(usePurpleTeamExercise);
 const mockedUseMitreMatrix = vi.mocked(useMitreMatrix);
 const mockedUseStartExercise = vi.mocked(useStartExercise);
+const mockedUseAbortExercise = vi.mocked(useAbortExercise);
+const mockedUseIngestExerciseTelemetry = vi.mocked(useIngestExerciseTelemetry);
 const mockedUseUploadAvatar = vi.mocked(useUploadAvatar);
 const mockedUseUpdateProfile = vi.mocked(useUpdateProfile);
 const mockedApi = vi.mocked(api);
+
+const abortMutateAsync = vi.fn();
+const telemetryMutateAsync = vi.fn();
 
 function renderWithProviders(ui: React.ReactElement) {
   const queryClient = new QueryClient({
@@ -149,6 +158,10 @@ describe('Purple Team admin navigation flow', () => {
     mockedUsePurpleTeamExercise.mockReturnValue({ data: undefined } as never);
     mockedUseMitreMatrix.mockReturnValue({ data: {} } as never);
     mockedUseStartExercise.mockReturnValue({ isPending: false, mutateAsync: vi.fn() } as never);
+    abortMutateAsync.mockReset();
+    telemetryMutateAsync.mockReset();
+    mockedUseAbortExercise.mockReturnValue({ isPending: false, mutateAsync: abortMutateAsync } as never);
+    mockedUseIngestExerciseTelemetry.mockReturnValue({ isPending: false, mutateAsync: telemetryMutateAsync } as never);
     mockedUseUploadAvatar.mockReturnValue({ isPending: false, mutateAsync: vi.fn() } as never);
     mockedUseUpdateProfile.mockReturnValue({ isPending: false, mutateAsync: vi.fn() } as never);
 
@@ -214,5 +227,161 @@ describe('Purple Team admin navigation flow', () => {
     expect(screen.queryByText('Purple Team Runtime Profile')).not.toBeInTheDocument();
     expect(screen.queryByRole('button', { name: /Purple Team Profile/i })).not.toBeInTheDocument();
     expect(await screen.findByText('Profile Information')).toBeInTheDocument();
+  });
+
+  it('triggers abort mutation for running exercise detail', async () => {
+    mockedUsePurpleTeamExercises.mockReturnValue({
+      data: [{
+        id: 'exercise-1',
+        name: 'Runtime Exercise',
+        attack_chain_id: 'chain-1',
+        target: '10.0.0.5',
+        status: 'running',
+        started_at: '2026-04-22T10:00:00Z',
+        completed_at: '',
+        total_steps: 2,
+        completed_steps: 1,
+        detected_attacks: 1,
+        missed_attacks: 0,
+        risk_score: 45,
+        red_team_results: [],
+        blue_team_alerts: [],
+        gap_analysis: {},
+        coverage_map: {},
+      }],
+    } as never);
+
+    mockedUsePurpleTeamExercise.mockReturnValue({
+      data: {
+        id: 'exercise-1',
+        name: 'Runtime Exercise',
+        attack_chain_id: 'chain-1',
+        target: '10.0.0.5',
+        status: 'running',
+        started_at: '2026-04-22T10:00:00Z',
+        completed_at: '',
+        total_steps: 2,
+        completed_steps: 1,
+        detected_attacks: 1,
+        missed_attacks: 0,
+        risk_score: 45,
+        red_team_results: [{
+          step_index: 0,
+          phase: 'recon',
+          technique_id: 'T1595',
+          technique_name: 'Active Scanning',
+          tool: 'nmap',
+          command: 'nmap -sV 10.0.0.5',
+          status: 'completed',
+          output: '',
+          findings: [],
+          started_at: '2026-04-22T10:00:05Z',
+          completed_at: '2026-04-22T10:00:10Z',
+          duration_seconds: 5,
+          detected_by_blue: true,
+        }],
+        blue_team_alerts: [],
+        gap_analysis: { total_attacks: 1, detected: 1, missed: 0, detection_rate: 100, missed_techniques: [], recommendations: [] },
+        coverage_map: {},
+      },
+    } as never);
+
+    renderWithProviders(<PurpleTeamPage />);
+
+    fireEvent.click(await screen.findByText('Runtime Exercise'));
+    fireEvent.click(await screen.findByRole('button', { name: 'Abort' }));
+
+    await waitFor(() => {
+      expect(abortMutateAsync).toHaveBeenCalledWith('exercise-1');
+    });
+  });
+
+  it('sends telemetry mutation payload when marking step detected or missed', async () => {
+    mockedUsePurpleTeamExercises.mockReturnValue({
+      data: [{
+        id: 'exercise-1',
+        name: 'Runtime Exercise',
+        attack_chain_id: 'chain-1',
+        target: '10.0.0.5',
+        status: 'running',
+        started_at: '2026-04-22T10:00:00Z',
+        completed_at: '',
+        total_steps: 2,
+        completed_steps: 1,
+        detected_attacks: 1,
+        missed_attacks: 0,
+        risk_score: 45,
+        red_team_results: [],
+        blue_team_alerts: [],
+        gap_analysis: {},
+        coverage_map: {},
+      }],
+    } as never);
+
+    mockedUsePurpleTeamExercise.mockReturnValue({
+      data: {
+        id: 'exercise-1',
+        name: 'Runtime Exercise',
+        attack_chain_id: 'chain-1',
+        target: '10.0.0.5',
+        status: 'running',
+        started_at: '2026-04-22T10:00:00Z',
+        completed_at: '',
+        total_steps: 2,
+        completed_steps: 1,
+        detected_attacks: 1,
+        missed_attacks: 0,
+        risk_score: 45,
+        red_team_results: [{
+          step_index: 0,
+          phase: 'recon',
+          technique_id: 'T1595',
+          technique_name: 'Active Scanning',
+          tool: 'nmap',
+          command: 'nmap -sV 10.0.0.5',
+          status: 'completed',
+          output: '',
+          findings: [],
+          started_at: '2026-04-22T10:00:05Z',
+          completed_at: '2026-04-22T10:00:10Z',
+          duration_seconds: 5,
+          detected_by_blue: true,
+        }],
+        blue_team_alerts: [],
+        gap_analysis: { total_attacks: 1, detected: 1, missed: 0, detection_rate: 100, missed_techniques: [], recommendations: [] },
+        coverage_map: {},
+      },
+    } as never);
+
+    renderWithProviders(<PurpleTeamPage />);
+
+    fireEvent.click(await screen.findByText('Runtime Exercise'));
+
+    fireEvent.click(await screen.findByRole('button', { name: 'Mark Detected' }));
+    fireEvent.click(await screen.findByRole('button', { name: 'Mark Missed' }));
+
+    await waitFor(() => {
+      expect(telemetryMutateAsync).toHaveBeenCalledWith({
+        exerciseId: 'exercise-1',
+        telemetry: {
+          step_index: 0,
+          technique_id: 'T1595',
+          detected: true,
+          source: 'dashboard.manual',
+          confidence: 0.95,
+        },
+      });
+
+      expect(telemetryMutateAsync).toHaveBeenCalledWith({
+        exerciseId: 'exercise-1',
+        telemetry: {
+          step_index: 0,
+          technique_id: 'T1595',
+          detected: false,
+          source: 'dashboard.manual',
+          confidence: 0.4,
+        },
+      });
+    });
   });
 });
