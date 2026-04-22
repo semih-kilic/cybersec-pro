@@ -3200,6 +3200,135 @@ pub async fn purple_team_mitre(
     Json(purple_team_mitre_matrix_data()).into_response()
 }
 
+/// Abort a running or pending exercise. Marks it as cancelled and finalises counters.
+pub async fn purple_team_abort_exercise(
+    Path(exercise_id): Path<String>,
+    user: AuthUser,
+    State(state): State<Arc<AppState>>,
+) -> impl IntoResponse {
+    let org_id = match user.org_id.as_deref() {
+        Some(v) if !v.is_empty() => v,
+        _ => return (StatusCode::BAD_REQUEST, Json(json!({"error": "Organization context required"}))).into_response(),
+    };
+
+    let result = sqlx::query(
+        r#"UPDATE purple_team_exercises
+           SET status = 'cancelled',
+               completed_at = NOW(),
+               updated_at = NOW(),
+               payload = payload || jsonb_build_object(
+                   'status', 'cancelled',
+                   'completed_at', to_char(NOW() AT TIME ZONE 'UTC', 'YYYY-MM-DD"T"HH24:MI:SS"Z"')
+               )
+           WHERE id = $1 AND organization_id = $2 AND status IN ('pending', 'running')
+           RETURNING id"#
+    )
+    .bind(&exercise_id)
+    .bind(org_id)
+    .execute(&state.db)
+    .await;
+
+    match result {
+        Ok(r) if r.rows_affected() > 0 => {
+            Json(json!({
+                "message": "Exercise aborted",
+                "exercise_id": exercise_id,
+                "status": "cancelled"
+            })).into_response()
+        }
+        Ok(_) => {
+            (StatusCode::NOT_FOUND, Json(json!({"error": "Exercise not found or already completed"}))).into_response()
+        }
+        Err(e) => {
+            tracing::error!("Failed to abort exercise {}: {}", exercise_id, e);
+            (StatusCode::INTERNAL_SERVER_ERROR, Json(json!({"error": "Failed to abort exercise"}))).into_response()
+        }
+    }
+}
+
+/// Ingest a blue-team detection telemetry event for an exercise step.
+/// Blue team tooling (SIEM, EDR, etc.) posts detection signals here, which updates
+/// the exercise's detected_attacks count and appends an event to the payload.
+pub async fn purple_team_ingest_telemetry(
+    Path(exercise_id): Path<String>,
+    user: AuthUser,
+    State(state): State<Arc<AppState>>,
+    Json(body): Json<serde_json::Value>,
+) -> impl IntoResponse {
+    let org_id = match user.org_id.as_deref() {
+        Some(v) if !v.is_empty() => v,
+        _ => return (StatusCode::BAD_REQUEST, Json(json!({"error": "Organization context required"}))).into_response(),
+    };
+
+    let step_index = body.get("step_index").and_then(|v| v.as_i64()).unwrap_or(0);
+    let technique_id = body.get("technique_id").and_then(|v| v.as_str()).unwrap_or("").to_string();
+    let detected = body.get("detected").and_then(|v| v.as_bool()).unwrap_or(false);
+    let source = body.get("source").and_then(|v| v.as_str()).unwrap_or("manual").to_string();
+    let confidence = body.get("confidence").and_then(|v| v.as_f64()).unwrap_or(1.0).clamp(0.0, 1.0);
+
+    if technique_id.is_empty() {
+        return (StatusCode::BAD_REQUEST, Json(json!({"error": "technique_id is required"}))).into_response();
+    }
+
+    let event = json!({
+        "step_index": step_index,
+        "technique_id": technique_id,
+        "detected": detected,
+        "source": source,
+        "confidence": confidence,
+        "reported_at": chrono::Utc::now().to_rfc3339(),
+        "reported_by": user.user_id
+    });
+
+    // Increment detected_attacks counter if this event reports a detection.
+    // The payload telemetry_events array is appended atomically.
+    let delta: i64 = if detected { 1 } else { 0 };
+    let result = sqlx::query_as::<_, (String, i64, i64, i64)>(
+        r#"UPDATE purple_team_exercises
+           SET detected_attacks = detected_attacks + $3,
+               missed_attacks = missed_attacks + $4,
+               updated_at = NOW(),
+               payload = jsonb_set(
+                   payload,
+                   '{telemetry_events}',
+                   COALESCE(payload->'telemetry_events', '[]'::jsonb) || $5::jsonb
+               )
+           WHERE id = $1 AND organization_id = $2
+           RETURNING id, detected_attacks, missed_attacks, total_steps"#
+    )
+    .bind(&exercise_id)
+    .bind(org_id)
+    .bind(delta)
+    .bind(1_i64 - delta)
+    .bind(event.to_string())
+    .fetch_optional(&state.db)
+    .await;
+
+    match result {
+        Ok(Some((_, detected_attacks, missed_attacks, total_steps))) => {
+            let detection_rate = if total_steps > 0 {
+                (detected_attacks as f64 / total_steps as f64) * 100.0
+            } else {
+                0.0
+            };
+            Json(json!({
+                "message": "Telemetry event recorded",
+                "exercise_id": exercise_id,
+                "detected_attacks": detected_attacks,
+                "missed_attacks": missed_attacks,
+                "detection_rate": detection_rate
+            })).into_response()
+        }
+        Ok(None) => {
+            (StatusCode::NOT_FOUND, Json(json!({"error": "Exercise not found"}))).into_response()
+        }
+        Err(e) => {
+            tracing::error!("Failed to record telemetry for exercise {}: {}", exercise_id, e);
+            (StatusCode::INTERNAL_SERVER_ERROR, Json(json!({"error": "Failed to record telemetry"}))).into_response()
+        }
+    }
+}
+
 // ── Terminal endpoints ─────────────────────────────────────
 
 pub async fn terminal_agents(

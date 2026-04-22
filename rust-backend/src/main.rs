@@ -431,6 +431,8 @@ fn build_router(state: Arc<AppState>) -> Router {
         .route("/api/v1/purple-team/playbooks", get(stub_handlers::purple_team_playbooks))
         .route("/api/v1/purple-team/exercises", get(stub_handlers::purple_team_exercises).post(stub_handlers::purple_team_create_exercise))
         .route("/api/v1/purple-team/exercises/:id", get(stub_handlers::purple_team_exercise_detail))
+        .route("/api/v1/purple-team/exercises/:id/abort", post(stub_handlers::purple_team_abort_exercise))
+        .route("/api/v1/purple-team/exercises/:id/telemetry", post(stub_handlers::purple_team_ingest_telemetry))
         .route("/api/v1/purple-team/mitre-matrix", get(stub_handlers::purple_team_mitre))
         // ── Terminal ──────────────────────────────────────────
         .route("/api/v1/terminal/agents", get(stub_handlers::terminal_agents))
