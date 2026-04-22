@@ -20,6 +20,18 @@ pub enum AppError {
     Internal(String),
 }
 
+impl std::fmt::Display for AppError {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            AppError::Validation(msg) => write!(f, "Validation error: {}", msg),
+            AppError::NotFound(msg) => write!(f, "Not found: {}", msg),
+            AppError::ScanExec(msg) => write!(f, "Scan execution error: {}", msg),
+            AppError::Auth(msg) => write!(f, "Auth error: {}", msg),
+            AppError::Internal(msg) => write!(f, "Internal error: {}", msg),
+        }
+    }
+}
+
 impl IntoResponse for AppError {
     fn into_response(self) -> Response {
         let (status, message) = match self {
