@@ -118,7 +118,12 @@ export function ScanExecutionPage() {
     queryKey: ['agents', 'list'],
     queryFn: async () => {
       const response = await api.getAgents();
-      return response.data?.agents || [];
+      const data = response.data as unknown;
+      if (Array.isArray(data)) return data;
+      if (Array.isArray((data as { agents?: unknown } | undefined)?.agents)) {
+        return (data as { agents: unknown[] }).agents;
+      }
+      return [];
     },
     staleTime: 10_000,
     refetchInterval: 15_000,
@@ -150,9 +155,26 @@ export function ScanExecutionPage() {
     }
   }, [toolConfigData]);
 
-  // Sync agents from RQ
+  // Sync agents from RQ with a strict array guard to avoid runtime crashes
+  // when API responses are temporarily shape-drifted.
   useEffect(() => {
-    if (agentsData) setAgents(agentsData as AgentInfo[]);
+    if (!agentsData) {
+      setAgents([]);
+      return;
+    }
+
+    if (Array.isArray(agentsData)) {
+      setAgents(agentsData as AgentInfo[]);
+      return;
+    }
+
+    const maybeAgents = (agentsData as { agents?: unknown }).agents;
+    if (Array.isArray(maybeAgents)) {
+      setAgents(maybeAgents as AgentInfo[]);
+      return;
+    }
+
+    setAgents([]);
   }, [agentsData]);
 
   // Use execution mode from RQ

@@ -1036,7 +1036,11 @@ export function useTerminalAgents() {
   return useQuery({
     queryKey: queryKeys.terminal.agents(),
     queryFn: () => authFetch<{ agents: TerminalAgent[] }>('/api/v1/terminal/agents', token),
-    select: (data) => data.agents || [],
+    select: (data) => {
+      if (Array.isArray(data)) return data;
+      const maybeAgents = (data as { agents?: unknown } | null | undefined)?.agents;
+      return Array.isArray(maybeAgents) ? maybeAgents : [];
+    },
     ...CACHE_TIMES.terminal,
     enabled: !!token,
   });
