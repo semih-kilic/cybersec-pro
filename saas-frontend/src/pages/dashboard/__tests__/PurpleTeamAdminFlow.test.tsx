@@ -384,4 +384,146 @@ describe('Purple Team admin navigation flow', () => {
       });
     });
   });
+
+  it('shows high_coverage alert banner when telemetry mutation returns high_coverage', async () => {
+    mockedUsePurpleTeamExercises.mockReturnValue({
+      data: [{
+        id: 'exercise-hc',
+        name: 'High Coverage Exercise',
+        attack_chain_id: 'chain-1',
+        target: '10.0.0.1',
+        status: 'running',
+        started_at: '2026-04-22T10:00:00Z',
+        completed_at: '',
+        total_steps: 5,
+        completed_steps: 4,
+        detected_attacks: 4,
+        missed_attacks: 1,
+        risk_score: 20,
+        red_team_results: [],
+        blue_team_alerts: [],
+        gap_analysis: {},
+        coverage_map: {},
+      }],
+    } as never);
+
+    mockedUsePurpleTeamExercise.mockReturnValue({
+      data: {
+        id: 'exercise-hc',
+        name: 'High Coverage Exercise',
+        attack_chain_id: 'chain-1',
+        target: '10.0.0.1',
+        status: 'running',
+        started_at: '2026-04-22T10:00:00Z',
+        completed_at: '',
+        total_steps: 5,
+        completed_steps: 4,
+        detected_attacks: 4,
+        missed_attacks: 1,
+        risk_score: 20,
+        red_team_results: [{
+          step_index: 0,
+          phase: 'recon',
+          technique_id: 'T1595',
+          technique_name: 'Active Scanning',
+          tool: 'nmap',
+          command: 'nmap -sV 10.0.0.1',
+          status: 'completed',
+          output: '',
+          findings: [],
+          started_at: '2026-04-22T10:00:05Z',
+          completed_at: '2026-04-22T10:00:10Z',
+          duration_seconds: 5,
+          detected_by_blue: true,
+        }],
+        blue_team_alerts: [],
+        gap_analysis: { total_attacks: 5, detected: 4, missed: 1, detection_rate: 80, missed_techniques: [], recommendations: [] },
+        coverage_map: {},
+      },
+    } as never);
+
+    mockedUseIngestExerciseTelemetry.mockReturnValue({
+      isPending: false,
+      mutateAsync: telemetryMutateAsync,
+      data: { success: true, id: 'exercise-hc', status: 'running', detected_attacks: 4, missed_attacks: 1, detection_coverage_alert: 'high_coverage' },
+    } as never);
+
+    renderWithProviders(<PurpleTeamPage />);
+
+    fireEvent.click(await screen.findByText('High Coverage Exercise'));
+
+    expect(await screen.findByText(/High Detection Coverage/i)).toBeInTheDocument();
+    expect(screen.getByText(/Blue Team is catching/i)).toBeInTheDocument();
+  });
+
+  it('shows low_coverage alert banner when telemetry mutation returns low_coverage', async () => {
+    mockedUsePurpleTeamExercises.mockReturnValue({
+      data: [{
+        id: 'exercise-lc',
+        name: 'Low Coverage Exercise',
+        attack_chain_id: 'chain-2',
+        target: '10.0.0.9',
+        status: 'running',
+        started_at: '2026-04-22T11:00:00Z',
+        completed_at: '',
+        total_steps: 5,
+        completed_steps: 4,
+        detected_attacks: 1,
+        missed_attacks: 4,
+        risk_score: 85,
+        red_team_results: [],
+        blue_team_alerts: [],
+        gap_analysis: {},
+        coverage_map: {},
+      }],
+    } as never);
+
+    mockedUsePurpleTeamExercise.mockReturnValue({
+      data: {
+        id: 'exercise-lc',
+        name: 'Low Coverage Exercise',
+        attack_chain_id: 'chain-2',
+        target: '10.0.0.9',
+        status: 'running',
+        started_at: '2026-04-22T11:00:00Z',
+        completed_at: '',
+        total_steps: 5,
+        completed_steps: 4,
+        detected_attacks: 1,
+        missed_attacks: 4,
+        risk_score: 85,
+        red_team_results: [{
+          step_index: 0,
+          phase: 'lateral',
+          technique_id: 'T1021',
+          technique_name: 'Remote Services',
+          tool: 'crackmapexec',
+          command: 'cme smb 10.0.0.9',
+          status: 'completed',
+          output: '',
+          findings: [],
+          started_at: '2026-04-22T11:00:05Z',
+          completed_at: '2026-04-22T11:00:12Z',
+          duration_seconds: 7,
+          detected_by_blue: false,
+        }],
+        blue_team_alerts: [],
+        gap_analysis: { total_attacks: 5, detected: 1, missed: 4, detection_rate: 20, missed_techniques: [], recommendations: [] },
+        coverage_map: {},
+      },
+    } as never);
+
+    mockedUseIngestExerciseTelemetry.mockReturnValue({
+      isPending: false,
+      mutateAsync: telemetryMutateAsync,
+      data: { success: true, id: 'exercise-lc', status: 'running', detected_attacks: 1, missed_attacks: 4, detection_coverage_alert: 'low_coverage' },
+    } as never);
+
+    renderWithProviders(<PurpleTeamPage />);
+
+    fireEvent.click(await screen.findByText('Low Coverage Exercise'));
+
+    expect(await screen.findByText(/Low Detection Coverage/i)).toBeInTheDocument();
+    expect(screen.getByText(/Review detection rules/i)).toBeInTheDocument();
+  });
 });
