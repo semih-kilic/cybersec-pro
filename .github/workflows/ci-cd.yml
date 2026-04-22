@@ -40,6 +40,11 @@ jobs:
           mkdir -p ci-reports
           cargo check --release 2>&1 | tee ci-reports/cargo-check.log
 
+      - name: Purple Team telemetry smoke tests
+        run: |
+          cargo test purple_team_parse_telemetry_payload
+          cargo test purple_team_detection_rate_handles_zero_total_steps
+
       - name: Run clippy lints
         run: |
           set +e

@@ -3296,7 +3296,7 @@ pub async fn purple_team_ingest_telemetry(
     };
 
     let parsed = purple_team_parse_telemetry_payload(&body, &user);
-    let (_step_index, technique_id, detected, _source, _confidence, event) = match parsed {
+    let (_step_index, _technique_id, detected, _source, _confidence, event) = match parsed {
         Ok(values) => values,
         Err(StatusCode::BAD_REQUEST) => {
             return (StatusCode::BAD_REQUEST, Json(json!({"error": "technique_id is required"}))).into_response();
@@ -3944,7 +3944,6 @@ mod tests {
     fn mock_auth_user() -> AuthUser {
         AuthUser {
             user_id: "user-1".to_string(),
-            email: "test@example.com".to_string(),
             role: "admin".to_string(),
             org_id: Some("org-1".to_string()),
         }
