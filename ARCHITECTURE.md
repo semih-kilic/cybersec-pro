@@ -23,6 +23,10 @@ Users/Browser
 rust-backend
     -> postgres:5432
     -> redis:6379
+    -> rust-scan-engine:5002
+
+rust-scan-engine
+    -> postgres:5432
 
 kali-tools (privileged)
     -> Tool execution API:5003
@@ -43,6 +47,7 @@ wireguard
 | postgres | cybersec-db | primary relational data store |
 | redis | cybersec-redis | cache/session/rate-limit support |
 | rust-backend | cybersec-api | main REST API and business logic |
+| rust-scan-engine | cybersec-scan-engine | dedicated scan runtime service |
 | saas-frontend | cybersec-frontend | dashboard SPA delivery |
 | nginx | cybersec-nginx | public edge routing and TLS mount |
 | kali-tools | cybersec-kali | execution environment for security tools |
@@ -51,7 +56,7 @@ wireguard
 
 ## Additional Codebase Services
 
-- `rust-scan-engine` (port 5002) exists as a separate service but is currently not wired into `docker-compose.yml`.
+- `rust-scan-engine` (port 5002) is wired in `docker-compose.yml` and can be used for dedicated scan execution flows.
 - `rust-service-manager` exists as standalone crate for watchdog/super-admin operations.
 
 ## Data and Auth Notes

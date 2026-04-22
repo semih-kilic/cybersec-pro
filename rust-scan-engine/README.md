@@ -6,13 +6,13 @@ Standalone high-performance scan execution service for CyberSec Pro.
 
 - Provides dedicated scan execution runtime on port `5002`.
 - Exists as separate crate and API surface (`/api/v3/*`).
-- Not yet included in top-level `docker-compose.yml` by default.
+- Included in top-level `docker-compose.yml` as `rust-scan-engine`.
 
 ## Stack
 
 - Axum `0.7`
 - Tokio `1`
-- SQLx `0.7` (note: main backend uses `0.8`)
+- SQLx `0.8` (aligned with main backend)
 - JWT-based authentication
 
 ## Run Locally
@@ -46,4 +46,4 @@ Exact route behavior should be verified against `src/main.rs` and route modules 
 
 - Align auth contract with `rust-backend` before production routing.
 - Unify SQLx versions (`0.7` vs `0.8`) prior to deeper shared DB integration.
-- Add service into compose/nginx only after health checks and failure behavior are validated.
+- Service is in compose with `/health` check; nginx routing should be added only when direct external exposure is required.

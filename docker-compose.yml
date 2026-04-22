@@ -73,8 +73,38 @@ services:
         condition: service_healthy
       redis:
         condition: service_healthy
+      rust-scan-engine:
+        condition: service_healthy
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:5001/api/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+    networks:
+      - cybersec-network
+
+  # ============================================
+  # Rust Scan Engine (Dedicated scanner runtime)
+  # ============================================
+  rust-scan-engine:
+    build:
+      context: ./rust-scan-engine
+      dockerfile: Dockerfile
+    container_name: cybersec-scan-engine
+    restart: always
+    environment:
+      - DATABASE_URL=postgres://cybersec:${DB_PASSWORD:-***REDACTED_PG_PASSWORD***}@postgres:5432/cybersec_pro
+      - JWT_SECRET_KEY=${JWT_SECRET_KEY:-jwt-secret-cybersec-2026-production}
+      - SCAN_ENGINE_PORT=5002
+      - RUST_LOG=info
+    ports:
+      - "5002:5002"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:5002/health"]
       interval: 30s
       timeout: 10s
       retries: 3
