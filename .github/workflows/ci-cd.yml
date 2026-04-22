@@ -59,6 +59,42 @@ jobs:
           name: backend-reports
           path: rust-backend/ci-reports
 
+  # ── Rust Scan Engine ──────────────────────────────────────
+  scan-engine-check:
+    name: Scan Engine Build & Check
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: rust-scan-engine
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Cache Cargo registry & build
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+            rust-scan-engine/target
+          key: ${{ runner.os }}-scan-engine-cargo-${{ hashFiles('rust-scan-engine/Cargo.lock') }}
+          restore-keys: ${{ runner.os }}-scan-engine-cargo-
+
+      - name: Check compilation
+        run: |
+          mkdir -p ci-reports
+          cargo check --release 2>&1 | tee ci-reports/cargo-check.log
+
+      - name: Upload scan engine reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: scan-engine-reports
+          path: rust-scan-engine/ci-reports
+
   # ── Frontend ──────────────────────────────────────────────
   frontend-build:
     name: Frontend Build
@@ -111,7 +147,7 @@ jobs:
   # ── Deploy (only on master push) ──────────────────────────
   deploy:
     name: Deploy to Production
-    needs: [backend-check, frontend-build]
+    needs: [backend-check, scan-engine-check, frontend-build]
     runs-on: ubuntu-latest
     if: github.ref == 'refs/heads/master' && github.event_name == 'push'
 
