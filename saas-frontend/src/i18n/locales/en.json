@@ -674,6 +674,7 @@
     "purpleTeamProfile": {
       "heading": "Purple Team Runtime Profile",
       "subtitle": "Tune detection ratios and scenario penalties without redeploying the backend.",
+      "openDashboard": "Open Purple Team dashboard →",
       "source": "Source",
       "priorityOne": "Priority 1",
       "priorityOneDesc": "Organization DB profile",

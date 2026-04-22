@@ -633,6 +633,7 @@
     "purpleTeamProfile": {
       "heading": "Profilo runtime Purple Team",
       "subtitle": "Regola i tassi di rilevamento e le penalità di scenario senza ridistribuire il backend.",
+      "openDashboard": "Apri dashboard Purple Team →",
       "source": "Origine",
       "priorityOne": "Priorità 1",
       "priorityOneDesc": "Profilo organizzazione nel database",

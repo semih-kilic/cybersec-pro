@@ -633,6 +633,7 @@
     "purpleTeamProfile": {
       "heading": "Profil d'exécution Purple Team",
       "subtitle": "Ajustez les taux de détection et les pénalités de scénario sans redéployer le backend.",
+      "openDashboard": "Ouvrir le tableau de bord Purple Team →",
       "source": "Origine",
       "priorityOne": "Priorité 1",
       "priorityOneDesc": "Profil d'organisation en base de données",

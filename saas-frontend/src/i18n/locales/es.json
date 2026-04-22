@@ -633,6 +633,7 @@
     "purpleTeamProfile": {
       "heading": "Perfil de ejecución de Purple Team",
       "subtitle": "Ajusta ratios de detección y penalizaciones de escenario sin volver a desplegar el backend.",
+      "openDashboard": "Abrir panel de Purple Team →",
       "source": "Origen",
       "priorityOne": "Prioridad 1",
       "priorityOneDesc": "Perfil de organización en base de datos",

@@ -633,6 +633,7 @@
     "purpleTeamProfile": {
       "heading": "Purple-Team-Laufzeitprofil",
       "subtitle": "Passen Sie Erkennungsraten und Szenario-Abschläge an, ohne das Backend neu bereitzustellen.",
+      "openDashboard": "Purple-Team-Dashboard öffnen →",
       "source": "Quelle",
       "priorityOne": "Priorität 1",
       "priorityOneDesc": "Organisationsprofil aus der Datenbank",

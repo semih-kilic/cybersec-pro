@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { motion } from 'framer-motion';
+import { Link } from 'react-router-dom';
 import type { SettingsTabProps } from './types';
 import api from '../../../services/api';
 
@@ -203,6 +204,14 @@ export function PurpleTeamProfileTab({ user, setLoading, setMessage }: SettingsT
         <div>
           <h2 className="text-xl font-bold text-white mb-1">{t('settings.purpleTeamProfile.heading', 'Purple Team Runtime Profile')}</h2>
           <p className="text-gray-400 text-sm">{t('settings.purpleTeamProfile.subtitle', 'Tune detection ratios and scenario penalties without redeploying the backend.')}</p>
+          <div className="mt-2">
+            <Link
+              to="/dashboard/purple-team"
+              className="text-sm text-cyan-400 hover:text-cyan-300 hover:underline"
+            >
+              {t('settings.purpleTeamProfile.openDashboard', 'Open Purple Team dashboard →')}
+            </Link>
+          </div>
         </div>
         <div className={`px-3 py-1 rounded-full text-xs font-medium self-start ${source === 'db' ? 'bg-purple-500/20 text-purple-300' : 'bg-gray-700 text-gray-300'}`}>
           {t('settings.purpleTeamProfile.source', 'Source')}: {source}
