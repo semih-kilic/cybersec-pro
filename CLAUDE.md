@@ -121,15 +121,21 @@ CI artifacts for observability:
 
 - `rust-backend/src/handlers/stub_handlers.rs` still contains mixed maturity endpoints; Purple Team now has DB-backed persistence with time-based lifecycle simulation, while real execution telemetry is still placeholder.
 - Billing/Stripe flow remains partially stubbed.
-- `rust-scan-engine` is not integrated in `docker-compose.yml`.
-- SQLx version mismatch between backend and scan engine should be resolved before deeper integration.
+- `rust-scan-engine` is integrated in `docker-compose.yml` (service: `rust-scan-engine`, port 5002, `SCAN_ENGINE_URL` wired in backend). ✅ Resolved.
+- SQLx version mismatch resolved: both `rust-backend` and `rust-scan-engine` now use `sqlx 0.8`. ✅ Resolved.
 
 ## 8) Best-First Priorities
 
-1. Expand Purple Team from persistence-only flow to execution telemetry + real detection pipeline updates.
-2. Add/expand automated checks (lint, type-check, backend smoke tests).
-3. Keep i18n parity stable with CI checks for locale drift.
-4. Align scan engine integration strategy with compose and routing.
+1. ✅ Expand Purple Team from persistence-only flow to execution telemetry + real detection pipeline updates.
+   - Gap analysis thresholds, detection coverage alerts, 15 backend unit tests, frontend alert banners.
+2. ✅ Add/expand automated checks (lint, type-check, backend smoke tests).
+   - CI runs purple_team, report_handlers, scan engine unit tests; i18n parity checks; frontend vitest.
+3. ✅ Keep i18n parity stable with CI checks for locale drift.
+   - 49/49 scopes complete; drift detection in pipeline.
+4. ✅ Align scan engine integration strategy with compose and routing.
+   - Nginx /api/v3/ routing (600s timeouts); 16 scanner unit tests (injection, whitelist, build_command); CI step added.
+5. Expand billing/Stripe flow beyond stub endpoints.
+6. Wire `purple_team_abort_exercise` to emit telemetry abort event (parity with ingest_telemetry).
 
 ## 9) Latest Frontend Stability Notes
 
