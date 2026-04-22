@@ -1,6 +1,7 @@
 import { useState, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useQueryClient } from '@tanstack/react-query';
+import { Link } from 'react-router-dom';
 import { PageTransition } from '../../components/ui';
 import { useAuth } from '../../hooks/useAuth';
 import { useDocumentTitle } from '../../hooks/useUtilities';
@@ -224,6 +225,15 @@ function TuningSummaryCard({
         <span className={`px-3 py-1 rounded-full text-xs font-medium border ${source === 'db' ? 'bg-purple-500/20 text-purple-300 border-purple-500/30' : 'bg-gray-800 text-gray-300 border-gray-700'}`}>
           {t('purpleTeam.runtimeTuningSource', 'Source')}: {source}
         </span>
+      </div>
+
+      <div className="flex justify-end mb-4">
+        <Link
+          to="/dashboard/settings?tab=purple-profile"
+          className="text-sm text-cyan-400 hover:text-cyan-300 hover:underline"
+        >
+          {t('purpleTeam.runtimeTuningManage', 'Manage runtime tuning →')}
+        </Link>
       </div>
 
       <div className="grid grid-cols-2 lg:grid-cols-5 gap-3 text-sm">
