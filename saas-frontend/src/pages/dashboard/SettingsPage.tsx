@@ -13,10 +13,11 @@ import {
   IntegrationsTab,
   SSOTab,
   BillingTab,
+  PurpleTeamProfileTab,
 } from './settings';
 import type { SettingsMessage } from './settings';
 
-const TABS = [
+const BASE_TABS = [
   { id: 'profile', label: 'Profile', icon: '👤' },
   { id: 'security', label: 'Security', icon: '🔐' },
   { id: 'notifications', label: 'Notifications', icon: '🔔' },
@@ -27,7 +28,10 @@ const TABS = [
   { id: 'billing', label: 'Billing', icon: '💳' },
 ] as const;
 
-type TabId = typeof TABS[number]['id'];
+const ADMIN_TAB = { id: 'purple-profile', label: 'Purple Team Profile', icon: '🟣' } as const;
+
+type BaseTabId = typeof BASE_TABS[number]['id'];
+type TabId = BaseTabId | typeof ADMIN_TAB.id;
 
 export default function SettingsPage() {
   const { t } = useTranslation();
@@ -35,9 +39,11 @@ export default function SettingsPage() {
   const { user, organization } = useAuth();
   const [searchParams, setSearchParams] = useSearchParams();
   const userPlan = organization?.plan_type || 'trial';
+  const isAdmin = user?.role === 'admin' || user?.role === 'superadmin';
+  const tabs = isAdmin ? [...BASE_TABS, ADMIN_TAB] : [...BASE_TABS];
 
   const tabParam = searchParams.get('tab');
-  const validIds = TABS.map(t => t.id) as readonly string[];
+  const validIds = tabs.map(t => t.id) as readonly string[];
   const initialTab = validIds.includes(tabParam || '') ? (tabParam as TabId) : 'profile';
 
   const [activeTab, setActiveTab] = useState<TabId>(initialTab);
@@ -61,6 +67,7 @@ export default function SettingsPage() {
     integrations:  <IntegrationsTab {...tabProps} />,
     sso:           <SSOTab {...tabProps} />,
     billing:       <BillingTab {...tabProps} />,
+    'purple-profile': <PurpleTeamProfileTab {...tabProps} />,
   };
 
   return (
@@ -83,7 +90,7 @@ export default function SettingsPage() {
         {/* Tabs — V17: horizontal scrollable on mobile, sidebar on desktop */}
         <div className="w-full lg:w-48 flex-shrink-0">
           <nav className="flex lg:flex-col gap-1 overflow-x-auto pb-2 lg:pb-0 lg:space-y-1 scrollbar-hide">
-            {TABS.map((tab) => (
+            {tabs.map((tab) => (
               <button
                 key={tab.id}
                 onClick={() => handleTabChange(tab.id)}

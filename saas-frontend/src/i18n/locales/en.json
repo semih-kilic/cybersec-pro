@@ -619,6 +619,30 @@
       "heading": "Team Management",
       "subtitle": "Invite team members and manage roles",
       "inviteMember": "Invite Member"
+    },
+    "purpleTeamProfile": {
+      "heading": "Purple Team Runtime Profile",
+      "subtitle": "Tune detection ratios and scenario penalties without redeploying the backend.",
+      "source": "Source",
+      "priorityOne": "Priority 1",
+      "priorityOneDesc": "Organization DB profile",
+      "priorityTwo": "Priority 2",
+      "priorityTwoDesc": "Environment JSON override",
+      "priorityThree": "Priority 3",
+      "priorityThreeDesc": "Per-variable environment fallback",
+      "editorLabel": "Profile JSON",
+      "exampleTitle": "Supported keys",
+      "exampleChainKeys": "Chain weights: chains.credential, chains.lateral, chains.default",
+      "exampleTargetKeys": "Target modifiers: target.prod_penalty, target.dev_bonus",
+      "exampleBoundKeys": "Bounds: bounds.min, bounds.max",
+      "reload": "Reload",
+      "reset": "Reset to Defaults",
+      "save": "Save Profile",
+      "saving": "Saving...",
+      "saved": "Purple Team profile saved.",
+      "loading": "Loading Purple Team profile...",
+      "invalidJson": "Profile JSON is not valid.",
+      "adminOnly": "Only organization admins can manage the Purple Team runtime profile."
     }
   },
   "cookie": {

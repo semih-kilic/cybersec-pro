@@ -618,6 +618,30 @@
       "heading": "Gestione del team",
       "subtitle": "Invita membri del team e gestisci i ruoli",
       "inviteMember": "Invita membro"
+    },
+    "purpleTeamProfile": {
+      "heading": "Profilo runtime Purple Team",
+      "subtitle": "Regola i tassi di rilevamento e le penalità di scenario senza ridistribuire il backend.",
+      "source": "Origine",
+      "priorityOne": "Priorità 1",
+      "priorityOneDesc": "Profilo organizzazione nel database",
+      "priorityTwo": "Priorità 2",
+      "priorityTwoDesc": "Override JSON da ambiente",
+      "priorityThree": "Priorità 3",
+      "priorityThreeDesc": "Fallback tramite singole variabili d'ambiente",
+      "editorLabel": "JSON del profilo",
+      "exampleTitle": "Chiavi supportate",
+      "exampleChainKeys": "Pesi catena: chains.credential, chains.lateral, chains.default",
+      "exampleTargetKeys": "Modificatori target: target.prod_penalty, target.dev_bonus",
+      "exampleBoundKeys": "Limiti: bounds.min, bounds.max",
+      "reload": "Ricarica",
+      "reset": "Ripristina predefiniti",
+      "save": "Salva profilo",
+      "saving": "Salvataggio...",
+      "saved": "Profilo Purple Team salvato.",
+      "loading": "Caricamento profilo Purple Team...",
+      "invalidJson": "Il JSON del profilo non è valido.",
+      "adminOnly": "Solo gli amministratori dell'organizzazione possono gestire il profilo runtime Purple Team."
     }
   },
   "cookie": {

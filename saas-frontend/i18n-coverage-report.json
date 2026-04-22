@@ -271,6 +271,12 @@
       "probableHardcodedLines": []
     },
     {
+      "filePath": "src/pages/dashboard/settings/PurpleTeamProfileTab.tsx",
+      "hasUseTranslation": true,
+      "hasTCalls": true,
+      "probableHardcodedLines": []
+    },
+    {
       "filePath": "src/pages/dashboard/settings/SSOTab.tsx",
       "hasUseTranslation": true,
       "hasTCalls": true,

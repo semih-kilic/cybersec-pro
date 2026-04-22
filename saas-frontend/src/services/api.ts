@@ -255,6 +255,29 @@ class ApiService {
   }
 
   // ================================
+  // PURPLE TEAM PROFILE
+  // ================================
+
+  async getPurpleTeamProfile() {
+    return this.request<{
+      organization_id: string;
+      profile: Record<string, unknown>;
+      source: 'db' | 'default';
+    }>('/settings/purple-team/profile');
+  }
+
+  async updatePurpleTeamProfile(profile: Record<string, unknown>) {
+    return this.request<{
+      message: string;
+      organization_id: string;
+      profile: Record<string, unknown>;
+    }>('/settings/purple-team/profile', {
+      method: 'PUT',
+      body: JSON.stringify({ profile }),
+    });
+  }
+
+  // ================================
   // API KEYS
   // ================================
 

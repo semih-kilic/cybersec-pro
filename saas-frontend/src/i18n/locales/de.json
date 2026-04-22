@@ -618,6 +618,30 @@
       "heading": "Teamverwaltung",
       "subtitle": "Laden Sie Teammitglieder ein und verwalten Sie Rollen",
       "inviteMember": "Mitglied einladen"
+    },
+    "purpleTeamProfile": {
+      "heading": "Purple-Team-Laufzeitprofil",
+      "subtitle": "Passen Sie Erkennungsraten und Szenario-Abschläge an, ohne das Backend neu bereitzustellen.",
+      "source": "Quelle",
+      "priorityOne": "Priorität 1",
+      "priorityOneDesc": "Organisationsprofil aus der Datenbank",
+      "priorityTwo": "Priorität 2",
+      "priorityTwoDesc": "JSON-Override aus der Umgebung",
+      "priorityThree": "Priorität 3",
+      "priorityThreeDesc": "Fallback über einzelne Umgebungsvariablen",
+      "editorLabel": "Profil-JSON",
+      "exampleTitle": "Unterstützte Schlüssel",
+      "exampleChainKeys": "Ketten-Gewichte: chains.credential, chains.lateral, chains.default",
+      "exampleTargetKeys": "Ziel-Modifikatoren: target.prod_penalty, target.dev_bonus",
+      "exampleBoundKeys": "Grenzen: bounds.min, bounds.max",
+      "reload": "Neu laden",
+      "reset": "Auf Standard zurücksetzen",
+      "save": "Profil speichern",
+      "saving": "Wird gespeichert...",
+      "saved": "Purple-Team-Profil gespeichert.",
+      "loading": "Purple-Team-Profil wird geladen...",
+      "invalidJson": "Profil-JSON ist ungültig.",
+      "adminOnly": "Nur Organisationsadmins können das Purple-Team-Laufzeitprofil verwalten."
     }
   },
   "cookie": {

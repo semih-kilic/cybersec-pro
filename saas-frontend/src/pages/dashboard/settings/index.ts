@@ -6,4 +6,5 @@ export { TeamTab } from './TeamTab';
 export { IntegrationsTab } from './IntegrationsTab';
 export { SSOTab } from './SSOTab';
 export { BillingTab } from './BillingTab';
+export { PurpleTeamProfileTab } from './PurpleTeamProfileTab';
 export type { SettingsTabProps, SettingsMessage, UserSettings, ApiKey } from './types';
