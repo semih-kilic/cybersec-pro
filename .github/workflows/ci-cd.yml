@@ -70,26 +70,23 @@ jobs:
         with:
           node-version: '20'
 
-      - name: Install pnpm
-        run: npm install -g pnpm
-
       - name: Install dependencies
-        run: pnpm install --frozen-lockfile
+        run: npm ci
 
       - name: i18n coverage check
-        run: pnpm run i18n:check
+        run: npm run i18n:check
 
       - name: i18n residual check
-        run: pnpm run i18n:residual
+        run: npm run i18n:residual
 
       - name: Type check
-        run: pnpm run type-check
+        run: npm run type-check
 
       - name: Purple Team flow tests
-        run: pnpm run test:purple-flow
+        run: npm run test:purple-flow
 
       - name: Build
-        run: pnpm run build
+        run: npm run build
 
       - name: Upload i18n reports
         if: always()
@@ -128,8 +125,8 @@ jobs:
 
             # Build frontend
             cd ../saas-frontend
-            pnpm install --frozen-lockfile
-            npx vite build
+            npm ci
+            npm run build
 
             # Deploy frontend
             sudo cp -r dist/* /var/www/dashboard/

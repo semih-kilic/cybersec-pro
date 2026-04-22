@@ -91,6 +91,8 @@ This script runs:
 - `src/pages/dashboard/__tests__/PurpleTeamAdminFlow.test.tsx`
 - `src/pages/dashboard/__tests__/SettingsPageRoleVisibility.test.tsx`
 
+The same command is enforced in CI by the `frontend-build` job before the production frontend build step.
+
 ### Marketing frontend
 
 ```bash
@@ -135,6 +137,13 @@ Localization files live in:
 - `.claude/memory/project-state.md` - current development state
 
 ## CI Artifacts
+
+Frontend CI gates before build:
+
+- `pnpm run i18n:check`
+- `pnpm run i18n:residual`
+- `pnpm run type-check`
+- `pnpm run test:purple-flow`
 
 - `i18n-reports` artifact (frontend job):
   - coverage report
