@@ -134,7 +134,12 @@ CI artifacts for observability:
    - 49/49 scopes complete; drift detection in pipeline.
 4. ✅ Align scan engine integration strategy with compose and routing.
    - Nginx /api/v3/ routing (600s timeouts); 16 scanner unit tests (injection, whitelist, build_command); CI step added.
-5. Expand billing/Stripe flow beyond stub endpoints.
+5. ✅ Expand billing/Stripe flow beyond stub endpoints.
+   - `customer.subscription.updated`: updates `organizations.plan_type` + upserts `subscriptions` record with period tracking.
+   - `invoice.payment_failed`: marks `subscriptions.status = 'past_due'` with attempt count logging.
+   - `/api/v1/billing/portal`: Stripe Customer Portal session creation (returns `portal_url`).
+   - Pure helper functions: `resolve_plan_from_price_id`, `extract_price_id_from_subscription`, `parse_stripe_signature` — all unit-tested.
+   - 13 unit tests: signature parsing, plan resolution, subscription event shapes, payment_failed event shape.
 6. ✅ Wire `purple_team_abort_exercise` to emit telemetry abort event (parity with ingest_telemetry).
    - Abort event appended to `payload->'telemetry_events'` atomically in same UPDATE; response body carries event; 3 unit tests.
 
