@@ -85,6 +85,9 @@ jobs:
       - name: Purple Team flow tests
         run: npm run test:purple-flow
 
+      - name: Runtime guard tests
+        run: npm run test:runtime-guards
+
       - name: Build
         run: npm run build
 

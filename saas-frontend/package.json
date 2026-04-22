@@ -15,6 +15,7 @@
     "i18n:residual": "node scripts/i18n-residual-check.cjs",
     "test": "vitest",
     "test:purple-flow": "vitest --run src/pages/dashboard/__tests__/PurpleTeamAdminFlow.test.tsx src/pages/dashboard/__tests__/SettingsPageRoleVisibility.test.tsx",
+    "test:runtime-guards": "vitest --run src/hooks/__tests__/useApiQueries.normalizeAgentsPayload.test.ts",
     "test:ui": "vitest --ui",
     "test:coverage": "vitest --coverage"
   },
