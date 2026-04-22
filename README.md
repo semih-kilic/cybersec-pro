@@ -140,10 +140,10 @@ Localization files live in:
 
 Frontend CI gates before build:
 
-- `pnpm run i18n:check`
-- `pnpm run i18n:residual`
-- `pnpm run type-check`
-- `pnpm run test:purple-flow`
+- `npm run i18n:check`
+- `npm run i18n:residual`
+- `npm run type-check`
+- `npm run test:purple-flow`
 
 - `i18n-reports` artifact (frontend job):
   - coverage report
