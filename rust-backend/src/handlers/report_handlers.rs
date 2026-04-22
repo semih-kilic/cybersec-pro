@@ -1262,3 +1262,122 @@ async fn load_org_logo_data_uri(db: &sqlx::PgPool, org_id: &str) -> Option<Strin
         Some(format!("data:{};base64,{}", mime, base64::Engine::encode(&base64::engine::general_purpose::STANDARD, &bytes)))
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    // ── build_recommendations ─────────────────────────────────────────────────
+
+    #[test]
+    fn report_recommendations_clean_scan_message() {
+        let html = build_recommendations(0, 0, 0, 0);
+        assert!(html.contains("CLEAN"), "expected CLEAN message for zero findings");
+        assert!(!html.contains("CRITICAL"));
+        assert!(!html.contains("HIGH"));
+    }
+
+    #[test]
+    fn report_recommendations_critical_only() {
+        let html = build_recommendations(3, 0, 0, 0);
+        assert!(html.contains("CRITICAL"), "CRITICAL section missing");
+        assert!(html.contains("3 critical"), "count mismatch");
+        assert!(!html.contains("CLEAN"));
+        assert!(!html.contains("HIGH"));
+    }
+
+    #[test]
+    fn report_recommendations_all_severities_present() {
+        let html = build_recommendations(1, 2, 3, 4);
+        assert!(html.contains("CRITICAL"));
+        assert!(html.contains("HIGH"));
+        assert!(html.contains("MEDIUM"));
+        assert!(html.contains("LOW"));
+        assert!(!html.contains("CLEAN"));
+    }
+
+    // ── build_compliance_section ──────────────────────────────────────────────
+
+    #[test]
+    fn report_compliance_owasp_all_pass_when_clean() {
+        let html = build_compliance_section("owasp", 0, 0, 0, 0, 10);
+        assert!(html.contains("OWASP Top 10"), "framework name missing");
+        assert!(!html.contains(">FAIL<"), "expected zero FAIL rows with clean scan");
+    }
+
+    #[test]
+    fn report_compliance_owasp_fails_on_critical() {
+        let html = build_compliance_section("owasp", 1, 0, 0, 0, 80);
+        assert!(html.contains(">FAIL<"), "expected at least one FAIL row");
+    }
+
+    #[test]
+    fn report_compliance_pci_higher_risk_yields_more_failures() {
+        let html_low_risk  = build_compliance_section("pci", 0, 0, 0, 0, 40);
+        let html_high_risk = build_compliance_section("pci", 0, 0, 0, 0, 75);
+        assert!(html_low_risk.contains("PCI DSS"), "framework name missing");
+        let fails_low  = html_low_risk.matches(">FAIL<").count();
+        let fails_high = html_high_risk.matches(">FAIL<").count();
+        assert!(fails_high >= fails_low, "higher risk_score should yield at least as many failures");
+    }
+
+    #[test]
+    fn report_compliance_unknown_template_uses_multi_framework() {
+        let html = build_compliance_section("unknown_template", 0, 0, 0, 0, 30);
+        assert!(html.contains("Multi-Framework Compliance"), "should fall back to multi-framework");
+    }
+
+    #[test]
+    fn report_compliance_pass_percentage_embedded_in_output() {
+        let html = build_compliance_section("iso", 0, 0, 0, 0, 30);
+        assert!(html.contains("controls passing"), "pass count text missing");
+        assert!(html.contains('%'), "percentage sign missing");
+    }
+
+    // ── build_executive_summary ───────────────────────────────────────────────
+
+    #[test]
+    fn report_executive_summary_empty_scans() {
+        let html = build_executive_summary(&[], "full");
+        assert!(html.contains("No completed scans"), "empty state message missing");
+    }
+
+    #[test]
+    fn report_executive_summary_single_scan() {
+        let scan = ScanRow {
+            id: "scan-1".into(),
+            tool_id: "tool-1".into(),
+            target: "10.0.0.1".into(),
+            output: None,
+            findings: None,
+            started_at: None,
+            completed_at: None,
+        };
+        let html = build_executive_summary(&[(scan, "nmap".into())], "full");
+        assert!(html.contains("10.0.0.1"), "target missing from summary");
+        assert!(html.contains("nmap"), "tool name missing from summary");
+    }
+
+    #[test]
+    fn report_executive_summary_deduplicates_targets() {
+        let make_scan = |target: &str, tool: &str| -> (ScanRow, String) {
+            (ScanRow {
+                id: uuid::Uuid::new_v4().to_string(),
+                tool_id: "t".into(),
+                target: target.into(),
+                output: None,
+                findings: None,
+                started_at: None,
+                completed_at: None,
+            }, tool.into())
+        };
+        let scans = vec![
+            make_scan("192.168.1.1", "nmap"),
+            make_scan("192.168.1.1", "masscan"),
+            make_scan("10.0.0.5", "nikto"),
+        ];
+        let html = build_executive_summary(&scans, "full");
+        // 2 unique targets — the summary embeds the deduplicated count
+        assert!(html.contains("<strong>2</strong>"), "should deduplicate to 2 unique targets");
+    }
+}

@@ -40,10 +40,15 @@ jobs:
           mkdir -p ci-reports
           cargo check --release 2>&1 | tee ci-reports/cargo-check.log
 
-      - name: Purple Team telemetry smoke tests
+      - name: Purple Team unit tests
         run: |
-          cargo test purple_team_parse_telemetry_payload
-          cargo test purple_team_detection_rate_handles_zero_total_steps
+          SQLX_OFFLINE=true cargo test purple_team 2>&1 | tee ci-reports/cargo-test-purple-team.log
+          grep -E "^test result" ci-reports/cargo-test-purple-team.log | grep -v "FAILED"
+
+      - name: Report handler unit tests
+        run: |
+          SQLX_OFFLINE=true cargo test handlers::report_handlers::tests 2>&1 | tee ci-reports/cargo-test-report-handlers.log
+          grep -E "^test result" ci-reports/cargo-test-report-handlers.log | grep -v "FAILED"
 
       - name: Run clippy lints
         run: |
