@@ -55,8 +55,6 @@ export default defineConfig({
           charts: ['recharts'],
           // UI primitives — headless UI + heroicons
           ui: ['@headlessui/react', '@heroicons/react'],
-          // Terminal — only loaded by TerminalPage
-          xterm: ['xterm', 'xterm-addon-fit', 'xterm-addon-web-links'],
           // Payments — only loaded by UpgradePage/BillingPage
           stripe: ['@stripe/stripe-js', '@stripe/react-stripe-js'],
           // Real-time

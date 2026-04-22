@@ -137,8 +137,8 @@ const LEADERBOARD = [
 ];
 
 export default function CommunityPage() {
-  useDocumentTitle(`${t('community.title', 'Community')} — CyberSec Pro`);
   const { t } = useTranslation();
+  useDocumentTitle(`${t('community.title', 'Community')} — CyberSec Pro`);
   const { user } = useAuth();
   const [activeCategory, setActiveCategory] = useState<string>('All');
   const [searchQuery, setSearchQuery] = useState('');

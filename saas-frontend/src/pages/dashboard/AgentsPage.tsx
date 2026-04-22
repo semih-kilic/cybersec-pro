@@ -192,6 +192,7 @@ function StatBadge({ label, value, color }: { label: string; value: number; colo
 function AgentCard({ agent, onSelect, onTest, isSelected, isTesting }: {
   agent: Agent; onSelect: () => void; onTest: () => void; isSelected: boolean; isTesting: boolean;
 }) {
+  const { t } = useTranslation();
   const status = STATUS_CONFIG[agent.status] || STATUS_CONFIG.offline;
   const icon = PLATFORM_ICONS[agent.platform] || PLATFORM_ICONS.unknown;
   const timeSince = agent.last_heartbeat ? formatTimeSince(agent.last_heartbeat) : 'Never';
@@ -257,6 +258,7 @@ function AgentCard({ agent, onSelect, onTest, isSelected, isTesting }: {
    ═══════════════════════════════════════════════════════════ */
 
 function AddDeviceWizard({ onClose, onCreate }: { onClose: () => void; onCreate: (data: Record<string, unknown>) => void }) {
+  const { t } = useTranslation();
   const [step, setStep] = useState<WizardStep>('type');
   const [connType, setConnType] = useState('ssh');
   const [form, setForm] = useState({
@@ -420,6 +422,7 @@ function AddDeviceWizard({ onClose, onCreate }: { onClose: () => void; onCreate:
 function EditDeviceModal({ agent, onClose, onSave }: {
   agent: Agent; onClose: () => void; onSave: (id: string, data: Record<string, unknown>) => void;
 }) {
+  const { t } = useTranslation();
   const [form, setForm] = useState({
     name: agent.name || '',
     ssh_host: agent.ip_address || '',
@@ -495,6 +498,7 @@ function EditDeviceModal({ agent, onClose, onSave }: {
 function DeviceDetail({ agent, testResult, isTesting, onTest, onEdit, onDelete, onClose }: {
   agent: Agent; testResult: TestResult | null; isTesting: boolean; onTest: () => void; onEdit: () => void; onDelete: () => void; onClose: () => void;
 }) {
+  const { t } = useTranslation();
   const status = STATUS_CONFIG[agent.status] || STATUS_CONFIG.offline;
   const icon = PLATFORM_ICONS[agent.platform] || '\u2753';
 
@@ -613,6 +617,7 @@ function DeviceDetail({ agent, testResult, isTesting, onTest, onEdit, onDelete, 
    ═══════════════════════════════════════════════════════════ */
 
 function NetworkDiscovery({ onClose }: { onClose: () => void }) {
+  const { t } = useTranslation();
   const { token } = useAuthToken();
   const [subnet, setSubnet] = useState('10.0.0.0/24');
   const [scanning, setScanning] = useState(false);
@@ -733,6 +738,7 @@ function DeviceGroup({ title, count, color, agents, selectedId, testingId, onSel
    ═══════════════════════════════════════════════════════════ */
 
 function EmptyState({ onAdd, onDiscover }: { onAdd: () => void; onDiscover: () => void }) {
+  const { t } = useTranslation();
   return (
     <div className="flex items-center justify-center h-full min-h-[400px]">
       <div className="text-center max-w-md">

@@ -48,6 +48,11 @@ interface AgentInfo {
   last_heartbeat: string;
 }
 
+type LegacyScanFields = {
+  tool_name?: string;
+  command?: string;
+};
+
 export function ScanExecutionPage() {
   const { t } = useTranslation();
   useDocumentTitle('Scan Execution — CyberSec Pro');
@@ -170,13 +175,14 @@ export function ScanExecutionPage() {
         const res = await api.getScan(scanId);
         const scan = res.data?.scan;
         if (!scan) return;
+        const legacyScan = scan as typeof scan & LegacyScanFields;
 
         // Populate state from existing scan data
         if (scan.target) setTarget(scan.target);
-        if (scan.tool_name || scan.tool_id) {
-          const toolName = scan.tool_name || scan.tool_id || '';
+        if (legacyScan.tool_name || scan.tool_id) {
+          const toolName = legacyScan.tool_name || scan.tool_id || '';
           setBusinessName(toolName);
-          setCommand(scan.command || `${toolName} ${scan.target || ''}`);
+          setCommand(legacyScan.command || `${toolName} ${scan.target || ''}`);
         }
         if (scan.output) {
           const lines = typeof scan.output === 'string' ? scan.output.split('\n') : [];

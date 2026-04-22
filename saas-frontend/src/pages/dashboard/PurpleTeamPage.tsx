@@ -267,6 +267,7 @@ function TuningSummaryCard({
 // ═══════════════════════════════════════════════════════════
 
 function MitreHeatMap({ coverage, matrix }: { coverage: Record<string, TacticCoverage>; matrix: Record<string, MitreTactic> }) {
+  const { t } = useTranslation();
   const [selectedTactic, setSelectedTactic] = useState<string | null>(null);
 
   // Ordered tactics for visual layout
@@ -418,6 +419,7 @@ function ChainSelector({ chains, onSelect }: { chains: AttackChain[]; onSelect: 
 // ═══════════════════════════════════════════════════════════
 
 function ExerciseDetail({ exercise }: { exercise: Exercise }) {
+  const { t } = useTranslation();
   const [activeTab, setActiveTab] = useState<'timeline' | 'alerts' | 'gaps' | 'coverage'>('timeline');
 
   const detectionRate = exercise.total_steps > 0

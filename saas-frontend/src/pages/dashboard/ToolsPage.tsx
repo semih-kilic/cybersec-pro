@@ -542,6 +542,7 @@ function VirtualizedToolGrid({
   getPlanBadge,
   userPlan,
 }: VirtualizedToolGridProps) {
+  const { t } = useTranslation();
   const containerRef = useRef<HTMLDivElement>(null);
   const COLS = 4; // xl:grid-cols-4
 
@@ -695,6 +696,7 @@ function VirtualizedToolList({
   canUseTool,
   getPlanBadge,
 }: VirtualizedToolListProps) {
+  const { t } = useTranslation();
   const containerRef = useRef<HTMLDivElement>(null);
 
   // Flatten all tools for list virtualization

@@ -282,6 +282,7 @@ function ServiceCard({
   onAction: (id: string, action: 'start' | 'stop' | 'restart') => void;
   onSelect: () => void;
 }) {
+  const { t } = useTranslation();
   const { config, status, pid, uptime_secs, cpu_percent, memory_mb, health_ok } = service;
   const isRunning = status === 'running';
 
@@ -408,6 +409,7 @@ function ServiceDetailModal({
   onAction: (id: string, action: 'start' | 'stop' | 'restart') => void;
   actionLoading: string | null;
 }) {
+  const { t } = useTranslation();
   const { config, status, pid, uptime_secs, cpu_percent, memory_mb, restart_count, last_started, last_health_check, health_ok, error_message, logs_tail } = service;
   const isRunning = status === 'running';
 
