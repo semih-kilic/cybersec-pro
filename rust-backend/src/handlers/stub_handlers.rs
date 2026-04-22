@@ -3283,7 +3283,8 @@ fn purple_team_detection_rate(detected_attacks: i64, total_steps: i64) -> f64 {
 
 /// Ingest a blue-team detection telemetry event for an exercise step.
 /// Blue team tooling (SIEM, EDR, etc.) posts detection signals here, which updates
-/// the exercise's detected_attacks count and appends an event to the payload.
+/// the exercise's detected_attacks count, appends an event to the payload,
+/// and recalculates gap_analysis in real time.
 pub async fn purple_team_ingest_telemetry(
     Path(exercise_id): Path<String>,
     user: AuthUser,
@@ -3309,7 +3310,7 @@ pub async fn purple_team_ingest_telemetry(
     // Increment detected_attacks counter if this event reports a detection.
     // The payload telemetry_events array is appended atomically.
     let delta: i64 = if detected { 1 } else { 0 };
-    let result = sqlx::query_as::<_, (String, i64, i64, i64)>(
+    let result = sqlx::query_as::<_, (String, i64, i64, i64, String)>(
         r#"UPDATE purple_team_exercises
            SET detected_attacks = detected_attacks + $3,
                missed_attacks = missed_attacks + $4,
@@ -3320,7 +3321,7 @@ pub async fn purple_team_ingest_telemetry(
                    COALESCE(payload->'telemetry_events', '[]'::jsonb) || $5::jsonb
                )
            WHERE id = $1 AND organization_id = $2
-           RETURNING id, detected_attacks, missed_attacks, total_steps"#
+           RETURNING id, detected_attacks, missed_attacks, total_steps, attack_chain_id"#
     )
     .bind(&exercise_id)
     .bind(org_id)
@@ -3331,14 +3332,69 @@ pub async fn purple_team_ingest_telemetry(
     .await;
 
     match result {
-        Ok(Some((_, detected_attacks, missed_attacks, total_steps))) => {
+        Ok(Some((_, detected_attacks, missed_attacks, total_steps, chain_id))) => {
             let detection_rate = purple_team_detection_rate(detected_attacks, total_steps);
+
+            // Build live gap_analysis from current counters and persist it into
+            // the payload so that exercise_detail / exercises list reflects
+            // real-time detection coverage without waiting for progress_tick.
+            let gap = json!({
+                "total_attacks": total_steps,
+                "detected": detected_attacks,
+                "missed": missed_attacks,
+                "detection_rate": detection_rate
+            });
+            let _ = sqlx::query(
+                r#"UPDATE purple_team_exercises
+                   SET payload = jsonb_set(payload, '{gap_analysis}', $3::jsonb),
+                       updated_at = NOW()
+                   WHERE id = $1 AND organization_id = $2"#,
+            )
+            .bind(&exercise_id)
+            .bind(org_id)
+            .bind(gap.to_string())
+            .execute(&state.db)
+            .await;
+
+            // Emit a detection pipeline signal: if coverage crosses a threshold,
+            // flag it in the exercise payload for the frontend alert banner.
+            if detection_rate >= 80.0 {
+                let _ = sqlx::query(
+                    r#"UPDATE purple_team_exercises
+                       SET payload = jsonb_set(payload, '{detection_coverage_alert}', '"high_coverage"'::jsonb),
+                           updated_at = NOW()
+                       WHERE id = $1 AND organization_id = $2"#,
+                )
+                .bind(&exercise_id)
+                .bind(org_id)
+                .execute(&state.db)
+                .await;
+            } else if detection_rate < 40.0 && total_steps >= 3 {
+                let _ = sqlx::query(
+                    r#"UPDATE purple_team_exercises
+                       SET payload = jsonb_set(payload, '{detection_coverage_alert}', '"low_coverage"'::jsonb),
+                           updated_at = NOW()
+                       WHERE id = $1 AND organization_id = $2"#,
+                )
+                .bind(&exercise_id)
+                .bind(org_id)
+                .execute(&state.db)
+                .await;
+            }
+
             Json(json!({
                 "message": "Telemetry event recorded",
                 "exercise_id": exercise_id,
+                "attack_chain_id": chain_id,
                 "detected_attacks": detected_attacks,
                 "missed_attacks": missed_attacks,
-                "detection_rate": detection_rate
+                "detection_rate": detection_rate,
+                "gap_analysis": {
+                    "total_attacks": total_steps,
+                    "detected": detected_attacks,
+                    "missed": missed_attacks,
+                    "detection_rate": detection_rate
+                }
             })).into_response()
         }
         Ok(None) => {
