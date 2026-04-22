@@ -2,9 +2,11 @@ import { useState, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useQueryClient } from '@tanstack/react-query';
 import { PageTransition } from '../../components/ui';
+import { useAuth } from '../../hooks/useAuth';
 import { useDocumentTitle } from '../../hooks/useUtilities';
 import {
   usePurpleTeamStats,
+  usePurpleTeamProfileSummary,
   useAttackChains,
   usePlaybooks,
   usePurpleTeamExercises,
@@ -186,6 +188,66 @@ function StatCard({ label, value, icon, color = 'cyan' }: { label: string; value
         <span className="text-xs text-gray-400 uppercase tracking-wider">{label}</span>
       </div>
       <div className="text-2xl font-bold text-white">{value}</div>
+    </div>
+  );
+}
+
+function TuningSummaryCard({
+  source,
+  credential,
+  lateral,
+  defaultWeight,
+  prodPenalty,
+  devBonus,
+}: {
+  source: 'db' | 'default';
+  credential: number;
+  lateral: number;
+  defaultWeight: number;
+  prodPenalty: number;
+  devBonus: number;
+}) {
+  const { t } = useTranslation();
+
+  return (
+    <div className="bg-gray-900/50 border border-gray-700/50 rounded-xl p-4">
+      <div className="flex items-start justify-between gap-4 mb-4">
+        <div>
+          <h3 className="text-lg font-bold text-white flex items-center gap-2">
+            <span>🧪</span>
+            <span>{t('purpleTeam.runtimeTuningTitle', 'Runtime Tuning')}</span>
+          </h3>
+          <p className="text-sm text-gray-400 mt-1">
+            {t('purpleTeam.runtimeTuningSubtitle', 'Active organization-level detection tuning applied to Purple Team simulations.')}
+          </p>
+        </div>
+        <span className={`px-3 py-1 rounded-full text-xs font-medium border ${source === 'db' ? 'bg-purple-500/20 text-purple-300 border-purple-500/30' : 'bg-gray-800 text-gray-300 border-gray-700'}`}>
+          {t('purpleTeam.runtimeTuningSource', 'Source')}: {source}
+        </span>
+      </div>
+
+      <div className="grid grid-cols-2 lg:grid-cols-5 gap-3 text-sm">
+        <div className="rounded-lg bg-gray-800/40 border border-gray-700/40 p-3">
+          <div className="text-gray-400 mb-1">{t('purpleTeam.runtimeCredential', 'Credential')}</div>
+          <div className="text-white font-bold">{credential.toFixed(2)}</div>
+        </div>
+        <div className="rounded-lg bg-gray-800/40 border border-gray-700/40 p-3">
+          <div className="text-gray-400 mb-1">{t('purpleTeam.runtimeLateral', 'Lateral')}</div>
+          <div className="text-white font-bold">{lateral.toFixed(2)}</div>
+        </div>
+        <div className="rounded-lg bg-gray-800/40 border border-gray-700/40 p-3">
+          <div className="text-gray-400 mb-1">{t('purpleTeam.runtimeDefault', 'Default')}</div>
+          <div className="text-white font-bold">{defaultWeight.toFixed(2)}</div>
+        </div>
+        <div className="rounded-lg bg-gray-800/40 border border-gray-700/40 p-3">
+          <div className="text-gray-400 mb-1">{t('purpleTeam.runtimeProdPenalty', 'Prod penalty')}</div>
+          <div className="text-white font-bold">{prodPenalty.toFixed(2)}</div>
+        </div>
+        <div className="rounded-lg bg-gray-800/40 border border-gray-700/40 p-3">
+          <div className="text-gray-400 mb-1">{t('purpleTeam.runtimeDevBonus', 'Dev bonus')}</div>
+          <div className="text-white font-bold">{devBonus.toFixed(2)}</div>
+        </div>
+      </div>
     </div>
   );
 }
@@ -603,6 +665,7 @@ function ExerciseDetail({ exercise }: { exercise: Exercise }) {
 
 export default function PurpleTeamPage() {
   const { t } = useTranslation();
+  const { user } = useAuth();
   useDocumentTitle(`${t('purpleTeam.title', 'Purple Team')} — CyberSec Pro`);
   void useQueryClient();
 
@@ -618,6 +681,8 @@ export default function PurpleTeamPage() {
 
   // React Query hooks — all 5 data sources
   const { data: stats = null, isLoading: statsLoading } = usePurpleTeamStats();
+  const isAdmin = user?.role === 'admin' || user?.role === 'superadmin';
+  const { data: profileSummary } = usePurpleTeamProfileSummary(isAdmin);
   const { data: chains = [], isLoading: chainsLoading } = useAttackChains();
   const { data: playbooks = [] } = usePlaybooks();
   const { data: mitreMatrix = {} } = useMitreMatrix();
@@ -729,6 +794,17 @@ export default function PurpleTeamPage() {
               color={(stats.average_risk_score ?? 0) <= 30 ? 'green' : (stats.average_risk_score ?? 0) <= 60 ? 'yellow' : 'red'} />
             <StatCard label="Attack Steps" value={stats.total_attack_steps} icon="💣" color="red" />
           </div>
+
+          {isAdmin && profileSummary?.profile && (
+            <TuningSummaryCard
+              source={profileSummary.source}
+              credential={profileSummary.profile.chains?.credential ?? 0.55}
+              lateral={profileSummary.profile.chains?.lateral ?? 0.62}
+              defaultWeight={profileSummary.profile.chains?.default ?? 0.72}
+              prodPenalty={profileSummary.profile.target?.prod_penalty ?? 0.10}
+              devBonus={profileSummary.profile.target?.dev_bonus ?? 0.08}
+            />
+          )}
 
           {/* Red vs Blue Scoreboard */}
           <div className="bg-gray-900/50 border border-gray-700/50 rounded-xl p-4">

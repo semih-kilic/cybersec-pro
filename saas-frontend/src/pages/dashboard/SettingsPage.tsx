@@ -18,17 +18,22 @@ import {
 import type { SettingsMessage } from './settings';
 
 const BASE_TABS = [
-  { id: 'profile', label: 'Profile', icon: '👤' },
-  { id: 'security', label: 'Security', icon: '🔐' },
-  { id: 'notifications', label: 'Notifications', icon: '🔔' },
-  { id: 'team', label: 'Team', icon: '👥' },
-  { id: 'api', label: 'API Keys', icon: '🔑' },
-  { id: 'integrations', label: 'Integrations', icon: '🔗' },
-  { id: 'sso', label: 'SSO', icon: '🏢' },
-  { id: 'billing', label: 'Billing', icon: '💳' },
+  { id: 'profile', labelKey: 'settings.tabs.profile', fallback: 'Profile', icon: '👤' },
+  { id: 'security', labelKey: 'settings.tabs.security', fallback: 'Security', icon: '🔐' },
+  { id: 'notifications', labelKey: 'settings.tabs.notifications', fallback: 'Notifications', icon: '🔔' },
+  { id: 'team', labelKey: 'settings.tabs.team', fallback: 'Team', icon: '👥' },
+  { id: 'api', labelKey: 'settings.tabs.api', fallback: 'API Keys', icon: '🔑' },
+  { id: 'integrations', labelKey: 'settings.tabs.integrations', fallback: 'Integrations', icon: '🔗' },
+  { id: 'sso', labelKey: 'settings.tabs.sso', fallback: 'SSO', icon: '🏢' },
+  { id: 'billing', labelKey: 'settings.tabs.billing', fallback: 'Billing', icon: '💳' },
 ] as const;
 
-const ADMIN_TAB = { id: 'purple-profile', label: 'Purple Team Profile', icon: '🟣' } as const;
+const ADMIN_TAB = {
+  id: 'purple-profile',
+  labelKey: 'settings.tabs.purpleProfile',
+  fallback: 'Purple Team Profile',
+  icon: '🟣',
+} as const;
 
 type BaseTabId = typeof BASE_TABS[number]['id'];
 type TabId = BaseTabId | typeof ADMIN_TAB.id;
@@ -101,7 +106,7 @@ export default function SettingsPage() {
                 }`}
               >
                 <span>{tab.icon}</span>
-                <span className="font-medium text-sm">{tab.label}</span>
+                <span className="font-medium text-sm">{t(tab.labelKey, tab.fallback)}</span>
               </button>
             ))}
           </nav>

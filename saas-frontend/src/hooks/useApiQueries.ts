@@ -896,6 +896,26 @@ export interface MitreTactic {
   total: number;
 }
 
+export interface PurpleTeamProfileSummary {
+  organization_id: string;
+  source: 'db' | 'default';
+  profile: {
+    chains?: {
+      credential?: number;
+      lateral?: number;
+      default?: number;
+    };
+    target?: {
+      prod_penalty?: number;
+      dev_bonus?: number;
+    };
+    bounds?: {
+      min?: number;
+      max?: number;
+    };
+  };
+}
+
 export function usePurpleTeamStats() {
   const { token } = useAuth();
 
@@ -904,6 +924,18 @@ export function usePurpleTeamStats() {
     queryFn: () => authFetch<PurpleTeamStats>('/api/v1/purple-team/dashboard', token),
     ...CACHE_TIMES.purpleTeam,
     enabled: !!token,
+  });
+}
+
+export function usePurpleTeamProfileSummary(enabled = true) {
+  const { token } = useAuth();
+
+  return useQuery<PurpleTeamProfileSummary>({
+    queryKey: queryKeys.purpleTeam.profile(),
+    queryFn: () => authFetch<PurpleTeamProfileSummary>('/api/v1/settings/purple-team/profile', token),
+    staleTime: 60_000,
+    gcTime: 5 * 60_000,
+    enabled: !!token && enabled,
   });
 }
 

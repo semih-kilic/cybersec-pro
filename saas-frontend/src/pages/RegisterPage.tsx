@@ -419,7 +419,7 @@ export function RegisterPage() {
           {/* Back to Home (mobile) */}
           <div className="mt-4 text-center lg:hidden">
             <Link to="/" className="text-gray-600 hover:text-gray-400 text-xs">
-              <- {t('auth.backToHome')}
+              {'<- '}{t('auth.backToHome')}
             </Link>
           </div>
         </div>
