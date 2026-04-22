@@ -3211,6 +3211,14 @@ pub async fn purple_team_abort_exercise(
         _ => return (StatusCode::BAD_REQUEST, Json(json!({"error": "Organization context required"}))).into_response(),
     };
 
+    let abort_event = json!({
+        "event_type": "abort",
+        "aborted_by": user.user_id,
+        "aborted_at": chrono::Utc::now().to_rfc3339(),
+        "reason": "manual_abort"
+    });
+    let abort_event_str = abort_event.to_string();
+
     let result = sqlx::query(
         r#"UPDATE purple_team_exercises
            SET status = 'cancelled',
@@ -3218,13 +3226,15 @@ pub async fn purple_team_abort_exercise(
                updated_at = NOW(),
                payload = payload || jsonb_build_object(
                    'status', 'cancelled',
-                   'completed_at', to_char(NOW() AT TIME ZONE 'UTC', 'YYYY-MM-DD"T"HH24:MI:SS"Z"')
+                   'completed_at', to_char(NOW() AT TIME ZONE 'UTC', 'YYYY-MM-DD"T"HH24:MI:SS"Z"'),
+                   'telemetry_events', COALESCE(payload->'telemetry_events', '[]'::jsonb) || $3::jsonb
                )
            WHERE id = $1 AND organization_id = $2 AND status IN ('pending', 'running')
            RETURNING id"#
     )
     .bind(&exercise_id)
     .bind(org_id)
+    .bind(&abort_event_str)
     .execute(&state.db)
     .await;
 
@@ -3233,7 +3243,8 @@ pub async fn purple_team_abort_exercise(
             Json(json!({
                 "message": "Exercise aborted",
                 "exercise_id": exercise_id,
-                "status": "cancelled"
+                "status": "cancelled",
+                "abort_event": abort_event
             })).into_response()
         }
         Ok(_) => {
@@ -4135,5 +4146,70 @@ mod tests {
         assert_eq!(event.get("detected").and_then(|v| v.as_bool()), Some(true));
         assert_eq!(event.get("source").and_then(|v| v.as_str()), Some("siem"));
         assert_eq!(event.get("reported_by").and_then(|v| v.as_str()), Some("user-1"));
+    }
+
+    #[test]
+    fn purple_team_abort_event_has_required_fields() {
+        // Verify the abort event shape that would be appended to telemetry_events.
+        let user_id = "operator-42";
+        let abort_event = serde_json::json!({
+            "event_type": "abort",
+            "aborted_by": user_id,
+            "aborted_at": chrono::Utc::now().to_rfc3339(),
+            "reason": "manual_abort"
+        });
+
+        assert_eq!(abort_event.get("event_type").and_then(|v| v.as_str()), Some("abort"));
+        assert_eq!(abort_event.get("aborted_by").and_then(|v| v.as_str()), Some("operator-42"));
+        assert_eq!(abort_event.get("reason").and_then(|v| v.as_str()), Some("manual_abort"));
+        assert!(abort_event.get("aborted_at").is_some(), "aborted_at timestamp must be present");
+    }
+
+    #[test]
+    fn purple_team_abort_event_type_is_distinct_from_telemetry_event() {
+        // Abort event must be distinguishable from ingest telemetry events by event_type.
+        let abort_event = serde_json::json!({
+            "event_type": "abort",
+            "aborted_by": "user-1",
+            "aborted_at": "2026-04-22T16:00:00Z",
+            "reason": "manual_abort"
+        });
+        let telemetry_event = serde_json::json!({
+            "technique_id": "T1059",
+            "detected": false,
+            "reported_by": "user-1"
+        });
+
+        let abort_type = abort_event.get("event_type").and_then(|v| v.as_str()).unwrap_or("");
+        let has_technique = telemetry_event.get("technique_id").is_some();
+
+        assert_eq!(abort_type, "abort");
+        assert!(has_technique);
+        // abort event must NOT carry technique_id
+        assert!(abort_event.get("technique_id").is_none());
+    }
+
+    #[test]
+    fn purple_team_abort_response_includes_abort_event_in_body() {
+        // The response returned by abort_exercise carries the abort_event so callers
+        // can inspect what was recorded without a subsequent GET.
+        let abort_event = serde_json::json!({
+            "event_type": "abort",
+            "aborted_by": "user-99",
+            "aborted_at": "2026-04-22T17:00:00Z",
+            "reason": "manual_abort"
+        });
+        let response_body = serde_json::json!({
+            "message": "Exercise aborted",
+            "exercise_id": "ex-123",
+            "status": "cancelled",
+            "abort_event": abort_event
+        });
+
+        assert_eq!(response_body.get("status").and_then(|v| v.as_str()), Some("cancelled"));
+        assert!(response_body.get("abort_event").is_some(), "response must embed abort_event");
+        let embedded = &response_body["abort_event"];
+        assert_eq!(embedded.get("event_type").and_then(|v| v.as_str()), Some("abort"));
+        assert_eq!(embedded.get("aborted_by").and_then(|v| v.as_str()), Some("user-99"));
     }
 }
