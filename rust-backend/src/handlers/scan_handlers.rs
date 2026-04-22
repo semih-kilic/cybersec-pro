@@ -7,9 +7,8 @@ use axum::{
     },
     Json,
 };
-use futures::stream::Stream;
-use serde::Deserialize;
-use serde_json::json;
+use serde::{Deserialize, Serialize};
+use serde_json::{json, Value as JsonValue};
 use std::sync::Arc;
 use std::time::Duration;
 use tokio_stream::wrappers::BroadcastStream;
@@ -27,6 +26,428 @@ pub struct ScanQuery {
     pub page: Option<u32>,
     pub per_page: Option<u32>,
     pub status: Option<String>,
+}
+
+const SCAN_ENGINE_METADATA_KEY: &str = "_scan_engine";
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+struct ScanEngineMetadata {
+    url: String,
+    remote_scan_id: String,
+}
+
+#[derive(Debug, Serialize)]
+struct ScanEngineStartRequest {
+    tool: String,
+    target: String,
+    params: Option<JsonValue>,
+}
+
+#[derive(Debug, Deserialize)]
+struct ScanEngineStartResponse {
+    scan_id: String,
+}
+
+#[derive(Debug, Deserialize)]
+struct ScanEngineStatusResponse {
+    status: String,
+    exit_code: Option<i32>,
+    error: Option<String>,
+}
+
+#[derive(Debug, Deserialize)]
+struct ScanEngineOutputResponse {
+    output: Vec<String>,
+}
+
+fn configured_scan_engine_url() -> Option<String> {
+    std::env::var("SCAN_ENGINE_URL")
+        .ok()
+        .map(|value| value.trim().trim_end_matches('/').to_string())
+        .filter(|value| !value.is_empty())
+}
+
+fn merge_scan_parameters(base: &JsonValue, metadata: &ScanEngineMetadata) -> JsonValue {
+    let mut merged = match base {
+        JsonValue::Object(map) => JsonValue::Object(map.clone()),
+        JsonValue::Null => JsonValue::Object(serde_json::Map::new()),
+        other => json!({ "_request": other.clone() }),
+    };
+
+    if let JsonValue::Object(ref mut map) = merged {
+        map.insert(
+            SCAN_ENGINE_METADATA_KEY.to_string(),
+            serde_json::to_value(metadata).unwrap_or_else(|_| json!({})),
+        );
+    }
+
+    merged
+}
+
+fn extract_scan_engine_metadata(parameters: &Option<JsonValue>) -> Option<ScanEngineMetadata> {
+    parameters
+        .as_ref()?
+        .get(SCAN_ENGINE_METADATA_KEY)
+        .cloned()
+        .and_then(|value| serde_json::from_value(value).ok())
+}
+
+fn normalize_scan_engine_status(status: &str) -> &str {
+    match status {
+        "queued" => "pending",
+        other => other,
+    }
+}
+
+async fn start_scan_on_engine(
+    client: &reqwest::Client,
+    engine_url: &str,
+    tool: &str,
+    target: &str,
+    params: Option<JsonValue>,
+) -> anyhow::Result<ScanEngineStartResponse> {
+    let response = client
+        .post(format!("{}/api/v3/scan", engine_url))
+        .json(&ScanEngineStartRequest {
+            tool: tool.to_string(),
+            target: target.to_string(),
+            params,
+        })
+        .send()
+        .await?;
+
+    if !response.status().is_success() {
+        let status = response.status();
+        let body = response.text().await.unwrap_or_default();
+        return Err(anyhow::anyhow!(
+            "scan-engine start failed with {}: {}",
+            status,
+            body
+        ));
+    }
+
+    Ok(response.json::<ScanEngineStartResponse>().await?)
+}
+
+async fn fetch_scan_engine_status(
+    client: &reqwest::Client,
+    engine_url: &str,
+    remote_scan_id: &str,
+) -> anyhow::Result<ScanEngineStatusResponse> {
+    let response = client
+        .get(format!("{}/api/v3/scan/{}/status", engine_url, remote_scan_id))
+        .send()
+        .await?;
+
+    if !response.status().is_success() {
+        let status = response.status();
+        let body = response.text().await.unwrap_or_default();
+        return Err(anyhow::anyhow!(
+            "scan-engine status failed with {}: {}",
+            status,
+            body
+        ));
+    }
+
+    Ok(response.json::<ScanEngineStatusResponse>().await?)
+}
+
+async fn fetch_scan_engine_output(
+    client: &reqwest::Client,
+    engine_url: &str,
+    remote_scan_id: &str,
+) -> anyhow::Result<Vec<String>> {
+    let response = client
+        .get(format!("{}/api/v3/scan/{}/output", engine_url, remote_scan_id))
+        .send()
+        .await?;
+
+    if !response.status().is_success() {
+        let status = response.status();
+        let body = response.text().await.unwrap_or_default();
+        return Err(anyhow::anyhow!(
+            "scan-engine output failed with {}: {}",
+            status,
+            body
+        ));
+    }
+
+    Ok(response.json::<ScanEngineOutputResponse>().await?.output)
+}
+
+async fn cancel_scan_on_engine(
+    client: &reqwest::Client,
+    engine_url: &str,
+    remote_scan_id: &str,
+) -> anyhow::Result<()> {
+    let response = client
+        .post(format!("{}/api/v3/scan/{}/cancel", engine_url, remote_scan_id))
+        .send()
+        .await?;
+
+    if !response.status().is_success() {
+        let status = response.status();
+        let body = response.text().await.unwrap_or_default();
+        return Err(anyhow::anyhow!(
+            "scan-engine cancel failed with {}: {}",
+            status,
+            body
+        ));
+    }
+
+    Ok(())
+}
+
+async fn persist_scan_output(db: &sqlx::PgPool, scan_id: &str, output_lines: &[String]) {
+    let joined_output = output_lines.join("\n");
+    if let Err(error) = sqlx::query("UPDATE scans SET output = $1 WHERE id = $2")
+        .bind(&joined_output)
+        .bind(scan_id)
+        .execute(db)
+        .await
+    {
+        tracing::warn!("Failed to persist output for scan {}: {}", scan_id, error);
+    }
+}
+
+async fn finalize_scan(
+    db: &sqlx::PgPool,
+    scan_tx: &tokio::sync::broadcast::Sender<String>,
+    scan_id: &str,
+    status: &str,
+    output: &str,
+    findings: Option<JsonValue>,
+    error_log: Option<String>,
+    org_id: &str,
+    user_id: &str,
+    tool_name: &str,
+    target: &str,
+    agent_id: Option<String>,
+) {
+    if let Err(error) = sqlx::query(
+        "UPDATE scans SET status = $1, output = $2, findings = $3::jsonb, error_log = $4, completed_at = CURRENT_TIMESTAMP WHERE id = $5",
+    )
+    .bind(status)
+    .bind(output)
+    .bind(&findings)
+    .bind(&error_log)
+    .bind(scan_id)
+    .execute(db)
+    .await
+    {
+        tracing::error!("Failed to update scan {}: {}", scan_id, error);
+    }
+
+    let _ = scan_tx.send(json!({
+        "type": "complete",
+        "scan_id": scan_id,
+        "status": status
+    }).to_string());
+
+    let event_type = if status == "completed" {
+        "scan_completed"
+    } else {
+        "scan_failed"
+    };
+    let payload = json!({
+        "scan_id": scan_id,
+        "tool": tool_name,
+        "target": target,
+        "status": status
+    });
+    crate::services::integrations::notify_integrations(db, org_id, event_type, &payload).await;
+
+    let findings_count = findings
+        .as_ref()
+        .and_then(|value| value.get("summary"))
+        .and_then(|value| value.get("total"))
+        .and_then(|value| value.as_u64())
+        .unwrap_or(0) as usize;
+    crate::services::notifications::notify_scan_complete(
+        db,
+        user_id,
+        scan_id,
+        tool_name,
+        target,
+        status,
+        findings_count,
+    )
+    .await;
+
+    if let Some(agent_id) = agent_id {
+        let _ = sqlx::query(
+            "UPDATE agents SET active_scans = GREATEST(COALESCE(active_scans, 1) - 1, 0), total_scans = COALESCE(total_scans, 0) + 1, status = CASE WHEN COALESCE(active_scans, 1) - 1 <= 0 THEN 'online' ELSE 'busy' END WHERE id = $1",
+        )
+        .bind(&agent_id)
+        .execute(db)
+        .await;
+    }
+}
+
+async fn monitor_scan_engine(
+    db: sqlx::PgPool,
+    scan_tx: tokio::sync::broadcast::Sender<String>,
+    backend_scan_id: String,
+    remote_scan_id: String,
+    engine_url: String,
+    org_id: String,
+    user_id: String,
+    tool_name: String,
+    target: String,
+) {
+    let client = reqwest::Client::new();
+    let mut latest_output: Vec<String> = Vec::new();
+    let mut streamed_lines = 0usize;
+    let mut status_failures = 0u8;
+
+    loop {
+        match fetch_scan_engine_output(&client, &engine_url, &remote_scan_id).await {
+            Ok(output_lines) => {
+                latest_output = output_lines;
+                if streamed_lines < latest_output.len() {
+                    for line in latest_output.iter().skip(streamed_lines) {
+                        let _ = scan_tx.send(json!({
+                            "type": "output",
+                            "scan_id": backend_scan_id,
+                            "line": line,
+                            "data": line,
+                            "execution_mode": "delegated"
+                        }).to_string());
+                    }
+                    streamed_lines = latest_output.len();
+                }
+                persist_scan_output(&db, &backend_scan_id, &latest_output).await;
+            }
+            Err(error) => {
+                tracing::warn!(
+                    "Failed to fetch scan-engine output for {}: {}",
+                    backend_scan_id,
+                    error
+                );
+            }
+        }
+
+        let remote_status = match fetch_scan_engine_status(&client, &engine_url, &remote_scan_id).await {
+            Ok(status) => {
+                status_failures = 0;
+                status
+            }
+            Err(error) => {
+                status_failures += 1;
+                tracing::warn!(
+                    "Failed to fetch scan-engine status for {}: {}",
+                    backend_scan_id,
+                    error
+                );
+
+                if status_failures >= 3 {
+                    finalize_scan(
+                        &db,
+                        &scan_tx,
+                        &backend_scan_id,
+                        "failed",
+                        &latest_output.join("\n"),
+                        None,
+                        Some(format!("Scan engine status polling failed: {}", error)),
+                        &org_id,
+                        &user_id,
+                        &tool_name,
+                        &target,
+                        None,
+                    )
+                    .await;
+                    break;
+                }
+
+                tokio::time::sleep(Duration::from_secs(2)).await;
+                continue;
+            }
+        };
+
+        let normalized_status = normalize_scan_engine_status(&remote_status.status).to_string();
+        let joined_output = latest_output.join("\n");
+
+        if normalized_status == "pending" || normalized_status == "running" {
+            if let Err(error) = sqlx::query(
+                "UPDATE scans SET status = $1, output = $2, error_log = $3 WHERE id = $4",
+            )
+            .bind(&normalized_status)
+            .bind(&joined_output)
+            .bind(&remote_status.error)
+            .bind(&backend_scan_id)
+            .execute(&db)
+            .await
+            {
+                tracing::warn!("Failed to refresh delegated scan {}: {}", backend_scan_id, error);
+            }
+
+            tokio::time::sleep(Duration::from_secs(2)).await;
+            continue;
+        }
+
+        let final_error = remote_status.error.clone().or_else(|| {
+            if normalized_status == "failed" {
+                Some(format!("Tool exited with code {:?}", remote_status.exit_code))
+            } else {
+                None
+            }
+        });
+
+        finalize_scan(
+            &db,
+            &scan_tx,
+            &backend_scan_id,
+            &normalized_status,
+            &joined_output,
+            None,
+            final_error,
+            &org_id,
+            &user_id,
+            &tool_name,
+            &target,
+            None,
+        )
+        .await;
+        break;
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::{extract_scan_engine_metadata, merge_scan_parameters, ScanEngineMetadata};
+    use serde_json::json;
+
+    #[test]
+    fn merge_scan_parameters_preserves_existing_fields() {
+        let metadata = ScanEngineMetadata {
+            url: "http://scan-engine:5002".to_string(),
+            remote_scan_id: "remote-1".to_string(),
+        };
+
+        let merged = merge_scan_parameters(&json!({"depth": "quick"}), &metadata);
+
+        assert_eq!(merged.get("depth"), Some(&json!("quick")));
+        assert_eq!(
+            merged.get("_scan_engine").and_then(|value| value.get("remote_scan_id")),
+            Some(&json!("remote-1"))
+        );
+    }
+
+    #[test]
+    fn extract_scan_engine_metadata_reads_reserved_block() {
+        let parameters = Some(json!({
+            "depth": "quick",
+            "_scan_engine": {
+                "url": "http://scan-engine:5002",
+                "remote_scan_id": "remote-2"
+            }
+        }));
+
+        let metadata = extract_scan_engine_metadata(&parameters).expect("metadata should exist");
+
+        assert_eq!(metadata.url, "http://scan-engine:5002");
+        assert_eq!(metadata.remote_scan_id, "remote-2");
+    }
 }
 
 // ── List Scans ─────────────────────────────────────────────
@@ -129,7 +550,7 @@ pub async fn get_scan(
     auth: AuthUser,
     Path(scan_id): Path<String>,
 ) -> impl IntoResponse {
-    let scan: Option<Scan> = match &auth.org_id {
+    let Some(mut scan): Option<Scan> = (match &auth.org_id {
         Some(org_id) => sqlx::query_as(
             "SELECT * FROM scans WHERE id = $1 AND organization_id = $2"
         )
@@ -146,12 +567,60 @@ pub async fn get_scan(
         .fetch_optional(&state.db)
         .await
         .unwrap_or(None),
+    }) else {
+        return (StatusCode::NOT_FOUND, Json(json!({"error": "Scan not found"}))).into_response();
     };
 
-    match scan {
-        Some(s) => (StatusCode::OK, Json(json!({"scan": s.to_response()}))).into_response(),
-        None => (StatusCode::NOT_FOUND, Json(json!({"error": "Scan not found"}))).into_response(),
+    if let Some(metadata) = extract_scan_engine_metadata(&scan.parameters) {
+        let current_status = scan.status.clone().unwrap_or_else(|| "pending".to_string());
+        if current_status == "pending" || current_status == "running" {
+            let client = reqwest::Client::new();
+            match fetch_scan_engine_status(&client, &metadata.url, &metadata.remote_scan_id).await {
+                Ok(remote_status) => {
+                    let normalized_status = normalize_scan_engine_status(&remote_status.status).to_string();
+                    let output_lines = fetch_scan_engine_output(&client, &metadata.url, &metadata.remote_scan_id)
+                        .await
+                        .unwrap_or_default();
+                    let joined_output = output_lines.join("\n");
+                    let remote_error = remote_status.error.clone().or_else(|| {
+                        if normalized_status == "failed" {
+                            Some(format!("Tool exited with code {:?}", remote_status.exit_code))
+                        } else {
+                            None
+                        }
+                    });
+
+                    let _ = sqlx::query(
+                        "UPDATE scans SET status = $1, output = $2, error_log = $3, completed_at = CASE WHEN $1 IN ('completed','failed','cancelled','timeout') THEN COALESCE(completed_at, CURRENT_TIMESTAMP) ELSE completed_at END WHERE id = $4"
+                    )
+                    .bind(&normalized_status)
+                    .bind(&joined_output)
+                    .bind(&remote_error)
+                    .bind(&scan.id)
+                    .execute(&state.db)
+                    .await;
+
+                    scan.status = Some(normalized_status);
+                    scan.output = Some(joined_output);
+                    scan.error_log = remote_error;
+                    if scan.status.as_deref() == Some("completed")
+                        || scan.status.as_deref() == Some("failed")
+                        || scan.status.as_deref() == Some("cancelled")
+                        || scan.status.as_deref() == Some("timeout")
+                    {
+                        if scan.completed_at.is_none() {
+                            scan.completed_at = Some(chrono::Utc::now().naive_utc());
+                        }
+                    }
+                }
+                Err(error) => {
+                    tracing::warn!("Failed to refresh delegated scan {}: {}", scan.id, error);
+                }
+            }
+        }
     }
+
+    (StatusCode::OK, Json(json!({"scan": scan.to_response()}))).into_response()
 }
 
 // ── Create / Start Scan ────────────────────────────────────
@@ -314,9 +783,45 @@ pub async fn start_scan(
         }
     }
 
+    let scan_engine_metadata = if body.agent_id.is_none() {
+        match configured_scan_engine_url() {
+            Some(engine_url) => {
+                let client = reqwest::Client::new();
+                match start_scan_on_engine(
+                    &client,
+                    &engine_url,
+                    &tool.name,
+                    target,
+                    body.parameters.clone(),
+                )
+                .await
+                {
+                    Ok(remote_scan) => Some(ScanEngineMetadata {
+                        url: engine_url,
+                        remote_scan_id: remote_scan.scan_id,
+                    }),
+                    Err(error) => {
+                        tracing::error!("Failed to delegate scan to scan-engine: {}", error);
+                        return (
+                            StatusCode::BAD_GATEWAY,
+                            Json(json!({"error": format!("Failed to start delegated scan: {}", error)})),
+                        )
+                            .into_response();
+                    }
+                }
+            }
+            None => None,
+        }
+    } else {
+        None
+    };
+
     // Create scan record
     let scan_id = Uuid::new_v4().to_string();
-    let params_json = body.parameters.as_ref().cloned().unwrap_or(serde_json::json!({}));
+    let mut params_json = body.parameters.as_ref().cloned().unwrap_or(serde_json::json!({}));
+    if let Some(metadata) = &scan_engine_metadata {
+        params_json = merge_scan_parameters(&params_json, metadata);
+    }
     if let Err(e) = sqlx::query(
         "INSERT INTO scans (id, organization_id, user_id, tool_id, target, parameters, status, agent_id, project_id, started_at)
          VALUES ($1, $2, $3, $4, $5, $6::jsonb, 'running', $7, $8, CURRENT_TIMESTAMP)"
@@ -400,88 +905,79 @@ pub async fn start_scan(
     let tool_name_for_notify = tool.name.clone();
     let target_for_notify = target.to_string();
 
-    tokio::spawn(async move {
-        let result = execute_scan(&tool_name, &target_owned, command_template.as_deref(), &scan_tx, &scan_id_clone, agent_ssh).await;
+    if let Some(metadata) = scan_engine_metadata.clone() {
+        tokio::spawn(monitor_scan_engine(
+            db,
+            scan_tx,
+            scan_id_clone,
+            metadata.remote_scan_id,
+            metadata.url,
+            org_id_for_spawn,
+            user_id_for_spawn,
+            tool_name_for_notify,
+            target_for_notify,
+        ));
+    } else {
+        tokio::spawn(async move {
+            let result = execute_scan(&tool_name, &target_owned, command_template.as_deref(), &scan_tx, &scan_id_clone, agent_ssh).await;
 
-        let (status, output, findings, error_log) = match &result {
-            Ok(r) => {
-                // Check exit code: non-zero means the tool reported an error
-                let is_success = r.exit_code == Some(0);
-                let has_output = !r.output.trim().is_empty();
-                let final_status = if is_success || has_output {
-                    "completed".to_string()
-                } else {
-                    "failed".to_string()
-                };
-                let err_log = if !is_success {
-                    Some(format!("Tool exited with code {:?}", r.exit_code))
-                } else {
-                    None
-                };
-                (final_status, r.output.clone(), r.findings.clone(), err_log)
-            }
-            Err(e) => {
-                tracing::error!("Scan {} failed: {}", scan_id_clone, e);
-                ("failed".to_string(), String::new(), None, Some(e.to_string()))
-            }
-        };
+            let (status, output, findings, error_log) = match &result {
+                Ok(r) => {
+                    let is_success = r.exit_code == Some(0);
+                    let has_output = !r.output.trim().is_empty();
+                    let final_status = if is_success || has_output {
+                        "completed".to_string()
+                    } else {
+                        "failed".to_string()
+                    };
+                    let err_log = if !is_success {
+                        Some(format!("Tool exited with code {:?}", r.exit_code))
+                    } else {
+                        None
+                    };
+                    (final_status, r.output.clone(), r.findings.clone(), err_log)
+                }
+                Err(e) => {
+                    tracing::error!("Scan {} failed: {}", scan_id_clone, e);
+                    ("failed".to_string(), String::new(), None, Some(e.to_string()))
+                }
+            };
 
-        if let Err(e) = sqlx::query(
-            "UPDATE scans SET status = $1, output = $2, findings = $3::jsonb, error_log = $4, completed_at = CURRENT_TIMESTAMP WHERE id = $5"
-        )
-        .bind(&status)
-        .bind(&output)
-        .bind(&findings)
-        .bind(&error_log)
-        .bind(&scan_id_clone)
-        .execute(&db)
-        .await {
-            tracing::error!("Failed to update scan {}: {}", scan_id_clone, e);
-        }
-
-        // Notify via broadcast
-        let _ = scan_tx.send(json!({
-            "type": "complete",
-            "scan_id": scan_id_clone,
-            "status": status
-        }).to_string());
-
-        // Notify integrations (Slack, Teams, Webhooks)
-        let event_type = if status == "completed" { "scan_completed" } else { "scan_failed" };
-        let payload = json!({
-            "scan_id": scan_id_clone,
-            "tool": tool_name_for_notify,
-            "target": target_for_notify,
-            "status": status
+            finalize_scan(
+                &db,
+                &scan_tx,
+                &scan_id_clone,
+                &status,
+                &output,
+                findings,
+                error_log,
+                &org_id_for_spawn,
+                &user_id_for_spawn,
+                &tool_name_for_notify,
+                &target_for_notify,
+                agent_id_for_spawn,
+            )
+            .await;
         });
-        crate::services::integrations::notify_integrations(&db, &org_id_for_spawn, event_type, &payload).await;
-
-        // Email notification to user (respects notification_preferences)
-        let findings_count = findings.as_ref()
-            .and_then(|f| f.get("summary"))
-            .and_then(|s| s.get("total"))
-            .and_then(|t| t.as_u64())
-            .unwrap_or(0) as usize;
-        crate::services::notifications::notify_scan_complete(
-            &db, &user_id_for_spawn, &scan_id_clone,
-            &tool_name_for_notify, &target_for_notify,
-            &status, findings_count,
-        ).await;
-
-        // Update agent: decrement active_scans, increment total_scans, set status back to online
-        if let Some(aid) = agent_id_for_spawn {
-            let _ = sqlx::query(
-                "UPDATE agents SET active_scans = GREATEST(COALESCE(active_scans, 1) - 1, 0), total_scans = COALESCE(total_scans, 0) + 1, status = CASE WHEN COALESCE(active_scans, 1) - 1 <= 0 THEN 'online' ELSE 'busy' END WHERE id = $1"
-            ).bind(&aid).execute(&db).await;
-        }
-    });
+    }
 
     // Build command string for response
     let (program, args) = crate::scan_engine::tool_registry::build_command(&tool.name, target, tool.command_template.as_deref())
         .unwrap_or_else(|_| (tool.name.clone(), vec![target.to_string()]));
     let command_str = format!("{} {}", program, args.join(" "));
 
-    let exec_mode = if body.agent_id.is_some() { "remote" } else { "local" };
+    let exec_mode = if scan_engine_metadata.is_some() {
+        "delegated"
+    } else if body.agent_id.is_some() {
+        "remote"
+    } else {
+        "local"
+    };
+    let engine_name = if scan_engine_metadata.is_some() {
+        "rust-scan-engine"
+    } else {
+        "rust-axum"
+    };
 
     (StatusCode::CREATED, Json(json!({
         "success": true,
@@ -490,7 +986,7 @@ pub async fn start_scan(
         "command": command_str,
         "status": "running",
         "execution_mode": exec_mode,
-        "engine": "rust-axum",
+        "engine": engine_name,
         "scan": {
             "id": scan_id,
             "tool": tool.name,
@@ -568,6 +1064,44 @@ pub async fn cancel_scan(
     auth: AuthUser,
     Path(scan_id): Path<String>,
 ) -> impl IntoResponse {
+    let scan: Option<Scan> = match &auth.org_id {
+        Some(org_id) => sqlx::query_as(
+            "SELECT * FROM scans WHERE id = $1 AND organization_id = $2"
+        )
+        .bind(&scan_id)
+        .bind(org_id)
+        .fetch_optional(&state.db)
+        .await
+        .unwrap_or(None),
+        None => sqlx::query_as(
+            "SELECT * FROM scans WHERE id = $1 AND user_id = $2"
+        )
+        .bind(&scan_id)
+        .bind(&auth.user_id)
+        .fetch_optional(&state.db)
+        .await
+        .unwrap_or(None),
+    };
+
+    let scan = match scan {
+        Some(scan) => scan,
+        None => {
+            return (StatusCode::NOT_FOUND, Json(json!({"error": "Scan not found or already completed"}))).into_response();
+        }
+    };
+
+    if let Some(metadata) = extract_scan_engine_metadata(&scan.parameters) {
+        let client = reqwest::Client::new();
+        if let Err(error) = cancel_scan_on_engine(&client, &metadata.url, &metadata.remote_scan_id).await {
+            tracing::error!("Failed to cancel delegated scan {}: {}", scan_id, error);
+            return (
+                StatusCode::BAD_GATEWAY,
+                Json(json!({"error": format!("Failed to cancel delegated scan: {}", error)})),
+            )
+                .into_response();
+        }
+    }
+
     let result = match &auth.org_id {
         Some(org_id) => sqlx::query(
             "UPDATE scans SET status = 'cancelled', completed_at = CURRENT_TIMESTAMP WHERE id = $1 AND organization_id = $2 AND status IN ('pending', 'running')"
