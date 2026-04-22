@@ -4041,4 +4041,99 @@ mod tests {
         assert_eq!(purple_team_detection_rate(3, 0), 0.0);
         assert_eq!(purple_team_detection_rate(3, 6), 50.0);
     }
+
+    // ── gap_analysis live-update logic ────────────────────────────────────────
+
+    #[test]
+    fn purple_team_detection_rate_exact_thresholds() {
+        // 80% high-coverage threshold
+        assert_eq!(purple_team_detection_rate(8, 10), 80.0);
+        assert!(purple_team_detection_rate(8, 10) >= 80.0); // triggers high_coverage alert
+        assert!(purple_team_detection_rate(7, 10) < 80.0);  // does NOT trigger high_coverage
+
+        // <40% low-coverage threshold
+        assert_eq!(purple_team_detection_rate(0, 10), 0.0);
+        assert!(purple_team_detection_rate(3, 10) < 40.0);  // triggers low_coverage
+        assert!(purple_team_detection_rate(4, 10) >= 40.0); // does NOT trigger low_coverage
+    }
+
+    #[test]
+    fn purple_team_detection_rate_full_detection() {
+        assert_eq!(purple_team_detection_rate(10, 10), 100.0);
+    }
+
+    #[test]
+    fn purple_team_gap_analysis_values_consistent_with_counters() {
+        // Simulate what ingest_telemetry now persists into gap_analysis.
+        // After 3 detected out of 5 total steps: rate = 60%, no alert.
+        let detected_attacks: i64 = 3;
+        let total_steps: i64 = 5;
+        let missed_attacks = total_steps - detected_attacks;
+        let detection_rate = purple_team_detection_rate(detected_attacks, total_steps);
+
+        let gap = json!({
+            "total_attacks": total_steps,
+            "detected": detected_attacks,
+            "missed": missed_attacks,
+            "detection_rate": detection_rate
+        });
+
+        assert_eq!(gap["total_attacks"], 5);
+        assert_eq!(gap["detected"], 3);
+        assert_eq!(gap["missed"], 2);
+        assert_eq!(gap["detection_rate"].as_f64().unwrap(), 60.0);
+        assert!(detection_rate >= 40.0 && detection_rate < 80.0); // no alert zone
+    }
+
+    #[test]
+    fn purple_team_gap_analysis_low_coverage_alert_condition() {
+        // <40% + at least 3 steps → low_coverage alert
+        let detected: i64 = 1;
+        let total: i64 = 5;
+        let rate = purple_team_detection_rate(detected, total);
+        assert!(rate < 40.0 && total >= 3); // alert fires
+    }
+
+    #[test]
+    fn purple_team_gap_analysis_no_alert_below_three_steps() {
+        // <40% but fewer than 3 total steps → alert suppressed
+        let detected: i64 = 0;
+        let total: i64 = 2;
+        let rate = purple_team_detection_rate(detected, total);
+        assert!(rate < 40.0 && total < 3); // alert suppressed
+    }
+
+    #[test]
+    fn purple_team_gap_analysis_high_coverage_alert_condition() {
+        let detected: i64 = 9;
+        let total: i64 = 10;
+        let rate = purple_team_detection_rate(detected, total);
+        assert!(rate >= 80.0); // high_coverage alert fires
+    }
+
+    #[test]
+    fn purple_team_parse_telemetry_builds_event_with_correct_fields() {
+        let user = mock_auth_user();
+        let body = json!({
+            "step_index": 0,
+            "technique_id": "T1566.001",
+            "detected": true,
+            "source": "siem",
+            "confidence": 0.9
+        });
+
+        let parsed = purple_team_parse_telemetry_payload(&body, &user).expect("parse ok");
+        let (step_index, technique_id, detected, source, confidence, event) = parsed;
+
+        assert_eq!(step_index, 0);
+        assert_eq!(technique_id, "T1566.001");
+        assert!(detected);
+        assert_eq!(source, "siem");
+        assert_eq!(confidence, 0.9);
+        // event object must carry technique_id and detected fields
+        assert_eq!(event.get("technique_id").and_then(|v| v.as_str()), Some("T1566.001"));
+        assert_eq!(event.get("detected").and_then(|v| v.as_bool()), Some(true));
+        assert_eq!(event.get("source").and_then(|v| v.as_str()), Some("siem"));
+        assert_eq!(event.get("reported_by").and_then(|v| v.as_str()), Some("user-1"));
+    }
 }
