@@ -287,3 +287,155 @@ impl ScanEngine {
             .ok_or(AppError::NotFound(format!("Scan {} output not found", scan_id)))
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::models::{ScanRequest, ALLOWED_TOOLS, BLOCKED_PATTERNS};
+
+    fn make_request(tool: &str, target: &str) -> ScanRequest {
+        ScanRequest {
+            tool: tool.into(),
+            target: target.into(),
+            params: None,
+            user_id: None,
+            profile: None,
+            timeout: None,
+        }
+    }
+
+    // ── validate_request: tool whitelist ─────────────────────────────────────
+
+    #[test]
+    fn scan_engine_rejects_tool_not_in_whitelist() {
+        let req = make_request("bash", "10.0.0.1");
+        let err = ScanEngine::validate_request(&req).unwrap_err();
+        assert!(err.to_string().contains("not in the allowed whitelist"),
+            "expected whitelist error, got: {}", err);
+    }
+
+    #[test]
+    fn scan_engine_rejects_python_interpreter() {
+        let req = make_request("python3", "10.0.0.1");
+        assert!(ScanEngine::validate_request(&req).is_err());
+    }
+
+    #[test]
+    fn scan_engine_accepts_all_whitelisted_tools() {
+        // Every tool in ALLOWED_TOOLS must pass validation against a safe target
+        let deduped: std::collections::HashSet<&str> = ALLOWED_TOOLS.iter().copied().collect();
+        for tool in &deduped {
+            let req = make_request(tool, "10.0.0.1");
+            assert!(
+                ScanEngine::validate_request(&req).is_ok(),
+                "tool '{}' should be accepted but was rejected", tool
+            );
+        }
+    }
+
+    // ── validate_request: target injection ───────────────────────────────────
+
+    #[test]
+    fn scan_engine_blocks_semicolon_in_target() {
+        let req = make_request("nmap", "10.0.0.1; rm -rf /");
+        let err = ScanEngine::validate_request(&req).unwrap_err();
+        assert!(err.to_string().contains("blocked pattern"), "got: {}", err);
+    }
+
+    #[test]
+    fn scan_engine_blocks_pipe_in_target() {
+        let req = make_request("nmap", "10.0.0.1 | cat /etc/passwd");
+        assert!(ScanEngine::validate_request(&req).is_err());
+    }
+
+    #[test]
+    fn scan_engine_blocks_command_substitution_in_target() {
+        let req = make_request("nmap", "$(whoami).example.com");
+        assert!(ScanEngine::validate_request(&req).is_err());
+    }
+
+    #[test]
+    fn scan_engine_blocks_path_traversal_in_target() {
+        let req = make_request("nmap", "../../etc/passwd");
+        assert!(ScanEngine::validate_request(&req).is_err());
+    }
+
+    #[test]
+    fn scan_engine_accepts_valid_ip_target() {
+        let req = make_request("nmap", "192.168.1.100");
+        assert!(ScanEngine::validate_request(&req).is_ok());
+    }
+
+    #[test]
+    fn scan_engine_accepts_valid_domain_target() {
+        let req = make_request("nikto", "example.com");
+        assert!(ScanEngine::validate_request(&req).is_ok());
+    }
+
+    // ── validate_request: params injection ───────────────────────────────────
+
+    #[test]
+    fn scan_engine_blocks_shell_injection_in_params() {
+        let mut req = make_request("nmap", "10.0.0.1");
+        req.params = Some(serde_json::json!({"flags": "--script=vuln; id"}));
+        assert!(ScanEngine::validate_request(&req).is_err());
+    }
+
+    #[test]
+    fn scan_engine_blocks_nmap_script_param() {
+        // --script= is blocked to prevent loading arbitrary NSE scripts
+        let mut req = make_request("nmap", "10.0.0.1");
+        req.params = Some(serde_json::json!({"flags": "--script=vuln"}));
+        assert!(ScanEngine::validate_request(&req).is_err());
+    }
+
+    // ── build_command ─────────────────────────────────────────────────────────
+
+    #[test]
+    fn scan_engine_nmap_quick_profile_adds_t4_and_f_flags() {
+        let mut req = make_request("nmap", "10.0.0.1");
+        req.profile = Some("quick".into());
+        let args = ScanEngine::build_command(&req);
+        assert!(args.contains(&"-T4".to_string()), "quick profile missing -T4");
+        assert!(args.contains(&"-F".to_string()), "quick profile missing -F");
+        assert!(args.contains(&"10.0.0.1".to_string()), "target missing");
+    }
+
+    #[test]
+    fn scan_engine_nmap_deep_profile_adds_all_ports_flag() {
+        let mut req = make_request("nmap", "10.0.0.5");
+        req.profile = Some("deep".into());
+        let args = ScanEngine::build_command(&req);
+        assert!(args.contains(&"-p-".to_string()), "deep profile missing -p-");
+        assert!(args.contains(&"-A".to_string()), "deep profile missing -A");
+    }
+
+    #[test]
+    fn scan_engine_nikto_includes_h_flag_before_target() {
+        let req = make_request("nikto", "https://example.com");
+        let args = ScanEngine::build_command(&req);
+        let h_pos = args.iter().position(|a| a == "-h");
+        let target_pos = args.iter().position(|a| a == "https://example.com");
+        assert!(h_pos.is_some(), "nikto missing -h flag");
+        assert!(target_pos.is_some(), "nikto missing target");
+        assert!(h_pos.unwrap() < target_pos.unwrap(), "-h must precede target");
+    }
+
+    #[test]
+    fn scan_engine_nuclei_includes_as_flag() {
+        let req = make_request("nuclei", "https://example.com");
+        let args = ScanEngine::build_command(&req);
+        assert!(args.contains(&"-as".to_string()), "nuclei missing -as auto-scan flag");
+        assert!(args.contains(&"https://example.com".to_string()));
+    }
+
+    #[test]
+    fn scan_engine_blocked_patterns_covers_critical_injections() {
+        // Verify the constant contains the most dangerous shell metacharacters
+        let required = [";", "&&", "||", "|", "`", "$(", "${", "../"];
+        for pat in required {
+            assert!(BLOCKED_PATTERNS.contains(&pat),
+                "BLOCKED_PATTERNS missing critical pattern: '{}'", pat);
+        }
+    }
+}
