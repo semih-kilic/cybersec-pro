@@ -170,6 +170,10 @@ jobs:
             cd rust-backend
             cargo build --release
 
+            # Build scan engine
+            cd ../rust-scan-engine
+            cargo build --release
+
             # Build frontend
             cd ../saas-frontend
             npm ci
@@ -178,10 +182,16 @@ jobs:
             # Deploy frontend
             sudo cp -r dist/* /var/www/dashboard/
 
+            # Restart scan engine
+            cd ../rust-scan-engine
+            pkill -f cybersec-scan-engine || true
+            sleep 2
+            SCAN_ENGINE_PORT=5002 nohup ./target/release/cybersec-scan-engine > /tmp/cybersec-scan-engine.log 2>&1 &
+
             # Restart backend
             cd ../rust-backend
             pkill -f cybersec-pro-backend || true
             sleep 2
-            nohup ./target/release/cybersec-pro-backend > /tmp/cybersec-backend.log 2>&1 &
+            SCAN_ENGINE_URL=http://127.0.0.1:5002 nohup ./target/release/cybersec-pro-backend > /tmp/cybersec-backend.log 2>&1 &
 
             echo "✅ Deployment complete"

@@ -9,6 +9,7 @@ echo "======================================"
 
 BASEDIR="/home/cybersec/cybersec-pro"
 RUST_DIR="$BASEDIR/rust-backend"
+SCAN_ENGINE_DIR="$BASEDIR/rust-scan-engine"
 
 # Colors
 RED='\033[0;31m'
@@ -34,15 +35,35 @@ print_status $? "Redis"
 # 2. Stop existing services
 echo -e "\n${YELLOW}2. Stopping existing services...${NC}"
 pkill -f "cybersec-pro-backend" 2>/dev/null || true
+pkill -f "cybersec-scan-engine" 2>/dev/null || true
 fuser -k 5001/tcp 2>/dev/null || true
+fuser -k 5002/tcp 2>/dev/null || true
 sleep 2
 print_status 0 "Old processes stopped"
 
-# 3. Start Rust Backend
-echo -e "\n${YELLOW}3. Starting Rust API Backend...${NC}"
+# 3. Start Rust Scan Engine
+echo -e "\n${YELLOW}3. Starting Rust Scan Engine...${NC}"
+cd $SCAN_ENGINE_DIR
+DATABASE_URL='postgres://cybersec:***REDACTED_PG_PASSWORD***@localhost:5432/cybersec_pro' \
+JWT_SECRET_KEY='***REDACTED_JWT_SECRET***' \
+SCAN_ENGINE_PORT=5002 \
+RUST_LOG=info \
+nohup ./target/release/cybersec-scan-engine > /tmp/rust-scan-engine.log 2>&1 &
+
+sleep 3
+if curl -s http://localhost:5002/health | grep -q "healthy"; then
+    print_status 0 "Rust Scan Engine (port 5002)"
+else
+    print_status 1 "Rust Scan Engine failed to start"
+    tail -5 /tmp/rust-scan-engine.log
+fi
+
+# 4. Start Rust Backend
+echo -e "\n${YELLOW}4. Starting Rust API Backend...${NC}"
 cd $RUST_DIR
 DATABASE_URL='postgres://cybersec:***REDACTED_PG_PASSWORD***@localhost:5432/cybersec_pro' \
 JWT_SECRET_KEY='***REDACTED_JWT_SECRET***' \
+SCAN_ENGINE_URL='http://127.0.0.1:5002' \
 GITHUB_CLIENT_ID='***REDACTED_GH_OAUTH_CLIENT_ID***' \
 GITHUB_CLIENT_SECRET='***REDACTED_GH_OAUTH_SECRET***' \
 STRIPE_SECRET_KEY='***REDACTED_STRIPE_SECRET***' \
@@ -62,8 +83,8 @@ else
     tail -5 /tmp/rust-backend.log
 fi
 
-# 4. Ensure Frontend is running
-echo -e "\n${YELLOW}4. Checking React Frontend...${NC}"
+# 5. Ensure Frontend is running
+echo -e "\n${YELLOW}5. Checking React Frontend...${NC}"
 if curl -s http://localhost:3001 > /dev/null 2>&1; then
     print_status 0 "React Frontend already running (port 3001)"
 else
@@ -77,8 +98,8 @@ else
     fi
 fi
 
-# 5. Reload Nginx
-echo -e "\n${YELLOW}5. Reloading Nginx...${NC}"
+# 6. Reload Nginx
+echo -e "\n${YELLOW}6. Reloading Nginx...${NC}"
 sudo nginx -t && sudo systemctl reload nginx
 print_status $? "Nginx"
 
@@ -89,11 +110,13 @@ echo "======================================"
 echo ""
 echo "📊 Server Status:"
 echo "   API:     http://localhost:5001 (Rust/Axum)"
+echo "   Engine:  http://localhost:5002 (Rust Scan Engine)"
 echo "   Web:     http://localhost:3001 (React/Vite)"
 echo "   Site:    https://semihkilic.com"
 echo ""
 echo "📁 Logs:"
 echo "   • /tmp/rust-backend.log"
+echo "   • /tmp/rust-scan-engine.log"
 echo "   • /tmp/frontend.log"
 echo ""
 echo "🔧 Commands:"
