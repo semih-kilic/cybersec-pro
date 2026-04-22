@@ -14,6 +14,8 @@ import {
   usePurpleTeamExercise,
   useMitreMatrix,
   useStartExercise,
+  useAbortExercise,
+  useIngestExerciseTelemetry,
 } from '../../hooks/useApiQueries';
 import { PurpleTeamPageSkeleton } from '../../components/ui/Skeleton';
 
@@ -418,7 +420,19 @@ function ChainSelector({ chains, onSelect }: { chains: AttackChain[]; onSelect: 
 // Exercise Detail Panel
 // ═══════════════════════════════════════════════════════════
 
-function ExerciseDetail({ exercise }: { exercise: Exercise }) {
+function ExerciseDetail({
+  exercise,
+  onAbort,
+  onTelemetry,
+  aborting,
+  telemetryPending,
+}: {
+  exercise: Exercise;
+  onAbort: () => void;
+  onTelemetry: (payload: { step_index: number; technique_id: string; detected: boolean }) => void;
+  aborting: boolean;
+  telemetryPending: boolean;
+}) {
   const { t } = useTranslation();
   const [activeTab, setActiveTab] = useState<'timeline' | 'alerts' | 'gaps' | 'coverage'>('timeline');
 
@@ -435,7 +449,18 @@ function ExerciseDetail({ exercise }: { exercise: Exercise }) {
             <h3 className="text-lg font-bold text-white">{exercise.name}</h3>
             <p className="text-xs text-gray-400">Target: {exercise.target} • Chain: {exercise.attack_chain_id}</p>
           </div>
-          <StatusBadge status={exercise.status} />
+          <div className="flex items-center gap-2">
+            <StatusBadge status={exercise.status} />
+            {(exercise.status === 'running' || exercise.status === 'pending') && (
+              <button
+                onClick={onAbort}
+                disabled={aborting}
+                className="px-3 py-1 text-xs rounded border border-red-500/30 bg-red-500/10 text-red-300 hover:bg-red-500/20 disabled:opacity-50"
+              >
+                {aborting ? 'Aborting...' : 'Abort'}
+              </button>
+            )}
+          </div>
         </div>
 
         {/* Progress bar */}
@@ -527,6 +552,24 @@ function ExerciseDetail({ exercise }: { exercise: Exercise }) {
                     <span className="text-red-400 font-bold">💀 MISSED</span>
                   )}
                 </div>
+                {(exercise.status === 'running' || exercise.status === 'pending') && step.technique_id && (
+                  <div className="mt-2 flex items-center gap-2">
+                    <button
+                      onClick={() => onTelemetry({ step_index: step.step_index ?? i, technique_id: step.technique_id, detected: true })}
+                      disabled={telemetryPending}
+                      className="px-2 py-1 text-[11px] rounded border border-green-500/30 bg-green-500/10 text-green-300 hover:bg-green-500/20 disabled:opacity-50"
+                    >
+                      Mark Detected
+                    </button>
+                    <button
+                      onClick={() => onTelemetry({ step_index: step.step_index ?? i, technique_id: step.technique_id, detected: false })}
+                      disabled={telemetryPending}
+                      className="px-2 py-1 text-[11px] rounded border border-red-500/30 bg-red-500/10 text-red-300 hover:bg-red-500/20 disabled:opacity-50"
+                    >
+                      Mark Missed
+                    </button>
+                  </div>
+                )}
                 {step.output && (
                   <details className="mt-2">
                     <summary className="text-xs text-gray-500 cursor-pointer hover:text-gray-300">{t('purpleTeam.viewOutput', 'View Output')}</summary>
@@ -712,7 +755,11 @@ export default function PurpleTeamPage() {
   const selectedExercise = (exerciseDetail as unknown as Exercise) || null;
 
   const startExerciseMutation = useStartExercise();
+  const abortExerciseMutation = useAbortExercise();
+  const telemetryMutation = useIngestExerciseTelemetry();
   const starting = startExerciseMutation.isPending;
+  const aborting = abortExerciseMutation.isPending;
+  const telemetryPending = telemetryMutation.isPending;
   const loading = statsLoading || chainsLoading;
 
   // Start exercise
@@ -739,6 +786,27 @@ export default function PurpleTeamPage() {
   const viewExercise = async (ex: Exercise) => {
     setSelectedExerciseId(ex.id);
     setTab('exercise');
+  };
+
+  const abortSelectedExercise = async () => {
+    if (!selectedExerciseId) return;
+    try {
+      await abortExerciseMutation.mutateAsync(selectedExerciseId);
+    } catch { /* mutation error handled by global toast */ }
+  };
+
+  const sendExerciseTelemetry = async (payload: { step_index: number; technique_id: string; detected: boolean }) => {
+    if (!selectedExerciseId) return;
+    try {
+      await telemetryMutation.mutateAsync({
+        exerciseId: selectedExerciseId,
+        telemetry: {
+          ...payload,
+          source: 'dashboard.manual',
+          confidence: payload.detected ? 0.95 : 0.4,
+        },
+      });
+    } catch { /* mutation error handled by global toast */ }
   };
 
   if (loading) {
@@ -916,7 +984,13 @@ export default function PurpleTeamPage() {
               >
                 ← Back to list
               </button>
-              <ExerciseDetail exercise={selectedExercise} />
+              <ExerciseDetail
+                exercise={selectedExercise}
+                onAbort={abortSelectedExercise}
+                onTelemetry={sendExerciseTelemetry}
+                aborting={aborting}
+                telemetryPending={telemetryPending}
+              />
             </div>
           ) : (
             <div className="space-y-3">

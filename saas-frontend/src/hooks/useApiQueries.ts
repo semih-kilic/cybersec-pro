@@ -1020,6 +1020,53 @@ export function useStartExercise() {
   });
 }
 
+export interface PurpleTelemetryPayload {
+  step_index: number;
+  technique_id: string;
+  detected: boolean;
+  source?: string;
+  confidence?: number;
+}
+
+export function useAbortExercise() {
+  const { token } = useAuth();
+  const qc = useQueryClient();
+
+  return useMutation({
+    mutationFn: (exerciseId: string) =>
+      authFetch<{ success: boolean; id: string; status: string }>(`/api/v1/purple-team/exercises/${exerciseId}/abort`, token, {
+        method: 'POST',
+      }),
+    onSuccess: (_, exerciseId) => {
+      qc.invalidateQueries({ queryKey: queryKeys.purpleTeam.exercises() });
+      qc.invalidateQueries({ queryKey: queryKeys.purpleTeam.exercise(exerciseId) });
+      qc.invalidateQueries({ queryKey: queryKeys.purpleTeam.dashboard() });
+    },
+  });
+}
+
+export function useIngestExerciseTelemetry() {
+  const { token } = useAuth();
+  const qc = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({ exerciseId, telemetry }: { exerciseId: string; telemetry: PurpleTelemetryPayload }) =>
+      authFetch<{ success: boolean; id: string; status: string; detected_attacks: number; missed_attacks: number }>(
+        `/api/v1/purple-team/exercises/${exerciseId}/telemetry`,
+        token,
+        {
+          method: 'POST',
+          body: JSON.stringify(telemetry),
+        }
+      ),
+    onSuccess: (_, variables) => {
+      qc.invalidateQueries({ queryKey: queryKeys.purpleTeam.exercises() });
+      qc.invalidateQueries({ queryKey: queryKeys.purpleTeam.exercise(variables.exerciseId) });
+      qc.invalidateQueries({ queryKey: queryKeys.purpleTeam.dashboard() });
+    },
+  });
+}
+
 // ==========================================
 // TERMINAL HOOKS
 // ==========================================
