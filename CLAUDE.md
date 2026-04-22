@@ -135,7 +135,8 @@ CI artifacts for observability:
 4. ✅ Align scan engine integration strategy with compose and routing.
    - Nginx /api/v3/ routing (600s timeouts); 16 scanner unit tests (injection, whitelist, build_command); CI step added.
 5. Expand billing/Stripe flow beyond stub endpoints.
-6. Wire `purple_team_abort_exercise` to emit telemetry abort event (parity with ingest_telemetry).
+6. ✅ Wire `purple_team_abort_exercise` to emit telemetry abort event (parity with ingest_telemetry).
+   - Abort event appended to `payload->'telemetry_events'` atomically in same UPDATE; response body carries event; 3 unit tests.
 
 ## 9) Latest Frontend Stability Notes
 
