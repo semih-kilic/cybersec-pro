@@ -1051,7 +1051,7 @@ export function useIngestExerciseTelemetry() {
 
   return useMutation({
     mutationFn: ({ exerciseId, telemetry }: { exerciseId: string; telemetry: PurpleTelemetryPayload }) =>
-      authFetch<{ success: boolean; id: string; status: string; detected_attacks: number; missed_attacks: number }>(
+      authFetch<{ success: boolean; id: string; status: string; detected_attacks: number; missed_attacks: number; detection_coverage_alert?: string; attack_chain_id?: string; gap_analysis?: { total_attacks: number; detected: number; missed: number; detection_rate: number } }>(
         `/api/v1/purple-team/exercises/${exerciseId}/telemetry`,
         token,
         {
