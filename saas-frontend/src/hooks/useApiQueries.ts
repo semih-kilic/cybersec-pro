@@ -227,6 +227,13 @@ export interface DashboardData {
   totalTargets: number;
 }
 
+export function normalizeScansPayload<T = { id: string }>(data: unknown): T[] {
+  if (Array.isArray(data)) return data as T[];
+
+  const maybeScans = (data as { scans?: unknown } | null | undefined)?.scans;
+  return Array.isArray(maybeScans) ? (maybeScans as T[]) : [];
+}
+
 /**
  * Fetch all dashboard overview data in parallel
  */
@@ -242,7 +249,7 @@ export function useDashboardData() {
         authFetch<UsageStatsResponse>('/api/v1/usage/stats', token).catch(() => ({ usage: { total_scans: 0 } })),
       ]);
 
-      const scans = scansData.scans || [];
+      const scans = normalizeScansPayload<DashboardScansResponse['scans'][number]>(scansData);
       return {
         totalTools: toolsData.total_tools || toolsData.total || 0,
         scanSummary: {
@@ -404,7 +411,7 @@ export function useScans(filters?: Record<string, string>) {
     },
     ...CACHE_TIMES.scans,
     enabled: !!token,
-    select: (data) => data.scans || [],
+    select: (data) => normalizeScansPayload<Scan>(data),
   });
 }
 
@@ -1481,7 +1488,7 @@ export function useDashboardScans() {
   return useQuery({
     queryKey: [...queryKeys.scans.all, 'dashboard'],
     queryFn: () => authFetch<{ scans: any[] }>('/api/v1/scans', token),
-    select: (data) => data.scans || [],
+    select: (data) => normalizeScansPayload(data),
     ...CACHE_TIMES.scans,
     enabled: !!token,
   });
