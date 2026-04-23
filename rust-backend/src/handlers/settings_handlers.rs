@@ -11,6 +11,46 @@ use std::sync::Arc;
 use crate::middleware::auth_middleware::{AdminUser, AuthUser};
 use crate::AppState;
 
+// ── Pure helpers (testable without DB) ────────────────────
+
+/// Returns `true` if `role` is one of the platform's recognised roles.
+pub fn is_valid_role(role: &str) -> bool {
+    crate::middleware::auth_middleware::VALID_ROLES.contains(&role)
+}
+
+/// Parsed, defaults-applied notification preferences from a JSON request body.
+#[derive(Debug, PartialEq)]
+pub struct NotificationPrefs {
+    pub email_scan_complete: bool,
+    pub email_weekly_report: bool,
+    pub email_security_alerts: bool,
+    pub browser_notifications: bool,
+    pub quiet_hours_enabled: bool,
+    pub quiet_hours_from: String,
+    pub quiet_hours_to: String,
+}
+
+/// Extract notification prefs from a JSON body, filling in safe defaults.
+pub fn parse_notification_prefs(body: &serde_json::Value) -> NotificationPrefs {
+    let email_scan = body.get("email_scan_complete").and_then(|v| v.as_bool()).unwrap_or(true);
+    let email_weekly = body.get("email_weekly_report").and_then(|v| v.as_bool()).unwrap_or(true);
+    let email_security = body.get("email_security_alerts").and_then(|v| v.as_bool()).unwrap_or(true);
+    let browser = body.get("browser_notifications").and_then(|v| v.as_bool()).unwrap_or(true);
+    let quiet = body.get("quiet_hours");
+    let quiet_enabled = quiet.and_then(|q| q.get("enabled")).and_then(|v| v.as_bool()).unwrap_or(false);
+    let quiet_from = quiet.and_then(|q| q.get("from")).and_then(|v| v.as_str()).unwrap_or("22:00").to_string();
+    let quiet_to = quiet.and_then(|q| q.get("to")).and_then(|v| v.as_str()).unwrap_or("08:00").to_string();
+    NotificationPrefs {
+        email_scan_complete: email_scan,
+        email_weekly_report: email_weekly,
+        email_security_alerts: email_security,
+        browser_notifications: browser,
+        quiet_hours_enabled: quiet_enabled,
+        quiet_hours_from: quiet_from,
+        quiet_hours_to: quiet_to,
+    }
+}
+
 // ══════════════════════════════════════════════════════════
 // NOTIFICATION PREFERENCES
 // ══════════════════════════════════════════════════════════
@@ -65,15 +105,15 @@ pub async fn update_notification_preferences(
     State(state): State<Arc<AppState>>,
     Json(body): Json<serde_json::Value>,
 ) -> impl IntoResponse {
-    let email_scan = body.get("email_scan_complete").and_then(|v| v.as_bool()).unwrap_or(true);
-    let email_weekly = body.get("email_weekly_report").and_then(|v| v.as_bool()).unwrap_or(true);
-    let email_security = body.get("email_security_alerts").and_then(|v| v.as_bool()).unwrap_or(true);
-    let browser = body.get("browser_notifications").and_then(|v| v.as_bool()).unwrap_or(true);
-
-    let quiet_hours = body.get("quiet_hours");
-    let quiet_enabled = quiet_hours.and_then(|q| q.get("enabled")).and_then(|v| v.as_bool()).unwrap_or(false);
-    let quiet_from = quiet_hours.and_then(|q| q.get("from")).and_then(|v| v.as_str()).unwrap_or("22:00").to_string();
-    let quiet_to = quiet_hours.and_then(|q| q.get("to")).and_then(|v| v.as_str()).unwrap_or("08:00").to_string();
+    let NotificationPrefs {
+        email_scan_complete: email_scan,
+        email_weekly_report: email_weekly,
+        email_security_alerts: email_security,
+        browser_notifications: browser,
+        quiet_hours_enabled: quiet_enabled,
+        quiet_hours_from: quiet_from,
+        quiet_hours_to: quiet_to,
+    } = parse_notification_prefs(&body);
 
     let id = uuid::Uuid::new_v4().to_string();
     let result = sqlx::query(
@@ -349,9 +389,8 @@ pub async fn invite_team_member(
     };
 
     let role = body.get("role").and_then(|r| r.as_str()).unwrap_or("user").to_string();
-    let valid_roles = crate::middleware::auth_middleware::VALID_ROLES;
-    if !valid_roles.contains(&role.as_str()) {
-        return (StatusCode::BAD_REQUEST, Json(json!({"error": format!("Invalid role. Must be one of: {:?}", valid_roles)}))).into_response();
+    if !is_valid_role(&role) {
+        return (StatusCode::BAD_REQUEST, Json(json!({"error": format!("Invalid role. Must be one of: {:?}", crate::middleware::auth_middleware::VALID_ROLES)}))).into_response();
     }
 
     // Check if user already exists in org
@@ -454,9 +493,8 @@ pub async fn change_member_role(
         None => return (StatusCode::BAD_REQUEST, Json(json!({"error": "Role required"}))).into_response(),
     };
 
-    let valid_roles = crate::middleware::auth_middleware::VALID_ROLES;
-    if !valid_roles.contains(&role.as_str()) {
-        return (StatusCode::BAD_REQUEST, Json(json!({"error": format!("Invalid role. Must be one of: {:?}", valid_roles)}))).into_response();
+    if !is_valid_role(&role) {
+        return (StatusCode::BAD_REQUEST, Json(json!({"error": format!("Invalid role. Must be one of: {:?}", crate::middleware::auth_middleware::VALID_ROLES)}))).into_response();
     }
 
     let result = sqlx::query("UPDATE users SET role = $1 WHERE id = $2 AND organization_id = $3")
@@ -612,5 +650,117 @@ pub async fn update_purple_team_profile(
         }))
         .into_response(),
         Err(e) => (StatusCode::INTERNAL_SERVER_ERROR, Json(json!({"error": format!("Failed to save profile: {}", e)}))).into_response(),
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::{is_valid_role, parse_notification_prefs, NotificationPrefs};
+    use serde_json::json;
+
+    // ── is_valid_role ─────────────────────────────────────
+
+    #[test]
+    fn is_valid_role_accepts_all_platform_roles() {
+        assert!(is_valid_role("viewer"));
+        assert!(is_valid_role("user"));
+        assert!(is_valid_role("analyst"));
+        assert!(is_valid_role("admin"));
+        assert!(is_valid_role("superadmin"));
+    }
+
+    #[test]
+    fn is_valid_role_rejects_unknown_role() {
+        assert!(!is_valid_role("owner"));
+        assert!(!is_valid_role("manager"));
+        assert!(!is_valid_role("god"));
+    }
+
+    #[test]
+    fn is_valid_role_rejects_empty_string() {
+        assert!(!is_valid_role(""));
+    }
+
+    #[test]
+    fn is_valid_role_is_case_sensitive() {
+        assert!(!is_valid_role("Admin"));
+        assert!(!is_valid_role("ADMIN"));
+        assert!(!is_valid_role("User"));
+    }
+
+    // ── parse_notification_prefs ──────────────────────────
+
+    #[test]
+    fn parse_notification_prefs_returns_all_defaults_for_empty_body() {
+        let prefs = parse_notification_prefs(&json!({}));
+        assert_eq!(prefs, NotificationPrefs {
+            email_scan_complete: true,
+            email_weekly_report: true,
+            email_security_alerts: true,
+            browser_notifications: true,
+            quiet_hours_enabled: false,
+            quiet_hours_from: "22:00".to_string(),
+            quiet_hours_to: "08:00".to_string(),
+        });
+    }
+
+    #[test]
+    fn parse_notification_prefs_reads_explicit_false_values() {
+        let body = json!({
+            "email_scan_complete": false,
+            "email_weekly_report": false,
+            "email_security_alerts": false,
+            "browser_notifications": false
+        });
+        let prefs = parse_notification_prefs(&body);
+        assert!(!prefs.email_scan_complete);
+        assert!(!prefs.email_weekly_report);
+        assert!(!prefs.email_security_alerts);
+        assert!(!prefs.browser_notifications);
+    }
+
+    #[test]
+    fn parse_notification_prefs_reads_quiet_hours_when_provided() {
+        let body = json!({
+            "quiet_hours": {
+                "enabled": true,
+                "from": "23:00",
+                "to": "07:30"
+            }
+        });
+        let prefs = parse_notification_prefs(&body);
+        assert!(prefs.quiet_hours_enabled);
+        assert_eq!(prefs.quiet_hours_from, "23:00");
+        assert_eq!(prefs.quiet_hours_to, "07:30");
+    }
+
+    #[test]
+    fn parse_notification_prefs_defaults_quiet_hours_when_block_absent() {
+        let body = json!({"email_scan_complete": true});
+        let prefs = parse_notification_prefs(&body);
+        assert!(!prefs.quiet_hours_enabled);
+        assert_eq!(prefs.quiet_hours_from, "22:00");
+        assert_eq!(prefs.quiet_hours_to, "08:00");
+    }
+
+    #[test]
+    fn parse_notification_prefs_defaults_quiet_hours_fields_when_only_enabled_set() {
+        let body = json!({"quiet_hours": {"enabled": true}});
+        let prefs = parse_notification_prefs(&body);
+        assert!(prefs.quiet_hours_enabled);
+        assert_eq!(prefs.quiet_hours_from, "22:00");
+        assert_eq!(prefs.quiet_hours_to, "08:00");
+    }
+
+    #[test]
+    fn parse_notification_prefs_ignores_non_bool_values_and_uses_defaults() {
+        let body = json!({
+            "email_scan_complete": "yes",
+            "browser_notifications": 1
+        });
+        let prefs = parse_notification_prefs(&body);
+        // Non-bool coerces to default (true)
+        assert!(prefs.email_scan_complete);
+        assert!(prefs.browser_notifications);
     }
 }
