@@ -133,3 +133,90 @@ pub fn has_role_access(user_role: &str, required_role: &str) -> bool {
 
 /// Valid roles for the system
 pub const VALID_ROLES: [&str; 5] = ["viewer", "user", "analyst", "admin", "superadmin"];
+
+#[cfg(test)]
+mod tests {
+    use super::{has_role_access, role_level, VALID_ROLES};
+
+    // ── role_level ─────────────────────────────────────────────────────
+
+    #[test]
+    fn role_level_returns_correct_level_for_all_roles() {
+        assert_eq!(role_level("superadmin"), 5);
+        assert_eq!(role_level("admin"), 4);
+        assert_eq!(role_level("analyst"), 3);
+        assert_eq!(role_level("user"), 2);
+        assert_eq!(role_level("viewer"), 1);
+    }
+
+    #[test]
+    fn role_level_returns_zero_for_unknown_role() {
+        assert_eq!(role_level("unknown"), 0);
+        assert_eq!(role_level(""), 0);
+        assert_eq!(role_level("ADMIN"), 0); // case-sensitive
+    }
+
+    #[test]
+    fn role_level_ordering_is_monotonically_increasing() {
+        assert!(role_level("viewer") < role_level("user"));
+        assert!(role_level("user") < role_level("analyst"));
+        assert!(role_level("analyst") < role_level("admin"));
+        assert!(role_level("admin") < role_level("superadmin"));
+    }
+
+    // ── has_role_access ───────────────────────────────────────────────
+
+    #[test]
+    fn has_role_access_allows_same_role() {
+        assert!(has_role_access("viewer", "viewer"));
+        assert!(has_role_access("admin", "admin"));
+        assert!(has_role_access("superadmin", "superadmin"));
+    }
+
+    #[test]
+    fn has_role_access_allows_higher_role() {
+        assert!(has_role_access("superadmin", "viewer"));
+        assert!(has_role_access("admin", "user"));
+        assert!(has_role_access("analyst", "viewer"));
+    }
+
+    #[test]
+    fn has_role_access_rejects_lower_role() {
+        assert!(!has_role_access("viewer", "user"));
+        assert!(!has_role_access("user", "analyst"));
+        assert!(!has_role_access("analyst", "admin"));
+        assert!(!has_role_access("admin", "superadmin"));
+    }
+
+    #[test]
+    fn has_role_access_unknown_role_cannot_access_anything() {
+        assert!(!has_role_access("unknown", "viewer"));
+        assert!(!has_role_access("", "viewer"));
+    }
+
+    // ── VALID_ROLES ──────────────────────────────────────────────────
+
+    #[test]
+    fn valid_roles_contains_all_five_system_roles() {
+        assert!(VALID_ROLES.contains(&"viewer"));
+        assert!(VALID_ROLES.contains(&"user"));
+        assert!(VALID_ROLES.contains(&"analyst"));
+        assert!(VALID_ROLES.contains(&"admin"));
+        assert!(VALID_ROLES.contains(&"superadmin"));
+        assert_eq!(VALID_ROLES.len(), 5);
+    }
+
+    #[test]
+    fn valid_roles_does_not_contain_unknown_roles() {
+        assert!(!VALID_ROLES.contains(&"guest"));
+        assert!(!VALID_ROLES.contains(&"superuser"));
+        assert!(!VALID_ROLES.contains(&"ADMIN"));
+    }
+
+    #[test]
+    fn every_valid_role_has_nonzero_level() {
+        for role in VALID_ROLES.iter() {
+            assert!(role_level(role) > 0, "role '{}' should have nonzero level", role);
+        }
+    }
+}

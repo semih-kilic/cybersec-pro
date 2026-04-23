@@ -163,3 +163,114 @@ pub fn get_plan_level(plan_type: &str) -> u8 {
 pub fn check_plan_access(user_plan: &str, required_plan: &str) -> bool {
     get_plan_level(user_plan) >= get_plan_level(required_plan)
 }
+
+#[cfg(test)]
+mod tests {
+    use super::{check_plan_access, get_plan_configs, get_plan_level};
+
+    // ── get_plan_level ──────────────────────────────────────────────────
+
+    #[test]
+    fn get_plan_level_returns_correct_level_for_all_plans() {
+        assert_eq!(get_plan_level("trial"), 0);
+        assert_eq!(get_plan_level("free"), 0);
+        assert_eq!(get_plan_level("starter"), 1);
+        assert_eq!(get_plan_level("professional"), 2);
+        assert_eq!(get_plan_level("enterprise"), 3);
+    }
+
+    #[test]
+    fn get_plan_level_returns_zero_for_unknown_plan() {
+        assert_eq!(get_plan_level("unknown"), 0);
+        assert_eq!(get_plan_level(""), 0);
+        assert_eq!(get_plan_level("ENTERPRISE"), 0); // case-sensitive
+    }
+
+    #[test]
+    fn get_plan_level_ordering_is_monotonically_increasing() {
+        assert!(get_plan_level("trial") < get_plan_level("starter"));
+        assert!(get_plan_level("starter") < get_plan_level("professional"));
+        assert!(get_plan_level("professional") < get_plan_level("enterprise"));
+    }
+
+    // ── check_plan_access ────────────────────────────────────────────
+
+    #[test]
+    fn check_plan_access_allows_same_level() {
+        assert!(check_plan_access("trial", "trial"));
+        assert!(check_plan_access("starter", "starter"));
+        assert!(check_plan_access("enterprise", "enterprise"));
+    }
+
+    #[test]
+    fn check_plan_access_allows_higher_plan() {
+        assert!(check_plan_access("enterprise", "starter"));
+        assert!(check_plan_access("professional", "trial"));
+        assert!(check_plan_access("starter", "trial"));
+    }
+
+    #[test]
+    fn check_plan_access_rejects_lower_plan() {
+        assert!(!check_plan_access("trial", "starter"));
+        assert!(!check_plan_access("starter", "professional"));
+        assert!(!check_plan_access("professional", "enterprise"));
+    }
+
+    #[test]
+    fn check_plan_access_free_is_equivalent_to_trial() {
+        assert!(check_plan_access("free", "trial"));
+        assert!(!check_plan_access("free", "starter"));
+    }
+
+    // ── get_plan_configs data integrity ──────────────────────────────────
+
+    #[test]
+    fn get_plan_configs_contains_all_four_plans() {
+        let plans = get_plan_configs();
+        assert!(plans.contains_key("trial"));
+        assert!(plans.contains_key("starter"));
+        assert!(plans.contains_key("professional"));
+        assert!(plans.contains_key("enterprise"));
+    }
+
+    #[test]
+    fn trial_plan_has_daily_limit_and_restricted_features() {
+        let plans = get_plan_configs();
+        let trial = &plans["trial"];
+        assert_eq!(trial.daily_scan_limit, 3);
+        assert_eq!(trial.max_projects, 1);
+        assert!(!trial.features.pdf_reports);
+        assert!(!trial.features.sso_saml);
+        assert!(!trial.features.purple_team);
+    }
+
+    #[test]
+    fn enterprise_plan_has_unlimited_projects_and_all_features() {
+        let plans = get_plan_configs();
+        let ent = &plans["enterprise"];
+        assert_eq!(ent.max_projects, 0);     // 0 = unlimited
+        assert_eq!(ent.max_agents, -1);       // -1 = unlimited
+        assert_eq!(ent.concurrent_scans, 0); // 0 = unlimited
+        assert!(ent.features.sso_saml);
+        assert!(ent.features.purple_team);
+        assert!(ent.features.api_access);
+    }
+
+    #[test]
+    fn plan_levels_match_config_ordering() {
+        let plans = get_plan_configs();
+        assert_eq!(plans["trial"].level, 0);
+        assert_eq!(plans["starter"].level, 1);
+        assert_eq!(plans["professional"].level, 2);
+        assert_eq!(plans["enterprise"].level, 3);
+    }
+
+    #[test]
+    fn professional_plan_has_ai_features_but_no_sso() {
+        let plans = get_plan_configs();
+        let pro = &plans["professional"];
+        assert!(pro.features.ai_suggestions);
+        assert!(pro.features.ai_remediation);
+        assert!(!pro.features.sso_saml);
+    }
+}

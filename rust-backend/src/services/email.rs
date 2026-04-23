@@ -71,19 +71,23 @@ pub async fn send_welcome_email(
     customer_name: &str,
 ) -> Result<(), String> {
     let html = welcome_email_html(customer_name);
-    let plain = format!(
-        "Welcome, {}!\n\nThank you for joining CyberSec Professional.\n\
-         Your journey to professional security starts now!\n\n© 2026 CyberSec Professional",
-        customer_name
-    );
+    let plain = welcome_plain_text(customer_name);
     send_email(
         cfg,
         customer_email,
-        "🛡️ Welcome to CyberSec Professional!",
+        "\u{1F6E1}\u{FE0F} Welcome to CyberSec Professional!",
         &plain,
         &html,
     )
     .await
+}
+
+pub(crate) fn welcome_plain_text(name: &str) -> String {
+    format!(
+        "Welcome, {}!\n\nThank you for joining CyberSec Professional.\n\
+         Your journey to professional security starts now!\n\n\u{00A9} 2026 CyberSec Professional",
+        name
+    )
 }
 
 pub async fn send_payment_confirmation(
@@ -94,11 +98,7 @@ pub async fn send_payment_confirmation(
     plan_name: &str,
 ) -> Result<(), String> {
     let html = payment_confirmation_html(customer_name, amount, plan_name);
-    let plain = format!(
-        "Payment Successful!\n\nDear {},\nYour payment of {} for {} has been confirmed.\n\
-         Your license key will be sent in a separate email shortly.\n\n© 2026 CyberSec Professional",
-        customer_name, amount, plan_name
-    );
+    let plain = payment_plain_text(customer_name, amount, plan_name);
     send_email(
         cfg,
         customer_email,
@@ -107,6 +107,14 @@ pub async fn send_payment_confirmation(
         &html,
     )
     .await
+}
+
+pub(crate) fn payment_plain_text(name: &str, amount: &str, plan_name: &str) -> String {
+    format!(
+        "Payment Successful!\n\nDear {},\nYour payment of {} for {} has been confirmed.\n\
+         Your license key will be sent in a separate email shortly.\n\n© 2026 CyberSec Professional",
+        name, amount, plan_name
+    )
 }
 
 pub async fn send_verification_email(
@@ -318,4 +326,74 @@ Your payment of <strong style="color:#00d4ff">{amount}</strong> for <strong>{pla
 <hr style="border:1px solid #2d3748;margin:30px 0">
 <p style="color:#4a5568;font-size:12px">© 2026 CyberSec Professional</p>
 </td></tr></table></body></html>"#, name = name, amount = amount, plan = plan)
+}
+
+#[cfg(test)]
+mod tests {
+    use super::{license_plain_text, payment_plain_text, welcome_plain_text};
+
+    // ── license_plain_text ──────────────────────────────────────────────
+
+    #[test]
+    fn license_plain_text_contains_all_fields() {
+        let text = license_plain_text("Alice", "Professional", "ABC-123", "2027-01-01");
+        assert!(text.contains("Alice"));
+        assert!(text.contains("Professional"));
+        assert!(text.contains("ABC-123"));
+        assert!(text.contains("2027-01-01"));
+    }
+
+    #[test]
+    fn license_plain_text_contains_support_contact() {
+        let text = license_plain_text("Alice", "Starter", "KEY", "2027-01-01");
+        assert!(text.contains("support@semihkilic.com"));
+    }
+
+    #[test]
+    fn license_plain_text_contains_quick_start_steps() {
+        let text = license_plain_text("Bob", "Enterprise", "KEY-XYZ", "2028-12-31");
+        assert!(text.contains("Quick Start"));
+        assert!(text.contains("License"));
+    }
+
+    // ── welcome_plain_text ──────────────────────────────────────────────
+
+    #[test]
+    fn welcome_plain_text_contains_name() {
+        let text = welcome_plain_text("Carol");
+        assert!(text.contains("Carol"));
+    }
+
+    #[test]
+    fn welcome_plain_text_contains_brand() {
+        let text = welcome_plain_text("Dave");
+        assert!(text.contains("CyberSec Professional"));
+    }
+
+    #[test]
+    fn welcome_plain_text_is_non_empty() {
+        assert!(!welcome_plain_text("").is_empty());
+    }
+
+    // ── payment_plain_text ──────────────────────────────────────────────
+
+    #[test]
+    fn payment_plain_text_contains_all_fields() {
+        let text = payment_plain_text("Eve", "\u20AC299", "Professional");
+        assert!(text.contains("Eve"));
+        assert!(text.contains("\u20AC299"));
+        assert!(text.contains("Professional"));
+    }
+
+    #[test]
+    fn payment_plain_text_mentions_license_key_followup() {
+        let text = payment_plain_text("Frank", "\u20AC99", "Starter");
+        assert!(text.contains("license key"));
+    }
+
+    #[test]
+    fn payment_plain_text_contains_payment_successful() {
+        let text = payment_plain_text("Grace", "\u20AC799", "Enterprise");
+        assert!(text.contains("Payment Successful"));
+    }
 }
