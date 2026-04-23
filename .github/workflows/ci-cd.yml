@@ -70,6 +70,11 @@ jobs:
           SQLX_OFFLINE=true cargo test handlers::sso_handlers::tests 2>&1 | tee ci-reports/cargo-test-sso-handlers.log
           grep -E "^test result" ci-reports/cargo-test-sso-handlers.log | grep -v "FAILED"
 
+      - name: Settings handler unit tests
+        run: |
+          SQLX_OFFLINE=true cargo test handlers::settings_handlers::tests 2>&1 | tee ci-reports/cargo-test-settings-handlers.log
+          grep -E "^test result" ci-reports/cargo-test-settings-handlers.log | grep -v "FAILED"
+
       - name: Run clippy lints
         run: |
           set +e
