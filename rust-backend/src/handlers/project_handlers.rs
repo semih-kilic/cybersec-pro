@@ -12,6 +12,24 @@ use crate::middleware::auth_middleware::AuthUser;
 use crate::models::Project;
 use crate::AppState;
 
+// ── Pure helpers (testable without DB) ─────────────────────────────────────
+
+/// Returns the default project target type when none is provided.
+pub fn default_project_target_type(provided: Option<&str>) -> &str {
+    provided.unwrap_or("web")
+}
+
+/// Returns `true` when the project count has reached the plan limit.
+/// A `max_projects` of 0 means unlimited.
+pub fn is_over_project_limit(count: i64, max_projects: i64) -> bool {
+    max_projects > 0 && count >= max_projects
+}
+
+/// Builds the plan-limit-reached error message.
+pub fn format_project_limit_error(count: i64, max: i64) -> String {
+    format!("Project limit reached ({}/{}). Upgrade your plan.", count, max)
+}
+
 pub async fn list_projects(
     State(state): State<Arc<AppState>>,
     auth: AuthUser,
@@ -67,9 +85,9 @@ pub async fn create_project(
                 .fetch_one(&state.db)
                 .await
                 .unwrap_or((0,));
-            if count.0 >= config.max_projects as i64 {
+            if is_over_project_limit(count.0, config.max_projects as i64) {
                 return (StatusCode::PAYMENT_REQUIRED, Json(json!({
-                    "error": format!("Project limit reached ({}/{}). Upgrade your plan.", count.0, config.max_projects)
+                    "error": format_project_limit_error(count.0, config.max_projects as i64)
                 }))).into_response();
             }
         }
@@ -81,7 +99,7 @@ pub async fn create_project(
     .bind(org_id)
     .bind(&body.name)
     .bind(&body.description)
-    .bind(body.target_type.as_deref().unwrap_or("web"))
+    .bind(default_project_target_type(body.target_type.as_deref()))
     .bind(&body.target_url)
     .bind(&body.target_ip)
     .fetch_one(&state.db)
@@ -141,4 +159,62 @@ pub async fn delete_project(
         .await;
 
     Json(json!({"message": "Project deleted"})).into_response()
+}
+
+#[cfg(test)]
+mod tests {
+    use super::{default_project_target_type, format_project_limit_error, is_over_project_limit};
+
+    // ── default_project_target_type ─────────────────────────────────────────
+
+    #[test]
+    fn default_project_target_type_returns_web_when_none() {
+        assert_eq!(default_project_target_type(None), "web");
+    }
+
+    #[test]
+    fn default_project_target_type_returns_provided_value() {
+        assert_eq!(default_project_target_type(Some("api")), "api");
+        assert_eq!(default_project_target_type(Some("mobile")), "mobile");
+        assert_eq!(default_project_target_type(Some("network")), "network");
+    }
+
+    // ── is_over_project_limit ───────────────────────────────────────────────
+
+    #[test]
+    fn is_over_project_limit_false_when_max_is_zero_unlimited() {
+        assert!(!is_over_project_limit(100, 0));
+        assert!(!is_over_project_limit(0, 0));
+    }
+
+    #[test]
+    fn is_over_project_limit_false_when_below_limit() {
+        assert!(!is_over_project_limit(4, 5));
+        assert!(!is_over_project_limit(0, 5));
+    }
+
+    #[test]
+    fn is_over_project_limit_true_at_limit() {
+        assert!(is_over_project_limit(5, 5));
+    }
+
+    #[test]
+    fn is_over_project_limit_true_above_limit() {
+        assert!(is_over_project_limit(6, 5));
+    }
+
+    // ── format_project_limit_error ──────────────────────────────────────────
+
+    #[test]
+    fn format_project_limit_error_includes_count_and_max() {
+        let msg = format_project_limit_error(5, 5);
+        assert!(msg.contains("5/5"), "expected '5/5' in: {msg}");
+        assert!(msg.contains("Upgrade"), "expected 'Upgrade' in: {msg}");
+    }
+
+    #[test]
+    fn format_project_limit_error_includes_exact_values() {
+        let msg = format_project_limit_error(3, 10);
+        assert!(msg.contains("3/10"), "expected '3/10' in: {msg}");
+    }
 }

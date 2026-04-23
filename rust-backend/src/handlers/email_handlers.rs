@@ -9,6 +9,18 @@ use crate::middleware::auth_middleware::AuthUser;
 use crate::services::email::{self, EmailConfig};
 use crate::AppState;
 
+// ── Pure helpers (testable without DB) ─────────────────────────────────────
+
+/// Returns the configured SMTP server, falling back to `smtp.yandex.com`.
+pub fn resolve_smtp_server(env_val: Option<String>) -> String {
+    env_val.unwrap_or_else(|| "smtp.yandex.com".into())
+}
+
+/// Returns the configured SMTP email address, falling back to the default.
+pub fn resolve_smtp_email(env_val: Option<String>) -> String {
+    env_val.unwrap_or_else(|| "cybersecpro@semihkilic.com".into())
+}
+
 #[derive(Deserialize)]
 pub struct SendLicenseRequest {
     pub customer_email: String,
@@ -89,7 +101,50 @@ pub async fn email_config_status(
     let configured = EmailConfig::from_env().is_some();
     Json(json!({
         "configured": configured,
-        "smtp_server": std::env::var("SMTP_SERVER").unwrap_or_else(|_| "smtp.yandex.com".into()),
-        "smtp_email": std::env::var("SMTP_EMAIL").unwrap_or_else(|_| "cybersecpro@semihkilic.com".into()),
+        "smtp_server": resolve_smtp_server(std::env::var("SMTP_SERVER").ok()),
+        "smtp_email": resolve_smtp_email(std::env::var("SMTP_EMAIL").ok()),
     }))
+}
+
+#[cfg(test)]
+mod tests {
+    use super::{resolve_smtp_email, resolve_smtp_server};
+
+    // ── resolve_smtp_server ───────────────────────────────────────────────
+
+    #[test]
+    fn resolve_smtp_server_uses_fallback_when_none() {
+        assert_eq!(resolve_smtp_server(None), "smtp.yandex.com");
+    }
+
+    #[test]
+    fn resolve_smtp_server_uses_provided_value() {
+        assert_eq!(
+            resolve_smtp_server(Some("smtp.gmail.com".into())),
+            "smtp.gmail.com"
+        );
+    }
+
+    #[test]
+    fn resolve_smtp_server_uses_custom_enterprise_server() {
+        assert_eq!(
+            resolve_smtp_server(Some("mail.company.internal".into())),
+            "mail.company.internal"
+        );
+    }
+
+    // ── resolve_smtp_email ────────────────────────────────────────────────
+
+    #[test]
+    fn resolve_smtp_email_uses_fallback_when_none() {
+        assert_eq!(resolve_smtp_email(None), "cybersecpro@semihkilic.com");
+    }
+
+    #[test]
+    fn resolve_smtp_email_uses_provided_value() {
+        assert_eq!(
+            resolve_smtp_email(Some("noreply@mycompany.com".into())),
+            "noreply@mycompany.com"
+        );
+    }
 }
