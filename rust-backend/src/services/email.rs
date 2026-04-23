@@ -46,23 +46,27 @@ pub async fn send_license_email(
     expiry_date: &str,
 ) -> Result<(), String> {
     let html = license_email_html(customer_name, customer_email, license_key, plan_name, expiry_date);
-    let plain = format!(
-        "CyberSec Professional - License Delivery\n\n\
-         Dear {},\n\nThank you for purchasing {}!\n\n\
-         Your License Key: {}\nValid Until: {}\n\n\
-         Quick Start:\n1. Go to Settings → License\n2. Enter your license key\n3. Start scanning!\n\n\
-         Need help? Contact: support@semihkilic.com\n\n© 2026 CyberSec Professional",
-        customer_name, plan_name, license_key, expiry_date
-    );
+    let plain = license_plain_text(customer_name, plan_name, license_key, expiry_date);
 
     send_email(
         cfg,
         customer_email,
-        &format!("🔐 Your CyberSec Professional License Key - {}", plan_name),
+        &format!("\u{1F510} Your CyberSec Professional License Key - {}", plan_name),
         &plain,
         &html,
     )
     .await
+}
+
+pub(crate) fn license_plain_text(name: &str, plan_name: &str, license_key: &str, expiry_date: &str) -> String {
+    format!(
+        "CyberSec Professional - License Delivery\n\n\
+         Dear {},\n\nThank you for purchasing {}!\n\n\
+         Your License Key: {}\nValid Until: {}\n\n\
+         Quick Start:\n1. Go to Settings \u{2192} License\n2. Enter your license key\n3. Start scanning!\n\n\
+         Need help? Contact: support@semihkilic.com\n\n\u{00A9} 2026 CyberSec Professional",
+        name, plan_name, license_key, expiry_date
+    )
 }
 
 pub async fn send_welcome_email(
@@ -379,21 +383,21 @@ mod tests {
 
     #[test]
     fn payment_plain_text_contains_all_fields() {
-        let text = payment_plain_text("Eve", "\u20AC299", "Professional");
+        let text = payment_plain_text("Eve", "EUR299", "Professional");
         assert!(text.contains("Eve"));
-        assert!(text.contains("\u20AC299"));
+        assert!(text.contains("EUR299"));
         assert!(text.contains("Professional"));
     }
 
     #[test]
     fn payment_plain_text_mentions_license_key_followup() {
-        let text = payment_plain_text("Frank", "\u20AC99", "Starter");
+        let text = payment_plain_text("Frank", "EUR99", "Starter");
         assert!(text.contains("license key"));
     }
 
     #[test]
     fn payment_plain_text_contains_payment_successful() {
-        let text = payment_plain_text("Grace", "\u20AC799", "Enterprise");
+        let text = payment_plain_text("Grace", "EUR799", "Enterprise");
         assert!(text.contains("Payment Successful"));
     }
 }
