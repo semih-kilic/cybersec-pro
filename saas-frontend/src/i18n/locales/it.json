@@ -1094,7 +1094,10 @@
     "stripeActive": "Pagamento Stripe attivo",
     "stripeManaged": "Gestito tramite Stripe Checkout",
     "noPayment": "Nessun metodo di pagamento salvato",
-    "addPayment": "Aggiungi metodo di pagamento →"
+    "addPayment": "Aggiungi metodo di pagamento →",
+    "manageSubscription": "Gestisci abbonamento",
+    "portalLoading": "Apertura in corso…",
+    "portalError": "Impossibile aprire il portale di fatturazione"
   },
   "community": {
     "title": "Comunità",

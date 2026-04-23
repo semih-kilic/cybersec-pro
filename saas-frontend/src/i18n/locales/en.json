@@ -1135,7 +1135,10 @@
     "stripeActive": "Stripe Payment Active",
     "stripeManaged": "Managed through Stripe Checkout",
     "noPayment": "No payment method on file",
-    "addPayment": "Add payment method →"
+    "addPayment": "Add payment method →",
+    "manageSubscription": "Manage Subscription",
+    "portalLoading": "Opening…",
+    "portalError": "Failed to open billing portal"
   },
   "community": {
     "title": "Community",

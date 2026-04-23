@@ -1431,6 +1431,26 @@ export function useCreateCheckout() {
   });
 }
 
+export function useOpenBillingPortal() {
+  const { token } = useAuth();
+  return useMutation({
+    mutationFn: async () => {
+      const res = await fetch('/api/v1/billing/portal', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          ...(token ? { 'Authorization': `Bearer ${token}` } : {}),
+        },
+      });
+      const json = await res.json();
+      if (!res.ok) throw new Error(json.error || 'Failed to open billing portal');
+      const url = json.portal_url;
+      if (url) return { portal_url: url } as { portal_url: string };
+      throw new Error('No portal URL received');
+    },
+  });
+}
+
 // ---- Admin: impersonate ----
 
 export function useImpersonateUserAction() {

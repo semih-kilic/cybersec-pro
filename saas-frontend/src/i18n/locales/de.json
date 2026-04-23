@@ -1094,7 +1094,10 @@
     "stripeActive": "Stripe-Zahlung aktiv",
     "stripeManaged": "Verwaltet durch Stripe Checkout",
     "noPayment": "Keine Zahlungsmethode hinterlegt",
-    "addPayment": "Zahlungsmethode hinzufügen →"
+    "addPayment": "Zahlungsmethode hinzufügen →",
+    "manageSubscription": "Abonnement verwalten",
+    "portalLoading": "Öffne…",
+    "portalError": "Abrechnungsportal konnte nicht geöffnet werden"
   },
   "community": {
     "title": "Community-Bereich",

@@ -7,6 +7,7 @@ import { useTranslation } from 'react-i18next';
 import { motion } from 'framer-motion';
 import type { SettingsTabProps } from './types';
 import api from '../../../services/api';
+import { useOpenBillingPortal } from '../../../hooks/useApiQueries';
 
 const PLAN_DETAILS: Record<string, { label: string; color: string; gradient: string; price: string }> = {
   trial:         { label: 'Free Trial',    color: 'text-gray-400',   gradient: 'from-gray-600 to-gray-700',     price: '€0' },
@@ -34,6 +35,7 @@ interface BillingData {
 export function BillingTab({ userPlan }: SettingsTabProps) {
   const { t } = useTranslation();
   const [billing, setBilling] = useState<BillingData | null>(null);
+  const portalMutation = useOpenBillingPortal();
 
   useEffect(() => {
     (async () => {
@@ -108,6 +110,11 @@ export function BillingTab({ userPlan }: SettingsTabProps) {
             <span className="text-gray-500 text-xs font-mono">{billing.stripe_customer_id}</span>
           )}
         </div>
+        {portalMutation.isError && (
+          <div className="mb-3 px-3 py-2 bg-red-500/10 border border-red-500/30 rounded-lg text-red-400 text-sm">
+            {(portalMutation.error as Error)?.message || t('billing.portalError', 'Failed to open billing portal')}
+          </div>
+        )}
         {billing?.stripe_customer_id ? (
           <div className="flex items-center gap-4 p-4 bg-gray-900/50 rounded-lg border border-gray-700">
             <div className="w-10 h-10 bg-gradient-to-br from-purple-600 to-blue-600 rounded-lg flex items-center justify-center text-white text-sm font-bold">S</div>
@@ -116,6 +123,22 @@ export function BillingTab({ userPlan }: SettingsTabProps) {
               <p className="text-gray-500 text-xs">{t('billing.stripeManaged', 'Managed through Stripe Checkout')}</p>
             </div>
             <span className="ml-auto px-2 py-1 bg-green-500/20 text-green-400 rounded text-xs">{t('common.active', 'Active')}</span>
+            <button
+              onClick={async () => {
+                try {
+                  const result = await portalMutation.mutateAsync();
+                  window.location.href = result.portal_url;
+                } catch {
+                  // error handled by mutation state
+                }
+              }}
+              disabled={portalMutation.isPending}
+              className="px-4 py-2 bg-purple-600 hover:bg-purple-700 disabled:opacity-60 text-white text-sm font-semibold rounded-lg transition btn-micro"
+            >
+              {portalMutation.isPending
+                ? t('billing.portalLoading', 'Opening…')
+                : t('billing.manageSubscription', 'Manage Subscription')}
+            </button>
           </div>
         ) : (
           <div className="p-4 bg-gray-900/50 rounded-lg border border-gray-700 text-center">
