@@ -222,11 +222,7 @@ pub async fn sso_ldap_login(
         .replace("{email}", &body.email);
 
     // Attempt LDAP bind authentication
-    let ldap_url = if port == 636 {
-        format!("ldaps://{}:{}", host, port)
-    } else {
-        format!("ldap://{}:{}", host, port)
-    };
+    let ldap_url = build_ldap_url(&host, port);
 
     let ldap_result = tokio::task::spawn_blocking(move || -> Result<String, String> {
         use ldap3::{LdapConn, Scope, SearchEntry, ResultEntry};
@@ -493,8 +489,19 @@ pub async fn sso_saml_callback(
     Redirect::temporary(&redirect_url).into_response()
 }
 
+// ── Pure helpers (testable without DB) ─────────────────────────────────
+
+/// Builds an LDAP URL choosing ldaps:// for port 636, ldap:// otherwise.
+pub fn build_ldap_url(host: &str, port: i32) -> String {
+    if port == 636 {
+        format!("ldaps://{}:{}", host, port)
+    } else {
+        format!("ldap://{}:{}", host, port)
+    }
+}
+
 /// Extract NameID from SAML Response XML (simplified parser)
-fn extract_saml_name_id(xml: &str) -> Option<String> {
+pub fn extract_saml_name_id(xml: &str) -> Option<String> {
     // Look for <saml:NameID ...>email@domain.com</saml:NameID>
     let start_tag = "<saml:NameID";
     let end_tag = "</saml:NameID>";
@@ -595,11 +602,7 @@ pub async fn test_sso_connection(
         let bind_dn = bind_dn.unwrap_or_default();
         let bind_pw = bind_pw.unwrap_or_default();
 
-        let ldap_url = if port == 636 {
-            format!("ldaps://{}:{}", host, port)
-        } else {
-            format!("ldap://{}:{}", host, port)
-        };
+        let ldap_url = build_ldap_url(&host, port);
 
         let result = tokio::task::spawn_blocking(move || -> Result<String, String> {
             use ldap3::LdapConn;
@@ -619,5 +622,94 @@ pub async fn test_sso_connection(
         }
     } else {
         Json(json!({"status": "info", "message": format!("{} — connection test requires manual verification via browser SSO flow", provider_type)})).into_response()
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::{build_ldap_url, extract_saml_name_id};
+
+    // ── build_ldap_url ────────────────────────────────────────────────────
+
+    #[test]
+    fn build_ldap_url_uses_ldap_for_standard_port() {
+        assert_eq!(build_ldap_url("ldap.example.com", 389), "ldap://ldap.example.com:389");
+    }
+
+    #[test]
+    fn build_ldap_url_uses_ldaps_for_port_636() {
+        assert_eq!(build_ldap_url("ldap.example.com", 636), "ldaps://ldap.example.com:636");
+    }
+
+    #[test]
+    fn build_ldap_url_uses_ldap_for_custom_port() {
+        assert_eq!(build_ldap_url("corp.internal", 3389), "ldap://corp.internal:3389");
+    }
+
+    #[test]
+    fn build_ldap_url_uses_ldaps_for_636_regardless_of_hostname() {
+        assert_eq!(build_ldap_url("10.0.0.1", 636), "ldaps://10.0.0.1:636");
+    }
+
+    // ── extract_saml_name_id ──────────────────────────────────────────────
+
+    #[test]
+    fn extract_saml_name_id_reads_namespaced_tag() {
+        let xml = r#"<samlp:Response><saml:NameID Format="email">user@example.com</saml:NameID></samlp:Response>"#;
+        assert_eq!(extract_saml_name_id(xml).as_deref(), Some("user@example.com"));
+    }
+
+    #[test]
+    fn extract_saml_name_id_reads_bare_tag_fallback() {
+        let xml = r#"<Response><NameID>alice@corp.com</NameID></Response>"#;
+        assert_eq!(extract_saml_name_id(xml).as_deref(), Some("alice@corp.com"));
+    }
+
+    #[test]
+    fn extract_saml_name_id_prefers_namespaced_over_bare() {
+        let xml = r#"<saml:NameID>ns@ns.com</saml:NameID><NameID>bare@bare.com</NameID>"#;
+        assert_eq!(extract_saml_name_id(xml).as_deref(), Some("ns@ns.com"));
+    }
+
+    #[test]
+    fn extract_saml_name_id_trims_whitespace() {
+        let xml = "<saml:NameID>  padded@example.com  </saml:NameID>";
+        assert_eq!(extract_saml_name_id(xml).as_deref(), Some("padded@example.com"));
+    }
+
+    #[test]
+    fn extract_saml_name_id_returns_none_when_absent() {
+        let xml = "<samlp:Response><saml:Status>Success</saml:Status></samlp:Response>";
+        assert!(extract_saml_name_id(xml).is_none());
+    }
+
+    #[test]
+    fn extract_saml_name_id_returns_none_for_empty_string() {
+        assert!(extract_saml_name_id("").is_none());
+    }
+
+    #[test]
+    fn extract_saml_name_id_returns_none_when_content_has_no_at_sign() {
+        // Content without '@' should not be treated as an email
+        let xml = "<saml:NameID>justausername</saml:NameID>";
+        assert!(extract_saml_name_id(xml).is_none());
+    }
+
+    #[test]
+    fn extract_saml_name_id_bare_returns_none_when_content_has_no_at_sign() {
+        let xml = "<NameID>notanemail</NameID>";
+        assert!(extract_saml_name_id(xml).is_none());
+    }
+
+    #[test]
+    fn extract_saml_name_id_handles_attributes_on_tag() {
+        let xml = r#"<saml:NameID Format="urn:oasis:names:tc:SAML:1.1:nameid-format:emailAddress">ops@company.io</saml:NameID>"#;
+        assert_eq!(extract_saml_name_id(xml).as_deref(), Some("ops@company.io"));
+    }
+
+    #[test]
+    fn extract_saml_name_id_handles_multiline_xml() {
+        let xml = "<samlp:Response>\n  <saml:Assertion>\n    <saml:NameID>\n      multi@line.com\n    </saml:NameID>\n  </saml:Assertion>\n</samlp:Response>";
+        assert_eq!(extract_saml_name_id(xml).as_deref(), Some("multi@line.com"));
     }
 }
