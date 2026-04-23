@@ -414,7 +414,10 @@ async fn monitor_scan_engine(
 
 #[cfg(test)]
 mod tests {
-    use super::{extract_scan_engine_metadata, merge_scan_parameters, ScanEngineMetadata};
+    use super::{
+        configured_scan_engine_url, extract_scan_engine_metadata, merge_scan_parameters,
+        normalize_scan_engine_status, ScanEngineMetadata,
+    };
     use serde_json::json;
 
     #[test]
@@ -447,6 +450,144 @@ mod tests {
 
         assert_eq!(metadata.url, "http://scan-engine:5002");
         assert_eq!(metadata.remote_scan_id, "remote-2");
+    }
+
+    // ── normalize_scan_engine_status ──────────────────────
+
+    #[test]
+    fn normalize_scan_engine_status_maps_queued_to_pending() {
+        assert_eq!(normalize_scan_engine_status("queued"), "pending");
+    }
+
+    #[test]
+    fn normalize_scan_engine_status_passthrough_for_known_values() {
+        assert_eq!(normalize_scan_engine_status("running"), "running");
+        assert_eq!(normalize_scan_engine_status("completed"), "completed");
+        assert_eq!(normalize_scan_engine_status("failed"), "failed");
+        assert_eq!(normalize_scan_engine_status("cancelled"), "cancelled");
+        assert_eq!(normalize_scan_engine_status("pending"), "pending");
+    }
+
+    #[test]
+    fn normalize_scan_engine_status_passthrough_for_unknown_values() {
+        assert_eq!(normalize_scan_engine_status("unknown_state"), "unknown_state");
+        assert_eq!(normalize_scan_engine_status(""), "");
+    }
+
+    // ── configured_scan_engine_url ────────────────────────
+
+    #[test]
+    fn configured_scan_engine_url_returns_none_when_env_unset() {
+        std::env::remove_var("SCAN_ENGINE_URL");
+        assert!(configured_scan_engine_url().is_none());
+    }
+
+    #[test]
+    fn configured_scan_engine_url_returns_none_for_empty_string() {
+        std::env::set_var("SCAN_ENGINE_URL", "");
+        assert!(configured_scan_engine_url().is_none());
+        std::env::remove_var("SCAN_ENGINE_URL");
+    }
+
+    #[test]
+    fn configured_scan_engine_url_trims_trailing_slash() {
+        std::env::set_var("SCAN_ENGINE_URL", "http://scan-engine:5002/");
+        let url = configured_scan_engine_url();
+        assert_eq!(url.as_deref(), Some("http://scan-engine:5002"));
+        std::env::remove_var("SCAN_ENGINE_URL");
+    }
+
+    #[test]
+    fn configured_scan_engine_url_trims_multiple_trailing_slashes() {
+        std::env::set_var("SCAN_ENGINE_URL", "http://scan-engine:5002///");
+        let url = configured_scan_engine_url();
+        assert_eq!(url.as_deref(), Some("http://scan-engine:5002"));
+        std::env::remove_var("SCAN_ENGINE_URL");
+    }
+
+    #[test]
+    fn configured_scan_engine_url_preserves_valid_url() {
+        std::env::set_var("SCAN_ENGINE_URL", "http://scan-engine:5002");
+        let url = configured_scan_engine_url();
+        assert_eq!(url.as_deref(), Some("http://scan-engine:5002"));
+        std::env::remove_var("SCAN_ENGINE_URL");
+    }
+
+    #[test]
+    fn configured_scan_engine_url_trims_whitespace() {
+        std::env::set_var("SCAN_ENGINE_URL", "  http://scan-engine:5002  ");
+        let url = configured_scan_engine_url();
+        assert_eq!(url.as_deref(), Some("http://scan-engine:5002"));
+        std::env::remove_var("SCAN_ENGINE_URL");
+    }
+
+    // ── merge_scan_parameters edge cases ─────────────────
+
+    #[test]
+    fn merge_scan_parameters_handles_null_base() {
+        let metadata = ScanEngineMetadata {
+            url: "http://engine:5002".to_string(),
+            remote_scan_id: "r-3".to_string(),
+        };
+        let merged = merge_scan_parameters(&json!(null), &metadata);
+        assert!(merged.get("_scan_engine").is_some());
+    }
+
+    #[test]
+    fn merge_scan_parameters_handles_empty_object_base() {
+        let metadata = ScanEngineMetadata {
+            url: "http://engine:5002".to_string(),
+            remote_scan_id: "r-4".to_string(),
+        };
+        let merged = merge_scan_parameters(&json!({}), &metadata);
+        let engine_block = merged.get("_scan_engine").expect("_scan_engine must be present");
+        assert_eq!(engine_block.get("url").and_then(|u| u.as_str()), Some("http://engine:5002"));
+        assert_eq!(engine_block.get("remote_scan_id").and_then(|id| id.as_str()), Some("r-4"));
+    }
+
+    #[test]
+    fn merge_scan_parameters_non_object_base_wrapped() {
+        let metadata = ScanEngineMetadata {
+            url: "http://engine:5002".to_string(),
+            remote_scan_id: "r-5".to_string(),
+        };
+        // A scalar value as base should be wrapped and _scan_engine injected
+        let merged = merge_scan_parameters(&json!("just_a_string"), &metadata);
+        assert!(merged.get("_scan_engine").is_some(), "_scan_engine must be injected");
+    }
+
+    // ── extract_scan_engine_metadata edge cases ───────────
+
+    #[test]
+    fn extract_scan_engine_metadata_returns_none_when_absent() {
+        let parameters = Some(json!({"depth": "quick"}));
+        assert!(extract_scan_engine_metadata(&parameters).is_none());
+    }
+
+    #[test]
+    fn extract_scan_engine_metadata_returns_none_for_none_input() {
+        assert!(extract_scan_engine_metadata(&None).is_none());
+    }
+
+    #[test]
+    fn extract_scan_engine_metadata_returns_none_for_malformed_block() {
+        // _scan_engine present but missing required fields -> deserialize fails -> None
+        let parameters = Some(json!({
+            "_scan_engine": { "bad_field": true }
+        }));
+        assert!(extract_scan_engine_metadata(&parameters).is_none());
+    }
+
+    // ── engine URL construction ───────────────────────────
+
+    #[test]
+    fn scan_engine_api_path_format_is_correct() {
+        let engine_url = "http://scan-engine:5002";
+        let scan_id = "abc-123";
+        assert_eq!(format!("{}/api/v3/scan", engine_url), "http://scan-engine:5002/api/v3/scan");
+        assert_eq!(format!("{}/api/v3/scan/{}/status", engine_url, scan_id), "http://scan-engine:5002/api/v3/scan/abc-123/status");
+        assert_eq!(format!("{}/api/v3/scan/{}/output", engine_url, scan_id), "http://scan-engine:5002/api/v3/scan/abc-123/output");
+        assert_eq!(format!("{}/api/v3/scan/{}/cancel", engine_url, scan_id), "http://scan-engine:5002/api/v3/scan/abc-123/cancel");
     }
 }
 
