@@ -21,6 +21,25 @@ use crate::services::auth::{
 use crate::AppState;
 use crate::services::email::{EmailConfig, send_welcome_email};
 
+// ── Pure helpers (testable without DB) ────────────────────
+
+/// Basic email format validation (RFC 5322 subset).
+/// Input should already be trimmed and lowercased.
+pub fn validate_email(email: &str) -> bool {
+    let at_pos = email.find('@');
+    at_pos.map(|pos| {
+        let local = &email[..pos];
+        let domain = &email[pos + 1..];
+        !local.is_empty()
+            && !domain.is_empty()
+            && domain.contains('.')
+            && domain.len() >= 3
+            && !email.contains(' ')
+            && email.len() >= 6
+            && email.len() <= 254
+    }).unwrap_or(false)
+}
+
 // ── Register ───────────────────────────────────────────────
 
 #[derive(Deserialize)]
@@ -47,20 +66,8 @@ pub async fn register(
 
     // Validate email — RFC 5322 basic check
     let email = body.email.trim().to_lowercase();
-    let at_pos = email.find('@');
-    let valid_email = at_pos.map(|pos| {
-        let local = &email[..pos];
-        let domain = &email[pos + 1..];
-        !local.is_empty()
-            && !domain.is_empty()
-            && domain.contains('.')
-            && domain.len() >= 3
-            && !email.contains(' ')
-            && email.len() >= 6
-            && email.len() <= 254
-    }).unwrap_or(false);
 
-    if !valid_email {
+    if !validate_email(&email) {
         return (StatusCode::BAD_REQUEST, Json(json!({"error": "Valid email required"}))).into_response();
     }
 
@@ -740,4 +747,145 @@ pub async fn reset_password(
     log_audit(&state.db, "password_reset", "auth", "info", Some(&user_id), None, None, Some("user"), Some(&user_id), "success", Some(&headers)).await;
 
     Json(json!({"message": "Password has been reset successfully. You can now log in with your new password."})).into_response()
+}
+
+#[cfg(test)]
+mod tests {
+    use super::{extract_refresh_token, validate_email};
+    use axum::http::{HeaderMap, HeaderValue};
+
+    // ── validate_email ────────────────────────────────────
+
+    #[test]
+    fn validate_email_accepts_standard_address() {
+        assert!(validate_email("user@example.com"));
+    }
+
+    #[test]
+    fn validate_email_accepts_subdomain_address() {
+        assert!(validate_email("user@mail.example.com"));
+    }
+
+    #[test]
+    fn validate_email_accepts_plus_alias() {
+        assert!(validate_email("user+tag@example.com"));
+    }
+
+    #[test]
+    fn validate_email_rejects_missing_at_sign() {
+        assert!(!validate_email("userexample.com"));
+    }
+
+    #[test]
+    fn validate_email_rejects_empty_local_part() {
+        assert!(!validate_email("@example.com"));
+    }
+
+    #[test]
+    fn validate_email_rejects_empty_domain() {
+        assert!(!validate_email("user@"));
+    }
+
+    #[test]
+    fn validate_email_rejects_domain_without_dot() {
+        assert!(!validate_email("user@localhost"));
+    }
+
+    #[test]
+    fn validate_email_rejects_email_with_space() {
+        assert!(!validate_email("user @example.com"));
+    }
+
+    #[test]
+    fn validate_email_rejects_too_short() {
+        // "a@b.c" = 5 chars, min is 6
+        assert!(!validate_email("a@b.c"));
+    }
+
+    #[test]
+    fn validate_email_accepts_minimum_valid_length() {
+        // "a@b.cd" = 6 chars
+        assert!(validate_email("a@b.cd"));
+    }
+
+    #[test]
+    fn validate_email_rejects_exceeding_max_length() {
+        // 255-char email: local part fills to push over 254
+        let long_local = "a".repeat(243);
+        let email = format!("{}@example.com", long_local); // 243+12 = 255 chars
+        assert!(!validate_email(&email));
+    }
+
+    #[test]
+    fn validate_email_accepts_exactly_max_length() {
+        // 254 chars: local 242 + "@" + "example.com" 11 = 254
+        let long_local = "a".repeat(242);
+        let email = format!("{}@example.com", long_local);
+        assert_eq!(email.len(), 254);
+        assert!(validate_email(&email));
+    }
+
+    // ── extract_refresh_token ─────────────────────────────
+
+    #[test]
+    fn extract_refresh_token_returns_none_for_empty_headers() {
+        let headers = HeaderMap::new();
+        assert!(extract_refresh_token(&headers).is_none());
+    }
+
+    #[test]
+    fn extract_refresh_token_reads_from_cookie() {
+        let mut headers = HeaderMap::new();
+        headers.insert("cookie", HeaderValue::from_static("refresh_token_cookie=my-token-abc"));
+        assert_eq!(extract_refresh_token(&headers).as_deref(), Some("my-token-abc"));
+    }
+
+    #[test]
+    fn extract_refresh_token_reads_from_multiple_cookies() {
+        let mut headers = HeaderMap::new();
+        headers.insert(
+            "cookie",
+            HeaderValue::from_static("session=abc123; refresh_token_cookie=tok-xyz; other=val"),
+        );
+        assert_eq!(extract_refresh_token(&headers).as_deref(), Some("tok-xyz"));
+    }
+
+    #[test]
+    fn extract_refresh_token_reads_from_authorization_bearer() {
+        let mut headers = HeaderMap::new();
+        headers.insert("authorization", HeaderValue::from_static("Bearer my-refresh-token"));
+        assert_eq!(extract_refresh_token(&headers).as_deref(), Some("my-refresh-token"));
+    }
+
+    #[test]
+    fn extract_refresh_token_cookie_takes_precedence_over_bearer() {
+        let mut headers = HeaderMap::new();
+        headers.insert("cookie", HeaderValue::from_static("refresh_token_cookie=cookie-token"));
+        headers.insert("authorization", HeaderValue::from_static("Bearer bearer-token"));
+        assert_eq!(extract_refresh_token(&headers).as_deref(), Some("cookie-token"));
+    }
+
+    #[test]
+    fn extract_refresh_token_ignores_non_bearer_authorization() {
+        let mut headers = HeaderMap::new();
+        headers.insert("authorization", HeaderValue::from_static("Basic dXNlcjpwYXNz"));
+        assert!(extract_refresh_token(&headers).is_none());
+    }
+
+    #[test]
+    fn extract_refresh_token_returns_none_when_cookie_absent() {
+        let mut headers = HeaderMap::new();
+        headers.insert("cookie", HeaderValue::from_static("session=abc; other=xyz"));
+        assert!(extract_refresh_token(&headers).is_none());
+    }
+
+    #[test]
+    fn extract_refresh_token_handles_cookie_with_leading_spaces() {
+        let mut headers = HeaderMap::new();
+        headers.insert(
+            "cookie",
+            HeaderValue::from_static("session=abc;  refresh_token_cookie=padded-token"),
+        );
+        assert_eq!(extract_refresh_token(&headers).as_deref(), Some("padded-token"));
+    }
 }
