@@ -99,3 +99,98 @@ impl Tool {
         }
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    fn make_tool(name: &str) -> Tool {
+        Tool {
+            id: "tool-001".into(),
+            name: name.into(),
+            category: "recon".into(),
+            description: None,
+            command_template: None,
+            parameters: None,
+            plan_required: None,
+            is_active: None,
+            created_at: None,
+            tool_type: None,
+            hardware_required: None,
+            gui_required: None,
+            install_command: None,
+            example_usage: None,
+            official_url: None,
+            business_name: None,
+            business_description: None,
+            business_category: None,
+            subcategory: None,
+            risk_context: None,
+            tool_group: None,
+            binary_name: None,
+            kali_package: None,
+        }
+    }
+
+    #[test]
+    fn test_to_response_defaults() {
+        let t = make_tool("nmap");
+        let r = t.to_response();
+        assert_eq!(r.id, "tool-001");
+        assert_eq!(r.name, "nmap");
+        assert_eq!(r.category, "recon");
+        assert_eq!(r.business_category, "web_application_security");
+        assert_eq!(r.plan_required, "starter");
+        assert!(r.is_active);
+        assert_eq!(r.tool_type, "cli");
+        assert_eq!(r.group, "misc");
+        // binary_name falls back to name when None
+        assert_eq!(r.binary_name, "nmap");
+        assert!(!r.gui_required);
+        assert!(r.hardware_required.is_empty());
+    }
+
+    #[test]
+    fn test_to_response_explicit_fields() {
+        let mut t = make_tool("burpsuite");
+        t.plan_required = Some("professional".into());
+        t.is_active = Some(false);
+        t.tool_type = Some("gui".into());
+        t.gui_required = Some(true);
+        t.tool_group = Some("web".into());
+        t.binary_name = Some("burp".into());
+        t.business_category = Some("web_security".into());
+        let r = t.to_response();
+        assert_eq!(r.plan_required, "professional");
+        assert!(!r.is_active);
+        assert_eq!(r.tool_type, "gui");
+        assert!(r.gui_required);
+        assert_eq!(r.group, "web");
+        assert_eq!(r.binary_name, "burp");
+        assert_eq!(r.business_category, "web_security");
+    }
+
+    #[test]
+    fn test_to_response_hardware_required_parsed_from_json() {
+        let mut t = make_tool("hashcat");
+        t.hardware_required = Some(serde_json::json!(["gpu", "high_ram"]));
+        let r = t.to_response();
+        assert_eq!(r.hardware_required, vec!["gpu", "high_ram"]);
+    }
+
+    #[test]
+    fn test_to_detail_response_includes_base_and_extras() {
+        let mut t = make_tool("metasploit");
+        t.install_command = Some("apt install metasploit-framework".into());
+        t.example_usage = Some("msfconsole".into());
+        t.official_url = Some("https://metasploit.com".into());
+        t.kali_package = Some("metasploit-framework".into());
+        let dr = t.to_detail_response();
+        assert_eq!(dr.technical_name, "metasploit");
+        assert_eq!(dr.install_command.as_deref(), Some("apt install metasploit-framework"));
+        assert_eq!(dr.example_usage.as_deref(), Some("msfconsole"));
+        assert_eq!(dr.official_url.as_deref(), Some("https://metasploit.com"));
+        assert_eq!(dr.kali_package.as_deref(), Some("metasploit-framework"));
+        assert_eq!(dr.base.name, "metasploit");
+    }
+}

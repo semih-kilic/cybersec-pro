@@ -107,3 +107,103 @@ impl Report {
         })
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    fn make_report() -> Report {
+        Report {
+            id: "rep-001".into(),
+            organization_id: "org-001".into(),
+            user_id: "user-001".into(),
+            name: "Q1 Report".into(),
+            template: None,
+            format: None,
+            status: None,
+            scan_ids: None,
+            sections: None,
+            total_findings: None,
+            critical_count: None,
+            high_count: None,
+            medium_count: None,
+            low_count: None,
+            info_count: None,
+            risk_score: None,
+            risk_level: None,
+            content: None,
+            file_path: None,
+            file_size: None,
+            created_at: None,
+            completed_at: None,
+        }
+    }
+
+    #[test]
+    fn test_to_response_defaults() {
+        let r = make_report();
+        let resp = r.to_response();
+        assert_eq!(resp.id, "rep-001");
+        assert_eq!(resp.name, "Q1 Report");
+        assert_eq!(resp.template, "full");
+        assert_eq!(resp.format, "html");
+        assert_eq!(resp.status, "generating");
+        assert_eq!(resp.total_findings, 0);
+        assert_eq!(resp.risk_score, 0);
+        assert_eq!(resp.risk_level, "None");
+        assert!(resp.file_size.is_none());
+    }
+
+    #[test]
+    fn test_to_response_severity_breakdown_defaults_to_zero() {
+        let r = make_report();
+        let resp = r.to_response();
+        assert_eq!(resp.severity_breakdown.critical, 0);
+        assert_eq!(resp.severity_breakdown.high, 0);
+        assert_eq!(resp.severity_breakdown.medium, 0);
+        assert_eq!(resp.severity_breakdown.low, 0);
+        assert_eq!(resp.severity_breakdown.info, 0);
+    }
+
+    #[test]
+    fn test_to_response_severity_breakdown_uses_counts() {
+        let mut r = make_report();
+        r.critical_count = Some(2);
+        r.high_count = Some(5);
+        r.medium_count = Some(3);
+        r.low_count = Some(1);
+        r.info_count = Some(4);
+        r.total_findings = Some(15);
+        let resp = r.to_response();
+        assert_eq!(resp.severity_breakdown.critical, 2);
+        assert_eq!(resp.severity_breakdown.high, 5);
+        assert_eq!(resp.severity_breakdown.info, 4);
+        assert_eq!(resp.total_findings, 15);
+    }
+
+    #[test]
+    fn test_to_response_explicit_template_and_format() {
+        let mut r = make_report();
+        r.template = Some("executive".into());
+        r.format = Some("pdf".into());
+        r.status = Some("completed".into());
+        r.risk_level = Some("High".into());
+        let resp = r.to_response();
+        assert_eq!(resp.template, "executive");
+        assert_eq!(resp.format, "pdf");
+        assert_eq!(resp.status, "completed");
+        assert_eq!(resp.risk_level, "High");
+    }
+
+    #[test]
+    fn test_to_response_json_matches_to_response() {
+        let mut r = make_report();
+        r.total_findings = Some(7);
+        r.risk_score = Some(42);
+        let resp = r.to_response();
+        let json = r.to_response_json();
+        assert_eq!(json["total_findings"], resp.total_findings);
+        assert_eq!(json["risk_score"], resp.risk_score);
+        assert_eq!(json["template"].as_str().unwrap(), resp.template);
+    }
+}

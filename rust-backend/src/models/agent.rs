@@ -99,3 +99,108 @@ impl Agent {
         }
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    fn make_agent() -> Agent {
+        Agent {
+            id: "agt-001".into(),
+            organization_id: "org-001".into(),
+            name: "prod-agent".into(),
+            hostname: None,
+            ip_address: None,
+            platform: None,
+            os_info: None,
+            version: None,
+            status: None,
+            connection_type: None,
+            ssh_host: None,
+            ssh_port: None,
+            ssh_username: None,
+            ssh_key_path: None,
+            ssh_password_encrypted: None,
+            vpn_config_path: None,
+            vpn_status: None,
+            vpn_assigned_ip: None,
+            proxy_endpoint: None,
+            proxy_api_key: None,
+            proxy_protocol: None,
+            agent_websocket_id: None,
+            agent_capabilities: None,
+            agent_docker_enabled: None,
+            auto_update: None,
+            registration_token: None,
+            api_key: None,
+            last_heartbeat: None,
+            cpu_usage: None,
+            memory_usage: None,
+            active_scans: None,
+            total_scans: None,
+            max_concurrent_scans: None,
+            location: None,
+            network_zone: None,
+            created_at: None,
+            updated_at: None,
+        }
+    }
+
+    #[test]
+    fn test_to_response_defaults() {
+        let a = make_agent();
+        let r = a.to_response();
+        assert_eq!(r.id, "agt-001");
+        assert_eq!(r.name, "prod-agent");
+        assert_eq!(r.platform, "linux");
+        assert_eq!(r.status, "pending");
+        assert_eq!(r.connection_type, "direct");
+        assert_eq!(r.network_zone, "public");
+        assert_eq!(r.agent_docker_enabled, false);
+        assert_eq!(r.max_concurrent_scans, 5);
+        assert_eq!(r.cpu_usage, 0.0);
+        assert_eq!(r.memory_usage, 0.0);
+        assert_eq!(r.active_scans, 0);
+        assert_eq!(r.total_scans, 0);
+    }
+
+    #[test]
+    fn test_to_response_explicit_fields() {
+        let mut a = make_agent();
+        a.platform = Some("windows".into());
+        a.status = Some("online".into());
+        a.connection_type = Some("ssh".into());
+        a.network_zone = Some("internal".into());
+        a.agent_docker_enabled = Some(true);
+        a.max_concurrent_scans = Some(10);
+        a.cpu_usage = Some(42.5);
+        a.memory_usage = Some(68.0);
+        a.active_scans = Some(3);
+        a.total_scans = Some(100);
+        let r = a.to_response();
+        assert_eq!(r.platform, "windows");
+        assert_eq!(r.status, "online");
+        assert_eq!(r.connection_type, "ssh");
+        assert_eq!(r.network_zone, "internal");
+        assert!(r.agent_docker_enabled);
+        assert_eq!(r.max_concurrent_scans, 10);
+        assert!((r.cpu_usage - 42.5).abs() < 0.01);
+        assert_eq!(r.active_scans, 3);
+        assert_eq!(r.total_scans, 100);
+    }
+
+    #[test]
+    fn test_to_response_last_seen_none_when_no_heartbeat() {
+        let a = make_agent();
+        let r = a.to_response();
+        assert!(r.last_seen.is_none());
+    }
+
+    #[test]
+    fn test_to_response_last_seen_formatted_when_heartbeat_set() {
+        let mut a = make_agent();
+        a.last_heartbeat = chrono::NaiveDateTime::parse_from_str("2026-01-15 08:30:00", "%Y-%m-%d %H:%M:%S").ok();
+        let r = a.to_response();
+        assert_eq!(r.last_seen.as_deref(), Some("2026-01-15T08:30:00"));
+    }
+}

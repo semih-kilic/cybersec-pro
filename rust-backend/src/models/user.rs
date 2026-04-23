@@ -77,3 +77,103 @@ impl User {
         }
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    fn make_user() -> User {
+        User {
+            id: "usr-001".into(),
+            email: "alice@example.com".into(),
+            password_hash: None,
+            first_name: None,
+            last_name: None,
+            role: None,
+            organization_id: None,
+            created_at: None,
+            last_login: None,
+            is_active: None,
+            email_verified: None,
+            verification_token: None,
+            verification_sent_at: None,
+            oauth_provider: None,
+            oauth_id: None,
+            avatar_url: None,
+            mfa_enabled: None,
+            mfa_secret: None,
+            mfa_backup_codes: None,
+            mfa_enabled_at: None,
+        }
+    }
+
+    #[test]
+    fn test_to_response_defaults() {
+        let u = make_user();
+        let r = u.to_response();
+        assert_eq!(r.id, "usr-001");
+        assert_eq!(r.email, "alice@example.com");
+        assert_eq!(r.role, "user");
+        assert!(r.is_active);
+        assert!(r.email_verified);
+        assert!(!r.mfa_enabled);
+        assert!(r.organization_id.is_none());
+    }
+
+    #[test]
+    fn test_to_response_explicit_fields() {
+        let mut u = make_user();
+        u.role = Some("admin".into());
+        u.is_active = Some(false);
+        u.email_verified = Some(false);
+        u.mfa_enabled = Some(true);
+        u.organization_id = Some("org-999".into());
+        let r = u.to_response();
+        assert_eq!(r.role, "admin");
+        assert!(!r.is_active);
+        assert!(!r.email_verified);
+        assert!(r.mfa_enabled);
+        assert_eq!(r.organization_id.as_deref(), Some("org-999"));
+    }
+
+    #[test]
+    fn test_is_admin_true_for_admin_and_superadmin() {
+        let mut u = make_user();
+        u.role = Some("admin".into());
+        assert!(u.is_admin());
+        u.role = Some("superadmin".into());
+        assert!(u.is_admin());
+    }
+
+    #[test]
+    fn test_is_admin_false_for_other_roles() {
+        let mut u = make_user();
+        for role in &["user", "analyst", "viewer", ""] {
+            u.role = Some(role.to_string());
+            assert!(!u.is_admin(), "expected is_admin=false for role '{}'", role);
+        }
+        u.role = None;
+        assert!(!u.is_admin());
+    }
+
+    #[test]
+    fn test_display_name_both_names() {
+        let mut u = make_user();
+        u.first_name = Some("Alice".into());
+        u.last_name = Some("Smith".into());
+        assert_eq!(u.display_name(), "Alice Smith");
+    }
+
+    #[test]
+    fn test_display_name_first_name_only() {
+        let mut u = make_user();
+        u.first_name = Some("Alice".into());
+        assert_eq!(u.display_name(), "Alice");
+    }
+
+    #[test]
+    fn test_display_name_falls_back_to_email() {
+        let u = make_user();
+        assert_eq!(u.display_name(), "alice@example.com");
+    }
+}

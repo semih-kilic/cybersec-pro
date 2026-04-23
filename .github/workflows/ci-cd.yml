@@ -140,6 +140,26 @@ jobs:
           SQLX_OFFLINE=true cargo test models::scan::tests 2>&1 | tee ci-reports/cargo-test-scan-model.log
           grep -E "^test result" ci-reports/cargo-test-scan-model.log | grep -v "FAILED"
 
+      - name: Report model unit tests
+        run: |
+          SQLX_OFFLINE=true cargo test models::report::tests 2>&1 | tee ci-reports/cargo-test-report-model.log
+          grep -E "^test result" ci-reports/cargo-test-report-model.log | grep -v "FAILED"
+
+      - name: Agent model unit tests
+        run: |
+          SQLX_OFFLINE=true cargo test models::agent::tests 2>&1 | tee ci-reports/cargo-test-agent-model.log
+          grep -E "^test result" ci-reports/cargo-test-agent-model.log | grep -v "FAILED"
+
+      - name: Tool model unit tests
+        run: |
+          SQLX_OFFLINE=true cargo test models::tool::tests 2>&1 | tee ci-reports/cargo-test-tool-model.log
+          grep -E "^test result" ci-reports/cargo-test-tool-model.log | grep -v "FAILED"
+
+      - name: User model unit tests
+        run: |
+          SQLX_OFFLINE=true cargo test models::user::tests 2>&1 | tee ci-reports/cargo-test-user-model.log
+          grep -E "^test result" ci-reports/cargo-test-user-model.log | grep -v "FAILED"
+
       - name: Run clippy lints
         run: |
           set +e
