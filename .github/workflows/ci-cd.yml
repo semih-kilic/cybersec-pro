@@ -125,6 +125,21 @@ jobs:
           SQLX_OFFLINE=true cargo test middleware::auth_middleware::tests 2>&1 | tee ci-reports/cargo-test-auth-middleware.log
           grep -E "^test result" ci-reports/cargo-test-auth-middleware.log | grep -v "FAILED"
 
+      - name: Notification service unit tests
+        run: |
+          SQLX_OFFLINE=true cargo test services::notifications::tests 2>&1 | tee ci-reports/cargo-test-notifications-service.log
+          grep -E "^test result" ci-reports/cargo-test-notifications-service.log | grep -v "FAILED"
+
+      - name: Integrations service unit tests
+        run: |
+          SQLX_OFFLINE=true cargo test services::integrations::tests 2>&1 | tee ci-reports/cargo-test-integrations-service.log
+          grep -E "^test result" ci-reports/cargo-test-integrations-service.log | grep -v "FAILED"
+
+      - name: Scan model unit tests
+        run: |
+          SQLX_OFFLINE=true cargo test models::scan::tests 2>&1 | tee ci-reports/cargo-test-scan-model.log
+          grep -E "^test result" ci-reports/cargo-test-scan-model.log | grep -v "FAILED"
+
       - name: Run clippy lints
         run: |
           set +e
