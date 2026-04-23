@@ -12,6 +12,44 @@ use crate::middleware::auth_middleware::AuthUser;
 use crate::models::Tool;
 use crate::AppState;
 
+// ── Pure helpers (testable without DB) ─────────────────────────────────
+
+/// Human-readable display name for a tool group ID.
+pub fn tool_group_display_name(group: &str) -> &str {
+    match group {
+        "web"           => "Web Application Security",
+        "forensics"     => "Digital Forensics",
+        "recon"         => "Reconnaissance & OSINT",
+        "password"      => "Password & GPU",
+        "vulnerability" => "Vulnerability Analysis",
+        "wireless"      => "Wireless Security",
+        "hardware"      => "Hardware Attacks",
+        "network"       => "Network & Sniffing",
+        "windows"       => "Windows Resources",
+        "reversing"     => "Reverse Engineering",
+        "defense"       => "Defense & Detection",
+        "post-exploit"  => "Post-Exploitation",
+        "crypto"        => "Cryptography & Steganography",
+        "reporting"     => "Reporting",
+        "exploitation"  => "Exploitation",
+        "social"        => "Social Engineering",
+        "voip"          => "VoIP Security",
+        "database"      => "Database Security",
+        "misc"          => "Miscellaneous",
+        other           => other,
+    }
+}
+
+/// Clamps and computes `(page, per_page, offset)` from raw query params.
+/// - `page` is 1-based, minimum 1.
+/// - `per_page` is capped at 200, defaults to 50.
+pub fn tool_page_params(page: Option<u32>, per_page: Option<u32>) -> (u32, u32, u32) {
+    let page = page.unwrap_or(1).max(1);
+    let per_page = per_page.unwrap_or(50).min(200);
+    let offset = (page - 1) * per_page;
+    (page, per_page, offset)
+}
+
 #[derive(Deserialize)]
 #[allow(dead_code)]
 pub struct ToolQuery {
@@ -391,32 +429,10 @@ pub async fn tool_groups(
     .await
     .unwrap_or_default();
 
-    let group_names: std::collections::HashMap<&str, &str> = [
-        ("web", "Web Application Security"),
-        ("forensics", "Digital Forensics"),
-        ("recon", "Reconnaissance & OSINT"),
-        ("password", "Password & GPU"),
-        ("vulnerability", "Vulnerability Analysis"),
-        ("wireless", "Wireless Security"),
-        ("hardware", "Hardware Attacks"),
-        ("network", "Network & Sniffing"),
-        ("windows", "Windows Resources"),
-        ("reversing", "Reverse Engineering"),
-        ("defense", "Defense & Detection"),
-        ("post-exploit", "Post-Exploitation"),
-        ("crypto", "Cryptography & Steganography"),
-        ("reporting", "Reporting"),
-        ("exploitation", "Exploitation"),
-        ("social", "Social Engineering"),
-        ("voip", "VoIP Security"),
-        ("database", "Database Security"),
-        ("misc", "Miscellaneous"),
-    ].into_iter().collect();
-
     let result: Vec<_> = groups.iter().map(|(grp, count)| {
         json!({
             "id": grp,
-            "name": group_names.get(grp.as_str()).unwrap_or(&grp.as_str()),
+            "name": tool_group_display_name(grp.as_str()),
             "tool_count": count
         })
     }).collect();
@@ -483,4 +499,99 @@ pub async fn search_tools(
         "tools": response,
         "total": response.len()
     }))
+}
+
+#[cfg(test)]
+mod tests {
+    use super::{tool_group_display_name, tool_page_params};
+
+    // ── tool_group_display_name ─────────────────────────────────────
+
+    #[test]
+    fn tool_group_display_name_returns_correct_label_for_all_known_groups() {
+        assert_eq!(tool_group_display_name("web"),           "Web Application Security");
+        assert_eq!(tool_group_display_name("forensics"),     "Digital Forensics");
+        assert_eq!(tool_group_display_name("recon"),         "Reconnaissance & OSINT");
+        assert_eq!(tool_group_display_name("password"),      "Password & GPU");
+        assert_eq!(tool_group_display_name("vulnerability"), "Vulnerability Analysis");
+        assert_eq!(tool_group_display_name("wireless"),      "Wireless Security");
+        assert_eq!(tool_group_display_name("hardware"),      "Hardware Attacks");
+        assert_eq!(tool_group_display_name("network"),       "Network & Sniffing");
+        assert_eq!(tool_group_display_name("windows"),       "Windows Resources");
+        assert_eq!(tool_group_display_name("reversing"),     "Reverse Engineering");
+        assert_eq!(tool_group_display_name("defense"),       "Defense & Detection");
+        assert_eq!(tool_group_display_name("post-exploit"),  "Post-Exploitation");
+        assert_eq!(tool_group_display_name("crypto"),        "Cryptography & Steganography");
+        assert_eq!(tool_group_display_name("reporting"),     "Reporting");
+        assert_eq!(tool_group_display_name("exploitation"),  "Exploitation");
+        assert_eq!(tool_group_display_name("social"),        "Social Engineering");
+        assert_eq!(tool_group_display_name("voip"),          "VoIP Security");
+        assert_eq!(tool_group_display_name("database"),      "Database Security");
+        assert_eq!(tool_group_display_name("misc"),          "Miscellaneous");
+    }
+
+    #[test]
+    fn tool_group_display_name_echoes_unknown_group_id() {
+        assert_eq!(tool_group_display_name("custom-group"), "custom-group");
+        assert_eq!(tool_group_display_name(""), "");
+        assert_eq!(tool_group_display_name("iot"), "iot");
+    }
+
+    // ── tool_page_params ────────────────────────────────────────────
+
+    #[test]
+    fn tool_page_params_defaults_when_none() {
+        let (page, per_page, offset) = tool_page_params(None, None);
+        assert_eq!(page, 1);
+        assert_eq!(per_page, 50);
+        assert_eq!(offset, 0);
+    }
+
+    #[test]
+    fn tool_page_params_first_page_has_zero_offset() {
+        let (page, per_page, offset) = tool_page_params(Some(1), Some(20));
+        assert_eq!(page, 1);
+        assert_eq!(per_page, 20);
+        assert_eq!(offset, 0);
+    }
+
+    #[test]
+    fn tool_page_params_second_page_offset_equals_per_page() {
+        let (page, per_page, offset) = tool_page_params(Some(2), Some(20));
+        assert_eq!(page, 2);
+        assert_eq!(per_page, 20);
+        assert_eq!(offset, 20);
+    }
+
+    #[test]
+    fn tool_page_params_third_page_correct_offset() {
+        let (_page, _per_page, offset) = tool_page_params(Some(3), Some(25));
+        assert_eq!(offset, 50);
+    }
+
+    #[test]
+    fn tool_page_params_clamps_page_zero_to_one() {
+        let (page, _per_page, offset) = tool_page_params(Some(0), None);
+        assert_eq!(page, 1);
+        assert_eq!(offset, 0);
+    }
+
+    #[test]
+    fn tool_page_params_caps_per_page_at_200() {
+        let (_page, per_page, _offset) = tool_page_params(None, Some(500));
+        assert_eq!(per_page, 200);
+    }
+
+    #[test]
+    fn tool_page_params_per_page_at_exactly_200_is_accepted() {
+        let (_page, per_page, _offset) = tool_page_params(None, Some(200));
+        assert_eq!(per_page, 200);
+    }
+
+    #[test]
+    fn tool_page_params_per_page_zero_has_zero_offset() {
+        let (_page, per_page, offset) = tool_page_params(None, Some(0));
+        assert_eq!(per_page, 0);
+        assert_eq!(offset, 0);
+    }
 }
