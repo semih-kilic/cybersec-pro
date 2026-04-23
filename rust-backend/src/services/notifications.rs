@@ -4,6 +4,45 @@ use sqlx::PgPool;
 
 use super::email::EmailConfig;
 
+/// Pure helper: color code for a given alert severity.
+pub fn severity_color(severity: &str) -> &'static str {
+    match severity {
+        "critical" => "#ff0000",
+        "high" => "#ff6600",
+        "medium" => "#ffaa00",
+        _ => "#00d4ff",
+    }
+}
+
+/// Pure helper: emoji for scan completion status.
+pub fn scan_status_emoji(status: &str) -> &'static str {
+    if status == "completed" { "\u{2705}" } else { "\u{274C}" }
+}
+
+/// Pure helper: color for scan completion status.
+pub fn scan_status_color(status: &str) -> &'static str {
+    if status == "completed" { "#00ff88" } else { "#ff4444" }
+}
+
+/// Pure helper: human-readable findings count text.
+pub fn findings_text(count: usize) -> String {
+    if count > 0 {
+        format!("{} findings detected", count)
+    } else {
+        "No findings".to_string()
+    }
+}
+
+/// Pure helper: whether `now` (HH:MM) falls in quiet range [from, to].
+/// Handles midnight-crossing ranges (when from > to).
+pub fn in_quiet_range(now: &str, from: &str, to: &str) -> bool {
+    if from <= to {
+        now >= from && now <= to
+    } else {
+        now >= from || now <= to
+    }
+}
+
 /// Send scan completion email to the user who started the scan, if they have
 /// `email_scan_complete = true` in notification_preferences.
 pub async fn notify_scan_complete(
@@ -55,13 +94,9 @@ pub async fn notify_scan_complete(
         None => return,
     };
 
-    let status_emoji = if status == "completed" { "✅" } else { "❌" };
-    let status_color = if status == "completed" { "#00ff88" } else { "#ff4444" };
-    let findings_text = if findings_count > 0 {
-        format!("{} findings detected", findings_count)
-    } else {
-        "No findings".to_string()
-    };
+    let status_emoji = scan_status_emoji(status);
+    let status_color = scan_status_color(status);
+    let findings_text = findings_text(findings_count);
 
     let subject = format!("{} Scan {} — {} on {}", status_emoji, status, tool_name, target);
 
@@ -130,12 +165,7 @@ pub async fn notify_security_alert(
         None => return,
     };
 
-    let severity_color = match severity {
-        "critical" => "#ff0000",
-        "high" => "#ff6600",
-        "medium" => "#ffaa00",
-        _ => "#00d4ff",
-    };
+    let severity_color = severity_color(severity);
 
     for (email, name) in &users {
         let name = name.as_deref().unwrap_or("User");
@@ -182,13 +212,64 @@ async fn is_quiet_hours(db: &PgPool, user_id: &str) -> bool {
     match pref {
         Some((true, Some(from), Some(to))) => {
             let now = chrono::Utc::now().format("%H:%M").to_string();
-            if from <= to {
-                now >= from && now <= to
-            } else {
-                // Wraps midnight, e.g. 22:00 - 08:00
-                now >= from || now <= to
-            }
+            in_quiet_range(&now, &from, &to)
         }
         _ => false,
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_severity_color() {
+        assert_eq!(severity_color("critical"), "#ff0000");
+        assert_eq!(severity_color("high"), "#ff6600");
+        assert_eq!(severity_color("medium"), "#ffaa00");
+        assert_eq!(severity_color("low"), "#00d4ff");
+        assert_eq!(severity_color("info"), "#00d4ff");
+        assert_eq!(severity_color(""), "#00d4ff");
+    }
+
+    #[test]
+    fn test_scan_status_emoji() {
+        assert_eq!(scan_status_emoji("completed"), "\u{2705}");
+        assert_eq!(scan_status_emoji("failed"), "\u{274C}");
+        assert_eq!(scan_status_emoji("running"), "\u{274C}");
+    }
+
+    #[test]
+    fn test_scan_status_color() {
+        assert_eq!(scan_status_color("completed"), "#00ff88");
+        assert_eq!(scan_status_color("failed"), "#ff4444");
+        assert_eq!(scan_status_color("pending"), "#ff4444");
+    }
+
+    #[test]
+    fn test_findings_text() {
+        assert_eq!(findings_text(0), "No findings");
+        assert_eq!(findings_text(1), "1 findings detected");
+        assert_eq!(findings_text(42), "42 findings detected");
+    }
+
+    #[test]
+    fn test_in_quiet_range_normal() {
+        // Range does not cross midnight: 09:00–17:00
+        assert!(in_quiet_range("10:00", "09:00", "17:00"));
+        assert!(in_quiet_range("09:00", "09:00", "17:00"));
+        assert!(in_quiet_range("17:00", "09:00", "17:00"));
+        assert!(!in_quiet_range("08:59", "09:00", "17:00"));
+        assert!(!in_quiet_range("17:01", "09:00", "17:00"));
+    }
+
+    #[test]
+    fn test_in_quiet_range_midnight_wrap() {
+        // Range crosses midnight: 22:00–06:00
+        assert!(in_quiet_range("23:00", "22:00", "06:00"));
+        assert!(in_quiet_range("00:30", "22:00", "06:00"));
+        assert!(in_quiet_range("06:00", "22:00", "06:00"));
+        assert!(!in_quiet_range("10:00", "22:00", "06:00"));
+        assert!(!in_quiet_range("21:59", "22:00", "06:00"));
     }
 }

@@ -52,14 +52,19 @@ pub async fn notify_integrations(
     }
 }
 
+/// Pure helper: returns (color, emoji) for a Slack attachment based on event type.
+pub fn slack_event_style(event_type: &str) -> (&'static str, &'static str) {
+    match event_type {
+        "scan_completed" => ("#36a64f", "\u{2705}"),
+        "scan_failed" => ("#d32f2f", "\u{274C}"),
+        "vulnerability_critical" => ("#d32f2f", "\u{1F6A8}"),
+        "vulnerability_high" => ("#ff9800", "\u{26A0}\u{FE0F}"),
+        _ => ("#2196f3", "\u{2139}\u{FE0F}"),
+    }
+}
+
 async fn send_slack(webhook_url: &str, event_type: &str, payload: &Value) -> Result<(), String> {
-    let (color, emoji) = match event_type {
-        "scan_completed" => ("#36a64f", "✅"),
-        "scan_failed" => ("#d32f2f", "❌"),
-        "vulnerability_critical" => ("#d32f2f", "🚨"),
-        "vulnerability_high" => ("#ff9800", "⚠️"),
-        _ => ("#2196f3", "ℹ️"),
-    };
+    let (color, emoji) = slack_event_style(event_type);
 
     let target = payload.get("target").and_then(|v| v.as_str()).unwrap_or("N/A");
     let tool = payload.get("tool").and_then(|v| v.as_str()).unwrap_or("N/A");
@@ -149,4 +154,39 @@ async fn send_webhook(webhook_url: &str, event_type: &str, payload: &Value) -> R
         return Err(format!("Webhook returned status {}", resp.status()));
     }
     Ok(())
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_slack_event_style_known_events() {
+        let (color, emoji) = slack_event_style("scan_completed");
+        assert_eq!(color, "#36a64f");
+        assert_eq!(emoji, "\u{2705}");
+
+        let (color, emoji) = slack_event_style("scan_failed");
+        assert_eq!(color, "#d32f2f");
+        assert_eq!(emoji, "\u{274C}");
+
+        let (color, emoji) = slack_event_style("vulnerability_critical");
+        assert_eq!(color, "#d32f2f");
+        assert_eq!(emoji, "\u{1F6A8}");
+
+        let (color, emoji) = slack_event_style("vulnerability_high");
+        assert_eq!(color, "#ff9800");
+        assert_eq!(emoji, "\u{26A0}\u{FE0F}");
+    }
+
+    #[test]
+    fn test_slack_event_style_unknown_falls_back() {
+        let (color, emoji) = slack_event_style("some_other_event");
+        assert_eq!(color, "#2196f3");
+        assert_eq!(emoji, "\u{2139}\u{FE0F}");
+
+        let (color, emoji) = slack_event_style("");
+        assert_eq!(color, "#2196f3");
+        assert_eq!(emoji, "\u{2139}\u{FE0F}");
+    }
 }

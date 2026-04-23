@@ -118,3 +118,106 @@ impl Scan {
         }
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use chrono::NaiveDateTime;
+
+    fn make_scan() -> Scan {
+        Scan {
+            id: "scan-001".into(),
+            organization_id: "org-001".into(),
+            user_id: "user-001".into(),
+            tool_id: "tool-001".into(),
+            target: "example.com".into(),
+            parameters: None,
+            status: None,
+            agent_id: None,
+            project_id: None,
+            output: None,
+            error_log: None,
+            findings: None,
+            report_path: None,
+            started_at: None,
+            completed_at: None,
+            created_at: None,
+        }
+    }
+
+    #[test]
+    fn test_duration_seconds_no_start() {
+        let s = make_scan();
+        assert_eq!(s.duration_seconds(), 0.0);
+    }
+
+    #[test]
+    fn test_duration_str_no_start() {
+        let s = make_scan();
+        assert_eq!(s.duration_str(), "0s");
+    }
+
+    #[test]
+    fn test_duration_str_seconds() {
+        let mut s = make_scan();
+        s.started_at = NaiveDateTime::parse_from_str("2026-01-01 10:00:00", "%Y-%m-%d %H:%M:%S").ok();
+        s.completed_at = NaiveDateTime::parse_from_str("2026-01-01 10:00:45", "%Y-%m-%d %H:%M:%S").ok();
+        assert_eq!(s.duration_str(), "45s");
+        assert!((s.duration_seconds() - 45.0).abs() < 0.1);
+    }
+
+    #[test]
+    fn test_duration_str_minutes() {
+        let mut s = make_scan();
+        s.started_at = NaiveDateTime::parse_from_str("2026-01-01 10:00:00", "%Y-%m-%d %H:%M:%S").ok();
+        s.completed_at = NaiveDateTime::parse_from_str("2026-01-01 10:02:15", "%Y-%m-%d %H:%M:%S").ok();
+        assert_eq!(s.duration_str(), "2m 15s");
+    }
+
+    #[test]
+    fn test_findings_summary_none() {
+        let s = make_scan();
+        let sum = s.findings_summary();
+        assert_eq!(sum.total, 0);
+        assert_eq!(sum.critical, 0);
+        assert_eq!(sum.high, 0);
+    }
+
+    #[test]
+    fn test_findings_summary_array() {
+        let mut s = make_scan();
+        s.findings = Some(serde_json::json!([{"id": 1}, {"id": 2}, {"id": 3}]));
+        let sum = s.findings_summary();
+        assert_eq!(sum.total, 3);
+        assert_eq!(sum.critical, 0);
+    }
+
+    #[test]
+    fn test_findings_summary_object_with_summary() {
+        let mut s = make_scan();
+        s.findings = Some(serde_json::json!({
+            "summary": {
+                "total": 5,
+                "critical": 1,
+                "high": 2,
+                "medium": 1,
+                "low": 1,
+                "open_ports": 0
+            }
+        }));
+        let sum = s.findings_summary();
+        assert_eq!(sum.total, 5);
+        assert_eq!(sum.critical, 1);
+        assert_eq!(sum.high, 2);
+    }
+
+    #[test]
+    fn test_to_response_defaults() {
+        let s = make_scan();
+        let r = s.to_response();
+        assert_eq!(r.status, "pending");
+        assert_eq!(r.output, "");
+        assert_eq!(r.id, "scan-001");
+        assert_eq!(r.target, "example.com");
+    }
+}
