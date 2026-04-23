@@ -160,6 +160,21 @@ jobs:
           SQLX_OFFLINE=true cargo test models::user::tests 2>&1 | tee ci-reports/cargo-test-user-model.log
           grep -E "^test result" ci-reports/cargo-test-user-model.log | grep -v "FAILED"
 
+      - name: SSO config model unit tests
+        run: |
+          SQLX_OFFLINE=true cargo test models::sso_config::tests 2>&1 | tee ci-reports/cargo-test-sso-config-model.log
+          grep -E "^test result" ci-reports/cargo-test-sso-config-model.log | grep -v "FAILED"
+
+      - name: Scheduled scan model unit tests
+        run: |
+          SQLX_OFFLINE=true cargo test models::scheduled_scan::tests 2>&1 | tee ci-reports/cargo-test-scheduled-scan-model.log
+          grep -E "^test result" ci-reports/cargo-test-scheduled-scan-model.log | grep -v "FAILED"
+
+      - name: Audit log model unit tests
+        run: |
+          SQLX_OFFLINE=true cargo test models::audit_log::tests 2>&1 | tee ci-reports/cargo-test-audit-log-model.log
+          grep -E "^test result" ci-reports/cargo-test-audit-log-model.log | grep -v "FAILED"
+
       - name: Run clippy lints
         run: |
           set +e

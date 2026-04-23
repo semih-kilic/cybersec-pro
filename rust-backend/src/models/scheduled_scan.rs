@@ -75,3 +75,77 @@ impl ScheduledScan {
         }
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    fn make_scan() -> ScheduledScan {
+        ScheduledScan {
+            id: "ss-001".into(),
+            organization_id: "org-001".into(),
+            user_id: "usr-001".into(),
+            name: "nightly scan".into(),
+            tool_name: "nmap".into(),
+            target: "10.0.0.0/24".into(),
+            parameters: None,
+            schedule_type: None,
+            cron_expression: None,
+            hour: None,
+            minute: None,
+            day_of_week: None,
+            day_of_month: None,
+            is_active: None,
+            last_run: None,
+            next_run: None,
+            run_count: None,
+            agent_id: None,
+            project_id: None,
+            created_at: None,
+            updated_at: None,
+        }
+    }
+
+    #[test]
+    fn test_to_response_defaults() {
+        let s = make_scan();
+        let r = s.to_response();
+        assert_eq!(r.id, "ss-001");
+        assert_eq!(r.name, "nightly scan");
+        assert_eq!(r.tool_name, "nmap");
+        assert_eq!(r.target, "10.0.0.0/24");
+        assert_eq!(r.schedule_type, "daily");
+        assert_eq!(r.hour, 2);
+        assert_eq!(r.minute, 0);
+        assert!(r.is_active);
+        assert_eq!(r.run_count, 0);
+        assert!(r.last_run.is_none());
+        assert!(r.next_run.is_none());
+    }
+
+    #[test]
+    fn test_to_response_explicit_fields() {
+        let mut s = make_scan();
+        s.schedule_type = Some("weekly".into());
+        s.hour = Some(3);
+        s.minute = Some(30);
+        s.day_of_week = Some("monday".into());
+        s.is_active = Some(false);
+        s.run_count = Some(12);
+        let r = s.to_response();
+        assert_eq!(r.schedule_type, "weekly");
+        assert_eq!(r.hour, 3);
+        assert_eq!(r.minute, 30);
+        assert_eq!(r.day_of_week.as_deref(), Some("monday"));
+        assert!(!r.is_active);
+        assert_eq!(r.run_count, 12);
+    }
+
+    #[test]
+    fn test_to_response_last_run_formatted() {
+        let mut s = make_scan();
+        s.last_run = chrono::NaiveDateTime::parse_from_str("2026-03-01 02:00:00", "%Y-%m-%d %H:%M:%S").ok();
+        let r = s.to_response();
+        assert_eq!(r.last_run.as_deref(), Some("2026-03-01T02:00:00"));
+    }
+}

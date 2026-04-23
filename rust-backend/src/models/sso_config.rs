@@ -96,3 +96,122 @@ impl SSOConfig {
         base
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    fn make_sso(provider_type: &str) -> SSOConfig {
+        SSOConfig {
+            id: "sso-001".into(),
+            organization_id: "org-001".into(),
+            provider_type: provider_type.into(),
+            provider_name: None,
+            is_enabled: None,
+            saml_entity_id: None,
+            saml_sso_url: None,
+            saml_certificate: None,
+            saml_sign_requests: None,
+            oidc_client_id: None,
+            oidc_client_secret: None,
+            oidc_issuer_url: None,
+            oidc_scopes: None,
+            ldap_host: None,
+            ldap_port: None,
+            ldap_use_ssl: None,
+            ldap_bind_dn: None,
+            ldap_bind_password: None,
+            ldap_base_dn: None,
+            ldap_user_filter: None,
+            ldap_group_filter: None,
+            domain_hint: None,
+            enforce_sso: None,
+            jit_provisioning: None,
+            default_role: None,
+            created_at: None,
+            updated_at: None,
+            last_login_at: None,
+        }
+    }
+
+    #[test]
+    fn test_to_response_base_defaults() {
+        let s = make_sso("saml");
+        let r = s.to_response();
+        assert_eq!(r["id"], "sso-001");
+        assert_eq!(r["provider_type"], "saml");
+        assert_eq!(r["is_enabled"], false);
+        assert_eq!(r["enforce_sso"], false);
+        assert_eq!(r["jit_provisioning"], true);
+        assert_eq!(r["default_role"], "user");
+    }
+
+    #[test]
+    fn test_to_response_saml_masks_certificate() {
+        let mut s = make_sso("saml");
+        s.saml_certificate = Some("REAL_CERT_DATA".into());
+        s.saml_entity_id = Some("https://example.com/saml".into());
+        s.saml_sso_url = Some("https://idp.example.com/sso".into());
+        let r = s.to_response();
+        // Certificate must be masked, never exposed raw
+        assert_eq!(r["saml_certificate"], "\u{2022}\u{2022}\u{2022}\u{2022}\u{2022}\u{2022}");
+        assert_eq!(r["saml_entity_id"], "https://example.com/saml");
+        assert_eq!(r["saml_sign_requests"], true); // default
+    }
+
+    #[test]
+    fn test_to_response_saml_certificate_null_when_none() {
+        let s = make_sso("saml");
+        let r = s.to_response();
+        assert!(r["saml_certificate"].is_null());
+    }
+
+    #[test]
+    fn test_to_response_oidc_masks_secret() {
+        let mut s = make_sso("oidc");
+        s.oidc_client_id = Some("client-123".into());
+        s.oidc_client_secret = Some("super-secret".into());
+        s.oidc_issuer_url = Some("https://accounts.google.com".into());
+        let r = s.to_response();
+        assert_eq!(r["oidc_client_id"], "client-123");
+        // Secret must be masked
+        assert_eq!(r["oidc_client_secret"], "\u{2022}\u{2022}\u{2022}\u{2022}\u{2022}\u{2022}");
+        assert_eq!(r["oidc_issuer_url"], "https://accounts.google.com");
+        assert_eq!(r["oidc_scopes"], "openid profile email"); // default
+    }
+
+    #[test]
+    fn test_to_response_ldap_masks_password() {
+        let mut s = make_sso("ldap");
+        s.ldap_host = Some("ldap.corp.com".into());
+        s.ldap_port = Some(636);
+        s.ldap_use_ssl = Some(true);
+        s.ldap_bind_password = Some("s3cr3t".into());
+        let r = s.to_response();
+        assert_eq!(r["ldap_host"], "ldap.corp.com");
+        assert_eq!(r["ldap_port"], 636);
+        assert_eq!(r["ldap_use_ssl"], true);
+        // Password must be masked
+        assert_eq!(r["ldap_bind_password"], "\u{2022}\u{2022}\u{2022}\u{2022}\u{2022}\u{2022}");
+    }
+
+    #[test]
+    fn test_to_response_ldap_defaults_port_389() {
+        let s = make_sso("ldap");
+        let r = s.to_response();
+        assert_eq!(r["ldap_port"], 389);
+        assert_eq!(r["ldap_use_ssl"], false);
+        assert!(r["ldap_bind_password"].is_null());
+    }
+
+    #[test]
+    fn test_to_response_unknown_provider_no_extra_fields() {
+        let s = make_sso("oauth2");
+        let r = s.to_response();
+        assert_eq!(r["provider_type"], "oauth2");
+        // None of the provider-specific keys should be present
+        assert!(r.get("saml_entity_id").is_none());
+        assert!(r.get("oidc_client_id").is_none());
+        assert!(r.get("ldap_host").is_none());
+    }
+}
