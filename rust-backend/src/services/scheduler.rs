@@ -208,3 +208,61 @@ async fn resolve_agent_ssh(
         _ => None,
     })
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use chrono::{TimeZone, Timelike};
+
+    #[test]
+    fn test_next_cron_fire_5field_expr_adds_seconds_prefix() {
+        // "0 2 * * *" = daily at 02:00; next fire after 2026-01-01 03:00 should be 2026-01-02 02:00
+        let after = Utc.with_ymd_and_hms(2026, 1, 1, 3, 0, 0).unwrap();
+        let next = next_cron_fire("0 2 * * *", after);
+        assert!(next.is_some(), "expected a next fire time");
+        let next = next.unwrap();
+        assert_eq!(next.hour(), 2);
+        assert_eq!(next.minute(), 0);
+        // Should be the next calendar day
+        assert!(next > after);
+    }
+
+    #[test]
+    fn test_next_cron_fire_already_6field_expr() {
+        // 6-field cron with explicit seconds: "0 30 6 * * *" = daily at 06:30:00
+        let after = Utc.with_ymd_and_hms(2026, 6, 1, 7, 0, 0).unwrap();
+        let next = next_cron_fire("0 30 6 * * *", after);
+        assert!(next.is_some());
+        let next = next.unwrap();
+        assert_eq!(next.hour(), 6);
+        assert_eq!(next.minute(), 30);
+        assert!(next > after);
+    }
+
+    #[test]
+    fn test_next_cron_fire_invalid_expr_returns_none() {
+        let after = Utc.with_ymd_and_hms(2026, 1, 1, 0, 0, 0).unwrap();
+        assert!(next_cron_fire("not a cron", after).is_none());
+        assert!(next_cron_fire("", after).is_none());
+        assert!(next_cron_fire("99 99 99 99 99", after).is_none());
+    }
+
+    #[test]
+    fn test_next_cron_fire_is_always_in_the_future() {
+        let after = Utc.with_ymd_and_hms(2026, 3, 15, 12, 0, 0).unwrap();
+        // Every hour
+        let next = next_cron_fire("0 * * * *", after).unwrap();
+        assert!(next > after, "next fire must be strictly after 'after'");
+    }
+
+    #[test]
+    fn test_next_cron_fire_weekly_schedule() {
+        // Every Monday at 09:00: "0 9 * * 1"
+        let after = Utc.with_ymd_and_hms(2026, 4, 21, 10, 0, 0).unwrap(); // Tuesday
+        let next = next_cron_fire("0 9 * * 1", after).unwrap();
+        // Next Monday must be >= 6 days away
+        let diff_days = (next - after).num_days();
+        assert!(diff_days >= 5, "weekly schedule should fire ~7 days later, got {} days", diff_days);
+        assert_eq!(next.hour(), 9);
+    }
+}

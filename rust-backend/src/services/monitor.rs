@@ -1,3 +1,14 @@
+/// Pure helper: compute next consecutive_failures count.
+/// Resets to 0 on recovery; increments by 1 on continued failure.
+pub fn next_consecutive_failures(is_up: bool, prev_failures: u32) -> u32 {
+    if is_up { 0 } else { prev_failures + 1 }
+}
+
+/// Pure helper: whether a down-transition on a critical target should trigger an alert.
+pub fn should_send_down_alert(was_up: bool, is_up: bool, critical: bool) -> bool {
+    was_up && !is_up && critical
+}
+
 /// CyberSec Pro — Site Monitor Service (Rust)
 /// Replaces Python site_monitor.py
 /// Background task that checks HTTP endpoints and sends alert emails when services go down.
@@ -85,14 +96,12 @@ impl SiteMonitor {
                 let mut states = self.states.write().await;
                 let prev = states.get(&target.name);
                 let was_up = prev.map(|s| s.is_up).unwrap_or(true);
-                let consecutive = if is_up {
-                    0
-                } else {
-                    prev.map(|s| s.consecutive_failures).unwrap_or(0) + 1
-                };
+                let prev_failures = prev.map(|s| s.consecutive_failures).unwrap_or(0);
+                drop(prev);
+                let consecutive = next_consecutive_failures(is_up, prev_failures);
 
                 // Transition: was up → now down → send alert
-                if was_up && !is_up && target.critical {
+                if should_send_down_alert(was_up, is_up, target.critical) {
                     tracing::warn!("🔴 {} is DOWN: {:?}", target.name, error);
                     if let Some(ref alert_addr) = self.alert_email {
                         if let Some(cfg) = EmailConfig::from_env() {
@@ -128,5 +137,52 @@ impl SiteMonitor {
 
     pub async fn get_status(&self) -> Vec<MonitorState> {
         self.states.read().await.values().cloned().collect()
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_next_consecutive_failures_resets_on_recovery() {
+        assert_eq!(next_consecutive_failures(true, 5), 0);
+        assert_eq!(next_consecutive_failures(true, 0), 0);
+        assert_eq!(next_consecutive_failures(true, 100), 0);
+    }
+
+    #[test]
+    fn test_next_consecutive_failures_increments_on_down() {
+        assert_eq!(next_consecutive_failures(false, 0), 1);
+        assert_eq!(next_consecutive_failures(false, 1), 2);
+        assert_eq!(next_consecutive_failures(false, 9), 10);
+    }
+
+    #[test]
+    fn test_should_send_down_alert_triggers_on_transition() {
+        // was_up=true, is_up=false, critical=true → alert
+        assert!(should_send_down_alert(true, false, true));
+    }
+
+    #[test]
+    fn test_should_send_down_alert_no_alert_when_already_down() {
+        // already down → no repeated alert
+        assert!(!should_send_down_alert(false, false, true));
+    }
+
+    #[test]
+    fn test_should_send_down_alert_no_alert_when_coming_back_up() {
+        assert!(!should_send_down_alert(false, true, true));
+    }
+
+    #[test]
+    fn test_should_send_down_alert_no_alert_for_non_critical() {
+        // non-critical service going down → no alert
+        assert!(!should_send_down_alert(true, false, false));
+    }
+
+    #[test]
+    fn test_should_send_down_alert_no_alert_when_staying_up() {
+        assert!(!should_send_down_alert(true, true, true));
     }
 }
