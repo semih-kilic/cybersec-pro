@@ -260,9 +260,9 @@ mod tests {
         // Every Monday at 09:00: "0 9 * * 1"
         let after = Utc.with_ymd_and_hms(2026, 4, 21, 10, 0, 0).unwrap(); // Tuesday
         let next = next_cron_fire("0 9 * * 1", after).unwrap();
-        // Next Monday must be >= 6 days away
-        let diff_days = (next - after).num_days();
-        assert!(diff_days >= 5, "weekly schedule should fire ~7 days later, got {} days", diff_days);
+        // Must fire strictly after 'after' and at 09:00 on a Monday
+        assert!(next > after, "next fire must be after 'after'");
         assert_eq!(next.hour(), 9);
+        assert_eq!(next.weekday().num_days_from_monday(), 0, "should fire on a Monday");
     }
 }
