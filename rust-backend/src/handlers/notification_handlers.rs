@@ -10,6 +10,26 @@ use std::sync::Arc;
 use crate::middleware::auth_middleware::AuthUser;
 use crate::AppState;
 
+// ── Pure helpers (testable without DB) ─────────────────────────────────
+
+/// Maps an audit log `(category, action)` pair to a notification type string.
+pub fn audit_action_to_notification_type(category: &str, action: &str) -> &'static str {
+    if action.contains("scan_start") {
+        return "system";
+    }
+    if action.contains("scan_complete") || action.contains("scan_finish") {
+        return "scan_complete";
+    }
+    if action.contains("scan_fail") {
+        return "scan_failed";
+    }
+    match category {
+        "auth"     => "system",
+        "security" => "security_alert",
+        _          => "system",
+    }
+}
+
 pub async fn list_notifications(
     State(state): State<Arc<AppState>>,
     auth: AuthUser,
@@ -38,7 +58,7 @@ pub async fn list_notifications(
         // Generate meaningful notification data
         let (notif_type, title, message, link) = match (category, action.as_str()) {
             (_, a) if a.contains("scan_start") => (
-                "system", 
+                audit_action_to_notification_type(category, action.as_str()), 
                 "Scan Started".to_string(),
                 format!("A new scan has been initiated"),
                 if !resource_id_val.is_empty() { Some(format!("/dashboard/scans/{}", resource_id_val)) } else { None }
@@ -129,4 +149,50 @@ pub async fn read_notification(
     .execute(&state.db)
     .await;
     Json(json!({"message": "Notification marked as read", "success": true}))
+}
+
+#[cfg(test)]
+mod tests {
+    use super::audit_action_to_notification_type;
+
+    #[test]
+    fn audit_action_scan_start_maps_to_system() {
+        assert_eq!(audit_action_to_notification_type("system", "scan_start"), "system");
+        assert_eq!(audit_action_to_notification_type("system", "tool_scan_start"), "system");
+    }
+
+    #[test]
+    fn audit_action_scan_complete_maps_to_scan_complete() {
+        assert_eq!(audit_action_to_notification_type("system", "scan_complete"), "scan_complete");
+        assert_eq!(audit_action_to_notification_type("system", "scan_finish"), "scan_complete");
+    }
+
+    #[test]
+    fn audit_action_scan_fail_maps_to_scan_failed() {
+        assert_eq!(audit_action_to_notification_type("system", "scan_fail"), "scan_failed");
+        assert_eq!(audit_action_to_notification_type("system", "scan_failed_timeout"), "scan_failed");
+    }
+
+    #[test]
+    fn audit_action_scan_keywords_take_priority_over_category() {
+        // Even if category is "security", scan_* action wins
+        assert_eq!(audit_action_to_notification_type("security", "scan_complete"), "scan_complete");
+    }
+
+    #[test]
+    fn audit_category_auth_maps_to_system() {
+        assert_eq!(audit_action_to_notification_type("auth", "login"), "system");
+        assert_eq!(audit_action_to_notification_type("auth", "mfa_enable"), "system");
+    }
+
+    #[test]
+    fn audit_category_security_maps_to_security_alert() {
+        assert_eq!(audit_action_to_notification_type("security", "suspicious_login"), "security_alert");
+    }
+
+    #[test]
+    fn audit_unknown_category_and_action_maps_to_system() {
+        assert_eq!(audit_action_to_notification_type("billing", "subscription_created"), "system");
+        assert_eq!(audit_action_to_notification_type("unknown", "anything"), "system");
+    }
 }

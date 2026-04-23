@@ -80,6 +80,21 @@ jobs:
           SQLX_OFFLINE=true cargo test handlers::tool_handlers::tests 2>&1 | tee ci-reports/cargo-test-tool-handlers.log
           grep -E "^test result" ci-reports/cargo-test-tool-handlers.log | grep -v "FAILED"
 
+      - name: Agent handler unit tests
+        run: |
+          SQLX_OFFLINE=true cargo test handlers::agent_handlers::tests 2>&1 | tee ci-reports/cargo-test-agent-handlers.log
+          grep -E "^test result" ci-reports/cargo-test-agent-handlers.log | grep -v "FAILED"
+
+      - name: Dashboard handler unit tests
+        run: |
+          SQLX_OFFLINE=true cargo test handlers::dashboard_handlers::tests 2>&1 | tee ci-reports/cargo-test-dashboard-handlers.log
+          grep -E "^test result" ci-reports/cargo-test-dashboard-handlers.log | grep -v "FAILED"
+
+      - name: Notification handler unit tests
+        run: |
+          SQLX_OFFLINE=true cargo test handlers::notification_handlers::tests 2>&1 | tee ci-reports/cargo-test-notification-handlers.log
+          grep -E "^test result" ci-reports/cargo-test-notification-handlers.log | grep -v "FAILED"
+
       - name: Run clippy lints
         run: |
           set +e

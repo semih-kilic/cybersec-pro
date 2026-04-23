@@ -13,6 +13,37 @@ use crate::middleware::auth_middleware::AuthUser;
 use crate::models::Agent;
 use crate::AppState;
 
+// ── Pure helpers (testable without DB) ─────────────────────────────────
+
+/// Extracts `(cpu_usage, memory_usage, active_scans)` from a heartbeat JSON body.
+/// Missing or non-numeric fields default to 0.
+pub fn parse_heartbeat_metrics(body: &serde_json::Value) -> (f64, f64, i32) {
+    let cpu    = body.get("cpu_usage").and_then(|v| v.as_f64()).unwrap_or(0.0);
+    let mem    = body.get("memory_usage").and_then(|v| v.as_f64()).unwrap_or(0.0);
+    let active = body.get("active_scans").and_then(|v| v.as_i64()).unwrap_or(0) as i32;
+    (cpu, mem, active)
+}
+
+/// Returns `true` if the given string is a valid agent registration token prefix format.
+/// Registration tokens are prefixed with `agt_` followed by 32 hex chars (UUID without dashes).
+pub fn is_valid_agent_token_format(token: &str) -> bool {
+    if let Some(suffix) = token.strip_prefix("agt_") {
+        suffix.len() == 32 && suffix.chars().all(|c| c.is_ascii_hexdigit())
+    } else {
+        false
+    }
+}
+
+/// Returns `true` if the given string is a valid agent API key format.
+/// API keys are prefixed with `ak_` followed by 32 hex chars.
+pub fn is_valid_agent_api_key_format(key: &str) -> bool {
+    if let Some(suffix) = key.strip_prefix("ak_") {
+        suffix.len() == 32 && suffix.chars().all(|c| c.is_ascii_hexdigit())
+    } else {
+        false
+    }
+}
+
 pub async fn list_agents(
     State(state): State<Arc<AppState>>,
     auth: AuthUser,
@@ -203,16 +234,14 @@ pub async fn agent_heartbeat(
     Path(agent_id): Path<String>,
     Json(body): Json<serde_json::Value>,
 ) -> impl IntoResponse {
-    let cpu = body.get("cpu_usage").and_then(|v| v.as_f64()).unwrap_or(0.0);
-    let mem = body.get("memory_usage").and_then(|v| v.as_f64()).unwrap_or(0.0);
-    let active = body.get("active_scans").and_then(|v| v.as_i64()).unwrap_or(0);
+    let (cpu, mem, active) = parse_heartbeat_metrics(&body);
 
     let _ = sqlx::query(
         "UPDATE agents SET status = 'online', last_heartbeat = CURRENT_TIMESTAMP, cpu_usage = $1, memory_usage = $2, active_scans = $3 WHERE id = $4"
     )
     .bind(cpu)
     .bind(mem)
-    .bind(active as i32)
+    .bind(active)
     .bind(&agent_id)
     .execute(&state.db)
     .await;
@@ -319,5 +348,90 @@ pub async fn network_discover(
             "success": false,
             "error": e,
         }))).into_response(),
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::{is_valid_agent_api_key_format, is_valid_agent_token_format, parse_heartbeat_metrics};
+    use serde_json::json;
+
+    // ── parse_heartbeat_metrics ──────────────────────────────────────────
+
+    #[test]
+    fn parse_heartbeat_metrics_reads_all_fields() {
+        let body = json!({"cpu_usage": 55.5, "memory_usage": 72.3, "active_scans": 3});
+        let (cpu, mem, active) = parse_heartbeat_metrics(&body);
+        assert!((cpu - 55.5).abs() < f64::EPSILON);
+        assert!((mem - 72.3).abs() < f64::EPSILON);
+        assert_eq!(active, 3);
+    }
+
+    #[test]
+    fn parse_heartbeat_metrics_defaults_to_zero_for_empty_body() {
+        let (cpu, mem, active) = parse_heartbeat_metrics(&json!({}));
+        assert_eq!(cpu, 0.0);
+        assert_eq!(mem, 0.0);
+        assert_eq!(active, 0);
+    }
+
+    #[test]
+    fn parse_heartbeat_metrics_defaults_to_zero_for_non_numeric_fields() {
+        let body = json!({"cpu_usage": "high", "memory_usage": null, "active_scans": false});
+        let (cpu, mem, active) = parse_heartbeat_metrics(&body);
+        assert_eq!(cpu, 0.0);
+        assert_eq!(mem, 0.0);
+        assert_eq!(active, 0);
+    }
+
+    #[test]
+    fn parse_heartbeat_metrics_handles_zero_values_explicitly() {
+        let body = json!({"cpu_usage": 0.0, "memory_usage": 0.0, "active_scans": 0});
+        let (cpu, mem, active) = parse_heartbeat_metrics(&body);
+        assert_eq!(cpu, 0.0);
+        assert_eq!(mem, 0.0);
+        assert_eq!(active, 0);
+    }
+
+    // ── is_valid_agent_token_format ────────────────────────────────────
+
+    #[test]
+    fn is_valid_agent_token_format_accepts_well_formed_token() {
+        // 32 lowercase hex chars after "agt_"
+        assert!(is_valid_agent_token_format("agt_a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4"));
+    }
+
+    #[test]
+    fn is_valid_agent_token_format_rejects_wrong_prefix() {
+        assert!(!is_valid_agent_token_format("ak_a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4"));
+        assert!(!is_valid_agent_token_format("a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4"));
+    }
+
+    #[test]
+    fn is_valid_agent_token_format_rejects_too_short_suffix() {
+        assert!(!is_valid_agent_token_format("agt_a1b2c3"));
+    }
+
+    #[test]
+    fn is_valid_agent_token_format_rejects_non_hex_chars() {
+        // contains 'g' which is not hex
+        assert!(!is_valid_agent_token_format("agt_g1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4"));
+    }
+
+    // ── is_valid_agent_api_key_format ──────────────────────────────────
+
+    #[test]
+    fn is_valid_agent_api_key_format_accepts_well_formed_key() {
+        assert!(is_valid_agent_api_key_format("ak_a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4"));
+    }
+
+    #[test]
+    fn is_valid_agent_api_key_format_rejects_wrong_prefix() {
+        assert!(!is_valid_agent_api_key_format("agt_a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4"));
+    }
+
+    #[test]
+    fn is_valid_agent_api_key_format_rejects_non_hex_chars() {
+        assert!(!is_valid_agent_api_key_format("ak_xyzxyzxyzxyzxyzxyzxyzxyzxyzxyzxy"));
     }
 }

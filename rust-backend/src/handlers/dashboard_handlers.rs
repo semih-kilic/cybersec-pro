@@ -10,6 +10,24 @@ use std::sync::Arc;
 use crate::middleware::auth_middleware::AuthUser;
 use crate::AppState;
 
+// ── Pure helpers (testable without DB) ─────────────────────────────────
+
+/// Computes a 0-100 security score from scan findings.
+/// Returns 0 when there are no completed scans.
+/// Deducts 15 per critical, 8 per high, 3 per medium, 1 per low (capped at 100).
+pub fn compute_security_score(completed: i64, critical: i64, high: i64, medium: i64, low: i64) -> i64 {
+    if completed == 0 {
+        return 0;
+    }
+    let penalty = (critical * 15 + high * 8 + medium * 3 + low * 1).min(100);
+    (100 - penalty).max(0)
+}
+
+/// Maps a security score to a human-readable risk level.
+pub fn risk_level_from_score(score: i64) -> &'static str {
+    if score >= 80 { "Low" } else if score >= 60 { "Medium" } else { "High" }
+}
+
 // ── Security Summary (Dashboard) ───────────────────────────
 
 pub async fn security_summary(
@@ -115,13 +133,7 @@ pub async fn security_summary(
 
     let issues_total = critical + high + medium + low + info;
 
-    // Compute security score: base 100, deduct for issues
-    let security_score = if completed.0 == 0 {
-        0
-    } else {
-        let penalty = (critical * 15 + high * 8 + medium * 3 + low * 1).min(100);
-        (100 - penalty).max(0)
-    };
+    let security_score = compute_security_score(completed.0, critical, high, medium, low);
 
     let open_issues = json!({
         "critical": critical,
@@ -132,7 +144,7 @@ pub async fn security_summary(
         "total": issues_total
     });
 
-    let risk_level = if security_score >= 80 { "Low" } else if security_score >= 60 { "Medium" } else { "High" };
+    let risk_level = risk_level_from_score(security_score);
 
     (StatusCode::OK, Json(json!({
         "total_scans": total_scans.0,
@@ -206,4 +218,77 @@ pub async fn analytics_overview(
         "performance": {"avg_duration_seconds": 0, "total_scans": total, "success_rate": success_rate},
         "risk": {"score": 0, "level": "low", "severity_totals": {"critical": 0, "high": 0, "medium": 0, "low": 0, "info": 0}, "total_issues": 0}
     }))).into_response()
+}
+
+#[cfg(test)]
+mod tests {
+    use super::{compute_security_score, risk_level_from_score};
+
+    // ── compute_security_score ─────────────────────────────────────────
+
+    #[test]
+    fn compute_security_score_returns_zero_when_no_completed_scans() {
+        assert_eq!(compute_security_score(0, 0, 0, 0, 0), 0);
+        assert_eq!(compute_security_score(0, 5, 10, 20, 30), 0);
+    }
+
+    #[test]
+    fn compute_security_score_returns_100_when_no_findings() {
+        assert_eq!(compute_security_score(1, 0, 0, 0, 0), 100);
+        assert_eq!(compute_security_score(42, 0, 0, 0, 0), 100);
+    }
+
+    #[test]
+    fn compute_security_score_deducts_correctly_per_severity() {
+        // 1 critical = -15
+        assert_eq!(compute_security_score(1, 1, 0, 0, 0), 85);
+        // 1 high = -8
+        assert_eq!(compute_security_score(1, 0, 1, 0, 0), 92);
+        // 1 medium = -3
+        assert_eq!(compute_security_score(1, 0, 0, 1, 0), 97);
+        // 1 low = -1
+        assert_eq!(compute_security_score(1, 0, 0, 0, 1), 99);
+    }
+
+    #[test]
+    fn compute_security_score_combined_deduction() {
+        // 2 critical(30) + 1 high(8) + 1 medium(3) + 1 low(1) = 42 penalty -> score 58
+        assert_eq!(compute_security_score(1, 2, 1, 1, 1), 58);
+    }
+
+    #[test]
+    fn compute_security_score_penalty_caps_at_100_score_floored_at_0() {
+        // 10 critical = 150 penalty, capped to 100 -> score 0
+        assert_eq!(compute_security_score(1, 10, 0, 0, 0), 0);
+    }
+
+    #[test]
+    fn compute_security_score_exactly_at_100_penalty_gives_0() {
+        // penalty = 100 exactly -> score 0
+        // e.g. 6 critical(90) + 1 high(8) + 0 + 2 low(2) = 100
+        assert_eq!(compute_security_score(1, 6, 1, 0, 2), 0);
+    }
+
+    // ── risk_level_from_score ─────────────────────────────────────────
+
+    #[test]
+    fn risk_level_from_score_low_at_80() {
+        assert_eq!(risk_level_from_score(80), "Low");
+        assert_eq!(risk_level_from_score(100), "Low");
+        assert_eq!(risk_level_from_score(95), "Low");
+    }
+
+    #[test]
+    fn risk_level_from_score_medium_between_60_and_79() {
+        assert_eq!(risk_level_from_score(60), "Medium");
+        assert_eq!(risk_level_from_score(79), "Medium");
+        assert_eq!(risk_level_from_score(70), "Medium");
+    }
+
+    #[test]
+    fn risk_level_from_score_high_below_60() {
+        assert_eq!(risk_level_from_score(59), "High");
+        assert_eq!(risk_level_from_score(0), "High");
+        assert_eq!(risk_level_from_score(1), "High");
+    }
 }
