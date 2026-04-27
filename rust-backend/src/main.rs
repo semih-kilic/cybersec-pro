@@ -231,7 +231,7 @@ fn build_router(state: Arc<AppState>) -> Router {
             get(scan_handlers::list_scans).post(scan_handlers::start_scan),
         )
         .route("/api/v1/scans/create", post(scan_handlers::create_scan))
-        .route("/api/v1/scans/:scan_id", get(scan_handlers::get_scan).delete(stub_handlers::scan_delete))
+        .route("/api/v1/scans/:scan_id", get(scan_handlers::get_scan).delete(scan_handlers::delete_scan))
         .route(
             "/api/v1/scans/:scan_id/output",
             get(scan_handlers::scan_output_stream),
