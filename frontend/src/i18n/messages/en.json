@@ -287,7 +287,8 @@
     "title": "Security Insights & Guides",
     "subtitle": "Learn offensive security techniques, tool tutorials, and industry best practices.",
     "readMore": "Read More",
-    "minRead": "min read"
+    "minRead": "min read",
+    "backToBlog": "Back to Blog"
   },
   "careers": {
     "badge": "Join Our Team",
@@ -374,6 +375,7 @@
     "subtitle": "Stay ahead of threats with the latest offensive security research, tool tutorials, and industry analysis.",
     "readMore": "Read More",
     "minRead": "min read",
+    "backToBlog": "Back to Blog",
     "viewAll": "View All Articles"
   }
 }

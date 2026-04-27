@@ -287,7 +287,8 @@
     "title": "Analyses & Guides de sécurité",
     "subtitle": "Apprenez les techniques de sécurité offensive, les tutoriels d'outils et les meilleures pratiques du secteur.",
     "readMore": "Lire la suite",
-    "minRead": "min de lecture"
+    "minRead": "min de lecture",
+    "backToBlog": "Retour au blog"
   },
   "careers": {
     "badge": "Rejoignez-nous",

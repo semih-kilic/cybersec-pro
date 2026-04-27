@@ -287,7 +287,8 @@
     "title": "Sicherheits-Einblicke & Anleitungen",
     "subtitle": "Lernen Sie Offensive-Security-Techniken, Tool-Tutorials und Best Practices der Branche.",
     "readMore": "Weiterlesen",
-    "minRead": "Min. Lesezeit"
+    "minRead": "Min. Lesezeit",
+    "backToBlog": "Zurück zum Blog"
   },
   "careers": {
     "badge": "Karriere bei uns",

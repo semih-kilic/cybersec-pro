@@ -287,7 +287,8 @@
     "title": "보안 인사이트 & 가이드",
     "subtitle": "공격적 보안 기법, 도구 튜토리얼, 업계 모범 사례를 배워보세요.",
     "readMore": "더 보기",
-    "minRead": "분 읽기"
+    "minRead": "분 읽기",
+    "backToBlog": "블로그로 돌아가기"
   },
   "careers": {
     "badge": "함께하세요",

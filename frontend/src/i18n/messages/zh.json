@@ -287,7 +287,8 @@
     "title": "安全洞察与指南",
     "subtitle": "学习进攻性安全技术、工具教程和行业最佳实践。",
     "readMore": "阅读更多",
-    "minRead": "分钟阅读"
+    "minRead": "分钟阅读",
+    "backToBlog": "返回博客"
   },
   "careers": {
     "badge": "加入我们",

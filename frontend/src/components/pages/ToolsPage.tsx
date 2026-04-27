@@ -2,9 +2,11 @@
 
 import { useState, useMemo, useEffect } from "react";
 import { useTranslations } from "next-intl";
+import { useLocale } from "next-intl";
 import dynamic from "next/dynamic";
+import Link from "next/link";
 import RevealOnScroll from "@/components/animations/RevealOnScroll";
-import { Search, Terminal, Play, Shield, Loader2 } from "lucide-react";
+import { Search, Terminal, Play, Shield, Loader2, Info } from "lucide-react";
 
 const NetworkMesh = dynamic(() => import("@/components/three/NetworkMesh"), { ssr: false });
 
@@ -24,8 +26,13 @@ interface ToolsResponse {
   success: boolean;
 }
 
+function nameToSlug(name: string): string {
+  return name.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
+}
+
 export default function ToolsPage() {
   const t = useTranslations("tools");
+  const locale = useLocale();
   const [search, setSearch] = useState("");
   const [category, setCategory] = useState("All");
   const [allTools, setAllTools] = useState<Tool[]>([]);
@@ -190,12 +197,20 @@ export default function ToolsPage() {
                       <code className="truncate">{tool.command}</code>
                     </div>
                   )}
-                  <a
-                    href="/dashboard/login"
-                    className="btn-primary mt-1 justify-center py-2 text-xs opacity-0 transition-opacity group-hover:opacity-100"
-                  >
-                    <Play size={12} /> {t("runTool")}
-                  </a>
+                  <div className="mt-1 flex items-center gap-2 opacity-0 transition-opacity group-hover:opacity-100">
+                    <a
+                      href="/dashboard/login"
+                      className="btn-primary flex-1 justify-center py-2 text-xs"
+                    >
+                      <Play size={12} /> {t("runTool")}
+                    </a>
+                    <Link
+                      href={`/${locale}/tools/${nameToSlug(tool.name)}/`}
+                      className="flex items-center gap-1 rounded-xl border border-white/10 px-3 py-2 text-xs text-white/50 hover:border-[var(--color-neon-dim)] hover:text-[var(--color-neon)] transition"
+                    >
+                      <Info size={12} />
+                    </Link>
+                  </div>
                 </div>
               ))}
             </div>
