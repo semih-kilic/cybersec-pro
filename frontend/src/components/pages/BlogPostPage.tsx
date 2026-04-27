@@ -3,8 +3,9 @@
 import { useTranslations } from "next-intl";
 import { useLocale } from "next-intl";
 import Link from "next/link";
+import dynamic from "next/dynamic";
 import { Clock, ArrowLeft, Shield, Bug, Terminal, Wifi, Server, Code2, Calendar, User } from "lucide-react";
-import MatrixRain from "@/components/three/MatrixRain";
+const MatrixRain = dynamic(() => import("@/components/three/MatrixRain"), { ssr: false });
 import RevealOnScroll from "@/components/animations/RevealOnScroll";
 
 const CATEGORY_COLORS: Record<string, string> = {

@@ -6,8 +6,7 @@ import { useTranslations } from "next-intl";
 import { motion, useScroll, useTransform } from "framer-motion";
 import { ArrowRight, Cloud } from "lucide-react";
 import { useRef, useEffect, useState, useCallback } from "react";
-import MatrixRain from "@/components/three/MatrixRain";
-
+const MatrixRain = dynamic(() => import("@/components/three/MatrixRain"), { ssr: false });
 const CyberAttackGlobe = dynamic(() => import("@/components/three/CyberAttackGlobe"), { ssr: false });
 
 /* ─── Animated Counter ─── */

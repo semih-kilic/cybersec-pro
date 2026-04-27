@@ -2,7 +2,8 @@
 
 import { useTranslations } from "next-intl";
 import RevealOnScroll from "@/components/animations/RevealOnScroll";
-import CyberScene from "@/components/three/CyberScene";
+import dynamic from "next/dynamic";
+const CyberScene = dynamic(() => import("@/components/three/CyberScene"), { ssr: false });
 import { Shield, Database, Lock, Eye, Cookie, Users, Clock, Mail } from "lucide-react";
 
 export default function PrivacyPage() {

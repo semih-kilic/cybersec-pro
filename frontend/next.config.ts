@@ -8,6 +8,12 @@ const nextConfig: NextConfig = {
   trailingSlash: true,
   images: { unoptimized: true },
   transpilePackages: ["three"],
+  compiler: {
+    removeConsole: process.env.NODE_ENV === "production",
+  },
+  experimental: {
+    optimizePackageImports: ["lucide-react", "@radix-ui/react-icons"],
+  },
 };
 
 export default withNextIntl(nextConfig);

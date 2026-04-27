@@ -1,7 +1,8 @@
 "use client";
 
+import dynamic from "next/dynamic";
 import RevealOnScroll from "@/components/animations/RevealOnScroll";
-import MatrixRain from "@/components/three/MatrixRain";
+const MatrixRain = dynamic(() => import("@/components/three/MatrixRain"), { ssr: false });
 import { ShieldAlert } from "lucide-react";
 import Link from "next/link";
 
