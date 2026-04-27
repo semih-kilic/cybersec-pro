@@ -17,7 +17,10 @@
 <meta name="twitter:description" content="396 Kali Linux tools. Cloud-based offensive security. No installation.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,500;14..32,600;14..32,700;14..32,800;14..32,900&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<link rel="dns-prefetch" href="https://fonts.googleapis.com">
+<link rel="dns-prefetch" href="https://fonts.gstatic.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,500;14..32,600;14..32,700;14..32,800;14..32,900&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="preload" as="style" onload="this.onload=null;this.rel='stylesheet'">
+<noscript><link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,500;14..32,600;14..32,700;14..32,800;14..32,900&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet"></noscript>
 <link rel="manifest" href="/site.webmanifest">
 <script type="application/ld+json">{"@context":"https://schema.org","@type":"SoftwareApplication","name":"CyberSec Pro","operatingSystem":"Cloud","applicationCategory":"SecurityApplication","url":"https://semihkilic.com","offers":[{"@type":"Offer","name":"Starter","price":"99","priceCurrency":"EUR"},{"@type":"Offer","name":"Professional","price":"299","priceCurrency":"EUR"},{"@type":"Offer","name":"Enterprise","price":"799","priceCurrency":"EUR"}]}</script>
 <script type="application/ld+json">{"@context":"https://schema.org","@type":"Organization","name":"CyberSec Pro","url":"https://semihkilic.com","email":"cybersecpro@semihkilic.com"}</script>
@@ -684,7 +687,7 @@ if(window.matchMedia('(prefers-reduced-motion:no-preference)').matches){const io
   }
 
   resize();
-  setInterval(draw,45);
+  function loop(){draw();requestAnimationFrame(loop)}requestAnimationFrame(loop);
   window.addEventListener('resize',resize);
 
   if(window.matchMedia('(prefers-reduced-motion:reduce)').matches){
@@ -692,6 +695,6 @@ if(window.matchMedia('(prefers-reduced-motion:no-preference)').matches){const io
   }
 })();
 </script>
-<script src="/js/live-chat.js"></script>
+<script src="/js/live-chat.js" defer></script>
 </body>
 </html>
