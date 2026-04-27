@@ -459,3 +459,78 @@ pub async fn get_system_metrics() -> SystemMetrics {
     tokio::task::spawn_blocking(get_system_metrics_sync)
         .await.unwrap_or_else(|_| default_metrics())
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_get_service_configs_exists() {
+        let configs = get_service_configs();
+        assert!(!configs.is_empty(), "Service configs should not be empty");
+    }
+
+    #[test]
+    fn test_get_service_configs_priority_backend() {
+        let configs = get_service_configs();
+        let rust_backend = configs.iter().find(|c| c.id == "rust-backend");
+        assert!(rust_backend.is_some(), "rust-backend config should exist");
+        assert_eq!(rust_backend.unwrap().priority, 1);
+        assert_eq!(rust_backend.unwrap().port, Some(5001));
+    }
+
+    #[test]
+    fn test_get_service_configs_postgres() {
+        let configs = get_service_configs();
+        let pg = configs.iter().find(|c| c.id == "postgresql");
+        assert!(pg.is_some(), "postgresql config should exist");
+        assert_eq!(pg.unwrap().port, Some(5432));
+        assert_eq!(pg.unwrap().category, "database");
+    }
+
+    #[test]
+    fn test_get_service_configs_nginx() {
+        let configs = get_service_configs();
+        let nginx = configs.iter().find(|c| c.id == "nginx");
+        assert!(nginx.is_some(), "nginx config should exist");
+        assert_eq!(nginx.unwrap().port, Some(80));
+        assert!(nginx.unwrap().auto_restart);
+    }
+
+    #[test]
+    fn test_get_service_configs_redis() {
+        let configs = get_service_configs();
+        let redis = configs.iter().find(|c| c.id == "redis");
+        assert!(redis.is_some(), "redis config should exist");
+        assert_eq!(redis.unwrap().port, Some(6379));
+        assert_eq!(redis.unwrap().category, "infrastructure");
+    }
+
+    #[test]
+    fn test_get_service_configs_all_have_names() {
+        let configs = get_service_configs();
+        for config in &configs {
+            assert!(!config.name.is_empty(), "Config {} should have a name", config.id);
+            assert!(!config.id.is_empty(), "Config should have an id");
+        }
+    }
+
+    #[test]
+    fn test_get_service_configs_priority_ordering() {
+        let configs = get_service_configs();
+        let priority_1 = configs.iter().filter(|c| c.priority == 1).count();
+        let priority_2 = configs.iter().filter(|c| c.priority == 2).count();
+        assert!(priority_1 > 0, "Should have at least one priority-1 service");
+        assert!(priority_2 > 0, "Should have at least one priority-2 service");
+    }
+
+    #[test]
+    fn test_default_metrics_values() {
+        let metrics = default_metrics();
+        assert_eq!(metrics.cpu_percent, 0.0);
+        assert_eq!(metrics.memory_percent, 0.0);
+        assert_eq!(metrics.disk_percent, 0.0);
+        assert_eq!(metrics.network_rx_bytes, 0);
+        assert_eq!(metrics.network_tx_bytes, 0);
+    }
+}

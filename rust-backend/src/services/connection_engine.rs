@@ -408,4 +408,113 @@ pub mod crypto {
 
         String::from_utf8(plaintext).map_err(|e| format!("UTF-8 decode: {}", e))
     }
+
+    #[cfg(test)]
+    mod tests {
+        use super::*;
+
+        #[test]
+        fn test_encrypt_decrypt_roundtrip() {
+            let plaintext = "my_secret_password_123";
+            let secret = "app_secret_key";
+
+            let encrypted = encrypt_password(plaintext, secret).expect("Encryption failed");
+            assert!(!encrypted.is_empty(), "Encrypted password should not be empty");
+            assert_ne!(encrypted, plaintext, "Encrypted text should differ from plaintext");
+
+            let decrypted = decrypt_password(&encrypted, secret).expect("Decryption failed");
+            assert_eq!(decrypted, plaintext, "Decrypted text should match original plaintext");
+        }
+
+        #[test]
+        fn test_encrypt_decrypt_with_special_chars() {
+            let plaintext = "p@$$w0rd!#%&*()_+-=[]{}|:;<>,.?/~`";
+            let secret = "test_secret";
+
+            let encrypted = encrypt_password(plaintext, secret).expect("Encryption failed");
+            let decrypted = decrypt_password(&encrypted, secret).expect("Decryption failed");
+            assert_eq!(decrypted, plaintext);
+        }
+
+        #[test]
+        fn test_encrypt_decrypt_empty_password() {
+            let plaintext = "";
+            let secret = "secret";
+
+            let encrypted = encrypt_password(plaintext, secret).expect("Encryption failed");
+            let decrypted = decrypt_password(&encrypted, secret).expect("Decryption failed");
+            assert_eq!(decrypted, plaintext);
+        }
+
+        #[test]
+        fn test_encrypt_same_plaintext_different_ciphertext() {
+            let plaintext = "password";
+            let secret = "secret";
+
+            let encrypted1 = encrypt_password(plaintext, secret).expect("Encryption 1 failed");
+            let encrypted2 = encrypt_password(plaintext, secret).expect("Encryption 2 failed");
+
+            // Due to random nonce, ciphertexts should differ
+            assert_ne!(encrypted1, encrypted2, "Same plaintext with random nonce should produce different ciphertexts");
+
+            // But both should decrypt to same value
+            let dec1 = decrypt_password(&encrypted1, secret).expect("Decrypt 1 failed");
+            let dec2 = decrypt_password(&encrypted2, secret).expect("Decrypt 2 failed");
+            assert_eq!(dec1, plaintext);
+            assert_eq!(dec2, plaintext);
+        }
+
+        #[test]
+        fn test_decrypt_with_wrong_secret() {
+            let plaintext = "original_password";
+            let secret = "correct_secret";
+            let wrong_secret = "wrong_secret";
+
+            let encrypted = encrypt_password(plaintext, secret).expect("Encryption failed");
+            let result = decrypt_password(&encrypted, wrong_secret);
+            assert!(result.is_err(), "Decryption with wrong secret should fail");
+        }
+
+        #[test]
+        fn test_decrypt_invalid_base64() {
+            let result = decrypt_password("not_valid_base64!!!", "secret");
+            assert!(result.is_err(), "Decryption of invalid base64 should fail");
+        }
+
+        #[test]
+        fn test_decrypt_truncated_data() {
+            let result = decrypt_password("YWJjZA==", "secret");  // base64("abcd") = 4 bytes < 13 required
+            assert!(result.is_err(), "Decryption of truncated data should fail");
+        }
+
+        #[test]
+        fn test_encrypt_long_password() {
+            let plaintext = "x".repeat(1000);  // Very long password
+            let secret = "secret";
+
+            let encrypted = encrypt_password(&plaintext, secret).expect("Encryption failed");
+            let decrypted = decrypt_password(&encrypted, secret).expect("Decryption failed");
+            assert_eq!(decrypted, plaintext);
+        }
+
+        #[test]
+        fn test_different_secrets_different_keys() {
+            let plaintext = "password";
+            let secret1 = "secret1";
+            let secret2 = "secret2";
+
+            let encrypted1 = encrypt_password(plaintext, secret1).expect("Encryption 1 failed");
+            let encrypted2 = encrypt_password(plaintext, secret2).expect("Encryption 2 failed");
+
+            // Encrypted values should be different due to different keys
+            assert_ne!(encrypted1, encrypted2);
+
+            // secret1 key should decrypt encrypted1 but not encrypted2
+            let dec1 = decrypt_password(&encrypted1, secret1).expect("Decrypt 1 failed");
+            assert_eq!(dec1, plaintext);
+
+            let result = decrypt_password(&encrypted2, secret1);
+            assert!(result.is_err(), "Wrong key should fail decryption");
+        }
+    }
 }

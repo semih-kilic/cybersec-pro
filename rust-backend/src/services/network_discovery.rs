@@ -227,3 +227,105 @@ pub async fn discover_subnet(options: &DiscoveryOptions) -> Result<Vec<Discovere
     info!("✅ Discovery complete: {} hosts found on {}", discovered.len(), options.subnet);
     Ok(discovered)
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_service_name_common_ports() {
+        assert_eq!(service_name(21), "FTP");
+        assert_eq!(service_name(22), "SSH");
+        assert_eq!(service_name(80), "HTTP");
+        assert_eq!(service_name(443), "HTTPS");
+        assert_eq!(service_name(3306), "MySQL");
+        assert_eq!(service_name(5432), "PostgreSQL");
+    }
+
+    #[test]
+    fn test_service_name_unknown() {
+        assert_eq!(service_name(12345), "Unknown");
+        assert_eq!(service_name(9999), "Unknown");
+    }
+
+    #[test]
+    fn test_guess_device_type_windows() {
+        assert_eq!(guess_device_type(&[3389, 445]), "windows");
+        assert_eq!(guess_device_type(&[445]), "windows");
+    }
+
+    #[test]
+    fn test_guess_device_type_server() {
+        assert_eq!(guess_device_type(&[22, 80, 443]), "server");
+        assert_eq!(guess_device_type(&[22, 80]), "server");
+    }
+
+    #[test]
+    fn test_guess_device_type_linux() {
+        assert_eq!(guess_device_type(&[22]), "linux");
+    }
+
+    #[test]
+    fn test_guess_device_type_network() {
+        assert_eq!(guess_device_type(&[23, 161]), "network_device");
+    }
+
+    #[test]
+    fn test_guess_device_type_web() {
+        assert_eq!(guess_device_type(&[80]), "web_device");
+        assert_eq!(guess_device_type(&[443]), "web_device");
+    }
+
+    #[test]
+    fn test_guess_device_type_printer() {
+        assert_eq!(guess_device_type(&[631]), "printer");
+        assert_eq!(guess_device_type(&[9100]), "printer");
+    }
+
+    #[test]
+    fn test_guess_device_type_unknown() {
+        assert_eq!(guess_device_type(&[]), "unknown");
+        assert_eq!(guess_device_type(&[12345]), "device");
+    }
+
+    #[test]
+    fn test_guess_os_windows() {
+        assert_eq!(guess_os(&[3389]).unwrap(), "Windows");
+        assert_eq!(guess_os(&[445, 135]).unwrap(), "Windows");
+        assert_eq!(guess_os(&[3389, 445, 135]).unwrap(), "Windows");
+    }
+
+    #[test]
+    fn test_guess_os_linux() {
+        assert_eq!(guess_os(&[22]).unwrap(), "Linux/Unix");
+        assert_eq!(guess_os(&[22, 80, 443]).unwrap(), "Linux/Unix");
+    }
+
+    #[test]
+    fn test_guess_os_macos() {
+        assert_eq!(guess_os(&[5900]).unwrap(), "macOS/VNC");
+    }
+
+    #[test]
+    fn test_guess_os_network_device() {
+        assert_eq!(guess_os(&[23, 161]).unwrap(), "Network Device (Router/Switch)");
+    }
+
+    #[test]
+    fn test_guess_os_unknown() {
+        assert_eq!(guess_os(&[12345]), None);
+        assert_eq!(guess_os(&[]), None);
+    }
+
+    #[test]
+    fn test_discovery_options_default() {
+        let opts = DiscoveryOptions::default();
+        assert_eq!(opts.subnet, "10.0.0.0/24");
+        assert!(opts.port_scan);
+        assert_eq!(opts.timeout_ms, 1500);
+        assert_eq!(opts.max_concurrent, 100);
+        assert!(opts.ports.contains(&22));
+        assert!(opts.ports.contains(&80));
+        assert!(opts.ports.contains(&443));
+    }
+}
