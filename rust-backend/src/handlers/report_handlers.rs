@@ -1,6 +1,6 @@
 use axum::{
     extract::{Path, Query, State},
-    http::{header, StatusCode},
+    http::{header, HeaderMap, StatusCode},
     response::IntoResponse,
     Json,
 };
@@ -102,8 +102,13 @@ struct ToolName {
 pub async fn create_report(
     State(state): State<Arc<AppState>>,
     auth: AuthUser,
+    _headers: HeaderMap,
     Json(body): Json<CreateReportRequest>,
 ) -> impl IntoResponse {
+    // Rate limit: 10 reports per user per hour (CPU-intensive generation)
+    if state.rate_limiter.is_limited(&format!("create_report:{}", auth.user_id), 10, std::time::Duration::from_secs(3600)) {
+        return (StatusCode::TOO_MANY_REQUESTS, Json(json!({"error": "Report generation rate limit exceeded. Maximum 10 reports per hour."}))).into_response();
+    }
     let org_id = match &auth.org_id {
         Some(id) => id,
         None => return (StatusCode::FORBIDDEN, Json(json!({"error": "Organization required"}))).into_response(),

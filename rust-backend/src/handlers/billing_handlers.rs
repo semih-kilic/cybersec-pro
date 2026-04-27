@@ -201,8 +201,17 @@ pub async fn create_checkout(
 // Unauthenticated checkout for sales site
 pub async fn create_checkout_public(
     State(_state): State<Arc<AppState>>,
+    headers: HeaderMap,
     Json(body): Json<serde_json::Value>,
 ) -> impl IntoResponse {
+    // Rate limit: 10 checkout attempts per IP per hour (prevent Stripe API abuse)
+    let ip = headers.get("x-forwarded-for")
+        .and_then(|v| v.to_str().ok())
+        .unwrap_or("unknown");
+    if _state.rate_limiter.is_limited(&format!("checkout:{}", ip), 10, std::time::Duration::from_secs(3600)) {
+        return (StatusCode::TOO_MANY_REQUESTS, Json(json!({"error": "Too many checkout attempts. Try again later."}))).into_response();
+    }
+
     let stripe_secret = std::env::var("STRIPE_SECRET_KEY").unwrap_or_default();
     if stripe_secret.is_empty() {
         return (StatusCode::SERVICE_UNAVAILABLE, Json(json!({"error": "Stripe not configured"}))).into_response();

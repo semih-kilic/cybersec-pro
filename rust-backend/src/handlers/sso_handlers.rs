@@ -1,6 +1,6 @@
 use axum::{
     extract::{Query, State},
-    http::StatusCode,
+    http::{HeaderMap, StatusCode},
     response::{IntoResponse, Redirect},
     Json,
 };
@@ -187,8 +187,17 @@ pub struct LdapLoginRequest {
 
 pub async fn sso_ldap_login(
     State(state): State<Arc<AppState>>,
+    headers: HeaderMap,
     Json(body): Json<LdapLoginRequest>,
 ) -> impl IntoResponse {
+    // Rate limit: 5 attempts per IP per minute (brute-force protection)
+    let ip = headers.get("x-forwarded-for")
+        .and_then(|v| v.to_str().ok())
+        .unwrap_or("unknown");
+    if state.rate_limiter.is_limited(&format!("sso_ldap:{}", ip), 5, std::time::Duration::from_secs(60)) {
+        return (StatusCode::TOO_MANY_REQUESTS, Json(json!({"error": "Too many attempts. Try again later."}))).into_response();
+    }
+
     // Find SSO config by domain hint or email domain
     let email_domain = body.email.split('@').nth(1).unwrap_or("");
     let domain = body.domain.as_deref().unwrap_or(email_domain);
