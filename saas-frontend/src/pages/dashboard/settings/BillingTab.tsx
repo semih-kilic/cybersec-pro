@@ -48,7 +48,7 @@ export function BillingTab({ userPlan }: SettingsTabProps) {
   const plan = PLAN_DETAILS[planKey] || PLAN_DETAILS.trial;
   const config = billing?.config;
 
-  const toolCount = config?.tool_limit === 401 ? 'All 401' : config?.tool_limit || '25';
+  const toolCount = config?.tool_limit === 396 ? 'All 396' : config?.tool_limit || '25';
   const scanLimit = config?.daily_scan_limit === 0 ? 'Unlimited' : String(config?.daily_scan_limit || 5);
   const agentLimit = config?.max_agents === -1 ? 'Unlimited' : String(config?.max_agents || 0);
 

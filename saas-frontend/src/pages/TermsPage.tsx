@@ -38,7 +38,7 @@ export default function TermsPage() {
               <h2 className="text-2xl font-semibold text-white mb-3">{t('terms.section2Title', '2. Service Description')}</h2>
               <p>{t('terms.section2Body', 'CyberSec Pro provides a cloud-based penetration testing platform with access to security tools for authorized testing purposes. The Service includes:')}</p>
               <ul className="list-disc list-inside space-y-1 mt-2">
-                <li>{t('terms.section2.item1', 'Access to 401 Kali Linux security tools via web interface')}</li>
+                <li>{t('terms.section2.item1', 'Access to 396 Kali Linux security tools via web interface')}</li>
                 <li>{t('terms.section2.item2', 'Scan scheduling and execution capabilities')}</li>
                 <li>{t('terms.section2.item3', 'Report generation and vulnerability tracking')}</li>
                 <li>{t('terms.section2.item4', 'Remote agent management for distributed testing')}</li>

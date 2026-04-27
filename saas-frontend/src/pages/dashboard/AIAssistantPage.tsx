@@ -25,7 +25,7 @@ const WELCOME_MESSAGE: ChatMessage = {
 
 I can help you with:
 - 💰 **Plan pricing** and comparisons
-- 🔍 **What we test** — 401 security tests explained
+- 🔍 **What we test** — 396 security tests explained
 - 🛡️ **Scan results** — I'll explain findings in plain language
 - 🔧 **Fix guidance** — Step-by-step remediation instructions
 - 📞 **Support** — Connect with our team

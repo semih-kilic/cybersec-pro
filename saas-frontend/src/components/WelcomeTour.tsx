@@ -10,7 +10,7 @@ interface WelcomeTourProps {
 const tourSteps = [
   {
     title: "Welcome to CyberSec Pro! 🎉",
-    description: "401 Kali Linux security tools at your fingertips. Let's get you started in 4 quick steps.",
+    description: "396 Kali Linux security tools at your fingertips. Let's get you started in 4 quick steps.",
     image: "🛡️",
     highlight: null,
     shortcut: null
@@ -116,7 +116,7 @@ export default function WelcomeTour({ isOpen, onClose, planType }: WelcomeTourPr
               <p className="text-gray-400 text-sm">
                 You're on the <span className="text-cyan-400 font-semibold">{planType}</span> plan with access to{' '}
                 <span className="text-cyan-400 font-semibold">
-                  {planType === 'enterprise' ? '401' : planType === 'professional' ? '200' : planType === 'starter' ? '50' : '3'}
+                  {planType === 'enterprise' ? '396' : planType === 'professional' ? '200' : planType === 'starter' ? '50' : '3'}
                 </span>{' '}
                 security tools.
               </p>
