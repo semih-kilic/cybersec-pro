@@ -1,7 +1,7 @@
 {
   "meta": {
     "title": "CyberSec Pro — Plataforma de Seguridad Ofensiva",
-    "description": "Plataforma de seguridad ofensiva en la nube con 401 herramientas de Kali Linux. Escaneo automatizado de vulnerabilidades, pruebas de penetración y evaluaciones de seguridad."
+    "description": "Plataforma de seguridad ofensiva en la nube con 396 herramientas de Kali Linux. Escaneo automatizado de vulnerabilidades, pruebas de penetración y evaluaciones de seguridad."
   },
   "nav": {
     "features": "Funciones",
@@ -22,12 +22,12 @@
   "hero": {
     "badge": "Seguridad Ofensiva en la Nube",
     "title": "Plataforma de\nSeguridad Ofensiva",
-    "titleHighlight": "401 Herramientas.",
-    "subtitle": "Ejecute 401 herramientas de Kali Linux en 61 categorías desde su navegador. Sin configuración. Sin infraestructura. Solo resultados.",
+    "titleHighlight": "396 Herramientas.",
+    "subtitle": "Ejecute 396 herramientas de Kali Linux en 61 categorías desde su navegador. Sin configuración. Sin infraestructura. Solo resultados.",
     "cta": "Iniciar escaneo gratuito",
     "ctaSecondary": "Ver herramientas",
     "stats": {
-      "tools": "401",
+      "tools": "396",
       "toolsLabel": "Herramientas de seguridad",
       "categories": "61",
       "categoriesLabel": "Categorías",
@@ -47,7 +47,7 @@
         "description": "Configure y ejecute escaneos de seguridad complejos con unos pocos clics. Programe evaluaciones recurrentes."
       },
       "tools": {
-        "title": "401 herramientas Kali",
+        "title": "396 herramientas Kali",
         "description": "Acceda al arsenal completo de Kali Linux — desde Nmap hasta Metasploit, de Burp Suite a SQLMap."
       },
       "reports": {
@@ -150,7 +150,7 @@
   },
   "tools": {
     "badge": "Arsenal de seguridad",
-    "title": "401 herramientas. 61 categorías.",
+    "title": "396 herramientas. 61 categorías.",
     "subtitle": "Cada herramienta de la distribución Kali Linux, lista para ejecutar en su navegador.",
     "searchPlaceholder": "Buscar herramientas...",
     "allCategories": "Todas",
@@ -175,7 +175,7 @@
       },
       "q3": {
         "q": "¿Cuántas herramientas hay disponibles?",
-        "a": "401 herramientas Kali Linux en 61 categorías, incluyendo Nmap, Metasploit, Burp Suite y SQLMap."
+        "a": "396 herramientas Kali Linux en 61 categorías, incluyendo Nmap, Metasploit, Burp Suite y SQLMap."
       },
       "q4": {
         "q": "¿Qué tipos de escaneo hay?",
@@ -221,7 +221,7 @@
     "button": "Iniciar escaneo gratuito"
   },
   "footer": {
-    "description": "Plataforma de seguridad ofensiva en la nube. 401 herramientas Kali Linux en 61 categorías.",
+    "description": "Plataforma de seguridad ofensiva en la nube. 396 herramientas Kali Linux en 61 categorías.",
     "platform": "Plataforma",
     "company": "Empresa",
     "legal": "Legal",

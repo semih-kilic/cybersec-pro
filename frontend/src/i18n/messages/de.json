@@ -1,7 +1,7 @@
 {
   "meta": {
     "title": "CyberSec Pro — Offensive-Security-Plattform",
-    "description": "Cloud-basierte Offensive-Security-Plattform mit 401 Kali-Linux-Tools. Automatisiertes Schwachstellen-Scanning, Penetrationstests und Sicherheitsbewertungen."
+    "description": "Cloud-basierte Offensive-Security-Plattform mit 396 Kali-Linux-Tools. Automatisiertes Schwachstellen-Scanning, Penetrationstests und Sicherheitsbewertungen."
   },
   "nav": {
     "features": "Funktionen",
@@ -22,12 +22,12 @@
   "hero": {
     "badge": "Cloud-basierte Offensive Security",
     "title": "Offensive-Security-\nPlattform",
-    "titleHighlight": "401 Tools.",
-    "subtitle": "Führen Sie 401 Kali-Linux-Tools in 61 Kategorien direkt im Browser aus. Keine Einrichtung. Keine Infrastruktur. Nur Ergebnisse.",
+    "titleHighlight": "396 Tools.",
+    "subtitle": "Führen Sie 396 Kali-Linux-Tools in 61 Kategorien direkt im Browser aus. Keine Einrichtung. Keine Infrastruktur. Nur Ergebnisse.",
     "cta": "Kostenlosen Scan starten",
     "ctaSecondary": "Sicherheitstools ansehen",
     "stats": {
-      "tools": "401",
+      "tools": "396",
       "toolsLabel": "Sicherheitstools",
       "categories": "61",
       "categoriesLabel": "Kategorien",
@@ -47,7 +47,7 @@
         "description": "Konfigurieren und starten Sie komplexe Sicherheitsscans mit wenigen Klicks. Planen Sie wiederkehrende Bewertungen."
       },
       "tools": {
-        "title": "401 Kali-Tools",
+        "title": "396 Kali-Tools",
         "description": "Zugriff auf das komplette Kali-Linux-Arsenal — von Nmap bis Metasploit, Burp Suite bis SQLMap."
       },
       "reports": {
@@ -150,7 +150,7 @@
   },
   "tools": {
     "badge": "Sicherheits-Arsenal",
-    "title": "401 Tools. 61 Kategorien.",
+    "title": "396 Tools. 61 Kategorien.",
     "subtitle": "Jedes Tool der Kali-Linux-Distribution, direkt im Browser einsatzbereit.",
     "searchPlaceholder": "Tools suchen...",
     "allCategories": "Alle",
@@ -175,7 +175,7 @@
       },
       "q3": {
         "q": "Wie viele Tools sind verfügbar?",
-        "a": "CyberSec Pro bietet 401 Kali Linux Tools in 61 Kategorien, darunter Nmap, Metasploit, Burp Suite und SQLMap."
+        "a": "CyberSec Pro bietet 396 Kali Linux Tools in 61 Kategorien, darunter Nmap, Metasploit, Burp Suite und SQLMap."
       },
       "q4": {
         "q": "Welche Scan-Typen gibt es?",
@@ -221,7 +221,7 @@
     "button": "Kostenlosen Scan starten"
   },
   "footer": {
-    "description": "Cloud-basierte Offensive-Security-Plattform. 401 Kali-Linux-Tools in 61 Kategorien.",
+    "description": "Cloud-basierte Offensive-Security-Plattform. 396 Kali-Linux-Tools in 61 Kategorien.",
     "platform": "Plattform",
     "company": "Unternehmen",
     "legal": "Rechtliches",

@@ -1,7 +1,7 @@
 {
   "meta": {
     "title": "CyberSec Pro — منصة الأمن الهجومي",
-    "description": "منصة أمن هجومي سحابية مع 401 أداة من Kali Linux. فحص تلقائي للثغرات واختبارات اختراق وتقييمات أمنية."
+    "description": "منصة أمن هجومي سحابية مع 396 أداة من Kali Linux. فحص تلقائي للثغرات واختبارات اختراق وتقييمات أمنية."
   },
   "nav": {
     "features": "الميزات",
@@ -22,12 +22,12 @@
   "hero": {
     "badge": "أمن هجومي سحابي",
     "title": "منصة\nالأمن الهجومي",
-    "titleHighlight": "401 أداة.",
-    "subtitle": "شغّل 401 أداة من Kali Linux في 61 فئة مباشرة من متصفحك. بدون إعداد. بدون بنية تحتية. فقط نتائج.",
+    "titleHighlight": "396 أداة.",
+    "subtitle": "شغّل 396 أداة من Kali Linux في 61 فئة مباشرة من متصفحك. بدون إعداد. بدون بنية تحتية. فقط نتائج.",
     "cta": "ابدأ فحصاً مجانياً",
     "ctaSecondary": "عرض أدوات الأمان",
     "stats": {
-      "tools": "401",
+      "tools": "396",
       "toolsLabel": "أدوات أمنية",
       "categories": "61",
       "categoriesLabel": "فئة",
@@ -47,7 +47,7 @@
         "description": "قم بتكوين وتشغيل عمليات فحص أمنية معقدة ببضع نقرات. جدولة التقييمات المتكررة."
       },
       "tools": {
-        "title": "401 أداة Kali",
+        "title": "396 أداة Kali",
         "description": "الوصول إلى ترسانة Kali Linux الكاملة — من Nmap إلى Metasploit، من Burp Suite إلى SQLMap."
       },
       "reports": {
@@ -150,7 +150,7 @@
   },
   "tools": {
     "badge": "ترسانة الأمان",
-    "title": "401 أداة. 61 فئة.",
+    "title": "396 أداة. 61 فئة.",
     "subtitle": "كل أداة من توزيعة Kali Linux، جاهزة للتشغيل في متصفحك.",
     "searchPlaceholder": "البحث عن أدوات...",
     "allCategories": "الكل",
@@ -175,7 +175,7 @@
       },
       "q3": {
         "q": "كم عدد الأدوات المتاحة؟",
-        "a": "401 أداة Kali Linux في 61 فئة، بما في ذلك Nmap وMetasploit وBurp Suite وSQLMap."
+        "a": "396 أداة Kali Linux في 61 فئة، بما في ذلك Nmap وMetasploit وBurp Suite وSQLMap."
       },
       "q4": {
         "q": "ما أنواع الفحص المتاحة؟",
@@ -221,7 +221,7 @@
     "button": "ابدأ فحصاً مجانياً"
   },
   "footer": {
-    "description": "منصة أمن هجومي سحابية. 401 أداة Kali Linux في 61 فئة.",
+    "description": "منصة أمن هجومي سحابية. 396 أداة Kali Linux في 61 فئة.",
     "platform": "المنصة",
     "company": "الشركة",
     "legal": "القانونية",

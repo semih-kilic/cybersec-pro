@@ -158,7 +158,7 @@
             if (data) options.body = JSON.stringify(data);
             
             const response = await fetch(API_URL + endpoint, options);
-            if (response.status === 401) {
+            if (response.status === 396) {
                 logout();
                 alert('Invalid token');
                 return null;

@@ -84,11 +84,11 @@
     "signOut": "Abmelden"
   },
   "landing": {
-    "badge": "401 Professionelle Sicherheitstools • DSGVO-konform 🇪🇺",
+    "badge": "396 Professionelle Sicherheitstools • DSGVO-konform 🇪🇺",
     "headline": "Die fortschrittlichste Kali Linux Plattform in Europa",
     "headlinePart1": "Die fortschrittlichste",
     "headlinePart2": "Plattform in Europa",
-    "subheadline": "401 Penetrationstest-Tools in Ihrem Browser. Keine Installation erforderlich. Enterprise-Sicherheitsplattform für europäische Compliance-Standards.",
+    "subheadline": "396 Penetrationstest-Tools in Ihrem Browser. Keine Installation erforderlich. Enterprise-Sicherheitsplattform für europäische Compliance-Standards.",
     "startTrial": "Kostenlos testen",
     "startTrial14": "Kostenlos testen - 14 Tage",
     "startTrialNow": "Jetzt kostenlos testen",
@@ -289,7 +289,7 @@
   },
   "tools": {
     "title": "Sicherheitstools",
-    "subtitle": "401 professionelle Penetrationstest-Tools",
+    "subtitle": "396 professionelle Penetrationstest-Tools",
     "searchPlaceholder": "Tools suchen...",
     "allCategories": "Alle Kategorien",
     "runTool": "Tool ausführen",
@@ -905,7 +905,7 @@
     "section2Title": "2. Dienstbeschreibung",
     "section2Body": "CyberSec Pro bietet eine cloudbasierte Penetration-Testing-Plattform mit Zugang zu Sicherheitstools für autorisierte Testzwecke. Der Dienst umfasst:",
     "section2": {
-      "item1": "Zugriff auf 401 Kali-Linux-Sicherheitstools über eine Weboberfläche",
+      "item1": "Zugriff auf 396 Kali-Linux-Sicherheitstools über eine Weboberfläche",
       "item2": "Planung und Ausführung von Scans",
       "item3": "Berichterstellung und Nachverfolgung von Schwachstellen",
       "item4": "Remote-Agentenverwaltung für verteilte Tests"
