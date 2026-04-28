@@ -1293,8 +1293,14 @@ pub async fn delete_scan(
     };
 
     match result {
-        Ok(r) if r.rows_affected() > 0 => Json(json!({"message": "Scan deleted"})).into_response(),
-        _ => Json(json!({"error": "Scan not found"})).into_response(),
+        Ok(r) if r.rows_affected() > 0 =>
+            (StatusCode::OK, Json(json!({"message": "Scan deleted"}))).into_response(),
+        Ok(_) =>
+            (StatusCode::NOT_FOUND, Json(json!({"error": "Scan not found or access denied"}))).into_response(),
+        Err(e) => {
+            tracing::error!("delete_scan DB error: {:?}", e);
+            (StatusCode::INTERNAL_SERVER_ERROR, Json(json!({"error": "Database error"}))).into_response()
+        }
     }
 }
 

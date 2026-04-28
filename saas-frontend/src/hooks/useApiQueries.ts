@@ -517,9 +517,33 @@ export function useDeleteScan() {
   return useMutation({
     mutationFn: (scanId: string) =>
       authFetch(`/api/v1/scans/${scanId}`, token, { method: 'DELETE' }),
-    onSuccess: () => {
-      qc.invalidateQueries({ queryKey: queryKeys.scans.all });
-      qc.invalidateQueries({ queryKey: queryKeys.dashboard.all });
+    onMutate: async (scanId: string) => {
+      // Cancel in-flight queries to prevent overwriting optimistic update
+      await qc.cancelQueries({ queryKey: queryKeys.scans.all });
+      // Snapshot current data for rollback
+      const previousScans = qc.getQueriesData({ queryKey: queryKeys.scans.all });
+      // Optimistically remove scan from all cached scan lists
+      qc.setQueriesData({ queryKey: queryKeys.scans.all }, (old: unknown) => {
+        if (!old || typeof old !== 'object') return old;
+        const data = old as Record<string, unknown>;
+        if (Array.isArray(data.scans)) {
+          return { ...data, scans: data.scans.filter((s: { id: string }) => s.id !== scanId) };
+        }
+        return old;
+      });
+      return { previousScans };
+    },
+    onError: (_err, _scanId, context) => {
+      // Roll back optimistic update on failure
+      if (context?.previousScans) {
+        for (const [queryKey, data] of context.previousScans) {
+          qc.setQueryData(queryKey, data);
+        }
+      }
+    },
+    onSettled: async () => {
+      await qc.invalidateQueries({ queryKey: queryKeys.scans.all });
+      await qc.invalidateQueries({ queryKey: queryKeys.dashboard.all });
     },
   });
 }
