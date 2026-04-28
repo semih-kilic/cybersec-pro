@@ -1275,22 +1275,49 @@ pub async fn delete_scan(
     auth: AuthUser,
     Path(scan_id): Path<String>,
 ) -> impl IntoResponse {
-    let result = match &auth.org_id {
-        Some(org_id) => sqlx::query(
-            "DELETE FROM scans WHERE id = $1 AND organization_id = $2"
+    // First verify the scan belongs to this user/org (authorization check)
+    let owned: Option<(String,)> = match &auth.org_id {
+        Some(org_id) => sqlx::query_as(
+            "SELECT id FROM scans WHERE id = $1 AND organization_id = $2"
         )
         .bind(&scan_id)
         .bind(org_id)
-        .execute(&state.db)
-        .await,
-        None => sqlx::query(
-            "DELETE FROM scans WHERE id = $1 AND user_id = $2"
+        .fetch_optional(&state.db)
+        .await
+        .unwrap_or(None),
+        None => sqlx::query_as(
+            "SELECT id FROM scans WHERE id = $1 AND user_id = $2"
         )
         .bind(&scan_id)
         .bind(&auth.user_id)
-        .execute(&state.db)
-        .await,
+        .fetch_optional(&state.db)
+        .await
+        .unwrap_or(None),
     };
+
+    if owned.is_none() {
+        return (StatusCode::NOT_FOUND, Json(json!({"error": "Scan not found or access denied"}))).into_response();
+    }
+
+    // Use a transaction to cascade-delete dependent records first
+    let result = async {
+        let mut tx = state.db.begin().await?;
+
+        // Delete usage_tracking records that reference this scan
+        sqlx::query("DELETE FROM usage_tracking WHERE scan_id = $1")
+            .bind(&scan_id)
+            .execute(&mut *tx)
+            .await?;
+
+        // Delete the scan itself
+        let r = sqlx::query("DELETE FROM scans WHERE id = $1")
+            .bind(&scan_id)
+            .execute(&mut *tx)
+            .await?;
+
+        tx.commit().await?;
+        Ok::<_, sqlx::Error>(r)
+    }.await;
 
     match result {
         Ok(r) if r.rows_affected() > 0 =>
