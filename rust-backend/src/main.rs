@@ -344,6 +344,8 @@ fn build_router(state: Arc<AppState>) -> Router {
         // ── Settings: API Keys ────────────────────────────────
         .route("/api/v1/settings/api-keys", get(settings_handlers::list_api_keys).post(settings_handlers::create_api_key))
         .route("/api/v1/settings/api-keys/:key_id", delete(settings_handlers::delete_api_key))
+        .route("/api/v1/settings/api-keys/:key_id/rotate", post(settings_handlers::rotate_api_key))
+        .route("/api/v1/settings/api-keys/stats", get(settings_handlers::api_key_stats))
         // ── Settings: Team Management ─────────────────────────
         .route("/api/v1/settings/team", get(settings_handlers::list_team_members))
         .route("/api/v1/settings/team/invite", post(settings_handlers::invite_team_member))
@@ -459,6 +461,20 @@ fn build_router(state: Arc<AppState>) -> Router {
         .route("/api/v1/integrations/:id", put(stub_handlers::update_integration).delete(stub_handlers::delete_integration))
         .route("/api/v1/integrations/:id/toggle", post(stub_handlers::toggle_integration))
         .route("/api/v1/integrations/:id/test", post(stub_handlers::test_integration))
+        // ── Phase 1: Security (Login History, IP Whitelist, Audit) ────────
+        .route("/api/v1/security/login-history", get(security_handlers::get_login_history))
+        .route("/api/v1/security/sessions", get(security_handlers::get_active_sessions))
+        .route("/api/v1/security/audit-logs", get(security_handlers::get_audit_logs))
+        .route("/api/v1/security/ip-whitelist", get(security_handlers::list_ip_whitelist).post(security_handlers::add_ip_whitelist))
+        .route("/api/v1/security/ip-whitelist/:ip_id", delete(security_handlers::remove_ip_whitelist))
+        // ── Phase 3: Scan Templates ────────────────────────────────────────
+        .route("/api/v1/scan-templates", get(security_handlers::list_scan_templates).post(security_handlers::create_scan_template))
+        .route("/api/v1/scan-templates/:template_id", delete(security_handlers::delete_scan_template))
+        // ── Phase 5: Analytics Trend ──────────────────────────────────────
+        .route("/api/v1/analytics/trend", get(security_handlers::get_analytics_trend))
+        // ── Phase 6: Strix AI Jobs ────────────────────────────────────────
+        .route("/api/v1/strix/jobs", get(security_handlers::list_strix_jobs).post(security_handlers::create_strix_job))
+        .route("/api/v1/strix/jobs/:job_id", get(security_handlers::get_strix_job))
         .merge(swagger_ui)
         .with_state(state)
 }

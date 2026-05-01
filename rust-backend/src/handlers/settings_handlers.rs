@@ -289,6 +289,97 @@ pub async fn delete_api_key(
     }
 }
 
+// ── API key rotate ─────────────────────────────────────────
+pub async fn rotate_api_key(
+    user: AuthUser,
+    State(state): State<Arc<AppState>>,
+    Path(key_id): Path<String>,
+) -> impl IntoResponse {
+    let org_id = match &user.org_id {
+        Some(id) => id.clone(),
+        None => return (StatusCode::FORBIDDEN, Json(json!({"error": "Organization required"}))).into_response(),
+    };
+
+    // Verify ownership
+    let existing: Option<(String, String)> = sqlx::query_as(
+        "SELECT id, name FROM api_keys WHERE id = $1 AND user_id = $2 AND organization_id = $3 AND is_active = TRUE"
+    )
+    .bind(&key_id).bind(&user.user_id).bind(&org_id)
+    .fetch_optional(&state.db).await.unwrap_or(None);
+
+    let (_, name) = match existing {
+        Some(r) => r,
+        None => return (StatusCode::NOT_FOUND, Json(json!({"error": "API key not found"}))).into_response(),
+    };
+
+    // Generate new key
+    let (raw_key, key_preview, key_hash) = {
+        use rand::Rng;
+        let mut rng = rand::thread_rng();
+        let key_bytes: Vec<u8> = (0..32).map(|_| rng.gen::<u8>()).collect();
+        let raw = format!("csp_{}", hex::encode(&key_bytes));
+        let preview = raw[raw.len()-8..].to_string();
+        let salt = argon2::password_hash::SaltString::generate(&mut argon2::password_hash::rand_core::OsRng);
+        let hash = match argon2::PasswordHasher::hash_password(
+            &argon2::Argon2::default(), raw.as_bytes(), &salt
+        ) {
+            Ok(h) => h.to_string(),
+            Err(_) => return (StatusCode::INTERNAL_SERVER_ERROR, Json(json!({"error": "Key generation failed"}))).into_response(),
+        };
+        (raw, preview, hash)
+    };
+
+    let result = sqlx::query(
+        "UPDATE api_keys SET key_hash = $1, key_preview = $2, rotated_at = NOW(), usage_count = 0 WHERE id = $3"
+    )
+    .bind(&key_hash).bind(&key_preview).bind(&key_id)
+    .execute(&state.db).await;
+
+    match result {
+        Ok(_) => Json(json!({
+            "message": "API key rotated successfully",
+            "api_key": {
+                "id": key_id,
+                "name": name,
+                "key": raw_key,
+                "key_preview": key_preview,
+                "rotated_at": chrono::Utc::now().to_rfc3339()
+            }
+        })).into_response(),
+        Err(e) => (StatusCode::INTERNAL_SERVER_ERROR, Json(json!({"error": format!("Rotate failed: {}", e)}))).into_response(),
+    }
+}
+
+// ── API key stats ──────────────────────────────────────────
+pub async fn api_key_stats(
+    user: AuthUser,
+    State(state): State<Arc<AppState>>,
+) -> impl IntoResponse {
+    let org_id = match &user.org_id {
+        Some(id) => id.clone(),
+        None => return (StatusCode::FORBIDDEN, Json(json!({"error": "Organization required"}))).into_response(),
+    };
+
+    let rows: Vec<(String, String, i64, Option<String>, Option<String>)> = sqlx::query_as(
+        "SELECT id, name, COALESCE(usage_count,0), CAST(last_used_at AS TEXT), CAST(rotated_at AS TEXT)
+         FROM api_keys WHERE organization_id = $1 AND user_id = $2 ORDER BY usage_count DESC"
+    )
+    .bind(&org_id).bind(&user.user_id)
+    .fetch_all(&state.db).await.unwrap_or_default();
+
+    let stats: Vec<serde_json::Value> = rows.iter().map(|(id, name, count, last_used, rotated)| {
+        json!({
+            "id": id,
+            "name": name,
+            "usage_count": count,
+            "last_used_at": last_used,
+            "rotated_at": rotated
+        })
+    }).collect();
+
+    Json(json!({"api_key_stats": stats, "total_keys": stats.len()})).into_response()
+}
+
 // ══════════════════════════════════════════════════════════
 // TEAM MANAGEMENT
 // ══════════════════════════════════════════════════════════

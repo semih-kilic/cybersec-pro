@@ -29,6 +29,13 @@ pub struct User {
     pub mfa_secret: Option<String>,
     pub mfa_backup_codes: Option<JsonValue>,
     pub mfa_enabled_at: Option<NaiveDateTime>,
+    // Security / lockout (Phase 1)
+    pub failed_login_count: Option<i32>,
+    pub locked_until: Option<NaiveDateTime>,
+    pub last_failed_login: Option<NaiveDateTime>,
+    pub mfa_required: Option<bool>,
+    // RBAC (Phase 1)
+    pub permissions: Option<JsonValue>,
 }
 
 #[derive(Debug, Serialize)]
@@ -104,6 +111,11 @@ mod tests {
             mfa_secret: None,
             mfa_backup_codes: None,
             mfa_enabled_at: None,
+            failed_login_count: None,
+            locked_until: None,
+            last_failed_login: None,
+            mfa_required: None,
+            permissions: None,
         }
     }
 

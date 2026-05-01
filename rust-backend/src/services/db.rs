@@ -381,4 +381,103 @@ r#"CREATE TABLE IF NOT EXISTS integrations (
 // Add role column if missing (for RBAC expansion)
 "ALTER TABLE users ADD COLUMN IF NOT EXISTS role TEXT DEFAULT 'user'",
 "ALTER TABLE users ADD COLUMN IF NOT EXISTS permissions JSONB DEFAULT '[]'",
+
+// ── Phase 1: Login History ──────────────────────────────────────────────────
+r#"CREATE TABLE IF NOT EXISTS login_history (
+    id TEXT PRIMARY KEY,
+    user_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    ip_address TEXT,
+    user_agent TEXT,
+    country TEXT,
+    city TEXT,
+    success BOOLEAN NOT NULL DEFAULT TRUE,
+    failure_reason TEXT,
+    mfa_used BOOLEAN DEFAULT FALSE,
+    session_id TEXT,
+    created_at TIMESTAMP DEFAULT NOW()
+)"#,
+"CREATE INDEX IF NOT EXISTS idx_login_history_user_id ON login_history(user_id)",
+"CREATE INDEX IF NOT EXISTS idx_login_history_created_at ON login_history(created_at)",
+
+// ── Phase 1: IP Whitelist ───────────────────────────────────────────────────
+r#"CREATE TABLE IF NOT EXISTS ip_whitelist (
+    id TEXT PRIMARY KEY,
+    organization_id TEXT NOT NULL REFERENCES organizations(id) ON DELETE CASCADE,
+    user_id TEXT REFERENCES users(id) ON DELETE CASCADE,
+    ip_cidr TEXT NOT NULL,
+    label TEXT,
+    is_active BOOLEAN DEFAULT TRUE,
+    created_by TEXT REFERENCES users(id),
+    created_at TIMESTAMP DEFAULT NOW()
+)"#,
+"CREATE INDEX IF NOT EXISTS idx_ip_whitelist_org ON ip_whitelist(organization_id)",
+
+// ── Phase 1: API Key extra columns ─────────────────────────────────────────
+"ALTER TABLE api_keys ADD COLUMN IF NOT EXISTS usage_count BIGINT DEFAULT 0",
+"ALTER TABLE api_keys ADD COLUMN IF NOT EXISTS rate_limit_per_hour INTEGER DEFAULT 1000",
+"ALTER TABLE api_keys ADD COLUMN IF NOT EXISTS allowed_ips TEXT[]",
+"ALTER TABLE api_keys ADD COLUMN IF NOT EXISTS description TEXT",
+"ALTER TABLE api_keys ADD COLUMN IF NOT EXISTS rotated_at TIMESTAMP",
+
+// ── Phase 1: Suspicious login flags on users ───────────────────────────────
+"ALTER TABLE users ADD COLUMN IF NOT EXISTS failed_login_count INTEGER DEFAULT 0",
+"ALTER TABLE users ADD COLUMN IF NOT EXISTS locked_until TIMESTAMP",
+"ALTER TABLE users ADD COLUMN IF NOT EXISTS last_failed_login TIMESTAMP",
+"ALTER TABLE users ADD COLUMN IF NOT EXISTS mfa_required BOOLEAN DEFAULT FALSE",
+
+// ── Phase 3: Scan templates ────────────────────────────────────────────────
+r#"CREATE TABLE IF NOT EXISTS scan_templates (
+    id TEXT PRIMARY KEY,
+    organization_id TEXT REFERENCES organizations(id) ON DELETE CASCADE,
+    created_by TEXT REFERENCES users(id),
+    name TEXT NOT NULL,
+    description TEXT,
+    tool_id TEXT REFERENCES tools(id),
+    parameters JSONB DEFAULT '{}',
+    is_public BOOLEAN DEFAULT FALSE,
+    use_count INTEGER DEFAULT 0,
+    created_at TIMESTAMP DEFAULT NOW(),
+    updated_at TIMESTAMP DEFAULT NOW()
+)"#,
+"CREATE INDEX IF NOT EXISTS idx_scan_templates_org ON scan_templates(organization_id)",
+
+// ── Phase 5: Analytics snapshots ──────────────────────────────────────────
+r#"CREATE TABLE IF NOT EXISTS analytics_snapshots (
+    id TEXT PRIMARY KEY,
+    organization_id TEXT NOT NULL REFERENCES organizations(id) ON DELETE CASCADE,
+    snapshot_date DATE NOT NULL,
+    total_scans INTEGER DEFAULT 0,
+    completed_scans INTEGER DEFAULT 0,
+    failed_scans INTEGER DEFAULT 0,
+    critical_findings INTEGER DEFAULT 0,
+    high_findings INTEGER DEFAULT 0,
+    medium_findings INTEGER DEFAULT 0,
+    low_findings INTEGER DEFAULT 0,
+    risk_score DOUBLE PRECISION DEFAULT 0,
+    tools_used JSONB DEFAULT '[]',
+    created_at TIMESTAMP DEFAULT NOW(),
+    UNIQUE(organization_id, snapshot_date)
+)"#,
+"CREATE INDEX IF NOT EXISTS idx_analytics_snapshots_org_date ON analytics_snapshots(organization_id, snapshot_date DESC)",
+
+// ── Phase 6: Strix AI Jobs ────────────────────────────────────────────────
+r#"CREATE TABLE IF NOT EXISTS strix_jobs (
+    id TEXT PRIMARY KEY,
+    organization_id TEXT NOT NULL REFERENCES organizations(id) ON DELETE CASCADE,
+    user_id TEXT NOT NULL REFERENCES users(id),
+    target TEXT NOT NULL,
+    target_type TEXT DEFAULT 'url',
+    job_type TEXT DEFAULT 'autonomous_pentest',
+    status TEXT DEFAULT 'queued',
+    agents_config JSONB DEFAULT '{}',
+    results JSONB,
+    findings_count INTEGER DEFAULT 0,
+    poc_verified_count INTEGER DEFAULT 0,
+    auto_fix_prs JSONB DEFAULT '[]',
+    started_at TIMESTAMP,
+    completed_at TIMESTAMP,
+    created_at TIMESTAMP DEFAULT NOW()
+)"#,
+"CREATE INDEX IF NOT EXISTS idx_strix_jobs_org ON strix_jobs(organization_id)",
+"CREATE INDEX IF NOT EXISTS idx_strix_jobs_status ON strix_jobs(status)",
 ];

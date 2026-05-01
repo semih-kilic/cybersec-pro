@@ -21,6 +21,39 @@ use crate::services::auth::{
 use crate::AppState;
 use crate::services::email::{EmailConfig, send_welcome_email};
 
+// ── Helper: record login history ──────────────────────────
+
+async fn record_login_history(
+    pool: &sqlx::PgPool,
+    user_id: &str,
+    headers: &HeaderMap,
+    success: bool,
+    failure_reason: Option<&str>,
+) {
+    let id = Uuid::new_v4().to_string();
+    let ip = headers
+        .get("x-forwarded-for")
+        .or_else(|| headers.get("x-real-ip"))
+        .and_then(|v| v.to_str().ok())
+        .map(|s| s.split(',').next().unwrap_or(s).trim().to_string());
+    let ua = headers
+        .get("user-agent")
+        .and_then(|v| v.to_str().ok())
+        .map(|s| s.chars().take(500).collect::<String>());
+    let _ = sqlx::query(
+        "INSERT INTO login_history (id, user_id, ip_address, user_agent, success, failure_reason)
+         VALUES ($1, $2, $3, $4, $5, $6)"
+    )
+    .bind(&id)
+    .bind(user_id)
+    .bind(&ip)
+    .bind(&ua)
+    .bind(success)
+    .bind(failure_reason)
+    .execute(pool)
+    .await;
+}
+
 // ── Pure helpers (testable without DB) ────────────────────
 
 /// Basic email format validation (RFC 5322 subset).
@@ -204,6 +237,15 @@ pub async fn login(
         }
     };
 
+    // Check account lockout (5 failed attempts → 15 min lockout)
+    if let Some(locked_until) = user.locked_until {
+        let now = chrono::Utc::now().naive_utc();
+        if locked_until > now {
+            record_login_history(&state.db, &user.id, &headers, false, Some("Account locked")).await;
+            return (StatusCode::TOO_MANY_REQUESTS, Json(json!({"error": "Account temporarily locked. Try again later."}))).into_response();
+        }
+    }
+
     // Verify password
     let pw_hash = match &user.password_hash {
         Some(h) => h,
@@ -211,6 +253,18 @@ pub async fn login(
     };
 
     if !verify_password(&body.password, pw_hash) {
+        // Increment failed login counter, lock after 5 failures
+        let new_count = user.failed_login_count.unwrap_or(0) + 1;
+        if new_count >= 5 {
+            let _ = sqlx::query(
+                "UPDATE users SET failed_login_count = $1, last_failed_login = NOW(), locked_until = NOW() + INTERVAL '15 minutes' WHERE id = $2"
+            ).bind(new_count).bind(&user.id).execute(&state.db).await;
+        } else {
+            let _ = sqlx::query(
+                "UPDATE users SET failed_login_count = $1, last_failed_login = NOW() WHERE id = $2"
+            ).bind(new_count).bind(&user.id).execute(&state.db).await;
+        }
+        record_login_history(&state.db, &user.id, &headers, false, Some("Invalid password")).await;
         log_audit(&state.db, "login_failed", "auth", "warning", Some(&user.id), user.organization_id.as_deref(), None, Some("user"), Some(&user.id), "failure", Some(&headers)).await;
         return (StatusCode::UNAUTHORIZED, Json(json!({"error": "Invalid email or password"}))).into_response();
     }
@@ -251,8 +305,8 @@ pub async fn login(
         }
     }
 
-    // Update last_login
-    let _ = sqlx::query("UPDATE users SET last_login = CURRENT_TIMESTAMP WHERE id = $1")
+    // Update last_login + reset failed counter
+    let _ = sqlx::query("UPDATE users SET last_login = CURRENT_TIMESTAMP, failed_login_count = 0, locked_until = NULL WHERE id = $1")
         .bind(&user.id)
         .execute(&state.db)
         .await;
@@ -260,6 +314,8 @@ pub async fn login(
     let org_id = user.organization_id.as_deref();
     let role = user.role.as_deref().unwrap_or("user");
 
+    // Record successful login history
+    record_login_history(&state.db, &user.id, &headers, true, None).await;
     log_audit(&state.db, "login", "auth", "info", Some(&user.id), org_id, None, Some("user"), Some(&user.id), "success", Some(&headers)).await;
 
     let access_token = create_access_token(&state.jwt_secret, &user.id, org_id, role).unwrap_or_default();
