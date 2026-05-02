@@ -1,9 +1,23 @@
 import { useState, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
+import { useSearchParams } from 'react-router-dom';
+import {
+  User,
+  ShieldCheck,
+  Bell,
+  Users,
+  Key,
+  Plug,
+  Building2,
+  CreditCard,
+  Crown,
+  Settings as SettingsIcon,
+  CheckCircle2,
+  XCircle,
+} from 'lucide-react';
+import type { ComponentType, SVGProps } from 'react';
 import { useAuth } from '../../hooks/useAuth';
 import { useDocumentTitle } from '../../hooks/useUtilities';
-import { useSearchParams } from 'react-router-dom';
-import { PageTransition } from '../../components/ui';
 import {
   ProfileTab,
   SecurityTab,
@@ -16,23 +30,27 @@ import {
   PurpleTeamProfileTab,
 } from './settings';
 import type { SettingsMessage } from './settings';
+import { PageHeader } from '../../components/vos';
+
+type IconType = ComponentType<SVGProps<SVGSVGElement>>;
 
 const BASE_TABS = [
-  { id: 'profile', labelKey: 'settings.tabs.profile', fallback: 'Profile', icon: '👤' },
-  { id: 'security', labelKey: 'settings.tabs.security', fallback: 'Security', icon: '🔐' },
-  { id: 'notifications', labelKey: 'settings.tabs.notifications', fallback: 'Notifications', icon: '🔔' },
-  { id: 'team', labelKey: 'settings.tabs.team', fallback: 'Team', icon: '👥' },
-  { id: 'api', labelKey: 'settings.tabs.api', fallback: 'API Keys', icon: '🔑' },
-  { id: 'integrations', labelKey: 'settings.tabs.integrations', fallback: 'Integrations', icon: '🔗' },
-  { id: 'sso', labelKey: 'settings.tabs.sso', fallback: 'SSO', icon: '🏢' },
-  { id: 'billing', labelKey: 'settings.tabs.billing', fallback: 'Billing', icon: '💳' },
+  { id: 'profile',       labelKey: 'settings.tabs.profile',       fallback: 'Profile',        icon: User,        description: 'Personal details' },
+  { id: 'security',      labelKey: 'settings.tabs.security',      fallback: 'Security',       icon: ShieldCheck, description: 'Authentication & MFA' },
+  { id: 'notifications', labelKey: 'settings.tabs.notifications', fallback: 'Notifications',  icon: Bell,        description: 'Email & alerts' },
+  { id: 'team',          labelKey: 'settings.tabs.team',          fallback: 'Team',           icon: Users,       description: 'Members & roles' },
+  { id: 'api',           labelKey: 'settings.tabs.api',           fallback: 'API keys',       icon: Key,         description: 'Programmatic access' },
+  { id: 'integrations',  labelKey: 'settings.tabs.integrations',  fallback: 'Integrations',   icon: Plug,        description: 'Connected services' },
+  { id: 'sso',           labelKey: 'settings.tabs.sso',           fallback: 'SSO',            icon: Building2,   description: 'Enterprise sign-on' },
+  { id: 'billing',       labelKey: 'settings.tabs.billing',       fallback: 'Billing',        icon: CreditCard,  description: 'Plan & invoices' },
 ] as const;
 
 const ADMIN_TAB = {
   id: 'purple-profile',
   labelKey: 'settings.tabs.purpleProfile',
-  fallback: 'Purple Team Profile',
-  icon: '🟣',
+  fallback: 'Purple team',
+  icon: Crown as IconType,
+  description: 'Operator profile',
 } as const;
 
 type BaseTabId = typeof BASE_TABS[number]['id'];
@@ -48,7 +66,7 @@ export default function SettingsPage() {
   const tabs = isAdmin ? [...BASE_TABS, ADMIN_TAB] : [...BASE_TABS];
 
   const tabParam = searchParams.get('tab');
-  const validIds = tabs.map(t => t.id) as readonly string[];
+  const validIds = tabs.map((tt) => tt.id) as readonly string[];
   const initialTab = validIds.includes(tabParam || '') ? (tabParam as TabId) : 'profile';
 
   const [activeTab, setActiveTab] = useState<TabId>(initialTab);
@@ -75,50 +93,103 @@ export default function SettingsPage() {
     'purple-profile': <PurpleTeamProfileTab {...tabProps} />,
   };
 
-  return (
-    <PageTransition>
-    <div className="p-6 max-w-6xl mx-auto">
-      {/* Header */}
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold text-white mb-2">{t('settings.title', 'Settings')}</h1>
-        <p className="text-gray-400">{t('settings.subtitle', 'Manage your account settings and preferences')}</p>
-      </div>
+  const activeMeta = tabs.find((tt) => tt.id === activeTab);
 
-      {/* Message */}
+  return (
+    <div className="space-y-vos-6">
+      <PageHeader
+        eyebrow="Workspace"
+        title={t('settings.title', 'Settings')}
+        description={t('settings.subtitle', 'Manage your account, security, billing, and integrations.')}
+        icon={<SettingsIcon className="w-5 h-5" />}
+      />
+
       {message && (
-        <div className={`mb-6 p-4 rounded-lg ${message.type === 'success' ? 'bg-green-500/20 border border-green-500 text-green-400' : 'bg-red-500/20 border border-red-500 text-red-400'}`}>
-          {message.text}
+        <div
+          className={`flex items-start gap-vos-3 rounded-vos-lg border px-vos-4 py-vos-3 ${
+            message.type === 'success'
+              ? 'border-vos-success/30 bg-vos-success/10 text-vos-success'
+              : 'border-vos-danger/30 bg-vos-danger/10 text-vos-danger'
+          }`}
+        >
+          {message.type === 'success' ? (
+            <CheckCircle2 className="w-4 h-4 mt-0.5 shrink-0" />
+          ) : (
+            <XCircle className="w-4 h-4 mt-0.5 shrink-0" />
+          )}
+          <span className="text-vos-sm">{message.text}</span>
         </div>
       )}
 
-      <div className="flex flex-col lg:flex-row gap-4 lg:gap-8">
-        {/* Tabs — V17: horizontal scrollable on mobile, sidebar on desktop */}
-        <div className="w-full lg:w-48 flex-shrink-0">
-          <nav className="flex lg:flex-col gap-1 overflow-x-auto pb-2 lg:pb-0 lg:space-y-1 scrollbar-hide">
-            {tabs.map((tab) => (
-              <button
-                key={tab.id}
-                onClick={() => handleTabChange(tab.id)}
-                className={`flex items-center gap-2 lg:gap-3 px-3 lg:px-4 py-2.5 lg:py-3 rounded-lg text-left transition whitespace-nowrap flex-shrink-0 lg:w-full ${
-                  activeTab === tab.id
-                    ? 'bg-kali-blue/20 text-kali-blue border-b-2 lg:border-b-0 lg:border-l-2 border-kali-blue'
-                    : 'text-gray-400 hover:text-white hover:bg-gray-800'
-                }`}
-              >
-                <span>{tab.icon}</span>
-                <span className="font-medium text-sm">{t(tab.labelKey, tab.fallback)}</span>
-              </button>
-            ))}
-          </nav>
-        </div>
+      <div className="grid grid-cols-1 lg:grid-cols-[260px_minmax(0,1fr)] gap-vos-6">
+        {/* Sidebar nav */}
+        <aside className="lg:sticky lg:top-vos-6 self-start">
+          <div className="rounded-vos-xl border border-vos-border-1 bg-vos-bg-elev-2 p-vos-2">
+            <nav className="flex lg:flex-col gap-1 overflow-x-auto lg:overflow-visible scrollbar-hide">
+              {tabs.map((tab) => {
+                const Icon = tab.icon as IconType;
+                const isActive = activeTab === tab.id;
+                return (
+                  <button
+                    key={tab.id}
+                    onClick={() => handleTabChange(tab.id as TabId)}
+                    className={`group flex items-center gap-vos-3 px-vos-3 py-vos-2 rounded-vos-md text-left transition whitespace-nowrap lg:w-full ${
+                      isActive
+                        ? 'bg-vos-accent/10 text-vos-accent ring-1 ring-vos-accent/30'
+                        : 'text-vos-text-2 hover:bg-vos-bg-elev-1 hover:text-vos-text'
+                    }`}
+                  >
+                    <span
+                      className={`w-7 h-7 rounded-vos-sm flex items-center justify-center transition ${
+                        isActive
+                          ? 'bg-vos-accent/20 text-vos-accent'
+                          : 'bg-vos-bg-elev-1 text-vos-text-3 group-hover:text-vos-text'
+                      }`}
+                    >
+                      <Icon className="w-3.5 h-3.5" />
+                    </span>
+                    <span className="flex-1 min-w-0">
+                      <span className="block text-vos-sm font-medium">
+                        {t(tab.labelKey, tab.fallback)}
+                      </span>
+                      <span className="hidden lg:block text-[10px] text-vos-text-3 truncate">
+                        {tab.description}
+                      </span>
+                    </span>
+                  </button>
+                );
+              })}
+            </nav>
+          </div>
+        </aside>
 
         {/* Content */}
-        <div className="flex-1 bg-gray-900 rounded-xl p-4 sm:p-6 border border-gray-800 min-w-0">
-          {TAB_COMPONENTS[activeTab]}
-        </div>
+        <section className="rounded-vos-xl border border-vos-border-1 bg-vos-bg-elev-2 overflow-hidden min-w-0">
+          {activeMeta && (
+            <header className="flex items-center gap-vos-3 px-vos-6 py-vos-4 border-b border-vos-border-1">
+              <span className="w-9 h-9 rounded-vos-md bg-vos-accent/10 text-vos-accent flex items-center justify-center">
+                {(() => {
+                  const Icon = activeMeta.icon as IconType;
+                  return <Icon className="w-4 h-4" />;
+                })()}
+              </span>
+              <div className="min-w-0">
+                <h2 className="text-vos-md font-semibold text-vos-text tracking-vos-snug">
+                  {t(activeMeta.labelKey, activeMeta.fallback)}
+                </h2>
+                <p className="text-vos-xs text-vos-text-3">{activeMeta.description}</p>
+              </div>
+              {loading && (
+                <span className="ml-auto text-vos-xs text-vos-text-3 inline-flex items-center gap-1.5">
+                  <span className="w-2 h-2 rounded-full bg-vos-accent animate-pulse" />
+                  Saving…
+                </span>
+              )}
+            </header>
+          )}
+          <div className="p-vos-6">{TAB_COMPONENTS[activeTab]}</div>
+        </section>
       </div>
     </div>
-    </PageTransition>
   );
 }
-
