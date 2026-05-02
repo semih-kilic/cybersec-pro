@@ -457,7 +457,7 @@ pub async fn get_analytics_trend(
 // STRIX AI JOBS (Phase 6)
 // ══════════════════════════════════════════════════════════
 
-pub async fn create_strix_job(
+pub async fn create_cybersec_ai_job(
     user: AuthUser,
     State(state): State<Arc<AppState>>,
     Json(body): Json<serde_json::Value>,
@@ -485,7 +485,7 @@ pub async fn create_strix_job(
     let config_str = agents_config.to_string();
 
     let result = sqlx::query(
-        "INSERT INTO strix_jobs (id, organization_id, user_id, target, target_type, job_type, agents_config, status)
+        "INSERT INTO cybersec_ai_jobs (id, organization_id, user_id, target, target_type, job_type, agents_config, status)
          VALUES ($1, $2, $3, $4, $5, $6, $7::jsonb, 'queued')"
     )
     .bind(&id).bind(&org_id).bind(&user.user_id)
@@ -496,10 +496,10 @@ pub async fn create_strix_job(
         Ok(_) => {
             // Log audit
             crate::services::audit::log_audit(
-                &state.db, "strix_job_created", "security", "info",
+                &state.db, "cybersec_ai_job_created", "security", "info",
                 Some(&user.user_id), Some(&org_id),
                 Some(json!({"target": &target, "job_type": &job_type})),
-                Some("strix_job"), Some(&id), "success", None
+                Some("cybersec_ai_job"), Some(&id), "success", None
             ).await;
 
             (StatusCode::CREATED, Json(json!({
@@ -519,7 +519,7 @@ pub async fn create_strix_job(
     }
 }
 
-pub async fn list_strix_jobs(
+pub async fn list_cybersec_ai_jobs(
     user: AuthUser,
     State(state): State<Arc<AppState>>,
 ) -> impl IntoResponse {
@@ -531,7 +531,7 @@ pub async fn list_strix_jobs(
     let rows: Vec<(String, String, String, String, i32, i32, Option<String>, Option<String>, String)> = sqlx::query_as(
         "SELECT id, target, job_type, status, findings_count, poc_verified_count,
                 CAST(started_at AS TEXT), CAST(completed_at AS TEXT), CAST(created_at AS TEXT)
-         FROM strix_jobs WHERE organization_id = $1 ORDER BY created_at DESC LIMIT 50"
+         FROM cybersec_ai_jobs WHERE organization_id = $1 ORDER BY created_at DESC LIMIT 50"
     )
     .bind(&org_id)
     .fetch_all(&state.db).await.unwrap_or_default();
@@ -550,10 +550,10 @@ pub async fn list_strix_jobs(
         })
     }).collect();
 
-    Json(json!({"strix_jobs": jobs, "total": jobs.len()})).into_response()
+    Json(json!({"cybersec_ai_jobs": jobs, "total": jobs.len()})).into_response()
 }
 
-pub async fn get_strix_job(
+pub async fn get_cybersec_ai_job(
     user: AuthUser,
     State(state): State<Arc<AppState>>,
     Path(job_id): Path<String>,
@@ -565,7 +565,7 @@ pub async fn get_strix_job(
 
     let row: Option<(String, String, String, String, serde_json::Value, Option<serde_json::Value>, i32, i32, Option<String>)> = sqlx::query_as(
         "SELECT id, target, job_type, status, agents_config, results, findings_count, poc_verified_count, CAST(created_at AS TEXT)
-         FROM strix_jobs WHERE id = $1 AND organization_id = $2"
+         FROM cybersec_ai_jobs WHERE id = $1 AND organization_id = $2"
     )
     .bind(&job_id).bind(&org_id)
     .fetch_optional(&state.db).await.unwrap_or(None);

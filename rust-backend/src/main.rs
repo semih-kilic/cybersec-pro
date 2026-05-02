@@ -428,6 +428,14 @@ fn build_router(state: Arc<AppState>) -> Router {
         .route("/api/v1/ai/suggest", post(stub_handlers::ai_suggest))
         .route("/api/v1/ai/remediation", post(stub_handlers::ai_remediation))
         .route("/api/v1/ai/report-summary", post(stub_handlers::ai_report_summary))
+        // ── CyberSec Pro AI (intelligent assistant) ───────────
+        .route("/api/v1/ai/tools", get(ai_handlers::list_tools))
+        .route("/api/v1/ai/suggest-tools", post(ai_handlers::suggest_tools))
+        .route("/api/v1/ai/generate-command", post(ai_handlers::generate_command))
+        .route("/api/v1/ai/playbook", post(ai_handlers::generate_playbook))
+        .route("/api/v1/ai/explain", post(ai_handlers::explain))
+        .route("/api/v1/ai/interpret-results", post(ai_handlers::interpret_results))
+        .route("/api/v1/ai/validate-command", post(ai_handlers::validate))
         // ── Purple Team ───────────────────────────────────────
         .route("/api/v1/purple-team/dashboard", get(stub_handlers::purple_team_dashboard))
         .route("/api/v1/purple-team/chains", get(stub_handlers::purple_team_chains))
@@ -473,8 +481,8 @@ fn build_router(state: Arc<AppState>) -> Router {
         // ── Phase 5: Analytics Trend ──────────────────────────────────────
         .route("/api/v1/analytics/trend", get(security_handlers::get_analytics_trend))
         // ── Phase 6: Strix AI Jobs ────────────────────────────────────────
-        .route("/api/v1/strix/jobs", get(security_handlers::list_strix_jobs).post(security_handlers::create_strix_job))
-        .route("/api/v1/strix/jobs/:job_id", get(security_handlers::get_strix_job))
+        .route("/api/v1/cybersec-ai/jobs", get(security_handlers::list_cybersec_ai_jobs).post(security_handlers::create_cybersec_ai_job))
+        .route("/api/v1/cybersec-ai/jobs/:job_id", get(security_handlers::get_cybersec_ai_job))
         .merge(swagger_ui)
         .with_state(state)
 }

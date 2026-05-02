@@ -461,7 +461,7 @@ r#"CREATE TABLE IF NOT EXISTS analytics_snapshots (
 "CREATE INDEX IF NOT EXISTS idx_analytics_snapshots_org_date ON analytics_snapshots(organization_id, snapshot_date DESC)",
 
 // ── Phase 6: Strix AI Jobs ────────────────────────────────────────────────
-r#"CREATE TABLE IF NOT EXISTS strix_jobs (
+r#"CREATE TABLE IF NOT EXISTS cybersec_ai_jobs (
     id TEXT PRIMARY KEY,
     organization_id TEXT NOT NULL REFERENCES organizations(id) ON DELETE CASCADE,
     user_id TEXT NOT NULL REFERENCES users(id),
@@ -478,6 +478,6 @@ r#"CREATE TABLE IF NOT EXISTS strix_jobs (
     completed_at TIMESTAMP,
     created_at TIMESTAMP DEFAULT NOW()
 )"#,
-"CREATE INDEX IF NOT EXISTS idx_strix_jobs_org ON strix_jobs(organization_id)",
-"CREATE INDEX IF NOT EXISTS idx_strix_jobs_status ON strix_jobs(status)",
+"CREATE INDEX IF NOT EXISTS idx_cybersec_ai_jobs_org ON cybersec_ai_jobs(organization_id)",
+"CREATE INDEX IF NOT EXISTS idx_cybersec_ai_jobs_status ON cybersec_ai_jobs(status)",
 ];
