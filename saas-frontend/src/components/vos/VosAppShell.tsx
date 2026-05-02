@@ -51,9 +51,13 @@ export function VosAppShell({
   }, [location.pathname]);
 
   return (
-    <div className="vos-root min-h-screen">
+    <div className="vos-root min-h-screen relative">
       {/* Background layers — fixed, behind everything */}
       <div className="vos-bg-mesh" aria-hidden />
+      <div className="vos-aurora" aria-hidden>
+        <div className="vos-aurora-blob" />
+        <div className="vos-aurora-blob b2" />
+      </div>
       <div className="vos-noise" aria-hidden />
 
       {/* Sidebar (fixed) */}
@@ -132,7 +136,9 @@ function ShellInner({
   return (
     <>
       <VosTopbar user={user} onSearch={onSearch} onLogout={onLogout} onMenu={onMenu} />
-      <main className="flex-1 vos-container py-vos-8">{children}</main>
+      <main className="flex-1 vos-page-spotlight px-vos-4 lg:px-vos-8 py-vos-6 lg:py-vos-8 relative z-vos-content">
+        {children}
+      </main>
     </>
   );
 }

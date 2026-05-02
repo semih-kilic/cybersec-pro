@@ -1,6 +1,5 @@
 import { type ComponentType, type ReactNode } from 'react';
 import { NavLink, useLocation } from 'react-router-dom';
-import { motion } from 'framer-motion';
 import { ChevronsLeft, ChevronsRight, X } from 'lucide-react';
 import { cn } from '../../lib/cn';
 
@@ -46,10 +45,12 @@ export function VosSidebar({
       )}
       style={{
         width: collapsed ? 'var(--vos-sidebar-w-collapsed)' : 'var(--vos-sidebar-w)',
-        background: 'var(--vos-glass-2)',
-        backdropFilter: 'blur(24px) saturate(180%)',
-        WebkitBackdropFilter: 'blur(24px) saturate(180%)',
-        boxShadow: 'var(--vos-highlight)',
+        background:
+          'linear-gradient(180deg, rgba(15, 19, 30, 0.78) 0%, rgba(11, 15, 23, 0.55) 100%)',
+        backdropFilter: 'blur(28px) saturate(180%)',
+        WebkitBackdropFilter: 'blur(28px) saturate(180%)',
+        boxShadow:
+          'inset -1px 0 0 0 rgba(255, 255, 255, 0.05), inset 0 1px 0 0 rgba(255, 255, 255, 0.06), 16px 0 40px -24px rgba(0, 0, 0, 0.55)',
       }}
     >
       {/* Brand row */}
@@ -90,12 +91,19 @@ export function VosSidebar({
       {/* Nav scroll area */}
       <nav className="flex-1 overflow-y-auto vos-scrollbar px-vos-2 py-vos-3 space-y-0.5">
         {nav.map((item, i) => (
-          <NavRow
-            key={item.to + i}
-            item={item}
-            collapsed={collapsed}
-            currentPath={location.pathname}
-          />
+          <div key={item.to + i}>
+            {item.section && !collapsed && (
+              <div className="vos-nav-section">{item.section}</div>
+            )}
+            {item.section && collapsed && i > 0 && (
+              <div className="vos-divider mx-vos-2 my-vos-2" />
+            )}
+            <NavRow
+              item={item}
+              collapsed={collapsed}
+              currentPath={location.pathname}
+            />
+          </div>
         ))}
 
         {bottomNav && bottomNav.length > 0 && (
@@ -174,29 +182,20 @@ function NavRow({
       to={item.to}
       title={collapsed ? item.label : undefined}
       className={cn(
-        'group relative flex items-center gap-vos-3 px-vos-3 py-vos-2.5 rounded-vos-md',
-        'text-vos-sm font-medium transition-colors duration-vos-2 ease-vos-out',
+        'vos-nav-item group flex items-center gap-vos-3 px-vos-3 py-vos-2.5 rounded-vos-md',
+        'text-vos-sm font-medium transition-all duration-vos-2 ease-vos-out',
         isActive
-          ? 'text-vos-text bg-vos-glass-3'
+          ? 'vos-nav-item-active'
           : 'text-vos-text-3 hover:text-vos-text hover:bg-vos-glass-2',
         collapsed && 'justify-center',
       )}
-      style={isActive ? { boxShadow: 'var(--vos-highlight)' } : undefined}
     >
-      {isActive && (
-        <motion.span
-          layoutId="vos-nav-active"
-          className="absolute left-0 top-1.5 bottom-1.5 w-[3px] rounded-full"
-          style={{
-            background: 'var(--vos-accent)',
-            boxShadow: '0 0 12px var(--vos-accent-glow)',
-          }}
-          transition={{ duration: 0.32, ease: [0.16, 1, 0.3, 1] }}
-        />
-      )}
-      <Icon size={18} className="shrink-0 relative" />
-      {!collapsed && <span className="flex-1 truncate relative">{item.label}</span>}
-      {!collapsed && item.badge && <span className="relative">{item.badge}</span>}
+      <Icon
+        size={18}
+        className={cn('shrink-0 transition-transform duration-vos-2', isActive && 'text-vos-accent')}
+      />
+      {!collapsed && <span className="flex-1 truncate">{item.label}</span>}
+      {!collapsed && item.badge && <span>{item.badge}</span>}
     </NavLink>
   );
 }

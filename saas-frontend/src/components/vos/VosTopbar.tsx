@@ -41,12 +41,13 @@ export function VosTopbar({
       className={cn(
         'sticky top-0 z-vos-sticky',
         'h-vos-topbar flex items-center gap-vos-4 px-vos-4 lg:px-vos-6',
-        'border-b border-vos-border-1',
       )}
       style={{
-        background: 'var(--vos-glass-2)',
-        backdropFilter: 'blur(20px) saturate(180%)',
-        WebkitBackdropFilter: 'blur(20px) saturate(180%)',
+        background: 'linear-gradient(180deg, rgba(11, 15, 23, 0.72) 0%, rgba(11, 15, 23, 0.45) 100%)',
+        backdropFilter: 'blur(24px) saturate(180%)',
+        WebkitBackdropFilter: 'blur(24px) saturate(180%)',
+        boxShadow:
+          'inset 0 1px 0 0 rgba(255, 255, 255, 0.06), 0 1px 0 0 rgba(255, 255, 255, 0.04), 0 12px 24px -16px rgba(0, 0, 0, 0.55)',
       }}
     >
       <button
