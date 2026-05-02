@@ -23,7 +23,8 @@ export function ApiKeysTab({ loading, setLoading, setMessage }: SettingsTabProps
   const apiKeyStats = (statsData as { api_key_stats?: ApiKeyStat[] } | undefined)?.api_key_stats ?? [];
 
   const rotateKey = async (keyId: string) => {
-    const res = await rotateMutation.mutateAsync(keyId).catch(() => null);
+    const rawRes = await rotateMutation.mutateAsync(keyId).catch(() => null);
+    const res = rawRes as { api_key?: { key: string } } | null;
     if (res?.api_key?.key) {
       setShowNewKey(res.api_key.key);
       loadKeys();

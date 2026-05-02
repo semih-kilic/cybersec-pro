@@ -284,7 +284,7 @@ export function DashboardPage() {
                         <td className="p-4 text-white">{scan.tool?.name}</td>
                         <td className="p-4 text-gray-300">{scan.target}</td>
                         <td className={`p-4 ${getStatusColor(scan.status)}`}>{scan.status}</td>
-                        <td className="p-4 text-gray-400">{new Date(scan.created_at).toLocaleDateString()}</td>
+                        <td className="p-4 text-gray-400">{scan.created_at ? new Date(scan.created_at).toLocaleDateString() : '—'}</td>
                       </tr>
                     ))}
                   </tbody>

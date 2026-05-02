@@ -1579,7 +1579,7 @@ export function useDashboardScans() {
   return useQuery({
     queryKey: [...queryKeys.scans.all, 'dashboard'],
     queryFn: () => authFetch<{ scans: any[] }>('/api/v1/scans', token),
-    select: (data) => normalizeScansPayload(data),
+    select: (data) => normalizeScansPayload<DashboardScansResponse['scans'][number]>(data),
     ...CACHE_TIMES.scans,
     enabled: !!token,
   });

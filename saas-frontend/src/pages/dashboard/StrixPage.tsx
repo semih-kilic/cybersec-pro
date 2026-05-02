@@ -229,10 +229,25 @@ export default function StrixPage() {
   );
 }
 
+type StrixJobDetail = {
+  id: string;
+  target: string;
+  target_type: string;
+  job_type: string;
+  status: string;
+  agents_config?: Record<string, boolean>;
+  results?: unknown;
+  findings_count: number;
+  poc_verified_count: number;
+  started_at?: string;
+  completed_at?: string;
+};
+
 function JobDetail({ jobId }: { jobId: string }) {
-  const { data, isLoading } = useStrixJob(jobId);
+  const { data: rawData, isLoading } = useStrixJob(jobId);
   if (isLoading) return <div className="mt-4 text-gray-500 text-sm">Loading details…</div>;
-  if (!data) return null;
+  if (!rawData) return null;
+  const data = rawData as StrixJobDetail;
 
   return (
     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="mt-4 pt-4 border-t border-gray-700 space-y-3">
@@ -244,7 +259,7 @@ function JobDetail({ jobId }: { jobId: string }) {
         <div>
           <p className="text-gray-500 text-xs mb-2">Active Agents:</p>
           <div className="flex flex-wrap gap-2">
-            {Object.entries(data.agents_config as Record<string, boolean>)
+            {Object.entries(data.agents_config)
               .filter(([, v]) => v)
               .map(([k]) => (
                 <span key={k} className="px-2 py-0.5 bg-cyan-500/20 text-cyan-400 rounded text-xs">{k.replace(/_/g, ' ')}</span>
@@ -252,11 +267,11 @@ function JobDetail({ jobId }: { jobId: string }) {
           </div>
         </div>
       )}
-      {data.results && (
+      {data.results !== undefined && data.results !== null && (
         <div>
           <p className="text-gray-500 text-xs mb-2">Results:</p>
           <pre className="bg-gray-900 rounded-lg p-3 text-xs text-green-400 overflow-x-auto max-h-48">
-            {JSON.stringify(data.results, null, 2)}
+            {JSON.stringify(data.results as Record<string, unknown>, null, 2)}
           </pre>
         </div>
       )}
