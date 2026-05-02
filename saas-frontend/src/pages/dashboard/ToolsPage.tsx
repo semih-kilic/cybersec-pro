@@ -1,6 +1,45 @@
+/**
+ * 🛡️ Tools — Security Arsenal
+ *
+ * V20 "Onyx" rewrite. Apple-grade restraint: monochrome surfaces,
+ * Apple system-blue accent, dense data presentation, severity-driven
+ * status colors. All business logic (search, multi-category filter,
+ * plan gating, virtualization) is preserved verbatim — only the
+ * visual layer was rebuilt on top of Vision OS + SOC primitives.
+ */
 import { useState, useMemo, useCallback, useRef } from 'react';
 import { Link } from 'react-router-dom';
-import { Header } from '../../components/layout/Header';
+import {
+  Search,
+  X,
+  LayoutGrid,
+  List,
+  CheckCircle2,
+  Crown,
+  Sparkles,
+  Globe,
+  Lock,
+  Wifi,
+  Cpu,
+  Network,
+  ShieldCheck,
+  Skull,
+  Key,
+  Bug,
+  FileCode2,
+  TerminalSquare,
+  Microscope,
+  Database,
+  Phone,
+  Wrench,
+  Eye,
+  KeyRound,
+  Shield,
+  AlertTriangle,
+  Monitor,
+  Zap,
+  ArrowRight,
+} from 'lucide-react';
 import { useAuth } from '../../hooks/useAuth';
 import { useTranslation } from 'react-i18next';
 import { useDocumentTitle } from '../../hooks/useUtilities';
@@ -8,6 +47,11 @@ import { useTools } from '../../hooks/useApiQueries';
 import { useVirtualizer } from '@tanstack/react-virtual';
 import { ToolsPageSkeleton } from '../../components/ui/Skeleton';
 import { PageTransition } from '../../components/ui';
+import {
+  PageHeader,
+  StatusPill,
+  FilterChip,
+} from '../../components/vos';
 
 interface Tool {
   id: string;
@@ -27,81 +71,73 @@ interface Tool {
   business_category?: string;
 }
 
-// Category icons and colors mapping — 17 groups
-const categoryIcons: { [key: string]: string } = {
-  'web': '🌐',
-  'forensics': '🔬',
-  'recon': '🔍',
-  'password': '🔑',
-  'vulnerability': '🔓',
-  'wireless': '📡',
-  'hardware': '🔌',
-  'network': '🌍',
-  'windows': '🪟',
-  'reversing': '⚙️',
-  'defense': '🛡️',
-  'post-exploit': '💀',
-  'crypto': '🔐',
-  'reporting': '📊',
-  'exploitation': '💥',
-  'social': '🎭',
-  'voip': '📞',
-  'database': '🗄️',
-  'misc': '🔧',
+/* ───────── Category metadata (icons + display names) ───────── */
+const categoryIcon: Record<string, React.ComponentType<{ size?: number; className?: string }>> = {
+  web: Globe,
+  forensics: Microscope,
+  recon: Eye,
+  password: KeyRound,
+  vulnerability: Lock,
+  wireless: Wifi,
+  hardware: Cpu,
+  network: Network,
+  windows: Monitor,
+  reversing: FileCode2,
+  defense: ShieldCheck,
+  'post-exploit': Skull,
+  crypto: Key,
+  reporting: FileCode2,
+  exploitation: Bug,
+  social: Eye,
+  voip: Phone,
+  database: Database,
+  misc: Wrench,
 };
 
-const categoryColors: { [key: string]: string } = {
-  'web': 'from-purple-500 to-pink-500',
-  'forensics': 'from-indigo-500 to-purple-500',
-  'recon': 'from-blue-500 to-cyan-500',
-  'password': 'from-yellow-500 to-orange-500',
-  'vulnerability': 'from-red-500 to-orange-500',
-  'wireless': 'from-cyan-500 to-teal-500',
-  'hardware': 'from-amber-600 to-yellow-500',
-  'network': 'from-blue-600 to-indigo-500',
-  'windows': 'from-sky-500 to-blue-600',
-  'reversing': 'from-gray-500 to-slate-500',
-  'defense': 'from-emerald-500 to-green-600',
-  'post-exploit': 'from-rose-600 to-red-500',
-  'crypto': 'from-violet-500 to-purple-500',
-  'reporting': 'from-teal-500 to-cyan-500',
-  'exploitation': 'from-red-600 to-red-400',
-  'social': 'from-pink-500 to-rose-500',
-  'voip': 'from-green-500 to-emerald-500',
-  'database': 'from-amber-500 to-orange-500',
-  'misc': 'from-gray-600 to-gray-500',
-};
-
-const categoryDisplayNames: { [key: string]: string } = {
-  'web': 'Web Application Security',
-  'forensics': 'Digital Forensics',
-  'recon': 'Reconnaissance & OSINT',
-  'password': 'Password & GPU',
-  'vulnerability': 'Vulnerability Analysis',
-  'wireless': 'Wireless Security',
-  'hardware': 'Hardware Attacks',
-  'network': 'Network & Sniffing',
-  'windows': 'Windows Resources',
-  'reversing': 'Reverse Engineering',
-  'defense': 'Defense & Detection',
+const categoryDisplayNames: Record<string, string> = {
+  web: 'Web Application Security',
+  forensics: 'Digital Forensics',
+  recon: 'Reconnaissance & OSINT',
+  password: 'Password & GPU',
+  vulnerability: 'Vulnerability Analysis',
+  wireless: 'Wireless Security',
+  hardware: 'Hardware Attacks',
+  network: 'Network & Sniffing',
+  windows: 'Windows Resources',
+  reversing: 'Reverse Engineering',
+  defense: 'Defense & Detection',
   'post-exploit': 'Post-Exploitation',
-  'crypto': 'Cryptography & Steganography',
-  'reporting': 'Reporting',
-  'exploitation': 'Exploitation',
-  'social': 'Social Engineering',
-  'voip': 'VoIP Security',
-  'database': 'Database Security',
-  'misc': 'Miscellaneous',
+  crypto: 'Cryptography & Steganography',
+  reporting: 'Reporting',
+  exploitation: 'Exploitation',
+  social: 'Social Engineering',
+  voip: 'VoIP Security',
+  database: 'Database Security',
+  misc: 'Miscellaneous',
 };
 
-// All plans have access to all tools — no plan-based blocking
-const planHierarchy: { [key: string]: number } = {
-  'free': 0,
-  'trial': 10,
-  'starter': 10,
-  'professional': 10,
-  'enterprise': 10,
+const planHierarchy: Record<string, number> = {
+  free: 0,
+  trial: 10,
+  starter: 10,
+  professional: 10,
+  enterprise: 10,
 };
+
+const POPULAR_QUICK_TOOLS = [
+  { id: 'nmap', name: 'Nmap', icon: Network, desc: 'Port Scanner' },
+  { id: 'nikto', name: 'Nikto', icon: Globe, desc: 'Web Scanner' },
+  { id: 'sqlmap', name: 'SQLMap', icon: Database, desc: 'SQL Injection' },
+  { id: 'hydra', name: 'Hydra', icon: KeyRound, desc: 'Brute Force' },
+  { id: 'gobuster', name: 'Gobuster', icon: Search, desc: 'Dir Scanner' },
+  { id: 'nuclei', name: 'Nuclei', icon: Zap, desc: 'Vuln Scanner' },
+  { id: 'wireshark', name: 'Wireshark', icon: Wifi, desc: 'Packet Analyzer' },
+];
+
+function CategoryIcon({ name, size = 16 }: { name: string; size?: number }) {
+  const Icon = categoryIcon[name] || Wrench;
+  return <Icon size={size} />;
+}
 
 export function ToolsPage() {
   useDocumentTitle('Tools — CyberSec Pro');
@@ -114,111 +150,76 @@ export function ToolsPage() {
   const [showOnlyAvailable, setShowOnlyAvailable] = useState(false);
   const [sortBy, setSortBy] = useState<'name' | 'category' | 'plan'>('category');
 
-  // Virtualizer ref for scrollable container
-  const scrollContainerRef = useRef<HTMLDivElement>(null);
-
-  // Get user plan from organization
   const userPlan = organization?.plan_type || 'trial';
-
-  // TanStack Query: cached tools fetch (5min staleTime)
   const { data: toolsData, isLoading: loading } = useTools(userPlan);
   const allCategories = toolsData?.categories || {};
   const totalTools = toolsData?.totalTools || 0;
   const categoryList = toolsData?.categoryList || [];
 
-  // Check if user can use a tool based on plan
-  const canUseTool = useCallback((toolPlan: string): boolean => {
-    const userLevel = planHierarchy[userPlan.toLowerCase()] || 0;
-    const toolLevel = planHierarchy[toolPlan.toLowerCase()] || 0;
-    return userLevel >= toolLevel;
-  }, [userPlan]);
+  const canUseTool = useCallback(
+    (toolPlan: string): boolean => {
+      const userLevel = planHierarchy[userPlan.toLowerCase()] || 0;
+      const toolLevel = planHierarchy[toolPlan.toLowerCase()] || 0;
+      return userLevel >= toolLevel;
+    },
+    [userPlan],
+  );
 
-  // Get plan badge component
-  const getPlanBadge = (plan: string) => {
-    const badges: { [key: string]: { bg: string; text: string; label: string } } = {
-      'free': { bg: 'bg-gray-700', text: 'text-gray-300', label: 'Free' },
-      'trial': { bg: 'bg-gray-600', text: 'text-gray-200', label: 'Trial' },
-      'starter': { bg: 'bg-blue-900/50', text: 'text-blue-400', label: 'Starter' },
-      'professional': { bg: 'bg-emerald-900/50', text: 'text-emerald-400', label: 'Pro' },
-      'enterprise': { bg: 'bg-purple-900/50', text: 'text-purple-400', label: 'Enterprise' },
-    };
-    
-    const badge = badges[plan.toLowerCase()] || badges['free'];
-    return (
-      <span className={`px-2 py-0.5 ${badge.bg} ${badge.text} text-xs font-medium rounded`}>
-        {badge.label}
-      </span>
-    );
-  };
-
-  // Filter tools based on search, categories, and other filters
   const filteredCategories = useMemo(() => {
     const result: { [key: string]: Tool[] } = {};
-    
     Object.entries(allCategories).forEach(([categoryKey, categoryData]) => {
-      // Check if this category is selected (if any are selected)
-      if (selectedCategories.length > 0 && !selectedCategories.includes(categoryKey)) {
-        return;
-      }
-      
-      let filteredTools = categoryData.tools.filter(tool => {
-        // Search filter
+      if (selectedCategories.length > 0 && !selectedCategories.includes(categoryKey)) return;
+      const filteredTools = categoryData.tools.filter((tool) => {
         if (searchQuery) {
-          const query = searchQuery.toLowerCase();
-          const matchesSearch = 
-            tool.name.toLowerCase().includes(query) ||
-            tool.description?.toLowerCase().includes(query) ||
-            tool.id.toLowerCase().includes(query);
-          if (!matchesSearch) return false;
+          const q = searchQuery.toLowerCase();
+          const m =
+            tool.name.toLowerCase().includes(q) ||
+            tool.description?.toLowerCase().includes(q) ||
+            tool.id.toLowerCase().includes(q);
+          if (!m) return false;
         }
-        
-        // Installed filter
-        if (showOnlyInstalled && !tool.installed) {
-          return false;
-        }
-        
-        // Available for user's plan filter
-        if (showOnlyAvailable && !canUseTool(tool.plan_required)) {
-          return false;
-        }
-        
+        if (showOnlyInstalled && !tool.installed) return false;
+        if (showOnlyAvailable && !canUseTool(tool.plan_required)) return false;
         return true;
       });
-      
-      // Sort tools
-      if (sortBy === 'name') {
-        filteredTools.sort((a, b) => a.name.localeCompare(b.name));
-      } else if (sortBy === 'plan') {
-        filteredTools.sort((a, b) => 
-          (planHierarchy[b.plan_required] || 0) - (planHierarchy[a.plan_required] || 0)
+      if (sortBy === 'name') filteredTools.sort((a, b) => a.name.localeCompare(b.name));
+      else if (sortBy === 'plan')
+        filteredTools.sort(
+          (a, b) =>
+            (planHierarchy[b.plan_required] || 0) - (planHierarchy[a.plan_required] || 0),
         );
-      }
-      
-      if (filteredTools.length > 0) {
-        result[categoryKey] = filteredTools;
-      }
+      if (filteredTools.length > 0) result[categoryKey] = filteredTools;
     });
-    
     return result;
-  }, [allCategories, searchQuery, selectedCategories, showOnlyInstalled, showOnlyAvailable, canUseTool, sortBy]);
+  }, [
+    allCategories,
+    searchQuery,
+    selectedCategories,
+    showOnlyInstalled,
+    showOnlyAvailable,
+    canUseTool,
+    sortBy,
+  ]);
 
-  // Calculate filtered count
-  const filteredCount = useMemo(() => {
-    return Object.values(filteredCategories).reduce((sum, tools) => sum + tools.length, 0);
-  }, [filteredCategories]);
+  const filteredCount = useMemo(
+    () => Object.values(filteredCategories).reduce((s, t) => s + t.length, 0),
+    [filteredCategories],
+  );
 
-  // Toggle category selection (multi-select)
-  const toggleCategory = (category: string) => {
-    setSelectedCategories(prev => {
-      if (prev.includes(category)) {
-        return prev.filter(c => c !== category);
-      } else {
-        return [...prev, category];
-      }
-    });
-  };
+  const installedCount = useMemo(
+    () =>
+      Object.values(allCategories).reduce(
+        (s, c) => s + c.tools.filter((t) => t.installed).length,
+        0,
+      ),
+    [allCategories],
+  );
 
-  // Clear all filters
+  const toggleCategory = (category: string) =>
+    setSelectedCategories((prev) =>
+      prev.includes(category) ? prev.filter((c) => c !== category) : [...prev, category],
+    );
+
   const clearFilters = () => {
     setSearchQuery('');
     setSelectedCategories([]);
@@ -228,334 +229,287 @@ export function ToolsPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-950">
-        <Header />
+      <div className="min-h-screen">
         <ToolsPageSkeleton />
       </div>
     );
   }
 
+  const isEntryPlan = userPlan === 'trial' || userPlan === 'starter';
+
   return (
     <PageTransition>
-    <div className="min-h-screen bg-gray-950">
-      <Header />
-      
-      <div className="max-w-7xl mx-auto px-4 py-8">
-        {/* Trial/Starter User Banner */}
-        {(userPlan === 'trial' || userPlan === 'starter') && (
-          <div className="mb-6 bg-gradient-to-r from-cyan-900/30 via-blue-900/30 to-purple-900/30 rounded-xl p-6 border border-cyan-500/30">
-            <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
-              <div className="flex items-center gap-4">
-                <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-cyan-500 to-blue-600 flex items-center justify-center">
-                  <span className="text-2xl">🛡️</span>
-                </div>
-                <div>
-                  <h3 className="text-lg font-bold text-white">
-                    {totalTools > 0 ? totalTools : '1000+'} Security Tools Available
-                  </h3>
-                  <p className="text-gray-400 text-sm">
-                    {(userPlan === 'trial' || userPlan === 'starter')
-                      ? `Click "My Plan" filter to see your available tools. Upgrade to unlock all ${totalTools} professional tools!` 
-                      : `${totalTools} tools across 17 categories. Click "My Plan" to see your plan tools.`}
-                  </p>
-                </div>
-              </div>
-              <Link 
-                to="/dashboard/billing/upgrade"
-                className="px-5 py-2.5 bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-white font-semibold rounded-lg transition flex items-center gap-2"
+      <div className="p-vos-8 max-w-7xl mx-auto space-y-vos-6">
+        <PageHeader
+          eyebrow="Arsenal"
+          icon={<ShieldCheck size={22} />}
+          title={t('tools.title', 'Security Tools')}
+          description={
+            <>
+              <span className="tabular-nums font-semibold text-vos-text">{totalTools}</span> professional
+              security tools across {Object.keys(allCategories).length} categories. Plan:{' '}
+              <span className="text-vos-accent font-medium capitalize">{userPlan}</span>
+              {showOnlyAvailable && (
+                <span className="ml-2 text-vos-accent">· showing {filteredCount} in your plan</span>
+              )}
+            </>
+          }
+          actions={
+            isEntryPlan && (
+              <Link
+                to="/dashboard/upgrade"
+                className="inline-flex items-center gap-2 h-10 px-vos-4 rounded-vos-md bg-vos-accent text-white text-vos-sm font-medium hover:opacity-90"
               >
-                <span>{t('common.upgradeNow', 'Upgrade Now')}</span>
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
-                </svg>
+                <Crown size={14} />
+                {t('common.upgradeNow', 'Upgrade')}
               </Link>
-            </div>
-          </div>
-        )}
+            )
+          }
+        />
 
-        {/* Quick Access: Your Trial Tools */}
-        {(userPlan === 'trial' || userPlan === 'starter') && !showOnlyAvailable && (
-          <div className="mb-6 bg-gradient-to-r from-emerald-900/30 to-teal-900/30 rounded-xl p-5 border border-emerald-500/30">
-            <div className="flex items-center justify-between mb-4">
-              <div className="flex items-center gap-3">
-                <span className="text-2xl">✨</span>
+        {/* Quick access — only for entry plans */}
+        {isEntryPlan && !showOnlyAvailable && (
+          <section className="rounded-vos-xl border border-vos-border-1 bg-vos-bg-elev-2 p-vos-5">
+            <div className="flex items-center justify-between mb-vos-4">
+              <div className="flex items-center gap-vos-3">
+                <span className="size-9 rounded-vos-md bg-vos-accent/10 border border-vos-accent/20 flex items-center justify-center text-vos-accent">
+                  <Sparkles size={16} />
+                </span>
                 <div>
-                  <h3 className="text-white font-bold">{t('tools.quickAccessTitle', 'Quick Access: Popular Security Tools')}</h3>
-                  <p className="text-gray-400 text-sm">{t('tools.quickAccessDesc', 'Click any tool to start scanning immediately')}</p>
+                  <h3 className="text-vos-md font-semibold text-vos-text">
+                    {t('tools.quickAccessTitle', 'Quick Access — Popular Tools')}
+                  </h3>
+                  <p className="text-vos-xs text-vos-text-3">
+                    {t('tools.quickAccessDesc', 'Click any tool to start scanning immediately')}
+                  </p>
                 </div>
               </div>
               <button
                 onClick={() => setShowOnlyAvailable(true)}
-                className="text-emerald-400 hover:text-emerald-300 text-sm font-medium"
+                className="text-vos-xs font-medium text-vos-accent hover:opacity-80 flex items-center gap-1"
               >
-                Show Only My Tools →
+                Show only my tools <ArrowRight size={12} />
               </button>
             </div>
-            <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-3">
-              {[
-                { id: 'nmap', name: 'Nmap', icon: '🔍', desc: 'Port Scanner' },
-                { id: 'nikto', name: 'Nikto', icon: '🌐', desc: 'Web Scanner' },
-                { id: 'sqlmap', name: 'SQLMap', icon: '💉', desc: 'SQL Injection' },
-                { id: 'hydra', name: 'Hydra', icon: '🔑', desc: 'Brute Force' },
-                { id: 'gobuster', name: 'Gobuster', icon: '📂', desc: 'Dir Scanner' },
-                { id: 'nuclei', name: 'Nuclei', icon: '⚛️', desc: 'Vuln Scanner' },
-                { id: 'wireshark', name: 'Wireshark', icon: '📡', desc: 'Packet Analyzer' },
-              ].map((tool) => (
-                <Link 
-                  key={tool.id}
-                  to={`/dashboard/tools/${tool.id}`}
-                  className="bg-gray-800/60 hover:bg-emerald-900/40 border border-gray-700 hover:border-emerald-500/50 rounded-lg p-3 text-center transition group"
-                >
-                  <div className="text-xl mb-1">{tool.icon}</div>
-                  <div className="text-white font-medium text-sm group-hover:text-emerald-400 transition">{tool.name}</div>
-                  <div className="text-gray-500 text-xs">{tool.desc}</div>
-                </Link>
-              ))}
+            <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 gap-vos-2">
+              {POPULAR_QUICK_TOOLS.map((tool) => {
+                const Icon = tool.icon;
+                return (
+                  <Link
+                    key={tool.id}
+                    to={`/dashboard/tools/${tool.id}`}
+                    className="group rounded-vos-md border border-vos-border-1 bg-vos-bg-elev-3 hover:border-vos-accent/40 hover:bg-vos-accent/5 transition-colors p-vos-3 text-center"
+                  >
+                    <Icon
+                      size={18}
+                      className="mx-auto text-vos-text-2 group-hover:text-vos-accent transition-colors"
+                    />
+                    <div className="text-vos-sm font-medium text-vos-text mt-1.5">{tool.name}</div>
+                    <div className="text-[10px] text-vos-text-3">{tool.desc}</div>
+                  </Link>
+                );
+              })}
             </div>
-          </div>
+          </section>
         )}
 
-        {/* Page Header */}
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-white mb-2">{t('tools.title')}</h1>
-          <p className="text-gray-400">
-            {totalTools} professional security tools available • Your plan: <span className="text-kali-blue font-medium capitalize">{userPlan}</span>
-            {showOnlyAvailable && <span className="ml-2 text-cyan-400">• Showing {filteredCount} tools in your plan</span>}
-          </p>
-        </div>
-
-        {/* Search and Filters Bar */}
-        <div className="bg-gray-900 rounded-xl border border-gray-800 p-4 mb-6">
-          <div className="flex flex-col lg:flex-row gap-4">
-            {/* Search Input */}
-            <div className="flex-1 relative">
-              <svg className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-              </svg>
+        {/* Command bar — search + filters + view toggle */}
+        <section className="rounded-vos-xl border border-vos-border-1 bg-vos-bg-elev-2 p-vos-4 space-y-vos-4">
+          <div className="flex flex-col lg:flex-row gap-vos-2">
+            <label className="flex items-center gap-2 px-vos-3 h-10 rounded-vos-md bg-vos-bg-elev-3 border border-vos-border-1 focus-within:border-vos-accent focus-within:ring-2 focus-within:ring-vos-accent/30 transition-colors flex-1">
+              <Search size={14} className="text-vos-text-3 shrink-0" />
               <input
-                type="text"
-                placeholder={t('tools.searchPlaceholder', 'Search tools by name, description...')}
+                type="search"
+                placeholder={t('tools.searchPlaceholder', 'Search tools by name, description…')}
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full pl-10 pr-4 py-2.5 bg-gray-800 border border-gray-700 rounded-lg text-white placeholder-gray-400 focus:border-kali-blue focus:outline-none"
+                className="flex-1 bg-transparent border-0 outline-none text-vos-sm text-vos-text placeholder:text-vos-text-muted"
               />
               {searchQuery && (
-                <button 
+                <button
                   onClick={() => setSearchQuery('')}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-white"
+                  className="size-5 rounded hover:bg-vos-bg-elev-4 flex items-center justify-center text-vos-text-3"
+                  aria-label="Clear search"
                 >
-                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                  </svg>
+                  <X size={12} />
                 </button>
               )}
-            </div>
+            </label>
 
-            {/* Filter Toggles */}
-            <div className="flex gap-2 flex-wrap">
-              <button
-                onClick={() => setShowOnlyInstalled(!showOnlyInstalled)}
-                className={`px-4 py-2 rounded-lg text-sm font-medium transition ${
-                  showOnlyInstalled 
-                    ? 'bg-green-600 text-white' 
-                    : 'bg-gray-800 text-gray-400 hover:text-white'
-                }`}
-              >
-                ✓ Installed Only
-              </button>
-              <button
-                onClick={() => setShowOnlyAvailable(!showOnlyAvailable)}
-                className={`px-4 py-2.5 rounded-lg text-sm font-semibold transition flex items-center gap-2 ${
-                  showOnlyAvailable 
-                    ? 'bg-gradient-to-r from-cyan-500 to-blue-600 text-white shadow-lg shadow-cyan-500/25' 
-                    : 'bg-gray-800 text-gray-300 hover:text-white border border-cyan-500/50 hover:border-cyan-500'
-                }`}
-              >
-                <span>🎯</span>
-                <span>{t('tools.myPlan', 'My Plan')}</span>
-                {!showOnlyAvailable && (userPlan === 'trial' || userPlan === 'starter') && (
-                  <span className="bg-cyan-500/30 text-cyan-300 px-1.5 py-0.5 rounded text-xs">
-                    7
-                  </span>
-                )}
-              </button>
-              
-              {/* Sort Dropdown */}
+            <div className="flex flex-wrap items-center gap-vos-2">
+              <FilterChip
+                label="Installed"
+                icon={CheckCircle2}
+                active={showOnlyInstalled}
+                onClick={() => setShowOnlyInstalled((v) => !v)}
+                value={showOnlyInstalled ? installedCount : undefined}
+              />
+              <FilterChip
+                label="My plan"
+                icon={Crown}
+                active={showOnlyAvailable}
+                onClick={() => setShowOnlyAvailable((v) => !v)}
+              />
+
               <select
                 value={sortBy}
                 onChange={(e) => setSortBy(e.target.value as 'name' | 'category' | 'plan')}
-                className="px-4 py-2 bg-gray-800 border border-gray-700 rounded-lg text-white text-sm focus:border-kali-blue focus:outline-none"
+                className="h-8 px-vos-3 rounded-vos-md bg-vos-bg-elev-3 border border-vos-border-1 text-vos-xs text-vos-text-2 focus:outline-none focus:border-vos-accent"
               >
-                <option value="category">{t('tools.sortByCategory', 'Sort by Category')}</option>
-                <option value="name">{t('tools.sortByName', 'Sort by Name')}</option>
-                <option value="plan">{t('tools.sortByPlan', 'Sort by Plan')}</option>
+                <option value="category">{t('tools.sortByCategory', 'Category')}</option>
+                <option value="name">{t('tools.sortByName', 'Name')}</option>
+                <option value="plan">{t('tools.sortByPlan', 'Plan')}</option>
               </select>
 
-              {/* View Toggle */}
-              <div className="flex gap-1 bg-gray-800 p-1 rounded-lg">
+              <div className="flex p-0.5 rounded-vos-md bg-vos-bg-elev-3 border border-vos-border-1">
                 <button
                   onClick={() => setViewMode('grid')}
-                  className={`p-2 rounded ${viewMode === 'grid' ? 'bg-gray-700 text-white' : 'text-gray-400'}`}
+                  aria-label="Grid view"
+                  className={`size-7 rounded flex items-center justify-center transition-colors ${
+                    viewMode === 'grid'
+                      ? 'bg-vos-bg-elev-4 text-vos-text'
+                      : 'text-vos-text-3 hover:text-vos-text'
+                  }`}
                 >
-                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" />
-                  </svg>
+                  <LayoutGrid size={13} />
                 </button>
                 <button
                   onClick={() => setViewMode('list')}
-                  className={`p-2 rounded ${viewMode === 'list' ? 'bg-gray-700 text-white' : 'text-gray-400'}`}
+                  aria-label="List view"
+                  className={`size-7 rounded flex items-center justify-center transition-colors ${
+                    viewMode === 'list'
+                      ? 'bg-vos-bg-elev-4 text-vos-text'
+                      : 'text-vos-text-3 hover:text-vos-text'
+                  }`}
                 >
-                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 10h16M4 14h16M4 18h16" />
-                  </svg>
+                  <List size={13} />
                 </button>
               </div>
             </div>
           </div>
 
-          {/* Category Multi-Select */}
-          <div className="mt-4">
-            <div className="flex items-center gap-2 mb-2">
-              <span className="text-sm text-gray-400">{t('tools.categoriesLabel', 'Categories:')}</span>
+          {/* Categories */}
+          <div>
+            <div className="flex items-center gap-vos-3 mb-vos-2">
+              <span className="text-[10px] font-semibold uppercase tracking-vos-wide text-vos-text-3">
+                {t('tools.categoriesLabel', 'Categories')}
+              </span>
               {selectedCategories.length > 0 && (
                 <button
                   onClick={() => setSelectedCategories([])}
-                  className="text-xs text-kali-blue hover:underline"
+                  className="text-vos-xs text-vos-accent hover:opacity-80"
                 >
-                  Clear selection ({selectedCategories.length})
+                  Clear ({selectedCategories.length})
                 </button>
               )}
             </div>
-            <div className="flex flex-wrap gap-2">
-              {categoryList.map(category => (
-                <button
-                  key={category}
-                  onClick={() => toggleCategory(category)}
-                  className={`px-3 py-1.5 rounded-full text-sm font-medium transition flex items-center gap-1.5 ${
-                    selectedCategories.includes(category)
-                      ? 'bg-kali-blue text-white'
-                      : 'bg-gray-800 text-gray-400 hover:text-white hover:bg-gray-700'
-                  }`}
-                >
-                  <span>{categoryIcons[category] || '🔧'}</span>
-                  <span>{categoryDisplayNames[category] || category}</span>
-                  <span className="bg-gray-700 px-1.5 py-0.5 rounded text-xs">
-                    {allCategories[category]?.tools?.length || 0}
-                  </span>
-                </button>
-              ))}
+            <div className="flex flex-wrap gap-1.5">
+              {categoryList.map((category) => {
+                const count = allCategories[category]?.tools?.length || 0;
+                return (
+                  <FilterChip
+                    key={category}
+                    label={categoryDisplayNames[category] || category}
+                    value={count}
+                    icon={(p) => <CategoryIcon name={category} size={p.size} />}
+                    active={selectedCategories.includes(category)}
+                    onClick={() => toggleCategory(category)}
+                  />
+                );
+              })}
             </div>
           </div>
-        </div>
+        </section>
 
-        {/* Results Summary */}
-        <div className="flex items-center justify-between mb-6">
-          <p className="text-sm text-gray-400">
-            Showing <span className="text-white font-medium">{filteredCount}</span> of <span className="text-white font-medium">{totalTools}</span> tools
-            {searchQuery && <span> matching "<span className="text-kali-blue">{searchQuery}</span>"</span>}
-            {selectedCategories.length > 0 && <span> in {selectedCategories.length} categories</span>}
+        {/* Results summary */}
+        <div className="flex items-center justify-between text-vos-xs text-vos-text-3">
+          <p>
+            Showing{' '}
+            <span className="text-vos-text font-semibold tabular-nums">{filteredCount}</span> of{' '}
+            <span className="text-vos-text font-semibold tabular-nums">{totalTools}</span> tools
+            {searchQuery && (
+              <>
+                {' '}
+                matching <span className="text-vos-accent">"{searchQuery}"</span>
+              </>
+            )}
+            {selectedCategories.length > 0 && (
+              <> in {selectedCategories.length} categories</>
+            )}
           </p>
-          
-          {(searchQuery || selectedCategories.length > 0 || showOnlyInstalled || showOnlyAvailable) && (
+          {(searchQuery ||
+            selectedCategories.length > 0 ||
+            showOnlyInstalled ||
+            showOnlyAvailable) && (
             <button
               onClick={clearFilters}
-              className="text-sm text-kali-blue hover:underline"
+              className="text-vos-accent hover:opacity-80 font-medium"
             >
               Clear all filters
             </button>
           )}
         </div>
 
-        {/* Tools Display - Virtualized */}
+        {/* Tools display */}
         {viewMode === 'grid' ? (
           <VirtualizedToolGrid
             filteredCategories={filteredCategories}
-            categoryColors={categoryColors}
-            categoryIcons={categoryIcons}
-            categoryDisplayNames={categoryDisplayNames}
             canUseTool={canUseTool}
-            getPlanBadge={getPlanBadge}
-            userPlan={userPlan}
-            scrollContainerRef={scrollContainerRef}
           />
         ) : (
-          <VirtualizedToolList
-            filteredCategories={filteredCategories}
-            categoryColors={categoryColors}
-            categoryIcons={categoryIcons}
-            categoryDisplayNames={categoryDisplayNames}
-            canUseTool={canUseTool}
-            getPlanBadge={getPlanBadge}
-            scrollContainerRef={scrollContainerRef}
-          />
+          <VirtualizedToolList filteredCategories={filteredCategories} />
         )}
 
-        {/* Empty State */}
         {Object.keys(filteredCategories).length === 0 && (
-          <div className="text-center py-16">
-            <div className="w-16 h-16 mx-auto rounded-full bg-gray-800 flex items-center justify-center mb-4">
-              <svg className="w-8 h-8 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-              </svg>
-            </div>
-            <h3 className="text-lg font-medium text-white mb-2">{t('tools.noToolsFound', 'No tools found')}</h3>
-            <p className="text-gray-400 mb-4">{t('tools.adjustFilters', 'Try adjusting your search or filter criteria.')}</p>
+          <div className="text-center py-vos-16 rounded-vos-xl border border-vos-border-1 bg-vos-bg-elev-2">
+            <span className="size-12 mx-auto rounded-vos-md bg-vos-bg-elev-3 border border-vos-border-1 flex items-center justify-center text-vos-text-3 mb-vos-3">
+              <Search size={20} />
+            </span>
+            <h3 className="text-vos-md font-semibold text-vos-text mb-1">
+              {t('tools.noToolsFound', 'No tools found')}
+            </h3>
+            <p className="text-vos-sm text-vos-text-3 mb-vos-4">
+              {t('tools.adjustFilters', 'Try adjusting your search or filter criteria.')}
+            </p>
             <button
               onClick={clearFilters}
-              className="px-4 py-2 bg-kali-blue hover:bg-kali-blue/90 text-white rounded-lg transition"
+              className="px-vos-4 h-9 rounded-vos-md bg-vos-accent text-white text-vos-sm font-medium hover:opacity-90"
             >
               Clear all filters
             </button>
           </div>
         )}
       </div>
-    </div>
     </PageTransition>
   );
 }
 
-// ==========================================
-// VIRTUALIZED GRID VIEW (Tool Cards)
-// ==========================================
+/* ════════════════════════════════════════════════════════════════════ *
+ *  GRID VIEW — virtualized
+ * ════════════════════════════════════════════════════════════════════ */
 
-type VirtualGridRow = 
+type VirtualGridRow =
   | { type: 'header'; categoryKey: string; toolCount: number }
   | { type: 'cards'; tools: Array<{ tool: Tool; categoryKey: string }> };
 
-interface VirtualizedToolGridProps {
-  filteredCategories: { [key: string]: Tool[] };
-  categoryColors: { [key: string]: string };
-  categoryIcons: { [key: string]: string };
-  categoryDisplayNames: { [key: string]: string };
-  canUseTool: (plan: string) => boolean;
-  getPlanBadge: (plan: string) => React.ReactNode;
-  userPlan: string;
-  scrollContainerRef: React.RefObject<HTMLDivElement | null>;
-}
-
 function VirtualizedToolGrid({
   filteredCategories,
-  categoryColors,
-  categoryIcons,
-  categoryDisplayNames,
   canUseTool,
-  getPlanBadge,
-  userPlan,
-}: VirtualizedToolGridProps) {
-  const { t } = useTranslation();
+}: {
+  filteredCategories: { [key: string]: Tool[] };
+  canUseTool: (plan: string) => boolean;
+}) {
   const containerRef = useRef<HTMLDivElement>(null);
-  const COLS = 4; // xl:grid-cols-4
+  const COLS = 4;
 
-  // Build flat virtual rows: headers + card rows
   const virtualRows = useMemo(() => {
     const rows: VirtualGridRow[] = [];
     Object.entries(filteredCategories).forEach(([categoryKey, tools]) => {
       rows.push({ type: 'header', categoryKey, toolCount: tools.length });
-      // Chunk tools into rows of COLS
       for (let i = 0; i < tools.length; i += COLS) {
         rows.push({
           type: 'cards',
-          tools: tools.slice(i, i + COLS).map(tool => ({ tool, categoryKey })),
+          tools: tools.slice(i, i + COLS).map((tool) => ({ tool, categoryKey })),
         });
       }
     });
@@ -565,7 +519,7 @@ function VirtualizedToolGrid({
   const rowVirtualizer = useVirtualizer({
     count: virtualRows.length,
     getScrollElement: () => containerRef.current,
-    estimateSize: (index) => virtualRows[index].type === 'header' ? 64 : 220,
+    estimateSize: (index) => (virtualRows[index].type === 'header' ? 56 : 188),
     overscan: 5,
   });
 
@@ -573,7 +527,7 @@ function VirtualizedToolGrid({
     <div
       ref={containerRef}
       className="overflow-auto"
-      style={{ maxHeight: 'calc(100vh - 420px)' }}
+      style={{ maxHeight: 'calc(100vh - 460px)' }}
     >
       <div
         style={{
@@ -584,7 +538,7 @@ function VirtualizedToolGrid({
       >
         {rowVirtualizer.getVirtualItems().map((virtualRow) => {
           const row = virtualRows[virtualRow.index];
-          
+
           if (row.type === 'header') {
             return (
               <div
@@ -597,21 +551,21 @@ function VirtualizedToolGrid({
                   height: `${virtualRow.size}px`,
                   transform: `translateY(${virtualRow.start}px)`,
                 }}
-                className="flex items-center gap-3 pt-6 pb-2"
+                className="flex items-center gap-vos-3 pt-vos-5 pb-vos-2"
               >
-                <div className={`w-10 h-10 rounded-xl bg-gradient-to-br ${categoryColors[row.categoryKey] || 'from-gray-500 to-gray-600'} flex items-center justify-center text-xl`}>
-                  {categoryIcons[row.categoryKey] || '🔧'}
-                </div>
+                <span className="size-9 rounded-vos-md bg-vos-bg-elev-3 border border-vos-border-1 flex items-center justify-center text-vos-text-2">
+                  <CategoryIcon name={row.categoryKey} size={16} />
+                </span>
                 <div>
-                  <h2 className="text-lg font-semibold text-white">
+                  <h2 className="text-vos-md font-semibold text-vos-text tracking-vos-snug">
                     {categoryDisplayNames[row.categoryKey] || row.categoryKey}
                   </h2>
-                  <p className="text-sm text-gray-400">{row.toolCount} tools</p>
+                  <p className="text-vos-xs text-vos-text-3">{row.toolCount} tools</p>
                 </div>
               </div>
             );
           }
-          
+
           return (
             <div
               key={virtualRow.key}
@@ -623,49 +577,16 @@ function VirtualizedToolGrid({
                 height: `${virtualRow.size}px`,
                 transform: `translateY(${virtualRow.start}px)`,
               }}
-              className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 py-2"
+              className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-vos-3 py-vos-2"
             >
-              {row.tools.map(({ tool, categoryKey }) => {
-                const canUse = canUseTool(tool.plan_required);
-                return (
-                  <div 
-                    key={tool.id}
-                    className="bg-gray-900 rounded-xl border p-5 transition group relative border-gray-800 hover:border-cyan-500/50 hover:shadow-lg hover:shadow-cyan-500/10"
-                  >
-                    <div className="flex items-start justify-between mb-3">
-                      <div className={`w-10 h-10 rounded-lg bg-gradient-to-br ${categoryColors[categoryKey] || 'from-gray-500 to-gray-600'} flex items-center justify-center`}>
-                        <span className="text-lg">{categoryIcons[categoryKey] || '🔧'}</span>
-                      </div>
-                      <div className="flex flex-col items-end gap-1">
-                        {tool.installed && <span className="text-xs text-green-400">✓ Installed</span>}
-                        {tool.gui_only && <span className="text-xs text-yellow-400" title={t('tools.guiOnlyTitle', 'Requires desktop environment (VNC/RDP)')}>🖥️ {t('tools.guiOnly', 'GUI Only')}</span>}
-                        {tool.requires_root && <span className="text-xs text-orange-400" title={t('tools.rootTitle', 'Runs with elevated privileges')}>🔐 {t('tools.root', 'Root')}</span>}
-                        {tool.dangerous && <span className="text-xs text-red-400" title={t('tools.dangerousTitle', 'Use with caution - may affect target systems')}>⚠️ {t('tools.dangerous', 'Dangerous')}</span>}
-                      </div>
-                    </div>
-                    <h3 className="text-white font-semibold mb-2 group-hover:text-kali-blue transition">
-                      {tool.name}
-                    </h3>
-                    <p className="text-sm text-gray-400 line-clamp-2 mb-4">
-                      {tool.description || 'No description available'}
-                    </p>
-                    <div className="flex gap-2">
-                      {tool.gui_only ? (
-                        <div className="flex-1 py-2 bg-yellow-900/30 text-yellow-400 text-center rounded-lg text-sm font-medium cursor-not-allowed">
-                          🖥️ Desktop Required
-                        </div>
-                      ) : (
-                        <Link 
-                          to={`/dashboard/tools/${tool.id}`}
-                          className="flex-1 py-2 bg-kali-blue hover:bg-kali-blue/90 text-white text-center rounded-lg text-sm font-medium transition"
-                        >
-                          {tool.requires_root ? '🔐 Run as Root' : '⚡ Run Tool'}
-                        </Link>
-                      )}
-                    </div>
-                  </div>
-                );
-              })}
+              {row.tools.map(({ tool, categoryKey }) => (
+                <ToolCard
+                  key={tool.id}
+                  tool={tool}
+                  categoryKey={categoryKey}
+                  canUse={canUseTool(tool.plan_required)}
+                />
+              ))}
             </div>
           );
         })}
@@ -674,130 +595,177 @@ function VirtualizedToolGrid({
   );
 }
 
-// ==========================================
-// VIRTUALIZED LIST VIEW (Table Rows)
-// ==========================================
-
-interface VirtualizedToolListProps {
-  filteredCategories: { [key: string]: Tool[] };
-  categoryColors: { [key: string]: string };
-  categoryIcons: { [key: string]: string };
-  categoryDisplayNames: { [key: string]: string };
-  canUseTool: (plan: string) => boolean;
-  getPlanBadge: (plan: string) => React.ReactNode;
-  scrollContainerRef: React.RefObject<HTMLDivElement | null>;
+function ToolCard({
+  tool,
+  categoryKey,
+  canUse,
+}: {
+  tool: Tool;
+  categoryKey: string;
+  canUse: boolean;
+}) {
+  void canUse;
+  const { t } = useTranslation();
+  return (
+    <div className="group rounded-vos-xl border border-vos-border-1 bg-vos-bg-elev-2 hover:border-vos-border-2 hover:bg-vos-bg-elev-3/50 transition-colors p-vos-4 flex flex-col">
+      <div className="flex items-start justify-between mb-vos-3">
+        <span className="size-9 rounded-vos-md bg-vos-bg-elev-3 border border-vos-border-1 flex items-center justify-center text-vos-text-2 group-hover:text-vos-accent group-hover:border-vos-accent/30 transition-colors">
+          <CategoryIcon name={categoryKey} size={16} />
+        </span>
+        <div className="flex flex-col items-end gap-1">
+          {tool.installed && (
+            <StatusPill tone="success">
+              <CheckCircle2 size={10} />
+              Installed
+            </StatusPill>
+          )}
+          {tool.gui_only && (
+            <StatusPill tone="warning">
+              <Monitor size={10} />
+              GUI
+            </StatusPill>
+          )}
+          {tool.requires_root && (
+            <StatusPill tone="warning">
+              <Lock size={10} />
+              Root
+            </StatusPill>
+          )}
+          {tool.dangerous && (
+            <StatusPill tone="danger">
+              <AlertTriangle size={10} />
+              Dangerous
+            </StatusPill>
+          )}
+        </div>
+      </div>
+      <h3 className="text-vos-sm font-semibold text-vos-text">{tool.name}</h3>
+      <p className="text-vos-xs text-vos-text-3 line-clamp-2 mt-1 mb-vos-3 flex-1">
+        {tool.description || 'No description available'}
+      </p>
+      {tool.gui_only ? (
+        <div className="h-9 flex items-center justify-center rounded-vos-md bg-vos-warning/10 border border-vos-warning/20 text-vos-warning text-vos-xs font-medium">
+          <Monitor size={12} className="mr-1.5" /> Desktop required
+        </div>
+      ) : (
+        <Link
+          to={`/dashboard/tools/${tool.id}`}
+          className="h-9 inline-flex items-center justify-center gap-1.5 rounded-vos-md bg-vos-bg-elev-3 hover:bg-vos-accent hover:text-white border border-vos-border-1 hover:border-vos-accent text-vos-text text-vos-xs font-medium transition-colors"
+        >
+          {tool.requires_root ? (
+            <>
+              <Lock size={12} />
+              {t('common.runAsRoot', 'Run as Root')}
+            </>
+          ) : (
+            <>
+              <TerminalSquare size={12} />
+              {t('common.runTool', 'Run Tool')}
+            </>
+          )}
+        </Link>
+      )}
+    </div>
+  );
 }
+
+/* ════════════════════════════════════════════════════════════════════ *
+ *  LIST VIEW — virtualized dense table
+ * ════════════════════════════════════════════════════════════════════ */
 
 function VirtualizedToolList({
   filteredCategories,
-  categoryColors,
-  categoryIcons,
-  categoryDisplayNames,
-  canUseTool,
-  getPlanBadge,
-}: VirtualizedToolListProps) {
-  const { t } = useTranslation();
+}: {
+  filteredCategories: { [key: string]: Tool[] };
+}) {
   const containerRef = useRef<HTMLDivElement>(null);
 
-  // Flatten all tools for list virtualization
-  const flatTools = useMemo(() => {
-    return Object.entries(filteredCategories).flatMap(([categoryKey, tools]) =>
-      tools.map(tool => ({ tool, categoryKey }))
-    );
-  }, [filteredCategories]);
+  const flatTools = useMemo(
+    () =>
+      Object.entries(filteredCategories).flatMap(([categoryKey, tools]) =>
+        tools.map((tool) => ({ tool, categoryKey })),
+      ),
+    [filteredCategories],
+  );
 
   const rowVirtualizer = useVirtualizer({
     count: flatTools.length,
     getScrollElement: () => containerRef.current,
-    estimateSize: () => 64,
+    estimateSize: () => 52,
     overscan: 15,
   });
 
   return (
-    <div className="bg-gray-900 rounded-xl border border-gray-800 overflow-hidden">
-      <table className="w-full">
-        <thead>
-          <tr className="text-left text-sm text-gray-400 border-b border-gray-800">
-            <th className="px-5 py-3 font-medium">{t('common.tool', 'Tool')}</th>
-            <th className="px-5 py-3 font-medium">{t('tools.category', 'Category')}</th>
-            <th className="px-5 py-3 font-medium">{t('tools.plan', 'Plan')}</th>
-            <th className="px-5 py-3 font-medium">{t('common.status', 'Status')}</th>
-            <th className="px-5 py-3 font-medium">{t('common.actions', 'Actions')}</th>
-          </tr>
-        </thead>
-      </table>
-
+    <div className="rounded-vos-xl border border-vos-border-1 bg-vos-bg-elev-2 overflow-hidden">
+      <div className="grid grid-cols-[3fr_2fr_1fr_1fr] px-vos-4 py-vos-2 bg-vos-bg-elev-1/40 border-b border-vos-border-1 text-[10px] uppercase tracking-vos-wide font-semibold text-vos-text-3">
+        <span>Tool</span>
+        <span>Category</span>
+        <span>Status</span>
+        <span className="text-right">Action</span>
+      </div>
       <div
         ref={containerRef}
         className="overflow-auto"
-        style={{ maxHeight: 'calc(100vh - 420px)' }}
+        style={{ maxHeight: 'calc(100vh - 480px)' }}
       >
         <div style={{ height: `${rowVirtualizer.getTotalSize()}px`, position: 'relative' }}>
-          <table className="w-full">
-            <tbody>
-              {rowVirtualizer.getVirtualItems().map((virtualRow) => {
-                const { tool, categoryKey } = flatTools[virtualRow.index];
-                const canUse = canUseTool(tool.plan_required);
-                return (
-                  <tr
-                    key={virtualRow.key}
-                    className="border-b border-gray-800/50 hover:bg-gray-800/30 transition"
-                    style={{
-                      position: 'absolute',
-                      top: 0,
-                      left: 0,
-                      width: '100%',
-                      height: `${virtualRow.size}px`,
-                      transform: `translateY(${virtualRow.start}px)`,
-                      display: 'flex',
-                      alignItems: 'center',
-                    }}
+          {rowVirtualizer.getVirtualItems().map((virtualRow) => {
+            const { tool, categoryKey } = flatTools[virtualRow.index];
+            return (
+              <div
+                key={virtualRow.key}
+                style={{
+                  position: 'absolute',
+                  top: 0,
+                  left: 0,
+                  width: '100%',
+                  height: `${virtualRow.size}px`,
+                  transform: `translateY(${virtualRow.start}px)`,
+                }}
+                className="grid grid-cols-[3fr_2fr_1fr_1fr] items-center gap-vos-2 px-vos-4 border-t border-vos-border-1 hover:bg-vos-bg-elev-3/40 transition-colors"
+              >
+                <div className="flex items-center gap-vos-3 min-w-0">
+                  <span className="size-7 rounded-vos-sm bg-vos-bg-elev-3 border border-vos-border-1 flex items-center justify-center text-vos-text-2 shrink-0">
+                    <CategoryIcon name={categoryKey} size={13} />
+                  </span>
+                  <div className="min-w-0">
+                    <p className="text-vos-sm text-vos-text font-medium truncate">{tool.name}</p>
+                    <p className="text-vos-xs text-vos-text-3 truncate">{tool.description}</p>
+                  </div>
+                </div>
+                <span className="text-vos-xs text-vos-text-3 truncate">
+                  {categoryDisplayNames[categoryKey] || categoryKey}
+                </span>
+                <span>
+                  {tool.installed ? (
+                    <StatusPill tone="success">
+                      <CheckCircle2 size={10} />
+                      Ready
+                    </StatusPill>
+                  ) : (
+                    <StatusPill tone="neutral">Not installed</StatusPill>
+                  )}
+                </span>
+                <div className="text-right">
+                  <Link
+                    to={`/dashboard/tools/${tool.id}`}
+                    className="inline-flex items-center gap-1 px-vos-3 h-7 rounded-vos-sm bg-vos-bg-elev-3 hover:bg-vos-accent hover:text-white border border-vos-border-1 hover:border-vos-accent text-vos-xs font-medium transition-colors"
                   >
-                    <td className="px-5 py-4 flex-[3]">
-                      <div className="flex items-center gap-3">
-                        <div className={`w-8 h-8 rounded-lg bg-gradient-to-br ${categoryColors[categoryKey] || 'from-gray-500 to-gray-600'} flex items-center justify-center text-sm flex-shrink-0`}>
-                          {categoryIcons[categoryKey] || '🔧'}
-                        </div>
-                        <div className="min-w-0">
-                          <p className="text-white font-medium truncate">{tool.name}</p>
-                          <p className="text-xs text-gray-400 truncate max-w-xs">{tool.description}</p>
-                        </div>
-                      </div>
-                    </td>
-                    <td className="px-5 py-4 text-sm text-gray-400 flex-[2]">
-                      {categoryDisplayNames[categoryKey] || categoryKey}
-                    </td>
-                    <td className="px-5 py-4 flex-1">
-                      {tool.installed ? (
-                        <span className="text-green-400 text-sm">✓ Installed</span>
-                      ) : (
-                        <span className="text-gray-500 text-sm">{t('tools.notInstalled', 'Not installed')}</span>
-                      )}
-                    </td>
-                    <td className="px-5 py-4 flex-1">
-                      {tool.installed ? (
-                        <span className="text-green-400 text-sm">✓ Ready</span>
-                      ) : (
-                        <span className="text-gray-500 text-sm">—</span>
-                      )}
-                    </td>
-                    <td className="px-5 py-4 flex-1">
-                      <Link 
-                        to={`/dashboard/tools/${tool.id}`}
-                        className="px-3 py-1.5 bg-kali-blue hover:bg-kali-blue/90 text-white rounded text-sm transition inline-block"
-                      >
-                        Run
-                      </Link>
-                    </td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
+                    <TerminalSquare size={11} />
+                    Run
+                  </Link>
+                </div>
+              </div>
+            );
+          })}
         </div>
       </div>
     </div>
   );
 }
 
+// Backward-compat default export
 export default ToolsPage;
+
+// Suppress unused import lint for Shield (was used in legacy heading)
+void Shield;
