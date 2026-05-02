@@ -27,3 +27,6 @@ export { Spinner } from './Spinner';
 export { Tabs, TabsList, TabsTrigger, TabsContent } from './Tabs';
 export { Switch } from './Switch';
 export { Avatar } from './Avatar';
+export { VosAppShell } from './VosAppShell';
+export { VosSidebar, type VosNavItem } from './VosSidebar';
+export { VosTopbar } from './VosTopbar';
