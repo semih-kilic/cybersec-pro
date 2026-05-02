@@ -5,7 +5,6 @@ import { QueryClientProvider } from '@tanstack/react-query';
 import { queryClient, setGlobalToastError } from './lib/queryClient';
 import { OverviewSkeleton } from './components/ui/Skeleton';
 import { ErrorBoundary } from './components/ui/ErrorBoundary';
-import { NotificationCenter } from './components/ui/NotificationCenter';
 import { Breadcrumb } from './components/ui/Breadcrumb';
 import { OfflineBanner } from './components/ui/OfflineBanner';
 import { ScrollToTop } from './components/ui/ScrollToTop';
@@ -16,9 +15,17 @@ import './i18n';
 // Auth
 import { AuthProvider, useAuth } from './hooks/useAuth';
 
-// Layout
-import { Sidebar } from './components/layout/Sidebar';
-import { useState, useCallback } from 'react';
+// Layout (legacy Sidebar still available for incremental rollback if needed)
+// import { Sidebar } from './components/layout/Sidebar';
+
+// 🪟 Vision OS Shell + nav icons
+import { VosAppShell, type VosNavItem } from './components/vos';
+import {
+  LayoutGrid, Wrench, Activity, Crosshair, FileText, Calendar,
+  FolderKanban, Server, BarChart3, Sparkles, Swords, Terminal as TerminalIcn,
+  ShieldCheck, Bug, Newspaper, GraduationCap, FileCheck2, Users,
+  BrainCircuit, FileStack, Settings as SettingsIcn, MessageCircle, BookOpen,
+} from 'lucide-react';
 
 // Global Context
 import { TargetProvider } from './contexts/TargetContext';
@@ -184,32 +191,46 @@ function PublicRoute({ children }: { children: React.ReactNode }) {
   return <>{children}</>;
 }
 
-// Dashboard Layout with Sidebar — V18: Collapsible sidebar + responsive
+// Dashboard Layout — V19: Vision OS shell (glass + mesh + 3D depth)
+const DASHBOARD_NAV: VosNavItem[] = [
+  { label: 'Dashboard',       to: '/dashboard',                  icon: LayoutGrid,    section: 'Workspace' },
+  { label: 'Tools',           to: '/dashboard/tools',            icon: Wrench },
+  { label: 'Scans',           to: '/dashboard/scans',            icon: Activity },
+  { label: 'Targets',         to: '/dashboard/targets',          icon: Crosshair },
+  { label: 'Reports',         to: '/dashboard/reports',          icon: FileText },
+  { label: 'Schedule',        to: '/dashboard/schedule',         icon: Calendar },
+  { label: 'Projects',        to: '/dashboard/projects',         icon: FolderKanban,  section: 'Operations' },
+  { label: 'Agents',          to: '/dashboard/agents',           icon: Server },
+  { label: 'Analytics',       to: '/dashboard/analytics',        icon: BarChart3 },
+  { label: 'AI Assistant',    to: '/dashboard/ai',               icon: Sparkles,      section: 'Intelligence' },
+  { label: 'CyberSec AI',     to: '/dashboard/cybersec-ai',      icon: BrainCircuit },
+  { label: 'Purple Team',     to: '/dashboard/purple-team',      icon: Swords },
+  { label: 'Terminal',        to: '/dashboard/terminal',         icon: TerminalIcn },
+  { label: 'Threat Intel',    to: '/dashboard/threat-intel',     icon: ShieldCheck,   section: 'Knowledge' },
+  { label: 'Vulnerabilities', to: '/dashboard/vulnerabilities',  icon: Bug },
+  { label: 'Security News',   to: '/dashboard/news',             icon: Newspaper },
+  { label: 'Learning',        to: '/dashboard/learning',         icon: GraduationCap },
+  { label: 'Compliance',      to: '/dashboard/compliance',       icon: FileCheck2 },
+  { label: 'Community',       to: '/dashboard/community',        icon: Users },
+  { label: 'Scan Templates',  to: '/dashboard/scan-templates',   icon: FileStack },
+];
+
+const DASHBOARD_BOTTOM_NAV: VosNavItem[] = [
+  { label: 'Settings',      to: '/dashboard/settings', icon: SettingsIcn },
+  { label: 'Feedback',      to: '/dashboard/feedback', icon: MessageCircle },
+  { label: 'Documentation', to: '/docs.html',          icon: BookOpen, external: true },
+];
+
 function DashboardLayout() {
-  const { isPaletteOpen, closePalette, showShortcutsHelp, setShowShortcutsHelp } = useKeyboardShortcuts();
+  const { user, logout } = useAuth();
+  const { isPaletteOpen, openPalette, closePalette, showShortcutsHelp, setShowShortcutsHelp } = useKeyboardShortcuts();
   const { requestPermission } = useBrowserNotifications();
   const location = useLocation();
-  const [sidebarOpen, setSidebarOpen] = useState(false);
-  const [sidebarCollapsed, setSidebarCollapsed] = useState(() => {
-    try { return localStorage.getItem('cybersecpro_sidebar_collapsed') === 'true'; }
-    catch { return false; }
-  });
-
-  const toggleSidebar = useCallback(() => setSidebarOpen(prev => !prev), []);
-  const closeSidebar = useCallback(() => setSidebarOpen(false), []);
-  const toggleCollapse = useCallback(() => {
-    setSidebarCollapsed(prev => {
-      const next = !prev;
-      try { localStorage.setItem('cybersecpro_sidebar_collapsed', String(next)); } catch {}
-      return next;
-    });
-  }, []);
 
   // Connect WebSocket once when dashboard mounts
   useEffect(() => {
     wsManager.connect();
     requestPermission();
-    return () => { /* keep connection alive across route changes */ };
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Google Analytics — track SPA route changes
@@ -222,67 +243,36 @@ function DashboardLayout() {
     }
   }, [location.pathname, location.search]);
 
+  const displayName = user
+    ? `${user.first_name ?? ''} ${user.last_name ?? ''}`.trim() || user.email
+    : undefined;
+
   return (
     <TargetProvider>
       <ScrollToTop />
-      <div className="flex min-h-screen bg-gray-950">
-        {/* Accessibility: skip navigation link */}
-        <a href="#main-content" className="skip-to-content">
-          Skip to main content
-        </a>
+      <a href="#main-content" className="skip-to-content">Skip to main content</a>
 
-        {/* Mobile overlay backdrop */}
-        {sidebarOpen && (
-          <div
-            className="fixed inset-0 bg-black/60 z-40 lg:hidden backdrop-blur-sm"
-            onClick={closeSidebar}
-            aria-hidden="true"
-          />
-        )}
-
-        {/* Sidebar — hidden on mobile by default, slide-in when open */}
-        <Sidebar isOpen={sidebarOpen} onClose={closeSidebar} isCollapsed={sidebarCollapsed} onToggleCollapse={toggleCollapse} />
-
-        {/* Main Content — dynamic margin based on collapsed state */}
-        <main className={`flex-1 ${sidebarCollapsed ? 'lg:ml-16' : 'lg:ml-64'} overflow-auto min-w-0 transition-[margin] duration-300`} id="main-content" role="main" aria-label="Dashboard content">
-          {/* Global offline banner */}
-          <OfflineBanner />
-          {/* Mobile top bar with hamburger */}
-          <div className="sticky top-0 z-30 lg:hidden flex items-center gap-3 px-4 py-3 bg-gray-900/95 backdrop-blur-md border-b border-gray-800">
-            <button
-              onClick={toggleSidebar}
-              className="p-2 rounded-lg text-gray-400 hover:text-white hover:bg-gray-800 transition active:scale-95"
-              aria-label="Open menu"
-            >
-              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
-              </svg>
-            </button>
-            <div className="flex items-center gap-2">
-              <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-kali-blue to-kali-purple flex items-center justify-center">
-                <svg className="w-4 h-4 text-white" viewBox="0 0 24 24" fill="currentColor">
-                  <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/>
-                </svg>
-              </div>
-              <span className="text-sm font-bold text-white">CyberSec Pro</span>
-            </div>
-            <div className="ml-auto flex items-center gap-1">
-              <NotificationCenter />
-            </div>
-          </div>
-
+      <VosAppShell
+        nav={DASHBOARD_NAV}
+        bottomNav={DASHBOARD_BOTTOM_NAV}
+        brand="CyberSec Pro"
+        user={{ name: displayName, email: user?.email, avatarUrl: user?.avatar_url }}
+        onSearch={openPalette}
+        onLogout={logout}
+      >
+        <OfflineBanner />
+        <div id="main-content" role="main" aria-label="Dashboard content">
           <Suspense fallback={<OverviewSkeleton />}>
             <ErrorBoundary key={location.pathname} fallback={<RouteErrorFallback />}>
-              <div className="px-4 pt-3 lg:px-6 lg:pt-4">
-                <Breadcrumb />
-              </div>
+              <Breadcrumb />
               <Outlet />
             </ErrorBoundary>
           </Suspense>
-        </main>
-        <CommandPalette isOpen={isPaletteOpen} onClose={closePalette} />
-        <ShortcutsHelp isOpen={showShortcutsHelp} onClose={() => setShowShortcutsHelp(false)} />
-      </div>
+        </div>
+      </VosAppShell>
+
+      <CommandPalette isOpen={isPaletteOpen} onClose={closePalette} />
+      <ShortcutsHelp isOpen={showShortcutsHelp} onClose={() => setShowShortcutsHelp(false)} />
     </TargetProvider>
   );
 }
