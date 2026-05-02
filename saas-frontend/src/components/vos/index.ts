@@ -30,3 +30,4 @@ export { Avatar } from './Avatar';
 export { VosAppShell } from './VosAppShell';
 export { VosSidebar, type VosNavItem } from './VosSidebar';
 export { VosTopbar } from './VosTopbar';
+export { VosUserMenu } from './VosUserMenu';

@@ -1,7 +1,7 @@
 import { useLocation, Link } from 'react-router-dom';
 import { useMemo } from 'react';
 import { Bell, Menu, Search, ChevronRight } from 'lucide-react';
-import { Avatar } from './Avatar';
+import { VosUserMenu } from './VosUserMenu';
 import { cn } from '../../lib/cn';
 
 /**
@@ -10,18 +10,20 @@ import { cn } from '../../lib/cn';
  *   • Mobile menu toggle (hidden on lg+)
  *   • Auto-generated breadcrumb from URL pathname
  *   • Inline search trigger (⌘K)
- *   • Notifications + user pill
+ *   • Notifications + user dropdown menu
  */
 export function VosTopbar({
   user,
   onSearch,
   onMenu,
   onLogout,
+  onShortcuts,
 }: {
-  user?: { name?: string; email?: string; avatarUrl?: string };
+  user?: { name?: string; email?: string; avatarUrl?: string; role?: string; plan?: string };
   onSearch?: () => void;
   onMenu?: () => void;
   onLogout?: () => void;
+  onShortcuts?: () => void;
 }) {
   const { pathname } = useLocation();
 
@@ -41,13 +43,8 @@ export function VosTopbar({
       className={cn(
         'sticky top-0 z-vos-sticky',
         'h-vos-topbar flex items-center gap-vos-4 px-vos-4 lg:px-vos-6',
+        'vos-topbar-surface',
       )}
-      style={{
-        background: 'rgba(0, 0, 0, 0.72)',
-        backdropFilter: 'blur(20px) saturate(180%)',
-        WebkitBackdropFilter: 'blur(20px) saturate(180%)',
-        boxShadow: '0 1px 0 0 var(--vos-border-1)',
-      }}
     >
       <button
         type="button"
@@ -124,29 +121,8 @@ export function VosTopbar({
         <span className="absolute top-2 right-2 size-1.5 rounded-full bg-vos-danger" />
       </button>
 
-      {/* User pill */}
-      <div className="flex items-center gap-vos-2 pl-vos-2 pr-1 py-1 rounded-vos-full border border-vos-border-1 bg-vos-bg-elev-1">
-        <div className="hidden sm:flex flex-col items-end leading-tight pl-1">
-          <span className="text-vos-xs font-medium text-vos-text truncate max-w-[160px]">
-            {user?.name ?? 'Operator'}
-          </span>
-          {user?.email && (
-            <span className="text-[10px] text-vos-text-muted truncate max-w-[160px]">
-              {user.email}
-            </span>
-          )}
-        </div>
-        <Avatar name={user?.name} src={user?.avatarUrl} size="sm" />
-        {onLogout && (
-          <button
-            type="button"
-            onClick={onLogout}
-            className="hidden sm:inline-flex text-vos-2xs text-vos-text-muted hover:text-vos-text-2 px-2"
-          >
-            Sign out
-          </button>
-        )}
-      </div>
+      {/* User dropdown menu */}
+      <VosUserMenu user={user} onLogout={onLogout} onShortcuts={onShortcuts} />
     </header>
   );
 }

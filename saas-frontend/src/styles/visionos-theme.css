@@ -26,6 +26,7 @@
   --vos-bg-elev-2:    #16161b;          /* cards */
   --vos-bg-elev-3:    #1c1c22;          /* hover / popovers */
   --vos-bg-elev-4:    #22222a;          /* dropdowns, modals */
+  --vos-topbar-bg:    rgba(0, 0, 0, 0.72);
 
   /* No mesh, no aurora */
   --vos-mesh: none;
@@ -227,6 +228,66 @@
   --vos-sidebar-w:           260px;
   --vos-sidebar-w-collapsed:  64px;
   --vos-topbar-h:             52px;
+}
+
+/* ============================================================ *
+ *  LIGHT MODE — Apple System Settings light (restrained, not bright white)
+ *  Activated by .light class on <html> (set by ColorModeContext).
+ * ============================================================ */
+html.light {
+  /* Surfaces — Apple silver, never pure white */
+  --vos-bg:           #f5f5f7;
+  --vos-bg-deep:      #ececef;
+  --vos-bg-canvas:    #f5f5f7;
+  --vos-bg-elev-1:    #ffffff;          /* sidebar / topbar */
+  --vos-bg-elev-2:    #ffffff;          /* cards */
+  --vos-bg-elev-3:    #f0f0f3;          /* hover */
+  --vos-bg-elev-4:    #ffffff;          /* modals */
+  --vos-topbar-bg:    rgba(255, 255, 255, 0.78);
+
+  --vos-glass-1: rgba(0, 0, 0, 0.025);
+  --vos-glass-2: rgba(0, 0, 0, 0.04);
+  --vos-glass-3: rgba(0, 0, 0, 0.06);
+  --vos-glass-4: rgba(0, 0, 0, 0.08);
+  --vos-glass-tint: rgba(255, 255, 255, 0.7);
+
+  /* Hairlines — darker for light mode */
+  --vos-border-1:      rgba(0, 0, 0, 0.08);
+  --vos-border-2:      rgba(0, 0, 0, 0.12);
+  --vos-border-3:      rgba(0, 0, 0, 0.18);
+  --vos-border-strong: rgba(0, 0, 0, 0.28);
+
+  --vos-highlight:        inset 0 1px 0 0 rgba(255, 255, 255, 0.6);
+  --vos-highlight-strong: inset 0 1px 0 0 rgba(255, 255, 255, 0.85);
+
+  /* Text — Apple's exact light mode greys */
+  --vos-text:        #1d1d1f;
+  --vos-text-2:      #424245;
+  --vos-text-3:      #6e6e73;
+  --vos-text-muted:  #86868b;
+  --vos-text-on-accent: #ffffff;
+
+  /* Accent — Apple system blue light mode */
+  --vos-accent:      #0066cc;
+  --vos-accent-2:    #0077ed;
+  --vos-accent-soft: rgba(0, 102, 204, 0.10);
+  --vos-accent-glow: rgba(0, 102, 204, 0.20);
+
+  /* Apple system semantic (light mode) */
+  --vos-success:       #248a3d;
+  --vos-success-soft:  rgba(36, 138, 61, 0.10);
+  --vos-warning:       #b25000;
+  --vos-warning-soft:  rgba(178, 80, 0, 0.10);
+  --vos-danger:        #d70015;
+  --vos-danger-soft:   rgba(215, 0, 21, 0.10);
+  --vos-info:          #0071a4;
+  --vos-info-soft:     rgba(0, 113, 164, 0.10);
+}
+
+/* Apply surface bg to html in light mode */
+html.light body {
+  background: var(--vos-bg);
+  color: var(--vos-text);
 }
 
 @media (prefers-reduced-motion: reduce) {

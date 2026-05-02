@@ -26,32 +26,33 @@ export function useColorMode() {
 function getSavedMode(): ColorMode {
   try {
     const saved = localStorage.getItem(STORAGE_KEY);
-    // Only accept explicit 'dark' or 'light'. Treat 'system' as 'light' to prevent
-    // OS dark-mode preference from overriding our default.
-    if (saved === 'dark') return 'dark';
-    if (saved === 'light') return 'light';
-    // 'system' or missing → force light. Write it so pre-hydration script agrees.
-    localStorage.setItem(STORAGE_KEY, 'light');
+    if (saved === 'dark' || saved === 'light' || saved === 'system') return saved;
+    // First-run default — dark (Apple-grade SOC default).
+    localStorage.setItem(STORAGE_KEY, 'dark');
   } catch { /* noop */ }
-  return 'light'; // Default to light (professional SaaS appearance)
+  return 'dark';
 }
 
 export function ColorModeProvider({ children }: { children: React.ReactNode }) {
   const [colorMode, setColorModeState] = useState<ColorMode>(getSavedMode);
+  const [systemPrefersDark, setSystemPrefersDark] = useState<boolean>(
+    typeof window !== 'undefined' ? window.matchMedia('(prefers-color-scheme: dark)').matches : true
+  );
 
-  // Listen for system preference changes (for future use)
+  // Listen for system preference changes
   useEffect(() => {
     const mq = window.matchMedia('(prefers-color-scheme: dark)');
-    const handler = () => { /* Reserved for future system pref support */ };
+    const handler = (e: MediaQueryListEvent) => setSystemPrefersDark(e.matches);
     mq.addEventListener('change', handler);
     return () => mq.removeEventListener('change', handler);
   }, []);
 
   const resolvedMode: 'dark' | 'light' = useMemo(
-    // Never follow system preference — only explicit user choice.
-    // 'system' treated as 'light' to guarantee light-mode default.
-    () => (colorMode === 'dark' ? 'dark' : 'light'),
-    [colorMode]
+    () => {
+      if (colorMode === 'system') return systemPrefersDark ? 'dark' : 'light';
+      return colorMode;
+    },
+    [colorMode, systemPrefersDark]
   );
 
   const isDark = resolvedMode === 'dark';

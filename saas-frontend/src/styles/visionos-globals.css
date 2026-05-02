@@ -28,6 +28,14 @@
   pointer-events: none;
 }
 
+/* Topbar surface — theme-aware blur strip with hairline bottom */
+.vos-topbar-surface {
+  background: var(--vos-topbar-bg);
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  box-shadow: 0 1px 0 0 var(--vos-border-1);
+}
+
 /* Optional very subtle vignette — only visible on huge displays */
 .vos-vignette {
   position: fixed;

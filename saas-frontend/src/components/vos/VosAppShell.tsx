@@ -25,14 +25,16 @@ export function VosAppShell({
   user,
   onSearch,
   onLogout,
+  onShortcuts,
   children,
 }: {
   nav: VosNavItem[];
   bottomNav?: VosNavItem[];
   brand?: string;
-  user?: { name?: string; email?: string; avatarUrl?: string };
+  user?: { name?: string; email?: string; avatarUrl?: string; role?: string; plan?: string };
   onSearch?: () => void;
   onLogout?: () => void;
+  onShortcuts?: () => void;
   children: ReactNode;
 }) {
   const location = useLocation();
@@ -64,6 +66,7 @@ export function VosAppShell({
         onToggleCollapse={() => setCollapsed(c => !c)}
         mobileOpen={mobileOpen}
         onMobileClose={() => setMobileOpen(false)}
+        userRole={user?.role}
       />
 
       {/* Mobile backdrop */}
@@ -94,6 +97,7 @@ export function VosAppShell({
             user={user}
             onSearch={onSearch}
             onLogout={onLogout}
+            onShortcuts={onShortcuts}
             onMenu={() => setMobileOpen(true)}
           >
             {children}
@@ -105,6 +109,7 @@ export function VosAppShell({
             user={user}
             onSearch={onSearch}
             onLogout={onLogout}
+            onShortcuts={onShortcuts}
             onMenu={() => setMobileOpen(true)}
           >
             {children}
@@ -120,17 +125,19 @@ function ShellInner({
   user,
   onSearch,
   onLogout,
+  onShortcuts,
   onMenu,
 }: {
   children: ReactNode;
-  user?: { name?: string; email?: string; avatarUrl?: string };
+  user?: { name?: string; email?: string; avatarUrl?: string; role?: string; plan?: string };
   onSearch?: () => void;
   onLogout?: () => void;
+  onShortcuts?: () => void;
   onMenu: () => void;
 }) {
   return (
     <>
-      <VosTopbar user={user} onSearch={onSearch} onLogout={onLogout} onMenu={onMenu} />
+      <VosTopbar user={user} onSearch={onSearch} onLogout={onLogout} onShortcuts={onShortcuts} onMenu={onMenu} />
       <main className="flex-1 px-vos-4 lg:px-vos-8 py-vos-6 lg:py-vos-10 relative z-vos-content">
         {children}
       </main>

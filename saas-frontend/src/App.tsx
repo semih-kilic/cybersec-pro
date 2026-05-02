@@ -24,7 +24,8 @@ import {
   LayoutGrid, Wrench, Activity, Crosshair, FileText, Calendar,
   FolderKanban, Server, BarChart3, Sparkles, Swords, Terminal as TerminalIcn,
   ShieldCheck, Bug, Newspaper, GraduationCap, FileCheck2, Users,
-  BrainCircuit, FileStack, Settings as SettingsIcn, MessageCircle, BookOpen,
+  BrainCircuit, FileStack, MessageCircle, BookOpen,
+  Crown, ShieldAlert, Wand2, Zap,
 } from 'lucide-react';
 
 // Global Context
@@ -75,6 +76,7 @@ const AIAssistantPage = lazy(() => import('./pages/dashboard/AIAssistantPage'));
 const PurpleTeamPage = lazy(() => import('./pages/dashboard/PurpleTeamPage'));
 const AdminPage = lazy(() => import('./pages/dashboard/AdminPage'));
 const ServiceManagerPage = lazy(() => import('./pages/dashboard/ServiceManagerPage'));
+const GodModePage = lazy(() => import('./pages/dashboard/GodModePage'));
 const ThreatIntelPage = lazy(() => import('./pages/dashboard/ThreatIntelPage'));
 const VulnerabilityDBPage = lazy(() => import('./pages/dashboard/VulnerabilityDBPage'));
 const SecurityNewsPage = lazy(() => import('./pages/dashboard/SecurityNewsPage'));
@@ -191,21 +193,25 @@ function PublicRoute({ children }: { children: React.ReactNode }) {
   return <>{children}</>;
 }
 
-// Dashboard Layout — V19: Vision OS shell (glass + mesh + 3D depth)
+// Dashboard Layout — V20: Apple-grade Vision OS shell
 const DASHBOARD_NAV: VosNavItem[] = [
+  // ── Workspace ─────────────────────────────────────────────────────
   { label: 'Dashboard',       to: '/dashboard',                  icon: LayoutGrid,    section: 'Workspace' },
   { label: 'Tools',           to: '/dashboard/tools',            icon: Wrench },
   { label: 'Scans',           to: '/dashboard/scans',            icon: Activity },
   { label: 'Targets',         to: '/dashboard/targets',          icon: Crosshair },
   { label: 'Reports',         to: '/dashboard/reports',          icon: FileText },
   { label: 'Schedule',        to: '/dashboard/schedule',         icon: Calendar },
+  // ── Operations ────────────────────────────────────────────────────
   { label: 'Projects',        to: '/dashboard/projects',         icon: FolderKanban,  section: 'Operations' },
   { label: 'Agents',          to: '/dashboard/agents',           icon: Server },
   { label: 'Analytics',       to: '/dashboard/analytics',        icon: BarChart3 },
+  // ── Intelligence ──────────────────────────────────────────────────
   { label: 'AI Assistant',    to: '/dashboard/ai',               icon: Sparkles,      section: 'Intelligence' },
   { label: 'CyberSec AI',     to: '/dashboard/cybersec-ai',      icon: BrainCircuit },
   { label: 'Purple Team',     to: '/dashboard/purple-team',      icon: Swords },
   { label: 'Terminal',        to: '/dashboard/terminal',         icon: TerminalIcn },
+  // ── Knowledge ─────────────────────────────────────────────────────
   { label: 'Threat Intel',    to: '/dashboard/threat-intel',     icon: ShieldCheck,   section: 'Knowledge' },
   { label: 'Vulnerabilities', to: '/dashboard/vulnerabilities',  icon: Bug },
   { label: 'Security News',   to: '/dashboard/news',             icon: Newspaper },
@@ -213,10 +219,18 @@ const DASHBOARD_NAV: VosNavItem[] = [
   { label: 'Compliance',      to: '/dashboard/compliance',       icon: FileCheck2 },
   { label: 'Community',       to: '/dashboard/community',        icon: Users },
   { label: 'Scan Templates',  to: '/dashboard/scan-templates',   icon: FileStack },
+  // ── Account ───────────────────────────────────────────────────────
+  { label: 'Upgrade Plan',    to: '/dashboard/upgrade',          icon: Zap,           section: 'Account', cta: true },
+  // ── System (admin / superadmin only) ──────────────────────────────
+  { label: 'Admin',           to: '/dashboard/admin',            icon: Crown,         section: 'System',
+    roles: ['admin', 'superadmin'] },
+  { label: 'Service Manager', to: '/dashboard/service-manager',  icon: ShieldAlert,
+    roles: ['superadmin'] },
+  { label: 'God Mode',        to: '/dashboard/god-mode',         icon: Wand2,
+    roles: ['superadmin'] },
 ];
 
 const DASHBOARD_BOTTOM_NAV: VosNavItem[] = [
-  { label: 'Settings',      to: '/dashboard/settings', icon: SettingsIcn },
   { label: 'Feedback',      to: '/dashboard/feedback', icon: MessageCircle },
   { label: 'Documentation', to: '/docs.html',          icon: BookOpen, external: true },
 ];
@@ -256,9 +270,16 @@ function DashboardLayout() {
         nav={DASHBOARD_NAV}
         bottomNav={DASHBOARD_BOTTOM_NAV}
         brand="CyberSec Pro"
-        user={{ name: displayName, email: user?.email, avatarUrl: user?.avatar_url }}
+        user={{
+          name: displayName,
+          email: user?.email,
+          avatarUrl: user?.avatar_url,
+          role: user?.role,
+          plan: (user as any)?.plan_type ?? (user as any)?.plan,
+        }}
         onSearch={openPalette}
         onLogout={logout}
+        onShortcuts={() => setShowShortcutsHelp(true)}
       >
         <OfflineBanner />
         <div id="main-content" role="main" aria-label="Dashboard content">
@@ -374,6 +395,7 @@ function AppRoutes() {
         <Route path="purple-team" element={<PurpleTeamPage />} />
         <Route path="admin" element={<AdminPage />} />
         <Route path="service-manager" element={<SuperadminRoute><ServiceManagerPage /></SuperadminRoute>} />
+        <Route path="god-mode" element={<SuperadminRoute><GodModePage /></SuperadminRoute>} />
         <Route path="threat-intel" element={<ThreatIntelPage />} />
         <Route path="vulnerabilities" element={<VulnerabilityDBPage />} />
         <Route path="news" element={<SecurityNewsPage />} />
