@@ -11,6 +11,10 @@ export interface VosNavItem {
   external?: boolean;
   /** Optional section heading shown ABOVE this item */
   section?: string;
+  /** Visible only when current user role is in this list (omit = visible to all) */
+  roles?: Array<'user' | 'admin' | 'superadmin'>;
+  /** Render as elevated CTA pill (used for Upgrade) */
+  cta?: boolean;
 }
 
 export function VosSidebar({
@@ -21,6 +25,7 @@ export function VosSidebar({
   onToggleCollapse,
   mobileOpen,
   onMobileClose,
+  userRole,
 }: {
   nav: VosNavItem[];
   bottomNav?: VosNavItem[];
@@ -29,8 +34,15 @@ export function VosSidebar({
   onToggleCollapse: () => void;
   mobileOpen: boolean;
   onMobileClose: () => void;
+  userRole?: string;
 }) {
   const location = useLocation();
+
+  const canSee = (item: VosNavItem) =>
+    !item.roles || item.roles.length === 0 || (userRole && item.roles.includes(userRole as any));
+
+  const visibleNav = nav.filter(canSee);
+  const visibleBottomNav = (bottomNav ?? []).filter(canSee);
 
   return (
     <aside
@@ -82,7 +94,7 @@ export function VosSidebar({
 
       {/* Nav scroll area */}
       <nav className="flex-1 overflow-y-auto vos-scrollbar px-vos-2 py-vos-3 space-y-0.5">
-        {nav.map((item, i) => (
+        {visibleNav.map((item, i) => (
           <div key={item.to + i}>
             {item.section && !collapsed && (
               <div className="vos-nav-section">{item.section}</div>
@@ -98,10 +110,10 @@ export function VosSidebar({
           </div>
         ))}
 
-        {bottomNav && bottomNav.length > 0 && (
+        {visibleBottomNav.length > 0 && (
           <>
             <div className="vos-divider my-vos-3" />
-            {bottomNav.map((item, i) => (
+            {visibleBottomNav.map((item, i) => (
               <NavRow
                 key={'b' + item.to + i}
                 item={item}
@@ -166,6 +178,25 @@ function NavRow({
         <Icon size={18} className="shrink-0" />
         {!collapsed && <span className="flex-1 truncate">{item.label}</span>}
       </a>
+    );
+  }
+
+  // Special CTA styling (Upgrade)
+  if (item.cta) {
+    return (
+      <NavLink
+        to={item.to}
+        title={collapsed ? item.label : undefined}
+        className={cn(
+          'group flex items-center gap-vos-3 px-vos-3 py-vos-2.5 rounded-vos-md',
+          'text-vos-sm font-semibold transition-colors duration-vos-2 ease-vos-out',
+          'bg-vos-accent text-white hover:opacity-90',
+          collapsed && 'justify-center',
+        )}
+      >
+        <Icon size={18} className="shrink-0" />
+        {!collapsed && <span className="flex-1 truncate">{item.label}</span>}
+      </NavLink>
     );
   }
 
