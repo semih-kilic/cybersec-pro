@@ -2699,12 +2699,80 @@ pub async fn admin_overview(
         json!({"id": id, "target": target, "status": status, "created_at": created})
     }).collect();
 
+    // ── Phase 7 super-admin enrichments ──
+    // Recent signups (last 7 days)
+    let signups_24h = sqlx::query_as::<_, (i64,)>(
+        "SELECT COUNT(*) FROM users WHERE created_at > NOW() - INTERVAL '24 hours'"
+    ).fetch_one(&state.db).await.unwrap_or((0,)).0;
+    let signups_7d = sqlx::query_as::<_, (i64,)>(
+        "SELECT COUNT(*) FROM users WHERE created_at > NOW() - INTERVAL '7 days'"
+    ).fetch_one(&state.db).await.unwrap_or((0,)).0;
+    let signups_30d = sqlx::query_as::<_, (i64,)>(
+        "SELECT COUNT(*) FROM users WHERE created_at > NOW() - INTERVAL '30 days'"
+    ).fetch_one(&state.db).await.unwrap_or((0,)).0;
+
+    let recent_signups_rows = sqlx::query_as::<_, (String, String, Option<String>, String)>(
+        "SELECT id, email, first_name, CAST(created_at AS TEXT)
+         FROM users
+         WHERE created_at > NOW() - INTERVAL '14 days'
+         ORDER BY created_at DESC
+         LIMIT 20"
+    ).fetch_all(&state.db).await.unwrap_or_default();
+    let recent_signups: Vec<serde_json::Value> = recent_signups_rows.iter().map(|(id, email, name, created)| {
+        json!({"id": id, "email": email, "first_name": name.clone().unwrap_or_default(), "created_at": created})
+    }).collect();
+
+    // Recent audit events (catch-all visibility for super-admin)
+    let recent_audit_rows = sqlx::query_as::<_, (String, String, Option<String>, String, String)>(
+        "SELECT action, category, COALESCE(severity, 'info'), COALESCE(status,'success'), CAST(created_at AS TEXT)
+         FROM audit_logs
+         ORDER BY created_at DESC
+         LIMIT 25"
+    ).fetch_all(&state.db).await.unwrap_or_default();
+    let recent_audit: Vec<serde_json::Value> = recent_audit_rows.iter().map(|(action, cat, sev, status, created)| {
+        json!({
+            "action": action,
+            "category": cat,
+            "severity": sev,
+            "status": status,
+            "created_at": created
+        })
+    }).collect();
+
+    // MRR computed from plan_type × monthly price
+    let mrr: f64 = plans_dist.iter().map(|(plan, count_v)| {
+        let price = match plan.as_str() {
+            "starter" => 99.0,
+            "professional" => 299.0,
+            "enterprise" => 799.0,
+            _ => 0.0,
+        };
+        let count = count_v.as_i64().unwrap_or(0) as f64;
+        price * count
+    }).sum();
+    let arr = mrr * 12.0;
+
+    // Newsletter subscribers (optional table — guard with COALESCE if missing)
+    let newsletter_count: i64 = sqlx::query_as::<_, (i64,)>(
+        "SELECT COUNT(*) FROM newsletter_subscribers WHERE is_active = TRUE"
+    ).fetch_one(&state.db).await.map(|r| r.0).unwrap_or(0);
+
+    let newsletter_rows = sqlx::query_as::<_, (String, String, bool, String)>(
+        "SELECT id, email, is_active, CAST(created_at AS TEXT) FROM newsletter_subscribers ORDER BY created_at DESC LIMIT 25"
+    ).fetch_all(&state.db).await.unwrap_or_default();
+    let newsletter_list: Vec<serde_json::Value> = newsletter_rows.iter().map(|(id, email, active, created)| {
+        json!({"id": id, "email": email, "is_active": active, "created_at": created})
+    }).collect();
+
     Json(json!({
         "users": { "total": total_users, "active": active_users, "list": user_list },
         "organizations": { "total": total_orgs, "plans_distribution": plans_dist, "list": org_list },
         "scans": { "total": total_scans, "running": running_scans, "recent": scan_list },
         "agents": { "total": total_agents, "online": online_agents },
-        "revenue": { "mrr": 0, "arr": 0 },
+        "revenue": { "mrr": mrr, "arr": arr },
+        "signups": { "last_24h": signups_24h, "last_7d": signups_7d, "last_30d": signups_30d, "recent": recent_signups },
+        "newsletter": { "total": newsletter_count, "list": newsletter_list },
+        "audit_log": recent_audit,
         "system_health": "healthy",
         "engine": "rust-axum"
     })).into_response()

@@ -480,4 +480,14 @@ r#"CREATE TABLE IF NOT EXISTS cybersec_ai_jobs (
 )"#,
 "CREATE INDEX IF NOT EXISTS idx_cybersec_ai_jobs_org ON cybersec_ai_jobs(organization_id)",
 "CREATE INDEX IF NOT EXISTS idx_cybersec_ai_jobs_status ON cybersec_ai_jobs(status)",
+
+// ── Phase 7: Newsletter subscribers ─────────────────────────────────────
+r#"CREATE TABLE IF NOT EXISTS newsletter_subscribers (
+    id TEXT PRIMARY KEY,
+    email TEXT UNIQUE NOT NULL,
+    source TEXT,
+    is_active BOOLEAN DEFAULT TRUE,
+    created_at TIMESTAMP DEFAULT NOW()
+)"#,
+"CREATE INDEX IF NOT EXISTS idx_newsletter_active ON newsletter_subscribers(is_active)",
 ];

