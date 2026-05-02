@@ -17,6 +17,10 @@
 /* Import premium visual effects — V18 */
 @import './styles/premium-effects.css';
 
+/* 🪟 Vision OS Design System (V19) — additive, opt-in via .vos-root */
+@import './styles/visionos-theme.css';
+@import './styles/visionos-globals.css';
+
 /* Import Tailwind CSS */
 @tailwind base;
 @tailwind components;
