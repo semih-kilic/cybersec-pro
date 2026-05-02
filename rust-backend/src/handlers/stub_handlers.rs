@@ -3625,11 +3625,197 @@ pub async fn chatbot_message(
 }
 
 pub async fn feedback(
-    _user: AuthUser,
-    State(_state): State<Arc<AppState>>,
-    Json(_body): Json<serde_json::Value>,
+    user: AuthUser,
+    State(state): State<Arc<AppState>>,
+    Json(body): Json<serde_json::Value>,
 ) -> impl IntoResponse {
-    Json(json!({"message": "Thank you for your feedback!"})).into_response()
+    use crate::services::email::{send_email_public, EmailConfig};
+
+    // ─── Extract & validate fields ─────────────────────────────
+    let feedback_type = body.get("type").and_then(|v| v.as_str()).unwrap_or("general").trim().to_string();
+    let subject       = body.get("subject").and_then(|v| v.as_str()).unwrap_or("").trim().to_string();
+    let message       = body.get("message").and_then(|v| v.as_str()).unwrap_or("").trim().to_string();
+    let priority      = body.get("priority").and_then(|v| v.as_str()).unwrap_or("normal").to_string();
+
+    // Body-supplied user info (frontend sends user.email/name)
+    let body_user_email = body
+        .get("user").and_then(|u| u.get("email")).and_then(|v| v.as_str())
+        .map(|s| s.trim().to_string()).filter(|s| !s.is_empty());
+    let user_name = body
+        .get("user").and_then(|u| u.get("name")).and_then(|v| v.as_str())
+        .unwrap_or("User").to_string();
+
+    // Authoritative email: try DB lookup, fall back to body, then to reply_email
+    let db_email: Option<String> = sqlx::query_scalar::<_, String>(
+        "SELECT email FROM users WHERE id = $1"
+    ).bind(&user.user_id).fetch_optional(&state.db).await.ok().flatten();
+    let account_email = db_email.or(body_user_email).unwrap_or_else(|| "unknown@user".to_string());
+
+    let reply_email = body
+        .get("replyEmail").and_then(|v| v.as_str())
+        .map(|s| s.trim().to_string()).filter(|s| !s.is_empty())
+        .unwrap_or_else(|| account_email.clone());
+    let system_info = body.get("systemInfo").cloned().unwrap_or(serde_json::Value::Null);
+
+    if subject.is_empty() || message.is_empty() {
+        return (axum::http::StatusCode::BAD_REQUEST,
+            Json(json!({"error": "Subject and message are required"}))).into_response();
+    }
+    if reply_email.is_empty() || !reply_email.contains('@') {
+        return (axum::http::StatusCode::BAD_REQUEST,
+            Json(json!({"error": "Valid reply email is required"}))).into_response();
+    }
+
+    // ─── Load SMTP config ──────────────────────────────────────
+    let cfg = match EmailConfig::from_env() {
+        Some(c) => c,
+        None => {
+            tracing::warn!("Feedback received but SMTP not configured: {} from {}", subject, reply_email);
+            return Json(json!({
+                "message": "Thank you! We received your feedback (mail delivery is currently offline).",
+                "delivered": false,
+            })).into_response();
+        }
+    };
+    let admin_email = std::env::var("FEEDBACK_ADMIN_EMAIL")
+        .ok()
+        .filter(|s| !s.is_empty())
+        .unwrap_or_else(|| cfg.smtp_email.clone());
+
+    // ─── Render system info block ──────────────────────────────
+    let sysinfo_html = if system_info.is_null() {
+        String::new()
+    } else {
+        let pretty = serde_json::to_string_pretty(&system_info).unwrap_or_default();
+        format!(
+            r#"<h3 style="color:#94a3b8;margin:20px 0 8px;font-size:13px;text-transform:uppercase;letter-spacing:1px">System Info</h3>
+            <pre style="background:#0a0a0a;color:#94a3b8;padding:14px;border-radius:8px;font-size:12px;overflow-x:auto;border:1px solid rgba(0,255,136,.15)">{}</pre>"#,
+            html_escape(&pretty)
+        )
+    };
+    let sysinfo_text = if system_info.is_null() {
+        String::new()
+    } else {
+        format!("\n\nSystem Info:\n{}", serde_json::to_string_pretty(&system_info).unwrap_or_default())
+    };
+
+    // ─── Build admin notification ──────────────────────────────
+    let admin_subject = format!("[Feedback/{}] {} — {}", feedback_type, priority.to_uppercase(), subject);
+    let admin_text = format!(
+        "New feedback received\n\n\
+         Type: {}\nPriority: {}\nFrom: {} <{}>\nReply to: {}\n\n\
+         Subject: {}\n\nMessage:\n{}{}",
+        feedback_type, priority, user_name, account_email, reply_email,
+        subject, message, sysinfo_text
+    );
+    let admin_html = format!(
+        r#"<!DOCTYPE html><html><body style="margin:0;padding:0;font-family:-apple-system,Segoe UI,sans-serif;background:#0a0e1a;color:#e2e8f0">
+        <table role="presentation" style="width:100%;border-collapse:collapse"><tr><td align="center" style="padding:30px 16px">
+        <table role="presentation" style="width:640px;max-width:100%;border-collapse:collapse;background:linear-gradient(135deg,#1a1a2e,#16213e);border-radius:14px;overflow:hidden;border:1px solid rgba(0,255,136,.15)">
+        <tr><td style="padding:24px 28px;border-bottom:1px solid rgba(0,255,136,.15)">
+        <span style="display:inline-block;padding:4px 12px;background:linear-gradient(135deg,#00ff88,#00d4ff);color:#0a0a0a;font-weight:700;font-size:11px;border-radius:50px;letter-spacing:1px">📬 NEW FEEDBACK</span>
+        <h1 style="color:#fff;font-size:20px;margin:12px 0 4px">{subject_html}</h1>
+        <div style="color:#94a3b8;font-size:13px">
+          <span style="text-transform:capitalize">{type_html}</span> • Priority: <strong style="color:#00d4ff;text-transform:uppercase">{priority_html}</strong>
+        </div>
+        </td></tr>
+        <tr><td style="padding:20px 28px;color:#cbd5e1;font-size:14px;line-height:1.7">
+          <p><strong style="color:#94a3b8">From:</strong> {name_html} &lt;{from_html}&gt;</p>
+          <p><strong style="color:#94a3b8">Reply to:</strong> <a href="mailto:{reply_html}" style="color:#00d4ff">{reply_html}</a></p>
+          <h3 style="color:#94a3b8;margin:20px 0 8px;font-size:13px;text-transform:uppercase;letter-spacing:1px">Message</h3>
+          <div style="background:rgba(0,212,255,.05);border-left:3px solid #00d4ff;padding:14px 16px;border-radius:6px;white-space:pre-wrap;color:#e2e8f0">{message_html}</div>
+          {sysinfo_html}
+        </td></tr>
+        <tr><td style="padding:18px 28px;background:rgba(0,0,0,.2);text-align:center;font-size:12px;color:#64748b">
+          CyberSec Pro — Feedback System
+        </td></tr></table></td></tr></table></body></html>"#,
+        subject_html  = html_escape(&subject),
+        type_html     = html_escape(&feedback_type),
+        priority_html = html_escape(&priority),
+        name_html     = html_escape(&user_name),
+        from_html     = html_escape(&account_email),
+        reply_html    = html_escape(&reply_email),
+        message_html  = html_escape(&message),
+        sysinfo_html  = sysinfo_html,
+    );
+
+    // ─── Build user confirmation email ─────────────────────────
+    let user_subject = format!("We received your feedback — {}", subject);
+    let user_text = format!(
+        "Hi {},\n\nThank you for reaching out to CyberSec Pro support. We've received your message and our team will review it shortly.\n\n\
+         Reference: {} • Priority: {}\nSubject: {}\n\nYour message:\n{}\n\n\
+         We will reply to {} as soon as possible. If you need to add details, simply reply to this email.\n\n\
+         — CyberSec Pro Team",
+        user_name, feedback_type, priority, subject, message, reply_email
+    );
+    let user_html = format!(
+        r#"<!DOCTYPE html><html><body style="margin:0;padding:0;font-family:-apple-system,Segoe UI,sans-serif;background:#0a0e1a;color:#e2e8f0">
+        <table role="presentation" style="width:100%;border-collapse:collapse"><tr><td align="center" style="padding:30px 16px">
+        <table role="presentation" style="width:560px;max-width:100%;border-collapse:collapse;background:linear-gradient(135deg,#1a1a2e,#16213e);border-radius:14px;overflow:hidden;border:1px solid rgba(0,255,136,.18)">
+        <tr><td style="padding:36px 32px 16px;text-align:center;border-bottom:1px solid rgba(0,255,136,.12)">
+          <div style="width:72px;height:72px;margin:0 auto 14px;background:linear-gradient(135deg,#00ff88,#00d4ff);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:36px">✓</div>
+          <h1 style="color:#fff;font-size:24px;margin:0">Thanks, we got it!</h1>
+          <p style="color:#94a3b8;font-size:14px;margin:6px 0 0">Your feedback is on its way to our team</p>
+        </td></tr>
+        <tr><td style="padding:24px 32px;color:#cbd5e1;font-size:14px;line-height:1.7">
+          <p>Hi <strong style="color:#00ff88">{name_html}</strong>,</p>
+          <p>We received your <strong style="color:#00d4ff;text-transform:capitalize">{type_html}</strong> feedback and will review it shortly. Below is a copy for your records.</p>
+          <div style="background:rgba(0,212,255,.05);border:1px solid rgba(0,212,255,.18);border-radius:10px;padding:16px 18px;margin-top:18px">
+            <div style="font-size:12px;color:#64748b;text-transform:uppercase;letter-spacing:1px">Subject</div>
+            <div style="color:#fff;font-weight:600;margin:4px 0 12px">{subject_html}</div>
+            <div style="font-size:12px;color:#64748b;text-transform:uppercase;letter-spacing:1px">Message</div>
+            <div style="color:#cbd5e1;white-space:pre-wrap;margin-top:4px">{message_html}</div>
+          </div>
+          <p style="margin-top:20px">We'll reply to <a href="mailto:{reply_html}" style="color:#00d4ff">{reply_html}</a> as soon as possible. Need to add details? Just reply to this email.</p>
+        </td></tr>
+        <tr><td style="padding:20px 32px;text-align:center;background:rgba(0,0,0,.2);font-size:12px;color:#64748b">
+          CyberSec Pro • <a href="mailto:cybersecpro@semihkilic.com" style="color:#00d4ff;text-decoration:none">cybersecpro@semihkilic.com</a>
+        </td></tr></table></td></tr></table></body></html>"#,
+        name_html    = html_escape(&user_name),
+        type_html    = html_escape(&feedback_type),
+        subject_html = html_escape(&subject),
+        message_html = html_escape(&message),
+        reply_html   = html_escape(&reply_email),
+    );
+
+    // ─── Send both emails (don't fail the request if one fails) ─
+    let mut delivery = serde_json::Map::new();
+    match send_email_public(&cfg, &admin_email, &admin_subject, &admin_text, &admin_html).await {
+        Ok(_) => {
+            tracing::info!("📨 Feedback admin email sent to {}", admin_email);
+            delivery.insert("admin".into(), json!(true));
+        }
+        Err(e) => {
+            tracing::error!("Feedback admin email failed: {}", e);
+            delivery.insert("admin".into(), json!(false));
+            delivery.insert("admin_error".into(), json!(e));
+        }
+    }
+    match send_email_public(&cfg, &reply_email, &user_subject, &user_text, &user_html).await {
+        Ok(_) => {
+            tracing::info!("📨 Feedback user confirmation sent to {}", reply_email);
+            delivery.insert("user".into(), json!(true));
+        }
+        Err(e) => {
+            tracing::error!("Feedback user confirmation failed: {}", e);
+            delivery.insert("user".into(), json!(false));
+            delivery.insert("user_error".into(), json!(e));
+        }
+    }
+
+    Json(json!({
+        "message": "Thank you for your feedback! A confirmation has been sent to your email.",
+        "delivered": delivery,
+    })).into_response()
+}
+
+/// Minimal HTML escaper for embedding user input into email templates.
+fn html_escape(s: &str) -> String {
+    s.replace('&', "&amp;")
+     .replace('<', "&lt;")
+     .replace('>', "&gt;")
+     .replace('"', "&quot;")
+     .replace('\'', "&#39;")
 }
 
 // ── GDPR ───────────────────────────────────────────────────
