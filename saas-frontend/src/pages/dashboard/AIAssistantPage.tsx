@@ -101,9 +101,9 @@ export default function AIAssistantPage() {
     <PageTransition>
       <div className="p-vos-6 max-w-vos-page mx-auto space-y-vos-6">
         <PageHeader
-          icon={Bot}
+          icon={<Bot size={22} />}
           title="CyberSec Pro AI"
-          subtitle="Your security expert. Ask what tool to use, build safe commands, design multi-step playbooks, validate dangerous commands, and let AI interpret your scan findings."
+          description="Your security expert. Ask what tool to use, build safe commands, design multi-step playbooks, validate dangerous commands, and let AI interpret your scan findings."
           badge={<StatusPill tone="accent" label="Intelligent Co-Pilot" />}
           actions={
             <label className="flex items-center gap-2 h-9 px-vos-3 rounded-vos-md bg-vos-bg-elev-1 border border-vos-border-1 text-vos-sm text-vos-text-2 cursor-pointer hover:border-vos-accent/40 transition-colors">

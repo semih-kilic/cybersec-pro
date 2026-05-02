@@ -269,9 +269,9 @@ export function AdminPage() {
     <PageTransition>
       <div className="p-vos-6 max-w-vos-page mx-auto space-y-vos-6">
         <PageHeader
-          icon={Crown}
+          icon={<Crown size={22} />}
           title="Admin God Mode"
-          subtitle={`Full platform control — ${user.email}`}
+          description={`Full platform control — ${user.email}`}
           badge={<StatusPill tone="danger" label="SUPERADMIN" />}
         />
 

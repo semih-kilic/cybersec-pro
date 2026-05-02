@@ -281,9 +281,9 @@ export default function LearningCenterPage() {
     <PageTransition>
       <div className="p-vos-6 max-w-vos-page mx-auto space-y-vos-6">
         <PageHeader
-          icon={GraduationCap}
+          icon={<GraduationCap size={22} />}
           title={t('learning.title', 'Learning Center')}
-          subtitle={t(
+          description={t(
             'learning.subtitle',
             'Master cybersecurity through curated courses, CTFs, hands-on labs and certification prep — every link opens at the original platform.'
           )}
