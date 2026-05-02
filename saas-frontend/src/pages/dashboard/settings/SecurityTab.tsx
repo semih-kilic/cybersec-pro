@@ -462,7 +462,7 @@ export function SecurityTab({ loading, setLoading, setMessage }: SettingsTabProp
 function ActiveSessionsSection() {
   const { data, isLoading } = useActiveSessions();
   const sessions: Array<{ id: string; ip_address?: string; user_agent?: string; is_current: boolean; last_active: string }> =
-    data?.sessions ?? [];
+    (data as { sessions?: Array<{ id: string; ip_address?: string; user_agent?: string; is_current: boolean; last_active: string }> } | undefined)?.sessions ?? [];
 
   if (isLoading) return <div className="text-gray-500 text-sm">Loading sessions…</div>;
 
@@ -497,7 +497,7 @@ function ActiveSessionsSection() {
 function LoginHistorySection() {
   const { data, isLoading } = useLoginHistory(20, 0);
   const history: Array<{ id: string; ip_address?: string; user_agent?: string; success: boolean; failure_reason?: string; city?: string; created_at: string }> =
-    data?.login_history ?? [];
+    (data as { login_history?: Array<{ id: string; ip_address?: string; user_agent?: string; success: boolean; failure_reason?: string; city?: string; created_at: string }> } | undefined)?.login_history ?? [];
 
   if (isLoading) return <div className="text-gray-500 text-sm">Loading login history…</div>;
 
@@ -547,7 +547,7 @@ function IpWhitelistSection() {
   const [err, setErr] = useState('');
 
   const list: Array<{ id: string; ip_cidr: string; label?: string; is_active: boolean; created_at: string }> =
-    data?.ip_whitelist ?? [];
+    (data as { ip_whitelist?: Array<{ id: string; ip_cidr: string; label?: string; is_active: boolean; created_at: string }> } | undefined)?.ip_whitelist ?? [];
 
   const handleAdd = async () => {
     setErr('');

@@ -7,6 +7,7 @@ import { useTranslation } from 'react-i18next';
 import { motion, AnimatePresence } from 'framer-motion';
 import type { SettingsTabProps, ApiKey } from './types';
 import api from '../../../services/api';
+import { useRotateApiKey, useApiKeyStats } from '../../../hooks/useApiQueries';
 
 export function ApiKeysTab({ loading, setLoading, setMessage }: SettingsTabProps) {
   const { t } = useTranslation();
@@ -14,6 +15,21 @@ export function ApiKeysTab({ loading, setLoading, setMessage }: SettingsTabProps
   const [newKeyName, setNewKeyName] = useState('');
   const [showNewKey, setShowNewKey] = useState<string | null>(null);
   const [deleteConfirm, setDeleteConfirm] = useState<string | null>(null);
+  const [rotateConfirm, setRotateConfirm] = useState<string | null>(null);
+  const [showStats, setShowStats] = useState(false);
+  const rotateMutation = useRotateApiKey();
+  const { data: statsData } = useApiKeyStats();
+  type ApiKeyStat = { id: string; name: string; usage_count: number; last_used_at?: string; rotated_at?: string };
+  const apiKeyStats = (statsData as { api_key_stats?: ApiKeyStat[] } | undefined)?.api_key_stats ?? [];
+
+  const rotateKey = async (keyId: string) => {
+    const res = await rotateMutation.mutateAsync(keyId).catch(() => null);
+    if (res?.api_key?.key) {
+      setShowNewKey(res.api_key.key);
+      loadKeys();
+    }
+    setRotateConfirm(null);
+  };
 
   useEffect(() => {
     loadKeys();
@@ -178,15 +194,58 @@ export function ApiKeysTab({ loading, setLoading, setMessage }: SettingsTabProps
                     <button onClick={() => setDeleteConfirm(null)} className="px-3 py-1 bg-gray-700 text-gray-300 rounded text-sm btn-micro">{t('common.cancel', 'Cancel')}</button>
                   </div>
                 ) : (
-                  <button onClick={() => setDeleteConfirm(key.id)} className="px-3 py-1 text-red-400 hover:bg-red-500/20 rounded transition text-sm">
-                    Delete
-                  </button>
+                  <div className="flex items-center gap-2">
+                    {rotateConfirm === key.id ? (
+                      <>
+                        <button onClick={() => rotateKey(key.id)} className="px-3 py-1 bg-yellow-600 text-white rounded text-sm">Confirm Rotate</button>
+                        <button onClick={() => setRotateConfirm(null)} className="px-3 py-1 bg-gray-700 text-gray-300 rounded text-sm">Cancel</button>
+                      </>
+                    ) : (
+                      <button onClick={() => setRotateConfirm(key.id)} className="px-3 py-1 text-yellow-400 hover:bg-yellow-500/20 rounded transition text-sm" title="Rotate key">
+                        ↺ Rotate
+                      </button>
+                    )}
+                    <button onClick={() => setDeleteConfirm(key.id)} className="px-3 py-1 text-red-400 hover:bg-red-500/20 rounded transition text-sm">
+                      Delete
+                    </button>
+                  </div>
                 )}
               </motion.div>
             ))}
           </AnimatePresence>
         )}
       </div>
+
+      {/* Stats */}
+      {apiKeyStats.length > 0 && (
+        <div className="border-t border-gray-800 pt-6">
+          <button onClick={() => setShowStats(s => !s)} className="text-gray-400 hover:text-white text-sm flex items-center gap-2 mb-3">
+            <span>{showStats ? '▾' : '▸'}</span> API Key Usage Stats
+          </button>
+          {showStats && (
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm">
+                <thead><tr className="text-gray-500 text-left border-b border-gray-800">
+                  <th className="pb-2 pr-4">Key Name</th>
+                  <th className="pb-2 pr-4">Requests</th>
+                  <th className="pb-2 pr-4">Last Used</th>
+                  <th className="pb-2">Last Rotated</th>
+                </tr></thead>
+                <tbody>
+                  {apiKeyStats.map((s: ApiKeyStat) => (
+                    <tr key={s.id} className="border-b border-gray-800/50">
+                      <td className="py-2 pr-4 text-white">{s.name}</td>
+                      <td className="py-2 pr-4 text-cyan-400 font-mono">{s.usage_count.toLocaleString()}</td>
+                      <td className="py-2 pr-4 text-gray-400 text-xs">{s.last_used_at ? new Date(s.last_used_at).toLocaleString() : '—'}</td>
+                      <td className="py-2 text-gray-400 text-xs">{s.rotated_at ? new Date(s.rotated_at).toLocaleString() : 'Never'}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </div>
+      )}
 
       {/* Docs */}
       <div className="p-4 bg-gray-800 rounded-lg border border-gray-700">

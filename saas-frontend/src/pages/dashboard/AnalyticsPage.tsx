@@ -11,7 +11,7 @@ import {
   ResponsiveContainer, Legend, RadialBarChart, RadialBar,
 } from 'recharts';
 import { motion } from 'framer-motion';
-import { useAnalyticsOverview } from '../../hooks/useApiQueries';
+import { useAnalyticsOverview, useAnalyticsTrend } from '../../hooks/useApiQueries';
 import { StatCard, Card, CardHeader, EmptyState, Button, PageTransition } from '../../components/ui';
 import { SparklineKPI } from '../../components/ui/SparklineKPI';
 
@@ -64,6 +64,8 @@ export default function AnalyticsPage() {
   useDocumentTitle(`${t('analytics.title', 'Analytics')} — CyberSec Pro`);
   const [timeRange, setTimeRange] = useState<'7d' | '30d' | '90d'>('30d');
   const { data, isLoading: loading, refetch: loadAnalytics } = useAnalyticsOverview(timeRange);
+  const trendDays = timeRange === '7d' ? 7 : timeRange === '30d' ? 30 : 90;
+  const { data: trendApiData } = useAnalyticsTrend(trendDays);
 
   if (loading) {
     return (

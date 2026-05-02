@@ -74,6 +74,8 @@ const SecurityNewsPage = lazy(() => import('./pages/dashboard/SecurityNewsPage')
 const LearningCenterPage = lazy(() => import('./pages/dashboard/LearningCenterPage'));
 const ComplianceDashboardPage = lazy(() => import('./pages/dashboard/ComplianceDashboardPage'));
 const CommunityPage = lazy(() => import('./pages/dashboard/CommunityPage'));
+const StrixPage = lazy(() => import('./pages/dashboard/StrixPage'));
+const ScanTemplatesPage = lazy(() => import('./pages/dashboard/ScanTemplatesPage'));
 
 // Legal/GDPR Pages (lazy loaded)
 const PrivacyPolicyPage = lazy(() => import('./pages/PrivacyPolicyPage'));
@@ -388,6 +390,8 @@ function AppRoutes() {
         <Route path="learning" element={<LearningCenterPage />} />
         <Route path="compliance" element={<ComplianceDashboardPage />} />
         <Route path="community" element={<CommunityPage />} />
+        <Route path="strix" element={<StrixPage />} />
+        <Route path="scan-templates" element={<ScanTemplatesPage />} />
       </Route>
       
       {/* Legacy dashboard route for backwards compatibility */}
