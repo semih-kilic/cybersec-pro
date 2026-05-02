@@ -19,6 +19,10 @@ export default {
           bg:        'var(--vos-bg)',
           'bg-deep': 'var(--vos-bg-deep)',
           canvas:    'var(--vos-bg-canvas)',
+          'bg-elev-1': 'var(--vos-bg-elev-1)',
+          'bg-elev-2': 'var(--vos-bg-elev-2)',
+          'bg-elev-3': 'var(--vos-bg-elev-3)',
+          'bg-elev-4': 'var(--vos-bg-elev-4)',
           // Glass tints
           'glass-1': 'var(--vos-glass-1)',
           'glass-2': 'var(--vos-glass-2)',
@@ -135,6 +139,23 @@ export default {
         'cyber-6xl': 'var(--text-6xl)',
       },
       
+      // Vision OS letter-spacing scale (Apple display tracking)
+      letterSpacing: {
+        'vos-tighter': 'var(--vos-tracking-tighter)',
+        'vos-tight':   'var(--vos-tracking-tight)',
+        'vos-snug':    'var(--vos-tracking-snug)',
+        'vos-normal':  'var(--vos-tracking-normal)',
+        'vos-wide':    'var(--vos-tracking-wide)',
+      },
+
+      // Vision OS line-height scale
+      lineHeight: {
+        'vos-tight': 'var(--vos-leading-tight)',
+        'vos-snug':  'var(--vos-leading-snug)',
+        'vos-base':  'var(--vos-leading-base)',
+        'vos-loose': 'var(--vos-leading-loose)',
+      },
+
       // Spacing system
       spacing: {
         // Vision OS spacing

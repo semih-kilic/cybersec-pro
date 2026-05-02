@@ -43,11 +43,10 @@ export function VosTopbar({
         'h-vos-topbar flex items-center gap-vos-4 px-vos-4 lg:px-vos-6',
       )}
       style={{
-        background: 'linear-gradient(180deg, rgba(11, 15, 23, 0.72) 0%, rgba(11, 15, 23, 0.45) 100%)',
-        backdropFilter: 'blur(24px) saturate(180%)',
-        WebkitBackdropFilter: 'blur(24px) saturate(180%)',
-        boxShadow:
-          'inset 0 1px 0 0 rgba(255, 255, 255, 0.06), 0 1px 0 0 rgba(255, 255, 255, 0.04), 0 12px 24px -16px rgba(0, 0, 0, 0.55)',
+        background: 'rgba(0, 0, 0, 0.72)',
+        backdropFilter: 'blur(20px) saturate(180%)',
+        WebkitBackdropFilter: 'blur(20px) saturate(180%)',
+        boxShadow: '0 1px 0 0 var(--vos-border-1)',
       }}
     >
       <button
@@ -122,11 +121,11 @@ export function VosTopbar({
         className="relative vos-btn vos-btn-ghost vos-btn-icon"
       >
         <Bell size={18} />
-        <span className="absolute top-1.5 right-1.5 size-2 rounded-full bg-vos-accent" style={{ boxShadow: '0 0 6px var(--vos-accent-glow)' }} />
+        <span className="absolute top-2 right-2 size-1.5 rounded-full bg-vos-danger" />
       </button>
 
       {/* User pill */}
-      <div className="flex items-center gap-vos-2.5 pl-vos-2 pr-vos-1 py-1 rounded-vos-full vos-glass-1 border border-vos-border-2">
+      <div className="flex items-center gap-vos-2 pl-vos-2 pr-1 py-1 rounded-vos-full border border-vos-border-1 bg-vos-bg-elev-1">
         <div className="hidden sm:flex flex-col items-end leading-tight pl-1">
           <span className="text-vos-xs font-medium text-vos-text truncate max-w-[160px]">
             {user?.name ?? 'Operator'}

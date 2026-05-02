@@ -1,0 +1,421 @@
+/**
+ * 🍎 CyberSec Pro — Apple-grade Globals (V20 / "Onyx")
+ *
+ * No aurora, no mesh, no rainbow. Just hairlines, generous whitespace,
+ * and disciplined typography. The chrome stays out of the way.
+ */
+
+/* ============================================================ *
+ *  ROOT
+ * ============================================================ */
+.vos-root {
+  background-color: var(--vos-bg);
+  color: var(--vos-text);
+  font-family: var(--vos-font-sans);
+  font-feature-settings: 'cv11', 'ss01', 'ss03';
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+  letter-spacing: var(--vos-tracking-base);
+}
+
+/* Page canvas — solid, no decoration. Apple's hero pages start from black. */
+.vos-bg-canvas {
+  position: fixed;
+  inset: 0;
+  background: var(--vos-bg);
+  z-index: var(--vos-z-bg);
+  pointer-events: none;
+}
+
+/* Optional very subtle vignette — only visible on huge displays */
+.vos-vignette {
+  position: fixed;
+  inset: 0;
+  z-index: var(--vos-z-bg);
+  pointer-events: none;
+  background:
+    radial-gradient(ellipse 100% 80% at 50% 110%,
+      rgba(10, 132, 255, 0.04), transparent 70%);
+}
+
+/* Legacy mesh class — kept as no-op for backward compat */
+.vos-bg-mesh {
+  position: fixed;
+  inset: 0;
+  background: var(--vos-bg);
+  z-index: var(--vos-z-bg);
+  pointer-events: none;
+}
+
+/* Legacy aurora — fully neutralized */
+.vos-aurora,
+.vos-aurora::before,
+.vos-aurora::after,
+.vos-aurora > .vos-aurora-blob { display: none !important; }
+
+/* Legacy noise — keep, but barely visible */
+.vos-noise {
+  position: fixed;
+  inset: 0;
+  opacity: 0.015;
+  mix-blend-mode: overlay;
+  pointer-events: none;
+  z-index: var(--vos-z-bg);
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
+}
+
+/* ============================================================ *
+ *  SURFACES — solid elevated greys, NOT colored glass
+ * ============================================================ */
+
+.vos-surface {
+  background: var(--vos-bg-elev-2);
+  border: 1px solid var(--vos-border-1);
+  border-radius: var(--vos-radius-lg);
+  box-shadow: var(--vos-shadow-1);
+  color: var(--vos-text);
+}
+
+/* Glass tiers — used only for sticky chrome (sidebar/topbar). */
+.vos-glass-1 {
+  background: var(--vos-bg-elev-1);
+  border: 1px solid var(--vos-border-1);
+  border-radius: var(--vos-radius-md);
+}
+.vos-glass-2 {
+  background: var(--vos-bg-elev-2);
+  border: 1px solid var(--vos-border-1);
+  box-shadow: var(--vos-shadow-1);
+  border-radius: var(--vos-radius-lg);
+}
+.vos-glass-3 {
+  background: var(--vos-bg-elev-2);
+  border: 1px solid var(--vos-border-2);
+  box-shadow: var(--vos-shadow-2);
+  border-radius: var(--vos-radius-xl);
+}
+.vos-glass-4 {
+  background: var(--vos-bg-elev-3);
+  border: 1px solid var(--vos-border-2);
+  box-shadow: var(--vos-shadow-3);
+  border-radius: var(--vos-radius-2xl);
+}
+
+/* Depth shadow tiers (no border / bg, pair with anything) */
+.vos-elevated-1 { box-shadow: var(--vos-shadow-1); }
+.vos-elevated-2 { box-shadow: var(--vos-shadow-2); }
+.vos-elevated-3 { box-shadow: var(--vos-shadow-3); }
+.vos-elevated-4 { box-shadow: var(--vos-shadow-4); }
+
+.vos-hairline        { border: 1px solid var(--vos-border-1); }
+.vos-hairline-strong { border: 1px solid var(--vos-border-2); }
+
+/* Horizontal divider */
+.vos-divider {
+  height: 1px;
+  background: var(--vos-border-1);
+  border: none;
+}
+
+/* ============================================================ *
+ *  INTERACTIONS
+ * ============================================================ */
+
+/* Tactile press — subtle scale, Apple-style */
+.vos-press {
+  transition: transform var(--vos-dur-1) var(--vos-ease-out);
+}
+.vos-press:active { transform: scale(0.97); }
+
+/* Hover lift — almost imperceptible (Apple uses 1px) */
+.vos-lift {
+  transition:
+    transform var(--vos-dur-3) var(--vos-ease-spring),
+    box-shadow var(--vos-dur-3) var(--vos-ease-spring),
+    border-color var(--vos-dur-3) var(--vos-ease-spring);
+}
+.vos-lift:hover {
+  transform: translateY(-1px);
+  box-shadow: var(--vos-shadow-2);
+  border-color: var(--vos-border-2);
+}
+
+/* No 3D tilt — Apple does not do this */
+.vos-tilt { transition: transform var(--vos-dur-3) var(--vos-ease-out); }
+.vos-tilt:hover { transform: translateY(-1px); }
+
+/* No moving sheen — flatten to no-op for backward compat */
+.vos-sheen { position: relative; }
+
+/* Focus ring — Apple system blue, 4px outer halo */
+.vos-focus-ring:focus-visible {
+  outline: none;
+  box-shadow: var(--vos-glow-accent);
+}
+
+/* ============================================================ *
+ *  CHIPS
+ * ============================================================ */
+.vos-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  height: 22px;
+  padding: 0 0.5rem;
+  font-size: var(--vos-text-2xs);
+  font-weight: 500;
+  border-radius: var(--vos-radius-full);
+  background: var(--vos-bg-elev-3);
+  border: 1px solid var(--vos-border-1);
+  color: var(--vos-text-2);
+  letter-spacing: var(--vos-tracking-base);
+}
+.vos-chip-accent  { background: var(--vos-accent-soft);  color: var(--vos-accent);  border-color: transparent; }
+.vos-chip-success { background: var(--vos-success-soft); color: var(--vos-success); border-color: transparent; }
+.vos-chip-warning { background: var(--vos-warning-soft); color: var(--vos-warning); border-color: transparent; }
+.vos-chip-danger  { background: var(--vos-danger-soft);  color: var(--vos-danger);  border-color: transparent; }
+.vos-chip-info    { background: var(--vos-info-soft);    color: var(--vos-info);    border-color: transparent; }
+
+/* ============================================================ *
+ *  BUTTONS — Apple's pill/rounded style
+ * ============================================================ */
+.vos-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  height: 36px;
+  padding: 0 1rem;
+  font-size: var(--vos-text-base);
+  font-weight: 500;
+  letter-spacing: var(--vos-tracking-base);
+  border-radius: var(--vos-radius-full);
+  border: 1px solid var(--vos-border-2);
+  background: var(--vos-bg-elev-2);
+  color: var(--vos-text);
+  cursor: pointer;
+  transition:
+    background var(--vos-dur-2) var(--vos-ease-out),
+    border-color var(--vos-dur-2) var(--vos-ease-out),
+    transform var(--vos-dur-1) var(--vos-ease-out);
+  white-space: nowrap;
+}
+.vos-btn:hover { background: var(--vos-bg-elev-3); border-color: var(--vos-border-3); }
+.vos-btn:active { transform: scale(0.97); }
+.vos-btn:focus-visible { outline: none; box-shadow: var(--vos-glow-accent); }
+.vos-btn:disabled { opacity: 0.45; cursor: not-allowed; }
+
+.vos-btn-primary {
+  background: var(--vos-accent);
+  color: var(--vos-text-on-accent);
+  border-color: transparent;
+}
+.vos-btn-primary:hover { background: var(--vos-accent-2); border-color: transparent; }
+
+.vos-btn-ghost {
+  background: transparent;
+  border-color: transparent;
+  color: var(--vos-text-2);
+}
+.vos-btn-ghost:hover { background: var(--vos-bg-elev-2); color: var(--vos-text); }
+
+.vos-btn-danger {
+  background: var(--vos-danger);
+  color: #fff;
+  border-color: transparent;
+}
+.vos-btn-danger:hover { background: #ff5e54; border-color: transparent; }
+
+.vos-btn-icon { width: 36px; padding: 0; }
+.vos-btn-sm   { height: 28px; padding: 0 0.75rem; font-size: var(--vos-text-sm); }
+.vos-btn-lg   { height: 44px; padding: 0 1.5rem; font-size: var(--vos-text-md); font-weight: 600; }
+
+/* ============================================================ *
+ *  INPUTS
+ * ============================================================ */
+.vos-input {
+  display: block;
+  width: 100%;
+  height: 38px;
+  padding: 0 0.875rem;
+  font-size: var(--vos-text-base);
+  color: var(--vos-text);
+  background: var(--vos-bg-elev-1);
+  border: 1px solid var(--vos-border-2);
+  border-radius: var(--vos-radius-md);
+  transition:
+    border-color var(--vos-dur-2) var(--vos-ease-out),
+    background var(--vos-dur-2) var(--vos-ease-out),
+    box-shadow var(--vos-dur-2) var(--vos-ease-out);
+  outline: none;
+}
+.vos-input::placeholder { color: var(--vos-text-muted); }
+.vos-input:hover { border-color: var(--vos-border-3); }
+.vos-input:focus {
+  border-color: var(--vos-accent);
+  background: var(--vos-bg-elev-2);
+  box-shadow: var(--vos-glow-accent);
+}
+
+/* ============================================================ *
+ *  TYPOGRAPHY UTILITIES — Apple's exact scale & tracking
+ * ============================================================ */
+.vos-display {
+  font-size: clamp(2.5rem, 5vw, var(--vos-text-6xl));
+  line-height: var(--vos-leading-tight);
+  letter-spacing: var(--vos-tracking-tight);
+  font-weight: var(--vos-weight-semibold);
+  color: var(--vos-text);
+}
+.vos-h1 {
+  font-size: clamp(2rem, 4vw, var(--vos-text-4xl));
+  line-height: var(--vos-leading-tight);
+  letter-spacing: var(--vos-tracking-tight);
+  font-weight: var(--vos-weight-semibold);
+  color: var(--vos-text);
+}
+.vos-h2 {
+  font-size: var(--vos-text-3xl);
+  line-height: var(--vos-leading-snug);
+  letter-spacing: var(--vos-tracking-snug);
+  font-weight: var(--vos-weight-semibold);
+  color: var(--vos-text);
+}
+.vos-h3 {
+  font-size: var(--vos-text-2xl);
+  line-height: var(--vos-leading-snug);
+  letter-spacing: var(--vos-tracking-snug);
+  font-weight: var(--vos-weight-semibold);
+  color: var(--vos-text);
+}
+.vos-h4 {
+  font-size: var(--vos-text-xl);
+  line-height: var(--vos-leading-snug);
+  font-weight: var(--vos-weight-semibold);
+  color: var(--vos-text);
+}
+.vos-eyebrow {
+  font-size: var(--vos-text-2xs);
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--vos-text-3);
+}
+.vos-mono { font-family: var(--vos-font-mono); }
+.vos-num  { font-variant-numeric: tabular-nums; font-feature-settings: 'tnum'; }
+
+/* Gradient text — kept very restrained (white → faint blue) */
+.vos-text-gradient {
+  background: linear-gradient(180deg, #ffffff 0%, #b8b8c0 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  -webkit-text-fill-color: transparent;
+}
+.vos-text-gradient-accent {
+  background: linear-gradient(135deg, #ffffff 0%, var(--vos-accent) 120%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  -webkit-text-fill-color: transparent;
+}
+
+/* ============================================================ *
+ *  ANIMATIONS — entry only, no decorative motion
+ * ============================================================ */
+@keyframes vos-fade-in {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+@keyframes vos-rise-in {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes vos-scale-in {
+  from { opacity: 0; transform: scale(0.97); }
+  to   { opacity: 1; transform: scale(1); }
+}
+@keyframes vos-shimmer {
+  from { background-position: -200% 0; }
+  to   { background-position: 200% 0; }
+}
+
+.vos-fade-in { animation: vos-fade-in var(--vos-dur-3) var(--vos-ease-out) both; }
+.vos-rise-in { animation: vos-rise-in var(--vos-dur-4) var(--vos-ease-spring) both; }
+.vos-scale-in { animation: vos-scale-in var(--vos-dur-3) var(--vos-ease-spring) both; }
+
+/* Skeleton — single tonal grey shimmer */
+.vos-skeleton {
+  background: linear-gradient(
+    90deg,
+    var(--vos-bg-elev-2) 0%,
+    var(--vos-bg-elev-3) 50%,
+    var(--vos-bg-elev-2) 100%
+  );
+  background-size: 200% 100%;
+  animation: vos-shimmer 1.6s linear infinite;
+  border-radius: var(--vos-radius-md);
+}
+
+/* ============================================================ *
+ *  SCROLLBAR — barely visible
+ * ============================================================ */
+.vos-scrollbar::-webkit-scrollbar { width: 8px; height: 8px; }
+.vos-scrollbar::-webkit-scrollbar-track { background: transparent; }
+.vos-scrollbar::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.08);
+  border-radius: 4px;
+}
+.vos-scrollbar::-webkit-scrollbar-thumb:hover { background: rgba(255, 255, 255, 0.16); }
+
+/* ============================================================ *
+ *  CONTAINERS — Apple's content widths
+ * ============================================================ */
+.vos-container {
+  max-width: var(--vos-container);
+  margin-inline: auto;
+  padding-inline: clamp(1rem, 4vw, 2.5rem);
+}
+.vos-container-wide {
+  max-width: var(--vos-container-wide);
+  margin-inline: auto;
+  padding-inline: clamp(1rem, 4vw, 2.5rem);
+}
+.vos-container-narrow {
+  max-width: var(--vos-container-narrow);
+  margin-inline: auto;
+  padding-inline: clamp(1rem, 4vw, 2.5rem);
+}
+
+.vos-stack { position: relative; isolation: isolate; }
+
+/* ============================================================ *
+ *  NAV ACTIVE STATE — Apple sidebar style (subtle fill, no glow)
+ * ============================================================ */
+.vos-nav-item {
+  position: relative;
+  isolation: isolate;
+}
+.vos-nav-item-active {
+  background: rgba(255, 255, 255, 0.07);
+  color: var(--vos-text);
+}
+/* No gradient bar, no glow — Apple Mail / System Settings sidebars do not have that */
+
+/* Sidebar section header — Apple's group label */
+.vos-nav-section {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  color: var(--vos-text-muted);
+  padding: 18px 14px 6px;
+  user-select: none;
+}
+.vos-nav-section:first-child { padding-top: 6px; }
+
+/* Legacy decorative classes — neutralized */
+.vos-page-spotlight,
+.vos-page-spotlight::before { background: none !important; }
+.vos-ring-aurora::before { display: none !important; }
+.vos-spotlight { display: none !important; }

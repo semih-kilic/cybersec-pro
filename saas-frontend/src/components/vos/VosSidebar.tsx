@@ -45,37 +45,29 @@ export function VosSidebar({
       )}
       style={{
         width: collapsed ? 'var(--vos-sidebar-w-collapsed)' : 'var(--vos-sidebar-w)',
-        background:
-          'linear-gradient(180deg, rgba(15, 19, 30, 0.78) 0%, rgba(11, 15, 23, 0.55) 100%)',
-        backdropFilter: 'blur(28px) saturate(180%)',
-        WebkitBackdropFilter: 'blur(28px) saturate(180%)',
-        boxShadow:
-          'inset -1px 0 0 0 rgba(255, 255, 255, 0.05), inset 0 1px 0 0 rgba(255, 255, 255, 0.06), 16px 0 40px -24px rgba(0, 0, 0, 0.55)',
+        background: 'var(--vos-bg-elev-1)',
+        boxShadow: 'inset -1px 0 0 0 var(--vos-border-1)',
       }}
     >
       {/* Brand row */}
       <div className="h-vos-topbar flex items-center gap-vos-3 px-vos-4 border-b border-vos-border-1">
         <div
-          className="size-9 rounded-vos-md flex items-center justify-center shrink-0"
+          className="size-8 rounded-vos-sm flex items-center justify-center shrink-0"
           style={{
-            background: 'linear-gradient(135deg, var(--vos-accent), var(--vos-violet))',
-            boxShadow: 'var(--vos-glow)',
+            background: 'var(--vos-accent)',
           }}
         >
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden>
             <path
               d="M12 2L3 7v6c0 5 3.8 9.5 9 11 5.2-1.5 9-6 9-11V7l-9-5z"
               fill="white"
-              fillOpacity="0.95"
             />
           </svg>
         </div>
         {!collapsed && (
           <div className="flex-1 min-w-0">
-            <div className="vos-h4 truncate">{brand}</div>
-            <div className="text-vos-2xs uppercase tracking-[0.08em] text-vos-text-muted">
-              Security Platform
-            </div>
+            <div className="text-vos-md font-semibold tracking-vos-snug truncate text-vos-text">{brand}</div>
+            <div className="text-vos-2xs text-vos-text-muted truncate">Security Platform</div>
           </div>
         )}
         <button
