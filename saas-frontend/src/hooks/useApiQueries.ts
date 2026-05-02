@@ -1722,3 +1722,177 @@ export function useDeleteOrgLogo() {
   });
 }
 
+// ══════════════════════════════════════════════════
+// PHASE 1 — Security: Login History + IP Whitelist
+// ══════════════════════════════════════════════════
+
+export function useLoginHistory(limit = 20, offset = 0) {
+  const { token } = useAuth();
+  return useQuery({
+    queryKey: ['login-history', limit, offset],
+    queryFn: () => authFetch(`/api/v1/security/login-history?limit=${limit}&offset=${offset}`, token),
+    staleTime: 30_000,
+  });
+}
+
+export function useActiveSessions() {
+  const { token } = useAuth();
+  return useQuery({
+    queryKey: ['active-sessions'],
+    queryFn: () => authFetch('/api/v1/security/sessions', token),
+    staleTime: 60_000,
+  });
+}
+
+export function useAuditLogs(limit = 50, offset = 0) {
+  const { token } = useAuth();
+  return useQuery({
+    queryKey: ['audit-logs', limit, offset],
+    queryFn: () => authFetch(`/api/v1/security/audit-logs?limit=${limit}&offset=${offset}`, token),
+    staleTime: 30_000,
+  });
+}
+
+export function useIpWhitelist() {
+  const { token } = useAuth();
+  return useQuery({
+    queryKey: ['ip-whitelist'],
+    queryFn: () => authFetch('/api/v1/security/ip-whitelist', token),
+    staleTime: 60_000,
+  });
+}
+
+export function useAddIpWhitelist() {
+  const { token } = useAuth();
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (body: { ip_cidr: string; label?: string }) =>
+      authFetch('/api/v1/security/ip-whitelist', token, { method: 'POST', body: JSON.stringify(body) }),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['ip-whitelist'] }),
+  });
+}
+
+export function useRemoveIpWhitelist() {
+  const { token } = useAuth();
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (ipId: string) =>
+      authFetch(`/api/v1/security/ip-whitelist/${ipId}`, token, { method: 'DELETE' }),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['ip-whitelist'] }),
+  });
+}
+
+// ══════════════════════════════════════════════════
+// PHASE 1 — API Key: Rotate + Stats
+// ══════════════════════════════════════════════════
+
+export function useApiKeyStats() {
+  const { token } = useAuth();
+  return useQuery({
+    queryKey: ['api-key-stats'],
+    queryFn: () => authFetch('/api/v1/settings/api-keys/stats', token),
+    staleTime: 60_000,
+  });
+}
+
+export function useRotateApiKey() {
+  const { token } = useAuth();
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (keyId: string) =>
+      authFetch(`/api/v1/settings/api-keys/${keyId}/rotate`, token, { method: 'POST' }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['api-keys'] });
+      qc.invalidateQueries({ queryKey: ['api-key-stats'] });
+    },
+  });
+}
+
+// ══════════════════════════════════════════════════
+// PHASE 3 — Scan Templates
+// ══════════════════════════════════════════════════
+
+export function useScanTemplates() {
+  const { token } = useAuth();
+  return useQuery({
+    queryKey: ['scan-templates'],
+    queryFn: () => authFetch('/api/v1/scan-templates', token),
+    staleTime: 120_000,
+  });
+}
+
+export function useCreateScanTemplate() {
+  const { token } = useAuth();
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (body: { name: string; description?: string; tool_id?: string; parameters?: Record<string, unknown>; is_public?: boolean }) =>
+      authFetch('/api/v1/scan-templates', token, { method: 'POST', body: JSON.stringify(body) }),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['scan-templates'] }),
+  });
+}
+
+export function useDeleteScanTemplate() {
+  const { token } = useAuth();
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (templateId: string) =>
+      authFetch(`/api/v1/scan-templates/${templateId}`, token, { method: 'DELETE' }),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['scan-templates'] }),
+  });
+}
+
+// ══════════════════════════════════════════════════
+// PHASE 5 — Analytics Trend
+// ══════════════════════════════════════════════════
+
+export function useAnalyticsTrend(days = 30) {
+  const { token } = useAuth();
+  return useQuery({
+    queryKey: ['analytics-trend', days],
+    queryFn: () => authFetch(`/api/v1/analytics/trend?days=${days}`, token),
+    staleTime: 300_000,
+  });
+}
+
+// ══════════════════════════════════════════════════
+// PHASE 6 — Strix AI Jobs
+// ══════════════════════════════════════════════════
+
+export function useStrixJobs() {
+  const { token } = useAuth();
+  return useQuery({
+    queryKey: ['strix-jobs'],
+    queryFn: () => authFetch('/api/v1/strix/jobs', token),
+    staleTime: 30_000,
+    refetchInterval: (query) => {
+      const data = query.state.data as { strix_jobs?: Array<{ status: string }> } | undefined;
+      const hasActive = data?.strix_jobs?.some(j => j.status === 'queued' || j.status === 'running');
+      return hasActive ? 5_000 : false;
+    },
+  });
+}
+
+export function useCreateStrixJob() {
+  const { token } = useAuth();
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (body: { target: string; target_type?: string; job_type?: string; agents_config?: Record<string, boolean> }) =>
+      authFetch('/api/v1/strix/jobs', token, { method: 'POST', body: JSON.stringify(body) }),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['strix-jobs'] }),
+  });
+}
+
+export function useStrixJob(jobId: string | null) {
+  const { token } = useAuth();
+  return useQuery({
+    queryKey: ['strix-job', jobId],
+    queryFn: () => authFetch(`/api/v1/strix/jobs/${jobId}`, token),
+    enabled: !!jobId,
+    staleTime: 10_000,
+    refetchInterval: (query) => {
+      const data = query.state.data as { status?: string } | undefined;
+      return data?.status === 'running' || data?.status === 'queued' ? 3_000 : false;
+    },
+  });
+}
+

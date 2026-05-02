@@ -1,12 +1,13 @@
 /**
  * Security Settings Tab
- * Password change, 2FA/MFA (V20), danger zone
+ * Password change, 2FA/MFA, Login History, IP Whitelist, Sessions
  */
 import { useState, useEffect, FormEvent } from 'react';
 import { useTranslation } from 'react-i18next';
 import { motion } from 'framer-motion';
 import type { SettingsTabProps } from './types';
 import { api } from '../../../services/api';
+import { useLoginHistory, useIpWhitelist, useAddIpWhitelist, useRemoveIpWhitelist, useActiveSessions } from '../../../hooks/useApiQueries';
 
 export function SecurityTab({ loading, setLoading, setMessage }: SettingsTabProps) {
   const { t } = useTranslation();
@@ -401,20 +402,20 @@ export function SecurityTab({ loading, setLoading, setMessage }: SettingsTabProp
       {/* Sessions */}
       <div className="border-t border-gray-800 pt-8">
         <h2 className="text-xl font-bold text-white mb-4">{t('security.activeSessions', 'Active Sessions')}</h2>
-        <div className="space-y-3">
-          <div className="flex items-center justify-between p-4 bg-gray-800 rounded-lg">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-lg bg-green-500/20 flex items-center justify-center">
-                <span className="text-green-400">🖥️</span>
-              </div>
-              <div>
-                <p className="text-white font-medium text-sm">{t('security.currentSession', 'Current Session')}</p>
-                <p className="text-gray-500 text-xs">Linux · Chrome · {new Date().toLocaleDateString()}</p>
-              </div>
-            </div>
-            <span className="px-2 py-1 bg-green-500/20 text-green-400 rounded text-xs">{t('common.active', 'Active')}</span>
-          </div>
-        </div>
+        <ActiveSessionsSection />
+      </div>
+
+      {/* Login History */}
+      <div className="border-t border-gray-800 pt-8">
+        <h2 className="text-xl font-bold text-white mb-4">Login History</h2>
+        <LoginHistorySection />
+      </div>
+
+      {/* IP Whitelist */}
+      <div className="border-t border-gray-800 pt-8">
+        <h2 className="text-xl font-bold text-white mb-2">IP Whitelist</h2>
+        <p className="text-gray-400 text-sm mb-4">Restrict access to specific IP addresses or CIDR ranges.</p>
+        <IpWhitelistSection />
       </div>
 
       {/* Danger Zone */}
@@ -451,5 +452,174 @@ export function SecurityTab({ loading, setLoading, setMessage }: SettingsTabProp
         </div>
       </div>
     </motion.div>
+  );
+}
+
+// ──────────────────────────────────────────────
+// Sub-components
+// ──────────────────────────────────────────────
+
+function ActiveSessionsSection() {
+  const { data, isLoading } = useActiveSessions();
+  const sessions: Array<{ id: string; ip_address?: string; user_agent?: string; is_current: boolean; last_active: string }> =
+    data?.sessions ?? [];
+
+  if (isLoading) return <div className="text-gray-500 text-sm">Loading sessions…</div>;
+
+  return (
+    <div className="space-y-3">
+      {sessions.length === 0 && (
+        <div className="p-4 bg-gray-800 rounded-lg text-gray-400 text-sm">No recent sessions found.</div>
+      )}
+      {sessions.map((s) => (
+        <div key={s.id} className="flex items-center justify-between p-4 bg-gray-800 rounded-lg">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-lg bg-green-500/20 flex items-center justify-center">
+              <span className="text-green-400">🖥️</span>
+            </div>
+            <div>
+              <p className="text-white font-medium text-sm">{s.ip_address ?? 'Unknown IP'}</p>
+              <p className="text-gray-500 text-xs truncate max-w-xs">{s.user_agent ?? 'Unknown browser'}</p>
+              <p className="text-gray-600 text-xs">{new Date(s.last_active).toLocaleString()}</p>
+            </div>
+          </div>
+          {s.is_current ? (
+            <span className="px-2 py-1 bg-green-500/20 text-green-400 rounded text-xs">Current</span>
+          ) : (
+            <span className="px-2 py-1 bg-gray-700 text-gray-400 rounded text-xs">Past</span>
+          )}
+        </div>
+      ))}
+    </div>
+  );
+}
+
+function LoginHistorySection() {
+  const { data, isLoading } = useLoginHistory(20, 0);
+  const history: Array<{ id: string; ip_address?: string; user_agent?: string; success: boolean; failure_reason?: string; city?: string; created_at: string }> =
+    data?.login_history ?? [];
+
+  if (isLoading) return <div className="text-gray-500 text-sm">Loading login history…</div>;
+
+  return (
+    <div className="overflow-x-auto">
+      <table className="w-full text-sm">
+        <thead>
+          <tr className="text-gray-500 text-left border-b border-gray-800">
+            <th className="pb-2 pr-4">Date</th>
+            <th className="pb-2 pr-4">IP Address</th>
+            <th className="pb-2 pr-4">Location</th>
+            <th className="pb-2 pr-4">Status</th>
+            <th className="pb-2">Details</th>
+          </tr>
+        </thead>
+        <tbody>
+          {history.length === 0 && (
+            <tr><td colSpan={5} className="py-4 text-gray-500 text-center">No login history yet.</td></tr>
+          )}
+          {history.map((h) => (
+            <tr key={h.id} className="border-b border-gray-800/50 hover:bg-gray-800/30">
+              <td className="py-2 pr-4 text-gray-300 whitespace-nowrap">{new Date(h.created_at).toLocaleString()}</td>
+              <td className="py-2 pr-4 text-gray-300 font-mono text-xs">{h.ip_address ?? '—'}</td>
+              <td className="py-2 pr-4 text-gray-400 text-xs">{h.city ?? '—'}</td>
+              <td className="py-2 pr-4">
+                {h.success ? (
+                  <span className="px-2 py-0.5 bg-green-500/20 text-green-400 rounded text-xs">✓ Success</span>
+                ) : (
+                  <span className="px-2 py-0.5 bg-red-500/20 text-red-400 rounded text-xs">✗ Failed</span>
+                )}
+              </td>
+              <td className="py-2 text-gray-500 text-xs">{h.failure_reason ?? (h.success ? 'Authenticated' : '—')}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  );
+}
+
+function IpWhitelistSection() {
+  const { data, isLoading } = useIpWhitelist();
+  const addMutation = useAddIpWhitelist();
+  const removeMutation = useRemoveIpWhitelist();
+  const [newIp, setNewIp] = useState('');
+  const [newLabel, setNewLabel] = useState('');
+  const [err, setErr] = useState('');
+
+  const list: Array<{ id: string; ip_cidr: string; label?: string; is_active: boolean; created_at: string }> =
+    data?.ip_whitelist ?? [];
+
+  const handleAdd = async () => {
+    setErr('');
+    if (!newIp.trim()) { setErr('IP address or CIDR required'); return; }
+    try {
+      await addMutation.mutateAsync({ ip_cidr: newIp.trim(), label: newLabel.trim() || undefined });
+      setNewIp(''); setNewLabel('');
+    } catch (e: unknown) {
+      setErr(e instanceof Error ? e.message : 'Failed to add IP');
+    }
+  };
+
+  return (
+    <div className="space-y-4">
+      {/* Add form */}
+      <div className="flex items-end gap-3 flex-wrap">
+        <div>
+          <label className="block text-gray-400 text-xs mb-1">IP / CIDR</label>
+          <input
+            type="text"
+            value={newIp}
+            onChange={(e) => setNewIp(e.target.value)}
+            placeholder="192.168.1.0/24"
+            className="px-3 py-2 bg-gray-800 border border-gray-700 rounded-lg text-white text-sm font-mono w-44 focus:outline-none focus:border-cyan-500"
+          />
+        </div>
+        <div>
+          <label className="block text-gray-400 text-xs mb-1">Label (optional)</label>
+          <input
+            type="text"
+            value={newLabel}
+            onChange={(e) => setNewLabel(e.target.value)}
+            placeholder="Office VPN"
+            className="px-3 py-2 bg-gray-800 border border-gray-700 rounded-lg text-white text-sm w-36 focus:outline-none focus:border-cyan-500"
+          />
+        </div>
+        <button
+          onClick={handleAdd}
+          disabled={addMutation.isPending}
+          className="px-4 py-2 bg-cyan-600 text-white rounded-lg hover:bg-cyan-700 transition text-sm disabled:opacity-50"
+        >
+          {addMutation.isPending ? 'Adding…' : '+ Add IP'}
+        </button>
+      </div>
+      {err && <p className="text-red-400 text-xs">{err}</p>}
+
+      {/* List */}
+      {isLoading ? (
+        <div className="text-gray-500 text-sm">Loading…</div>
+      ) : list.length === 0 ? (
+        <div className="p-4 bg-gray-800 rounded-lg text-gray-400 text-sm">
+          No IP restrictions set. All IPs are allowed.
+        </div>
+      ) : (
+        <div className="space-y-2">
+          {list.map((entry) => (
+            <div key={entry.id} className="flex items-center justify-between p-3 bg-gray-800 rounded-lg">
+              <div>
+                <span className="font-mono text-cyan-400 text-sm">{entry.ip_cidr}</span>
+                {entry.label && <span className="ml-3 text-gray-400 text-xs">{entry.label}</span>}
+              </div>
+              <button
+                onClick={() => removeMutation.mutate(entry.id)}
+                disabled={removeMutation.isPending}
+                className="text-red-400 hover:text-red-300 text-xs px-2 py-1 rounded hover:bg-red-500/10 transition"
+              >
+                Remove
+              </button>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
   );
 }
