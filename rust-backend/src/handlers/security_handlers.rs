@@ -588,6 +588,65 @@ pub async fn get_cybersec_ai_job(
     }
 }
 
+pub async fn cancel_cybersec_ai_job(
+    user: AuthUser,
+    State(state): State<Arc<AppState>>,
+    Path(job_id): Path<String>,
+) -> impl IntoResponse {
+    let org_id = match &user.org_id {
+        Some(id) => id.clone(),
+        None => return (StatusCode::FORBIDDEN, Json(json!({"error": "Organization required"}))).into_response(),
+    };
+
+    // Look up current status (and verify ownership).
+    let current: Option<(String,)> = sqlx::query_as(
+        "SELECT status FROM cybersec_ai_jobs WHERE id = $1 AND organization_id = $2"
+    )
+    .bind(&job_id).bind(&org_id)
+    .fetch_optional(&state.db).await.unwrap_or(None);
+
+    let Some((status,)) = current else {
+        return (StatusCode::NOT_FOUND, Json(json!({"error": "Job not found"}))).into_response();
+    };
+
+    let new_status = match status.as_str() {
+        "queued" => "cancelled",                 // never started → cancel immediately
+        "running" => "cancelling",               // worker will observe and stop
+        "cancelling" | "cancelled" | "completed" | "failed" => {
+            return (StatusCode::OK, Json(json!({
+                "message": "Job already in terminal state",
+                "status": status
+            }))).into_response();
+        }
+        _ => "cancelled",
+    };
+
+    let updated = sqlx::query(
+        "UPDATE cybersec_ai_jobs
+         SET status = $3,
+             completed_at = CASE WHEN $3 = 'cancelled' THEN NOW() ELSE completed_at END
+         WHERE id = $1 AND organization_id = $2"
+    )
+    .bind(&job_id).bind(&org_id).bind(new_status)
+    .execute(&state.db).await;
+
+    match updated {
+        Ok(_) => {
+            crate::services::audit::log_audit(
+                &state.db, "cybersec_ai_job_cancelled", "security", "warning",
+                Some(&user.user_id), Some(&org_id),
+                Some(json!({"job_id": &job_id, "previous_status": status})),
+                Some("cybersec_ai_job"), Some(&job_id), "success", None
+            ).await;
+            (StatusCode::OK, Json(json!({
+                "message": "Cancellation requested",
+                "status": new_status
+            }))).into_response()
+        }
+        Err(e) => (StatusCode::INTERNAL_SERVER_ERROR, Json(json!({"error": format!("Failed: {}", e)}))).into_response(),
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::validate_ip_cidr;

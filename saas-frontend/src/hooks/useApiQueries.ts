@@ -1891,7 +1891,20 @@ export function useCyberSecAIJob(jobId: string | null) {
     staleTime: 10_000,
     refetchInterval: (query) => {
       const data = query.state.data as { status?: string } | undefined;
-      return data?.status === 'running' || data?.status === 'queued' ? 3_000 : false;
+      return data?.status === 'running' || data?.status === 'queued' || data?.status === 'cancelling' ? 3_000 : false;
+    },
+  });
+}
+
+export function useCancelCyberSecAIJob() {
+  const { token } = useAuth();
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (jobId: string) =>
+      authFetch(`/api/v1/cybersec-ai/jobs/${jobId}/cancel`, token, { method: 'POST' }),
+    onSuccess: (_data, jobId) => {
+      qc.invalidateQueries({ queryKey: ["cybersec-ai-jobs"] });
+      qc.invalidateQueries({ queryKey: ["cybersec-ai-job", jobId] });
     },
   });
 }

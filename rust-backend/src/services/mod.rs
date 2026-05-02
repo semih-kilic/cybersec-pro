@@ -10,3 +10,4 @@ pub mod network_discovery;
 pub mod scheduler;
 pub mod integrations;
 pub mod notifications;
+pub mod cybersec_ai_worker;

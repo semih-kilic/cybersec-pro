@@ -125,6 +125,15 @@ async fn main() -> anyhow::Result<()> {
         });
     }
 
+    // Spawn CyberSec AI worker (autonomous pentest job processor)
+    {
+        let db = Arc::new(state.db.clone());
+        tokio::spawn(async move {
+            tokio::time::sleep(std::time::Duration::from_secs(8)).await;
+            services::cybersec_ai_worker::run(db).await;
+        });
+    }
+
     // Build router
     let app = build_router(state.clone())
         .layer(axum_middleware::from_fn(security_headers))
@@ -483,6 +492,7 @@ fn build_router(state: Arc<AppState>) -> Router {
         // ── Phase 6: Strix AI Jobs ────────────────────────────────────────
         .route("/api/v1/cybersec-ai/jobs", get(security_handlers::list_cybersec_ai_jobs).post(security_handlers::create_cybersec_ai_job))
         .route("/api/v1/cybersec-ai/jobs/:job_id", get(security_handlers::get_cybersec_ai_job))
+        .route("/api/v1/cybersec-ai/jobs/:job_id/cancel", post(security_handlers::cancel_cybersec_ai_job))
         .merge(swagger_ui)
         .with_state(state)
 }

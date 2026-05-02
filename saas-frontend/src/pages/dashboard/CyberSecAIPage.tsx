@@ -37,6 +37,7 @@ import {
   useCyberSecAIJobs,
   useCreateCyberSecAIJob,
   useCyberSecAIJob,
+  useCancelCyberSecAIJob,
 } from '../../hooks/useApiQueries';
 
 type Job = {
@@ -56,6 +57,8 @@ const STATUS_TONE: Record<string, 'warning' | 'info' | 'success' | 'danger' | 'n
   running: 'info',
   completed: 'success',
   failed: 'danger',
+  cancelling: 'warning',
+  cancelled: 'neutral',
 };
 
 export default function CyberSecAIPage() {
@@ -410,8 +413,17 @@ type CyberSecAIJobDetail = {
   completed_at?: string;
 };
 
+type AIStep = { agent: string; status: string; output?: string; finding_count?: number; error?: string | null };
+type AIFinding = { agent?: string; severity?: string; title?: string; evidence?: string; target?: string; verified?: boolean };
+type AIResults = { steps?: AIStep[]; findings?: AIFinding[]; summary?: { agents_completed?: number; agents_total?: number }; error?: string };
+
+const SEVERITY_TONE: Record<string, 'danger' | 'warning' | 'info' | 'neutral' | 'success'> = {
+  critical: 'danger', high: 'danger', medium: 'warning', low: 'info', info: 'neutral'
+};
+
 function JobDetail({ jobId }: { jobId: string }) {
   const { data: rawData, isLoading } = useCyberSecAIJob(jobId);
+  const cancelJob = useCancelCyberSecAIJob();
   if (isLoading)
     return (
       <div className="flex items-center gap-2 text-vos-text-3 text-vos-sm">
@@ -420,18 +432,35 @@ function JobDetail({ jobId }: { jobId: string }) {
     );
   if (!rawData) return null;
   const data = rawData as CyberSecAIJobDetail;
+  const results = (data.results as AIResults | null | undefined) ?? undefined;
+  const isActive = data.status === 'queued' || data.status === 'running' || data.status === 'cancelling';
 
   return (
     <div className="space-y-vos-4">
-      <KeyValueGrid
-        cols={4}
-        items={[
-          { label: 'Target Type', value: data.target_type },
-          { label: 'Job Type', value: data.job_type.replace(/_/g, ' ') },
-          { label: 'Findings', value: data.findings_count },
-          { label: 'PoC Verified', value: data.poc_verified_count },
-        ]}
-      />
+      <div className="flex items-center justify-between gap-vos-3">
+        <KeyValueGrid
+          cols={4}
+          items={[
+            { label: 'Target Type', value: data.target_type },
+            { label: 'Job Type', value: data.job_type.replace(/_/g, ' ') },
+            { label: 'Findings', value: data.findings_count },
+            { label: 'PoC Verified', value: data.poc_verified_count },
+          ]}
+        />
+        {isActive && (
+          <button
+            onClick={() => cancelJob.mutate(data.id)}
+            disabled={cancelJob.isPending || data.status === 'cancelling'}
+            className="shrink-0 inline-flex items-center gap-1.5 h-8 px-3 rounded-vos-md bg-vos-danger/10 text-vos-danger border border-vos-danger/30 text-vos-xs font-medium hover:bg-vos-danger/20 transition-colors disabled:opacity-50"
+          >
+            {cancelJob.isPending || data.status === 'cancelling' ? (
+              <><Loader2 size={12} className="animate-spin" /> Cancelling…</>
+            ) : (
+              <>Stop job</>
+            )}
+          </button>
+        )}
+      </div>
 
       {data.agents_config && (
         <div>
@@ -453,18 +482,60 @@ function JobDetail({ jobId }: { jobId: string }) {
         </div>
       )}
 
-      {data.results !== undefined && data.results !== null && (
+      {results?.steps && results.steps.length > 0 && (
         <div>
           <p className="text-[10px] uppercase tracking-vos-wide font-semibold text-vos-text-3 mb-vos-2">
-            Results
+            Agent Pipeline
           </p>
-          <pre className="bg-vos-bg-elev-1 rounded-vos-md p-vos-3 text-[11px] text-vos-text-2 overflow-x-auto max-h-64 font-vos-mono border border-vos-border-1">
-            {JSON.stringify(data.results as Record<string, unknown>, null, 2)}
-          </pre>
+          <div className="space-y-1.5">
+            {results.steps.map((s, i) => (
+              <div key={i} className="flex items-center justify-between gap-2 px-vos-3 h-9 rounded-vos-md bg-vos-bg-elev-1 border border-vos-border-1">
+                <div className="flex items-center gap-2 min-w-0">
+                  <span className="text-vos-sm font-medium text-vos-text capitalize">{s.agent.replace(/_/g, ' ')}</span>
+                  {typeof s.finding_count === 'number' && s.finding_count > 0 && (
+                    <span className="text-vos-xs text-vos-text-3">· {s.finding_count} finding{s.finding_count === 1 ? '' : 's'}</span>
+                  )}
+                </div>
+                <StatusPill
+                  tone={s.status === 'done' ? 'success' : s.status === 'error' ? 'danger' : 'warning'}
+                  pulse={s.status === 'running'}
+                  label={s.status}
+                />
+              </div>
+            ))}
+          </div>
         </div>
       )}
 
-      {(data.status === 'queued' || data.status === 'running') && (
+      {results?.findings && results.findings.length > 0 && (
+        <div>
+          <p className="text-[10px] uppercase tracking-vos-wide font-semibold text-vos-text-3 mb-vos-2">
+            Findings ({results.findings.length})
+          </p>
+          <div className="space-y-1 max-h-72 overflow-y-auto pr-1">
+            {results.findings.slice(0, 100).map((f, i) => (
+              <div key={i} className="flex items-start gap-2 p-vos-3 rounded-vos-md bg-vos-bg-elev-1 border border-vos-border-1">
+                <StatusPill tone={SEVERITY_TONE[(f.severity || 'info').toLowerCase()] || 'neutral'} label={f.severity || 'info'} />
+                <div className="min-w-0 flex-1">
+                  <div className="text-vos-sm font-medium text-vos-text truncate">{f.title || 'Finding'}</div>
+                  {f.evidence && <div className="text-vos-xs text-vos-text-3 font-vos-mono truncate">{f.evidence}</div>}
+                </div>
+                {f.verified && (
+                  <span className="text-vos-xs text-vos-success">verified</span>
+                )}
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {results?.error && (
+        <div className="p-vos-3 rounded-vos-md bg-vos-danger/10 border border-vos-danger/30 text-vos-xs text-vos-danger">
+          {results.error}
+        </div>
+      )}
+
+      {isActive && (
         <div className="flex items-center gap-2 text-vos-accent text-vos-xs">
           <Loader2 size={12} className="animate-spin" /> Job is {data.status}… auto-refreshing
         </div>
