@@ -1,8 +1,38 @@
+/**
+ * 🛡️ TargetsPage — V20 "Onyx" rewrite
+ *
+ * Apple-grade asset inventory.
+ * - PageHeader + StatCard summary
+ * - Search + group/type filters
+ * - DenseTable with checkbox selection, type icon, group chip, tags, risk
+ * - Bulk action bar (scan / delete)
+ * - Add/Import modals
+ *
+ * Business logic preserved (React Query queryClient cache mutations).
+ */
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useQueryClient } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
-import { Header } from '../../components/layout/Header';
+import {
+  Crosshair,
+  Search,
+  X,
+  Plus,
+  Upload,
+  Play,
+  Pencil,
+  Trash2,
+  Globe,
+  Link as LinkIcon,
+  Network,
+  ArrowRightLeft,
+  Server,
+  FolderTree,
+  ListChecks,
+  AlertTriangle,
+  ShieldCheck,
+} from 'lucide-react';
 import { PageTransition } from '../../components/ui';
 import { useAuth } from '../../hooks/useAuth';
 import { useTargets, useTargetGroups } from '../../hooks/useApiQueries';
@@ -10,6 +40,17 @@ import { queryKeys } from '../../lib/queryClient';
 import { useDocumentTitle } from '../../hooks/useUtilities';
 import { useToast } from '../../components/ui/Toast';
 import { TargetsPageSkeleton } from '../../components/ui/Skeleton';
+import { StatCard } from '../../components/ui/Card';
+import {
+  PageHeader,
+  StatusPill,
+  FilterChip,
+  DenseTable,
+  DenseTableHead,
+  DenseTH,
+  DenseTR,
+  DenseTD,
+} from '../../components/vos';
 
 interface Target {
   id: string;
@@ -26,42 +67,15 @@ interface Target {
   notes?: string;
 }
 
-interface _TargetGroup {
-  id: string;
-  name: string;
-  color: string;
-  targets_count: number;
-}
-
-const typeIcons: { [key: string]: JSX.Element } = {
-  ip: (
-    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 3v2m6-2v2M9 19v2m6-2v2M5 9H3m2 6H3m18-6h-2m2 6h-2M7 19h10a2 2 0 002-2V7a2 2 0 00-2-2H7a2 2 0 00-2 2v10a2 2 0 002 2zM9 9h6v6H9V9z" />
-    </svg>
-  ),
-  domain: (
-    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9" />
-    </svg>
-  ),
-  url: (
-    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
-    </svg>
-  ),
-  cidr: (
-    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7M4 7c0 2.21 3.582 4 8 4s8-1.79 8-4M4 7c0-2.21 3.582-4 8-4s8 1.79 8 4" />
-    </svg>
-  ),
-  range: (
-    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" />
-    </svg>
-  ),
+const TYPE_ICON: Record<string, React.ComponentType<{ size?: number; className?: string }>> = {
+  ip: Server,
+  domain: Globe,
+  url: LinkIcon,
+  cidr: Network,
+  range: ArrowRightLeft,
 };
 
-const typeLabels: { [key: string]: string } = {
+const TYPE_LABEL: Record<string, string> = {
   ip: 'IP Address',
   domain: 'Domain',
   url: 'URL',
@@ -69,15 +83,33 @@ const typeLabels: { [key: string]: string } = {
   range: 'IP Range',
 };
 
+const GROUP_DOT: Record<string, string> = {
+  red: 'bg-vos-danger',
+  yellow: 'bg-vos-warning',
+  blue: 'bg-vos-info',
+  green: 'bg-vos-success',
+  purple: 'bg-vos-info',
+  orange: 'bg-vos-warning',
+};
+
+function riskTone(score?: number): 'success' | 'warning' | 'danger' | 'neutral' {
+  if (!score) return 'neutral';
+  if (score >= 70) return 'danger';
+  if (score >= 40) return 'warning';
+  return 'success';
+}
+
 export function TargetsPage() {
   const { t } = useTranslation();
   useDocumentTitle(`${t('targets.title', 'Targets')} — CyberSec Pro`);
   const toast = useToast();
   const { token: _token } = useAuth();
+  void _token;
   const queryClient = useQueryClient();
   const { data: targets = [], isLoading: targetsLoading } = useTargets();
   const { data: groups = [], isLoading: groupsLoading } = useTargetGroups();
   const loading = targetsLoading || groupsLoading;
+
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedGroup, setSelectedGroup] = useState<string | null>(null);
   const [selectedType, setSelectedType] = useState<string | null>(null);
@@ -85,7 +117,6 @@ export function TargetsPage() {
   const [showImportModal, setShowImportModal] = useState(false);
   const [selectedTargets, setSelectedTargets] = useState<string[]>([]);
 
-  // Add target form
   const [newTarget, setNewTarget] = useState({
     name: '',
     value: '',
@@ -97,38 +128,49 @@ export function TargetsPage() {
 
   const handleAddTarget = async () => {
     try {
-      // API call would go here
       const target: Target = {
         id: Date.now().toString(),
         name: newTarget.name,
         value: newTarget.value,
         type: newTarget.type,
         group_id: newTarget.group_id,
-        group_name: groups.find(g => g.id === newTarget.group_id)?.name,
-        tags: newTarget.tags.split(',').map(t => t.trim()).filter(Boolean),
+        group_name: groups.find((g) => g.id === newTarget.group_id)?.name,
+        tags: newTarget.tags
+          .split(',')
+          .map((t) => t.trim())
+          .filter(Boolean),
         scans_count: 0,
         created_at: new Date().toISOString(),
         notes: newTarget.notes,
       };
-      queryClient.setQueryData(queryKeys.targets.list(), (old: { targets: Target[] } | undefined) => ({
-        targets: [target, ...(old?.targets || [])],
-      }));
+      queryClient.setQueryData(
+        queryKeys.targets.list(),
+        (old: { targets: Target[] } | undefined) => ({
+          targets: [target, ...(old?.targets || [])],
+        }),
+      );
       setShowAddModal(false);
       setNewTarget({ name: '', value: '', type: 'ip', group_id: '', tags: '', notes: '' });
-    } catch (error) {
-      toast.error(t('targets.addFailed', 'Add Failed'), t('targets.addFailedBody', 'Failed to add target'));
+    } catch {
+      toast.error(
+        t('targets.addFailed', 'Add Failed'),
+        t('targets.addFailedBody', 'Failed to add target'),
+      );
     }
   };
 
   const handleDeleteTargets = async () => {
-    queryClient.setQueryData(queryKeys.targets.list(), (old: { targets: Target[] } | undefined) => ({
-      targets: (old?.targets || []).filter(t => !selectedTargets.includes(t.id)),
-    }));
+    queryClient.setQueryData(
+      queryKeys.targets.list(),
+      (old: { targets: Target[] } | undefined) => ({
+        targets: (old?.targets || []).filter((t) => !selectedTargets.includes(t.id)),
+      }),
+    );
     setSelectedTargets([]);
   };
 
-  const filteredTargets = targets.filter(target => {
-    const matchesSearch = 
+  const filteredTargets = targets.filter((target) => {
+    const matchesSearch =
       (target.name || '').toLowerCase().includes(searchQuery.toLowerCase()) ||
       (target.value || '').toLowerCase().includes(searchQuery.toLowerCase());
     const matchesGroup = !selectedGroup || target.group_id === selectedGroup;
@@ -136,190 +178,156 @@ export function TargetsPage() {
     return matchesSearch && matchesGroup && matchesType;
   });
 
-  const getRiskColor = (score?: number) => {
-    if (!score) return 'text-gray-500';
-    if (score >= 70) return 'text-red-500';
-    if (score >= 40) return 'text-yellow-500';
-    return 'text-green-500';
-  };
+  if (loading) return <TargetsPageSkeleton />;
 
-  const getGroupColor = (color: string) => {
-    const colors: { [key: string]: string } = {
-      red: 'bg-red-500',
-      yellow: 'bg-yellow-500',
-      blue: 'bg-blue-500',
-      green: 'bg-green-500',
-      purple: 'bg-purple-500',
-      orange: 'bg-orange-500',
-    };
-    return colors[color] || 'bg-gray-500';
-  };
-
-  if (loading) {
-    return <TargetsPageSkeleton />;
-  }
+  const highRiskCount = targets.filter((t) => (t.risk_score || 0) >= 70).length;
+  const totalScans = targets.reduce((sum, t) => sum + t.scans_count, 0);
 
   return (
     <PageTransition>
-    <div className="min-h-screen bg-gray-950">
-      <Header 
-        title={t('targets.title', 'Targets')}
-        subtitle={t('targets.subtitle', 'Manage your scan targets and groups')}
-      />
-
-      <div className="p-6">
-        {/* Stats */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-          <div className="bg-gray-900 rounded-xl border border-gray-800 p-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-2xl font-bold text-white">{targets.length}</p>
-                <p className="text-sm text-gray-400">{t('targets.totalTargets', 'Total Targets')}</p>
-              </div>
-              <div className="w-10 h-10 rounded-lg bg-kali-blue/20 flex items-center justify-center">
-                <svg className="w-5 h-5 text-kali-blue" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
-                </svg>
-              </div>
-            </div>
-          </div>
-          <div className="bg-gray-900 rounded-xl border border-gray-800 p-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-2xl font-bold text-white">{groups.length}</p>
-                <p className="text-sm text-gray-400">{t('targets.groups', 'Groups')}</p>
-              </div>
-              <div className="w-10 h-10 rounded-lg bg-purple-500/20 flex items-center justify-center">
-                <svg className="w-5 h-5 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
-                </svg>
-              </div>
-            </div>
-          </div>
-          <div className="bg-gray-900 rounded-xl border border-gray-800 p-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-2xl font-bold text-white">{targets.reduce((sum, t) => sum + t.scans_count, 0)}</p>
-                <p className="text-sm text-gray-400">{t('targets.totalScans', 'Total Scans')}</p>
-              </div>
-              <div className="w-10 h-10 rounded-lg bg-green-500/20 flex items-center justify-center">
-                <svg className="w-5 h-5 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
-                </svg>
-              </div>
-            </div>
-          </div>
-          <div className="bg-gray-900 rounded-xl border border-gray-800 p-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-2xl font-bold text-red-400">
-                  {targets.filter(t => (t.risk_score || 0) >= 70).length}
-                </p>
-                <p className="text-sm text-gray-400">{t('targets.highRisk', 'High Risk')}</p>
-              </div>
-              <div className="w-10 h-10 rounded-lg bg-red-500/20 flex items-center justify-center">
-                <svg className="w-5 h-5 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-                </svg>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Controls */}
-        <div className="flex flex-col lg:flex-row gap-4 mb-6">
-          {/* Search */}
-          <div className="relative flex-1">
-            <input
-              type="text"
-              placeholder={t('targets.searchPlaceholder', 'Search targets...')}
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-10 pr-4 py-3 bg-gray-900 border border-gray-800 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:border-kali-blue transition"
-            />
-            <svg className="w-5 h-5 text-gray-500 absolute left-3 top-1/2 -translate-y-1/2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-            </svg>
-          </div>
-
-          {/* Group Filter */}
-          <div className="flex gap-2 overflow-x-auto">
-            <button
-              onClick={() => setSelectedGroup(null)}
-              className={`px-4 py-2 rounded-lg text-sm font-medium whitespace-nowrap transition ${
-                !selectedGroup ? 'bg-kali-blue text-white' : 'bg-gray-800 text-gray-400 hover:text-white'
-              }`}
-            >
-              All
-            </button>
-            {groups.map(group => (
+      <div className="p-vos-8 max-w-7xl mx-auto space-y-vos-6">
+        <PageHeader
+          eyebrow="Inventory"
+          icon={<Crosshair size={22} />}
+          title={t('targets.title', 'Targets')}
+          description={t('targets.subtitle', 'Manage your scan targets and groups')}
+          actions={
+            <div className="flex items-center gap-vos-2">
               <button
-                key={group.id}
-                onClick={() => setSelectedGroup(selectedGroup === group.id ? null : group.id)}
-                className={`px-4 py-2 rounded-lg text-sm font-medium whitespace-nowrap transition flex items-center gap-2 ${
-                  selectedGroup === group.id ? 'bg-kali-blue text-white' : 'bg-gray-800 text-gray-400 hover:text-white'
-                }`}
+                onClick={() => setShowImportModal(true)}
+                className="inline-flex items-center gap-2 h-10 px-vos-4 rounded-vos-md bg-vos-bg-elev-3 border border-vos-border-1 text-vos-text text-vos-sm font-medium hover:bg-vos-bg-elev-4"
               >
-                <span className={`w-2 h-2 rounded-full ${getGroupColor(group.color)}`} />
-                {group.name} ({group.targets_count})
+                <Upload size={13} />
+                Import
               </button>
-            ))}
-          </div>
+              <button
+                onClick={() => setShowAddModal(true)}
+                className="inline-flex items-center gap-2 h-10 px-vos-4 rounded-vos-md bg-vos-accent text-white text-vos-sm font-medium hover:opacity-90"
+              >
+                <Plus size={13} />
+                Add Target
+              </button>
+            </div>
+          }
+        />
 
-          {/* Type Filter */}
-          <select
-            value={selectedType || ''}
-            onChange={(e) => setSelectedType(e.target.value || null)}
-            className="px-4 py-2 bg-gray-800 border border-gray-700 rounded-lg text-white focus:outline-none focus:border-kali-blue transition"
-          >
-            <option value="">{t('targets.allTypes', 'All Types')}</option>
-            <option value="ip">{t('targets.ipAddress', 'IP Address')}</option>
-            <option value="domain">{t('targets.domain', 'Domain')}</option>
-            <option value="url">{t('targets.url', 'URL')}</option>
-            <option value="cidr">{t('targets.cidrRange', 'CIDR Range')}</option>
-            <option value="range">{t('targets.ipRange', 'IP Range')}</option>
-          </select>
-
-          {/* Actions */}
-          <div className="flex gap-2">
-            <button
-              onClick={() => setShowImportModal(true)}
-              className="px-4 py-2 bg-gray-800 hover:bg-gray-700 text-white rounded-lg transition flex items-center gap-2"
-            >
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
-              </svg>
-              Import
-            </button>
-            <button
-              onClick={() => setShowAddModal(true)}
-              className="px-6 py-2 bg-gradient-to-r from-kali-blue to-kali-purple text-white font-medium rounded-lg hover:opacity-90 transition flex items-center gap-2"
-            >
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-              </svg>
-              Add Target
-            </button>
-          </div>
+        {/* Stats */}
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-vos-3">
+          <StatCard
+            title={t('targets.totalTargets', 'Total Targets')}
+            value={targets.length.toString()}
+            icon={<ShieldCheck size={16} />}
+          />
+          <StatCard
+            title={t('targets.groups', 'Groups')}
+            value={groups.length.toString()}
+            icon={<FolderTree size={16} />}
+            variant="purple"
+          />
+          <StatCard
+            title={t('targets.totalScans', 'Total Scans')}
+            value={totalScans.toString()}
+            icon={<ListChecks size={16} />}
+            variant="green"
+          />
+          <StatCard
+            title={t('targets.highRisk', 'High Risk')}
+            value={highRiskCount.toString()}
+            icon={<AlertTriangle size={16} />}
+            variant="red"
+          />
         </div>
 
-        {/* Bulk Actions */}
+        {/* Filters */}
+        <section className="rounded-vos-xl border border-vos-border-1 bg-vos-bg-elev-2 p-vos-4 space-y-vos-3">
+          <div className="flex flex-col lg:flex-row gap-vos-2">
+            <label className="flex items-center gap-2 px-vos-3 h-10 rounded-vos-md bg-vos-bg-elev-3 border border-vos-border-1 focus-within:border-vos-accent focus-within:ring-2 focus-within:ring-vos-accent/30 transition-colors flex-1">
+              <Search size={14} className="text-vos-text-3 shrink-0" />
+              <input
+                type="search"
+                placeholder={t('targets.searchPlaceholder', 'Search targets…')}
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="flex-1 bg-transparent border-0 outline-none text-vos-sm text-vos-text placeholder:text-vos-text-muted"
+              />
+              {searchQuery && (
+                <button
+                  onClick={() => setSearchQuery('')}
+                  className="size-5 rounded hover:bg-vos-bg-elev-4 flex items-center justify-center text-vos-text-3"
+                  aria-label="Clear"
+                >
+                  <X size={12} />
+                </button>
+              )}
+            </label>
+
+            <select
+              value={selectedType || ''}
+              onChange={(e) => setSelectedType(e.target.value || null)}
+              className="h-10 px-vos-3 rounded-vos-md bg-vos-bg-elev-3 border border-vos-border-1 text-vos-text text-vos-sm focus:outline-none focus:border-vos-accent"
+            >
+              <option value="">{t('targets.allTypes', 'All Types')}</option>
+              <option value="ip">{t('targets.ipAddress', 'IP Address')}</option>
+              <option value="domain">{t('targets.domain', 'Domain')}</option>
+              <option value="url">{t('targets.url', 'URL')}</option>
+              <option value="cidr">{t('targets.cidrRange', 'CIDR Range')}</option>
+              <option value="range">{t('targets.ipRange', 'IP Range')}</option>
+            </select>
+          </div>
+
+          <div className="flex flex-wrap items-center gap-1.5">
+            <FilterChip
+              label="All groups"
+              active={!selectedGroup}
+              onClick={() => setSelectedGroup(null)}
+              value={targets.length}
+            />
+            {groups.map((group) => {
+              const dot = GROUP_DOT[group.color] || 'bg-vos-text-muted';
+              const active = selectedGroup === group.id;
+              return (
+                <button
+                  key={group.id}
+                  onClick={() => setSelectedGroup(active ? null : group.id)}
+                  className={`inline-flex items-center gap-1.5 h-7 px-vos-2 rounded-vos-sm border text-vos-xs font-medium transition-colors ${
+                    active
+                      ? 'bg-vos-accent/10 border-vos-accent text-vos-accent'
+                      : 'bg-vos-bg-elev-3 border-vos-border-1 text-vos-text-2 hover:text-vos-text'
+                  }`}
+                >
+                  <span className={`size-1.5 rounded-full ${dot}`} />
+                  {group.name}
+                  <span className="tabular-nums text-vos-text-3">
+                    ({group.targets_count})
+                  </span>
+                </button>
+              );
+            })}
+          </div>
+        </section>
+
+        {/* Bulk action bar */}
         {selectedTargets.length > 0 && (
-          <div className="bg-gray-900 border border-gray-800 rounded-xl p-4 mb-6 flex items-center justify-between">
-            <span className="text-white">{selectedTargets.length} targets selected</span>
-            <div className="flex gap-2">
-              <button className="px-4 py-2 bg-kali-blue text-white rounded-lg hover:bg-kali-blue/90 transition">
+          <div className="rounded-vos-xl border border-vos-accent/30 bg-vos-accent/5 p-vos-3 flex items-center justify-between">
+            <span className="text-vos-sm text-vos-text">
+              <span className="font-semibold tabular-nums">{selectedTargets.length}</span>{' '}
+              targets selected
+            </span>
+            <div className="flex gap-vos-2">
+              <button className="inline-flex items-center gap-1.5 h-8 px-vos-3 rounded-vos-sm bg-vos-accent text-white text-vos-xs font-medium hover:opacity-90">
+                <Play size={11} />
                 Scan Selected
               </button>
-              <button 
+              <button
                 onClick={handleDeleteTargets}
-                className="px-4 py-2 bg-red-500/20 text-red-400 rounded-lg hover:bg-red-500/30 transition"
+                className="inline-flex items-center gap-1.5 h-8 px-vos-3 rounded-vos-sm bg-vos-danger/10 text-vos-danger border border-vos-danger/20 text-vos-xs font-medium hover:bg-vos-danger/20"
               >
+                <Trash2 size={11} />
                 Delete
               </button>
-              <button 
+              <button
                 onClick={() => setSelectedTargets([])}
-                className="px-4 py-2 bg-gray-800 text-gray-400 rounded-lg hover:bg-gray-700 transition"
+                className="inline-flex items-center gap-1.5 h-8 px-vos-3 rounded-vos-sm bg-vos-bg-elev-3 border border-vos-border-1 text-vos-text-2 text-vos-xs font-medium hover:text-vos-text"
               >
                 Clear
               </button>
@@ -327,311 +335,379 @@ export function TargetsPage() {
           </div>
         )}
 
-        {/* Targets Table */}
-        <div className="bg-gray-900 rounded-xl border border-gray-800 overflow-hidden">
-          <table className="w-full">
-            <thead>
-              <tr className="text-left text-sm text-gray-400 border-b border-gray-800">
-                <th className="px-5 py-3 font-medium">
-                  <input
-                    type="checkbox"
-                    checked={selectedTargets.length === filteredTargets.length && filteredTargets.length > 0}
-                    onChange={(e) => {
-                      if (e.target.checked) {
-                        setSelectedTargets(filteredTargets.map(t => t.id));
-                      } else {
-                        setSelectedTargets([]);
-                      }
-                    }}
-                    className="w-4 h-4 rounded border-gray-600 bg-gray-800 text-kali-blue focus:ring-kali-blue"
-                  />
-                </th>
-                <th className="px-5 py-3 font-medium">{t('common.target', 'Target')}</th>
-                <th className="px-5 py-3 font-medium">{t('common.type', 'Type')}</th>
-                <th className="px-5 py-3 font-medium">{t('targets.group', 'Group')}</th>
-                <th className="px-5 py-3 font-medium">{t('targets.tags', 'Tags')}</th>
-                <th className="px-5 py-3 font-medium">{t('common.scans', 'Scans')}</th>
-                <th className="px-5 py-3 font-medium">{t('targets.risk', 'Risk')}</th>
-                <th className="px-5 py-3 font-medium">{t('common.actions', 'Actions')}</th>
-              </tr>
-            </thead>
-            <tbody>
-              {filteredTargets.map((target) => (
-                <tr key={target.id} className="border-b border-gray-800/50 hover:bg-gray-800/30 transition">
-                  <td className="px-5 py-4">
-                    <input
-                      type="checkbox"
-                      checked={selectedTargets.includes(target.id)}
-                      onChange={(e) => {
-                        if (e.target.checked) {
-                          setSelectedTargets([...selectedTargets, target.id]);
-                        } else {
-                          setSelectedTargets(selectedTargets.filter(id => id !== target.id));
-                        }
-                      }}
-                      className="w-4 h-4 rounded border-gray-600 bg-gray-800 text-kali-blue focus:ring-kali-blue"
-                    />
-                  </td>
-                  <td className="px-5 py-4">
-                    <div>
-                      <p className="text-white font-medium">{target.name}</p>
-                      <p className="text-sm text-gray-400 font-mono">{target.value}</p>
-                    </div>
-                  </td>
-                  <td className="px-5 py-4">
-                    <div className="flex items-center gap-2 text-gray-400">
-                      {typeIcons[target.type]}
-                      <span className="text-sm">{typeLabels[target.type]}</span>
-                    </div>
-                  </td>
-                  <td className="px-5 py-4">
-                    {target.group_name && (
-                      <span className="inline-flex items-center gap-2 px-2 py-1 bg-gray-800 rounded text-sm text-gray-300">
-                        <span className={`w-2 h-2 rounded-full ${getGroupColor(groups.find(g => g.id === target.group_id)?.color || 'gray')}`} />
-                        {target.group_name}
-                      </span>
-                    )}
-                  </td>
-                  <td className="px-5 py-4">
-                    <div className="flex flex-wrap gap-1">
-                      {(target.tags || []).map(tag => (
-                        <span key={tag} className="px-2 py-0.5 bg-gray-800 text-gray-400 rounded text-xs">
-                          {tag}
-                        </span>
-                      ))}
-                    </div>
-                  </td>
-                  <td className="px-5 py-4 text-sm text-gray-400">
-                    {target.scans_count}
-                  </td>
-                  <td className="px-5 py-4">
-                    {target.risk_score !== undefined ? (
-                      <span className={`font-medium ${getRiskColor(target.risk_score)}`}>
-                        {target.risk_score}%
-                      </span>
-                    ) : (
-                      <span className="text-gray-500">-</span>
-                    )}
-                  </td>
-                  <td className="px-5 py-4">
-                    <div className="flex gap-2">
-                      <Link
-                        to={`/dashboard/scans/new?target=${encodeURIComponent(target.value)}`}
-                        className="p-2 bg-kali-blue/20 text-kali-blue hover:bg-kali-blue/30 rounded transition"
-                        title={t('targets.scanTitle', 'Scan')}
-                      >
-                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" />
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                        </svg>
-                      </Link>
-                      <button
-                        className="p-2 bg-gray-800 text-gray-400 hover:bg-gray-700 hover:text-white rounded transition"
-                        title={t('common.edit', 'Edit')}
-                      >
-                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
-                        </svg>
-                      </button>
-                    </div>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-
-          {filteredTargets.length === 0 && (
-            <div className="text-center py-16">
-              <div className="w-16 h-16 mx-auto rounded-full bg-gray-800 flex items-center justify-center mb-4">
-                <svg className="w-8 h-8 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
-                </svg>
-              </div>
-              <h3 className="text-lg font-medium text-white mb-2">{t('targets.noTargetsFound', 'No targets found')}</h3>
-              <p className="text-gray-400 mb-4">{t('targets.addFirstTarget', 'Add your first target to start scanning.')}</p>
-              <button 
-                onClick={() => setShowAddModal(true)}
-                className="inline-flex items-center gap-2 px-6 py-2 bg-kali-blue text-white rounded-lg hover:bg-kali-blue/90 transition"
-              >
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-                </svg>
-                Add Target
-              </button>
-            </div>
-          )}
-        </div>
-
-        {/* Add Target Modal */}
-        {showAddModal && (
-          <div 
-            className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4"
-            onClick={() => setShowAddModal(false)}
-          >
-            <div 
-              className="bg-gray-900 rounded-2xl border border-gray-800 w-full max-w-lg"
-              onClick={e => e.stopPropagation()}
+        {/* Table */}
+        {filteredTargets.length === 0 ? (
+          <div className="text-center py-vos-16 rounded-vos-xl border border-vos-border-1 bg-vos-bg-elev-2">
+            <span className="size-12 mx-auto rounded-vos-md bg-vos-bg-elev-3 border border-vos-border-1 flex items-center justify-center text-vos-text-3 mb-vos-3">
+              <Crosshair size={20} />
+            </span>
+            <h3 className="text-vos-md font-semibold text-vos-text mb-1">
+              {t('targets.noTargetsFound', 'No targets found')}
+            </h3>
+            <p className="text-vos-sm text-vos-text-3 mb-vos-4">
+              {t('targets.addFirstTarget', 'Add your first target to start scanning.')}
+            </p>
+            <button
+              onClick={() => setShowAddModal(true)}
+              className="inline-flex items-center gap-2 h-10 px-vos-4 rounded-vos-md bg-vos-accent text-white text-vos-sm font-medium hover:opacity-90"
             >
-              <div className="flex items-center justify-between p-6 border-b border-gray-800">
-                <h2 className="text-xl font-semibold text-white">{t('targets.addTarget', 'Add Target')}</h2>
-                <button onClick={() => setShowAddModal(false)} className="text-gray-400 hover:text-white">
-                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                  </svg>
-                </button>
-              </div>
-
-              <div className="p-6 space-y-4">
-                <div>
-                  <label className="block text-sm text-gray-400 mb-2">{t('common.name', 'Name')}</label>
-                  <input
-                    type="text"
-                    value={newTarget.name}
-                    onChange={(e) => setNewTarget({ ...newTarget, name: e.target.value })}
-                    placeholder={t('targets.namePlaceholder', 'Production Server')}
-                    className="w-full px-4 py-3 bg-gray-800 border border-gray-700 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:border-kali-blue transition"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm text-gray-400 mb-2">{t('targets.value', 'Value')}</label>
-                  <input
-                    type="text"
-                    value={newTarget.value}
-                    onChange={(e) => setNewTarget({ ...newTarget, value: e.target.value })}
-                    placeholder="192.168.1.1 or example.com"
-                    className="w-full px-4 py-3 bg-gray-800 border border-gray-700 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:border-kali-blue transition"
-                  />
-                </div>
-
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-sm text-gray-400 mb-2">{t('common.type', 'Type')}</label>
-                    <select
-                      value={newTarget.type}
-                      onChange={(e) => setNewTarget({ ...newTarget, type: e.target.value as Target['type'] })}
-                      className="w-full px-4 py-3 bg-gray-800 border border-gray-700 rounded-xl text-white focus:outline-none focus:border-kali-blue transition"
-                    >
-                      <option value="ip">{t('targets.ipAddress', 'IP Address')}</option>
-                      <option value="domain">{t('targets.domain', 'Domain')}</option>
-                      <option value="url">{t('targets.url', 'URL')}</option>
-                      <option value="cidr">{t('targets.cidrRange', 'CIDR Range')}</option>
-                      <option value="range">{t('targets.ipRange', 'IP Range')}</option>
-                    </select>
-                  </div>
-
-                  <div>
-                    <label className="block text-sm text-gray-400 mb-2">{t('targets.group', 'Group')}</label>
-                    <select
-                      value={newTarget.group_id}
-                      onChange={(e) => setNewTarget({ ...newTarget, group_id: e.target.value })}
-                      className="w-full px-4 py-3 bg-gray-800 border border-gray-700 rounded-xl text-white focus:outline-none focus:border-kali-blue transition"
-                    >
-                      <option value="">{t('targets.noGroup', 'No Group')}</option>
-                      {groups.map(group => (
-                        <option key={group.id} value={group.id}>{group.name}</option>
-                      ))}
-                    </select>
-                  </div>
-                </div>
-
-                <div>
-                  <label className="block text-sm text-gray-400 mb-2">{t('targets.tagsLabel', 'Tags (comma separated)')}</label>
-                  <input
-                    type="text"
-                    value={newTarget.tags}
-                    onChange={(e) => setNewTarget({ ...newTarget, tags: e.target.value })}
-                    placeholder={t('targets.tagsPlaceholder', 'web, production, critical')}
-                    className="w-full px-4 py-3 bg-gray-800 border border-gray-700 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:border-kali-blue transition"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm text-gray-400 mb-2">{t('targets.notes', 'Notes')}</label>
-                  <textarea
-                    value={newTarget.notes}
-                    onChange={(e) => setNewTarget({ ...newTarget, notes: e.target.value })}
-                    placeholder={t('targets.notesPlaceholder', 'Additional notes about this target...')}
-                    rows={3}
-                    className="w-full px-4 py-3 bg-gray-800 border border-gray-700 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:border-kali-blue transition resize-none"
-                  />
-                </div>
-              </div>
-
-              <div className="flex justify-end gap-3 p-6 border-t border-gray-800">
-                <button
-                  onClick={() => setShowAddModal(false)}
-                  className="px-4 py-2 bg-gray-800 hover:bg-gray-700 text-white rounded-lg transition"
-                >
-                  Cancel
-                </button>
-                <button
-                  onClick={handleAddTarget}
-                  disabled={!newTarget.name || !newTarget.value}
-                  className="px-6 py-2 bg-kali-blue hover:bg-kali-blue/90 text-white rounded-lg transition disabled:opacity-50"
-                >
-                  Add Target
-                </button>
-              </div>
-            </div>
+              <Plus size={14} />
+              Add Target
+            </button>
           </div>
+        ) : (
+          <DenseTable>
+            <DenseTableHead>
+              <DenseTH>
+                <input
+                  type="checkbox"
+                  checked={
+                    selectedTargets.length === filteredTargets.length &&
+                    filteredTargets.length > 0
+                  }
+                  onChange={(e) => {
+                    if (e.target.checked)
+                      setSelectedTargets(filteredTargets.map((t) => t.id));
+                    else setSelectedTargets([]);
+                  }}
+                  className="size-3.5 rounded border-vos-border-2 text-vos-accent focus:ring-vos-accent"
+                  aria-label="Select all"
+                />
+              </DenseTH>
+              <DenseTH>{t('common.target', 'Target')}</DenseTH>
+              <DenseTH>{t('common.type', 'Type')}</DenseTH>
+              <DenseTH>{t('targets.group', 'Group')}</DenseTH>
+              <DenseTH>{t('targets.tags', 'Tags')}</DenseTH>
+              <DenseTH align="right">{t('common.scans', 'Scans')}</DenseTH>
+              <DenseTH>{t('targets.risk', 'Risk')}</DenseTH>
+              <DenseTH align="right">{t('common.actions', 'Actions')}</DenseTH>
+            </DenseTableHead>
+            <tbody>
+              {filteredTargets.map((target) => {
+                const TypeIcon = TYPE_ICON[target.type] || Server;
+                const groupColor = groups.find((g) => g.id === target.group_id)?.color;
+                const dot = GROUP_DOT[groupColor || ''] || 'bg-vos-text-muted';
+                return (
+                  <DenseTR key={target.id}>
+                    <DenseTD>
+                      <input
+                        type="checkbox"
+                        checked={selectedTargets.includes(target.id)}
+                        onChange={(e) => {
+                          if (e.target.checked)
+                            setSelectedTargets([...selectedTargets, target.id]);
+                          else
+                            setSelectedTargets(
+                              selectedTargets.filter((id) => id !== target.id),
+                            );
+                        }}
+                        onClick={(e) => e.stopPropagation()}
+                        className="size-3.5 rounded border-vos-border-2 text-vos-accent focus:ring-vos-accent"
+                      />
+                    </DenseTD>
+                    <DenseTD>
+                      <div>
+                        <p className="text-vos-text font-medium">{target.name}</p>
+                        <p className="text-vos-xs font-mono text-vos-text-3">
+                          {target.value}
+                        </p>
+                      </div>
+                    </DenseTD>
+                    <DenseTD>
+                      <span className="inline-flex items-center gap-1.5 text-vos-text-2 text-vos-xs">
+                        <TypeIcon size={12} />
+                        {TYPE_LABEL[target.type]}
+                      </span>
+                    </DenseTD>
+                    <DenseTD>
+                      {target.group_name && (
+                        <span className="inline-flex items-center gap-1.5 px-vos-2 h-6 rounded-vos-sm bg-vos-bg-elev-3 border border-vos-border-1 text-vos-xs text-vos-text-2">
+                          <span className={`size-1.5 rounded-full ${dot}`} />
+                          {target.group_name}
+                        </span>
+                      )}
+                    </DenseTD>
+                    <DenseTD>
+                      <div className="flex flex-wrap gap-1">
+                        {(target.tags || []).map((tag) => (
+                          <span
+                            key={tag}
+                            className="px-1.5 h-5 inline-flex items-center rounded text-[10px] bg-vos-bg-elev-3 border border-vos-border-1 text-vos-text-3"
+                          >
+                            {tag}
+                          </span>
+                        ))}
+                      </div>
+                    </DenseTD>
+                    <DenseTD align="right">
+                      <span className="text-vos-text tabular-nums text-vos-xs">
+                        {target.scans_count}
+                      </span>
+                    </DenseTD>
+                    <DenseTD>
+                      {target.risk_score !== undefined ? (
+                        <StatusPill tone={riskTone(target.risk_score)}>
+                          {target.risk_score}%
+                        </StatusPill>
+                      ) : (
+                        <span className="text-vos-text-muted text-vos-xs">–</span>
+                      )}
+                    </DenseTD>
+                    <DenseTD align="right">
+                      <div
+                        className="flex gap-1 justify-end"
+                        onClick={(e) => e.stopPropagation()}
+                      >
+                        <Link
+                          to={`/dashboard/scans/new?target=${encodeURIComponent(
+                            target.value,
+                          )}`}
+                          className="size-7 rounded-vos-sm bg-vos-accent/10 text-vos-accent border border-vos-accent/20 hover:bg-vos-accent hover:text-white flex items-center justify-center transition-colors"
+                          title={t('targets.scanTitle', 'Scan')}
+                        >
+                          <Play size={11} />
+                        </Link>
+                        <button
+                          className="size-7 rounded-vos-sm bg-vos-bg-elev-3 border border-vos-border-1 text-vos-text-2 hover:text-vos-text hover:bg-vos-bg-elev-4 flex items-center justify-center transition-colors"
+                          title={t('common.edit', 'Edit')}
+                        >
+                          <Pencil size={11} />
+                        </button>
+                      </div>
+                    </DenseTD>
+                  </DenseTR>
+                );
+              })}
+            </tbody>
+          </DenseTable>
+        )}
+
+        {/* Add Modal */}
+        {showAddModal && (
+          <Modal title={t('targets.addTarget', 'Add Target')} onClose={() => setShowAddModal(false)}>
+            <div className="p-vos-5 space-y-vos-4">
+              <ModalField label={t('common.name', 'Name')}>
+                <ModalInput
+                  value={newTarget.name}
+                  onChange={(e) => setNewTarget({ ...newTarget, name: e.target.value })}
+                  placeholder={t('targets.namePlaceholder', 'Production Server')}
+                />
+              </ModalField>
+              <ModalField label={t('targets.value', 'Value')}>
+                <ModalInput
+                  value={newTarget.value}
+                  onChange={(e) => setNewTarget({ ...newTarget, value: e.target.value })}
+                  placeholder="192.168.1.1 or example.com"
+                />
+              </ModalField>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-vos-3">
+                <ModalField label={t('common.type', 'Type')}>
+                  <ModalSelect
+                    value={newTarget.type}
+                    onChange={(e) =>
+                      setNewTarget({ ...newTarget, type: e.target.value as Target['type'] })
+                    }
+                  >
+                    <option value="ip">{t('targets.ipAddress', 'IP Address')}</option>
+                    <option value="domain">{t('targets.domain', 'Domain')}</option>
+                    <option value="url">{t('targets.url', 'URL')}</option>
+                    <option value="cidr">{t('targets.cidrRange', 'CIDR Range')}</option>
+                    <option value="range">{t('targets.ipRange', 'IP Range')}</option>
+                  </ModalSelect>
+                </ModalField>
+                <ModalField label={t('targets.group', 'Group')}>
+                  <ModalSelect
+                    value={newTarget.group_id}
+                    onChange={(e) =>
+                      setNewTarget({ ...newTarget, group_id: e.target.value })
+                    }
+                  >
+                    <option value="">{t('targets.noGroup', 'No Group')}</option>
+                    {groups.map((group) => (
+                      <option key={group.id} value={group.id}>
+                        {group.name}
+                      </option>
+                    ))}
+                  </ModalSelect>
+                </ModalField>
+              </div>
+              <ModalField label={t('targets.tagsLabel', 'Tags (comma separated)')}>
+                <ModalInput
+                  value={newTarget.tags}
+                  onChange={(e) => setNewTarget({ ...newTarget, tags: e.target.value })}
+                  placeholder={t('targets.tagsPlaceholder', 'web, production, critical')}
+                />
+              </ModalField>
+              <ModalField label={t('targets.notes', 'Notes')}>
+                <textarea
+                  value={newTarget.notes}
+                  onChange={(e) => setNewTarget({ ...newTarget, notes: e.target.value })}
+                  placeholder={t(
+                    'targets.notesPlaceholder',
+                    'Additional notes about this target…',
+                  )}
+                  rows={3}
+                  className="w-full px-vos-3 py-vos-2 bg-vos-bg-elev-3 border border-vos-border-1 rounded-vos-md text-vos-text placeholder:text-vos-text-muted focus:outline-none focus:border-vos-accent focus:ring-2 focus:ring-vos-accent/30 resize-none text-vos-sm"
+                />
+              </ModalField>
+            </div>
+            <ModalFooter>
+              <ModalCancel onClick={() => setShowAddModal(false)} />
+              <ModalConfirm
+                onClick={handleAddTarget}
+                disabled={!newTarget.name || !newTarget.value}
+              >
+                Add Target
+              </ModalConfirm>
+            </ModalFooter>
+          </Modal>
         )}
 
         {/* Import Modal */}
         {showImportModal && (
-          <div 
-            className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4"
-            onClick={() => setShowImportModal(false)}
+          <Modal
+            title={t('targets.importTargets', 'Import Targets')}
+            onClose={() => setShowImportModal(false)}
           >
-            <div 
-              className="bg-gray-900 rounded-2xl border border-gray-800 w-full max-w-lg"
-              onClick={e => e.stopPropagation()}
-            >
-              <div className="flex items-center justify-between p-6 border-b border-gray-800">
-                <h2 className="text-xl font-semibold text-white">{t('targets.importTargets', 'Import Targets')}</h2>
-                <button onClick={() => setShowImportModal(false)} className="text-gray-400 hover:text-white">
-                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                  </svg>
-                </button>
+            <div className="p-vos-5 space-y-vos-4">
+              <div className="border-2 border-dashed border-vos-border-2 rounded-vos-md p-vos-6 text-center hover:border-vos-accent transition-colors cursor-pointer">
+                <Upload size={36} className="text-vos-text-3 mx-auto mb-vos-2" />
+                <p className="text-vos-sm text-vos-text">
+                  {t('targets.dropFile', 'Drop a file here or click to upload')}
+                </p>
+                <p className="text-vos-xs text-vos-text-muted mt-1">
+                  {t('targets.supportedFormats', 'Supports CSV, TXT, JSON formats')}
+                </p>
               </div>
-
-              <div className="p-6">
-                <div className="border-2 border-dashed border-gray-700 rounded-xl p-8 text-center hover:border-kali-blue transition cursor-pointer">
-                  <svg className="w-12 h-12 text-gray-500 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
-                  </svg>
-                  <p className="text-white mb-2">{t('targets.dropFile', 'Drop a file here or click to upload')}</p>
-                  <p className="text-sm text-gray-500">{t('targets.supportedFormats', 'Supports CSV, TXT, JSON formats')}</p>
-                </div>
-
-                <div className="mt-4">
-                  <p className="text-sm text-gray-400 mb-2">{t('targets.pasteTargets', 'Or paste targets (one per line):')}</p>
-                  <textarea
-                    placeholder="192.168.1.1&#10;example.com&#10;10.0.0.0/24"
-                    rows={6}
-                    className="w-full px-4 py-3 bg-gray-800 border border-gray-700 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:border-kali-blue transition font-mono text-sm resize-none"
-                  />
-                </div>
-              </div>
-
-              <div className="flex justify-end gap-3 p-6 border-t border-gray-800">
-                <button
-                  onClick={() => setShowImportModal(false)}
-                  className="px-4 py-2 bg-gray-800 hover:bg-gray-700 text-white rounded-lg transition"
-                >
-                  Cancel
-                </button>
-                <button className="px-6 py-2 bg-kali-blue hover:bg-kali-blue/90 text-white rounded-lg transition">
-                  Import
-                </button>
+              <div>
+                <p className="text-[10px] uppercase tracking-vos-wide font-semibold text-vos-text-3 mb-1.5">
+                  {t('targets.pasteTargets', 'Or paste targets (one per line):')}
+                </p>
+                <textarea
+                  placeholder={`192.168.1.1\nexample.com\n10.0.0.0/24`}
+                  rows={6}
+                  className="w-full px-vos-3 py-vos-2 bg-vos-bg-elev-3 border border-vos-border-1 rounded-vos-md text-vos-text placeholder:text-vos-text-muted focus:outline-none focus:border-vos-accent focus:ring-2 focus:ring-vos-accent/30 resize-none font-mono text-vos-xs"
+                />
               </div>
             </div>
-          </div>
+            <ModalFooter>
+              <ModalCancel onClick={() => setShowImportModal(false)} />
+              <ModalConfirm onClick={() => setShowImportModal(false)}>Import</ModalConfirm>
+            </ModalFooter>
+          </Modal>
         )}
       </div>
-    </div>
     </PageTransition>
+  );
+}
+
+/* ───────── Modal primitives ───────── */
+function Modal({
+  title,
+  onClose,
+  children,
+}: {
+  title: string;
+  onClose: () => void;
+  children: React.ReactNode;
+}) {
+  return (
+    <div
+      className="fixed inset-0 bg-black/60 backdrop-blur-md flex items-center justify-center z-50 p-vos-4"
+      onClick={onClose}
+    >
+      <div
+        className="rounded-vos-2xl border border-vos-border-1 bg-vos-bg-elev-2 w-full max-w-lg shadow-vos-elev-3 overflow-hidden"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div className="flex items-center justify-between p-vos-5 border-b border-vos-border-1">
+          <h2 className="text-vos-md font-semibold text-vos-text">{title}</h2>
+          <button
+            onClick={onClose}
+            className="size-8 rounded-vos-md text-vos-text-3 hover:text-vos-text hover:bg-vos-bg-elev-3 flex items-center justify-center"
+            aria-label="Close"
+          >
+            <X size={16} />
+          </button>
+        </div>
+        {children}
+      </div>
+    </div>
+  );
+}
+
+function ModalField({
+  label,
+  children,
+}: {
+  label: React.ReactNode;
+  children: React.ReactNode;
+}) {
+  return (
+    <div>
+      <label className="text-[10px] uppercase tracking-vos-wide font-semibold text-vos-text-3 mb-1.5 block">
+        {label}
+      </label>
+      {children}
+    </div>
+  );
+}
+
+function ModalInput(props: React.InputHTMLAttributes<HTMLInputElement>) {
+  return (
+    <input
+      type="text"
+      {...props}
+      className="w-full px-vos-3 h-10 bg-vos-bg-elev-3 border border-vos-border-1 rounded-vos-md text-vos-text text-vos-sm placeholder:text-vos-text-muted focus:outline-none focus:border-vos-accent focus:ring-2 focus:ring-vos-accent/30"
+    />
+  );
+}
+
+function ModalSelect(props: React.SelectHTMLAttributes<HTMLSelectElement>) {
+  return (
+    <select
+      {...props}
+      className="w-full px-vos-3 h-10 bg-vos-bg-elev-3 border border-vos-border-1 rounded-vos-md text-vos-text text-vos-sm focus:outline-none focus:border-vos-accent focus:ring-2 focus:ring-vos-accent/30"
+    />
+  );
+}
+
+function ModalFooter({ children }: { children: React.ReactNode }) {
+  return (
+    <div className="flex justify-end gap-vos-2 p-vos-5 border-t border-vos-border-1 bg-vos-bg-elev-1/40">
+      {children}
+    </div>
+  );
+}
+
+function ModalCancel({ onClick }: { onClick: () => void }) {
+  return (
+    <button
+      onClick={onClick}
+      className="h-10 px-vos-4 rounded-vos-md bg-vos-bg-elev-3 border border-vos-border-1 text-vos-text text-vos-sm font-medium hover:bg-vos-bg-elev-4"
+    >
+      Cancel
+    </button>
+  );
+}
+
+function ModalConfirm({
+  onClick,
+  children,
+  disabled,
+}: {
+  onClick: () => void;
+  children: React.ReactNode;
+  disabled?: boolean;
+}) {
+  return (
+    <button
+      onClick={onClick}
+      disabled={disabled}
+      className="h-10 px-vos-5 rounded-vos-md bg-vos-accent text-white text-vos-sm font-semibold hover:opacity-90 disabled:opacity-40"
+    >
+      {children}
+    </button>
   );
 }
 

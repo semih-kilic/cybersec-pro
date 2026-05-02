@@ -1,29 +1,60 @@
+/**
+ * 🛡️ ReportsPage — V20 "Onyx" rewrite
+ *
+ * Apple-grade SOC reports view.
+ * - PageHeader + StatCards summary
+ * - Org branding (logo upload) panel
+ * - Search bar + Generate button
+ * - Report card grid: RiskScore gauge + SeverityHeatmap + actions
+ * - Generate modal: template picker, format chips, scan picker
+ * - Preview modal: iframe / pre
+ *
+ * Business logic preserved (React Query mutations, blob downloads,
+ * iframe srcDoc preview, file size validation).
+ */
 import { useState, useEffect, useRef } from 'react';
-import { Header } from '../../components/layout/Header';
+import { useTranslation } from 'react-i18next';
+import {
+  FileText,
+  FileBarChart2,
+  Plus,
+  Search,
+  X,
+  CheckCircle2,
+  AlertTriangle,
+  ShieldCheck,
+  Download,
+  Trash2,
+  Eye,
+  RotateCw,
+  Image as ImageIcon,
+  UploadCloud,
+  ListChecks,
+  Loader2,
+  Sparkles,
+} from 'lucide-react';
 import { PageTransition } from '../../components/ui';
-import { useReports, useReportTemplates, useGenerateReport, useFetchReport, useDeleteReport, useOrgLogo, useUploadOrgLogo, useDeleteOrgLogo } from '../../hooks/useApiQueries';
+import {
+  useReports,
+  useReportTemplates,
+  useGenerateReport,
+  useFetchReport,
+  useDeleteReport,
+  useOrgLogo,
+  useUploadOrgLogo,
+  useDeleteOrgLogo,
+} from '../../hooks/useApiQueries';
 import { useDocumentTitle } from '../../hooks/useUtilities';
 import { useToast } from '../../components/ui/Toast';
 import { ReportsPageSkeleton } from '../../components/ui/Skeleton';
-import { useTranslation } from 'react-i18next';
+import { StatCard } from '../../components/ui/Card';
 import {
-  DocumentTextIcon,
-  DocumentArrowDownIcon,
-  PlusIcon,
-  MagnifyingGlassIcon,
-  XMarkIcon,
-  CheckCircleIcon,
-  ExclamationTriangleIcon,
-  ChartBarIcon,
-  ShieldCheckIcon,
-  ClipboardDocumentListIcon,
-  DocumentChartBarIcon,
-  TrashIcon,
-  EyeIcon,
-  ArrowPathIcon,
-  PhotoIcon,
-  ArrowUpTrayIcon,
-} from '@heroicons/react/24/outline';
+  PageHeader,
+  StatusPill,
+  RiskScore,
+  SeverityHeatmap,
+} from '../../components/vos';
+import type { Severity } from '../../components/vos';
 
 interface ReportSummary {
   id: string;
@@ -48,14 +79,6 @@ interface ReportSummary {
   completed_at: string;
 }
 
-interface _AvailableScan {
-  id: string;
-  name: string;
-  tool: string;
-  target: string;
-  completed_at: string;
-}
-
 interface ReportTemplate {
   id: string;
   name: string;
@@ -73,7 +96,7 @@ const defaultTemplates: ReportTemplate[] = [
     description: 'High-level overview for management and stakeholders',
     icon: '📊',
     sections: ['Risk Overview', 'Key Findings', 'Recommendations'],
-    formats: ['html', 'pdf', 'json']
+    formats: ['html', 'pdf', 'json'],
   },
   {
     id: 'technical',
@@ -81,7 +104,7 @@ const defaultTemplates: ReportTemplate[] = [
     description: 'Detailed technical analysis for security teams',
     icon: '🔧',
     sections: ['Vulnerability Details', 'CVE References', 'Technical Remediation'],
-    formats: ['html', 'pdf', 'json', 'csv']
+    formats: ['html', 'pdf', 'json', 'csv'],
   },
   {
     id: 'compliance',
@@ -89,7 +112,7 @@ const defaultTemplates: ReportTemplate[] = [
     description: 'Multi-framework compliance report for auditors',
     icon: '📋',
     sections: ['Compliance Status', 'Control Mappings', 'Gap Analysis'],
-    formats: ['html', 'pdf', 'json']
+    formats: ['html', 'pdf', 'json'],
   },
   {
     id: 'owasp',
@@ -98,7 +121,7 @@ const defaultTemplates: ReportTemplate[] = [
     icon: '🛡️',
     sections: ['OWASP Category Mapping', 'Risk Matrix', 'Remediation Priority'],
     frameworks: ['OWASP Top 10'],
-    formats: ['html', 'pdf', 'json']
+    formats: ['html', 'pdf', 'json'],
   },
   {
     id: 'pci-dss',
@@ -107,7 +130,7 @@ const defaultTemplates: ReportTemplate[] = [
     icon: '💳',
     sections: ['PCI-DSS Compliance Status', 'Requirement 11 Controls', 'Gap Analysis'],
     frameworks: ['PCI-DSS 4.0'],
-    formats: ['html', 'pdf', 'json']
+    formats: ['html', 'pdf', 'json'],
   },
   {
     id: 'iso27001',
@@ -116,23 +139,48 @@ const defaultTemplates: ReportTemplate[] = [
     icon: '📜',
     sections: ['Annex A Control Mapping', 'Technical Controls Status', 'Gap Analysis'],
     frameworks: ['ISO 27001 Annex A'],
-    formats: ['html', 'pdf', 'json']
+    formats: ['html', 'pdf', 'json'],
   },
   {
     id: 'full',
     name: 'Full Report',
     description: 'Comprehensive report with all sections and frameworks',
     icon: '📑',
-    sections: ['Executive Summary', 'Technical Details', 'Compliance Mapping', 'Remediation Guide'],
-    formats: ['html', 'pdf', 'json', 'csv', 'markdown']
-  }
+    sections: [
+      'Executive Summary',
+      'Technical Details',
+      'Compliance Mapping',
+      'Remediation Guide',
+    ],
+    formats: ['html', 'pdf', 'json', 'csv', 'markdown'],
+  },
 ];
+
+function formatFileSize(bytes: number) {
+  if (!bytes) return '0 B';
+  const k = 1024;
+  const sizes = ['B', 'KB', 'MB', 'GB'];
+  const i = Math.floor(Math.log(bytes) / Math.log(k));
+  return parseFloat((bytes / Math.pow(k, i)).toFixed(1)) + ' ' + sizes[i];
+}
+
+const RISK_TONE: Record<
+  string,
+  'success' | 'warning' | 'danger' | 'info' | 'neutral' | 'accent'
+> = {
+  Critical: 'danger',
+  High: 'warning',
+  Medium: 'warning',
+  Low: 'success',
+  None: 'neutral',
+};
 
 export function ReportsPage() {
   const { t } = useTranslation();
   useDocumentTitle(`${t('reports.title', 'Reports')} — CyberSec Pro`);
   const toast = useToast();
-  const { data: reportsData, isLoading: reportsLoading, isError: reportsError } = useReports();
+
+  const { data: reportsData, isLoading: reportsLoading } = useReports();
   const generateMutation = useGenerateReport();
   const fetchReportMutation = useFetchReport();
   const deleteMutation = useDeleteReport();
@@ -140,45 +188,74 @@ export function ReportsPage() {
   const uploadLogoMutation = useUploadOrgLogo();
   const deleteLogoMutation = useDeleteOrgLogo();
   const logoInputRef = useRef<HTMLInputElement>(null);
+
   const reports = reportsData?.reports || [];
   const availableScans = reportsData?.available_scans || [];
-  const { data: fetchedTemplates = [], isLoading: templatesLoading, isError: templatesError } = useReportTemplates();
-  const templates = (fetchedTemplates && fetchedTemplates.length > 0) ? fetchedTemplates : defaultTemplates;
+  const { data: fetchedTemplates = [], isLoading: templatesLoading } =
+    useReportTemplates();
+  const templates =
+    fetchedTemplates && fetchedTemplates.length > 0 ? fetchedTemplates : defaultTemplates;
   const loading = reportsLoading || templatesLoading;
+
   const [generating, setGenerating] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
-  
-  // Modal states
   const [showGenerateModal, setShowGenerateModal] = useState(false);
   const [showPreviewModal, setShowPreviewModal] = useState(false);
   const [previewContent, setPreviewContent] = useState('');
   const [previewReport, setPreviewReport] = useState<ReportSummary | null>(null);
-  
-  // Generate form states
+
   const [selectedTemplate, setSelectedTemplate] = useState('full');
   const [selectedScans, setSelectedScans] = useState<string[]>([]);
   const [reportName, setReportName] = useState('Security Assessment Report');
-  const [reportFormat, setReportFormat] = useState<'html' | 'pdf' | 'json' | 'csv' | 'markdown'>('html');
+  const [reportFormat, setReportFormat] = useState<
+    'html' | 'pdf' | 'json' | 'csv' | 'markdown'
+  >('html');
   const [selectedSections, setSelectedSections] = useState<string[]>([]);
-  
+
   const iframeRef = useRef<HTMLIFrameElement>(null);
 
   useEffect(() => {
-    // Update sections when template changes
-    const template = templates.find(t => t.id === selectedTemplate);
-    if (template) {
-      setSelectedSections(template.sections);
-    }
+    const template = templates.find((t) => t.id === selectedTemplate);
+    if (template) setSelectedSections(template.sections);
   }, [selectedTemplate, templates]);
+
+  const downloadReport = (content: string, name: string, format: string) => {
+    const extMap: Record<string, string> = {
+      html: 'html',
+      json: 'json',
+      csv: 'csv',
+      markdown: 'md',
+      pdf: 'pdf',
+    };
+    const mimeMap: Record<string, string> = {
+      html: 'text/html',
+      json: 'application/json',
+      csv: 'text/csv',
+      markdown: 'text/markdown',
+      pdf: 'application/pdf',
+    };
+    const blob = new Blob([content], { type: mimeMap[format] || 'text/plain' });
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `${name.replace(/\s+/g, '_')}_${
+      new Date().toISOString().split('T')[0]
+    }.${extMap[format] || 'txt'}`;
+    document.body.appendChild(a);
+    a.click();
+    window.URL.revokeObjectURL(url);
+    document.body.removeChild(a);
+  };
 
   const handleGenerateReport = async () => {
     if (selectedScans.length === 0) {
-      toast.warning(t('reports.noScansSelected', 'No Scans Selected'), t('reports.selectAtLeastOneScan', 'Please select at least one scan'));
+      toast.warning(
+        t('reports.noScansSelected', 'No Scans Selected'),
+        t('reports.selectAtLeastOneScan', 'Please select at least one scan'),
+      );
       return;
     }
-    
     setGenerating(true);
-    
     try {
       const res = await generateMutation.mutateAsync({
         scan_ids: selectedScans,
@@ -187,60 +264,34 @@ export function ReportsPage() {
         template: selectedTemplate,
         sections: selectedSections,
       });
-      
-      // PDF returns binary blob directly
       if (reportFormat === 'pdf') {
         const blob = await res.blob();
         const url = window.URL.createObjectURL(blob);
         const a = document.createElement('a');
         a.href = url;
-        a.download = `${reportName.replace(/\s+/g, '_')}_${new Date().toISOString().split('T')[0]}.pdf`;
+        a.download = `${reportName.replace(/\s+/g, '_')}_${
+          new Date().toISOString().split('T')[0]
+        }.pdf`;
         document.body.appendChild(a);
         a.click();
         window.URL.revokeObjectURL(url);
         document.body.removeChild(a);
       } else {
         const data = await res.json();
-        const content = data.report.content;
-        downloadReport(content, reportName, reportFormat);
+        downloadReport(data.report.content, reportName, reportFormat);
       }
-      
-      // Close modal and reset
       setShowGenerateModal(false);
       setSelectedScans([]);
       setReportName('Security Assessment Report');
     } catch (error: any) {
-      toast.error(t('reports.reportFailed', 'Report Failed'), error?.message || t('reports.failedToGenerateReport', 'Failed to generate report'));
+      toast.error(
+        t('reports.reportFailed', 'Report Failed'),
+        error?.message ||
+          t('reports.failedToGenerateReport', 'Failed to generate report'),
+      );
     } finally {
       setGenerating(false);
     }
-  };
-
-  const downloadReport = (content: string, name: string, format: string) => {
-    const extMap: Record<string, string> = {
-      'html': 'html',
-      'json': 'json',
-      'csv': 'csv',
-      'markdown': 'md',
-      'pdf': 'pdf'
-    };
-    const mimeMap: Record<string, string> = {
-      'html': 'text/html',
-      'json': 'application/json',
-      'csv': 'text/csv',
-      'markdown': 'text/markdown',
-      'pdf': 'application/pdf'
-    };
-    
-    const blob = new Blob([content], { type: mimeMap[format] || 'text/plain' });
-    const url = window.URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `${name.replace(/\s+/g, '_')}_${new Date().toISOString().split('T')[0]}.${extMap[format] || 'txt'}`;
-    document.body.appendChild(a);
-    a.click();
-    window.URL.revokeObjectURL(url);
-    document.body.removeChild(a);
   };
 
   const handlePreview = async (report: ReportSummary) => {
@@ -249,7 +300,7 @@ export function ReportsPage() {
       setPreviewContent(data.content || '');
       setPreviewReport(report);
       setShowPreviewModal(true);
-    } catch (error) {
+    } catch {
       toast.error('Preview Failed', 'Failed to fetch report');
     }
   };
@@ -258,17 +309,16 @@ export function ReportsPage() {
     try {
       const data = await fetchReportMutation.mutateAsync(report.id);
       downloadReport(data.content, report.name, report.format);
-    } catch (error) {
+    } catch {
       toast.error('Download Failed', 'Could not download report');
     }
   };
 
   const handleDelete = async (reportId: string) => {
     if (!confirm('Are you sure you want to delete this report?')) return;
-    
     try {
       await deleteMutation.mutateAsync(reportId);
-    } catch (error) {
+    } catch {
       toast.error('Delete Failed', 'Could not delete report');
     }
   };
@@ -281,7 +331,13 @@ export function ReportsPage() {
       toast.error('File Too Large', 'Maximum logo size is 5MB');
       return;
     }
-    const validTypes = ['image/png', 'image/jpeg', 'image/gif', 'image/webp', 'image/svg+xml'];
+    const validTypes = [
+      'image/png',
+      'image/jpeg',
+      'image/gif',
+      'image/webp',
+      'image/svg+xml',
+    ];
     if (!validTypes.includes(file.type)) {
       toast.error('Invalid Format', 'Accepted: PNG, JPG, GIF, WebP, SVG');
       return;
@@ -304,139 +360,116 @@ export function ReportsPage() {
     }
   };
 
-  const getRiskColor = (level: string) => {
-    const colors: Record<string, string> = {
-      'Critical': 'text-red-500 bg-red-500/10 border-red-500/30',
-      'High': 'text-orange-500 bg-orange-500/10 border-orange-500/30',
-      'Medium': 'text-yellow-500 bg-yellow-500/10 border-yellow-500/30',
-      'Low': 'text-green-500 bg-green-500/10 border-green-500/30',
-      'None': 'text-blue-500 bg-blue-500/10 border-blue-500/30'
-    };
-    return colors[level] || colors['None'];
-  };
-
-  const formatFileSize = (bytes: number) => {
-    if (!bytes) return '0 B';
-    const k = 1024;
-    const sizes = ['B', 'KB', 'MB', 'GB'];
-    const i = Math.floor(Math.log(bytes) / Math.log(k));
-    return parseFloat((bytes / Math.pow(k, i)).toFixed(1)) + ' ' + sizes[i];
-  };
-
-  const filteredReports = reports.filter(report =>
-    report.name?.toLowerCase().includes(searchQuery.toLowerCase())
+  const filteredReports = reports.filter((report) =>
+    report.name?.toLowerCase().includes(searchQuery.toLowerCase()),
   );
 
-  // Calculate totals
-  const criticalCount = reports.reduce((sum, r) => sum + (r.severity_breakdown?.critical || 0), 0);
-  const highCount = reports.reduce((sum, r) => sum + (r.severity_breakdown?.high || 0), 0);
-  const avgRiskScore = reports.length > 0 
-    ? Math.round(reports.reduce((sum, r) => sum + (r.risk_score || 0), 0) / reports.length)
-    : 0;
+  const criticalCount = reports.reduce(
+    (sum, r) => sum + (r.severity_breakdown?.critical || 0),
+    0,
+  );
+  const highCount = reports.reduce(
+    (sum, r) => sum + (r.severity_breakdown?.high || 0),
+    0,
+  );
+  const avgRiskScore =
+    reports.length > 0
+      ? Math.round(
+          reports.reduce((sum, r) => sum + (r.risk_score || 0), 0) / reports.length,
+        )
+      : 0;
 
-  if (loading) {
-    return <ReportsPageSkeleton />;
-  }
+  if (loading) return <ReportsPageSkeleton />;
 
   return (
     <PageTransition>
-    <div className="min-h-screen bg-gray-950">
-      <Header 
-        title={t('reports.securityReports', 'Security Reports')}
-        subtitle={t('reports.subtitle', 'Generate professional security assessment reports')}
-      />
+      <div className="p-vos-8 max-w-7xl mx-auto space-y-vos-6">
+        <PageHeader
+          eyebrow="Intel"
+          icon={<FileBarChart2 size={22} />}
+          title={t('reports.securityReports', 'Security Reports')}
+          description={t(
+            'reports.subtitle',
+            'Generate professional security assessment reports',
+          )}
+          actions={
+            <button
+              onClick={() => setShowGenerateModal(true)}
+              className="inline-flex items-center gap-2 h-10 px-vos-4 rounded-vos-md bg-vos-accent text-white text-vos-sm font-medium hover:opacity-90"
+            >
+              <Plus size={14} />
+              {t('reports.generateReport', 'Generate Report')}
+            </button>
+          }
+        />
 
-      <div className="p-6 space-y-6">
-        {/* Stats Cards */}
-        <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
-          <div className="bg-gradient-to-br from-gray-900 to-gray-800 rounded-xl border border-gray-700 p-4">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-lg bg-kali-blue/20 flex items-center justify-center">
-                <DocumentTextIcon className="w-5 h-5 text-kali-blue" />
-              </div>
-              <div>
-                <p className="text-2xl font-bold text-white">{reports.length}</p>
-                <p className="text-xs text-gray-400">{t('reports.statReports', 'Reports')}</p>
-              </div>
-            </div>
-          </div>
-          
-          <div className="bg-gradient-to-br from-gray-900 to-gray-800 rounded-xl border border-gray-700 p-4">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-lg bg-green-500/20 flex items-center justify-center">
-                <CheckCircleIcon className="w-5 h-5 text-green-400" />
-              </div>
-              <div>
-                <p className="text-2xl font-bold text-white">{availableScans.length}</p>
-                <p className="text-xs text-gray-400">{t('reports.statScansAvailable', 'Scans Available')}</p>
-              </div>
-            </div>
-          </div>
-          
-          <div className="bg-gradient-to-br from-gray-900 to-gray-800 rounded-xl border border-gray-700 p-4">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-lg bg-red-500/20 flex items-center justify-center">
-                <ExclamationTriangleIcon className="w-5 h-5 text-red-400" />
-              </div>
-              <div>
-                <p className="text-2xl font-bold text-red-400">{criticalCount}</p>
-                <p className="text-xs text-gray-400">{t('reports.statCritical', 'Critical')}</p>
-              </div>
-            </div>
-          </div>
-          
-          <div className="bg-gradient-to-br from-gray-900 to-gray-800 rounded-xl border border-gray-700 p-4">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-lg bg-orange-500/20 flex items-center justify-center">
-                <ChartBarIcon className="w-5 h-5 text-orange-400" />
-              </div>
-              <div>
-                <p className="text-2xl font-bold text-orange-400">{highCount}</p>
-                <p className="text-xs text-gray-400">{t('reports.statHigh', 'High')}</p>
-              </div>
-            </div>
-          </div>
-          
-          <div className="bg-gradient-to-br from-gray-900 to-gray-800 rounded-xl border border-gray-700 p-4">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-lg bg-purple-500/20 flex items-center justify-center">
-                <ShieldCheckIcon className="w-5 h-5 text-purple-400" />
-              </div>
-              <div>
-                <p className="text-2xl font-bold text-white">{avgRiskScore}</p>
-                <p className="text-xs text-gray-400">{t('reports.statAvgRisk', 'Avg Risk Score')}</p>
-              </div>
-            </div>
-          </div>
+        {/* Stats */}
+        <div className="grid grid-cols-2 md:grid-cols-5 gap-vos-3">
+          <StatCard
+            title={t('reports.statReports', 'Reports')}
+            value={reports.length.toString()}
+            icon={<FileText size={16} />}
+          />
+          <StatCard
+            title={t('reports.statScansAvailable', 'Scans Available')}
+            value={availableScans.length.toString()}
+            icon={<CheckCircle2 size={16} />}
+            variant="green"
+          />
+          <StatCard
+            title={t('reports.statCritical', 'Critical')}
+            value={criticalCount.toString()}
+            icon={<AlertTriangle size={16} />}
+            variant="red"
+          />
+          <StatCard
+            title={t('reports.statHigh', 'High')}
+            value={highCount.toString()}
+            icon={<AlertTriangle size={16} />}
+            variant="amber"
+          />
+          <StatCard
+            title={t('reports.statAvgRisk', 'Avg Risk Score')}
+            value={`${avgRiskScore}`}
+            icon={<ShieldCheck size={16} />}
+            variant="purple"
+          />
         </div>
 
-        {/* Report Branding */}
-        <div className="bg-gradient-to-br from-gray-900 to-gray-800 rounded-xl border border-gray-700 p-5">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-4">
-              <div className="w-12 h-12 rounded-lg bg-kali-purple/20 flex items-center justify-center">
-                <PhotoIcon className="w-6 h-6 text-kali-purple" />
-              </div>
-              <div>
-                <h3 className="text-white font-semibold text-sm">{t('reports.brandingTitle', 'Report Branding')}</h3>
-                <p className="text-gray-400 text-xs mt-0.5">{t('reports.brandingSubtitle', 'Your logo will appear on all generated reports')}</p>
+        {/* Branding */}
+        <section className="rounded-vos-xl border border-vos-border-1 bg-vos-bg-elev-2 p-vos-4">
+          <div className="flex items-center justify-between gap-vos-4 flex-wrap">
+            <div className="flex items-center gap-vos-3 min-w-0">
+              <span className="size-9 rounded-vos-md bg-vos-accent/10 border border-vos-accent/20 flex items-center justify-center text-vos-accent shrink-0">
+                <ImageIcon size={16} />
+              </span>
+              <div className="min-w-0">
+                <h3 className="text-vos-sm font-semibold text-vos-text">
+                  {t('reports.brandingTitle', 'Report Branding')}
+                </h3>
+                <p className="text-vos-xs text-vos-text-3 mt-0.5">
+                  {t(
+                    'reports.brandingSubtitle',
+                    'Your logo will appear on all generated reports',
+                  )}
+                </p>
               </div>
             </div>
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-vos-3">
               {orgLogoUrl && (
-                <div className="flex items-center gap-3">
+                <div className="flex items-center gap-vos-2">
                   <img
                     src={orgLogoUrl}
                     alt="Organization logo"
-                    className="h-10 w-auto max-w-[120px] object-contain rounded border border-gray-600 bg-white/5 p-1"
+                    className="h-9 w-auto max-w-[120px] object-contain rounded-vos-sm border border-vos-border-1 bg-vos-bg-elev-3 p-1"
                   />
                   <button
                     onClick={handleLogoDelete}
                     disabled={deleteLogoMutation.isPending}
-                    className="p-2 text-red-400 hover:bg-red-500/10 rounded-lg transition"
+                    className="size-8 rounded-vos-md text-vos-text-3 hover:text-vos-danger hover:bg-vos-danger/10 flex items-center justify-center transition-colors"
                     title={t('reports.removeLogo', 'Remove logo')}
                   >
-                    <TrashIcon className="w-4 h-4" />
+                    <Trash2 size={14} />
                   </button>
                 </div>
               )}
@@ -450,365 +483,459 @@ export function ReportsPage() {
               <button
                 onClick={() => logoInputRef.current?.click()}
                 disabled={uploadLogoMutation.isPending}
-                className="px-4 py-2 bg-gray-800 hover:bg-gray-700 border border-gray-600 text-white text-sm font-medium rounded-lg transition flex items-center gap-2"
+                className="inline-flex items-center gap-2 h-9 px-vos-3 rounded-vos-md bg-vos-bg-elev-3 border border-vos-border-1 text-vos-text text-vos-xs font-medium hover:bg-vos-bg-elev-4"
               >
                 {uploadLogoMutation.isPending ? (
-                  <ArrowPathIcon className="w-4 h-4 animate-spin" />
+                  <Loader2 size={12} className="animate-spin" />
                 ) : (
-                  <ArrowUpTrayIcon className="w-4 h-4" />
+                  <UploadCloud size={12} />
                 )}
                 {orgLogoUrl ? 'Change Logo' : 'Upload Logo'}
               </button>
             </div>
           </div>
-        </div>
+        </section>
 
-        {/* Controls */}
-        <div className="flex flex-col md:flex-row gap-4">
-          <div className="relative flex-1">
-            <MagnifyingGlassIcon className="w-5 h-5 text-gray-500 absolute left-3 top-1/2 -translate-y-1/2" />
+        {/* Search */}
+        <section className="rounded-vos-xl border border-vos-border-1 bg-vos-bg-elev-2 p-vos-3">
+          <label className="flex items-center gap-2 px-vos-3 h-10 rounded-vos-md bg-vos-bg-elev-3 border border-vos-border-1 focus-within:border-vos-accent focus-within:ring-2 focus-within:ring-vos-accent/30 transition-colors">
+            <Search size={14} className="text-vos-text-3 shrink-0" />
             <input
-              type="text"
-              placeholder={t('reports.searchPlaceholder', 'Search reports...')}
+              type="search"
+              placeholder={t('reports.searchPlaceholder', 'Search reports…')}
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-10 pr-4 py-3 bg-gray-900 border border-gray-800 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:border-kali-blue transition"
+              className="flex-1 bg-transparent border-0 outline-none text-vos-sm text-vos-text placeholder:text-vos-text-muted"
             />
-          </div>
-          <button
-            onClick={() => setShowGenerateModal(true)}
-            className="px-6 py-3 bg-gradient-to-r from-kali-blue to-kali-purple text-white font-medium rounded-xl hover:opacity-90 transition flex items-center gap-2 justify-center"
-          >
-            <PlusIcon className="w-5 h-5" />
-            Generate Report
-          </button>
-        </div>
+            {searchQuery && (
+              <button
+                onClick={() => setSearchQuery('')}
+                className="size-5 rounded hover:bg-vos-bg-elev-4 flex items-center justify-center text-vos-text-3"
+                aria-label="Clear"
+              >
+                <X size={12} />
+              </button>
+            )}
+          </label>
+        </section>
 
-        {/* Reports Grid */}
+        {/* Reports grid */}
         {filteredReports.length === 0 ? (
-          <div className="bg-gray-900/50 rounded-2xl border border-gray-800 p-12 text-center">
-            <DocumentChartBarIcon className="w-16 h-16 text-gray-600 mx-auto mb-4" />
-            <h3 className="text-xl font-semibold text-white mb-2">{t('reports.noReportsTitle', 'No Reports Yet')}</h3>
-            <p className="text-gray-400 mb-6">{t('reports.noReportsDesc', 'Generate your first professional security report from completed scans.')}</p>
+          <div className="text-center py-vos-16 rounded-vos-xl border border-vos-border-1 bg-vos-bg-elev-2">
+            <span className="size-12 mx-auto rounded-vos-md bg-vos-bg-elev-3 border border-vos-border-1 flex items-center justify-center text-vos-text-3 mb-vos-3">
+              <FileBarChart2 size={20} />
+            </span>
+            <h3 className="text-vos-md font-semibold text-vos-text mb-1">
+              {t('reports.noReportsTitle', 'No Reports Yet')}
+            </h3>
+            <p className="text-vos-sm text-vos-text-3 mb-vos-4 max-w-md mx-auto">
+              {t(
+                'reports.noReportsDesc',
+                'Generate your first professional security report from completed scans.',
+              )}
+            </p>
             <button
               onClick={() => setShowGenerateModal(true)}
-              className="px-6 py-3 bg-kali-blue text-white rounded-xl hover:bg-kali-blue/90 transition inline-flex items-center gap-2"
+              className="inline-flex items-center gap-2 h-10 px-vos-4 rounded-vos-md bg-vos-accent text-white text-vos-sm font-medium hover:opacity-90"
             >
-              <PlusIcon className="w-5 h-5" />
+              <Plus size={14} />
               Generate Report
             </button>
           </div>
         ) : (
-          <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-4">
-            {filteredReports.map((report) => (
-              <div 
-                key={report.id}
-                className="bg-gray-900 rounded-xl border border-gray-800 overflow-hidden hover:border-gray-700 transition group"
-              >
-                <div className="p-5">
-                  {/* Header */}
-                  <div className="flex items-start justify-between mb-4">
-                    <div className="flex-1 min-w-0">
-                      <h3 className="text-white font-semibold truncate">{report.name}</h3>
-                      <p className="text-sm text-gray-400 mt-1">
-                        {new Date(report.created_at).toLocaleDateString()} • {report.template} • {report.format.toUpperCase()}
-                      </p>
-                    </div>
-                    <span className={`px-2 py-1 rounded-full text-xs font-medium border ${getRiskColor(report.risk_level)}`}>
-                      {report.risk_level || 'N/A'}
-                    </span>
-                  </div>
-                  
-                  {/* Risk Score Bar */}
-                  <div className="mb-4">
-                    <div className="flex justify-between text-xs mb-1">
-                      <span className="text-gray-400">{t('reports.riskScore', 'Risk Score')}</span>
-                      <span className="text-white font-medium">{report.risk_score || 0}/100</span>
-                    </div>
-                    <div className="h-2 bg-gray-800 rounded-full overflow-hidden">
-                      <div 
-                        className={`h-full transition-all duration-500 ${
-                          (report.risk_score || 0) >= 70 ? 'bg-red-500' :
-                          (report.risk_score || 0) >= 50 ? 'bg-orange-500' :
-                          (report.risk_score || 0) >= 25 ? 'bg-yellow-500' :
-                          'bg-green-500'
-                        }`}
-                        style={{ width: `${report.risk_score || 0}%` }}
+          <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-vos-4">
+            {filteredReports.map((report) => {
+              const counts: Record<Severity, number> = {
+                critical: report.severity_breakdown?.critical || 0,
+                high: report.severity_breakdown?.high || 0,
+                medium: report.severity_breakdown?.medium || 0,
+                low: report.severity_breakdown?.low || 0,
+                info: report.severity_breakdown?.info || 0,
+              };
+              const total =
+                counts.critical + counts.high + counts.medium + counts.low + counts.info;
+              return (
+                <article
+                  key={report.id}
+                  className="rounded-vos-xl border border-vos-border-1 bg-vos-bg-elev-2 hover:border-vos-border-2 transition-colors overflow-hidden flex flex-col"
+                >
+                  <div className="p-vos-5 flex-1 space-y-vos-4">
+                    <div className="flex items-start justify-between gap-vos-3">
+                      <div className="min-w-0 flex-1">
+                        <h3 className="text-vos-md font-semibold text-vos-text truncate">
+                          {report.name}
+                        </h3>
+                        <p className="text-vos-xs text-vos-text-3 mt-0.5">
+                          {new Date(report.created_at).toLocaleDateString()} ·{' '}
+                          {report.template} · {report.format.toUpperCase()}
+                        </p>
+                      </div>
+                      <RiskScore
+                        value={report.risk_score || 0}
+                        size={56}
+                        invert
                       />
                     </div>
+
+                    <div>
+                      <div className="flex items-center justify-between mb-1.5">
+                        <span className="text-[10px] uppercase tracking-vos-wide font-semibold text-vos-text-3">
+                          Severity Mix
+                        </span>
+                        <StatusPill tone={RISK_TONE[report.risk_level] || 'neutral'}>
+                          {report.risk_level || 'N/A'}
+                        </StatusPill>
+                      </div>
+                      {total > 0 ? (
+                        <SeverityHeatmap counts={counts} total={total} />
+                      ) : (
+                        <div className="h-2 rounded-full bg-vos-success/30 flex items-center justify-center text-[10px] text-vos-success font-medium uppercase tracking-vos-wide">
+                          Clean
+                        </div>
+                      )}
+                    </div>
+
+                    <div className="flex items-center justify-between text-vos-xs text-vos-text-3 tabular-nums">
+                      <span>
+                        <span className="text-vos-text font-semibold">
+                          {report.total_findings || 0}
+                        </span>{' '}
+                        findings
+                      </span>
+                      <span>{formatFileSize(report.file_size)}</span>
+                    </div>
                   </div>
-                  
-                  {/* Severity Breakdown */}
-                  <div className="flex gap-2 mb-4 flex-wrap">
-                    {report.severity_breakdown?.critical > 0 && (
-                      <span className="px-2 py-1 bg-red-500/20 text-red-400 rounded text-xs font-medium">
-                        {report.severity_breakdown.critical} Critical
-                      </span>
-                    )}
-                    {report.severity_breakdown?.high > 0 && (
-                      <span className="px-2 py-1 bg-orange-500/20 text-orange-400 rounded text-xs font-medium">
-                        {report.severity_breakdown.high} High
-                      </span>
-                    )}
-                    {report.severity_breakdown?.medium > 0 && (
-                      <span className="px-2 py-1 bg-yellow-500/20 text-yellow-400 rounded text-xs font-medium">
-                        {report.severity_breakdown.medium} Med
-                      </span>
-                    )}
-                    {(report.total_findings || 0) === 0 && (
-                      <span className="px-2 py-1 bg-green-500/20 text-green-400 rounded text-xs font-medium">
-                        Clean
-                      </span>
-                    )}
-                  </div>
-                  
-                  {/* Meta */}
-                  <div className="flex items-center justify-between text-xs text-gray-500 mb-4">
-                    <span>{report.total_findings || 0} findings</span>
-                    <span>{formatFileSize(report.file_size)}</span>
-                  </div>
-                  
-                  {/* Actions */}
-                  <div className="flex gap-2">
+
+                  <div className="flex gap-1 p-vos-3 border-t border-vos-border-1 bg-vos-bg-elev-1/40">
                     <button
                       onClick={() => handlePreview(report)}
-                      className="flex-1 px-3 py-2 bg-gray-800 hover:bg-gray-700 text-gray-300 rounded-lg transition flex items-center justify-center gap-1.5 text-sm"
+                      className="flex-1 inline-flex items-center justify-center gap-1.5 h-8 rounded-vos-sm bg-vos-bg-elev-3 hover:bg-vos-bg-elev-4 border border-vos-border-1 text-vos-text text-vos-xs font-medium transition-colors"
                     >
-                      <EyeIcon className="w-4 h-4" />
+                      <Eye size={11} />
                       Preview
                     </button>
                     <button
                       onClick={() => handleDownload(report)}
-                      className="flex-1 px-3 py-2 bg-kali-blue hover:bg-kali-blue/90 text-white rounded-lg transition flex items-center justify-center gap-1.5 text-sm"
+                      className="flex-1 inline-flex items-center justify-center gap-1.5 h-8 rounded-vos-sm bg-vos-accent text-white text-vos-xs font-medium hover:opacity-90 transition-opacity"
                     >
-                      <DocumentArrowDownIcon className="w-4 h-4" />
+                      <Download size={11} />
                       Download
                     </button>
                     <button
                       onClick={() => handleDelete(report.id)}
-                      className="px-3 py-2 bg-gray-800 hover:bg-red-500/20 text-gray-400 hover:text-red-400 rounded-lg transition"
+                      className="size-8 rounded-vos-sm text-vos-text-3 hover:text-vos-danger hover:bg-vos-danger/10 flex items-center justify-center transition-colors"
+                      aria-label="Delete report"
                     >
-                      <TrashIcon className="w-4 h-4" />
+                      <Trash2 size={11} />
                     </button>
                   </div>
+                </article>
+              );
+            })}
+          </div>
+        )}
+
+        {/* Generate modal */}
+        {showGenerateModal && (
+          <div
+            className="fixed inset-0 bg-black/60 backdrop-blur-md flex items-center justify-center p-vos-4 z-50"
+            onClick={() => setShowGenerateModal(false)}
+          >
+            <div
+              className="rounded-vos-2xl border border-vos-border-1 bg-vos-bg-elev-2 w-full max-w-4xl max-h-[90vh] overflow-hidden flex flex-col shadow-vos-elev-3"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className="flex items-center justify-between p-vos-5 border-b border-vos-border-1">
+                <div>
+                  <p className="text-[10px] uppercase tracking-vos-wide font-semibold text-vos-text-3">
+                    Workflow
+                  </p>
+                  <h2 className="text-vos-lg font-semibold text-vos-text">
+                    {t('reports.generateTitle', 'Generate Report')}
+                  </h2>
+                  <p className="text-vos-xs text-vos-text-3 mt-0.5">
+                    {t(
+                      'reports.generateSubtitle',
+                      'Create a professional security assessment report',
+                    )}
+                  </p>
+                </div>
+                <button
+                  onClick={() => setShowGenerateModal(false)}
+                  className="size-8 rounded-vos-md text-vos-text-3 hover:text-vos-text hover:bg-vos-bg-elev-3 flex items-center justify-center transition-colors"
+                  aria-label="Close"
+                >
+                  <X size={16} />
+                </button>
+              </div>
+
+              <div className="flex-1 overflow-y-auto p-vos-5 space-y-vos-5">
+                {/* Name */}
+                <div>
+                  <label className="text-[10px] uppercase tracking-vos-wide font-semibold text-vos-text-3 mb-1.5 block">
+                    {t('reports.reportNameLabel', 'Report Name')}
+                  </label>
+                  <input
+                    type="text"
+                    value={reportName}
+                    onChange={(e) => setReportName(e.target.value)}
+                    className="w-full px-vos-3 h-10 bg-vos-bg-elev-3 border border-vos-border-1 rounded-vos-md text-vos-text text-vos-sm placeholder:text-vos-text-muted focus:outline-none focus:border-vos-accent focus:ring-2 focus:ring-vos-accent/30"
+                    placeholder={t(
+                      'reports.reportNamePlaceholder',
+                      'Security Assessment Report',
+                    )}
+                  />
+                </div>
+
+                {/* Template */}
+                <div>
+                  <label className="text-[10px] uppercase tracking-vos-wide font-semibold text-vos-text-3 mb-vos-2 block">
+                    {t('reports.chooseTemplate', 'Choose Template')}
+                  </label>
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-vos-2">
+                    {templates.map((template) => {
+                      const active = selectedTemplate === template.id;
+                      return (
+                        <button
+                          key={template.id}
+                          onClick={() => {
+                            setSelectedTemplate(template.id);
+                            if (!template.formats.includes(reportFormat)) {
+                              setReportFormat(
+                                (template.formats[0] || 'html') as
+                                  | 'html'
+                                  | 'pdf'
+                                  | 'json'
+                                  | 'csv'
+                                  | 'markdown',
+                              );
+                            }
+                          }}
+                          className={`p-vos-3 rounded-vos-md border text-left transition-colors ${
+                            active
+                              ? 'bg-vos-accent/10 border-vos-accent'
+                              : 'bg-vos-bg-elev-3 border-vos-border-1 hover:border-vos-border-2'
+                          }`}
+                        >
+                          <div className="text-xl mb-1.5">{template.icon}</div>
+                          <div className="text-vos-sm font-medium text-vos-text">
+                            {template.name}
+                          </div>
+                          <div className="text-vos-xs text-vos-text-3 mt-0.5 line-clamp-2">
+                            {template.description}
+                          </div>
+                          {template.frameworks && template.frameworks.length > 0 && (
+                            <div className="mt-1.5 flex flex-wrap gap-1">
+                              {template.frameworks.map((fw) => (
+                                <span
+                                  key={fw}
+                                  className="text-[9px] px-1.5 py-0.5 rounded bg-vos-info/15 text-vos-info"
+                                >
+                                  {fw}
+                                </span>
+                              ))}
+                            </div>
+                          )}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                {/* Format */}
+                <div>
+                  <label className="text-[10px] uppercase tracking-vos-wide font-semibold text-vos-text-3 mb-vos-2 block">
+                    {t('reports.outputFormat', 'Output Format')}
+                  </label>
+                  <div className="flex flex-wrap gap-1.5">
+                    {(
+                      templates.find((t) => t.id === selectedTemplate)?.formats || [
+                        'html',
+                        'pdf',
+                        'json',
+                        'csv',
+                        'markdown',
+                      ]
+                    ).map((format) => {
+                      const active = reportFormat === format;
+                      return (
+                        <button
+                          key={format}
+                          onClick={() =>
+                            setReportFormat(
+                              format as 'html' | 'pdf' | 'json' | 'csv' | 'markdown',
+                            )
+                          }
+                          className={`h-8 px-vos-3 rounded-vos-sm text-vos-xs font-medium uppercase tracking-wide border transition-colors ${
+                            active
+                              ? 'bg-vos-accent/10 border-vos-accent text-vos-accent'
+                              : 'bg-vos-bg-elev-3 border-vos-border-1 text-vos-text-3 hover:text-vos-text'
+                          }`}
+                        >
+                          {format}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                {/* Scans */}
+                <div>
+                  <label className="text-[10px] uppercase tracking-vos-wide font-semibold text-vos-text-3 mb-vos-2 block">
+                    Select Scans (
+                    <span className="text-vos-text tabular-nums">
+                      {selectedScans.length}
+                    </span>{' '}
+                    selected)
+                  </label>
+                  {availableScans.length === 0 ? (
+                    <div className="rounded-vos-md border border-vos-border-1 bg-vos-bg-elev-3 p-vos-5 text-center">
+                      <ListChecks
+                        size={28}
+                        className="mx-auto text-vos-text-3 mb-vos-2"
+                      />
+                      <p className="text-vos-sm text-vos-text-2">
+                        {t('reports.noScansAvailable', 'No completed scans available')}
+                      </p>
+                      <p className="text-vos-xs text-vos-text-3 mt-1">
+                        {t(
+                          'reports.runScansFirst',
+                          'Run some scans first to generate reports',
+                        )}
+                      </p>
+                    </div>
+                  ) : (
+                    <div className="rounded-vos-md border border-vos-border-1 bg-vos-bg-elev-3 max-h-64 overflow-y-auto divide-y divide-vos-border-1">
+                      {availableScans.map((scan) => {
+                        const checked = selectedScans.includes(scan.id);
+                        return (
+                          <label
+                            key={scan.id}
+                            className={`flex items-center gap-vos-3 p-vos-3 cursor-pointer transition-colors ${
+                              checked
+                                ? 'bg-vos-accent/10'
+                                : 'hover:bg-vos-bg-elev-4'
+                            }`}
+                          >
+                            <input
+                              type="checkbox"
+                              checked={checked}
+                              onChange={(e) => {
+                                if (e.target.checked)
+                                  setSelectedScans([...selectedScans, scan.id]);
+                                else
+                                  setSelectedScans(
+                                    selectedScans.filter((id) => id !== scan.id),
+                                  );
+                              }}
+                              className="size-3.5 rounded border-vos-border-2 text-vos-accent focus:ring-vos-accent"
+                            />
+                            <div className="flex-1 min-w-0">
+                              <div className="text-vos-sm text-vos-text font-medium truncate">
+                                {scan.name}
+                              </div>
+                              <div className="text-vos-xs text-vos-text-3 truncate">
+                                {scan.target} · {scan.completed_at}
+                              </div>
+                            </div>
+                            <StatusPill tone="neutral">{scan.tool}</StatusPill>
+                          </label>
+                        );
+                      })}
+                    </div>
+                  )}
                 </div>
               </div>
-            ))}
+
+              <div className="flex items-center justify-between p-vos-5 border-t border-vos-border-1 bg-vos-bg-elev-1/40">
+                <button
+                  onClick={() => setShowGenerateModal(false)}
+                  className="px-vos-4 h-10 text-vos-text-3 hover:text-vos-text text-vos-sm transition-colors"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={handleGenerateReport}
+                  disabled={generating || selectedScans.length === 0}
+                  className="inline-flex items-center gap-2 h-10 px-vos-5 rounded-vos-md bg-vos-accent text-white text-vos-sm font-semibold hover:opacity-90 disabled:opacity-40 disabled:cursor-not-allowed transition-opacity"
+                >
+                  {generating ? (
+                    <>
+                      <Loader2 size={14} className="animate-spin" />
+                      Generating…
+                    </>
+                  ) : (
+                    <>
+                      <Sparkles size={14} />
+                      Generate Report
+                    </>
+                  )}
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Preview modal */}
+        {showPreviewModal && previewReport && (
+          <div
+            className="fixed inset-0 bg-black/60 backdrop-blur-md flex items-center justify-center p-vos-4 z-50"
+            onClick={() => setShowPreviewModal(false)}
+          >
+            <div
+              className="rounded-vos-2xl border border-vos-border-1 bg-vos-bg-elev-2 w-full max-w-6xl h-[90vh] overflow-hidden flex flex-col shadow-vos-elev-3"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className="p-vos-4 border-b border-vos-border-1 flex items-center justify-between">
+                <div className="min-w-0">
+                  <h2 className="text-vos-md font-semibold text-vos-text truncate">
+                    {previewReport.name}
+                  </h2>
+                  <p className="text-vos-xs text-vos-text-3 truncate">
+                    {previewReport.template} · {previewReport.format.toUpperCase()} ·
+                    Risk: {previewReport.risk_level}
+                  </p>
+                </div>
+                <div className="flex items-center gap-vos-2">
+                  <button
+                    onClick={() => handleDownload(previewReport)}
+                    className="inline-flex items-center gap-1.5 h-9 px-vos-3 rounded-vos-md bg-vos-accent text-white text-vos-xs font-medium hover:opacity-90"
+                  >
+                    <Download size={12} />
+                    Download
+                  </button>
+                  <button
+                    onClick={() => setShowPreviewModal(false)}
+                    className="size-9 rounded-vos-md text-vos-text-3 hover:text-vos-text hover:bg-vos-bg-elev-3 flex items-center justify-center"
+                    aria-label="Close"
+                  >
+                    <X size={16} />
+                  </button>
+                </div>
+              </div>
+
+              <div className="flex-1 overflow-hidden bg-vos-bg-elev-1">
+                {previewReport.format === 'html' ? (
+                  <iframe
+                    ref={iframeRef}
+                    srcDoc={previewContent}
+                    className="w-full h-full border-0 bg-white"
+                    title={t('reports.reportPreview', 'Report Preview')}
+                  />
+                ) : (
+                  <pre className="p-vos-5 overflow-auto h-full text-vos-text-2 text-vos-xs font-mono whitespace-pre-wrap">
+                    {previewContent}
+                  </pre>
+                )}
+              </div>
+            </div>
           </div>
         )}
       </div>
-
-      {/* Generate Report Modal */}
-      {showGenerateModal && (
-        <div className="fixed inset-0 bg-black/80 flex items-center justify-center p-4 z-50">
-          <div className="bg-gray-900 rounded-2xl border border-gray-800 w-full max-w-4xl max-h-[90vh] overflow-hidden flex flex-col">
-            <div className="p-6 border-b border-gray-800 flex items-center justify-between">
-              <div>
-                <h2 className="text-xl font-bold text-white">{t('reports.generateTitle', 'Generate Report')}</h2>
-                <p className="text-gray-400 text-sm mt-1">{t('reports.generateSubtitle', 'Create a professional security assessment report')}</p>
-              </div>
-              <button
-                onClick={() => setShowGenerateModal(false)}
-                className="p-2 hover:bg-gray-800 rounded-lg transition"
-              >
-                <XMarkIcon className="w-5 h-5 text-gray-400" />
-              </button>
-            </div>
-            
-            <div className="flex-1 overflow-y-auto p-6 space-y-6">
-              {/* Report Name */}
-              <div>
-                <label className="block text-sm font-medium text-gray-300 mb-2">{t('reports.reportNameLabel', 'Report Name')}</label>
-                <input
-                  type="text"
-                  value={reportName}
-                  onChange={(e) => setReportName(e.target.value)}
-                  className="w-full px-4 py-3 bg-gray-800 border border-gray-700 rounded-xl text-white focus:outline-none focus:border-kali-blue"
-                  placeholder={t('reports.reportNamePlaceholder', 'Security Assessment Report')}
-                />
-              </div>
-              
-              {/* Template Selection */}
-              <div>
-                <label className="block text-sm font-medium text-gray-300 mb-3">{t('reports.chooseTemplate', 'Choose Template')}</label>
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-                  {templates.map((template) => (
-                    <button
-                      key={template.id}
-                      onClick={() => {
-                        setSelectedTemplate(template.id);
-                        // Auto-select best format for template
-                        if (!template.formats.includes(reportFormat)) {
-                          setReportFormat((template.formats[0] || 'html') as 'html' | 'pdf' | 'json' | 'csv' | 'markdown');
-                        }
-                      }}
-                      className={`p-4 rounded-xl border text-left transition ${
-                        selectedTemplate === template.id
-                          ? 'bg-kali-blue/20 border-kali-blue'
-                          : 'bg-gray-800 border-gray-700 hover:border-gray-600'
-                      }`}
-                    >
-                      <div className="text-2xl mb-2">{template.icon}</div>
-                      <div className="text-white font-medium text-sm">{template.name}</div>
-                      <div className="text-gray-400 text-xs mt-1 line-clamp-2">{template.description}</div>
-                      {(template as any).frameworks && (template as any).frameworks.length > 0 && (
-                        <div className="mt-2 flex flex-wrap gap-1">
-                          {(template as any).frameworks.map((fw: string) => (
-                            <span key={fw} className="text-[10px] px-1.5 py-0.5 bg-purple-500/20 text-purple-300 rounded">
-                              {fw}
-                            </span>
-                          ))}
-                        </div>
-                      )}
-                    </button>
-                  ))}
-                </div>
-              </div>
-              
-              {/* Format Selection */}
-              <div>
-                <label className="block text-sm font-medium text-gray-300 mb-3">{t('reports.outputFormat', 'Output Format')}</label>
-                <div className="flex flex-wrap gap-2">
-                  {(templates.find(t => t.id === selectedTemplate)?.formats || ['html', 'pdf', 'json', 'csv', 'markdown']).map((format) => (
-                    <button
-                      key={format}
-                      onClick={() => setReportFormat(format as 'html' | 'pdf' | 'json' | 'csv' | 'markdown')}
-                      className={`px-4 py-2 rounded-lg border transition ${
-                        reportFormat === format
-                          ? 'bg-kali-blue/20 border-kali-blue text-white'
-                          : 'bg-gray-800 border-gray-700 text-gray-400 hover:border-gray-600'
-                      }`}
-                    >
-                      {format === 'pdf' ? '📄 PDF' : format.toUpperCase()}
-                    </button>
-                  ))}
-                </div>
-              </div>
-              
-              {/* Scan Selection */}
-              <div>
-                <label className="block text-sm font-medium text-gray-300 mb-3">
-                  Select Scans ({selectedScans.length} selected)
-                </label>
-                {availableScans.length === 0 ? (
-                  <div className="bg-gray-800 rounded-xl p-6 text-center">
-                    <ClipboardDocumentListIcon className="w-12 h-12 text-gray-600 mx-auto mb-3" />
-                    <p className="text-gray-400">{t('reports.noScansAvailable', 'No completed scans available')}</p>
-                    <p className="text-gray-500 text-sm mt-1">{t('reports.runScansFirst', 'Run some scans first to generate reports')}</p>
-                  </div>
-                ) : (
-                  <div className="bg-gray-800 rounded-xl border border-gray-700 max-h-64 overflow-y-auto">
-                    {availableScans.map((scan) => (
-                      <label
-                        key={scan.id}
-                        className={`flex items-center gap-3 p-4 border-b border-gray-700 last:border-b-0 cursor-pointer hover:bg-gray-750 transition ${
-                          selectedScans.includes(scan.id) ? 'bg-kali-blue/10' : ''
-                        }`}
-                      >
-                        <input
-                          type="checkbox"
-                          checked={selectedScans.includes(scan.id)}
-                          onChange={(e) => {
-                            if (e.target.checked) {
-                              setSelectedScans([...selectedScans, scan.id]);
-                            } else {
-                              setSelectedScans(selectedScans.filter(id => id !== scan.id));
-                            }
-                          }}
-                          className="w-4 h-4 rounded border-gray-600 text-kali-blue focus:ring-kali-blue focus:ring-offset-gray-900"
-                        />
-                        <div className="flex-1 min-w-0">
-                          <div className="text-white text-sm font-medium truncate">{scan.name}</div>
-                          <div className="text-gray-500 text-xs">{scan.target} • {scan.completed_at}</div>
-                        </div>
-                        <span className="px-2 py-1 bg-gray-700 text-gray-300 rounded text-xs">
-                          {scan.tool}
-                        </span>
-                      </label>
-                    ))}
-                  </div>
-                )}
-              </div>
-            </div>
-            
-            {/* Footer */}
-            <div className="p-6 border-t border-gray-800 flex items-center justify-between">
-              <button
-                onClick={() => setShowGenerateModal(false)}
-                className="px-6 py-2 text-gray-400 hover:text-white transition"
-              >
-                Cancel
-              </button>
-              <button
-                onClick={handleGenerateReport}
-                disabled={generating || selectedScans.length === 0}
-                className="px-6 py-3 bg-gradient-to-r from-kali-blue to-kali-purple text-white font-medium rounded-xl hover:opacity-90 transition disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
-              >
-                {generating ? (
-                  <>
-                    <ArrowPathIcon className="w-5 h-5 animate-spin" />
-                    Generating...
-                  </>
-                ) : (
-                  <>
-                    <DocumentTextIcon className="w-5 h-5" />
-                    Generate Report
-                  </>
-                )}
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Preview Modal */}
-      {showPreviewModal && previewReport && (
-        <div className="fixed inset-0 bg-black/80 flex items-center justify-center p-4 z-50">
-          <div className="bg-gray-900 rounded-2xl border border-gray-800 w-full max-w-6xl h-[90vh] overflow-hidden flex flex-col">
-            <div className="p-4 border-b border-gray-800 flex items-center justify-between">
-              <div>
-                <h2 className="text-lg font-bold text-white">{previewReport.name}</h2>
-                <p className="text-gray-400 text-sm">
-                  {previewReport.template} • {previewReport.format.toUpperCase()} • Risk: {previewReport.risk_level}
-                </p>
-              </div>
-              <div className="flex items-center gap-2">
-                <button
-                  onClick={() => handleDownload(previewReport)}
-                  className="px-4 py-2 bg-kali-blue text-white rounded-lg hover:bg-kali-blue/90 transition flex items-center gap-2"
-                >
-                  <DocumentArrowDownIcon className="w-4 h-4" />
-                  Download
-                </button>
-                <button
-                  onClick={() => setShowPreviewModal(false)}
-                  className="p-2 hover:bg-gray-800 rounded-lg transition"
-                >
-                  <XMarkIcon className="w-5 h-5 text-gray-400" />
-                </button>
-              </div>
-            </div>
-            
-            <div className="flex-1 overflow-hidden">
-              {previewReport.format === 'html' ? (
-                <iframe
-                  ref={iframeRef}
-                  srcDoc={previewContent}
-                  className="w-full h-full border-0"
-                  title={t('reports.reportPreview', 'Report Preview')}
-                />
-              ) : (
-                <pre className="p-6 overflow-auto h-full text-gray-300 text-sm font-mono whitespace-pre-wrap">
-                  {previewContent}
-                </pre>
-              )}
-            </div>
-          </div>
-        </div>
-      )}
-    </div>
     </PageTransition>
   );
 }
 
 export default ReportsPage;
+
+void RotateCw;
