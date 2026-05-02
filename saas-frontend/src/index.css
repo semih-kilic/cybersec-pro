@@ -21,6 +21,9 @@
 @import './styles/visionos-theme.css';
 @import './styles/visionos-globals.css';
 
+/* 🪟 V20 Onyx legacy skin overrides — uses !important so source-order is OK */
+@import './styles/vos-skin-overrides.css';
+
 /* Import Tailwind CSS */
 @tailwind base;
 @tailwind components;

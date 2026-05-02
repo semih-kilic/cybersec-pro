@@ -31,3 +31,24 @@ export { VosAppShell } from './VosAppShell';
 export { VosSidebar, type VosNavItem } from './VosSidebar';
 export { VosTopbar } from './VosTopbar';
 export { VosUserMenu } from './VosUserMenu';
+
+// SOC primitives
+export {
+  PageHeader,
+  CommandBar,
+  SearchField,
+  FilterChip,
+  FilterDropdown,
+  StatusPill,
+  SeverityTag,
+  SeverityHeatmap,
+  RiskScore,
+  DenseTable,
+  DenseTableHead,
+  DenseTH,
+  DenseTR,
+  DenseTD,
+  Section,
+  KeyValueGrid,
+  type Severity,
+} from './Soc';

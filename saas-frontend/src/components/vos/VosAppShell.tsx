@@ -53,7 +53,7 @@ export function VosAppShell({
   }, [location.pathname]);
 
   return (
-    <div className="vos-root min-h-screen relative">
+    <div data-vos-app="" className="vos-root min-h-screen relative">
       {/* Solid black canvas — apple.com style. No mesh, no aurora. */}
       <div className="vos-bg-canvas" aria-hidden />
 

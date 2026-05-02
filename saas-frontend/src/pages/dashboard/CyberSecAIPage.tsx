@@ -1,16 +1,61 @@
 /**
- * CyberSec Pro AI — Autonomous Pentesting Page
- * Phase 6 — AI-powered vulnerability discovery and verification
+ * 🛡️ CyberSec Pro AI — Autonomous Pentesting
+ *
+ * V20 "Onyx" rewrite using Vision OS + SOC primitives.
+ * Same business logic & data hooks as before — pure visual rebuild.
  */
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { useCyberSecAIJobs, useCreateCyberSecAIJob, useCyberSecAIJob } from '../../hooks/useApiQueries';
+import {
+  Bot,
+  Plus,
+  X,
+  Loader2,
+  ShieldCheck,
+  Activity,
+  Search,
+  Bug,
+  Wrench,
+  AlertTriangle,
+  Sparkles,
+} from 'lucide-react';
+import {
+  PageHeader,
+  StatusPill,
+  Section,
+  DenseTable,
+  DenseTableHead,
+  DenseTH,
+  DenseTR,
+  DenseTD,
+  KeyValueGrid,
+  type Severity,
+} from '../../components/vos';
+import { StatCard } from '../../components/ui/Card';
+import { EmptyState } from '../../components/ui/EmptyState';
+import {
+  useCyberSecAIJobs,
+  useCreateCyberSecAIJob,
+  useCyberSecAIJob,
+} from '../../hooks/useApiQueries';
 
-const STATUS_COLORS: Record<string, string> = {
-  queued:    'bg-yellow-500/20 text-yellow-400',
-  running:   'bg-blue-500/20 text-blue-400',
-  completed: 'bg-green-500/20 text-green-400',
-  failed:    'bg-red-500/20 text-red-400',
+type Job = {
+  id: string;
+  target: string;
+  job_type: string;
+  status: string;
+  findings_count: number;
+  poc_verified_count: number;
+  started_at?: string;
+  completed_at?: string;
+  created_at: string;
+};
+
+const STATUS_TONE: Record<string, 'warning' | 'info' | 'success' | 'danger' | 'neutral'> = {
+  queued: 'warning',
+  running: 'info',
+  completed: 'success',
+  failed: 'danger',
 };
 
 export default function CyberSecAIPage() {
@@ -26,15 +71,19 @@ export default function CyberSecAIPage() {
   });
   const [formErr, setFormErr] = useState('');
 
-  const jobs: Array<{
-    id: string; target: string; job_type: string; status: string;
-    findings_count: number; poc_verified_count: number;
-    started_at?: string; completed_at?: string; created_at: string;
-  }> = ((data as { cybersec_ai_jobs?: Array<{ id: string; target: string; job_type: string; status: string; findings_count: number; poc_verified_count: number; started_at?: string; completed_at?: string; created_at: string }> }) ?? {})?.cybersec_ai_jobs ?? [];
+  const jobs: Job[] =
+    ((data as { cybersec_ai_jobs?: Job[] }) ?? {})?.cybersec_ai_jobs ?? [];
+
+  const totalFindings = jobs.reduce((a, j) => a + j.findings_count, 0);
+  const totalVerified = jobs.reduce((a, j) => a + j.poc_verified_count, 0);
+  const running = jobs.filter((j) => j.status === 'running').length;
 
   const handleCreate = async () => {
     setFormErr('');
-    if (!form.target.trim()) { setFormErr('Target URL or repository required'); return; }
+    if (!form.target.trim()) {
+      setFormErr('Target URL or repository required');
+      return;
+    }
     try {
       await createJob.mutateAsync({
         target: form.target.trim(),
@@ -43,191 +92,309 @@ export default function CyberSecAIPage() {
         agents_config: form.agents,
       });
       setShowForm(false);
-      setForm({ target: '', target_type: 'url', job_type: 'autonomous_pentest', agents: { recon: true, vuln_scan: true, exploit_verify: true, auto_fix: false } });
+      setForm({
+        target: '',
+        target_type: 'url',
+        job_type: 'autonomous_pentest',
+        agents: { recon: true, vuln_scan: true, exploit_verify: true, auto_fix: false },
+      });
     } catch (e: unknown) {
       setFormErr(e instanceof Error ? e.message : 'Failed to create job');
     }
   };
 
   return (
-    <div className="p-6 space-y-6 max-w-6xl mx-auto">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold text-white flex items-center gap-2">
-            <span className="text-3xl">�</span> CyberSec Pro AI
-          </h1>
-          <p className="text-gray-400 text-sm mt-1">Autonomous AI-powered penetration testing, vulnerability discovery & PoC verification</p>
-        </div>
-        <button
-          onClick={() => setShowForm(true)}
-          className="px-4 py-2 bg-cyan-600 text-white rounded-lg hover:bg-cyan-700 transition font-medium"
-        >
-          + New AI Pentest Job
-        </button>
+    <div className="p-vos-8 space-y-vos-8 max-w-7xl mx-auto">
+      <PageHeader
+        eyebrow="Autonomous"
+        icon={<Bot size={22} />}
+        title="CyberSec Pro AI"
+        description="Autonomous AI-powered penetration testing, vulnerability discovery, and proof-of-concept verification across your attack surface."
+        actions={
+          <button
+            onClick={() => setShowForm(true)}
+            className="inline-flex items-center gap-2 h-10 px-vos-4 rounded-vos-md bg-vos-accent text-white text-vos-sm font-medium hover:opacity-90 transition-opacity"
+          >
+            <Plus size={16} /> New AI pentest job
+          </button>
+        }
+      />
+
+      {/* KPI bar */}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-vos-4">
+        <StatCard
+          title="Total Jobs"
+          value={jobs.length}
+          icon={<Sparkles size={16} />}
+          variant="cyan"
+        />
+        <StatCard
+          title="Active Now"
+          value={running}
+          icon={<Activity size={16} />}
+          variant="cyan"
+        />
+        <StatCard
+          title="Findings"
+          value={totalFindings}
+          icon={<Bug size={16} />}
+          variant="amber"
+        />
+        <StatCard
+          title="PoC Verified"
+          value={totalVerified}
+          icon={<ShieldCheck size={16} />}
+          variant="red"
+        />
       </div>
 
-      {/* Stats bar */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        {[
-          { label: 'Total Jobs', value: jobs.length, color: 'text-cyan-400' },
-          { label: 'Running', value: jobs.filter(j => j.status === 'running').length, color: 'text-blue-400' },
-          { label: 'Findings', value: jobs.reduce((a, j) => a + j.findings_count, 0), color: 'text-yellow-400' },
-          { label: 'PoC Verified', value: jobs.reduce((a, j) => a + j.poc_verified_count, 0), color: 'text-red-400' },
-        ].map(stat => (
-          <div key={stat.label} className="p-4 bg-gray-800 rounded-lg border border-gray-700">
-            <div className={`text-2xl font-bold ${stat.color}`}>{stat.value}</div>
-            <div className="text-gray-400 text-sm">{stat.label}</div>
+      {/* Jobs */}
+      <Section
+        title="Pentest Jobs"
+        description="Click any row to inspect agent output and verified PoCs."
+        bodyClassName="p-0"
+      >
+        {isLoading ? (
+          <div className="flex items-center justify-center py-vos-12 text-vos-text-3">
+            <Loader2 size={18} className="animate-spin" />
           </div>
-        ))}
-      </div>
+        ) : jobs.length === 0 ? (
+          <div className="py-vos-8">
+            <EmptyState
+              title="No jobs yet"
+              description="Launch your first autonomous pentest to discover vulnerabilities automatically."
+            />
+          </div>
+        ) : (
+          <DenseTable className="border-0 rounded-none">
+            <DenseTableHead>
+              <DenseTH>Status</DenseTH>
+              <DenseTH>Target</DenseTH>
+              <DenseTH>Type</DenseTH>
+              <DenseTH className="text-right">Findings</DenseTH>
+              <DenseTH className="text-right">Verified</DenseTH>
+              <DenseTH>Created</DenseTH>
+            </DenseTableHead>
+            <tbody>
+              {jobs.map((job) => (
+                <>
+                  <DenseTR
+                    key={job.id}
+                    onClick={() =>
+                      setSelectedJobId(selectedJobId === job.id ? null : job.id)
+                    }
+                    highlighted={selectedJobId === job.id}
+                  >
+                    <DenseTD>
+                      <StatusPill
+                        tone={STATUS_TONE[job.status] ?? 'neutral'}
+                        pulse={job.status === 'running'}
+                      >
+                        {job.status}
+                      </StatusPill>
+                    </DenseTD>
+                    <DenseTD className="text-vos-text font-medium">
+                      {job.target}
+                    </DenseTD>
+                    <DenseTD className="capitalize">
+                      {job.job_type.replace(/_/g, ' ')}
+                    </DenseTD>
+                    <DenseTD className="text-right tabular-nums">
+                      {job.findings_count > 0 ? (
+                        <span className="text-vos-warning font-semibold">
+                          {job.findings_count}
+                        </span>
+                      ) : (
+                        <span className="text-vos-text-3">0</span>
+                      )}
+                    </DenseTD>
+                    <DenseTD className="text-right tabular-nums">
+                      {job.poc_verified_count > 0 ? (
+                        <span className="text-vos-danger font-semibold">
+                          {job.poc_verified_count}
+                        </span>
+                      ) : (
+                        <span className="text-vos-text-3">0</span>
+                      )}
+                    </DenseTD>
+                    <DenseTD className="text-vos-text-3 whitespace-nowrap">
+                      {new Date(job.created_at).toLocaleString()}
+                    </DenseTD>
+                  </DenseTR>
+                  {selectedJobId === job.id && (
+                    <tr className="border-t border-vos-border-1 bg-vos-bg-elev-1/30">
+                      <td colSpan={6} className="px-vos-6 py-vos-5">
+                        <JobDetail jobId={job.id} />
+                      </td>
+                    </tr>
+                  )}
+                </>
+              ))}
+            </tbody>
+          </DenseTable>
+        )}
+      </Section>
 
       {/* New job modal */}
       <AnimatePresence>
         {showForm && (
           <motion.div
-            initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-            className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 bg-black/50 backdrop-blur-md z-vos-modal flex items-center justify-center p-vos-4"
+            onClick={() => setShowForm(false)}
           >
             <motion.div
-              initial={{ scale: 0.95, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.95, opacity: 0 }}
-              className="bg-gray-900 border border-gray-700 rounded-xl p-6 w-full max-w-lg space-y-4"
+              initial={{ scale: 0.96, opacity: 0, y: 8 }}
+              animate={{ scale: 1, opacity: 1, y: 0 }}
+              exit={{ scale: 0.96, opacity: 0, y: 8 }}
+              transition={{ duration: 0.22, ease: [0.22, 1, 0.36, 1] }}
+              onClick={(e) => e.stopPropagation()}
+              className="bg-vos-bg-elev-2 border border-vos-border-1 rounded-vos-2xl shadow-vos-4 w-full max-w-lg overflow-hidden"
             >
-              <h2 className="text-xl font-bold text-white">🤖 New CyberSec Pro AI Job</h2>
-
-              <div>
-                <label className="block text-gray-400 text-sm mb-1">Target *</label>
-                <input
-                  type="text"
-                  value={form.target}
-                  onChange={e => setForm(f => ({ ...f, target: e.target.value }))}
-                  placeholder="https://example.com or github.com/owner/repo"
-                  className="w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded-lg text-white text-sm focus:outline-none focus:border-cyan-500"
-                />
-              </div>
-
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-gray-400 text-sm mb-1">Target Type</label>
-                  <select
-                    value={form.target_type}
-                    onChange={e => setForm(f => ({ ...f, target_type: e.target.value }))}
-                    className="w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded-lg text-white text-sm focus:outline-none focus:border-cyan-500"
-                  >
-                    <option value="url">Web URL</option>
-                    <option value="repository">Git Repository</option>
-                    <option value="api">REST API</option>
-                    <option value="ip">IP / Network</option>
-                  </select>
+              <header className="flex items-center justify-between px-vos-6 py-vos-4 border-b border-vos-border-1">
+                <div className="flex items-center gap-vos-3">
+                  <span className="size-9 rounded-vos-md bg-vos-accent/10 border border-vos-accent/20 flex items-center justify-center text-vos-accent">
+                    <Bot size={18} />
+                  </span>
+                  <h2 className="text-vos-md font-semibold text-vos-text">
+                    New AI Pentest Job
+                  </h2>
                 </div>
-                <div>
-                  <label className="block text-gray-400 text-sm mb-1">Job Type</label>
-                  <select
-                    value={form.job_type}
-                    onChange={e => setForm(f => ({ ...f, job_type: e.target.value }))}
-                    className="w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded-lg text-white text-sm focus:outline-none focus:border-cyan-500"
-                  >
-                    <option value="autonomous_pentest">Autonomous Pentest</option>
-                    <option value="vuln_scan">Vulnerability Scan</option>
-                    <option value="code_review">Code Review</option>
-                    <option value="api_audit">API Security Audit</option>
-                  </select>
-                </div>
-              </div>
-
-              <div>
-                <label className="block text-gray-400 text-sm mb-2">AI Agents</label>
-                <div className="space-y-2">
-                  {[
-                    { key: 'recon', label: 'Reconnaissance', desc: 'Fingerprint target, enumerate services' },
-                    { key: 'vuln_scan', label: 'Vulnerability Scanner', desc: 'Detect known CVEs and weaknesses' },
-                    { key: 'exploit_verify', label: 'PoC Verification', desc: 'Confirm findings with safe exploits' },
-                    { key: 'auto_fix', label: 'Auto-Fix (Beta)', desc: 'Generate remediation pull requests' },
-                  ].map(agent => (
-                    <label key={agent.key} className="flex items-start gap-3 cursor-pointer">
-                      <input
-                        type="checkbox"
-                        checked={form.agents[agent.key as keyof typeof form.agents]}
-                        onChange={e => setForm(f => ({ ...f, agents: { ...f.agents, [agent.key]: e.target.checked } }))}
-                        className="mt-0.5 accent-cyan-500"
-                      />
-                      <div>
-                        <span className="text-white text-sm font-medium">{agent.label}</span>
-                        <span className="block text-gray-500 text-xs">{agent.desc}</span>
-                      </div>
-                    </label>
-                  ))}
-                </div>
-              </div>
-
-              {formErr && <p className="text-red-400 text-sm">{formErr}</p>}
-
-              <div className="flex gap-3 pt-2">
                 <button
-                  onClick={handleCreate}
-                  disabled={createJob.isPending}
-                  className="flex-1 py-2 bg-cyan-600 text-white rounded-lg hover:bg-cyan-700 transition disabled:opacity-50 font-medium"
+                  onClick={() => setShowForm(false)}
+                  className="size-8 rounded-vos-md hover:bg-vos-bg-elev-3 text-vos-text-3 hover:text-vos-text flex items-center justify-center"
+                  aria-label="Close"
                 >
-                  {createJob.isPending ? '⏳ Queuing…' : '🚀 Launch Job'}
+                  <X size={16} />
                 </button>
+              </header>
+
+              <div className="px-vos-6 py-vos-5 space-y-vos-5">
+                <Field label="Target *">
+                  <Input
+                    value={form.target}
+                    onChange={(v) => setForm((f) => ({ ...f, target: v }))}
+                    placeholder="https://example.com or github.com/owner/repo"
+                  />
+                </Field>
+
+                <div className="grid grid-cols-2 gap-vos-4">
+                  <Field label="Target Type">
+                    <Select
+                      value={form.target_type}
+                      onChange={(v) => setForm((f) => ({ ...f, target_type: v }))}
+                      options={[
+                        ['url', 'Web URL'],
+                        ['repository', 'Git Repository'],
+                        ['api', 'REST API'],
+                        ['ip', 'IP / Network'],
+                      ]}
+                    />
+                  </Field>
+                  <Field label="Job Type">
+                    <Select
+                      value={form.job_type}
+                      onChange={(v) => setForm((f) => ({ ...f, job_type: v }))}
+                      options={[
+                        ['autonomous_pentest', 'Autonomous Pentest'],
+                        ['vuln_scan', 'Vulnerability Scan'],
+                        ['code_review', 'Code Review'],
+                        ['api_audit', 'API Security Audit'],
+                      ]}
+                    />
+                  </Field>
+                </div>
+
+                <Field label="AI Agents">
+                  <div className="space-y-2">
+                    {[
+                      { key: 'recon', label: 'Reconnaissance', desc: 'Fingerprint target, enumerate services', icon: Search },
+                      { key: 'vuln_scan', label: 'Vulnerability Scanner', desc: 'Detect known CVEs and weaknesses', icon: Bug },
+                      { key: 'exploit_verify', label: 'PoC Verification', desc: 'Confirm findings with safe exploits', icon: ShieldCheck },
+                      { key: 'auto_fix', label: 'Auto-Fix (Beta)', desc: 'Generate remediation pull requests', icon: Wrench },
+                    ].map((agent) => {
+                      const checked = form.agents[agent.key as keyof typeof form.agents];
+                      const Icon = agent.icon;
+                      return (
+                        <label
+                          key={agent.key}
+                          className={`flex items-start gap-vos-3 p-vos-3 rounded-vos-md border cursor-pointer transition-colors ${
+                            checked
+                              ? 'bg-vos-accent/5 border-vos-accent/30'
+                              : 'bg-vos-bg-elev-3 border-vos-border-1 hover:border-vos-border-2'
+                          }`}
+                        >
+                          <input
+                            type="checkbox"
+                            checked={checked}
+                            onChange={(e) =>
+                              setForm((f) => ({
+                                ...f,
+                                agents: { ...f.agents, [agent.key]: e.target.checked },
+                              }))
+                            }
+                            className="mt-0.5 accent-vos-accent"
+                          />
+                          <Icon
+                            size={16}
+                            className={checked ? 'text-vos-accent' : 'text-vos-text-3'}
+                          />
+                          <div className="min-w-0">
+                            <p className="text-vos-sm font-medium text-vos-text">
+                              {agent.label}
+                            </p>
+                            <p className="text-vos-xs text-vos-text-3 mt-0.5">
+                              {agent.desc}
+                            </p>
+                          </div>
+                        </label>
+                      );
+                    })}
+                  </div>
+                </Field>
+
+                {formErr && (
+                  <div className="flex items-center gap-2 px-vos-3 py-vos-2 rounded-vos-md bg-vos-danger/10 border border-vos-danger/20 text-vos-danger text-vos-xs">
+                    <AlertTriangle size={14} />
+                    {formErr}
+                  </div>
+                )}
+              </div>
+
+              <footer className="flex gap-vos-3 px-vos-6 py-vos-4 border-t border-vos-border-1 bg-vos-bg-elev-1/40">
                 <button
-                  onClick={() => { setShowForm(false); setFormErr(''); }}
-                  className="px-4 py-2 bg-gray-700 text-gray-300 rounded-lg hover:bg-gray-600 transition"
+                  onClick={() => setShowForm(false)}
+                  className="px-vos-4 h-9 rounded-vos-md border border-vos-border-1 bg-vos-bg-elev-2 text-vos-text-2 text-vos-sm font-medium hover:border-vos-border-2"
                 >
                   Cancel
                 </button>
-              </div>
+                <button
+                  onClick={handleCreate}
+                  disabled={createJob.isPending}
+                  className="flex-1 inline-flex items-center justify-center gap-2 h-9 rounded-vos-md bg-vos-accent text-white text-vos-sm font-medium hover:opacity-90 disabled:opacity-50"
+                >
+                  {createJob.isPending ? (
+                    <>
+                      <Loader2 size={14} className="animate-spin" /> Queuing…
+                    </>
+                  ) : (
+                    <>
+                      <Sparkles size={14} /> Launch Job
+                    </>
+                  )}
+                </button>
+              </footer>
             </motion.div>
           </motion.div>
         )}
       </AnimatePresence>
-
-      {/* Jobs list */}
-      <div className="space-y-3">
-        {isLoading && <div className="text-gray-500 text-sm">Loading jobs…</div>}
-        {!isLoading && jobs.length === 0 && (
-          <div className="p-8 bg-gray-800 rounded-xl border border-gray-700 text-center">
-            <div className="text-4xl mb-3">🦅</div>
-            <p className="text-white font-medium">No CyberSec Pro AI jobs yet</p>
-            <p className="text-gray-400 text-sm mt-1">Launch your first autonomous pentest to discover vulnerabilities automatically.</p>
-          </div>
-        )}
-        {jobs.map(job => (
-          <motion.div
-            key={job.id}
-            initial={{ opacity: 0, y: 4 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="p-4 bg-gray-800 rounded-xl border border-gray-700 hover:border-gray-600 transition cursor-pointer"
-            onClick={() => setSelectedJobId(selectedJobId === job.id ? null : job.id)}
-          >
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <span className={`px-2 py-0.5 rounded text-xs font-medium ${STATUS_COLORS[job.status] ?? 'bg-gray-700 text-gray-400'}`}>
-                  {job.status === 'running' ? '⚡ ' : ''}{job.status}
-                </span>
-                <div>
-                  <p className="text-white font-medium text-sm">{job.target}</p>
-                  <p className="text-gray-500 text-xs">{job.job_type.replace(/_/g, ' ')} · {new Date(job.created_at).toLocaleString()}</p>
-                </div>
-              </div>
-              <div className="flex items-center gap-4 text-sm">
-                <div className="text-center">
-                  <div className="text-yellow-400 font-bold">{job.findings_count}</div>
-                  <div className="text-gray-500 text-xs">Findings</div>
-                </div>
-                <div className="text-center">
-                  <div className="text-red-400 font-bold">{job.poc_verified_count}</div>
-                  <div className="text-gray-500 text-xs">PoC Verified</div>
-                </div>
-              </div>
-            </div>
-            {selectedJobId === job.id && <JobDetail jobId={job.id} />}
-          </motion.div>
-        ))}
-      </div>
     </div>
   );
 }
+
+/* ───────── Job detail panel (inline expand) ───────── */
 
 type CyberSecAIJobDetail = {
   id: string;
@@ -245,41 +412,123 @@ type CyberSecAIJobDetail = {
 
 function JobDetail({ jobId }: { jobId: string }) {
   const { data: rawData, isLoading } = useCyberSecAIJob(jobId);
-  if (isLoading) return <div className="mt-4 text-gray-500 text-sm">Loading details…</div>;
+  if (isLoading)
+    return (
+      <div className="flex items-center gap-2 text-vos-text-3 text-vos-sm">
+        <Loader2 size={14} className="animate-spin" /> Loading details…
+      </div>
+    );
   if (!rawData) return null;
   const data = rawData as CyberSecAIJobDetail;
 
   return (
-    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="mt-4 pt-4 border-t border-gray-700 space-y-3">
-      <div className="grid grid-cols-2 gap-4 text-sm">
-        <div><span className="text-gray-500">Target Type:</span> <span className="text-gray-300 ml-2">{data.target_type}</span></div>
-        <div><span className="text-gray-500">Status:</span> <span className="text-gray-300 ml-2">{data.status}</span></div>
-      </div>
+    <div className="space-y-vos-4">
+      <KeyValueGrid
+        cols={4}
+        items={[
+          { label: 'Target Type', value: data.target_type },
+          { label: 'Job Type', value: data.job_type.replace(/_/g, ' ') },
+          { label: 'Findings', value: data.findings_count },
+          { label: 'PoC Verified', value: data.poc_verified_count },
+        ]}
+      />
+
       {data.agents_config && (
         <div>
-          <p className="text-gray-500 text-xs mb-2">Active Agents:</p>
-          <div className="flex flex-wrap gap-2">
+          <p className="text-[10px] uppercase tracking-vos-wide font-semibold text-vos-text-3 mb-vos-2">
+            Active Agents
+          </p>
+          <div className="flex flex-wrap gap-1.5">
             {Object.entries(data.agents_config)
               .filter(([, v]) => v)
               .map(([k]) => (
-                <span key={k} className="px-2 py-0.5 bg-cyan-500/20 text-cyan-400 rounded text-xs">{k.replace(/_/g, ' ')}</span>
+                <span
+                  key={k}
+                  className="inline-flex items-center px-2 h-6 rounded-vos-sm bg-vos-accent/10 text-vos-accent text-[11px] font-medium border border-vos-accent/20"
+                >
+                  {k.replace(/_/g, ' ')}
+                </span>
               ))}
           </div>
         </div>
       )}
+
       {data.results !== undefined && data.results !== null && (
         <div>
-          <p className="text-gray-500 text-xs mb-2">Results:</p>
-          <pre className="bg-gray-900 rounded-lg p-3 text-xs text-green-400 overflow-x-auto max-h-48">
+          <p className="text-[10px] uppercase tracking-vos-wide font-semibold text-vos-text-3 mb-vos-2">
+            Results
+          </p>
+          <pre className="bg-vos-bg-elev-1 rounded-vos-md p-vos-3 text-[11px] text-vos-text-2 overflow-x-auto max-h-64 font-vos-mono border border-vos-border-1">
             {JSON.stringify(data.results as Record<string, unknown>, null, 2)}
           </pre>
         </div>
       )}
+
       {(data.status === 'queued' || data.status === 'running') && (
-        <div className="flex items-center gap-2 text-blue-400 text-sm">
-          <span className="animate-spin">⚙</span> Job is {data.status}… auto-refreshing
+        <div className="flex items-center gap-2 text-vos-accent text-vos-xs">
+          <Loader2 size={12} className="animate-spin" /> Job is {data.status}… auto-refreshing
         </div>
       )}
-    </motion.div>
+    </div>
   );
 }
+
+/* ───────── Form primitives (local) ───────── */
+
+function Field({ label, children }: { label: string; children: React.ReactNode }) {
+  return (
+    <div className="flex flex-col gap-1.5">
+      <label className="text-[10px] uppercase tracking-vos-wide font-semibold text-vos-text-3">
+        {label}
+      </label>
+      {children}
+    </div>
+  );
+}
+
+function Input({
+  value,
+  onChange,
+  placeholder,
+}: {
+  value: string;
+  onChange: (v: string) => void;
+  placeholder?: string;
+}) {
+  return (
+    <input
+      type="text"
+      value={value}
+      onChange={(e) => onChange(e.target.value)}
+      placeholder={placeholder}
+      className="h-9 px-vos-3 rounded-vos-md bg-vos-bg-elev-3 border border-vos-border-1 text-vos-sm text-vos-text placeholder:text-vos-text-muted focus:outline-none focus:border-vos-accent focus:ring-2 focus:ring-vos-accent/30 transition-colors"
+    />
+  );
+}
+
+function Select({
+  value,
+  onChange,
+  options,
+}: {
+  value: string;
+  onChange: (v: string) => void;
+  options: Array<[string, string]>;
+}) {
+  return (
+    <select
+      value={value}
+      onChange={(e) => onChange(e.target.value)}
+      className="h-9 px-vos-3 rounded-vos-md bg-vos-bg-elev-3 border border-vos-border-1 text-vos-sm text-vos-text focus:outline-none focus:border-vos-accent focus:ring-2 focus:ring-vos-accent/30 transition-colors"
+    >
+      {options.map(([v, l]) => (
+        <option key={v} value={v}>
+          {l}
+        </option>
+      ))}
+    </select>
+  );
+}
+
+// silence unused Severity import in case heatmap added later
+export type _ = Severity;

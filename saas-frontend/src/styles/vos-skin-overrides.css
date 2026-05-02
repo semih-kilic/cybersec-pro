@@ -1,0 +1,224 @@
+/**
+ * 🪟 V20 ONYX — Legacy Skin Override Layer
+ *
+ * Retones the most common Tailwind utility classes used by legacy
+ * pages so unmigrated routes still inherit the Apple-grade Onyx
+ * palette in BOTH dark and light themes.
+ *
+ * Loaded AFTER `@tailwind utilities` in `index.css`. Equal-specificity
+ * selectors win by source order. Scoped to `[data-vos-app]` so the
+ * marketing landing site is untouched.
+ */
+
+/* ───────── BACKGROUNDS: gray ramp → onyx elevations ───────── */
+[data-vos-app] .bg-gray-950,
+[data-vos-app] .bg-gray-925 { background-color: var(--vos-bg) !important; }
+[data-vos-app] .bg-gray-900,
+[data-vos-app] .bg-gray-900\/95,
+[data-vos-app] .bg-gray-900\/90,
+[data-vos-app] .bg-gray-900\/80,
+[data-vos-app] .bg-gray-900\/70,
+[data-vos-app] .bg-gray-900\/60,
+[data-vos-app] .bg-gray-900\/50 { background-color: var(--vos-bg-elev-1) !important; }
+[data-vos-app] .bg-gray-800,
+[data-vos-app] .bg-gray-800\/90,
+[data-vos-app] .bg-gray-800\/80,
+[data-vos-app] .bg-gray-800\/70,
+[data-vos-app] .bg-gray-800\/60,
+[data-vos-app] .bg-gray-800\/50,
+[data-vos-app] .bg-gray-800\/40,
+[data-vos-app] .bg-gray-800\/30 { background-color: var(--vos-bg-elev-2) !important; }
+[data-vos-app] .bg-gray-700,
+[data-vos-app] .bg-gray-700\/80,
+[data-vos-app] .bg-gray-700\/60,
+[data-vos-app] .bg-gray-700\/50,
+[data-vos-app] .bg-gray-700\/40,
+[data-vos-app] .bg-gray-700\/30,
+[data-vos-app] .bg-gray-600 { background-color: var(--vos-bg-elev-3) !important; }
+
+[data-vos-app] .hover\:bg-gray-900:hover { background-color: var(--vos-bg-elev-1) !important; }
+[data-vos-app] .hover\:bg-gray-800:hover,
+[data-vos-app] .hover\:bg-gray-700:hover,
+[data-vos-app] .hover\:bg-gray-700\/50:hover { background-color: var(--vos-bg-elev-3) !important; }
+
+/* ───────── BORDERS: gray ramp → hairline ───────── */
+[data-vos-app] .border-gray-900,
+[data-vos-app] .border-gray-800,
+[data-vos-app] .border-gray-700,
+[data-vos-app] .border-gray-700\/50,
+[data-vos-app] .border-gray-700\/30,
+[data-vos-app] .border-gray-600 { border-color: var(--vos-border-1) !important; }
+[data-vos-app] .hover\:border-gray-700:hover,
+[data-vos-app] .hover\:border-gray-600:hover,
+[data-vos-app] .hover\:border-gray-500:hover { border-color: var(--vos-border-2) !important; }
+[data-vos-app] .divide-gray-700 > :not([hidden]) ~ :not([hidden]),
+[data-vos-app] .divide-gray-800 > :not([hidden]) ~ :not([hidden]) { border-color: var(--vos-border-1) !important; }
+
+/* ───────── TEXT: gray ramp → vos text scale ───────── */
+[data-vos-app] .text-white,
+[data-vos-app] .text-gray-100,
+[data-vos-app] .text-gray-200 { color: var(--vos-text) !important; }
+[data-vos-app] .text-gray-300 { color: var(--vos-text-2) !important; }
+[data-vos-app] .text-gray-400 { color: var(--vos-text-3) !important; }
+[data-vos-app] .text-gray-500,
+[data-vos-app] .text-gray-600 { color: var(--vos-text-muted) !important; }
+[data-vos-app] .hover\:text-white:hover { color: var(--vos-text) !important; }
+[data-vos-app] .hover\:text-gray-300:hover { color: var(--vos-text-2) !important; }
+
+/* ───────── ACCENT (cyan / blue / kali) → Apple system blue ───────── */
+[data-vos-app] .text-cyan-400,
+[data-vos-app] .text-cyan-300,
+[data-vos-app] .text-cyan-500,
+[data-vos-app] .text-blue-400,
+[data-vos-app] .text-blue-500,
+[data-vos-app] .text-blue-600,
+[data-vos-app] .text-sky-400,
+[data-vos-app] .text-sky-500,
+[data-vos-app] .text-kali-blue,
+[data-vos-app] .text-kali-purple { color: var(--vos-accent) !important; }
+
+[data-vos-app] .bg-cyan-500,
+[data-vos-app] .bg-cyan-600,
+[data-vos-app] .bg-blue-500,
+[data-vos-app] .bg-blue-600,
+[data-vos-app] .bg-blue-700,
+[data-vos-app] .bg-sky-500,
+[data-vos-app] .bg-sky-600,
+[data-vos-app] .bg-kali-blue,
+[data-vos-app] .bg-kali-purple { background-color: var(--vos-accent) !important; color: var(--vos-text-on-accent) !important; }
+
+[data-vos-app] .hover\:bg-cyan-600:hover,
+[data-vos-app] .hover\:bg-cyan-700:hover,
+[data-vos-app] .hover\:bg-blue-600:hover,
+[data-vos-app] .hover\:bg-blue-700:hover { background-color: var(--vos-accent-2) !important; }
+
+[data-vos-app] .bg-cyan-500\/10,
+[data-vos-app] .bg-cyan-500\/20,
+[data-vos-app] .bg-blue-500\/10,
+[data-vos-app] .bg-blue-500\/20,
+[data-vos-app] .bg-blue-600\/10,
+[data-vos-app] .bg-blue-600\/20 { background-color: color-mix(in srgb, var(--vos-accent) 15%, transparent) !important; }
+
+[data-vos-app] .border-cyan-500,
+[data-vos-app] .border-cyan-500\/20,
+[data-vos-app] .border-cyan-500\/30,
+[data-vos-app] .border-blue-500,
+[data-vos-app] .border-blue-500\/20,
+[data-vos-app] .border-blue-500\/30,
+[data-vos-app] .border-kali-blue,
+[data-vos-app] .border-kali-purple { border-color: color-mix(in srgb, var(--vos-accent) 30%, transparent) !important; }
+
+[data-vos-app] .ring-cyan-500,
+[data-vos-app] .ring-cyan-500\/20,
+[data-vos-app] .ring-cyan-500\/30,
+[data-vos-app] .ring-blue-500,
+[data-vos-app] .ring-blue-500\/20,
+[data-vos-app] .ring-blue-500\/30 { --tw-ring-color: color-mix(in srgb, var(--vos-accent) 30%, transparent) !important; }
+
+/* legacy kali gradient stops */
+[data-vos-app] .from-kali-blue,
+[data-vos-app] .from-kali-purple {
+  --tw-gradient-from: var(--vos-accent) var(--tw-gradient-from-position) !important;
+  --tw-gradient-to: rgb(0 102 204 / 0) var(--tw-gradient-to-position) !important;
+  --tw-gradient-stops: var(--tw-gradient-from), var(--tw-gradient-to) !important;
+}
+[data-vos-app] .to-kali-blue,
+[data-vos-app] .to-kali-purple {
+  --tw-gradient-to: var(--vos-accent-2) var(--tw-gradient-to-position) !important;
+}
+[data-vos-app] .via-kali-blue,
+[data-vos-app] .via-kali-purple {
+  --tw-gradient-stops: var(--tw-gradient-from), var(--vos-accent) var(--tw-gradient-via-position), var(--tw-gradient-to) !important;
+}
+
+/* ───────── SEMANTIC COLORS → vos semantics ───────── */
+[data-vos-app] .text-red-400,
+[data-vos-app] .text-red-500,
+[data-vos-app] .text-rose-400,
+[data-vos-app] .text-rose-500 { color: var(--vos-danger) !important; }
+[data-vos-app] .bg-red-500,
+[data-vos-app] .bg-red-600 { background-color: var(--vos-danger) !important; color: #fff !important; }
+[data-vos-app] .bg-red-500\/10,
+[data-vos-app] .bg-red-500\/20,
+[data-vos-app] .bg-rose-500\/10 { background-color: color-mix(in srgb, var(--vos-danger) 15%, transparent) !important; }
+[data-vos-app] .border-red-500\/20,
+[data-vos-app] .border-red-500\/30,
+[data-vos-app] .border-rose-500\/30 { border-color: color-mix(in srgb, var(--vos-danger) 30%, transparent) !important; }
+
+[data-vos-app] .text-emerald-400,
+[data-vos-app] .text-emerald-500,
+[data-vos-app] .text-green-400,
+[data-vos-app] .text-green-500 { color: var(--vos-success) !important; }
+[data-vos-app] .bg-emerald-500,
+[data-vos-app] .bg-emerald-600,
+[data-vos-app] .bg-green-500,
+[data-vos-app] .bg-green-600 { background-color: var(--vos-success) !important; color: #fff !important; }
+[data-vos-app] .bg-emerald-500\/10,
+[data-vos-app] .bg-emerald-500\/20,
+[data-vos-app] .bg-green-500\/10,
+[data-vos-app] .bg-green-500\/20 { background-color: color-mix(in srgb, var(--vos-success) 15%, transparent) !important; }
+[data-vos-app] .border-emerald-500\/30,
+[data-vos-app] .border-green-500\/30 { border-color: color-mix(in srgb, var(--vos-success) 30%, transparent) !important; }
+
+[data-vos-app] .text-amber-400,
+[data-vos-app] .text-amber-500,
+[data-vos-app] .text-yellow-400,
+[data-vos-app] .text-yellow-500,
+[data-vos-app] .text-orange-400,
+[data-vos-app] .text-orange-500 { color: var(--vos-warning) !important; }
+[data-vos-app] .bg-amber-500,
+[data-vos-app] .bg-amber-600,
+[data-vos-app] .bg-yellow-500,
+[data-vos-app] .bg-orange-500 { background-color: var(--vos-warning) !important; color: #fff !important; }
+[data-vos-app] .bg-amber-500\/10,
+[data-vos-app] .bg-amber-500\/20,
+[data-vos-app] .bg-yellow-500\/10,
+[data-vos-app] .bg-orange-500\/10 { background-color: color-mix(in srgb, var(--vos-warning) 15%, transparent) !important; }
+[data-vos-app] .border-amber-500\/30,
+[data-vos-app] .border-yellow-500\/30,
+[data-vos-app] .border-orange-500\/30 { border-color: color-mix(in srgb, var(--vos-warning) 30%, transparent) !important; }
+
+[data-vos-app] .text-purple-400,
+[data-vos-app] .text-purple-500,
+[data-vos-app] .text-violet-400,
+[data-vos-app] .text-fuchsia-400 { color: var(--vos-info) !important; }
+[data-vos-app] .bg-purple-500,
+[data-vos-app] .bg-purple-600,
+[data-vos-app] .bg-violet-500,
+[data-vos-app] .bg-violet-600 { background-color: var(--vos-info) !important; color: #fff !important; }
+[data-vos-app] .bg-purple-500\/10,
+[data-vos-app] .bg-purple-500\/20,
+[data-vos-app] .bg-violet-500\/10 { background-color: color-mix(in srgb, var(--vos-info) 15%, transparent) !important; }
+
+/* ───────── HERO GRADIENTS → flat onyx (kill rainbow look) ───────── */
+[data-vos-app] .bg-gradient-to-br.from-gray-900,
+[data-vos-app] .bg-gradient-to-b.from-gray-900,
+[data-vos-app] .bg-gradient-to-tr.from-gray-900,
+[data-vos-app] .bg-gradient-to-br.from-black,
+[data-vos-app] .bg-gradient-to-b.from-black { background: var(--vos-bg) !important; }
+
+/* ───────── INPUTS ───────── */
+[data-vos-app] input.bg-gray-800,
+[data-vos-app] input.bg-gray-700,
+[data-vos-app] textarea.bg-gray-800,
+[data-vos-app] textarea.bg-gray-700,
+[data-vos-app] select.bg-gray-800,
+[data-vos-app] select.bg-gray-700 {
+  background-color: var(--vos-bg-elev-3) !important;
+  border-color: var(--vos-border-1) !important;
+  color: var(--vos-text) !important;
+}
+[data-vos-app] input::placeholder,
+[data-vos-app] textarea::placeholder { color: var(--vos-text-muted) !important; }
+
+[data-vos-app] .focus\:border-kali-blue:focus,
+[data-vos-app] .focus\:border-cyan-500:focus,
+[data-vos-app] .focus\:border-blue-500:focus { border-color: var(--vos-accent) !important; }
+[data-vos-app] .focus\:ring-cyan-500:focus,
+[data-vos-app] .focus\:ring-blue-500:focus,
+[data-vos-app] .focus\:ring-kali-blue:focus { --tw-ring-color: color-mix(in srgb, var(--vos-accent) 40%, transparent) !important; }
+
+/* ───────── Light-mode strengthen hairlines ───────── */
+html.light [data-vos-app] .border-gray-700,
+html.light [data-vos-app] .border-gray-700\/50,
+html.light [data-vos-app] .border-gray-800 { border-color: var(--vos-border-2) !important; }
