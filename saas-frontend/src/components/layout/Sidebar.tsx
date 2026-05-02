@@ -31,7 +31,7 @@ const navigation = [
   { nameKey: 'nav.learning', href: '/dashboard/learning', icon: LearningIcon },
   { nameKey: 'nav.compliance', href: '/dashboard/compliance', icon: ComplianceIcon },
   { nameKey: 'nav.community', href: '/dashboard/community', icon: CommunityIcon },
-  { nameKey: 'nav.strix', href: '/dashboard/strix', icon: StrixIcon },
+  { nameKey: 'nav.cybersecAI', href: '/dashboard/cybersec-ai', icon: CyberSecAIIcon },
   { nameKey: 'nav.scanTemplates', href: '/dashboard/scan-templates', icon: TemplateIcon },
 ];
 
@@ -211,7 +211,7 @@ function CommunityIcon() {
   );
 }
 
-function StrixIcon() {
+function CyberSecAIIcon() {
   return (
     <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />

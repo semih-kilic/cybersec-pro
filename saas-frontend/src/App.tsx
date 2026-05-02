@@ -74,7 +74,7 @@ const SecurityNewsPage = lazy(() => import('./pages/dashboard/SecurityNewsPage')
 const LearningCenterPage = lazy(() => import('./pages/dashboard/LearningCenterPage'));
 const ComplianceDashboardPage = lazy(() => import('./pages/dashboard/ComplianceDashboardPage'));
 const CommunityPage = lazy(() => import('./pages/dashboard/CommunityPage'));
-const StrixPage = lazy(() => import('./pages/dashboard/StrixPage'));
+const CyberSecAIPage = lazy(() => import('./pages/dashboard/CyberSecAIPage'));
 const ScanTemplatesPage = lazy(() => import('./pages/dashboard/ScanTemplatesPage'));
 
 // Legal/GDPR Pages (lazy loaded)
@@ -390,7 +390,8 @@ function AppRoutes() {
         <Route path="learning" element={<LearningCenterPage />} />
         <Route path="compliance" element={<ComplianceDashboardPage />} />
         <Route path="community" element={<CommunityPage />} />
-        <Route path="strix" element={<StrixPage />} />
+        <Route path="cybersec-ai" element={<CyberSecAIPage />} />
+        <Route path="strix" element={<CyberSecAIPage />} />
         <Route path="scan-templates" element={<ScanTemplatesPage />} />
       </Route>
       

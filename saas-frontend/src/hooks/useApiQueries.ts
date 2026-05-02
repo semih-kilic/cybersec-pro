@@ -1855,38 +1855,38 @@ export function useAnalyticsTrend(days = 30) {
 }
 
 // ══════════════════════════════════════════════════
-// PHASE 6 — Strix AI Jobs
+// PHASE 6 — CyberSec Pro AI Jobs
 // ══════════════════════════════════════════════════
 
-export function useStrixJobs() {
+export function useCyberSecAIJobs() {
   const { token } = useAuth();
   return useQuery({
-    queryKey: ['strix-jobs'],
-    queryFn: () => authFetch('/api/v1/strix/jobs', token),
+    queryKey: ["cybersec-ai-jobs"],
+    queryFn: () => authFetch('/api/v1/cybersec-ai/jobs', token),
     staleTime: 30_000,
     refetchInterval: (query) => {
-      const data = query.state.data as { strix_jobs?: Array<{ status: string }> } | undefined;
-      const hasActive = data?.strix_jobs?.some(j => j.status === 'queued' || j.status === 'running');
+      const data = query.state.data as { cybersec_ai_jobs?: Array<{ status: string }> } | undefined;
+      const hasActive = data?.cybersec_ai_jobs?.some(j => j.status === 'queued' || j.status === 'running');
       return hasActive ? 5_000 : false;
     },
   });
 }
 
-export function useCreateStrixJob() {
+export function useCreateCyberSecAIJob() {
   const { token } = useAuth();
   const qc = useQueryClient();
   return useMutation({
     mutationFn: (body: { target: string; target_type?: string; job_type?: string; agents_config?: Record<string, boolean> }) =>
-      authFetch('/api/v1/strix/jobs', token, { method: 'POST', body: JSON.stringify(body) }),
-    onSuccess: () => qc.invalidateQueries({ queryKey: ['strix-jobs'] }),
+      authFetch('/api/v1/cybersec-ai/jobs', token, { method: 'POST', body: JSON.stringify(body) }),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["cybersec-ai-jobs"] }),
   });
 }
 
-export function useStrixJob(jobId: string | null) {
+export function useCyberSecAIJob(jobId: string | null) {
   const { token } = useAuth();
   return useQuery({
-    queryKey: ['strix-job', jobId],
-    queryFn: () => authFetch(`/api/v1/strix/jobs/${jobId}`, token),
+    queryKey: ["cybersec-ai-job", jobId],
+    queryFn: () => authFetch(`/api/v1/cybersec-ai/jobs/${jobId}`, token),
     enabled: !!jobId,
     staleTime: 10_000,
     refetchInterval: (query) => {
@@ -1896,3 +1896,63 @@ export function useStrixJob(jobId: string | null) {
   });
 }
 
+
+// ── CyberSec Pro AI — Intelligent Assistant ─────────────────
+
+export function useAITools() {
+  const { token } = useAuth();
+  return useQuery({
+    queryKey: ['ai-tools'],
+    queryFn: () => authFetch('/api/v1/ai/tools', token),
+    staleTime: 60 * 60_000, // 1h cache
+    enabled: !!token,
+  });
+}
+
+export function useAISuggestTools() {
+  const { token } = useAuth();
+  return useMutation({
+    mutationFn: (body: { query: string; target_type?: string; use_llm?: boolean }) =>
+      authFetch('/api/v1/ai/suggest-tools', token, { method: 'POST', body: JSON.stringify(body) }),
+  });
+}
+
+export function useAIGenerateCommand() {
+  const { token } = useAuth();
+  return useMutation({
+    mutationFn: (body: { tool_id: string; target: string; options?: Record<string, unknown> }) =>
+      authFetch('/api/v1/ai/generate-command', token, { method: 'POST', body: JSON.stringify(body) }),
+  });
+}
+
+export function useAIPlaybook() {
+  const { token } = useAuth();
+  return useMutation({
+    mutationFn: (body: { goal: string; target: string; use_llm?: boolean }) =>
+      authFetch('/api/v1/ai/playbook', token, { method: 'POST', body: JSON.stringify(body) }),
+  });
+}
+
+export function useAIExplain() {
+  const { token } = useAuth();
+  return useMutation({
+    mutationFn: (body: { tool_id?: string; command?: string; use_llm?: boolean }) =>
+      authFetch('/api/v1/ai/explain', token, { method: 'POST', body: JSON.stringify(body) }),
+  });
+}
+
+export function useAIInterpretResults() {
+  const { token } = useAuth();
+  return useMutation({
+    mutationFn: (body: { findings: unknown; use_llm?: boolean }) =>
+      authFetch('/api/v1/ai/interpret-results', token, { method: 'POST', body: JSON.stringify(body) }),
+  });
+}
+
+export function useAIValidateCommand() {
+  const { token } = useAuth();
+  return useMutation({
+    mutationFn: (body: { command: string }) =>
+      authFetch('/api/v1/ai/validate-command', token, { method: 'POST', body: JSON.stringify(body) }),
+  });
+}

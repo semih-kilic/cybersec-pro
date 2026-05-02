@@ -1,10 +1,10 @@
 /**
- * Strix AI Autonomous Pentesting Page
+ * CyberSec Pro AI — Autonomous Pentesting Page
  * Phase 6 — AI-powered vulnerability discovery and verification
  */
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { useStrixJobs, useCreateStrixJob, useStrixJob } from '../../hooks/useApiQueries';
+import { useCyberSecAIJobs, useCreateCyberSecAIJob, useCyberSecAIJob } from '../../hooks/useApiQueries';
 
 const STATUS_COLORS: Record<string, string> = {
   queued:    'bg-yellow-500/20 text-yellow-400',
@@ -13,9 +13,9 @@ const STATUS_COLORS: Record<string, string> = {
   failed:    'bg-red-500/20 text-red-400',
 };
 
-export default function StrixPage() {
-  const { data, isLoading } = useStrixJobs();
-  const createJob = useCreateStrixJob();
+export default function CyberSecAIPage() {
+  const { data, isLoading } = useCyberSecAIJobs();
+  const createJob = useCreateCyberSecAIJob();
   const [selectedJobId, setSelectedJobId] = useState<string | null>(null);
   const [showForm, setShowForm] = useState(false);
   const [form, setForm] = useState({
@@ -30,7 +30,7 @@ export default function StrixPage() {
     id: string; target: string; job_type: string; status: string;
     findings_count: number; poc_verified_count: number;
     started_at?: string; completed_at?: string; created_at: string;
-  }> = ((data as { strix_jobs?: Array<{ id: string; target: string; job_type: string; status: string; findings_count: number; poc_verified_count: number; started_at?: string; completed_at?: string; created_at: string }> }) ?? {})?.strix_jobs ?? [];
+  }> = ((data as { cybersec_ai_jobs?: Array<{ id: string; target: string; job_type: string; status: string; findings_count: number; poc_verified_count: number; started_at?: string; completed_at?: string; created_at: string }> }) ?? {})?.cybersec_ai_jobs ?? [];
 
   const handleCreate = async () => {
     setFormErr('');
@@ -55,9 +55,9 @@ export default function StrixPage() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold text-white flex items-center gap-2">
-            <span className="text-3xl">🦅</span> Strix AI
+            <span className="text-3xl">�</span> CyberSec Pro AI
           </h1>
-          <p className="text-gray-400 text-sm mt-1">Autonomous AI-powered penetration testing and vulnerability verification</p>
+          <p className="text-gray-400 text-sm mt-1">Autonomous AI-powered penetration testing, vulnerability discovery & PoC verification</p>
         </div>
         <button
           onClick={() => setShowForm(true)}
@@ -93,7 +93,7 @@ export default function StrixPage() {
               initial={{ scale: 0.95, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.95, opacity: 0 }}
               className="bg-gray-900 border border-gray-700 rounded-xl p-6 w-full max-w-lg space-y-4"
             >
-              <h2 className="text-xl font-bold text-white">🦅 New Strix AI Job</h2>
+              <h2 className="text-xl font-bold text-white">🤖 New CyberSec Pro AI Job</h2>
 
               <div>
                 <label className="block text-gray-400 text-sm mb-1">Target *</label>
@@ -188,7 +188,7 @@ export default function StrixPage() {
         {!isLoading && jobs.length === 0 && (
           <div className="p-8 bg-gray-800 rounded-xl border border-gray-700 text-center">
             <div className="text-4xl mb-3">🦅</div>
-            <p className="text-white font-medium">No Strix AI jobs yet</p>
+            <p className="text-white font-medium">No CyberSec Pro AI jobs yet</p>
             <p className="text-gray-400 text-sm mt-1">Launch your first autonomous pentest to discover vulnerabilities automatically.</p>
           </div>
         )}
@@ -229,7 +229,7 @@ export default function StrixPage() {
   );
 }
 
-type StrixJobDetail = {
+type CyberSecAIJobDetail = {
   id: string;
   target: string;
   target_type: string;
@@ -244,10 +244,10 @@ type StrixJobDetail = {
 };
 
 function JobDetail({ jobId }: { jobId: string }) {
-  const { data: rawData, isLoading } = useStrixJob(jobId);
+  const { data: rawData, isLoading } = useCyberSecAIJob(jobId);
   if (isLoading) return <div className="mt-4 text-gray-500 text-sm">Loading details…</div>;
   if (!rawData) return null;
-  const data = rawData as StrixJobDetail;
+  const data = rawData as CyberSecAIJobDetail;
 
   return (
     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="mt-4 pt-4 border-t border-gray-700 space-y-3">
