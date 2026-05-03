@@ -499,4 +499,12 @@ r#"CREATE TABLE IF NOT EXISTS feature_flags (
     created_at TIMESTAMP DEFAULT NOW(),
     updated_at TIMESTAMP DEFAULT NOW()
 )"#,
+
+// ── Phase 18.6: trial-abuse prevention ──────────────────────────────────
+// Normalized email = lowercase, +tag stripped, gmail dots removed.
+// Used to block the same person registering twice via aliases.
+r#"ALTER TABLE users ADD COLUMN IF NOT EXISTS email_normalized TEXT"#,
+r#"ALTER TABLE users ADD COLUMN IF NOT EXISTS signup_ip TEXT"#,
+"CREATE INDEX IF NOT EXISTS idx_users_email_normalized ON users(email_normalized)",
+"CREATE INDEX IF NOT EXISTS idx_users_signup_ip ON users(signup_ip)",
 ];

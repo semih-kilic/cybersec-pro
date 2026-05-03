@@ -35,7 +35,7 @@ pub struct PlanConfig {
 pub fn get_plan_configs() -> HashMap<&'static str, PlanConfig> {
     let mut plans = HashMap::new();
 
-    // Trial: 14 days, 3 scans/day, 1 concurrent, all tools accessible
+    // Trial: 3 days, 3 scans/day, 1 concurrent, all tools accessible
     plans.insert("trial", PlanConfig {
         level: 0,
         price_eur: 0,
@@ -45,7 +45,7 @@ pub fn get_plan_configs() -> HashMap<&'static str, PlanConfig> {
         max_projects: 1,
         max_team_members: 1,
         max_agents: 1,
-        trial_days: 14,
+        trial_days: 3,
         features: PlanFeatures {
             basic_reports: true,
             pdf_reports: false,

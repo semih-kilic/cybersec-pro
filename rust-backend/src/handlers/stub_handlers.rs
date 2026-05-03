@@ -2561,9 +2561,28 @@ pub async fn usage_stats(
     ).bind(&org_id).fetch_optional(&state.db).await.ok().flatten().unwrap_or((None,));
     let configs = crate::services::plan::get_plan_configs();
     let cfg = configs.get(plan.0.as_deref().unwrap_or("trial"));
-    let scans_limit = cfg.map(|c| c.scans_per_month).unwrap_or(10_000);
-    let storage_limit_mb = cfg.map(|c| c.storage_gb as i64 * 1024).unwrap_or(50_000);
-    let api_limit = cfg.map(|c| c.api_calls_per_month).unwrap_or(100_000);
+    // Use monthly when set, otherwise project from daily * 30. 0 in either
+    // means "unlimited" — surface as -1 so the frontend renders as ∞.
+    let scans_limit: i64 = cfg.map(|c| {
+        if c.monthly_scan_limit > 0 { c.monthly_scan_limit as i64 }
+        else if c.daily_scan_limit > 0 { c.daily_scan_limit as i64 * 30 }
+        else { -1 }
+    }).unwrap_or(10_000);
+    // Storage / api limits are not modelled per-plan yet; pick sane defaults.
+    let storage_limit_mb: i64 = match plan.0.as_deref().unwrap_or("trial") {
+        "trial"      => 1_024,
+        "starter"    => 10_240,
+        "pro"        => 51_200,
+        "enterprise" => -1,
+        _            => 10_240,
+    };
+    let api_limit: i64 = match plan.0.as_deref().unwrap_or("trial") {
+        "trial"      => 5_000,
+        "starter"    => 50_000,
+        "pro"        => 500_000,
+        "enterprise" => -1,
+        _            => 50_000,
+    };
 
     Json(json!({
         "scans_used": scans_used.0,

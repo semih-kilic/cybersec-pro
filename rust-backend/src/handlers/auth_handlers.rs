@@ -73,6 +73,26 @@ pub fn validate_email(email: &str) -> bool {
     }).unwrap_or(false)
 }
 
+/// Collapse aliases of the same mailbox to a single canonical key.
+/// - lowercases everything
+/// - strips `+tag` suffix from the local part for every provider
+/// - removes `.` from the local part for gmail.com / googlemail.com
+///   (Google ignores dots) and rewrites googlemail.com → gmail.com
+/// Used to block one human from claiming multiple trial accounts.
+pub fn normalize_email(email: &str) -> String {
+    let lower = email.trim().to_lowercase();
+    let Some(at) = lower.find('@') else { return lower; };
+    let (local_raw, domain_with_at) = lower.split_at(at);
+    let domain = &domain_with_at[1..];
+    // strip +tag
+    let local = local_raw.split('+').next().unwrap_or(local_raw);
+    let (local_clean, domain_clean): (String, &str) = match domain {
+        "gmail.com" | "googlemail.com" => (local.replace('.', ""), "gmail.com"),
+        _ => (local.to_string(), domain),
+    };
+    format!("{}@{}", local_clean, domain_clean)
+}
+
 // ── Register ───────────────────────────────────────────────
 
 #[derive(Deserialize)]
@@ -92,7 +112,10 @@ pub async fn register(
     // Rate limit check
     let ip = headers.get("x-forwarded-for")
         .and_then(|v| v.to_str().ok())
-        .unwrap_or("unknown");
+        .and_then(|s| s.split(',').next())
+        .map(|s| s.trim())
+        .unwrap_or("unknown")
+        .to_string();
     if state.rate_limiter.is_limited(&format!("register:{}", ip), 3, std::time::Duration::from_secs(60)) {
         return (StatusCode::TOO_MANY_REQUESTS, Json(json!({"error": "Too many registration attempts"}))).into_response();
     }
@@ -109,15 +132,46 @@ pub async fn register(
         return (StatusCode::BAD_REQUEST, Json(json!({"error": "Password must be at least 8 characters"}))).into_response();
     }
 
-    // Check existing
-    let existing: Option<(String,)> = sqlx::query_as("SELECT id FROM users WHERE email = $1")
-        .bind(&email)
-        .fetch_optional(&state.db)
-        .await
-        .unwrap_or(None);
+    // Trial-abuse prevention: normalize the email so aliases like
+    //   john.doe+test@gmail.com  and  johndoe@gmail.com
+    // collapse to a single key. Reject if anyone already signed up with the
+    // same normalized address — trial gives full access, so each human gets
+    // exactly one trial.
+    let email_normalized = normalize_email(&email);
+
+    // Check existing — both raw and normalized.
+    let existing: Option<(String,)> = sqlx::query_as(
+        "SELECT id FROM users WHERE email = $1 OR email_normalized = $2 LIMIT 1"
+    )
+    .bind(&email).bind(&email_normalized)
+    .fetch_optional(&state.db)
+    .await
+    .unwrap_or(None);
 
     if existing.is_some() {
-        return (StatusCode::CONFLICT, Json(json!({"error": "Email already registered"}))).into_response();
+        return (StatusCode::CONFLICT, Json(json!({
+            "error": "An account already exists for this email. Trial is one-per-person — please log in or upgrade.",
+            "code": "EMAIL_OR_ALIAS_TAKEN"
+        }))).into_response();
+    }
+
+    // Block obvious multi-account abuse from the same source IP. Allow up to
+    // 2 signups per /32 in 30 days (covers legit family/colleague case);
+    // reject the 3rd. `unknown` IPs (no XFF header) skip this check so we
+    // don't lock out the test environment.
+    if ip != "unknown" {
+        let recent_signups: (i64,) = sqlx::query_as(
+            "SELECT COUNT(*) FROM users \
+             WHERE signup_ip = $1 AND created_at > NOW() - INTERVAL '30 days'"
+        )
+        .bind(&ip)
+        .fetch_one(&state.db).await.unwrap_or((0,));
+        if recent_signups.0 >= 2 {
+            return (StatusCode::TOO_MANY_REQUESTS, Json(json!({
+                "error": "Too many trial signups from this network. Contact sales for a team plan.",
+                "code": "TRIAL_LIMIT_PER_NETWORK"
+            }))).into_response();
+        }
     }
 
     // Hash password before transaction
@@ -152,10 +206,10 @@ pub async fn register(
     }
 
     if let Err(e) = sqlx::query(
-        "INSERT INTO users (id, email, password_hash, first_name, last_name, role, organization_id, email_verified, verification_token, verification_sent_at)
-         VALUES ($1, $2, $3, $4, $5, 'admin', $6, FALSE, $7, CURRENT_TIMESTAMP)"
+        "INSERT INTO users (id, email, email_normalized, signup_ip, password_hash, first_name, last_name, role, organization_id, email_verified, verification_token, verification_sent_at)
+         VALUES ($1, $2, $3, $4, $5, $6, $7, 'admin', $8, FALSE, $9, CURRENT_TIMESTAMP)"
     )
-    .bind(&user_id).bind(&email).bind(&pw_hash)
+    .bind(&user_id).bind(&email).bind(&email_normalized).bind(&ip).bind(&pw_hash)
     .bind(&body.first_name).bind(&body.last_name)
     .bind(&org_id).bind(&verification_token)
     .execute(&mut *tx).await {
