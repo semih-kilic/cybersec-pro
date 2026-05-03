@@ -1023,34 +1023,41 @@ pub async fn start_scan(
     let scan_id_clone = scan_id.clone();
     let scan_tx = state.scan_output_tx.clone();
 
-    // Look up agent SSH info for remote execution
-    let agent_ssh: Option<AgentSshInfo> = if let Some(ref aid) = body.agent_id {
-        let agent_row: Option<(Option<String>, Option<i32>, Option<String>, Option<String>, Option<String>)> = sqlx::query_as(
-            "SELECT ssh_host, ssh_port, ssh_username, ssh_key_path, ssh_fingerprint FROM agents WHERE id = $1 AND organization_id = $2"
+    // Look up agent connection_type + SSH info. Reverse-tunnel agents run jobs
+    // by long-polling the backend; SSH agents are dialled directly.
+    let agent_meta: Option<(Option<String>, Option<String>, Option<i32>, Option<String>, Option<String>, Option<String>)> = if let Some(ref aid) = body.agent_id {
+        sqlx::query_as(
+            "SELECT connection_type, ssh_host, ssh_port, ssh_username, ssh_key_path, ssh_fingerprint FROM agents WHERE id = $1 AND organization_id = $2"
         )
         .bind(aid)
         .bind(&org_id)
         .fetch_optional(&state.db)
         .await
-        .unwrap_or(None);
-        agent_row.and_then(|(host, port, user, key, fingerprint)| {
-            match (host, user) {
+        .unwrap_or(None)
+    } else {
+        None
+    };
+    let connection_type = agent_meta.as_ref().and_then(|m| m.0.clone()).unwrap_or_else(|| "direct".into());
+    let is_reverse_tunnel = connection_type == "reverse_tunnel";
+    let agent_ssh: Option<AgentSshInfo> = if is_reverse_tunnel {
+        None
+    } else {
+        agent_meta.as_ref().and_then(|(_ct, host, port, user, key, fingerprint)| {
+            match (host.clone(), user.clone()) {
                 (Some(h), Some(u)) if !h.is_empty() && !u.is_empty() => Some(AgentSshInfo {
                     ssh_host: h,
                     ssh_port: port.unwrap_or(22),
                     ssh_username: u,
-                    ssh_key_path: key,
-                    ssh_fingerprint: fingerprint,
+                    ssh_key_path: key.clone(),
+                    ssh_fingerprint: fingerprint.clone(),
                 }),
                 _ => None,
             }
         })
-    } else {
-        None
     };
 
-    // Update agent status to busy if dispatching remotely
-    if agent_ssh.is_some() {
+    // Update agent status to busy if dispatching remotely (SSH or reverse-tunnel).
+    if (agent_ssh.is_some() || is_reverse_tunnel) && body.agent_id.is_some() {
         if let Some(ref aid) = body.agent_id {
             let _ = sqlx::query("UPDATE agents SET status = 'busy', active_scans = COALESCE(active_scans, 0) + 1 WHERE id = $1")
                 .bind(aid)
@@ -1064,6 +1071,108 @@ pub async fn start_scan(
     let user_id_for_spawn = auth.user_id.clone();
     let tool_name_for_notify = tool.name.clone();
     let target_for_notify = target.to_string();
+
+    // ── Reverse-tunnel branch ────────────────────────────────────────
+    // Queue an agent_job and spawn a poller that finalizes the scan when the
+    // agent posts its result back. Skip the in-process executor entirely.
+    if is_reverse_tunnel {
+        let aid = body.agent_id.clone().unwrap_or_default();
+        let (program, args) = crate::scan_engine::tool_registry::build_command(
+            &tool.name, target, command_template.as_deref()
+        ).unwrap_or_else(|_| (tool.name.clone(), vec![target.to_string()]));
+        // shell-escape each arg defensively (single-quote, escape internal quotes).
+        let mut parts: Vec<String> = Vec::with_capacity(args.len() + 1);
+        parts.push(program);
+        for a in &args {
+            let escaped = a.replace('\'', "'\\''");
+            parts.push(format!("'{}'", escaped));
+        }
+        let cmd_string = parts.join(" ");
+        let job_id = uuid::Uuid::new_v4().to_string();
+        let _ = sqlx::query(
+            "INSERT INTO agent_jobs (id, agent_id, organization_id, scan_id, tool_id, command, timeout_seconds, status) \
+             VALUES ($1, $2, $3, $4, $5, $6, $7, 'pending')"
+        )
+        .bind(&job_id)
+        .bind(&aid)
+        .bind(&org_id)
+        .bind(&scan_id)
+        .bind(&tool.name)
+        .bind(&cmd_string)
+        .bind(1800_i32)
+        .execute(&state.db)
+        .await;
+
+        let db_poll = state.db.clone();
+        let scan_tx_poll = state.scan_output_tx.clone();
+        let scan_id_poll = scan_id.clone();
+        let job_id_poll = job_id.clone();
+        let org_for_finalize = org_id.clone();
+        let user_for_finalize = auth.user_id.clone();
+        let tool_for_finalize = tool.name.clone();
+        let target_for_finalize = target.to_string();
+        let agent_for_finalize = body.agent_id.clone();
+        tokio::spawn(async move {
+            // Poll up to 30 minutes (1800s) at 2s intervals.
+            for _ in 0..900u32 {
+                tokio::time::sleep(std::time::Duration::from_secs(2)).await;
+                let row: Option<(String, Option<i32>, Option<String>, Option<String>)> = sqlx::query_as(
+                    "SELECT status, exit_code, stdout, stderr FROM agent_jobs WHERE id = $1"
+                )
+                .bind(&job_id_poll)
+                .fetch_optional(&db_poll)
+                .await
+                .ok()
+                .flatten();
+                if let Some((status, exit, stdout, stderr)) = row {
+                    if matches!(status.as_str(), "completed" | "failed" | "timeout" | "cancelled") {
+                        let combined = match (stdout, stderr) {
+                            (Some(o), Some(e)) if !e.is_empty() => format!("{o}\n--- stderr ---\n{e}"),
+                            (Some(o), _) => o,
+                            (_, Some(e)) => e,
+                            _ => String::new(),
+                        };
+                        let final_status = if status == "completed" && exit == Some(0) { "completed" } else { "failed" };
+                        let err_log = if final_status == "failed" { Some(format!("agent job status={status} exit={exit:?}")) } else { None };
+                        finalize_scan(
+                            &db_poll, &scan_tx_poll, &scan_id_poll, final_status,
+                            &combined, None, err_log,
+                            &org_for_finalize, &user_for_finalize,
+                            &tool_for_finalize, &target_for_finalize,
+                            agent_for_finalize.clone(),
+                        ).await;
+                        return;
+                    }
+                }
+            }
+            // Timed out waiting for agent — mark scan failed.
+            finalize_scan(
+                &db_poll, &scan_tx_poll, &scan_id_poll, "failed",
+                "", None, Some("agent job poll timeout (30m)".to_string()),
+                &org_for_finalize, &user_for_finalize,
+                &tool_for_finalize, &target_for_finalize,
+                agent_for_finalize,
+            ).await;
+        });
+
+        let exec_mode = "reverse_tunnel";
+        return (StatusCode::CREATED, Json(json!({
+            "success": true,
+            "message": "Scan queued for reverse-tunnel agent",
+            "scan_id": scan_id,
+            "command": cmd_string,
+            "status": "running",
+            "execution_mode": exec_mode,
+            "engine": "agent-rt",
+            "job_id": job_id,
+            "scan": {
+                "id": scan_id,
+                "tool": tool.name,
+                "target": target,
+                "status": "running"
+            }
+        }))).into_response();
+    }
 
     if let Some(metadata) = scan_engine_metadata.clone() {
         tokio::spawn(monitor_scan_engine(
