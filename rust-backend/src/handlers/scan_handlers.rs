@@ -999,7 +999,26 @@ pub async fn start_scan(
     // Execute scan asynchronously
     let db = state.db.clone();
     let tool_name = tool.name.clone();
-    let command_template = tool.command_template.clone();
+    // Zero-code: substitute user-supplied parameters into the command_template
+    // (placeholders like {url}, {wordlist}, {lhost}, {lport}, {user}, etc.).
+    // Built-in {target}/{host}/{url}/{ip}/{domain} fall through to parse_template.
+    let command_template = {
+        let mut tpl = tool.command_template.clone();
+        if let (Some(t), Some(obj)) = (tpl.as_mut(), body.parameters.as_ref().and_then(|p| p.as_object())) {
+            for (k, v) in obj {
+                if k == "target" { continue; } // target handled separately
+                let val = v.as_str().map(String::from).unwrap_or_else(|| v.to_string());
+                // Defensive: reject newlines/backticks/$() — never let a param introduce shell metachars.
+                let safe = val.replace(['\n', '\r', '`'], "");
+                if safe.contains("$(") || safe.contains("&&") || safe.contains("||") || safe.contains(';') || safe.contains('|') {
+                    tracing::warn!("scan param '{}' rejected (shell metachars)", k);
+                    continue;
+                }
+                *t = t.replace(&format!("{{{}}}", k), &safe);
+            }
+        }
+        tpl
+    };
     let target_owned = target.to_string();
     let scan_id_clone = scan_id.clone();
     let scan_tx = state.scan_output_tx.clone();
