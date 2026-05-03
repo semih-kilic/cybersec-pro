@@ -314,6 +314,10 @@ fn build_router(state: Arc<AppState>) -> Router {
             "/api/v1/agents/:agent_id/jobs",
             post(agent_handlers::queue_agent_job),
         )
+        .route(
+            "/api/v1/agents/jobs",
+            get(agent_handlers::list_agent_jobs),
+        )
         // ── Billing / Subscriptions ───────────────────────────
         .route(
             "/api/v1/billing/subscription",

@@ -110,6 +110,19 @@ Reverse-tunnel agents execute scans through an `agent_jobs` queue (`migrations/0
 4. A 30-min poller in `start_scan` (900 × 2 s) calls `finalize_scan` with the combined output.
 5. `cancel_scan` flips queued/running jobs to `cancelled` so the agent drops them on the next poll. `finalize_scan` only updates rows in `('pending','running')` so a late agent result cannot resurrect a cancelled scan.
 
+### CyberSec AI worker resilience
+
+`services/cybersec_ai_worker.rs::run()` runs an **orphan sweeper** alongside the 6 s polling loop:
+
+- On startup: `sweep_orphans(db, true)` — any `cybersec_ai_jobs` row left in `running` or `cancelling` (i.e. abandoned by a previous backend process) is force-finalised to `cancelled` with `results.cancel_reason = 'orphaned by worker restart'`.
+- Every tick: `sweep_orphans(db, false)` — any `cancelling` row whose `started_at < NOW() - INTERVAL '2 minutes'` is force-cancelled with `cancel_reason = 'force-cancelled after grace period'`. Covers the case where an inner shell command swallowed the cancel signal.
+
+Combined with the in-process cancel flag (which already tears jobs down within ~5 s for cooperative cancels), this guarantees no row ever stays in the `cancelling` state for more than ~2 minutes, even across crashes and restarts.
+
+### Multilingual tool suggestion
+
+`handlers/ai_handlers.rs::search_tools()` runs `translate_query_to_english(query)` before scoring. The translator is an additive keyword map (~40 Turkish + a handful of DE/ES/FR pentest nouns onto the English vocab — başla→start, araç→tool, tarama→scan, zafiyet→vulnerability, kablosuz→wireless, parola→password, oltalama→phishing, sızma→pentest, ağ→network, etc.). The original query tokens are preserved; the translated tokens are appended, so mixed-language and English-only queries continue to work. When the scoring pass produces zero matches, the handler returns a curated starter set `[subfinder, httpx, nmap, nuclei, nikto, ffuf]` (optionally filtered by `target_type`) so users always receive an actionable suggestion.
+
 ## Agent Connectivity
 
 Two transports are supported per device, selected in the Add Device wizard:

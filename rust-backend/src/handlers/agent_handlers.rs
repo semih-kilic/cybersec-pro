@@ -1,5 +1,5 @@
 use axum::{
-    extract::{Path, State},
+    extract::{Path, Query, State},
     http::{header, HeaderMap, StatusCode},
     response::IntoResponse,
     Json,
@@ -953,6 +953,99 @@ pub async fn queue_agent_job(
 
     match res {
         Ok(_) => (StatusCode::CREATED, Json(json!({"job_id": job_id, "status":"pending"}))).into_response(),
+        Err(e) => (StatusCode::INTERNAL_SERVER_ERROR, Json(json!({"error": e.to_string()}))).into_response(),
+    }
+}
+
+#[derive(Deserialize)]
+pub struct ListJobsQuery {
+    #[serde(default)]
+    pub agent_id: Option<String>,
+    #[serde(default)]
+    pub status: Option<String>,
+    #[serde(default = "default_jobs_limit")]
+    pub limit: i64,
+}
+
+fn default_jobs_limit() -> i64 { 50 }
+
+/// GET /api/v1/agents/jobs — recent reverse-tunnel agent jobs for the
+/// caller's organization. Optional filters: agent_id, status, limit (1..=200).
+pub async fn list_agent_jobs(
+    State(state): State<Arc<AppState>>,
+    auth: AuthUser,
+    Query(q): Query<ListJobsQuery>,
+) -> impl IntoResponse {
+    let org_id = match &auth.org_id {
+        Some(o) => o.clone(),
+        None => return (StatusCode::FORBIDDEN, Json(json!({"error":"Org context required"}))).into_response(),
+    };
+    let limit = q.limit.clamp(1, 200);
+
+    // Build dynamic WHERE — keep parameter binding ordered.
+    let mut sql = String::from(
+        "SELECT j.id, j.agent_id, COALESCE(a.name, j.agent_id) AS agent_name, \
+                j.scan_id, j.tool_id, j.command, j.status, j.exit_code, \
+                j.timeout_seconds, \
+                CAST(j.created_at AS TEXT)   AS created_at, \
+                CAST(j.claimed_at AS TEXT)   AS claimed_at, \
+                CAST(j.completed_at AS TEXT) AS completed_at, \
+                COALESCE(LENGTH(j.stdout), 0)::int AS stdout_bytes, \
+                COALESCE(LENGTH(j.stderr), 0)::int AS stderr_bytes \
+         FROM agent_jobs j \
+         LEFT JOIN agents a ON a.id = j.agent_id \
+         WHERE j.organization_id = $1"
+    );
+    let mut idx = 2;
+    if q.agent_id.is_some() { sql.push_str(&format!(" AND j.agent_id = ${}", idx)); idx += 1; }
+    if q.status.is_some()   { sql.push_str(&format!(" AND j.status   = ${}", idx)); idx += 1; }
+    sql.push_str(&format!(" ORDER BY j.created_at DESC LIMIT ${}", idx));
+
+    let mut query = sqlx::query_as::<_, (
+        String, String, String,
+        Option<String>, Option<String>, String, String, Option<i32>, i32,
+        Option<String>, Option<String>, Option<String>,
+        i32, i32,
+    )>(&sql).bind(&org_id);
+    if let Some(a) = &q.agent_id { query = query.bind(a); }
+    if let Some(s) = &q.status   { query = query.bind(s); }
+    query = query.bind(limit);
+
+    match query.fetch_all(&state.db).await {
+        Ok(rows) => {
+            let jobs: Vec<_> = rows.into_iter().map(|(
+                id, agent_id, agent_name, scan_id, tool_id, command, status, exit_code, timeout_seconds,
+                created_at, claimed_at, completed_at, stdout_bytes, stderr_bytes,
+            )| json!({
+                "id": id,
+                "agent_id": agent_id,
+                "agent_name": agent_name,
+                "scan_id": scan_id,
+                "tool_id": tool_id,
+                "command": command.chars().take(500).collect::<String>(),
+                "status": status,
+                "exit_code": exit_code,
+                "timeout_seconds": timeout_seconds,
+                "created_at": created_at,
+                "claimed_at": claimed_at,
+                "completed_at": completed_at,
+                "stdout_bytes": stdout_bytes,
+                "stderr_bytes": stderr_bytes,
+            })).collect();
+
+            // Quick org-scoped status counters for the dashboard header.
+            let counts: Vec<(String, i64)> = sqlx::query_as(
+                "SELECT status, COUNT(*)::bigint FROM agent_jobs WHERE organization_id = $1 GROUP BY status"
+            )
+            .bind(&org_id)
+            .fetch_all(&state.db)
+            .await
+            .unwrap_or_default();
+            let mut by_status = serde_json::Map::new();
+            for (s, c) in counts { by_status.insert(s, json!(c)); }
+
+            Json(json!({"jobs": jobs, "by_status": by_status, "limit": limit})).into_response()
+        }
         Err(e) => (StatusCode::INTERNAL_SERVER_ERROR, Json(json!({"error": e.to_string()}))).into_response(),
     }
 }
