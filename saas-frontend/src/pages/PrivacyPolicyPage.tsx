@@ -34,7 +34,16 @@ export default function PrivacyPolicyPage() {
               <p>{t('privacy.section1Body', 'CyberSec Pro ("we", "our", "us") is committed to protecting your personal data and respecting your privacy. This Privacy Policy explains how we collect, use, store, and protect your personal information in compliance with the General Data Protection Regulation (GDPR) (EU) 2016/679.')}</p>
               <p className="mt-2">Our platform is operated by Semih Kılıç. For data protection inquiries, contact our Data Protection Officer at <a href="mailto:cybersecpro@semihkilic.com" className="text-cyan-400 hover:underline">cybersecpro@semihkilic.com</a>.</p>
             </section>
-
+            <section className="rounded-lg border border-emerald-500/30 bg-emerald-500/5 p-5">
+              <h2 className="text-2xl font-semibold text-emerald-300 mb-3 flex items-center gap-2">🔒 Zero-knowledge credential handling</h2>
+              <ul className="list-disc pl-5 space-y-2">
+                <li><strong>Credentials never persisted.</strong> SSH keys, passwords, API keys and tokens you provide for a tool run are forwarded to the executing agent in-memory and discarded the moment the job ends. They are not written to our database, logs, backups or analytics pipelines.</li>
+                <li><strong>Bring-your-own vault.</strong> You can plug in HashiCorp Vault, AWS/GCP/Azure Secrets Manager or 1Password Connect; we will fetch the secret per-run and never store the resolved value.</li>
+                <li><strong>Encryption in transit.</strong> All agent traffic uses TLS 1.3. Reverse-tunnel agents authenticate with short-lived enrollment tokens scoped to a single device.</li>
+                <li><strong>Output retention is yours to control.</strong> Scan output is retained only as long as you keep the report; deleting a report wipes the associated raw output and any cached artifacts.</li>
+                <li><strong>No third-party telemetry on credentials.</strong> Sentry, PostHog and other observability tools we use are configured to scrub fields matching <code className="text-emerald-200">pass|secret|token|api[_-]?key|credential</code>.</li>
+              </ul>
+            </section>
             <section>
               <h2 className="text-2xl font-semibold text-white mb-3">{t('privacy.section2Title', '2. Data Controller')}</h2>
               <p>{t('privacy.section2Body', 'The data controller responsible for your personal data is:')}</p>

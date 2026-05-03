@@ -30,7 +30,10 @@ interface ToolParameter {
   type: 'text' | 'number' | 'select' | 'boolean' | 'textarea' | 'file';
   required: boolean; default?: string; placeholder?: string;
   options?: string[]; description?: string; group?: string;
+  secret?: boolean;
 }
+
+const SECRET_NAME_RE = /pass|secret|token|api[_-]?key|credential/i;
 
 interface Tool {
   id: string; name: string; slug?: string; description: string;
@@ -125,17 +128,21 @@ export function ToolDetailPage() {
     // Hackingtool seed shape: { form: [{name,label,type,required,placeholder,default,options}], danger_level, target_types }
     if (tool.parameters && typeof tool.parameters === 'object' && Array.isArray((tool.parameters as any).form)) {
       const form = (tool.parameters as any).form as Array<any>;
-      return form.map((f) => ({
-        name: f.name,
-        flag: '', // Backend handles substitution via command_template {placeholders}
-        type: (f.type === 'url' || f.type === 'email' || f.type === 'password') ? 'text' : (f.type as ToolParameter['type']),
-        required: !!f.required,
-        default: f.default !== undefined ? String(f.default) : undefined,
-        placeholder: f.placeholder || (f.default !== undefined ? String(f.default) : ''),
-        options: f.options,
-        description: f.label || f.name,
-        group: 'Parameters',
-      }));
+      return form.map((f) => {
+        const isSecret = f.type === 'password' || SECRET_NAME_RE.test(String(f.name || ''));
+        return {
+          name: f.name,
+          flag: '', // Backend handles substitution via command_template {placeholders}
+          type: (f.type === 'url' || f.type === 'email' || f.type === 'password') ? 'text' : (f.type as ToolParameter['type']),
+          required: !!f.required,
+          default: f.default !== undefined ? String(f.default) : undefined,
+          placeholder: f.placeholder || (f.default !== undefined ? String(f.default) : ''),
+          options: f.options,
+          description: f.label || f.name,
+          group: 'Parameters',
+          secret: isSecret,
+        } as ToolParameter;
+      });
     }
     if (tool.parameters && typeof tool.parameters === 'object') {
       return Object.entries(tool.parameters).map(([key, param]: [string, any]) => ({
@@ -396,7 +403,14 @@ export function ToolDetailPage() {
                           <label className="block text-sm text-gray-400 mb-1.5">
                             {param.name}{param.required && <span className="text-red-500 ml-1">*</span>}
                           </label>
-                          {param.type === 'text' && <input type="text" placeholder={param.placeholder} value={(paramValues[param.name] as string) || ''} onChange={(e) => handleParamChange(param.name, e.target.value)} disabled={isScanning} className="w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:border-kali-blue transition disabled:opacity-50" />}
+                          {param.type === 'text' && <input type={param.secret ? 'password' : 'text'} autoComplete={param.secret ? 'new-password' : 'off'} placeholder={param.placeholder} value={(paramValues[param.name] as string) || ''} onChange={(e) => handleParamChange(param.name, e.target.value)} disabled={isScanning} className="w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:border-kali-blue transition disabled:opacity-50" />}
+                          {param.secret && (
+                            <p className="mt-1 flex items-center gap-1 text-[11px] text-emerald-400">
+                              <span>🔒</span>
+                              <span>Zero-knowledge — credentials are sent to your agent only and are never persisted on our servers.</span>
+                              <Link to="/dashboard/privacy" className="underline hover:text-emerald-300">Learn&nbsp;more</Link>
+                            </p>
+                          )}
                           {param.type === 'number' && <input type="number" placeholder={param.placeholder} value={(paramValues[param.name] as string) || ''} onChange={(e) => handleParamChange(param.name, e.target.value)} disabled={isScanning} className="w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:border-kali-blue transition disabled:opacity-50" />}
                           {param.type === 'select' && (
                             <select value={(paramValues[param.name] as string) || ''} onChange={(e) => handleParamChange(param.name, e.target.value)} disabled={isScanning} className="w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded-lg text-white focus:outline-none focus:border-kali-blue transition disabled:opacity-50">

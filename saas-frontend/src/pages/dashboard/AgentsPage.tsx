@@ -52,6 +52,9 @@ import {
   Power,
   PlayCircle,
   Clock,
+  Download,
+  Copy,
+  RefreshCw,
 } from 'lucide-react';
 import {
   PageHeader,
@@ -130,6 +133,7 @@ const CONNECTION_TYPES: {
   desc: string;
 }[] = [
   { id: 'ssh', name: 'SSH', icon: TerminalIcon, desc: 'Linux, macOS, routers, firewalls' },
+  { id: 'reverse_tunnel', name: 'Reverse-tunnel agent', icon: Download, desc: 'You install our binary; works behind NAT/firewall, no inbound port required' },
   { id: 'winrm', name: 'WinRM', icon: AppWindow, desc: 'Windows servers and workstations' },
   { id: 'snmp', name: 'SNMP', icon: Network, desc: 'Switches, routers, printers' },
   { id: 'docker', name: 'Docker', icon: Container, desc: 'Container environments' },
@@ -427,17 +431,30 @@ function AddDeviceWizard({
   ];
   const currentIdx = steps.findIndex((s) => s.id === step);
 
+  const isReverseTunnel = connType === 'reverse_tunnel';
   const canNext = () => {
     if (step === 'type') return true;
-    if (step === 'connection')
+    if (step === 'connection') {
+      if (isReverseTunnel) return form.name.trim().length > 0;
       return form.ssh_host.trim().length > 0 && form.name.trim().length > 0;
+    }
     if (step === 'credentials') return form.ssh_username.trim().length > 0;
     return true;
   };
   const handleNext = () => {
+    // Reverse-tunnel agents skip the credentials step entirely (the agent
+    // authenticates with a one-time enrollment token, no SSH creds needed).
+    if (isReverseTunnel && step === 'connection') {
+      setStep('review');
+      return;
+    }
     if (currentIdx < steps.length - 1) setStep(steps[currentIdx + 1].id);
   };
   const handleBack = () => {
+    if (isReverseTunnel && step === 'review') {
+      setStep('connection');
+      return;
+    }
     if (currentIdx > 0) setStep(steps[currentIdx - 1].id);
   };
 
@@ -524,7 +541,29 @@ function AddDeviceWizard({
             </motion.div>
           )}
 
-          {step === 'connection' && (
+          {step === 'connection' && isReverseTunnel && (
+            <motion.div
+              key="conn-rt"
+              initial={{ opacity: 0, x: 16 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: -16 }}
+              className="space-y-vos-3"
+            >
+              <WizardInput
+                label={t('agents.labelDeviceName', 'Device Name')}
+                placeholder="e.g. Laptop behind NAT"
+                value={form.name}
+                onChange={(v) => updateForm('name', v)}
+              />
+              <PlatformPicker
+                value={form.platform}
+                onChange={(v) => updateForm('platform', v)}
+              />
+              <ReverseTunnelPanel platform={form.platform} />
+            </motion.div>
+          )}
+
+          {step === 'connection' && !isReverseTunnel && (
             <motion.div
               key="conn"
               initial={{ opacity: 0, x: 16 }}
@@ -568,7 +607,7 @@ function AddDeviceWizard({
             </motion.div>
           )}
 
-          {step === 'credentials' && (
+          {step === 'credentials' && !isReverseTunnel && (
             <motion.div
               key="cred"
               initial={{ opacity: 0, x: 16 }}
@@ -610,38 +649,54 @@ function AddDeviceWizard({
               <div className="rounded-vos-md bg-vos-bg-elev-3 border border-vos-border-1 p-vos-4">
                 <KeyValueGrid
                   cols={2}
-                  items={[
-                    { label: 'Name', value: form.name || '—' },
-                    {
-                      label: t('common.type', 'Type'),
-                      value:
-                        CONNECTION_TYPES.find((c) => c.id === connType)?.name || connType,
-                    },
-                    { label: 'Host', value: `${form.ssh_host}:${form.ssh_port}`, mono: true },
-                    {
-                      label: t('agents.labelUsername', 'Username'),
-                      value: form.ssh_username,
-                      mono: true,
-                    },
-                    {
-                      label: t('agents.labelPassword', 'Password'),
-                      value: form.ssh_password ? '••••••••' : 'Not set',
-                    },
-                    {
-                      label: t('agents.detailPlatform', 'Platform'),
-                      value: form.platform,
-                    },
-                    ...(form.location
-                      ? [{ label: t('agents.labelLocation', 'Location'), value: form.location }]
-                      : []),
-                  ]}
+                  items={
+                    isReverseTunnel
+                      ? [
+                          { label: 'Name', value: form.name || '—' },
+                          { label: t('common.type', 'Type'), value: 'Reverse-tunnel agent' },
+                          { label: t('agents.detailPlatform', 'Platform'), value: form.platform },
+                          { label: 'Inbound port', value: 'None required', mono: true },
+                          { label: 'Auth', value: 'One-time enrollment token', mono: true },
+                        ]
+                      : [
+                          { label: 'Name', value: form.name || '—' },
+                          {
+                            label: t('common.type', 'Type'),
+                            value:
+                              CONNECTION_TYPES.find((c) => c.id === connType)?.name || connType,
+                          },
+                          { label: 'Host', value: `${form.ssh_host}:${form.ssh_port}`, mono: true },
+                          {
+                            label: t('agents.labelUsername', 'Username'),
+                            value: form.ssh_username,
+                            mono: true,
+                          },
+                          {
+                            label: t('agents.labelPassword', 'Password'),
+                            value: form.ssh_password ? '••••••••' : 'Not set',
+                          },
+                          {
+                            label: t('agents.detailPlatform', 'Platform'),
+                            value: form.platform,
+                          },
+                          ...(form.location
+                            ? [{ label: t('agents.labelLocation', 'Location'), value: form.location }]
+                            : []),
+                        ]
+                  }
                 />
               </div>
+              {isReverseTunnel && <ReverseTunnelPanel platform={form.platform} compact />}
               <p className="text-vos-xs text-vos-text-3 text-center">
-                {t(
-                  'agents.reviewHint',
-                  'After creating, use Test Connection to verify SSH access and auto-detect system info.',
-                )}
+                {isReverseTunnel
+                  ? t(
+                      'agents.reviewHintRT',
+                      'After creating, run the install command on the device. The agent will dial home over TLS and appear online here within ~30s.',
+                    )
+                  : t(
+                      'agents.reviewHint',
+                      'After creating, use Test Connection to verify SSH access and auto-detect system info.',
+                    )}
               </p>
             </motion.div>
           )}
