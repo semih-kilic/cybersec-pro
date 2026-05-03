@@ -1969,3 +1969,135 @@ export function useAIValidateCommand() {
       authFetch('/api/v1/ai/validate-command', token, { method: 'POST', body: JSON.stringify(body) }),
   });
 }
+
+// ==========================================
+// SUPERADMIN — God Mode endpoints
+// ==========================================
+
+export interface SuperadminTelemetry {
+  host: { name: string | null; os: string | null; kernel: string | null; uptime_secs: number; boot_time: number };
+  cpu: {
+    usage_pct: number;
+    core_count: number;
+    physical_core_count: number | null;
+    load_avg_1: number;
+    load_avg_5: number;
+    load_avg_15: number;
+    per_core: Array<{ name: string; usage_pct: number; frequency_mhz: number }>;
+  };
+  memory: { total_bytes: number; used_bytes: number; available_bytes: number; usage_pct: number; swap_total_bytes: number; swap_used_bytes: number };
+  disk: { total_bytes: number; used_bytes: number; usage_pct: number; devices: Array<{ name: string; mount: string; fs: string; total_bytes: number; available_bytes: number; used_bytes: number; usage_pct: number }> };
+  network: { received_bytes_window: number; transmitted_bytes_window: number; interfaces: Array<{ name: string; received_bytes_total: number; transmitted_bytes_total: number; received_bytes_window: number; transmitted_bytes_window: number }> };
+  process: { count: number };
+}
+
+/** Polls /api/v1/superadmin/telemetry every 2 seconds. */
+export function useSuperadminTelemetry(enabled = true) {
+  const { token } = useAuth();
+  return useQuery<SuperadminTelemetry>({
+    queryKey: ['superadmin', 'telemetry'],
+    queryFn: () => authFetch<SuperadminTelemetry>('/api/v1/superadmin/telemetry', token),
+    refetchInterval: 2000,
+    refetchIntervalInBackground: false,
+    staleTime: 0,
+    enabled: enabled && !!token,
+  });
+}
+
+export interface SuperadminDbStats {
+  database: { name: string; size_bytes: number };
+  pool: { size: number; idle: number };
+  active_connections: number;
+  active_queries: Array<{ pid: number; usename: string | null; application_name: string | null; client_addr: string | null; state: string | null; query: string | null; query_start: string | null }>;
+  top_tables: Array<{ schema: string; name: string; row_count: number; size_bytes: number; index_size_bytes: number }>;
+}
+
+export function useSuperadminDbStats(enabled = true) {
+  const { token } = useAuth();
+  return useQuery<SuperadminDbStats>({
+    queryKey: ['superadmin', 'dbstats'],
+    queryFn: () => authFetch<SuperadminDbStats>('/api/v1/superadmin/db-stats', token),
+    refetchInterval: 10000,
+    staleTime: 0,
+    enabled: enabled && !!token,
+  });
+}
+
+export interface SuperadminLogs {
+  unit: string;
+  lines: number;
+  output: string;
+}
+
+export function useSuperadminLogs(unit: string, lines: number, enabled = true) {
+  const { token } = useAuth();
+  return useQuery<SuperadminLogs>({
+    queryKey: ['superadmin', 'logs', unit, lines],
+    queryFn: () => authFetch<SuperadminLogs>(`/api/v1/superadmin/logs?unit=${encodeURIComponent(unit)}&lines=${lines}`, token),
+    refetchInterval: 5000,
+    staleTime: 0,
+    enabled: enabled && !!token,
+  });
+}
+
+export interface FeatureFlag {
+  key: string;
+  enabled: boolean;
+  description: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export function useFeatureFlags(enabled = true) {
+  const { token } = useAuth();
+  return useQuery<{ flags: FeatureFlag[] }>({
+    queryKey: ['superadmin', 'flags'],
+    queryFn: () => authFetch<{ flags: FeatureFlag[] }>('/api/v1/superadmin/feature-flags', token),
+    refetchInterval: 15000,
+    enabled: enabled && !!token,
+  });
+}
+
+export function useUpsertFeatureFlag() {
+  const { token } = useAuth();
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (body: { key: string; enabled: boolean; description?: string }) =>
+      authFetch(`/api/v1/superadmin/feature-flags/${encodeURIComponent(body.key)}`, token, {
+        method: 'PUT',
+        body: JSON.stringify({ enabled: body.enabled, description: body.description ?? null }),
+      }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['superadmin', 'flags'] });
+      qc.invalidateQueries({ queryKey: ['superadmin', 'killSwitch'] });
+    },
+  });
+}
+
+export interface KillSwitchStatus { engaged: boolean; reason?: string | null; updated_at?: string | null }
+
+export function useKillSwitchStatus(enabled = true) {
+  const { token } = useAuth();
+  return useQuery<KillSwitchStatus>({
+    queryKey: ['superadmin', 'killSwitch'],
+    queryFn: () => authFetch<KillSwitchStatus>('/api/v1/superadmin/kill-switch', token),
+    refetchInterval: 5000,
+    enabled: enabled && !!token,
+  });
+}
+
+export function useToggleKillSwitch() {
+  const { token } = useAuth();
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (body: { engaged: boolean; reason?: string }) =>
+      authFetch('/api/v1/superadmin/kill-switch', token, {
+        method: 'POST',
+        body: JSON.stringify(body),
+      }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['superadmin', 'killSwitch'] });
+      qc.invalidateQueries({ queryKey: ['superadmin', 'flags'] });
+    },
+  });
+}
