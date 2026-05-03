@@ -467,6 +467,42 @@ pub async fn enroll_agent(
     })).into_response()
 }
 
+/// Serve the agent binary for the requested platform.
+///
+/// Files live under `AGENT_BIN_DIR` (default `/home/cybersec/cybersec-pro/agent-binaries`).
+/// Naming convention: `cybersec-agent-<os>-<arch>` (e.g. `cybersec-agent-linux-amd64`).
+/// Public endpoint — the binary itself is harmless without an enrollment JWT.
+pub async fn agent_binary(
+    Path(platform): Path<String>,
+) -> impl IntoResponse {
+    // Whitelist platform names — must match `cybersec-agent-(linux|darwin|windows)-(amd64|arm64)(\.exe)?`.
+    let allowed = [
+        "linux-amd64", "linux-arm64",
+        "darwin-amd64", "darwin-arm64", "darwin-universal",
+        "windows-amd64.exe", "windows-arm64.exe",
+    ];
+    if !allowed.iter().any(|p| *p == platform.as_str()) {
+        return (StatusCode::NOT_FOUND, Json(json!({"error": "Unsupported platform"}))).into_response();
+    }
+    let dir = std::env::var("AGENT_BIN_DIR")
+        .unwrap_or_else(|_| "/home/cybersec/cybersec-pro/agent-binaries".to_string());
+    let path = std::path::PathBuf::from(&dir).join(format!("cybersec-agent-{platform}"));
+    let bytes = match tokio::fs::read(&path).await {
+        Ok(b) => b,
+        Err(_) => return (StatusCode::NOT_FOUND, Json(json!({
+            "error": "Binary not yet available for this platform — contact cybersecpro@semihkilic.com"
+        }))).into_response(),
+    };
+    (
+        StatusCode::OK,
+        [
+            (header::CONTENT_TYPE, "application/octet-stream"),
+            (header::CACHE_CONTROL, "public, max-age=300"),
+        ],
+        bytes,
+    ).into_response()
+}
+
 /// Serve a POSIX install script for the reverse-tunnel agent.
 ///
 /// Public endpoint (no auth) — the script itself reads `CSP_TOKEN` from the
@@ -490,13 +526,60 @@ case "${CSP_TOKEN}" in
   *) echo "ERROR: CSP_TOKEN looks malformed (expected agt_… or JWT)." >&2; exit 1 ;;
 esac
 
-OS="$(uname -s | tr '[:upper:]' '[:lower:]')"
-ARCH="$(uname -m)"
-echo "==> Detected ${OS}/${ARCH}"
-echo "==> CyberSec Pro agent v1 installation"
-echo "==> Token accepted; agent binary is in private beta."
-echo "    Reach out: cybersecpro@semihkilic.com to get the binary."
-exit 0
+API="${CSP_API_URL:-https://cybersecpro.semihkilic.com}"
+OS_RAW="$(uname -s | tr '[:upper:]' '[:lower:]')"
+case "${OS_RAW}" in
+  linux) OS=linux ;;
+  darwin) OS=darwin ;;
+  *) echo "ERROR: unsupported OS '${OS_RAW}'" >&2; exit 1 ;;
+esac
+ARCH_RAW="$(uname -m)"
+case "${ARCH_RAW}" in
+  x86_64|amd64) ARCH=amd64 ;;
+  aarch64|arm64) ARCH=arm64 ;;
+  *) echo "ERROR: unsupported arch '${ARCH_RAW}'" >&2; exit 1 ;;
+esac
+
+INSTALL_DIR="${CSP_INSTALL_DIR:-${HOME}/.cybersec-agent}"
+mkdir -p "${INSTALL_DIR}"
+BIN="${INSTALL_DIR}/cybersec-agent"
+URL="${API}/api/v1/agents/binary/${OS}-${ARCH}"
+echo "==> Downloading ${URL}"
+if command -v curl >/dev/null 2>&1; then
+  curl -fsSL -o "${BIN}" "${URL}"
+elif command -v wget >/dev/null 2>&1; then
+  wget -qO "${BIN}" "${URL}"
+else
+  echo "ERROR: need curl or wget" >&2; exit 1
+fi
+chmod +x "${BIN}"
+echo "==> Installed to ${BIN}"
+
+# Try to install systemd unit if running as root and systemd is available.
+if [ "$(id -u)" = "0" ] && command -v systemctl >/dev/null 2>&1; then
+  cat > /etc/systemd/system/cybersec-agent.service <<UNIT
+[Unit]
+Description=CyberSec Pro reverse-tunnel agent
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+Environment=CSP_TOKEN=${CSP_TOKEN}
+Environment=CSP_API_URL=${API}
+ExecStart=${BIN}
+Restart=on-failure
+RestartSec=10
+
+[Install]
+WantedBy=multi-user.target
+UNIT
+  systemctl daemon-reload
+  systemctl enable --now cybersec-agent.service
+  echo "==> systemd unit installed and started"
+else
+  echo "==> Run manually: CSP_TOKEN=${CSP_TOKEN} CSP_API_URL=${API} ${BIN}"
+fi
 "#;
     (
         StatusCode::OK,
