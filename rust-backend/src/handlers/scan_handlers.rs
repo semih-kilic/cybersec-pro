@@ -225,7 +225,8 @@ async fn finalize_scan(
     agent_id: Option<String>,
 ) {
     if let Err(error) = sqlx::query(
-        "UPDATE scans SET status = $1, output = $2, findings = $3::jsonb, error_log = $4, completed_at = CURRENT_TIMESTAMP WHERE id = $5",
+        "UPDATE scans SET status = $1, output = $2, findings = $3::jsonb, error_log = $4, completed_at = CURRENT_TIMESTAMP \
+         WHERE id = $5 AND status IN ('pending', 'running')",
     )
     .bind(status)
     .bind(output)
@@ -1390,6 +1391,17 @@ pub async fn cancel_scan(
 
     match result {
         Ok(r) if r.rows_affected() > 0 => {
+            // Best-effort cancel any pending/claimed/running agent_jobs tied to this scan,
+            // so reverse-tunnel agents won't deliver the next poll and the scan poller
+            // exits early. Currently-running jobs on the agent still finish in-process,
+            // but the result is ignored (status was already terminal).
+            let _ = sqlx::query(
+                "UPDATE agent_jobs SET status = 'cancelled', completed_at = now() \
+                 WHERE scan_id = $1 AND status IN ('pending', 'claimed', 'running')"
+            )
+            .bind(&scan_id)
+            .execute(&state.db)
+            .await;
             (StatusCode::OK, Json(json!({"message": "Scan cancelled"}))).into_response()
         }
         _ => (StatusCode::NOT_FOUND, Json(json!({"error": "Scan not found or already completed"}))).into_response(),
