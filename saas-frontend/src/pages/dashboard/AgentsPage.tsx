@@ -408,19 +408,19 @@ const AGENT_BASE_URL =
 
 const RT_DOWNLOADS: Record<string, { label: string; url: string; install: string }> = {
   linux: {
-    label: 'Linux (x86_64)',
+    label: 'Linux (x86_64 / arm64 — auto-detected)',
     url: `${AGENT_BASE_URL}/api/v1/agents/install.sh`,
     install: `curl -fsSL ${AGENT_BASE_URL}/api/v1/agents/install.sh | CSP_TOKEN=__TOKEN__ sh`,
   },
   macos: {
-    label: 'macOS (universal)',
+    label: 'macOS (universal — coming soon, use Docker)',
     url: `${AGENT_BASE_URL}/api/v1/agents/install.sh`,
     install: `curl -fsSL ${AGENT_BASE_URL}/api/v1/agents/install.sh | CSP_TOKEN=__TOKEN__ sh`,
   },
   windows: {
     label: 'Windows (x86_64)',
     url: `${AGENT_BASE_URL}/api/v1/agents/install.ps1`,
-    install: `iwr ${AGENT_BASE_URL}/api/v1/agents/install.ps1 -useb | iex; $env:CSP_TOKEN="__TOKEN__"; cybersec-agent enroll`,
+    install: `$env:CSP_TOKEN="__TOKEN__"; iwr ${AGENT_BASE_URL}/api/v1/agents/install.ps1 -useb | iex`,
   },
   docker: {
     label: 'Docker',
