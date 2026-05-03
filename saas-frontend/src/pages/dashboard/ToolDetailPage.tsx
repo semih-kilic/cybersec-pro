@@ -36,6 +36,7 @@ interface Tool {
   id: string; name: string; slug?: string; description: string;
   category: string; plan_required: string; is_active: boolean;
   parameters: ToolParameter[];
+  command_template?: string | null;
   documentation?: string;
   examples?: { name: string; command: string; description: string }[];
 }
@@ -121,6 +122,21 @@ export function ToolDetailPage() {
     if (toolConfig) return toolConfig.parameters;
     if (!tool) return [];
     if (Array.isArray(tool.parameters) && tool.parameters.length > 0) return tool.parameters;
+    // Hackingtool seed shape: { form: [{name,label,type,required,placeholder,default,options}], danger_level, target_types }
+    if (tool.parameters && typeof tool.parameters === 'object' && Array.isArray((tool.parameters as any).form)) {
+      const form = (tool.parameters as any).form as Array<any>;
+      return form.map((f) => ({
+        name: f.name,
+        flag: '', // Backend handles substitution via command_template {placeholders}
+        type: (f.type === 'url' || f.type === 'email' || f.type === 'password') ? 'text' : (f.type as ToolParameter['type']),
+        required: !!f.required,
+        default: f.default !== undefined ? String(f.default) : undefined,
+        placeholder: f.placeholder || (f.default !== undefined ? String(f.default) : ''),
+        options: f.options,
+        description: f.label || f.name,
+        group: 'Parameters',
+      }));
+    }
     if (tool.parameters && typeof tool.parameters === 'object') {
       return Object.entries(tool.parameters).map(([key, param]: [string, any]) => ({
         name: param.description || key, flag: param.flag || '', type: param.type || 'text',
@@ -143,6 +159,17 @@ export function ToolDetailPage() {
 
   const generateCommand = () => {
     if (!tool) return;
+    // If the tool ships with a command_template (zero-code tools), substitute
+    // {placeholder} tokens with the user's form values for an accurate preview.
+    if (tool.command_template && tool.command_template.trim()) {
+      let cmd = tool.command_template;
+      Object.entries(paramValues).forEach(([k, v]) => {
+        if (v === undefined || v === '' || v === false) return;
+        cmd = cmd.replace(new RegExp(`\\{${k}\\}`, 'g'), String(v));
+      });
+      setGeneratedCommand(cmd);
+      return;
+    }
     let cmd = getToolSlug(tool);
     getNormalizedParams().forEach(param => {
       const value = paramValues[param.name];
