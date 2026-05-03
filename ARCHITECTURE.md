@@ -94,8 +94,21 @@ The `tools` table is seeded on every backend startup from two sources:
 |---|---:|---|---|
 | Internal catalog | 1160 | (mixed)  | `services/db.rs` initial load + migrations |
 | Z4nzu/hackingtool catalog | 173 | `ht_` | `services/hackingtool_seed.rs` |
+| Modern security catalog | 209 | `ht_` | `services/hackingtool_seed_modern.rs` |
+
+The modern catalog covers cloud security (prowler, scoutsuite, pacu, cloudfox, checkov, tfsec, kics), container/Kubernetes (trivy, grype, syft, kube-bench, kube-hunter, kubescape, kube-linter), supply-chain (semgrep, codeql, bandit, govulncheck, osv-scanner, cosign, slsa-verifier, phylum), API & GraphQL (akto, jwt_tool, graphqlmap, clairvoyance, inql), AI/LLM (garak, llm_guard, rebuff, vigil, modelscan, counterfit, ART), Web3 (slither, mythril, manticore, echidna, foundry), modern mobile (drozer, apktool, quark, androbugs, iblessing), DevSecOps (ggshield, legitify, octoscan, zizmor, chain-bench), modern recon (chaos, dnsx, asnmap, tlsx, mapcidr, cdncheck, uncover, interactsh, cvemap), and end-to-end workflow runners (osmedeus, reconftw, bbot, sn1per, oneforall). Total **382 hackingtool family entries / 1542 tools overall**.
 
 Each row stores `command_template` plus a `parameters` JSONB that — for hackingtool entries — includes `{ form: [{name,label,type,required,placeholder,default,options}], danger_level, target_types }` so the frontend can build a zero-code form without per-tool code.
+
+### Reverse-tunnel job channel
+
+Reverse-tunnel agents execute scans through an `agent_jobs` queue (`migrations/004_agent_jobs.sql`):
+
+1. `start_scan` (in `handlers/scan_handlers.rs`) detects `connection_type='reverse_tunnel'` on the target agent and INSERTs a job row instead of opening SSH.
+2. The agent long-polls `GET /api/v1/agents/jobs/next` (25× 1 s) — the claim is atomic via `UPDATE agent_jobs SET status='claimed' … WHERE id=(SELECT id FROM agent_jobs WHERE agent_id=$1 AND status='pending' FOR UPDATE SKIP LOCKED LIMIT 1)`.
+3. Agent executes the command (sh on unix, cmd on windows) with a tokio timeout, then POSTs `/api/v1/agents/jobs/{id}/result` with stdout/stderr (1 MiB cap each).
+4. A 30-min poller in `start_scan` (900 × 2 s) calls `finalize_scan` with the combined output.
+5. `cancel_scan` flips queued/running jobs to `cancelled` so the agent drops them on the next poll. `finalize_scan` only updates rows in `('pending','running')` so a late agent result cannot resurrect a cancelled scan.
 
 ## Agent Connectivity
 
