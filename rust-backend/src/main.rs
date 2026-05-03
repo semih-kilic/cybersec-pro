@@ -198,6 +198,7 @@ fn build_router(state: Arc<AppState>) -> Router {
         // ── Public agent install scripts (no auth) ────────────
         .route("/api/v1/agents/install.sh", get(agent_handlers::install_sh))
         .route("/api/v1/agents/install.ps1", get(agent_handlers::install_ps1))
+        .route("/api/v1/agents/enroll", post(agent_handlers::enroll_agent))
         // ── Auth ──────────────────────────────────────────────
         .route("/api/v1/auth/register", post(auth_handlers::register))
         .route("/api/v1/auth/login", post(auth_handlers::login))

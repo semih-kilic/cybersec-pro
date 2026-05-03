@@ -393,6 +393,80 @@ pub async fn issue_enrollment_token(
     })).into_response()
 }
 
+/// Enroll a reverse-tunnel agent using a short-lived enrollment JWT.
+///
+/// Body: `{ "token": "<jwt>", "hostname": "...", "platform": "linux|macos|windows" }`.
+/// Validates the JWT (HS256, kind=agent_enroll), derives `organization_id` from
+/// claims, inserts the agent row, and returns `{ agent_id, api_key }` which the
+/// agent stores locally and presents on every heartbeat / job-poll thereafter.
+///
+/// Public endpoint (no AuthUser) — the JWT is the auth.
+pub async fn enroll_agent(
+    State(state): State<Arc<AppState>>,
+    Json(body): Json<serde_json::Value>,
+) -> impl IntoResponse {
+    let token = match body.get("token").and_then(|v| v.as_str()) {
+        Some(t) if !t.is_empty() => t.to_string(),
+        _ => return (StatusCode::BAD_REQUEST, Json(json!({"error": "token is required"}))).into_response(),
+    };
+    let hostname = body.get("hostname").and_then(|v| v.as_str()).unwrap_or("unknown").to_string();
+    let platform = body.get("platform").and_then(|v| v.as_str()).unwrap_or("linux").to_string();
+
+    let secret = std::env::var("JWT_SECRET").unwrap_or_else(|_| "default-secret".into());
+    let mut validation = jsonwebtoken::Validation::new(jsonwebtoken::Algorithm::HS256);
+    validation.validate_exp = true;
+    let data = match jsonwebtoken::decode::<serde_json::Value>(
+        &token,
+        &jsonwebtoken::DecodingKey::from_secret(secret.as_bytes()),
+        &validation,
+    ) {
+        Ok(d) => d,
+        Err(e) => {
+            tracing::warn!("agent enroll: invalid JWT: {e}");
+            return (StatusCode::UNAUTHORIZED, Json(json!({"error": "Invalid or expired enrollment token"}))).into_response();
+        }
+    };
+    let claims = data.claims;
+    if claims.get("kind").and_then(|v| v.as_str()) != Some("agent_enroll") {
+        return (StatusCode::UNAUTHORIZED, Json(json!({"error": "Wrong token kind"}))).into_response();
+    }
+    let org_id = match claims.get("org_id").and_then(|v| v.as_str()) {
+        Some(s) => s.to_string(),
+        None => return (StatusCode::UNAUTHORIZED, Json(json!({"error": "Token missing org_id"}))).into_response(),
+    };
+
+    let agent_id = Uuid::new_v4().to_string();
+    let api_key = format!("ak_{}", Uuid::new_v4().to_string().replace('-', ""));
+    let name = format!("agent-{}", &agent_id[..8]);
+
+    let res = sqlx::query(
+        "INSERT INTO agents (id, organization_id, name, connection_type, hostname, platform, network_zone, max_concurrent_scans, registration_token, api_key, status)
+         VALUES ($1, $2, $3, 'reverse_tunnel', $4, $5, 'public', 5, $6, $7, 'online')"
+    )
+    .bind(&agent_id)
+    .bind(&org_id)
+    .bind(&name)
+    .bind(&hostname)
+    .bind(&platform)
+    .bind(&token)
+    .bind(&api_key)
+    .execute(&state.db)
+    .await;
+
+    if let Err(e) = res {
+        tracing::error!("agent enroll: db insert failed: {e}");
+        return (StatusCode::INTERNAL_SERVER_ERROR, Json(json!({"error": "Failed to register agent"}))).into_response();
+    }
+
+    Json(json!({
+        "agent_id": agent_id,
+        "api_key": api_key,
+        "name": name,
+        "heartbeat_url": format!("/api/v1/agents/{}/heartbeat", agent_id),
+        "heartbeat_interval_seconds": 30,
+    })).into_response()
+}
+
 /// Serve a POSIX install script for the reverse-tunnel agent.
 ///
 /// Public endpoint (no auth) — the script itself reads `CSP_TOKEN` from the
