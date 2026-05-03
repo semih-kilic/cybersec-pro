@@ -16,3 +16,4 @@ pub mod settings_handlers;
 pub mod security_handlers;
 pub mod ai_handlers;
 pub mod superadmin_handlers;
+pub mod news_handlers;

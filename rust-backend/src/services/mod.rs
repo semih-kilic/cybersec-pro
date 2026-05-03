@@ -13,3 +13,4 @@ pub mod notifications;
 pub mod cybersec_ai_worker;
 pub mod hackingtool_seed;
 pub mod hackingtool_seed_modern;
+pub mod news_feed;
