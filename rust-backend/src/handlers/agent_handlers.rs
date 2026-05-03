@@ -438,6 +438,14 @@ pub async fn enroll_agent(
     let agent_id = Uuid::new_v4().to_string();
     let api_key = format!("ak_{}", Uuid::new_v4().to_string().replace('-', ""));
     let name = format!("agent-{}", &agent_id[..8]);
+    // Store SHA-256 hash of the enrollment JWT (not the raw token) so the
+    // unique constraint enforces single-use without persisting credentials.
+    let token_hash = {
+        use sha2::{Digest, Sha256};
+        let mut h = Sha256::new();
+        h.update(token.as_bytes());
+        format!("sha256:{:x}", h.finalize())
+    };
 
     let res = sqlx::query(
         "INSERT INTO agents (id, organization_id, name, connection_type, hostname, platform, network_zone, max_concurrent_scans, registration_token, api_key, status)
@@ -448,7 +456,7 @@ pub async fn enroll_agent(
     .bind(&name)
     .bind(&hostname)
     .bind(&platform)
-    .bind(&token)
+    .bind(&token_hash)
     .bind(&api_key)
     .execute(&state.db)
     .await;
