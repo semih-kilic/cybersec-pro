@@ -92,7 +92,7 @@
     "headlinePart2": "Plataforma en Europa",
     "subheadline": "396 herramientas de pruebas de penetración en tu navegador. Sin instalación. Plataforma de seguridad empresarial para estándares europeos.",
     "startTrial": "Prueba Gratuita",
-    "startTrial14": "Prueba Gratuita - 14 Días",
+    "startTrial14": "Prueba Gratuita - 3 Días",
     "startTrialNow": "Comienza tu prueba gratuita ahora",
     "seeFeatures": "Ver funciones →",
     "goToDashboard": "Ir al panel",
@@ -155,7 +155,7 @@
     },
     "plan": {
       "freeTrial": "Prueba gratuita",
-      "freeCycle": "/14 días",
+      "freeCycle": "/3 días",
       "freeItem1": "1 escaneo de seguridad gratuito",
       "freeItem3": "Informe PDF con hallazgos",
       "freeItem4": "No se requiere tarjeta de crédito",

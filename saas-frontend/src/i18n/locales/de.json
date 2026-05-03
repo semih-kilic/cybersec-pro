@@ -92,7 +92,7 @@
     "headlinePart2": "Plattform in Europa",
     "subheadline": "396 Penetrationstest-Tools in Ihrem Browser. Keine Installation erforderlich. Enterprise-Sicherheitsplattform für europäische Compliance-Standards.",
     "startTrial": "Kostenlos testen",
-    "startTrial14": "Kostenlos testen - 14 Tage",
+    "startTrial14": "Kostenlos testen - 3 Tage",
     "startTrialNow": "Jetzt kostenlos testen",
     "seeFeatures": "Funktionen ansehen →",
     "goToDashboard": "Zum Dashboard",
@@ -155,7 +155,7 @@
     },
     "plan": {
       "freeTrial": "Kostenlose Testversion",
-      "freeCycle": "/14 Tage",
+      "freeCycle": "/3 Tage",
       "freeItem1": "1 kostenloser Sicherheitsscan",
       "freeItem3": "PDF-Bericht mit Ergebnissen",
       "freeItem4": "Keine Kreditkarte erforderlich",

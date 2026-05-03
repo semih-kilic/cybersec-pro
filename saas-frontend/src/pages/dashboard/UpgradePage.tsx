@@ -43,7 +43,7 @@ function buildPlans(counts: { trial: number; starter: number; professional: numb
       name: 'Free Trial',
       price: 0,
       yearlyPrice: 0,
-      period: '14 days',
+      period: '3 days',
       description: 'Test drive the full platform.',
       features: [
         `All ${counts.trial} security tools`,

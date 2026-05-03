@@ -92,7 +92,7 @@
     "headlinePart2": "Platform in Europe",
     "subheadline": "396 penetration testing tools in your browser. No installation required. Enterprise-grade security testing platform, built for European compliance standards.",
     "startTrial": "Start Free Trial",
-    "startTrial14": "Start Free Trial - 14 Days",
+    "startTrial14": "Start Free Trial - 3 Days",
     "startTrialNow": "Start Your Free Trial Now",
     "seeFeatures": "See Features →",
     "goToDashboard": "Go to Dashboard",
@@ -155,7 +155,7 @@
     },
     "plan": {
       "freeTrial": "Free Trial",
-      "freeCycle": "/14 days",
+      "freeCycle": "/3 days",
       "runtimeTuningTitle": "Runtime Tuning",
       "runtimeTuningSubtitle": "Active organization-level detection tuning applied to Purple Team simulations.",
       "runtimeTuningSource": "Source",

@@ -92,7 +92,7 @@
     "headlinePart2": "Piattaforma in Europa",
     "subheadline": "396 strumenti di penetration testing nel tuo browser. Nessuna installazione richiesta. Piattaforma di sicurezza enterprise per standard europei.",
     "startTrial": "Prova Gratuita",
-    "startTrial14": "Prova Gratuita - 14 Giorni",
+    "startTrial14": "Prova Gratuita - 3 Giorni",
     "startTrialNow": "Inizia la tua prova gratuita ora",
     "seeFeatures": "Vedi funzionalità →",
     "goToDashboard": "Vai alla dashboard",
@@ -155,7 +155,7 @@
     },
     "plan": {
       "freeTrial": "Prova gratuita",
-      "freeCycle": "/14 giorni",
+      "freeCycle": "/3 giorni",
       "freeItem1": "1 scansione di sicurezza gratuita",
       "freeItem3": "Report PDF con risultati",
       "freeItem4": "Nessuna carta di credito richiesta",

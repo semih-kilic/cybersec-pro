@@ -92,7 +92,7 @@
     "headlinePart2": "Plateforme en Europe",
     "subheadline": "396 outils de test d'intrusion dans votre navigateur. Aucune installation requise. Plateforme de test de sécurité de niveau entreprise.",
     "startTrial": "Essai gratuit",
-    "startTrial14": "Essai Gratuit - 14 Jours",
+    "startTrial14": "Essai Gratuit - 3 Jours",
     "startTrialNow": "Commencez votre essai gratuit",
     "seeFeatures": "Voir les fonctionnalités →",
     "goToDashboard": "Aller au tableau de bord",
@@ -155,7 +155,7 @@
     },
     "plan": {
       "freeTrial": "Essai gratuit",
-      "freeCycle": "/14 jours",
+      "freeCycle": "/3 jours",
       "freeItem1": "1 scan de sécurité gratuit",
       "freeItem3": "Rapport PDF avec résultats",
       "freeItem4": "Aucune carte bancaire requise",

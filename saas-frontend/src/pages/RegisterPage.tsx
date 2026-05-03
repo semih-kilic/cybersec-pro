@@ -119,7 +119,7 @@ export function RegisterPage() {
               </p>
               <p className="text-blue-400 font-medium mb-6">{verificationEmail}</p>
               <p className="text-gray-500 text-sm mb-6">
-                {t('auth.checkEmailBody', 'Click the link in the email to verify your account and start your 14-day free trial. The link expires in 24 hours.')}
+                {t('auth.checkEmailBody', 'Click the link in the email to verify your account and start your 3-day free trial. The link expires in 24 hours.')}
               </p>
 
               <div className="border-t border-gray-800 pt-6 space-y-3">

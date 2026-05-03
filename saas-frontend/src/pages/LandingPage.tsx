@@ -229,7 +229,7 @@ export function LandingPage() {
               <div className="text-lg font-medium text-green-400 mb-2">{t('landing.plan.freeTrial', 'Free Trial')}</div>
               <div className="flex items-baseline gap-1 mb-4">
                 <span className="text-4xl font-bold text-white">€0</span>
-                <span className="text-gray-400">{t('landing.plan.freeCycle', '/14 days')}</span>
+                <span className="text-gray-400">{t('landing.plan.freeCycle', '/3 days')}</span>
               </div>
               <ul className="space-y-2 mb-6 text-gray-300 text-sm">
                 <li className="flex items-center gap-2">
