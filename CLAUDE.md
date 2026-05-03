@@ -150,3 +150,27 @@ CI artifacts for observability:
 - Dashboard pages with helper subcomponents were stabilized for i18n hook usage (`useTranslation`) and hook-order correctness (`useDocumentTitle` after `t` binding).
 - Deprecated, unused terminal UI dependencies were removed from `saas-frontend` (`xterm`, `xterm-addon-fit`, `xterm-addon-web-links`) and stale Vite chunk mapping was removed.
 
+## 10) Tool Catalog & Zero-code Runner (May 2026)
+
+- **Catalog source of truth.** `rust-backend/src/services/hackingtool_seed.rs` seeds the full Z4nzu/hackingtool catalog (173 tools, 20 business categories) on every startup with idempotent UPSERT. IDs are prefixed `ht_`. Total runnable tools in DB: **1333**.
+- **Per-row schema.** Each tool row has `command_template` (string with `{placeholder}` tokens) and `parameters` JSONB. For hackingtool entries, `parameters = { form: [{name,label,type,required,placeholder,default,options}], danger_level, target_types }`.
+- **Zero-code form rendering.** `saas-frontend/src/pages/dashboard/ToolDetailPage.tsx::getNormalizedParams()` detects the `form` array shape and produces a `ToolParameter[]` automatically. `generateCommand()` substitutes `{key}` placeholders against the live form values for the preview.
+- **Backend substitution + guard.** `rust-backend/src/handlers/scan_handlers.rs::start_scan` walks `body.parameters`, strips CR/LF/backticks, rejects shell metachars (`$()`, `&&`, `||`, `;`, `|`) with a warn log, then `t.replace("{key}", &safe)` into the template before spawn.
+- **Cancel.** `services/cybersec_ai_worker.rs` polls a cancel flag between phases; UI Stop button typically tears the job down in &lt;5s.
+
+## 11) Hybrid Agent Connectivity
+
+- Two transports per device, picked in the Add Device wizard:
+  - **SSH** (existing). Outbound from backend; credentials AES-256-GCM at rest.
+  - **Reverse-tunnel agent** (new). User installs a small binary; agent dials hub over TLS 1.3 with a one-time enrollment token. No inbound port required.
+- Per-OS install one-liners are surfaced for Linux x86_64, macOS universal, Windows x86_64, and Docker (`semihkilic/cybersec-agent:v1`).
+- TODO: replace client-generated enrollment token with `POST /api/v1/agents/enrollment-token` returning an HMAC-signed JWT scoped to org with 24h TTL.
+
+## 12) Privacy / Zero-knowledge Credentials
+
+- Inputs flagged secret (`f.type === 'password'` OR name matches `pass|secret|token|api[_-]?key|credential`) are rendered masked with an inline 🔒 banner on every tool form.
+- Per-scan credentials are forwarded to the executing agent in memory and discarded when the job ends. Not written to DB, logs, backups, or analytics.
+- BYO Vault is supported for credential resolution at run time: HashiCorp Vault, AWS Secrets Manager, GCP Secret Manager, Azure Key Vault, 1Password Connect.
+- Public docs: `/dashboard/privacy` carries the full "Zero-knowledge credential handling" section.
+
+

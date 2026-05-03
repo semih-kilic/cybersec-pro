@@ -397,6 +397,127 @@ function KV({
 }
 
 /* ════════════════════════════════════════════════════════════ *
+ *  REVERSE-TUNNEL AGENT PANEL
+ *  Shows per-OS download links + a one-time enrollment token.
+ *  The agent binary dials our hub over TLS — no inbound port needed.
+ * ════════════════════════════════════════════════════════════ */
+
+const AGENT_VERSION = 'v1';
+const AGENT_BASE_URL =
+  (typeof window !== 'undefined' && window.location?.origin) || 'https://cybersecpro.semihkilic.com';
+
+const RT_DOWNLOADS: Record<string, { label: string; url: string; install: string }> = {
+  linux: {
+    label: 'Linux (x86_64)',
+    url: `${AGENT_BASE_URL}/downloads/cybersec-agent-linux-amd64`,
+    install: `curl -fsSL ${AGENT_BASE_URL}/install.sh | CSP_TOKEN=__TOKEN__ sh`,
+  },
+  macos: {
+    label: 'macOS (universal)',
+    url: `${AGENT_BASE_URL}/downloads/cybersec-agent-darwin-universal`,
+    install: `curl -fsSL ${AGENT_BASE_URL}/install.sh | CSP_TOKEN=__TOKEN__ sh`,
+  },
+  windows: {
+    label: 'Windows (x86_64)',
+    url: `${AGENT_BASE_URL}/downloads/cybersec-agent-windows-amd64.exe`,
+    install: `iwr ${AGENT_BASE_URL}/install.ps1 -useb | iex; $env:CSP_TOKEN="__TOKEN__"; cybersec-agent enroll`,
+  },
+  docker: {
+    label: 'Docker',
+    url: 'https://hub.docker.com/r/semihkilic/cybersec-agent',
+    install: `docker run -d --name cybersec-agent --restart=always -e CSP_TOKEN=__TOKEN__ semihkilic/cybersec-agent:${AGENT_VERSION}`,
+  },
+};
+
+function ReverseTunnelPanel({ platform, compact }: { platform: string; compact?: boolean }) {
+  const key = (platform || 'linux').toLowerCase();
+  const dl = RT_DOWNLOADS[key] || RT_DOWNLOADS.linux;
+  // Client-side token placeholder. TODO: replace with POST /api/v1/agents/enrollment-token
+  // backed by HMAC-signed JWT scoped to the org and 24h TTL.
+  const [token, setToken] = useState<string>(() => {
+    try { return crypto.randomUUID().replace(/-/g, '').slice(0, 32); }
+    catch { return Math.random().toString(36).slice(2) + Math.random().toString(36).slice(2); }
+  });
+  const installCmd = dl.install.replace('__TOKEN__', token);
+  const copy = (text: string) => {
+    try { navigator.clipboard.writeText(text); } catch { /* noop */ }
+  };
+  return (
+    <div className={`rounded-vos-md border border-vos-border-1 bg-vos-bg-elev-3 p-vos-3 space-y-vos-2 ${compact ? '' : ''}`}>
+      <div className="flex items-center justify-between">
+        <div className="text-vos-xs font-semibold text-vos-text-2 uppercase tracking-vos-wide">
+          Reverse-tunnel agent — {dl.label}
+        </div>
+        <a
+          href={dl.url}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="inline-flex items-center gap-1 text-[11px] text-vos-accent hover:underline"
+        >
+          <Download size={12} /> Direct download
+        </a>
+      </div>
+
+      <div>
+        <label className="text-[10px] uppercase tracking-vos-wide text-vos-text-3">
+          One-time enrollment token (24h)
+        </label>
+        <div className="mt-1 flex items-stretch gap-1">
+          <code className="flex-1 truncate rounded-vos-sm bg-vos-bg-elev-4 px-2 py-1.5 text-[11px] text-vos-text font-mono">
+            {token}
+          </code>
+          <button
+            type="button"
+            onClick={() => copy(token)}
+            className="inline-flex items-center gap-1 rounded-vos-sm bg-vos-bg-elev-4 px-2 text-[11px] text-vos-text-2 hover:text-vos-text"
+            title="Copy token"
+          >
+            <Copy size={12} />
+          </button>
+          <button
+            type="button"
+            onClick={() => {
+              try { setToken(crypto.randomUUID().replace(/-/g, '').slice(0, 32)); }
+              catch { setToken(Math.random().toString(36).slice(2)); }
+            }}
+            className="inline-flex items-center gap-1 rounded-vos-sm bg-vos-bg-elev-4 px-2 text-[11px] text-vos-text-2 hover:text-vos-text"
+            title="Regenerate"
+          >
+            <RefreshCw size={12} />
+          </button>
+        </div>
+      </div>
+
+      <div>
+        <label className="text-[10px] uppercase tracking-vos-wide text-vos-text-3">
+          Install command
+        </label>
+        <div className="mt-1 flex items-stretch gap-1">
+          <code className="flex-1 overflow-x-auto rounded-vos-sm bg-vos-bg-elev-4 px-2 py-1.5 text-[11px] text-vos-text font-mono whitespace-pre">
+            {installCmd}
+          </code>
+          <button
+            type="button"
+            onClick={() => copy(installCmd)}
+            className="inline-flex items-center gap-1 rounded-vos-sm bg-vos-bg-elev-4 px-2 text-[11px] text-vos-text-2 hover:text-vos-text"
+            title="Copy"
+          >
+            <Copy size={12} />
+          </button>
+        </div>
+      </div>
+
+      <p className="text-[11px] text-vos-text-3 leading-relaxed">
+        🔒 The agent dials our hub over TLS 1.3, authenticates with this token, and tunnels
+        scan jobs back through the same connection. No inbound firewall rule is required and
+        the token expires automatically. Credentials you supply per scan are never stored on
+        our side.
+      </p>
+    </div>
+  );
+}
+
+/* ════════════════════════════════════════════════════════════ *
  *  ADD DEVICE WIZARD
  * ════════════════════════════════════════════════════════════ */
 

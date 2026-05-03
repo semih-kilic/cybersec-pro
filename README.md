@@ -2,6 +2,15 @@
 
 CyberSec Pro is a multi-service cybersecurity SaaS platform with Rust APIs, a React/Vite application dashboard, and a Next.js marketing site.
 
+## What's New (May 2026)
+
+- **Hackingtool registry (1300+ tools).** The full [Z4nzu/hackingtool](https://github.com/Z4nzu/hackingtool) catalog (173 tools across 20 business categories) is seeded into PostgreSQL on every backend startup via `rust-backend/src/services/hackingtool_seed.rs` (idempotent UPSERT, IDs prefixed `ht_`). Combined with the existing inventory the DB now ships **1333 runnable tools**.
+- **Zero-code Runner.** Each hackingtool row carries a `parameters.form` JSONB describing its inputs. `pages/dashboard/ToolDetailPage.tsx` auto-renders a form for any tool with this shape, shows a live command preview built from the row's `command_template`, and a one-click Run sends the values to `/api/v1/scan/start`. The backend (`handlers/scan_handlers.rs::start_scan`) substitutes `{key}` placeholders with safe values (CR/LF/backticks stripped, shell metachars `$()`, `&&`, `||`, `;`, `|` rejected) before spawning.
+- **Hybrid agents (SSH + reverse-tunnel).** The Add Device wizard in `pages/dashboard/AgentsPage.tsx` now offers a *Reverse-tunnel agent* option that emits per-OS download URLs (Linux/macOS/Windows/Docker) and a one-time enrollment token plus install one-liner. The agent dials the hub over TLS — no inbound port required, suitable for laptops behind NAT.
+- **Zero-knowledge credential handling.** Inputs whose name matches `pass|secret|token|api[_-]?key|credential` (or whose seed type is `password`) are rendered masked with an inline 🔒 banner linking to `/dashboard/privacy`. The privacy page documents: credentials are forwarded to the executing agent in-memory and never persisted, BYO Vault is supported (HashiCorp Vault / AWS / GCP / Azure Secrets Manager / 1Password Connect), TLS 1.3 in transit, observability scrubbing for secret-looking fields.
+- **God Mode + cancel.** Long-running scans can be stopped from the UI; `services/cybersec_ai_worker.rs` watches a cancel flag between phases for &lt;5s teardown.
+- **SEO.** `saas-frontend/index.html` now ships canonical URL, expanded OG/Twitter cards, JSON-LD `SoftwareApplication` + `Organization`, and `public/robots.txt` + `public/sitemap.xml`.
+
 ## Repository Status
 
 - Core API runtime: `rust-backend` (Axum, PostgreSQL, Redis)

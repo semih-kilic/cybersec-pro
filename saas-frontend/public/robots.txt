@@ -1,0 +1,9 @@
+User-agent: *
+Allow: /
+Allow: /tools
+Allow: /tools/
+Disallow: /dashboard/
+Disallow: /api/
+Disallow: /auth/
+
+Sitemap: https://cybersecpro.semihkilic.com/sitemap.xml
