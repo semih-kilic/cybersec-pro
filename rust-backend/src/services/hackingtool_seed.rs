@@ -31,7 +31,7 @@ type Entry = (
 
 // ── Parameter form helpers ──────────────────────────────────────────────────
 
-fn p_target() -> Value {
+pub(crate) fn p_target() -> Value {
     json!({
         "form": [
             {"name": "target", "label": "Target (host / URL / IP)", "type": "text", "required": true, "placeholder": "example.com"}
@@ -39,7 +39,7 @@ fn p_target() -> Value {
     })
 }
 
-fn p_url() -> Value {
+pub(crate) fn p_url() -> Value {
     json!({
         "form": [
             {"name": "url", "label": "Target URL", "type": "url", "required": true, "placeholder": "https://example.com"}
@@ -47,7 +47,7 @@ fn p_url() -> Value {
     })
 }
 
-fn p_host() -> Value {
+pub(crate) fn p_host() -> Value {
     json!({
         "form": [
             {"name": "host", "label": "Host / IP", "type": "text", "required": true, "placeholder": "192.0.2.1"}
@@ -55,7 +55,7 @@ fn p_host() -> Value {
     })
 }
 
-fn p_domain() -> Value {
+pub(crate) fn p_domain() -> Value {
     json!({
         "form": [
             {"name": "domain", "label": "Domain", "type": "text", "required": true, "placeholder": "example.com"}
@@ -71,7 +71,7 @@ fn p_iface() -> Value {
     })
 }
 
-fn p_file() -> Value {
+pub(crate) fn p_file() -> Value {
     json!({
         "form": [
             {"name": "file", "label": "Input file path", "type": "text", "required": true, "placeholder": "/path/to/file"}
@@ -79,7 +79,7 @@ fn p_file() -> Value {
     })
 }
 
-fn p_wordlist() -> Value {
+pub(crate) fn p_wordlist() -> Value {
     json!({
         "form": [
             {"name": "wordlist", "label": "Wordlist path", "type": "text", "required": true, "placeholder": "/usr/share/wordlists/rockyou.txt"}
@@ -121,7 +121,7 @@ fn p_target_apikey() -> Value {
     })
 }
 
-fn p_apk() -> Value {
+pub(crate) fn p_apk() -> Value {
     json!({
         "form": [
             {"name": "apk", "label": "APK file path", "type": "text", "required": true, "placeholder": "/path/to/app.apk"}
@@ -129,7 +129,7 @@ fn p_apk() -> Value {
     })
 }
 
-fn p_none() -> Value {
+pub(crate) fn p_none() -> Value {
     json!({"form": []})
 }
 

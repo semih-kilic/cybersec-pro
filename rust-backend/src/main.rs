@@ -55,6 +55,11 @@ async fn main() -> anyhow::Result<()> {
         Ok((ins, upd)) => tracing::info!("hackingtool registry seeded: {ins} inserted, {upd} updated"),
         Err(e) => tracing::warn!("hackingtool seeding failed: {e}"),
     }
+    // Seed modern catalog (~210 cloud / k8s / supply-chain / AI / web3 tools).
+    match services::hackingtool_seed_modern::seed_modern_tools(&db).await {
+        Ok((ins, upd)) => tracing::info!("modern tool registry seeded: {ins} inserted, {upd} updated"),
+        Err(e) => tracing::warn!("modern tool seeding failed: {e}"),
+    }
 
     // JWT secret (required — must be at least 32 chars)
     let jwt_secret = std::env::var("JWT_SECRET_KEY")
