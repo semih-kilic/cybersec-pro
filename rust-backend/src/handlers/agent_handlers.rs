@@ -741,6 +741,222 @@ exit 0
     )
 }
 
+// ── Reverse-tunnel job channel ─────────────────────────────────────────
+// Agents authenticated with Bearer api_key long-poll for new commands and POST
+// back the captured stdout/stderr/exit_code. The control plane queues commands
+// via `queue_agent_job` (called from scan_handlers when agent.connection_type =
+// 'reverse_tunnel') or directly by an admin via POST /agents/:id/jobs.
+
+/// Authenticates an agent request via Bearer api_key and confirms the agent
+/// row exists. Returns the agent's `organization_id` on success.
+async fn authenticate_agent(
+    state: &Arc<AppState>,
+    headers: &HeaderMap,
+    agent_id: &str,
+) -> Result<String, (StatusCode, Json<serde_json::Value>)> {
+    let presented = match bearer_from_headers(headers) {
+        Some(k) if is_valid_agent_api_key_format(&k) => k,
+        _ => return Err((StatusCode::UNAUTHORIZED, Json(json!({"error": "Missing or malformed Bearer api_key"})))),
+    };
+
+    let row: Option<(String, String)> = sqlx::query_as(
+        "SELECT api_key, organization_id FROM agents WHERE id = $1"
+    )
+    .bind(agent_id)
+    .fetch_optional(&state.db)
+    .await
+    .unwrap_or(None);
+
+    let (stored, org_id) = match row {
+        Some((k, o)) if !k.is_empty() => (k, o),
+        _ => return Err((StatusCode::UNAUTHORIZED, Json(json!({"error": "Unknown agent"})))),
+    };
+
+    if !constant_time_eq(stored.as_bytes(), presented.as_bytes()) {
+        return Err((StatusCode::UNAUTHORIZED, Json(json!({"error": "Invalid api_key"}))));
+    }
+    Ok(org_id)
+}
+
+/// GET /api/v1/agents/:agent_id/jobs/next — long-poll up to 25s for the next
+/// pending job for this agent. Atomically claims the job (status -> 'claimed').
+/// Returns 204 No Content if no job appears within the poll window.
+pub async fn agent_next_job(
+    State(state): State<Arc<AppState>>,
+    Path(agent_id): Path<String>,
+    headers: HeaderMap,
+) -> impl IntoResponse {
+    if let Err(e) = authenticate_agent(&state, &headers, &agent_id).await {
+        return e.into_response();
+    }
+
+    // Long-poll: try up to 25 times with 1s sleep between attempts.
+    for _ in 0..25 {
+        let claimed: Option<(String, String, Option<String>, Option<String>, i32)> = sqlx::query_as(
+            "UPDATE agent_jobs SET status = 'claimed', claimed_at = now() \
+             WHERE id = ( \
+                 SELECT id FROM agent_jobs \
+                 WHERE agent_id = $1 AND status = 'pending' \
+                 ORDER BY created_at ASC \
+                 FOR UPDATE SKIP LOCKED \
+                 LIMIT 1 \
+             ) \
+             RETURNING id, command, scan_id, tool_id, timeout_seconds"
+        )
+        .bind(&agent_id)
+        .fetch_optional(&state.db)
+        .await
+        .unwrap_or(None);
+
+        if let Some((job_id, command, scan_id, tool_id, timeout_seconds)) = claimed {
+            return (StatusCode::OK, Json(json!({
+                "job_id": job_id,
+                "command": command,
+                "scan_id": scan_id,
+                "tool_id": tool_id,
+                "timeout_seconds": timeout_seconds,
+            }))).into_response();
+        }
+
+        tokio::time::sleep(std::time::Duration::from_secs(1)).await;
+    }
+
+    StatusCode::NO_CONTENT.into_response()
+}
+
+/// POST /api/v1/agents/:agent_id/jobs/:job_id/result — agent reports outcome.
+pub async fn agent_job_result(
+    State(state): State<Arc<AppState>>,
+    Path((agent_id, job_id)): Path<(String, String)>,
+    headers: HeaderMap,
+    Json(body): Json<serde_json::Value>,
+) -> impl IntoResponse {
+    if let Err(e) = authenticate_agent(&state, &headers, &agent_id).await {
+        return e.into_response();
+    }
+
+    // Cap stored output at 1 MiB each to avoid runaway rows from misbehaving agents.
+    const MAX_OUTPUT_BYTES: usize = 1_048_576;
+    let truncate = |s: Option<&str>| -> Option<String> {
+        s.map(|v| {
+            if v.len() > MAX_OUTPUT_BYTES {
+                format!("{}\n...[truncated {} bytes]", &v[..MAX_OUTPUT_BYTES], v.len() - MAX_OUTPUT_BYTES)
+            } else {
+                v.to_string()
+            }
+        })
+    };
+
+    let exit_code = body.get("exit_code").and_then(|v| v.as_i64()).map(|v| v as i32);
+    let stdout = truncate(body.get("stdout").and_then(|v| v.as_str()));
+    let stderr = truncate(body.get("stderr").and_then(|v| v.as_str()));
+    let raw_status = body.get("status").and_then(|v| v.as_str()).unwrap_or("completed");
+    let status = match raw_status {
+        "completed" | "failed" | "timeout" | "cancelled" => raw_status,
+        _ => "completed",
+    };
+
+    let updated = sqlx::query(
+        "UPDATE agent_jobs \
+         SET status = $1, exit_code = $2, stdout = $3, stderr = $4, completed_at = now() \
+         WHERE id = $5 AND agent_id = $6 AND status IN ('pending','claimed','running')"
+    )
+    .bind(status)
+    .bind(exit_code)
+    .bind(&stdout)
+    .bind(&stderr)
+    .bind(&job_id)
+    .bind(&agent_id)
+    .execute(&state.db)
+    .await;
+
+    match updated {
+        Ok(r) if r.rows_affected() == 1 => (StatusCode::OK, Json(json!({"status":"ok"}))).into_response(),
+        Ok(_) => (StatusCode::NOT_FOUND, Json(json!({"error":"Job not found or already finalized"}))).into_response(),
+        Err(e) => (StatusCode::INTERNAL_SERVER_ERROR, Json(json!({"error": e.to_string()}))).into_response(),
+    }
+}
+
+#[derive(Deserialize)]
+pub struct QueueJobBody {
+    pub command: String,
+    #[serde(default)]
+    pub tool_id: Option<String>,
+    #[serde(default)]
+    pub scan_id: Option<String>,
+    #[serde(default)]
+    pub timeout_seconds: Option<i32>,
+}
+
+/// POST /api/v1/agents/:agent_id/jobs — operator queues a command for the
+/// reverse-tunnel agent to execute. The agent must belong to the operator's org.
+pub async fn queue_agent_job(
+    State(state): State<Arc<AppState>>,
+    Path(agent_id): Path<String>,
+    auth: AuthUser,
+    Json(body): Json<QueueJobBody>,
+) -> impl IntoResponse {
+    let org_id = match &auth.org_id {
+        Some(o) => o.clone(),
+        None => return (StatusCode::FORBIDDEN, Json(json!({"error":"Org context required"}))).into_response(),
+    };
+
+    // Confirm the agent is in the caller's org and is a reverse-tunnel agent.
+    let row: Option<(String, Option<String>)> = sqlx::query_as(
+        "SELECT organization_id, connection_type FROM agents WHERE id = $1"
+    )
+    .bind(&agent_id)
+    .fetch_optional(&state.db)
+    .await
+    .unwrap_or(None);
+
+    let (agent_org, conn_type) = match row {
+        Some(r) => r,
+        None => return (StatusCode::NOT_FOUND, Json(json!({"error":"Agent not found"}))).into_response(),
+    };
+    if agent_org != org_id {
+        return (StatusCode::FORBIDDEN, Json(json!({"error":"Agent is not in your organization"}))).into_response();
+    }
+    if conn_type.as_deref() != Some("reverse_tunnel") {
+        return (StatusCode::BAD_REQUEST, Json(json!({"error":"Agent is not a reverse-tunnel agent"}))).into_response();
+    }
+
+    // Reject command strings with shell metachars that would let a tenant
+    // string commands together. Match the policy used by start_scan substitution.
+    let cmd = body.command.trim();
+    if cmd.is_empty() {
+        return (StatusCode::BAD_REQUEST, Json(json!({"error":"Empty command"}))).into_response();
+    }
+    if cmd.contains("$(") || cmd.contains("`") || cmd.contains("&&")
+        || cmd.contains("||") || cmd.contains(';') || cmd.contains('|')
+        || cmd.contains('\n') || cmd.contains('\r')
+    {
+        return (StatusCode::BAD_REQUEST, Json(json!({"error":"Command contains forbidden shell metacharacters"}))).into_response();
+    }
+
+    let job_id = Uuid::new_v4().to_string();
+    let timeout = body.timeout_seconds.unwrap_or(600).clamp(10, 3600);
+
+    let res = sqlx::query(
+        "INSERT INTO agent_jobs (id, agent_id, organization_id, scan_id, tool_id, command, timeout_seconds, status) \
+         VALUES ($1, $2, $3, $4, $5, $6, $7, 'pending')"
+    )
+    .bind(&job_id)
+    .bind(&agent_id)
+    .bind(&org_id)
+    .bind(&body.scan_id)
+    .bind(&body.tool_id)
+    .bind(cmd)
+    .bind(timeout)
+    .execute(&state.db)
+    .await;
+
+    match res {
+        Ok(_) => (StatusCode::CREATED, Json(json!({"job_id": job_id, "status":"pending"}))).into_response(),
+        Err(e) => (StatusCode::INTERNAL_SERVER_ERROR, Json(json!({"error": e.to_string()}))).into_response(),
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::{is_valid_agent_api_key_format, is_valid_agent_token_format, parse_heartbeat_metrics};
