@@ -1,0 +1,85 @@
+name: Build agent binaries
+
+on:
+  push:
+    branches: [master]
+    paths:
+      - 'rust-agent/**'
+      - '.github/workflows/build-agent.yml'
+  workflow_dispatch:
+
+jobs:
+  build:
+    name: Build ${{ matrix.target }}
+    runs-on: ${{ matrix.runner }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - target: x86_64-apple-darwin
+            runner: macos-13
+            artifact: cybersec-agent-darwin-amd64
+          - target: aarch64-apple-darwin
+            runner: macos-14
+            artifact: cybersec-agent-darwin-arm64
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: ${{ matrix.target }}
+
+      - name: Cache cargo
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+            rust-agent/target
+          key: ${{ runner.os }}-${{ matrix.target }}-cargo-${{ hashFiles('rust-agent/Cargo.lock', 'rust-agent/Cargo.toml') }}
+
+      - name: Build
+        working-directory: rust-agent
+        run: cargo build --release --target ${{ matrix.target }}
+
+      - name: Strip
+        working-directory: rust-agent
+        run: strip target/${{ matrix.target }}/release/cybersec-agent
+
+      - name: Rename
+        working-directory: rust-agent
+        run: cp target/${{ matrix.target }}/release/cybersec-agent ${{ matrix.artifact }}
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.artifact }}
+          path: rust-agent/${{ matrix.artifact }}
+          if-no-files-found: error
+
+  universal:
+    name: Build darwin-universal
+    needs: build
+    runs-on: macos-14
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: cybersec-agent-darwin-amd64
+          path: ./amd64
+      - uses: actions/download-artifact@v4
+        with:
+          name: cybersec-agent-darwin-arm64
+          path: ./arm64
+      - name: lipo
+        run: |
+          lipo -create \
+            ./amd64/cybersec-agent-darwin-amd64 \
+            ./arm64/cybersec-agent-darwin-arm64 \
+            -output ./cybersec-agent-darwin-universal
+          file ./cybersec-agent-darwin-universal
+      - uses: actions/upload-artifact@v4
+        with:
+          name: cybersec-agent-darwin-universal
+          path: ./cybersec-agent-darwin-universal
+          if-no-files-found: error
