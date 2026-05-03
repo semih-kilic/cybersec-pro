@@ -2319,26 +2319,97 @@ pub async fn analytics_overview(
         status_dist.insert(s.clone(), json!(c));
     }
 
+    // Target distribution — top 10 by frequency.
+    let target_rows = sqlx::query_as::<_, (String, i64)>(
+        "SELECT COALESCE(NULLIF(target,''),'(none)'), COUNT(*) FROM scans \
+         WHERE user_id = $1 GROUP BY target ORDER BY COUNT(*) DESC LIMIT 10"
+    ).bind(&user.user_id).fetch_all(&state.db).await.unwrap_or_default();
+    let target_distribution: Vec<serde_json::Value> = target_rows.iter()
+        .map(|(t, c)| json!({"target": t, "count": c})).collect();
+
+    // This-week vs last-week comparison.
+    let this_week: (i64,) = sqlx::query_as(
+        "SELECT COUNT(*) FROM scans WHERE user_id = $1 AND created_at >= NOW() - INTERVAL '7 days'"
+    ).bind(&user.user_id).fetch_one(&state.db).await.unwrap_or((0,));
+    let last_week: (i64,) = sqlx::query_as(
+        "SELECT COUNT(*) FROM scans WHERE user_id = $1 \
+         AND created_at >= NOW() - INTERVAL '14 days' AND created_at < NOW() - INTERVAL '7 days'"
+    ).bind(&user.user_id).fetch_one(&state.db).await.unwrap_or((0,));
+    let change_pct = if last_week.0 > 0 {
+        ((this_week.0 - last_week.0) as f64 / last_week.0 as f64 * 100.0 * 10.0).round() / 10.0
+    } else if this_week.0 > 0 { 100.0 } else { 0.0 };
+
+    // Average scan duration (only for scans we have timing for).
+    let avg_dur: (Option<f64>,) = sqlx::query_as(
+        "SELECT AVG(EXTRACT(EPOCH FROM (completed_at - started_at)))::float8 \
+         FROM scans WHERE user_id = $1 \
+         AND status = 'completed' AND started_at IS NOT NULL AND completed_at IS NOT NULL"
+    ).bind(&user.user_id).fetch_one(&state.db).await.unwrap_or((None,));
+    let avg_duration_seconds = avg_dur.0.map(|v| v.round() as i64).unwrap_or(0);
+
+    // Risk aggregation from scans.findings JSONB.
+    // Findings are usually stored as { "critical": n, "high": n, ... } or as
+    // an array of { "severity": "high", … }. Cover both shapes.
+    let sev_rows: Vec<(String, i64)> = sqlx::query_as(
+        r#"
+        WITH per_scan AS (
+            SELECT
+                COALESCE((findings->>'critical')::int, 0) AS critical,
+                COALESCE((findings->>'high')::int,     0) AS high,
+                COALESCE((findings->>'medium')::int,   0) AS medium,
+                COALESCE((findings->>'low')::int,      0) AS low,
+                COALESCE((findings->>'info')::int,     0) AS info
+            FROM scans
+            WHERE user_id = $1
+              AND findings IS NOT NULL
+              AND jsonb_typeof(findings) = 'object'
+        )
+        SELECT 'critical', COALESCE(SUM(critical),0)::bigint FROM per_scan
+        UNION ALL SELECT 'high',     COALESCE(SUM(high),0)::bigint     FROM per_scan
+        UNION ALL SELECT 'medium',   COALESCE(SUM(medium),0)::bigint   FROM per_scan
+        UNION ALL SELECT 'low',      COALESCE(SUM(low),0)::bigint      FROM per_scan
+        UNION ALL SELECT 'info',     COALESCE(SUM(info),0)::bigint     FROM per_scan
+        "#
+    ).bind(&user.user_id).fetch_all(&state.db).await.unwrap_or_default();
+
+    let mut sev = std::collections::HashMap::new();
+    for (k, v) in &sev_rows { sev.insert(k.clone(), *v); }
+    let crit = *sev.get("critical").unwrap_or(&0);
+    let high = *sev.get("high").unwrap_or(&0);
+    let med  = *sev.get("medium").unwrap_or(&0);
+    let low  = *sev.get("low").unwrap_or(&0);
+    let info = *sev.get("info").unwrap_or(&0);
+    let total_issues = crit + high + med + low + info;
+    // Weighted score (clamped 0..100).
+    let raw_score = crit * 25 + high * 10 + med * 4 + low * 1;
+    let risk_score = raw_score.min(100);
+    let risk_level = if crit > 0 || risk_score >= 75 { "critical" }
+        else if high > 0 || risk_score >= 50 { "high" }
+        else if med > 0 || risk_score >= 25 { "medium" }
+        else if low > 0 { "low" } else { "info" };
+
+    let _ = failed;
+
     Json(json!({
         "daily_trend": daily_trend,
         "tool_usage": tool_usage,
         "status_distribution": status_dist,
-        "target_distribution": [],
+        "target_distribution": target_distribution,
         "comparison": {
-            "this_week": total_scans.0,
-            "last_week": 0,
-            "change_pct": 0.0
+            "this_week": this_week.0,
+            "last_week": last_week.0,
+            "change_pct": change_pct
         },
         "performance": {
-            "avg_duration_seconds": 0,
+            "avg_duration_seconds": avg_duration_seconds,
             "total_scans": total_scans.0,
             "success_rate": success_rate
         },
         "risk": {
-            "score": 0,
-            "level": "low",
-            "severity_totals": {"critical": 0, "high": 0, "medium": 0, "low": 0, "info": 0},
-            "total_issues": 0
+            "score": risk_score,
+            "level": risk_level,
+            "severity_totals": {"critical": crit, "high": high, "medium": med, "low": low, "info": info},
+            "total_issues": total_issues
         }
     })).into_response()
 }
@@ -2460,17 +2531,47 @@ pub async fn usage_stats(
     user: AuthUser,
     State(state): State<Arc<AppState>>,
 ) -> impl IntoResponse {
-    let total_scans = sqlx::query_as::<_, (i64,)>(
-        "SELECT COUNT(*) FROM scans WHERE user_id = $1"
-    ).bind(&user.user_id).fetch_one(&state.db).await.unwrap_or((0,));
+    let org_id = user.org_id.clone().unwrap_or_else(|| user.user_id.clone());
+
+    // Scan usage — count scans this billing period (current calendar month).
+    let scans_used: (i64,) = sqlx::query_as(
+        "SELECT COUNT(*) FROM scans \
+         WHERE organization_id = $1 AND created_at >= date_trunc('month', CURRENT_DATE)"
+    ).bind(&org_id).fetch_one(&state.db).await.unwrap_or((0,));
+
+    // Storage = sum of scan output text size (rough proxy; reports/uploads
+    // are not currently tracked separately).
+    let storage_bytes: (Option<i64>,) = sqlx::query_as(
+        "SELECT COALESCE(SUM(LENGTH(COALESCE(output,'')) + LENGTH(COALESCE(error_log,''))), 0)::bigint \
+         FROM scans WHERE organization_id = $1"
+    ).bind(&org_id).fetch_one(&state.db).await.unwrap_or((Some(0),));
+    let storage_used_mb = storage_bytes.0.unwrap_or(0) / 1_048_576;
+
+    // API calls — count audit_logs entries this month as a conservative proxy
+    // (covers every authenticated mutation; read-only GETs aren't logged so
+    // this is an under-count, not an over-count).
+    let api_calls: (i64,) = sqlx::query_as(
+        "SELECT COUNT(*) FROM audit_logs \
+         WHERE organization_id = $1 AND created_at >= date_trunc('month', CURRENT_DATE)"
+    ).bind(&org_id).fetch_one(&state.db).await.unwrap_or((0,));
+
+    // Plan-aware limits.
+    let plan: (Option<String>,) = sqlx::query_as(
+        "SELECT plan_type FROM organizations WHERE id = $1"
+    ).bind(&org_id).fetch_optional(&state.db).await.ok().flatten().unwrap_or((None,));
+    let configs = crate::services::plan::get_plan_configs();
+    let cfg = configs.get(plan.0.as_deref().unwrap_or("trial"));
+    let scans_limit = cfg.map(|c| c.scans_per_month).unwrap_or(10_000);
+    let storage_limit_mb = cfg.map(|c| c.storage_gb as i64 * 1024).unwrap_or(50_000);
+    let api_limit = cfg.map(|c| c.api_calls_per_month).unwrap_or(100_000);
 
     Json(json!({
-        "scans_used": total_scans.0,
-        "scans_limit": 10000,
-        "storage_used_mb": 0,
-        "storage_limit_mb": 50000,
-        "api_calls": 0,
-        "api_limit": 100000
+        "scans_used": scans_used.0,
+        "scans_limit": scans_limit,
+        "storage_used_mb": storage_used_mb,
+        "storage_limit_mb": storage_limit_mb,
+        "api_calls": api_calls.0,
+        "api_limit": api_limit,
     })).into_response()
 }
 
