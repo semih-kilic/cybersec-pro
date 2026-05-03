@@ -27,13 +27,66 @@ const CANCEL_SENTINEL: &str = "__cybersec_ai_cancelled__";
 
 pub async fn run(db: Arc<PgPool>) {
     tracing::info!("🤖 CyberSec AI worker started — polling every {}s", POLL_INTERVAL_SECS);
+
+    // Startup sweep: any row left in `running` or `cancelling` from a previous
+    // process is orphaned (no in-flight task watches it). Force-finalize them
+    // so the UI doesn't show a perpetually spinning state.
+    if let Err(e) = sweep_orphans(&db, true).await {
+        tracing::warn!("ai_worker startup sweep failed: {e}");
+    }
+
     let mut interval = tokio::time::interval(Duration::from_secs(POLL_INTERVAL_SECS));
     loop {
         interval.tick().await;
+        // Per-tick safety net: any `cancelling` row older than 2 minutes
+        // (well beyond AGENT_TIMEOUT_SECS=90) gets force-cancelled. This
+        // covers cases where the inner command ignored the cancel sentinel.
+        if let Err(e) = sweep_orphans(&db, false).await {
+            tracing::warn!("ai_worker per-tick sweep failed: {e}");
+        }
         if let Err(e) = pick_and_process(&db).await {
             tracing::error!("cybersec_ai_worker tick failed: {e}");
         }
     }
+}
+
+/// Force-finalize stuck rows.
+/// - When `startup=true`: any `running`/`cancelling` row → cancelled (this
+///   process didn't claim it, so no task is watching).
+/// - When `startup=false`: only `cancelling` rows whose `started_at` is older
+///   than 2 minutes get cancelled (the worker has had ample time to react).
+async fn sweep_orphans(db: &PgPool, startup: bool) -> Result<(), sqlx::Error> {
+    let res = if startup {
+        sqlx::query(
+            "UPDATE cybersec_ai_jobs
+             SET status = 'cancelled', completed_at = NOW(),
+                 results = COALESCE(results, '{}'::jsonb) ||
+                           jsonb_build_object('cancel_reason', 'orphaned by worker restart')
+             WHERE status IN ('running', 'cancelling')",
+        )
+        .execute(db)
+        .await?
+    } else {
+        sqlx::query(
+            "UPDATE cybersec_ai_jobs
+             SET status = 'cancelled', completed_at = NOW(),
+                 results = COALESCE(results, '{}'::jsonb) ||
+                           jsonb_build_object('cancel_reason', 'force-cancelled after grace period')
+             WHERE status = 'cancelling'
+               AND started_at IS NOT NULL
+               AND started_at < NOW() - INTERVAL '2 minutes'",
+        )
+        .execute(db)
+        .await?
+    };
+    if res.rows_affected() > 0 {
+        tracing::info!(
+            startup,
+            count = res.rows_affected(),
+            "ai_worker sweep finalized stuck job(s)"
+        );
+    }
+    Ok(())
 }
 
 async fn pick_and_process(db: &PgPool) -> Result<(), sqlx::Error> {

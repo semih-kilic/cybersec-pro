@@ -174,7 +174,12 @@ const TOOL_CATALOG: &[ToolMeta] = &[
 ];
 
 fn search_tools(query: &str, target_type: Option<&str>) -> Vec<&'static ToolMeta> {
-    let q = query.to_lowercase();
+    // Normalize the query and translate a small set of common Turkish keywords
+    // to English so non-English prompts ("ilk olarak hangi araç ile başlamalıyım")
+    // can still find matches against the (English) tool keyword vocabulary.
+    let q_raw = query.to_lowercase();
+    let q = translate_query_to_english(&q_raw);
+
     let mut scored: Vec<(i32, &ToolMeta)> = TOOL_CATALOG.iter().map(|t| {
         let mut score = 0;
         for kw in t.keywords { if q.contains(*kw) { score += 3; } }
@@ -185,7 +190,94 @@ fn search_tools(query: &str, target_type: Option<&str>) -> Vec<&'static ToolMeta
         (score, t)
     }).collect();
     scored.sort_by(|a, b| b.0.cmp(&a.0));
-    scored.into_iter().filter(|(s, _)| *s > 0).take(8).map(|(_, t)| t).collect()
+    let matched: Vec<&ToolMeta> = scored.into_iter().filter(|(s, _)| *s > 0).take(8).map(|(_, t)| t).collect();
+    if !matched.is_empty() {
+        return matched;
+    }
+
+    // Fallback: query had no recognisable keywords (e.g. "ilk olarak hangi
+    // araç ile başlamalıyım" / "what should I start with"). Surface a curated
+    // "getting started" set so the user isn't left with an empty result.
+    let starter_ids = ["subfinder", "httpx", "nmap", "nuclei", "nikto", "ffuf"];
+    let mut starters: Vec<&ToolMeta> = starter_ids
+        .iter()
+        .filter_map(|id| TOOL_CATALOG.iter().find(|t| &t.id == id))
+        .collect();
+    if let Some(tt) = target_type {
+        starters.retain(|t| t.target_types.contains(&tt));
+    }
+    if starters.is_empty() {
+        // Fall back to the first 6 catalog entries if even the starter list
+        // got filtered out by an unusual target_type.
+        return TOOL_CATALOG.iter().take(6).collect();
+    }
+    starters
+}
+
+/// Cheap-and-cheerful keyword translator. We do NOT want to ship a full i18n
+/// dictionary — only enough Turkish (and a handful of common European)
+/// pentest-vocabulary words to map onto the English keyword catalog.
+fn translate_query_to_english(q: &str) -> String {
+    const PAIRS: &[(&str, &str)] = &[
+        // Turkish → English
+        ("başlamalıyım", "start"),
+        ("başlangıç", "start"),
+        ("başla", "start"),
+        ("hangi araç", "tool"),
+        ("araç", "tool"),
+        ("ilk olarak", "start"),
+        ("ilk", "start"),
+        ("nasıl", "how"),
+        ("tarama", "scan"),
+        ("tara", "scan"),
+        ("zafiyet", "vulnerability"),
+        ("zayıflık", "vulnerability"),
+        ("güvenlik", "security"),
+        ("açık", "open"),
+        ("port", "port"),
+        ("alt alan", "subdomain"),
+        ("altalan", "subdomain"),
+        ("alan adı", "domain"),
+        ("parola", "password"),
+        ("şifre", "password"),
+        ("kırma", "crack"),
+        ("kırıcı", "crack"),
+        ("brute force", "bruteforce"),
+        ("kaba kuvvet", "bruteforce"),
+        ("web uygulaması", "web"),
+        ("web sitesi", "web"),
+        ("site", "web"),
+        ("sızma testi", "pentest"),
+        ("sızma", "pentest"),
+        ("ağ", "network"),
+        ("kablosuz", "wireless"),
+        ("wifi", "wifi"),
+        ("oltalama", "phishing"),
+        ("kimlik avı", "phishing"),
+        ("sertifika", "certificate"),
+        ("ssl", "ssl"),
+        ("api", "api"),
+        ("bulut", "cloud"),
+        ("konteyner", "container"),
+        ("mobil", "mobile"),
+        ("android", "android"),
+        ("ios", "ios"),
+        // German / Spanish / French — trivial common nouns
+        ("werkzeug", "tool"),
+        ("herramienta", "tool"),
+        ("outil", "tool"),
+        ("scannen", "scan"),
+        ("escanear", "scan"),
+        ("scanner", "scan"),
+    ];
+    let mut out = q.to_string();
+    for (from, to) in PAIRS {
+        if out.contains(from) {
+            out.push(' ');
+            out.push_str(to);
+        }
+    }
+    out
 }
 
 fn tool_to_json(t: &ToolMeta) -> Value {
