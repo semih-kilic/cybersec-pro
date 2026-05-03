@@ -1,6 +1,6 @@
 use axum::{
     extract::{Path, State},
-    http::{header, StatusCode},
+    http::{header, HeaderMap, StatusCode},
     response::IntoResponse,
     Json,
 };
@@ -12,6 +12,24 @@ use uuid::Uuid;
 use crate::middleware::auth_middleware::AuthUser;
 use crate::models::Agent;
 use crate::AppState;
+
+/// Returns the HMAC secret used for agent enrollment JWTs. Prefers `JWT_SECRET_KEY`
+/// (the canonical app-wide secret loaded by main.rs from .env) and falls back to
+/// `JWT_SECRET` then "default-secret" for legacy compatibility.
+fn jwt_secret() -> String {
+    std::env::var("JWT_SECRET_KEY")
+        .or_else(|_| std::env::var("JWT_SECRET"))
+        .unwrap_or_else(|_| "default-secret".into())
+}
+
+/// Extracts a Bearer token from the Authorization header.
+fn bearer_from_headers(headers: &HeaderMap) -> Option<String> {
+    headers
+        .get(axum::http::header::AUTHORIZATION)
+        .and_then(|v| v.to_str().ok())
+        .and_then(|s| s.strip_prefix("Bearer "))
+        .map(|s| s.trim().to_string())
+}
 
 // ── Pure helpers (testable without DB) ─────────────────────────────────
 
@@ -142,7 +160,7 @@ pub async fn create_agent(
     // Encrypt SSH password if provided
     let encrypted_password = body.ssh_password.as_ref().and_then(|pwd| {
         if pwd.is_empty() { return None; }
-        let secret = std::env::var("JWT_SECRET").unwrap_or_else(|_| "default-secret".into());
+        let secret = jwt_secret();
         crate::services::connection_engine::crypto::encrypt_password(pwd, &secret).ok()
     });
 
@@ -232,8 +250,35 @@ pub async fn delete_agent(
 pub async fn agent_heartbeat(
     State(state): State<Arc<AppState>>,
     Path(agent_id): Path<String>,
+    headers: HeaderMap,
     Json(body): Json<serde_json::Value>,
 ) -> impl IntoResponse {
+    // Authenticate via the Bearer api_key issued at enrollment. The api_key is
+    // bound to the agent row and never leaves the agent — this prevents anyone
+    // who knows an agent_id from spoofing heartbeats.
+    let presented = match bearer_from_headers(&headers) {
+        Some(k) if is_valid_agent_api_key_format(&k) => k,
+        _ => return (StatusCode::UNAUTHORIZED, Json(json!({"error": "Missing or malformed Bearer api_key"}))).into_response(),
+    };
+
+    let row: Option<(String,)> = sqlx::query_as(
+        "SELECT api_key FROM agents WHERE id = $1"
+    )
+    .bind(&agent_id)
+    .fetch_optional(&state.db)
+    .await
+    .unwrap_or(None);
+
+    let stored = match row.and_then(|(k,)| Some(k)) {
+        Some(k) if !k.is_empty() => k,
+        _ => return (StatusCode::UNAUTHORIZED, Json(json!({"error": "Unknown agent"}))).into_response(),
+    };
+
+    // Constant-time compare to avoid timing oracles on api_key.
+    if !constant_time_eq(stored.as_bytes(), presented.as_bytes()) {
+        return (StatusCode::UNAUTHORIZED, Json(json!({"error": "Invalid api_key"}))).into_response();
+    }
+
     let (cpu, mem, active) = parse_heartbeat_metrics(&body);
 
     let _ = sqlx::query(
@@ -246,7 +291,15 @@ pub async fn agent_heartbeat(
     .execute(&state.db)
     .await;
 
-    Json(json!({"status": "ok"}))
+    Json(json!({"status": "ok"})).into_response()
+}
+
+/// Constant-time byte comparison.
+fn constant_time_eq(a: &[u8], b: &[u8]) -> bool {
+    if a.len() != b.len() { return false; }
+    let mut diff: u8 = 0;
+    for (x, y) in a.iter().zip(b.iter()) { diff |= x ^ y; }
+    diff == 0
 }
 
 /// Execute a command on agent via SSH
@@ -287,7 +340,7 @@ pub async fn agent_execute(
     };
 
     let password = agent.ssh_password_encrypted.as_ref().and_then(|enc| {
-        let secret = std::env::var("JWT_SECRET").unwrap_or_else(|_| "default-secret".into());
+        let secret = jwt_secret();
         crate::services::connection_engine::crypto::decrypt_password(enc, &secret).ok()
     });
 
@@ -374,7 +427,7 @@ pub async fn issue_enrollment_token(
         "iat": now,
         "exp": exp,
     });
-    let secret = std::env::var("JWT_SECRET").unwrap_or_else(|_| "default-secret".into());
+    let secret = jwt_secret();
     let token = match jsonwebtoken::encode(
         &jsonwebtoken::Header::new(jsonwebtoken::Algorithm::HS256),
         &claims,
@@ -412,7 +465,7 @@ pub async fn enroll_agent(
     let hostname = body.get("hostname").and_then(|v| v.as_str()).unwrap_or("unknown").to_string();
     let platform = body.get("platform").and_then(|v| v.as_str()).unwrap_or("linux").to_string();
 
-    let secret = std::env::var("JWT_SECRET").unwrap_or_else(|_| "default-secret".into());
+    let secret = jwt_secret();
     let mut validation = jsonwebtoken::Validation::new(jsonwebtoken::Algorithm::HS256);
     validation.validate_exp = true;
     let data = match jsonwebtoken::decode::<serde_json::Value>(
@@ -447,9 +500,10 @@ pub async fn enroll_agent(
         format!("sha256:{:x}", h.finalize())
     };
 
+    // status='pending' until the first heartbeat flips it to 'online'.
     let res = sqlx::query(
         "INSERT INTO agents (id, organization_id, name, connection_type, hostname, platform, network_zone, max_concurrent_scans, registration_token, api_key, status)
-         VALUES ($1, $2, $3, 'reverse_tunnel', $4, $5, 'public', 5, $6, $7, 'online')"
+         VALUES ($1, $2, $3, 'reverse_tunnel', $4, $5, 'public', 5, $6, $7, 'pending')"
     )
     .bind(&agent_id)
     .bind(&org_id)
