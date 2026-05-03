@@ -153,10 +153,13 @@ async fn main() {
     // Heartbeat loop with graceful shutdown.
     let mut sys = System::new_all();
     let mut interval = tokio::time::interval(Duration::from_secs(HEARTBEAT_SECS));
+
+    #[cfg(unix)]
     let mut sigterm = tokio::signal::unix::signal(tokio::signal::unix::SignalKind::terminate())
         .expect("sigterm handler");
 
     loop {
+        #[cfg(unix)]
         tokio::select! {
             _ = interval.tick() => {
                 if let Err(e) = heartbeat(&state, &http, &mut sys).await {
@@ -169,6 +172,18 @@ async fn main() {
             }
             _ = sigterm.recv() => {
                 eprintln!("[agent] SIGTERM received, exiting");
+                break;
+            }
+        }
+        #[cfg(not(unix))]
+        tokio::select! {
+            _ = interval.tick() => {
+                if let Err(e) = heartbeat(&state, &http, &mut sys).await {
+                    eprintln!("[agent] heartbeat error: {e}");
+                }
+            }
+            _ = tokio::signal::ctrl_c() => {
+                eprintln!("[agent] Ctrl-C received, exiting");
                 break;
             }
         }

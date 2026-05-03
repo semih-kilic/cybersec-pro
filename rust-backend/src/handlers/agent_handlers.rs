@@ -22,6 +22,13 @@ fn jwt_secret() -> String {
         .unwrap_or_else(|_| "default-secret".into())
 }
 
+/// Returns the symmetric key used to encrypt SSH passwords stored in the `agents`
+/// table. Kept separate from `jwt_secret()` so we don't break decryption of
+/// passwords already in the DB when the JWT signing secret rotates.
+pub(crate) fn password_encryption_key() -> String {
+    std::env::var("JWT_SECRET").unwrap_or_else(|_| "default-secret".into())
+}
+
 /// Extracts a Bearer token from the Authorization header.
 fn bearer_from_headers(headers: &HeaderMap) -> Option<String> {
     headers
@@ -160,7 +167,7 @@ pub async fn create_agent(
     // Encrypt SSH password if provided
     let encrypted_password = body.ssh_password.as_ref().and_then(|pwd| {
         if pwd.is_empty() { return None; }
-        let secret = jwt_secret();
+        let secret = password_encryption_key();
         crate::services::connection_engine::crypto::encrypt_password(pwd, &secret).ok()
     });
 
@@ -340,7 +347,7 @@ pub async fn agent_execute(
     };
 
     let password = agent.ssh_password_encrypted.as_ref().and_then(|enc| {
-        let secret = jwt_secret();
+        let secret = password_encryption_key();
         crate::services::connection_engine::crypto::decrypt_password(enc, &secret).ok()
     });
 
@@ -655,7 +662,7 @@ fi
 
 /// Serve a PowerShell install script for the reverse-tunnel agent on Windows.
 pub async fn install_ps1() -> impl IntoResponse {
-    let body = r#"# CyberSec Pro reverse-tunnel agent installer (Windows)
+    let body = r#"# CyberSec Pro reverse-tunnel agent installer (Windows / PowerShell 5+)
 $ErrorActionPreference = 'Stop'
 
 if (-not $env:CSP_TOKEN) {
@@ -668,9 +675,60 @@ if ($env:CSP_TOKEN -notmatch '^(agt_|eyJ)') {
   exit 1
 }
 
-Write-Host "==> CyberSec Pro agent v1 installation"
-Write-Host "==> Token accepted; agent binary is in private beta."
-Write-Host "    Reach out: cybersecpro@semihkilic.com to get the binary."
+$Api = if ($env:CSP_API_URL) { $env:CSP_API_URL } else { 'https://cybersecpro.semihkilic.com' }
+
+# Detect architecture (amd64 / arm64).
+$Arch = switch -regex ($env:PROCESSOR_ARCHITECTURE) {
+  '^AMD64$'   { 'amd64'; break }
+  '^ARM64$'   { 'arm64'; break }
+  default     { 'amd64' }
+}
+
+$Dir = Join-Path $env:LOCALAPPDATA 'CyberSecAgent'
+$Bin = Join-Path $Dir 'cybersec-agent.exe'
+New-Item -ItemType Directory -Force -Path $Dir | Out-Null
+
+$Url = "$Api/api/v1/agents/binary/windows-$Arch.exe"
+Write-Host "==> Downloading $Url"
+
+# TLS 1.2 for older PowerShell 5.x.
+[Net.ServicePointManager]::SecurityProtocol = [Net.ServicePointManager]::SecurityProtocol -bor [Net.SecurityProtocolType]::Tls12
+Invoke-WebRequest -Uri $Url -OutFile $Bin -UseBasicParsing
+
+if (-not (Test-Path $Bin)) {
+  Write-Error "Download failed: $Bin not found."
+  exit 1
+}
+
+Write-Host "==> Installed: $Bin"
+
+# Register a per-user scheduled task so the agent runs at login and is restarted on failure.
+$TaskName = 'CyberSecAgent'
+$Action = New-ScheduledTaskAction -Execute $Bin
+$Trigger = New-ScheduledTaskTrigger -AtLogOn
+$Settings = New-ScheduledTaskSettingsSet -StartWhenAvailable -RestartCount 999 -RestartInterval (New-TimeSpan -Minutes 1)
+$Principal = New-ScheduledTaskPrincipal -UserId $env:USERNAME -LogonType Interactive
+
+# Pass CSP_TOKEN/CSP_API_URL through the task definition's environment via a wrapper.
+$Wrapper = Join-Path $Dir 'run-agent.ps1'
+@"
+`$env:CSP_TOKEN  = '$($env:CSP_TOKEN)'
+`$env:CSP_API_URL = '$Api'
+& '$Bin'
+"@ | Set-Content -Path $Wrapper -Encoding UTF8
+
+$Action = New-ScheduledTaskAction -Execute 'powershell.exe' -Argument "-NoProfile -ExecutionPolicy Bypass -File `"$Wrapper`""
+
+try {
+  Register-ScheduledTask -TaskName $TaskName -Action $Action -Trigger $Trigger -Settings $Settings -Principal $Principal -Force | Out-Null
+  Start-ScheduledTask -TaskName $TaskName
+  Write-Host "==> Scheduled task '$TaskName' registered and started."
+} catch {
+  Write-Warning "Could not register scheduled task: $_"
+  Write-Host "==> Run manually: $Bin"
+}
+
+Write-Host "==> Done. The agent will enroll on first run and heartbeat every 30s."
 exit 0
 "#;
     (

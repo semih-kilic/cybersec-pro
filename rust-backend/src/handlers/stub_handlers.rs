@@ -1703,7 +1703,7 @@ pub async fn update_agent(
     // Encrypt SSH password if provided
     let ssh_password_enc = body.get("ssh_password").and_then(|v| v.as_str()).and_then(|pwd| {
         if pwd.is_empty() { return None; }
-        let secret = std::env::var("JWT_SECRET").unwrap_or_else(|_| "default-secret".into());
+        let secret = crate::handlers::agent_handlers::password_encryption_key();
         crate::services::connection_engine::crypto::encrypt_password(pwd, &secret).ok()
     });
 
@@ -1793,7 +1793,7 @@ pub async fn test_agent(
 
     // Decrypt password if stored
     let password = ssh_password_enc.and_then(|enc| {
-        let secret = std::env::var("JWT_SECRET").unwrap_or_else(|_| "default-secret".into());
+        let secret = crate::handlers::agent_handlers::password_encryption_key();
         crate::services::connection_engine::crypto::decrypt_password(&enc, &secret).ok()
     });
 
@@ -3567,7 +3567,7 @@ pub async fn terminal_execute(
     };
 
     let password = ssh_password_enc.and_then(|enc| {
-        let secret = std::env::var("JWT_SECRET").unwrap_or_else(|_| "default-secret".into());
+        let secret = crate::handlers::agent_handlers::password_encryption_key();
         crate::services::connection_engine::crypto::decrypt_password(&enc, &secret).ok()
     });
 
@@ -3639,7 +3639,7 @@ pub async fn terminal_test_connection(
     };
 
     let password = ssh_password_enc.and_then(|enc| {
-        let secret = std::env::var("JWT_SECRET").unwrap_or_else(|_| "default-secret".into());
+        let secret = crate::handlers::agent_handlers::password_encryption_key();
         crate::services::connection_engine::crypto::decrypt_password(&enc, &secret).ok()
     });
 
