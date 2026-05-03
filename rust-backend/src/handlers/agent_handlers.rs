@@ -1,6 +1,6 @@
 use axum::{
     extract::{Path, State},
-    http::StatusCode,
+    http::{header, StatusCode},
     response::IntoResponse,
     Json,
 };
@@ -391,6 +391,77 @@ pub async fn issue_enrollment_token(
         "expires_at": exp,
         "ttl_seconds": 60 * 60 * 24,
     })).into_response()
+}
+
+/// Serve a POSIX install script for the reverse-tunnel agent.
+///
+/// Public endpoint (no auth) — the script itself reads `CSP_TOKEN` from the
+/// caller's environment and uses it to enroll. The script is intentionally
+/// minimal: it prints next steps and currently exits with a friendly notice
+/// because the agent binary is still being staged. Once `cybersec-agent` is
+/// published this handler is the single rollout point — no nginx changes.
+pub async fn install_sh() -> impl IntoResponse {
+    let body = r#"#!/bin/sh
+# CyberSec Pro reverse-tunnel agent installer
+set -eu
+
+if [ -z "${CSP_TOKEN:-}" ]; then
+  echo "ERROR: CSP_TOKEN environment variable is required." >&2
+  echo "       Get one from https://cybersecpro.semihkilic.com/dashboard/agents" >&2
+  exit 1
+fi
+
+case "${CSP_TOKEN}" in
+  agt_*|eyJ*) : ;; # accept legacy agt_<hex> or JWT
+  *) echo "ERROR: CSP_TOKEN looks malformed (expected agt_… or JWT)." >&2; exit 1 ;;
+esac
+
+OS="$(uname -s | tr '[:upper:]' '[:lower:]')"
+ARCH="$(uname -m)"
+echo "==> Detected ${OS}/${ARCH}"
+echo "==> CyberSec Pro agent v1 installation"
+echo "==> Token accepted; agent binary is in private beta."
+echo "    Reach out: cybersecpro@semihkilic.com to get the binary."
+exit 0
+"#;
+    (
+        StatusCode::OK,
+        [
+            (header::CONTENT_TYPE, "text/x-shellscript; charset=utf-8"),
+            (header::CACHE_CONTROL, "public, max-age=300"),
+        ],
+        body,
+    )
+}
+
+/// Serve a PowerShell install script for the reverse-tunnel agent on Windows.
+pub async fn install_ps1() -> impl IntoResponse {
+    let body = r#"# CyberSec Pro reverse-tunnel agent installer (Windows)
+$ErrorActionPreference = 'Stop'
+
+if (-not $env:CSP_TOKEN) {
+  Write-Error "CSP_TOKEN environment variable is required. Get one from https://cybersecpro.semihkilic.com/dashboard/agents"
+  exit 1
+}
+
+if ($env:CSP_TOKEN -notmatch '^(agt_|eyJ)') {
+  Write-Error "CSP_TOKEN looks malformed (expected agt_... or JWT)."
+  exit 1
+}
+
+Write-Host "==> CyberSec Pro agent v1 installation"
+Write-Host "==> Token accepted; agent binary is in private beta."
+Write-Host "    Reach out: cybersecpro@semihkilic.com to get the binary."
+exit 0
+"#;
+    (
+        StatusCode::OK,
+        [
+            (header::CONTENT_TYPE, "text/plain; charset=utf-8"),
+            (header::CACHE_CONTROL, "public, max-age=300"),
+        ],
+        body,
+    )
 }
 
 #[cfg(test)]
