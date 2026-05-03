@@ -2742,19 +2742,38 @@ pub async fn plan_info(
 }
 
 pub async fn plan_features(
-    _user: AuthUser,
-    State(_state): State<Arc<AppState>>,
+    user: AuthUser,
+    State(state): State<Arc<AppState>>,
 ) -> impl IntoResponse {
+    let org_id = user.org_id.as_deref().unwrap_or("");
+    let plan_row: Option<(Option<String>,)> = sqlx::query_as(
+        "SELECT plan_type FROM organizations WHERE id = $1"
+    ).bind(org_id).fetch_optional(&state.db).await.ok().flatten();
+    let plan = plan_row.and_then(|r| r.0).unwrap_or_else(|| "trial".into());
+
+    let configs = crate::services::plan::get_plan_configs();
+    let cfg = configs.get(plan.as_str());
+
+    let (features, limits) = match cfg {
+        Some(c) => (
+            json!(c.features),
+            json!({
+                "daily_scan_limit": c.daily_scan_limit,
+                "monthly_scan_limit": c.monthly_scan_limit,
+                "concurrent_scans": c.concurrent_scans,
+                "max_projects": c.max_projects,
+                "max_team_members": c.max_team_members,
+                "max_agents": c.max_agents,
+                "trial_days": c.trial_days,
+            }),
+        ),
+        None => (json!({}), json!({})),
+    };
+
     Json(json!({
-        "features": {
-            "max_scans": 10000,
-            "max_agents": 50,
-            "max_projects": 100,
-            "reporting": true,
-            "api_access": true,
-            "sso": true,
-            "purple_team": true
-        }
+        "plan": plan,
+        "features": features,
+        "limits": limits,
     })).into_response()
 }
 
@@ -3804,12 +3823,93 @@ pub async fn terminal_test_connection(
 // ── Chatbot / Feedback ─────────────────────────────────────
 
 pub async fn chatbot_message(
-    _user: AuthUser,
-    State(_state): State<Arc<AppState>>,
+    user: AuthUser,
+    State(state): State<Arc<AppState>>,
     Json(body): Json<serde_json::Value>,
 ) -> impl IntoResponse {
-    let msg = body.get("message").and_then(|v| v.as_str()).unwrap_or("");
-    Json(json!({"response": format!("Chatbot not yet implemented. You said: {}", msg), "type": "text"})).into_response()
+    let msg = body.get("message").and_then(|v| v.as_str()).unwrap_or("").trim();
+    if msg.is_empty() {
+        return (StatusCode::BAD_REQUEST,
+            Json(json!({"error": "message is required"}))).into_response();
+    }
+
+    // Prefer LLM when configured. Use the same OPENAI_API_KEY as the rest of
+    // the AI surface; keep responses short and security-focused.
+    if let Ok(api_key) = std::env::var("OPENAI_API_KEY") {
+        if !api_key.is_empty() {
+            let model = std::env::var("OPENAI_MODEL").unwrap_or_else(|_| "gpt-4o-mini".into());
+            let system = "You are CyberSec Pro's in-app assistant. Help the user pick \
+                          the right tool from the catalog (nmap, nuclei, subfinder, httpx, \
+                          ffuf, sqlmap, nikto, gobuster, etc.), explain what a finding \
+                          means, or suggest next steps. Reply in 2-4 sentences in the \
+                          same language as the user. Never instruct the user to attack \
+                          systems they don't own.";
+            let payload = json!({
+                "model": model,
+                "temperature": 0.3,
+                "max_tokens": 350,
+                "messages": [
+                    {"role": "system", "content": system},
+                    {"role": "user", "content": msg},
+                ],
+            });
+            if let Ok(client) = reqwest::Client::builder()
+                .timeout(std::time::Duration::from_secs(20)).build()
+            {
+                if let Ok(resp) = client.post("https://api.openai.com/v1/chat/completions")
+                    .bearer_auth(&api_key)
+                    .json(&payload)
+                    .send().await
+                {
+                    if let Ok(v) = resp.json::<serde_json::Value>().await {
+                        if let Some(text) = v["choices"][0]["message"]["content"].as_str() {
+                            return Json(json!({
+                                "response": text,
+                                "type": "text",
+                                "source": "llm",
+                                "model": model,
+                            })).into_response();
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    // Local fallback — pull up to 5 tools whose name/description matches a
+    // word in the message. Keeps the chatbot useful without an OpenAI key.
+    let q = format!("%{}%", msg.to_lowercase());
+    let rows: Vec<(String, String, Option<String>)> = sqlx::query_as(
+        "SELECT id, name, description FROM tools \
+         WHERE is_active = TRUE \
+           AND (LOWER(name) LIKE $1 OR LOWER(COALESCE(description,'')) LIKE $1) \
+         ORDER BY name LIMIT 5"
+    ).bind(&q).fetch_all(&state.db).await.unwrap_or_default();
+
+    let suggestions: Vec<serde_json::Value> = rows.iter().map(|(id, name, desc)| {
+        json!({"id": id, "name": name, "description": desc})
+    }).collect();
+
+    let response = if suggestions.is_empty() {
+        "I couldn't match a tool to that query. Try keywords like 'subdomain', \
+         'sql injection', 'port scan', or 'directory brute-force', or open the \
+         Tools page to browse all 1500+ entries.".to_string()
+    } else {
+        let names: Vec<&str> = rows.iter().map(|(_, n, _)| n.as_str()).collect();
+        format!(
+            "Here are tools that match '{}': {}. Open any of them from the Tools \
+             page to launch a zero-code scan.",
+            msg, names.join(", ")
+        )
+    };
+
+    let _ = user; // unused in fallback path
+    Json(json!({
+        "response": response,
+        "type": "text",
+        "source": "local",
+        "suggestions": suggestions,
+    })).into_response()
 }
 
 pub async fn feedback(
