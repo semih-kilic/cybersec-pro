@@ -301,7 +301,7 @@ export default function AgentJobsPage() {
                       className="border-b border-vos-border-1/60 hover:bg-vos-bg-elev-1/60"
                     >
                       <td className="px-vos-3 py-vos-3">
-                        <StatusPill tone={STATUS_TONES[j.status] || 'neutral'} label={j.status} />
+                        <StatusPill tone={STATUS_TONES[j.status] || 'neutral'}>{j.status}</StatusPill>
                         {j.exit_code != null && (j.status === 'failed' || j.status === 'completed') && (
                           <div className="text-vos-xs text-vos-text-3 mt-vos-1">exit {j.exit_code}</div>
                         )}

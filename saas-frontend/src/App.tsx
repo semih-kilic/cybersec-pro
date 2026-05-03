@@ -67,6 +67,7 @@ const SchedulePage = lazy(() => import('./pages/dashboard/SchedulePage'));
 const TerminalPage = lazy(() => import('./pages/dashboard/TerminalPage'));
 const SettingsPage = lazy(() => import('./pages/dashboard/SettingsPage'));
 const AgentsPage = lazy(() => import('./pages/dashboard/AgentsPage'));
+const AgentJobsPage = lazy(() => import('./pages/dashboard/AgentJobsPage'));
 const ProjectsPage = lazy(() => import('./pages/dashboard/ProjectsPage'));
 const UpgradePage = lazy(() => import('./pages/dashboard/UpgradePage'));
 const BillingPage = lazy(() => import('./pages/dashboard/BillingPage'));
@@ -205,6 +206,7 @@ const DASHBOARD_NAV: VosNavItem[] = [
   // ── Operations ────────────────────────────────────────────────────
   { label: 'Projects',        to: '/dashboard/projects',         icon: FolderKanban,  section: 'Operations' },
   { label: 'Agents',          to: '/dashboard/agents',           icon: Server },
+  { label: 'Agent Jobs',      to: '/dashboard/agent-jobs',       icon: Activity },
   { label: 'Analytics',       to: '/dashboard/analytics',        icon: BarChart3 },
   // ── Intelligence ──────────────────────────────────────────────────
   { label: 'AI Assistant',    to: '/dashboard/ai',               icon: Sparkles,      section: 'Intelligence' },
@@ -385,6 +387,7 @@ function AppRoutes() {
         <Route path="terminal" element={<TerminalPage />} />
         <Route path="settings" element={<SettingsPage />} />
         <Route path="agents" element={<AgentsPage />} />
+        <Route path="agent-jobs" element={<AgentJobsPage />} />
         <Route path="projects" element={<ProjectsPage />} />
         <Route path="projects/:projectId" element={<ProjectsPage />} />
         <Route path="upgrade" element={<UpgradePage />} />
