@@ -10,7 +10,7 @@
  *
  * All business logic (React Query mutations, test results state) preserved.
  */
-import { useState, useCallback } from 'react';
+import React, { useState, useCallback } from 'react';
 import {
   useAgentsDashboard,
   useCreateAgent,
@@ -432,16 +432,54 @@ const RT_DOWNLOADS: Record<string, { label: string; url: string; install: string
 function ReverseTunnelPanel({ platform, compact }: { platform: string; compact?: boolean }) {
   const key = (platform || 'linux').toLowerCase();
   const dl = RT_DOWNLOADS[key] || RT_DOWNLOADS.linux;
-  // Client-side token placeholder. TODO: replace with POST /api/v1/agents/enrollment-token
-  // backed by HMAC-signed JWT scoped to the org and 24h TTL.
-  const [token, setToken] = useState<string>(() => {
-    try { return crypto.randomUUID().replace(/-/g, '').slice(0, 32); }
-    catch { return Math.random().toString(36).slice(2) + Math.random().toString(36).slice(2); }
-  });
-  const installCmd = dl.install.replace('__TOKEN__', token);
+  // Fetch a short-lived enrollment JWT from the backend (HS256, 24h, scoped to org).
+  // Falls back to a client-generated UUID if the user is unauthenticated or the
+  // endpoint is unreachable, so the wizard preview never blocks.
+  const [token, setToken] = useState<string>('');
+  const [loading, setLoading] = useState<boolean>(true);
+  const [expiresAt, setExpiresAt] = useState<number | null>(null);
+
+  const fetchToken = useCallback(async () => {
+    setLoading(true);
+    const fallback = () => {
+      try { return crypto.randomUUID().replace(/-/g, '').slice(0, 32); }
+      catch { return Math.random().toString(36).slice(2) + Math.random().toString(36).slice(2); }
+    };
+    try {
+      const jwt = localStorage.getItem('token') || '';
+      const res = await fetch('/api/v1/agents/enrollment-token', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          ...(jwt ? { Authorization: 'Bearer ' + jwt } : {}),
+        },
+      });
+      if (res.ok) {
+        const data = await res.json();
+        if (typeof data?.token === 'string' && data.token.length > 0) {
+          setToken(data.token);
+          if (typeof data.expires_at === 'number') setExpiresAt(data.expires_at);
+          setLoading(false);
+          return;
+        }
+      }
+      setToken(fallback());
+    } catch {
+      setToken(fallback());
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  React.useEffect(() => { fetchToken(); }, [fetchToken]);
+
+  const installCmd = dl.install.replace('__TOKEN__', token || '__TOKEN__');
   const copy = (text: string) => {
     try { navigator.clipboard.writeText(text); } catch { /* noop */ }
   };
+  const expiresLabel = expiresAt
+    ? new Date(expiresAt * 1000).toLocaleString()
+    : '24h';
   return (
     <div className={`rounded-vos-md border border-vos-border-1 bg-vos-bg-elev-3 p-vos-3 space-y-vos-2 ${compact ? '' : ''}`}>
       <div className="flex items-center justify-between">
@@ -460,27 +498,26 @@ function ReverseTunnelPanel({ platform, compact }: { platform: string; compact?:
 
       <div>
         <label className="text-[10px] uppercase tracking-vos-wide text-vos-text-3">
-          One-time enrollment token (24h)
+          One-time enrollment token (expires {expiresLabel})
         </label>
         <div className="mt-1 flex items-stretch gap-1">
           <code className="flex-1 truncate rounded-vos-sm bg-vos-bg-elev-4 px-2 py-1.5 text-[11px] text-vos-text font-mono">
-            {token}
+            {loading ? 'Issuing token…' : token}
           </code>
           <button
             type="button"
             onClick={() => copy(token)}
-            className="inline-flex items-center gap-1 rounded-vos-sm bg-vos-bg-elev-4 px-2 text-[11px] text-vos-text-2 hover:text-vos-text"
+            disabled={loading || !token}
+            className="inline-flex items-center gap-1 rounded-vos-sm bg-vos-bg-elev-4 px-2 text-[11px] text-vos-text-2 hover:text-vos-text disabled:opacity-50"
             title="Copy token"
           >
             <Copy size={12} />
           </button>
           <button
             type="button"
-            onClick={() => {
-              try { setToken(crypto.randomUUID().replace(/-/g, '').slice(0, 32)); }
-              catch { setToken(Math.random().toString(36).slice(2)); }
-            }}
-            className="inline-flex items-center gap-1 rounded-vos-sm bg-vos-bg-elev-4 px-2 text-[11px] text-vos-text-2 hover:text-vos-text"
+            onClick={fetchToken}
+            disabled={loading}
+            className="inline-flex items-center gap-1 rounded-vos-sm bg-vos-bg-elev-4 px-2 text-[11px] text-vos-text-2 hover:text-vos-text disabled:opacity-50"
             title="Regenerate"
           >
             <RefreshCw size={12} />

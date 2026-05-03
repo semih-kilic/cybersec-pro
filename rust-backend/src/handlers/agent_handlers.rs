@@ -351,6 +351,48 @@ pub async fn network_discover(
     }
 }
 
+/// Issue a short-lived enrollment token for a reverse-tunnel agent.
+///
+/// Returns a JWT signed with `JWT_SECRET` carrying `{ org_id, kind: "agent_enroll", exp }`
+/// where `exp` is 24 hours from issuance. The agent presents this token on first dial-in
+/// to bind itself to the calling user's organization. The token is single-use on the
+/// agent side (the agent rotates to a long-lived API key after enrollment); the backend
+/// does not need to track issued tokens because the `exp` claim caps the blast radius.
+pub async fn issue_enrollment_token(
+    State(_state): State<Arc<AppState>>,
+    auth: AuthUser,
+) -> impl IntoResponse {
+    let org_id = match &auth.org_id {
+        Some(id) => id.clone(),
+        None => return (StatusCode::FORBIDDEN, Json(json!({"error": "Organization required"}))).into_response(),
+    };
+    let now = chrono::Utc::now().timestamp() as usize;
+    let exp = now + 60 * 60 * 24; // 24h
+    let claims = serde_json::json!({
+        "org_id": org_id,
+        "kind": "agent_enroll",
+        "iat": now,
+        "exp": exp,
+    });
+    let secret = std::env::var("JWT_SECRET").unwrap_or_else(|_| "default-secret".into());
+    let token = match jsonwebtoken::encode(
+        &jsonwebtoken::Header::new(jsonwebtoken::Algorithm::HS256),
+        &claims,
+        &jsonwebtoken::EncodingKey::from_secret(secret.as_bytes()),
+    ) {
+        Ok(t) => t,
+        Err(e) => {
+            tracing::error!("enrollment token sign failed: {e}");
+            return (StatusCode::INTERNAL_SERVER_ERROR, Json(json!({"error": "Token signing failed"}))).into_response();
+        }
+    };
+    Json(json!({
+        "token": token,
+        "expires_at": exp,
+        "ttl_seconds": 60 * 60 * 24,
+    })).into_response()
+}
+
 #[cfg(test)]
 mod tests {
     use super::{is_valid_agent_api_key_format, is_valid_agent_token_format, parse_heartbeat_metrics};
