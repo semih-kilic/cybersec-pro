@@ -50,6 +50,12 @@ async fn main() -> anyhow::Result<()> {
         .expect("DATABASE_URL environment variable must be set");
     let db = services::db::init_db(&database_url).await?;
 
+    // Seed Z4nzu/hackingtool catalog (~185 zero-code tools, idempotent upsert).
+    match services::hackingtool_seed::seed_hackingtools(&db).await {
+        Ok((ins, upd)) => tracing::info!("hackingtool registry seeded: {ins} inserted, {upd} updated"),
+        Err(e) => tracing::warn!("hackingtool seeding failed: {e}"),
+    }
+
     // JWT secret (required — must be at least 32 chars)
     let jwt_secret = std::env::var("JWT_SECRET_KEY")
         .or_else(|_| std::env::var("SECRET_KEY"))

@@ -11,3 +11,4 @@ pub mod scheduler;
 pub mod integrations;
 pub mod notifications;
 pub mod cybersec_ai_worker;
+pub mod hackingtool_seed;
