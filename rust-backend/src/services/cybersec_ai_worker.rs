@@ -15,11 +15,15 @@ use std::time::Duration;
 use serde_json::{json, Value};
 use sqlx::PgPool;
 use tokio::process::Command;
-use tokio::time::timeout;
+use tokio::time::{sleep, timeout};
 
 const POLL_INTERVAL_SECS: u64 = 6;
 const AGENT_TIMEOUT_SECS: u64 = 90;
+const CANCEL_POLL_SECS: u64 = 2;
 const MAX_OUTPUT_BYTES: usize = 64 * 1024;
+
+/// Sentinel error returned by `run_cmd` when the job was cancelled mid-flight.
+const CANCEL_SENTINEL: &str = "__cybersec_ai_cancelled__";
 
 pub async fn run(db: Arc<PgPool>) {
     tracing::info!("🤖 CyberSec AI worker started — polling every {}s", POLL_INTERVAL_SECS);
@@ -164,9 +168,9 @@ async fn process_job(
         save_progress!(db, id, steps, findings);
 
         let result = match agent {
-            "recon" => run_recon(target, target_type, &host).await,
-            "vuln_scan" => run_vuln_scan(target, target_type, &host).await,
-            "exploit_verify" => run_exploit_verify(target, &host).await,
+            "recon" => run_recon(db, id, target, target_type, &host).await,
+            "vuln_scan" => run_vuln_scan(db, id, target, target_type, &host).await,
+            "exploit_verify" => run_exploit_verify(db, id, target, &host).await,
             "auto_fix" => run_auto_fix_recommendation(target, job_type).await,
             _ => Ok(AgentResult::default()),
         };
@@ -176,6 +180,14 @@ async fn process_job(
             findings: vec![],
             error: Some(e.to_string()),
         });
+
+        // If any inner command observed a cancellation, abort the whole job now.
+        if agent_result.output.contains(CANCEL_SENTINEL)
+            || agent_result.error.as_deref() == Some(CANCEL_SENTINEL)
+        {
+            mark_cancelled(db, id).await?;
+            return Ok(JobOutcome::Cancelled);
+        }
 
         for f in &agent_result.findings {
             findings.push(f.clone());
@@ -247,6 +259,8 @@ struct AgentResult {
 
 // ─────────────────────────── Agent: recon ───────────────────────────────────
 async fn run_recon(
+    db: &PgPool,
+    job_id: &str,
     target: &str,
     target_type: &str,
     host: &str,
@@ -257,11 +271,15 @@ async fn run_recon(
     if target_type == "url" || target_type == "domain" {
         // Subdomain enumeration (passive, fast).
         let sub = run_cmd(
+            db, job_id,
             "subfinder",
             &["-d", host, "-silent", "-timeout", "8", "-max-time", "1"],
         )
         .await;
         if let Ok(out) = &sub {
+            if out.contains(CANCEL_SENTINEL) {
+                return Ok(AgentResult { output: out.clone(), findings, error: Some(CANCEL_SENTINEL.into()) });
+            }
             output.push_str("── subfinder ──\n");
             output.push_str(out);
             output.push('\n');
@@ -281,6 +299,7 @@ async fn run_recon(
 
         // Liveness probe via httpx.
         let httpx = run_cmd(
+            db, job_id,
             "httpx",
             &[
                 "-silent", "-status-code", "-title", "-tech-detect",
@@ -289,12 +308,16 @@ async fn run_recon(
         )
         .await;
         if let Ok(out) = &httpx {
+            if out.contains(CANCEL_SENTINEL) {
+                return Ok(AgentResult { output: out.clone(), findings, error: Some(CANCEL_SENTINEL.into()) });
+            }
             output.push_str("── httpx ──\n");
             output.push_str(out);
         }
     } else if target_type == "ip" {
         // Lightweight nmap top-100.
         let nmap = run_cmd(
+            db, job_id,
             "nmap",
             &["-Pn", "--top-ports", "100", "-T4", "--open", host],
         )
@@ -327,6 +350,8 @@ async fn run_recon(
 
 // ─────────────────────────── Agent: vuln_scan ───────────────────────────────
 async fn run_vuln_scan(
+    db: &PgPool,
+    job_id: &str,
     target: &str,
     target_type: &str,
     _host: &str,
@@ -337,6 +362,7 @@ async fn run_vuln_scan(
     if target_type == "url" || target_type == "domain" {
         // nuclei with CVE templates only — bounded by AGENT_TIMEOUT_SECS.
         let nuclei = run_cmd(
+            db, job_id,
             "nuclei",
             &[
                 "-u", target,
@@ -351,6 +377,9 @@ async fn run_vuln_scan(
         )
         .await;
         if let Ok(out) = &nuclei {
+            if out.contains(CANCEL_SENTINEL) {
+                return Ok(AgentResult { output: out.clone(), findings, error: Some(CANCEL_SENTINEL.into()) });
+            }
             output.push_str("── nuclei ──\n");
             output.push_str(out);
             for line in out.lines() {
@@ -369,11 +398,15 @@ async fn run_vuln_scan(
         }
     } else if target_type == "ip" {
         let nmap = run_cmd(
+            db, job_id,
             "nmap",
             &["-Pn", "-sV", "--top-ports", "50", "--script", "vuln", target],
         )
         .await;
         if let Ok(out) = &nmap {
+            if out.contains(CANCEL_SENTINEL) {
+                return Ok(AgentResult { output: out.clone(), findings, error: Some(CANCEL_SENTINEL.into()) });
+            }
             output.push_str("── nmap vuln ──\n");
             output.push_str(out);
             for line in out.lines() {
@@ -401,6 +434,8 @@ async fn run_vuln_scan(
 
 // ─────────────────────────── Agent: exploit_verify ──────────────────────────
 async fn run_exploit_verify(
+    db: &PgPool,
+    job_id: &str,
     target: &str,
     _host: &str,
 ) -> Result<AgentResult, Box<dyn std::error::Error + Send + Sync>> {
@@ -409,6 +444,7 @@ async fn run_exploit_verify(
 
     // Lightweight follow-up: re-run nuclei in verification template set.
     let nuclei = run_cmd(
+        db, job_id,
         "nuclei",
         &[
             "-u", target,
@@ -423,6 +459,9 @@ async fn run_exploit_verify(
     )
     .await
     .unwrap_or_default();
+    if nuclei.contains(CANCEL_SENTINEL) {
+        return Ok(AgentResult { output: nuclei, findings: vec![], error: Some(CANCEL_SENTINEL.into()) });
+    }
     output.push_str(&nuclei);
 
     let mut findings: Vec<Value> = Vec::new();
@@ -462,11 +501,20 @@ async fn run_auto_fix_recommendation(
 }
 
 // ─────────────────────────── helpers ────────────────────────────────────────
+//
+// `run_cmd` wraps the command future inside a tokio::select! that races against
+// a polling loop watching the job's `status` column.  The moment the row is
+// flipped to `cancelling`/`cancelled`, the command future is dropped — and
+// because Tokio's `Command` was built with `kill_on_drop(true)` the OS process
+// is reaped immediately.  The function then returns the CANCEL_SENTINEL string
+// so the agent layer can short-circuit cleanly.
 async fn run_cmd(
+    db: &PgPool,
+    job_id: &str,
     bin: &str,
     args: &[&str],
 ) -> Result<String, Box<dyn std::error::Error + Send + Sync>> {
-    let fut = async {
+    let cmd_fut = async {
         let out = Command::new(bin)
             .args(args)
             .kill_on_drop(true)
@@ -479,7 +527,25 @@ async fn run_cmd(
         }
         Ok::<String, std::io::Error>(s)
     };
-    match timeout(Duration::from_secs(AGENT_TIMEOUT_SECS), fut).await {
+
+    let cancel_fut = async {
+        loop {
+            sleep(Duration::from_secs(CANCEL_POLL_SECS)).await;
+            if is_cancelled(db, job_id).await.unwrap_or(false) {
+                return ();
+            }
+        }
+    };
+
+    let bounded = async {
+        tokio::select! {
+            biased;
+            _ = cancel_fut => Ok::<String, std::io::Error>(CANCEL_SENTINEL.to_string()),
+            r = cmd_fut => r,
+        }
+    };
+
+    match timeout(Duration::from_secs(AGENT_TIMEOUT_SECS), bounded).await {
         Ok(Ok(s)) => Ok(s),
         Ok(Err(e)) => Err(Box::new(e) as _),
         Err(_) => Ok(format!("[timeout after {AGENT_TIMEOUT_SECS}s]")),

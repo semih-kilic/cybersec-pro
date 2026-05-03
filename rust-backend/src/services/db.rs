@@ -490,4 +490,13 @@ r#"CREATE TABLE IF NOT EXISTS newsletter_subscribers (
     created_at TIMESTAMP DEFAULT NOW()
 )"#,
 "CREATE INDEX IF NOT EXISTS idx_newsletter_active ON newsletter_subscribers(is_active)",
+
+// ── Phase 8: God Mode feature flags ─────────────────────────────────────
+r#"CREATE TABLE IF NOT EXISTS feature_flags (
+    key TEXT PRIMARY KEY,
+    enabled BOOLEAN NOT NULL DEFAULT FALSE,
+    description TEXT,
+    created_at TIMESTAMP DEFAULT NOW(),
+    updated_at TIMESTAMP DEFAULT NOW()
+)"#,
 ];

@@ -433,6 +433,13 @@ fn build_router(state: Arc<AppState>) -> Router {
         .route("/api/v1/admin/service-manager/processes", get(stub_handlers::admin_processes))
         .route("/api/v1/admin/service-manager/alerts", get(stub_handlers::admin_alerts))
         .route("/api/v1/admin/service-manager/alerts/:alert_id/acknowledge", post(stub_handlers::admin_ack_alert))
+        // ── Superadmin God Mode (realtime) ───────────────────
+        .route("/api/v1/superadmin/telemetry", get(superadmin_handlers::telemetry))
+        .route("/api/v1/superadmin/db-stats", get(superadmin_handlers::db_stats))
+        .route("/api/v1/superadmin/logs", get(superadmin_handlers::logs))
+        .route("/api/v1/superadmin/feature-flags", get(superadmin_handlers::list_feature_flags))
+        .route("/api/v1/superadmin/feature-flags/:key", put(superadmin_handlers::upsert_feature_flag))
+        .route("/api/v1/superadmin/kill-switch", get(superadmin_handlers::kill_switch_status).post(superadmin_handlers::kill_switch))
         // ── AI ────────────────────────────────────────────────
         .route("/api/v1/ai/suggest", post(stub_handlers::ai_suggest))
         .route("/api/v1/ai/remediation", post(stub_handlers::ai_remediation))

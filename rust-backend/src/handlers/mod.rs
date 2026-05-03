@@ -15,3 +15,4 @@ pub mod monitor_handlers;
 pub mod settings_handlers;
 pub mod security_handlers;
 pub mod ai_handlers;
+pub mod superadmin_handlers;

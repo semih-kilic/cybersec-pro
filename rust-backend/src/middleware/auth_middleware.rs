@@ -94,6 +94,23 @@ impl FromRequestParts<Arc<AppState>> for AdminUser
     }
 }
 
+/// Superadmin-only auth check (strictest tier — God Mode endpoints).
+pub struct SuperAdminUser(pub AuthUser);
+
+#[async_trait]
+impl FromRequestParts<Arc<AppState>> for SuperAdminUser
+{
+    type Rejection = Response;
+
+    async fn from_request_parts(parts: &mut Parts, state: &Arc<AppState>) -> Result<Self, Self::Rejection> {
+        let user = AuthUser::from_request_parts(parts, state).await?;
+        if user.role != "superadmin" {
+            return Err((StatusCode::FORBIDDEN, Json(serde_json::json!({"error": "Superadmin access required"}))).into_response());
+        }
+        Ok(SuperAdminUser(user))
+    }
+}
+
 /// Analyst or higher auth check (analyst, admin, superadmin)
 pub struct AnalystUser(pub AuthUser);
 
