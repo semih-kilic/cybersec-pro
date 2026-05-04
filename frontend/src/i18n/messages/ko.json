@@ -31,10 +31,10 @@
       "toolsLabel": "보안 도구",
       "categories": "61",
       "categoriesLabel": "카테고리",
-      "uptime": "99.9%",
-      "uptimeLabel": "가동률",
-      "scans": "100만+",
-      "scansLabel": "실행된 스캔"
+      "uptime": "5",
+      "uptimeLabel": "플랜",
+      "scans": "3",
+      "scansLabel": "일 무료 체험"
     }
   },
   "features": {

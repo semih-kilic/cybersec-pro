@@ -31,10 +31,10 @@
       "toolsLabel": "Инструментов безопасности",
       "categories": "61",
       "categoriesLabel": "Категория",
-      "uptime": "99,9%",
-      "uptimeLabel": "Время работы",
-      "scans": "1М+",
-      "scansLabel": "Выполненных сканирований"
+      "uptime": "5",
+      "uptimeLabel": "Тарифа",
+      "scans": "3",
+      "scansLabel": "Дня пробного периода"
     }
   },
   "features": {

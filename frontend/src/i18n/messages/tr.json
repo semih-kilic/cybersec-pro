@@ -31,10 +31,10 @@
       "toolsLabel": "Güvenlik Aracı",
       "categories": "61",
       "categoriesLabel": "Kategori",
-      "uptime": "%99.9",
-      "uptimeLabel": "Çalışma Süresi",
-      "scans": "1M+",
-      "scansLabel": "Tarama Yapıldı"
+      "uptime": "5",
+      "uptimeLabel": "Plan",
+      "scans": "3",
+      "scansLabel": "Gün Ücretsiz Deneme"
     }
   },
   "features": {

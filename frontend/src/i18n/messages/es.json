@@ -31,10 +31,10 @@
       "toolsLabel": "Herramientas de seguridad",
       "categories": "61",
       "categoriesLabel": "Categorías",
-      "uptime": "99,9 %",
-      "uptimeLabel": "Disponibilidad",
-      "scans": "1M+",
-      "scansLabel": "Escaneos realizados"
+      "uptime": "5",
+      "uptimeLabel": "Planes",
+      "scans": "3",
+      "scansLabel": "Días de prueba"
     }
   },
   "features": {

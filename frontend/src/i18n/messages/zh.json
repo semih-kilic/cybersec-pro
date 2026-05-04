@@ -31,10 +31,10 @@
       "toolsLabel": "安全工具",
       "categories": "61",
       "categoriesLabel": "类别",
-      "uptime": "99.9%",
-      "uptimeLabel": "正常运行时间",
-      "scans": "100万+",
-      "scansLabel": "已执行扫描"
+      "uptime": "5",
+      "uptimeLabel": "套餐",
+      "scans": "3",
+      "scansLabel": "天免费试用"
     }
   },
   "features": {

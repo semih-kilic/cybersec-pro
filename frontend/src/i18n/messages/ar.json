@@ -31,10 +31,10 @@
       "toolsLabel": "أدوات أمنية",
       "categories": "61",
       "categoriesLabel": "فئة",
-      "uptime": "99.9%",
-      "uptimeLabel": "وقت التشغيل",
-      "scans": "+1M",
-      "scansLabel": "عمليات فحص"
+      "uptime": "5",
+      "uptimeLabel": "خطط",
+      "scans": "3",
+      "scansLabel": "أيام تجربة مجانية"
     }
   },
   "features": {

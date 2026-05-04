@@ -31,10 +31,10 @@
       "toolsLabel": "セキュリティツール",
       "categories": "61",
       "categoriesLabel": "カテゴリ",
-      "uptime": "99.9%",
-      "uptimeLabel": "稼働率",
-      "scans": "100万+",
-      "scansLabel": "スキャン実行数"
+      "uptime": "5",
+      "uptimeLabel": "プラン",
+      "scans": "3",
+      "scansLabel": "日間無料トライアル"
     }
   },
   "features": {
