@@ -12,7 +12,14 @@ use std::sync::Arc;
 
 use crate::middleware::auth_middleware::AuthUser;
 use crate::AppState;
-
+/// Constant-time byte comparison to prevent timing-side-channel leakage when
+/// validating Stripe webhook signatures.
+fn ct_eq(a: &[u8], b: &[u8]) -> bool {
+    if a.len() != b.len() { return false; }
+    let mut diff: u8 = 0;
+    for (x, y) in a.iter().zip(b.iter()) { diff |= x ^ y; }
+    diff == 0
+}
 // ── Pure helpers (testable without DB) ────────────────────
 
 /// Resolve plan name from a Stripe price ID using env-configured price IDs.
@@ -306,7 +313,7 @@ pub async fn stripe_webhook(
     mac.update(signed_payload.as_bytes());
     let expected = hex::encode(mac.finalize().into_bytes());
 
-    if expected != sig_v1 {
+    if !ct_eq(expected.as_bytes(), sig_v1.as_bytes()) {
         tracing::warn!("Stripe webhook signature mismatch");
         return (StatusCode::BAD_REQUEST, Json(json!({"error": "Invalid signature"}))).into_response();
     }
