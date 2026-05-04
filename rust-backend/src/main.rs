@@ -520,6 +520,8 @@ fn build_router(state: Arc<AppState>) -> Router {
         .route("/api/v1/integrations/:id/test", post(stub_handlers::test_integration))
         // ── Security News (real RSS aggregator) ───────────────
         .route("/api/v1/security-news", get(news_handlers::list_security_news))
+        // ── Threat Intelligence (real CISA KEV + URLhaus + ThreatFox) ──
+        .route("/api/v1/threat-intel", get(threat_intel_handlers::get_threat_intel))
         // ── Phase 1: Security (Login History, IP Whitelist, Audit) ────────
         .route("/api/v1/security/login-history", get(security_handlers::get_login_history))
         .route("/api/v1/security/sessions", get(security_handlers::get_active_sessions))

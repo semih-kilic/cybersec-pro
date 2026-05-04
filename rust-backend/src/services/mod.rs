@@ -14,3 +14,4 @@ pub mod cybersec_ai_worker;
 pub mod hackingtool_seed;
 pub mod hackingtool_seed_modern;
 pub mod news_feed;
+pub mod threat_intel;
