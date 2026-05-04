@@ -15,3 +15,4 @@ pub mod hackingtool_seed;
 pub mod hackingtool_seed_modern;
 pub mod news_feed;
 pub mod threat_intel;
+pub mod vulnerability_db;

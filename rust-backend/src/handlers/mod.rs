@@ -18,3 +18,5 @@ pub mod ai_handlers;
 pub mod superadmin_handlers;
 pub mod news_handlers;
 pub mod threat_intel_handlers;
+pub mod vulnerability_db_handlers;
+pub mod community_handlers;

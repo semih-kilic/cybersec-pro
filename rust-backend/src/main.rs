@@ -524,6 +524,15 @@ fn build_router(state: Arc<AppState>) -> Router {
         .route("/api/v1/security-news", get(news_handlers::list_security_news))
         // ── Threat Intelligence (real CISA KEV + URLhaus + ThreatFox) ──
         .route("/api/v1/threat-intel", get(threat_intel_handlers::get_threat_intel))
+        .route("/api/v1/vulnerability-db", get(vulnerability_db_handlers::get_vulnerability_db))
+        // ── Phase 22: real Community / Forum ──────────────────────────────
+        .route("/api/v1/community/posts",
+               get(community_handlers::list_posts)
+               .post(community_handlers::create_post))
+        .route("/api/v1/community/posts/:id/like", post(community_handlers::toggle_like))
+        .route("/api/v1/community/stats", get(community_handlers::get_stats))
+        .route("/api/v1/community/leaderboard", get(community_handlers::get_leaderboard))
+        .route("/api/v1/community/me/rank", get(community_handlers::get_my_rank))
         // ── Phase 1: Security (Login History, IP Whitelist, Audit) ────────
         .route("/api/v1/security/login-history", get(security_handlers::get_login_history))
         .route("/api/v1/security/sessions", get(security_handlers::get_active_sessions))

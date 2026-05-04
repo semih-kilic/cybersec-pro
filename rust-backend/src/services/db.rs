@@ -507,4 +507,40 @@ r#"ALTER TABLE users ADD COLUMN IF NOT EXISTS email_normalized TEXT"#,
 r#"ALTER TABLE users ADD COLUMN IF NOT EXISTS signup_ip TEXT"#,
 "CREATE INDEX IF NOT EXISTS idx_users_email_normalized ON users(email_normalized)",
 "CREATE INDEX IF NOT EXISTS idx_users_signup_ip ON users(signup_ip)",
+
+// ── Phase 22: real community / discussion forum ─────────────────────────
+r#"CREATE TABLE IF NOT EXISTS community_posts (
+    id TEXT PRIMARY KEY,
+    user_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    organization_id TEXT REFERENCES organizations(id) ON DELETE SET NULL,
+    category TEXT NOT NULL DEFAULT 'General',
+    title TEXT NOT NULL,
+    content TEXT NOT NULL,
+    tags JSONB NOT NULL DEFAULT '[]'::jsonb,
+    pinned BOOLEAN NOT NULL DEFAULT FALSE,
+    like_count INTEGER NOT NULL DEFAULT 0,
+    reply_count INTEGER NOT NULL DEFAULT 0,
+    view_count INTEGER NOT NULL DEFAULT 0,
+    created_at TIMESTAMP NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMP NOT NULL DEFAULT NOW()
+)"#,
+"CREATE INDEX IF NOT EXISTS idx_community_posts_created ON community_posts(created_at DESC)",
+"CREATE INDEX IF NOT EXISTS idx_community_posts_category ON community_posts(category)",
+"CREATE INDEX IF NOT EXISTS idx_community_posts_user ON community_posts(user_id)",
+
+r#"CREATE TABLE IF NOT EXISTS community_post_likes (
+    post_id TEXT NOT NULL REFERENCES community_posts(id) ON DELETE CASCADE,
+    user_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    created_at TIMESTAMP NOT NULL DEFAULT NOW(),
+    PRIMARY KEY (post_id, user_id)
+)"#,
+
+r#"CREATE TABLE IF NOT EXISTS community_post_replies (
+    id TEXT PRIMARY KEY,
+    post_id TEXT NOT NULL REFERENCES community_posts(id) ON DELETE CASCADE,
+    user_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    content TEXT NOT NULL,
+    created_at TIMESTAMP NOT NULL DEFAULT NOW()
+)"#,
+"CREATE INDEX IF NOT EXISTS idx_community_replies_post ON community_post_replies(post_id, created_at)",
 ];
