@@ -312,7 +312,7 @@ export function LandingPage() {
                   <span className="text-purple-400">✓</span> {t('landing.plan.enterpriseItem4', 'Dedicated account manager')}
                 </li>
                 <li className="flex items-center gap-2">
-                  <span className="text-purple-400">✓</span> 24/7 priority support
+                  <span className="text-purple-400">✓</span> {t('landing.plan.enterpriseItem5', 'Priority support (business hours, 2h response)')}
                 </li>
               </ul>
               <div className="mt-auto">

@@ -23,16 +23,16 @@ load_dotenv()
 # ============================================================================
 
 app = Flask(__name__)
-app.secret_key = os.environ.get('SECRET_KEY', 'cybersec-pro-secret-key-2026')
+app.secret_key = os.environ['SECRET_KEY']  # fail-closed: must be supplied via env
 CORS(app)
 
 # Stripe Configuration - Using environment variables for security
-STRIPE_PUBLISHABLE_KEY = os.environ.get('STRIPE_PUBLISHABLE_KEY', 'pk_test_your_publishable_key_here')
-STRIPE_SECRET_KEY = os.environ.get('STRIPE_SECRET_KEY', 'sk_test_your_secret_key_here')
+STRIPE_PUBLISHABLE_KEY = os.environ['STRIPE_PUBLISHABLE_KEY']
+STRIPE_SECRET_KEY = os.environ['STRIPE_SECRET_KEY']
 stripe.api_key = STRIPE_SECRET_KEY
 
 YOUR_DOMAIN = os.environ.get('DOMAIN', 'https://semihkilic.com')
-ADMIN_TOKEN = os.environ.get('ADMIN_TOKEN', 'cybersec-admin-2026')
+ADMIN_TOKEN = os.environ['ADMIN_TOKEN']  # fail-closed: must be supplied via env
 
 # Stripe Webhook Secret (get from Stripe Dashboard)
 STRIPE_WEBHOOK_SECRET = os.environ.get('STRIPE_WEBHOOK_SECRET', '')

@@ -1,7 +1,7 @@
 # CyberSec Pro - Tool Compatibility Guide
 
 ## Overview
-CyberSec Pro integrates 230+ security tools through a unified dashboard interface.
+CyberSec Pro integrates 778 security tools through a unified dashboard interface.
 
 ### Tool Status on Different Systems
 
@@ -64,7 +64,7 @@ CyberSec Pro integrates 230+ security tools through a unified dashboard interfac
 ## Recommended Setup
 
 ### For Best Experience
-1. **Use Kali Linux** - All 230 tools work out of the box
+1. **Use Kali Linux** - All 778 tools work out of the box
 2. **Use Docker** - Full Kali environment in a container
 
 ### Docker Quick Start

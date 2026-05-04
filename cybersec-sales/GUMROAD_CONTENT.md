@@ -7,7 +7,7 @@ CyberSec Pro - Professional Cybersecurity Testing Platform
 
 ## Short Description (for listing)
 ```
-230+ security tools in one powerful dashboard. Penetration testing, vulnerability scanning, network analysis - built for professionals.
+778 security tools in one powerful dashboard. Penetration testing, vulnerability scanning, network analysis - built for professionals.
 ```
 
 ## Full Description (Markdown)
@@ -15,12 +15,12 @@ CyberSec Pro - Professional Cybersecurity Testing Platform
 ```markdown
 # 🛡️ CyberSec Pro
 
-The most comprehensive cybersecurity testing platform with **230+ professional security tools** in a modern, unified dashboard.
+The most comprehensive cybersecurity testing platform with **778 professional security tools** in a modern, unified dashboard.
 
 ## 🚀 What You Get
 
 ✅ **Modern Web Dashboard** - Beautiful React-based interface to manage all tools
-✅ **230+ Tool Integration** - Pre-configured commands for Nmap, SQLMap, Nikto, Hydra, and more
+✅ **778 Tool Integration** - Pre-configured commands for Nmap, SQLMap, Nikto, Hydra, and more
 ✅ **Integrated Terminal** - Run commands directly from the dashboard
 ✅ **Scan Management** - Save, organize, and track all your security scans
 ✅ **Report Generation** - Export findings in PDF, HTML, JSON formats
@@ -94,7 +94,7 @@ curl -sSL https://semihkilic.com/install.sh | bash
 - 1 machine license
 
 ### Professional - $149/year ⭐ MOST POPULAR
-- All 230+ tools
+- All 778 tools
 - Unlimited scans
 - Advanced reports (PDF/HTML/JSON)
 - Priority support
@@ -103,8 +103,8 @@ curl -sSL https://semihkilic.com/install.sh | bash
 
 ### Enterprise - $499/year
 - Everything in Professional
-- 24/7 support
-- Custom tool development
+- Priority support (business hours, 2h response)
+- Custom tool integration
 - White-label option
 - 5 machine licenses
 - Team features
@@ -119,7 +119,7 @@ curl -sSL https://semihkilic.com/install.sh | bash
 ## Thumbnail
 - Size: 600x600 px
 - Format: PNG
-- Include: Logo + "230+ Tools"
+- Include: Logo + "778 Tools"
 
 ---
 

@@ -12,8 +12,8 @@
 - **Updated**: `APPS/cybersec-sales/backend/app.py`
 - **New Pricing Structure**:
   - Starter: $29/month (10 scans, 50 tools)
-  - Professional: $79/month (50 scans, 230+ tools) - **RECOMMENDED**
-  - Enterprise: $199/month (unlimited scans, 230+ tools)
+  - Professional: $79/month (50 scans, 778 tools) - **RECOMMENDED**
+  - Enterprise: $199/month (unlimited scans, 778 tools)
 - **Legacy Support**: Annual plans maintained for existing customers
 - **Stripe Integration**: Updated to support both subscriptions and one-time payments
 
