@@ -2101,3 +2101,52 @@ export function useToggleKillSwitch() {
     },
   });
 }
+
+// ── Superadmin: organizations & plan management ───────────────────────────
+export interface SuperadminOrg {
+  id: string;
+  name: string;
+  slug: string;
+  plan_type: string;
+  is_active: boolean;
+  created_at: string;
+  member_count: number;
+  owner_email: string | null;
+}
+export interface SuperadminOrgsResponse {
+  organizations: SuperadminOrg[];
+  available_plans: string[];
+  count: number;
+}
+
+export function useSuperadminOrganizations(q: string, enabled = true) {
+  const { token } = useAuth();
+  return useQuery<SuperadminOrgsResponse>({
+    queryKey: ['superadmin', 'orgs', q],
+    queryFn: () => {
+      const params = new URLSearchParams();
+      if (q.trim()) params.set('q', q.trim());
+      params.set('limit', '200');
+      return authFetch<SuperadminOrgsResponse>(`/api/v1/superadmin/organizations?${params.toString()}`, token);
+    },
+    refetchInterval: 30000,
+    staleTime: 5000,
+    enabled: enabled && !!token,
+  });
+}
+
+export function useChangeOrgPlan() {
+  const { token } = useAuth();
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (body: { org_id: string; plan_type: string; reason?: string }) =>
+      authFetch(`/api/v1/superadmin/organizations/${encodeURIComponent(body.org_id)}/plan`, token, {
+        method: 'PUT',
+        body: JSON.stringify({ plan_type: body.plan_type, reason: body.reason ?? null }),
+      }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['superadmin', 'orgs'] });
+      qc.invalidateQueries({ queryKey: ['plan'] });
+    },
+  });
+}

@@ -2298,11 +2298,22 @@ pub async fn analytics_overview(
         (completed.0 as f64 / total_scans.0 as f64 * 100.0).round()
     } else { 0.0 };
 
-    // Build daily_trend from scans table
-    let trend_rows = sqlx::query_as::<_, (String, i64)>(
-        "SELECT CAST(created_at::date AS TEXT), COUNT(*) FROM scans WHERE user_id = $1 AND created_at > NOW() - INTERVAL '30 days' GROUP BY created_at::date ORDER BY created_at::date"
+    // Build daily_trend from scans table — include per-day avg duration (sec) and success rate (%)
+    let trend_rows = sqlx::query_as::<_, (String, i64, Option<f64>, Option<f64>)>(
+        "SELECT CAST(created_at::date AS TEXT) AS d, \
+                COUNT(*)::bigint AS scans, \
+                AVG(EXTRACT(EPOCH FROM (completed_at - started_at))) FILTER (WHERE status='completed' AND started_at IS NOT NULL AND completed_at IS NOT NULL)::float8 AS avg_dur, \
+                (COUNT(*) FILTER (WHERE status='completed')::float8 * 100.0 / NULLIF(COUNT(*),0)) AS success_rate \
+         FROM scans \
+         WHERE user_id = $1 AND created_at > NOW() - INTERVAL '30 days' \
+         GROUP BY d ORDER BY d"
     ).bind(&user.user_id).fetch_all(&state.db).await.unwrap_or_default();
-    let daily_trend: Vec<serde_json::Value> = trend_rows.iter().map(|(d, c)| json!({"date": d, "scans": c})).collect();
+    let daily_trend: Vec<serde_json::Value> = trend_rows.iter().map(|(d, c, avg, sr)| json!({
+        "date": d,
+        "scans": c,
+        "avg_duration_seconds": avg.map(|v| v.round() as i64).unwrap_or(0),
+        "success_rate": sr.map(|v| v.round()).unwrap_or(0.0),
+    })).collect();
 
     // Build tool_usage from scans joined with tools
     let tool_rows = sqlx::query_as::<_, (String, i64)>(

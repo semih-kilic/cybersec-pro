@@ -473,6 +473,8 @@ fn build_router(state: Arc<AppState>) -> Router {
         .route("/api/v1/superadmin/feature-flags", get(superadmin_handlers::list_feature_flags))
         .route("/api/v1/superadmin/feature-flags/:key", put(superadmin_handlers::upsert_feature_flag))
         .route("/api/v1/superadmin/kill-switch", get(superadmin_handlers::kill_switch_status).post(superadmin_handlers::kill_switch))
+        .route("/api/v1/superadmin/organizations", get(superadmin_handlers::list_organizations))
+        .route("/api/v1/superadmin/organizations/:org_id/plan", put(superadmin_handlers::change_org_plan))
         // ── AI ────────────────────────────────────────────────
         .route("/api/v1/ai/suggest", post(stub_handlers::ai_suggest))
         .route("/api/v1/ai/remediation", post(stub_handlers::ai_remediation))

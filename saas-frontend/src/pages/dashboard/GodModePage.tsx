@@ -8,7 +8,7 @@
  *   • Feature flags registry with per-flag toggle.
  *   • Platform-wide kill switch with audit-logged confirmation.
  */
-import { useMemo, useState } from 'react';
+import { useMemo, useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
   ShieldAlert,
@@ -25,6 +25,8 @@ import {
   CheckCircle2,
   Server,
   Plus,
+  Crown,
+  Search,
 } from 'lucide-react';
 import { useDocumentTitle } from '../../hooks/useUtilities';
 import {
@@ -56,7 +58,10 @@ import {
   useUpsertFeatureFlag,
   useKillSwitchStatus,
   useToggleKillSwitch,
+  useSuperadminOrganizations,
+  useChangeOrgPlan,
   type FeatureFlag,
+  type SuperadminOrg,
 } from '../../hooks/useApiQueries';
 
 // ---------- helpers ----------
@@ -206,6 +211,10 @@ export default function GodModePage() {
               <ToggleLeft size={14} className="mr-1.5" />
               {t('godMode.tabs.flags', 'Feature flags')}
             </TabsTrigger>
+            <TabsTrigger value="plans">
+              <Crown size={14} className="mr-1.5" />
+              {t('godMode.tabs.plans', 'Plans & Memberships')}
+            </TabsTrigger>
           </TabsList>
 
           <TabsContent value="telemetry">
@@ -222,6 +231,10 @@ export default function GodModePage() {
 
           <TabsContent value="flags">
             <FeatureFlagsPanel />
+          </TabsContent>
+
+          <TabsContent value="plans">
+            <PlansPanel />
           </TabsContent>
         </Tabs>
 
@@ -810,6 +823,211 @@ function KillSwitchModal({
           }}
         >
           {targetState ? 'Engage kill switch' : 'Release kill switch'}
+        </Button>
+      </ModalFooter>
+    </Modal>
+  );
+}
+
+// ---------- Plans & Memberships panel ----------
+const PLAN_TONE: Record<string, 'default' | 'info' | 'success' | 'warning'> = {
+  trial: 'warning',
+  starter: 'default',
+  professional: 'info',
+  enterprise: 'success',
+};
+
+function PlansPanel() {
+  const { t } = useTranslation();
+  const [search, setSearch] = useState('');
+  const orgs = useSuperadminOrganizations(search);
+  const [editing, setEditing] = useState<SuperadminOrg | null>(null);
+
+  const items = orgs.data?.organizations ?? [];
+  const plans = orgs.data?.available_plans ?? ['trial', 'starter', 'professional', 'enterprise'];
+
+  return (
+    <Card className="p-vos-6">
+      <div className="flex items-end justify-between gap-vos-4 mb-vos-4 flex-wrap">
+        <div>
+          <h2 className="text-vos-lg font-semibold text-vos-text">
+            {t('godMode.plans.title', 'Plans & Memberships')}
+          </h2>
+          <p className="text-vos-sm text-vos-text-3">
+            {t('godMode.plans.subtitle', 'Switch any organization to any plan. Changes are audit-logged.')}
+          </p>
+        </div>
+        <div className="flex items-center gap-vos-2">
+          <div className="relative">
+            <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-vos-text-3" />
+            <Input
+              type="text"
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              placeholder={t('godMode.plans.search', 'Search org / email')}
+              className="pl-8 w-64"
+            />
+          </div>
+          <Button variant="ghost" leftIcon={<RefreshCw size={14} />} onClick={() => orgs.refetch()}>
+            {t('common.refresh', 'Refresh')}
+          </Button>
+        </div>
+      </div>
+
+      {orgs.isLoading && <Spinner />}
+      {orgs.error && (
+        <div className="text-vos-sm text-vos-danger">{(orgs.error as Error).message}</div>
+      )}
+
+      {!orgs.isLoading && items.length === 0 && (
+        <EmptyState
+          icon={<Crown size={20} />}
+          title={t('godMode.plans.empty', 'No organizations found')}
+          description={t('godMode.plans.emptyDesc', 'Try a different search.')}
+        />
+      )}
+
+      {items.length > 0 && (
+        <div className="overflow-x-auto rounded-vos-md border border-vos-border-1">
+          <table className="w-full text-vos-sm">
+            <thead className="bg-vos-surface-2 text-vos-text-3">
+              <tr>
+                <th className="text-left px-vos-3 py-vos-2">{t('common.organization', 'Organization')}</th>
+                <th className="text-left px-vos-3 py-vos-2">{t('godMode.plans.owner', 'Owner')}</th>
+                <th className="text-left px-vos-3 py-vos-2">{t('godMode.plans.members', 'Members')}</th>
+                <th className="text-left px-vos-3 py-vos-2">{t('godMode.plans.plan', 'Current plan')}</th>
+                <th className="text-left px-vos-3 py-vos-2">{t('godMode.plans.created', 'Created')}</th>
+                <th className="text-right px-vos-3 py-vos-2"></th>
+              </tr>
+            </thead>
+            <tbody>
+              {items.map((o) => (
+                <tr key={o.id} className="border-t border-vos-border-1 hover:bg-vos-surface-2/40">
+                  <td className="px-vos-3 py-vos-2">
+                    <div className="font-medium text-vos-text">{o.name}</div>
+                    <div className="text-vos-xs text-vos-text-3 font-mono">{o.slug}</div>
+                  </td>
+                  <td className="px-vos-3 py-vos-2 text-vos-text-2">{o.owner_email ?? '—'}</td>
+                  <td className="px-vos-3 py-vos-2 text-vos-text-2">{o.member_count}</td>
+                  <td className="px-vos-3 py-vos-2">
+                    <Badge tone={PLAN_TONE[o.plan_type] ?? 'neutral'} size="sm">
+                      {o.plan_type}
+                    </Badge>
+                  </td>
+                  <td className="px-vos-3 py-vos-2 text-vos-xs text-vos-text-3">
+                    {new Date(o.created_at).toLocaleDateString()}
+                  </td>
+                  <td className="px-vos-3 py-vos-2 text-right">
+                    <Button size="sm" variant="secondary" onClick={() => setEditing(o)}>
+                      {t('godMode.plans.change', 'Change plan')}
+                    </Button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
+
+      <ChangePlanModal
+        org={editing}
+        plans={plans}
+        onClose={() => setEditing(null)}
+      />
+    </Card>
+  );
+}
+
+function ChangePlanModal({
+  org,
+  plans,
+  onClose,
+}: {
+  org: SuperadminOrg | null;
+  plans: string[];
+  onClose: () => void;
+}) {
+  const { t } = useTranslation();
+  const change = useChangeOrgPlan();
+  const [target, setTarget] = useState<string>('starter');
+  const [reason, setReason] = useState<string>('');
+
+  // Reset form when a different org opens
+  useEffect(() => {
+    if (org) {
+      setTarget(org.plan_type);
+      setReason('');
+    }
+  }, [org]);
+
+  if (!org) return null;
+
+  const submit = async () => {
+    if (!target || target === org.plan_type) {
+      onClose();
+      return;
+    }
+    await change.mutateAsync({ org_id: org.id, plan_type: target, reason: reason.trim() || undefined });
+    onClose();
+  };
+
+  return (
+    <Modal open={!!org} onClose={onClose}>
+      <ModalHeader>
+        {t('godMode.plans.changeFor', 'Change plan for')} <span className="font-mono text-vos-text">{org.name}</span>
+      </ModalHeader>
+      <ModalBody>
+        <div className="flex flex-col gap-vos-4">
+          <div>
+            <div className="text-vos-xs text-vos-text-3 mb-1">{t('godMode.plans.currentPlan', 'Current plan')}</div>
+            <Badge tone={PLAN_TONE[org.plan_type] ?? 'neutral'}>{org.plan_type}</Badge>
+          </div>
+          <div>
+            <label className="text-vos-xs text-vos-text-3 block mb-1">{t('godMode.plans.newPlan', 'New plan')}</label>
+            <div className="flex flex-wrap gap-vos-2">
+              {plans.map((p) => (
+                <button
+                  key={p}
+                  type="button"
+                  onClick={() => setTarget(p)}
+                  className={`px-vos-3 py-vos-2 rounded-vos-md border text-vos-sm font-medium capitalize transition-colors ${
+                    target === p
+                      ? 'border-vos-accent bg-vos-accent/10 text-vos-accent'
+                      : 'border-vos-border-1 text-vos-text-2 hover:bg-vos-surface-2'
+                  }`}
+                >
+                  {p}
+                </button>
+              ))}
+            </div>
+          </div>
+          <div>
+            <label className="text-vos-xs text-vos-text-3 block mb-1">{t('godMode.plans.reason', 'Reason (optional, audited)')}</label>
+            <Textarea
+              value={reason}
+              onChange={(e) => setReason(e.target.value)}
+              rows={2}
+              placeholder={t('godMode.plans.reasonPh', 'e.g. customer upgrade request, comp account, abuse downgrade...')}
+            />
+          </div>
+          {change.error && (
+            <div className="text-vos-sm text-vos-danger">{(change.error as Error).message}</div>
+          )}
+        </div>
+      </ModalBody>
+      <ModalFooter>
+        <Button variant="ghost" onClick={onClose}>
+          {t('common.cancel', 'Cancel')}
+        </Button>
+        <Button
+          variant="primary"
+          onClick={submit}
+          disabled={change.isPending || target === org.plan_type}
+          leftIcon={change.isPending ? <Spinner size="sm" /> : <CheckCircle2 size={14} />}
+        >
+          {target === org.plan_type
+            ? t('godMode.plans.noChange', 'No change')
+            : t('godMode.plans.apply', 'Apply change')}
         </Button>
       </ModalFooter>
     </Modal>

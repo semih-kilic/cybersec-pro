@@ -398,3 +398,146 @@ pub async fn kill_switch_status(_su: SuperAdminUser, State(state): State<Arc<App
         None => json!({"engaged": false}),
     }).into_response()
 }
+
+// ── Organizations & plan management ─────────────────────────────────────────
+
+#[derive(Deserialize)]
+pub struct OrgListQuery {
+    pub q: Option<String>,
+    pub limit: Option<i64>,
+}
+
+/// GET /api/v1/superadmin/organizations — list orgs with member counts.
+pub async fn list_organizations(
+    _su: SuperAdminUser,
+    State(state): State<Arc<AppState>>,
+    Query(q): Query<OrgListQuery>,
+) -> impl IntoResponse {
+    let limit = q.limit.unwrap_or(200).clamp(1, 1000);
+    let needle = q.q.as_deref().map(|s| format!("%{}%", s.to_lowercase()));
+
+    let rows = match needle {
+        Some(n) => sqlx::query_as::<_, (String, String, String, Option<String>, bool, chrono::NaiveDateTime, i64, Option<String>)>(
+            r#"
+            SELECT o.id, o.name, o.slug, o.plan_type, o.is_active, o.created_at,
+                   COALESCE((SELECT COUNT(*) FROM users u WHERE u.organization_id = o.id), 0) AS member_count,
+                   (SELECT u.email FROM users u WHERE u.organization_id = o.id ORDER BY u.created_at ASC LIMIT 1) AS owner_email
+            FROM organizations o
+            WHERE LOWER(o.name) LIKE $1 OR LOWER(o.slug) LIKE $1
+               OR EXISTS (SELECT 1 FROM users u WHERE u.organization_id = o.id AND LOWER(u.email) LIKE $1)
+            ORDER BY o.created_at DESC
+            LIMIT $2
+            "#
+        ).bind(&n).bind(limit).fetch_all(&state.db).await,
+        None => sqlx::query_as::<_, (String, String, String, Option<String>, bool, chrono::NaiveDateTime, i64, Option<String>)>(
+            r#"
+            SELECT o.id, o.name, o.slug, o.plan_type, o.is_active, o.created_at,
+                   COALESCE((SELECT COUNT(*) FROM users u WHERE u.organization_id = o.id), 0) AS member_count,
+                   (SELECT u.email FROM users u WHERE u.organization_id = o.id ORDER BY u.created_at ASC LIMIT 1) AS owner_email
+            FROM organizations o
+            ORDER BY o.created_at DESC
+            LIMIT $1
+            "#
+        ).bind(limit).fetch_all(&state.db).await,
+    };
+
+    let rows = match rows {
+        Ok(r) => r,
+        Err(e) => return (StatusCode::INTERNAL_SERVER_ERROR, Json(json!({"error": e.to_string()}))).into_response(),
+    };
+
+    let plans = crate::services::plan::get_plan_configs();
+    let mut available_plans: Vec<String> = plans.keys().map(|k| (*k).to_string()).collect();
+    available_plans.sort();
+
+    let items: Vec<Value> = rows.into_iter().map(|r| {
+        json!({
+            "id": r.0,
+            "name": r.1,
+            "slug": r.2,
+            "plan_type": r.3.unwrap_or_else(|| "starter".into()),
+            "is_active": r.4,
+            "created_at": r.5.and_utc().to_rfc3339(),
+            "member_count": r.6,
+            "owner_email": r.7,
+        })
+    }).collect();
+
+    let count = items.len();
+    Json(json!({
+        "organizations": items,
+        "available_plans": available_plans,
+        "count": count,
+    })).into_response()
+}
+
+#[derive(Deserialize)]
+pub struct ChangePlanBody {
+    pub plan_type: String,
+    pub reason: Option<String>,
+}
+
+/// PUT /api/v1/superadmin/organizations/:org_id/plan — change an org's plan.
+pub async fn change_org_plan(
+    su: SuperAdminUser,
+    State(state): State<Arc<AppState>>,
+    Path(org_id): Path<String>,
+    Json(body): Json<ChangePlanBody>,
+) -> impl IntoResponse {
+    let plans = crate::services::plan::get_plan_configs();
+    if !plans.contains_key(body.plan_type.as_str()) {
+        let valid: Vec<String> = plans.keys().map(|k| (*k).to_string()).collect();
+        return (StatusCode::BAD_REQUEST, Json(json!({
+            "error": "invalid plan_type",
+            "valid_plans": valid,
+        }))).into_response();
+    }
+
+    let prev: Option<(String, Option<String>)> = match sqlx::query_as(
+        "SELECT name, plan_type FROM organizations WHERE id = $1"
+    ).bind(&org_id).fetch_optional(&state.db).await {
+        Ok(p) => p,
+        Err(e) => return (StatusCode::INTERNAL_SERVER_ERROR, Json(json!({"error": e.to_string()}))).into_response(),
+    };
+
+    let prev = match prev {
+        Some(p) => p,
+        None => return (StatusCode::NOT_FOUND, Json(json!({"error": "organization not found"}))).into_response(),
+    };
+
+    let res = sqlx::query("UPDATE organizations SET plan_type = $1 WHERE id = $2")
+        .bind(&body.plan_type)
+        .bind(&org_id)
+        .execute(&state.db)
+        .await;
+
+    if let Err(e) = res {
+        return (StatusCode::INTERNAL_SERVER_ERROR, Json(json!({"error": e.to_string()}))).into_response();
+    }
+
+    audit::log_audit(
+        &state.db,
+        "org_plan_changed",
+        "superadmin",
+        "warning",
+        Some(&su.0.user_id),
+        su.0.org_id.as_deref(),
+        Some(json!({
+            "org_id": &org_id,
+            "org_name": prev.0,
+            "from_plan": prev.1,
+            "to_plan": &body.plan_type,
+            "reason": body.reason,
+        })),
+        Some("organization"),
+        Some(&org_id),
+        "success",
+        None,
+    ).await;
+
+    Json(json!({
+        "organization_id": org_id,
+        "previous_plan": prev.1,
+        "plan_type": body.plan_type,
+    })).into_response()
+}
