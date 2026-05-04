@@ -196,7 +196,7 @@ pub async fn tools_count(
         .unwrap_or((0,));
 
     let by_category: Vec<(String, i64)> = sqlx::query_as(
-        "SELECT COALESCE(NULLIF(business_category, ''), category) as cat, COUNT(*) FROM tools WHERE is_active = TRUE GROUP BY cat"
+        "SELECT category, COUNT(*) FROM tools WHERE is_active = TRUE GROUP BY category"
     )
     .fetch_all(&state.db)
     .await

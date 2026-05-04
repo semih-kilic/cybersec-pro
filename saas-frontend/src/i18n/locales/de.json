@@ -86,11 +86,11 @@
     "signOut": "Abmelden"
   },
   "landing": {
-    "badge": "396 Professionelle Sicherheitstools • DSGVO-konform 🇪🇺",
+    "badge": "778 Professionelle Sicherheitstools • DSGVO-konform 🇪🇺",
     "headline": "Die fortschrittlichste Kali Linux Plattform in Europa",
     "headlinePart1": "Die fortschrittlichste",
     "headlinePart2": "Plattform in Europa",
-    "subheadline": "396 Penetrationstest-Tools in Ihrem Browser. Keine Installation erforderlich. Enterprise-Sicherheitsplattform für europäische Compliance-Standards.",
+    "subheadline": "778 Penetrationstest-Tools in Ihrem Browser. Keine Installation erforderlich. Enterprise-Sicherheitsplattform für europäische Compliance-Standards.",
     "startTrial": "Kostenlos testen",
     "startTrial14": "Kostenlos testen - 3 Tage",
     "startTrialNow": "Jetzt kostenlos testen",
@@ -192,7 +192,7 @@
     "startTrial": "Kostenlos testen",
     "createAccount": "Konto erstellen",
     "registerTitle": "Kostenlose Testversion",
-    "registerSubtitle": "14 Tage kostenlos • Keine Kreditkarte erforderlich",
+    "registerSubtitle": "3 Tage kostenlos • Keine Kreditkarte erforderlich",
     "firstName": "Vorname",
     "lastName": "Nachname",
     "confirmPassword": "Passwort bestätigen",
@@ -230,7 +230,7 @@
     "registrationFailed": "Registrierung fehlgeschlagen",
     "checkEmailTitle": "Prüfen Sie Ihre E-Mails",
     "checkEmailSentTo": "Wir haben einen Verifizierungslink gesendet an:",
-    "checkEmailBody": "Klicken Sie auf den Link in der E-Mail, um Ihr Konto zu verifizieren und Ihre 14-tägige kostenlose Testversion zu starten. Der Link läuft in 24 Stunden ab.",
+    "checkEmailBody": "Klicken Sie auf den Link in der E-Mail, um Ihr Konto zu verifizieren und Ihre 3-tägige kostenlose Testversion zu starten. Der Link läuft in 24 Stunden ab.",
     "sent": "✅ Gesendet!",
     "newVerificationSent": "Neuer Verifizierungslink wurde gesendet!",
     "firstNamePlaceholder": "Max",
@@ -291,7 +291,7 @@
   },
   "tools": {
     "title": "Sicherheitstools",
-    "subtitle": "396 professionelle Penetrationstest-Tools",
+    "subtitle": "778 professionelle Penetrationstest-Tools",
     "searchPlaceholder": "Tools suchen...",
     "allCategories": "Alle Kategorien",
     "runTool": "Tool ausführen",
@@ -907,7 +907,7 @@
     "section2Title": "2. Dienstbeschreibung",
     "section2Body": "CyberSec Pro bietet eine cloudbasierte Penetration-Testing-Plattform mit Zugang zu Sicherheitstools für autorisierte Testzwecke. Der Dienst umfasst:",
     "section2": {
-      "item1": "Zugriff auf 396 Kali-Linux-Sicherheitstools über eine Weboberfläche",
+      "item1": "Zugriff auf 778 Kali-Linux-Sicherheitstools über eine Weboberfläche",
       "item2": "Planung und Ausführung von Scans",
       "item3": "Berichterstellung und Nachverfolgung von Schwachstellen",
       "item4": "Remote-Agentenverwaltung für verteilte Tests"

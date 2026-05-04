@@ -86,11 +86,11 @@
     "signOut": "Esci"
   },
   "landing": {
-    "badge": "396 strumenti di sicurezza professionali • Conforme al GDPR 🇪🇺",
+    "badge": "778 strumenti di sicurezza professionali • Conforme al GDPR 🇪🇺",
     "headline": "La piattaforma Kali Linux più avanzata d'Europa",
     "headlinePart1": "La Più Avanzata",
     "headlinePart2": "Piattaforma in Europa",
-    "subheadline": "396 strumenti di penetration testing nel tuo browser. Nessuna installazione richiesta. Piattaforma di sicurezza enterprise per standard europei.",
+    "subheadline": "778 strumenti di penetration testing nel tuo browser. Nessuna installazione richiesta. Piattaforma di sicurezza enterprise per standard europei.",
     "startTrial": "Prova Gratuita",
     "startTrial14": "Prova Gratuita - 3 Giorni",
     "startTrialNow": "Inizia la tua prova gratuita ora",
@@ -192,7 +192,7 @@
     "startTrial": "Prova gratuita",
     "createAccount": "Crea account",
     "registerTitle": "Prova gratuita",
-    "registerSubtitle": "14 giorni gratis • Nessuna carta di credito",
+    "registerSubtitle": "3 giorni gratis • Nessuna carta di credito",
     "firstName": "Nome",
     "lastName": "Cognome",
     "confirmPassword": "Conferma password",
@@ -230,7 +230,7 @@
     "registrationFailed": "Registrazione non riuscita",
     "checkEmailTitle": "Controlla la tua e-mail",
     "checkEmailSentTo": "Abbiamo inviato un link di verifica a:",
-    "checkEmailBody": "Fai clic sul link nell'e-mail per verificare il tuo account e avviare la tua prova gratuita di 14 giorni. Il link scade entro 24 ore.",
+    "checkEmailBody": "Fai clic sul link nell'e-mail per verificare il tuo account e avviare la tua prova gratuita di 3 giorni. Il link scade entro 24 ore.",
     "sent": "✅ Inviato!",
     "newVerificationSent": "Nuovo link di verifica inviato!",
     "firstNamePlaceholder": "Giovanni",
@@ -291,7 +291,7 @@
   },
   "tools": {
     "title": "Strumenti di sicurezza",
-    "subtitle": "396 strumenti professionali di penetration testing",
+    "subtitle": "778 strumenti professionali di penetration testing",
     "searchPlaceholder": "Cerca strumenti...",
     "allCategories": "Tutte le categorie",
     "runTool": "Esegui strumento",
@@ -907,7 +907,7 @@
     "section2Title": "2. Descrizione del servizio",
     "section2Body": "CyberSec Pro fornisce una piattaforma cloud di penetration testing con accesso a strumenti di sicurezza per scopi di test autorizzati. Il Servizio include:",
     "section2": {
-      "item1": "Accesso a 396 strumenti di sicurezza Kali Linux tramite interfaccia web",
+      "item1": "Accesso a 778 strumenti di sicurezza Kali Linux tramite interfaccia web",
       "item2": "Capacità di pianificazione ed esecuzione delle scansioni",
       "item3": "Generazione report e tracciamento delle vulnerabilità",
       "item4": "Gestione remota degli agenti per test distribuiti"

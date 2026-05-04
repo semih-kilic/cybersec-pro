@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { XMarkIcon, ArrowRightIcon } from '@heroicons/react/24/outline';
+import { useToolCounts } from '../hooks/useApiQueries';
 
 interface WelcomeTourProps {
   isOpen: boolean;
@@ -7,10 +8,11 @@ interface WelcomeTourProps {
   planType: string;
 }
 
-const tourSteps = [
+function buildTourSteps(toolsTotal: number) {
+  return [
   {
-    title: "Welcome to CyberSec Pro! 🎉",
-    description: "396 Kali Linux security tools at your fingertips. Let's get you started in 4 quick steps.",
+    title: "Welcome to CyberSec Pro! \uD83C\uDF89",
+    description: `${toolsTotal} Kali Linux security tools at your fingertips. Let's get you started in 4 quick steps.`,
     image: "🛡️",
     highlight: null,
     shortcut: null
@@ -43,10 +45,14 @@ const tourSteps = [
     highlight: null,
     shortcut: null
   }
-];
+  ];
+}
 
 export default function WelcomeTour({ isOpen, onClose, planType }: WelcomeTourProps) {
   const [currentStep, setCurrentStep] = useState(0);
+  const { data: toolCounts } = useToolCounts();
+  const toolsTotal = toolCounts?.total ?? 0;
+  const tourSteps = buildTourSteps(toolsTotal);
 
   useEffect(() => {
     if (isOpen) {
@@ -116,7 +122,7 @@ export default function WelcomeTour({ isOpen, onClose, planType }: WelcomeTourPr
               <p className="text-gray-400 text-sm">
                 You're on the <span className="text-cyan-400 font-semibold">{planType}</span> plan with access to{' '}
                 <span className="text-cyan-400 font-semibold">
-                  {planType === 'enterprise' ? '396' : planType === 'professional' ? '200' : planType === 'starter' ? '50' : '3'}
+                  {planType === 'enterprise' || planType === 'professional' || planType === 'starter' ? toolsTotal : Math.min(3, toolsTotal)}
                 </span>{' '}
                 security tools.
               </p>
