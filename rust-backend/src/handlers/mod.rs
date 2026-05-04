@@ -20,3 +20,4 @@ pub mod news_handlers;
 pub mod threat_intel_handlers;
 pub mod vulnerability_db_handlers;
 pub mod community_handlers;
+pub mod compliance_handlers;

@@ -533,6 +533,8 @@ fn build_router(state: Arc<AppState>) -> Router {
         .route("/api/v1/community/stats", get(community_handlers::get_stats))
         .route("/api/v1/community/leaderboard", get(community_handlers::get_leaderboard))
         .route("/api/v1/community/me/rank", get(community_handlers::get_my_rank))
+        // ── Phase 23: real Compliance dashboard ───────────────────────────
+        .route("/api/v1/compliance/dashboard", get(compliance_handlers::get_dashboard))
         // ── Phase 1: Security (Login History, IP Whitelist, Audit) ────────
         .route("/api/v1/security/login-history", get(security_handlers::get_login_history))
         .route("/api/v1/security/sessions", get(security_handlers::get_active_sessions))
