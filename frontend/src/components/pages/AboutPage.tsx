@@ -25,11 +25,11 @@ const values = [
 ];
 
 const compliance = [
-  { name: "SOC 2", color: "#9fef00" },
-  { name: "ISO 27001", color: "#06d6a0" },
+  { name: "SOC 2 (aligned)", color: "#9fef00" },
+  { name: "ISO 27001 (aligned)", color: "#06d6a0" },
   { name: "GDPR / CCPA", color: "#118ab2" },
-  { name: "HIPAA", color: "#ef476f" },
-  { name: "PCI DSS", color: "#ffd166" },
+  { name: "HIPAA (aligned)", color: "#ef476f" },
+  { name: "PCI DSS (aligned)", color: "#ffd166" },
 ];
 
 const security = [
@@ -122,9 +122,9 @@ export default function AboutPage() {
       {/* Compliance */}
       <section className="mx-auto max-w-5xl px-6 pb-20">
         <RevealOnScroll>
-          <div className="section-heading mb-12"><h2>Enterprise Compliance</h2></div>
+          <div className="section-heading mb-12"><h2>Compliance Frameworks We Align With</h2></div>
         </RevealOnScroll>
-        <div className="flex flex-wrap justify-center gap-4 mb-8">
+        <div className="flex flex-wrap justify-center gap-4 mb-4">
           {compliance.map((c) => (
             <RevealOnScroll key={c.name}>
               <div className="glass-card flex items-center gap-3 px-6 py-4" style={{ borderColor: `${c.color}30` }}>
@@ -134,6 +134,9 @@ export default function AboutPage() {
             </RevealOnScroll>
           ))}
         </div>
+        <p className="text-center text-xs text-white/40 max-w-2xl mx-auto">
+          We design our controls and reporting against these frameworks. Independent third-party certifications (SOC 2, ISO 27001, HIPAA, PCI DSS) are not yet held; GDPR / CCPA data subject rights are honored.
+        </p>
       </section>
 
       {/* Security Infrastructure */}

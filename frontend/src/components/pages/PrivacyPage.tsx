@@ -81,7 +81,7 @@ export default function PrivacyPage() {
               <div className="grid gap-3 md:grid-cols-2">
                 {[
                   { label: "End-to-End Encryption", desc: "AES-256 at rest, TLS 1.3 in transit" },
-                  { label: "SOC 2 Type II Compliance", desc: "Annual audits by independent assessors" },
+                  { label: "SOC 2-Aligned Controls", desc: "Designed against SOC 2 Trust Services Criteria (no certification claimed)" },
                   { label: "Role-Based Access Control", desc: "Granular RBAC with least-privilege principle" },
                   { label: "Multi-Factor Authentication", desc: "TOTP-based MFA for all accounts" },
                 ].map((s) => (

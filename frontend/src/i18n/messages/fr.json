@@ -187,7 +187,7 @@
       },
       "q6": {
         "q": "Mes données sont-elles sécurisées ?",
-        "a": "Absolument. AES-256 au repos, TLS 1.3 en transit. Conformité SOC 2."
+        "a": "Absolument. AES-256 au repos, TLS 1.3 en transit. Nos contrôles sont conçus pour s'aligner sur les critères SOC 2 Trust Services."
       },
       "q7": {
         "q": "Pour mon entreprise ?",

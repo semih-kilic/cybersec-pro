@@ -187,7 +187,7 @@
       },
       "q6": {
         "q": "Verilerim güvende mi?",
-        "a": "Kesinlikle. Tüm veriler AES-256 ile şifrelenir ve TLS 1.3 ile iletilir. SOC 2 uyumluluk standartlarını takip ediyoruz."
+        "a": "Kesinlikle. Tüm veriler AES-256 ile şifrelenir ve TLS 1.3 ile iletilir. Kontrollerimiz SOC 2 Trust Services Criteria ile uyumlu olacak şekilde tasarlanmıştır."
       },
       "q7": {
         "q": "Şirketim için kullanabilir miyim?",

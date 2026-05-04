@@ -19,13 +19,12 @@ const RSS_FEEDS = [
   { name: "Krebs on Security", url: "https://krebsonsecurity.com/feed/", icon: "🛡️" },
 ];
 
-// Fallback news for when RSS fails (static export / CORS)
+// Static fallback links (used only when RSS fetch fails / blocked by CORS in static export).
+// We deliberately avoid fabricated headlines: only point users to the real source homepages.
 const FALLBACK_NEWS: NewsItem[] = [
-  { title: "Critical Zero-Day Vulnerabilities Discovered in Enterprise Software", link: "https://thehackernews.com", source: "The Hacker News", sourceIcon: "🔐", date: new Date().toLocaleDateString() },
-  { title: "Ransomware Gangs Shift Tactics: Double Extortion on the Rise", link: "https://www.bleepingcomputer.com", source: "BleepingComputer", sourceIcon: "💻", date: new Date().toLocaleDateString() },
-  { title: "Nation-State Actors Target Critical Infrastructure with New Malware", link: "https://krebsonsecurity.com", source: "Krebs on Security", sourceIcon: "🛡️", date: new Date().toLocaleDateString() },
-  { title: "CISA Adds New CVEs to Known Exploited Vulnerabilities Catalog", link: "https://thehackernews.com", source: "The Hacker News", sourceIcon: "🔐", date: new Date().toLocaleDateString() },
-  { title: "Supply Chain Attack Compromises Popular Open Source Packages", link: "https://www.bleepingcomputer.com", source: "BleepingComputer", sourceIcon: "💻", date: new Date().toLocaleDateString() },
+  { title: "Visit The Hacker News for the latest cybersecurity stories", link: "https://thehackernews.com", source: "The Hacker News", sourceIcon: "🔐", date: new Date().toLocaleDateString() },
+  { title: "Visit BleepingComputer for breaking security news", link: "https://www.bleepingcomputer.com", source: "BleepingComputer", sourceIcon: "💻", date: new Date().toLocaleDateString() },
+  { title: "Visit Krebs on Security for in-depth investigations", link: "https://krebsonsecurity.com", source: "Krebs on Security", sourceIcon: "🛡️", date: new Date().toLocaleDateString() },
 ];
 
 async function fetchRSS(feed: typeof RSS_FEEDS[0]): Promise<NewsItem[]> {
