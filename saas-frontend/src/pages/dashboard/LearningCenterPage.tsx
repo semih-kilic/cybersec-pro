@@ -9,8 +9,6 @@ import {
   Award,
   Play,
   ExternalLink,
-  Star,
-  Users as UsersIcon,
   Clock,
   Layers,
   ShieldCheck,
@@ -37,8 +35,6 @@ type Course = {
   duration: string;
   modules: number;
   category: string;
-  students: number;
-  rating: number;
   description: string;
   provider: string;
   url: string;
@@ -49,7 +45,6 @@ const COURSES: Course[] = [
     id: 1,
     title: 'Ethical Hacking Fundamentals',
     level: 'Beginner', duration: '12 hours', modules: 24, category: 'Offensive Security',
-    students: 14280, rating: 4.8,
     description: 'Master the fundamentals of ethical hacking — reconnaissance, scanning, exploitation, and reporting.',
     provider: 'TryHackMe',
     url: 'https://tryhackme.com/path/outline/beginner',
@@ -58,7 +53,6 @@ const COURSES: Course[] = [
     id: 2,
     title: 'Web Application Penetration Testing',
     level: 'Intermediate', duration: '18 hours', modules: 32, category: 'Web Security',
-    students: 8920, rating: 4.9,
     description: 'Deep dive into OWASP Top 10, SQLi, XSS, CSRF, auth bypasses and advanced web exploitation.',
     provider: 'PortSwigger Academy',
     url: 'https://portswigger.net/web-security',
@@ -67,7 +61,6 @@ const COURSES: Course[] = [
     id: 3,
     title: 'Network Security & Packet Analysis',
     level: 'Intermediate', duration: '15 hours', modules: 28, category: 'Network Security',
-    students: 6750, rating: 4.7,
     description: 'Network protocols, Wireshark analysis, firewall bypasses, MITM attacks and network forensics.',
     provider: 'Wireshark Docs',
     url: 'https://www.wireshark.org/docs/',
@@ -76,7 +69,6 @@ const COURSES: Course[] = [
     id: 4,
     title: 'Kali Linux Mastery',
     level: 'Beginner', duration: '20 hours', modules: 40, category: 'Tools & Platform',
-    students: 22400, rating: 4.9,
     description: 'Complete guide to Kali Linux — from installation to advanced tool usage for professional pentesting.',
     provider: 'Kali Docs',
     url: 'https://www.kali.org/docs/',
@@ -85,7 +77,6 @@ const COURSES: Course[] = [
     id: 5,
     title: 'Cloud Security (AWS / Azure / GCP)',
     level: 'Advanced', duration: '16 hours', modules: 30, category: 'Cloud Security',
-    students: 5320, rating: 4.8,
     description: 'Secure cloud environments. IAM, network security, container security, and cloud-native attacks.',
     provider: 'SANS',
     url: 'https://www.sans.org/cyber-security-courses/cloud-security-fundamentals/',
@@ -94,7 +85,6 @@ const COURSES: Course[] = [
     id: 6,
     title: 'Malware Analysis & Reverse Engineering',
     level: 'Advanced', duration: '22 hours', modules: 36, category: 'Malware Analysis',
-    students: 3840, rating: 4.9,
     description: 'Static and dynamic analysis, assembly, debuggers, sandbox analysis and threat intelligence.',
     provider: 'TCM Security',
     url: 'https://academy.tcm-sec.com/p/practical-malware-analysis-triage',
@@ -103,7 +93,6 @@ const COURSES: Course[] = [
     id: 7,
     title: 'Incident Response & Digital Forensics',
     level: 'Intermediate', duration: '14 hours', modules: 26, category: 'DFIR',
-    students: 4560, rating: 4.7,
     description: 'IR procedures, memory forensics, disk analysis, timeline reconstruction and evidence handling.',
     provider: 'SANS',
     url: 'https://www.sans.org/cyber-security-courses/hacker-techniques-incident-handling/',
@@ -112,7 +101,6 @@ const COURSES: Course[] = [
     id: 8,
     title: 'Bug Bounty Hunting Masterclass',
     level: 'Intermediate', duration: '10 hours', modules: 20, category: 'Bug Bounty',
-    students: 11200, rating: 4.8,
     description: 'Practical methodology from asset discovery to report writing. HackerOne / Bugcrowd patterns.',
     provider: 'Bugcrowd University',
     url: 'https://www.bugcrowd.com/hackers/bugcrowd-university/',
@@ -124,42 +112,40 @@ type CtfChallenge = {
   title: string;
   difficulty: 'Easy' | 'Medium' | 'Hard';
   category: string;
-  points: number;
-  solves: number;
   description: string;
   platform: string;
   url: string;
 };
 
 const CTF_CHALLENGES: CtfChallenge[] = [
-  { id: 1, title: 'SQL Injection Lab', difficulty: 'Easy', category: 'Web', points: 100, solves: 2847,
+  { id: 1, title: 'SQL Injection Lab', difficulty: 'Easy', category: 'Web',
     description: 'Exploit SQL injection in a mock banking app.', platform: 'PortSwigger',
     url: 'https://portswigger.net/web-security/sql-injection' },
-  { id: 2, title: 'Buffer Overflow Basics', difficulty: 'Medium', category: 'Binary', points: 200, solves: 1523,
+  { id: 2, title: 'Buffer Overflow Basics', difficulty: 'Medium', category: 'Binary',
     description: 'Exploit a classic stack-based BOF for shell.', platform: 'TryHackMe',
     url: 'https://tryhackme.com/room/bof1' },
-  { id: 3, title: 'XSS Hunter', difficulty: 'Easy', category: 'Web', points: 150, solves: 3102,
+  { id: 3, title: 'XSS Hunter', difficulty: 'Easy', category: 'Web',
     description: 'Find and exploit XSS across multiple contexts.', platform: 'PortSwigger',
     url: 'https://portswigger.net/web-security/cross-site-scripting' },
-  { id: 4, title: 'Cryptographic Weakness', difficulty: 'Hard', category: 'Crypto', points: 300, solves: 456,
+  { id: 4, title: 'Cryptographic Weakness', difficulty: 'Hard', category: 'Crypto',
     description: 'Break a custom encryption scheme via known-plaintext.', platform: 'CryptoHack',
     url: 'https://cryptohack.org/' },
-  { id: 5, title: 'Privilege Escalation: Linux', difficulty: 'Medium', category: 'PrivEsc', points: 250, solves: 1890,
+  { id: 5, title: 'Privilege Escalation: Linux', difficulty: 'Medium', category: 'PrivEsc',
     description: 'Escalate from low-priv user to root.', platform: 'TryHackMe',
     url: 'https://tryhackme.com/room/linuxprivesc' },
-  { id: 6, title: 'Active Directory Attack Path', difficulty: 'Hard', category: 'AD', points: 400, solves: 312,
+  { id: 6, title: 'Active Directory Attack Path', difficulty: 'Hard', category: 'AD',
     description: 'Achieve Domain Admin via realistic attack chains.', platform: 'HackTheBox',
     url: 'https://www.hackthebox.com/' },
-  { id: 7, title: 'Network Forensics Challenge', difficulty: 'Medium', category: 'Forensics', points: 200, solves: 987,
+  { id: 7, title: 'Network Forensics Challenge', difficulty: 'Medium', category: 'Forensics',
     description: 'Reconstruct an exfiltration incident from PCAPs.', platform: 'CyberDefenders',
     url: 'https://cyberdefenders.org/' },
-  { id: 8, title: 'Container Escape', difficulty: 'Hard', category: 'Cloud', points: 350, solves: 234,
+  { id: 8, title: 'Container Escape', difficulty: 'Hard', category: 'Cloud',
     description: 'Break out of a Docker container using known techniques.', platform: 'HackTheBox',
     url: 'https://www.hackthebox.com/' },
-  { id: 9, title: 'Reverse Engineering Malware', difficulty: 'Hard', category: 'Reversing', points: 500, solves: 189,
+  { id: 9, title: 'Reverse Engineering Malware', difficulty: 'Hard', category: 'Reversing',
     description: 'Analyse a real malware sample to extract IOCs.', platform: 'MalwareBazaar',
     url: 'https://bazaar.abuse.ch/' },
-  { id: 10, title: 'OSINT Investigation', difficulty: 'Easy', category: 'OSINT', points: 100, solves: 4521,
+  { id: 10, title: 'OSINT Investigation', difficulty: 'Easy', category: 'OSINT',
     description: 'Trace a fictional threat actor with OSINT.', platform: 'TryHackMe',
     url: 'https://tryhackme.com/room/ohsint' },
 ];
@@ -192,32 +178,32 @@ const LABS: Lab[] = [
 
 type Cert = {
   name: string; org: string; difficulty: 'Beginner' | 'Intermediate' | 'Advanced';
-  price: string; coverage: number; description: string; url: string;
+  price: string; description: string; url: string;
 };
 
 const CERTIFICATIONS: Cert[] = [
   { name: 'OSCP — Offensive Security Certified Professional', org: 'OffSec', difficulty: 'Advanced',
-    price: '$1,749', coverage: 95,
+    price: '$1,749',
     description: 'The gold standard for pentesting. Hands-on, 24-hour practical exam.',
     url: 'https://www.offsec.com/courses/pen-200/' },
   { name: 'CEH — Certified Ethical Hacker', org: 'EC-Council', difficulty: 'Intermediate',
-    price: '$1,199', coverage: 85,
+    price: '$1,199',
     description: 'Comprehensive ethical hacking certification covering tools, techniques, and methodologies.',
     url: 'https://www.eccouncil.org/programs/certified-ethical-hacker-ceh/' },
   { name: 'CompTIA Security+', org: 'CompTIA', difficulty: 'Beginner',
-    price: '$404', coverage: 100,
+    price: '$404',
     description: 'Entry-level security certification covering network security, compliance and threats.',
     url: 'https://www.comptia.org/certifications/security' },
   { name: 'CISSP', org: '(ISC)²', difficulty: 'Advanced',
-    price: '$749', coverage: 70,
+    price: '$749',
     description: 'Management-focused certification covering 8 domains of information security.',
     url: 'https://www.isc2.org/Certifications/CISSP' },
   { name: 'eJPT — Junior Penetration Tester', org: 'INE', difficulty: 'Beginner',
-    price: '$249', coverage: 90,
+    price: '$249',
     description: 'Practical entry-level certification with hands-on lab-based exam.',
     url: 'https://security.ine.com/certifications/ejpt-certification/' },
   { name: 'GPEN — GIAC Penetration Tester', org: 'SANS / GIAC', difficulty: 'Advanced',
-    price: '$2,499', coverage: 75,
+    price: '$2,499',
     description: 'Advanced penetration testing certification from SANS Institute.',
     url: 'https://www.giac.org/certifications/penetration-tester-gpen/' },
 ];
@@ -357,16 +343,12 @@ function CoursesGrid() {
           >
             <div className="flex items-start justify-between mb-vos-2">
               <StatusPill tone={LEVEL_TONE[course.level]} label={course.level} />
-              <div className="flex items-center gap-1 text-vos-xs text-vos-warning">
-                <Star size={12} className="fill-current" /> {course.rating.toFixed(1)}
-              </div>
             </div>
             <h3 className="text-vos-text font-semibold text-vos-base mb-1">{course.title}</h3>
             <p className="text-vos-text-3 text-vos-sm mb-vos-3 line-clamp-2">{course.description}</p>
             <div className="flex flex-wrap gap-3 text-vos-xs text-vos-text-3 mb-vos-3">
               <span className="inline-flex items-center gap-1"><Clock size={11} /> {course.duration}</span>
               <span className="inline-flex items-center gap-1"><Layers size={11} /> {course.modules} modules</span>
-              <span className="inline-flex items-center gap-1"><UsersIcon size={11} /> {course.students.toLocaleString()}</span>
             </div>
             <div className="flex items-center justify-between gap-2">
               <div className="flex flex-wrap gap-1.5 min-w-0">
@@ -398,7 +380,7 @@ function CtfList() {
             className="flex items-center gap-vos-3 p-vos-3 rounded-vos-md bg-vos-bg-elev-1 border border-vos-border-1 hover:border-vos-border-2 transition-colors"
           >
             <div className="w-12 h-12 rounded-vos-md bg-vos-bg-elev-2 border border-vos-border-1 flex items-center justify-center text-vos-base font-vos-mono font-bold text-vos-accent shrink-0">
-              {ctf.points}
+              <Flag size={18} />
             </div>
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-2 mb-1">
@@ -408,8 +390,6 @@ function CtfList() {
               <p className="text-vos-text-3 text-vos-xs truncate">{ctf.description}</p>
               <div className="flex gap-3 mt-1 text-[11px] text-vos-text-3">
                 <span>{ctf.category}</span>
-                <span>·</span>
-                <span>{ctf.solves.toLocaleString()} solves</span>
                 <span>·</span>
                 <span>{ctf.platform}</span>
               </div>
@@ -470,7 +450,7 @@ function LabsGrid() {
 
 function CertList() {
   return (
-    <Section title="Certifications" description="Industry-recognised certifications mapped to platform coverage.">
+    <Section title="Certifications" description="Industry-recognised certifications.">
       <div className="space-y-vos-3">
         {CERTIFICATIONS.map((cert) => (
           <div
@@ -490,17 +470,8 @@ function CertList() {
                 <div className="flex flex-wrap gap-3 text-vos-xs text-vos-text-3 mb-vos-2">
                   <span>Provider: <span className="text-vos-text-2">{cert.org}</span></span>
                   <span>Exam fee: <span className="text-vos-text-2">{cert.price}</span></span>
-                  <span>Coverage: <span className="text-vos-text-2">{cert.coverage}%</span></span>
                 </div>
                 <div className="flex items-center gap-vos-3">
-                  <div className="flex-1 h-1.5 bg-vos-bg-elev-2 rounded-full overflow-hidden">
-                    <motion.div
-                      initial={{ width: 0 }}
-                      animate={{ width: `${cert.coverage}%` }}
-                      transition={{ duration: 0.6, ease: 'easeOut' }}
-                      className="h-full bg-gradient-to-r from-vos-accent to-vos-success rounded-full"
-                    />
-                  </div>
                   <ExternalCardLink url={cert.url} label={`Learn about ${cert.name}`}>
                     <ShieldCheck size={12} /> Details
                   </ExternalCardLink>
