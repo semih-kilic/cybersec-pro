@@ -660,16 +660,16 @@ DELETE /api/v1/settings/api-keys/:key_id`}</pre>
               </div>
             </RevealOnScroll>
 
-            {/* Performance */}
+            {/* Platform facts */}
             <RevealOnScroll>
               <div className="glass-card p-8">
-                <h2 className="text-xl font-bold text-white mb-4">Performance & Reliability</h2>
+                <h2 className="text-xl font-bold text-white mb-4">Platform at a Glance</h2>
                 <div className="grid gap-4 md:grid-cols-4">
                   {[
-                    { metric: "99.9%", label: "Uptime SLA" },
-                    { metric: "<50ms", label: "API Latency (p95)" },
-                    { metric: "100+", label: "Concurrent Scans" },
-                    { metric: "<1s", label: "Real-time Streaming" },
+                    { metric: "778", label: "Security Tools" },
+                    { metric: "61", label: "Categories" },
+                    { metric: "Rust", label: "Backend Stack" },
+                    { metric: "MIT", label: "Agent License" },
                   ].map((m) => (
                     <div key={m.label} className="text-center">
                       <span className="text-2xl font-extrabold font-mono text-[var(--color-neon)]">{m.metric}</span>
