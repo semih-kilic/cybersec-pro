@@ -150,7 +150,10 @@ enum SmsProvider {
         secret_key: String,
         region: String,
     },
-    Mock, // For development/testing
+    /// Explicit dev-only stub. Only selected when SMS_PROVIDER=mock.
+    Mock,
+    /// No provider configured. Refuses to send (no silent simulation).
+    Disabled,
 }
 
 impl SmsService {
@@ -166,7 +169,8 @@ impl SmsService {
                 secret_key: std::env::var("AWS_SECRET_ACCESS_KEY").unwrap_or_default(),
                 region: std::env::var("AWS_REGION").unwrap_or_else(|_| "us-east-1".into()),
             },
-            _ => SmsProvider::Mock,
+            Ok("mock") => SmsProvider::Mock,
+            _ => SmsProvider::Disabled,
         };
 
         SmsService {
@@ -198,6 +202,10 @@ impl SmsService {
             SmsProvider::Mock => {
                 tracing::info!("[SMS MOCK] To: {} | Message: {}", to, message);
                 Ok(())
+            }
+            SmsProvider::Disabled => {
+                tracing::error!("SMS provider not configured (set SMS_PROVIDER=twilio|sns|mock)");
+                Err("SMS provider not configured".into())
             }
         }
     }

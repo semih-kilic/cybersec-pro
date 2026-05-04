@@ -791,7 +791,7 @@ export function useProjects() {
 // ==========================================
 
 export interface AnalyticsData {
-  daily_trend: Array<{ date: string; scans: number }>;
+  daily_trend: Array<{ date: string; scans: number; avg_duration_seconds?: number; success_rate?: number }>;
   tool_usage: Array<{ name: string; count: number }>;
   status_distribution: Record<string, number>;
   target_distribution: Array<{ target: string; count: number }>;

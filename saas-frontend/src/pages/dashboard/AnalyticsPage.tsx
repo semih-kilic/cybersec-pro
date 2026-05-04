@@ -244,7 +244,7 @@ export default function AnalyticsPage() {
             title={t('analytics.avgDuration', 'Avg Duration')}
             value={data.performance.avg_duration_seconds}
             suffix="s"
-            data={data.daily_trend.slice(-7).map((_) => data.performance.avg_duration_seconds + Math.random() * 10 - 5)}
+            data={data.daily_trend.slice(-7).map((d) => d.avg_duration_seconds ?? data.performance.avg_duration_seconds)}
             variant="default"
             icon={<svg className="w-4 h-4 text-cyan-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>}
           />
@@ -252,7 +252,7 @@ export default function AnalyticsPage() {
             title={t('analytics.successRate', 'Success Rate')}
             value={data.performance.success_rate}
             suffix="%"
-            data={[85, 88, 90, 87, 92, 89, data.performance.success_rate]}
+            data={data.daily_trend.slice(-7).map((d) => d.success_rate ?? data.performance.success_rate)}
             variant="success"
             icon={<svg className="w-4 h-4 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>}
           />
