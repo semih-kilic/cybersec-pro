@@ -63,7 +63,7 @@ lazy_static = "1"
 # async-stripe = "1.0.0-rc.3"
 
 # Redis (optional rate limiting)
-redis = { version = "0.25", features = ["tokio-comp"] }
+redis = { version = "0.27", features = ["tokio-comp"] }
 
 # Email (SMTP)
 lettre = { version = "0.11", features = ["tokio1-native-tls", "builder", "hostname"] }
