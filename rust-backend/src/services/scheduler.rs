@@ -2,7 +2,6 @@ use chrono::{DateTime, Utc};
 use cron::Schedule;
 use sqlx::PgPool;
 use std::str::FromStr;
-use std::sync::Arc;
 use tokio::sync::broadcast;
 
 /// Compute the next fire time from a cron expression after a given reference time.

@@ -822,7 +822,7 @@ fn build_findings_html(scan: &ScanRow) -> String {
     html
 }
 
-fn build_compliance_section(template: &str, crit: i32, high: i32, med: i32, low: i32, risk_score: i32) -> String {
+fn build_compliance_section(template: &str, crit: i32, high: i32, med: i32, _low: i32, risk_score: i32) -> String {
     let framework = match template {
         "owasp" => "OWASP Top 10 (2021)",
         "pci" => "PCI DSS v4.0",

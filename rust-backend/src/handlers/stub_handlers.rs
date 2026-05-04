@@ -1782,7 +1782,7 @@ pub async fn test_agent(
     let ssh_username: Option<String> = agent.get("ssh_username");
     let ssh_password_enc: Option<String> = agent.get("ssh_password_encrypted");
     let ssh_key_path: Option<String> = agent.get("ssh_key_path");
-    let platform: Option<String> = agent.get("platform");
+    let _platform: Option<String> = agent.get("platform");
 
     let host = match ssh_host {
         Some(h) if !h.is_empty() => h,

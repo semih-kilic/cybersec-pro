@@ -8,7 +8,7 @@ use std::time::Duration;
 use ipnet::Ipv4Net;
 use tokio::sync::Semaphore;
 use std::sync::Arc;
-use tracing::{info, debug};
+use tracing::info;
 
 /// A discovered host on the network
 #[derive(Debug, Clone, serde::Serialize)]

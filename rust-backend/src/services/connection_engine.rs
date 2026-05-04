@@ -8,7 +8,7 @@ use std::net::TcpStream;
 use std::path::Path;
 use std::time::Duration;
 use ssh2::Session;
-use tracing::{info, warn, error};
+use tracing::info;
 
 /// Result of a connection test
 #[derive(Debug, Clone, serde::Serialize)]
@@ -353,7 +353,7 @@ pub async fn scan_common_ports(host: &str, timeout_ms: u64) -> Vec<u16> {
 /// Password encryption using AES-256-GCM
 pub mod crypto {
     use aes_gcm::{
-        aead::{Aead, KeyInit, OsRng},
+        aead::{Aead, KeyInit},
         Aes256Gcm, Nonce,
     };
     use base64::{Engine as _, engine::general_purpose::STANDARD as B64};
