@@ -138,14 +138,14 @@
       "euCompliant": "EU Compliant",
       "copyright": "© 2026 CyberSec Pro. Powered by Kali Linux."
     },
-    "demoTitle": "See CyberSec Pro in Action",
-    "demoSubtitle": "Watch a real security scan from login to report — updated weekly with latest features.",
+    "demoTitle": "Sample Scan Output",
+    "demoSubtitle": "A glimpse of the terminal that powers every scan.",
     "terminalTitle": "CyberSec Pro Terminal",
     "terminalStarting": "Starting Nmap 7.94 ( https://nmap.org )",
     "terminalHeader": "PORT   STATE SERVICE VERSION",
     "terminalDone": "Nmap done: 1 IP address (1 host up)",
-    "watchDemo": "Watch 2-Min Demo",
-    "noSignup": "No signup required",
+    "watchDemo": "Start Free Trial",
+    "noSignup": "No credit card required",
     "pill": {
       "loginDashboard": "Login & Dashboard",
       "liveNmap": "Live Nmap Scan",
@@ -676,7 +676,7 @@
     "purpleTeamProfile": {
       "heading": "Purple Team Runtime Profile",
       "subtitle": "Tune detection ratios and scenario penalties without redeploying the backend.",
-      "openDashboard": "Open Purple Team dashboard →",
+      "openDashboard": "Open Dashboard",
       "source": "Source",
       "priorityOne": "Priority 1",
       "priorityOneDesc": "Organization DB profile",

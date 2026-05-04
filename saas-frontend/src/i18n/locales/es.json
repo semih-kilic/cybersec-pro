@@ -138,14 +138,14 @@
       "euCompliant": "Cumple con UE",
       "copyright": "© 2026 CyberSec Pro. Impulsado por Kali Linux."
     },
-    "demoTitle": "Mira CyberSec Pro en acción",
-    "demoSubtitle": "Observa un escaneo real de seguridad desde el inicio de sesión hasta el informe — actualizado semanalmente con nuevas funciones.",
+    "demoTitle": "Salida de escaneo de muestra",
+    "demoSubtitle": "Un vistazo al terminal que impulsa cada escaneo.",
     "terminalTitle": "Terminal de CyberSec Pro",
     "terminalStarting": "Iniciando Nmap 7.94 ( https://nmap.org )",
     "terminalHeader": "PUERTO ESTADO SERVICIO VERSION",
     "terminalDone": "Nmap finalizado: 1 dirección IP (1 host activo)",
-    "watchDemo": "Ver demo de 2 min",
-    "noSignup": "No requiere registro",
+    "watchDemo": "Iniciar prueba gratuita",
+    "noSignup": "No se requiere tarjeta de crédito",
     "pill": {
       "loginDashboard": "Inicio de sesión y panel",
       "liveNmap": "Escaneo Nmap en vivo",
@@ -635,7 +635,7 @@
     "purpleTeamProfile": {
       "heading": "Perfil de ejecución de Purple Team",
       "subtitle": "Ajusta ratios de detección y penalizaciones de escenario sin volver a desplegar el backend.",
-      "openDashboard": "Abrir panel de Purple Team →",
+      "openDashboard": "Abrir panel",
       "source": "Origen",
       "priorityOne": "Prioridad 1",
       "priorityOneDesc": "Perfil de organización en base de datos",
