@@ -97,7 +97,6 @@ impl SiteMonitor {
                 let prev = states.get(&target.name);
                 let was_up = prev.map(|s| s.is_up).unwrap_or(true);
                 let prev_failures = prev.map(|s| s.consecutive_failures).unwrap_or(0);
-                drop(prev);
                 let consecutive = next_consecutive_failures(is_up, prev_failures);
 
                 // Transition: was up → now down → send alert
