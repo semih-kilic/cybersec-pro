@@ -186,9 +186,9 @@ pub async fn get_tool(
 
 // ── Tool Count ─────────────────────────────────────────────
 
+/// Public endpoint — used by the landing page so it must NOT require auth.
 pub async fn tools_count(
     State(state): State<Arc<AppState>>,
-    _auth: AuthUser,
 ) -> impl IntoResponse {
     let total: (i64,) = sqlx::query_as("SELECT COUNT(*) FROM tools WHERE is_active = TRUE")
         .fetch_one(&state.db)
@@ -196,22 +196,31 @@ pub async fn tools_count(
         .unwrap_or((0,));
 
     let by_category: Vec<(String, i64)> = sqlx::query_as(
-        "SELECT COALESCE(business_category, category) as cat, COUNT(*) FROM tools WHERE is_active = TRUE GROUP BY cat"
+        "SELECT COALESCE(NULLIF(business_category, ''), category) as cat, COUNT(*) FROM tools WHERE is_active = TRUE GROUP BY cat"
     )
     .fetch_all(&state.db)
     .await
     .unwrap_or_default();
 
+    let categories_total = by_category.len() as i64;
     let categories: serde_json::Map<String, serde_json::Value> = by_category
         .into_iter()
         .map(|(cat, count)| (cat, json!(count)))
         .collect();
+
+    // Real trial duration from canonical PlanConfig (no hardcoded value).
+    let trial_days = crate::services::plan::get_plan_configs()
+        .get("trial")
+        .map(|p| p.trial_days)
+        .unwrap_or(0);
 
     // All plans now have access to all tools
     let total_tools = total.0;
 
     Json(json!({
         "total": total_tools,
+        "categories_total": categories_total,
+        "trial_days": trial_days,
         "by_category": categories,
         "plans": {
             "trial": total_tools,

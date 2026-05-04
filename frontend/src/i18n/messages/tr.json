@@ -1,7 +1,7 @@
 {
   "meta": {
     "title": "CyberSec Pro — Saldırı Güvenliği Platformu",
-    "description": "396 Kali Linux aracıyla bulut tabanlı saldırı güvenliği platformu. Otomatik güvenlik açığı taraması, penetrasyon testi ve güvenlik değerlendirmeleri."
+    "description": "778 Kali Linux aracıyla bulut tabanlı saldırı güvenliği platformu. Otomatik güvenlik açığı taraması, penetrasyon testi ve güvenlik değerlendirmeleri."
   },
   "nav": {
     "features": "Özellikler",
@@ -22,12 +22,12 @@
   "hero": {
     "badge": "Bulut Tabanlı Saldırı Güvenliği",
     "title": "Saldırı Güvenliği\nPlatformu",
-    "titleHighlight": "396 Araç.",
-    "subtitle": "396 Kali Linux aracını 61 kategoride tarayıcınızdan çalıştırın. Kurulum yok. Altyapı yok. Sadece sonuçlar.",
+    "titleHighlight": "778 Araç.",
+    "subtitle": "778 Kali Linux aracını 61 kategoride tarayıcınızdan çalıştırın. Kurulum yok. Altyapı yok. Sadece sonuçlar.",
     "cta": "Ücretsiz Taramayı Başlat",
     "ctaSecondary": "Güvenlik Araçlarını Gör",
     "stats": {
-      "tools": "396",
+      "tools": "778",
       "toolsLabel": "Güvenlik Aracı",
       "categories": "61",
       "categoriesLabel": "Kategori",
@@ -47,7 +47,7 @@
         "description": "Birkaç tıklamayla karmaşık güvenlik taramalarını yapılandırın ve çalıştırın. Tekrarlayan değerlendirmeler planlayın."
       },
       "tools": {
-        "title": "396 Kali Aracı",
+        "title": "778 Kali Aracı",
         "description": "Nmap'ten Metasploit'e, Burp Suite'ten SQLMap'e — tam Kali Linux cephaneliğine erişin."
       },
       "reports": {
@@ -82,9 +82,9 @@
       "trial": {
         "name": "Ücretsiz Deneme",
         "price": "€0",
-        "period": "14 gün",
+        "period": "3 gün",
         "features": [
-          "Tüm 396 güvenlik aracı",
+          "Tüm 778 güvenlik aracı",
           "Günde 3 tarama",
           "1 eşzamanlı tarama",
           "PDF bulgular raporu",
@@ -97,7 +97,7 @@
         "price": "€99",
         "period": "/ay",
         "features": [
-          "Tüm 396 güvenlik aracı",
+          "Tüm 778 güvenlik aracı",
           "Ayda 30 tarama",
           "2 eşzamanlı tarama",
           "1 domain/uygulama",
@@ -112,7 +112,7 @@
         "price": "€299",
         "period": "/ay",
         "features": [
-          "Tüm 396 güvenlik aracı",
+          "Tüm 778 güvenlik aracı",
           "Ayda 250 tarama",
           "5 eşzamanlı tarama",
           "5 domain/uygulamaya kadar",
@@ -130,7 +130,7 @@
         "price": "€799",
         "period": "/ay",
         "features": [
-          "Tüm 396 güvenlik aracı",
+          "Tüm 778 güvenlik aracı",
           "Ayda 5.000 tarama",
           "Sınırsız eşzamanlı tarama",
           "Sınırsız domain/uygulama",
@@ -150,7 +150,7 @@
   },
   "tools": {
     "badge": "Güvenlik Cephaneliği",
-    "title": "396 Araç. 61 Kategori.",
+    "title": "778 Araç. 61 Kategori.",
     "subtitle": "Kali Linux dağıtımındaki her araç, tarayıcınızda çalışmaya hazır.",
     "searchPlaceholder": "Araç ara...",
     "allCategories": "Tümü",
@@ -175,7 +175,7 @@
       },
       "q3": {
         "q": "Kaç araç mevcut?",
-        "a": "CyberSec Pro, Nmap, Metasploit, Burp Suite, SQLMap, Nikto, Hydra ve daha fazlası dahil 61 kategoride 396 Kali Linux aracı sunar."
+        "a": "CyberSec Pro, Nmap, Metasploit, Burp Suite, SQLMap, Nikto, Hydra ve daha fazlası dahil 61 kategoride 778 Kali Linux aracı sunar."
       },
       "q4": {
         "q": "Hangi tarama türleri mevcut?",
@@ -221,7 +221,7 @@
     "button": "Ücretsiz Taramayı Başlat"
   },
   "footer": {
-    "description": "Bulut tabanlı saldırı güvenliği platformu. 61 kategoride 396 Kali Linux aracı.",
+    "description": "Bulut tabanlı saldırı güvenliği platformu. 61 kategoride 778 Kali Linux aracı.",
     "platform": "Platform",
     "company": "Şirket",
     "legal": "Yasal",

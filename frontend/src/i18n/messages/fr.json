@@ -1,7 +1,7 @@
 {
   "meta": {
     "title": "CyberSec Pro — Plateforme de Sécurité Offensive",
-    "description": "Plateforme de sécurité offensive dans le cloud avec 396 outils Kali Linux. Scan automatisé des vulnérabilités, tests de pénétration et évaluations de sécurité."
+    "description": "Plateforme de sécurité offensive dans le cloud avec 778 outils Kali Linux. Scan automatisé des vulnérabilités, tests de pénétration et évaluations de sécurité."
   },
   "nav": {
     "features": "Fonctionnalités",
@@ -22,12 +22,12 @@
   "hero": {
     "badge": "Sécurité Offensive dans le Cloud",
     "title": "Plateforme de\nSécurité Offensive",
-    "titleHighlight": "396 Outils.",
-    "subtitle": "Exécutez 396 outils Kali Linux dans 61 catégories depuis votre navigateur. Aucune configuration. Aucune infrastructure. Que des résultats.",
+    "titleHighlight": "778 Outils.",
+    "subtitle": "Exécutez 778 outils Kali Linux dans 61 catégories depuis votre navigateur. Aucune configuration. Aucune infrastructure. Que des résultats.",
     "cta": "Lancer un scan gratuit",
     "ctaSecondary": "Voir les outils",
     "stats": {
-      "tools": "396",
+      "tools": "778",
       "toolsLabel": "Outils de sécurité",
       "categories": "61",
       "categoriesLabel": "Catégories",
@@ -47,7 +47,7 @@
         "description": "Configurez et lancez des scans de sécurité complexes en quelques clics. Planifiez des évaluations récurrentes."
       },
       "tools": {
-        "title": "396 outils Kali",
+        "title": "778 outils Kali",
         "description": "Accédez à l'arsenal complet de Kali Linux — de Nmap à Metasploit, de Burp Suite à SQLMap."
       },
       "reports": {
@@ -82,9 +82,9 @@
       "trial": {
         "name": "Essai Gratuit",
         "price": "0 €",
-        "period": "14 jours",
+        "period": "3 jours",
         "features": [
-          "Les 396 outils de sécurité",
+          "Les 778 outils de sécurité",
           "3 scans par jour",
           "1 scan simultané",
           "Rapport PDF avec résultats",
@@ -97,7 +97,7 @@
         "price": "99 €",
         "period": "/mois",
         "features": [
-          "Les 396 outils de sécurité",
+          "Les 778 outils de sécurité",
           "30 scans par mois",
           "2 scans simultanés",
           "1 domaine/application",
@@ -112,7 +112,7 @@
         "price": "299 €",
         "period": "/mois",
         "features": [
-          "Les 396 outils de sécurité",
+          "Les 778 outils de sécurité",
           "250 scans par mois",
           "5 scans simultanés",
           "Jusqu'à 5 domaines/applications",
@@ -130,7 +130,7 @@
         "price": "799 €",
         "period": "/mois",
         "features": [
-          "Les 396 outils de sécurité",
+          "Les 778 outils de sécurité",
           "5 000 scans par mois",
           "Scans simultanés illimités",
           "Domaines/applications illimités",
@@ -150,7 +150,7 @@
   },
   "tools": {
     "badge": "Arsenal de sécurité",
-    "title": "396 outils. 61 catégories.",
+    "title": "778 outils. 61 catégories.",
     "subtitle": "Chaque outil de la distribution Kali Linux, prêt à être utilisé dans votre navigateur.",
     "searchPlaceholder": "Rechercher des outils...",
     "allCategories": "Tous",
@@ -175,7 +175,7 @@
       },
       "q3": {
         "q": "Combien d'outils sont disponibles ?",
-        "a": "396 outils Kali Linux dans 61 catégories, dont Nmap, Metasploit, Burp Suite et SQLMap."
+        "a": "778 outils Kali Linux dans 61 catégories, dont Nmap, Metasploit, Burp Suite et SQLMap."
       },
       "q4": {
         "q": "Quels types de scan sont disponibles ?",
@@ -221,7 +221,7 @@
     "button": "Lancer un scan gratuit"
   },
   "footer": {
-    "description": "Plateforme de sécurité offensive dans le cloud. 396 outils Kali Linux dans 61 catégories.",
+    "description": "Plateforme de sécurité offensive dans le cloud. 778 outils Kali Linux dans 61 catégories.",
     "platform": "Plateforme",
     "company": "Entreprise",
     "legal": "Mentions légales",

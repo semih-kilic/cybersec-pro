@@ -27,7 +27,7 @@
     "cta": "무료 스캔 시작",
     "ctaSecondary": "보안 도구 보기",
     "stats": {
-      "tools": "396",
+      "tools": "778",
       "toolsLabel": "보안 도구",
       "categories": "61",
       "categoriesLabel": "카테고리",
@@ -82,7 +82,7 @@
       "trial": {
         "name": "무료 체험",
         "price": "€0",
-        "period": "14일",
+        "period": "3일",
         "features": [
           "전체 396개 보안 도구",
           "하루 3회 스캔",

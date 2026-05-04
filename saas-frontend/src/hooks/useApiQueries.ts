@@ -12,7 +12,7 @@ import { useAuth } from './useAuth';
 import { queryKeys, CACHE_TIMES } from '../lib/queryClient';
 
 // ---- Helper: authenticated fetch ----
-async function authFetch<T>(url: string, token: string | null, options?: RequestInit): Promise<T> {
+async function authFetch<T>(url: string, token: string | null | undefined, options?: RequestInit): Promise<T> {
   const res = await fetch(url, {
     ...options,
     headers: {
@@ -58,18 +58,18 @@ export interface PlanToolCounts {
     enterprise: number;
   };
   total: number;
+  categories_total: number;
+  trial_days: number;
 }
 
-/** Fetches dynamic tool counts per plan from /api/v1/tools/count */
+/** Fetches dynamic tool counts per plan from /api/v1/tools/count (public endpoint) */
 export function useToolCounts() {
-  const { token } = useAuth();
   return useQuery<PlanToolCounts>({
     queryKey: ['toolCounts'],
-    queryFn: () => authFetch<PlanToolCounts>('/api/v1/tools/count', token),
+    queryFn: () => authFetch<PlanToolCounts>('/api/v1/tools/count', undefined),
     staleTime: CACHE_TIMES.tools.staleTime,   // 5 minutes - counts rarely change
     gcTime: CACHE_TIMES.tools.gcTime,          // 30 min cache
     refetchOnWindowFocus: false,
-    enabled: !!token,
   });
 }
 

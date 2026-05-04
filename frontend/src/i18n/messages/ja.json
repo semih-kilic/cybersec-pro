@@ -27,7 +27,7 @@
     "cta": "無料スキャンを開始",
     "ctaSecondary": "ツールを見る",
     "stats": {
-      "tools": "396",
+      "tools": "778",
       "toolsLabel": "セキュリティツール",
       "categories": "61",
       "categoriesLabel": "カテゴリ",
@@ -82,7 +82,7 @@
       "trial": {
         "name": "無料トライアル",
         "price": "€0",
-        "period": "14日間",
+        "period": "3日間",
         "features": [
           "全396セキュリティツール",
           "1日3回スキャン",
