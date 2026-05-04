@@ -1,13 +1,21 @@
 #!/bin/bash
 # CyberSec Pro - Otomatik Git Sync Script
-cd /home/cybersec/cybersec-pro
+cd /home/cybersec/cybersec-pro || exit 1
+
+# Force SSH (cron has no credential helper for HTTPS) and non-interactive auth
+export GIT_SSH_COMMAND="ssh -i /home/cybersec/.ssh/id_ed25519 -o BatchMode=yes -o StrictHostKeyChecking=accept-new"
+export GIT_TERMINAL_PROMPT=0
 
 # Değişiklik var mı kontrol et
 if [[ -n $(git status --porcelain) ]]; then
     git add -A
     git commit -m "🔄 Auto-sync: $(date '+%Y-%m-%d %H:%M:%S')"
-    git push origin master
-    echo "[$(date)] Auto-sync completed"
+    if git push origin master; then
+        echo "[$(date)] Auto-sync completed"
+    else
+        echo "[$(date)] Auto-sync push FAILED" >&2
+        exit 2
+    fi
 else
     echo "[$(date)] No changes to sync"
 fi
