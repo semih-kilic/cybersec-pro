@@ -376,6 +376,11 @@ pub async fn stripe_webhook(
                     .and_then(|o| o.as_str())
                     .unwrap_or("");
 
+                let mut effective_plan = String::new();
+                let mut effective_amount: i64 = data.get("amount_total").and_then(|a| a.as_i64()).unwrap_or(0);
+                let currency = data.get("currency").and_then(|c| c.as_str()).unwrap_or("eur").to_uppercase();
+                let customer_email = data.get("customer_email").and_then(|e| e.as_str()).unwrap_or("").to_string();
+
                 if !plan_type.is_empty() && !org_id.is_empty() {
                     // Update org plan and store stripe_customer_id
                     let _ = sqlx::query(
@@ -387,10 +392,11 @@ pub async fn stripe_webhook(
                     .execute(&state.db)
                     .await;
                     tracing::info!("Plan updated: org={} plan={} customer={}", org_id, plan_type, customer_id);
+                    effective_plan = plan_type.to_string();
                 } else if !customer_id.is_empty() {
                     // Fallback: resolve plan from amount_total when metadata is missing
-                    if let Some(amount) = data.get("amount_total").and_then(|a| a.as_i64()) {
-                        let resolved_plan = match amount {
+                    if effective_amount > 0 {
+                        let resolved_plan = match effective_amount {
                             9900 => "starter",
                             29900 => "professional",
                             79900 => "enterprise",
@@ -402,11 +408,46 @@ pub async fn stripe_webhook(
                             )
                             .bind(resolved_plan)
                             .bind(customer_id)
-                            .bind(data.get("customer_email").and_then(|e| e.as_str()).unwrap_or(""))
+                            .bind(&customer_email)
                             .execute(&state.db)
                             .await;
-                            tracing::info!("Plan resolved from amount: {} -> {}", amount, resolved_plan);
+                            tracing::info!("Plan resolved from amount: {} -> {}", effective_amount, resolved_plan);
+                            effective_plan = resolved_plan.to_string();
                         }
+                    }
+                }
+
+                // Send payment confirmation email (best-effort, non-blocking on failure)
+                if !customer_email.is_empty() && !effective_plan.is_empty() {
+                    if let Some(cfg) = crate::services::email::EmailConfig::from_env() {
+                        if effective_amount <= 0 {
+                            effective_amount = data.get("amount_total").and_then(|a| a.as_i64()).unwrap_or(0);
+                        }
+                        let amount_str = format!("{:.2} {}", (effective_amount as f64) / 100.0, currency);
+                        let plan_label = match effective_plan.as_str() {
+                            "starter"      => "Starter Plan",
+                            "professional" => "Professional Plan",
+                            "enterprise"   => "Enterprise Plan",
+                            other          => other,
+                        };
+                        let recipient = customer_email.clone();
+                        let plan_label_owned = plan_label.to_string();
+                        let amount_owned = amount_str.clone();
+                        tokio::spawn(async move {
+                            if let Err(e) = crate::services::email::send_payment_confirmation(
+                                &cfg,
+                                &recipient,
+                                &recipient,
+                                &amount_owned,
+                                &plan_label_owned,
+                            ).await {
+                                tracing::warn!("Payment confirmation email failed for {}: {}", recipient, e);
+                            } else {
+                                tracing::info!("Payment confirmation email sent to {} ({} - {})", recipient, plan_label_owned, amount_owned);
+                            }
+                        });
+                    } else {
+                        tracing::debug!("EmailConfig not configured; skipping payment confirmation email");
                     }
                 }
             }
