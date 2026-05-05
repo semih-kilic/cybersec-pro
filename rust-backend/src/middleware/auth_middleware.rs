@@ -132,6 +132,7 @@ impl FromRequestParts<Arc<AppState>> for AnalystUser
 
 /// Role hierarchy for permission checks.
 /// superadmin > admin > analyst > user > viewer
+#[allow(dead_code)] // Public API surface; covered by tests, awaiting wire-up in route guards.
 pub fn role_level(role: &str) -> u8 {
     match role {
         "superadmin" => 5,
@@ -144,6 +145,7 @@ pub fn role_level(role: &str) -> u8 {
 }
 
 /// Check if a role has at least the required permission level.
+#[allow(dead_code)] // Public API surface; covered by tests, awaiting wire-up in route guards.
 pub fn has_role_access(user_role: &str, required_role: &str) -> bool {
     role_level(user_role) >= role_level(required_role)
 }

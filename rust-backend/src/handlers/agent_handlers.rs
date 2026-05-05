@@ -51,6 +51,7 @@ pub fn parse_heartbeat_metrics(body: &serde_json::Value) -> (f64, f64, i32) {
 
 /// Returns `true` if the given string is a valid agent registration token prefix format.
 /// Registration tokens are prefixed with `agt_` followed by 32 hex chars (UUID without dashes).
+#[allow(dead_code)] // Public validator covered by tests; called by future agent-onboarding handler.
 pub fn is_valid_agent_token_format(token: &str) -> bool {
     if let Some(suffix) = token.strip_prefix("agt_") {
         suffix.len() == 32 && suffix.chars().all(|c| c.is_ascii_hexdigit())

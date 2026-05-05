@@ -322,6 +322,7 @@ pub async fn scan_port(host: &str, port: u16, timeout_ms: u64) -> bool {
 }
 
 /// Scan common ports on a host
+#[allow(dead_code)] // Public utility; awaiting wire-up in /api/network/quick-scan endpoint.
 pub async fn scan_common_ports(host: &str, timeout_ms: u64) -> Vec<u16> {
     let common_ports: Vec<u16> = vec![
         22, 80, 443, 21, 23, 25, 53, 110, 143, 993, 995,

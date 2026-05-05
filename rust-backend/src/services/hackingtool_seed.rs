@@ -79,6 +79,7 @@ pub(crate) fn p_file() -> Value {
     })
 }
 
+#[allow(dead_code)] // Param template for tools added in future seed batches.
 pub(crate) fn p_wordlist() -> Value {
     json!({
         "form": [
@@ -112,6 +113,7 @@ fn p_url_wordlist() -> Value {
     })
 }
 
+#[allow(dead_code)] // Param template for tools added in future seed batches.
 fn p_target_apikey() -> Value {
     json!({
         "form": [

@@ -70,6 +70,7 @@ lazy_static::lazy_static! {
 }
 
 /// Get the full Kali tools registry
+#[allow(dead_code)] // Public registry accessor; awaiting wire-up in /api/tools/list.
 pub fn get_all_tools() -> &'static Vec<KaliTool> {
     &KALI_REGISTRY
 }

@@ -5,6 +5,7 @@ use sqlx::PgPool;
 use super::email::EmailConfig;
 
 /// Pure helper: color code for a given alert severity.
+#[allow(dead_code)] // Public helper covered by tests; awaiting wire-up in HTML email templates.
 pub fn severity_color(severity: &str) -> &'static str {
     match severity {
         "critical" => "#ff0000",
@@ -140,6 +141,7 @@ pub async fn notify_scan_complete(
 }
 
 /// Send security alert email to all org members who have `email_security_alerts = true`
+#[allow(dead_code)] // Awaiting wire-up from scan/incident pipeline.
 pub async fn notify_security_alert(
     db: &PgPool,
     org_id: &str,

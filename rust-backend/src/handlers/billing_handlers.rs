@@ -388,12 +388,7 @@ pub async fn stripe_webhook(
                     .await;
                     tracing::info!("Plan updated: org={} plan={} customer={}", org_id, plan_type, customer_id);
                 } else if !customer_id.is_empty() {
-                    // Fallback: resolve plan from price in line_items
-                    let _starter_price = std::env::var("STRIPE_STARTER_PRICE_ID").unwrap_or_default();
-                    let _pro_price = std::env::var("STRIPE_PROFESSIONAL_PRICE_ID").unwrap_or_default();
-                    let _ent_price = std::env::var("STRIPE_ENTERPRISE_PRICE_ID").unwrap_or_default();
-
-                    // Try to get price from session line items or amount
+                    // Fallback: resolve plan from amount_total when metadata is missing
                     if let Some(amount) = data.get("amount_total").and_then(|a| a.as_i64()) {
                         let resolved_plan = match amount {
                             9900 => "starter",

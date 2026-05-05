@@ -94,6 +94,7 @@ pub(crate) fn welcome_plain_text(name: &str) -> String {
     )
 }
 
+#[allow(dead_code)] // Awaiting wire-up from Stripe webhook payment_intent.succeeded handler.
 pub async fn send_payment_confirmation(
     cfg: &EmailConfig,
     customer_email: &str,
@@ -317,6 +318,7 @@ fn welcome_email_html(name: &str) -> String {
 </td></tr></table></body></html>"#, name = name)
 }
 
+#[allow(dead_code)] // Used by send_payment_confirmation, which is awaiting wire-up.
 fn payment_confirmation_html(name: &str, amount: &str, plan: &str) -> String {
     format!(r#"<!DOCTYPE html><html>
 <body style="margin:0;padding:0;font-family:Arial,sans-serif;background:#0a0a0a">

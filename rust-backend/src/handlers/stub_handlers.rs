@@ -240,6 +240,7 @@ fn purple_team_env_f64(key: &str, default: f64) -> f64 {
         .unwrap_or(default)
 }
 
+#[allow(dead_code)] // Profile loader used by purple_team_detection_ratio (awaiting wire-up).
 fn purple_team_profile_from_env() -> Option<serde_json::Value> {
     std::env::var("PURPLE_TEAM_PROFILE_JSON")
         .ok()
@@ -346,6 +347,7 @@ fn purple_team_detection_ratio_with_profile(
     (base + target_adjustment).clamp(lower, upper)
 }
 
+#[allow(dead_code)] // Public-facing detection ratio used by purple-team report (awaiting handler wire-up).
 fn purple_team_detection_ratio(chain_id: &str, target: &str) -> f64 {
     let profile = purple_team_profile_from_env();
     purple_team_detection_ratio_with_profile(chain_id, target, profile.as_ref())

@@ -43,6 +43,7 @@ pub fn tool_group_display_name(group: &str) -> &str {
 /// Clamps and computes `(page, per_page, offset)` from raw query params.
 /// - `page` is 1-based, minimum 1.
 /// - `per_page` is capped at 200, defaults to 50.
+#[allow(dead_code)] // Public pagination helper covered by tests; awaiting wire-up in tool list endpoint.
 pub fn tool_page_params(page: Option<u32>, per_page: Option<u32>) -> (u32, u32, u32) {
     let page = page.unwrap_or(1).max(1);
     let per_page = per_page.unwrap_or(50).min(200);
