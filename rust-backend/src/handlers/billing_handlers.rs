@@ -23,18 +23,21 @@ fn ct_eq(a: &[u8], b: &[u8]) -> bool {
 // ── Pure helpers (testable without DB) ────────────────────
 
 /// Resolve plan name from a Stripe price ID using env-configured price IDs.
-/// Returns empty string if price_id is unrecognized or env vars are not set.
+/// Matches both monthly and yearly price IDs. Returns empty string when unrecognized.
 pub fn resolve_plan_from_price_id(price_id: &str) -> &'static str {
     if price_id.is_empty() {
         return "";
     }
-    let starter = std::env::var("STRIPE_STARTER_PRICE_ID").unwrap_or_default();
-    let pro     = std::env::var("STRIPE_PROFESSIONAL_PRICE_ID").unwrap_or_default();
-    let ent     = std::env::var("STRIPE_ENTERPRISE_PRICE_ID").unwrap_or_default();
+    let starter      = std::env::var("STRIPE_STARTER_PRICE_ID").unwrap_or_default();
+    let starter_yr   = std::env::var("STRIPE_STARTER_PRICE_ID_YEARLY").unwrap_or_default();
+    let pro          = std::env::var("STRIPE_PROFESSIONAL_PRICE_ID").unwrap_or_default();
+    let pro_yr       = std::env::var("STRIPE_PROFESSIONAL_PRICE_ID_YEARLY").unwrap_or_default();
+    let ent          = std::env::var("STRIPE_ENTERPRISE_PRICE_ID").unwrap_or_default();
+    let ent_yr       = std::env::var("STRIPE_ENTERPRISE_PRICE_ID_YEARLY").unwrap_or_default();
 
-    if !starter.is_empty() && price_id == starter { return "starter"; }
-    if !pro.is_empty()     && price_id == pro     { return "professional"; }
-    if !ent.is_empty()     && price_id == ent     { return "enterprise"; }
+    if (!starter.is_empty()    && price_id == starter)    || (!starter_yr.is_empty() && price_id == starter_yr) { return "starter"; }
+    if (!pro.is_empty()        && price_id == pro)        || (!pro_yr.is_empty()     && price_id == pro_yr)     { return "professional"; }
+    if (!ent.is_empty()        && price_id == ent)        || (!ent_yr.is_empty()     && price_id == ent_yr)     { return "enterprise"; }
     ""
 }
 
@@ -102,9 +105,9 @@ pub async fn get_subscription(
 // ── Create Checkout Session ────────────────────────────────
 
 #[derive(Deserialize)]
-#[allow(dead_code)]
 pub struct CheckoutRequest {
     pub plan: String,
+    /// "monthly" (default) or "yearly"
     pub billing: Option<String>,
     pub success_url: Option<String>,
     pub cancel_url: Option<String>,
@@ -122,10 +125,15 @@ pub async fn create_checkout(
         return (StatusCode::SERVICE_UNAVAILABLE, Json(json!({"error": "Stripe not configured"}))).into_response();
     }
 
-    let price_id = match body.plan.as_str() {
-        "starter" => std::env::var("STRIPE_STARTER_PRICE_ID").unwrap_or_default(),
-        "professional" => std::env::var("STRIPE_PROFESSIONAL_PRICE_ID").unwrap_or_default(),
-        "enterprise" => std::env::var("STRIPE_ENTERPRISE_PRICE_ID").unwrap_or_default(),
+    let yearly = body.billing.as_deref().map(|s| s.eq_ignore_ascii_case("yearly") || s.eq_ignore_ascii_case("annual")).unwrap_or(false);
+
+    let price_id = match (body.plan.as_str(), yearly) {
+        ("starter", false)      => std::env::var("STRIPE_STARTER_PRICE_ID").unwrap_or_default(),
+        ("starter", true)       => std::env::var("STRIPE_STARTER_PRICE_ID_YEARLY").unwrap_or_default(),
+        ("professional", false) => std::env::var("STRIPE_PROFESSIONAL_PRICE_ID").unwrap_or_default(),
+        ("professional", true)  => std::env::var("STRIPE_PROFESSIONAL_PRICE_ID_YEARLY").unwrap_or_default(),
+        ("enterprise", false)   => std::env::var("STRIPE_ENTERPRISE_PRICE_ID").unwrap_or_default(),
+        ("enterprise", true)    => std::env::var("STRIPE_ENTERPRISE_PRICE_ID_YEARLY").unwrap_or_default(),
         _ => return (StatusCode::BAD_REQUEST, Json(json!({"error": "Invalid plan"}))).into_response(),
     };
 
@@ -160,6 +168,7 @@ pub async fn create_checkout(
         ("cancel_url", cancel_url),
         ("metadata[org_id]", org_id.to_string()),
         ("metadata[plan_type]", body.plan.clone()),   // was "plan" — webhook reads "plan_type"
+        ("metadata[billing_cycle]", if yearly { "yearly".to_string() } else { "monthly".to_string() }),
         ("metadata[user_id]", auth.user_id.clone()),
     ];
 
@@ -394,26 +403,31 @@ pub async fn stripe_webhook(
                     tracing::info!("Plan updated: org={} plan={} customer={}", org_id, plan_type, customer_id);
                     effective_plan = plan_type.to_string();
                 } else if !customer_id.is_empty() {
-                    // Fallback: resolve plan from amount_total when metadata is missing
-                    if effective_amount > 0 {
-                        let resolved_plan = match effective_amount {
-                            9900 => "starter",
-                            29900 => "professional",
-                            79900 => "enterprise",
-                            _ => ""
-                        };
-                        if !resolved_plan.is_empty() {
-                            let _ = sqlx::query(
-                                "UPDATE organizations SET plan_type = $1, stripe_customer_id = $2 WHERE stripe_customer_id = $2 OR id IN (SELECT organization_id FROM users WHERE email = $3)"
-                            )
-                            .bind(resolved_plan)
-                            .bind(customer_id)
-                            .bind(&customer_email)
-                            .execute(&state.db)
-                            .await;
-                            tracing::info!("Plan resolved from amount: {} -> {}", effective_amount, resolved_plan);
-                            effective_plan = resolved_plan.to_string();
-                        }
+                    // Fallback: resolve plan from price_id in line_items when metadata is missing.
+                    // Price IDs are stable across catalog re-pricings (we update env vars), so this
+                    // is safer than amount-based matching which breaks on currency/decimal changes.
+                    let price_from_items = data.get("line_items")
+                        .and_then(|li| li.get("data"))
+                        .and_then(|d| d.as_array())
+                        .and_then(|arr| arr.first())
+                        .and_then(|item| item.get("price"))
+                        .and_then(|p| p.get("id"))
+                        .and_then(|id| id.as_str())
+                        .unwrap_or("");
+                    let resolved_plan = resolve_plan_from_price_id(price_from_items);
+                    if !resolved_plan.is_empty() {
+                        let _ = sqlx::query(
+                            "UPDATE organizations SET plan_type = $1, stripe_customer_id = $2 WHERE stripe_customer_id = $2 OR id IN (SELECT organization_id FROM users WHERE email = $3)"
+                        )
+                        .bind(resolved_plan)
+                        .bind(customer_id)
+                        .bind(&customer_email)
+                        .execute(&state.db)
+                        .await;
+                        tracing::info!("Plan resolved from price_id {}: {}", price_from_items, resolved_plan);
+                        effective_plan = resolved_plan.to_string();
+                    } else {
+                        tracing::warn!("checkout.session.completed for customer={} has no metadata.plan_type and no recognizable price_id (got '{}'); skipping upgrade", customer_id, price_from_items);
                     }
                 }
 
@@ -713,6 +727,21 @@ mod tests {
         std::env::remove_var("STRIPE_STARTER_PRICE_ID");
         std::env::remove_var("STRIPE_PROFESSIONAL_PRICE_ID");
         std::env::remove_var("STRIPE_ENTERPRISE_PRICE_ID");
+    }
+
+    #[test]
+    fn billing_resolve_plan_matches_yearly_price_ids() {
+        std::env::set_var("STRIPE_STARTER_PRICE_ID_YEARLY", "price_starter_yr");
+        std::env::set_var("STRIPE_PROFESSIONAL_PRICE_ID_YEARLY", "price_pro_yr");
+        std::env::set_var("STRIPE_ENTERPRISE_PRICE_ID_YEARLY", "price_ent_yr");
+
+        assert_eq!(resolve_plan_from_price_id("price_starter_yr"), "starter");
+        assert_eq!(resolve_plan_from_price_id("price_pro_yr"), "professional");
+        assert_eq!(resolve_plan_from_price_id("price_ent_yr"), "enterprise");
+
+        std::env::remove_var("STRIPE_STARTER_PRICE_ID_YEARLY");
+        std::env::remove_var("STRIPE_PROFESSIONAL_PRICE_ID_YEARLY");
+        std::env::remove_var("STRIPE_ENTERPRISE_PRICE_ID_YEARLY");
     }
 
     #[test]
