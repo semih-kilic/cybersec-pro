@@ -61,8 +61,8 @@ function buildPlans(counts: { trial: number; starter: number; professional: numb
     {
       id: 'starter',
       name: 'Starter',
-      price: 99,
-      yearlyPrice: 990,
+      price: 29,
+      yearlyPrice: 279,
       period: '/month',
       description: 'For a single website or app.',
       features: [
@@ -83,8 +83,8 @@ function buildPlans(counts: { trial: number; starter: number; professional: numb
     {
       id: 'professional',
       name: 'Professional',
-      price: 299,
-      yearlyPrice: 2990,
+      price: 99,
+      yearlyPrice: 949,
       period: '/month',
       description: 'For growing SaaS and tech companies.',
       features: [
@@ -108,8 +108,8 @@ function buildPlans(counts: { trial: number; starter: number; professional: numb
     {
       id: 'enterprise',
       name: 'Enterprise',
-      price: 799,
-      yearlyPrice: 0,
+      price: 349,
+      yearlyPrice: 3349,
       period: '/month',
       description: 'For security-conscious organisations.',
       features: [

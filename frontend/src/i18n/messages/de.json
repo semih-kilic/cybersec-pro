@@ -94,7 +94,7 @@
       },
       "starter": {
         "name": "Starter",
-        "price": "99 €",
+        "price": "29 €",
         "period": "/Monat",
         "features": [
           "Alle 778 Sicherheitstools",
@@ -109,7 +109,7 @@
       },
       "professional": {
         "name": "Professional",
-        "price": "299 €",
+        "price": "99 €",
         "period": "/Monat",
         "features": [
           "Alle 778 Sicherheitstools",
@@ -127,7 +127,7 @@
       },
       "enterprise": {
         "name": "Enterprise",
-        "price": "799 €",
+        "price": "349 €",
         "period": "/Monat",
         "features": [
           "Alle 778 Sicherheitstools",

@@ -94,7 +94,7 @@
       },
       "starter": {
         "name": "Başlangıç",
-        "price": "€99",
+        "price": "€29",
         "period": "/ay",
         "features": [
           "Tüm 778 güvenlik aracı",
@@ -109,7 +109,7 @@
       },
       "professional": {
         "name": "Profesyonel",
-        "price": "€299",
+        "price": "€99",
         "period": "/ay",
         "features": [
           "Tüm 778 güvenlik aracı",
@@ -127,7 +127,7 @@
       },
       "enterprise": {
         "name": "Kurumsal",
-        "price": "€799",
+        "price": "€349",
         "period": "/ay",
         "features": [
           "Tüm 778 güvenlik aracı",

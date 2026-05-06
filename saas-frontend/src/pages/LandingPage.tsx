@@ -229,7 +229,7 @@ export function LandingPage() {
             <div className="bg-gray-800/50 rounded-2xl p-6 border border-blue-500/50 flex flex-col">
               <div className="text-lg font-medium text-blue-400 mb-2">{t('landing.plan.starter', 'Starter')}</div>
               <div className="flex items-baseline gap-1 mb-4">
-                <span className="text-4xl font-bold text-white">€99</span>
+                <span className="text-4xl font-bold text-white">€29</span>
                 <span className="text-gray-400">{t('landing.plan.monthly', '/month')}</span>
               </div>
               <ul className="space-y-2 mb-6 text-gray-300 text-sm">
@@ -264,7 +264,7 @@ export function LandingPage() {
               </div>
               <div className="text-lg font-medium text-emerald-400 mb-2">{t('landing.plan.professional', 'Professional')}</div>
               <div className="flex items-baseline gap-1 mb-4">
-                <span className="text-4xl font-bold text-white">€299</span>
+                <span className="text-4xl font-bold text-white">€99</span>
                 <span className="text-gray-400">{t('landing.plan.monthly', '/month')}</span>
               </div>
               <ul className="space-y-2 mb-6 text-gray-300 text-sm">
@@ -295,7 +295,7 @@ export function LandingPage() {
             <div className="bg-gray-800/50 rounded-2xl p-6 border border-purple-500/50 flex flex-col">
               <div className="text-lg font-medium text-purple-400 mb-2">{t('landing.plan.enterprise', 'Enterprise')}</div>
               <div className="flex items-baseline gap-1 mb-4">
-                <span className="text-4xl font-bold text-white">€799</span>
+                <span className="text-4xl font-bold text-white">€349</span>
                 <span className="text-gray-400">{t('landing.plan.monthly', '/month')}</span>
               </div>
               <ul className="space-y-2 mb-6 text-gray-300 text-sm">

@@ -11,9 +11,9 @@ import { useOpenBillingPortal } from '../../../hooks/useApiQueries';
 
 const PLAN_DETAILS: Record<string, { label: string; color: string; gradient: string; price: string }> = {
   trial:         { label: 'Free Trial',    color: 'text-gray-400',   gradient: 'from-gray-600 to-gray-700',     price: '€0' },
-  starter:       { label: 'Starter',       color: 'text-blue-400',   gradient: 'from-blue-600 to-blue-700',     price: '€99/mo' },
-  professional:  { label: 'Professional',  color: 'text-purple-400', gradient: 'from-purple-600 to-purple-700', price: '€299/mo' },
-  enterprise:    { label: 'Enterprise',    color: 'text-yellow-400', gradient: 'from-yellow-600 to-orange-600', price: '€799/mo' },
+  starter:       { label: 'Starter',       color: 'text-blue-400',   gradient: 'from-blue-600 to-blue-700',     price: '€29/mo' },
+  professional:  { label: 'Professional',  color: 'text-purple-400', gradient: 'from-purple-600 to-purple-700', price: '€99/mo' },
+  enterprise:    { label: 'Enterprise',    color: 'text-yellow-400', gradient: 'from-yellow-600 to-orange-600', price: '€349/mo' },
 };
 
 interface BillingData {

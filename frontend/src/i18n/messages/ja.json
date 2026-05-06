@@ -94,7 +94,7 @@
       },
       "starter": {
         "name": "スターター",
-        "price": "€99",
+        "price": "€29",
         "period": "/月",
         "features": [
           "全396セキュリティツール",
@@ -109,7 +109,7 @@
       },
       "professional": {
         "name": "プロフェッショナル",
-        "price": "€299",
+        "price": "€99",
         "period": "/月",
         "features": [
           "全396セキュリティツール",
@@ -127,7 +127,7 @@
       },
       "enterprise": {
         "name": "エンタープライズ",
-        "price": "€799",
+        "price": "€349",
         "period": "/月",
         "features": [
           "全396セキュリティツール",

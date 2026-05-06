@@ -94,7 +94,7 @@
       },
       "starter": {
         "name": "스타터",
-        "price": "€99",
+        "price": "€29",
         "period": "/월",
         "features": [
           "전체 396개 보안 도구",
@@ -109,7 +109,7 @@
       },
       "professional": {
         "name": "프로페셔널",
-        "price": "€299",
+        "price": "€99",
         "period": "/월",
         "features": [
           "전체 396개 보안 도구",
@@ -127,7 +127,7 @@
       },
       "enterprise": {
         "name": "엔터프라이즈",
-        "price": "€799",
+        "price": "€349",
         "period": "/월",
         "features": [
           "전체 396개 보안 도구",
