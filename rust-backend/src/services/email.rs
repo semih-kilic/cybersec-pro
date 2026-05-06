@@ -264,6 +264,44 @@ pub async fn send_email_public(
     send_email(cfg, to, subject, plain, html).await
 }
 
+/// Newsletter welcome email. Loads SMTP config from env on demand so callers
+/// (the newsletter handler) do not need access to it.
+pub async fn send_newsletter_welcome(to: &str) -> Result<(), String> {
+    let cfg = EmailConfig::from_env()
+        .ok_or_else(|| "SMTP not configured (missing env vars)".to_string())?;
+    let subject = "\u{1F4E8} Welcome to the CyberSec Pro newsletter";
+    let plain = "Thanks for subscribing to CyberSec Pro!\n\n\
+                 You'll get curated security news, tool deep-dives, and \
+                 platform updates roughly once a week. No spam, ever.\n\n\
+                 Unsubscribe anytime by replying to any of our emails.\n\n\
+                 \u{2014} The CyberSec Pro team\nhttps://semihkilic.com";
+    let html = newsletter_welcome_html();
+    send_email(&cfg, to, subject, plain, &html).await
+}
+
+fn newsletter_welcome_html() -> String {
+    r#"<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Welcome</title></head>
+<body style="margin:0;padding:0;font-family:'Segoe UI',Tahoma,sans-serif;background:#0a0e14;color:#e6edf3">
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="border-collapse:collapse">
+<tr><td align="center" style="padding:48px 16px">
+<table role="presentation" width="560" cellpadding="0" cellspacing="0" style="background:#0d1117;border:1px solid #1f242c;border-radius:14px;overflow:hidden">
+<tr><td style="padding:40px 40px 24px;text-align:center;border-bottom:1px solid #1f242c">
+<div style="font-size:32px;line-height:1">🛡️</div>
+<h1 style="margin:16px 0 4px;font-size:22px;color:#fff">Welcome to CyberSec Pro</h1>
+<p style="margin:0;color:#8b949e;font-size:14px">You're on the list.</p></td></tr>
+<tr><td style="padding:28px 40px;color:#c9d1d9;font-size:15px;line-height:1.65">
+<p style="margin:0 0 16px">Thanks for subscribing! Here's what to expect:</p>
+<ul style="margin:0 0 16px;padding-left:20px;color:#b1bac4">
+<li style="margin-bottom:6px">Curated weekly security news from BleepingComputer, Krebs, The Hacker News, CISA &amp; more.</li>
+<li style="margin-bottom:6px">Hands-on tool guides &mdash; nmap, Burp, Metasploit, Hashcat, Wireshark.</li>
+<li style="margin-bottom:6px">Platform updates and feature announcements.</li></ul>
+<p style="margin:0 0 8px">Roughly one email per week. No spam, no third-party tracking.</p></td></tr>
+<tr><td style="padding:0 40px 40px;text-align:center">
+<a href="https://semihkilic.com/en/blog/" style="display:inline-block;padding:12px 28px;background:#9fef00;color:#0a0e14;text-decoration:none;font-weight:600;border-radius:8px;font-size:14px">Read the latest →</a>
+<p style="margin:24px 0 0;color:#6e7681;font-size:11px">CyberSec Pro · <a href="https://semihkilic.com" style="color:#6e7681">semihkilic.com</a> · Reply to unsubscribe</p></td></tr>
+</table></td></tr></table></body></html>"#.to_string()
+}
+
 // ── HTML Templates ─────────────────────────────────────────
 
 fn license_email_html(name: &str, email: &str, key: &str, plan: &str, expiry: &str) -> String {

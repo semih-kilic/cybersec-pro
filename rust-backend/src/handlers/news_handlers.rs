@@ -58,3 +58,27 @@ pub async fn list_security_news(
         "count": items.len(),
     })).into_response()
 }
+
+// Public (unauthenticated) blog feed for the marketing site.
+// Pulls the same RSS aggregator output, returns a smaller curated payload.
+pub async fn list_blog_public(
+    State(_state): State<Arc<AppState>>,
+    Query(q): Query<NewsQuery>,
+) -> impl IntoResponse {
+    let mut items = news_feed::get_news(false).await;
+
+    if let Some(cat) = q.category.as_deref() {
+        if !cat.is_empty() && !cat.eq_ignore_ascii_case("all") {
+            items.retain(|i| i.category.eq_ignore_ascii_case(cat));
+        }
+    }
+
+    let limit = q.limit.unwrap_or(24).min(60);
+    items.truncate(limit);
+
+    Json(json!({
+        "items": items,
+        "count": items.len(),
+        "cached": true,
+    })).into_response()
+}

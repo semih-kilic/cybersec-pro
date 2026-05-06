@@ -451,6 +451,9 @@ fn build_router(state: Arc<AppState>) -> Router {
         .route("/api/v1/billing/create-checkout", post(billing_handlers::create_checkout))
         .route("/api/v1/billing/portal", post(billing_handlers::billing_portal))
         .route("/api/create-checkout-session", post(billing_handlers::create_checkout_public))
+        // ── Public marketing endpoints (no auth) ──────────────
+        .route("/api/v1/blog/feed", get(news_handlers::list_blog_public))
+        .route("/api/v1/newsletter/subscribe", post(newsletter_handlers::subscribe_newsletter))
         // ── Admin ─────────────────────────────────────────────
         .route("/api/v1/admin/overview", get(stub_handlers::admin_overview))
         .route("/api/v1/admin/impersonate", post(stub_handlers::admin_impersonate))
