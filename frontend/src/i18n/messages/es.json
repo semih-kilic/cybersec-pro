@@ -105,7 +105,9 @@
           "Escaneos programados",
           "Soporte email prioritario (48h)",
           "3 miembros de equipo"
-        ]
+        ],
+        "priceYearly": "€279",
+        "periodYearly": "/year"
       },
       "professional": {
         "name": "Professional",
@@ -123,7 +125,9 @@
           "Escaneo LDAP / Active Directory",
           "Soporte prioritario (24h)",
           "10 miembros de equipo"
-        ]
+        ],
+        "priceYearly": "€949",
+        "periodYearly": "/year"
       },
       "enterprise": {
         "name": "Enterprise",
@@ -144,7 +148,9 @@
           "SLA personalizado bajo solicitud",
           "Soporte prioritario (horario laboral, respuesta 2h)",
           "Revisiones trimestrales de hoja de ruta de seguridad"
-        ]
+        ],
+        "priceYearly": "€3349",
+        "periodYearly": "/year"
       }
     }
   },

@@ -80,9 +80,15 @@ export default function PricingSection() {
                   <h3 className="text-lg font-bold text-white">{t(`plans.${key}.name`)}</h3>
                   <div className="mt-4 flex items-baseline gap-1">
                     <span className="font-mono text-4xl font-extrabold text-[var(--color-neon)]">
-                      {t(`plans.${key}.price`)}
+                      {annual && key !== "trial"
+                        ? t(`plans.${key}.priceYearly`)
+                        : t(`plans.${key}.price`)}
                     </span>
-                    <span className="text-sm text-white/40">{t(`plans.${key}.period`)}</span>
+                    <span className="text-sm text-white/40">
+                      {annual && key !== "trial"
+                        ? t(`plans.${key}.periodYearly`)
+                        : t(`plans.${key}.period`)}
+                    </span>
                   </div>
                   <ul className="mt-6 flex flex-1 flex-col gap-3">
                     {features.map((f: string) => (

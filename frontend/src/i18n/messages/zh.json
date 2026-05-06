@@ -105,7 +105,9 @@
           "定时扫描",
           "优先邮件支持(48小时)",
           "3个团队成员"
-        ]
+        ],
+        "priceYearly": "€279",
+        "periodYearly": "/year"
       },
       "professional": {
         "name": "专业版",
@@ -123,7 +125,9 @@
           "LDAP / Active Directory扫描",
           "优先支持(24小时)",
           "10个团队成员"
-        ]
+        ],
+        "priceYearly": "€949",
+        "periodYearly": "/year"
       },
       "enterprise": {
         "name": "企业版",
@@ -144,7 +148,9 @@
           "Custom SLA available on request",
           "优先支持(工作时间，2小时响应)",
           "季度安全路线图评审"
-        ]
+        ],
+        "priceYearly": "€3349",
+        "periodYearly": "/year"
       }
     }
   },

@@ -535,9 +535,23 @@ export function DenseTR({
   );
 }
 
-export function DenseTD({ children, className }: { children: ReactNode; className?: string }) {
+export function DenseTD({
+  children,
+  className,
+  onClick,
+  colSpan,
+}: {
+  children: ReactNode;
+  className?: string;
+  onClick?: (e: React.MouseEvent<HTMLTableCellElement>) => void;
+  colSpan?: number;
+}) {
   return (
-    <td className={cn('px-vos-4 py-vos-2.5 text-vos-text-2 align-middle', className)}>
+    <td
+      onClick={onClick}
+      colSpan={colSpan}
+      className={cn('px-vos-4 py-vos-2.5 text-vos-text-2 align-middle', className)}
+    >
       {children}
     </td>
   );

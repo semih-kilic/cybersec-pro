@@ -64,7 +64,12 @@ export default function Footer() {
 
         <div className="mt-12 flex flex-col items-center justify-between gap-4 border-t border-white/5 pt-8 md:flex-row">
           <span className="text-xs text-white/30">{t("copyright")}</span>
-          <span className="text-xs text-white/30">{t("tagline")}</span>
+          <a
+            href="/dashboard/register"
+            className="text-xs text-white/40 transition hover:text-[var(--color-neon)]"
+          >
+            {t("tagline")} →
+          </a>
         </div>
       </div>
     </footer>

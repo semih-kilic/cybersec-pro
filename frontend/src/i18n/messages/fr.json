@@ -105,7 +105,9 @@
           "Scans programmés",
           "Support e-mail prioritaire (48h)",
           "3 membres d'équipe"
-        ]
+        ],
+        "priceYearly": "€279",
+        "periodYearly": "/year"
       },
       "professional": {
         "name": "Professional",
@@ -123,7 +125,9 @@
           "Scan LDAP / Active Directory",
           "Support prioritaire (24h)",
           "10 membres d'équipe"
-        ]
+        ],
+        "priceYearly": "€949",
+        "periodYearly": "/year"
       },
       "enterprise": {
         "name": "Enterprise",
@@ -144,7 +148,9 @@
           "SLA personnalisé sur demande",
           "Support prioritaire (heures ouvrables, réponse 2h)",
           "Revues trimestrielles de feuille de route sécurité"
-        ]
+        ],
+        "priceYearly": "€3349",
+        "periodYearly": "/year"
       }
     }
   },

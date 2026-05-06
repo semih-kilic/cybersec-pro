@@ -551,7 +551,7 @@ fn build_router(state: Arc<AppState>) -> Router {
         .route("/api/v1/analytics/trend", get(security_handlers::get_analytics_trend))
         // ── Phase 6: Strix AI Jobs ────────────────────────────────────────
         .route("/api/v1/cybersec-ai/jobs", get(security_handlers::list_cybersec_ai_jobs).post(security_handlers::create_cybersec_ai_job))
-        .route("/api/v1/cybersec-ai/jobs/:job_id", get(security_handlers::get_cybersec_ai_job))
+        .route("/api/v1/cybersec-ai/jobs/:job_id", get(security_handlers::get_cybersec_ai_job).delete(security_handlers::delete_cybersec_ai_job))
         .route("/api/v1/cybersec-ai/jobs/:job_id/cancel", post(security_handlers::cancel_cybersec_ai_job))
         .merge(swagger_ui)
         .with_state(state)

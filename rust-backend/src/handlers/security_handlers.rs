@@ -647,6 +647,60 @@ pub async fn cancel_cybersec_ai_job(
     }
 }
 
+/// Hard-delete a CyberSec AI job. Only allowed for jobs in a terminal state
+/// (`completed`, `failed`, `cancelled`) — running/queued jobs must be
+/// cancelled first to avoid orphaning a worker. Verifies organization
+/// ownership before deletion.
+pub async fn delete_cybersec_ai_job(
+    user: AuthUser,
+    State(state): State<Arc<AppState>>,
+    Path(job_id): Path<String>,
+) -> impl IntoResponse {
+    let org_id = match &user.org_id {
+        Some(id) => id.clone(),
+        None => return (StatusCode::FORBIDDEN, Json(json!({"error": "Organization required"}))).into_response(),
+    };
+
+    let current: Option<(String,)> = sqlx::query_as(
+        "SELECT status FROM cybersec_ai_jobs WHERE id = $1 AND organization_id = $2"
+    )
+    .bind(&job_id).bind(&org_id)
+    .fetch_optional(&state.db).await.unwrap_or(None);
+
+    let Some((status,)) = current else {
+        return (StatusCode::NOT_FOUND, Json(json!({"error": "Job not found"}))).into_response();
+    };
+
+    if !matches!(status.as_str(), "completed" | "failed" | "cancelled") {
+        return (
+            StatusCode::CONFLICT,
+            Json(json!({
+                "error": "Cancel the job before deleting it.",
+                "status": status,
+            })),
+        )
+            .into_response();
+    }
+
+    let res = sqlx::query("DELETE FROM cybersec_ai_jobs WHERE id = $1 AND organization_id = $2")
+        .bind(&job_id).bind(&org_id)
+        .execute(&state.db).await;
+
+    match res {
+        Ok(r) if r.rows_affected() > 0 => {
+            crate::services::audit::log_audit(
+                &state.db, "cybersec_ai_job_deleted", "security", "warning",
+                Some(&user.user_id), Some(&org_id),
+                Some(json!({"job_id": &job_id, "previous_status": status})),
+                Some("cybersec_ai_job"), Some(&job_id), "success", None
+            ).await;
+            (StatusCode::OK, Json(json!({"message": "Job deleted", "id": job_id}))).into_response()
+        }
+        Ok(_) => (StatusCode::NOT_FOUND, Json(json!({"error": "Job not found"}))).into_response(),
+        Err(e) => (StatusCode::INTERNAL_SERVER_ERROR, Json(json!({"error": format!("Failed: {}", e)}))).into_response(),
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::validate_ip_cidr;

@@ -1909,6 +1909,18 @@ export function useCancelCyberSecAIJob() {
   });
 }
 
+export function useDeleteCyberSecAIJob() {
+  const { token } = useAuth();
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (jobId: string) =>
+      authFetch(`/api/v1/cybersec-ai/jobs/${jobId}`, token, { method: 'DELETE' }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["cybersec-ai-jobs"] });
+    },
+  });
+}
+
 
 // ── CyberSec Pro AI — Intelligent Assistant ─────────────────
 

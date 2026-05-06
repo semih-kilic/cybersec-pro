@@ -6,6 +6,7 @@ import FeaturesSection from "@/components/sections/FeaturesSection";
 import TerminalDemo from "@/components/sections/TerminalDemo";
 import BlogSection from "@/components/sections/BlogSection";
 import PricingSection from "@/components/sections/PricingSection";
+import RoiCalculatorSection from "@/components/sections/RoiCalculatorSection";
 import CtaSection from "@/components/sections/CtaSection";
 
 export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }): Promise<Metadata> {
@@ -24,6 +25,7 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
       <TerminalDemo />
       <BlogSection />
       <PricingSection />
+      <RoiCalculatorSection />
       <CtaSection />
     </>
   );

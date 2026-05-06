@@ -105,7 +105,9 @@
           "فحوصات مجدولة",
           "دعم بريد إلكتروني أولوية (48 ساعة)",
           "3 أعضاء فريق"
-        ]
+        ],
+        "priceYearly": "€279",
+        "periodYearly": "/year"
       },
       "professional": {
         "name": "احترافي",
@@ -123,7 +125,9 @@
           "فحص LDAP / Active Directory",
           "دعم أولوية (24 ساعة)",
           "10 أعضاء فريق"
-        ]
+        ],
+        "priceYearly": "€949",
+        "periodYearly": "/year"
       },
       "enterprise": {
         "name": "المؤسسات",
@@ -144,7 +148,9 @@
           "Custom SLA available on request",
           "دعم ذو أولوية (ساعات العمل، استجابة خلال ساعتين)",
           "مراجعات أمنية ربع سنوية لخارطة الطريق"
-        ]
+        ],
+        "priceYearly": "€3349",
+        "periodYearly": "/year"
       }
     }
   },

@@ -18,6 +18,9 @@ import {
   Wrench,
   AlertTriangle,
   Sparkles,
+  Trash2,
+  Info,
+  ExternalLink,
 } from 'lucide-react';
 import {
   PageHeader,
@@ -38,6 +41,7 @@ import {
   useCreateCyberSecAIJob,
   useCyberSecAIJob,
   useCancelCyberSecAIJob,
+  useDeleteCyberSecAIJob,
 } from '../../hooks/useApiQueries';
 
 type Job = {
@@ -64,6 +68,7 @@ const STATUS_TONE: Record<string, 'warning' | 'info' | 'success' | 'danger' | 'n
 export default function CyberSecAIPage() {
   const { data, isLoading } = useCyberSecAIJobs();
   const createJob = useCreateCyberSecAIJob();
+  const deleteJob = useDeleteCyberSecAIJob();
   const [selectedJobId, setSelectedJobId] = useState<string | null>(null);
   const [showForm, setShowForm] = useState(false);
   const [form, setForm] = useState({
@@ -123,6 +128,45 @@ export default function CyberSecAIPage() {
         }
       />
 
+      {/* What is this? — explainer */}
+      <div className="rounded-vos-xl border border-vos-border-1 bg-gradient-to-br from-vos-bg-elev-1 to-vos-bg-elev-2 p-vos-6">
+        <div className="flex items-start gap-vos-4">
+          <span className="size-10 shrink-0 rounded-vos-md bg-vos-accent/10 border border-vos-accent/20 flex items-center justify-center text-vos-accent">
+            <Info size={18} />
+          </span>
+          <div className="space-y-vos-3">
+            <div>
+              <h3 className="text-vos-md font-semibold text-vos-text">What does CyberSec Pro AI do?</h3>
+              <p className="text-vos-sm text-vos-text-2 mt-1 leading-relaxed">
+                Point it at a URL, IP, or Git repository and a fleet of LLM-driven agents will
+                <strong className="text-vos-text"> reconnoiter, fingerprint, attack, and verify </strong>
+                vulnerabilities for you — then return a prioritised report with reproducible proof-of-concepts.
+                Powered by the open-source <a href="https://github.com/usestrix/strix" target="_blank" rel="noopener noreferrer" className="text-vos-accent hover:underline inline-flex items-center gap-0.5">Strix engine <ExternalLink size={11} /></a>,
+                hardened with our own scanners and LLM safeguards.
+              </p>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-vos-3 text-vos-xs">
+              <div className="rounded-vos-md border border-vos-border-1 bg-vos-bg-1/40 p-vos-3">
+                <div className="flex items-center gap-1.5 text-vos-accent font-semibold mb-1"><Search size={12}/> 1. Recon</div>
+                <p className="text-vos-text-3 leading-snug">Crawls the target, maps endpoints, fingerprints stacks, finds exposed assets.</p>
+              </div>
+              <div className="rounded-vos-md border border-vos-border-1 bg-vos-bg-1/40 p-vos-3">
+                <div className="flex items-center gap-1.5 text-vos-warning font-semibold mb-1"><Bug size={12}/> 2. Discover &amp; Exploit</div>
+                <p className="text-vos-text-3 leading-snug">Runs OWASP-aligned attacks (SQLi, XSS, SSRF, IDOR, auth flaws…) and chains primitives.</p>
+              </div>
+              <div className="rounded-vos-md border border-vos-border-1 bg-vos-bg-1/40 p-vos-3">
+                <div className="flex items-center gap-1.5 text-vos-success font-semibold mb-1"><ShieldCheck size={12}/> 3. Verify</div>
+                <p className="text-vos-text-3 leading-snug">Reproduces each finding end-to-end so you only see exploitable, non-false-positive issues.</p>
+              </div>
+            </div>
+            <p className="text-vos-xs text-vos-text-3">
+              <AlertTriangle size={11} className="inline mr-1 -mt-0.5 text-vos-warning" />
+              Only test systems you are authorised to test. All actions are logged and attributable to your account.
+            </p>
+          </div>
+        </div>
+      </div>
+
       {/* KPI bar */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-vos-4">
         <StatCard
@@ -177,6 +221,7 @@ export default function CyberSecAIPage() {
               <DenseTH className="text-right">Findings</DenseTH>
               <DenseTH className="text-right">Verified</DenseTH>
               <DenseTH>Created</DenseTH>
+              <DenseTH className="text-right">Actions</DenseTH>
             </DenseTableHead>
             <tbody>
               {jobs.map((job) => (
@@ -223,10 +268,30 @@ export default function CyberSecAIPage() {
                     <DenseTD className="text-vos-text-3 whitespace-nowrap">
                       {new Date(job.created_at).toLocaleString()}
                     </DenseTD>
+                    <DenseTD className="text-right" onClick={(e) => e.stopPropagation()}>
+                      {['completed', 'failed', 'cancelled'].includes(job.status) ? (
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            if (confirm('Delete this job and its findings? This cannot be undone.')) {
+                              deleteJob.mutate(job.id);
+                              if (selectedJobId === job.id) setSelectedJobId(null);
+                            }
+                          }}
+                          disabled={deleteJob.isPending}
+                          aria-label="Delete job"
+                          className="inline-flex items-center justify-center size-7 rounded-vos-sm text-vos-text-3 hover:text-vos-danger hover:bg-vos-danger/10 disabled:opacity-50"
+                        >
+                          <Trash2 size={14} />
+                        </button>
+                      ) : (
+                        <span className="text-vos-text-3 text-vos-xs">—</span>
+                      )}
+                    </DenseTD>
                   </DenseTR>
                   {selectedJobId === job.id && (
                     <tr className="border-t border-vos-border-1 bg-vos-bg-elev-1/30">
-                      <td colSpan={6} className="px-vos-6 py-vos-5">
+                      <td colSpan={7} className="px-vos-6 py-vos-5">
                         <JobDetail jobId={job.id} />
                       </td>
                     </tr>

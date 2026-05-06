@@ -105,7 +105,9 @@
           "Zamanlanmış taramalar",
           "Öncelikli e-posta desteği (48s)",
           "3 ekip üyesi"
-        ]
+        ],
+        "priceYearly": "€279",
+        "periodYearly": "/year"
       },
       "professional": {
         "name": "Profesyonel",
@@ -123,7 +125,9 @@
           "LDAP / Active Directory taraması",
           "Öncelikli destek (24s)",
           "10 ekip üyesi"
-        ]
+        ],
+        "priceYearly": "€949",
+        "periodYearly": "/year"
       },
       "enterprise": {
         "name": "Kurumsal",
@@ -144,7 +148,9 @@
           "Custom SLA available on request",
           "Öncelikli destek (mesai saatleri, 2s yanıt)",
           "Üç aylık güvenlik yol haritası incelemeleri"
-        ]
+        ],
+        "priceYearly": "€3349",
+        "periodYearly": "/year"
       }
     }
   },

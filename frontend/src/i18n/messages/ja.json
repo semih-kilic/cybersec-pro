@@ -105,7 +105,9 @@
           "スケジュールスキャン",
           "優先メールサポート(48h)",
           "3チームメンバー"
-        ]
+        ],
+        "priceYearly": "€279",
+        "periodYearly": "/year"
       },
       "professional": {
         "name": "プロフェッショナル",
@@ -123,7 +125,9 @@
           "LDAP / Active Directoryスキャン",
           "優先サポート(24h)",
           "10チームメンバー"
-        ]
+        ],
+        "priceYearly": "€949",
+        "periodYearly": "/year"
       },
       "enterprise": {
         "name": "エンタープライズ",
@@ -144,7 +148,9 @@
           "Custom SLA available on request",
           "優先サポート(営業時間内、2時間応答)",
           "四半期セキュリティロードマップレビュー"
-        ]
+        ],
+        "priceYearly": "€3349",
+        "periodYearly": "/year"
       }
     }
   },
