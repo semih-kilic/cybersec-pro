@@ -302,7 +302,7 @@ function ThemeChoice({
 }: {
   current: string;
   choice: 'light' | 'dark' | 'system';
-  icon: React.ComponentType<{ size?: number; className?: string }>;
+  icon: React.ComponentType<{ size?: number | string; className?: string }>;
   label: string;
   onSelect: (mode: 'light' | 'dark' | 'system') => void;
 }) {

@@ -6,7 +6,7 @@ import { cn } from '../../lib/cn';
 export interface VosNavItem {
   label: string;
   to: string;
-  icon: ComponentType<{ className?: string; size?: number }>;
+  icon: ComponentType<{ className?: string; size?: number | string }>;
   badge?: ReactNode;
   external?: boolean;
   /** Optional section heading shown ABOVE this item */
