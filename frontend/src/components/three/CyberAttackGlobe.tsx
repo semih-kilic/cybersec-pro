@@ -364,7 +364,7 @@ export default function CyberAttackGlobe() {
       <Canvas
         camera={{ position: [0, 1.5, 6], fov: 50 }}
         gl={{ antialias: true, alpha: true }}
-        style={{ background: "transparent" }}
+        style={{ background: "transparent", pointerEvents: "none" }}
         onCreated={({ gl }) => {
           gl.toneMapping = THREE.ACESFilmicToneMapping;
           gl.toneMappingExposure = 0.8;
