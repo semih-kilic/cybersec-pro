@@ -1301,10 +1301,57 @@ pub async fn scan_output_stream(
             .into_response();
     }
 
+    // IMPORTANT: subscribe to the broadcast BEFORE we read the scan from the
+    // DB so any output emitted between the DB read and the subscription is
+    // not lost.
     let rx = state.scan_output_tx.subscribe();
     let scan_id_filter = scan_id.clone();
 
-    let stream = BroadcastStream::new(rx)
+    // Replay buffer: if the scan already finished (or already produced output)
+    // we need to replay the saved output to late subscribers, otherwise the
+    // browser sees an empty stream and reports "Stream disconnected
+    // unexpectedly".
+    let row: Option<(String, Option<String>, Option<i32>)> = sqlx::query_as(
+        "SELECT status, output, exit_code FROM scans WHERE id = $1"
+    )
+    .bind(&scan_id)
+    .fetch_optional(&state.db)
+    .await
+    .unwrap_or(None);
+
+    let mut replay: Vec<String> = Vec::new();
+    let mut already_complete = false;
+    if let Some((status, output_opt, exit_code)) = row {
+        if let Some(output) = output_opt.filter(|o| !o.trim().is_empty()) {
+            for line in output.lines() {
+                replay.push(json!({
+                    "type": "output",
+                    "scan_id": scan_id,
+                    "line": line,
+                    "data": line,
+                }).to_string());
+            }
+        }
+        if matches!(status.as_str(), "completed" | "failed" | "cancelled") {
+            already_complete = true;
+            replay.push(json!({
+                "type": "complete",
+                "scan_id": scan_id,
+                "status": status,
+                "exit_code": exit_code,
+                "result": {
+                    "status": status,
+                    "exit_code": exit_code,
+                },
+            }).to_string());
+        }
+    }
+
+    let replay_stream = tokio_stream::iter(replay.into_iter().map(|data| {
+        Ok::<_, std::convert::Infallible>(Event::default().data(data))
+    }));
+
+    let live_stream = BroadcastStream::new(rx)
         .filter_map(move |msg: Result<String, tokio_stream::wrappers::errors::BroadcastStreamRecvError>| {
             match msg {
                 Ok(data) => {
@@ -1317,6 +1364,15 @@ pub async fn scan_output_stream(
                 Err(_) => None,
             }
         });
+
+    // If the scan is already in a terminal state, do not bother holding the
+    // connection open with the live broadcast — replay is the full story.
+    let stream: std::pin::Pin<Box<dyn futures::stream::Stream<Item = Result<Event, std::convert::Infallible>> + Send>> =
+        if already_complete {
+            Box::pin(replay_stream)
+        } else {
+            Box::pin(replay_stream.chain(live_stream))
+        };
 
     Sse::new(stream)
         .keep_alive(
