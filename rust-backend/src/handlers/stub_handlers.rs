@@ -698,9 +698,21 @@ pub async fn social_auth(
     .unwrap_or(None);
 
     let (user_id, org_id, role) = if let Some((uid, r, oid)) = existing {
-        // Update last login + avatar
-        let _ = sqlx::query("UPDATE users SET last_login = CURRENT_TIMESTAMP, avatar_url = $1 WHERE id = $2")
+        // Update last login + sync profile fields from OAuth provider so the
+        // dashboard always reflects the upstream identity (avatar, name).
+        // Only overwrite name fields when the provider actually returned a
+        // value, to avoid wiping a manually-edited display name.
+        let _ = sqlx::query(
+            "UPDATE users SET
+                last_login = CURRENT_TIMESTAMP,
+                avatar_url = COALESCE(NULLIF($1,''), avatar_url),
+                first_name = COALESCE(NULLIF($2,''), first_name),
+                last_name  = COALESCE(NULLIF($3,''), last_name)
+             WHERE id = $4"
+        )
             .bind(&avatar_url)
+            .bind(&first_name)
+            .bind(&last_name)
             .bind(&uid)
             .execute(&state.db)
             .await;
