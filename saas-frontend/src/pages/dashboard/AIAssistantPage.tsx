@@ -64,26 +64,36 @@ interface SafetyResult {
   verdict: 'ok' | 'review' | 'blocked';
 }
 
-const TABS: Array<{ id: Tab; label: string; icon: typeof Bot; desc: string }> = [
-  { id: 'suggest',   label: 'Suggest Tools', icon: Target,      desc: 'Which tool fits my goal?' },
-  { id: 'playbook',  label: 'Playbook',      icon: Workflow,    desc: 'Multi-step workflow' },
-  { id: 'command',   label: 'Build Command', icon: Zap,         desc: 'Safe command for target' },
-  { id: 'explain',   label: 'Explain',       icon: Lightbulb,   desc: 'How does this work?' },
-  { id: 'validate',  label: 'Validate',      icon: ShieldCheck, desc: 'Safety check a command' },
-  { id: 'interpret', label: 'Interpret',     icon: BarChart3,   desc: 'Summarise findings' },
+const TABS: Array<{ id: Tab; labelKey: string; labelFallback: string; descKey: string; descFallback: string; icon: typeof Bot }> = [
+  { id: 'suggest',   labelKey: 'aiAssistant.tabs.suggest',   labelFallback: 'Suggest Tools', descKey: 'aiAssistant.tabs.suggestDesc',   descFallback: 'Which tool fits my goal?', icon: Target },
+  { id: 'playbook',  labelKey: 'aiAssistant.tabs.playbook',  labelFallback: 'Playbook',      descKey: 'aiAssistant.tabs.playbookDesc',  descFallback: 'Multi-step workflow',     icon: Workflow },
+  { id: 'command',   labelKey: 'aiAssistant.tabs.command',   labelFallback: 'Build Command', descKey: 'aiAssistant.tabs.commandDesc',   descFallback: 'Safe command for target', icon: Zap },
+  { id: 'explain',   labelKey: 'aiAssistant.tabs.explain',   labelFallback: 'Explain',       descKey: 'aiAssistant.tabs.explainDesc',   descFallback: 'How does this work?',     icon: Lightbulb },
+  { id: 'validate',  labelKey: 'aiAssistant.tabs.validate',  labelFallback: 'Validate',      descKey: 'aiAssistant.tabs.validateDesc',  descFallback: 'Safety check a command',  icon: ShieldCheck },
+  { id: 'interpret', labelKey: 'aiAssistant.tabs.interpret', labelFallback: 'Interpret',     descKey: 'aiAssistant.tabs.interpretDesc', descFallback: 'Summarise findings',      icon: BarChart3 },
 ];
 
 const DANGER_TONE: Record<number, 'success' | 'warning' | 'danger'> = {
   0: 'success', 1: 'warning', 2: 'danger',
 };
-const DANGER_LABEL: Record<number, string> = {
+const DANGER_LABEL_KEY: Record<number, string> = {
+  0: 'aiAssistant.danger.safe',
+  1: 'aiAssistant.danger.intrusive',
+  2: 'aiAssistant.danger.destructive',
+};
+const DANGER_LABEL_FALLBACK: Record<number, string> = {
   0: 'Safe', 1: 'Intrusive', 2: 'Destructive',
 };
 
 const VERDICT_TONE: Record<string, 'success' | 'warning' | 'danger'> = {
   ok: 'success', review: 'warning', blocked: 'danger',
 };
-const VERDICT_LABEL: Record<string, string> = {
+const VERDICT_LABEL_KEY: Record<string, string> = {
+  ok: 'aiAssistant.verdict.ok',
+  review: 'aiAssistant.verdict.review',
+  blocked: 'aiAssistant.verdict.blocked',
+};
+const VERDICT_LABEL_FALLBACK: Record<string, string> = {
   ok: 'Safe to run', review: 'Review needed', blocked: 'Blocked',
 };
 
@@ -103,8 +113,8 @@ export default function AIAssistantPage() {
         <PageHeader
           icon={<Bot size={22} />}
           title="CyberSec Pro AI"
-          description="Your security expert. Ask what tool to use, build safe commands, design multi-step playbooks, validate dangerous commands, and let AI interpret your scan findings."
-          badge={<StatusPill tone="accent" label="Intelligent Co-Pilot" />}
+          description={t('aiAssistant.headerDescription', 'Your security expert. Ask what tool to use, build safe commands, design multi-step playbooks, validate dangerous commands, and let AI interpret your scan findings.')}
+          badge={<StatusPill tone="accent" label={t('aiAssistant.headerBadge', 'Intelligent Co-Pilot')} />}
           actions={
             <label className="flex items-center gap-2 h-9 px-vos-3 rounded-vos-md bg-vos-bg-elev-1 border border-vos-border-1 text-vos-sm text-vos-text-2 cursor-pointer hover:border-vos-accent/40 transition-colors">
               <input
@@ -114,8 +124,8 @@ export default function AIAssistantPage() {
                 className="w-3.5 h-3.5 accent-vos-accent"
               />
               <Sparkles size={13} className="text-vos-accent" />
-              LLM enrichment
-              <span className="text-[11px] text-vos-text-3">(slower, smarter)</span>
+              {t('aiAssistant.llmEnrichment', 'LLM enrichment')}
+              <span className="text-[11px] text-vos-text-3">{t('aiAssistant.llmHint', '(slower, smarter)')}</span>
             </label>
           }
         />
@@ -137,15 +147,15 @@ export default function AIAssistantPage() {
               >
                 <Icon size={16} className="mt-0.5 shrink-0" />
                 <div className="min-w-0">
-                  <div className="font-medium text-vos-sm">{it.label}</div>
-                  <div className={`text-[11px] truncate ${active ? 'text-vos-accent/80' : 'text-vos-text-3'}`}>{it.desc}</div>
+                  <div className="font-medium text-vos-sm">{t(it.labelKey, it.labelFallback)}</div>
+                  <div className={`text-[11px] truncate ${active ? 'text-vos-accent/80' : 'text-vos-text-3'}`}>{t(it.descKey, it.descFallback)}</div>
                 </div>
               </button>
             );
           })}
         </div>
 
-        <Section bodyClassName="min-h-[400px]" title={TABS.find((x) => x.id === tab)?.label ?? ''}>
+        <Section bodyClassName="min-h-[400px]" title={(() => { const cur = TABS.find((x) => x.id === tab); return cur ? t(cur.labelKey, cur.labelFallback) : ''; })()}>
           <AnimatePresence mode="wait">
             <motion.div
               key={tab}
@@ -255,18 +265,19 @@ function AICallout({ title, children }: { title: string; children: React.ReactNo
 // Panel: Suggest Tools
 // ─────────────────────────────────────────────────────────────────────────
 function SuggestPanel({ useLLM }: { useLLM: boolean }) {
+  const { t } = useTranslation();
   const [query, setQuery] = useState('');
   const [targetType, setTargetType] = useState('');
   const mut = useAISuggestTools();
   const result = mut.data as { suggestions?: ToolSuggestion[]; explanation?: string; source?: string } | undefined;
 
   const examples = [
-    'I want to scan a WordPress site',
-    'Find subdomains for bug bounty',
-    'Test SSL configuration',
-    'Check Docker image for CVEs',
-    'Brute force SSH login',
-    'Find leaked secrets in git repo',
+    t('aiAssistant.suggest.examples.wordpress', 'I want to scan a WordPress site'),
+    t('aiAssistant.suggest.examples.subdomains', 'Find subdomains for bug bounty'),
+    t('aiAssistant.suggest.examples.ssl', 'Test SSL configuration'),
+    t('aiAssistant.suggest.examples.docker', 'Check Docker image for CVEs'),
+    t('aiAssistant.suggest.examples.ssh', 'Brute force SSH login'),
+    t('aiAssistant.suggest.examples.secrets', 'Find leaked secrets in git repo'),
   ];
 
   const submit = () => {
@@ -277,33 +288,33 @@ function SuggestPanel({ useLLM }: { useLLM: boolean }) {
   return (
     <div className="space-y-vos-4">
       <div>
-        <VosLabel>What do you want to do?</VosLabel>
+        <VosLabel>{t('aiAssistant.suggest.label', 'What do you want to do?')}</VosLabel>
         <VosTextarea
           value={query}
           onChange={(e) => setQuery(e.target.value)}
           onKeyDown={(e) => e.key === 'Enter' && e.ctrlKey && submit()}
-          placeholder="e.g. I want to find SQL injection vulnerabilities in a login form…"
+          placeholder={t('aiAssistant.suggest.placeholder', 'e.g. I want to find SQL injection vulnerabilities in a login form…')}
           rows={3}
         />
       </div>
 
       <div className="flex flex-wrap items-end gap-vos-3">
         <div>
-          <VosLabel>Target type (optional)</VosLabel>
+          <VosLabel>{t('aiAssistant.suggest.targetTypeLabel', 'Target type (optional)')}</VosLabel>
           <VosSelect value={targetType} onChange={(e) => setTargetType(e.target.value)}>
-            <option value="">Any</option>
+            <option value="">{t('aiAssistant.suggest.targetTypeAny', 'Any')}</option>
             <option value="url">URL</option>
             <option value="domain">Domain</option>
             <option value="ip">IP / CIDR</option>
-            <option value="repository">Git repo</option>
-            <option value="image">Container image</option>
-            <option value="file">File</option>
+            <option value="repository">{t('aiAssistant.suggest.targetTypeRepo', 'Git repo')}</option>
+            <option value="image">{t('aiAssistant.suggest.targetTypeImage', 'Container image')}</option>
+            <option value="file">{t('aiAssistant.suggest.targetTypeFile', 'File')}</option>
           </VosSelect>
         </div>
         <PrimaryButton onClick={submit} disabled={mut.isPending || !query.trim()} icon={Target}>
-          {mut.isPending ? 'Thinking…' : 'Suggest Tools'}
+          {mut.isPending ? t('aiAssistant.suggest.thinking', 'Thinking…') : t('aiAssistant.suggest.submit', 'Suggest Tools')}
         </PrimaryButton>
-        <span className="text-vos-xs text-vos-text-3">Ctrl+Enter to submit</span>
+        <span className="text-vos-xs text-vos-text-3">{t('aiAssistant.suggest.shortcut', 'Ctrl+Enter to submit')}</span>
       </div>
 
       <div className="flex flex-wrap gap-vos-2">
@@ -313,7 +324,7 @@ function SuggestPanel({ useLLM }: { useLLM: boolean }) {
       </div>
 
       {result?.explanation && (
-        <AICallout title={`AI Analysis · ${result.source ?? 'engine'}`}>{result.explanation}</AICallout>
+        <AICallout title={t('aiAssistant.suggest.aiAnalysisTitle', 'AI Analysis · {{source}}', { source: result.source ?? 'engine' })}>{result.explanation}</AICallout>
       )}
 
       {result?.suggestions && result.suggestions.length > 0 ? (
@@ -330,14 +341,14 @@ function SuggestPanel({ useLLM }: { useLLM: boolean }) {
                 </div>
                 <StatusPill
                   tone={DANGER_TONE[tool.danger_level] ?? 'neutral'}
-                  label={DANGER_LABEL[tool.danger_level] ?? '—'}
+                  label={t(DANGER_LABEL_KEY[tool.danger_level] ?? '', DANGER_LABEL_FALLBACK[tool.danger_level] ?? '—')}
                 />
               </div>
               <div className="text-vos-xs text-vos-text-3 mb-vos-2">
-                <span className="text-vos-text-muted">Best for: </span>
+                <span className="text-vos-text-muted">{t('aiAssistant.suggest.bestFor', 'Best for: ')}</span>
                 {tool.use_cases.slice(0, 3).join(' • ')}
               </div>
-              <div className="text-[10px] uppercase tracking-vos-wide text-vos-text-3 mb-1">Example</div>
+              <div className="text-[10px] uppercase tracking-vos-wide text-vos-text-3 mb-1">{t('aiAssistant.suggest.example', 'Example')}</div>
               <CodeBlock>{tool.example_command}</CodeBlock>
               <div className="flex flex-wrap gap-1 mt-vos-2">
                 {tool.target_types.map((tt) => (
@@ -353,7 +364,7 @@ function SuggestPanel({ useLLM }: { useLLM: boolean }) {
           ))}
         </div>
       ) : mut.isSuccess ? (
-        <p className="text-vos-text-3 text-vos-sm italic">No matching tools — try rephrasing your goal.</p>
+        <p className="text-vos-text-3 text-vos-sm italic">{t('aiAssistant.suggest.empty', 'No matching tools — try rephrasing your goal.')}</p>
       ) : null}
     </div>
   );
@@ -363,6 +374,7 @@ function SuggestPanel({ useLLM }: { useLLM: boolean }) {
 // Panel: Command Builder
 // ─────────────────────────────────────────────────────────────────────────
 function CommandPanel() {
+  const { t } = useTranslation();
   const [toolId, setToolId] = useState('nmap');
   const [target, setTarget] = useState('');
   const mut = useAIGenerateCommand();
@@ -377,14 +389,14 @@ function CommandPanel() {
     <div className="space-y-vos-4">
       <div className="grid md:grid-cols-2 gap-vos-3">
         <div>
-          <VosLabel>Tool</VosLabel>
+          <VosLabel>{t('aiAssistant.command.toolLabel', 'Tool')}</VosLabel>
           <VosSelect value={toolId} onChange={(e) => setToolId(e.target.value)} className="w-full">
-            {TOOL_OPTIONS.map((t) => <option key={t} value={t}>{t}</option>)}
+            {TOOL_OPTIONS.map((opt) => <option key={opt} value={opt}>{opt}</option>)}
           </VosSelect>
         </div>
         <div>
-          <VosLabel>Target</VosLabel>
-          <VosInput value={target} onChange={(e) => setTarget(e.target.value)} placeholder="example.com or 192.168.1.0/24" />
+          <VosLabel>{t('aiAssistant.command.targetLabel', 'Target')}</VosLabel>
+          <VosInput value={target} onChange={(e) => setTarget(e.target.value)} placeholder={t('aiAssistant.command.targetPlaceholder', 'example.com or 192.168.1.0/24')} />
         </div>
       </div>
       <PrimaryButton
@@ -392,13 +404,13 @@ function CommandPanel() {
         onClick={() => mut.mutate({ tool_id: toolId, target: target.trim() })}
         icon={Zap}
       >
-        {mut.isPending ? 'Building…' : 'Build Command'}
+        {mut.isPending ? t('aiAssistant.command.building', 'Building…') : t('aiAssistant.command.submit', 'Build Command')}
       </PrimaryButton>
 
       {r?.command && (
         <div className="space-y-vos-3">
           <div>
-            <div className="text-[10px] uppercase tracking-vos-wide text-vos-text-3 mb-1">Generated command</div>
+            <div className="text-[10px] uppercase tracking-vos-wide text-vos-text-3 mb-1">{t('aiAssistant.command.generated', 'Generated command')}</div>
             <CodeBlock className="whitespace-pre-wrap break-words">{r.command}</CodeBlock>
           </div>
           {r.safety && <SafetyCard safety={r.safety} />}
@@ -412,6 +424,7 @@ function CommandPanel() {
 // Panel: Playbook
 // ─────────────────────────────────────────────────────────────────────────
 function PlaybookPanel({ useLLM }: { useLLM: boolean }) {
+  const { t } = useTranslation();
   const [goal, setGoal] = useState('');
   const [target, setTarget] = useState('');
   const mut = useAIPlaybook();
@@ -419,18 +432,25 @@ function PlaybookPanel({ useLLM }: { useLLM: boolean }) {
     | { steps?: Array<{ order: number; tool: string; purpose: string; command: string }>; rationale?: string }
     | undefined;
 
-  const presets = ['Bug bounty recon', 'WordPress audit', 'Internal network pentest', 'SSL/TLS audit', 'API security test', 'Find leaked secrets'];
+  const presets = [
+    t('aiAssistant.playbook.presets.bugBounty', 'Bug bounty recon'),
+    t('aiAssistant.playbook.presets.wordpress', 'WordPress audit'),
+    t('aiAssistant.playbook.presets.internal', 'Internal network pentest'),
+    t('aiAssistant.playbook.presets.ssl', 'SSL/TLS audit'),
+    t('aiAssistant.playbook.presets.api', 'API security test'),
+    t('aiAssistant.playbook.presets.secrets', 'Find leaked secrets'),
+  ];
 
   return (
     <div className="space-y-vos-4">
       <div className="grid md:grid-cols-2 gap-vos-3">
         <div>
-          <VosLabel>Goal</VosLabel>
-          <VosInput value={goal} onChange={(e) => setGoal(e.target.value)} placeholder="e.g. Bug bounty recon" />
+          <VosLabel>{t('aiAssistant.playbook.goalLabel', 'Goal')}</VosLabel>
+          <VosInput value={goal} onChange={(e) => setGoal(e.target.value)} placeholder={t('aiAssistant.playbook.goalPlaceholder', 'e.g. Bug bounty recon')} />
         </div>
         <div>
-          <VosLabel>Target</VosLabel>
-          <VosInput value={target} onChange={(e) => setTarget(e.target.value)} placeholder="example.com" />
+          <VosLabel>{t('aiAssistant.playbook.targetLabel', 'Target')}</VosLabel>
+          <VosInput value={target} onChange={(e) => setTarget(e.target.value)} placeholder={t('aiAssistant.playbook.targetPlaceholder', 'example.com')} />
         </div>
       </div>
       <div className="flex flex-wrap gap-vos-2">
@@ -443,10 +463,10 @@ function PlaybookPanel({ useLLM }: { useLLM: boolean }) {
         onClick={() => mut.mutate({ goal: goal.trim(), target: target.trim(), use_llm: useLLM })}
         icon={Workflow}
       >
-        {mut.isPending ? 'Designing…' : 'Generate Playbook'}
+        {mut.isPending ? t('aiAssistant.playbook.designing', 'Designing…') : t('aiAssistant.playbook.submit', 'Generate Playbook')}
       </PrimaryButton>
 
-      {r?.rationale && <AICallout title="Why this order">{r.rationale}</AICallout>}
+      {r?.rationale && <AICallout title={t('aiAssistant.playbook.rationale', 'Why this order')}>{r.rationale}</AICallout>}
 
       {r?.steps && r.steps.length > 0 && (
         <ol className="space-y-vos-2">
@@ -477,6 +497,7 @@ function PlaybookPanel({ useLLM }: { useLLM: boolean }) {
 // Panel: Explain
 // ─────────────────────────────────────────────────────────────────────────
 function ExplainPanel({ useLLM }: { useLLM: boolean }) {
+  const { t } = useTranslation();
   const [mode, setMode] = useState<'tool' | 'command'>('tool');
   const [val, setVal] = useState('');
   const mut = useAIExplain();
@@ -510,21 +531,21 @@ function ExplainPanel({ useLLM }: { useLLM: boolean }) {
         value={val}
         onChange={(e) => setVal(e.target.value)}
         onKeyDown={(e) => e.key === 'Enter' && submit()}
-        placeholder={mode === 'tool' ? 'e.g. nmap, sqlmap, nuclei…' : 'e.g. nmap -sV -A scanme.nmap.org'}
+        placeholder={mode === 'tool' ? t('aiAssistant.explain.toolPlaceholder', 'e.g. nmap, sqlmap, nuclei…') : t('aiAssistant.explain.commandPlaceholder', 'e.g. nmap -sV -A scanme.nmap.org')}
         className="font-vos-mono"
       />
       <PrimaryButton disabled={!val.trim() || mut.isPending} onClick={submit} icon={Lightbulb}>
-        {mut.isPending ? 'Explaining…' : 'Explain'}
+        {mut.isPending ? t('aiAssistant.explain.explaining', 'Explaining…') : t('aiAssistant.explain.submit', 'Explain')}
       </PrimaryButton>
 
       {r?.summary && (
         <div className="p-vos-3 rounded-vos-md bg-vos-bg-elev-1 border border-vos-border-1">
-          <div className="text-[10px] uppercase tracking-vos-wide text-vos-text-3 mb-1">Quick summary</div>
+          <div className="text-[10px] uppercase tracking-vos-wide text-vos-text-3 mb-1">{t('aiAssistant.explain.quickSummary', 'Quick summary')}</div>
           <p className="text-vos-sm text-vos-text-2">{r.summary}</p>
         </div>
       )}
-      {r?.explanation && <AICallout title="Explanation">{r.explanation}</AICallout>}
-      {r?.deep_explanation && <AICallout title="Deep dive">{r.deep_explanation}</AICallout>}
+      {r?.explanation && <AICallout title={t('aiAssistant.explain.explanation', 'Explanation')}>{r.explanation}</AICallout>}
+      {r?.deep_explanation && <AICallout title={t('aiAssistant.explain.deepDive', 'Deep dive')}>{r.deep_explanation}</AICallout>}
       {r?.safety && <SafetyCard safety={r.safety} />}
     </div>
   );
@@ -534,6 +555,7 @@ function ExplainPanel({ useLLM }: { useLLM: boolean }) {
 // Panel: Validate
 // ─────────────────────────────────────────────────────────────────────────
 function ValidatePanel() {
+  const { t } = useTranslation();
   const [cmd, setCmd] = useState('');
   const mut = useAIValidateCommand();
   const r = mut.data as SafetyResult | undefined;
@@ -545,7 +567,7 @@ function ValidatePanel() {
       <VosTextarea
         value={cmd}
         onChange={(e) => setCmd(e.target.value)}
-        placeholder="Paste any shell command to check for destructive patterns…"
+        placeholder={t('aiAssistant.validate.placeholder', 'Paste any shell command to check for destructive patterns…')}
         rows={3}
         className="font-vos-mono text-vos-success"
       />
@@ -555,9 +577,9 @@ function ValidatePanel() {
           onClick={() => mut.mutate({ command: cmd.trim() })}
           icon={ShieldCheck}
         >
-          {mut.isPending ? 'Analysing…' : 'Validate'}
+          {mut.isPending ? t('aiAssistant.validate.analysing', 'Analysing…') : t('aiAssistant.validate.submit', 'Validate')}
         </PrimaryButton>
-        <span className="text-vos-xs text-vos-text-3">Try:</span>
+        <span className="text-vos-xs text-vos-text-3">{t('aiAssistant.validate.try', 'Try:')}</span>
         {dangerExamples.map((ex) => (
           <ChipButton key={ex} onClick={() => setCmd(ex)}>
             {ex.length > 30 ? ex.slice(0, 28) + '…' : ex}
@@ -573,6 +595,7 @@ function ValidatePanel() {
 // Panel: Interpret Results
 // ─────────────────────────────────────────────────────────────────────────
 function InterpretPanel({ useLLM }: { useLLM: boolean }) {
+  const { t } = useTranslation();
   const [json, setJson] = useState('');
   const [parseErr, setParseErr] = useState('');
   const mut = useAIInterpretResults();
@@ -586,7 +609,7 @@ function InterpretPanel({ useLLM }: { useLLM: boolean }) {
       const findings = JSON.parse(json);
       mut.mutate({ findings, use_llm: useLLM });
     } catch (e) {
-      setParseErr(e instanceof Error ? e.message : 'Invalid JSON');
+      setParseErr(e instanceof Error ? e.message : t('aiAssistant.interpret.invalidJson', 'Invalid JSON'));
     }
   };
 
@@ -604,7 +627,7 @@ function InterpretPanel({ useLLM }: { useLLM: boolean }) {
       <VosTextarea
         value={json}
         onChange={(e) => setJson(e.target.value)}
-        placeholder={`Paste findings JSON array, e.g.\n${placeholder}`}
+        placeholder={`${t('aiAssistant.interpret.placeholderHeader', 'Paste findings JSON array, e.g.')}\n${placeholder}`}
         rows={10}
         className="font-vos-mono text-vos-xs"
       />
@@ -615,7 +638,7 @@ function InterpretPanel({ useLLM }: { useLLM: boolean }) {
         </div>
       )}
       <PrimaryButton disabled={!json.trim() || mut.isPending} onClick={submit} icon={BarChart3}>
-        {mut.isPending ? 'Analysing…' : 'Interpret'}
+        {mut.isPending ? t('aiAssistant.interpret.analysing', 'Analysing…') : t('aiAssistant.interpret.submit', 'Interpret')}
       </PrimaryButton>
 
       {r && (
@@ -623,14 +646,14 @@ function InterpretPanel({ useLLM }: { useLLM: boolean }) {
           <KeyValueGrid
             cols={4}
             items={[
-              { label: 'Total Findings', value: r.total_findings ?? 0 },
+              { label: t('aiAssistant.interpret.totalFindings', 'Total Findings'), value: r.total_findings ?? 0 },
               ...Object.entries(r.severity_counts ?? {}).map(([sev, count]) => ({
                 label: sev.charAt(0).toUpperCase() + sev.slice(1),
                 value: count,
               })),
             ]}
           />
-          {r.summary && <AICallout title="Analyst Summary">{r.summary}</AICallout>}
+          {r.summary && <AICallout title={t('aiAssistant.interpret.analystSummary', 'Analyst Summary')}>{r.summary}</AICallout>}
         </div>
       )}
     </div>
@@ -641,8 +664,9 @@ function InterpretPanel({ useLLM }: { useLLM: boolean }) {
 // Shared: Safety card
 // ─────────────────────────────────────────────────────────────────────────
 function SafetyCard({ safety }: { safety: SafetyResult }) {
+  const { t } = useTranslation();
   const tone = VERDICT_TONE[safety.verdict] ?? 'warning';
-  const label = VERDICT_LABEL[safety.verdict] ?? 'Review';
+  const label = t(VERDICT_LABEL_KEY[safety.verdict] ?? 'aiAssistant.verdict.review', VERDICT_LABEL_FALLBACK[safety.verdict] ?? 'Review');
   const Icon = safety.verdict === 'ok' ? Check : safety.verdict === 'review' ? AlertTriangle : AlertOctagon;
   const borderClass =
     tone === 'success'
@@ -657,7 +681,7 @@ function SafetyCard({ safety }: { safety: SafetyResult }) {
         <Icon size={16} className={tone === 'success' ? 'text-vos-success' : tone === 'warning' ? 'text-vos-warning' : 'text-vos-danger'} />
         <StatusPill tone={tone} label={label} />
         {safety.warnings.length > 0 && (
-          <span className="text-vos-xs text-vos-text-3">{safety.warnings.length} warning{safety.warnings.length === 1 ? '' : 's'}</span>
+          <span className="text-vos-xs text-vos-text-3">{t('aiAssistant.safety.warning', { count: safety.warnings.length, defaultValue_one: '{{count}} warning', defaultValue_other: '{{count}} warnings', defaultValue: `${safety.warnings.length} warning${safety.warnings.length === 1 ? '' : 's'}` })}</span>
         )}
       </div>
       {safety.warnings.length > 0 && (
@@ -676,7 +700,7 @@ function SafetyCard({ safety }: { safety: SafetyResult }) {
       {safety.command && (
         <div className="mt-vos-3">
           <div className="flex items-center gap-1.5 text-[10px] uppercase tracking-vos-wide text-vos-text-3 mb-1">
-            <Terminal size={11} /> Command
+            <Terminal size={11} /> {t('aiAssistant.safety.command', 'Command')}
           </div>
           <CodeBlock className="whitespace-pre-wrap break-words">{safety.command}</CodeBlock>
         </div>

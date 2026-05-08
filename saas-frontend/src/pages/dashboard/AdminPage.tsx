@@ -108,14 +108,14 @@ interface AdminOverview {
 }
 
 const TABS = [
-  { key: 'overview', label: 'Overview', icon: Activity },
-  { key: 'users', label: 'Users', icon: Users },
-  { key: 'orgs', label: 'Organizations', icon: Building2 },
-  { key: 'signups', label: 'Signups', icon: UserCheck },
-  { key: 'newsletter', label: 'Newsletter', icon: Mail },
-  { key: 'revenue', label: 'Revenue', icon: CreditCard },
-  { key: 'audit', label: 'Audit Log', icon: ScrollText },
-  { key: 'health', label: 'System Health', icon: HeartPulse },
+  { key: 'overview', labelKey: 'admin.tabOverview', labelFallback: 'Overview', icon: Activity },
+  { key: 'users', labelKey: 'admin.tabUsers', labelFallback: 'Users', icon: Users },
+  { key: 'orgs', labelKey: 'admin.tabOrganizations', labelFallback: 'Organizations', icon: Building2 },
+  { key: 'signups', labelKey: 'admin.tabSignups', labelFallback: 'Signups', icon: UserCheck },
+  { key: 'newsletter', labelKey: 'admin.tabNewsletter', labelFallback: 'Newsletter', icon: Mail },
+  { key: 'revenue', labelKey: 'admin.tabRevenue', labelFallback: 'Revenue', icon: CreditCard },
+  { key: 'audit', labelKey: 'admin.tabAuditLog', labelFallback: 'Audit Log', icon: ScrollText },
+  { key: 'health', labelKey: 'admin.tabSystemHealth', labelFallback: 'System Health', icon: HeartPulse },
 ] as const;
 type TabKey = typeof TABS[number]['key'];
 
@@ -254,8 +254,8 @@ export function AdminPage() {
           <div className="w-16 h-16 mx-auto rounded-vos-lg bg-vos-danger/10 border border-vos-danger/30 flex items-center justify-center">
             <Lock size={28} className="text-vos-danger" />
           </div>
-          <h2 className="text-vos-xl font-semibold text-vos-text">Access Denied</h2>
-          <p className="text-vos-text-3 text-vos-sm">Superadmin access required.</p>
+          <h2 className="text-vos-xl font-semibold text-vos-text">{t('admin.accessDenied', 'Access Denied')}</h2>
+          <p className="text-vos-text-3 text-vos-sm">{t('admin.superadminRequired', 'Superadmin access required.')}</p>
         </div>
       </div>
     );
@@ -270,16 +270,16 @@ export function AdminPage() {
       <div className="p-vos-6 max-w-vos-page mx-auto space-y-vos-6">
         <PageHeader
           icon={<Crown size={22} />}
-          title="Admin God Mode"
-          description={`Full platform control — ${user.email}`}
-          badge={<StatusPill tone="danger" label="SUPERADMIN" />}
+          title={t('admin.godMode', 'Admin God Mode')}
+          description={t('admin.fullPlatformControl', 'Full platform control — {{email}}', { email: user.email })}
+          badge={<StatusPill tone="danger" label={t('admin.superadmin', 'SUPERADMIN')} />}
         />
 
         {error && (
           <div className="flex items-start gap-vos-3 p-vos-3 rounded-vos-md bg-vos-danger/10 border border-vos-danger/30 text-vos-danger text-vos-sm">
             <AlertCircle size={16} className="mt-0.5 shrink-0" />
             <div className="flex-1">{error}</div>
-            <button onClick={() => setError(null)} className="text-vos-xs underline">dismiss</button>
+            <button onClick={() => setError(null)} className="text-vos-xs underline">{t('admin.dismiss', 'dismiss')}</button>
           </div>
         )}
 
@@ -288,21 +288,21 @@ export function AdminPage() {
           <KeyValueGrid
             cols={4}
             items={[
-              { label: 'Total Users', value: `${d.users.total} (${d.users.active} active)` },
-              { label: 'Organizations', value: d.organizations.total },
-              { label: 'Total Scans', value: `${d.scans.total} (${d.scans.running} running)` },
-              { label: 'Agents', value: `${d.agents.total} (${d.agents.online} online)` },
-              { label: 'MRR', value: `€${Math.round(d.revenue.mrr).toLocaleString()}` },
-              { label: 'ARR', value: `€${Math.round(d.revenue.arr).toLocaleString()}` },
-              { label: 'Signups · 24h', value: d.signups?.last_24h ?? 0 },
-              { label: 'Newsletter', value: d.newsletter?.total ?? 0 },
+              { label: t('admin.kpiTotalUsers', 'Total Users'), value: t('admin.kpiUsersWithActive', '{{total}} ({{active}} active)', { total: d.users.total, active: d.users.active }) },
+              { label: t('admin.kpiOrganizations', 'Organizations'), value: d.organizations.total },
+              { label: t('admin.kpiTotalScans', 'Total Scans'), value: t('admin.kpiScansWithRunning', '{{total}} ({{running}} running)', { total: d.scans.total, running: d.scans.running }) },
+              { label: t('admin.kpiAgents', 'Agents'), value: t('admin.kpiAgentsWithOnline', '{{total}} ({{online}} online)', { total: d.agents.total, online: d.agents.online }) },
+              { label: t('admin.kpiMRR', 'MRR'), value: `€${Math.round(d.revenue.mrr).toLocaleString()}` },
+              { label: t('admin.kpiARR', 'ARR'), value: `€${Math.round(d.revenue.arr).toLocaleString()}` },
+              { label: t('admin.kpiSignups24h', 'Signups · 24h'), value: d.signups?.last_24h ?? 0 },
+              { label: t('admin.kpiNewsletter', 'Newsletter'), value: d.newsletter?.total ?? 0 },
             ]}
           />
         )}
 
         {/* Tab Bar */}
         <div className="flex flex-wrap gap-1 p-1 rounded-vos-lg bg-vos-bg-elev-1 border border-vos-border-1 w-fit">
-          {TABS.map(({ key, label, icon: Icon }) => {
+          {TABS.map(({ key, labelKey, labelFallback, icon: Icon }) => {
             const active = tab === key;
             return (
               <button
@@ -315,14 +315,14 @@ export function AdminPage() {
                 }`}
               >
                 <Icon size={14} />
-                {label}
+                {t(labelKey, labelFallback)}
               </button>
             );
           })}
         </div>
 
         {/* Impersonation control — always visible at top of operational tabs */}
-        <Section title="Impersonate User" description="Switch to any user's session for support and debugging.">
+        <Section title={t('admin.impersonateUser', 'Impersonate User')} description={t('admin.impersonateDescription', "Switch to any user's session for support and debugging.")}>
           <div className="flex gap-vos-3">
             <input
               type="email"
@@ -336,11 +336,11 @@ export function AdminPage() {
               disabled={impersonate.isPending || !impersonateEmail.trim()}
               className="inline-flex items-center gap-1.5 h-9 px-vos-4 rounded-vos-md bg-vos-danger text-white text-vos-sm font-semibold hover:bg-vos-danger/90 disabled:opacity-50 transition-colors"
             >
-              {impersonate.isPending ? 'Switching…' : 'Impersonate'}
+              {impersonate.isPending ? t('admin.switching', 'Switching…') : t('admin.impersonate', 'Impersonate')}
             </button>
           </div>
           <p className="text-vos-xs text-vos-text-3 mt-vos-2">
-            Logs you in as the target user. Refresh the page to return to your account.
+            {t('admin.impersonateNote', 'Logs you in as the target user. Refresh the page to return to your account.')}
           </p>
         </Section>
 
@@ -374,9 +374,10 @@ export function AdminPage() {
 
 // ─── Overview ──────────────────────────────────────────────────────────────
 function OverviewTab({ d }: { d: AdminOverview }) {
+  const { t } = useTranslation();
   return (
     <>
-      <Section title="Plans Distribution">
+      <Section title={t('admin.plansDistribution', 'Plans Distribution')}>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-vos-3">
           {Object.entries(d.organizations.plans_distribution).map(([plan, count]) => (
             <div key={plan} className="rounded-vos-md border border-vos-border-1 bg-vos-bg-elev-1 p-vos-4 text-center">
@@ -387,12 +388,12 @@ function OverviewTab({ d }: { d: AdminOverview }) {
         </div>
       </Section>
 
-      <Section title="Recent Scans">
+      <Section title={t('admin.recentScans', 'Recent Scans')}>
         <DenseTable>
           <DenseTableHead>
-            <DenseTH>Target</DenseTH>
-            <DenseTH>Status</DenseTH>
-            <DenseTH>Created</DenseTH>
+            <DenseTH>{t('admin.colTarget', 'Target')}</DenseTH>
+            <DenseTH>{t('admin.colStatus', 'Status')}</DenseTH>
+            <DenseTH>{t('admin.colCreated', 'Created')}</DenseTH>
           </DenseTableHead>
           <tbody>
             {d.scans.recent.map((s) => (
@@ -408,7 +409,7 @@ function OverviewTab({ d }: { d: AdminOverview }) {
               </DenseTR>
             ))}
             {d.scans.recent.length === 0 && (
-              <DenseTR><DenseTD className="text-vos-text-3">No scans yet</DenseTD></DenseTR>
+              <DenseTR><DenseTD className="text-vos-text-3">{t('admin.noScansYet', 'No scans yet')}</DenseTD></DenseTR>
             )}
           </tbody>
         </DenseTable>
@@ -431,6 +432,7 @@ function UsersTab(props: {
   actionLoading: string | null;
 }) {
   const { d, currentUserId, bulk, setBulk, onBulk, onToggle, onRole, onDelete, onImpersonate, actionLoading } = props;
+  const { t } = useTranslation();
   const selectableIds = useMemo(
     () => d.users.list.filter((u) => u.id !== currentUserId).map((u) => u.id),
     [d.users.list, currentUserId]
@@ -439,15 +441,15 @@ function UsersTab(props: {
 
   return (
     <Section
-      title={`All Users (${d.users.total})`}
+      title={`${t('admin.allUsers', 'All Users')} (${d.users.total})`}
       action={
         bulk.size > 0 ? (
           <div className="flex items-center gap-vos-2">
-            <span className="text-vos-xs text-vos-text-3">{bulk.size} selected</span>
-            <button onClick={() => onBulk('activate')} className="px-2.5 h-7 rounded-vos-sm bg-vos-success/10 text-vos-success text-vos-xs border border-vos-success/30 hover:bg-vos-success/20">Activate</button>
-            <button onClick={() => onBulk('deactivate')} className="px-2.5 h-7 rounded-vos-sm bg-vos-warning/10 text-vos-warning text-vos-xs border border-vos-warning/30 hover:bg-vos-warning/20">Deactivate</button>
-            <button onClick={() => onBulk('delete')} className="px-2.5 h-7 rounded-vos-sm bg-vos-danger/10 text-vos-danger text-vos-xs border border-vos-danger/30 hover:bg-vos-danger/20">Delete</button>
-            <button onClick={() => setBulk(new Set())} className="text-vos-xs text-vos-text-3 underline">Clear</button>
+            <span className="text-vos-xs text-vos-text-3">{t('admin.selected', '{{count}} selected', { count: bulk.size })}</span>
+            <button onClick={() => onBulk('activate')} className="px-2.5 h-7 rounded-vos-sm bg-vos-success/10 text-vos-success text-vos-xs border border-vos-success/30 hover:bg-vos-success/20">{t('admin.activate', 'Activate')}</button>
+            <button onClick={() => onBulk('deactivate')} className="px-2.5 h-7 rounded-vos-sm bg-vos-warning/10 text-vos-warning text-vos-xs border border-vos-warning/30 hover:bg-vos-warning/20">{t('admin.deactivate', 'Deactivate')}</button>
+            <button onClick={() => onBulk('delete')} className="px-2.5 h-7 rounded-vos-sm bg-vos-danger/10 text-vos-danger text-vos-xs border border-vos-danger/30 hover:bg-vos-danger/20">{t('admin.delete', 'Delete')}</button>
+            <button onClick={() => setBulk(new Set())} className="text-vos-xs text-vos-text-3 underline">{t('admin.clear', 'Clear')}</button>
           </div>
         ) : null
       }
@@ -461,11 +463,11 @@ function UsersTab(props: {
               onChange={(e) => setBulk(e.target.checked ? new Set(selectableIds) : new Set())}
             />
           </DenseTH>
-          <DenseTH>Email</DenseTH>
-          <DenseTH>Name</DenseTH>
-          <DenseTH>Role</DenseTH>
-          <DenseTH>Active</DenseTH>
-          <DenseTH>Actions</DenseTH>
+          <DenseTH>{t('admin.colEmail', 'Email')}</DenseTH>
+          <DenseTH>{t('admin.colName', 'Name')}</DenseTH>
+          <DenseTH>{t('admin.colRole', 'Role')}</DenseTH>
+          <DenseTH>{t('admin.colActive', 'Active')}</DenseTH>
+          <DenseTH>{t('admin.colActions', 'Actions')}</DenseTH>
         </DenseTableHead>
         <tbody>
           {d.users.list.map((u) => (
@@ -503,7 +505,7 @@ function UsersTab(props: {
                   disabled={u.id === currentUserId || actionLoading === u.id}
                   className="disabled:opacity-30"
                 >
-                  <StatusPill tone={u.is_active ? 'success' : 'neutral'} label={u.is_active ? 'Active' : 'Inactive'} />
+                  <StatusPill tone={u.is_active ? 'success' : 'neutral'} label={u.is_active ? t('admin.statusActive', 'Active') : t('admin.statusInactive', 'Inactive')} />
                 </button>
               </DenseTD>
               <DenseTD>
@@ -513,7 +515,7 @@ function UsersTab(props: {
                     disabled={actionLoading === u.id}
                     className="text-vos-xs text-vos-accent hover:underline"
                   >
-                    Impersonate
+                    {t('admin.impersonate', 'Impersonate')}
                   </button>
                   {u.id !== currentUserId && (
                     <button
@@ -521,7 +523,7 @@ function UsersTab(props: {
                       disabled={actionLoading === u.id}
                       className="text-vos-xs text-vos-danger hover:underline inline-flex items-center gap-1"
                     >
-                      <Trash2 size={11} /> Delete
+                      <Trash2 size={11} /> {t('admin.delete', 'Delete')}
                     </button>
                   )}
                 </div>
@@ -543,15 +545,16 @@ function OrgsTab({
   onDelete: (id: string, name: string) => void;
   actionLoading: string | null;
 }) {
+  const { t } = useTranslation();
   return (
-    <Section title={`All Organizations (${d.organizations.total})`}>
+    <Section title={t('admin.allOrganizations', 'All Organizations ({{total}})', { total: d.organizations.total })}>
       <DenseTable>
         <DenseTableHead>
-          <DenseTH>Name</DenseTH>
-          <DenseTH>Slug</DenseTH>
-          <DenseTH>Plan</DenseTH>
-          <DenseTH>Active</DenseTH>
-          <DenseTH>Actions</DenseTH>
+          <DenseTH>{t('admin.colName', 'Name')}</DenseTH>
+          <DenseTH>{t('admin.colSlug', 'Slug')}</DenseTH>
+          <DenseTH>{t('admin.colPlan', 'Plan')}</DenseTH>
+          <DenseTH>{t('admin.colActive', 'Active')}</DenseTH>
+          <DenseTH>{t('admin.colActions', 'Actions')}</DenseTH>
         </DenseTableHead>
         <tbody>
           {d.organizations.list.map((o) => (
@@ -571,7 +574,7 @@ function OrgsTab({
                 </select>
               </DenseTD>
               <DenseTD>
-                <StatusPill tone={o.is_active ? 'success' : 'neutral'} label={o.is_active ? 'Active' : 'Inactive'} />
+                <StatusPill tone={o.is_active ? 'success' : 'neutral'} label={o.is_active ? t('admin.statusActive', 'Active') : t('admin.statusInactive', 'Inactive')} />
               </DenseTD>
               <DenseTD>
                 <button
@@ -579,7 +582,7 @@ function OrgsTab({
                   disabled={actionLoading === o.id}
                   className="inline-flex items-center gap-1 text-vos-xs text-vos-danger hover:underline disabled:opacity-50"
                 >
-                  <Trash2 size={11} /> {actionLoading === o.id ? '…' : 'Delete'}
+                  <Trash2 size={11} /> {actionLoading === o.id ? '…' : t('admin.delete', 'Delete')}
                 </button>
               </DenseTD>
             </DenseTR>
@@ -592,24 +595,25 @@ function OrgsTab({
 
 // ─── Signups ───────────────────────────────────────────────────────────────
 function SignupsTab({ d }: { d: AdminOverview }) {
+  const { t } = useTranslation();
   const s = d.signups;
-  if (!s) return <Section title="Signups"><p className="text-vos-text-3 text-vos-sm">No signup data available.</p></Section>;
+  if (!s) return <Section title={t('admin.tabSignups', 'Signups')}><p className="text-vos-text-3 text-vos-sm">{t('admin.noSignupData', 'No signup data available.')}</p></Section>;
   return (
     <>
       <KeyValueGrid
         cols={3}
         items={[
-          { label: 'Last 24 hours', value: s.last_24h },
-          { label: 'Last 7 days', value: s.last_7d },
-          { label: 'Last 30 days', value: s.last_30d },
+          { label: t('admin.signupsLast24h', 'Last 24 hours'), value: s.last_24h },
+          { label: t('admin.signupsLast7d', 'Last 7 days'), value: s.last_7d },
+          { label: t('admin.signupsLast30d', 'Last 30 days'), value: s.last_30d },
         ]}
       />
-      <Section title="Recent Signups (last 14 days)">
+      <Section title={t('admin.recentSignups', 'Recent Signups (last 14 days)')}>
         <DenseTable>
           <DenseTableHead>
-            <DenseTH>Email</DenseTH>
-            <DenseTH>Name</DenseTH>
-            <DenseTH>Joined</DenseTH>
+            <DenseTH>{t('admin.colEmail', 'Email')}</DenseTH>
+            <DenseTH>{t('admin.colName', 'Name')}</DenseTH>
+            <DenseTH>{t('admin.colJoined', 'Joined')}</DenseTH>
           </DenseTableHead>
           <tbody>
             {s.recent.map((u) => (
@@ -620,7 +624,7 @@ function SignupsTab({ d }: { d: AdminOverview }) {
               </DenseTR>
             ))}
             {s.recent.length === 0 && (
-              <DenseTR><DenseTD className="text-vos-text-3">No signups in the last 14 days</DenseTD></DenseTR>
+              <DenseTR><DenseTD className="text-vos-text-3">{t('admin.noRecentSignups', 'No signups in the last 14 days')}</DenseTD></DenseTR>
             )}
           </tbody>
         </DenseTable>
@@ -631,30 +635,31 @@ function SignupsTab({ d }: { d: AdminOverview }) {
 
 // ─── Newsletter ────────────────────────────────────────────────────────────
 function NewsletterTab({ d }: { d: AdminOverview }) {
+  const { t } = useTranslation();
   const n = d.newsletter;
   return (
     <Section
-      title={`Newsletter Subscribers (${n?.total ?? 0})`}
-      description="Active subscribers will receive product updates and threat advisories."
+      title={t('admin.newsletterSubscribers', 'Newsletter Subscribers ({{total}})', { total: n?.total ?? 0 })}
+      description={t('admin.newsletterDescription', 'Active subscribers will receive product updates and threat advisories.')}
     >
       <DenseTable>
         <DenseTableHead>
-          <DenseTH>Email</DenseTH>
-          <DenseTH>Status</DenseTH>
-          <DenseTH>Subscribed</DenseTH>
+          <DenseTH>{t('admin.colEmail', 'Email')}</DenseTH>
+          <DenseTH>{t('admin.colStatus', 'Status')}</DenseTH>
+          <DenseTH>{t('admin.colSubscribed', 'Subscribed')}</DenseTH>
         </DenseTableHead>
         <tbody>
           {(n?.list ?? []).map((row) => (
             <DenseTR key={row.id}>
               <DenseTD className="font-vos-mono">{row.email}</DenseTD>
               <DenseTD>
-                <StatusPill tone={row.is_active ? 'success' : 'neutral'} label={row.is_active ? 'Active' : 'Unsubscribed'} />
+                <StatusPill tone={row.is_active ? 'success' : 'neutral'} label={row.is_active ? t('admin.statusActive', 'Active') : t('admin.statusUnsubscribed', 'Unsubscribed')} />
               </DenseTD>
               <DenseTD className="text-vos-text-3">{new Date(row.created_at).toLocaleString()}</DenseTD>
             </DenseTR>
           ))}
           {(n?.list ?? []).length === 0 && (
-            <DenseTR><DenseTD className="text-vos-text-3">No subscribers yet</DenseTD></DenseTR>
+            <DenseTR><DenseTD className="text-vos-text-3">{t('admin.noSubscribers', 'No subscribers yet')}</DenseTD></DenseTR>
           )}
         </tbody>
       </DenseTable>
@@ -664,6 +669,7 @@ function NewsletterTab({ d }: { d: AdminOverview }) {
 
 // ─── Revenue ───────────────────────────────────────────────────────────────
 function RevenueTab({ d }: { d: AdminOverview }) {
+  const { t } = useTranslation();
   const paying = d.organizations.total - (d.organizations.plans_distribution['free'] ?? 0);
   const arpu = paying > 0 ? Math.round(d.revenue.mrr / paying) : 0;
 
@@ -672,13 +678,13 @@ function RevenueTab({ d }: { d: AdminOverview }) {
       <KeyValueGrid
         cols={4}
         items={[
-          { label: 'MRR', value: `€${Math.round(d.revenue.mrr).toLocaleString()}` },
-          { label: 'ARR', value: `€${Math.round(d.revenue.arr).toLocaleString()}` },
-          { label: 'Paying Orgs', value: `${paying} / ${d.organizations.total}` },
-          { label: 'ARPU', value: `€${arpu}` },
+          { label: t('admin.kpiMRR', 'MRR'), value: `€${Math.round(d.revenue.mrr).toLocaleString()}` },
+          { label: t('admin.kpiARR', 'ARR'), value: `€${Math.round(d.revenue.arr).toLocaleString()}` },
+          { label: t('admin.payingOrgs', 'Paying Orgs'), value: `${paying} / ${d.organizations.total}` },
+          { label: t('admin.arpu', 'ARPU'), value: `€${arpu}` },
         ]}
       />
-      <Section title="Revenue by Plan">
+      <Section title={t('admin.revenueByPlan', 'Revenue by Plan')}>
         <div className="grid md:grid-cols-4 gap-vos-3">
           {(['free', 'starter', 'professional', 'enterprise'] as const).map((plan) => {
             const count = d.organizations.plans_distribution[plan] ?? 0;
@@ -687,19 +693,19 @@ function RevenueTab({ d }: { d: AdminOverview }) {
               <div key={plan} className="rounded-vos-md border border-vos-border-1 bg-vos-bg-elev-1 p-vos-4 text-center">
                 <div className="text-[10px] uppercase tracking-vos-wide text-vos-text-3">{plan}</div>
                 <div className="text-vos-2xl font-bold text-vos-text mt-1">€{(price * count).toLocaleString()}</div>
-                <div className="text-vos-xs text-vos-text-3 mt-1">{count} × €{price}/mo</div>
+                <div className="text-vos-xs text-vos-text-3 mt-1">{t('admin.monthlyRate', '{{count}} × €{{price}}/mo', { count, price })}</div>
               </div>
             );
           })}
         </div>
       </Section>
-      <Section title="Revenue Projections">
+      <Section title={t('admin.revenueProjections', 'Revenue Projections')}>
         <KeyValueGrid
           cols={3}
           items={[
-            { label: 'This Month', value: `€${Math.round(d.revenue.mrr).toLocaleString()}` },
-            { label: 'Quarterly (est.)', value: `€${Math.round(d.revenue.mrr * 3).toLocaleString()}` },
-            { label: 'Annual (est.)', value: `€${Math.round(d.revenue.arr).toLocaleString()}` },
+            { label: t('admin.revThisMonth', 'This Month'), value: `€${Math.round(d.revenue.mrr).toLocaleString()}` },
+            { label: t('admin.revQuarterly', 'Quarterly (est.)'), value: `€${Math.round(d.revenue.mrr * 3).toLocaleString()}` },
+            { label: t('admin.revAnnual', 'Annual (est.)'), value: `€${Math.round(d.revenue.arr).toLocaleString()}` },
           ]}
         />
       </Section>
@@ -709,16 +715,17 @@ function RevenueTab({ d }: { d: AdminOverview }) {
 
 // ─── Audit Log ─────────────────────────────────────────────────────────────
 function AuditTab({ d }: { d: AdminOverview }) {
+  const { t } = useTranslation();
   const rows = d.audit_log ?? [];
   return (
-    <Section title="Recent Audit Events" description="Last 25 platform-wide actions, freshest first.">
+    <Section title={t('admin.auditEventsTitle', 'Recent Audit Events')} description={t('admin.auditEventsDescription', 'Last 25 platform-wide actions, freshest first.')}>
       <DenseTable>
         <DenseTableHead>
-          <DenseTH>Severity</DenseTH>
-          <DenseTH>Action</DenseTH>
-          <DenseTH>Category</DenseTH>
-          <DenseTH>Status</DenseTH>
-          <DenseTH>When</DenseTH>
+          <DenseTH>{t('admin.colSeverity', 'Severity')}</DenseTH>
+          <DenseTH>{t('admin.colAction', 'Action')}</DenseTH>
+          <DenseTH>{t('admin.colCategory', 'Category')}</DenseTH>
+          <DenseTH>{t('admin.colStatus', 'Status')}</DenseTH>
+          <DenseTH>{t('admin.colWhen', 'When')}</DenseTH>
         </DenseTableHead>
         <tbody>
           {rows.map((row, i) => (
@@ -735,7 +742,7 @@ function AuditTab({ d }: { d: AdminOverview }) {
             </DenseTR>
           ))}
           {rows.length === 0 && (
-            <DenseTR><DenseTD className="text-vos-text-3">No audit events yet</DenseTD></DenseTR>
+            <DenseTR><DenseTD className="text-vos-text-3">{t('admin.noAuditEvents', 'No audit events yet')}</DenseTD></DenseTR>
           )}
         </tbody>
       </DenseTable>
@@ -745,6 +752,7 @@ function AuditTab({ d }: { d: AdminOverview }) {
 
 // ─── System Health ─────────────────────────────────────────────────────────
 function HealthTab({ d }: { d: AdminOverview }) {
+  const { t } = useTranslation();
   const items = [
     { title: 'Backend API', detail: 'Rust Axum', metric: 'Port 5001' },
     { title: 'PostgreSQL', detail: 'cybersec_pro database', metric: 'localhost:5432' },
@@ -774,7 +782,7 @@ function HealthTab({ d }: { d: AdminOverview }) {
               <h3 className="text-vos-sm font-semibold text-vos-text inline-flex items-center gap-2">
                 <ShieldCheck size={14} className="text-vos-success" /> {it.title}
               </h3>
-              <StatusPill tone="success" label="Operational" />
+              <StatusPill tone="success" label={t('admin.operational', 'Operational')} />
             </div>
             <p className="text-vos-xs text-vos-text-3">{it.detail}</p>
             <p className="text-vos-xs text-vos-text-3 mt-1">{it.metric}</p>
@@ -782,7 +790,7 @@ function HealthTab({ d }: { d: AdminOverview }) {
         ))}
       </div>
 
-      <Section title="Platform Services">
+      <Section title={t('admin.platformServices', 'Platform Services')}>
         <div className="space-y-1.5">
           {services.map((name) => (
             <div key={name} className="flex items-center justify-between px-vos-3 h-9 rounded-vos-md bg-vos-bg-elev-1 border border-vos-border-1">
@@ -795,12 +803,12 @@ function HealthTab({ d }: { d: AdminOverview }) {
         </div>
       </Section>
 
-      <Section title="Agent Status">
+      <Section title={t('admin.agentStatus', 'Agent Status')}>
         <KeyValueGrid
           cols={2}
           items={[
-            { label: 'Total Agents', value: d.agents.total },
-            { label: 'Online Now', value: d.agents.online },
+            { label: t('admin.statTotalAgents', 'Total Agents'), value: d.agents.total },
+            { label: t('admin.statOnlineNow', 'Online Now'), value: d.agents.online },
           ]}
         />
       </Section>
