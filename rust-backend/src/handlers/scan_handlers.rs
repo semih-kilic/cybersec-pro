@@ -420,6 +420,11 @@ mod tests {
         normalize_scan_engine_status, ScanEngineMetadata,
     };
     use serde_json::json;
+    use std::sync::Mutex;
+
+    /// Serialize tests that mutate the SCAN_ENGINE_URL env var so they don't
+    /// race against each other under the default multi-threaded test runner.
+    static ENV_GUARD: Mutex<()> = Mutex::new(());
 
     #[test]
     fn merge_scan_parameters_preserves_existing_fields() {
@@ -479,12 +484,14 @@ mod tests {
 
     #[test]
     fn configured_scan_engine_url_returns_none_when_env_unset() {
+        let _g = ENV_GUARD.lock().unwrap_or_else(|p| p.into_inner());
         std::env::remove_var("SCAN_ENGINE_URL");
         assert!(configured_scan_engine_url().is_none());
     }
 
     #[test]
     fn configured_scan_engine_url_returns_none_for_empty_string() {
+        let _g = ENV_GUARD.lock().unwrap_or_else(|p| p.into_inner());
         std::env::set_var("SCAN_ENGINE_URL", "");
         assert!(configured_scan_engine_url().is_none());
         std::env::remove_var("SCAN_ENGINE_URL");
@@ -492,6 +499,7 @@ mod tests {
 
     #[test]
     fn configured_scan_engine_url_trims_trailing_slash() {
+        let _g = ENV_GUARD.lock().unwrap_or_else(|p| p.into_inner());
         std::env::set_var("SCAN_ENGINE_URL", "http://scan-engine:5002/");
         let url = configured_scan_engine_url();
         assert_eq!(url.as_deref(), Some("http://scan-engine:5002"));
@@ -500,6 +508,7 @@ mod tests {
 
     #[test]
     fn configured_scan_engine_url_trims_multiple_trailing_slashes() {
+        let _g = ENV_GUARD.lock().unwrap_or_else(|p| p.into_inner());
         std::env::set_var("SCAN_ENGINE_URL", "http://scan-engine:5002///");
         let url = configured_scan_engine_url();
         assert_eq!(url.as_deref(), Some("http://scan-engine:5002"));
@@ -508,6 +517,7 @@ mod tests {
 
     #[test]
     fn configured_scan_engine_url_preserves_valid_url() {
+        let _g = ENV_GUARD.lock().unwrap_or_else(|p| p.into_inner());
         std::env::set_var("SCAN_ENGINE_URL", "http://scan-engine:5002");
         let url = configured_scan_engine_url();
         assert_eq!(url.as_deref(), Some("http://scan-engine:5002"));
@@ -516,6 +526,7 @@ mod tests {
 
     #[test]
     fn configured_scan_engine_url_trims_whitespace() {
+        let _g = ENV_GUARD.lock().unwrap_or_else(|p| p.into_inner());
         std::env::set_var("SCAN_ENGINE_URL", "  http://scan-engine:5002  ");
         let url = configured_scan_engine_url();
         assert_eq!(url.as_deref(), Some("http://scan-engine:5002"));
