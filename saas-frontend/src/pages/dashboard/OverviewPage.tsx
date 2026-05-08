@@ -48,8 +48,12 @@ export function OverviewPage() {
   const [showWelcomeTour, setShowWelcomeTour] = useState(false);
 
   useEffect(() => {
-    const tourCompleted = localStorage.getItem('cybersec_tour_completed');
-    if (!tourCompleted && user && !loading) setShowWelcomeTour(true);
+    if (!user || loading) return;
+    // Per-user key so other accounts on the same browser see the tour exactly once each.
+    const tourKey = `cybersec_tour_completed_${user.id}`;
+    const legacyKey = 'cybersec_tour_completed';
+    const tourCompleted = localStorage.getItem(tourKey) || localStorage.getItem(legacyKey);
+    if (!tourCompleted) setShowWelcomeTour(true);
   }, [user, loading]);
 
   useEffect(() => {
@@ -90,6 +94,7 @@ export function OverviewPage() {
         isOpen={showWelcomeTour}
         onClose={() => setShowWelcomeTour(false)}
         planType={currentPlan}
+        userId={user?.id}
       />
       <OnboardingModal
         isOpen={showOnboarding}

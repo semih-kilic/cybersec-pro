@@ -1,0 +1,82 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>CyberSec Pro — Documentation</title>
+  <link rel="icon" href="/icon-192.png" />
+  <style>
+    :root { color-scheme: dark; }
+    * { box-sizing: border-box; }
+    html, body { margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif; background: #0a0f1a; color: #e2e8f0; min-height: 100vh; }
+    .container { max-width: 960px; margin: 0 auto; padding: 48px 24px 80px; }
+    header { display: flex; align-items: center; gap: 16px; margin-bottom: 40px; padding-bottom: 24px; border-bottom: 1px solid #1f2937; }
+    .logo { width: 48px; height: 48px; border-radius: 12px; background: linear-gradient(135deg, #06b6d4, #2563eb); display: grid; place-items: center; font-weight: 800; font-size: 24px; color: white; }
+    h1 { margin: 0; font-size: 28px; }
+    .sub { color: #94a3b8; font-size: 14px; margin-top: 4px; }
+    nav { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 40px; }
+    nav a { display: block; padding: 20px; background: #111827; border: 1px solid #1f2937; border-radius: 12px; text-decoration: none; color: #e2e8f0; transition: border-color .15s, transform .15s; }
+    nav a:hover { border-color: #06b6d4; transform: translateY(-1px); }
+    nav strong { display: block; margin-bottom: 4px; color: #06b6d4; font-size: 15px; }
+    nav span { font-size: 13px; color: #94a3b8; }
+    h2 { margin-top: 40px; padding-bottom: 8px; border-bottom: 1px solid #1f2937; font-size: 20px; }
+    code, pre { font-family: "JetBrains Mono", Menlo, Consolas, monospace; }
+    code { background: #1f2937; padding: 2px 6px; border-radius: 4px; font-size: 13px; color: #67e8f9; }
+    pre { background: #0f172a; border: 1px solid #1f2937; padding: 16px; border-radius: 8px; overflow: auto; font-size: 13px; line-height: 1.55; }
+    p, li { line-height: 1.65; color: #cbd5e1; font-size: 15px; }
+    a { color: #06b6d4; }
+    .pill { display: inline-block; background: #082f49; color: #67e8f9; padding: 2px 10px; border-radius: 999px; font-size: 12px; margin-left: 8px; vertical-align: middle; }
+    .cta { display: inline-block; margin-top: 16px; padding: 10px 20px; background: linear-gradient(135deg, #06b6d4, #2563eb); color: white; text-decoration: none; border-radius: 8px; font-weight: 600; font-size: 14px; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <div class="logo">CS</div>
+      <div>
+        <h1>CyberSec Pro Documentation</h1>
+        <div class="sub">Comprehensive guides for the platform, API, and agents</div>
+      </div>
+    </header>
+
+    <nav>
+      <a href="/dashboard/learning"><strong>📚 Learning Center</strong><span>Tutorials, walkthroughs, best practices</span></a>
+      <a href="#api"><strong>⚡ API Reference</strong><span>REST &amp; WebSocket endpoints</span></a>
+      <a href="/dashboard/agents"><strong>🖥️ Agents</strong><span>Install &amp; manage Kali agents</span></a>
+      <a href="/dashboard/tools"><strong>🛠️ Tools Catalog</strong><span>Browse 50+ security tools</span></a>
+    </nav>
+
+    <h2 id="getting-started">Getting Started</h2>
+    <p>Welcome to CyberSec Pro — a unified platform for vulnerability scanning, agent orchestration, and reporting. To begin:</p>
+    <ol>
+      <li>Install at least one agent (see <a href="/dashboard/agents">Agents</a>).</li>
+      <li>Pick a tool from the <a href="/dashboard/tools">Tools</a> catalog.</li>
+      <li>Run a scan and review the results in <a href="/dashboard/reports">Reports</a>.</li>
+    </ol>
+    <a class="cta" href="/dashboard">Open the dashboard →</a>
+
+    <h2 id="api">API Reference <span class="pill">v1</span></h2>
+    <p>All authenticated endpoints require a Bearer token. Generate one in <a href="/dashboard/settings?tab=api">Settings → API Keys</a>.</p>
+    <pre>curl -H "Authorization: Bearer YOUR_API_KEY" \
+     https://api.cybersec.pro/api/v1/scans</pre>
+
+    <h3>Common endpoints</h3>
+    <ul>
+      <li><code>GET /api/v1/tools</code> — list available tools</li>
+      <li><code>POST /api/v1/scans</code> — start a scan</li>
+      <li><code>GET /api/v1/scans/:id</code> — fetch scan status &amp; results</li>
+      <li><code>GET /api/v1/agents</code> — list registered agents</li>
+      <li><code>GET /api/v1/reports</code> — list generated reports</li>
+    </ul>
+
+    <h3>Rate limits</h3>
+    <p>Default: <strong>60 requests / minute</strong> per key. Contact support for higher limits.</p>
+
+    <h2 id="agents">Agents</h2>
+    <p>Agents are lightweight Rust processes that execute scans on Kali Linux machines. Install via the one-line script shown in <a href="/dashboard/agents">Agents</a>, then connect over SSH or WebSocket. See in-app installation instructions for the latest commands.</p>
+
+    <h2 id="support">Support</h2>
+    <p>Need help? Reach out via <a href="/dashboard/feedback">in-app feedback</a> or email <a href="mailto:support@cybersec.pro">support@cybersec.pro</a>.</p>
+  </div>
+</body>
+</html>

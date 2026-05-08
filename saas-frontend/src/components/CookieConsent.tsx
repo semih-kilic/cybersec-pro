@@ -52,8 +52,8 @@ export function CookieConsentBanner() {
   if (!visible) return null;
 
   return (
-    <div className="fixed bottom-0 left-0 right-0 z-[100] p-4 animate-slide-up">
-      <div className="max-w-4xl mx-auto bg-gray-900 rounded-2xl border border-gray-700 shadow-2xl shadow-black/50 overflow-hidden">
+    <div className="fixed bottom-0 left-0 right-0 z-40 p-4 animate-slide-up pointer-events-none">
+      <div className="max-w-4xl mx-auto bg-gray-900 rounded-2xl border border-gray-700 shadow-2xl shadow-black/50 overflow-hidden pointer-events-auto">
         {/* Main Banner */}
         <div className="p-6">
           <div className="flex items-start gap-4">

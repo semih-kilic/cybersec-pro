@@ -6,6 +6,7 @@ interface WelcomeTourProps {
   isOpen: boolean;
   onClose: () => void;
   planType: string;
+  userId?: string | number;
 }
 
 function buildTourSteps(toolsTotal: number) {
@@ -48,7 +49,7 @@ function buildTourSteps(toolsTotal: number) {
   ];
 }
 
-export default function WelcomeTour({ isOpen, onClose, planType }: WelcomeTourProps) {
+export default function WelcomeTour({ isOpen, onClose, planType, userId }: WelcomeTourProps) {
   const [currentStep, setCurrentStep] = useState(0);
   const { data: toolCounts } = useToolCounts();
   const toolsTotal = toolCounts?.total ?? 0;
@@ -65,10 +66,20 @@ export default function WelcomeTour({ isOpen, onClose, planType }: WelcomeTourPr
   const step = tourSteps[currentStep];
   const isLastStep = currentStep === tourSteps.length - 1;
 
+  const markComplete = () => {
+    try {
+      const key = userId ? `cybersec_tour_completed_${userId}` : 'cybersec_tour_completed';
+      localStorage.setItem(key, 'true');
+      // Also set legacy key for backward compat with older OverviewPage checks.
+      localStorage.setItem('cybersec_tour_completed', 'true');
+    } catch {
+      // localStorage may be unavailable (private mode); ignore
+    }
+  };
+
   const handleNext = () => {
     if (isLastStep) {
-      // Save that user has seen the tour
-      localStorage.setItem('cybersec_tour_completed', 'true');
+      markComplete();
       onClose();
     } else {
       setCurrentStep(currentStep + 1);
@@ -76,7 +87,7 @@ export default function WelcomeTour({ isOpen, onClose, planType }: WelcomeTourPr
   };
 
   const handleSkip = () => {
-    localStorage.setItem('cybersec_tour_completed', 'true');
+    markComplete();
     onClose();
   };
 

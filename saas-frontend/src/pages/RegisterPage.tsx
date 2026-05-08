@@ -384,11 +384,15 @@ export function RegisterPage() {
             </div>
 
             {/* Terms */}
-            <label className="flex items-start gap-3 cursor-pointer">
+            <label htmlFor="acceptTerms" className="flex items-start gap-3 cursor-pointer">
               <input
+                id="acceptTerms"
+                name="acceptTerms"
                 type="checkbox"
+                required
                 checked={agreedTerms}
                 onChange={(e) => setAgreedTerms(e.target.checked)}
+                aria-required="true"
                 className="mt-1 w-4 h-4 rounded border-gray-700 bg-gray-900 text-blue-500 focus:ring-blue-500 focus:ring-offset-0"
               />
               <span className="text-gray-400 text-xs leading-relaxed">

@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useSearchParams } from 'react-router-dom';
 import {
@@ -78,6 +78,15 @@ export default function SettingsPage() {
     setSearchParams({ tab });
     setMessage(null);
   }, [setSearchParams]);
+
+  // Keep activeTab in sync when URL ?tab= changes (e.g. external link or back/forward).
+  useEffect(() => {
+    if (tabParam && validIds.includes(tabParam) && tabParam !== activeTab) {
+      setActiveTab(tabParam as TabId);
+      setMessage(null);
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [tabParam]);
 
   const tabProps = { loading, setLoading, setMessage, user, organization, userPlan };
 

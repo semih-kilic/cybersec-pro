@@ -537,7 +537,10 @@ export function ScanExecutionPage() {
     } as Record<Severity, number>;
   })();
   const severityTotal = SEVERITY_KEYS.reduce((sum, k) => sum + (severityCounts[k] || 0), 0);
-  const securityScore = typeof businessResults?.summary?.score === 'number' ? businessResults.summary.score : null;
+  const rawSecurityScore = businessResults?.summary?.score;
+  const securityScore = (typeof rawSecurityScore === 'number' && Number.isFinite(rawSecurityScore))
+    ? Math.max(0, Math.min(100, rawSecurityScore))
+    : null;
   const onlineAgents = agents.filter((a) => a.status === 'online');
 
   const isPrivateTarget =

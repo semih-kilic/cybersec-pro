@@ -434,8 +434,10 @@ export function RiskScore({
   /** if true, lower score = better (e.g. risk score). default: higher = better */
   invert?: boolean;
 }) {
-  const effectiveScore = score ?? value ?? 0;
-  const pct = Math.max(0, Math.min(1, effectiveScore / outOf));
+  const rawScore = score ?? value;
+  const effectiveScore = (typeof rawScore === 'number' && Number.isFinite(rawScore)) ? rawScore : 0;
+  const safeOutOf = (typeof outOf === 'number' && Number.isFinite(outOf) && outOf > 0) ? outOf : 100;
+  const pct = Math.max(0, Math.min(1, effectiveScore / safeOutOf));
   const tone =
     invert
       ? pct >= 0.66 ? 'critical' : pct >= 0.33 ? 'medium' : 'success'

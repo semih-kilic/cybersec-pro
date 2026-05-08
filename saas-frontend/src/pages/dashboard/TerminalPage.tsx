@@ -207,9 +207,14 @@ export function TerminalPage() {
 
     // Check if connected for remote commands
     if (!isConnected) {
+      const noConnReason = agents.length === 0
+        ? `⚠️ No agents available.\nYou need to install at least one Kali agent before using the terminal.\n→ Go to Agents (/dashboard/agents) and click "+ Add Agent" for setup instructions.`
+        : !selectedAgent
+          ? `⚠️ No agent selected.\nPick an agent from the dropdown above. Online agents are auto-selected when available.`
+          : `⚠️ Not connected to "${selectedAgent.name}".\nClick "Connect" (or type "connect") to establish the SSH session.\nType "agents" to see all available agents.`;
       setHistory(prev => [...prev, { 
         type: 'error', 
-        content: `⚠️ Not connected to any agent.\nSelect an agent from the dropdown and click "Connect" to establish SSH connection.\nType "agents" to see available agents.`
+        content: noConnReason
       }]);
       return;
     }
@@ -217,7 +222,7 @@ export function TerminalPage() {
     if (!selectedAgent) {
       setHistory(prev => [...prev, { 
         type: 'error', 
-        content: '⚠️ No agent selected. Select an agent from the dropdown above.'
+        content: '⚠️ No agent selected. Pick one from the dropdown above, or visit /dashboard/agents to register a new agent.'
       }]);
       return;
     }
