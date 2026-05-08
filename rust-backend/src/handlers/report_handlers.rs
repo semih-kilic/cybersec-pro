@@ -1255,6 +1255,8 @@ async fn load_org_logo_data_uri(db: &sqlx::PgPool, org_id: &str) -> Option<Strin
     .fetch_optional(db)
     .await
     .ok()??;
+
+    // logo_url is like /uploads/logos/{org_id}.png
     let disk_path = format!("/home/cybersec/cybersec-pro{}", logo_url);
     let bytes = tokio::fs::read(&disk_path).await.ok()?;
 
@@ -1271,6 +1273,28 @@ async fn load_org_logo_data_uri(db: &sqlx::PgPool, org_id: &str) -> Option<Strin
         };
         Some(format!("data:{};base64,{}", mime, base64::Engine::encode(&base64::engine::general_purpose::STANDARD, &bytes)))
     }
+}
+
+/// Read live tool inventory counts from the DB so the methodology section in
+/// generated reports always reflects the actual catalog rather than hard-coded numbers.
+/// Falls back to (0, 0) if the query fails — the template will simply render zero,
+/// which is preferable to inventing numbers.
+async fn load_tool_inventory_counts(db: &sqlx::PgPool) -> (i64, i64) {
+    let tools: i64 = sqlx::query_scalar(
+        "SELECT COUNT(*) FROM tools WHERE is_active = TRUE"
+    )
+    .fetch_one(db)
+    .await
+    .unwrap_or(0);
+
+    let categories: i64 = sqlx::query_scalar(
+        "SELECT COUNT(DISTINCT category) FROM tools WHERE is_active = TRUE AND category IS NOT NULL AND category <> ''"
+    )
+    .fetch_one(db)
+    .await
+    .unwrap_or(0);
+
+    (tools, categories)
 }
 
 #[cfg(test)]
