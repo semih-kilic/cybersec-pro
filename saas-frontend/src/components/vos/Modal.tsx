@@ -79,11 +79,13 @@ export function ModalHeader({
   description,
   onClose,
   className,
+  children,
 }: {
   title?: ReactNode;
   description?: ReactNode;
   onClose?: () => void;
   className?: string;
+  children?: ReactNode;
 }) {
   return (
     <header
@@ -93,7 +95,7 @@ export function ModalHeader({
       )}
     >
       <div className="flex flex-col gap-vos-1 min-w-0">
-        {title && <h2 className="vos-h3">{title}</h2>}
+        {(title || children) && <h2 className="vos-h3">{title ?? children}</h2>}
         {description && <p className="text-vos-sm text-vos-text-3">{description}</p>}
       </div>
       {onClose && (

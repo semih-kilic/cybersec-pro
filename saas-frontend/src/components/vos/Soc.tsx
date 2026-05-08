@@ -339,18 +339,26 @@ export function SeverityHeatmap({
   showLabels = true,
   size = 'md',
   className,
+  total: totalProp,
+  compact,
 }: {
   counts: Partial<Record<Severity, number>>;
   showLabels?: boolean;
   size?: 'sm' | 'md' | 'lg';
   className?: string;
+  /** Optional explicit total; defaults to sum of counts */
+  total?: number;
+  /** Hide labels for tight spaces */
+  compact?: boolean;
 }) {
-  const total =
+  const computedTotal =
     (counts.critical ?? 0) +
     (counts.high ?? 0) +
     (counts.medium ?? 0) +
     (counts.low ?? 0) +
     (counts.info ?? 0);
+  const total = totalProp ?? computedTotal;
+  if (compact) showLabels = false;
   const heightClass = size === 'sm' ? 'h-1' : size === 'lg' ? 'h-3' : 'h-2';
   const order: Severity[] = ['critical', 'high', 'medium', 'low', 'info'];
   const colorBg: Record<Severity, string> = {
@@ -408,6 +416,7 @@ export function SeverityHeatmap({
 
 export function RiskScore({
   score,
+  value,
   outOf = 100,
   size = 80,
   strokeWidth = 6,
@@ -415,7 +424,9 @@ export function RiskScore({
   invert,
 }: {
   /** raw score */
-  score: number;
+  score?: number;
+  /** alias for score */
+  value?: number;
   outOf?: number;
   size?: number;
   strokeWidth?: number;
@@ -423,7 +434,8 @@ export function RiskScore({
   /** if true, lower score = better (e.g. risk score). default: higher = better */
   invert?: boolean;
 }) {
-  const pct = Math.max(0, Math.min(1, score / outOf));
+  const effectiveScore = score ?? value ?? 0;
+  const pct = Math.max(0, Math.min(1, effectiveScore / outOf));
   const tone =
     invert
       ? pct >= 0.66 ? 'critical' : pct >= 0.33 ? 'medium' : 'success'
@@ -464,7 +476,7 @@ export function RiskScore({
       </svg>
       <div className="absolute inset-0 flex flex-col items-center justify-center pt-[2px]">
         <span className="text-vos-xl font-semibold tabular-nums tracking-vos-tight text-vos-text leading-none">
-          {Math.round(score)}
+          {Math.round(effectiveScore)}
         </span>
         {label && <span className="text-[10px] text-vos-text-3 mt-0.5">{label}</span>}
       </div>
@@ -503,9 +515,19 @@ export function DenseTableHead({ children }: { children: ReactNode }) {
   );
 }
 
-export function DenseTH({ children, className }: { children: ReactNode; className?: string }) {
+export function DenseTH({
+  children,
+  className,
+  align,
+}: {
+  children: ReactNode;
+  className?: string;
+  align?: 'left' | 'right' | 'center';
+}) {
+  const alignClass =
+    align === 'right' ? 'text-right' : align === 'center' ? 'text-center' : 'text-left';
   return (
-    <th className={cn('px-vos-4 py-vos-2 text-left font-semibold whitespace-nowrap', className)}>
+    <th className={cn('px-vos-4 py-vos-2 font-semibold whitespace-nowrap', alignClass, className)}>
       {children}
     </th>
   );
@@ -542,17 +564,21 @@ export function DenseTD({
   className,
   onClick,
   colSpan,
+  align,
 }: {
   children: ReactNode;
   className?: string;
   onClick?: (e: React.MouseEvent<HTMLTableCellElement>) => void;
   colSpan?: number;
+  align?: 'left' | 'right' | 'center';
 }) {
+  const alignClass =
+    align === 'right' ? 'text-right' : align === 'center' ? 'text-center' : '';
   return (
     <td
       onClick={onClick}
       colSpan={colSpan}
-      className={cn('px-vos-4 py-vos-2.5 text-vos-text-2 align-middle', className)}
+      className={cn('px-vos-4 py-vos-2.5 text-vos-text-2 align-middle', alignClass, className)}
     >
       {children}
     </td>
@@ -608,7 +634,7 @@ export function KeyValueGrid({
   cols = 2,
   className,
 }: {
-  items: Array<{ label: ReactNode; value: ReactNode }>;
+  items: Array<{ label: ReactNode; value: ReactNode; mono?: boolean }>;
   cols?: 1 | 2 | 3 | 4;
   className?: string;
 }) {
@@ -624,7 +650,7 @@ export function KeyValueGrid({
           <dt className="text-[10px] uppercase tracking-vos-wide font-semibold text-vos-text-3">
             {it.label}
           </dt>
-          <dd className="text-vos-sm text-vos-text break-words">{it.value}</dd>
+          <dd className={cn('text-vos-sm text-vos-text break-words', it.mono && 'font-mono')}>{it.value}</dd>
         </div>
       ))}
     </dl>

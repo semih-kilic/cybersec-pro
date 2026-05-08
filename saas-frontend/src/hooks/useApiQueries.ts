@@ -697,12 +697,13 @@ export function useReportTemplates() {
 
   return useQuery({
     queryKey: queryKeys.reports.templates(),
-    queryFn: () => authFetch<{ templates: { id: string; name: string; description: string; icon?: string; sections?: string[]; formats?: string[] }[] }>('/api/v1/reports/templates', token),
+    queryFn: () => authFetch<{ templates: { id: string; name: string; description: string; icon?: string; sections?: string[]; formats?: string[]; frameworks?: string[] }[] }>('/api/v1/reports/templates', token),
     select: (data) => (data.templates || []).map(t => ({
       ...t,
       icon: t.icon || templateDefaults[t.id]?.icon || '📄',
       sections: t.sections || templateDefaults[t.id]?.sections || ['Summary'],
       formats: t.formats || templateDefaults[t.id]?.formats || ['html', 'pdf'],
+      frameworks: t.frameworks ?? [],
     })),
     ...CACHE_TIMES.reports,
     enabled: !!token,
