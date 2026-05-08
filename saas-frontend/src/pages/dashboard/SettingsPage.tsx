@@ -48,7 +48,7 @@ const BASE_TABS = [
 const ADMIN_TAB = {
   id: 'purple-profile',
   labelKey: 'settings.tabs.purpleProfile',
-  fallback: 'Purple team',
+  fallback: 'Purple Team Profile',
   icon: Crown as IconType,
   description: 'Operator profile',
 } as const;

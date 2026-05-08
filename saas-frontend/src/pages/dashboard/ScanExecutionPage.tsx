@@ -681,10 +681,25 @@ export function ScanExecutionPage() {
                 <KeyValueGrid
                   cols={1}
                   items={[
-                    { label: 'Mode', value: <StatusPill tone={executionInfo.mode === 'agent' ? 'info' : executionInfo.mode === 'delegated' ? 'accent' : 'neutral'}>{executionInfo.mode}</StatusPill> },
+                    {
+                      label: 'Mode',
+                      value: (
+                        <StatusPill tone={executionInfo.mode === 'agent' ? 'info' : executionInfo.mode === 'delegated' ? 'accent' : 'neutral'}>
+                          {executionInfo.mode === 'delegated'
+                            ? '⚙️ Scan Engine'
+                            : executionInfo.mode === 'agent'
+                            ? '🛰️ Agent'
+                            : '🖥️ Running on Server'}
+                        </StatusPill>
+                      ),
+                    },
                     ...(executionInfo.agentName ? [{ label: 'Agent', value: `${executionInfo.agentName} (${executionInfo.agentIp || ''})` }] : []),
                     ...(executionInfo.dispatchMethod ? [{ label: 'Transport', value: executionInfo.dispatchMethod === 'websocket' ? 'WebSocket' : 'HTTP polling' }] : []),
-                    ...(executionInfo.engineName ? [{ label: 'Engine', value: executionInfo.engineName }] : []),
+                    ...(executionInfo.mode === 'delegated'
+                      ? [{ label: 'Engine', value: executionInfo.engineName || 'rust-scan-engine' }]
+                      : executionInfo.engineName
+                      ? [{ label: 'Engine', value: executionInfo.engineName }]
+                      : []),
                   ]}
                 />
               )}
