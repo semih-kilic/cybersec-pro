@@ -134,7 +134,7 @@ const POPULAR_QUICK_TOOLS = [
   { id: 'wireshark', name: 'Wireshark', icon: Wifi, desc: 'Packet Analyzer' },
 ];
 
-function CategoryIcon({ name, size = 16 }: { name: string; size?: number }) {
+function CategoryIcon({ name, size = 16 }: { name: string; size?: number | string }) {
   const Icon = categoryIcon[name] || Wrench;
   return <Icon size={size} />;
 }
