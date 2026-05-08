@@ -243,7 +243,7 @@ function Item({
   children: React.ReactNode;
   to?: string;
   href?: string;
-  icon?: React.ComponentType<{ size?: number; className?: string }>;
+  icon?: React.ComponentType<{ size?: number | string; className?: string }>;
   external?: boolean;
   onClick?: () => void;
   accent?: boolean;
