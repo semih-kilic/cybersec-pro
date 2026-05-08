@@ -171,8 +171,8 @@ export default function AgentJobsPage() {
     <PageTransition>
       <div className="flex flex-col gap-vos-8 pb-vos-12">
         <PageHeader
-          eyebrow="Reverse-tunnel telemetry"
-          title="Agent Jobs"
+          eyebrow={t('agent_jobs.eyebrow', 'Reverse-tunnel telemetry')}
+          title={t('agent_jobs.title', 'Agent Jobs')}
           description={t('agent_jobs.description', 'Recent commands queued to your reverse-tunnel agents. Auto-refreshes every 6 s.') as string}
           icon={<Activity className="size-6" />}
           actions={
@@ -186,7 +186,7 @@ export default function AgentJobsPage() {
                     : 'bg-vos-bg-elev-2 border-vos-border-1 text-vos-text-2 hover:text-vos-text-1')
                 }
               >
-                {autoRefresh ? 'Auto-refresh on' : 'Auto-refresh off'}
+                {autoRefresh ? t('agent_jobs.autoRefreshOn', 'Auto-refresh on') : t('agent_jobs.autoRefreshOff', 'Auto-refresh off')}
               </button>
               <button
                 onClick={load}
@@ -194,7 +194,7 @@ export default function AgentJobsPage() {
                 className="px-vos-3 py-vos-2 rounded-vos-md bg-vos-bg-elev-2 border border-vos-border-1 text-vos-sm font-medium text-vos-text-2 hover:text-vos-text-1 transition-colors flex items-center gap-vos-2 disabled:opacity-50"
               >
                 <RefreshCw className={'size-4 ' + (loading ? 'animate-spin' : '')} />
-                Refresh
+                {t('agent_jobs.refresh', 'Refresh')}
               </button>
             </div>
           }
@@ -246,7 +246,7 @@ export default function AgentJobsPage() {
               type="text"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              placeholder="Search by agent, tool, command, or job id…"
+              placeholder={t('agent_jobs.searchPlaceholder', 'Search by agent, tool, command, or job id…')}
               className="w-full pl-vos-9 pr-vos-3 py-vos-2 bg-vos-bg-elev-1 border border-vos-border-1 rounded-vos-md text-vos-sm text-vos-text-1 placeholder:text-vos-text-3 focus:outline-none focus:border-vos-accent"
             />
           </div>
@@ -256,13 +256,13 @@ export default function AgentJobsPage() {
               className="px-vos-3 py-vos-2 rounded-vos-md border border-vos-border-1 text-vos-sm text-vos-text-2 hover:text-vos-text-1 flex items-center gap-vos-2"
             >
               <Filter className="size-4" />
-              Clear filter ({statusFilter})
+              {t('agent_jobs.clearFilter', 'Clear filter')} ({statusFilter})
             </button>
           )}
         </div>
 
         {/* Table */}
-        <Section title="Recent jobs" description={data ? `Showing ${filteredJobs.length} of ${data.jobs.length} loaded` : undefined}>
+        <Section title={t('agent_jobs.recentJobs', 'Recent jobs')} description={data ? t('agent_jobs.showingCount', 'Showing {{shown}} of {{total}} loaded', { shown: filteredJobs.length, total: data.jobs.length }) : undefined}>
           {err && (
             <div className="p-vos-4 rounded-vos-md bg-red-500/10 border border-red-500/30 text-red-300 text-vos-sm">
               {err}
@@ -271,12 +271,12 @@ export default function AgentJobsPage() {
           {loading && !data && (
             <div className="flex items-center justify-center p-vos-8 text-vos-text-3">
               <Loader2 className="size-5 animate-spin mr-vos-2" />
-              Loading…
+              {t('agent_jobs.loading', 'Loading…')}
             </div>
           )}
           {data && filteredJobs.length === 0 && (
             <div className="p-vos-8 text-center text-vos-text-3 text-vos-sm">
-              No agent jobs match your filters yet.
+              {t('agent_jobs.noJobsMatch', 'No agent jobs match your filters yet.')}
             </div>
           )}
           {data && filteredJobs.length > 0 && (
@@ -284,12 +284,12 @@ export default function AgentJobsPage() {
               <table className="w-full text-vos-sm">
                 <thead>
                   <tr className="text-left text-vos-xs uppercase tracking-vos-wide text-vos-text-3 border-b border-vos-border-1">
-                    <th className="px-vos-3 py-vos-2 font-medium">Status</th>
-                    <th className="px-vos-3 py-vos-2 font-medium">Agent</th>
-                    <th className="px-vos-3 py-vos-2 font-medium">Tool / Command</th>
-                    <th className="px-vos-3 py-vos-2 font-medium text-right">Duration</th>
-                    <th className="px-vos-3 py-vos-2 font-medium text-right">Output</th>
-                    <th className="px-vos-3 py-vos-2 font-medium text-right">Created</th>
+                    <th className="px-vos-3 py-vos-2 font-medium">{t('agent_jobs.colStatus', 'Status')}</th>
+                    <th className="px-vos-3 py-vos-2 font-medium">{t('agent_jobs.colAgent', 'Agent')}</th>
+                    <th className="px-vos-3 py-vos-2 font-medium">{t('agent_jobs.colToolCommand', 'Tool / Command')}</th>
+                    <th className="px-vos-3 py-vos-2 font-medium text-right">{t('agent_jobs.colDuration', 'Duration')}</th>
+                    <th className="px-vos-3 py-vos-2 font-medium text-right">{t('agent_jobs.colOutput', 'Output')}</th>
+                    <th className="px-vos-3 py-vos-2 font-medium text-right">{t('agent_jobs.colCreated', 'Created')}</th>
                   </tr>
                 </thead>
                 <tbody>

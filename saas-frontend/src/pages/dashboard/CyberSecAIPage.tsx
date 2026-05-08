@@ -21,7 +21,6 @@ import {
   Sparkles,
   Trash2,
   Info,
-  ExternalLink,
 } from 'lucide-react';
 import {
   PageHeader,
@@ -138,32 +137,28 @@ export default function CyberSecAIPage() {
           </span>
           <div className="space-y-vos-3">
             <div>
-              <h3 className="text-vos-md font-semibold text-vos-text">What does CyberSec Pro AI do?</h3>
+              <h3 className="text-vos-md font-semibold text-vos-text">{t('cybersecAI.aboutTitle', 'What does CyberSec Pro AI do?')}</h3>
               <p className="text-vos-sm text-vos-text-2 mt-1 leading-relaxed">
-                Point it at a URL, IP, or Git repository and a fleet of LLM-driven agents will
-                <strong className="text-vos-text"> reconnoiter, fingerprint, attack, and verify </strong>
-                vulnerabilities for you — then return a prioritised report with reproducible proof-of-concepts.
-                Powered by the open-source <a href="https://github.com/usestrix/strix" target="_blank" rel="noopener noreferrer" className="text-vos-accent hover:underline inline-flex items-center gap-0.5">Strix engine <ExternalLink size={11} /></a>,
-                hardened with our own scanners and LLM safeguards.
+                {t('cybersecAI.aboutBody', 'Point it at a URL, IP, or Git repository and a fleet of LLM-driven agents will reconnoiter, fingerprint, attack, and verify vulnerabilities for you — then return a prioritised report with reproducible proof-of-concepts. Powered by the open-source Strix engine, hardened with our own scanners and LLM safeguards.')}
               </p>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-vos-3 text-vos-xs">
               <div className="rounded-vos-md border border-vos-border-1 bg-vos-bg-1/40 p-vos-3">
-                <div className="flex items-center gap-1.5 text-vos-accent font-semibold mb-1"><Search size={12}/> 1. Recon</div>
-                <p className="text-vos-text-3 leading-snug">Crawls the target, maps endpoints, fingerprints stacks, finds exposed assets.</p>
+                <div className="flex items-center gap-1.5 text-vos-accent font-semibold mb-1"><Search size={12}/> {t('cybersecAI.step1', '1. Recon')}</div>
+                <p className="text-vos-text-3 leading-snug">{t('cybersecAI.step1Desc', 'Crawls the target, maps endpoints, fingerprints stacks, finds exposed assets.')}</p>
               </div>
               <div className="rounded-vos-md border border-vos-border-1 bg-vos-bg-1/40 p-vos-3">
-                <div className="flex items-center gap-1.5 text-vos-warning font-semibold mb-1"><Bug size={12}/> 2. Discover &amp; Exploit</div>
-                <p className="text-vos-text-3 leading-snug">Runs OWASP-aligned attacks (SQLi, XSS, SSRF, IDOR, auth flaws…) and chains primitives.</p>
+                <div className="flex items-center gap-1.5 text-vos-warning font-semibold mb-1"><Bug size={12}/> {t('cybersecAI.step2', '2. Discover & Exploit')}</div>
+                <p className="text-vos-text-3 leading-snug">{t('cybersecAI.step2Desc', 'Runs OWASP-aligned attacks (SQLi, XSS, SSRF, IDOR, auth flaws…) and chains primitives.')}</p>
               </div>
               <div className="rounded-vos-md border border-vos-border-1 bg-vos-bg-1/40 p-vos-3">
-                <div className="flex items-center gap-1.5 text-vos-success font-semibold mb-1"><ShieldCheck size={12}/> 3. Verify</div>
-                <p className="text-vos-text-3 leading-snug">Reproduces each finding end-to-end so you only see exploitable, non-false-positive issues.</p>
+                <div className="flex items-center gap-1.5 text-vos-success font-semibold mb-1"><ShieldCheck size={12}/> {t('cybersecAI.step3', '3. Verify')}</div>
+                <p className="text-vos-text-3 leading-snug">{t('cybersecAI.step3Desc', 'Reproduces each finding end-to-end so you only see exploitable, non-false-positive issues.')}</p>
               </div>
             </div>
             <p className="text-vos-xs text-vos-text-3">
               <AlertTriangle size={11} className="inline mr-1 -mt-0.5 text-vos-warning" />
-              Only test systems you are authorised to test. All actions are logged and attributable to your account.
+              {t('cybersecAI.authNote', 'Only test systems you are authorised to test. All actions are logged and attributable to your account.')}
             </p>
           </div>
         </div>
@@ -172,25 +167,25 @@ export default function CyberSecAIPage() {
       {/* KPI bar */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-vos-4">
         <StatCard
-          title="Total Jobs"
+          title={t('cybersecAI.totalJobs', 'Total Jobs')}
           value={jobs.length}
           icon={<Sparkles size={16} />}
           variant="cyan"
         />
         <StatCard
-          title="Active Now"
+          title={t('cybersecAI.activeNow', 'Active Now')}
           value={running}
           icon={<Activity size={16} />}
           variant="cyan"
         />
         <StatCard
-          title="Findings"
+          title={t('cybersecAI.findings', 'Findings')}
           value={totalFindings}
           icon={<Bug size={16} />}
           variant="amber"
         />
         <StatCard
-          title="PoC Verified"
+          title={t('cybersecAI.pocVerified', 'PoC Verified')}
           value={totalVerified}
           icon={<ShieldCheck size={16} />}
           variant="red"
@@ -199,8 +194,8 @@ export default function CyberSecAIPage() {
 
       {/* Jobs */}
       <Section
-        title="Pentest Jobs"
-        description="Click any row to inspect agent output and verified PoCs."
+        title={t('cybersecAI.pentestJobs', 'Pentest Jobs')}
+        description={t('cybersecAI.pentestJobsDesc', 'Click any row to inspect agent output and verified PoCs.')}
         bodyClassName="p-0"
       >
         {isLoading ? (
@@ -210,20 +205,20 @@ export default function CyberSecAIPage() {
         ) : jobs.length === 0 ? (
           <div className="py-vos-8">
             <EmptyState
-              title="No jobs yet"
-              description="Launch your first autonomous pentest to discover vulnerabilities automatically."
+              title={t('cybersecAI.noJobs', 'No jobs yet')}
+              description={t('cybersecAI.noJobsDesc', 'Launch your first autonomous pentest to discover vulnerabilities automatically.')}
             />
           </div>
         ) : (
           <DenseTable className="border-0 rounded-none">
             <DenseTableHead>
-              <DenseTH>Status</DenseTH>
-              <DenseTH>Target</DenseTH>
-              <DenseTH>Type</DenseTH>
-              <DenseTH className="text-right">Findings</DenseTH>
-              <DenseTH className="text-right">Verified</DenseTH>
-              <DenseTH>Created</DenseTH>
-              <DenseTH className="text-right">Actions</DenseTH>
+              <DenseTH>{t('cybersecAI.colStatus', 'Status')}</DenseTH>
+              <DenseTH>{t('cybersecAI.colTarget', 'Target')}</DenseTH>
+              <DenseTH>{t('cybersecAI.colType', 'Type')}</DenseTH>
+              <DenseTH className="text-right">{t('cybersecAI.colFindings', 'Findings')}</DenseTH>
+              <DenseTH className="text-right">{t('cybersecAI.colVerified', 'Verified')}</DenseTH>
+              <DenseTH>{t('cybersecAI.colCreated', 'Created')}</DenseTH>
+              <DenseTH className="text-right">{t('cybersecAI.colActions', 'Actions')}</DenseTH>
             </DenseTableHead>
             <tbody>
               {jobs.map((job) => (
@@ -489,12 +484,13 @@ const SEVERITY_TONE: Record<string, 'danger' | 'warning' | 'info' | 'neutral' | 
 };
 
 function JobDetail({ jobId }: { jobId: string }) {
+  const { t } = useTranslation();
   const { data: rawData, isLoading } = useCyberSecAIJob(jobId);
   const cancelJob = useCancelCyberSecAIJob();
   if (isLoading)
     return (
       <div className="flex items-center gap-2 text-vos-text-3 text-vos-sm">
-        <Loader2 size={14} className="animate-spin" /> Loading details…
+        <Loader2 size={14} className="animate-spin" /> {t('cybersecAI.loadingDetails', 'Loading details…')}
       </div>
     );
   if (!rawData) return null;
@@ -588,7 +584,7 @@ function JobDetail({ jobId }: { jobId: string }) {
                   {f.evidence && <div className="text-vos-xs text-vos-text-3 font-vos-mono truncate">{f.evidence}</div>}
                 </div>
                 {f.verified && (
-                  <span className="text-vos-xs text-vos-success">verified</span>
+                  <span className="text-vos-xs text-vos-success">{t('cybersecAI.verified', 'verified')}</span>
                 )}
               </div>
             ))}

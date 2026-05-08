@@ -258,12 +258,13 @@ function TelemetryPanel({
   loading: boolean;
   error?: string;
 }) {
+  const { t } = useTranslation();
   if (loading && !telemetry) {
     return (
       <Card elevation={2} className="rounded-vos-xl p-vos-8">
         <div className="flex items-center justify-center gap-vos-3 text-vos-text-3">
           <Spinner size="md" />
-          <span className="text-vos-sm">Loading telemetry…</span>
+          <span className="text-vos-sm">{t('godMode.loadingTelemetry', 'Loading telemetry…')}</span>
         </div>
       </Card>
     );
@@ -273,8 +274,8 @@ function TelemetryPanel({
       <Card elevation={2} className="rounded-vos-xl p-vos-6">
         <EmptyState
           icon={<AlertTriangle size={20} />}
-          title="Telemetry unavailable"
-          description={error || 'No data returned from /api/v1/superadmin/telemetry'}
+          title={t('godMode.telemetryUnavailable', 'Telemetry unavailable')}
+          description={error || t('godMode.telemetryNoData', 'No data returned from /api/v1/superadmin/telemetry')}
         />
       </Card>
     );
@@ -286,16 +287,16 @@ function TelemetryPanel({
       <Card elevation={2} className="rounded-vos-xl">
         <div className="px-vos-6 py-vos-5 border-b border-vos-border-1 flex items-center gap-vos-2">
           <Server size={16} className="text-vos-text-3" />
-          <h2 className="text-vos-md font-semibold text-vos-text">Host</h2>
+          <h2 className="text-vos-md font-semibold text-vos-text">{t('godMode.host', 'Host')}</h2>
         </div>
         <div className="p-vos-6 grid grid-cols-2 gap-vos-3 text-vos-sm">
-          <KV label="Hostname" value={telemetry.host.name ?? '—'} />
-          <KV label="OS" value={telemetry.host.os ?? '—'} />
-          <KV label="Kernel" value={telemetry.host.kernel ?? '—'} />
-          <KV label="Uptime" value={fmtUptime(telemetry.host.uptime_secs)} />
-          <KV label="Processes" value={String(telemetry.process.count)} />
+          <KV label={t('godMode.hostname', 'Hostname')} value={telemetry.host.name ?? '—'} />
+          <KV label={t('godMode.os', 'OS')} value={telemetry.host.os ?? '—'} />
+          <KV label={t('godMode.kernel', 'Kernel')} value={telemetry.host.kernel ?? '—'} />
+          <KV label={t('godMode.uptime', 'Uptime')} value={fmtUptime(telemetry.host.uptime_secs)} />
+          <KV label={t('godMode.processes', 'Processes')} value={String(telemetry.process.count)} />
           <KV
-            label="Load avg (1/5/15)"
+            label={t('godMode.loadAvg', 'Load avg (1/5/15)')}
             value={`${telemetry.cpu.load_avg_1.toFixed(2)} / ${telemetry.cpu.load_avg_5.toFixed(2)} / ${telemetry.cpu.load_avg_15.toFixed(2)}`}
           />
         </div>
@@ -306,10 +307,10 @@ function TelemetryPanel({
         <div className="px-vos-6 py-vos-5 border-b border-vos-border-1 flex items-center justify-between">
           <div className="flex items-center gap-vos-2">
             <Cpu size={16} className="text-vos-text-3" />
-            <h2 className="text-vos-md font-semibold text-vos-text">CPU per-core</h2>
+            <h2 className="text-vos-md font-semibold text-vos-text">{t('godMode.cpuPerCore', 'CPU per-core')}</h2>
           </div>
           <Badge tone="default" size="sm">
-            {fmtPct(telemetry.cpu.usage_pct)} avg
+            {t('godMode.avg', '{{value}} avg', { value: fmtPct(telemetry.cpu.usage_pct) })}
           </Badge>
         </div>
         <div className="p-vos-6 grid grid-cols-2 gap-x-vos-4 gap-y-vos-2 max-h-72 overflow-y-auto">
@@ -323,7 +324,7 @@ function TelemetryPanel({
       <Card elevation={2} className="rounded-vos-xl">
         <div className="px-vos-6 py-vos-5 border-b border-vos-border-1 flex items-center gap-vos-2">
           <Activity size={16} className="text-vos-text-3" />
-          <h2 className="text-vos-md font-semibold text-vos-text">Memory</h2>
+          <h2 className="text-vos-md font-semibold text-vos-text">{t('godMode.memory', 'Memory')}</h2>
         </div>
         <div className="p-vos-6 space-y-vos-3 text-vos-sm">
           <MeterRow
@@ -342,7 +343,7 @@ function TelemetryPanel({
               }
             />
           )}
-          <KV label="Available" value={fmtBytes(telemetry.memory.available_bytes)} />
+          <KV label={t('godMode.available', 'Available')} value={fmtBytes(telemetry.memory.available_bytes)} />
         </div>
       </Card>
 
@@ -350,11 +351,11 @@ function TelemetryPanel({
       <Card elevation={2} className="rounded-vos-xl">
         <div className="px-vos-6 py-vos-5 border-b border-vos-border-1 flex items-center gap-vos-2">
           <HardDrive size={16} className="text-vos-text-3" />
-          <h2 className="text-vos-md font-semibold text-vos-text">Disks</h2>
+          <h2 className="text-vos-md font-semibold text-vos-text">{t('godMode.disks', 'Disks')}</h2>
         </div>
         <div className="p-vos-6 space-y-vos-3 text-vos-sm max-h-80 overflow-y-auto">
           {telemetry.disk.devices.length === 0 && (
-            <p className="text-vos-text-3 text-vos-xs">No disks reported.</p>
+            <p className="text-vos-text-3 text-vos-xs">{t('godMode.noDisks', 'No disks reported.')}</p>
           )}
           {telemetry.disk.devices.map((d, i) => (
             <div key={i} className="border border-vos-border-1 rounded-vos-md p-vos-3">
@@ -378,17 +379,17 @@ function TelemetryPanel({
       <Card elevation={2} className="rounded-vos-xl lg:col-span-2">
         <div className="px-vos-6 py-vos-5 border-b border-vos-border-1 flex items-center gap-vos-2">
           <Network size={16} className="text-vos-text-3" />
-          <h2 className="text-vos-md font-semibold text-vos-text">Network interfaces</h2>
+          <h2 className="text-vos-md font-semibold text-vos-text">{t('godMode.networkInterfaces', 'Network interfaces')}</h2>
         </div>
         <div className="p-vos-6 overflow-x-auto">
           <table className="w-full text-vos-sm">
             <thead>
               <tr className="text-vos-xs uppercase tracking-vos-wide text-vos-text-3 border-b border-vos-border-1">
-                <th className="text-left py-vos-2 pr-vos-4">Name</th>
-                <th className="text-right py-vos-2 pr-vos-4">RX (window)</th>
-                <th className="text-right py-vos-2 pr-vos-4">TX (window)</th>
-                <th className="text-right py-vos-2 pr-vos-4">RX total</th>
-                <th className="text-right py-vos-2">TX total</th>
+                <th className="text-left py-vos-2 pr-vos-4">{t('godMode.colName', 'Name')}</th>
+                <th className="text-right py-vos-2 pr-vos-4">{t('godMode.rxWindow', 'RX (window)')}</th>
+                <th className="text-right py-vos-2 pr-vos-4">{t('godMode.txWindow', 'TX (window)')}</th>
+                <th className="text-right py-vos-2 pr-vos-4">{t('godMode.rxTotal', 'RX total')}</th>
+                <th className="text-right py-vos-2">{t('godMode.txTotal', 'TX total')}</th>
               </tr>
             </thead>
             <tbody>
@@ -451,6 +452,7 @@ function CoreBar({ name, pct, freq }: { name: string; pct: number; freq: number 
 
 // ---------- DB panel ----------
 function DbPanel() {
+  const { t } = useTranslation();
   const { data, isLoading, error, refetch, isFetching } = useSuperadminDbStats();
 
   if (isLoading && !data) {
@@ -458,7 +460,7 @@ function DbPanel() {
       <Card elevation={2} className="rounded-vos-xl p-vos-8">
         <div className="flex items-center justify-center gap-vos-3 text-vos-text-3">
           <Spinner size="md" />
-          <span className="text-vos-sm">Loading database stats…</span>
+          <span className="text-vos-sm">{t('godMode.loadingDb', 'Loading database stats…')}</span>
         </div>
       </Card>
     );
@@ -469,8 +471,8 @@ function DbPanel() {
       <Card elevation={2} className="rounded-vos-xl p-vos-6">
         <EmptyState
           icon={<AlertTriangle size={20} />}
-          title="DB stats unavailable"
-          description={error?.message || 'No data returned'}
+          title={t('godMode.dbUnavailable', 'DB stats unavailable')}
+          description={error?.message || t('godMode.noDataReturned', 'No data returned')}
         />
       </Card>
     );
@@ -480,28 +482,28 @@ function DbPanel() {
     <div className="grid grid-cols-1 lg:grid-cols-2 gap-vos-6">
       <Card elevation={2} className="rounded-vos-xl">
         <div className="px-vos-6 py-vos-5 border-b border-vos-border-1 flex items-center justify-between">
-          <h2 className="text-vos-md font-semibold text-vos-text">Database overview</h2>
+          <h2 className="text-vos-md font-semibold text-vos-text">{t('godMode.dbOverview', 'Database overview')}</h2>
           <Button variant="ghost" size="sm" leftIcon={<RefreshCw size={12} />} onClick={() => refetch()} loading={isFetching}>
-            Refresh
+            {t('common.refresh', 'Refresh')}
           </Button>
         </div>
         <div className="p-vos-6 grid grid-cols-2 gap-vos-3 text-vos-sm">
-          <KV label="Database" value={data.database.name} />
-          <KV label="Size" value={fmtBytes(data.database.size_bytes)} />
-          <KV label="Pool size" value={String(data.pool.size)} />
-          <KV label="Pool idle" value={String(data.pool.idle)} />
-          <KV label="Active connections" value={String(data.active_connections)} />
-          <KV label="Active queries" value={String(data.active_queries.length)} />
+          <KV label={t('godMode.dbName', 'Database')} value={data.database.name} />
+          <KV label={t('godMode.dbSize', 'Size')} value={fmtBytes(data.database.size_bytes)} />
+          <KV label={t('godMode.poolSize', 'Pool size')} value={String(data.pool.size)} />
+          <KV label={t('godMode.poolIdle', 'Pool idle')} value={String(data.pool.idle)} />
+          <KV label={t('godMode.activeConnections', 'Active connections')} value={String(data.active_connections)} />
+          <KV label={t('godMode.activeQueries', 'Active queries')} value={String(data.active_queries.length)} />
         </div>
       </Card>
 
       <Card elevation={2} className="rounded-vos-xl">
         <div className="px-vos-6 py-vos-5 border-b border-vos-border-1">
-          <h2 className="text-vos-md font-semibold text-vos-text">Active queries</h2>
+          <h2 className="text-vos-md font-semibold text-vos-text">{t('godMode.activeQueries', 'Active queries')}</h2>
         </div>
         <div className="p-vos-6 max-h-96 overflow-y-auto space-y-vos-3 text-vos-sm">
           {data.active_queries.length === 0 && (
-            <p className="text-vos-text-3 text-vos-xs">No active queries.</p>
+            <p className="text-vos-text-3 text-vos-xs">{t('godMode.noActiveQueries', 'No active queries.')}</p>
           )}
           {data.active_queries.map((q) => (
             <div key={q.pid} className="border border-vos-border-1 rounded-vos-md p-vos-3 text-vos-xs">
@@ -522,16 +524,16 @@ function DbPanel() {
 
       <Card elevation={2} className="rounded-vos-xl lg:col-span-2">
         <div className="px-vos-6 py-vos-5 border-b border-vos-border-1">
-          <h2 className="text-vos-md font-semibold text-vos-text">Top tables (by size)</h2>
+          <h2 className="text-vos-md font-semibold text-vos-text">{t('godMode.topTables', 'Top tables (by size)')}</h2>
         </div>
         <div className="p-vos-6 overflow-x-auto">
           <table className="w-full text-vos-sm">
             <thead>
               <tr className="text-vos-xs uppercase tracking-vos-wide text-vos-text-3 border-b border-vos-border-1">
-                <th className="text-left py-vos-2 pr-vos-4">Table</th>
-                <th className="text-right py-vos-2 pr-vos-4">Rows</th>
-                <th className="text-right py-vos-2 pr-vos-4">Size</th>
-                <th className="text-right py-vos-2">Index size</th>
+                <th className="text-left py-vos-2 pr-vos-4">{t('godMode.colTable', 'Table')}</th>
+                <th className="text-right py-vos-2 pr-vos-4">{t('godMode.colRows', 'Rows')}</th>
+                <th className="text-right py-vos-2 pr-vos-4">{t('godMode.colSize', 'Size')}</th>
+                <th className="text-right py-vos-2">{t('godMode.colIndexSize', 'Index size')}</th>
               </tr>
             </thead>
             <tbody>
@@ -555,6 +557,7 @@ function DbPanel() {
 
 // ---------- Logs panel ----------
 function LogsPanel() {
+  const { t } = useTranslation();
   const [unit, setUnit] = useState('cybersec-saas.service');
   const [lines, setLines] = useState(300);
   const { data, isLoading, error, refetch, isFetching } = useSuperadminLogs(unit, lines);
@@ -579,16 +582,16 @@ function LogsPanel() {
             onChange={(e) => setLines(Number(e.target.value))}
             className="bg-vos-glass-2 border border-vos-border-1 text-vos-text rounded-vos-md text-vos-sm px-vos-3 py-vos-2"
           >
-            <option value={100}>100 lines</option>
-            <option value={300}>300 lines</option>
-            <option value={1000}>1000 lines</option>
-            <option value={2000}>2000 lines</option>
+            <option value={100}>{t('godMode.linesN', '{{n}} lines', { n: 100 })}</option>
+            <option value={300}>{t('godMode.linesN', '{{n}} lines', { n: 300 })}</option>
+            <option value={1000}>{t('godMode.linesN', '{{n}} lines', { n: 1000 })}</option>
+            <option value={2000}>{t('godMode.linesN', '{{n}} lines', { n: 2000 })}</option>
           </select>
           <Button variant="ghost" size="sm" leftIcon={<RefreshCw size={12} />} onClick={() => refetch()} loading={isFetching}>
-            Refresh
+            {t('common.refresh', 'Refresh')}
           </Button>
         </div>
-        <span className="text-vos-xs text-vos-text-3">Auto-refresh every 5s</span>
+        <span className="text-vos-xs text-vos-text-3">{t('godMode.autoRefresh', 'Auto-refresh every 5s')}</span>
       </div>
       <div className="p-vos-4">
         {isLoading && !data && (
@@ -601,7 +604,7 @@ function LogsPanel() {
         )}
         {data && (
           <pre className="bg-vos-bg-1 border border-vos-border-1 rounded-vos-md p-vos-4 text-vos-xs font-mono leading-relaxed text-vos-text-2 whitespace-pre-wrap max-h-[28rem] overflow-y-auto">
-            {data.output || '(no output)'}
+            {data.output || t('godMode.noOutput', '(no output)')}
           </pre>
         )}
       </div>
@@ -611,6 +614,7 @@ function LogsPanel() {
 
 // ---------- Feature flags panel ----------
 function FeatureFlagsPanel() {
+  const { t } = useTranslation();
   const { data, isLoading, error, refetch, isFetching } = useFeatureFlags();
   const upsert = useUpsertFeatureFlag();
   const [showCreate, setShowCreate] = useState(false);
@@ -623,17 +627,17 @@ function FeatureFlagsPanel() {
     <Card elevation={2} className="rounded-vos-xl">
       <div className="px-vos-6 py-vos-5 border-b border-vos-border-1 flex items-center justify-between flex-wrap gap-vos-3">
         <div>
-          <h2 className="text-vos-md font-semibold text-vos-text">Feature flags</h2>
+          <h2 className="text-vos-md font-semibold text-vos-text">{t('godMode.featureFlags', 'Feature flags')}</h2>
           <p className="text-vos-xs text-vos-text-3 mt-0.5">
-            Toggle experimental features and platform kill switches. All changes are audited.
+            {t('godMode.featureFlagsHint', 'Toggle experimental features and platform kill switches. All changes are audited.')}
           </p>
         </div>
         <div className="flex items-center gap-vos-2">
           <Button variant="ghost" size="sm" leftIcon={<RefreshCw size={12} />} onClick={() => refetch()} loading={isFetching}>
-            Refresh
+            {t('common.refresh', 'Refresh')}
           </Button>
           <Button variant="primary" size="sm" leftIcon={<Plus size={12} />} onClick={() => setShowCreate(true)}>
-            New flag
+            {t('godMode.newFlag', 'New flag')}
           </Button>
         </div>
       </div>
@@ -647,8 +651,8 @@ function FeatureFlagsPanel() {
         {flags.length === 0 && !isLoading && (
           <EmptyState
             icon={<ToggleLeft size={20} />}
-            title="No feature flags yet"
-            description='Click "New flag" to create the first one.'
+            title={t('godMode.noFlags', 'No feature flags yet')}
+            description={t('godMode.noFlagsDesc', 'Click "New flag" to create the first one.')}
           />
         )}
         <div className="divide-y divide-vos-border-1">
@@ -667,12 +671,12 @@ function FeatureFlagsPanel() {
 
       {/* Create flag modal */}
       <Modal open={showCreate} onClose={() => setShowCreate(false)} size="md">
-        <ModalHeader title="New feature flag" onClose={() => setShowCreate(false)} />
+        <ModalHeader title={t('godMode.newFlagTitle', 'New feature flag')} onClose={() => setShowCreate(false)} />
         <ModalBody>
           <div className="space-y-vos-4">
             <div>
               <label className="text-vos-xs uppercase tracking-vos-wide text-vos-text-3 block mb-1.5">
-                Key
+                {t('godMode.key', 'Key')}
               </label>
               <Input
                 value={newKey}
@@ -683,20 +687,20 @@ function FeatureFlagsPanel() {
             </div>
             <div>
               <label className="text-vos-xs uppercase tracking-vos-wide text-vos-text-3 block mb-1.5">
-                Description
+                {t('common.description', 'Description')}
               </label>
               <Textarea
                 value={newDesc}
                 onChange={(e) => setNewDesc(e.target.value)}
                 rows={2}
-                placeholder="What does this flag control?"
+                placeholder={t('godMode.flagDescPlaceholder', 'What does this flag control?')}
               />
             </div>
           </div>
         </ModalBody>
         <ModalFooter>
           <Button variant="ghost" onClick={() => setShowCreate(false)}>
-            Cancel
+            {t('common.cancel', 'Cancel')}
           </Button>
           <Button
             variant="primary"
@@ -709,7 +713,7 @@ function FeatureFlagsPanel() {
               setShowCreate(false);
             }}
           >
-            Create (disabled)
+            {t('godMode.createDisabled', 'Create (disabled)')}
           </Button>
         </ModalFooter>
       </Modal>
@@ -726,6 +730,7 @@ function FeatureFlagRow({
   onToggle: (next: boolean) => void;
   busy: boolean;
 }) {
+  const { t } = useTranslation();
   return (
     <div className="flex items-start justify-between gap-vos-4 py-vos-4">
       <div className="min-w-0">
@@ -734,20 +739,20 @@ function FeatureFlagRow({
           {flag.enabled ? (
             <Badge tone="success" size="sm">
               <CheckCircle2 size={11} className="mr-1" />
-              Enabled
+              {t('godMode.enabled', 'Enabled')}
             </Badge>
           ) : (
-            <Badge tone="default" size="sm">Disabled</Badge>
+            <Badge tone="default" size="sm">{t('godMode.disabled', 'Disabled')}</Badge>
           )}
           {flag.key === 'platform_kill_switch' && (
-            <Badge tone="danger" size="sm">Kill switch</Badge>
+            <Badge tone="danger" size="sm">{t('godMode.killSwitchBadge', 'Kill switch')}</Badge>
           )}
         </div>
         {flag.description && (
           <p className="text-vos-xs text-vos-text-3 mt-1 max-w-xl">{flag.description}</p>
         )}
         <p className="text-vos-xs text-vos-text-3 mt-1 font-mono">
-          updated {flag.updated_at}
+          {t('godMode.updatedAt', 'updated {{at}}', { at: flag.updated_at })}
         </p>
       </div>
       <div className="shrink-0 flex items-center gap-vos-3">
@@ -768,6 +773,7 @@ function KillSwitchModal({
   onClose: () => void;
   currentlyEngaged: boolean;
 }) {
+  const { t } = useTranslation();
   const [reason, setReason] = useState('');
   const [confirmText, setConfirmText] = useState('');
   const toggle = useToggleKillSwitch();
@@ -777,7 +783,7 @@ function KillSwitchModal({
   return (
     <Modal open={open} onClose={onClose} size="md">
       <ModalHeader
-        title={targetState ? 'Engage platform kill switch' : 'Release platform kill switch'}
+        title={targetState ? t('godMode.killEngageTitle', 'Engage platform kill switch') : t('godMode.killReleaseTitle', 'Release platform kill switch')}
         onClose={onClose}
       />
       <ModalBody>
@@ -786,31 +792,31 @@ function KillSwitchModal({
             <AlertTriangle size={18} className="text-vos-danger shrink-0 mt-0.5" />
             <p className="text-vos-text-2">
               {targetState
-                ? 'Engaging the kill switch will block non-superadmin requests across the entire platform. All running scans, agents, and AI workers will refuse new work. This action is logged to the audit trail.'
-                : 'Releasing the kill switch will restore normal platform operation. This action is logged to the audit trail.'}
+                ? t('godMode.killEngageWarn', 'Engaging the kill switch will block non-superadmin requests across the entire platform. All running scans, agents, and AI workers will refuse new work. This action is logged to the audit trail.')
+                : t('godMode.killReleaseWarn', 'Releasing the kill switch will restore normal platform operation. This action is logged to the audit trail.')}
             </p>
           </div>
           <div>
             <label className="text-vos-xs uppercase tracking-vos-wide text-vos-text-3 block mb-1.5">
-              Reason {targetState && <span className="text-vos-danger">(required)</span>}
+              {t('godMode.reason', 'Reason')} {targetState && <span className="text-vos-danger">{t('godMode.required', '(required)')}</span>}
             </label>
             <Textarea
               value={reason}
               onChange={(e) => setReason(e.target.value)}
               rows={3}
-              placeholder={targetState ? 'e.g. Security incident, suspected breach…' : 'e.g. Incident resolved'}
+              placeholder={targetState ? t('godMode.reasonPlaceholderEngage', 'e.g. Security incident, suspected breach…') : t('godMode.reasonPlaceholderRelease', 'e.g. Incident resolved')}
             />
           </div>
           <div>
             <label className="text-vos-xs uppercase tracking-vos-wide text-vos-text-3 block mb-1.5">
-              Type <span className="font-mono text-vos-danger">{requiredConfirmation}</span> to confirm
+              {t('godMode.typeToConfirmPrefix', 'Type')} <span className="font-mono text-vos-danger">{requiredConfirmation}</span> {t('godMode.typeToConfirmSuffix', 'to confirm')}
             </label>
             <Input value={confirmText} onChange={(e) => setConfirmText(e.target.value)} />
           </div>
         </div>
       </ModalBody>
       <ModalFooter>
-        <Button variant="ghost" onClick={onClose}>Cancel</Button>
+        <Button variant="ghost" onClick={onClose}>{t('common.cancel', 'Cancel')}</Button>
         <Button
           variant="danger"
           loading={toggle.isPending}
@@ -822,7 +828,7 @@ function KillSwitchModal({
             onClose();
           }}
         >
-          {targetState ? 'Engage kill switch' : 'Release kill switch'}
+          {targetState ? t('godMode.killSwitch', 'Engage kill switch') : t('godMode.killSwitchRelease', 'Release kill switch')}
         </Button>
       </ModalFooter>
     </Modal>

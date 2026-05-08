@@ -430,6 +430,7 @@ const RT_DOWNLOADS: Record<string, { label: string; url: string; install: string
 };
 
 function ReverseTunnelPanel({ platform, compact }: { platform: string; compact?: boolean }) {
+  const { t } = useTranslation();
   const key = (platform || 'linux').toLowerCase();
   const dl = RT_DOWNLOADS[key] || RT_DOWNLOADS.linux;
   // Fetch a short-lived enrollment JWT from the backend (HS256, 24h, scoped to org).
@@ -484,7 +485,7 @@ function ReverseTunnelPanel({ platform, compact }: { platform: string; compact?:
     <div className={`rounded-vos-md border border-vos-border-1 bg-vos-bg-elev-3 p-vos-3 space-y-vos-2 ${compact ? '' : ''}`}>
       <div className="flex items-center justify-between">
         <div className="text-vos-xs font-semibold text-vos-text-2 uppercase tracking-vos-wide">
-          Reverse-tunnel agent — {dl.label}
+          {t('agents.reverseTunnelAgent', 'Reverse-tunnel agent')} — {dl.label}
         </div>
         <a
           href={dl.url}
@@ -492,24 +493,24 @@ function ReverseTunnelPanel({ platform, compact }: { platform: string; compact?:
           rel="noopener noreferrer"
           className="inline-flex items-center gap-1 text-[11px] text-vos-accent hover:underline"
         >
-          <Download size={12} /> Direct download
+          <Download size={12} /> {t('agents.directDownload', 'Direct download')}
         </a>
       </div>
 
       <div>
         <label className="text-[10px] uppercase tracking-vos-wide text-vos-text-3">
-          One-time enrollment token (expires {expiresLabel})
+          {t('agents.enrollmentToken', 'One-time enrollment token (expires {{expires}})', { expires: expiresLabel })}
         </label>
         <div className="mt-1 flex items-stretch gap-1">
           <code className="flex-1 truncate rounded-vos-sm bg-vos-bg-elev-4 px-2 py-1.5 text-[11px] text-vos-text font-mono">
-            {loading ? 'Issuing token…' : token}
+            {loading ? t('agents.issuingToken', 'Issuing token…') : token}
           </code>
           <button
             type="button"
             onClick={() => copy(token)}
             disabled={loading || !token}
             className="inline-flex items-center gap-1 rounded-vos-sm bg-vos-bg-elev-4 px-2 text-[11px] text-vos-text-2 hover:text-vos-text disabled:opacity-50"
-            title="Copy token"
+            title={t('agents.copyToken', 'Copy token')}
           >
             <Copy size={12} />
           </button>
@@ -518,7 +519,7 @@ function ReverseTunnelPanel({ platform, compact }: { platform: string; compact?:
             onClick={fetchToken}
             disabled={loading}
             className="inline-flex items-center gap-1 rounded-vos-sm bg-vos-bg-elev-4 px-2 text-[11px] text-vos-text-2 hover:text-vos-text disabled:opacity-50"
-            title="Regenerate"
+            title={t('agents.regenerate', 'Regenerate')}
           >
             <RefreshCw size={12} />
           </button>
@@ -527,7 +528,7 @@ function ReverseTunnelPanel({ platform, compact }: { platform: string; compact?:
 
       <div>
         <label className="text-[10px] uppercase tracking-vos-wide text-vos-text-3">
-          Install command
+          {t('agents.installCommand', 'Install command')}
         </label>
         <div className="mt-1 flex items-stretch gap-1">
           <code className="flex-1 overflow-x-auto rounded-vos-sm bg-vos-bg-elev-4 px-2 py-1.5 text-[11px] text-vos-text font-mono whitespace-pre">
@@ -537,7 +538,7 @@ function ReverseTunnelPanel({ platform, compact }: { platform: string; compact?:
             type="button"
             onClick={() => copy(installCmd)}
             className="inline-flex items-center gap-1 rounded-vos-sm bg-vos-bg-elev-4 px-2 text-[11px] text-vos-text-2 hover:text-vos-text"
-            title="Copy"
+            title={t('agents.copy', 'Copy')}
           >
             <Copy size={12} />
           </button>
@@ -545,10 +546,7 @@ function ReverseTunnelPanel({ platform, compact }: { platform: string; compact?:
       </div>
 
       <p className="text-[11px] text-vos-text-3 leading-relaxed">
-        🔒 The agent dials our hub over TLS 1.3, authenticates with this token, and tunnels
-        scan jobs back through the same connection. No inbound firewall rule is required and
-        the token expires automatically. Credentials you supply per scan are never stored on
-        our side.
+        {t('agents.reverseTunnelHint', '🔒 The agent dials our hub over TLS 1.3, authenticates with this token, and tunnels scan jobs back through the same connection. No inbound firewall rule is required and the token expires automatically. Credentials you supply per scan are never stored on our side.')}
       </p>
     </div>
   );
@@ -709,7 +707,7 @@ function AddDeviceWizard({
             >
               <WizardInput
                 label={t('agents.labelDeviceName', 'Device Name')}
-                placeholder="e.g. Laptop behind NAT"
+                placeholder={t('agents.placeholderLaptopBehindNAT', 'e.g. Laptop behind NAT')}
                 value={form.name}
                 onChange={(v) => updateForm('name', v)}
               />
@@ -731,7 +729,7 @@ function AddDeviceWizard({
             >
               <WizardInput
                 label={t('agents.labelDeviceName', 'Device Name')}
-                placeholder="e.g. Production Server"
+                placeholder={t('agents.placeholderProductionServer', 'e.g. Production Server')}
                 value={form.name}
                 onChange={(v) => updateForm('name', v)}
               />
@@ -758,7 +756,7 @@ function AddDeviceWizard({
               />
               <WizardInput
                 label={t('agents.labelLocationOptional', 'Location (optional)')}
-                placeholder="e.g. Office HQ, DC-1, Cloud-EU"
+                placeholder={t('agents.placeholderLocationExample', 'e.g. Office HQ, DC-1, Cloud-EU')}
                 value={form.location}
                 onChange={(v) => updateForm('location', v)}
               />
@@ -1032,7 +1030,7 @@ function EditDeviceModal({
       <div className="px-vos-5 py-vos-4 space-y-vos-3 max-h-[60vh] overflow-y-auto">
         <WizardInput
           label={t('agents.labelDeviceName', 'Device Name')}
-          placeholder="e.g. Production Server"
+          placeholder={t('agents.placeholderProductionServer', 'e.g. Production Server')}
           value={form.name}
           onChange={(v) => updateForm('name', v)}
         />
@@ -1067,7 +1065,7 @@ function EditDeviceModal({
         />
         <WizardInput
           label={t('agents.labelNewPassword', 'New Password (leave blank to keep)')}
-          placeholder="leave blank to keep current"
+          placeholder={t('agents.placeholderLeaveBlank', 'leave blank to keep current')}
           value={form.ssh_password}
           onChange={(v) => updateForm('ssh_password', v)}
           type="password"
@@ -1078,7 +1076,7 @@ function EditDeviceModal({
         />
         <WizardInput
           label={t('agents.labelLocation', 'Location')}
-          placeholder="e.g. Office HQ, DC-1"
+          placeholder={t('agents.placeholderLocationShort', 'e.g. Office HQ, DC-1')}
           value={form.location}
           onChange={(v) => updateForm('location', v)}
         />
