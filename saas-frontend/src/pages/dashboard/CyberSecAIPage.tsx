@@ -5,6 +5,7 @@
  * Same business logic & data hooks as before — pure visual rebuild.
  */
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   Bot,
@@ -66,6 +67,7 @@ const STATUS_TONE: Record<string, 'warning' | 'info' | 'success' | 'danger' | 'n
 };
 
 export default function CyberSecAIPage() {
+  const { t } = useTranslation();
   const { data, isLoading } = useCyberSecAIJobs();
   const createJob = useCreateCyberSecAIJob();
   const deleteJob = useDeleteCyberSecAIJob();
@@ -114,16 +116,16 @@ export default function CyberSecAIPage() {
   return (
     <div className="p-vos-8 space-y-vos-8 max-w-7xl mx-auto">
       <PageHeader
-        eyebrow="Autonomous"
+        eyebrow={t('cybersecAI.eyebrow')}
         icon={<Bot size={22} />}
-        title="CyberSec Pro AI"
-        description="Autonomous AI-powered penetration testing, vulnerability discovery, and proof-of-concept verification across your attack surface."
+        title={t('cybersecAI.title')}
+        description={t('cybersecAI.description')}
         actions={
           <button
             onClick={() => setShowForm(true)}
             className="inline-flex items-center gap-2 h-10 px-vos-4 rounded-vos-md bg-vos-accent text-white text-vos-sm font-medium hover:opacity-90 transition-opacity"
           >
-            <Plus size={16} /> New AI pentest job
+            <Plus size={16} /> {t('cybersecAI.newJob')}
           </button>
         }
       />

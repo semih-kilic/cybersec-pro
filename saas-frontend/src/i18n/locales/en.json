@@ -1291,6 +1291,17 @@
     "exerciseNameLabel": "Exercise Name (optional):",
     "exerciseNamePlaceholder": "My Purple Team Exercise"
   },
+  "cybersecAI": {
+    "eyebrow": "Autonomous",
+    "title": "CyberSec Pro AI",
+    "description": "Autonomous AI-powered penetration testing, vulnerability discovery, and proof-of-concept verification across your attack surface.",
+    "newJob": "New AI pentest job"
+  },
+  "scanTemplates": {
+    "title": "Scan Templates",
+    "subtitle": "Pre-configured scan profiles for common security assessments",
+    "createTemplate": "+ Create Template"
+  },
   "reports": {
     "title": "Reports",
     "noScansSelected": "No Scans Selected",

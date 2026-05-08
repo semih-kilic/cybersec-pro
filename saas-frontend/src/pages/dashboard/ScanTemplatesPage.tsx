@@ -3,6 +3,7 @@
  * Phase 3 — Pre-defined and custom scan configurations
  */
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { motion } from 'framer-motion';
 import { useScanTemplates, useCreateScanTemplate, useDeleteScanTemplate } from '../../hooks/useApiQueries';
 
@@ -23,6 +24,7 @@ interface Template {
 }
 
 export default function ScanTemplatesPage() {
+  const { t } = useTranslation();
   const { data, isLoading } = useScanTemplates();
   const createMutation = useCreateScanTemplate();
   const deleteMutation = useDeleteScanTemplate();
@@ -69,14 +71,14 @@ export default function ScanTemplatesPage() {
     <div className="p-6 space-y-6 max-w-5xl mx-auto">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-white">Scan Templates</h1>
-          <p className="text-gray-400 text-sm mt-1">Pre-configured scan profiles for common security assessments</p>
+          <h1 className="text-2xl font-bold text-white">{t('scanTemplates.title')}</h1>
+          <p className="text-gray-400 text-sm mt-1">{t('scanTemplates.subtitle')}</p>
         </div>
         <button
           onClick={() => setShowForm(s => !s)}
           className="px-4 py-2 bg-cyan-600 text-white rounded-lg hover:bg-cyan-700 transition font-medium"
         >
-          + Create Template
+          {t('scanTemplates.createTemplate')}
         </button>
       </div>
 
