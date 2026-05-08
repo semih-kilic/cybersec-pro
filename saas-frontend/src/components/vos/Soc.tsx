@@ -253,11 +253,13 @@ export function StatusPill({
   tone = 'neutral',
   pulse,
   children,
+  label,
   className,
 }: {
   tone?: StatusTone;
   pulse?: boolean;
-  children: ReactNode;
+  children?: ReactNode;
+  label?: ReactNode;
   className?: string;
 }) {
   const c = statusToneClass[tone];
@@ -283,7 +285,7 @@ export function StatusPill({
           />
         )}
       </span>
-      {children}
+      {children ?? label}
     </span>
   );
 }

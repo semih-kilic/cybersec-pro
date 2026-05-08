@@ -72,7 +72,7 @@ interface Tool {
 }
 
 /* ───────── Category metadata (icons + display names) ───────── */
-const categoryIcon: Record<string, React.ComponentType<{ size?: number; className?: string }>> = {
+const categoryIcon: Record<string, React.ComponentType<{ size?: number | string; className?: string }>> = {
   web: Globe,
   forensics: Microscope,
   recon: Eye,

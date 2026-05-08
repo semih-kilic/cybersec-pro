@@ -67,7 +67,7 @@ interface Target {
   notes?: string;
 }
 
-const TYPE_ICON: Record<string, React.ComponentType<{ size?: number; className?: string }>> = {
+const TYPE_ICON: Record<string, React.ComponentType<{ size?: number | string; className?: string }>> = {
   ip: Server,
   domain: Globe,
   url: LinkIcon,

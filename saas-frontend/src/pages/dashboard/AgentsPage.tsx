@@ -129,7 +129,7 @@ type WizardStep = 'type' | 'connection' | 'credentials' | 'review';
 const CONNECTION_TYPES: {
   id: string;
   name: string;
-  icon: React.ComponentType<{ size?: number; className?: string }>;
+  icon: React.ComponentType<{ size?: number | string; className?: string }>;
   desc: string;
 }[] = [
   { id: 'ssh', name: 'SSH', icon: TerminalIcon, desc: 'Linux, macOS, routers, firewalls' },
@@ -142,7 +142,7 @@ const CONNECTION_TYPES: {
 
 const PLATFORM_ICON: Record<
   string,
-  React.ComponentType<{ size?: number; className?: string }>
+  React.ComponentType<{ size?: number | string; className?: string }>
 > = {
   linux: TerminalIcon,
   windows: AppWindow,
@@ -1600,7 +1600,7 @@ function FeatureBadge({
   icon: Icon,
   label,
 }: {
-  icon: React.ComponentType<{ size?: number; className?: string }>;
+  icon: React.ComponentType<{ size?: number | string; className?: string }>;
   label: string;
 }) {
   return (
