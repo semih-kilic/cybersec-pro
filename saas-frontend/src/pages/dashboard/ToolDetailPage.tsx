@@ -407,8 +407,8 @@ export function ToolDetailPage() {
                           {param.secret && (
                             <p className="mt-1 flex items-center gap-1 text-[11px] text-emerald-400">
                               <span>🔒</span>
-                              <span>Zero-knowledge — credentials are sent to your agent only and are never persisted on our servers.</span>
-                              <Link to="/dashboard/privacy" className="underline hover:text-emerald-300">Learn&nbsp;more</Link>
+                              <span>{t('toolDetail.zeroKnowledge', 'Zero-knowledge — credentials are sent to your agent only and are never persisted on our servers.')}</span>
+                              <Link to="/dashboard/privacy" className="underline hover:text-emerald-300">{t('toolDetail.learnMore', 'Learn more')}</Link>
                             </p>
                           )}
                           {param.type === 'number' && <input type="number" placeholder={param.placeholder} value={(paramValues[param.name] as string) || ''} onChange={(e) => handleParamChange(param.name, e.target.value)} disabled={isScanning} className="w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:border-kali-blue transition disabled:opacity-50" />}

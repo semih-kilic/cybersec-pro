@@ -308,24 +308,24 @@ export function ScansPage() {
         {/* Stats */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-vos-3">
           <StatCard
-            title="Total Scans"
+            title={t('scans.totalScans', 'Total Scans')}
             value={scans.length.toString()}
             icon={<ListChecks size={16} />}
           />
           <StatCard
-            title="Running"
+            title={t('scans.running', 'Running')}
             value={runningScans.length.toString()}
             icon={<Activity size={16} />}
             variant="cyan"
           />
           <StatCard
-            title="Completed"
+            title={t('scans.completed', 'Completed')}
             value={completedScans.length.toString()}
             icon={<CheckCircle2 size={16} />}
             variant="green"
           />
           <StatCard
-            title="Failed"
+            title={t('scans.failed', 'Failed')}
             value={failedScans.length.toString()}
             icon={<AlertTriangle size={16} />}
             variant="red"

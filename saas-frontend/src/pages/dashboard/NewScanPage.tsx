@@ -683,15 +683,13 @@ export function NewScanPage() {
 
               <div className="rounded-vos-md bg-vos-danger/10 border border-vos-danger/20 p-vos-3 mb-vos-5">
                 <p className="text-vos-danger text-vos-xs">
-                  <strong>{selectedTool}</strong> is marked as a{' '}
-                  <strong>dangerous tool</strong>. It may actively exploit vulnerabilities or
-                  affect target systems.
+                  {t('newScan.dangerousToolWarning', '{{tool}} is marked as a dangerous tool. It may actively exploit vulnerabilities or affect target systems.', { tool: selectedTool })}
                 </p>
                 <ul className="mt-vos-2 text-vos-danger/80 text-vos-xs space-y-1">
-                  <li>• Only use on systems you own or have written permission to test</li>
-                  <li>• May trigger security alerts on target systems</li>
-                  <li>• Could cause service disruption if misconfigured</li>
-                  <li>• All actions are logged for audit purposes</li>
+                  <li>{t('newScan.dangerousBullet1', '• Only use on systems you own or have written permission to test')}</li>
+                  <li>{t('newScan.dangerousBullet2', '• May trigger security alerts on target systems')}</li>
+                  <li>{t('newScan.dangerousBullet3', '• Could cause service disruption if misconfigured')}</li>
+                  <li>{t('newScan.dangerousBullet4', '• All actions are logged for audit purposes')}</li>
                 </ul>
               </div>
 

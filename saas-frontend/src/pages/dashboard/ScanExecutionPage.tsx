@@ -655,8 +655,8 @@ export function ScanExecutionPage() {
                 disabled={status === 'running'}
                 className="vos-input w-full disabled:opacity-50"
               >
-                <option value="auto">Auto — best available (public targets only)</option>
-                <option value="local">Server — run on cloud (can target private IPs)</option>
+                <option value="auto">{t('scanExec.runAuto', 'Auto — best available (public targets only)')}</option>
+                <option value="local">{t('scanExec.runLocal', 'Server — run on cloud (can target private IPs)')}</option>
                 {onlineAgents.map((agent) => (
                   <option key={agent.id} value={agent.id}>
                     {agent.name} — {agent.ip_address} (private network) · CPU {agent.cpu_usage}%
@@ -852,7 +852,7 @@ export function ScanExecutionPage() {
                     ) : (
                       <div className="text-center">
                         <Zap className="w-10 h-10 text-vos-text-3 mx-auto" />
-                        <p className="text-vos-xs text-vos-text-3 mt-2">No score available</p>
+                        <p className="text-vos-xs text-vos-text-3 mt-2">{t('scanExec.noScore', 'No score available')}</p>
                       </div>
                     )}
                   </div>
@@ -891,12 +891,12 @@ export function ScanExecutionPage() {
                               {f.location && <p className="text-vos-xs text-vos-text-3 mt-0.5 break-words">{f.location}</p>}
                               {f.impact && (
                                 <p className="text-vos-xs text-vos-text-2 mt-vos-2">
-                                  <strong className="text-vos-text">Impact: </strong>{f.impact}
+                                  <strong className="text-vos-text">{t('scanExec.impact', 'Impact')}: </strong>{f.impact}
                                 </p>
                               )}
                               {f.fix && (
                                 <p className="text-vos-xs text-vos-text-2 mt-1">
-                                  <strong className="text-vos-success">Fix: </strong>{f.fix}
+                                  <strong className="text-vos-success">{t('scanExec.fix', 'Fix')}: </strong>{f.fix}
                                 </p>
                               )}
                             </div>
@@ -907,7 +907,7 @@ export function ScanExecutionPage() {
                   </div>
                 </Section>
               ) : (
-                <Section title="Result">
+                <Section title={t('scanExec.result', 'Result')}>
                   <div className="text-center py-vos-6">
                     <div className="w-14 h-14 mx-auto rounded-full bg-vos-success/10 flex items-center justify-center mb-vos-3">
                       <CheckCircle2 className="w-7 h-7 text-vos-success" />

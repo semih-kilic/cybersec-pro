@@ -592,7 +592,7 @@ export function TargetsPage() {
             </div>
             <ModalFooter>
               <ModalCancel onClick={() => setShowImportModal(false)} />
-              <ModalConfirm onClick={() => setShowImportModal(false)}>Import</ModalConfirm>
+              <ModalConfirm onClick={() => setShowImportModal(false)}>{t('targets.import', 'Import')}</ModalConfirm>
             </ModalFooter>
           </Modal>
         )}

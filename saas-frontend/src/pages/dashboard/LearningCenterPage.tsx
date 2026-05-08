@@ -330,8 +330,9 @@ function ExternalCardLink({ url, children, label }: { url: string; children: Rea
 }
 
 function CoursesGrid() {
+  const { t } = useTranslation();
   return (
-    <Section title="Courses" description="Curated learning paths from industry-leading providers.">
+    <Section title={t('learningCenter.coursesTitle', 'Courses')} description={t('learningCenter.coursesDesc', 'Curated learning paths from industry-leading providers.')}>
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-vos-3">
         {COURSES.map((course, i) => (
           <motion.article
@@ -371,8 +372,9 @@ function CoursesGrid() {
 }
 
 function CtfList() {
+  const { t } = useTranslation();
   return (
-    <Section title="CTF Challenges" description="Capture-the-flag challenges across web, binary, crypto, AD and more.">
+    <Section title={t('learningCenter.ctfTitle', 'CTF Challenges')} description={t('learningCenter.ctfDesc', 'Capture-the-flag challenges across web, binary, crypto, AD and more.')}>
       <div className="space-y-1.5">
         {CTF_CHALLENGES.map((ctf) => (
           <div
@@ -405,8 +407,9 @@ function CtfList() {
 }
 
 function LabsGrid() {
+  const { t } = useTranslation();
   return (
-    <Section title="Practice Labs" description="Hands-on environments to build real-world muscle memory.">
+    <Section title={t('learningCenter.labsTitle', 'Practice Labs')} description={t('learningCenter.labsDesc', 'Hands-on environments to build real-world muscle memory.')}>
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-vos-3">
         {LABS.map((lab, i) => (
           <motion.div
@@ -449,8 +452,9 @@ function LabsGrid() {
 }
 
 function CertList() {
+  const { t } = useTranslation();
   return (
-    <Section title="Certifications" description="Industry-recognised certifications.">
+    <Section title={t('learningCenter.certsTitle', 'Certifications')} description={t('learningCenter.certsDesc', 'Industry-recognised certifications.')}>
       <div className="space-y-vos-3">
         {CERTIFICATIONS.map((cert) => (
           <div
@@ -486,8 +490,9 @@ function CertList() {
 }
 
 function TutorialsGrid() {
+  const { t } = useTranslation();
   return (
-    <Section title="Tutorials" description="Bite-sized walkthroughs and reference docs.">
+    <Section title={t('learningCenter.tutorialsTitle', 'Tutorials')} description={t('learningCenter.tutorialsDesc', 'Bite-sized walkthroughs and reference docs.')}>
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-vos-3">
         {TUTORIALS.map((tut) => (
           <a

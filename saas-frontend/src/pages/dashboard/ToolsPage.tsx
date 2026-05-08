@@ -678,6 +678,7 @@ function VirtualizedToolList({
 }: {
   filteredCategories: { [key: string]: Tool[] };
 }) {
+  const { t } = useTranslation();
   const containerRef = useRef<HTMLDivElement>(null);
 
   const flatTools = useMemo(
@@ -698,10 +699,10 @@ function VirtualizedToolList({
   return (
     <div className="rounded-vos-xl border border-vos-border-1 bg-vos-bg-elev-2 overflow-hidden">
       <div className="grid grid-cols-[3fr_2fr_1fr_1fr] px-vos-4 py-vos-2 bg-vos-bg-elev-1/40 border-b border-vos-border-1 text-[10px] uppercase tracking-vos-wide font-semibold text-vos-text-3">
-        <span>Tool</span>
-        <span>Category</span>
-        <span>Status</span>
-        <span className="text-right">Action</span>
+        <span>{t('tools.colTool', 'Tool')}</span>
+        <span>{t('tools.colCategory', 'Category')}</span>
+        <span>{t('tools.colStatus', 'Status')}</span>
+        <span className="text-right">{t('tools.colAction', 'Action')}</span>
       </div>
       <div
         ref={containerRef}
@@ -743,7 +744,7 @@ function VirtualizedToolList({
                       Ready
                     </StatusPill>
                   ) : (
-                    <StatusPill tone="neutral">Not installed</StatusPill>
+                    <StatusPill tone="neutral">{t('tools.notInstalled', 'Not installed')}</StatusPill>
                   )}
                 </span>
                 <div className="text-right">

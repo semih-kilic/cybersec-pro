@@ -178,21 +178,13 @@
       "filePath": "src/pages/dashboard/LearningCenterPage.tsx",
       "hasUseTranslation": true,
       "hasTCalls": true,
-      "probableHardcodedLines": [
-        334,
-        375,
-        409,
-        453,
-        490
-      ]
+      "probableHardcodedLines": []
     },
     {
       "filePath": "src/pages/dashboard/NewScanPage.tsx",
       "hasUseTranslation": true,
       "hasTCalls": true,
-      "probableHardcodedLines": [
-        687
-      ]
+      "probableHardcodedLines": []
     },
     {
       "filePath": "src/pages/dashboard/OverviewPage.tsx",
@@ -222,49 +214,21 @@
       "filePath": "src/pages/dashboard/ScanExecutionPage.tsx",
       "hasUseTranslation": true,
       "hasTCalls": true,
-      "probableHardcodedLines": [
-        658,
-        659,
-        855,
-        894,
-        899,
-        910
-      ]
+      "probableHardcodedLines": []
     },
     {
       "filePath": "src/pages/dashboard/ScanTemplatesPage.tsx",
       "hasUseTranslation": true,
       "hasTCalls": true,
       "probableHardcodedLines": [
-        91,
-        94,
-        96,
-        100,
-        102,
-        107,
-        109,
-        113,
-        120,
-        141,
-        153,
-        165,
-        166,
-        195,
-        209,
-        210,
-        213
+        102
       ]
     },
     {
       "filePath": "src/pages/dashboard/ScansPage.tsx",
       "hasUseTranslation": true,
       "hasTCalls": true,
-      "probableHardcodedLines": [
-        311,
-        316,
-        322,
-        328
-      ]
+      "probableHardcodedLines": []
     },
     {
       "filePath": "src/pages/dashboard/SchedulePage.tsx",
@@ -296,9 +260,7 @@
       "filePath": "src/pages/dashboard/TargetsPage.tsx",
       "hasUseTranslation": true,
       "hasTCalls": true,
-      "probableHardcodedLines": [
-        595
-      ]
+      "probableHardcodedLines": []
     },
     {
       "filePath": "src/pages/dashboard/TerminalPage.tsx",
@@ -316,22 +278,13 @@
       "filePath": "src/pages/dashboard/ToolDetailPage.tsx",
       "hasUseTranslation": true,
       "hasTCalls": true,
-      "probableHardcodedLines": [
-        410,
-        411
-      ]
+      "probableHardcodedLines": []
     },
     {
       "filePath": "src/pages/dashboard/ToolsPage.tsx",
       "hasUseTranslation": true,
       "hasTCalls": true,
-      "probableHardcodedLines": [
-        701,
-        702,
-        703,
-        704,
-        746
-      ]
+      "probableHardcodedLines": []
     },
     {
       "filePath": "src/pages/dashboard/UpgradePage.tsx",
@@ -351,15 +304,7 @@
       "filePath": "src/pages/dashboard/settings/ApiKeysTab.tsx",
       "hasUseTranslation": true,
       "hasTCalls": true,
-      "probableHardcodedLines": [
-        201,
-        202,
-        205,
-        230,
-        231,
-        232,
-        233
-      ]
+      "probableHardcodedLines": []
     },
     {
       "filePath": "src/pages/dashboard/settings/BillingTab.tsx",
@@ -401,23 +346,7 @@
       "filePath": "src/pages/dashboard/settings/SecurityTab.tsx",
       "hasUseTranslation": true,
       "hasTCalls": true,
-      "probableHardcodedLines": [
-        410,
-        416,
-        417,
-        472,
-        487,
-        489,
-        509,
-        510,
-        511,
-        512,
-        513,
-        568,
-        578,
-        583,
-        599
-      ]
+      "probableHardcodedLines": []
     },
     {
       "filePath": "src/pages/dashboard/settings/TeamTab.tsx",

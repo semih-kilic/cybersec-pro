@@ -407,14 +407,14 @@ export function SecurityTab({ loading, setLoading, setMessage }: SettingsTabProp
 
       {/* Login History */}
       <div className="border-t border-gray-800 pt-8">
-        <h2 className="text-xl font-bold text-white mb-4">Login History</h2>
+        <h2 className="text-xl font-bold text-white mb-4">{t('security.loginHistory', 'Login History')}</h2>
         <LoginHistorySection />
       </div>
 
       {/* IP Whitelist */}
       <div className="border-t border-gray-800 pt-8">
-        <h2 className="text-xl font-bold text-white mb-2">IP Whitelist</h2>
-        <p className="text-gray-400 text-sm mb-4">Restrict access to specific IP addresses or CIDR ranges.</p>
+        <h2 className="text-xl font-bold text-white mb-2">{t('security.ipWhitelist', 'IP Whitelist')}</h2>
+        <p className="text-gray-400 text-sm mb-4">{t('security.ipWhitelistDesc', 'Restrict access to specific IP addresses or CIDR ranges.')}</p>
         <IpWhitelistSection />
       </div>
 
@@ -460,6 +460,7 @@ export function SecurityTab({ loading, setLoading, setMessage }: SettingsTabProp
 // ──────────────────────────────────────────────
 
 function ActiveSessionsSection() {
+  const { t } = useTranslation();
   const { data, isLoading } = useActiveSessions();
   const sessions: Array<{ id: string; ip_address?: string; user_agent?: string; is_current: boolean; last_active: string }> =
     (data as { sessions?: Array<{ id: string; ip_address?: string; user_agent?: string; is_current: boolean; last_active: string }> } | undefined)?.sessions ?? [];
@@ -469,7 +470,7 @@ function ActiveSessionsSection() {
   return (
     <div className="space-y-3">
       {sessions.length === 0 && (
-        <div className="p-4 bg-gray-800 rounded-lg text-gray-400 text-sm">No recent sessions found.</div>
+        <div className="p-4 bg-gray-800 rounded-lg text-gray-400 text-sm">{t('security.noSessions', 'No recent sessions found.')}</div>
       )}
       {sessions.map((s) => (
         <div key={s.id} className="flex items-center justify-between p-4 bg-gray-800 rounded-lg">
@@ -484,9 +485,9 @@ function ActiveSessionsSection() {
             </div>
           </div>
           {s.is_current ? (
-            <span className="px-2 py-1 bg-green-500/20 text-green-400 rounded text-xs">Current</span>
+            <span className="px-2 py-1 bg-green-500/20 text-green-400 rounded text-xs">{t('security.current', 'Current')}</span>
           ) : (
-            <span className="px-2 py-1 bg-gray-700 text-gray-400 rounded text-xs">Past</span>
+            <span className="px-2 py-1 bg-gray-700 text-gray-400 rounded text-xs">{t('security.past', 'Past')}</span>
           )}
         </div>
       ))}
@@ -495,6 +496,7 @@ function ActiveSessionsSection() {
 }
 
 function LoginHistorySection() {
+  const { t } = useTranslation();
   const { data, isLoading } = useLoginHistory(20, 0);
   const history: Array<{ id: string; ip_address?: string; user_agent?: string; success: boolean; failure_reason?: string; city?: string; created_at: string }> =
     (data as { login_history?: Array<{ id: string; ip_address?: string; user_agent?: string; success: boolean; failure_reason?: string; city?: string; created_at: string }> } | undefined)?.login_history ?? [];
@@ -506,11 +508,11 @@ function LoginHistorySection() {
       <table className="w-full text-sm">
         <thead>
           <tr className="text-gray-500 text-left border-b border-gray-800">
-            <th className="pb-2 pr-4">Date</th>
-            <th className="pb-2 pr-4">IP Address</th>
-            <th className="pb-2 pr-4">Location</th>
-            <th className="pb-2 pr-4">Status</th>
-            <th className="pb-2">Details</th>
+            <th className="pb-2 pr-4">{t('security.colDate', 'Date')}</th>
+            <th className="pb-2 pr-4">{t('security.colIpAddress', 'IP Address')}</th>
+            <th className="pb-2 pr-4">{t('security.colLocation', 'Location')}</th>
+            <th className="pb-2 pr-4">{t('security.colStatus', 'Status')}</th>
+            <th className="pb-2">{t('security.colDetails', 'Details')}</th>
           </tr>
         </thead>
         <tbody>
@@ -539,6 +541,7 @@ function LoginHistorySection() {
 }
 
 function IpWhitelistSection() {
+  const { t } = useTranslation();
   const { data, isLoading } = useIpWhitelist();
   const addMutation = useAddIpWhitelist();
   const removeMutation = useRemoveIpWhitelist();
@@ -565,7 +568,7 @@ function IpWhitelistSection() {
       {/* Add form */}
       <div className="flex items-end gap-3 flex-wrap">
         <div>
-          <label className="block text-gray-400 text-xs mb-1">IP / CIDR</label>
+          <label className="block text-gray-400 text-xs mb-1">{t('security.ipOrCidr', 'IP / CIDR')}</label>
           <input
             type="text"
             value={newIp}
@@ -575,12 +578,12 @@ function IpWhitelistSection() {
           />
         </div>
         <div>
-          <label className="block text-gray-400 text-xs mb-1">Label (optional)</label>
+          <label className="block text-gray-400 text-xs mb-1">{t('security.labelOptional', 'Label (optional)')}</label>
           <input
             type="text"
             value={newLabel}
             onChange={(e) => setNewLabel(e.target.value)}
-            placeholder="Office VPN"
+            placeholder={t('security.labelPlaceholder', 'Office VPN')}
             className="px-3 py-2 bg-gray-800 border border-gray-700 rounded-lg text-white text-sm w-36 focus:outline-none focus:border-cyan-500"
           />
         </div>
@@ -596,7 +599,7 @@ function IpWhitelistSection() {
 
       {/* List */}
       {isLoading ? (
-        <div className="text-gray-500 text-sm">Loading…</div>
+        <div className="text-gray-500 text-sm">{t('common.loading', 'Loading…')}</div>
       ) : list.length === 0 ? (
         <div className="p-4 bg-gray-800 rounded-lg text-gray-400 text-sm">
           No IP restrictions set. All IPs are allowed.

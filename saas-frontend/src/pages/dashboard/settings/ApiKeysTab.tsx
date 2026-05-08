@@ -198,16 +198,16 @@ export function ApiKeysTab({ loading, setLoading, setMessage }: SettingsTabProps
                   <div className="flex items-center gap-2">
                     {rotateConfirm === key.id ? (
                       <>
-                        <button onClick={() => rotateKey(key.id)} className="px-3 py-1 bg-yellow-600 text-white rounded text-sm">Confirm Rotate</button>
-                        <button onClick={() => setRotateConfirm(null)} className="px-3 py-1 bg-gray-700 text-gray-300 rounded text-sm">Cancel</button>
+                        <button onClick={() => rotateKey(key.id)} className="px-3 py-1 bg-yellow-600 text-white rounded text-sm">{t('apiKeys.confirmRotate', 'Confirm Rotate')}</button>
+                        <button onClick={() => setRotateConfirm(null)} className="px-3 py-1 bg-gray-700 text-gray-300 rounded text-sm">{t('common.cancel', 'Cancel')}</button>
                       </>
                     ) : (
-                      <button onClick={() => setRotateConfirm(key.id)} className="px-3 py-1 text-yellow-400 hover:bg-yellow-500/20 rounded transition text-sm" title="Rotate key">
-                        ↺ Rotate
+                      <button onClick={() => setRotateConfirm(key.id)} className="px-3 py-1 text-yellow-400 hover:bg-yellow-500/20 rounded transition text-sm" title={t('apiKeys.rotateKey', 'Rotate key')}>
+                        ↺ {t('apiKeys.rotate', 'Rotate')}
                       </button>
                     )}
                     <button onClick={() => setDeleteConfirm(key.id)} className="px-3 py-1 text-red-400 hover:bg-red-500/20 rounded transition text-sm">
-                      Delete
+                      {t('common.delete', 'Delete')}
                     </button>
                   </div>
                 )}
@@ -221,16 +221,16 @@ export function ApiKeysTab({ loading, setLoading, setMessage }: SettingsTabProps
       {apiKeyStats.length > 0 && (
         <div className="border-t border-gray-800 pt-6">
           <button onClick={() => setShowStats(s => !s)} className="text-gray-400 hover:text-white text-sm flex items-center gap-2 mb-3">
-            <span>{showStats ? '▾' : '▸'}</span> API Key Usage Stats
+            <span>{showStats ? '▾' : '▸'}</span> {t('apiKeys.usageStats', 'API Key Usage Stats')}
           </button>
           {showStats && (
             <div className="overflow-x-auto">
               <table className="w-full text-sm">
                 <thead><tr className="text-gray-500 text-left border-b border-gray-800">
-                  <th className="pb-2 pr-4">Key Name</th>
-                  <th className="pb-2 pr-4">Requests</th>
-                  <th className="pb-2 pr-4">Last Used</th>
-                  <th className="pb-2">Last Rotated</th>
+                  <th className="pb-2 pr-4">{t('apiKeys.colKeyName', 'Key Name')}</th>
+                  <th className="pb-2 pr-4">{t('apiKeys.colRequests', 'Requests')}</th>
+                  <th className="pb-2 pr-4">{t('apiKeys.colLastUsed', 'Last Used')}</th>
+                  <th className="pb-2">{t('apiKeys.colLastRotated', 'Last Rotated')}</th>
                 </tr></thead>
                 <tbody>
                   {apiKeyStats.map((s: ApiKeyStat) => (
