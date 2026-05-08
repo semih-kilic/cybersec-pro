@@ -176,4 +176,11 @@ CI artifacts for observability:
 - BYO Vault is supported for credential resolution at run time: HashiCorp Vault, AWS Secrets Manager, GCP Secret Manager, Azure Key Vault, 1Password Connect.
 - Public docs: `/dashboard/privacy` carries the full "Zero-knowledge credential handling" section.
 
+## 13) Phase 40 + SSE Reliability (May 2026)
+
+- **Scan output stream is replay-safe.** `handlers/scan_handlers.rs::scan_output_stream` now subscribes to `state.scan_output_tx` **before** the DB lookup, then prepends a replay segment built from `scans.output` (one SSE event per output line + a terminal `complete` event when the scan is already in `completed`/`failed`/`cancelled`). For terminal scans the live broadcast tail is dropped entirely — replay is the full story. This fixes the "Stream disconnected unexpectedly" / empty-stream bug for fast tools (e.g. local nmap) that finished before the browser opened the SSE.
+- **AppState pool field is `db`, not `pool`.** All handlers use `&state.db` (PgPool). Any new handler copy-pasted from older code must be migrated to `state.db` or it will not compile.
+- **Phase 40 (May 4) cleanup.** Removed `_archived_python/` (sales backend, monitor, translate, email — all replaced by Rust services). Upgraded `redis` crate to `0.27`. 7 Rust files received compile fixes (handlers/community, handlers/billing, handlers/scan, scan_engine wiring). `.gitignore` now excludes nested `**/target/` so `rust-agent` etc. no longer leak build artifacts.
+- **Backend listens on `0.0.0.0:5001`.** Health endpoint: `GET /api/health` → `{"engine":"rust-axum","status":"healthy","version":"4.0.0"}`. Frontend dev server is `vite --port 3001`. Nginx is in front for production routing.
+
 
