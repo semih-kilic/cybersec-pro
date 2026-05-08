@@ -146,7 +146,7 @@ export function FilterChip({
   active?: boolean;
   onClick?: () => void;
   onRemove?: () => void;
-  icon?: ComponentType<{ size?: number; className?: string }>;
+  icon?: ComponentType<{ size?: string | number; className?: string }>;
   className?: string;
 }) {
   return (
