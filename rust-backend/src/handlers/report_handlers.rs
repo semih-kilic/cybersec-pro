@@ -208,10 +208,14 @@ pub async fn create_report(
         .await
         .unwrap_or(None);
 
+    // Fetch live tool & category counts from DB so the methodology section stays accurate.
+    let (tools_count, categories_count) = load_tool_inventory_counts(&state.db).await;
+
     let html_content = generate_html_report(
         &body.name, template, &now, &date_short,
         &scan_rows, total_findings, critical, high, medium, low, info,
         risk_score, risk_level, org_logo.as_deref(), org_name.as_deref(),
+        tools_count, categories_count,
     );
 
     // Convert based on requested format
@@ -459,6 +463,7 @@ fn generate_html_report(
     total: i32, crit: i32, high: i32, med: i32, low: i32, info: i32,
     risk_score: i32, risk_level: &str,
     org_logo_data_uri: Option<&str>, org_name: Option<&str>,
+    tools_count: i64, categories_count: i64,
 ) -> String {
     let risk_color = match risk_level {
         "Critical" => "#ef4444",
@@ -700,7 +705,7 @@ h4{{font-size:12px;font-weight:700;color:#475569;margin:16px 0 8px}}
 
     <h2>📊 Methodology</h2>
     <p style="margin-bottom:8px">This assessment was performed using <strong>CyberSec Pro</strong>, a cloud-based
-    offensive security platform running <strong>401 Kali Linux tools</strong> across 61 categories.
+    offensive security platform running <strong>{tools_count} Kali Linux tools</strong> across {categories_count} categories.
     All scans were conducted with proper authorization.</p>
     <table class="meta-table" style="margin-top:12px">
         <tr><td><strong>Platform</strong></td><td>CyberSec Pro v4.0</td></tr>
@@ -722,6 +727,8 @@ h4{{font-size:12px;font-weight:700;color:#475569;margin:16px 0 8px}}
         now = now,
         date_short = date_short,
         scan_count = scans.len(),
+        tools_count = tools_count,
+        categories_count = categories_count,
         total = total,
         crit = crit,
         high = high,
@@ -1248,8 +1255,6 @@ async fn load_org_logo_data_uri(db: &sqlx::PgPool, org_id: &str) -> Option<Strin
     .fetch_optional(db)
     .await
     .ok()??;
-
-    // logo_url is like /uploads/logos/{org_id}.png
     let disk_path = format!("/home/cybersec/cybersec-pro{}", logo_url);
     let bytes = tokio::fs::read(&disk_path).await.ok()?;
 
