@@ -103,17 +103,17 @@ export default function GodModePage() {
   const ks = useKillSwitchStatus();
   const tel = useSuperadminTelemetry(tab === 'telemetry');
 
-  const cpuPct = tel.data?.cpu.usage_pct ?? 0;
-  const memPct = tel.data?.memory.usage_pct ?? 0;
-  const diskPct = tel.data?.disk.usage_pct ?? 0;
-  const memUsed = tel.data?.memory.used_bytes ?? 0;
-  const memTotal = tel.data?.memory.total_bytes ?? 0;
-  const diskUsed = tel.data?.disk.used_bytes ?? 0;
-  const diskTotal = tel.data?.disk.total_bytes ?? 0;
-  const netRx = tel.data?.network.received_bytes_window ?? 0;
-  const netTx = tel.data?.network.transmitted_bytes_window ?? 0;
-  const cores = tel.data?.cpu.core_count ?? 0;
-  const physical = tel.data?.cpu.physical_core_count ?? null;
+  const cpuPct = tel.data?.cpu?.usage_pct ?? 0;
+  const memPct = tel.data?.memory?.usage_pct ?? 0;
+  const diskPct = tel.data?.disk?.usage_pct ?? 0;
+  const memUsed = tel.data?.memory?.used_bytes ?? 0;
+  const memTotal = tel.data?.memory?.total_bytes ?? 0;
+  const diskUsed = tel.data?.disk?.used_bytes ?? 0;
+  const diskTotal = tel.data?.disk?.total_bytes ?? 0;
+  const netRx = tel.data?.network?.received_bytes_window ?? 0;
+  const netTx = tel.data?.network?.transmitted_bytes_window ?? 0;
+  const cores = tel.data?.cpu?.core_count ?? 0;
+  const physical = tel.data?.cpu?.physical_core_count ?? null;
 
   return (
     <PageTransition>
@@ -290,14 +290,14 @@ function TelemetryPanel({
           <h2 className="text-vos-md font-semibold text-vos-text">{t('godMode.host', 'Host')}</h2>
         </div>
         <div className="p-vos-6 grid grid-cols-2 gap-vos-3 text-vos-sm">
-          <KV label={t('godMode.hostname', 'Hostname')} value={telemetry.host.name ?? '—'} />
-          <KV label={t('godMode.os', 'OS')} value={telemetry.host.os ?? '—'} />
-          <KV label={t('godMode.kernel', 'Kernel')} value={telemetry.host.kernel ?? '—'} />
-          <KV label={t('godMode.uptime', 'Uptime')} value={fmtUptime(telemetry.host.uptime_secs)} />
-          <KV label={t('godMode.processes', 'Processes')} value={String(telemetry.process.count)} />
+          <KV label={t('godMode.hostname', 'Hostname')} value={telemetry.host?.name ?? '—'} />
+          <KV label={t('godMode.os', 'OS')} value={telemetry.host?.os ?? '—'} />
+          <KV label={t('godMode.kernel', 'Kernel')} value={telemetry.host?.kernel ?? '—'} />
+          <KV label={t('godMode.uptime', 'Uptime')} value={fmtUptime(telemetry.host?.uptime_secs)} />
+          <KV label={t('godMode.processes', 'Processes')} value={String(telemetry.process?.count ?? '—')} />
           <KV
             label={t('godMode.loadAvg', 'Load avg (1/5/15)')}
-            value={`${telemetry.cpu.load_avg_1.toFixed(2)} / ${telemetry.cpu.load_avg_5.toFixed(2)} / ${telemetry.cpu.load_avg_15.toFixed(2)}`}
+            value={`${(telemetry.cpu?.load_avg_1 ?? 0).toFixed(2)} / ${(telemetry.cpu?.load_avg_5 ?? 0).toFixed(2)} / ${(telemetry.cpu?.load_avg_15 ?? 0).toFixed(2)}`}
           />
         </div>
       </Card>
@@ -310,12 +310,12 @@ function TelemetryPanel({
             <h2 className="text-vos-md font-semibold text-vos-text">{t('godMode.cpuPerCore', 'CPU per-core')}</h2>
           </div>
           <Badge tone="default" size="sm">
-            {t('godMode.avg', '{{value}} avg', { value: fmtPct(telemetry.cpu.usage_pct) })}
+            {t('godMode.avg', '{{value}} avg', { value: fmtPct(telemetry.cpu?.usage_pct) })}
           </Badge>
         </div>
         <div className="p-vos-6 grid grid-cols-2 gap-x-vos-4 gap-y-vos-2 max-h-72 overflow-y-auto">
-          {telemetry.cpu.per_core.map((c, i) => (
-            <CoreBar key={i} name={c.name || `cpu${i}`} pct={c.usage_pct} freq={c.frequency_mhz} />
+          {(telemetry.cpu?.per_core ?? []).map((c, i) => (
+            <CoreBar key={i} name={c?.name || `cpu${i}`} pct={c?.usage_pct ?? 0} freq={c?.frequency_mhz ?? 0} />
           ))}
         </div>
       </Card>
@@ -329,21 +329,21 @@ function TelemetryPanel({
         <div className="p-vos-6 space-y-vos-3 text-vos-sm">
           <MeterRow
             label="RAM"
-            usedLabel={`${fmtBytes(telemetry.memory.used_bytes)} / ${fmtBytes(telemetry.memory.total_bytes)}`}
-            pct={telemetry.memory.usage_pct}
+            usedLabel={`${fmtBytes(telemetry.memory?.used_bytes)} / ${fmtBytes(telemetry.memory?.total_bytes)}`}
+            pct={telemetry.memory?.usage_pct ?? 0}
           />
-          {telemetry.memory.swap_total_bytes > 0 && (
+          {(telemetry.memory?.swap_total_bytes ?? 0) > 0 && (
             <MeterRow
               label="Swap"
-              usedLabel={`${fmtBytes(telemetry.memory.swap_used_bytes)} / ${fmtBytes(telemetry.memory.swap_total_bytes)}`}
+              usedLabel={`${fmtBytes(telemetry.memory?.swap_used_bytes)} / ${fmtBytes(telemetry.memory?.swap_total_bytes)}`}
               pct={
-                telemetry.memory.swap_total_bytes
-                  ? (telemetry.memory.swap_used_bytes / telemetry.memory.swap_total_bytes) * 100
+                telemetry.memory?.swap_total_bytes
+                  ? ((telemetry.memory.swap_used_bytes ?? 0) / telemetry.memory.swap_total_bytes) * 100
                   : 0
               }
             />
           )}
-          <KV label={t('godMode.available', 'Available')} value={fmtBytes(telemetry.memory.available_bytes)} />
+          <KV label={t('godMode.available', 'Available')} value={fmtBytes(telemetry.memory?.available_bytes)} />
         </div>
       </Card>
 
@@ -354,21 +354,21 @@ function TelemetryPanel({
           <h2 className="text-vos-md font-semibold text-vos-text">{t('godMode.disks', 'Disks')}</h2>
         </div>
         <div className="p-vos-6 space-y-vos-3 text-vos-sm max-h-80 overflow-y-auto">
-          {telemetry.disk.devices.length === 0 && (
+          {(telemetry.disk?.devices?.length ?? 0) === 0 && (
             <p className="text-vos-text-3 text-vos-xs">{t('godMode.noDisks', 'No disks reported.')}</p>
           )}
-          {telemetry.disk.devices.map((d, i) => (
+          {(telemetry.disk?.devices ?? []).map((d, i) => (
             <div key={i} className="border border-vos-border-1 rounded-vos-md p-vos-3">
               <div className="flex items-center justify-between mb-1.5">
-                <span className="font-mono text-vos-xs text-vos-text-2 truncate">{d.mount}</span>
+                <span className="font-mono text-vos-xs text-vos-text-2 truncate">{d?.mount ?? '—'}</span>
                 <Badge tone="default" size="sm">
-                  {d.fs}
+                  {d?.fs ?? ''}
                 </Badge>
               </div>
               <MeterRow
-                label={d.name}
-                usedLabel={`${fmtBytes(d.used_bytes)} / ${fmtBytes(d.total_bytes)}`}
-                pct={d.usage_pct}
+                label={d?.name ?? '—'}
+                usedLabel={`${fmtBytes(d?.used_bytes)} / ${fmtBytes(d?.total_bytes)}`}
+                pct={d?.usage_pct ?? 0}
               />
             </div>
           ))}
@@ -393,13 +393,13 @@ function TelemetryPanel({
               </tr>
             </thead>
             <tbody>
-              {telemetry.network.interfaces.map((n) => (
-                <tr key={n.name} className="border-b border-vos-border-1/50">
-                  <td className="py-vos-2 pr-vos-4 font-mono text-vos-xs">{n.name}</td>
-                  <td className="py-vos-2 pr-vos-4 text-right">{fmtBytes(n.received_bytes_window)}</td>
-                  <td className="py-vos-2 pr-vos-4 text-right">{fmtBytes(n.transmitted_bytes_window)}</td>
-                  <td className="py-vos-2 pr-vos-4 text-right text-vos-text-3">{fmtBytes(n.received_bytes_total)}</td>
-                  <td className="py-vos-2 text-right text-vos-text-3">{fmtBytes(n.transmitted_bytes_total)}</td>
+              {(telemetry.network?.interfaces ?? []).map((n, i) => (
+                <tr key={n?.name ?? i} className="border-b border-vos-border-1/50">
+                  <td className="py-vos-2 pr-vos-4 font-mono text-vos-xs">{n?.name ?? '—'}</td>
+                  <td className="py-vos-2 pr-vos-4 text-right">{fmtBytes(n?.received_bytes_window)}</td>
+                  <td className="py-vos-2 pr-vos-4 text-right">{fmtBytes(n?.transmitted_bytes_window)}</td>
+                  <td className="py-vos-2 pr-vos-4 text-right text-vos-text-3">{fmtBytes(n?.received_bytes_total)}</td>
+                  <td className="py-vos-2 text-right text-vos-text-3">{fmtBytes(n?.transmitted_bytes_total)}</td>
                 </tr>
               ))}
             </tbody>
@@ -488,12 +488,12 @@ function DbPanel() {
           </Button>
         </div>
         <div className="p-vos-6 grid grid-cols-2 gap-vos-3 text-vos-sm">
-          <KV label={t('godMode.dbName', 'Database')} value={data.database.name} />
-          <KV label={t('godMode.dbSize', 'Size')} value={fmtBytes(data.database.size_bytes)} />
-          <KV label={t('godMode.poolSize', 'Pool size')} value={String(data.pool.size)} />
-          <KV label={t('godMode.poolIdle', 'Pool idle')} value={String(data.pool.idle)} />
-          <KV label={t('godMode.activeConnections', 'Active connections')} value={String(data.active_connections)} />
-          <KV label={t('godMode.activeQueries', 'Active queries')} value={String(data.active_queries.length)} />
+          <KV label={t('godMode.dbName', 'Database')} value={data.database?.name ?? '—'} />
+          <KV label={t('godMode.dbSize', 'Size')} value={fmtBytes(data.database?.size_bytes)} />
+          <KV label={t('godMode.poolSize', 'Pool size')} value={String(data.pool?.size ?? '—')} />
+          <KV label={t('godMode.poolIdle', 'Pool idle')} value={String(data.pool?.idle ?? '—')} />
+          <KV label={t('godMode.activeConnections', 'Active connections')} value={String(data.active_connections ?? '—')} />
+          <KV label={t('godMode.activeQueries', 'Active queries')} value={String(data.active_queries?.length ?? 0)} />
         </div>
       </Card>
 
@@ -502,10 +502,10 @@ function DbPanel() {
           <h2 className="text-vos-md font-semibold text-vos-text">{t('godMode.activeQueries', 'Active queries')}</h2>
         </div>
         <div className="p-vos-6 max-h-96 overflow-y-auto space-y-vos-3 text-vos-sm">
-          {data.active_queries.length === 0 && (
+          {(data.active_queries?.length ?? 0) === 0 && (
             <p className="text-vos-text-3 text-vos-xs">{t('godMode.noActiveQueries', 'No active queries.')}</p>
           )}
-          {data.active_queries.map((q) => (
+          {(data.active_queries ?? []).map((q) => (
             <div key={q.pid} className="border border-vos-border-1 rounded-vos-md p-vos-3 text-vos-xs">
               <div className="flex items-center gap-vos-2 mb-1 flex-wrap">
                 <Badge tone="default" size="sm">pid {q.pid}</Badge>
@@ -537,14 +537,14 @@ function DbPanel() {
               </tr>
             </thead>
             <tbody>
-              {data.top_tables.map((t) => (
-                <tr key={`${t.schema}.${t.name}`} className="border-b border-vos-border-1/50">
+              {(data.top_tables ?? []).map((tt, i) => (
+                <tr key={`${tt?.schema ?? '?'}.${tt?.name ?? i}`} className="border-b border-vos-border-1/50">
                   <td className="py-vos-2 pr-vos-4 font-mono text-vos-xs">
-                    {t.schema}.{t.name}
+                    {tt?.schema ?? '—'}.{tt?.name ?? '—'}
                   </td>
-                  <td className="py-vos-2 pr-vos-4 text-right font-mono text-vos-xs">{t.row_count.toLocaleString()}</td>
-                  <td className="py-vos-2 pr-vos-4 text-right font-mono text-vos-xs">{fmtBytes(t.size_bytes)}</td>
-                  <td className="py-vos-2 text-right font-mono text-vos-xs text-vos-text-3">{fmtBytes(t.index_size_bytes)}</td>
+                  <td className="py-vos-2 pr-vos-4 text-right font-mono text-vos-xs">{(tt?.row_count ?? 0).toLocaleString()}</td>
+                  <td className="py-vos-2 pr-vos-4 text-right font-mono text-vos-xs">{fmtBytes(tt?.size_bytes)}</td>
+                  <td className="py-vos-2 text-right font-mono text-vos-xs text-vos-text-3">{fmtBytes(tt?.index_size_bytes)}</td>
                 </tr>
               ))}
             </tbody>
