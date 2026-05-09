@@ -31,6 +31,10 @@ pub struct Tool {
     pub maturity: Option<String>,
     pub output_parser: Option<String>,
     pub exclusion_reason: Option<String>,
+    pub health_status: Option<String>,
+    pub health_evidence: Option<String>,
+    pub health_probe: Option<String>,
+    pub last_health_check: Option<chrono::DateTime<chrono::Utc>>,
 }
 
 #[derive(Debug, Serialize)]
@@ -52,6 +56,9 @@ pub struct ToolResponse {
     pub binary_name: String,
     pub maturity: String,
     pub output_parser: Option<String>,
+    pub health_status: String,
+    pub health_probe: Option<String>,
+    pub last_health_check: Option<chrono::DateTime<chrono::Utc>>,
 }
 
 #[derive(Debug, Serialize)]
@@ -91,6 +98,9 @@ impl Tool {
             binary_name: self.binary_name.clone().unwrap_or_else(|| self.name.clone()),
             maturity: self.maturity.clone().unwrap_or_else(|| "experimental".into()),
             output_parser: self.output_parser.clone(),
+            health_status: self.health_status.clone().unwrap_or_else(|| "unknown".into()),
+            health_probe: self.health_probe.clone(),
+            last_health_check: self.last_health_check,
         }
     }
 
@@ -139,6 +149,10 @@ mod tests {
             output_parser: None,
             exclusion_reason: None,
             kali_package: None,
+            health_status: None,
+            health_evidence: None,
+            health_probe: None,
+            last_health_check: None,
         }
     }
 
