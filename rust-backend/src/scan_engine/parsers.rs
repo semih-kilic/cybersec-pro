@@ -8,20 +8,32 @@ pub fn parse_output(tool_name: &str, output: &str) -> Option<JsonValue> {
         "nikto" => parse_nikto(output),
         "sqlmap" => parse_sqlmap(output),
         "nuclei" => parse_nuclei(output),
-        "gobuster" | "dirb" | "ffuf" | "feroxbuster" => parse_directory_scan(output),
-        "sslscan" => parse_sslscan(output),
+        "gobuster" | "dirb" | "ffuf" | "feroxbuster" | "wfuzz" => parse_directory_scan(output),
+        "sslscan" | "sslyze" | "tlssled" => parse_sslscan(output),
         "whatweb" => parse_whatweb(output),
-        "wpscan" => parse_wpscan(output),
-        "amass" | "subfinder" | "dnsrecon" | "fierce" | "dnsenum" | "dnsmap" => parse_subdomain_enum(output),
+        "wpscan" | "joomscan" | "droopescan" | "cmsmap" | "wafw00f" => parse_wpscan(output),
+        "amass" | "subfinder" | "dnsrecon" | "fierce" | "dnsenum" | "dnsmap"
+            | "assetfinder" | "findomain" | "knockpy" | "sublist3r" | "puredns" | "shuffledns" | "alterx"
+            => parse_subdomain_enum(output),
         "theharvester" => parse_theharvester(output),
-        "masscan" => parse_masscan(output),
-        "hydra" | "medusa" | "ncrack" => parse_brute_force(output),
+        "masscan" | "rustscan" | "zmap" | "unicornscan" | "naabu" => parse_masscan(output),
+        "hydra" | "medusa" | "ncrack" | "kerbrute" => parse_brute_force(output),
         "enum4linux" | "smbmap" | "smbclient" => parse_smb(output),
         "testssl" | "testssl.sh" => parse_testssl(output),
         "wapiti" => parse_wapiti(output),
         "dmitry" => parse_dmitry(output),
-        "httpx" => parse_httpx(output),
-        "crackmapexec" | "netexec" => parse_cme(output),
+        "httpx" | "httpx-toolkit" | "tlsx" | "dnsx" | "asnmap" | "cdncheck" | "mapcidr" => parse_httpx(output),
+        "crackmapexec" | "netexec" | "evil-winrm" | "impacket-psexec" | "impacket-smbexec" | "impacket-secretsdump"
+            => parse_cme(output),
+        // New verified families
+        "trivy" | "grype" | "retire" | "bandit" | "semgrep" | "dalfox" | "ike-scan"
+            => parse_vuln_findings(output),
+        "gitleaks" => parse_secret_findings(output),
+        "katana" | "hakrawler" | "gospider" | "gau" | "waybackurls" | "paramspider" | "arjun"
+            => parse_url_list(output),
+        "kube-bench" | "kics" | "tfsec" | "checkov" | "terrascan" | "kubescape"
+            | "scout-suite" | "cloudsploit" | "cloudfox" | "certipy"
+            => parse_iac_findings(output),
         _ => parse_generic(output),
     }
 }
@@ -563,6 +575,128 @@ fn parse_cme(output: &str) -> Option<JsonValue> {
     let high = findings.iter().filter(|f| f["severity"] == "high").count();
     Some(json!({
         "summary": {"total": findings.len(), "critical": critical, "high": high, "medium": 0, "low": 0, "open_ports": 0},
+        "findings": findings
+    }))
+}
+
+// ── Verified-tier parsers (added) ──────────────────────────
+
+fn sev_bucket(s: &str) -> &'static str {
+    let l = s.to_lowercase();
+    if l.contains("critical") { "critical" }
+    else if l.contains("high") { "high" }
+    else if l.contains("medium") || l.contains("moderate") { "medium" }
+    else if l.contains("low") || l.contains("info") || l.contains("note") { "low" }
+    else { "low" }
+}
+
+fn parse_vuln_findings(output: &str) -> Option<JsonValue> {
+    // Generic vulnerability/finding extractor for trivy/grype/retire/bandit/semgrep/dalfox/ike-scan.
+    let mut findings = Vec::new();
+    let cve_re = Regex::new(r"CVE-\d{4}-\d{4,7}").ok()?;
+    let sev_re = Regex::new(r"(?i)\b(CRITICAL|HIGH|MEDIUM|MODERATE|LOW|INFO|NOTE)\b").ok()?;
+    for line in output.lines() {
+        let t = line.trim();
+        if t.is_empty() { continue; }
+        let cve = cve_re.find(t).map(|m| m.as_str().to_string());
+        let sev_match = sev_re.find(t).map(|m| m.as_str().to_string());
+        if cve.is_some() || sev_match.is_some() {
+            let severity = sev_match.as_deref().map(sev_bucket).unwrap_or("low");
+            findings.push(json\!({
+                "cve": cve,
+                "severity": severity,
+                "description": t,
+            }));
+        }
+    }
+    let critical = findings.iter().filter(|f| f["severity"] == "critical").count();
+    let high = findings.iter().filter(|f| f["severity"] == "high").count();
+    let medium = findings.iter().filter(|f| f["severity"] == "medium").count();
+    let low = findings.iter().filter(|f| f["severity"] == "low").count();
+    Some(json\!({
+        "summary": {"total": findings.len(), "critical": critical, "high": high, "medium": medium, "low": low, "open_ports": 0},
+        "findings": findings
+    }))
+}
+
+fn parse_secret_findings(output: &str) -> Option<JsonValue> {
+    // gitleaks-style: lines like "RuleID: ... File: path Line: N Secret: ..."
+    let mut findings = Vec::new();
+    let path_re = Regex::new(r"(?i)(File|Path)[:=]\s*([^\s,]+)").ok()?;
+    let line_re = Regex::new(r"(?i)Line[:=]\s*(\d+)").ok()?;
+    let rule_re = Regex::new(r"(?i)(RuleID|Rule|Description|Detector)[:=]\s*([^\n]+)").ok()?;
+    for chunk in output.split("\n\n") {
+        let has_secret = chunk.to_lowercase().contains("secret")
+            || chunk.to_lowercase().contains("token")
+            || chunk.to_lowercase().contains("api_key")
+            || chunk.to_lowercase().contains("password");
+        if \!has_secret { continue; }
+        let path = path_re.captures(chunk).map(|c| c[2].to_string());
+        let line = line_re.captures(chunk).and_then(|c| c[1].parse::<u32>().ok());
+        let rule = rule_re.captures(chunk).map(|c| c[2].trim().to_string());
+        if path.is_some() || rule.is_some() {
+            findings.push(json\!({
+                "severity": "high",
+                "rule": rule,
+                "file": path,
+                "line": line,
+                "description": chunk.lines().next().unwrap_or("").trim(),
+            }));
+        }
+    }
+    Some(json\!({
+        "summary": {"total": findings.len(), "critical": 0, "high": findings.len(), "medium": 0, "low": 0, "open_ports": 0},
+        "findings": findings
+    }))
+}
+
+fn parse_url_list(output: &str) -> Option<JsonValue> {
+    // katana/hakrawler/gospider/gau/waybackurls/paramspider/arjun: one URL per line (or noisy text containing URLs)
+    let mut urls: Vec<String> = Vec::new();
+    let url_re = Regex::new(r"https?://[^\s'\"<>]+").ok()?;
+    for line in output.lines() {
+        for m in url_re.find_iter(line) {
+            let u = m.as_str().trim_end_matches(&[',', ')', ']', '.', ';'][..]).to_string();
+            if \!urls.contains(&u) { urls.push(u); }
+        }
+    }
+    Some(json\!({
+        "summary": {"total": urls.len(), "critical": 0, "high": 0, "medium": 0, "low": urls.len(), "open_ports": 0},
+        "urls": urls
+    }))
+}
+
+fn parse_iac_findings(output: &str) -> Option<JsonValue> {
+    // kube-bench/kics/tfsec/checkov/terrascan/kubescape/scout-suite/cloudsploit/cloudfox/certipy
+    let mut findings = Vec::new();
+    let sev_re = Regex::new(r"(?i)\b(CRITICAL|HIGH|MEDIUM|LOW|INFO|PASS|FAIL|WARN)\b").ok()?;
+    let id_re = Regex::new(r"(?i)\b([A-Z]{2,5}[-_]\d{2,5}|[A-Z]{2,4}\.[A-Z]{2,4}\.\d+)\b").ok()?;
+    for line in output.lines() {
+        let t = line.trim();
+        if t.is_empty() { continue; }
+        let sev = sev_re.find(t).map(|m| m.as_str().to_string());
+        let id = id_re.find(t).map(|m| m.as_str().to_string());
+        if sev.is_none() && id.is_none() { continue; }
+        let raw = sev.as_deref().unwrap_or("");
+        let severity = if raw.eq_ignore_ascii_case("FAIL") || raw.eq_ignore_ascii_case("WARN") {
+            "medium"
+        } else if raw.eq_ignore_ascii_case("PASS") {
+            continue;
+        } else {
+            sev_bucket(raw)
+        };
+        findings.push(json\!({
+            "id": id,
+            "severity": severity,
+            "description": t,
+        }));
+    }
+    let critical = findings.iter().filter(|f| f["severity"] == "critical").count();
+    let high = findings.iter().filter(|f| f["severity"] == "high").count();
+    let medium = findings.iter().filter(|f| f["severity"] == "medium").count();
+    let low = findings.iter().filter(|f| f["severity"] == "low").count();
+    Some(json\!({
+        "summary": {"total": findings.len(), "critical": critical, "high": high, "medium": medium, "low": low, "open_ports": 0},
         "findings": findings
     }))
 }
