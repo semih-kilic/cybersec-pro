@@ -1319,8 +1319,10 @@ pub async fn seed_modern_tools(pool: &PgPool) -> Result<(usize, usize), sqlx::Er
                 business_category = EXCLUDED.business_category,
                 subcategory = EXCLUDED.subcategory,
                 risk_context = EXCLUDED.risk_context,
-                tool_group = EXCLUDED.tool_group,
-                is_active = TRUE
+                tool_group = EXCLUDED.tool_group
+                -- NB: deliberately NOT touching is_active on conflict so that
+                -- operator-initiated deactivations (e.g. scripts/tool_smoke_test.py)
+                -- survive subsequent seeder runs.
             RETURNING (xmax = 0)
             "#,
         )
