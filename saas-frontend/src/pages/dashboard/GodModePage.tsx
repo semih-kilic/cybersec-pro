@@ -558,7 +558,7 @@ function DbPanel() {
 // ---------- Logs panel ----------
 function LogsPanel() {
   const { t } = useTranslation();
-  const [unit, setUnit] = useState('cybersec-saas.service');
+  const [unit, setUnit] = useState('cybersec-rust.service');
   const [lines, setLines] = useState(300);
   const { data, isLoading, error, refetch, isFetching } = useSuperadminLogs(unit, lines);
 
@@ -571,11 +571,12 @@ function LogsPanel() {
             onChange={(e) => setUnit(e.target.value)}
             className="bg-vos-glass-2 border border-vos-border-1 text-vos-text rounded-vos-md text-vos-sm px-vos-3 py-vos-2"
           >
-            <option value="cybersec-saas.service">cybersec-saas</option>
+            <option value="cybersec-rust.service">cybersec-rust (backend)</option>
             <option value="nginx.service">nginx</option>
-            <option value="postgresql.service">postgresql</option>
+            <option value="postgresql@18-main.service">postgresql</option>
             <option value="redis-server.service">redis</option>
-            <option value="cybersec-monitor.service">cybersec-monitor</option>
+            <option value="cloudflared.service">cloudflared</option>
+            <option value="cybersec-healthcheck.service">healthcheck</option>
           </select>
           <select
             value={lines}

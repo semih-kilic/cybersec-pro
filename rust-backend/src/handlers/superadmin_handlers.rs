@@ -209,7 +209,7 @@ pub async fn logs(
     State(_state): State<Arc<AppState>>,
     Query(q): Query<LogsQuery>,
 ) -> impl IntoResponse {
-    let unit = q.unit.as_deref().unwrap_or("cybersec-saas.service");
+    let unit = q.unit.as_deref().unwrap_or("cybersec-rust.service");
     let lines = q.lines.min(2000).max(1);
 
     let output = tokio::process::Command::new("journalctl")
