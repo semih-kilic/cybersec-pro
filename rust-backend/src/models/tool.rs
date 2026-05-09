@@ -28,6 +28,9 @@ pub struct Tool {
     pub tool_group: Option<String>,
     pub binary_name: Option<String>,
     pub kali_package: Option<String>,
+    pub maturity: Option<String>,
+    pub output_parser: Option<String>,
+    pub exclusion_reason: Option<String>,
 }
 
 #[derive(Debug, Serialize)]
@@ -47,6 +50,8 @@ pub struct ToolResponse {
     pub gui_required: bool,
     pub group: String,
     pub binary_name: String,
+    pub maturity: String,
+    pub output_parser: Option<String>,
 }
 
 #[derive(Debug, Serialize)]
@@ -84,6 +89,8 @@ impl Tool {
             gui_required: self.gui_required.unwrap_or(false),
             group: self.tool_group.clone().unwrap_or_else(|| "misc".into()),
             binary_name: self.binary_name.clone().unwrap_or_else(|| self.name.clone()),
+            maturity: self.maturity.clone().unwrap_or_else(|| "experimental".into()),
+            output_parser: self.output_parser.clone(),
         }
     }
 
@@ -128,6 +135,9 @@ mod tests {
             risk_context: None,
             tool_group: None,
             binary_name: None,
+            maturity: None,
+            output_parser: None,
+            exclusion_reason: None,
             kali_package: None,
         }
     }

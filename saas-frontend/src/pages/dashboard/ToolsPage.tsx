@@ -69,6 +69,8 @@ interface Tool {
   binary_name?: string;
   tool_type?: string;
   business_category?: string;
+  maturity?: 'verified' | 'beta' | 'experimental';
+  output_parser?: string | null;
 }
 
 /* ───────── Category metadata (icons + display names) ───────── */
@@ -148,6 +150,7 @@ export function ToolsPage() {
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const [showOnlyInstalled, setShowOnlyInstalled] = useState(false);
   const [showOnlyAvailable, setShowOnlyAvailable] = useState(false);
+  const [showOnlyVerified, setShowOnlyVerified] = useState(false);
   const [sortBy, setSortBy] = useState<'name' | 'category' | 'plan'>('category');
 
   const userPlan = organization?.plan_type || 'trial';
@@ -180,6 +183,7 @@ export function ToolsPage() {
         }
         if (showOnlyInstalled && !tool.installed) return false;
         if (showOnlyAvailable && !canUseTool(tool.plan_required)) return false;
+        if (showOnlyVerified && tool.maturity !== 'verified') return false;
         return true;
       });
       if (sortBy === 'name') filteredTools.sort((a, b) => a.name.localeCompare(b.name));
@@ -197,6 +201,7 @@ export function ToolsPage() {
     selectedCategories,
     showOnlyInstalled,
     showOnlyAvailable,
+    showOnlyVerified,
     canUseTool,
     sortBy,
   ]);
@@ -225,6 +230,7 @@ export function ToolsPage() {
     setSelectedCategories([]);
     setShowOnlyInstalled(false);
     setShowOnlyAvailable(false);
+    setShowOnlyVerified(false);
   };
 
   if (loading) {
@@ -343,6 +349,12 @@ export function ToolsPage() {
                 active={showOnlyInstalled}
                 onClick={() => setShowOnlyInstalled((v) => !v)}
                 value={showOnlyInstalled ? installedCount : undefined}
+              />
+              <FilterChip
+                label="Verified"
+                icon={ShieldCheck}
+                active={showOnlyVerified}
+                onClick={() => setShowOnlyVerified((v) => !v)}
               />
               <FilterChip
                 label="My plan"
@@ -613,6 +625,12 @@ function ToolCard({
           <CategoryIcon name={categoryKey} size={16} />
         </span>
         <div className="flex flex-col items-end gap-1">
+          {tool.maturity === 'verified' && (
+            <StatusPill tone="success">
+              <ShieldCheck size={10} />
+              Verified
+            </StatusPill>
+          )}
           {tool.installed && (
             <StatusPill tone="success">
               <CheckCircle2 size={10} />

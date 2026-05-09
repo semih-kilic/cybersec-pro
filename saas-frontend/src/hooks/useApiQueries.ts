@@ -93,6 +93,8 @@ export interface Tool {
   binary_name?: string;
   tool_type?: string;
   business_category?: string;
+  maturity?: 'verified' | 'beta' | 'experimental';
+  output_parser?: string | null;
 }
 
 export interface CategoryInfo {
