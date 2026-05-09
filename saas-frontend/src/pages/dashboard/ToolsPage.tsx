@@ -71,6 +71,9 @@ interface Tool {
   business_category?: string;
   maturity?: 'verified' | 'beta' | 'experimental';
   output_parser?: string | null;
+  health_status?: 'healthy' | 'needs_interactive' | 'crashed' | 'missing' | 'skipped' | 'unknown';
+  health_probe?: string | null;
+  last_health_check?: string | null;
 }
 
 /* ───────── Category metadata (icons + display names) ───────── */
@@ -629,6 +632,18 @@ function ToolCard({
             <StatusPill tone="success">
               <ShieldCheck size={10} />
               Verified
+            </StatusPill>
+          )}
+          {tool.health_status === 'healthy' && (
+            <StatusPill tone="success">
+              <CheckCircle2 size={10} />
+              Self-Tested
+            </StatusPill>
+          )}
+          {tool.health_status === 'needs_interactive' && (
+            <StatusPill tone="warning">
+              <Monitor size={10} />
+              Interactive
             </StatusPill>
           )}
           {tool.installed && (

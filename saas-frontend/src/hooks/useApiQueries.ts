@@ -95,6 +95,9 @@ export interface Tool {
   business_category?: string;
   maturity?: 'verified' | 'beta' | 'experimental';
   output_parser?: string | null;
+  health_status?: 'healthy' | 'needs_interactive' | 'crashed' | 'missing' | 'skipped' | 'unknown';
+  health_probe?: string | null;
+  last_health_check?: string | null;
 }
 
 export interface CategoryInfo {

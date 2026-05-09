@@ -602,7 +602,7 @@ fn parse_vuln_findings(output: &str) -> Option<JsonValue> {
         let sev_match = sev_re.find(t).map(|m| m.as_str().to_string());
         if cve.is_some() || sev_match.is_some() {
             let severity = sev_match.as_deref().map(sev_bucket).unwrap_or("low");
-            findings.push(json\!({
+            findings.push(json!({
                 "cve": cve,
                 "severity": severity,
                 "description": t,
@@ -613,7 +613,7 @@ fn parse_vuln_findings(output: &str) -> Option<JsonValue> {
     let high = findings.iter().filter(|f| f["severity"] == "high").count();
     let medium = findings.iter().filter(|f| f["severity"] == "medium").count();
     let low = findings.iter().filter(|f| f["severity"] == "low").count();
-    Some(json\!({
+    Some(json!({
         "summary": {"total": findings.len(), "critical": critical, "high": high, "medium": medium, "low": low, "open_ports": 0},
         "findings": findings
     }))
@@ -630,12 +630,12 @@ fn parse_secret_findings(output: &str) -> Option<JsonValue> {
             || chunk.to_lowercase().contains("token")
             || chunk.to_lowercase().contains("api_key")
             || chunk.to_lowercase().contains("password");
-        if \!has_secret { continue; }
+        if !has_secret { continue; }
         let path = path_re.captures(chunk).map(|c| c[2].to_string());
         let line = line_re.captures(chunk).and_then(|c| c[1].parse::<u32>().ok());
         let rule = rule_re.captures(chunk).map(|c| c[2].trim().to_string());
         if path.is_some() || rule.is_some() {
-            findings.push(json\!({
+            findings.push(json!({
                 "severity": "high",
                 "rule": rule,
                 "file": path,
@@ -644,7 +644,7 @@ fn parse_secret_findings(output: &str) -> Option<JsonValue> {
             }));
         }
     }
-    Some(json\!({
+    Some(json!({
         "summary": {"total": findings.len(), "critical": 0, "high": findings.len(), "medium": 0, "low": 0, "open_ports": 0},
         "findings": findings
     }))
@@ -653,14 +653,14 @@ fn parse_secret_findings(output: &str) -> Option<JsonValue> {
 fn parse_url_list(output: &str) -> Option<JsonValue> {
     // katana/hakrawler/gospider/gau/waybackurls/paramspider/arjun: one URL per line (or noisy text containing URLs)
     let mut urls: Vec<String> = Vec::new();
-    let url_re = Regex::new(r"https?://[^\s'\"<>]+").ok()?;
+    let url_re = Regex::new(r"https?://\S+").ok()?;
     for line in output.lines() {
         for m in url_re.find_iter(line) {
             let u = m.as_str().trim_end_matches(&[',', ')', ']', '.', ';'][..]).to_string();
-            if \!urls.contains(&u) { urls.push(u); }
+            if !urls.contains(&u) { urls.push(u); }
         }
     }
-    Some(json\!({
+    Some(json!({
         "summary": {"total": urls.len(), "critical": 0, "high": 0, "medium": 0, "low": urls.len(), "open_ports": 0},
         "urls": urls
     }))
@@ -685,7 +685,7 @@ fn parse_iac_findings(output: &str) -> Option<JsonValue> {
         } else {
             sev_bucket(raw)
         };
-        findings.push(json\!({
+        findings.push(json!({
             "id": id,
             "severity": severity,
             "description": t,
@@ -695,7 +695,7 @@ fn parse_iac_findings(output: &str) -> Option<JsonValue> {
     let high = findings.iter().filter(|f| f["severity"] == "high").count();
     let medium = findings.iter().filter(|f| f["severity"] == "medium").count();
     let low = findings.iter().filter(|f| f["severity"] == "low").count();
-    Some(json\!({
+    Some(json!({
         "summary": {"total": findings.len(), "critical": critical, "high": high, "medium": medium, "low": low, "open_ports": 0},
         "findings": findings
     }))
