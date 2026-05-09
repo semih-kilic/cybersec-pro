@@ -8,31 +8,50 @@ pub fn parse_output(tool_name: &str, output: &str) -> Option<JsonValue> {
         "nikto" => parse_nikto(output),
         "sqlmap" => parse_sqlmap(output),
         "nuclei" => parse_nuclei(output),
-        "gobuster" | "dirb" | "ffuf" | "feroxbuster" | "wfuzz" => parse_directory_scan(output),
+        "gobuster" | "dirb" | "ffuf" | "feroxbuster" | "wfuzz" | "dirsearch" | "dotdotpwn" | "davtest" | "goldeneye" | "httprint"
+            => parse_directory_scan(output),
         "sslscan" | "sslyze" | "tlssled" => parse_sslscan(output),
         "whatweb" => parse_whatweb(output),
-        "wpscan" | "joomscan" | "droopescan" | "cmsmap" | "wafw00f" => parse_wpscan(output),
+        "wpscan" | "joomscan" | "droopescan" | "cmsmap" | "wafw00f" | "cmseek" | "commix" => parse_wpscan(output),
         "amass" | "subfinder" | "dnsrecon" | "fierce" | "dnsenum" | "dnsmap"
             | "assetfinder" | "findomain" | "knockpy" | "sublist3r" | "puredns" | "shuffledns" | "alterx"
+            | "altdns" | "anew" | "chaos" | "censys-cli" | "dnstwist" | "dnswalk" | "dnstracer" | "massdns"
+            | "finalrecon" | "lazyrecon" | "fang" | "emailharvester" | "email2phonenumber" | "holehe" | "h8mail"
+            | "linkedin2username" | "instaloader" | "instaloader-tool" | "maryam"
             => parse_subdomain_enum(output),
         "theharvester" => parse_theharvester(output),
-        "masscan" | "rustscan" | "zmap" | "unicornscan" | "naabu" => parse_masscan(output),
-        "hydra" | "medusa" | "ncrack" | "kerbrute" => parse_brute_force(output),
-        "enum4linux" | "smbmap" | "smbclient" => parse_smb(output),
+        "masscan" | "rustscan" | "zmap" | "unicornscan" | "naabu"
+            | "amap" | "fping" | "hping3" | "arping" | "iputils-arping"
+            => parse_masscan(output),
+        "hydra" | "medusa" | "ncrack" | "kerbrute"
+            | "crowbar" | "brutespray" | "brutespray-pro" | "fcrackzip" | "eapmd5pass" | "asleap"
+            | "lsassy" | "kerberoast" | "kerberoast.py" | "gpp-decrypt" | "hashid" | "hash-identifier"
+            => parse_brute_force(output),
+        "enum4linux" | "smbmap" | "smbclient" | "impacket-smbclient" | "impacket-smbserver" => parse_smb(output),
         "testssl" | "testssl.sh" => parse_testssl(output),
         "wapiti" => parse_wapiti(output),
         "dmitry" => parse_dmitry(output),
-        "httpx" | "httpx-toolkit" | "tlsx" | "dnsx" | "asnmap" | "cdncheck" | "mapcidr" => parse_httpx(output),
-        "crackmapexec" | "netexec" | "evil-winrm" | "impacket-psexec" | "impacket-smbexec" | "impacket-secretsdump"
+        "httpx" | "httpx-toolkit" | "tlsx" | "dnsx" | "asnmap" | "cdncheck" | "mapcidr"
+            | "httprobe" | "httpie" | "httrack" | "interactsh" | "gowitness" | "eyewitness"
+            => parse_httpx(output),
+        "crackmapexec" | "netexec" | "evil-winrm" | "evil_winrm" | "evil-winrm-py"
+            | "impacket-psexec" | "impacket-smbexec" | "impacket-secretsdump" | "impacket-mssqlclient"
+            | "atexec.py" | "dcomexec.py"
             => parse_cme(output),
         // New verified families
-        "trivy" | "grype" | "retire" | "bandit" | "semgrep" | "dalfox" | "ike-scan"
+        "trivy" | "grype" | "grype_dir" | "retire" | "bandit" | "semgrep" | "dalfox" | "ike-scan"
+            | "lynis" | "chkrootkit" | "clair" | "cargo_audit" | "cvemap" | "garak" | "checksec"
+            | "linpeas" | "linux-exploit-suggester" | "androbugs"
             => parse_vuln_findings(output),
-        "gitleaks" => parse_secret_findings(output),
-        "katana" | "hakrawler" | "gospider" | "gau" | "waybackurls" | "paramspider" | "arjun"
+        "gitleaks" | "detect_secrets" | "git_secrets" | "gitxray" => parse_secret_findings(output),
+        "katana" | "hakrawler" | "gospider" | "gospider-pro" | "gau" | "getallurls"
+            | "waybackurls" | "paramspider" | "arjun" | "crlfuzz" | "extended_xss_search"
+            | "evilurl" | "goshs"
             => parse_url_list(output),
-        "kube-bench" | "kics" | "tfsec" | "checkov" | "terrascan" | "kubescape"
+        "kube-bench" | "kube_bench" | "kics" | "tfsec" | "checkov" | "terrascan" | "kubescape"
             | "scout-suite" | "cloudsploit" | "cloudfox" | "certipy"
+            | "dockle" | "dive" | "hadolint" | "docker_bench" | "cloudsplaining" | "cloudbrute"
+            | "cartography" | "gcpbucketbrute" | "azurehound" | "cosign" | "defectdojo"
             => parse_iac_findings(output),
         _ => parse_generic(output),
     }
