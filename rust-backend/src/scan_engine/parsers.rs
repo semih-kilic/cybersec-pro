@@ -9,49 +9,83 @@ pub fn parse_output(tool_name: &str, output: &str) -> Option<JsonValue> {
         "sqlmap" => parse_sqlmap(output),
         "nuclei" => parse_nuclei(output),
         "gobuster" | "dirb" | "ffuf" | "feroxbuster" | "wfuzz" | "dirsearch" | "dotdotpwn" | "davtest" | "goldeneye" | "httprint"
+            | "skipfish" | "owasp-mantra-ff"
             => parse_directory_scan(output),
-        "sslscan" | "sslyze" | "tlssled" => parse_sslscan(output),
+        "sslscan" | "sslyze" | "tlssled" | "ssldump" | "sslh" | "sslsniff" | "sslsplit" | "sslstrip" | "qsslcaudit" | "mxcheck"
+            => parse_sslscan(output),
         "whatweb" => parse_whatweb(output),
-        "wpscan" | "joomscan" | "droopescan" | "cmsmap" | "wafw00f" | "cmseek" | "commix" => parse_wpscan(output),
+        "wpscan" | "joomscan" | "droopescan" | "cmsmap" | "wafw00f" | "cmseek" | "commix" | "wpprobe"
+            => parse_wpscan(output),
         "amass" | "subfinder" | "dnsrecon" | "fierce" | "dnsenum" | "dnsmap"
             | "assetfinder" | "findomain" | "knockpy" | "sublist3r" | "puredns" | "shuffledns" | "alterx"
             | "altdns" | "anew" | "chaos" | "censys-cli" | "dnstwist" | "dnswalk" | "dnstracer" | "massdns"
             | "finalrecon" | "lazyrecon" | "fang" | "emailharvester" | "email2phonenumber" | "holehe" | "h8mail"
             | "linkedin2username" | "instaloader" | "instaloader-tool" | "maryam"
+            | "recon-ng" | "spiderfoot-cli" | "metagoofil" | "urlcrazy" | "dnschef" | "dnscat"
+            | "dns2tcp" | "dns2tcpc" | "dns2tcpd" | "breacher" | "red_hawk" | "parsero" | "xnlinkfinder"
+            | "socialscan" | "pompem" | "raven" | "puredns-resolver" | "s3scanner" | "spray"
             => parse_subdomain_enum(output),
         "theharvester" => parse_theharvester(output),
         "masscan" | "rustscan" | "zmap" | "unicornscan" | "naabu"
             | "amap" | "fping" | "hping3" | "arping" | "iputils-arping"
+            | "nbtscan" | "netdiscover" | "netmask" | "p0f" | "onesixtyone"
+            | "snmp-check" | "snmpcheck" | "snmpwalk" | "nmblookup" | "sctpscan" | "braa"
+            | "sidguess" | "sidguesser" | "tcptraceroute" | "lft" | "intrace" | "firewalk"
             => parse_masscan(output),
         "hydra" | "medusa" | "ncrack" | "kerbrute"
             | "crowbar" | "brutespray" | "brutespray-pro" | "fcrackzip" | "eapmd5pass" | "asleap"
             | "lsassy" | "kerberoast" | "kerberoast.py" | "gpp-decrypt" | "hashid" | "hash-identifier"
+            | "hashcat" | "hashcat-utils" | "john_the_ripper" | "ophcrack-cli"
+            | "rcrack" | "rcracki-mt" | "rcracki_mt" | "rainbowcrack"
+            | "princeprocessor" | "maskprocessor" | "maskgen" | "statsgen" | "statsprocessor"
+            | "pdfcrack" | "truecrack" | "sucrack" | "name-that-hash" | "hashdeep" | "hashrat"
+            | "oclgausscrack" | "samdump2" | "samdump2-tool" | "pypykatz" | "mimikatz" | "secretsdump"
+            | "polenum" | "creddump7" | "pack" | "pack2" | "rubeus" | "sharphound"
+            | "spraykatz" | "pipal" | "bopscrk" | "rsmangler" | "cupp" | "crunch" | "cewl"
+            | "sipcrack" | "svcrack" | "svmap" | "svreport" | "svwar" | "sqldict" | "padbuster"
+            | "passing-the-hash" | "wce" | "rarcrack" | "ccrypt"
             => parse_brute_force(output),
-        "enum4linux" | "smbmap" | "smbclient" | "impacket-smbclient" | "impacket-smbserver" => parse_smb(output),
+        "enum4linux" | "smbmap" | "smbclient" | "impacket-smbclient" | "impacket-smbserver"
+            | "rpcclient" | "smbexec.py" | "smbserver.py" | "wmiexec.py" | "psexec.py" | "smtp-user-enum"
+            | "impacket-scripts"
+            => parse_smb(output),
         "testssl" | "testssl.sh" => parse_testssl(output),
         "wapiti" => parse_wapiti(output),
         "dmitry" => parse_dmitry(output),
         "httpx" | "httpx-toolkit" | "tlsx" | "dnsx" | "asnmap" | "cdncheck" | "mapcidr"
             | "httprobe" | "httpie" | "httrack" | "interactsh" | "gowitness" | "eyewitness"
+            | "cutycapt" | "uncover"
             => parse_httpx(output),
         "crackmapexec" | "netexec" | "evil-winrm" | "evil_winrm" | "evil-winrm-py"
             | "impacket-psexec" | "impacket-smbexec" | "impacket-secretsdump" | "impacket-mssqlclient"
-            | "atexec.py" | "dcomexec.py"
+            | "atexec.py" | "dcomexec.py" | "wmis" | "ntlmrelayx.py" | "responder"
+            | "spraying-toolkit" | "sprayingtoolkit"
             => parse_cme(output),
         // New verified families
         "trivy" | "grype" | "grype_dir" | "retire" | "bandit" | "semgrep" | "dalfox" | "ike-scan"
             | "lynis" | "chkrootkit" | "clair" | "cargo_audit" | "cvemap" | "garak" | "checksec"
             | "linpeas" | "linux-exploit-suggester" | "androbugs"
+            | "rkhunter" | "tiger" | "unhide" | "unix-privesc-check" | "pspy" | "pspy-binaries"
+            | "peass" | "winpeas" | "slither" | "mythril" | "echidna" | "retire_js"
+            | "semgrep_solidity" | "semgrep_supplychain" | "pe_tree" | "detect_it_easy"
+            | "vulners" | "vulnx" | "vulscan" | "nipper" | "nipper-ng" | "sara" | "snort"
+            | "nuclei-takeovers" | "nmap-vulners" | "witnessme" | "xsser" | "xsstrike" | "xsscon"
+            | "xanxss" | "tinja" | "explo" | "pkexec-exploit" | "windows-privesc-check"
+            | "winregfs" | "trivy_repo"
             => parse_vuln_findings(output),
-        "gitleaks" | "detect_secrets" | "git_secrets" | "gitxray" => parse_secret_findings(output),
+        "gitleaks" | "detect_secrets" | "git_secrets" | "gitxray" | "whispers" | "secretfinder"
+            => parse_secret_findings(output),
         "katana" | "hakrawler" | "gospider" | "gospider-pro" | "gau" | "getallurls"
             | "waybackurls" | "paramspider" | "arjun" | "crlfuzz" | "extended_xss_search"
             | "evilurl" | "goshs"
+            | "photon" | "photon-osint-tool" | "qsreplace" | "pup" | "gron" | "wcvs" | "sstimap"
+            | "jsql-injection" | "wayback-machine" | "proxify"
             => parse_url_list(output),
         "kube-bench" | "kube_bench" | "kics" | "tfsec" | "checkov" | "terrascan" | "kubescape"
             | "scout-suite" | "cloudsploit" | "cloudfox" | "certipy"
             | "dockle" | "dive" | "hadolint" | "docker_bench" | "cloudsplaining" | "cloudbrute"
             | "cartography" | "gcpbucketbrute" | "azurehound" | "cosign" | "defectdojo"
+            | "scoutsuite" | "syft" | "slsa_verifier" | "rekor_cli" | "terraform"
             => parse_iac_findings(output),
         _ => parse_generic(output),
     }
