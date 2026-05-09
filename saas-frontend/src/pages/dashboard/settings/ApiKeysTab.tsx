@@ -252,7 +252,7 @@ export function ApiKeysTab({ loading, setLoading, setMessage }: SettingsTabProps
       <div className="p-4 bg-gray-800 rounded-lg border border-gray-700">
         <p className="text-white font-medium mb-2">📚 API Documentation</p>
         <p className="text-gray-400 text-sm mb-3">{t('apiKeys.docsHint', 'Learn how to use the CyberSec Pro API in your applications.')}</p>
-        <a href="/docs.html#api" target="_blank" rel="noreferrer" className="text-kali-blue hover:underline text-sm">
+        <a href="/en/api-reference/" target="_blank" rel="noreferrer" className="text-kali-blue hover:underline text-sm">
           View API Documentation →
         </a>
       </div>

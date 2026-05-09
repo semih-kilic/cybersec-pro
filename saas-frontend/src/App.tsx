@@ -234,7 +234,7 @@ const DASHBOARD_NAV: VosNavItem[] = [
 
 const DASHBOARD_BOTTOM_NAV: VosNavItem[] = [
   { label: 'Feedback',      to: '/dashboard/feedback', icon: MessageCircle },
-  { label: 'Documentation', to: '/docs.html',          icon: BookOpen, external: true },
+  { label: 'Documentation', to: '/en/docs/',           icon: BookOpen, external: true },
 ];
 
 function DashboardLayout() {

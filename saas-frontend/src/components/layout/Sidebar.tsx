@@ -38,7 +38,7 @@ const navigation = [
 const bottomNav = [
   { nameKey: 'nav.settings', href: '/dashboard/settings', icon: SettingsIcon },
   { nameKey: 'nav.feedback', href: '/dashboard/feedback', icon: FeedbackIcon },
-  { nameKey: 'nav.documentation', href: '/docs.html', icon: DocsIcon, external: true },
+  { nameKey: 'nav.documentation', href: '/en/docs/', icon: DocsIcon, external: true },
 ];
 
 function DashboardIcon() {
