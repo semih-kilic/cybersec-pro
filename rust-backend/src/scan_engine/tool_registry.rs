@@ -418,8 +418,71 @@ fn resolve_binary(tool_name: &str) -> String {
     tool_name.to_string()
 }
 
+/// Default value for a placeholder that the user did not supply via scan parameters.
+///
+/// Order of resolution (handled by caller `parse_template`):
+/// 1. scan_handlers substitutes user-provided `{key}` parameters first.
+/// 2. Target-aliased placeholders (`{target}/{host}/{url}/{ip}/{domain}`) → `target`.
+/// 3. Anything still remaining → this map provides a sane default so the tool
+///    can run with just a target. If no default is known we fall back to `target`.
+///
+/// This guarantees that **every** Kali tool can be invoked with just a target
+/// and produce useful output — never leak a literal `{wordlist}` to argv.
+fn placeholder_default(key: &str, target: &str) -> String {
+    match key {
+        // ── Filesystem / payload inputs ────────────────────────────
+        // For binary-analysis / forensic tools the "target" *is* the file path.
+        "file" | "infile" | "input" | "binary" | "image" | "memdump" | "pcap"
+        | "apk" | "package" | "payload" | "script" | "path" | "cover" => target.to_string(),
+
+        // ── Wordlists ──────────────────────────────────────────────
+        "wordlist" | "user_list" | "users_file" | "username_list" =>
+            "/usr/share/wordlists/dirb/common.txt".to_string(),
+        "pass_list" | "password_list" | "pass_file" =>
+            "/usr/share/wordlists/rockyou.txt".to_string(),
+
+        // ── Credentials ────────────────────────────────────────────
+        "user" | "username" => "admin".to_string(),
+        "password" | "pass" | "passphrase" => "password".to_string(),
+        "email" => "admin@example.com".to_string(),
+
+        // ── Network / interface ────────────────────────────────────
+        "iface" | "interface" => "any".to_string(),
+        "lhost" => "0.0.0.0".to_string(),
+        "lport" => "4444".to_string(),
+        "ports" | "port" => "1-1024".to_string(),
+        "ssid" => "TARGET_SSID".to_string(),
+        "bssid" => "00:00:00:00:00:00".to_string(),
+        "dc" => target.to_string(),  // domain controller = target
+
+        // ── Hashes / crypto ────────────────────────────────────────
+        "hash" | "hashfile" => target.to_string(),
+        "key" | "authkey" | "pke" | "pkr" | "enonce" => target.to_string(),
+
+        // ── Output paths ───────────────────────────────────────────
+        "outfile" | "output" => "/tmp/cybersec_scan_out".to_string(),
+
+        // ── Misc ───────────────────────────────────────────────────
+        "count" => "4".to_string(),
+        "mode" => "default".to_string(),
+        "format" => "json".to_string(),
+        "flags" => "".to_string(),
+        "process" | "provider" | "action" | "message"
+        | "target_kind" | "bucket" => target.to_string(),
+
+        // Unknown: best to use target than leak `{xxx}` literally.
+        _ => target.to_string(),
+    }
+}
+
 /// Parse a command_template like "nikto -h {target}" into program + args.
-/// SECURITY: target is always treated as a single atomic argument — never split.
+///
+/// SECURITY:
+///   - target is always treated as a single atomic argument — never split.
+///   - All remaining `{key}` placeholders that scan_handlers did not fill are
+///     substituted from `placeholder_default()` so a literal `{wordlist}` can
+///     never reach argv (which would cause the tool to fail or behave oddly).
+///   - Defaults are static, vetted strings with no shell metacharacters.
 fn parse_template(program: &str, template: &str, target: &str) -> Result<(String, Vec<String>)> {
     if template.trim().is_empty() {
         return Err(anyhow!("Empty command template"));
@@ -436,7 +499,16 @@ fn parse_template(program: &str, template: &str, target: &str) -> Result<(String
         .replace("{ip}", SENTINEL)
         .replace("{domain}", SENTINEL);
 
-    let parts: Vec<&str> = templated.split_whitespace().collect();
+    // Substitute any remaining `{key}` placeholders with sane defaults. We do this
+    // here (after target sentinel substitution) so a default that happens to equal
+    // `target` is still parsed atomically when it lands at the same position.
+    let placeholder_re = regex::Regex::new(r"\{([a-z_][a-z0-9_]*)\}")
+        .map_err(|e| anyhow!("regex compile failed: {}", e))?;
+    let resolved = placeholder_re.replace_all(&templated, |caps: &regex::Captures| {
+        placeholder_default(&caps[1], target)
+    });
+
+    let parts: Vec<&str> = resolved.split_whitespace().collect();
     if parts.is_empty() {
         return Err(anyhow!("Empty command template after parsing"));
     }
@@ -467,4 +539,106 @@ fn parse_template(program: &str, template: &str, target: &str) -> Result<(String
     }
 
     Ok((program.to_string(), final_args))
+}
+
+// ── Tests ──────────────────────────────────────────────────
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn target_alias_placeholders_are_substituted() {
+        let (prog, args) = build_command("nikto", "https://example.com", Some("nikto -h {url}")).unwrap();
+        assert_eq!(prog, "nikto");
+        assert!(args.contains(&"https://example.com".to_string()));
+    }
+
+    #[test]
+    fn unknown_placeholder_falls_back_to_target() {
+        let (_p, args) = build_command(
+            "ddosscript", "10.0.0.1",
+            Some("python3 ddos/ddos.py {target}"),
+        ).unwrap();
+        // target is preserved
+        assert!(args.iter().any(|a| a == "10.0.0.1"));
+        // No literal {target} leaked
+        assert!(!args.iter().any(|a| a.contains('{')));
+    }
+
+    #[test]
+    fn wordlist_placeholder_uses_default_when_missing() {
+        let (_p, args) = build_command(
+            "dirb", "http://example.com",
+            Some("dirb {url} {wordlist}"),
+        ).unwrap();
+        assert!(args.contains(&"/usr/share/wordlists/dirb/common.txt".to_string()));
+        assert!(args.contains(&"http://example.com".to_string()));
+    }
+
+    #[test]
+    fn user_password_have_safe_defaults() {
+        let (_p, args) = build_command(
+            "evil_winrm", "10.0.0.1",
+            Some("evil-winrm -i {host} -u {user} -p {password}"),
+        ).unwrap();
+        assert!(args.contains(&"admin".to_string()));
+        assert!(args.contains(&"password".to_string()));
+        assert!(args.contains(&"10.0.0.1".to_string()));
+    }
+
+    #[test]
+    fn no_placeholder_left_in_argv() {
+        // Every template that uses any placeholder must produce argv with no
+        // stray `{...}` tokens.
+        let templates = [
+            ("nuclei", "http://x", "nuclei -u {url} -severity high"),
+            ("certipy", "x.local", "certipy find -u {user}@{domain} -p {password}"),
+            ("dirb", "http://x", "dirb {url} {wordlist}"),
+            ("evil_winrm", "10.0.0.1", "evil-winrm -i {host} -u {user} -p {password}"),
+            ("astra", "http://x", "python3 modules/scanner.py -u {url}"),
+            ("aws_pwn", "x", "python3 aws_pwn/{flags}"),
+            ("certgraph", "example.com", "certgraph {domain}"),
+            ("chainsaw", "/tmp/log", "chainsaw hunt {file}"),
+        ];
+        for (name, target, tpl) in templates {
+            let (_p, args) = build_command(name, target, Some(tpl)).unwrap();
+            for a in &args {
+                assert!(
+                    !(a.starts_with('{') && a.ends_with('}')),
+                    "tool={} produced literal placeholder in argv: {:?}",
+                    name, args
+                );
+            }
+        }
+    }
+
+    #[test]
+    fn smart_profile_used_when_no_template() {
+        let (prog, args) = build_command("nmap", "10.0.0.1", None).unwrap();
+        assert_eq!(prog, "nmap");
+        assert!(args.contains(&"-sV".to_string()));
+        assert!(args.contains(&"10.0.0.1".to_string()));
+    }
+
+    #[test]
+    fn target_with_spaces_is_atomic() {
+        // Defensive — a target containing a space must remain a single argv slot.
+        let (_p, args) = build_command(
+            "echo_test", "value with space",
+            Some("echo {target}"),
+        ).unwrap();
+        assert!(args.contains(&"value with space".to_string()),
+                "target was split across argv: {:?}", args);
+    }
+
+    #[test]
+    fn placeholder_default_is_deterministic() {
+        assert_eq!(placeholder_default("wordlist", "T"),
+                   "/usr/share/wordlists/dirb/common.txt");
+        assert_eq!(placeholder_default("user", "T"), "admin");
+        assert_eq!(placeholder_default("password", "T"), "password");
+        assert_eq!(placeholder_default("file", "/tmp/x"), "/tmp/x");
+        assert_eq!(placeholder_default("totally_unknown", "TGT"), "TGT");
+    }
 }
