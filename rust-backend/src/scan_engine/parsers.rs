@@ -24,6 +24,7 @@ pub fn parse_output(tool_name: &str, output: &str) -> Option<JsonValue> {
             | "recon-ng" | "spiderfoot-cli" | "metagoofil" | "urlcrazy" | "dnschef" | "dnscat"
             | "dns2tcp" | "dns2tcpc" | "dns2tcpd" | "breacher" | "red_hawk" | "parsero" | "xnlinkfinder"
             | "socialscan" | "pompem" | "raven" | "puredns-resolver" | "s3scanner" | "spray"
+            | "dig" | "host" | "nslookup" | "whois" | "gobuster-dns" | "checkurl" | "subjack"
             => parse_subdomain_enum(output),
         "theharvester" => parse_theharvester(output),
         "masscan" | "rustscan" | "zmap" | "unicornscan" | "naabu"
@@ -108,6 +109,7 @@ pub fn parse_output(tool_name: &str, output: &str) -> Option<JsonValue> {
             | "chntpw" | "chntpw-tool" | "cmospwd"
             | "aesfix" | "aeskeyfind" | "rsakeyfind"
             | "forensics-colorize" | "metacam"
+            | "autopsy" | "guymager" | "memdump" | "gpart" | "xplico"
             => parse_forensics_findings(output),
         // Wifi / RF / Bluetooth
         "mdk3" | "mdk4" | "wash" | "fluxion" | "fiked" | "freeradius-wpe" | "wifi-honey"
@@ -127,12 +129,15 @@ pub fn parse_output(tool_name: &str, output: &str) -> Option<JsonValue> {
             | "driftnet" | "ferret-sidejack" | "dns-rebind" | "dnsspoof"
             | "mausezahn" | "hexinject" | "irpas" | "nemesis" | "t50"
             | "macchanger" | "arp"
+            | "bettercap" | "scapy"
+            | "0trace" | "0trace.sh" | "traceroute" | "mtr"
+            | "iftop" | "nethogs" | "nload" | "iptraf-ng" | "vnstat" | "bmon" | "tftpd32"
             => parse_packet_capture(output),
         // VoIP
         "sippts" | "sipp" | "siparmyknife" | "sipsak" | "sipvicious"
             | "voiphopper" | "enumiax" | "ass" | "iaxflood" | "inviteflood"
             | "protos-sip" | "rtpbreak" | "rtpflood" | "rtpinsertsound" | "rtpmixsound"
-            | "ohrwurm"
+            | "ohrwurm" | "sentrypeer"
             => parse_voip_findings(output),
         // Payload generation / post-exploit / c2
         "msfvenom" | "msfpc" | "donut" | "exe2hex" | "exe2hexbat" | "shellter" | "backdoor-factory"
@@ -152,6 +157,10 @@ pub fn parse_output(tool_name: &str, output: &str) -> Option<JsonValue> {
             | "ligolo-ng-common-binaries" | "ligolo-proxy"
             | "iodine" | "iodine-client-start" | "ptunnel" | "pwnat"
             | "redsocks" | "miredo" | "sshuttle" | "proxytunnel"
+            | "afl" | "afl++" | "afl-fuzz" | "aflplusplus" | "libfuzzer"
+            | "autossh" | "mosh" | "sshpass"
+            | "proxychains" | "proxychains4" | "torsocks" | "udptunnel"
+            | "openvpn" | "wireguard" | "stunnel" | "stunnel4"
             => parse_payload_info(output),
         // Cisco / network device audit (vuln family)
         "cge.pl" | "cisco-auditing-tool" | "cisco-global-exploiter" | "cisco-ocs" | "cisco-torch"
@@ -160,6 +169,11 @@ pub fn parse_output(tool_name: &str, output: &str) -> Option<JsonValue> {
             | "sqlninja" | "sqlsus" | "oscanner"
             | "pdfid" | "pdf-parser" | "pdfparser" | "phpggc"
             | "nasty" | "yersinia"
+            | "heartleech" | "swaks" | "clamav" | "clamscan"
+            | "mobsf" | "mob_droid" | "cymothoa" | "termineter" | "toolsley"
+            | "bloodhound" | "impacket" | "endgame" | "enigma"
+            | "akto" | "aiverify" | "cortex" | "opencti" | "intelmq"
+            | "misp" | "thehive" | "yeti" | "gvm" | "grr" | "inetsim" | "maltego"
             => parse_vuln_findings(output),
         _ => parse_generic(output),
     }
