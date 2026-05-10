@@ -159,7 +159,7 @@ pub fn parse_output(tool_name: &str, output: &str) -> Option<JsonValue> {
             | "tnscmd10g" | "apache-users" | "slowhttptest" | "bed"
             | "sqlninja" | "sqlsus" | "oscanner"
             | "pdfid" | "pdf-parser" | "pdfparser" | "phpggc"
-            | "nasty" | "yersinia" | "voiphopper"
+            | "nasty" | "yersinia"
             => parse_vuln_findings(output),
         _ => parse_generic(output),
     }
@@ -844,14 +844,14 @@ fn parse_forensics_findings(output: &str) -> Option<JsonValue> {
         }
         for m in hash_re.find_iter(t) {
             let h = m.as_str().to_string();
-            if \!hashes.contains(&h) && hashes.len() < 200 { hashes.push(h); }
+            if !hashes.contains(&h) && hashes.len() < 200 { hashes.push(h); }
         }
         if let Some(p) = path_re.find(t) {
-            artifacts.push(json\!({"path": p.as_str(), "raw": t, "severity": "low"}));
+            artifacts.push(json!({"path": p.as_str(), "raw": t, "severity": "low"}));
             if artifacts.len() >= 500 { break; }
         }
     }
-    Some(json\!({
+    Some(json!({
         "summary": {
             "total": artifacts.len() + hashes.len(),
             "critical": 0, "high": 0, "medium": 0, "low": artifacts.len(),
@@ -879,7 +879,7 @@ fn parse_wifi_findings(output: &str) -> Option<JsonValue> {
         let ssid = ssid_re.captures(t).map(|c| c[1].to_string());
         let channel = chan_re.captures(t).and_then(|c| c[1].parse::<u32>().ok());
         if bssid.is_some() || ssid.is_some() {
-            networks.push(json\!({
+            networks.push(json!({
                 "bssid": bssid,
                 "ssid": ssid,
                 "channel": channel,
@@ -889,7 +889,7 @@ fn parse_wifi_findings(output: &str) -> Option<JsonValue> {
             if networks.len() >= 500 { break; }
         }
     }
-    Some(json\!({
+    Some(json!({
         "summary": {
             "total": networks.len(),
             "critical": 0,
@@ -916,14 +916,14 @@ fn parse_packet_capture(output: &str) -> Option<JsonValue> {
         if t.is_empty() { continue; }
         if let Some(c) = pkt_re.captures(t) { packets += c[1].parse::<u64>().unwrap_or(0); }
         if let Some(c) = cred_re.captures(t) {
-            creds.push(json\!({"field": c[1].to_string(), "value": c[2].to_string(), "severity": "high", "raw": t}));
+            creds.push(json!({"field": c[1].to_string(), "value": c[2].to_string(), "severity": "high", "raw": t}));
         }
         for m in ip_re.find_iter(t) {
             let h = m.as_str().to_string();
-            if \!hosts.contains(&h) && hosts.len() < 200 { hosts.push(h); }
+            if !hosts.contains(&h) && hosts.len() < 200 { hosts.push(h); }
         }
     }
-    Some(json\!({
+    Some(json!({
         "summary": {
             "total": hosts.len() + creds.len(),
             "critical": 0,
@@ -951,18 +951,18 @@ fn parse_voip_findings(output: &str) -> Option<JsonValue> {
         if t.is_empty() { continue; }
         if let Some(c) = ext_re.captures(t) {
             let e = c[1].to_string();
-            if \!extensions.contains(&e) { extensions.push(e); }
+            if !extensions.contains(&e) { extensions.push(e); }
         }
         if let Some(c) = user_re.captures(t) {
             let u = c[1].to_string();
-            if \!users.contains(&u) { users.push(u); }
+            if !users.contains(&u) { users.push(u); }
         }
         if resp_re.is_match(t) {
-            findings.push(json\!({"description": t, "severity": "low"}));
+            findings.push(json!({"description": t, "severity": "low"}));
             if findings.len() >= 200 { break; }
         }
     }
-    Some(json\!({
+    Some(json!({
         "summary": {
             "total": extensions.len() + users.len() + findings.len(),
             "critical": 0, "high": 0, "medium": 0,
@@ -990,15 +990,15 @@ fn parse_payload_info(output: &str) -> Option<JsonValue> {
         if size.is_none() { if let Some(c) = size_re.captures(t) { size = c[1].parse::<u64>().ok(); } }
         if format.is_none() { if let Some(c) = fmt_re.captures(t) { format = Some(c[1].to_string()); } }
         if let Some(c) = saved_re.captures(t) {
-            info.push(json\!({"description": format\!("output: {}", &c[2]), "severity": "low"}));
+            info.push(json!({"description": format!("output: {}", &c[2]), "severity": "low"}));
         }
         if listen_re.is_match(t) {
-            info.push(json\!({"description": t, "severity": "medium"}));
+            info.push(json!({"description": t, "severity": "medium"}));
         }
     }
     let med = info.iter().filter(|f| f["severity"] == "medium").count();
     let lo = info.iter().filter(|f| f["severity"] == "low").count();
-    Some(json\!({
+    Some(json!({
         "summary": {
             "total": info.len() + if size.is_some() { 1 } else { 0 },
             "critical": 0, "high": 0,
