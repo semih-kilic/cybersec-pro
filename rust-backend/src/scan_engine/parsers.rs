@@ -87,6 +87,80 @@ pub fn parse_output(tool_name: &str, output: &str) -> Option<JsonValue> {
             | "cartography" | "gcpbucketbrute" | "azurehound" | "cosign" | "defectdojo"
             | "scoutsuite" | "syft" | "slsa_verifier" | "rekor_cli" | "terraform"
             => parse_iac_findings(output),
+        // Forensics / disk / file recovery / registry
+        "sleuthkit" | "fls" | "ils" | "icat" | "jls" | "jcat"
+            | "blkcat" | "blkstat" | "blkls" | "blkcalc"
+            | "mmls" | "mmcat" | "mmstat" | "fsstat"
+            | "hfind" | "ifind" | "ffind" | "istat" | "img_cat" | "img_stat"
+            | "tsk_comparedir" | "tsk_gettimes" | "tsk_loaddb" | "tsk_recover" | "sorter" | "sigfind"
+            | "foremost" | "scalpel" | "photorec" | "testdisk" | "magicrescue" | "myrescue"
+            | "recoverdm" | "recoverjpeg" | "safecopy"
+            | "bulk-extractor" | "bulk_extractor"
+            | "ext3grep" | "ext4magic" | "extundelete" | "fatcat" | "scrounge-ntfs" | "xmount"
+            | "ewfacquire" | "ewf-tools" | "affcat" | "afflib-tools"
+            | "dc3dd" | "dcfldd" | "dd_rescue" | "ddrescue" | "mac-robber" | "mactime"
+            | "libhivex-bin" | "reglookup" | "regripper" | "rifiuti" | "rifiuti2"
+            | "pasco" | "galleta" | "missidentify" | "vinetto" | "dumpzilla"
+            | "pst-utils" | "readpst" | "undbx" | "cabextract"
+            | "exifprobe" | "exiftool" | "exiv2" | "srch_strings"
+            | "grokevt" | "grokevt-addlog" | "grokevt-builddb" | "grokevt-findlogs"
+            | "grokevt-parselog" | "grokevt-ripdll"
+            | "chntpw" | "chntpw-tool" | "cmospwd"
+            | "aesfix" | "aeskeyfind" | "rsakeyfind"
+            | "forensics-colorize" | "metacam"
+            => parse_forensics_findings(output),
+        // Wifi / RF / Bluetooth
+        "mdk3" | "mdk4" | "wash" | "fluxion" | "fiked" | "freeradius-wpe" | "wifi-honey"
+            | "pixiewps" | "kalibrate-rtl" | "evil_twin" | "kawaii_deauther"
+            | "hcxdumptool" | "hcxtools" | "crackle" | "blue-hydra" | "blueranger"
+            | "bluelog" | "bluez-hcidump"
+            | "multimon-ng" | "chirp" | "mfterm" | "nfc-list" | "nfc-mfclassic"
+            | "ubertooth-util" | "hackrf" | "hackrf_info" | "gnuradio"
+            | "gr-air-modes" | "gr-osmosdr" | "uhd-host" | "inspectrum"
+            | "rfdump" | "rfkill" | "atk6-thcping6"
+            | "thc-ipv6" | "thc-pptp-bruter" | "thc-ssl-dos"
+            => parse_wifi_findings(output),
+        // Packet capture / sniffer / MitM
+        "tcpdump" | "tcpflow" | "tcpick" | "tcpreplay" | "dumpcap" | "tshark"
+            | "ngrep" | "netsniff-ng" | "trafgen" | "ettercap" | "ettercap-text-only"
+            | "dsniff" | "arpspoof" | "arpwatch" | "sniffjoke" | "fragrouter"
+            | "driftnet" | "ferret-sidejack" | "dns-rebind" | "dnsspoof"
+            | "mausezahn" | "hexinject" | "irpas" | "nemesis" | "t50"
+            | "macchanger" | "arp"
+            => parse_packet_capture(output),
+        // VoIP
+        "sippts" | "sipp" | "siparmyknife" | "sipsak" | "sipvicious"
+            | "voiphopper" | "enumiax" | "ass" | "iaxflood" | "inviteflood"
+            | "protos-sip" | "rtpbreak" | "rtpflood" | "rtpinsertsound" | "rtpmixsound"
+            | "ohrwurm"
+            => parse_voip_findings(output),
+        // Payload generation / post-exploit / c2
+        "msfvenom" | "msfpc" | "donut" | "exe2hex" | "exe2hexbat" | "shellter" | "backdoor-factory"
+            | "evilginx2" | "sliver" | "havoc" | "koadic" | "weevely" | "webacoo" | "hoaxshell"
+            | "pwncat" | "pwncat_cs"
+            | "powershell-empire" | "powersploit" | "powersploit-tool" | "nishang"
+            | "set" | "setoolkit"
+            | "jboss-autopwn" | "jboss-linux" | "jboss-win"
+            | "veil" | "villain" | "vegile" | "sickle-pdk"
+            | "generic_chunked" | "generic_listen_tcp" | "generic_send_tcp" | "generic_send_udp"
+            | "sfuzz" | "dsss" | "spike" | "radamsa"
+            | "powercat" | "dbd" | "sbd" | "ncat" | "nc" | "ncat-w32" | "netcat" | "socat"
+            | "maskphish" | "brute_force_socialmedia" | "keydroid"
+            | "adaptixclient" | "adaptixserver"
+            | "chisel" | "chisel-common-binaries"
+            | "ligolo-agent" | "ligolo-mp" | "ligolo-mp-client"
+            | "ligolo-ng-common-binaries" | "ligolo-proxy"
+            | "iodine" | "iodine-client-start" | "ptunnel" | "pwnat"
+            | "redsocks" | "miredo" | "sshuttle" | "proxytunnel"
+            => parse_payload_info(output),
+        // Cisco / network device audit (vuln family)
+        "cge.pl" | "cisco-auditing-tool" | "cisco-global-exploiter" | "cisco-ocs" | "cisco-torch"
+            | "copy-router-config" | "copy-router-config.pl" | "merge-router-config.pl"
+            | "tnscmd10g" | "apache-users" | "slowhttptest" | "bed"
+            | "sqlninja" | "sqlsus" | "oscanner"
+            | "pdfid" | "pdf-parser" | "pdfparser" | "phpggc"
+            | "nasty" | "yersinia" | "voiphopper"
+            => parse_vuln_findings(output),
         _ => parse_generic(output),
     }
 }
@@ -751,5 +825,189 @@ fn parse_iac_findings(output: &str) -> Option<JsonValue> {
     Some(json!({
         "summary": {"total": findings.len(), "critical": critical, "high": high, "medium": medium, "low": low, "open_ports": 0},
         "findings": findings
+    }))
+}
+
+// ── Forensics: file artifacts, recovery counts, hashes, registry hits ──
+fn parse_forensics_findings(output: &str) -> Option<JsonValue> {
+    let mut artifacts: Vec<JsonValue> = Vec::new();
+    let path_re = Regex::new(r"(?m)(/[\w./_\-]+|[A-Za-z]:\\[\w\\.\-]+)").ok()?;
+    let hash_re = Regex::new(r"\b[a-fA-F0-9]{32,64}\b").ok()?;
+    let recover_re = Regex::new(r"(?i)(recovered|extracted|carved|found)\s+(\d+)").ok()?;
+    let mut recovered = 0u64;
+    let mut hashes: Vec<String> = Vec::new();
+    for line in output.lines() {
+        let t = line.trim();
+        if t.is_empty() { continue; }
+        if let Some(c) = recover_re.captures(t) {
+            recovered += c[2].parse::<u64>().unwrap_or(0);
+        }
+        for m in hash_re.find_iter(t) {
+            let h = m.as_str().to_string();
+            if \!hashes.contains(&h) && hashes.len() < 200 { hashes.push(h); }
+        }
+        if let Some(p) = path_re.find(t) {
+            artifacts.push(json\!({"path": p.as_str(), "raw": t, "severity": "low"}));
+            if artifacts.len() >= 500 { break; }
+        }
+    }
+    Some(json\!({
+        "summary": {
+            "total": artifacts.len() + hashes.len(),
+            "critical": 0, "high": 0, "medium": 0, "low": artifacts.len(),
+            "open_ports": 0,
+            "recovered_items": recovered
+        },
+        "artifacts": artifacts,
+        "hashes": hashes
+    }))
+}
+
+// ── Wifi/RF/Bluetooth: BSSIDs, SSIDs, channels ──
+fn parse_wifi_findings(output: &str) -> Option<JsonValue> {
+    let mut networks: Vec<JsonValue> = Vec::new();
+    let mut handshakes: u64 = 0;
+    let bssid_re = Regex::new(r"(?i)([0-9A-F]{2}(?:[:-][0-9A-F]{2}){5})").ok()?;
+    let ssid_re = Regex::new(r#"(?i)\bESSID[:=]\s*"?([^"\n]+?)"?\s*$"#).ok()?;
+    let chan_re = Regex::new(r"(?i)\bCH(?:annel)?[:=\s]+(\d+)").ok()?;
+    let hs_re = Regex::new(r"(?i)(WPA handshake|EAPOL|PMKID)").ok()?;
+    for line in output.lines() {
+        let t = line.trim();
+        if t.is_empty() { continue; }
+        if hs_re.is_match(t) { handshakes += 1; }
+        let bssid = bssid_re.find(t).map(|m| m.as_str().to_string());
+        let ssid = ssid_re.captures(t).map(|c| c[1].to_string());
+        let channel = chan_re.captures(t).and_then(|c| c[1].parse::<u32>().ok());
+        if bssid.is_some() || ssid.is_some() {
+            networks.push(json\!({
+                "bssid": bssid,
+                "ssid": ssid,
+                "channel": channel,
+                "raw": t,
+                "severity": "low"
+            }));
+            if networks.len() >= 500 { break; }
+        }
+    }
+    Some(json\!({
+        "summary": {
+            "total": networks.len(),
+            "critical": 0,
+            "high": handshakes as usize,
+            "medium": 0,
+            "low": networks.len(),
+            "open_ports": 0,
+            "handshakes": handshakes
+        },
+        "networks": networks
+    }))
+}
+
+// ── Packet capture / sniffer / MitM ──
+fn parse_packet_capture(output: &str) -> Option<JsonValue> {
+    let mut hosts: Vec<String> = Vec::new();
+    let mut creds: Vec<JsonValue> = Vec::new();
+    let mut packets: u64 = 0;
+    let ip_re = Regex::new(r"\b(?:\d{1,3}\.){3}\d{1,3}\b").ok()?;
+    let pkt_re = Regex::new(r"(?i)(\d+)\s+packets?\s+(captured|received|got)").ok()?;
+    let cred_re = Regex::new(r"(?i)(USER|PASS|LOGIN|HASH|TOKEN)[:=]\s*(\S+)").ok()?;
+    for line in output.lines() {
+        let t = line.trim();
+        if t.is_empty() { continue; }
+        if let Some(c) = pkt_re.captures(t) { packets += c[1].parse::<u64>().unwrap_or(0); }
+        if let Some(c) = cred_re.captures(t) {
+            creds.push(json\!({"field": c[1].to_string(), "value": c[2].to_string(), "severity": "high", "raw": t}));
+        }
+        for m in ip_re.find_iter(t) {
+            let h = m.as_str().to_string();
+            if \!hosts.contains(&h) && hosts.len() < 200 { hosts.push(h); }
+        }
+    }
+    Some(json\!({
+        "summary": {
+            "total": hosts.len() + creds.len(),
+            "critical": 0,
+            "high": creds.len(),
+            "medium": 0,
+            "low": hosts.len(),
+            "open_ports": 0,
+            "packets": packets
+        },
+        "hosts": hosts,
+        "credentials": creds
+    }))
+}
+
+// ── VoIP: extensions, SIP users ──
+fn parse_voip_findings(output: &str) -> Option<JsonValue> {
+    let mut extensions: Vec<String> = Vec::new();
+    let mut users: Vec<String> = Vec::new();
+    let mut findings: Vec<JsonValue> = Vec::new();
+    let ext_re = Regex::new(r"(?i)(?:extension|ext)[:=\s]+(\d{2,8})").ok()?;
+    let user_re = Regex::new(r"(?i)(?:user|sip user|account)[:=\s]+([\w.\-]+)").ok()?;
+    let resp_re = Regex::new(r"(?i)\b(SIP/2\.0\s+\d{3}|REGISTER|INVITE|OPTIONS)\b").ok()?;
+    for line in output.lines() {
+        let t = line.trim();
+        if t.is_empty() { continue; }
+        if let Some(c) = ext_re.captures(t) {
+            let e = c[1].to_string();
+            if \!extensions.contains(&e) { extensions.push(e); }
+        }
+        if let Some(c) = user_re.captures(t) {
+            let u = c[1].to_string();
+            if \!users.contains(&u) { users.push(u); }
+        }
+        if resp_re.is_match(t) {
+            findings.push(json\!({"description": t, "severity": "low"}));
+            if findings.len() >= 200 { break; }
+        }
+    }
+    Some(json\!({
+        "summary": {
+            "total": extensions.len() + users.len() + findings.len(),
+            "critical": 0, "high": 0, "medium": 0,
+            "low": extensions.len() + users.len(),
+            "open_ports": 0
+        },
+        "extensions": extensions,
+        "users": users,
+        "findings": findings
+    }))
+}
+
+// ── Payload generation / post-exploit / c2 ──
+fn parse_payload_info(output: &str) -> Option<JsonValue> {
+    let mut info: Vec<JsonValue> = Vec::new();
+    let mut size: Option<u64> = None;
+    let mut format: Option<String> = None;
+    let size_re = Regex::new(r"(?i)(?:size|length|payload size)[:=\s]+(\d+)").ok()?;
+    let fmt_re = Regex::new(r"(?i)(?:format|type|arch)[:=\s]+([\w./\-]+)").ok()?;
+    let saved_re = Regex::new(r"(?i)(saved as|written to|wrote)\s+(\S+)").ok()?;
+    let listen_re = Regex::new(r"(?i)(listening on|bound to|listener started|tcp listener)").ok()?;
+    for line in output.lines() {
+        let t = line.trim();
+        if t.is_empty() { continue; }
+        if size.is_none() { if let Some(c) = size_re.captures(t) { size = c[1].parse::<u64>().ok(); } }
+        if format.is_none() { if let Some(c) = fmt_re.captures(t) { format = Some(c[1].to_string()); } }
+        if let Some(c) = saved_re.captures(t) {
+            info.push(json\!({"description": format\!("output: {}", &c[2]), "severity": "low"}));
+        }
+        if listen_re.is_match(t) {
+            info.push(json\!({"description": t, "severity": "medium"}));
+        }
+    }
+    let med = info.iter().filter(|f| f["severity"] == "medium").count();
+    let lo = info.iter().filter(|f| f["severity"] == "low").count();
+    Some(json\!({
+        "summary": {
+            "total": info.len() + if size.is_some() { 1 } else { 0 },
+            "critical": 0, "high": 0,
+            "medium": med,
+            "low": lo,
+            "open_ports": 0,
+            "payload_size": size,
+            "payload_format": format
+        },
+        "events": info
     }))
 }
