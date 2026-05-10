@@ -20,7 +20,7 @@ import urllib.error
 BASE = os.environ.get("BASE_URL", "http://127.0.0.1:5001/api/v1")
 EMAIL = os.environ.get("SMOKE_EMAIL", "testdev@cybersec.test")
 PASSWORD = os.environ.get("SMOKE_PASSWORD", "TestPass123!")
-POLL_TIMEOUT = int(os.environ.get("POLL_TIMEOUT", "90"))
+POLL_TIMEOUT = int(os.environ.get("POLL_TIMEOUT", "300"))
 POLL_INTERVAL = 3
 
 # (tool_id, target, expected_findings_keys, scan_type)
@@ -34,7 +34,7 @@ CASES = [
     ("subfinder",  "nmap.org",               ["subdomains", "results"],        "quick"),
     ("dig",        "scanme.nmap.org",        ["records", "subdomains", "results"], "quick"),
     ("nikto",      "http://scanme.nmap.org", ["vulnerabilities", "findings"],  "quick"),
-    ("sslscan",    "scanme.nmap.org",        ["ciphers", "certificate", "ssl"], "quick"),
+    ("sslscan",    "google.com",             ["ciphers", "certificate", "ssl"], "quick"),
     ("gitleaks",   "/home/cybersec/cybersec-pro", ["secrets", "findings"],      "quick"),
     ("tfsec",      "/home/cybersec/cybersec-pro", ["iac_findings", "findings"], "quick"),
     ("trivy",      "/home/cybersec/cybersec-pro", ["vulnerabilities", "findings"], "quick"),

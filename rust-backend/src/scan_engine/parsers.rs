@@ -9,7 +9,7 @@ pub fn parse_output(tool_name: &str, output: &str) -> Option<JsonValue> {
         "sqlmap" => parse_sqlmap(output),
         "nuclei" => parse_nuclei(output),
         "gobuster" | "dirb" | "ffuf" | "feroxbuster" | "wfuzz" | "dirsearch" | "dotdotpwn" | "davtest" | "goldeneye" | "httprint"
-            | "skipfish" | "owasp-mantra-ff"
+            | "skipfish" | "owasp-mantra-ff" | "uniscan" | "lbd" | "cadaver"
             => parse_directory_scan(output),
         "sslscan" | "sslyze" | "tlssled" | "ssldump" | "sslh" | "sslsniff" | "sslsplit" | "sslstrip" | "qsslcaudit" | "mxcheck"
             => parse_sslscan(output),
@@ -21,7 +21,8 @@ pub fn parse_output(tool_name: &str, output: &str) -> Option<JsonValue> {
             | "altdns" | "anew" | "chaos" | "censys-cli" | "dnstwist" | "dnswalk" | "dnstracer" | "massdns"
             | "finalrecon" | "lazyrecon" | "fang" | "emailharvester" | "email2phonenumber" | "holehe" | "h8mail"
             | "linkedin2username" | "instaloader" | "instaloader-tool" | "maryam"
-            | "recon-ng" | "spiderfoot-cli" | "metagoofil" | "urlcrazy" | "dnschef" | "dnscat"
+            | "recon-ng" | "spiderfoot-cli" | "spiderfoot" | "sherlock" | "bbot" | "osrframework"
+            | "metagoofil" | "urlcrazy" | "dnschef" | "dnscat"
             | "dns2tcp" | "dns2tcpc" | "dns2tcpd" | "breacher" | "red_hawk" | "parsero" | "xnlinkfinder"
             | "socialscan" | "pompem" | "raven" | "puredns-resolver" | "s3scanner" | "spray"
             | "dig" | "host" | "nslookup" | "whois" | "gobuster-dns" | "checkurl" | "subjack"
@@ -44,11 +45,12 @@ pub fn parse_output(tool_name: &str, output: &str) -> Option<JsonValue> {
             | "polenum" | "creddump7" | "pack" | "pack2" | "rubeus" | "sharphound"
             | "spraykatz" | "pipal" | "bopscrk" | "rsmangler" | "cupp" | "crunch" | "cewl"
             | "sipcrack" | "svcrack" | "svmap" | "svreport" | "svwar" | "sqldict" | "padbuster"
-            | "passing-the-hash" | "wce" | "rarcrack" | "ccrypt"
+            | "passing-the-hash" | "wce" | "rarcrack" | "ccrypt" | "patator"
             => parse_brute_force(output),
         "enum4linux" | "smbmap" | "smbclient" | "impacket-smbclient" | "impacket-smbserver"
             | "rpcclient" | "smbexec.py" | "smbserver.py" | "wmiexec.py" | "psexec.py" | "smtp-user-enum"
-            | "impacket-scripts"
+            | "impacket-scripts" | "ldapsearch" | "ldeep" | "bloodhound-python" | "bloodhound-ce-python"
+            | "bloodyAD"
             => parse_smb(output),
         "testssl" | "testssl.sh" => parse_testssl(output),
         "wapiti" => parse_wapiti(output),
@@ -73,8 +75,11 @@ pub fn parse_output(tool_name: &str, output: &str) -> Option<JsonValue> {
             | "nuclei-takeovers" | "nmap-vulners" | "witnessme" | "xsser" | "xsstrike" | "xsscon"
             | "xanxss" | "tinja" | "explo" | "pkexec-exploit" | "windows-privesc-check"
             | "winregfs" | "trivy_repo"
+            | "androguard" | "androwarn" | "quark_engine" | "safety" | "npm_audit"
+            | "owasp_zap" | "caido" | "caido-cli" | "autorecon" | "CAT"
             => parse_vuln_findings(output),
         "gitleaks" | "detect_secrets" | "git_secrets" | "gitxray" | "whispers" | "secretfinder"
+            | "trufflehog" | "ggshield"
             => parse_secret_findings(output),
         "katana" | "hakrawler" | "gospider" | "gospider-pro" | "gau" | "getallurls"
             | "waybackurls" | "paramspider" | "arjun" | "crlfuzz" | "extended_xss_search"
@@ -87,6 +92,7 @@ pub fn parse_output(tool_name: &str, output: &str) -> Option<JsonValue> {
             | "dockle" | "dive" | "hadolint" | "docker_bench" | "cloudsplaining" | "cloudbrute"
             | "cartography" | "gcpbucketbrute" | "azurehound" | "cosign" | "defectdojo"
             | "scoutsuite" | "syft" | "slsa_verifier" | "rekor_cli" | "terraform"
+            | "prowler" | "pacu"
             => parse_iac_findings(output),
         // Forensics / disk / file recovery / registry
         "sleuthkit" | "fls" | "ils" | "icat" | "jls" | "jcat"
@@ -110,6 +116,7 @@ pub fn parse_output(tool_name: &str, output: &str) -> Option<JsonValue> {
             | "aesfix" | "aeskeyfind" | "rsakeyfind"
             | "forensics-colorize" | "metacam"
             | "autopsy" | "guymager" | "memdump" | "gpart" | "xplico"
+            | "volatility3" | "vol3" | "plaso" | "ghidra" | "mdbtools" | "mdb-sql"
             => parse_forensics_findings(output),
         // Wifi / RF / Bluetooth
         "mdk3" | "mdk4" | "wash" | "fluxion" | "fiked" | "freeradius-wpe" | "wifi-honey"
@@ -121,6 +128,7 @@ pub fn parse_output(tool_name: &str, output: &str) -> Option<JsonValue> {
             | "gr-air-modes" | "gr-osmosdr" | "uhd-host" | "inspectrum"
             | "rfdump" | "rfkill" | "atk6-thcping6"
             | "thc-ipv6" | "thc-pptp-bruter" | "thc-ssl-dos"
+            | "wifite" | "wifiphisher" | "wifipumpkin3" | "airgeddon" | "isr-evilgrade"
             => parse_wifi_findings(output),
         // Packet capture / sniffer / MitM
         "tcpdump" | "tcpflow" | "tcpick" | "tcpreplay" | "dumpcap" | "tshark"
@@ -132,6 +140,8 @@ pub fn parse_output(tool_name: &str, output: &str) -> Option<JsonValue> {
             | "bettercap" | "scapy"
             | "0trace" | "0trace.sh" | "traceroute" | "mtr"
             | "iftop" | "nethogs" | "nload" | "iptraf-ng" | "vnstat" | "bmon" | "tftpd32"
+            | "mitmproxy" | "mitm6" | "hamster-sidejack" | "hb-honeypot" | "above"
+            | "lockphish" | "saycheese" | "maskphish" | "weeman"
             => parse_packet_capture(output),
         // VoIP
         "sippts" | "sipp" | "siparmyknife" | "sipsak" | "sipvicious"
@@ -145,6 +155,9 @@ pub fn parse_output(tool_name: &str, output: &str) -> Option<JsonValue> {
             | "pwncat" | "pwncat_cs"
             | "powershell-empire" | "powersploit" | "powersploit-tool" | "nishang"
             | "set" | "setoolkit"
+            | "metasploit" | "metasploit-framework" | "msfconsole" | "msf-nasm_shell"
+            | "starkiller" | "hexstrike_server" | "krbrelayx" | "weirdaal" | "evilgrade"
+            | "gophish-stop" | "juice-shop" | "juice-shop-stop" | "dvwa-start" | "dvwa-stop"
             | "jboss-autopwn" | "jboss-linux" | "jboss-win"
             | "veil" | "villain" | "vegile" | "sickle-pdk"
             | "generic_chunked" | "generic_listen_tcp" | "generic_send_tcp" | "generic_send_udp"
