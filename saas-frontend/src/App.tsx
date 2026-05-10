@@ -223,9 +223,9 @@ const DASHBOARD_NAV: VosNavItem[] = [
   { label: 'Scan Templates',  to: '/dashboard/scan-templates',   icon: FileStack },
   // ── Account ───────────────────────────────────────────────────────
   { label: 'Upgrade Plan',    to: '/dashboard/upgrade',          icon: Zap,           section: 'Account', cta: true },
-  // ── System (admin / superadmin only) ──────────────────────────────
+  // ── System (superadmin only — regular admins manage everything via Settings) ──
   { label: 'Admin',           to: '/dashboard/admin',            icon: Crown,         section: 'System',
-    roles: ['admin', 'superadmin'] },
+    roles: ['superadmin'] },
   { label: 'Service Manager', to: '/dashboard/service-manager',  icon: ShieldAlert,
     roles: ['superadmin'] },
   { label: 'God Mode',        to: '/dashboard/god-mode',         icon: Wand2,
