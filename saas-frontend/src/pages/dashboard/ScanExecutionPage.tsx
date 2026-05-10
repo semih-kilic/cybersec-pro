@@ -34,8 +34,10 @@ import { queryKeys, CACHE_TIMES } from '../../lib/queryClient';
 import {
   useToolExecutionMode,
   useFetchBusinessReport,
+  useGenerateReport,
   normalizeAgentsPayload,
 } from '../../hooks/useApiQueries';
+import { useToast } from '../../components/ui/Toast';
 import {
   PageHeader,
   StatusPill,
@@ -223,6 +225,9 @@ export function ScanExecutionPage() {
 
   const { data: executionModeData } = useToolExecutionMode(toolId);
   const businessReportMutation = useFetchBusinessReport();
+  const generateReportMutation = useGenerateReport();
+  const toast = useToast();
+  const [pdfDownloading, setPdfDownloading] = useState(false);
 
   useEffect(() => {
     if (executionModeData) setExecutionMode(executionModeData as any);
@@ -359,6 +364,43 @@ export function ScanExecutionPage() {
       setViewMode('results');
     } catch {
       /* keep terminal */
+    }
+  };
+
+  const handleDownloadPdf = async () => {
+    if (!currentScanId || pdfDownloading) return;
+    setPdfDownloading(true);
+    try {
+      const reportName = `${businessName || tool?.name || 'Scan'}_${target || 'report'}`.replace(
+        /[^A-Za-z0-9_-]+/g,
+        '_',
+      );
+      const res = await generateReportMutation.mutateAsync({
+        scan_ids: [currentScanId],
+        name: reportName,
+        format: 'pdf',
+        template: 'full',
+      });
+      const blob = await (res as Response).blob();
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `${reportName}_${new Date().toISOString().split('T')[0]}.pdf`;
+      document.body.appendChild(a);
+      a.click();
+      window.URL.revokeObjectURL(url);
+      document.body.removeChild(a);
+      toast.success(
+        t('reports.downloadStarted', 'PDF report downloaded'),
+        t('reports.downloadStartedDetail', 'Saved to your downloads folder.'),
+      );
+    } catch (err: any) {
+      toast.error(
+        t('reports.reportFailed', 'Report Failed'),
+        err?.message || t('reports.failedToGenerateReport', 'Failed to generate report'),
+      );
+    } finally {
+      setPdfDownloading(false);
     }
   };
 
@@ -824,12 +866,25 @@ export function ScanExecutionPage() {
                 Terminal
               </button>
               <div className="flex-1" />
+              <button
+                type="button"
+                onClick={handleDownloadPdf}
+                disabled={pdfDownloading || !currentScanId}
+                className="px-vos-4 py-vos-2 rounded-vos-md bg-vos-accent text-white hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed text-vos-sm font-medium transition flex items-center gap-1.5"
+                title={t('reports.downloadPdfNow', 'Download PDF report')}
+              >
+                <FileText className="w-4 h-4" />
+                {pdfDownloading
+                  ? t('reports.generating', 'Generating…')
+                  : t('reports.downloadPdf', 'Download PDF')}
+              </button>
               <Link
                 to={`/dashboard/reports?scan=${currentScanId}`}
                 className="px-vos-4 py-vos-2 rounded-vos-md bg-vos-bg-elev-1 text-vos-text-2 border border-vos-border-1 hover:text-vos-text text-vos-sm font-medium transition flex items-center gap-1.5"
+                title={t('reports.openReportBuilder', 'Open report builder for advanced options')}
               >
                 <FileText className="w-4 h-4" />
-                PDF report
+                {t('reports.customize', 'Customize')}
               </Link>
             </div>
           )}
