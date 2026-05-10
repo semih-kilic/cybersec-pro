@@ -99,7 +99,12 @@ def run_case(tok: str, tool: str, target: str, expected: list[str], scan_type: s
         time.sleep(POLL_INTERVAL)
 
     scan = last.get("scan", last) if isinstance(last, dict) else {}
-    findings = scan.get("findings") or last.get("findings")
+    exec_res = last.get("execution_result") or {}
+    findings = (
+        exec_res.get("findings")
+        or scan.get("findings")
+        or last.get("findings")
+    )
     if isinstance(findings, str):
         try:
             findings = json.loads(findings)
@@ -129,19 +134,22 @@ def run_case(tok: str, tool: str, target: str, expected: list[str], scan_type: s
 
 def main():
     tok = get_token()
-    print(f"auth ok, running {len(CASES)} cases against {BASE}")
+    print(f"auth ok, running {len(CASES)} cases against {BASE}", flush=True)
     results = []
     for tool, tgt, exp, st in CASES:
-        print(f"  -> {tool:<12} target={tgt}")
-        sys.stdout.flush()
+        print(f"  -> {tool:<12} target={tgt}", flush=True)
         try:
             r = run_case(tok, tool, tgt, exp, st)
         except Exception as e:
             r = {"tool": tool, "target": tgt, "ok": False, "exception": str(e)}
         results.append(r)
         flag = "PASS" if r.get("ok") else "FAIL"
-        print(f"     {flag} status={r.get('status')} keys={r.get('findings_keys')} matched={r.get('matched_keys')}")
-        sys.stdout.flush()
+        print(f"     {flag} status={r.get('status')} keys={r.get('findings_keys')} matched={r.get('matched_keys')}", flush=True)
+        # Persist progress after EVERY case, so partial runs are visible.
+        with open("/tmp/parser_validation.json", "w") as f:
+            json.dump({"in_progress": True, "results": results}, f, indent=2)
+        # Avoid hammering the rate limiter (5/60s) and concurrent-scan limit.
+        time.sleep(13)
 
     out = {
         "base_url": BASE,
