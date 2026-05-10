@@ -13,6 +13,7 @@
  * iframe srcDoc preview, file size validation).
  */
 import { useState, useEffect, useRef } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import {
   FileText,
@@ -218,6 +219,25 @@ export function ReportsPage() {
     const template = templates.find((t) => t.id === selectedTemplate);
     if (template) setSelectedSections(template.sections);
   }, [selectedTemplate, templates]);
+
+  // Deep-link: open Generate modal with scan preselected when ?scan=<id> is present
+  const [searchParams, setSearchParams] = useSearchParams();
+  useEffect(() => {
+    const scanId = searchParams.get('scan');
+    if (!scanId) return;
+    setSelectedScans([scanId]);
+    setShowGenerateModal(true);
+    const fmt = searchParams.get('format');
+    if (fmt && ['html', 'pdf', 'json', 'csv', 'markdown'].includes(fmt)) {
+      setReportFormat(fmt as 'html' | 'pdf' | 'json' | 'csv' | 'markdown');
+    }
+    // Clear params so back/forward doesn't re-trigger
+    const next = new URLSearchParams(searchParams);
+    next.delete('scan');
+    next.delete('format');
+    setSearchParams(next, { replace: true });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const downloadReport = (content: string, name: string, format: string) => {
     const extMap: Record<string, string> = {

@@ -1327,6 +1327,11 @@ pub async fn v2_tools(
             "group": resp.group,
             "binary_name": resp.binary_name,
             "installed": true,
+            "maturity": resp.maturity,
+            "output_parser": resp.output_parser,
+            "health_status": resp.health_status,
+            "health_probe": resp.health_probe,
+            "last_health_check": resp.last_health_check,
         }));
     }
 
