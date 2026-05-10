@@ -9,7 +9,7 @@ use nix::sys::signal::{killpg, Signal};
 use nix::unistd::Pid;
 
 use super::parsers::parse_output;
-use super::tool_registry::build_command;
+use super::tool_registry::{build_command, get_tool_max_runtime_secs};
 
 #[allow(dead_code)]
 pub struct ScanResult {
@@ -126,8 +126,11 @@ pub async fn execute_scan(
     let tx_clone = tx.clone();
     let scan_id_owned = scan_id.to_string();
 
+    // Per-tool runtime override (defaults to 900s); slow tools like nikto/gitleaks get more headroom.
+    let max_runtime_secs = get_tool_max_runtime_secs(tool_name);
+
     // Read stdout and stderr concurrently with timeout
-    let result = timeout(Duration::from_secs(900), async {
+    let result = timeout(Duration::from_secs(max_runtime_secs), async {
         loop {
             if stderr_done {
                 // Only read stdout
@@ -194,7 +197,7 @@ pub async fn execute_scan(
             tracing::warn!("Could not get child PID for scan {}, attempting direct kill", scan_id);
         }
         let _ = child.kill().await;
-        return Err(anyhow!("Scan timed out after 900 seconds"));
+        return Err(anyhow!("Scan timed out after {} seconds", max_runtime_secs));
     }
 
     let status = child.wait().await?;

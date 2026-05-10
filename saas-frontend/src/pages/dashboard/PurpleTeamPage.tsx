@@ -61,6 +61,8 @@ interface Exercise {
   blue_team_alerts: BlueAlert[];
   gap_analysis: GapAnalysis;
   coverage_map: Record<string, TacticCoverage>;
+  // UUIDs of underlying scans launched by this exercise (enriched by purple_team_progress_tick).
+  linked_scan_ids?: string[];
 }
 
 interface StepResult {
@@ -499,6 +501,31 @@ function ExerciseDetail({
           <StatCard label="Missed" value={exercise.missed_attacks} icon="💀" color="red" />
           <StatCard label="Detection Rate" value={`${detectionRate}%`} icon="📊" color={detectionRate >= 70 ? 'green' : detectionRate >= 40 ? 'yellow' : 'red'} />
         </div>
+
+        {/* Linked scans — underlying tool runs that produced this exercise's findings */}
+        {exercise.linked_scan_ids && exercise.linked_scan_ids.length > 0 && (
+          <div className="mt-3 rounded-lg border border-cyan-500/30 bg-cyan-500/5 p-3">
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-xs font-bold uppercase tracking-wider text-cyan-300">
+                🔗 {t('purpleTeam.linkedScans', 'Linked Scans')}
+              </span>
+              <span className="text-[10px] text-gray-400">{exercise.linked_scan_ids.length} {t('purpleTeam.scansLabel', 'scan(s)')}</span>
+            </div>
+            <div className="flex flex-wrap gap-2">
+              {exercise.linked_scan_ids.map((scanId) => (
+                <Link
+                  key={scanId}
+                  to={`/dashboard/scans/${scanId}`}
+                  className="inline-flex items-center gap-1 rounded border border-cyan-500/40 bg-gray-800/60 px-2 py-1 text-[11px] font-mono text-cyan-300 hover:bg-cyan-500/10 hover:text-cyan-200 transition-colors"
+                  title={scanId}
+                >
+                  <span className="text-cyan-500">➜</span>
+                  <span>{scanId.slice(0, 8)}</span>
+                </Link>
+              ))}
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Tabs */}

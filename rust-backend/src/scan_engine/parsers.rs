@@ -188,6 +188,26 @@ pub fn parse_output(tool_name: &str, output: &str) -> Option<JsonValue> {
             | "akto" | "aiverify" | "cortex" | "opencti" | "intelmq"
             | "misp" | "thehive" | "yeti" | "gvm" | "grr" | "inetsim" | "maltego"
             => parse_vuln_findings(output),
+        // Mobile / APK static analysis
+        "apktool" | "baksmali" | "smali" | "d2j-dex2jar" | "dex2jar" | "jadx" | "jadx-gui"
+            | "frida" | "frida-tools" | "frida-ps" | "frida-trace" | "objection"
+            | "mobsf" | "mob_droid" | "androguard" | "androwarn" | "quark_engine"
+            | "androbugs" | "qark" | "drozer" | "apkleaks" | "apkid"
+            | "mara_framework" | "mara-framework"
+            => parse_vuln_findings(output),
+        // Binary RE / disassembly / debug / packer / fuzz-helper
+        "radare2" | "r2" | "rizin" | "rz-bin" | "rz-asm" | "rz-diff" | "rz-find"
+            | "ropper" | "ropgadget" | "ropchain" | "one_gadget" | "patchelf"
+            | "readelf" | "readpe" | "objdump" | "nm" | "strings" | "xxd" | "hexdump" | "od"
+            | "ltrace" | "strace" | "ssdeep" | "ssdeep-tool" | "yara" | "yarac"
+            | "floss" | "cutter" | "edb" | "edb-debugger"
+            | "gdb" | "gdb-peda" | "gdb-multiarch" | "gef" | "pwndbg" | "pwntools" | "pwn"
+            | "upx" | "upx-ucl" | "die" | "detect-it-easy"
+            | "pyinstaller" | "pyinstxtractor" | "uncompyle6" | "decompyle3"
+            | "checksec.sh" | "rabin2" | "rasm2" | "radiff2" | "rax2" | "rahash2"
+            | "searchsploit" | "exploitdb" | "exploitdb-papers" | "windows-binaries"
+            | "ghidra-bridge" | "binwalk" | "binwalk3" | "binnavi"
+            => parse_forensics_findings(output),
         _ => parse_generic(output),
     }
 }
@@ -510,17 +530,95 @@ fn parse_generic(output: &str) -> Option<JsonValue> {
     let lines: Vec<&str> = output.lines().collect();
     let total = lines.len();
 
-    // Count potential findings by heuristic
-    let warning_count = lines.iter().filter(|l| {
+    // Severity heuristics — bucket by keyword precedence (critical > high > medium > low/info)
+    let mut critical = 0usize;
+    let mut high = 0usize;
+    let mut medium = 0usize;
+    let mut low = 0usize;
+    let mut info = 0usize;
+    for l in &lines {
         let lower = l.to_lowercase();
-        lower.contains("warning") || lower.contains("vuln") || lower.contains("risk") || lower.contains("critical") || lower.contains("error")
-    }).count();
+        if lower.contains("critical") || lower.contains("[crit]") {
+            critical += 1;
+        } else if lower.contains("high") || lower.contains("severity: high") || lower.contains("[high]") {
+            high += 1;
+        } else if lower.contains("medium") || lower.contains("[medium]") || lower.contains("warning") {
+            medium += 1;
+        } else if lower.contains("low") || lower.contains("[low]") {
+            low += 1;
+        } else if lower.contains("info") || lower.contains("notice") || lower.contains("vuln") || lower.contains("risk") || lower.contains("error") {
+            info += 1;
+        }
+    }
+
+    // Cheap fingerprint extractors — best-effort, regex failures are silently ignored
+    let cve_re = Regex::new(r"CVE-\d{4}-\d{4,7}").ok();
+    let url_re = Regex::new(r#"https?://[^\s"'<>)]+"#).ok();
+    let ip_re = Regex::new(r"\b(?:\d{1,3}\.){3}\d{1,3}\b").ok();
+    let port_re = Regex::new(r"\b(\d{1,5})/(tcp|udp)\b").ok();
+    let host_re = Regex::new(r"(?i)\b([a-z0-9]([a-z0-9\-]{0,61}[a-z0-9])?\.)+[a-z]{2,}\b").ok();
+
+    let mut cves: Vec<String> = Vec::new();
+    let mut urls: Vec<String> = Vec::new();
+    let mut ips: Vec<String> = Vec::new();
+    let mut open_ports: Vec<String> = Vec::new();
+    let mut hosts: Vec<String> = Vec::new();
+
+    for line in &lines {
+        if let Some(re) = &cve_re {
+            for m in re.find_iter(line) {
+                let v = m.as_str().to_string();
+                if !cves.contains(&v) { cves.push(v); }
+            }
+        }
+        if let Some(re) = &url_re {
+            if let Some(m) = re.find(line) {
+                let v = m.as_str().trim_end_matches(&[',', '.', ')', ']'][..]).to_string();
+                if !urls.contains(&v) && urls.len() < 200 { urls.push(v); }
+            }
+        }
+        if let Some(re) = &ip_re {
+            if let Some(m) = re.find(line) {
+                let v = m.as_str().to_string();
+                if !ips.contains(&v) && ips.len() < 200 { ips.push(v); }
+            }
+        }
+        if let Some(re) = &port_re {
+            for m in re.find_iter(line) {
+                let v = m.as_str().to_string();
+                if !open_ports.contains(&v) && open_ports.len() < 200 { open_ports.push(v); }
+            }
+        }
+        if let Some(re) = &host_re {
+            if let Some(m) = re.find(line) {
+                let v = m.as_str().to_string();
+                // Skip pure IPs (already captured) and obvious non-hostnames
+                if !v.chars().next().map(|c| c.is_ascii_digit()).unwrap_or(false)
+                    && !hosts.contains(&v) && hosts.len() < 200 {
+                    hosts.push(v);
+                }
+            }
+        }
+    }
+
+    let total_findings = critical + high + medium + low + info + cves.len();
 
     Some(json!({
         "summary": {
-            "total": warning_count,
-            "critical": 0, "high": 0, "medium": 0,
-            "low": warning_count, "open_ports": 0
+            "total": total_findings,
+            "critical": critical,
+            "high": high,
+            "medium": medium,
+            "low": low,
+            "info": info,
+            "open_ports": open_ports.len()
+        },
+        "findings": {
+            "cves": cves,
+            "urls": urls,
+            "ips": ips,
+            "hosts": hosts,
+            "open_ports": open_ports,
         },
         "raw_lines": total
     }))

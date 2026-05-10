@@ -101,6 +101,13 @@ fn get_smart_profile(tool_name: &str) -> Option<ToolProfile> {
         },
         "nikto" => ToolProfile {
             pre_args: vec!["-h".into()],
+            // -maxtime: nikto self-aborts before our outer timeout fires (resilience)
+            // -ask no: never prompt; -nointeractive: skip TTY prompts
+            post_args: vec!["-maxtime".into(), "1500".into(), "-ask".into(), "no".into(), "-nointeractive".into()],
+        },
+        "gitleaks" => ToolProfile {
+            // Directory scan w/o git history → much faster, deterministic finish
+            pre_args: vec!["detect".into(), "--no-git".into(), "--no-banner".into(), "--report-format".into(), "json".into(), "--source".into()],
             post_args: vec![],
         },
         "sqlmap" => ToolProfile {
@@ -337,6 +344,20 @@ fn get_smart_profile(tool_name: &str) -> Option<ToolProfile> {
 }
 
 // ── Build Command ──────────────────────────────────────────
+
+/// Per-tool maximum runtime override (seconds).
+/// Returns the bespoke timeout for slow tools (nikto, gitleaks, masscan, etc.) or the default 900s.
+/// Used by `executor::execute_scan` to size the outer kill-switch.
+pub fn get_tool_max_runtime_secs(tool_name: &str) -> u64 {
+    match tool_name {
+        // Long-running scanners — give them more headroom than the 900s default
+        "nikto" | "masscan" | "amass" | "wpscan" | "sqlmap" | "wapiti" | "skipfish" | "dirsearch" => 1800,
+        "gitleaks" | "trivy" | "semgrep" | "bandit" | "nuclei" | "subfinder" | "theharvester" | "theHarvester" => 1500,
+        "hydra" | "medusa" | "ncrack" | "crackmapexec" | "netexec" => 1800,
+        // Default: 15 minutes
+        _ => 900,
+    }
+}
 
 /// Build command program + args from tool name, target, and optional template.
 /// Resolution order:
