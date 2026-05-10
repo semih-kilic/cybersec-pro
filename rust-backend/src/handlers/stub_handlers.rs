@@ -600,6 +600,28 @@ async fn purple_team_progress_tick(state: &Arc<AppState>, org_id: &str) {
             next_status = "running".to_string();
         } else if status == "running" && age_seconds >= 90.0 {
             purple_team_apply_completion(&mut payload, total_steps, db_profile.as_ref());
+            // Real-data linkage: attach recent scan IDs for the same org+target so
+            // operators can pivot from a simulated TTP to actual scan evidence.
+            let target_str = payload
+                .get("target")
+                .and_then(|v| v.as_str())
+                .unwrap_or("")
+                .to_string();
+            if !target_str.is_empty() {
+                let linked: Vec<(String,)> = sqlx::query_as(
+                    r#"SELECT id::text FROM scans
+                       WHERE organization_id = $1 AND target = $2
+                         AND created_at > NOW() - INTERVAL '30 days'
+                       ORDER BY created_at DESC
+                       LIMIT 10"#
+                )
+                .bind(org_id)
+                .bind(&target_str)
+                .fetch_all(&state.db)
+                .await
+                .unwrap_or_default();
+                payload["linked_scan_ids"] = json!(linked.iter().map(|(s,)| s.clone()).collect::<Vec<_>>());
+            }
             next_status = "completed".to_string();
         } else if status == "running" {
             purple_team_apply_running_progress(&mut payload, total_steps, age_seconds);

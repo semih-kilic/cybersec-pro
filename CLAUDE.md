@@ -119,7 +119,7 @@ CI artifacts for observability:
 
 ## 7) Known Risk Areas
 
-- `rust-backend/src/handlers/stub_handlers.rs` still contains mixed maturity endpoints; Purple Team now has DB-backed persistence with time-based lifecycle simulation, while real execution telemetry is still placeholder.
+- `rust-backend/src/handlers/stub_handlers.rs` mixes maturity. Purple Team uses DB-backed persistence with **deterministic TTP simulation**: per-chain detection ratios are read from `purple_team_profiles.profile_json` (organization-scoped) with env-var fallback (`PURPLE_TEAM_RATIO_*`), and step results are derived from `purple_team_step_catalog`. This is intentional simulation for blue-team training, not production telemetry; correlation with real scan findings is on the roadmap (link `purple_team_exercises.target` to recent `scans.target` rows of the same org and surface a `linked_scan_ids` array in the payload).
 - Billing/Stripe flow remains partially stubbed.
 - `rust-scan-engine` is integrated in `docker-compose.yml` (service: `rust-scan-engine`, port 5002, `SCAN_ENGINE_URL` wired in backend). ✅ Resolved.
 - SQLx version mismatch resolved: both `rust-backend` and `rust-scan-engine` now use `sqlx 0.8`. ✅ Resolved.
@@ -167,7 +167,7 @@ CI artifacts for observability:
   - **SSH** (existing). Outbound from backend; credentials AES-256-GCM at rest.
   - **Reverse-tunnel agent** (new). User installs a small binary; agent dials hub over TLS 1.3 with a one-time enrollment token. No inbound port required.
 - Per-OS install one-liners are surfaced for Linux x86_64, macOS universal, Windows x86_64, and Docker (`semihkilic/cybersec-agent:v1`).
-- TODO: replace client-generated enrollment token with `POST /api/v1/agents/enrollment-token` returning an HMAC-signed JWT scoped to org with 24h TTL.
+- **Enrollment token issuance.** `POST /api/v1/agents/enrollment-token` (auth required) returns an HMAC-SHA256 JWT carrying `{org_id, kind: "agent_enroll", iat, exp}` scoped to the caller's organization with a 24h TTL. Signed with `JWT_SECRET_KEY` (falls back to `JWT_SECRET`). The agent presents this token on first dial-in via `POST /api/v1/agents/enroll`; the SHA-256 hash of the JWT is persisted in `agents.enrollment_token_hash` so the same token cannot enroll twice. After enrollment the agent rotates to a long-lived `api_key` returned in the enroll response. Implementation: `agent_handlers::issue_enrollment_token` (rust-backend/src/handlers/agent_handlers.rs:422).
 
 ## 12) Privacy / Zero-knowledge Credentials
 
