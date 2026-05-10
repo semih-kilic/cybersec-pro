@@ -1,0 +1,224 @@
+# GIT CLONE TOOLS
+advphishing :: git clone https://github.com/Ignitetch/AdvPhishing
+androbugs :: git clone https://github.com/AndroBugs/AndroBugs_Framework
+apk2gold :: git clone https://github.com/lxdvs/apk2gold
+astra :: git clone https://github.com/flipkart-incubator/Astra && cd Astra && pip3 install -r requirements.txt
+asyncrone :: git clone https://github.com/fatihsnsy/aSYNcrone && cd aSYNcrone && make
+autophisher :: git clone https://github.com/CodingRanjith/autophisher
+aws_pwn :: git clone https://github.com/dagrz/aws_pwn
+blackeye :: git clone https://github.com/thelinuxchoice/blackeye
+blackeye-phish :: git clone https://github.com/An0nUD4Y/blackeye
+blackphish :: git clone https://github.com/iinc0gnit0/BlackPhish
+blisqy :: git clone https://github.com/JohnTroony/Blisqy
+bluepot :: git clone https://github.com/andrewmichaelsmith/bluepot
+breacher :: git clone https://github.com/s0md3v/Breacher
+brutal :: git clone https://github.com/Screetsec/Brutal
+brute_force_socialmedia :: git clone https://github.com/Matrix07ksa/Brute_Force
+can-i-take-over-xyz :: git clone https://github.com/EdOverflow/can-i-take-over-xyz
+cape :: git clone https://github.com/kevoreilly/CAPEv2
+checkurl :: git clone https://github.com/UndeadSec/checkURL
+chrome_keylogger_hera :: git clone https://github.com/UndeadSec/HeraKeylogger
+cloudmapper :: git clone https://github.com/duo-labs/cloudmapper && cd cloudmapper && pipenv install
+cmseek :: git clone https://github.com/Tuhinshubhra/CMSeeK && pip3 install -r CMSeeK/requirements.txt
+cmsmap :: git clone https://github.com/Dionach/CMSmap
+counterfit :: git clone https://github.com/Azure/counterfit && cd counterfit && pip3 install .[dev]
+credsniper :: git clone https://github.com/ustayready/CredSniper && cd CredSniper && pip3 install -r requirements.txt
+crivo :: git clone https://github.com/GMDSantana/crivo
+crontab-enum :: git clone crontab-enum
+CVE-2014-0160 :: git clone heartbleed-exploit
+CVE-2021-44228 :: git clone log4j-scan
+ddos_script :: git clone https://github.com/the-deepnet/ddos
+debinject :: git clone https://github.com/UndeadSec/Debinject
+dirtycow :: git clone https://github.com/dirtycow/dirtycow.github.io
+dirtypipe :: git clone dirtypipe-exploit
+docker-bench :: git clone https://github.com/docker/docker-bench-security
+docker_bench :: git clone https://github.com/docker/docker-bench-security
+domainpwspray :: git clone https://github.com/dafthack/DomainPasswordSpray
+dracnmap :: git clone https://github.com/Screetsec/Dracnmap
+dsss :: git clone https://github.com/stamparm/DSSS
+enigma :: git clone https://github.com/UndeadSec/Enigma
+evilapp :: git clone https://github.com/crypticterminal/EvilApp
+evil_twin :: git clone https://github.com/Z4nzu/fakeap
+evilurl :: git clone https://github.com/UndeadSec/EvilURL
+extended_xss_search :: git clone https://github.com/Damian89/extended-xss-search
+fastssh :: git clone https://github.com/Z4nzu/fastssh
+finduser :: git clone https://github.com/xHak9x/finduser
+fireprox :: git clone https://github.com/ustayready/fireprox
+fireprox-creds :: git clone https://github.com/ustayready/fireprox
+fluxion :: git clone https://github.com/FluxionNetwork/fluxion
+fuzzdb :: git clone https://github.com/fuzzdb-project/fuzzdb
+gcpbucketbrute :: git clone https://github.com/RhinoSecurityLabs/GCPBucketBrute && pip3 install -r GCPBucketBrute/requirements.txt
+gdb-peda :: git clone https://github.com/longld/peda ~/peda
+git_secrets :: git clone https://github.com/awslabs/git-secrets && cd git-secrets && sudo make install
+goblin_wordgenerator :: git clone https://github.com/UndeadSec/GoblinWordGenerator
+GTFOBins :: git clone https://github.com/GTFOBins/GTFOBins.github.io
+hash_buster :: git clone https://github.com/s0md3v/Hash-Buster && cd Hash-Buster && sudo make install
+hiddeneye :: git clone https://github.com/Morsmalleo/HiddenEye && cd HiddenEye && pip3 install -r requirements.txt
+iam-vulnerable :: git clone https://github.com/BishopFox/iam-vulnerable
+infoga :: git clone https://github.com/m4ll0k/Infoga && cd Infoga && pip3 install -r requirements.txt
+i_see_you :: git clone https://github.com/Viralmaniar/I-See-You
+jupyter-threat-hunting :: git clone https://github.com/cyb3rward0g/notebooks-forensics
+jwt_tool :: git clone https://github.com/ticarpi/jwt_tool && pip3 install -r jwt_tool/requirements.txt
+kadimus :: git clone https://github.com/P0cL4bs/Kadimus
+kali-anonsurf :: git clone https://github.com/Und3rf10w/kali-anonsurf && cd kali-anonsurf && sudo ./installer.sh
+kawaii_deauther :: git clone https://github.com/aryanrtm/KawaiiDeauther
+kernel-exploit-suggester :: git clone https://github.com/mzet-/linux-exploit-suggester
+keydroid :: git clone https://github.com/F4dl0/keydroid
+knockmail :: git clone https://github.com/4w4k3/KnockMail && cd KnockMail && pip3 install -r requirements.txt
+krackattack :: git clone https://github.com/vanhoefm/krackattacks-scripts
+kubesploit :: git clone https://github.com/CyberArk/kubesploit && cd kubesploit && go build cmd/server/main.go
+lazyrecon :: git clone https://github.com/nahamsec/lazyrecon
+leviathan :: git clone https://github.com/leviathan-framework/leviathan && cd leviathan && pip3 install -r requirements.txt
+lfisuite :: git clone https://github.com/D35m0nd142/LFISuite
+lime :: git clone https://github.com/504ensicsLabs/LiME
+lockphish :: git clone https://github.com/JasonJerry/lockphish
+log4j-rce :: git clone https://github.com/kozmer/log4j-shell-poc
+LOLBASProject :: git clone https://github.com/LOLBAS-Project/LOLBAS
+maskphish :: git clone https://github.com/jaykali/maskphish
+mob_droid :: git clone https://github.com/kinghacker0/Mob-Droid
+msdt-exploit :: git clone msdt-follina
+msolspray :: git clone https://github.com/dafthack/MSOLSpray
+multitor :: git clone https://github.com/trimstray/multitor && cd multitor && sudo ./setup.sh install
+mysms :: git clone https://github.com/papusingh2sms/mysms
+mythic :: git clone https://github.com/its-a-feature/Mythic && cd Mythic && sudo make
+nanodump :: git clone https://github.com/helpsystems/nanodump
+nexphisher :: git clone https://github.com/htr-tech/nexphisher
+nmap-vulners :: git clone https://github.com/vulnersCom/nmap-vulners /usr/share/nmap/scripts/
+nosqlmap :: git clone https://github.com/codingo/NoSQLMap
+nosqlmap :: git clone https://github.com/codingo/NoSQLMap && cd NoSQLMap && sudo python3 setup.py install
+ohmyqr :: git clone https://github.com/cryptedwolf/ohmyqr
+oneforall :: git clone https://github.com/shmilylty/OneForAll && cd OneForAll && pip3 install -r requirements.txt
+password_list_smwyg :: git clone https://github.com/Viralmaniar/SMWYG-Show-Me-What-You-Got
+peach :: git clone https://github.com/MozillaSecurity/peach && cd peach
+peass_ng :: git clone https://github.com/peass-ng/PEASS-ng
+peirates :: git clone https://github.com/inguardians/peirates && cd peirates && go build
+petitpotam :: git clone https://github.com/topotam/PetitPotam
+pezor :: git clone https://github.com/phra/PEzor
+pixload :: git clone https://github.com/chinarulezzz/pixload
+privesccheck :: git clone https://github.com/itm4n/PrivescCheck
+pyphisher :: git clone https://github.com/KasRoudra/PyPhisher && cd PyPhisher && pip3 install -r files/requirements.txt
+qrljacking :: git clone https://github.com/OWASP/QRLJacking
+recon-dog :: git clone https://github.com/s0md3v/ReconDog && cd ReconDog && pip3 install -r requirements.txt
+reconftw :: git clone https://github.com/six2dez/reconftw
+reconftw :: git clone https://github.com/six2dez/reconftw && cd reconftw && bash install.sh
+reconspider :: git clone https://github.com/bhavsec/reconspider && cd reconspider && sudo python3 setup.py install
+red_hawk :: git clone https://github.com/Tuhinshubhra/RED_HAWK
+routersploit :: git clone https://github.com/threat9/routersploit && cd routersploit && pip3 install -r requirements.txt
+rvuln :: git clone https://github.com/iinc0gnit0/RVuln
+sadcloud :: git clone https://github.com/nccgroup/sadcloud
+saycheese :: git clone https://github.com/hangetzzu/saycheese
+seatbelt :: git clone https://github.com/GhostPack/Seatbelt
+secretfinder :: git clone https://github.com/m4ll0k/SecretFinder && pip3 install -r SecretFinder/requirements.txt
+seeker-tool :: git clone https://github.com/thewhiteh4t/seeker
+shellphish :: git clone https://github.com/An0nUD4Y/shellphish
+shellphish :: git clone https://github.com/An0nUD4Y/SocialPhish
+shodanfy :: git clone https://github.com/m4ll0k/Shodanfy.py
+smuggler :: git clone https://github.com/defparam/smuggler
+sn1per :: git clone https://github.com/1N3/Sn1per && cd Sn1per && sudo bash install.sh
+socialfish :: git clone https://github.com/UndeadSec/SocialFish
+socialfish :: git clone https://github.com/UndeadSec/SocialFish && cd SocialFish && pip3 install -r requirements.txt
+social_mapper :: git clone https://github.com/Greenwolf/social_mapper
+spycam :: git clone https://github.com/indexnotfound404/spycam
+sqlscan :: git clone https://github.com/Cvar1984/sqlscan && cd sqlscan && pip3 install .
+ssrfmap :: git clone https://github.com/swisskyrepo/SSRFmap
+stegocracker :: git clone https://github.com/W1LDN16H7/StegoCracker
+stitch :: git clone https://github.com/nathanlopez/Stitch && cd Stitch && pip3 install -r lnx_requirements.txt
+striker :: git clone https://github.com/s0md3v/Striker && cd Striker && pip3 install -r requirements.txt
+suid3num :: git clone https://github.com/Anon-Exploiter/SUID3NUM
+testssl_sh :: git clone https://github.com/drwetter/testssl.sh
+thanos :: git clone https://github.com/TridevReddy/Thanos
+the_fatrat :: git clone https://github.com/Screetsec/TheFatRat && cd TheFatRat && sudo bash setup.sh
+tplmap :: git clone https://github.com/epinna/tplmap
+trape-osint :: git clone https://github.com/jofpin/trape
+ufonet :: git clone https://github.com/epsylon/ufonet && cd ufonet && pip3 install -r requirements.txt
+underhanded :: git clone https://github.com/jakuta-tech/underhanded
+userrecon-tool :: git clone https://github.com/issamelferkh/userrecon
+vajra :: git clone https://github.com/r3curs1v3-pr0xy/vajra && cd vajra && pip3 install -r requirements.txt
+vegile :: git clone https://github.com/Screetsec/Vegile
+venom :: git clone https://github.com/r00t-3xp10it/venom && cd venom && sudo bash setup/setup.sh
+villain-c2 :: git clone https://github.com/t3l3machus/Villain
+vulnx :: git clone https://github.com/anouarbensaad/vulnx && pip3 install -r vulnx/requirements.txt
+vulscan :: git clone https://github.com/scipag/vulscan /usr/share/nmap/scripts/vulscan
+w3af :: git clone https://github.com/andresriancho/w3af && cd w3af && ./w3af_console
+WADComs :: git clone https://github.com/WADComs/WADComs.github.io
+web2attack :: git clone https://github.com/santatic/web2attack
+webcopilot :: git clone https://github.com/AzizKpln/webcopilot
+websploit :: git clone https://github.com/The404Hacking/websploit
+weirdaal :: git clone https://github.com/carnal0wnage/weirdAAL
+whitespace_snow10 :: git clone https://github.com/beardog108/snow10
+wifijammer_ng :: git clone https://github.com/MisterBianco/wifijammer-ng && cd wifijammer-ng && sudo python3 setup.py install
+wishfish :: git clone https://github.com/kinghacker0/WishFish
+wlcreator :: git clone https://github.com/Z4nzu/wlcreator
+wpa-sycophant :: git clone https://github.com/oblique/wpa-sycophant
+xanxss :: git clone https://github.com/Ekultek/XanXSS
+xerosploit :: git clone https://github.com/LionSec/xerosploit && cd xerosploit && sudo python3 install.py
+xsscon :: git clone https://github.com/menkrep1337/XSSCon
+xss_freak :: git clone https://github.com/PR0PH3CY33/XSS-Freak
+xss_payload_generator :: git clone https://github.com/capture0x/XSS-LOADER
+xxeinjector :: git clone https://github.com/enjoiz/XXEinjector
+yextend :: git clone https://github.com/BayshoreNetworks/yextend
+zphisher :: git clone https://github.com/htr-tech/zphisher
+
+# CURL DOWNLOAD TOOLS
+apko :: curl -L https://github.com/chainguard-dev/apko/releases/latest/download/apko_Linux_x86_64.tar.gz | tar xz -C /usr/local/bin apko
+arachni :: curl -L https://github.com/Arachni/arachni/releases/latest/download/arachni-1.6.1.3-linux-x86_64.tar.gz | tar xz -C /opt
+az :: curl -sL https://aka.ms/InstallAzureCLIDeb | sudo bash
+chain_bench :: curl -L https://github.com/aquasecurity/chain-bench/releases/latest/download/chain-bench_Linux_x86_64.tar.gz | tar xz -C /usr/local/bin chain-bench
+chainsaw :: curl -L https://github.com/WithSecureLabs/chainsaw/releases/latest/download/chainsaw_x86_64-unknown-linux-gnu.tar.gz | tar xz -C /usr/local/bin
+container_diff :: curl -LO https://storage.googleapis.com/container-diff/latest/container-diff-linux-amd64 && chmod +x container-diff-linux-amd64 && sudo mv container-diff-linux-amd64 /usr/local/bin/container-diff
+crawlergo :: curl -L https://github.com/Qianlitp/crawlergo/releases/latest/download/crawlergo_linux_amd64 -o /usr/local/bin/crawlergo && chmod +x /usr/local/bin/crawlergo
+depcheck :: curl -L https://github.com/jeremylong/DependencyCheck/releases/latest/download/dependency-check-9.0.7-release.zip -o /tmp/dc.zip && unzip /tmp/dc.zip -d /opt
+falco :: curl -s https://falco.org/repo/falcosecurity-packages.asc | sudo apt-key add - && sudo apt install -y falco
+foundry :: curl -L https://foundry.paradigm.xyz | bash && foundryup
+gcloud :: curl https://sdk.cloud.google.com | bash
+grype_dir :: curl -sSfL https://raw.githubusercontent.com/anchore/grype/main/install.sh | sh -s -- -b /usr/local/bin
+hayabusa :: curl -L https://github.com/Yamato-Security/hayabusa/releases/latest/download/hayabusa-2.16.0-linux.zip -o /tmp/hb.zip && unzip /tmp/hb.zip -d /opt/hayabusa
+kubeaudit :: curl -L https://github.com/Shopify/kubeaudit/releases/latest/download/kubeaudit_linux_amd64.tar.gz | tar xz -C /usr/local/bin kubeaudit
+kube_bench :: curl -L https://github.com/aquasecurity/kube-bench/releases/latest/download/kube-bench_linux_amd64.tar.gz | tar xz -C /usr/local/bin kube-bench
+kubeeye :: curl -L https://github.com/kubesphere/kubeeye/releases/latest/download/ke-linux.tar.gz | tar xz -C /usr/local/bin ke
+kubescape :: curl -s https://raw.githubusercontent.com/kubescape/kubescape/master/install.sh | bash
+kubesec :: curl -L https://github.com/controlplaneio/kubesec/releases/latest/download/kubesec_linux_amd64.tar.gz | tar xz -C /usr/local/bin kubesec
+mayhem_for_api :: curl -L https://app.mayhem.security/cli/Linux/install.sh | bash
+noseyparker :: curl -L https://github.com/praetorian-inc/noseyparker/releases/latest/download/noseyparker-v0.18.1-x86_64-unknown-linux-gnu.tar.gz | tar xz -C /usr/local/bin
+osmedeus :: curl -fsSL https://raw.githubusercontent.com/j3ssie/osmedeus/master/install.sh | bash
+PEASS-ng :: curl -L https://github.com/carlospolop/PEASS-ng/releases/latest/download/linpeas.sh -o linpeas.sh
+phylum :: curl -fsSL https://sh.phylum.io | sh
+polaris :: curl -L https://github.com/FairwindsOps/polaris/releases/latest/download/polaris_linux_amd64.tar.gz | tar xz -C /usr/local/bin polaris
+rad :: curl -L https://github.com/chaitin/rad/releases/latest/download/rad_linux_amd64.zip -o /tmp/rad.zip && unzip /tmp/rad.zip -d /usr/local/bin
+rapidfort :: curl -L https://us02.rapidfort.com/cli/rfdownload | bash
+rekor_cli :: curl -L https://github.com/sigstore/rekor/releases/latest/download/rekor-cli-linux-amd64 -o /usr/local/bin/rekor-cli && chmod +x /usr/local/bin/rekor-cli
+sliver :: curl https://sliver.sh/install | sudo bash
+starboard :: curl -L https://github.com/aquasecurity/starboard/releases/latest/download/starboard_linux_x86_64.tar.gz | tar xz -C /usr/local/bin starboard
+trivy_repo :: curl -sfL https://raw.githubusercontent.com/aquasecurity/trivy/main/contrib/install.sh | sh -s -- -b /usr/local/bin
+velociraptor :: curl -L https://github.com/Velocidex/velociraptor/releases/latest/download/velociraptor-v0.7.1-linux-amd64 -o /usr/local/bin/velociraptor && chmod +x /usr/local/bin/velociraptor
+
+# OTHER (Download from links etc.)
+anchore_engine :: docker run -d -p 8228:8228 anchore/anchore-engine
+axiom :: bash <(curl -s https://raw.githubusercontent.com/pry0cc/axiom/master/interact/axiom-configure)
+binary-ninja :: Download from binary.ninja
+botkube :: helm repo add botkube https://charts.botkube.io && helm install botkube botkube/botkube
+cobalt-strike :: Licensed software
+covenant :: dotnet run
+hopper :: Download from hopperapp.com
+iblessing :: brew install ws1986/iblessing/iblessing
+ida :: Download from hex-rays.com
+ida-free :: Download from hex-rays.com
+inveigh :: Import-Module Inveigh.ps1
+k-rail :: helm repo add k-rail https://cruise-automation.github.io/k-rail/charts && helm install k-rail k-rail/k-rail
+magescan :: composer require steverobbins/magescan
+mailSniper :: Import-Module MailSniper.ps1
+nessus :: dpkg -i Nessus.deb
+pestudio :: wget https://www.winitor.com/tools/pestudio/current/pestudio.zip
+pkexec-exploit :: gcc pkexec-exploit.c -o exploit
+polkit-exploit :: gcc polkit-exploit.c -o exploit
+postman :: snap install postman
+regula :: brew install fugue/regula/regula
+revshells :: Browse https://www.revshells.com/
+sharpup :: Download from GhostPack
+stegsolve :: java -jar stegsolve.jar
+sudo-exploit :: gcc sudo-exploit.c -o exploit
+toolsley :: echo 'Visit https://www.toolsley.com/'
+tweetdeck-tool :: Browse https://tweetdeck.twitter.com
+vooki :: wget https://github.com/Vooki-Studios/Vooki-REST-API-Scanner/releases/latest/download/Vooki-Linux.tar.gz && tar xf Vooki-Linux.tar.gz
+windbg :: choco install windbg
+x64dbg :: Download from x64dbg.com
