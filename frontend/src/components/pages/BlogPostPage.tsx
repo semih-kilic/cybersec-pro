@@ -368,7 +368,7 @@ jobs:
     steps:
       - name: Trigger CyberSec Pro Scan
         run: |
-          curl -X POST https://semihkilic.com/api/v1/scans \\
+          curl -X POST https://api.cyber-sec-pro.com/v1/scans \\
             -H "Authorization: Bearer \${{ secrets.CYBERSEC_API_KEY }}" \\
             -H "Content-Type: application/json" \\
             -d '{

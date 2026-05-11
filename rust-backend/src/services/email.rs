@@ -29,7 +29,7 @@ impl EmailConfig {
                 .and_then(|p| p.parse().ok())
                 .unwrap_or(465),
             smtp_email: std::env::var("SMTP_EMAIL")
-                .unwrap_or_else(|_| "cybersecpro@semihkilic.com".into()),
+                .unwrap_or_else(|_| "noreply@cyber-sec-pro.com".into()),
             smtp_password: password,
             from_name: std::env::var("SMTP_FROM_NAME")
                 .unwrap_or_else(|_| "CyberSec Professional".into()),
@@ -64,7 +64,7 @@ pub(crate) fn license_plain_text(name: &str, plan_name: &str, license_key: &str,
          Dear {},\n\nThank you for purchasing {}!\n\n\
          Your License Key: {}\nValid Until: {}\n\n\
          Quick Start:\n1. Go to Settings \u{2192} License\n2. Enter your license key\n3. Start scanning!\n\n\
-         Need help? Contact: support@semihkilic.com\n\n\u{00A9} 2026 CyberSec Professional",
+         Need help? Contact: support@cyber-sec-pro.com\n\n\u{00A9} 2026 CyberSec Professional",
         name, plan_name, license_key, expiry_date
     )
 }
@@ -274,7 +274,7 @@ pub async fn send_newsletter_welcome(to: &str) -> Result<(), String> {
                  You'll get curated security news, tool deep-dives, and \
                  platform updates roughly once a week. No spam, ever.\n\n\
                  Unsubscribe anytime by replying to any of our emails.\n\n\
-                 \u{2014} The CyberSec Pro team\nhttps://semihkilic.com";
+                 \u{2014} The CyberSec Pro team\nhttps://cyber-sec-pro.com";
     let html = newsletter_welcome_html();
     send_email(&cfg, to, subject, plain, &html).await
 }
@@ -297,8 +297,8 @@ fn newsletter_welcome_html() -> String {
 <li style="margin-bottom:6px">Platform updates and feature announcements.</li></ul>
 <p style="margin:0 0 8px">Roughly one email per week. No spam, no third-party tracking.</p></td></tr>
 <tr><td style="padding:0 40px 40px;text-align:center">
-<a href="https://semihkilic.com/en/blog/" style="display:inline-block;padding:12px 28px;background:#9fef00;color:#0a0e14;text-decoration:none;font-weight:600;border-radius:8px;font-size:14px">Read the latest →</a>
-<p style="margin:24px 0 0;color:#6e7681;font-size:11px">CyberSec Pro · <a href="https://semihkilic.com" style="color:#6e7681">semihkilic.com</a> · Reply to unsubscribe</p></td></tr>
+<a href="https://cyber-sec-pro.com/en/blog/" style="display:inline-block;padding:12px 28px;background:#9fef00;color:#0a0e14;text-decoration:none;font-weight:600;border-radius:8px;font-size:14px">Read the latest →</a>
+<p style="margin:24px 0 0;color:#6e7681;font-size:11px">CyberSec Pro · <a href="https://cyber-sec-pro.com" style="color:#6e7681">cyber-sec-pro.com</a> · Reply to unsubscribe</p></td></tr>
 </table></td></tr></table></body></html>"#.to_string()
 }
 
@@ -334,9 +334,9 @@ fn license_email_html(name: &str, email: &str, key: &str, plan: &str, expiry: &s
 <p style="color:#8892b0;font-size:12px;margin:0 0 5px;text-transform:uppercase">Valid Until</p>
 <p style="color:#ccd6f6;font-size:16px;font-weight:600;margin:0">{expiry}</p></td></tr></table></td></tr>
 <tr><td style="padding:20px 40px 30px;text-align:center">
-<a href="https://semihkilic.com/dashboard/login" style="display:inline-block;padding:16px 40px;background:linear-gradient(135deg,#00ff88,#00d4ff);color:#0a0a0a;text-decoration:none;font-weight:bold;font-size:16px;border-radius:50px;text-transform:uppercase;letter-spacing:1px">Activate Now →</a></td></tr>
+<a href="https://app.cyber-sec-pro.com/dashboard/login" style="display:inline-block;padding:16px 40px;background:linear-gradient(135deg,#00ff88,#00d4ff);color:#0a0a0a;text-decoration:none;font-weight:bold;font-size:16px;border-radius:50px;text-transform:uppercase;letter-spacing:1px">Activate Now →</a></td></tr>
 <tr><td style="padding:20px 40px;text-align:center;border-top:1px solid rgba(0,255,136,.1)">
-<p style="color:#8892b0;font-size:14px;margin:0 0 10px">Need help? <a href="mailto:support@semihkilic.com" style="color:#00d4ff;text-decoration:none">support@semihkilic.com</a></p></td></tr>
+<p style="color:#8892b0;font-size:14px;margin:0 0 10px">Need help? <a href="mailto:support@cyber-sec-pro.com" style="color:#00d4ff;text-decoration:none">support@cyber-sec-pro.com</a></p></td></tr>
 <tr><td style="padding:20px 40px;background:#0a0a0a;text-align:center">
 <p style="color:#4a5568;font-size:12px;margin:0 0 10px">© 2026 CyberSec Professional. All rights reserved.</p>
 <p style="color:#4a5568;font-size:11px;margin:0">This email was sent to {email}</p></td></tr>
@@ -388,7 +388,7 @@ mod tests {
     #[test]
     fn license_plain_text_contains_support_contact() {
         let text = license_plain_text("Alice", "Starter", "KEY", "2027-01-01");
-        assert!(text.contains("support@semihkilic.com"));
+        assert!(text.contains("support@cyber-sec-pro.com"));
     }
 
     #[test]

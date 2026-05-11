@@ -560,7 +560,7 @@ pub async fn agent_binary(
     let bytes = match tokio::fs::read(&path).await {
         Ok(b) => b,
         Err(_) => return (StatusCode::NOT_FOUND, Json(json!({
-            "error": "Binary not yet available for this platform — contact cybersecpro@semihkilic.com"
+            "error": "Binary not yet available for this platform — contact support@cyber-sec-pro.com"
         }))).into_response(),
     };
     (
@@ -587,7 +587,7 @@ set -eu
 
 if [ -z "${CSP_TOKEN:-}" ]; then
   echo "ERROR: CSP_TOKEN environment variable is required." >&2
-  echo "       Get one from https://cybersecpro.semihkilic.com/dashboard/agents" >&2
+  echo "       Get one from https://app.cyber-sec-pro.com/dashboard/agents" >&2
   exit 1
 fi
 
@@ -596,7 +596,7 @@ case "${CSP_TOKEN}" in
   *) echo "ERROR: CSP_TOKEN looks malformed (expected agt_… or JWT)." >&2; exit 1 ;;
 esac
 
-API="${CSP_API_URL:-https://cybersecpro.semihkilic.com}"
+API="${CSP_API_URL:-https://app.cyber-sec-pro.com}"
 OS_RAW="$(uname -s | tr '[:upper:]' '[:lower:]')"
 case "${OS_RAW}" in
   linux) OS=linux ;;
@@ -667,7 +667,7 @@ pub async fn install_ps1() -> impl IntoResponse {
 $ErrorActionPreference = 'Stop'
 
 if (-not $env:CSP_TOKEN) {
-  Write-Error "CSP_TOKEN environment variable is required. Get one from https://cybersecpro.semihkilic.com/dashboard/agents"
+  Write-Error "CSP_TOKEN environment variable is required. Get one from https://app.cyber-sec-pro.com/dashboard/agents"
   exit 1
 }
 
@@ -676,7 +676,7 @@ if ($env:CSP_TOKEN -notmatch '^(agt_|eyJ)') {
   exit 1
 }
 
-$Api = if ($env:CSP_API_URL) { $env:CSP_API_URL } else { 'https://cybersecpro.semihkilic.com' }
+$Api = if ($env:CSP_API_URL) { $env:CSP_API_URL } else { 'https://app.cyber-sec-pro.com' }
 
 # Detect architecture (amd64 / arm64).
 $Arch = switch -regex ($env:PROCESSOR_ARCHITECTURE) {

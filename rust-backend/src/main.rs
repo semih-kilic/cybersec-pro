@@ -155,7 +155,7 @@ async fn main() -> anyhow::Result<()> {
                     "http://localhost:3000".parse().unwrap(),
                     "http://localhost:3001".parse().unwrap(),
                     "http://localhost:5001".parse().unwrap(),
-                    "https://semihkilic.com".parse().unwrap(),
+                    "https://app.cyber-sec-pro.com".parse().unwrap(),
                 ])
                 .allow_methods([
                     axum::http::Method::GET,

@@ -18,7 +18,7 @@ pub fn resolve_smtp_server(env_val: Option<String>) -> String {
 
 /// Returns the configured SMTP email address, falling back to the default.
 pub fn resolve_smtp_email(env_val: Option<String>) -> String {
-    env_val.unwrap_or_else(|| "cybersecpro@semihkilic.com".into())
+    env_val.unwrap_or_else(|| "noreply@cyber-sec-pro.com".into())
 }
 
 #[derive(Deserialize)]
@@ -137,7 +137,7 @@ mod tests {
 
     #[test]
     fn resolve_smtp_email_uses_fallback_when_none() {
-        assert_eq!(resolve_smtp_email(None), "cybersecpro@semihkilic.com");
+        assert_eq!(resolve_smtp_email(None), "noreply@cyber-sec-pro.com");
     }
 
     #[test]

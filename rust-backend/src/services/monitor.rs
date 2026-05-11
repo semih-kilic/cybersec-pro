@@ -49,7 +49,7 @@ impl SiteMonitor {
             MonitorTarget {
                 name: "Sales Website".into(),
                 url: std::env::var("DOMAIN")
-                    .unwrap_or_else(|_| "https://semihkilic.com".into()),
+                    .unwrap_or_else(|_| "https://cyber-sec-pro.com".into()),
                 critical: true,
             },
             MonitorTarget {

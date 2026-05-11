@@ -517,7 +517,7 @@ pub async fn invite_team_member(
         Ok(_) => {
             // Send invitation email if SMTP is configured
             if let Some(cfg) = crate::services::email::EmailConfig::from_env() {
-                let invite_url = format!("https://semihkilic.com/dashboard/register?invite={}&org={}", token, org_id);
+                let invite_url = format!("https://app.cyber-sec-pro.com/dashboard/register?invite={}&org={}", token, org_id);
                 let _ = crate::services::email::send_team_invite_email(&cfg, &email, &invite_url, &role).await;
             }
             Json(json!({"message": "Invitation sent", "invitation_id": id})).into_response()

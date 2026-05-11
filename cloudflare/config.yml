@@ -18,28 +18,28 @@ ingress:
       keepAliveTimeout: 90s
   
   # WWW redirect
-  - hostname: www.semihkilic.com
+  - hostname: www.cyber-sec-pro.com
     service: http://localhost:80
     originRequest:
-      httpHostHeader: www.semihkilic.com
+      httpHostHeader: www.cyber-sec-pro.com
   
   # App subdomain (future dashboard)
-  - hostname: app.semihkilic.com
+  - hostname: app.cyber-sec-pro.com
     service: http://localhost:80
     originRequest:
-      httpHostHeader: app.semihkilic.com
+      httpHostHeader: app.cyber-sec-pro.com
   
   # CyberSec Pro SaaS Platform
-  - hostname: cybersecpro.semihkilic.com
+  - hostname: app.cyber-sec-pro.com
     service: http://localhost:80
     originRequest:
-      httpHostHeader: cybersecpro.semihkilic.com
+      httpHostHeader: app.cyber-sec-pro.com
   
   # API subdomain (future API-only access)
-  - hostname: api.semihkilic.com
+  - hostname: api.cyber-sec-pro.com
     service: http://localhost:80
     originRequest:
-      httpHostHeader: api.semihkilic.com
+      httpHostHeader: api.cyber-sec-pro.com
   
   # Catch-all rule (must be last)
   - service: http_status:404

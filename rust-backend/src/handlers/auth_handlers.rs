@@ -772,7 +772,7 @@ pub async fn forgot_password(
 
     // Send reset email (best-effort; don't reveal failure to client)
     let base_url = std::env::var("FRONTEND_URL")
-        .unwrap_or_else(|_| "https://semihkilic.com".to_string());
+        .unwrap_or_else(|_| "https://app.cyber-sec-pro.com".to_string());
     let reset_url = format!("{}/dashboard/reset-password?token={}", base_url, reset_token);
     let name = first_name.as_deref().unwrap_or("there");
 

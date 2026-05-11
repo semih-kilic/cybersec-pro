@@ -36,15 +36,15 @@ export default function ContactPage() {
             <p className="text-sm leading-relaxed text-white/50">{t("sales.description")}</p>
             <div className="flex items-center gap-2 font-mono text-xs text-white/40">
               <span className="uppercase text-white/30">Email</span>
-              <a href="mailto:cybersecpro@semihkilic.com" className="truncate text-[var(--color-neon)] hover:underline">
-                cybersecpro@semihkilic.com
+              <a href="mailto:support@cyber-sec-pro.com" className="truncate text-[var(--color-neon)] hover:underline">
+                support@cyber-sec-pro.com
               </a>
             </div>
             <span className="inline-block w-fit rounded-full border border-[var(--color-neon)]/15 bg-[var(--color-neon)]/[0.06] px-3 py-1 font-mono text-xs font-semibold text-[var(--color-neon)]">
               {t("sales.response")}
             </span>
             <a
-              href="mailto:cybersecpro@semihkilic.com?subject=Demo%20Request"
+              href="mailto:support@cyber-sec-pro.com?subject=Demo%20Request"
               className="btn-primary mt-auto justify-center"
             >
               {t("sales.cta")} <ArrowRight size={14} />
@@ -86,15 +86,15 @@ export default function ContactPage() {
             <p className="text-sm leading-relaxed text-white/50">{t("partnerships.description")}</p>
             <div className="flex items-center gap-2 font-mono text-xs text-white/40">
               <span className="uppercase text-white/30">Email</span>
-              <a href="mailto:cybersecpro@semihkilic.com" className="truncate text-[var(--color-neon)] hover:underline">
-                cybersecpro@semihkilic.com
+              <a href="mailto:support@cyber-sec-pro.com" className="truncate text-[var(--color-neon)] hover:underline">
+                support@cyber-sec-pro.com
               </a>
             </div>
             <span className="inline-block w-fit rounded-full border border-[var(--color-neon)]/15 bg-[var(--color-neon)]/[0.06] px-3 py-1 font-mono text-xs font-semibold text-[var(--color-neon)]">
               {t("partnerships.response")}
             </span>
             <a
-              href="mailto:cybersecpro@semihkilic.com?subject=Partnership%20Inquiry"
+              href="mailto:info@cyber-sec-pro.com?subject=Partnership%20Inquiry"
               className="btn-primary mt-auto justify-center"
             >
               {t("partnerships.cta")} <ArrowRight size={14} />

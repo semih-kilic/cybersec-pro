@@ -178,7 +178,7 @@ export function DashboardPage() {
                   <div className="text-sm text-gray-400">{t('dashboard.getMoreTools', 'Get more tools')}</div>
                 </a>
                 <a 
-                  href="https://docs.semihkilic.com" 
+                  href="https://cyber-sec-pro.com/docs" 
                   target="_blank"
                   className="p-4 bg-gray-700/50 rounded-lg hover:bg-gray-700 transition text-left"
                 >

@@ -345,10 +345,10 @@ export default function FeedbackPage() {
           <p className="text-gray-400">
             You can also reach us directly at{' '}
             <a 
-              href="mailto:cybersecpro@semihkilic.com" 
+              href="mailto:support@cyber-sec-pro.com" 
               className="text-cyan-400 hover:text-cyan-300 transition"
             >
-              cybersecpro@semihkilic.com
+              support@cyber-sec-pro.com
             </a>
           </p>
         </div>

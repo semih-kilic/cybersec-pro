@@ -151,11 +151,11 @@ pub async fn create_checkout(
 
     let success_url = body.success_url.unwrap_or_else(|| {
         format!("{}/dashboard/settings?tab=billing&success=true",
-            std::env::var("DOMAIN").unwrap_or_else(|_| "https://semihkilic.com".into()))
+            std::env::var("DOMAIN").unwrap_or_else(|_| "https://app.cyber-sec-pro.com".into()))
     });
     let cancel_url = body.cancel_url.unwrap_or_else(|| {
         format!("{}/dashboard/upgrade",
-            std::env::var("DOMAIN").unwrap_or_else(|_| "https://semihkilic.com".into()))
+            std::env::var("DOMAIN").unwrap_or_else(|_| "https://app.cyber-sec-pro.com".into()))
     });
 
     // Create Stripe Checkout Session via Stripe API
@@ -245,7 +245,7 @@ pub async fn create_checkout_public(
         return (StatusCode::SERVICE_UNAVAILABLE, Json(json!({"error": "Price not configured"}))).into_response();
     }
 
-    let domain = std::env::var("DOMAIN").unwrap_or_else(|_| "https://semihkilic.com".into());
+    let domain = std::env::var("DOMAIN").unwrap_or_else(|_| "https://app.cyber-sec-pro.com".into());
     let success_url = format!("{}/dashboard/login?checkout=success", domain);
     let cancel_url = format!("{}/new-pricing.html", domain);
 
@@ -618,7 +618,7 @@ pub async fn billing_portal(
 
     let return_url = format!(
         "{}/dashboard/settings?tab=billing",
-        std::env::var("DOMAIN").unwrap_or_else(|_| "https://semihkilic.com".into())
+        std::env::var("DOMAIN").unwrap_or_else(|_| "https://app.cyber-sec-pro.com".into())
     );
 
     let client = reqwest::Client::new();

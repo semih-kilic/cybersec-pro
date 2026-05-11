@@ -404,7 +404,7 @@ function KV({
 
 const AGENT_VERSION = 'v1';
 const AGENT_BASE_URL =
-  (typeof window !== 'undefined' && window.location?.origin) || 'https://cybersecpro.semihkilic.com';
+  (typeof window !== 'undefined' && window.location?.origin) || 'https://app.cyber-sec-pro.com';
 
 const RT_DOWNLOADS: Record<string, { label: string; url: string; install: string }> = {
   linux: {
@@ -424,8 +424,8 @@ const RT_DOWNLOADS: Record<string, { label: string; url: string; install: string
   },
   docker: {
     label: 'Docker',
-    url: 'https://hub.docker.com/r/semihkilic/cybersec-agent',
-    install: `docker run -d --name cybersec-agent --restart=always -e CSP_TOKEN=__TOKEN__ semihkilic/cybersec-agent:${AGENT_VERSION}`,
+    url: 'https://hub.docker.com/r/cybersecpro/cybersec-agent',
+    install: `docker run -d --name cybersec-agent --restart=always -e CSP_TOKEN=__TOKEN__ cybersecpro/cybersec-agent:${AGENT_VERSION}`,
   },
 };
 

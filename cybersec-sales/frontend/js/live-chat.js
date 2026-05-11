@@ -11,9 +11,9 @@
     platform: {
       name: 'CyberSec Pro',
       description: 'Cloud-based Kali Linux security platform with 401 penetration testing tools',
-      website: 'https://semihkilic.com',
-      support_email: 'cybersecpro@semihkilic.com',
-      sales_email: 'cybersecpro@semihkilic.com',
+      website: 'https://cyber-sec-pro.com',
+      support_email: 'support@cyber-sec-pro.com',
+      sales_email: 'support@cyber-sec-pro.com',
     },
     pricing: {
       free_trial: { price: 0, period: '14 days trial', tools: 401, scans: 1, projects: 1 },
@@ -77,11 +77,11 @@
       ],
       pricing: "💰 **Our Plans:**\n\n• **Free Trial**: €0 for 14 days - All 401 tools, 1 comprehensive scan\n• **Starter**: €99/month - 1 domain, weekly scans, email alerts\n• **Professional**: €299/month - 5 domains, daily scans, API access, compliance reports\n• **Enterprise**: €799/month - Unlimited domains, continuous monitoring, dedicated support\n\nWant me to explain any plan in detail?",
       tools: "🛠️ We have **401 Kali Linux security tools** including:\n\n• **Reconnaissance**: Nmap, Recon-ng, theHarvester, Amass\n• **Web Testing**: Burp Suite, OWASP ZAP, Nikto, SQLMap\n• **Password Attacks**: Hydra, John the Ripper, Hashcat\n• **Exploitation**: Metasploit Framework\n• **Wireless**: Aircrack-ng, Wifite\n\nAll tools run in the cloud - no installation needed!",
-      trial: "🎉 **Free Trial Details:**\n\n• 14 days full access\n• All 401 security tools\n• 1 comprehensive scan\n• No credit card required\n• PDF report with findings\n\n[Start Free Trial →](https://semihkilic.com/dashboard/login)",
-      support: "📞 **Contact Support:**\n\n• **Email**: cybersecpro@semihkilic.com\n• **Live Chat**: Available Mon-Fri, 9AM-6PM CET (Pro & Team users)\n• **Priority Support**: 24/7 for Enterprise users\n\nI can also help answer most questions right here!",
-      enterprise: "🏢 **Enterprise Plan (€799/month):**\n\n• All 401 Kali tools\n• Unlimited domains & applications\n• Continuous hourly monitoring\n• Dedicated account manager\n• SSO / SAML / OAuth\n• Compliance reports (SOC 2, ISO 27001, GDPR, HIPAA, PCI DSS)\n• 24/7 priority support (2h response)\n• 99.9% uptime SLA\n\n[Contact Sales →](mailto:cybersecpro@semihkilic.com)",
+      trial: "🎉 **Free Trial Details:**\n\n• 14 days full access\n• All 401 security tools\n• 1 comprehensive scan\n• No credit card required\n• PDF report with findings\n\n[Start Free Trial →](https://app.cyber-sec-pro.com/dashboard/login)",
+      support: "📞 **Contact Support:**\n\n• **Email**: support@cyber-sec-pro.com\n• **Live Chat**: Available Mon-Fri, 9AM-6PM CET (Pro & Team users)\n• **Priority Support**: 24/7 for Enterprise users\n\nI can also help answer most questions right here!",
+      enterprise: "🏢 **Enterprise Plan (€799/month):**\n\n• All 401 Kali tools\n• Unlimited domains & applications\n• Continuous hourly monitoring\n• Dedicated account manager\n• SSO / SAML / OAuth\n• Compliance reports (SOC 2, ISO 27001, GDPR, HIPAA, PCI DSS)\n• 24/7 priority support (2h response)\n• 99.9% uptime SLA\n\n[Contact Sales →](mailto:support@cyber-sec-pro.com)",
       agents: "🖥️ **Remote Agents:**\n\nDeploy scanning agents inside your network for:\n• Internal vulnerability scanning\n• Private asset discovery\n• Continuous monitoring\n• Distributed scanning\n\nSupported on: Linux, Windows, macOS, Docker\n\nAvailable on Team (1 agent) and Enterprise (unlimited) plans.",
-      notFound: "🤔 I'm not sure about that. Here's what I can help with:\n\n• 💰 Pricing & plans\n• 🛠️ Tools & features\n• 🎉 Free trial info\n• 📞 Contact support\n• 🖥️ Remote agents\n\nOr contact us at cybersecpro@semihkilic.com"
+      notFound: "🤔 I'm not sure about that. Here's what I can help with:\n\n• 💰 Pricing & plans\n• 🛠️ Tools & features\n• 🎉 Free trial info\n• 📞 Contact support\n• 🖥️ Remote agents\n\nOr contact us at support@cyber-sec-pro.com"
     }
   };
 
@@ -434,7 +434,7 @@
     
     // Refund
     if (/refund|money back|cancel|iptal|iade/.test(lowerText)) {
-      return "💸 **Refund Policy:**\n\n• 30-day money-back guarantee\n• Cancel anytime\n• No questions asked\n• Refund processed within 5-7 days\n\nContact cybersecpro@semihkilic.com for refunds.";
+      return "💸 **Refund Policy:**\n\n• 30-day money-back guarantee\n• Cancel anytime\n• No questions asked\n• Refund processed within 5-7 days\n\nContact support@cyber-sec-pro.com for refunds.";
     }
     
     // API
