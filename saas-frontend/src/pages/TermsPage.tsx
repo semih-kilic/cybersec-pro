@@ -104,8 +104,8 @@ export default function TermsPage() {
             <section>
               <h2 className="text-2xl font-semibold text-white mb-3">{t('terms.section10Title', '10. Contact')}</h2>
               <div className="bg-gray-900/50 rounded-lg p-4 border border-gray-700">
-                <p>Email: <a href="mailto:cybersecpro@semihkilic.com" className="text-cyan-400 hover:underline">cybersecpro@semihkilic.com</a></p>
-                <p>Website: <a href="https://cybersecpro.semihkilic.com" className="text-cyan-400 hover:underline">cybersecpro.semihkilic.com</a></p>
+                <p>Email: <a href="mailto:support@cyber-sec-pro.com" className="text-cyan-400 hover:underline">support@cyber-sec-pro.com</a></p>
+                <p>Website: <a href="https://app.cyber-sec-pro.com" className="text-cyan-400 hover:underline">app.cyber-sec-pro.com</a></p>
               </div>
             </section>
           </div>

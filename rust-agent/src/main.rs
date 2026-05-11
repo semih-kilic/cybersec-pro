@@ -2,7 +2,7 @@
 //!
 //! Behavior:
 //! 1. Read `CSP_TOKEN` (one-time enrollment JWT) and `CSP_API_URL`
-//!    (defaults to https://cybersecpro.semihkilic.com).
+//!    (defaults to https://app.cyber-sec-pro.com).
 //! 2. POST `/api/v1/agents/enroll` to exchange token for `{agent_id, api_key}`.
 //! 3. Persist `agent_id` + `api_key` to `~/.cybersec-agent/state.json`.
 //! 4. Loop: every 30s POST heartbeat with cpu/mem/active_scans metrics.
@@ -17,7 +17,7 @@ use std::sync::Arc;
 use std::time::Duration;
 use sysinfo::System;
 
-const DEFAULT_API: &str = "https://cybersecpro.semihkilic.com";
+const DEFAULT_API: &str = "https://app.cyber-sec-pro.com";
 const HEARTBEAT_SECS: u64 = 30;
 const JOB_POLL_BACKOFF_SECS: u64 = 5;
 const JOB_POLL_MAX_BACKOFF_SECS: u64 = 60;

@@ -14,7 +14,7 @@
  * Environment:
  *   DEMO_EMAIL     - Login email (default: demo@semihkilic.com)
  *   DEMO_PASSWORD  - Login password (default: demo123!)
- *   DEMO_BASE_URL  - App URL (default: https://cybersecpro.semihkilic.com)
+ *   DEMO_BASE_URL  - App URL (default: https://app.cyber-sec-pro.com)
  *   YT_CLIENT_ID   - YouTube OAuth client ID
  *   YT_CLIENT_SECRET - YouTube OAuth client secret
  *   YT_REFRESH_TOKEN - YouTube OAuth refresh token
@@ -29,7 +29,7 @@ const fs = require('fs');
 // ── Config ───────────────────────────────────────────────────
 
 const CONFIG = {
-  baseUrl: process.env.DEMO_BASE_URL || 'https://cybersecpro.semihkilic.com',
+  baseUrl: process.env.DEMO_BASE_URL || 'https://app.cyber-sec-pro.com',
   email: process.env.DEMO_EMAIL || 'demo@semihkilic.com',
   password: process.env.DEMO_PASSWORD || 'demo123!',
   outputDir: path.join(__dirname, 'demo-videos'),
@@ -525,7 +525,7 @@ async function uploadToYouTube(videoPath, thumbPath) {
         '✅ Security Reports & Analytics',
         '✅ Remote Agent Management',
         '',
-        '🔗 Try it free: https://cybersecpro.semihkilic.com',
+        '🔗 Try it free: https://app.cyber-sec-pro.com',
         '📧 Contact: info@semihkilic.com',
         '',
         '#cybersecurity #pentesting #kalilinux #nmap #infosec',

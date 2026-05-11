@@ -57,7 +57,7 @@ export default function Footer() {
             <div className="flex flex-col gap-2">
               <Link href={l("/privacy")} className="text-sm text-white/40 hover:text-[var(--color-neon)]">{t("privacyPolicy")}</Link>
               <Link href={l("/terms")} className="text-sm text-white/40 hover:text-[var(--color-neon)]">{t("termsOfService")}</Link>
-              <a href="mailto:cybersecpro@semihkilic.com" className="text-sm text-white/40 hover:text-[var(--color-neon)]">{t("support")}</a>
+              <a href="mailto:support@cyber-sec-pro.com" className="text-sm text-white/40 hover:text-[var(--color-neon)]">{t("support")}</a>
             </div>
           </div>
         </div>

@@ -207,8 +207,8 @@ export default function AboutPage() {
                 <p className="mt-3 text-[11px] text-white/30 italic">
                   &ldquo;I&apos;m building CyberSec Pro entirely on my own — no team, no investors, just one person&apos;s vision to make professional-grade security testing accessible to everyone. If you believe in this mission, your support means the world.&rdquo;
                 </p>
-                <a href="mailto:cybersecpro@semihkilic.com" className="mt-4 inline-flex items-center gap-2 text-xs text-white/40 hover:text-[var(--color-neon)] transition">
-                  <Mail size={12} /> cybersecpro@semihkilic.com
+                <a href="mailto:info@cyber-sec-pro.com" className="mt-4 inline-flex items-center gap-2 text-xs text-white/40 hover:text-[var(--color-neon)] transition">
+                  <Mail size={12} /> support@cyber-sec-pro.com
                 </a>
               </div>
             </div>
@@ -239,7 +239,7 @@ export default function AboutPage() {
               <a href="/dashboard/login" className="btn-primary text-sm">
                 Start Free Scan
               </a>
-              <a href="mailto:cybersecpro@semihkilic.com" className="inline-flex items-center gap-2 text-sm text-white/60 hover:text-[var(--color-neon)] transition">
+              <a href="mailto:info@cyber-sec-pro.com" className="inline-flex items-center gap-2 text-sm text-white/60 hover:text-[var(--color-neon)] transition">
                 Contact Us <ArrowRight size={14} />
               </a>
             </div>

@@ -279,7 +279,7 @@ export default function ApiReferencePage() {
             <div className="glass-card p-6">
               <h3 className="mb-3 font-mono text-sm font-bold text-white/70">{t("baseUrl")}</h3>
               <code className="rounded-lg bg-black/30 px-4 py-2 font-mono text-sm text-[var(--color-neon)]">
-                https://semihkilic.com/api/v1
+                https://api.cyber-sec-pro.com/v1
               </code>
               <p className="mt-3 text-xs text-white/40">All endpoints use HTTPS. HTTP requests are redirected. TLS 1.3 required.</p>
             </div>

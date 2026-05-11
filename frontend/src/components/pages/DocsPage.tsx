@@ -62,7 +62,7 @@ export default function DocsPage() {
                 <p className="text-sm text-white/50 mb-6">Get up and running with CyberSec Pro in under 5 minutes. Follow these steps to launch your first security assessment.</p>
                 <div className="grid gap-6 md:grid-cols-3">
                   {[
-                    { n: "1", title: "Create Account", desc: "Register at semihkilic.com with your email address or GitHub OAuth. Verify your email to activate. You'll receive a 3-day free trial with access to basic scanning tools." },
+                    { n: "1", title: "Create Account", desc: "Register at cyber-sec-pro.com with your email address or GitHub OAuth. Verify your email to activate. You'll receive a 3-day free trial with access to basic scanning tools." },
                     { n: "2", title: "Set Up MFA", desc: "Navigate to Settings → Security and enable TOTP-based MFA using Google Authenticator, Authy, or any RFC 6238 compatible app. MFA is mandatory for all accounts." },
                     { n: "3", title: "Add Your First Target", desc: "Go to Targets → Add Target. Enter your domain or IP address. Verify ownership via DNS TXT record, HTTP file upload, or HTML meta tag verification." },
                     { n: "4", title: "Configure Scan Profile", desc: "Choose a scan type (Quick, Full, Custom, or Scheduled). Select tools and set parameters. Save as a reusable profile for future scans." },
@@ -431,7 +431,7 @@ export default function DocsPage() {
                 <h3 className="font-bold text-white mb-3">Authentication</h3>
                 <div className="bg-black/50 rounded-xl p-4 font-mono text-xs text-[var(--color-neon)]/80 overflow-x-auto mb-6">
                   <pre>{`# Get JWT token
-curl -X POST https://semihkilic.com/api/v1/auth/login \\
+curl -X POST https://api.cyber-sec-pro.com/v1/auth/login \\
   -H "Content-Type: application/json" \\
   -d '{"email": "you@company.com", "password": "your_password"}'
 
@@ -444,26 +444,26 @@ Authorization: Bearer <access_token>`}</pre>
                 <h3 className="font-bold text-white mb-3">Common Workflows</h3>
                 <div className="bg-black/50 rounded-xl p-4 font-mono text-xs text-[var(--color-neon)]/80 overflow-x-auto mb-6">
                   <pre>{`# 1. Create a scan
-curl -X POST https://semihkilic.com/api/v1/scans/create \\
+curl -X POST https://api.cyber-sec-pro.com/v1/scans/create \\
   -H "Authorization: Bearer YOUR_TOKEN" \\
   -H "Content-Type: application/json" \\
   -d '{"target": "example.com", "tool": "nmap", "params": "-sV -sC"}'
 
 # 2. Execute the scan
-curl -X POST https://semihkilic.com/api/v1/scans/execute \\
+curl -X POST https://api.cyber-sec-pro.com/v1/scans/execute \\
   -H "Authorization: Bearer YOUR_TOKEN" \\
   -d '{"scan_id": "SCAN_ID"}'
 
 # 3. Stream real-time output (SSE)
-curl https://semihkilic.com/api/v1/scan/SCAN_ID/output \\
+curl https://api.cyber-sec-pro.com/v1/scan/SCAN_ID/output \\
   -H "Authorization: Bearer YOUR_TOKEN"
 
 # 4. Get scan results
-curl https://semihkilic.com/api/v1/scan/SCAN_ID/result \\
+curl https://api.cyber-sec-pro.com/v1/scan/SCAN_ID/result \\
   -H "Authorization: Bearer YOUR_TOKEN"
 
 # 5. Generate report
-curl -X POST https://semihkilic.com/api/v1/reports/generate \\
+curl -X POST https://api.cyber-sec-pro.com/v1/reports/generate \\
   -H "Authorization: Bearer YOUR_TOKEN" \\
   -d '{"scan_id": "SCAN_ID", "template": "technical", "format": "pdf"}'`}</pre>
                 </div>
@@ -481,7 +481,7 @@ jobs:
         env:
           CYBERSEC_TOKEN: \${{ secrets.CYBERSEC_API_TOKEN }}
         run: |
-          SCAN=$(curl -s -X POST https://semihkilic.com/api/v1/scan/start \\
+          SCAN=$(curl -s -X POST https://api.cyber-sec-pro.com/v1/scan/start \\
             -H "Authorization: Bearer $CYBERSEC_TOKEN" \\
             -d '{"tool":"nikto","target":"staging.example.com"}')
           echo "Scan started: $SCAN"`}</pre>

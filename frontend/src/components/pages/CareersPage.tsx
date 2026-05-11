@@ -127,7 +127,7 @@ export default function CareersPage() {
                     </div>
                   </div>
                   <a
-                    href={`mailto:cybersecpro@semihkilic.com?subject=Application: ${job.title}`}
+                    href={`mailto:info@cyber-sec-pro.com?subject=Application: ${job.title}`}
                     className="btn-primary mt-3 justify-center text-xs md:mt-0 flex-shrink-0"
                   >
                     {t("apply")}
@@ -148,8 +148,8 @@ export default function CareersPage() {
             <p className="text-sm text-white/50 max-w-lg mx-auto leading-relaxed">
               Send your CV, a brief cover letter, and links to relevant work (GitHub, portfolio, or published research) to:
             </p>
-            <a href="mailto:cybersecpro@semihkilic.com" className="mt-4 inline-block text-lg font-mono text-[var(--color-neon)] hover:underline">
-              cybersecpro@semihkilic.com
+            <a href="mailto:info@cyber-sec-pro.com" className="mt-4 inline-block text-lg font-mono text-[var(--color-neon)] hover:underline">
+              support@cyber-sec-pro.com
             </a>
             <p className="mt-3 text-xs text-white/30">We review all applications within 5 business days. No recruiters, please.</p>
           </div>

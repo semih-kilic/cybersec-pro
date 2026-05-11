@@ -35,7 +35,7 @@ export async function generateMetadata({
   return {
     title: messages.meta.title,
     description: messages.meta.description,
-    metadataBase: new URL("https://semihkilic.com"),
+    metadataBase: new URL("https://cyber-sec-pro.com"),
     icons: {
       icon: [
         { url: "/icon.svg", type: "image/svg+xml" },
@@ -51,7 +51,7 @@ export async function generateMetadata({
     openGraph: {
       title: messages.meta.title,
       description: messages.meta.description,
-      url: "https://semihkilic.com",
+      url: "https://cyber-sec-pro.com",
       siteName: "CyberSec Pro",
       type: "website",
       images: [

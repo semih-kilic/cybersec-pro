@@ -172,7 +172,7 @@ export default function PrivacyPage() {
                 <h2 className="text-xl font-bold text-white">Contact & DPO</h2>
               </div>
               <p className="text-sm text-white/50">For privacy-related inquiries, data access requests, or to exercise your GDPR rights:</p>
-              <p className="mt-2 text-sm font-mono text-[var(--color-neon)]">cybersecpro@semihkilic.com</p>
+              <p className="mt-2 text-sm font-mono text-[var(--color-neon)]">support@cyber-sec-pro.com</p>
               <p className="mt-2 text-xs text-white/40">We respond to all privacy requests within 72 hours. GDPR formal requests are processed within 30 days as required by law.</p>
             </div>
           </RevealOnScroll>

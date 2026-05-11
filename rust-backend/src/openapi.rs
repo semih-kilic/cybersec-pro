@@ -7,11 +7,11 @@ use utoipa::OpenApi;
         title = "CyberSec Pro API",
         version = "4.0.0",
         description = "CyberSec Professional — Security Operations Platform API",
-        contact(name = "Semih Kılıç", email = "support@semihkilic.com", url = "https://semihkilic.com"),
+        contact(name = "Semih Kılıç", email = "support@cyber-sec-pro.com", url = "https://cyber-sec-pro.com"),
         license(name = "Proprietary")
     ),
     servers(
-        (url = "https://cybersecpro.semihkilic.com", description = "Production"),
+        (url = "https://app.cyber-sec-pro.com", description = "Production"),
         (url = "http://localhost:5001", description = "Local Development")
     ),
     paths(),

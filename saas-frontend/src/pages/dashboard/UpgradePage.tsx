@@ -175,9 +175,9 @@ export default function UpgradePage() {
           window.location.href = data.checkout_url || data.url;
           return;
         }
-        toast.success('For Enterprise activation, contact cybersecpro@semihkilic.com.');
+        toast.success('For Enterprise activation, contact support@cyber-sec-pro.com.');
       } catch {
-        toast.success('Enterprise plan available — contact cybersecpro@semihkilic.com for activation.');
+        toast.success('Enterprise plan available — contact support@cyber-sec-pro.com for activation.');
       } finally {
         setLoading(null);
       }
@@ -191,13 +191,13 @@ export default function UpgradePage() {
         window.location.href = data.checkout_url || data.url;
         return;
       }
-      toast.success('Please contact cybersecpro@semihkilic.com to upgrade your plan.');
+      toast.success('Please contact support@cyber-sec-pro.com to upgrade your plan.');
     } catch (error: any) {
       const msg = error?.response?.data?.error || error?.message || '';
       if (msg.includes('not configured') || msg.includes('Stripe')) {
-        toast.success('Please contact cybersecpro@semihkilic.com to upgrade your plan.');
+        toast.success('Please contact support@cyber-sec-pro.com to upgrade your plan.');
       } else {
-        toast.error('Connection error. Please try again or contact cybersecpro@semihkilic.com.');
+        toast.error('Connection error. Please try again or contact support@cyber-sec-pro.com.');
       }
     } finally {
       setLoading(null);

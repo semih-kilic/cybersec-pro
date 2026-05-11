@@ -992,7 +992,7 @@ pub async fn resend_verification(
 
     // Send verification email
     if let Some(cfg) = crate::services::email::EmailConfig::from_env() {
-        let verify_url = format!("https://semihkilic.com/dashboard/verify-email?token={}", token);
+        let verify_url = format!("https://app.cyber-sec-pro.com/dashboard/verify-email?token={}", token);
         let html = format!(
             r#"<!DOCTYPE html><html><body style="margin:0;padding:0;font-family:Arial,sans-serif;background:#0a0a0a">
             <table style="width:100%;max-width:600px;margin:0 auto;background:#1a1a2e;border-radius:12px">
@@ -4109,7 +4109,7 @@ pub async fn feedback(
           <p style="margin-top:20px">We'll reply to <a href="mailto:{reply_html}" style="color:#00d4ff">{reply_html}</a> as soon as possible. Need to add details? Just reply to this email.</p>
         </td></tr>
         <tr><td style="padding:20px 32px;text-align:center;background:rgba(0,0,0,.2);font-size:12px;color:#64748b">
-          CyberSec Pro • <a href="mailto:cybersecpro@semihkilic.com" style="color:#00d4ff;text-decoration:none">cybersecpro@semihkilic.com</a>
+          CyberSec Pro • <a href="mailto:support@cyber-sec-pro.com" style="color:#00d4ff;text-decoration:none">support@cyber-sec-pro.com</a>
         </td></tr></table></td></tr></table></body></html>"#,
         name_html    = html_escape(&user_name),
         type_html    = html_escape(&feedback_type),

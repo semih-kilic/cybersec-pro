@@ -376,10 +376,10 @@ pub async fn sso_saml_init(
     // Build SAML AuthnRequest (SP-initiated)
     let request_id = format!("_cspr_{}", Uuid::new_v4());
     let issue_instant = chrono::Utc::now().format("%Y-%m-%dT%H:%M:%SZ").to_string();
-    let acs_url = "https://semihkilic.com/api/v1/auth/sso/saml/callback";
+    let acs_url = "https://api.cyber-sec-pro.com/v1/auth/sso/saml/callback";
 
     let authn_request = format!(
-        r#"<samlp:AuthnRequest xmlns:samlp="urn:oasis:names:tc:SAML:2.0:protocol" xmlns:saml="urn:oasis:names:tc:SAML:2.0:assertion" ID="{}" Version="2.0" IssueInstant="{}" Destination="{}" AssertionConsumerServiceURL="{}" ProtocolBinding="urn:oasis:names:tc:SAML:2.0:bindings:HTTP-POST"><saml:Issuer>https://semihkilic.com</saml:Issuer></samlp:AuthnRequest>"#,
+        r#"<samlp:AuthnRequest xmlns:samlp="urn:oasis:names:tc:SAML:2.0:protocol" xmlns:saml="urn:oasis:names:tc:SAML:2.0:assertion" ID="{}" Version="2.0" IssueInstant="{}" Destination="{}" AssertionConsumerServiceURL="{}" ProtocolBinding="urn:oasis:names:tc:SAML:2.0:bindings:HTTP-POST"><saml:Issuer>https://cyber-sec-pro.com</saml:Issuer></samlp:AuthnRequest>"#,
         request_id, issue_instant, sso_url, acs_url
     );
 
@@ -492,7 +492,7 @@ pub async fn sso_saml_callback(
 
     // Redirect to dashboard with token in URL fragment (secure — not sent to server)
     let redirect_url = format!(
-        "https://semihkilic.com/dashboard/sso-callback#access_token={}&refresh_token={}",
+        "https://app.cyber-sec-pro.com/dashboard/sso-callback#access_token={}&refresh_token={}",
         access_token, refresh_token
     );
     Redirect::temporary(&redirect_url).into_response()
@@ -569,7 +569,7 @@ pub async fn sso_oidc_init(
     let client_id = client_id.unwrap_or_default();
     let issuer_url = issuer_url.unwrap_or_default();
     let oidc_state = Uuid::new_v4().to_string();
-    let redirect_uri = "https://semihkilic.com/api/v1/auth/sso/oidc/callback";
+    let redirect_uri = "https://api.cyber-sec-pro.com/v1/auth/sso/oidc/callback";
 
     let auth_url = format!(
         "{}/authorize?client_id={}&response_type=code&scope=openid%20email%20profile&redirect_uri={}&state={}",
