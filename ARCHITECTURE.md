@@ -92,13 +92,17 @@ The `tools` table is seeded on every backend startup from two sources:
 
 | Source | Count | ID prefix | File |
 |---|---:|---|---|
-| Internal catalog | 1160 | (mixed)  | `services/db.rs` initial load + migrations |
+| Internal catalog | 1161 | (mixed)  | `services/db.rs` initial load + migrations |
 | Z4nzu/hackingtool catalog | 173 | `ht_` | `services/hackingtool_seed.rs` |
 | Modern security catalog | 209 | `ht_` | `services/hackingtool_seed_modern.rs` |
 
-The modern catalog covers cloud security (prowler, scoutsuite, pacu, cloudfox, checkov, tfsec, kics), container/Kubernetes (trivy, grype, syft, kube-bench, kube-hunter, kubescape, kube-linter), supply-chain (semgrep, codeql, bandit, govulncheck, osv-scanner, cosign, slsa-verifier, phylum), API & GraphQL (akto, jwt_tool, graphqlmap, clairvoyance, inql), AI/LLM (garak, llm_guard, rebuff, vigil, modelscan, counterfit, ART), Web3 (slither, mythril, manticore, echidna, foundry), modern mobile (drozer, apktool, quark, androbugs, iblessing), DevSecOps (ggshield, legitify, octoscan, zizmor, chain-bench), modern recon (chaos, dnsx, asnmap, tlsx, mapcidr, cdncheck, uncover, interactsh, cvemap), and end-to-end workflow runners (osmedeus, reconftw, bbot, sn1per, oneforall). Total **382 hackingtool family entries / 1542 tools overall**.
+The modern catalog covers cloud security (prowler, scoutsuite, pacu, cloudfox, checkov, tfsec, kics), container/Kubernetes (trivy, grype, syft, kube-bench, kube-hunter, kubescape, kube-linter), supply-chain (semgrep, codeql, bandit, govulncheck, osv-scanner, cosign, slsa-verifier, phylum), API & GraphQL (akto, jwt_tool, graphqlmap, clairvoyance, inql), AI/LLM (garak, llm_guard, rebuff, vigil, modelscan, counterfit, ART), Web3 (slither, mythril, manticore, echidna, foundry), modern mobile (drozer, apktool, quark, androbugs, iblessing), DevSecOps (ggshield, legitify, octoscan, zizmor, chain-bench), modern recon (chaos, dnsx, asnmap, tlsx, mapcidr, cdncheck, uncover, interactsh, cvemap), and end-to-end workflow runners (osmedeus, reconftw, bbot, sn1per, oneforall). Total **382 hackingtool family entries / 1543 tools overall**.
 
 Each row stores `command_template` plus a `parameters` JSONB that — for hackingtool entries — includes `{ form: [{name,label,type,required,placeholder,default,options}], danger_level, target_types }` so the frontend can build a zero-code form without per-tool code.
+
+### Tool health monitoring
+
+`scripts/tool-health-probe.py` is a Python runner that probes every binary in `tools` (`shutil.which` + `--version`/`--help`/`-h`/`-V`/`-v`, 12-worker thread pool, TUI denylist for vim/less/htop/etc) and persists results to `tools.health_status` (`ok`|`missing`|`broken`|`timeout`|`skipped`), `tools.health_exit_code`, `tools.health_evidence` (truncated stdout/stderr), `tools.last_health_check`. Resume mode skips rows probed in the last 24 h. The frontend can surface health badges on `ToolDetailPage.tsx` and the catalog grid. Initial baseline (May 11 2026): **613/1543 healthy** (~40%), 554 missing, 345 broken, 23 needs_interactive.
 
 ### Reverse-tunnel job channel
 

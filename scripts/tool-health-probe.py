@@ -24,6 +24,11 @@ DSN = os.environ.get("PG_DSN", "dbname=cybersec_pro")
 TIMEOUT = int(os.environ.get("PROBE_TIMEOUT", "8"))
 PROBE_FLAGS = ["--version", "-V", "-v", "--help", "-h"]
 EVIDENCE_MAX = 400
+TUI_DENYLIST = {
+    "vim", "vi", "nvim", "less", "more", "mc", "tmux", "screen", "htop", "top",
+    "nano", "joe", "emacs", "ne", "pico", "mutt", "ranger", "tig", "lynx", "links",
+    "elinks", "w3m", "irssi", "weechat", "btop",
+}
 REPORT_PATH = os.environ.get(
     "REPORT_PATH",
     f"/home/cybersec/cybersec-pro/scripts/tool-health-report-{datetime.now().strftime('%Y%m%d-%H%M')}.json",
@@ -39,6 +44,8 @@ def probe_binary(binary_name: str, custom_probe: str | None) -> dict:
     """Return dict with status, exit_code, evidence."""
     if not binary_name:
         return {"status": "skipped", "exit_code": None, "evidence": "no binary_name"}
+    if binary_name.lower() in TUI_DENYLIST:
+        return {"status": "skipped", "exit_code": None, "evidence": "TUI binary (denylisted)"}
 
     # Prefer custom probe (full command line) if provided
     if custom_probe and custom_probe.strip():
@@ -100,6 +107,8 @@ def main() -> int:
     cur.execute(
         "SELECT id, name, binary_name, health_probe FROM tools "
         "WHERE binary_name IS NOT NULL AND binary_name <> '' "
+        "AND (last_health_check IS NULL "
+        "     OR last_health_check < NOW() - INTERVAL '24 hours') "
         "ORDER BY name"
     )
     rows = cur.fetchall()

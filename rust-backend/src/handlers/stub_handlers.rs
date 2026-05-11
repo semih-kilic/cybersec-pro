@@ -1273,7 +1273,78 @@ pub async fn tool_config(
 
     match tool {
         Ok(Some((id, name, params, desc, cat, plan, cmd_tpl, binary, group))) => {
-            let params_val: serde_json::Value = serde_json::from_str(&params).unwrap_or(json!({}));
+            let mut params_val: serde_json::Value = serde_json::from_str(&params).unwrap_or(json!({}));
+
+            // Auto-derive form schema from {placeholder} tokens in command_template
+            // when parameters JSONB is empty/null. Lets the frontend build a zero-code
+            // form for any tool that ships only with a template (463+ such tools).
+            let needs_derive = match &params_val {
+                serde_json::Value::Null => true,
+                serde_json::Value::Object(m) => m.is_empty() || (m.len() == 1 && m.contains_key("form") && m["form"].as_array().map(|a| a.is_empty()).unwrap_or(true)),
+                serde_json::Value::Array(a) => a.is_empty(),
+                _ => false,
+            };
+            if needs_derive {
+                if let Some(tpl) = cmd_tpl.as_deref() {
+                    let mut seen = std::collections::HashSet::new();
+                    let mut form: Vec<serde_json::Value> = Vec::new();
+                    let bytes = tpl.as_bytes();
+                    let mut i = 0;
+                    while i < bytes.len() {
+                        if bytes[i] == b'{' {
+                            if let Some(end_rel) = tpl[i+1..].find('}') {
+                                let raw = &tpl[i+1..i+1+end_rel];
+                                let key = raw.trim();
+                                if !key.is_empty() && !key.contains(' ') && seen.insert(key.to_string()) {
+                                    let lower = key.to_lowercase();
+                                    let is_secret = lower.contains("pass") || lower.contains("secret")
+                                        || lower.contains("token") || lower.contains("apikey")
+                                        || lower.contains("api_key") || lower.contains("credential");
+                                    let ftype = if is_secret { "password" }
+                                        else if lower == "port" || lower.ends_with("_port") { "number" }
+                                        else if lower == "url" { "url" }
+                                        else if lower.contains("file") || lower.contains("path") || lower.contains("wordlist") { "text" }
+                                        else { "text" };
+                                    let label = key
+                                        .replace('_', " ")
+                                        .split_whitespace()
+                                        .map(|w| {
+                                            let mut c = w.chars();
+                                            match c.next() {
+                                                Some(f) => f.to_uppercase().collect::<String>() + c.as_str(),
+                                                None => String::new(),
+                                            }
+                                        })
+                                        .collect::<Vec<_>>()
+                                        .join(" ");
+                                    let required = matches!(lower.as_str(),
+                                        "target" | "host" | "url" | "domain" | "ip" | "input" | "file");
+                                    form.push(json!({
+                                        "name": key,
+                                        "label": label,
+                                        "type": ftype,
+                                        "required": required,
+                                        "placeholder": "",
+                                        "default": "",
+                                    }));
+                                }
+                                i = i + 1 + end_rel + 1;
+                                continue;
+                            }
+                        }
+                        i += 1;
+                    }
+                    if !form.is_empty() {
+                        params_val = json!({
+                            "form": form,
+                            "danger_level": "low",
+                            "target_types": [],
+                            "auto_derived": true,
+                        });
+                    }
+                }
+            }
+
             Json(json!({
                 "tool": {
                     "id": id,

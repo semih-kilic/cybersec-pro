@@ -2,8 +2,28 @@ User-agent: *
 Allow: /
 Allow: /tools
 Allow: /tools/
-Disallow: /dashboard/
+Allow: /dashboard/login
+Allow: /dashboard/register
+Allow: /dashboard/privacy
+Allow: /dashboard/terms
+Allow: /dashboard/gdpr
+Allow: /dashboard/docs.html
+Disallow: /dashboard/admin
+Disallow: /dashboard/agents
+Disallow: /dashboard/billing
+Disallow: /dashboard/settings
 Disallow: /api/
 Disallow: /auth/
 
+# Block AI training crawlers (optional — remove if you want them)
+User-agent: GPTBot
+Disallow: /
+User-agent: CCBot
+Disallow: /
+User-agent: ClaudeBot
+Disallow: /
+User-agent: Google-Extended
+Disallow: /
+
 Sitemap: https://app.cyber-sec-pro.com/sitemap.xml
+Sitemap: https://cyber-sec-pro.com/sitemap.xml
