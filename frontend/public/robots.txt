@@ -4,4 +4,4 @@ Allow: /
 Disallow: /app/
 Disallow: /api/
 
-Sitemap: https://semihkilic.com/sitemap.xml
+Sitemap: https://cyber-sec-pro.com/sitemap.xml
