@@ -424,8 +424,8 @@ const RT_DOWNLOADS: Record<string, { label: string; url: string; install: string
   },
   docker: {
     label: 'Docker',
-    url: 'https://hub.docker.com/r/semihkilic/cybersec-agent',
-    install: `docker run -d --name cybersec-agent --restart=always -e CSP_TOKEN=__TOKEN__ semihkilic/cybersec-agent:${AGENT_VERSION}`,
+    url: 'https://hub.docker.com/r/cybersecpro/cybersec-agent',
+    install: `docker run -d --name cybersec-agent --restart=always -e CSP_TOKEN=__TOKEN__ cybersecpro/cybersec-agent:${AGENT_VERSION}`,
   },
 };
 
