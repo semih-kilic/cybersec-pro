@@ -176,8 +176,8 @@ export function SSOTab({ setMessage, userPlan }: SettingsTabProps) {
               <div className="p-4 bg-gray-800/50 rounded-lg mt-4">
                 <p className="text-gray-400 text-xs mb-2">{t('sso.spMetadata', 'Your Service Provider (SP) metadata:')}</p>
                 <div className="space-y-1 text-xs font-mono text-gray-300">
-                  <p><span className="text-gray-500">ACS URL:</span> https://app.cybersecpro.com/api/v1/sso/saml/callback</p>
-                  <p><span className="text-gray-500">Entity ID:</span> https://app.cybersecpro.com</p>
+                  <p><span className="text-gray-500">ACS URL:</span> https://app.cyber-sec-pro.com/api/v1/sso/saml/callback</p>
+                  <p><span className="text-gray-500">Entity ID:</span> https://app.cyber-sec-pro.com</p>
                   <p><span className="text-gray-500">Name ID:</span> urn:oasis:names:tc:SAML:1.1:nameid-format:emailAddress</p>
                 </div>
               </div>
@@ -205,7 +205,7 @@ export function SSOTab({ setMessage, userPlan }: SettingsTabProps) {
               <div className="p-4 bg-gray-800/50 rounded-lg">
                 <p className="text-gray-400 text-xs mb-2">{t('sso.oidcProviderHint', 'Configure in your OIDC provider:')}</p>
                 <div className="space-y-1 text-xs font-mono text-gray-300">
-                  <p><span className="text-gray-500">Redirect URI:</span> https://app.cybersecpro.com/api/v1/sso/oidc/callback</p>
+                  <p><span className="text-gray-500">Redirect URI:</span> https://app.cyber-sec-pro.com/api/v1/sso/oidc/callback</p>
                 </div>
               </div>
             </div>

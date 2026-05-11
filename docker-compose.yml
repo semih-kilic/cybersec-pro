@@ -225,7 +225,7 @@ services:
       - PUID=1000
       - PGID=1000
       - TZ=Europe/Istanbul
-      - SERVERURL=${VPN_SERVER_URL:-vpn.cybersecpro.com}
+      - SERVERURL=${VPN_SERVER_URL:-vpn.cyber-sec-pro.com}
       - SERVERPORT=51820
       - PEERS=10
       - PEERDNS=auto

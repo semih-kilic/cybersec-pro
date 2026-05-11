@@ -88,8 +88,14 @@ pub async fn send_welcome_email(
 
 pub(crate) fn welcome_plain_text(name: &str) -> String {
     format!(
-        "Welcome, {}!\n\nThank you for joining CyberSec Professional.\n\
-         Your journey to professional security starts now!\n\n\u{00A9} 2026 CyberSec Professional",
+        "Welcome, {}!\n\n\
+         Your CyberSec Professional account is verified and ready.\n\n\
+         \u{1F680} OPEN YOUR DASHBOARD:\n   https://app.cyber-sec-pro.com/dashboard\n\n\
+         \u{26A1} 60-SECOND QUICK START:\n   1. Add a target (https://example.com)\n   2. Pick a scan template (Quick / Full / Custom)\n   3. Hit \"Start Scan\" \u2014 results stream live\n\n\
+         \u{1F381} YOUR FREE TRIAL INCLUDES:\n   \u2022 50 scans / month\n   \u2022 1 cloud agent + unlimited self-hosted agents\n   \u2022 Full vulnerability database access\n   \u2022 PDF / JSON / SARIF report export\n\n\
+         \u{1F4DA} DOCS & API:\n   Docs:    https://app.cyber-sec-pro.com/dashboard/docs\n   API key: https://app.cyber-sec-pro.com/dashboard/settings/api\n\n\
+         Need help? \u2192 support@cyber-sec-pro.com\n\n\
+         \u{00A9} 2026 CyberSec Professional",
         name
     )
 }
@@ -346,13 +352,49 @@ fn license_email_html(name: &str, email: &str, key: &str, plan: &str, expiry: &s
 }
 
 fn welcome_email_html(name: &str) -> String {
-    format!(r#"<!DOCTYPE html><html><head><meta charset="UTF-8"></head>
-<body style="margin:0;padding:0;font-family:Arial,sans-serif;background:#0a0a0a">
-<table style="width:100%;max-width:600px;margin:0 auto;background:#1a1a2e;border-radius:12px">
-<tr><td style="padding:40px;text-align:center">
-<h1 style="color:#00ff88;margin-bottom:20px">🛡️ Welcome, {name}!</h1>
-<p style="color:#ccd6f6;font-size:16px;line-height:1.6">Thank you for joining CyberSec Professional. Your journey to professional security starts now!</p>
-</td></tr></table></body></html>"#, name = name)
+    format!(r#"<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Welcome to CyberSec Professional</title></head>
+<body style="margin:0;padding:0;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Arial,sans-serif;background:#0a0a0a;color:#e6f1ff">
+<table role="presentation" cellpadding="0" cellspacing="0" style="width:100%;max-width:640px;margin:0 auto;background:linear-gradient(180deg,#0f1419 0%,#1a1a2e 100%);border-radius:14px;overflow:hidden">
+  <tr><td style="padding:40px 40px 24px 40px;text-align:center;background:linear-gradient(135deg,#9fef00 0%,#00d4ff 100%)">
+    <div style="font-size:46px;line-height:1">🛡️</div>
+    <h1 style="color:#0a0a0a;margin:14px 0 6px 0;font-size:28px;letter-spacing:-0.5px">Welcome aboard, {name}!</h1>
+    <p style="color:#0a0a0a;margin:0;font-size:15px;opacity:.85">Your account is verified and ready to scan.</p>
+  </td></tr>
+  <tr><td style="padding:36px 40px 16px 40px;text-align:center">
+    <a href="https://app.cyber-sec-pro.com/dashboard" style="display:inline-block;background:#9fef00;color:#0a0a0a;font-weight:700;padding:14px 36px;border-radius:10px;text-decoration:none;font-size:16px;box-shadow:0 6px 20px rgba(159,239,0,.25)">→ Open Dashboard</a>
+  </td></tr>
+  <tr><td style="padding:8px 40px 24px 40px">
+    <h2 style="color:#9fef00;font-size:18px;margin:24px 0 14px 0">⚡ 60-Second Quick Start</h2>
+    <ol style="color:#ccd6f6;font-size:15px;line-height:1.8;padding-left:20px;margin:0">
+      <li>Add a target (e.g. <code style="color:#00d4ff">https://example.com</code>)</li>
+      <li>Pick a scan template — Quick, Full, or Custom</li>
+      <li>Hit <strong>Start Scan</strong> — results stream live in your dashboard</li>
+    </ol>
+  </td></tr>
+  <tr><td style="padding:8px 40px 24px 40px">
+    <h2 style="color:#9fef00;font-size:18px;margin:8px 0 14px 0">🎁 Your Free Trial Includes</h2>
+    <table style="width:100%;border-collapse:collapse">
+      <tr><td style="padding:8px 0;color:#ccd6f6;font-size:14px">• <strong>50 scans</strong> per month</td></tr>
+      <tr><td style="padding:8px 0;color:#ccd6f6;font-size:14px">• <strong>1 cloud agent</strong> + unlimited self-hosted agents</td></tr>
+      <tr><td style="padding:8px 0;color:#ccd6f6;font-size:14px">• Full vulnerability database access</td></tr>
+      <tr><td style="padding:8px 0;color:#ccd6f6;font-size:14px">• PDF / JSON / SARIF report export</td></tr>
+    </table>
+  </td></tr>
+  <tr><td style="padding:8px 40px 24px 40px">
+    <h2 style="color:#9fef00;font-size:18px;margin:8px 0 14px 0">📚 Docs &amp; API</h2>
+    <p style="color:#ccd6f6;font-size:14px;line-height:1.7;margin:0">
+      → <a href="https://app.cyber-sec-pro.com/dashboard/docs" style="color:#00d4ff;text-decoration:none">Read the documentation</a><br>
+      → <a href="https://app.cyber-sec-pro.com/dashboard/settings/api" style="color:#00d4ff;text-decoration:none">Generate your API key</a>
+    </p>
+  </td></tr>
+  <tr><td style="padding:24px 40px 16px 40px;border-top:1px solid #2d3748;text-align:center">
+    <p style="color:#8892b0;font-size:13px;margin:0 0 6px 0">Stuck? Reply to this email or write to</p>
+    <p style="margin:0"><a href="mailto:support@cyber-sec-pro.com" style="color:#9fef00;text-decoration:none;font-weight:600">support@cyber-sec-pro.com</a></p>
+  </td></tr>
+  <tr><td style="padding:16px 40px 32px 40px;text-align:center">
+    <p style="color:#4a5568;font-size:11px;margin:0">© 2026 CyberSec Professional — <a href="https://cyber-sec-pro.com" style="color:#4a5568;text-decoration:underline">cyber-sec-pro.com</a></p>
+  </td></tr>
+</table></body></html>"#, name = name)
 }
 
 fn payment_confirmation_html(name: &str, amount: &str, plan: &str) -> String {

@@ -1022,17 +1022,34 @@ pub async fn verify_email(
         return (StatusCode::BAD_REQUEST, Json(json!({"error": "Missing verification token", "verified": false}))).into_response();
     }
 
-    // Verify token matches a user and mark email verified
-    let result = sqlx::query(
-        "UPDATE users SET email_verified = true, verification_token = NULL WHERE verification_token = $1"
+    // Atomically verify and return the user's email + name for welcome mail
+    let result = sqlx::query_as::<_, (String, Option<String>)>(
+        "UPDATE users SET email_verified = true, verification_token = NULL \
+         WHERE verification_token = $1 \
+         RETURNING email, first_name"
     )
     .bind(token)
-    .execute(&state.db)
+    .fetch_optional(&state.db)
     .await;
 
     match result {
-        Ok(r) if r.rows_affected() > 0 => {
-            Json(json!({"message": "Email verified", "verified": true})).into_response()
+        Ok(Some((email, first_name))) => {
+            if let Some(cfg) = crate::services::email::EmailConfig::from_env() {
+                let name = first_name.unwrap_or_else(|| "there".to_string());
+                let email_clone = email.clone();
+                tokio::spawn(async move {
+                    if let Err(e) = crate::services::email::send_welcome_email(&cfg, &email_clone, &name).await {
+                        tracing::warn!("welcome email send failed for {}: {}", email_clone, e);
+                    } else {
+                        tracing::info!("welcome email sent to {}", email_clone);
+                    }
+                });
+            }
+            Json(json!({
+                "message": "Email verified successfully! Welcome aboard.",
+                "verified": true,
+                "dashboard_url": "https://app.cyber-sec-pro.com/dashboard"
+            })).into_response()
         }
         _ => {
             (StatusCode::BAD_REQUEST, Json(json!({"error": "Invalid or expired token", "verified": false}))).into_response()
