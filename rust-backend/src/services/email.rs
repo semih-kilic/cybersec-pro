@@ -91,10 +91,10 @@ pub(crate) fn welcome_plain_text(name: &str) -> String {
         "Welcome, {}!\n\n\
          Your CyberSec Professional account is verified and ready.\n\n\
          \u{1F680} OPEN YOUR DASHBOARD:\n   https://app.cyber-sec-pro.com/dashboard\n\n\
-         \u{26A1} 60-SECOND QUICK START:\n   1. Add a target (https://example.com)\n   2. Pick a scan template (Quick / Full / Custom)\n   3. Hit \"Start Scan\" \u2014 results stream live\n\n\
-         \u{1F381} YOUR FREE TRIAL INCLUDES:\n   \u2022 50 scans / month\n   \u2022 1 cloud agent + unlimited self-hosted agents\n   \u2022 Full vulnerability database access\n   \u2022 PDF / JSON / SARIF report export\n\n\
+         \u{26A1} 60-SECOND QUICK START:\n   1. Add a target (https://example.com)\n   2. Pick a scan template (Quick / Full / Custom)\n   3. Hit \"Start Scan\" \u{2014} results stream live\n\n\
+         \u{1F381} YOUR FREE TRIAL INCLUDES:\n   \u{2022} 50 scans / month\n   \u{2022} 1 cloud agent + unlimited self-hosted agents\n   \u{2022} Full vulnerability database access\n   \u{2022} PDF / JSON / SARIF report export\n\n\
          \u{1F4DA} DOCS & API:\n   Docs:    https://app.cyber-sec-pro.com/dashboard/docs\n   API key: https://app.cyber-sec-pro.com/dashboard/settings/api\n\n\
-         Need help? \u2192 support@cyber-sec-pro.com\n\n\
+         Need help? \u{2192} support@cyber-sec-pro.com\n\n\
          \u{00A9} 2026 CyberSec Professional",
         name
     )
