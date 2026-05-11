@@ -19,7 +19,50 @@ use crate::services::auth::{
     generate_backup_codes, hash_backup_code, verify_backup_code,
 };
 use crate::AppState;
-use crate::services::email::{EmailConfig, send_welcome_email};
+use crate::services::email::{EmailConfig, send_welcome_email, send_verification_email};
+
+// ── Disposable / temporary email domain blocklist ─────────
+// Trial accounts MUST come from a real mailbox the user controls.
+// Common throwaway providers used to farm free trials are rejected.
+const DISPOSABLE_DOMAINS: &[&str] = &[
+    "mailinator.com", "guerrillamail.com", "guerrillamail.info", "guerrillamail.biz",
+    "guerrillamail.net", "guerrillamail.org", "sharklasers.com", "grr.la",
+    "10minutemail.com", "10minutemail.net", "20minutemail.com", "30minutemail.com",
+    "tempmail.com", "temp-mail.org", "temp-mail.io", "tempmailo.com", "tempmail.dev",
+    "tempmail.plus", "tempmail.email", "tempmail.us.com", "tempmailaddress.com",
+    "yopmail.com", "yopmail.fr", "yopmail.net", "cool.fr.nf", "jetable.fr.nf",
+    "nospam.ze.tc", "nomail.xl.cx", "mega.zik.dj", "speed.1s.fr", "courriel.fr.nf",
+    "moncourrier.fr.nf", "monemail.fr.nf", "monmail.fr.nf",
+    "trashmail.com", "trashmail.de", "trashmail.net", "trashmail.io", "trashmail.ws",
+    "throwawaymail.com", "getnada.com", "nada.email", "nada.ltd", "inboxbear.com",
+    "mintemail.com", "mohmal.com", "emailondeck.com", "fakemail.net", "fakeinbox.com",
+    "fakemailgenerator.com", "dispostable.com", "discard.email", "discardmail.com",
+    "maildrop.cc", "mailcatch.com", "mailnesia.com", "mailnull.com", "mailtemp.info",
+    "mailtothis.com", "mailtrap.io", "meltmail.com", "mytrashmail.com", "e4ward.com",
+    "spamgourmet.com", "spambog.com", "spambox.us", "spam4.me", "trbvm.com",
+    "33mail.com", "anonbox.net", "deadaddress.com", "despam.it",
+    "mailforspam.com", "my10minutemail.com", "sogetthis.com", "spamfree24.com",
+    "spamfree24.de", "spamfree24.eu", "spamfree24.info", "spamfree24.net",
+    "spamfree24.org", "thankyou2010.com", "trash2009.com", "trash-amil.com",
+    "wegwerfmail.de", "wegwerfmail.net", "wegwerfmail.org", "emailfake.com",
+    "emailto.de", "emltmp.com", "linshiyou.com", "linshiyouxiang.net",
+    "sneakemail.com", "snkmail.com", "trash-mail.com", "trbvn.com",
+    "yapped.net", "zoemail.org", "luxusmail.org", "hidemail.de", "hide.biz.st",
+    "hidemail.pro", "smashmail.de", "shitmail.me", "binkmail.com",
+    "bobmail.info", "chammy.info", "devnullmail.com", "letthemeatspam.com",
+    "mailshell.com", "mailzilla.org", "reallymymail.com", "safetymail.info",
+    "selfdestructingmail.com", "sendspamhere.com", "spamavert.com", "spamspot.com",
+    "superrito.com", "thismail.net", "tradermail.info", "vidchart.com", "yepmail.net",
+    "jourrapide.com", "einrot.com", "rhyta.com", "teleworm.us", "armyspy.com",
+    "cuvox.de", "dayrep.com", "fleckens.hu", "gustr.com", "superrito.com",
+];
+
+/// Returns true if the domain part of the email is on the disposable list.
+pub fn is_disposable_email(email_lower: &str) -> bool {
+    let Some(at) = email_lower.find('@') else { return false; };
+    let domain = &email_lower[at + 1..];
+    DISPOSABLE_DOMAINS.iter().any(|d| *d == domain)
+}
 
 // ── Helper: record login history ──────────────────────────
 
@@ -127,6 +170,15 @@ pub async fn register(
         return (StatusCode::BAD_REQUEST, Json(json!({"error": "Valid email required"}))).into_response();
     }
 
+    // Block disposable / temporary mailboxes — trial requires a real mailbox
+    // we can verify and that links a single human to the account.
+    if is_disposable_email(&email) {
+        return (StatusCode::BAD_REQUEST, Json(json!({
+            "error": "Disposable email addresses are not allowed. Please use your work or personal email.",
+            "code": "DISPOSABLE_EMAIL_BLOCKED"
+        }))).into_response();
+    }
+
     // Validate password strength
     if body.password.len() < 8 {
         return (StatusCode::BAD_REQUEST, Json(json!({"error": "Password must be at least 8 characters"}))).into_response();
@@ -225,20 +277,28 @@ pub async fn register(
 
     log_audit(&state.db, "register", "auth", "info", Some(&user_id), Some(&org_id), None, Some("user"), Some(&user_id), "success", Some(&headers)).await;
 
-    // Send welcome email (best-effort, don't block registration)
-    let welcome_name = body.first_name.as_deref().unwrap_or("there");
+    // Send verification email (best-effort, don't block registration response).
+    // We DO NOT issue access/refresh tokens until the user clicks the link —
+    // otherwise abusers could spin up trials with throwaway addresses and
+    // immediately run scans without ever proving they own the mailbox.
+    let display_name = body.first_name.as_deref().unwrap_or("there");
     if let Some(cfg) = EmailConfig::from_env() {
-        if let Err(e) = send_welcome_email(&cfg, &email, welcome_name).await {
-            tracing::error!("Failed to send welcome email to {}: {}", email, e);
+        let verify_url = format!(
+            "https://app.cyber-sec-pro.com/dashboard/verify-email?token={}",
+            verification_token
+        );
+        if let Err(e) = send_verification_email(&cfg, &email, display_name, &verify_url).await {
+            tracing::error!("Failed to send verification email to {}: {}", email, e);
         }
+        // Welcome email is queued but not blocking — informational only.
+        let _ = send_welcome_email(&cfg, &email, display_name).await;
+    } else {
+        tracing::warn!("SMTP not configured — verification email NOT sent for {}", email);
     }
 
-    // Generate tokens
-    let access_token = create_access_token(&state.jwt_secret, &user_id, Some(&org_id), "admin").unwrap_or_default();
-    let refresh_token = create_refresh_token(&state.jwt_secret, &user_id).unwrap_or_default();
-
+    // No tokens until the email is verified.
     (StatusCode::CREATED, Json(json!({
-        "message": "Registration successful",
+        "message": "Registration successful. Please check your email to verify your account before logging in.",
         "user": {
             "id": user_id,
             "email": email,
@@ -247,9 +307,8 @@ pub async fn register(
             "role": "admin",
             "organization_id": org_id
         },
-        "access_token": access_token,
-        "refresh_token": refresh_token,
-        "verification_required": true
+        "verification_required": true,
+        "code": "EMAIL_VERIFICATION_REQUIRED"
     }))).into_response()
 }
 
@@ -321,6 +380,19 @@ pub async fn login(
         record_login_history(&state.db, &user.id, &headers, false, Some("Invalid password")).await;
         log_audit(&state.db, "login_failed", "auth", "warning", Some(&user.id), user.organization_id.as_deref(), None, Some("user"), Some(&user.id), "failure", Some(&headers)).await;
         return (StatusCode::UNAUTHORIZED, Json(json!({"error": "Invalid email or password"}))).into_response();
+    }
+
+    // Email-verification gate. Password is correct but the mailbox was never
+    // proven — refuse to issue a session token so unverified accounts cannot
+    // start scans, hit our rate-limited API, or burn trial quota.
+    // OAuth users (no password) are auto-verified by their provider.
+    if user.password_hash.is_some() && !user.email_verified.unwrap_or(false) {
+        record_login_history(&state.db, &user.id, &headers, false, Some("Email not verified")).await;
+        return (StatusCode::FORBIDDEN, Json(json!({
+            "error": "Please verify your email before logging in. Check your inbox for the verification link.",
+            "code": "EMAIL_NOT_VERIFIED",
+            "email": user.email
+        }))).into_response();
     }
 
     // Check MFA

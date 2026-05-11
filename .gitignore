@@ -79,3 +79,7 @@ dist/
 build/
 # Rust build artifacts (any nested target/)
 **/target/
+
+# Backup env files
+rust-backend/.env.bak*
+*.env.bak.*

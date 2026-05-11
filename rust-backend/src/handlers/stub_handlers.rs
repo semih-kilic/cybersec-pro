@@ -1449,6 +1449,28 @@ pub async fn scan_start(
     State(state): State<Arc<AppState>>,
     Json(body): Json<serde_json::Value>,
 ) -> impl IntoResponse {
+    // Email-verification gate: refuse to launch scans for accounts that
+    // never proved mailbox ownership. Stops fresh trial-burning bots from
+    // hammering the scan engine. OAuth users get email_verified=true at
+    // signup, so this only blocks unverified password-signup accounts.
+    let verified: Option<(Option<bool>, Option<String>)> = sqlx::query_as(
+        "SELECT email_verified, oauth_provider FROM users WHERE id = $1"
+    )
+    .bind(&user.user_id)
+    .fetch_optional(&state.db)
+    .await
+    .unwrap_or(None);
+    let is_verified = verified
+        .as_ref()
+        .map(|(v, oauth)| v.unwrap_or(false) || oauth.is_some())
+        .unwrap_or(false);
+    if !is_verified {
+        return (axum::http::StatusCode::FORBIDDEN, Json(json!({
+            "error": "Please verify your email before running scans. Check your inbox for the verification link.",
+            "code": "EMAIL_NOT_VERIFIED"
+        }))).into_response();
+    }
+
     // Delegate to the plural scan handler by forwarding
     let tool_id = body.get("tool_id").and_then(|v| v.as_str()).unwrap_or("");
     let target = body.get("target").and_then(|v| v.as_str()).unwrap_or("");
