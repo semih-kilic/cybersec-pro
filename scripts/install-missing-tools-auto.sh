@@ -2,10 +2,49 @@
 # AUTO-GENERATED install script for cybersec-pro missing tools
 # Generated: 2026-05-10T15:21:39-04:00
 # 562 unique missing binaries grouped by installer
+#
+# SAFETY: Disk doluluğu izlenir. %85 üstünde durur, %92 üstünde acil cleanup tetikler.
+# Her aşama öncesi disk kontrolü + cleanup hook çağrılır.
+# Aşamaları seçili çalıştırmak için ENV: SKIP_CARGO=1 SKIP_DOCKER=1 vs.
 set +e   # devam et hata olsa bile
 export DEBIAN_FRONTEND=noninteractive
 
+DISK_LIMIT="${DISK_LIMIT:-85}"          # %85 üstü → dur
+DISK_EMERGENCY="${DISK_EMERGENCY:-92}"  # %92 üstü → acil cleanup
+SKIP_CARGO="${SKIP_CARGO:-1}"           # cargo install KAPALI default (disk yiyor)
+SKIP_DOCKER="${SKIP_DOCKER:-1}"         # docker images KAPALI default
+CLEANUP_SCRIPT="/home/cybersec/cybersec-pro/scripts/disk-cleanup.sh"
+
+disk_used() { df / | awk 'NR==2{ gsub("%",""); print $5 }'; }
+disk_free_gb() { df -BG / | awk 'NR==2{ gsub("G",""); print $4 }'; }
+
+check_disk() {
+  local stage="$1"
+  local used; used=$(disk_used)
+  local free; free=$(disk_free_gb)
+  echo "[disk] aşama=$stage  doluluk=${used}%  boş=${free}G"
+  if [ "$used" -ge "$DISK_EMERGENCY" ]; then
+    echo "[disk] !!! KRİTİK %${used} >= %${DISK_EMERGENCY} — cleanup tetikleniyor"
+    [ -x "$CLEANUP_SCRIPT" ] && sudo "$CLEANUP_SCRIPT"
+    used=$(disk_used)
+    if [ "$used" -ge "$DISK_EMERGENCY" ]; then
+      echo "[disk] cleanup yetmedi. SCRIPT DURDU. Manuel müdahale gerekiyor."
+      exit 99
+    fi
+  fi
+  if [ "$used" -ge "$DISK_LIMIT" ]; then
+    echo "[disk] WARN %${used} >= %${DISK_LIMIT}. Aşama '$stage' atlanıyor."
+    return 1
+  fi
+  return 0
+}
+
+#--- 0) ÖN KONTROL ---
+echo "[+] Ön disk kontrolü"
+check_disk "start" || { echo "Disk dolu, hiçbir şey kurulmadı."; exit 1; }
+
 #--- 1) APT toplu kurulum ---
+check_disk "APT" || exit 0
 echo "[+] APT update..."
 sudo apt-get update -y || true
 echo "[+] APT install (toplu, hatalar yoksayilir)..."
@@ -140,6 +179,7 @@ APT_LIST=(
 sudo apt-get install -y --no-install-recommends "${APT_LIST[@]}" 2>&1 | tail -50 || true
 
 #--- 2) GO install ---
+check_disk "GO" || exit 0
 echo "[+] go install..."
 export PATH=$PATH:$(go env GOPATH 2>/dev/null)/bin
 go install github.com/projectdiscovery/aix/cmd/aix@latest 2>/dev/null || echo "FAIL: go github.com/projectdiscovery/aix/cmd/aix@latest"
@@ -178,6 +218,7 @@ go install github.com/projectdiscovery/tlsx/cmd/tlsx@latest 2>/dev/null || echo 
 go install github.com/tomnomnom/unfurl 2>/dev/null || echo "FAIL: go github.com/tomnomnom/unfurl"
 
 #--- 3) PIPX install ---
+check_disk "PIPX" || exit 0
 echo "[+] pipx install..."
 command -v pipx >/dev/null || sudo apt-get install -y pipx
 pipx install --force 'adversarial-robustness-toolbox' 2>/dev/null || echo "FAIL: pipx adversarial-robustness-toolbox"
@@ -227,6 +268,7 @@ pipx install --force 'xnLinkFinder' 2>/dev/null || echo "FAIL: pipx xnLinkFinder
 pipx install --force 'zizmor' 2>/dev/null || echo "FAIL: pipx zizmor"
 
 #--- 4) PIP install (system override) ---
+check_disk "PIP" || exit 0
 echo "[+] pip install..."
 pip install --break-system-packages --user 'angr' 2>/dev/null || echo "FAIL: pip angr"
 pip install --break-system-packages --user 'avatar2' 2>/dev/null || echo "FAIL: pip avatar2"
@@ -355,6 +397,7 @@ pip install --break-system-packages --user 'impacket' 2>/dev/null || echo "FAIL:
 pip install --break-system-packages --user 'zoomeye' 2>/dev/null || echo "FAIL: pip zoomeye"
 
 #--- 5) NPM install ---
+check_disk "NPM" || exit 0
 echo "[+] npm install -g..."
 sudo npm install -g -g @42crunch/api-security-audit 2>/dev/null || echo "FAIL: npm -g @42crunch/api-security-audit"
 sudo npm install -g -g cloudsploit 2>/dev/null || echo "FAIL: npm -g cloudsploit"
@@ -372,6 +415,7 @@ sudo npm install -g -g socket 2>/dev/null || echo "FAIL: npm -g socket"
 sudo npm install -g -g wappalyzer 2>/dev/null || echo "FAIL: npm -g wappalyzer"
 
 #--- 6) GEM install ---
+check_disk "GEM" || exit 0
 echo "[+] gem install..."
 sudo gem install brakeman 2>/dev/null || echo "FAIL: gem brakeman"
 sudo gem install catphish 2>/dev/null || echo "FAIL: gem catphish"
@@ -386,14 +430,20 @@ sudo gem install XSpear 2>/dev/null || echo "FAIL: gem XSpear"
 sudo gem install zsteg 2>/dev/null || echo "FAIL: gem zsteg"
 
 #--- 7) CARGO install ---
+if [ "$SKIP_CARGO" = "1" ]; then
+  echo "[+] CARGO atlandı (SKIP_CARGO=1). Tekrar açmak için: SKIP_CARGO=0 ./install-missing-tools-auto.sh"
+else
+check_disk "CARGO" || exit 0
 echo "[+] cargo install..."
 cargo install cargo-audit 2>/dev/null || echo "FAIL: cargo cargo-audit"
 cargo install graphql-path-enum 2>/dev/null || echo "FAIL: cargo graphql-path-enum"
 cargo install htmlq 2>/dev/null || echo "FAIL: cargo htmlq"
 cargo install vita 2>/dev/null || echo "FAIL: cargo vita"
+fi  # /SKIP_CARGO
 
 #--- 8) DOCKER pull (büyük, opsiyonel - varsayılan KAPALI) ---
 if [[ "${INSTALL_DOCKER:-0}" == "1" ]]; then
+  check_disk "DOCKER" || exit 0
   docker pull aiverify/aiverify-portal 2>/dev/null || true
   docker pull aktosecurity/akto-api-security-community 2>/dev/null || true
   docker pull quay.io/coreos/clair 2>/dev/null || true
