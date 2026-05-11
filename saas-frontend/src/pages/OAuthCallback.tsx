@@ -28,7 +28,7 @@ export function OAuthCallback() {
       try {
         // Send redirect_uri so backend uses the same one for token exchange
         // Must match exactly what was sent to Google/GitHub (no query params)
-        const redirectUri = `${window.location.origin}/auth/callback`;
+        const redirectUri = `${window.location.origin}/dashboard/auth/callback`;
         localStorage.removeItem('oauth_provider');
         const response = await fetch(`/api/v1/auth/${provider}`, {
           method: 'POST',

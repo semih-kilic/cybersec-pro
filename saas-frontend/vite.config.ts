@@ -35,6 +35,9 @@ export default defineConfig({
   },
   build: {
     outDir: 'dist',
+    // CF edge cache poisoned old "/assets/" path with HTML 404 fallback.
+    // Bumping assetsDir invalidates all asset URLs at the CDN layer.
+    assetsDir: 'static-v2',
     sourcemap: false, // V17: disabled for production security
     target: 'es2020',
     cssCodeSplit: true,
