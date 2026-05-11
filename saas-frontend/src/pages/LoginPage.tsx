@@ -6,7 +6,7 @@ import { LanguageSwitcher } from '../components/LanguageSwitcher';
 import { CountryFlags } from '../components/CountryFlags';
 
 const GOOGLE_CLIENT_ID = '547951331800-kqkuc6aohfr7ptt26p38mnqfdvt7b6mu.apps.googleusercontent.com';
-const GITHUB_CLIENT_ID = '***REDACTED_GH_OAUTH_CLIENT_ID***';
+const GITHUB_CLIENT_ID = 'Ov23lizk4YnG8pDKXpWV';
 
 /* ── Animated Grid Background ── */
 function GridBackground() {

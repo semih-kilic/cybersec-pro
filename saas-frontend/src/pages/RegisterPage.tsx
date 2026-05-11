@@ -7,7 +7,7 @@ import { CountryFlags } from '../components/CountryFlags';
 
 // OAuth Configuration
 const GOOGLE_CLIENT_ID = '547951331800-kqkuc6aohfr7ptt26p38mnqfdvt7b6mu.apps.googleusercontent.com';
-const GITHUB_CLIENT_ID = '***REDACTED_GH_OAUTH_CLIENT_ID***';
+const GITHUB_CLIENT_ID = 'Ov23lizk4YnG8pDKXpWV';
 
 export function RegisterPage() {
   const [formData, setFormData] = useState({
