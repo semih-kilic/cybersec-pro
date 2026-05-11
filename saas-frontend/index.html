@@ -112,14 +112,20 @@
   </head>
   <body>
     <div id="root"></div>
-    <script type="module" src="/src/main.tsx"></script>
     <script>
-      // Register service worker for offline support & caching
+      // KILL-SWITCH: unregister any previously installed Service Worker that
+      // cached a broken build. Run before main app loads.
       if ('serviceWorker' in navigator) {
-        window.addEventListener('load', function() {
-          navigator.serviceWorker.register('/dashboard/sw.js', { scope: '/dashboard/' });
-        });
+        navigator.serviceWorker.getRegistrations().then(function(regs) {
+          regs.forEach(function(r) { r.unregister(); });
+        }).catch(function(){});
+        if (window.caches && caches.keys) {
+          caches.keys().then(function(keys) {
+            keys.forEach(function(k) { caches.delete(k); });
+          }).catch(function(){});
+        }
       }
     </script>
+    <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>
