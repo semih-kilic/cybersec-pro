@@ -59,6 +59,8 @@ pub struct ToolResponse {
     pub health_status: String,
     pub health_probe: Option<String>,
     pub last_health_check: Option<chrono::DateTime<chrono::Utc>>,
+    /// Derived: binary is detected on the host (healthy / ok / needs_interactive / broken).
+    pub installed: bool,
 }
 
 #[derive(Debug, Serialize)]
@@ -101,6 +103,10 @@ impl Tool {
             health_status: self.health_status.clone().unwrap_or_else(|| "unknown".into()),
             health_probe: self.health_probe.clone(),
             last_health_check: self.last_health_check,
+            installed: matches!(
+                self.health_status.as_deref(),
+                Some("healthy") | Some("ok") | Some("needs_interactive") | Some("broken")
+            ),
         }
     }
 
