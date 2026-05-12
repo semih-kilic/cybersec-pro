@@ -14,6 +14,8 @@ pub struct EmailConfig {
     pub smtp_email: String,
     pub smtp_password: String,
     pub from_name: String,
+    /// FROM header address. Falls back to smtp_email if SMTP_FROM is not set.
+    pub from_address: String,
 }
 
 impl EmailConfig {
@@ -22,17 +24,23 @@ impl EmailConfig {
         if password.is_empty() {
             return None;
         }
+        let smtp_email = std::env::var("SMTP_EMAIL")
+            .unwrap_or_else(|_| "noreply@cyber-sec-pro.com".into());
+        let from_address = std::env::var("SMTP_FROM")
+            .ok()
+            .filter(|s| !s.trim().is_empty())
+            .unwrap_or_else(|| smtp_email.clone());
         Some(Self {
             smtp_server: std::env::var("SMTP_SERVER").unwrap_or_else(|_| "smtp.yandex.com".into()),
             smtp_port: std::env::var("SMTP_PORT")
                 .ok()
                 .and_then(|p| p.parse().ok())
                 .unwrap_or(465),
-            smtp_email: std::env::var("SMTP_EMAIL")
-                .unwrap_or_else(|_| "noreply@cyber-sec-pro.com".into()),
+            smtp_email,
             smtp_password: password,
             from_name: std::env::var("SMTP_FROM_NAME")
                 .unwrap_or_else(|_| "CyberSec Professional".into()),
+            from_address,
         })
     }
 }
@@ -203,7 +211,7 @@ async fn send_email(
     plain: &str,
     html: &str,
 ) -> Result<(), String> {
-    let from_mailbox: Mailbox = format!("{} <{}>", cfg.from_name, cfg.smtp_email)
+    let from_mailbox: Mailbox = format!("{} <{}>", cfg.from_name, cfg.from_address)
         .parse()
         .map_err(|e| format!("Invalid from address: {}", e))?;
 
