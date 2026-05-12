@@ -250,9 +250,9 @@ async fn send_email(
             .credentials(creds)
             .build()
     } else {
-        // Port 587 or others: STARTTLS
-        AsyncSmtpTransport::<lettre::Tokio1Executor>::relay(&cfg.smtp_server)
-            .map_err(|e| format!("SMTP relay error: {}", e))?
+        // Port 587 or others: STARTTLS upgrade
+        AsyncSmtpTransport::<lettre::Tokio1Executor>::starttls_relay(&cfg.smtp_server)
+            .map_err(|e| format!("SMTP starttls_relay error: {}", e))?
             .port(cfg.smtp_port)
             .credentials(creds)
             .build()
