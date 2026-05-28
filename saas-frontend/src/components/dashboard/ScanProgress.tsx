@@ -53,15 +53,52 @@ interface ScanProgressProps {
   scanId: string | null;
   /** Whether the scan is currently active (show pulse animation) */
   isRunning?: boolean;
+  /** Fallback status from page state when no phase events are available */
+  status?: 'idle' | 'running' | 'completed' | 'failed';
+  /** Fallback numeric progress from page state */
+  progress?: number;
+  /** Number of output lines emitted so far (used as execution signal) */
+  outputCount?: number;
   /** Optional className for the outer container */
   className?: string;
 }
+
+const normalizePhase = (raw: unknown): ScanPhaseKey | null => {
+  if (!raw || typeof raw !== 'string') return null;
+  const key = raw.trim().toUpperCase().replace(/[\s-]+/g, '_');
+  switch (key) {
+    case 'INITIALIZING':
+    case 'RESOLVING_TARGET':
+    case 'PREPARING_TOOL':
+    case 'EXECUTING':
+    case 'PARSING_OUTPUT':
+    case 'SAVING_RESULTS':
+    case 'COMPLETED':
+    case 'FAILED':
+      return key;
+    default:
+      return null;
+  }
+};
+
+const phaseFromProgress = (progress: number, outputCount: number): ScanPhaseKey => {
+  if (progress >= 95) return 'SAVING_RESULTS';
+  if (progress >= 85) return 'PARSING_OUTPUT';
+  // If we already have streamed output, we are executing even if percentage stays low.
+  if (outputCount > 0 || progress >= 25) return 'EXECUTING';
+  if (progress >= 15) return 'PREPARING_TOOL';
+  if (progress >= 5) return 'RESOLVING_TARGET';
+  return 'INITIALIZING';
+};
 
 // ── Exported Component ──
 
 export const ScanProgress: React.FC<ScanProgressProps> = ({
   scanId,
   isRunning: _isRunning = false,
+  status,
+  progress = 0,
+  outputCount = 0,
   className = '',
 }) => {
   const [currentPhase, setCurrentPhase] = useState<PhaseState | null>(null);
@@ -86,7 +123,8 @@ export const ScanProgress: React.FC<ScanProgressProps> = ({
     const handlePhaseUpdate = (data: any) => {
       if (data?.scan_id !== scanId) return;
 
-      const phase = data.phase as ScanPhaseKey;
+      const phase = normalizePhase(data.phase);
+      if (!phase) return;
       const description = data.description || '';
       const progress = data.progress || 0;
 
@@ -132,9 +170,59 @@ export const ScanProgress: React.FC<ScanProgressProps> = ({
       prevPhaseRef.current = phase;
     };
 
-    const unsub = wsManager.on('scan_phase_update', handlePhaseUpdate);
-    return () => { unsub(); };
+    // Some backend paths publish phase info inside scan_output events instead of
+    // dedicated scan_phase_update events. Listen to both for compatibility.
+    const unsubPhase = wsManager.on('scan_phase_update', handlePhaseUpdate);
+    const unsubOutput = wsManager.on('scan_output', handlePhaseUpdate);
+    return () => {
+      unsubPhase();
+      unsubOutput();
+    };
   }, [scanId]);
+
+  // Fallback progression when no explicit phase events are published.
+  useEffect(() => {
+    if (!scanId || phaseHistory.length > 0) return;
+
+    if (status === 'completed') {
+      setIsFailed(false);
+      setCompletedPhases(new Set(PHASES.map(p => p.key)));
+      setCurrentPhase({
+        phase: 'COMPLETED',
+        description: 'Scan completed successfully',
+        progress: 100,
+        timestamp: Date.now(),
+      });
+      return;
+    }
+
+    if (status === 'failed') {
+      const inferred = phaseFromProgress(progress, outputCount);
+      const idx = PHASES.findIndex(p => p.key === inferred);
+      setIsFailed(true);
+      setCompletedPhases(new Set(PHASES.slice(0, Math.max(idx, 0)).map(p => p.key)));
+      setCurrentPhase({
+        phase: inferred,
+        description: 'Scan failed during execution',
+        progress: Math.max(1, Math.min(100, progress || 1)),
+        timestamp: Date.now(),
+      });
+      return;
+    }
+
+    if (status === 'running') {
+      const inferred = phaseFromProgress(progress, outputCount);
+      const idx = PHASES.findIndex(p => p.key === inferred);
+      setIsFailed(false);
+      setCompletedPhases(new Set(PHASES.slice(0, Math.max(idx, 0)).map(p => p.key)));
+      setCurrentPhase({
+        phase: inferred,
+        description: outputCount > 0 ? 'Tool output streaming' : 'Preparing scan pipeline',
+        progress: Math.max(1, Math.min(99, progress || (outputCount > 0 ? 40 : 5))),
+        timestamp: Date.now(),
+      });
+    }
+  }, [scanId, status, progress, outputCount, phaseHistory.length]);
 
   // ── Derive display state for each phase ──
   const getPhaseStatus = (phaseKey: ScanPhaseKey): 'completed' | 'active' | 'pending' | 'failed' => {

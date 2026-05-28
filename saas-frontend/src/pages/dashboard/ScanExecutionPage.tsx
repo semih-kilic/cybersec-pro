@@ -1021,7 +1021,13 @@ export function ScanExecutionPage() {
           ) : (
             <div className="space-y-vos-4">
               {(status === 'running' || status === 'completed' || status === 'failed') && currentScanId && (
-                <ScanProgress scanId={currentScanId} isRunning={status === 'running'} />
+                <ScanProgress
+                  scanId={currentScanId}
+                  isRunning={status === 'running'}
+                  status={status}
+                  progress={progress}
+                  outputCount={output.length}
+                />
               )}
 
               <div className="rounded-vos-xl border border-vos-border-1 bg-vos-bg-elev-2 overflow-hidden">
