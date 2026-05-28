@@ -193,8 +193,8 @@ async fn resolve_agent_ssh(
     if aid.is_empty() {
         return None;
     }
-    let row: Option<(Option<String>, Option<i32>, Option<String>, Option<String>, Option<String>)> = sqlx::query_as(
-        "SELECT ssh_host, ssh_port, ssh_username, ssh_key_path, ssh_fingerprint FROM agents WHERE id = $1 AND organization_id = $2",
+    let row: Option<(Option<String>, Option<String>, Option<i32>, Option<String>, Option<String>, Option<String>)> = sqlx::query_as(
+        "SELECT connection_type, ssh_host, ssh_port, ssh_username, ssh_key_path, ssh_fingerprint FROM agents WHERE id = $1 AND organization_id = $2",
     )
     .bind(aid)
     .bind(org_id)
@@ -202,9 +202,16 @@ async fn resolve_agent_ssh(
     .await
     .unwrap_or(None);
 
-    row.and_then(|(host, port, user, key, fp)| match (host, user) {
-        (Some(h), Some(u)) if !h.is_empty() && !u.is_empty() => Some((h, port.unwrap_or(22), u, key, fp)),
-        _ => None,
+    row.and_then(|(ct, host, port, user, key, fp)| {
+        // Only SSH-configured agents are dispatched remotely. Other connection types
+        // (direct/local/reverse_tunnel) execute on the backend host.
+        if ct.as_deref() != Some("ssh") {
+            return None;
+        }
+        match (host, user) {
+            (Some(h), Some(u)) if !h.is_empty() && !u.is_empty() => Some((h, port.unwrap_or(22), u, key, fp)),
+            _ => None,
+        }
     })
 }
 

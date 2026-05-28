@@ -1051,9 +1051,10 @@ pub async fn start_scan(
     };
     let connection_type = agent_meta.as_ref().and_then(|m| m.0.clone()).unwrap_or_else(|| "direct".into());
     let is_reverse_tunnel = connection_type == "reverse_tunnel";
-    let agent_ssh: Option<AgentSshInfo> = if is_reverse_tunnel {
-        None
-    } else {
+    // Only dispatch via SSH when the agent is explicitly configured for SSH.
+    // "direct"/"local" agents (and anything misconfigured without SSH host/user)
+    // fall through to local execution on the backend host, which has all tools installed.
+    let agent_ssh: Option<AgentSshInfo> = if connection_type == "ssh" && !is_reverse_tunnel {
         agent_meta.as_ref().and_then(|(_ct, host, port, user, key, fingerprint)| {
             match (host.clone(), user.clone()) {
                 (Some(h), Some(u)) if !h.is_empty() && !u.is_empty() => Some(AgentSshInfo {
@@ -1066,6 +1067,8 @@ pub async fn start_scan(
                 _ => None,
             }
         })
+    } else {
+        None
     };
 
     // Update agent status to busy if dispatching remotely (SSH or reverse-tunnel).
