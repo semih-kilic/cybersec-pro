@@ -1,0 +1,6 @@
+                  id                  |       name        | hostname | ip_address | status  | connection_type |  ssh_host  | ssh_port | ssh_username | ssh_fingerprint 
+--------------------------------------+-------------------+----------+------------+---------+-----------------+------------+----------+--------------+-----------------
+ f6f18366-efb3-4840-8e99-73fe6afeba1d | My_PC             | Hande    |            | online  | direct          | 10.0.0.115 |       22 | Sam          | 
+ 9e9d9db6-d823-48ed-83a4-2a46722cf055 | Manus Test Server |          |            | pending | ssh             | 127.0.0.1  |     2222 | manus_test   | 
+(2 rows)
+
