@@ -230,7 +230,17 @@ export function SecurityTab({ loading, setLoading, setMessage }: SettingsTabProp
             <div className="p-4 bg-gray-800 rounded-lg">
               <p className="text-white font-medium mb-3">{t('security.scanQr', 'Scan this QR code with your authenticator app')}</p>
               <div className="flex justify-center mb-4">
-                <div className="bg-white p-3 rounded-lg" dangerouslySetInnerHTML={{ __html: qrCode }} />
+                <div className="bg-white p-3 rounded-lg flex items-center justify-center">
+                  {qrCode ? (
+                    <img
+                      src={`data:image/png;base64,${qrCode}`}
+                      alt={t('security.qrAlt', 'MFA QR code')}
+                      className="max-w-full h-auto"
+                    />
+                  ) : (
+                    <div className="text-gray-400 text-sm">{t('security.generatingQr', 'Generating QR code...')}</div>
+                  )}
+                </div>
               </div>
               <div className="bg-gray-900 rounded-lg p-3">
                 <p className="text-gray-400 text-xs mb-1">{t('security.manualEntryKey', 'Manual entry key:')}</p>

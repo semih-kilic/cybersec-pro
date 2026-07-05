@@ -17,7 +17,7 @@ pub async fn security_headers(request: Request<Body>, next: Next) -> Response {
     headers.insert(
         "Content-Security-Policy",
         HeaderValue::from_static(
-            "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; \
+            "default-src 'self'; script-src 'self'; style-src 'self'; \
              img-src 'self' data: https: blob:; font-src 'self' data:; \
              connect-src 'self' wss: https:; frame-ancestors 'none'; \
              base-uri 'self'; form-action 'self'; object-src 'none';"

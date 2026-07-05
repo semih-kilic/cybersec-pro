@@ -15,7 +15,7 @@ use crate::models::{User, Organization};
 use crate::services::audit::log_audit;
 use crate::services::auth::{
     create_access_token, create_refresh_token, hash_password, verify_password,
-    generate_totp_secret, generate_totp_uri, verify_totp,
+    generate_totp_secret, generate_totp_uri, generate_totp_qr_code, verify_totp,
     generate_backup_codes, hash_backup_code, verify_backup_code,
 };
 use crate::AppState;
@@ -643,6 +643,13 @@ pub async fn mfa_setup(
 
     let secret = generate_totp_secret();
     let uri = generate_totp_uri(&secret, &user.email).unwrap_or_default();
+    let qr_code = match generate_totp_qr_code(&secret, &user.email) {
+        Ok(code) => code,
+        Err(e) => {
+            tracing::error!("Failed to generate MFA QR code: {e}");
+            return (StatusCode::INTERNAL_SERVER_ERROR, Json(json!({"error": "Failed to generate MFA QR code"}))).into_response();
+        }
+    };
 
     // Store secret temporarily
     let _ = sqlx::query("UPDATE users SET mfa_secret = $1 WHERE id = $2")
@@ -653,7 +660,9 @@ pub async fn mfa_setup(
 
     (StatusCode::OK, Json(json!({
         "secret": secret,
+        "qr_code": qr_code,
         "uri": uri,
+        "issuer": "CyberSec Pro",
         "message": "Scan QR code with authenticator app, then verify"
     }))).into_response()
 }

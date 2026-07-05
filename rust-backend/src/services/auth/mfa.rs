@@ -21,6 +21,20 @@ pub fn generate_totp_uri(secret: &str, email: &str) -> Result<String> {
     Ok(totp.get_url())
 }
 
+/// Generate a base64 PNG QR code for the TOTP provisioning URI.
+pub fn generate_totp_qr_code(secret: &str, email: &str) -> Result<String> {
+    let totp = TOTP::new(
+        Algorithm::SHA1,
+        6,
+        1,
+        30,
+        Secret::Encoded(secret.to_string()).to_bytes()?,
+        Some("CyberSec Pro".to_string()),
+        email.to_string(),
+    )?;
+    Ok(totp.get_qr_base64().map_err(|e| anyhow::anyhow!(e))?)
+}
+
 /// Verify a TOTP code against a secret.
 pub fn verify_totp(secret: &str, code: &str) -> Result<bool> {
     let totp = TOTP::new(

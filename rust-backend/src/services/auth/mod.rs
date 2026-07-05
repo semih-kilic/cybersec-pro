@@ -4,4 +4,12 @@ pub mod mfa;
 
 pub use jwt::{create_access_token, create_refresh_token, decode_token};
 pub use password::{hash_password, verify_password};
-pub use mfa::{generate_totp_secret, generate_totp_uri, verify_totp, generate_backup_codes, hash_backup_code, verify_backup_code};
+pub use mfa::{
+    generate_totp_secret,
+    generate_totp_uri,
+    generate_totp_qr_code,
+    verify_totp,
+    generate_backup_codes,
+    hash_backup_code,
+    verify_backup_code,
+};
