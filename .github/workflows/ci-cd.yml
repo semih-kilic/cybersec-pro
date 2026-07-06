@@ -1,0 +1,357 @@
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+    branches: [master]
+
+env:
+  CARGO_TERM_COLOR: always
+  SQLX_OFFLINE: true
+
+jobs:
+  # ── Rust Backend ──────────────────────────────────────────
+  backend-check:
+    name: Backend Build & Check
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: rust-backend
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Cache Cargo registry & build
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+            rust-backend/target
+          key: ${{ runner.os }}-cargo-${{ hashFiles('rust-backend/Cargo.lock') }}
+          restore-keys: ${{ runner.os }}-cargo-
+
+      - name: Check compilation
+        run: |
+          mkdir -p ci-reports
+          cargo check --release 2>&1 | tee ci-reports/cargo-check.log
+
+      - name: Purple Team unit tests
+        run: |
+          SQLX_OFFLINE=true cargo test purple_team 2>&1 | tee ci-reports/cargo-test-purple-team.log
+          grep -E "^test result" ci-reports/cargo-test-purple-team.log | grep -v "FAILED"
+
+      - name: Report handler unit tests
+        run: |
+          SQLX_OFFLINE=true cargo test handlers::report_handlers::tests 2>&1 | tee ci-reports/cargo-test-report-handlers.log
+          grep -E "^test result" ci-reports/cargo-test-report-handlers.log | grep -v "FAILED"
+
+      - name: Billing handler unit tests
+        run: |
+          SQLX_OFFLINE=true cargo test handlers::billing_handlers::tests 2>&1 | tee ci-reports/cargo-test-billing-handlers.log
+          grep -E "^test result" ci-reports/cargo-test-billing-handlers.log | grep -v "FAILED"
+
+      - name: Scan handler unit tests
+        run: |
+          SQLX_OFFLINE=true cargo test handlers::scan_handlers::tests 2>&1 | tee ci-reports/cargo-test-scan-handlers.log
+          grep -E "^test result" ci-reports/cargo-test-scan-handlers.log | grep -v "FAILED"
+
+      - name: Auth handler unit tests
+        run: |
+          SQLX_OFFLINE=true cargo test handlers::auth_handlers::tests 2>&1 | tee ci-reports/cargo-test-auth-handlers.log
+          grep -E "^test result" ci-reports/cargo-test-auth-handlers.log | grep -v "FAILED"
+
+      - name: SSO handler unit tests
+        run: |
+          SQLX_OFFLINE=true cargo test handlers::sso_handlers::tests 2>&1 | tee ci-reports/cargo-test-sso-handlers.log
+          grep -E "^test result" ci-reports/cargo-test-sso-handlers.log | grep -v "FAILED"
+
+      - name: Settings handler unit tests
+        run: |
+          SQLX_OFFLINE=true cargo test handlers::settings_handlers::tests 2>&1 | tee ci-reports/cargo-test-settings-handlers.log
+          grep -E "^test result" ci-reports/cargo-test-settings-handlers.log | grep -v "FAILED"
+
+      - name: Tool handler unit tests
+        run: |
+          SQLX_OFFLINE=true cargo test handlers::tool_handlers::tests 2>&1 | tee ci-reports/cargo-test-tool-handlers.log
+          grep -E "^test result" ci-reports/cargo-test-tool-handlers.log | grep -v "FAILED"
+
+      - name: Agent handler unit tests
+        run: |
+          SQLX_OFFLINE=true cargo test handlers::agent_handlers::tests 2>&1 | tee ci-reports/cargo-test-agent-handlers.log
+          grep -E "^test result" ci-reports/cargo-test-agent-handlers.log | grep -v "FAILED"
+
+      - name: Dashboard handler unit tests
+        run: |
+          SQLX_OFFLINE=true cargo test handlers::dashboard_handlers::tests 2>&1 | tee ci-reports/cargo-test-dashboard-handlers.log
+          grep -E "^test result" ci-reports/cargo-test-dashboard-handlers.log | grep -v "FAILED"
+
+      - name: Notification handler unit tests
+        run: |
+          SQLX_OFFLINE=true cargo test handlers::notification_handlers::tests 2>&1 | tee ci-reports/cargo-test-notification-handlers.log
+          grep -E "^test result" ci-reports/cargo-test-notification-handlers.log | grep -v "FAILED"
+
+      - name: Project handler unit tests
+        run: |
+          SQLX_OFFLINE=true cargo test handlers::project_handlers::tests 2>&1 | tee ci-reports/cargo-test-project-handlers.log
+          grep -E "^test result" ci-reports/cargo-test-project-handlers.log | grep -v "FAILED"
+
+      - name: Email handler unit tests
+        run: |
+          SQLX_OFFLINE=true cargo test handlers::email_handlers::tests 2>&1 | tee ci-reports/cargo-test-email-handlers.log
+          grep -E "^test result" ci-reports/cargo-test-email-handlers.log | grep -v "FAILED"
+
+      - name: Health handler unit tests
+        run: |
+          SQLX_OFFLINE=true cargo test handlers::health_handlers::tests 2>&1 | tee ci-reports/cargo-test-health-handlers.log
+          grep -E "^test result" ci-reports/cargo-test-health-handlers.log | grep -v "FAILED"
+
+      - name: Plan service unit tests
+        run: |
+          SQLX_OFFLINE=true cargo test services::plan::tests 2>&1 | tee ci-reports/cargo-test-plan-service.log
+          grep -E "^test result" ci-reports/cargo-test-plan-service.log | grep -v "FAILED"
+
+      - name: Email service unit tests
+        run: |
+          SQLX_OFFLINE=true cargo test services::email::tests 2>&1 | tee ci-reports/cargo-test-email-service.log
+          grep -E "^test result" ci-reports/cargo-test-email-service.log | grep -v "FAILED"
+
+      - name: Auth middleware unit tests
+        run: |
+          SQLX_OFFLINE=true cargo test middleware::auth_middleware::tests 2>&1 | tee ci-reports/cargo-test-auth-middleware.log
+          grep -E "^test result" ci-reports/cargo-test-auth-middleware.log | grep -v "FAILED"
+
+      - name: Notification service unit tests
+        run: |
+          SQLX_OFFLINE=true cargo test services::notifications::tests 2>&1 | tee ci-reports/cargo-test-notifications-service.log
+          grep -E "^test result" ci-reports/cargo-test-notifications-service.log | grep -v "FAILED"
+
+      - name: Integrations service unit tests
+        run: |
+          SQLX_OFFLINE=true cargo test services::integrations::tests 2>&1 | tee ci-reports/cargo-test-integrations-service.log
+          grep -E "^test result" ci-reports/cargo-test-integrations-service.log | grep -v "FAILED"
+
+      - name: Scan model unit tests
+        run: |
+          SQLX_OFFLINE=true cargo test models::scan::tests 2>&1 | tee ci-reports/cargo-test-scan-model.log
+          grep -E "^test result" ci-reports/cargo-test-scan-model.log | grep -v "FAILED"
+
+      - name: Report model unit tests
+        run: |
+          SQLX_OFFLINE=true cargo test models::report::tests 2>&1 | tee ci-reports/cargo-test-report-model.log
+          grep -E "^test result" ci-reports/cargo-test-report-model.log | grep -v "FAILED"
+
+      - name: Agent model unit tests
+        run: |
+          SQLX_OFFLINE=true cargo test models::agent::tests 2>&1 | tee ci-reports/cargo-test-agent-model.log
+          grep -E "^test result" ci-reports/cargo-test-agent-model.log | grep -v "FAILED"
+
+      - name: Tool model unit tests
+        run: |
+          SQLX_OFFLINE=true cargo test models::tool::tests 2>&1 | tee ci-reports/cargo-test-tool-model.log
+          grep -E "^test result" ci-reports/cargo-test-tool-model.log | grep -v "FAILED"
+
+      - name: User model unit tests
+        run: |
+          SQLX_OFFLINE=true cargo test models::user::tests 2>&1 | tee ci-reports/cargo-test-user-model.log
+          grep -E "^test result" ci-reports/cargo-test-user-model.log | grep -v "FAILED"
+
+      - name: SSO config model unit tests
+        run: |
+          SQLX_OFFLINE=true cargo test models::sso_config::tests 2>&1 | tee ci-reports/cargo-test-sso-config-model.log
+          grep -E "^test result" ci-reports/cargo-test-sso-config-model.log | grep -v "FAILED"
+
+      - name: Scheduled scan model unit tests
+        run: |
+          SQLX_OFFLINE=true cargo test models::scheduled_scan::tests 2>&1 | tee ci-reports/cargo-test-scheduled-scan-model.log
+          grep -E "^test result" ci-reports/cargo-test-scheduled-scan-model.log | grep -v "FAILED"
+
+      - name: Audit log model unit tests
+        run: |
+          SQLX_OFFLINE=true cargo test models::audit_log::tests 2>&1 | tee ci-reports/cargo-test-audit-log-model.log
+          grep -E "^test result" ci-reports/cargo-test-audit-log-model.log | grep -v "FAILED"
+
+      - name: Scheduler service unit tests
+        run: |
+          SQLX_OFFLINE=true cargo test services::scheduler::tests 2>&1 | tee ci-reports/cargo-test-scheduler-service.log
+          grep -E "^test result" ci-reports/cargo-test-scheduler-service.log | grep -v "FAILED"
+
+      - name: Monitor service unit tests
+        run: |
+          SQLX_OFFLINE=true cargo test services::monitor::tests 2>&1 | tee ci-reports/cargo-test-monitor-service.log
+          grep -E "^test result" ci-reports/cargo-test-monitor-service.log | grep -v "FAILED"
+
+      - name: Network discovery service unit tests
+        run: |
+          SQLX_OFFLINE=true cargo test services::network_discovery::tests 2>&1 | tee ci-reports/cargo-test-network-discovery.log
+          grep -E "^test result" ci-reports/cargo-test-network-discovery.log | grep -v "FAILED"
+
+      - name: Service manager unit tests
+        run: |
+          SQLX_OFFLINE=true cargo test services::service_manager::tests 2>&1 | tee ci-reports/cargo-test-service-manager.log
+          grep -E "^test result" ci-reports/cargo-test-service-manager.log | grep -v "FAILED"
+
+      - name: Connection engine crypto unit tests
+        run: |
+          SQLX_OFFLINE=true cargo test services::connection_engine::crypto::tests 2>&1 | tee ci-reports/cargo-test-connection-engine-crypto.log
+          grep -E "^test result" ci-reports/cargo-test-connection-engine-crypto.log | grep -v "FAILED"
+
+      - name: Run clippy lints
+        run: |
+          set +e
+          cargo clippy --release -- -W warnings 2>&1 | tee ci-reports/cargo-clippy.log
+          echo "exit_code=$?" > ci-reports/cargo-clippy-exit.txt
+          exit 0
+
+      - name: Upload backend reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: backend-reports
+          path: rust-backend/ci-reports
+
+  # ── Rust Scan Engine ──────────────────────────────────────
+  scan-engine-check:
+    name: Scan Engine Build & Check
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: rust-scan-engine
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Cache Cargo registry & build
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+            rust-scan-engine/target
+          key: ${{ runner.os }}-scan-engine-cargo-${{ hashFiles('rust-scan-engine/Cargo.lock') }}
+          restore-keys: ${{ runner.os }}-scan-engine-cargo-
+
+      - name: Check compilation
+        run: |
+          mkdir -p ci-reports
+          cargo check --release 2>&1 | tee ci-reports/cargo-check.log
+
+      - name: Scan engine unit tests
+        run: |
+          cargo test scanner::tests 2>&1 | tee ci-reports/cargo-test-scanner.log
+          grep -E "^test result" ci-reports/cargo-test-scanner.log | grep -v "FAILED"
+
+      - name: Upload scan engine reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: scan-engine-reports
+          path: rust-scan-engine/ci-reports
+
+  # ── Frontend ──────────────────────────────────────────────
+  frontend-build:
+    name: Frontend Build
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: saas-frontend
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: i18n coverage check
+        run: npm run i18n:check
+
+      - name: i18n residual check
+        run: npm run i18n:residual
+
+      - name: Type check
+        run: npm run type-check
+
+      - name: Purple Team flow tests
+        run: npm run test:purple-flow
+
+      - name: Runtime guard tests
+        run: npm run test:runtime-guards
+
+      - name: Runtime guard tests (scans)
+        run: npm run test:runtime-guards-scans
+
+      - name: Build
+        run: npm run build
+
+      - name: Upload i18n reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: i18n-reports
+          path: |
+            saas-frontend/i18n-coverage-report.json
+            saas-frontend/i18n-residual-report.json
+
+  # ── Deploy (only on master push) ──────────────────────────
+  deploy:
+    name: Deploy to Production
+    needs: [backend-check, scan-engine-check, frontend-build]
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/master' && github.event_name == 'push'
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Deploy via SSH
+        uses: appleboy/ssh-action@v1
+        with:
+          host: ${{ secrets.SERVER_HOST }}
+          username: ${{ secrets.SERVER_USER }}
+          key: ${{ secrets.SERVER_SSH_KEY }}
+          script: |
+            cd ~/cybersec-pro
+
+            # Pull latest
+            git pull origin master
+
+            # Build backend
+            cd rust-backend
+            cargo build --release
+
+            # Build scan engine
+            cd ../rust-scan-engine
+            cargo build --release
+
+            # Build frontend
+            cd ../saas-frontend
+            npm ci
+            npm run build
+
+            # Deploy frontend
+            sudo cp -r dist/* /var/www/dashboard/
+
+            # Restart scan engine
+            cd ../rust-scan-engine
+            pkill -f cybersec-scan-engine || true
+            sleep 2
+            SCAN_ENGINE_PORT=5002 nohup ./target/release/cybersec-scan-engine > /tmp/cybersec-scan-engine.log 2>&1 &
+
+            # Restart backend
+            cd ../rust-backend
+            pkill -f cybersec-pro-backend || true
+            sleep 2
+            SCAN_ENGINE_URL=http://127.0.0.1:5002 nohup ./target/release/cybersec-pro-backend > /tmp/cybersec-backend.log 2>&1 &
+
+            echo "✅ Deployment complete"
