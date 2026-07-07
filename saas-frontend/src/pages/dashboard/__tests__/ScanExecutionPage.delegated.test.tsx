@@ -41,6 +41,9 @@ vi.mock('../../../components/dashboard/ScanProgress', () => ({
 vi.mock('../../../hooks/useAuth', () => ({
   useAuth: vi.fn(),
 }));
+vi.mock('../../../components/ui/Toast', () => ({
+  useToast: () => ({ success: vi.fn(), error: vi.fn() })
+}));
 vi.mock('../../../contexts/TargetContext', () => ({
   useTarget: () => ({ target: '', addRecentTarget: vi.fn() }),
 }));
@@ -55,6 +58,7 @@ vi.mock('../../../hooks/useUtilities', () => ({
 vi.mock('../../../hooks/useApiQueries', () => ({
   useToolExecutionMode: vi.fn(),
   useFetchBusinessReport: vi.fn(),
+  useGenerateReport: vi.fn(),
   normalizeAgentsPayload: vi.fn((v: unknown) => (Array.isArray(v) ? v : [])),
 }));
 

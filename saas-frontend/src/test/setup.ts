@@ -69,9 +69,11 @@ global.ResizeObserver = class ResizeObserver {
 
 // Mock requestAnimationFrame
 global.requestAnimationFrame = (callback: FrameRequestCallback) => {
-  return setTimeout(callback, 16);
+  const timer = setTimeout(callback, 16);
+  if (timer.unref) timer.unref();
+  return timer as unknown as number;
 };
 
 global.cancelAnimationFrame = (id: number) => {
-  clearTimeout(id);
+  clearTimeout(id as unknown as NodeJS.Timeout);
 };
