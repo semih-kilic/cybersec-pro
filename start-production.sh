@@ -25,6 +25,18 @@ print_status() {
     fi
 }
 
+# Load environment variables from rust-backend/.env
+echo -e "\n${YELLOW}Loading environment variables from .env...${NC}"
+if [ -f "$RUST_DIR/.env" ]; then
+    set -a
+    source "$RUST_DIR/.env"
+    set +a
+    print_status 0 "Environment loaded"
+else
+    print_status 1 "Missing .env file in $RUST_DIR"
+    exit 1
+fi
+
 # 1. Start Redis
 echo -e "\n${YELLOW}1. Starting Redis...${NC}"
 if ! pgrep -x "redis-server" > /dev/null; then
@@ -44,8 +56,6 @@ print_status 0 "Old processes stopped"
 # 3. Start Rust Scan Engine
 echo -e "\n${YELLOW}3. Starting Rust Scan Engine...${NC}"
 cd $SCAN_ENGINE_DIR
-DATABASE_URL='postgres://cybersec:***REDACTED_PG_PASSWORD***@localhost:5432/cybersec_pro' \
-JWT_SECRET_KEY='***REDACTED_JWT_SECRET***' \
 SCAN_ENGINE_PORT=5002 \
 RUST_LOG=info \
 nohup ./target/release/cybersec-scan-engine > /tmp/rust-scan-engine.log 2>&1 &
@@ -61,17 +71,7 @@ fi
 # 4. Start Rust Backend
 echo -e "\n${YELLOW}4. Starting Rust API Backend...${NC}"
 cd $RUST_DIR
-DATABASE_URL='postgres://cybersec:***REDACTED_PG_PASSWORD***@localhost:5432/cybersec_pro' \
-JWT_SECRET_KEY='***REDACTED_JWT_SECRET***' \
 SCAN_ENGINE_URL='http://127.0.0.1:5002' \
-GITHUB_CLIENT_ID='***REDACTED_GH_OAUTH_CLIENT_ID***' \
-GITHUB_CLIENT_SECRET='***REDACTED_GH_OAUTH_SECRET***' \
-STRIPE_SECRET_KEY='***REDACTED_STRIPE_SECRET***' \
-STRIPE_STARTER_PRICE_ID='price_1T1eh20ed3IDKXcnWZVJA9ur' \
-STRIPE_PROFESSIONAL_PRICE_ID='price_1T1ei40ed3IDKXcnZDCi88tv' \
-STRIPE_ENTERPRISE_PRICE_ID='price_1T1eir0ed3IDKXcn3ILBR48o' \
-STRIPE_WEBHOOK_SECRET='***REDACTED_STRIPE_WEBHOOK***' \
-DOMAIN='https://semihkilic.com' \
 RUST_LOG=info \
 nohup ./target/release/cybersec-pro-backend > /tmp/rust-backend.log 2>&1 &
 
@@ -99,9 +99,9 @@ else
 fi
 
 # 6. Reload Nginx
-echo -e "\n${YELLOW}6. Reloading Nginx...${NC}"
-sudo nginx -t && sudo systemctl reload nginx
-print_status $? "Nginx"
+echo -e "\n${YELLOW}6. Skipping Nginx Reload in Dev environment...${NC}"
+# sudo nginx -t && sudo systemctl reload nginx
+# print_status $? "Nginx"
 
 # Summary
 echo -e "\n======================================"
