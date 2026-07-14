@@ -15,7 +15,7 @@ tower-http = { version = "0.5", features = ["cors", "trace", "compression-gzip",
 hyper = { version = "1", features = ["full"] }
 
 # Database
-sqlx = { version = "0.8", features = ["runtime-tokio", "postgres", "chrono", "uuid", "json"] }
+sqlx = { version = "0.8", features = ["runtime-tokio", "postgres", "chrono", "uuid", "json", "derive"], default-features = false }
 
 # Serialization
 serde = { version = "1", features = ["derive"] }
@@ -98,6 +98,9 @@ async-stream = "0.3"
 # System telemetry (God Mode)
 sysinfo = "0.30"
 
+# CLI tool for operations
+clap = { version = "4", features = ["derive"] }
+
 [profile.release]
 opt-level = 3
 lto = "thin"
@@ -109,6 +112,10 @@ path = "src/main.rs"
 [[bin]]
 name = "translate"
 path = "src/bin/translate.rs"
+
+[[bin]]
+name = "cybersec-ops"
+path = "src/bin/ops.rs"
 codegen-units = 1
 strip = true
 panic = "abort"
