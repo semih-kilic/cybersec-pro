@@ -82,27 +82,13 @@
       "filePath": "src/pages/dashboard/AIAssistantPage.tsx",
       "hasUseTranslation": true,
       "hasTCalls": true,
-      "probableHardcodedLines": [
-        115,
-        306,
-        307,
-        308
-      ]
+      "probableHardcodedLines": []
     },
     {
       "filePath": "src/pages/dashboard/AdminPage.tsx",
       "hasUseTranslation": true,
       "hasTCalls": true,
-      "probableHardcodedLines": [
-        329,
-        497,
-        498,
-        499,
-        570,
-        571,
-        572,
-        573
-      ]
+      "probableHardcodedLines": []
     },
     {
       "filePath": "src/pages/dashboard/AgentJobsPage.tsx",
@@ -114,12 +100,7 @@
       "filePath": "src/pages/dashboard/AgentsPage.tsx",
       "hasUseTranslation": true,
       "hasTCalls": true,
-      "probableHardcodedLines": [
-        776,
-        782,
-        1039,
-        1062
-      ]
+      "probableHardcodedLines": []
     },
     {
       "filePath": "src/pages/dashboard/AnalyticsPage.tsx",
@@ -137,9 +118,7 @@
       "filePath": "src/pages/dashboard/CommunityPage.tsx",
       "hasUseTranslation": true,
       "hasTCalls": true,
-      "probableHardcodedLines": [
-        432
-      ]
+      "probableHardcodedLines": []
     },
     {
       "filePath": "src/pages/dashboard/ComplianceDashboardPage.tsx",
@@ -151,9 +130,7 @@
       "filePath": "src/pages/dashboard/CyberSecAIPage.tsx",
       "hasUseTranslation": true,
       "hasTCalls": true,
-      "probableHardcodedLines": [
-        344
-      ]
+      "probableHardcodedLines": []
     },
     {
       "filePath": "src/pages/dashboard/FeedbackPage.tsx",
@@ -165,15 +142,7 @@
       "filePath": "src/pages/dashboard/GodModePage.tsx",
       "hasUseTranslation": true,
       "hasTCalls": true,
-      "probableHardcodedLines": [
-        574,
-        575,
-        576,
-        577,
-        578,
-        579,
-        685
-      ]
+      "probableHardcodedLines": []
     },
     {
       "filePath": "src/pages/dashboard/LearningCenterPage.tsx",
@@ -221,9 +190,7 @@
       "filePath": "src/pages/dashboard/ScanTemplatesPage.tsx",
       "hasUseTranslation": true,
       "hasTCalls": true,
-      "probableHardcodedLines": [
-        102
-      ]
+      "probableHardcodedLines": []
     },
     {
       "filePath": "src/pages/dashboard/ScansPage.tsx",
@@ -241,9 +208,7 @@
       "filePath": "src/pages/dashboard/SecurityNewsPage.tsx",
       "hasUseTranslation": true,
       "hasTCalls": true,
-      "probableHardcodedLines": [
-        254
-      ]
+      "probableHardcodedLines": []
     },
     {
       "filePath": "src/pages/dashboard/ServiceManagerPage.tsx",
@@ -297,9 +262,7 @@
       "filePath": "src/pages/dashboard/VulnerabilityDBPage.tsx",
       "hasUseTranslation": true,
       "hasTCalls": true,
-      "probableHardcodedLines": [
-        241
-      ]
+      "probableHardcodedLines": []
     },
     {
       "filePath": "src/pages/dashboard/settings/ApiKeysTab.tsx",

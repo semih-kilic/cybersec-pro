@@ -156,55 +156,6 @@
     "plan": {
       "freeTrial": "Free Trial",
       "freeCycle": "/3 days",
-      "runtimeTuningTitle": "Runtime Tuning",
-      "runtimeTuningSubtitle": "Active organization-level detection tuning applied to Purple Team simulations.",
-      "runtimeTuningSource": "Source",
-      "runtimeCredential": "Credential",
-      "runtimeLateral": "Lateral",
-      "runtimeDefault": "Default",
-      "runtimeProdPenalty": "Prod penalty",
-      "runtimeDevBonus": "Dev bonus",
-      "freeItem1": "1 free security scan",
-      "freeItem3": "PDF report with findings",
-      "freeItem4": "No credit card required",
-      "startFreeScan": "Start Free Scan",
-      "starter": "Starter",
-      "runtimeTuningTitle": "Laufzeit-Tuning",
-      "runtimeTuningSubtitle": "Aktive organisationsweite Erkennungseinstellungen, die auf Purple-Team-Simulationen angewendet werden.",
-      "runtimeTuningSource": "Quelle",
-      "runtimeCredential": "Zugangsdaten",
-      "runtimeLateral": "Seitwärts",
-      "runtimeDefault": "Standard",
-      "runtimeProdPenalty": "Produktionsabschlag",
-      "runtimeDevBonus": "Entwicklungsbonus",
-      "monthly": "/month",
-      "starterItem1": "1 domain/application",
-      "starterItem2": "Weekly automated scans",
-      "starterItem3": "Email vulnerability alerts",
-      "runtimeTuningTitle": "Ajuste en tiempo de ejecución",
-      "runtimeTuningSubtitle": "Configuración activa de detección a nivel de organización aplicada a las simulaciones Purple Team.",
-      "runtimeTuningSource": "Origen",
-      "runtimeCredential": "Credenciales",
-      "runtimeLateral": "Lateral",
-      "runtimeDefault": "Predeterminado",
-      "runtimeProdPenalty": "Penalización prod",
-      "runtimeDevBonus": "Bonificación dev",
-      "starterItem4": "PDF & HTML reports",
-      "starterItem5": "Email support (48h)",
-      "professional": "Professional",
-      "proItem1": "Up to 5 domains",
-      "runtimeTuningTitle": "Réglage d'exécution",
-      "runtimeTuningSubtitle": "Réglage actif de détection au niveau de l'organisation appliqué aux simulations Purple Team.",
-      "runtimeTuningSource": "Origine",
-      "runtimeCredential": "Identifiants",
-      "runtimeLateral": "Latéral",
-      "runtimeDefault": "Par défaut",
-      "runtimeProdPenalty": "Pénalité prod",
-      "runtimeDevBonus": "Bonus dev",
-      "proItem2": "Daily automated scans",
-      "proItem3": "API + CI/CD integration",
-      "proItem4": "Compliance reports",
-      "proItem5": "Priority support (24h)",
       "runtimeTuningTitle": "Ottimizzazione runtime",
       "runtimeTuningSubtitle": "Configurazione attiva di rilevamento a livello organizzativo applicata alle simulazioni Purple Team.",
       "runtimeTuningSource": "Origine",
@@ -213,6 +164,23 @@
       "runtimeDefault": "Predefinito",
       "runtimeProdPenalty": "Penalità prod",
       "runtimeDevBonus": "Bonus dev",
+      "freeItem1": "1 free security scan",
+      "freeItem3": "PDF report with findings",
+      "freeItem4": "No credit card required",
+      "startFreeScan": "Start Free Scan",
+      "starter": "Starter",
+      "monthly": "/month",
+      "starterItem1": "1 domain/application",
+      "starterItem2": "Weekly automated scans",
+      "starterItem3": "Email vulnerability alerts",
+      "starterItem4": "PDF & HTML reports",
+      "starterItem5": "Email support (48h)",
+      "professional": "Professional",
+      "proItem1": "Up to 5 domains",
+      "proItem2": "Daily automated scans",
+      "proItem3": "API + CI/CD integration",
+      "proItem4": "Compliance reports",
+      "proItem5": "Priority support (24h)",
       "enterprise": "Enterprise",
       "enterpriseItem1": "All Tools",
       "enterpriseItem2": "Unlimited everything",
@@ -517,7 +485,10 @@
       "pending": "Pending",
       "offline": "Offline",
       "error": "Error"
-    }
+    },
+    "placeholderRoot": "root",
+    "placeholderPassword": "password",
+    "placeholderServer": "server.local"
   },
   "targets": {
     "title": "Target Management",
@@ -1211,7 +1182,8 @@
       "categoryLabel": "Category",
       "contentLabel": "Content",
       "contentPlaceholder": "Share your thoughts, questions, or findings..."
-    }
+    },
+    "tagsPlaceholder": "nmap, recon, web-pentest"
   },
   "compliance": {
     "title": "Compliance Dashboard",
@@ -1350,7 +1322,8 @@
     "eyebrow": "Autonomous",
     "title": "CyberSec Pro AI",
     "description": "Autonomous AI-powered penetration testing, vulnerability discovery, and proof-of-concept verification across your attack surface.",
-    "newJob": "New AI pentest job"
+    "newJob": "New AI pentest job",
+    "targetPlaceholder": "https://example.com or github.com/owner/repo"
   },
   "aiAssistant": {
     "title": "AI Assistant",
@@ -1404,7 +1377,10 @@
         "docker": "Check Docker image for CVEs",
         "ssh": "Brute force SSH login",
         "secrets": "Find leaked secrets in git repo"
-      }
+      },
+      "targetTypeUrl": "URL",
+      "targetTypeDomain": "Domain",
+      "targetTypeIp": "IP / CIDR"
     },
     "command": {
       "toolLabel": "Tool",
@@ -1460,12 +1436,14 @@
       "warning_one": "{{count}} warning",
       "warning_other": "{{count}} warnings",
       "command": "Command"
-    }
+    },
+    "pageTitle": "CyberSec Pro AI"
   },
   "scanTemplates": {
     "title": "Scan Templates",
     "subtitle": "Pre-configured scan profiles for common security assessments",
-    "createTemplate": "+ Create Template"
+    "createTemplate": "+ Create Template",
+    "toolPlaceholder": "nmap, sqlmap, nikto…"
   },
   "reports": {
     "title": "Reports",
@@ -1547,7 +1525,8 @@
     "subtitle": "Latest cybersecurity news, breaches, and industry updates",
     "featured": "Featured",
     "searchPlaceholder": "Search news, topics, tags...",
-    "noArticles": "No news articles match your criteria."
+    "noArticles": "No news articles match your criteria.",
+    "closeButton": "✕"
   },
   "serviceManager": {
     "title": "Service Manager",
@@ -1612,7 +1591,8 @@
     "medium": "Medium",
     "low": "Low",
     "exploit": "EXPLOIT",
-    "noResults": "No vulnerabilities match your search criteria."
+    "noResults": "No vulnerabilities match your search criteria.",
+    "ransomware": "RANSOMWARE"
   },
   "apiKeys": {
     "namePlaceholder": "Enter key name (e.g., Production API)",
@@ -1714,5 +1694,14 @@
     "availableRoles": "Available Roles",
     "upgradeRequired": "Team management requires Professional plan or higher",
     "upgradeLink": "Upgrade to invite team members →"
+  },
+  "godMode": {
+    "serviceCybersecRust": "cybersec-rust (backend)",
+    "serviceNginx": "nginx",
+    "servicePostgresql": "postgresql",
+    "serviceRedis": "redis",
+    "serviceCloudflared": "cloudflared",
+    "serviceHealthcheck": "healthcheck",
+    "featureFlagPlaceholder": "my_new_feature"
   }
 }

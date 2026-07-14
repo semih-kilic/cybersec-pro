@@ -571,12 +571,12 @@ function LogsPanel() {
             onChange={(e) => setUnit(e.target.value)}
             className="bg-vos-glass-2 border border-vos-border-1 text-vos-text rounded-vos-md text-vos-sm px-vos-3 py-vos-2"
           >
-            <option value="cybersec-rust.service">cybersec-rust (backend)</option>
-            <option value="nginx.service">nginx</option>
-            <option value="postgresql@18-main.service">postgresql</option>
-            <option value="redis-server.service">redis</option>
-            <option value="cloudflared.service">cloudflared</option>
-            <option value="cybersec-healthcheck.service">healthcheck</option>
+            <option value="cybersec-rust.service">{t("godMode.serviceCybersecRust", "cybersec-rust (backend)")}</option>
+            <option value="nginx.service">{t("godMode.serviceNginx", "nginx")}</option>
+            <option value="postgresql@18-main.service">{t("godMode.servicePostgresql", "postgresql")}</option>
+            <option value="redis-server.service">{t("godMode.serviceRedis", "redis")}</option>
+            <option value="cloudflared.service">{t("godMode.serviceCloudflared", "cloudflared")}</option>
+            <option value="cybersec-healthcheck.service">{t("godMode.serviceHealthcheck", "healthcheck")}</option>
           </select>
           <select
             value={lines}
@@ -682,7 +682,7 @@ function FeatureFlagsPanel() {
               <Input
                 value={newKey}
                 onChange={(e) => setNewKey(e.target.value)}
-                placeholder="my_new_feature"
+                placeholder={t("godMode.featureFlagPlaceholder", "my_new_feature")}
                 autoFocus
               />
             </div>

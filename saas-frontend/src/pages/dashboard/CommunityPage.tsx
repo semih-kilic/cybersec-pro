@@ -429,7 +429,7 @@ export default function CommunityPage() {
                     type="text"
                     value={newTags}
                     onChange={e => setNewTags(e.target.value)}
-                    placeholder="nmap, recon, web-pentest"
+                    placeholder={t("community.tagsPlaceholder", "nmap, recon, web-pentest")}
                     className="w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded-lg text-white text-sm focus:ring-2 focus:ring-purple-500 focus:border-transparent"
                   />
                 </div>

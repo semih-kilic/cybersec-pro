@@ -251,7 +251,7 @@ export default function SecurityNewsPage() {
                   </span>
                   <span className="text-gray-500 text-xs">{relativeTime(selectedNews.published_at)}</span>
                 </div>
-                <button onClick={() => setSelectedNews(null)} className="text-gray-400 hover:text-white transition-colors text-xl">✕</button>
+                <button onClick={() => setSelectedNews(null)} className="text-gray-400 hover:text-white transition-colors text-xl">{t("securityNews.closeButton", "✕")}</button>
               </div>
 
               <h2 className="text-xl font-bold text-white mb-3">{selectedNews.title}</h2>

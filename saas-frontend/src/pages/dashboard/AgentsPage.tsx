@@ -773,13 +773,13 @@ function AddDeviceWizard({
             >
               <WizardInput
                 label={t('agents.labelUsername', 'Username')}
-                placeholder="root"
+                placeholder={t("agents.placeholderRoot", "root")}
                 value={form.ssh_username}
                 onChange={(v) => updateForm('ssh_username', v)}
               />
               <WizardInput
                 label={t('agents.labelPassword', 'Password')}
-                placeholder="password"
+                placeholder={t("agents.placeholderPassword", "password")}
                 value={form.ssh_password}
                 onChange={(v) => updateForm('ssh_password', v)}
                 type="password"
@@ -1036,7 +1036,7 @@ function EditDeviceModal({
         />
         <WizardInput
           label={t('agents.labelHostname', 'Hostname')}
-          placeholder="server.local"
+          placeholder={t("agents.placeholderServer", "server.local")}
           value={form.hostname}
           onChange={(v) => updateForm('hostname', v)}
         />
@@ -1059,7 +1059,7 @@ function EditDeviceModal({
         </div>
         <WizardInput
           label={t('agents.labelUsername', 'Username')}
-          placeholder="root"
+          placeholder={t("agents.placeholderRoot", "root")}
           value={form.ssh_username}
           onChange={(v) => updateForm('ssh_username', v)}
         />

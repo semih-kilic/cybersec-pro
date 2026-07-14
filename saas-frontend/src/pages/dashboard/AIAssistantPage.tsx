@@ -112,7 +112,7 @@ export default function AIAssistantPage() {
       <div className="p-vos-6 max-w-vos-page mx-auto space-y-vos-6">
         <PageHeader
           icon={<Bot size={22} />}
-          title="CyberSec Pro AI"
+          title={t("aiAssistant.pageTitle", "CyberSec Pro AI")}
           description={t('aiAssistant.headerDescription', 'Your security expert. Ask what tool to use, build safe commands, design multi-step playbooks, validate dangerous commands, and let AI interpret your scan findings.')}
           badge={<StatusPill tone="accent" label={t('aiAssistant.headerBadge', 'Intelligent Co-Pilot')} />}
           actions={
@@ -303,9 +303,9 @@ function SuggestPanel({ useLLM }: { useLLM: boolean }) {
           <VosLabel>{t('aiAssistant.suggest.targetTypeLabel', 'Target type (optional)')}</VosLabel>
           <VosSelect value={targetType} onChange={(e) => setTargetType(e.target.value)}>
             <option value="">{t('aiAssistant.suggest.targetTypeAny', 'Any')}</option>
-            <option value="url">URL</option>
-            <option value="domain">Domain</option>
-            <option value="ip">IP / CIDR</option>
+            <option value="url">{t("aiAssistant.suggest.targetTypeUrl", "URL")}</option>
+            <option value="domain">{t("aiAssistant.suggest.targetTypeDomain", "Domain")}</option>
+            <option value="ip">{t("aiAssistant.suggest.targetTypeIp", "IP / CIDR")}</option>
             <option value="repository">{t('aiAssistant.suggest.targetTypeRepo', 'Git repo')}</option>
             <option value="image">{t('aiAssistant.suggest.targetTypeImage', 'Container image')}</option>
             <option value="file">{t('aiAssistant.suggest.targetTypeFile', 'File')}</option>

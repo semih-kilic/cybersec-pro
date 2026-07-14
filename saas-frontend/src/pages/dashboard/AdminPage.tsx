@@ -326,7 +326,7 @@ export function AdminPage() {
           <div className="flex gap-vos-3">
             <input
               type="email"
-              placeholder="user@example.com"
+              placeholder={t("admin.impersonatePlaceholder", "user@example.com")}
               value={impersonateEmail}
               onChange={(e) => setImpersonateEmail(e.target.value)}
               className="flex-1 h-9 px-vos-3 rounded-vos-md bg-vos-bg-elev-3 border border-vos-border-1 text-vos-sm text-vos-text placeholder:text-vos-text-muted focus:outline-none focus:border-vos-accent focus:ring-2 focus:ring-vos-accent/30"
@@ -494,9 +494,9 @@ function UsersTab(props: {
                   disabled={u.id === currentUserId || actionLoading === u.id}
                   className="h-7 px-2 rounded-vos-sm bg-vos-bg-elev-3 border border-vos-border-1 text-vos-xs text-vos-text disabled:opacity-50"
                 >
-                  <option value="user">user</option>
-                  <option value="admin">admin</option>
-                  <option value="superadmin">superadmin</option>
+                  <option value="user">{t("admin.roleUser", "user")}</option>
+                  <option value="admin">{t("admin.roleAdmin", "admin")}</option>
+                  <option value="superadmin">{t("admin.roleSuperadmin", "superadmin")}</option>
                 </select>
               </DenseTD>
               <DenseTD>
@@ -567,10 +567,10 @@ function OrgsTab({
                   onChange={(e) => onChangePlan(o.id, e.target.value)}
                   className="h-7 px-2 rounded-vos-sm bg-vos-bg-elev-3 border border-vos-border-1 text-vos-xs text-vos-text"
                 >
-                  <option value="free">free</option>
-                  <option value="starter">starter</option>
-                  <option value="professional">professional</option>
-                  <option value="enterprise">enterprise</option>
+                  <option value="free">{t("admin.planFree", "free")}</option>
+                  <option value="starter">{t("admin.planStarter", "starter")}</option>
+                  <option value="professional">{t("admin.planProfessional", "professional")}</option>
+                  <option value="enterprise">{t("admin.planEnterprise", "enterprise")}</option>
                 </select>
               </DenseTD>
               <DenseTD>

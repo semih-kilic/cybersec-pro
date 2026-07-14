@@ -341,7 +341,7 @@ export default function CyberSecAIPage() {
                   <Input
                     value={form.target}
                     onChange={(v) => setForm((f) => ({ ...f, target: v }))}
-                    placeholder="https://example.com or github.com/owner/repo"
+                    placeholder={t("cybersecAI.targetPlaceholder", "https://example.com or github.com/owner/repo")}
                   />
                 </Field>
 

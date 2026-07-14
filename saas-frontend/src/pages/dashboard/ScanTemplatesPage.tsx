@@ -99,7 +99,7 @@ export default function ScanTemplatesPage() {
             <div>
               <label className="block text-gray-400 text-xs mb-1">{t('scanTemplates.tool', 'Tool')}</label>
               <input type="text" value={form.tool_id} onChange={e => setForm(f => ({ ...f, tool_id: e.target.value }))}
-                placeholder="nmap, sqlmap, nikto…"
+                placeholder={t("scanTemplates.toolPlaceholder", "nmap, sqlmap, nikto…")}
                 className="w-full px-3 py-2 bg-gray-900 border border-gray-700 rounded-lg text-white text-sm focus:outline-none focus:border-cyan-500" />
             </div>
           </div>
