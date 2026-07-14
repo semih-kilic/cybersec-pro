@@ -39,7 +39,7 @@ impl EmailConfig {
             smtp_email,
             smtp_password: password,
             from_name: std::env::var("SMTP_FROM_NAME")
-                .unwrap_or_else(|_| "CyberSec Professional".into()),
+                .unwrap_or_else(|_| "CyberSec Pro".into()),
             from_address,
         })
     }
@@ -59,7 +59,7 @@ pub async fn send_license_email(
     send_email(
         cfg,
         customer_email,
-        &format!("\u{1F510} Your CyberSec Professional License Key - {}", plan_name),
+        &format!("\u{1F510} Your CyberSec Pro License Key - {}", plan_name),
         &plain,
         &html,
     )
@@ -68,11 +68,11 @@ pub async fn send_license_email(
 
 pub(crate) fn license_plain_text(name: &str, plan_name: &str, license_key: &str, expiry_date: &str) -> String {
     format!(
-        "CyberSec Professional - License Delivery\n\n\
+        "CyberSec Pro - License Delivery\n\n\
          Dear {},\n\nThank you for purchasing {}!\n\n\
          Your License Key: {}\nValid Until: {}\n\n\
          Quick Start:\n1. Go to Settings \u{2192} License\n2. Enter your license key\n3. Start scanning!\n\n\
-         Need help? Contact: support@cyber-sec-pro.com\n\n\u{00A9} 2026 CyberSec Professional",
+         Need help? Contact: support@cyber-sec-pro.com\n\n\u{00A9} 2026 CyberSec Pro",
         name, plan_name, license_key, expiry_date
     )
 }
@@ -120,7 +120,7 @@ pub async fn send_payment_confirmation(
     send_email(
         cfg,
         customer_email,
-        "✅ Payment Confirmed - CyberSec Professional",
+        "✅ Payment Confirmed - CyberSec Pro",
         &plain,
         &html,
     )
@@ -130,7 +130,7 @@ pub async fn send_payment_confirmation(
 pub(crate) fn payment_plain_text(name: &str, amount: &str, plan_name: &str) -> String {
     format!(
         "Payment Successful!\n\nDear {},\nYour payment of {} for {} has been confirmed.\n\
-         Your license key will be sent in a separate email shortly.\n\n© 2026 CyberSec Professional",
+         Your license key will be sent in a separate email shortly.\n\n© 2026 CyberSec Pro",
         name, amount, plan_name
     )
 }
@@ -149,11 +149,11 @@ pub async fn send_verification_email(
         <p style="color:#ccd6f6;font-size:16px">Hi {},</p>
         <p style="color:#8892b0;font-size:14px">Please verify your email to activate your CyberSec Pro account.</p>
         <a href="{}" style="display:inline-block;padding:16px 40px;background:linear-gradient(135deg,#00ff88,#00d4ff);color:#0a0a0a;text-decoration:none;font-weight:bold;border-radius:50px;margin:20px 0">Verify Email</a>
-        <p style="color:#4a5568;font-size:12px;margin-top:20px">© 2026 CyberSec Professional</p>
+        <p style="color:#4a5568;font-size:12px;margin-top:20px">© 2026 CyberSec Pro</p>
         </td></tr></table></body></html>"#,
         name, verify_url
     );
-    let plain = format!("Hi {},\n\nVerify your email: {}\n\n© 2026 CyberSec Professional", name, verify_url);
+    let plain = format!("Hi {},\n\nVerify your email: {}\n\n© 2026 CyberSec Pro", name, verify_url);
     send_email(cfg, to_email, "🛡️ Verify Your Email - CyberSec Pro", &plain, &html).await
 }
 
@@ -172,12 +172,12 @@ pub async fn send_password_reset_email(
         <p style="color:#8892b0;font-size:14px">We received a request to reset your password. Click the button below to set a new password. This link expires in 1 hour.</p>
         <a href="{}" style="display:inline-block;padding:16px 40px;background:linear-gradient(135deg,#00ff88,#00d4ff);color:#0a0a0a;text-decoration:none;font-weight:bold;border-radius:50px;margin:20px 0">Reset Password</a>
         <p style="color:#8892b0;font-size:12px;margin-top:20px">If you didn't request this, you can safely ignore this email.</p>
-        <p style="color:#4a5568;font-size:12px;margin-top:20px">© 2026 CyberSec Professional</p>
+        <p style="color:#4a5568;font-size:12px;margin-top:20px">© 2026 CyberSec Pro</p>
         </td></tr></table></body></html>"#,
         name, reset_url
     );
     let plain = format!(
-        "Hi {},\n\nReset your password: {}\n\nThis link expires in 1 hour.\nIf you didn't request this, ignore this email.\n\n© 2026 CyberSec Professional",
+        "Hi {},\n\nReset your password: {}\n\nThis link expires in 1 hour.\nIf you didn't request this, ignore this email.\n\n© 2026 CyberSec Pro",
         name, reset_url
     );
     send_email(cfg, to_email, "🔑 Password Reset - CyberSec Pro", &plain, &html).await
@@ -196,11 +196,11 @@ pub async fn send_team_invite_email(
         <h1 style="color:#00ff88">🛡️ Team Invitation</h1>
         <p style="color:#ccd6f6;font-size:16px">You've been invited to join a CyberSec Pro team as <strong style="color:#00d4ff">{}</strong>.</p>
         <a href="{}" style="display:inline-block;padding:16px 40px;background:linear-gradient(135deg,#00ff88,#00d4ff);color:#0a0a0a;text-decoration:none;font-weight:bold;border-radius:50px;margin:20px 0">Accept Invitation</a>
-        <p style="color:#4a5568;font-size:12px;margin-top:20px">© 2026 CyberSec Professional</p>
+        <p style="color:#4a5568;font-size:12px;margin-top:20px">© 2026 CyberSec Pro</p>
         </td></tr></table></body></html>"#,
         role, invite_url
     );
-    let plain = format!("You've been invited to CyberSec Pro as {}.\n\nAccept: {}\n\n© 2026 CyberSec Professional", role, invite_url);
+    let plain = format!("You've been invited to CyberSec Pro as {}.\n\nAccept: {}\n\n© 2026 CyberSec Pro", role, invite_url);
     send_email(cfg, to_email, "🛡️ Team Invitation - CyberSec Pro", &plain, &html).await
 }
 
@@ -321,14 +321,14 @@ fn newsletter_welcome_html() -> String {
 fn license_email_html(name: &str, email: &str, key: &str, plan: &str, expiry: &str) -> String {
     format!(r#"<!DOCTYPE html>
 <html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
-<title>Your CyberSec Professional License</title></head>
+<title>Your CyberSec Pro License</title></head>
 <body style="margin:0;padding:0;font-family:'Segoe UI',Tahoma,Geneva,Verdana,sans-serif;background:#0a0a0a">
 <table role="presentation" style="width:100%;border-collapse:collapse"><tr><td align="center" style="padding:40px 0">
 <table role="presentation" style="width:600px;border-collapse:collapse;background:linear-gradient(135deg,#1a1a2e,#16213e);border-radius:16px;overflow:hidden;box-shadow:0 20px 60px rgba(0,255,136,.1)">
 <tr><td style="padding:40px 40px 20px;text-align:center;border-bottom:1px solid rgba(0,255,136,.2)">
 <div style="display:inline-block;padding:15px 30px;background:linear-gradient(135deg,#00ff88,#00d4ff);border-radius:50px;margin-bottom:20px">
 <span style="font-size:28px;font-weight:bold;color:#0a0a0a;letter-spacing:2px">🛡️ CYBERSEC PRO</span></div>
-<h1 style="color:#fff;font-size:28px;margin:20px 0 10px;font-weight:600">Welcome to CyberSec Professional!</h1>
+<h1 style="color:#fff;font-size:28px;margin:20px 0 10px;font-weight:600">Welcome to CyberSec Pro!</h1>
 <p style="color:#8892b0;font-size:16px;margin:0">Your license has been activated successfully</p></td></tr>
 <tr><td style="padding:30px 40px 20px">
 <p style="color:#ccd6f6;font-size:16px;line-height:1.6;margin:0">Dear <strong style="color:#00ff88">{name}</strong>,</p>
@@ -352,7 +352,7 @@ fn license_email_html(name: &str, email: &str, key: &str, plan: &str, expiry: &s
 <tr><td style="padding:20px 40px;text-align:center;border-top:1px solid rgba(0,255,136,.1)">
 <p style="color:#8892b0;font-size:14px;margin:0 0 10px">Need help? <a href="mailto:support@cyber-sec-pro.com" style="color:#00d4ff;text-decoration:none">support@cyber-sec-pro.com</a></p></td></tr>
 <tr><td style="padding:20px 40px;background:#0a0a0a;text-align:center">
-<p style="color:#4a5568;font-size:12px;margin:0 0 10px">© 2026 CyberSec Professional. All rights reserved.</p>
+<p style="color:#4a5568;font-size:12px;margin:0 0 10px">© 2026 CyberSec Pro. All rights reserved.</p>
 <p style="color:#4a5568;font-size:11px;margin:0">This email was sent to {email}</p></td></tr>
 </table></td></tr></table></body></html>"#,
         name = name, plan = plan, key = key, expiry = expiry, email = email
@@ -439,7 +439,7 @@ fn payment_confirmation_html(name: &str, amount: &str, plan: &str) -> String {
 Your payment of <strong style="color:#00d4ff">{amount}</strong> for <strong>{plan}</strong> has been confirmed.</p>
 <p style="color:#8892b0;font-size:14px">Your license key will be sent in a separate email shortly.</p>
 <hr style="border:1px solid #2d3748;margin:30px 0">
-<p style="color:#4a5568;font-size:12px">© 2026 CyberSec Professional</p>
+<p style="color:#4a5568;font-size:12px">© 2026 CyberSec Pro</p>
 </td></tr></table></body></html>"#, name = name, amount = amount, plan = plan)
 }
 
@@ -482,7 +482,7 @@ mod tests {
     #[test]
     fn welcome_plain_text_contains_brand() {
         let text = welcome_plain_text("Dave");
-        assert!(text.contains("CyberSec Professional"));
+        assert!(text.contains("CyberSec Pro"));
     }
 
     #[test]
