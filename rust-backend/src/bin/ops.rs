@@ -68,7 +68,7 @@ struct ToolRow {
     health_status: Option<String>,
     health_exit_code: Option<i32>,
     health_evidence: Option<String>,
-    last_health_check: Option<String>,
+    last_health_check: Option<chrono::DateTime<chrono::Utc>>,
     hardware_required: Option<serde_json::Value>,
     gui_required: Option<bool>,
     exclusion_reason: Option<String>,
@@ -261,7 +261,7 @@ async fn cmd_health_probe(workers: usize, apply: bool) {
             .bind(status)
             .bind(r.exit_code)
             .bind(&r.evidence)
-            .bind(r.tool_id)
+            .bind(r.tool_id.clone())
             .execute(&pool)
             .await;
         }
@@ -312,7 +312,7 @@ async fn probe_tool(tool: &ToolRow) -> HealthProbeResult {
                 };
 
                 return HealthProbeResult {
-                    tool_id: tool.id,
+                    tool_id: tool.id.clone(),
                     tool_name: tool.name.clone(),
                     status,
                     exit_code: Some(exit_code),
@@ -326,7 +326,7 @@ async fn probe_tool(tool: &ToolRow) -> HealthProbeResult {
     }
 
     HealthProbeResult {
-        tool_id: tool.id,
+        tool_id: tool.id.clone(),
         tool_name: tool.name.clone(),
         status: "missing".to_string(),
         exit_code: None,
@@ -484,7 +484,7 @@ async fn cmd_deep_smoke(workers: usize, apply: bool) {
             .bind(r.exit_code)
             .bind(&r.evidence)
             .bind(serde_json::to_string(&r).unwrap())
-            .bind(r.tool_id)            .execute(&pool)
+            .bind(r.tool_id.clone())            .execute(&pool)
             .await;
         }
         println!("\n✅ Applied results to database");
@@ -530,7 +530,7 @@ async fn deep_probe_tool(tool: &ToolRow) -> DeepSmokeResult {
                 };
 
                 return DeepSmokeResult {
-                    tool_id: tool.id,
+                    tool_id: tool.id.clone(),
                     tool_name: tool.name.clone(),
                     status,
                     exit_code: Some(exit_code),
@@ -541,7 +541,7 @@ async fn deep_probe_tool(tool: &ToolRow) -> DeepSmokeResult {
             Ok(Err(_)) => continue,
             Err(_) => {
                 return DeepSmokeResult {
-                    tool_id: tool.id,
+                    tool_id: tool.id.clone(),
                     tool_name: tool.name.clone(),
                     status: "timeout".to_string(),
                     exit_code: None,
@@ -553,7 +553,7 @@ async fn deep_probe_tool(tool: &ToolRow) -> DeepSmokeResult {
     }
 
     DeepSmokeResult {
-        tool_id: tool.id,
+        tool_id: tool.id.clone(),
         tool_name: tool.name.clone(),
         status: "missing".to_string(),
         exit_code: None,
@@ -623,8 +623,10 @@ fn decide_tool_active(tool: &ToolRow) -> (bool, String) {
     }
 
     // Check hardware requirement
-    if tool.hardware_required.unwrap_or(false) {
-        return (false, "hardware_required".to_string());
+    if let Some(ref hr) = tool.hardware_required {
+        if hr.as_bool().unwrap_or(false) {
+            return (false, "hardware_required".to_string());
+        }
     }
 
     // Check GUI requirement
