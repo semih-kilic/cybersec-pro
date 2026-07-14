@@ -153,7 +153,7 @@ function useStateWithLS(initial: boolean) {
   const wrap = (next: boolean | ((p: boolean) => boolean)) => {
     setVal(prev => {
       const v = typeof next === 'function' ? (next as (p: boolean) => boolean)(prev) : next;
-      try { window.localStorage.setItem('vos:sidebar:collapsed', v ? '1' : '0'); } catch {}
+      try { window.localStorage.setItem('vos:sidebar:collapsed', v ? '1' : '0'); } catch { /* ignore localStorage errors */ }
       return v;
     });
   };

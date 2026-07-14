@@ -622,7 +622,7 @@ class ApiService {
         let buffer = '';
         let markedConnected = false;
 
-        while (true) {
+        for (;;) {
           const { done, value } = await reader.read();
           if (done) {
             onStatus?.('disconnected');

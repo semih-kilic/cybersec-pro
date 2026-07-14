@@ -124,7 +124,7 @@ export function ProfileTab({ loading, setLoading, setMessage, user }: SettingsTa
           className="w-full px-4 py-3 bg-gray-800/50 border border-gray-700 rounded-lg text-gray-500 cursor-not-allowed"
         />
         <p className="text-gray-500 text-sm mt-1">
-          {t('profile.emailReadOnly', 'Email cannot be changed')} · 
+          {t('profile.emailReadOnly', 'Email cannot be changed')}   
           <a href="mailto:support@cybersec.pro?subject=Email%20change%20request" className="text-cyan-400 hover:underline">
             {t('profile.emailContactSupport', 'Contact support to change')}
           </a>

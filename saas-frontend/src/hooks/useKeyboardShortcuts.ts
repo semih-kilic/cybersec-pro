@@ -27,14 +27,7 @@ export function useKeyboardShortcuts(opts: UseKeyboardShortcutsOptions = {}) {
   const [showShortcutsHelp, setShowShortcutsHelp] = useState(false);
   const gPressedRef = useRef(false);
   const gTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  let navigate: ReturnType<typeof useNavigate>;
-
-  try {
-    navigate = useNavigate();
-  } catch {
-    // Outside router context — navigation shortcuts won't work
-    navigate = (() => {}) as any;
-  }
+  const navigate = useNavigate();
 
   const openPalette = useCallback(() => {
     setIsPaletteOpen(true);

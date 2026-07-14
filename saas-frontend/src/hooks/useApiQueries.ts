@@ -35,7 +35,7 @@ async function authFetch<T>(url: string, token: string | null | undefined, optio
       if (ct.includes('application/json')) {
         error = await res.json();
       }
-    } catch {}
+    } catch { /* json parse error */ }
     throw new Error(error.error || error.message || `Request failed: ${res.status}`);
   }
   const ct = res.headers.get('content-type') || '';
