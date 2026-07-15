@@ -11,6 +11,10 @@ const slugs = [
   "metasploit-zero-to-exploit",
   "ci-cd-pentest-automation",
   "wireless-security-assessment",
+  "sqlmap-injection-guide",
+  "nmap-network-scanning",
+  "metasploit-exploitation",
+  "hashcat-password-cracking",
 ];
 
 export function generateStaticParams() {
