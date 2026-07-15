@@ -68,7 +68,7 @@ const perks = [
   { icon: GraduationCap, label: "learning", detail: "€2,000/year learning & conference budget" },
   { icon: Monitor, label: "hardware", detail: "MacBook Pro + security lab setup" },
   { icon: Heart, label: "health", detail: "Health insurance & wellness support" },
-  { icon: Shield, label: "security", detail: "Access to all 811 tools for research" },
+  { icon: Shield, label: "security", detail: "Access to all 289 tools for research" },
 ];
 
 export default function CareersPage() {

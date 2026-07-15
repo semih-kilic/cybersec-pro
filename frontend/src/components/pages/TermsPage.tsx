@@ -56,7 +56,7 @@ export default function TermsPage() {
                 {[
                   { plan: "Starter", price: "€99", features: "50 tools, 10 scans/month" },
                   { plan: "Professional", price: "€299", features: "200 tools, unlimited scans, API access" },
-                  { plan: "Enterprise", price: "€799", features: "811 tools, unlimited everything, priority support" },
+                  { plan: "Enterprise", price: "€799", features: "289 tools, unlimited everything, priority support" },
                 ].map((p) => (
                   <div key={p.plan} className="bg-white/5 rounded-lg p-4 text-center">
                     <h3 className="text-sm font-bold text-[var(--color-neon)]">{p.plan}</h3>

@@ -86,11 +86,11 @@
     "signOut": "Esci"
   },
   "landing": {
-    "badge": "811 strumenti di sicurezza professionali • Conforme al GDPR 🇪🇺",
+    "badge": "289 strumenti di sicurezza professionali • Conforme al GDPR 🇪🇺",
     "headline": "La piattaforma Kali Linux più avanzata d'Europa",
     "headlinePart1": "La Più Avanzata",
     "headlinePart2": "Piattaforma in Europa",
-    "subheadline": "811 strumenti di penetration testing nel tuo browser. Nessuna installazione richiesta. Piattaforma di sicurezza enterprise per standard europei.",
+    "subheadline": "289 strumenti di penetration testing nel tuo browser. Nessuna installazione richiesta. Piattaforma di sicurezza enterprise per standard europei.",
     "startTrial": "Prova Gratuita",
     "startTrial14": "Prova Gratuita - 3 Giorni",
     "startTrialNow": "Inizia la tua prova gratuita ora",
@@ -102,7 +102,7 @@
     "pricingTitle": "Prezzi semplici e trasparenti",
     "pricingSubtitle": "Nessun costo nascosto • Cancella quando vuoi",
     "ctaTitle": "Pronto per iniziare?",
-    "ctaSubtitle": "CyberSec Pro porta 811 strumenti di sicurezza in stile Kali e monitoraggio continuo nel tuo browser. Avvia una prova gratuita sui tuoi target autorizzati.",
+    "ctaSubtitle": "CyberSec Pro porta 289 strumenti di sicurezza in stile Kali e monitoraggio continuo nel tuo browser. Avvia una prova gratuita sui tuoi target autorizzati.",
     "copyright": "© 2026 CyberSec Pro di Semih Kılıç. Tutti i diritti riservati.",
     "viewTools": "Vedi tutti gli strumenti",
     "contactSales": "Contatta le vendite",
@@ -291,7 +291,7 @@
   },
   "tools": {
     "title": "Strumenti di sicurezza",
-    "subtitle": "811 strumenti professionali di penetration testing",
+    "subtitle": "289 strumenti professionali di penetration testing",
     "searchPlaceholder": "Cerca strumenti...",
     "allCategories": "Tutte le categorie",
     "runTool": "Esegui strumento",
@@ -907,7 +907,7 @@
     "section2Title": "2. Descrizione del servizio",
     "section2Body": "CyberSec Pro fornisce una piattaforma cloud di penetration testing con accesso a strumenti di sicurezza per scopi di test autorizzati. Il Servizio include:",
     "section2": {
-      "item1": "Accesso a 811 strumenti di sicurezza Kali Linux tramite interfaccia web",
+      "item1": "Accesso a 289 strumenti di sicurezza Kali Linux tramite interfaccia web",
       "item2": "Capacità di pianificazione ed esecuzione delle scansioni",
       "item3": "Generazione report e tracciamento delle vulnerabilità",
       "item4": "Gestione remota degli agenti per test distribuiti"

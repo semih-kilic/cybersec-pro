@@ -156,7 +156,7 @@ export default function DocsPage() {
                 <div className="grid gap-4 md:grid-cols-2">
                   {[
                     { name: "Quick Scan", desc: "Top 20 tools run in parallel — Nmap, Nikto, WhatWeb, SSL scan, and more. Ideal for a fast security posture overview. Typically completes in 5-15 minutes depending on target size.", color: "var(--color-neon)", time: "5-15 min" },
-                    { name: "Full Scan", desc: "All relevant tools from your plan tier (50-811 tools). Comprehensive assessment covering network, web, wireless, and application attack vectors. Can take 1-4 hours for large targets.", color: "var(--color-cyan)", time: "1-4 hours" },
+                    { name: "Full Scan", desc: "All relevant tools from your plan tier (50-289 tools). Comprehensive assessment covering network, web, wireless, and application attack vectors. Can take 1-4 hours for large targets.", color: "var(--color-cyan)", time: "1-4 hours" },
                     { name: "Custom Scan", desc: "Hand-pick specific tools, configure individual parameters (ports, wordlists, intensity), and save as reusable scan profiles. Full control over every tool argument.", color: "var(--color-purple)", time: "Variable" },
                     { name: "Scheduled Scan", desc: "Set recurring scans — daily, weekly, or monthly. Configure automated alerts via email, webhook, or Slack. Compare results across scan history for trend analysis.", color: "var(--color-orange)", time: "Recurring" },
                   ].map((scan) => (
@@ -259,7 +259,7 @@ export default function DocsPage() {
           <div className="space-y-6">
             <RevealOnScroll>
               <div className="glass-card p-8">
-                <h2 className="text-2xl font-bold text-white mb-2">Tool Arsenal — 811 Verified Kali Linux Tools</h2>
+                <h2 className="text-2xl font-bold text-white mb-2">Tool Arsenal — 289 Verified Kali Linux Tools</h2>
                 <p className="text-sm text-white/50 mb-6">Every tool is verified, containerized, and optimized for cloud execution. Each tool runs in an isolated environment with configurable parameters.</p>
                 <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
                   {[
@@ -327,7 +327,7 @@ export default function DocsPage() {
                     { plan: "Trial (Free)", count: "20", desc: "Basic reconnaissance and scanning", color: "white/60" },
                     { plan: "Starter (€99)", count: "50+", desc: "Core pentesting toolkit", color: "var(--color-neon)" },
                     { plan: "Professional (€299)", count: "200+", desc: "Full offensive arsenal + API", color: "var(--color-cyan)" },
-                    { plan: "Enterprise (€799)", count: "811", desc: "Complete Kali arsenal + custom", color: "var(--color-purple)" },
+                    { plan: "Enterprise (€799)", count: "289", desc: "Complete Kali arsenal + custom", color: "var(--color-purple)" },
                   ].map((p) => (
                     <div key={p.plan} className="glass-card p-4 text-center">
                       <span className="text-2xl font-extrabold font-mono" style={{ color: p.color }}>{p.count}</span>
@@ -666,7 +666,7 @@ DELETE /api/v1/settings/api-keys/:key_id`}</pre>
                 <h2 className="text-xl font-bold text-white mb-4">Platform at a Glance</h2>
                 <div className="grid gap-4 md:grid-cols-4">
                   {[
-                    { metric: "811", label: "Security Tools" },
+                    { metric: "289", label: "Security Tools" },
                     { metric: "61", label: "Categories" },
                     { metric: "Rust", label: "Backend Stack" },
                     { metric: "MIT", label: "Agent License" },
