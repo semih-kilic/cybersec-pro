@@ -1,7 +1,0 @@
-HTTP/1.1 200 OK
-Server: Apache/2.4.7 (Ubuntu)
-Accept-Ranges: bytes
-Vary: Accept-Encoding
-Connection: close
-Content-Type: text/html
-
