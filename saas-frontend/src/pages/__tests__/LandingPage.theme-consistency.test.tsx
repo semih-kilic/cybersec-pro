@@ -43,7 +43,7 @@ const TestLandingPageElements: React.FC = () => (
         World-Class <span className="text-neon-green">Cybersecurity</span>
       </h1>
       <p className="text-cyber-text-secondary font-terminal">
-        Access <span className="text-neon-green">165+ verified security tools</span>
+        Access <span className="text-neon-green">1,379 verified security tools</span>
       </p>
       <button className="btn-neon-green">Initialize System</button>
       <button className="btn-neon-red">Watch Demo</button>
@@ -53,7 +53,7 @@ const TestLandingPageElements: React.FC = () => (
     <section className="bg-cyber-bg-secondary">
       <div className="card-cyberpunk">
         <h3 className="text-cyber-text-primary font-heading">Advanced Security Testing</h3>
-        <p className="text-cyber-text-secondary font-terminal">165+ verified cybersecurity tools</p>
+        <p className="text-cyber-text-secondary font-terminal">1,379 verified cybersecurity tools</p>
         <div className="text-neon-red font-terminal">root@kali:~# nmap -sS -O target</div>
       </div>
     </section>
