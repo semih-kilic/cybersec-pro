@@ -126,6 +126,25 @@ pub async fn execute_scan(
     let tx_clone = tx.clone();
     let scan_id_owned = scan_id.to_string();
 
+    // Spawn heartbeat task for local execution
+    let heartbeat_tx = tx.clone();
+    let heartbeat_scan_id = scan_id.to_string();
+    let heartbeat_handle = tokio::spawn(async move {
+        let mut counter = 0u32;
+        loop {
+            tokio::time::sleep(std::time::Duration::from_secs(5)).await;
+            counter += 1;
+            let elapsed = counter * 5;
+            let _ = heartbeat_tx.send(serde_json::json!({
+                "type": "heartbeat",
+                "scan_id": heartbeat_scan_id,
+                "line": format!("⏳ Scan in progress... ({}s elapsed)", elapsed),
+                "data": format!("⏳ Scan in progress... ({}s elapsed)", elapsed),
+                "heartbeat": true
+            }).to_string());
+        }
+    });
+
     // Per-tool runtime override (defaults to 900s); slow tools like nikto/gitleaks get more headroom.
     let max_runtime_secs = get_tool_max_runtime_secs(tool_name);
 
@@ -199,6 +218,9 @@ pub async fn execute_scan(
         let _ = child.kill().await;
         return Err(anyhow!("Scan timed out after {} seconds", max_runtime_secs));
     }
+
+    // Stop heartbeat
+    heartbeat_handle.abort();
 
     let status = child.wait().await?;
     let exit_code = status.code();
