@@ -300,6 +300,7 @@ async fn monitor_scan_engine(
     let mut latest_output: Vec<String> = Vec::new();
     let mut streamed_lines = 0usize;
     let mut status_failures = 0u8;
+    let mut heartbeat_counter: u32 = 0;
 
     loop {
         match fetch_scan_engine_output(&client, &engine_url, &remote_scan_id).await {
@@ -380,6 +381,19 @@ async fn monitor_scan_engine(
             .await
             {
                 tracing::warn!("Failed to refresh delegated scan {}: {}", backend_scan_id, error);
+            }
+
+            heartbeat_counter += 1;
+            if heartbeat_counter % 5 == 0 {
+                let elapsed_secs = heartbeat_counter * 2;
+                let _ = scan_tx.send(serde_json::json!({
+                    "type": "heartbeat",
+                    "scan_id": backend_scan_id,
+                    "line": format!("⏳ Scan in progress... ({}s elapsed)", elapsed_secs),
+                    "data": format!("⏳ Scan in progress... ({}s elapsed)", elapsed_secs),
+                    "execution_mode": "delegated",
+                    "heartbeat": true
+                }).to_string());
             }
 
             tokio::time::sleep(Duration::from_secs(2)).await;
