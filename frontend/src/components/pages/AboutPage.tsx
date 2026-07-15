@@ -10,7 +10,7 @@ const ParticleField = dynamic(() => import("@/components/three/ParticleField"), 
 
 const stats = [
   { value: "2024", label: "Founded" },
-  {value: "1,379", label: "Kali Tools" },
+  {value: "811", label: "Kali Tools" },
   { value: "2", label: "Continents" },
   { value: "24/7", label: "Scanning" },
 ];
@@ -18,7 +18,7 @@ const stats = [
 const certifications = ["CEH", "MS Azure", "AWS", "CS50X", "15y ITS"];
 
 const values = [
-  { icon: Shield, title: "Accessibility", desc: "1,379 verified Kali tools accessible through your browser. Plans start free — no VMs, no CLI dependencies, no complex setup." },
+  { icon: Shield, title: "Accessibility", desc: "811 verified Kali tools accessible through your browser. Plans start free — no VMs, no CLI dependencies, no complex setup." },
   { icon: BookOpen, title: "Transparency", desc: "Every scan produces reproducible output. Raw results alongside parsed summaries so you can verify and audit every finding." },
   { icon: Lock, title: "Privacy & Trust", desc: "AES-256 encryption at rest, TLS 1.3 in transit. Multi-tenant isolation ensures your scan data stays yours." },
   { icon: Clock, title: "Continuous Protection", desc: "Scheduled scans, 24/7 monitoring, and real-time WebSocket alerts keep you ahead of emerging threats." },
@@ -234,7 +234,7 @@ export default function AboutPage() {
         <RevealOnScroll>
           <div className="glass-card bg-gradient-to-r from-[var(--color-neon)]/5 to-transparent p-8 text-center">
             <h2 className="text-2xl font-bold text-white mb-3">Ready to Secure Your Infrastructure?</h2>
-            <p className="text-sm text-white/50 mb-6">Start scanning with 1,379 professional security tools. No credit card required.</p>
+            <p className="text-sm text-white/50 mb-6">Start scanning with 811 professional security tools. No credit card required.</p>
             <div className="flex items-center justify-center gap-4">
               <a href="/dashboard/login" className="btn-primary text-sm">
                 Start Free Scan
