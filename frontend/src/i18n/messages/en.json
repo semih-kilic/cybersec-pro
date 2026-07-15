@@ -1,7 +1,7 @@
 {
   "meta": {
     "title": "CyberSec Pro — Offensive Security Platform",
-    "description": "Cloud-based offensive security platform with 778 Kali Linux tools. Automated vulnerability scanning, penetration testing, and security assessments."
+    "description": "Cloud-based offensive security platform with 1,379 Kali Linux tools. Automated vulnerability scanning, penetration testing, and security assessments."
   },
   "nav": {
     "features": "Features",
@@ -22,12 +22,12 @@
   "hero": {
     "badge": "Cloud-Based Offensive Security",
     "title": "Offensive Security\nPlatform",
-    "titleHighlight": "778 Tools.",
-    "subtitle": "Run 778 Kali Linux tools across 61 categories from your browser. No setup. No infrastructure. Just results.",
+    "titleHighlight": "1,379 Tools.",
+    "subtitle": "Run 1,379 Kali Linux tools across 61 categories from your browser. No setup. No infrastructure. Just results.",
     "cta": "Start Free Scan",
     "ctaSecondary": "View Security Tools",
     "stats": {
-      "tools": "778",
+      "tools": "1,379",
       "toolsLabel": "Security Tools",
       "categories": "61",
       "categoriesLabel": "Categories",
@@ -47,7 +47,7 @@
         "description": "Configure and run complex security scans with a few clicks. Schedule recurring assessments."
       },
       "tools": {
-        "title": "778 Kali Tools",
+        "title": "1,379 Kali Tools",
         "description": "Access the complete Kali Linux arsenal — from Nmap to Metasploit, Burp Suite to SQLMap."
       },
       "reports": {
@@ -84,7 +84,7 @@
         "price": "€0",
         "period": "3 days",
         "features": [
-          "All 778 security tools",
+          "All 1,379 security tools",
           "3 scans per day",
           "1 concurrent scan",
           "PDF report with findings",
@@ -97,7 +97,7 @@
         "price": "€29",
         "period": "/month",
         "features": [
-          "All 778 security tools",
+          "All 1,379 security tools",
           "30 scans per month",
           "2 concurrent scans",
           "1 domain/application",
@@ -114,7 +114,7 @@
         "price": "€99",
         "period": "/month",
         "features": [
-          "All 778 security tools",
+          "All 1,379 security tools",
           "250 scans per month",
           "5 concurrent scans",
           "Up to 5 domains/applications",
@@ -134,7 +134,7 @@
         "price": "€349",
         "period": "/month",
         "features": [
-          "All 778 security tools",
+          "All 1,379 security tools",
           "5,000 scans per month",
           "Unlimited concurrent scans",
           "Unlimited domains/applications",
@@ -156,7 +156,7 @@
   },
   "tools": {
     "badge": "Security Arsenal",
-    "title": "778 Tools. 61 Categories.",
+    "title": "1,379 Tools. 61 Categories.",
     "subtitle": "Every tool from the Kali Linux distribution, ready to run in your browser.",
     "searchPlaceholder": "Search tools...",
     "allCategories": "All",
@@ -181,7 +181,7 @@
       },
       "q3": {
         "q": "How many tools are available?",
-        "a": "CyberSec Pro provides 778 Kali Linux tools across 61 categories, including Nmap, Metasploit, Burp Suite, SQLMap, Nikto, Hydra, and many more. Tool availability depends on your plan tier."
+        "a": "CyberSec Pro provides 1,379 Kali Linux tools across 61 categories, including Nmap, Metasploit, Burp Suite, SQLMap, Nikto, Hydra, and many more. Tool availability depends on your plan tier."
       },
       "q4": {
         "q": "What scan types are available?",
@@ -227,7 +227,7 @@
     "button": "Start Free Scan"
   },
   "footer": {
-    "description": "Cloud-based offensive security platform. 778 Kali Linux tools across 61 categories.",
+    "description": "Cloud-based offensive security platform. 1,379 Kali Linux tools across 61 categories.",
     "platform": "Platform",
     "company": "Company",
     "legal": "Legal",

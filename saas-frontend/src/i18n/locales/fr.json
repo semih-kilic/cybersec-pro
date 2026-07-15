@@ -86,11 +86,11 @@
     "signOut": "Déconnexion"
   },
   "landing": {
-    "badge": "778 outils de sécurité professionnels • Conforme au RGPD 🇪🇺",
+    "badge": "1,379 outils de sécurité professionnels • Conforme au RGPD 🇪🇺",
     "headline": "La plateforme Kali Linux la plus avancée d'Europe",
     "headlinePart1": "La Plus Avancée",
     "headlinePart2": "Plateforme en Europe",
-    "subheadline": "778 outils de test d'intrusion dans votre navigateur. Aucune installation requise. Plateforme de test de sécurité de niveau entreprise.",
+    "subheadline": "1,379 outils de test d'intrusion dans votre navigateur. Aucune installation requise. Plateforme de test de sécurité de niveau entreprise.",
     "startTrial": "Essai gratuit",
     "startTrial14": "Essai Gratuit - 3 Jours",
     "startTrialNow": "Commencez votre essai gratuit",
@@ -102,7 +102,7 @@
     "pricingTitle": "Tarification simple et transparente",
     "pricingSubtitle": "Sans frais cachés • Annulation à tout moment",
     "ctaTitle": "Prêt à commencer ?",
-    "ctaSubtitle": "CyberSec Pro apporte 778 outils de sécurité de type Kali et la surveillance continue dans votre navigateur. Démarrez un essai gratuit contre vos propres cibles autorisées.",
+    "ctaSubtitle": "CyberSec Pro apporte 1,379 outils de sécurité de type Kali et la surveillance continue dans votre navigateur. Démarrez un essai gratuit contre vos propres cibles autorisées.",
     "copyright": "© 2026 CyberSec Pro par Semih Kılıç. Tous droits réservés.",
     "viewTools": "Voir tous les outils",
     "contactSales": "Contacter les ventes",
@@ -291,7 +291,7 @@
   },
   "tools": {
     "title": "Outils de sécurité",
-    "subtitle": "778 outils professionnels de test d'intrusion",
+    "subtitle": "1,379 outils professionnels de test d'intrusion",
     "searchPlaceholder": "Rechercher des outils...",
     "allCategories": "Toutes les catégories",
     "runTool": "Exécuter l'outil",
@@ -907,7 +907,7 @@
     "section2Title": "2. Description du service",
     "section2Body": "CyberSec Pro fournit une plateforme de tests d'intrusion cloud avec accès à des outils de sécurité pour des finalités de test autorisées. Le Service comprend :",
     "section2": {
-      "item1": "Accès à 778 outils de sécurité Kali Linux via interface web",
+      "item1": "Accès à 1,379 outils de sécurité Kali Linux via interface web",
       "item2": "Planification et exécution des analyses",
       "item3": "Génération de rapports et suivi des vulnérabilités",
       "item4": "Gestion d'agents distants pour les tests distribués"

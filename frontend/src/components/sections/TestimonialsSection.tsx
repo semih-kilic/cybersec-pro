@@ -160,7 +160,7 @@ export default function TestimonialsSection() {
             <div>
               <p className="text-sm font-semibold text-white">Stay protected against emerging threats</p>
               <p className="text-xs text-white/40 mt-1">
-                CyberSec Pro continuously monitors threat feeds and updates its 778 tools to protect against the latest vulnerabilities.
+                CyberSec Pro continuously monitors threat feeds and updates its 1,379 tools to protect against the latest vulnerabilities.
               </p>
             </div>
             <a

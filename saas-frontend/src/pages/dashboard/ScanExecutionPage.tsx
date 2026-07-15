@@ -569,16 +569,26 @@ export function ScanExecutionPage() {
 
   // Severity counts derived from business results
   const severityCounts = (() => {
-    const s = businessResults?.summary || {};
-    return {
-      critical: Number(s.critical) || 0,
-      high: Number(s.high) || 0,
-      medium: Number(s.medium) || 0,
-      low: Number(s.low) || 0,
-      info: Number(s.info) || 0,
-    } as Record<Severity, number>;
+    const findings = businessResults?.findings || [];
+    const counts: Record<Severity, number> = { critical: 0, high: 0, medium: 0, low: 0, info: 0 };
+    for (const f of findings) {
+      const sev = (f.severity || 'info').toLowerCase() as Severity;
+      if (sev in counts) counts[sev]++;
+    }
+    // Fallback to summary if no findings array
+    if (findings.length === 0) {
+      const s = businessResults?.summary || {};
+      return {
+        critical: Number(s.critical) || 0,
+        high: Number(s.high) || 0,
+        medium: Number(s.medium) || 0,
+        low: Number(s.low) || 0,
+        info: Number(s.info) || 0,
+      } as Record<Severity, number>;
+    }
+    return counts;
   })();
-  const severityTotal = SEVERITY_KEYS.reduce((sum, k) => sum + (severityCounts[k] || 0), 0);
+  const severityTotal = businessResults?.findings?.length ?? SEVERITY_KEYS.reduce((sum, k) => sum + (severityCounts[k] || 0), 0);
   const rawSecurityScore = businessResults?.summary?.score;
   const securityScore = (typeof rawSecurityScore === 'number' && Number.isFinite(rawSecurityScore))
     ? Math.max(0, Math.min(100, rawSecurityScore))
