@@ -17,14 +17,7 @@ const CATEGORY_COLORS: Record<string, string> = {
   Wireless: "#ffd166",
 };
 
-const CATEGORY_ICONS: Record<string, typeof Shield> = {
-  Tools: Terminal,
-  Security: Shield,
-  DevSecOps: Code2,
-  Tutorials: Bug,
-  Guides: Server,
-  Wireless: Wifi,
-};
+
 
 interface BlogPost {
   slug: string;
@@ -687,6 +680,8 @@ Hashcat is essential for password security auditing. Use it to verify password p
     `,
   },
 };
+
+function formatDate(dateStr: string, locale: string) {
 
   return new Date(dateStr).toLocaleDateString(locale === "tr" ? "tr-TR" : locale === "de" ? "de-DE" : "en-US", {
     month: "long",
