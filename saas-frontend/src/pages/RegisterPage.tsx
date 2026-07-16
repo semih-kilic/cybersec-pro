@@ -5,7 +5,6 @@ import { useTranslation } from 'react-i18next';
 import MatrixRainBg from '../components/ui/MatrixRainBg';
 import { CountryFlags } from '../components/CountryFlags';
 
-// OAuth Configuration
 const GOOGLE_CLIENT_ID = '547951331800-kqkuc6aohfr7ptt26p38mnqfdvt7b6mu.apps.googleusercontent.com';
 const GITHUB_CLIENT_ID = 'Ov23lizk4YnG8pDKXpWV';
 
@@ -24,8 +23,8 @@ export function RegisterPage() {
   const [verificationSent, setVerificationSent] = useState(false);
   const [verificationEmail, setVerificationEmail] = useState('');
   const [resendStatus, setResendStatus] = useState<'idle' | 'sending' | 'sent' | 'error'>('idle');
-  const { register: _register } = useAuth();  // unused after V13 email verification flow
-  void _register; // suppress unused variable warning
+  const { register: _register } = useAuth();
+  void _register;
   const navigate = useNavigate();
   const { t } = useTranslation();
 
@@ -66,7 +65,6 @@ export function RegisterPage() {
     setLoading(true);
 
     try {
-      // V13: Registration now requires email verification
       const res = await fetch('/api/v1/auth/register', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -82,11 +80,9 @@ export function RegisterPage() {
       const data = await res.json();
       
       if (res.ok && data.requires_verification) {
-        // Show verification message instead of redirecting
         setVerificationSent(true);
         setVerificationEmail(formData.email);
       } else if (res.ok && data.access_token) {
-        // Legacy: if server returns token directly (OAuth users)
         localStorage.setItem('access_token', data.access_token);
         localStorage.setItem('user', JSON.stringify(data.user));
         navigate('/dashboard');
@@ -103,7 +99,6 @@ export function RegisterPage() {
   return (
     <div className="min-h-screen flex">
       <MatrixRainBg />
-      {/* Verification Sent Screen */}
       {verificationSent && (
         <div className="fixed inset-0 bg-gray-950 z-50 flex items-center justify-center p-6">
           <div className="max-w-md w-full text-center">
@@ -113,7 +108,7 @@ export function RegisterPage() {
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
                 </svg>
               </div>
-              <h2 className="text-2xl font-bold text-white mb-3">{t('auth.checkEmailTitle', 'Check Your Email')} 📧</h2>
+              <h2 className="text-2xl font-bold text-white mb-3">{t('auth.checkEmailTitle', 'Check Your Email')}</h2>
               <p className="text-gray-400 mb-2">
                 {t('auth.checkEmailSentTo', 'We sent a verification link to:')}
               </p>
@@ -121,7 +116,6 @@ export function RegisterPage() {
               <p className="text-gray-500 text-sm mb-6">
                 {t('auth.checkEmailBody', 'Click the link in the email to verify your account and start your 3-day free trial. The link expires in 24 hours.')}
               </p>
-
               <div className="border-t border-gray-800 pt-6 space-y-3">
                 <p className="text-gray-600 text-xs">{t('auth.checkEmailHint', "Didn't receive the email? Check your spam folder or:")}</p>
                 <button
@@ -144,13 +138,12 @@ export function RegisterPage() {
                   disabled={resendStatus === 'sending' || resendStatus === 'sent'}
                   className="px-6 py-2.5 bg-gray-800 hover:bg-gray-700 text-white rounded-lg text-sm font-medium transition disabled:opacity-50"
                 >
-                  {resendStatus === 'sending' ? t('auth.sending', 'Sending...') : resendStatus === 'sent' ? t('auth.sent', '✅ Sent!') : t('auth.resendVerification', 'Resend Verification Email')}
+                  {resendStatus === 'sending' ? t('auth.sending', 'Sending...') : resendStatus === 'sent' ? t('auth.sent', 'Sent!') : t('auth.resendVerification', 'Resend Verification Email')}
                 </button>
                 {resendStatus === 'sent' && (
                   <p className="text-green-400 text-xs">{t('auth.newVerificationSent', 'New verification link sent!')}</p>
                 )}
               </div>
-
               <p className="mt-6 text-gray-600 text-sm">
                 <Link to="/login" className="text-blue-400 hover:text-blue-300">{t('auth.backToLogin', 'Back to Login')}</Link>
               </p>
@@ -158,16 +151,14 @@ export function RegisterPage() {
           </div>
         </div>
       )}
-      {/* Left Panel - Cybersecurity Awareness (40%) */}
+      {/* Left Panel - Fixed contrast */}
       <div className="hidden lg:flex lg:w-[40%] bg-gradient-to-br from-gray-900 via-blue-950 to-gray-900 flex-col justify-between p-12 relative overflow-hidden">
-        {/* Background Effect */}
         <div className="absolute inset-0 opacity-10">
           <div className="absolute top-20 left-10 w-64 h-64 bg-blue-500 rounded-full filter blur-[100px]" />
           <div className="absolute bottom-20 right-10 w-64 h-64 bg-cyan-500 rounded-full filter blur-[100px]" />
         </div>
 
         <div className="relative z-10">
-          {/* Logo */}
           <Link to="/" className="flex items-center gap-3 mb-16">
             <div className="w-10 h-10 rounded-xl bg-gradient-to-r from-cyan-500 to-blue-500 flex items-center justify-center">
               <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -177,15 +168,13 @@ export function RegisterPage() {
             <span className="text-white font-bold text-xl">{t('common.appName', 'CyberSec Pro')}</span>
           </Link>
 
-          {/* Main Headline */}
           <h2 className="text-3xl font-bold text-white leading-tight mb-4">
             {t('register.heroLine1', 'Your Digital Assets')}<br />{t('register.heroLine2', 'Are Under Threat')}
           </h2>
-          <p className="text-gray-400 text-lg mb-10">
+          <p className="text-gray-300 text-lg mb-10">
             {t('register.heroSubtitle', "Cybersecurity isn't just an IT concern — it's a business survival issue.")}
           </p>
 
-          {/* Threat Awareness Cards */}
           <div className="space-y-4">
             <div className="bg-white/5 rounded-xl p-5 border border-red-500/20 backdrop-blur">
               <div className="flex items-start gap-3">
@@ -194,7 +183,7 @@ export function RegisterPage() {
                 </div>
                 <div>
                   <p className="text-white font-semibold text-sm mb-1">{t('register.ransomwareTitle', 'Ransomware Surge')}</p>
-                  <p className="text-gray-400 text-xs leading-relaxed">{t('register.ransomwareBody', 'A ransomware attack hits a business every 11 seconds. Average ransom payments have exceeded $1.5 million.')}</p>
+                  <p className="text-gray-300 text-xs leading-relaxed">{t('register.ransomwareBody', 'A ransomware attack hits a business every 11 seconds. Average ransom payments have exceeded $1.5 million.')}</p>
                 </div>
               </div>
             </div>
@@ -206,7 +195,7 @@ export function RegisterPage() {
                 </div>
                 <div>
                   <p className="text-white font-semibold text-sm mb-1">{t('register.humanFactorTitle', 'The Human Factor')}</p>
-                  <p className="text-gray-400 text-xs leading-relaxed">{t('register.humanFactorBody', '68% of breaches involve a non-malicious human element — phishing, misconfigurations, and weak credentials.')}</p>
+                  <p className="text-gray-300 text-xs leading-relaxed">{t('register.humanFactorBody', '68% of breaches involve a non-malicious human element — phishing, misconfigurations, and weak credentials.')}</p>
                 </div>
               </div>
             </div>
@@ -218,37 +207,33 @@ export function RegisterPage() {
                 </div>
                 <div>
                   <p className="text-white font-semibold text-sm mb-1">{t('register.preventionTitle', 'Prevention Works')}</p>
-                  <p className="text-gray-400 text-xs leading-relaxed">{t('register.preventionBody', 'Organizations with proactive security testing reduce breach costs by an average of $1.76 million.')}</p>
+                  <p className="text-gray-300 text-xs leading-relaxed">{t('register.preventionBody', 'Organizations with proactive security testing reduce breach costs by an average of $1.76 million.')}</p>
                 </div>
               </div>
             </div>
           </div>
 
-          {/* Country flags */}
           <div className="mt-8">
             <CountryFlags />
           </div>
         </div>
 
-        {/* Bottom quote */}
         <div className="relative z-10 mt-12">
           <div className="bg-white/5 rounded-xl p-5 border border-white/10 backdrop-blur">
-            <p className="text-gray-300 text-sm leading-relaxed">
+            <p className="text-gray-200 text-sm leading-relaxed">
               <span className="text-cyan-400 font-semibold">"</span>
               {t('register.quote', 'The question is not whether you will be breached, but when. The only defense is preparation.')}
               <span className="text-cyan-400 font-semibold">"</span>
             </p>
-            <p className="text-gray-500 text-xs mt-3">— {t('register.quoteAuthor', 'Cybersecurity Awareness Principle')}</p>
+            <p className="text-gray-400 text-xs mt-3">— {t('register.quoteAuthor', 'Cybersecurity Awareness Principle')}</p>
           </div>
         </div>
       </div>
 
       {/* Right Panel - Registration Form (60%) */}
       <div className="w-full lg:w-[60%] bg-gray-950 flex items-center justify-center p-6 md:p-12 relative">
-        {/* Subtle glow effect behind form */}
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-cyan-500/5 rounded-full blur-[120px] pointer-events-none" />
         <div className="w-full max-w-md relative z-10">
-          {/* Mobile Logo */}
           <div className="lg:hidden text-center mb-8">
             <Link to="/" className="inline-flex items-center gap-2">
               <div className="w-10 h-10 rounded-xl bg-gradient-to-r from-cyan-500 to-blue-500 flex items-center justify-center">
@@ -263,7 +248,6 @@ export function RegisterPage() {
           <h1 className="text-2xl font-bold text-white mb-1">{t('auth.createAccount')}</h1>
           <p className="text-gray-300 mb-8">{t('auth.registerSubtitle')}</p>
 
-          {/* OAuth Buttons */}
           <div className="grid grid-cols-2 gap-3 mb-6">
             <button
               onClick={handleGoogleLogin}
@@ -288,7 +272,6 @@ export function RegisterPage() {
             </button>
           </div>
 
-          {/* Divider */}
           <div className="relative my-6">
             <div className="absolute inset-0 flex items-center">
               <div className="w-full border-t border-gray-800"></div>
@@ -298,7 +281,6 @@ export function RegisterPage() {
             </div>
           </div>
 
-          {/* Form */}
           <form onSubmit={handleSubmit} className="space-y-4">
             {error && (
               <div className="bg-red-500/10 border border-red-500/30 rounded-lg p-3 text-red-400 text-sm">
@@ -383,7 +365,6 @@ export function RegisterPage() {
               />
             </div>
 
-            {/* Terms */}
             <label htmlFor="acceptTerms" className="flex items-start gap-3 cursor-pointer">
               <input
                 id="acceptTerms"
@@ -420,7 +401,6 @@ export function RegisterPage() {
             </Link>
           </p>
 
-          {/* Back to Home (mobile) */}
           <div className="mt-4 text-center lg:hidden">
             <Link to="/" className="text-gray-600 hover:text-gray-400 text-xs">
               {'<- '}{t('auth.backToHome')}

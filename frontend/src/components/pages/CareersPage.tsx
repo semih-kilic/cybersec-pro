@@ -3,72 +3,73 @@
 import { useTranslations } from "next-intl";
 import RevealOnScroll from "@/components/animations/RevealOnScroll";
 import CyberRadar from "@/components/three/CyberRadar";
-import { MapPin, Briefcase, Laptop, Coins, GraduationCap, Monitor, Heart, Shield, Send } from "lucide-react";
+import { Handshake, Building2, GraduationCap, Globe, Shield, Mail, ExternalLink, Users, Target, Zap } from "lucide-react";
 
-const jobs = [
+const partnerships = [
   {
-    title: "Senior Rust Backend Engineer",
-    department: "Engineering",
-    location: "Remote (EU preferred)",
-    type: "Full-time",
-    description: "Build high-performance security scanning infrastructure with Axum and Tokio.",
-    requirements: ["5+ years Rust (Axum, Tokio, sqlx)", "PostgreSQL & Redis expertise", "REST API design at scale", "Security mindset — OWASP awareness"],
+    icon: Building2,
+    title: "Technology Partners",
+    description: "Integrate your security tools, APIs, or platforms with CyberSec Pro. Expand your reach to thousands of security professionals.",
     color: "var(--color-neon)",
+    opportunities: ["API integrations", "Tool marketplace listings", "Co-developed features", "Joint product roadmap"],
   },
   {
-    title: "Frontend Engineer (React/Next.js)",
-    department: "Engineering",
-    location: "Remote",
-    type: "Full-time",
-    description: "Create beautiful, performant interfaces for security professionals worldwide.",
-    requirements: ["3+ years React/Next.js", "TypeScript, TailwindCSS", "Three.js/R3F experience a plus", "Accessibility and performance focus"],
+    icon: GraduationCap,
+    title: "Academic & Research",
+    description: "Partner with us for cybersecurity research, student programs, and academic tool development. Free access for qualifying institutions.",
     color: "var(--color-cyan)",
+    opportunities: ["Free educational licenses", "Research collaborations", "Student internship programs", "Joint publications"],
   },
   {
-    title: "Security Researcher",
-    department: "Security",
-    location: "Remote",
-    type: "Full-time",
-    description: "Research vulnerabilities, develop new scanning techniques, and improve tool integrations.",
-    requirements: ["OSCP, OSCE, or equivalent certification", "Kali Linux & penetration testing expertise", "CVE research experience", "Strong technical writing"],
+    icon: Globe,
+    title: "Channel & Reseller",
+    description: "Resell CyberSec Pro to your clients. Earn competitive margins while providing enterprise-grade security testing to your portfolio.",
     color: "var(--color-purple)",
+    opportunities: ["Competitive revenue share", "Sales training & certification", "Co-marketing support", "Dedicated partner portal"],
   },
   {
-    title: "Detection Engineer",
-    department: "Security",
-    location: "Remote",
-    type: "Full-time",
-    description: "Design and implement detection rules, improve scan accuracy, and reduce false positives.",
-    requirements: ["SIEM/SOAR experience", "Regex & YARA rule writing", "Network protocol analysis", "Python or Rust scripting"],
+    icon: Shield,
+    title: "Security Consultancies",
+    description: "Enhance your penetration testing and security assessment services with CyberSec Pro's 289-tool arsenal and automated reporting.",
     color: "var(--color-orange)",
-  },
-  {
-    title: "DevOps / SRE Engineer",
-    department: "Infrastructure",
-    location: "Remote (EU preferred)",
-    type: "Full-time",
-    description: "Scale our infrastructure to handle millions of security scans with zero downtime.",
-    requirements: ["Kubernetes & Docker orchestration", "CI/CD pipelines (GitHub Actions)", "Monitoring (Prometheus, Grafana)", "Linux systems administration"],
-    color: "#ef476f",
-  },
-  {
-    title: "Product Manager",
-    department: "Product",
-    location: "Remote",
-    type: "Full-time",
-    description: "Define product roadmap, prioritize features, and translate customer needs into engineering specs.",
-    requirements: ["3+ years PM experience (B2B SaaS)", "Cybersecurity domain knowledge", "Data-driven decision making", "Excellent stakeholder communication"],
-    color: "#ffd166",
+    opportunities: ["White-label reports", "Bulk scan pricing", "Custom tool configurations", "Priority support"],
   },
 ];
 
-const perks = [
-  { icon: Laptop, label: "remote", detail: "100% remote — work from anywhere" },
-  { icon: Coins, label: "equity", detail: "Competitive salary + equity options" },
-  { icon: GraduationCap, label: "learning", detail: "€2,000/year learning & conference budget" },
-  { icon: Monitor, label: "hardware", detail: "MacBook Pro + security lab setup" },
-  { icon: Heart, label: "health", detail: "Health insurance & wellness support" },
-  { icon: Shield, label: "security", detail: "Access to all 289 tools for research" },
+const sponsorTiers = [
+  {
+    name: "Community",
+    contribution: "Open Source Contributions",
+    benefits: [
+      "Recognition on our GitHub and website",
+      "Priority feature requests",
+      "Direct communication channel with the team",
+    ],
+    color: "var(--color-neon)",
+  },
+  {
+    name: "Gold Sponsor",
+    contribution: "€5,000+ / year",
+    benefits: [
+      "Logo on the website and documentation",
+      "Quarterly product briefings",
+      "Co-branded security research publications",
+      "Dedicated partner success manager",
+    ],
+    color: "#ffd166",
+  },
+  {
+    name: "Platinum Sponsor",
+    contribution: "€15,000+ / year",
+    benefits: [
+      "All Gold benefits",
+      "Joint marketing campaigns",
+      "Speaking slots at CyberSec Pro events",
+      "Custom integration development",
+      "Early access to new features",
+    ],
+    color: "#e0e0e0",
+  },
 ];
 
 export default function CareersPage() {
@@ -85,53 +86,29 @@ export default function CareersPage() {
         </RevealOnScroll>
       </section>
 
-      {/* Perks */}
-      <section className="mx-auto grid max-w-5xl grid-cols-2 gap-4 px-6 pb-16 md:grid-cols-3">
-        {perks.map(({ icon: Icon, label, detail }) => (
-          <RevealOnScroll key={label}>
-            <div className="glass-card flex flex-col items-center gap-3 p-6 text-center">
-              <Icon size={28} className="text-[var(--color-neon)]" />
-              <span className="text-sm font-semibold text-white">{t(`perks.${label}`)}</span>
-              <span className="text-xs text-white/40">{detail}</span>
-            </div>
-          </RevealOnScroll>
-        ))}
-      </section>
-
-      {/* Open Positions */}
+      {/* Partnership Types */}
       <section className="mx-auto max-w-5xl px-6 pb-16">
         <RevealOnScroll>
-          <h2 className="mb-8 text-2xl font-bold">{t("openPositions")}</h2>
+          <h2 className="mb-8 text-2xl font-bold text-center">Partner With Us</h2>
         </RevealOnScroll>
-        <div className="flex flex-col gap-4">
-          {jobs.map((job) => (
-            <RevealOnScroll key={job.title}>
-              <div className="glass-card p-6">
-                <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
-                  <div className="flex-1">
-                    <div className="flex items-center gap-3 mb-2">
-                      <h3 className="text-lg font-bold">{job.title}</h3>
-                      <span className="rounded-full px-2.5 py-0.5 text-[10px] font-semibold" style={{ background: `${job.color}20`, color: job.color }}>
-                        {job.department}
-                      </span>
-                    </div>
-                    <p className="text-sm text-white/50">{job.description}</p>
-                    <div className="mt-2 flex items-center gap-4 text-xs text-white/40">
-                      <span className="flex items-center gap-1"><MapPin size={12} /> {job.location}</span>
-                      <span className="flex items-center gap-1"><Briefcase size={12} /> {job.type}</span>
-                    </div>
-                    <div className="mt-3 flex flex-wrap gap-2">
-                      {job.requirements.map((req) => (
-                        <span key={req} className="rounded-md bg-white/5 px-2 py-1 text-[11px] text-white/40">{req}</span>
-                      ))}
-                    </div>
+        <div className="grid gap-6 md:grid-cols-2">
+          {partnerships.map(({ icon: Icon, title, description, color, opportunities }) => (
+            <RevealOnScroll key={title}>
+              <div className="glass-card flex flex-col gap-4 p-6 h-full">
+                <div className="flex items-center gap-3">
+                  <div className="flex h-10 w-10 items-center justify-center rounded-lg" style={{ background: `${color}15` }}>
+                    <Icon size={20} style={{ color }} />
                   </div>
-                  <a
-                    href={`mailto:info@cyber-sec-pro.com?subject=Application: ${job.title}`}
-                    className="btn-primary mt-3 justify-center text-xs md:mt-0 flex-shrink-0"
-                  >
-                    {t("apply")}
-                  </a>
+                  <h3 className="text-lg font-bold text-white">{title}</h3>
+                </div>
+                <p className="text-sm text-white/50 leading-relaxed">{description}</p>
+                <div className="mt-auto space-y-2">
+                  {opportunities.map((opp) => (
+                    <div key={opp} className="flex items-center gap-2 text-xs text-white/40">
+                      <Zap size={10} style={{ color }} className="shrink-0" />
+                      {opp}
+                    </div>
+                  ))}
                 </div>
               </div>
             </RevealOnScroll>
@@ -139,19 +116,76 @@ export default function CareersPage() {
         </div>
       </section>
 
-      {/* How to Apply */}
+      {/* Sponsorship Tiers */}
+      <section className="mx-auto max-w-5xl px-6 pb-16">
+        <RevealOnScroll>
+          <h2 className="mb-8 text-2xl font-bold text-center">Sponsorship Opportunities</h2>
+          <p className="text-center text-sm text-white/40 mb-8 max-w-lg mx-auto">
+            Support the development of open-source security tools and get visibility in the cybersecurity community.
+          </p>
+        </RevealOnScroll>
+        <div className="grid gap-6 md:grid-cols-3">
+          {sponsorTiers.map(({ name, contribution, benefits, color }) => (
+            <RevealOnScroll key={name}>
+              <div className="glass-card flex flex-col gap-4 p-6 h-full" style={{ borderColor: `${color}20` }}>
+                <div className="flex items-center gap-2">
+                  <div className="h-2.5 w-2.5 rounded-full" style={{ background: color }} />
+                  <h3 className="font-bold" style={{ color }}>{name}</h3>
+                </div>
+                <p className="text-sm text-white/50">{contribution}</p>
+                <div className="mt-auto space-y-2">
+                  {benefits.map((b) => (
+                    <div key={b} className="flex items-start gap-2 text-xs text-white/40">
+                      <span className="mt-1 h-1 w-1 shrink-0 rounded-full" style={{ background: color }} />
+                      {b}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </RevealOnScroll>
+          ))}
+        </div>
+      </section>
+
+      {/* Why Partner */}
+      <section className="mx-auto max-w-5xl px-6 pb-16">
+        <RevealOnScroll>
+          <h2 className="mb-8 text-2xl font-bold text-center">Why Partner With CyberSec Pro</h2>
+        </RevealOnScroll>
+        <div className="grid gap-4 md:grid-cols-3">
+          {[
+            { icon: Users, label: "Growing User Base", detail: "Join a rapidly expanding community of security professionals using our platform daily." },
+            { icon: Target, label: "Real-World Impact", detail: "Your tools and integrations help organizations identify and fix vulnerabilities faster." },
+            { icon: Handshake, label: "Mutual Growth", detail: "We invest in partnerships that create value for both parties and the security ecosystem." },
+          ].map(({ icon: Icon, label, detail }) => (
+            <RevealOnScroll key={label}>
+              <div className="glass-card flex flex-col items-center gap-3 p-6 text-center">
+                <Icon size={28} className="text-[var(--color-neon)]" />
+                <span className="text-sm font-semibold text-white">{label}</span>
+                <span className="text-xs text-white/40 leading-relaxed">{detail}</span>
+              </div>
+            </RevealOnScroll>
+          ))}
+        </div>
+      </section>
+
+      {/* Contact */}
       <section className="mx-auto max-w-5xl px-6 pb-28">
         <RevealOnScroll>
-          <div className="glass-card p-8 border-[var(--color-neon)]/20 text-center">
-            <Send size={32} className="mx-auto text-[var(--color-neon)] mb-4" />
-            <h2 className="text-2xl font-bold text-white mb-3">How to Apply</h2>
+          <div className="glass-card p-8 text-center" style={{ borderColor: "var(--color-neon)/20" }}>
+            <Mail size={32} className="mx-auto text-[var(--color-neon)] mb-4" />
+            <h2 className="text-2xl font-bold text-white mb-3">Get In Touch</h2>
             <p className="text-sm text-white/50 max-w-lg mx-auto leading-relaxed">
-              Send your CV, a brief cover letter, and links to relevant work (GitHub, portfolio, or published research) to:
+              Interested in partnering, sponsoring, or collaborating? We&apos;d love to hear from you.
+              Reach out and let&apos;s explore how we can work together.
             </p>
-            <a href="mailto:info@cyber-sec-pro.com" className="mt-4 inline-block text-lg font-mono text-[var(--color-neon)] hover:underline">
-              support@cyber-sec-pro.com
+            <a
+              href="mailto:partnerships@cyber-sec-pro.com?subject=Partnership%20Inquiry"
+              className="mt-6 inline-block text-lg font-mono text-[var(--color-neon)] hover:underline"
+            >
+              partnerships@cyber-sec-pro.com
             </a>
-            <p className="mt-3 text-xs text-white/30">We review all applications within 5 business days. No recruiters, please.</p>
+            <p className="mt-3 text-xs text-white/30">We respond to all inquiries within 3 business days.</p>
           </div>
         </RevealOnScroll>
       </section>
