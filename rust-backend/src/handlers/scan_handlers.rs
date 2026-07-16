@@ -1366,7 +1366,6 @@ pub async fn scan_output_stream(
                 "type": "complete",
                 "scan_id": scan_id,
                 "status": status,
-                "exit_code": exit_code,
                 "result": {
                     "status": status,
                 },
@@ -1564,4 +1563,5 @@ pub async fn create_scan(
 ) -> impl IntoResponse {
     start_scan(state, auth, headers, body).await
 }
+
 
