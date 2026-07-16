@@ -16,6 +16,14 @@ const CATEGORY_COLORS: Record<string, string> = {
   Guides: "#ef476f",
   Wireless: "#ffd166",
 };
+const CATEGORY_ICONS: Record<string, typeof Shield> = {
+  Tools: Terminal,
+  Security: Shield,
+  DevSecOps: Code2,
+  Tutorials: Bug,
+  Guides: Server,
+  Wireless: Wifi,
+};
 
 
 
