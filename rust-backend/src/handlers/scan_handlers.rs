@@ -1339,8 +1339,8 @@ pub async fn scan_output_stream(
     // we need to replay the saved output to late subscribers, otherwise the
     // browser sees an empty stream and reports "Stream disconnected
     // unexpectedly".
-    let row: Option<(String, Option<String>, Option<i32>)> = sqlx::query_as(
-        "SELECT status, output, exit_code FROM scans WHERE id = $1"
+    let row: Option<(String, Option<String>)> = sqlx::query_as(
+        "SELECT status, output FROM scans WHERE id = $1"
     )
     .bind(&scan_id)
     .fetch_optional(&state.db)
@@ -1349,7 +1349,7 @@ pub async fn scan_output_stream(
 
     let mut replay: Vec<String> = Vec::new();
     let mut already_complete = false;
-    if let Some((status, output_opt, exit_code)) = row {
+    if let Some((status, output_opt)) = row {
         if let Some(output) = output_opt.filter(|o| !o.trim().is_empty()) {
             for line in output.lines() {
                 replay.push(json!({
@@ -1369,7 +1369,6 @@ pub async fn scan_output_stream(
                 "exit_code": exit_code,
                 "result": {
                     "status": status,
-                    "exit_code": exit_code,
                 },
             }).to_string());
         }
@@ -1565,3 +1564,4 @@ pub async fn create_scan(
 ) -> impl IntoResponse {
     start_scan(state, auth, headers, body).await
 }
+
