@@ -424,6 +424,32 @@ export function ScanExecutionPage() {
     if (status !== 'running') setStreamStatus('idle');
   }, [currentScanId, status]);
 
+  useEffect(() => {
+    if (status !== 'running' || !currentScanId) return;
+    const poll = setInterval(async () => {
+      try {
+        const token = localStorage.getItem('auth_token') || '';
+        const resp = await fetch(`/api/v1/scans/${currentScanId}`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        if (!resp.ok) return;
+        const data = await resp.json();
+        const scan = data?.scan;
+        if (!scan) return;
+        if (scan.status === 'completed' || scan.status === 'failed') {
+          setStatus(scan.status);
+          setProgress(100);
+          setScanStartTime(null);
+          setResult(scan);
+          if (scan.status === 'completed') fetchBusinessResults();
+        }
+      } catch {
+        /* polling error - ignore */
+      }
+    }, 5000);
+    return () => clearInterval(poll);
+  }, [currentScanId, status]);
+
   const handleStartScan = async () => {
     if (!target) {
       setError('Target is required');
@@ -1104,4 +1130,5 @@ export function ScanExecutionPage() {
 }
 
 export default ScanExecutionPage;
+
 
