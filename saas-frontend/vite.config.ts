@@ -22,6 +22,7 @@ export default defineConfig({
   server: {
     port: 3000,
     host: true,
+    allowedHosts: ['cyber-sec-pro.com', 'www.cyber-sec-pro.com', 'app.cyber-sec-pro.com'],
     proxy: {
       '/api': {
         target: 'http://localhost:5001',
