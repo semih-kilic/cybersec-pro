@@ -324,10 +324,10 @@ export default function DocsPage() {
                 <h2 className="text-xl font-bold text-white mb-4">Tool Access by Plan</h2>
                 <div className="grid gap-3 md:grid-cols-4">
                   {[
-                    { plan: "Trial (Free)", count: "20", desc: "Basic reconnaissance and scanning", color: "white/60" },
-                    { plan: "Starter (€99)", count: "50+", desc: "Core pentesting toolkit", color: "var(--color-neon)" },
-                    { plan: "Professional (€299)", count: "200+", desc: "Full offensive arsenal + API", color: "var(--color-cyan)" },
-                    { plan: "Enterprise (€799)", count: "289", desc: "Complete Kali arsenal + custom", color: "var(--color-purple)" },
+                    { plan: "Free Trial", count: "289", desc: "All tools, 1 scan, 3-day trial", color: "white/60" },
+                    { plan: "Starter (€29/mo)", count: "289", desc: "1 domain, weekly scans, reports", color: "var(--color-neon)" },
+                    { plan: "Professional (€99/mo)", count: "289", desc: "5 domains, API, compliance reports", color: "var(--color-cyan)" },
+                    { plan: "Enterprise (€349/mo)", count: "289", desc: "Unlimited, SSO, dedicated support", color: "var(--color-purple)" },
                   ].map((p) => (
                     <div key={p.plan} className="glass-card p-4 text-center">
                       <span className="text-2xl font-extrabold font-mono" style={{ color: p.color }}>{p.count}</span>
@@ -667,7 +667,7 @@ DELETE /api/v1/settings/api-keys/:key_id`}</pre>
                 <div className="grid gap-4 md:grid-cols-4">
                   {[
                     { metric: "289", label: "Security Tools" },
-                    { metric: "61", label: "Categories" },
+                    { metric: "22", label: "Categories" },
                     { metric: "Rust", label: "Backend Stack" },
                     { metric: "MIT", label: "Agent License" },
                   ].map((m) => (
