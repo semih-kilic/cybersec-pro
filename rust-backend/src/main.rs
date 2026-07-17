@@ -136,6 +136,24 @@ async fn main() -> anyhow::Result<()> {
         });
     }
 
+    // Spawn Stuck Scan Detector (checks every 60s for stuck/stale scans)
+    {
+        let db = state.db.clone();
+        tokio::spawn(async move {
+            tokio::time::sleep(std::time::Duration::from_secs(30)).await;
+            services::stuck_scan_detector::run_stuck_scan_detector(db).await;
+        });
+    }
+
+    // Spawn Tool Health Check Loop (daily at 3:00 AM)
+    {
+        let db = state.db.clone();
+        tokio::spawn(async move {
+            tokio::time::sleep(std::time::Duration::from_secs(60)).await;
+            services::tool_health_checker::run_health_check_loop(db).await;
+        });
+    }
+
     // Spawn CyberSec AI worker (autonomous pentest job processor)
     {
         let db = Arc::new(state.db.clone());
@@ -233,6 +251,14 @@ fn build_router(state: Arc<AppState>) -> Router {
         .route(
             "/api/v1/tools/health",
             get(tool_handlers::all_tools_health),
+        )
+        .route(
+            "/api/v1/tools/run-health-check",
+            get(tool_handlers::run_health_check),
+        )
+        .route(
+            "/api/v1/tools/:tool_id/health/history",
+            get(tool_handlers::tool_health_history),
         )
         .route(
             "/api/v1/tools/business-categories",

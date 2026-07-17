@@ -12,7 +12,7 @@ use crate::middleware::auth_middleware::AuthUser;
 use crate::models::Tool;
 use crate::AppState;
 
-// ── Pure helpers (testable without DB) ─────────────────────────────────
+// â”€â”€ Pure helpers (testable without DB) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 /// Human-readable display name for a tool group ID.
 pub fn tool_group_display_name(group: &str) -> &str {
@@ -63,7 +63,7 @@ pub struct ToolQuery {
     pub tool_type: Option<String>,
 }
 
-// ── List Tools ─────────────────────────────────────────────
+// â”€â”€ List Tools â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 pub async fn list_tools(
     State(state): State<Arc<AppState>>,
@@ -88,7 +88,7 @@ pub async fn list_tools(
     let _user_plan_level = crate::services::plan::get_plan_level(&org_plan);
 
     // Build dynamic WHERE clause with PostgreSQL $N placeholders
-    // All tools are accessible to all plans — no plan-based filtering
+    // All tools are accessible to all plans â€” no plan-based filtering
     let mut where_clauses = vec!["is_active = TRUE".to_string()];
     let mut bind_values: Vec<String> = vec![];
     let mut param_idx = 0usize;
@@ -162,7 +162,7 @@ pub async fn list_tools(
     }))
 }
 
-// ── Get Tool ───────────────────────────────────────────────
+// â”€â”€ Get Tool â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 pub async fn get_tool(
     State(state): State<Arc<AppState>>,
@@ -185,9 +185,9 @@ pub async fn get_tool(
     }
 }
 
-// ── Tool Count ─────────────────────────────────────────────
+// â”€â”€ Tool Count â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
-/// Public endpoint — used by the landing page so it must NOT require auth.
+/// Public endpoint â€” used by the landing page so it must NOT require auth.
 pub async fn tools_count(
     State(state): State<Arc<AppState>>,
 ) -> impl IntoResponse {
@@ -233,7 +233,7 @@ pub async fn tools_count(
     }))
 }
 
-// ── Tool Health ────────────────────────────────────────────
+// â”€â”€ Tool Health â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 pub async fn tool_health(
     State(state): State<Arc<AppState>>,
@@ -252,63 +252,67 @@ pub async fn tool_health(
         None => return (StatusCode::NOT_FOUND, Json(json!({"error": "Tool not found"}))).into_response(),
     };
 
-    // Check if binary exists
-    let binary = tool.name.clone();
-    let installed = tokio::process::Command::new("which")
-        .arg(&binary)
-        .output()
-        .await
-        .map(|o| o.status.success())
-        .unwrap_or(false);
+    let binary = tool.binary_name.as_deref().unwrap_or(&tool.name);
+    let result = crate::services::tool_health_checker::check_tool_health_enhanced(
+        &state.db, &tool.id, binary, None,
+    ).await;
 
     (StatusCode::OK, Json(json!({
         "tool": tool.name,
-        "installed": installed,
-        "status": if installed { "healthy" } else { "not_installed" }
+        "tool_id": tool.id,
+        "installed": result.installed,
+        "version": result.version,
+        "status": result.status,
+        "runtime_ok": result.runtime_ok,
+        "runtime_output": result.runtime_output,
+        "response_time_ms": result.response_time_ms,
+        "error_message": result.error_message,
+        "last_health_check": tool.last_health_check,
     }))).into_response()
 }
 
-// ── All Tools Health ───────────────────────────────────────
+// â”€â”€ All Tools Health â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 pub async fn all_tools_health(
     State(state): State<Arc<AppState>>,
     _auth: AuthUser,
 ) -> impl IntoResponse {
-    let tools: Vec<(String, String)> = sqlx::query_as(
-        "SELECT id, name FROM tools WHERE is_active = TRUE AND (tool_type = 'cli' OR tool_type IS NULL)"
+    // Use cached health_status from tools table (updated by daily background check)
+    let tools: Vec<(String, String, Option<String>, Option<String>, Option<chrono::DateTime<chrono::Utc>>)> = sqlx::query_as(
+        "SELECT id, name, health_status, version, last_health_check FROM tools WHERE is_active = TRUE AND tool_type = 'cli'"
     )
     .fetch_all(&state.db)
     .await
     .unwrap_or_default();
 
-    let mut results = Vec::new();
-    let mut installed = 0u32;
-    let mut missing = 0u32;
+    let healthy = tools.iter().filter(|t| t.2.as_deref() == Some("healthy")).count();
+    let degraded = tools.iter().filter(|t| t.2.as_deref() == Some("degraded")).count();
+    let unhealthy = tools.iter().filter(|t| t.2.as_deref() == Some("unhealthy")).count();
+    let not_installed = tools.iter().filter(|t| t.2.as_deref() == Some("not_installed")).count();
+    let unchecked = tools.iter().filter(|t| t.2.is_none()).count();
 
-    for (id, name) in &tools {
-        let ok = tokio::process::Command::new("which")
-            .arg(name)
-            .output()
-            .await
-            .map(|o| o.status.success())
-            .unwrap_or(false);
-        if ok { installed += 1; } else { missing += 1; }
-        results.push(json!({
+    let results: Vec<_> = tools.iter().map(|(id, name, status, version, last_check)| {
+        json!({
             "id": id,
             "name": name,
-            "installed": ok
-        }));
-    }
+            "health_status": status.as_deref().unwrap_or("unchecked"),
+            "version": version,
+            "last_health_check": last_check,
+        })
+    }).collect();
 
     Json(json!({
         "total": tools.len(),
-        "installed": installed,
-        "missing": missing,
+        "healthy": healthy,
+        "degraded": degraded,
+        "unhealthy": unhealthy,
+        "not_installed": not_installed,
+        "unchecked": unchecked,
         "tools": results
     }))
 }
 
-// ── Tools Stats ────────────────────────────────────────────
+// â”€â”€ Tools Stats â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 pub async fn tools_stats(
     State(state): State<Arc<AppState>>,
@@ -337,7 +341,7 @@ pub async fn tools_stats(
     }))
 }
 
-// ── Available Tools (plan-filtered) ────────────────────────
+// â”€â”€ Available Tools (plan-filtered) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 pub async fn available_tools(
     State(state): State<Arc<AppState>>,
@@ -377,7 +381,7 @@ pub async fn available_tools(
     }))
 }
 
-// ── Business Categories ────────────────────────────────────
+// â”€â”€ Business Categories â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 pub async fn business_categories(
     State(state): State<Arc<AppState>>,
@@ -401,7 +405,7 @@ pub async fn business_categories(
     Json(json!({"categories": result}))
 }
 
-// ── Business Category Tools ────────────────────────────────
+// â”€â”€ Business Category Tools â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 pub async fn business_category_tools(
     State(state): State<Arc<AppState>>,
@@ -426,7 +430,7 @@ pub async fn business_category_tools(
     }))
 }
 
-// ── Tool Groups ────────────────────────────────────────────
+// â”€â”€ Tool Groups â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 pub async fn tool_groups(
     State(state): State<Arc<AppState>>,
@@ -455,7 +459,7 @@ pub async fn tool_groups(
     }))
 }
 
-// ── Group Tools ────────────────────────────────────────────
+// â”€â”€ Group Tools â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 pub async fn group_tools(
     State(state): State<Arc<AppState>>,
@@ -479,7 +483,7 @@ pub async fn group_tools(
     }))
 }
 
-// ── Search Tools ───────────────────────────────────────────
+// â”€â”€ Search Tools â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 pub async fn search_tools(
     State(state): State<Arc<AppState>>,
@@ -515,7 +519,7 @@ pub async fn search_tools(
 mod tests {
     use super::{tool_group_display_name, tool_page_params};
 
-    // ── tool_group_display_name ─────────────────────────────────────
+    // â”€â”€ tool_group_display_name â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
     #[test]
     fn tool_group_display_name_returns_correct_label_for_all_known_groups() {
@@ -547,7 +551,7 @@ mod tests {
         assert_eq!(tool_group_display_name("iot"), "iot");
     }
 
-    // ── tool_page_params ────────────────────────────────────────────
+    // â”€â”€ tool_page_params â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
     #[test]
     fn tool_page_params_defaults_when_none() {
@@ -605,3 +609,70 @@ mod tests {
         assert_eq!(offset, 0);
     }
 }
+
+// ── Run Health Check (on-demand) ──────────────────────────
+
+pub async fn run_health_check(
+    State(state): State<Arc<AppState>>,
+    _auth: AuthUser,
+) -> impl IntoResponse {
+    let results = crate::services::tool_health_checker::run_full_health_check(&state.db).await;
+    
+    let healthy = results.iter().filter(|r| r.status == "healthy").count();
+    let degraded = results.iter().filter(|r| r.status == "degraded").count();
+    let unhealthy = results.iter().filter(|r| r.status == "unhealthy").count();
+    let not_installed = results.iter().filter(|r| r.status == "not_installed").count();
+
+    Json(json!({
+        "total": results.len(),
+        "healthy": healthy,
+        "degraded": degraded,
+        "unhealthy": unhealthy,
+        "not_installed": not_installed,
+        "results": results.iter().map(|r| json!({
+            "tool_id": r.tool_id,
+            "status": r.status,
+            "version": r.version,
+            "runtime_ok": r.runtime_ok,
+            "response_time_ms": r.response_time_ms,
+            "error_message": r.error_message,
+        })).collect::<Vec<_>>(),
+    }))
+}
+
+// ── Tool Health History ───────────────────────────────────
+
+pub async fn tool_health_history(
+    State(state): State<Arc<AppState>>,
+    _auth: AuthUser,
+    Path(tool_id): Path<String>,
+) -> impl IntoResponse {
+    let history = sqlx::query_as!(
+        crate::models::tool::ToolHealthCheck,
+        r#"SELECT id, tool_id, check_type, status, installed, version, runtime_ok, 
+                  runtime_output, dependency_ok, dependency_output, response_time_ms, 
+                  error_message, checked_at 
+           FROM tool_health_checks 
+           WHERE tool_id = $1 
+           ORDER BY checked_at DESC 
+           LIMIT 50"#,
+        tool_id
+    )
+    .fetch_all(&state.db)
+    .await
+    .unwrap_or_default();
+
+    Json(json!({
+        "tool_id": tool_id,
+        "history": history.iter().map(|h| json!({
+            "id": h.id,
+            "status": h.status,
+            "version": h.version,
+            "runtime_ok": h.runtime_ok,
+            "response_time_ms": h.response_time_ms,
+            "checked_at": h.checked_at,
+        })).collect::<Vec<_>>(),
+    }))
+}
+
+

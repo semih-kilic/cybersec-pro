@@ -16,3 +16,5 @@ pub mod hackingtool_seed_modern;
 pub mod news_feed;
 pub mod threat_intel;
 pub mod vulnerability_db;
+pub mod tool_health_checker;
+pub mod stuck_scan_detector;

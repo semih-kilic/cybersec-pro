@@ -200,11 +200,15 @@ async fn cancel_scan_on_engine(
 
 async fn persist_scan_output(db: &sqlx::PgPool, scan_id: &str, output_lines: &[String]) {
     let joined_output = output_lines.join("\n");
-    if let Err(error) = sqlx::query("UPDATE scans SET output = $1 WHERE id = $2")
-        .bind(&joined_output)
-        .bind(scan_id)
-        .execute(db)
-        .await
+    let line_count = output_lines.len() as i64;
+    if let Err(error) = sqlx::query(
+        "UPDATE scans SET output = $1, last_output_at = NOW(), total_output_lines = $2 WHERE id = $3"
+    )
+    .bind(&joined_output)
+    .bind(line_count)
+    .bind(scan_id)
+    .execute(db)
+    .await
     {
         tracing::warn!("Failed to persist output for scan {}: {}", scan_id, error);
     }
@@ -225,7 +229,7 @@ async fn finalize_scan(
     agent_id: Option<String>,
 ) {
     if let Err(error) = sqlx::query(
-        "UPDATE scans SET status = $1, output = $2, findings = $3::jsonb, error_log = $4, completed_at = CURRENT_TIMESTAMP \
+        "UPDATE scans SET status = $1, output = $2, findings = $3::jsonb, error_log = $4, completed_at = CURRENT_TIMESTAMP, scan_phase = $6 \
          WHERE id = $5 AND status IN ('pending', 'running')",
     )
     .bind(status)
@@ -233,12 +237,20 @@ async fn finalize_scan(
     .bind(&findings)
     .bind(&error_log)
     .bind(scan_id)
+    .bind(status)
     .execute(db)
     .await
     {
         tracing::error!("Failed to update scan {}: {}", scan_id, error);
     }
 
+    let _ = scan_tx.send(json!({
+        "type": "phase_change",
+        "scan_id": scan_id,
+        "phase": "completed",
+        "status": status,
+        "progress": 100
+    }).to_string());
     let _ = scan_tx.send(json!({
         "type": "complete",
         "scan_id": scan_id,
@@ -990,8 +1002,8 @@ pub async fn start_scan(
         params_json = merge_scan_parameters(&params_json, metadata);
     }
     if let Err(e) = sqlx::query(
-        "INSERT INTO scans (id, organization_id, user_id, tool_id, target, parameters, status, agent_id, project_id, started_at)
-         VALUES ($1, $2, $3, $4, $5, $6::jsonb, 'running', $7, $8, CURRENT_TIMESTAMP)"
+        "INSERT INTO scans (id, organization_id, user_id, tool_id, target, parameters, status, scan_phase, agent_id, project_id, started_at)
+         VALUES ($1, $2, $3, $4, $5, $6::jsonb, 'running', 'initializing', $7, $8, CURRENT_TIMESTAMP)"
     )
     .bind(&scan_id)
     .bind(&org_id)
