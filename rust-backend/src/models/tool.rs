@@ -123,6 +123,23 @@ impl Tool {
     }
 }
 
+#[derive(Debug, Clone, Serialize, Deserialize, sqlx::FromRow)]
+pub struct ToolHealthCheck {
+    pub id: String,
+    pub tool_id: String,
+    pub check_type: String,
+    pub status: String,
+    pub installed: bool,
+    pub version: Option<String>,
+    pub runtime_ok: bool,
+    pub runtime_output: Option<String>,
+    pub dependency_ok: bool,
+    pub dependency_output: Option<String>,
+    pub response_time_ms: Option<i64>,
+    pub error_message: Option<String>,
+    pub checked_at: Option<chrono::DateTime<chrono::Utc>>,
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -224,21 +241,5 @@ mod tests {
         assert_eq!(dr.base.name, "metasploit");
     }
 
-#[derive(Debug, Clone, Serialize, Deserialize, sqlx::FromRow)]
-pub struct ToolHealthCheck {
-    pub id: String,
-    pub tool_id: String,
-    pub check_type: String,
-    pub status: String,
-    pub installed: bool,
-    pub version: Option<String>,
-    pub runtime_ok: bool,
-    pub runtime_output: Option<String>,
-    pub dependency_ok: bool,
-    pub dependency_output: Option<String>,
-    pub response_time_ms: Option<i64>,
-    pub error_message: Option<String>,
-    pub checked_at: Option<chrono::DateTime<chrono::Utc>>,
-}
 
 }

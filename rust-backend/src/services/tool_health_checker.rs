@@ -1,7 +1,7 @@
 use sqlx::PgPool;
 use std::time::Duration;
 use tokio::process::Command;
-use tracing::{info, warn, error};
+use tracing::info;
 
 #[derive(Debug, Clone)]
 pub struct HealthCheckResult {
@@ -172,7 +172,7 @@ async fn persist_health_check(pool: &PgPool, result: &HealthCheckResult) {
 pub async fn run_full_health_check(pool: &PgPool) -> Vec<HealthCheckResult> {
     info!("Starting full health check for all active CLI tools");
 
-    let tools = sqlx::query!(
+    let tools: Vec<(String, Option<String>)> = sqlx::query_as(
         "SELECT id, binary_name FROM tools WHERE is_active = true AND tool_type = 'cli' AND binary_name != ''"
     )
     .fetch_all(pool)
@@ -190,8 +190,8 @@ pub async fn run_full_health_check(pool: &PgPool) -> Vec<HealthCheckResult> {
         let mut handles = Vec::new();
         for tool in chunk {
             let pool_clone = pool.clone();
-            let tool_id = tool.id.clone();
-            let binary = tool.binary_name.clone().unwrap_or_default();
+            let tool_id = tool.0.clone();
+            let binary = tool.1.clone().unwrap_or_default();
             handles.push(tokio::spawn(async move {
                 check_tool_health_enhanced(&pool_clone, &tool_id, &binary, None).await
             }));

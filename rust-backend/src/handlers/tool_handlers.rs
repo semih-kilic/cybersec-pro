@@ -647,17 +647,16 @@ pub async fn tool_health_history(
     _auth: AuthUser,
     Path(tool_id): Path<String>,
 ) -> impl IntoResponse {
-    let history = sqlx::query_as!(
-        crate::models::tool::ToolHealthCheck,
-        r#"SELECT id, tool_id, check_type, status, installed, version, runtime_ok, 
-                  runtime_output, dependency_ok, dependency_output, response_time_ms, 
-                  error_message, checked_at 
-           FROM tool_health_checks 
-           WHERE tool_id = $1 
-           ORDER BY checked_at DESC 
-           LIMIT 50"#,
-        tool_id
+    let history = sqlx::query_as::<_, crate::models::tool::ToolHealthCheck>(
+        "SELECT id, tool_id, check_type, status, installed, version, runtime_ok, \
+         runtime_output, dependency_ok, dependency_output, response_time_ms, \
+         error_message, checked_at \
+         FROM tool_health_checks \
+         WHERE tool_id = $1 \
+         ORDER BY checked_at DESC \
+         LIMIT 50"
     )
+    .bind(&tool_id)
     .fetch_all(&state.db)
     .await
     .unwrap_or_default();
