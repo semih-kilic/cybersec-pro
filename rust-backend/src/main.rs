@@ -563,7 +563,12 @@ fn build_router(state: Arc<AppState>) -> Router {
         .route("/api/v1/community/leaderboard", get(community_handlers::get_leaderboard))
         .route("/api/v1/community/me/rank", get(community_handlers::get_my_rank))
         // ── Phase 23: real Compliance dashboard ───────────────────────────
-        .route("/api/v1/compliance/dashboard", get(compliance_handlers::get_dashboard))
+                .route("/api/v1/compliance/dashboard", get(compliance_handlers::get_dashboard))
+        .route("/api/v1/compliance/frameworks", get(compliance_handlers::list_frameworks))
+        .route("/api/v1/compliance/frameworks/:framework_id", get(compliance_handlers::get_framework_controls))
+        .route("/api/v1/compliance/frameworks/:framework_id/assess", post(compliance_handlers::assess_framework))
+        .route("/api/v1/compliance/frameworks/:framework_id/gap-analysis", get(compliance_handlers::gap_analysis))
+        .route("/api/v1/compliance/posture", get(compliance_handlers::get_posture))
         // ── Phase 1: Security (Login History, IP Whitelist, Audit) ────────
         .route("/api/v1/security/login-history", get(security_handlers::get_login_history))
         .route("/api/v1/security/sessions", get(security_handlers::get_active_sessions))

@@ -214,6 +214,46 @@ async fn persist_scan_output(db: &sqlx::PgPool, scan_id: &str, output_lines: &[S
     }
 }
 
+
+/// Emit a scan phase change via SSE broadcast and update DB
+fn emit_phase_change(
+    tx: &tokio::sync::broadcast::Sender<String>,
+    db: &sqlx::PgPool,
+    scan_id: &str,
+    phase: &str,
+    message: &str,
+) {
+    let phase_num = match phase {
+        "initializing" => 1,
+        "resolving_target" => 2,
+        "preparing_tool" => 3,
+        "executing" => 4,
+        "parsing_output" => 5,
+        "saving_results" => 6,
+        "completed" => 7,
+        _ => 0,
+    };
+    let progress = if phase == "completed" { 100 } else { phase_num * 15 };
+
+    // Broadcast SSE event
+    let _ = tx.send(json!({
+        "type": "phase_change",
+        "scan_id": scan_id,
+        "phase": phase,
+        "phase_num": phase_num,
+        "message": message,
+        "progress": progress
+    }).to_string());
+
+    // Update DB
+    let _ = sqlx::query(
+        "UPDATE scans SET scan_phase = $1, phase_started_at = NOW() WHERE id = $2"
+    )
+    .bind(phase)
+    .bind(scan_id)
+    .execute(db);
+}
+
 async fn finalize_scan(
     db: &sqlx::PgPool,
     scan_tx: &tokio::sync::broadcast::Sender<String>,
@@ -228,16 +268,22 @@ async fn finalize_scan(
     target: &str,
     agent_id: Option<String>,
 ) {
+    // Phase: parsing_output (scan complete, now parsing)
+    emit_phase_change(scan_tx, db, scan_id, "parsing_output", "Scan complete. Parsing output and extracting findings");
+
+    // Phase: saving_results
+    emit_phase_change(scan_tx, db, scan_id, "saving_results", "Saving findings to database and generating reports");
+
     if let Err(error) = sqlx::query(
-        "UPDATE scans SET status = $1, output = $2, findings = $3::jsonb, error_log = $4, completed_at = CURRENT_TIMESTAMP, scan_phase = $6 \
-         WHERE id = $5 AND status IN ('pending', 'running')",
+        "UPDATE scans SET status = $1, output = $2, findings = $3::jsonb, error_log = $4, completed_at = CURRENT_TIMESTAMP, scan_phase = $5 \
+         WHERE id = $6 AND status IN ('pending', 'running')",
     )
     .bind(status)
     .bind(output)
     .bind(&findings)
     .bind(&error_log)
-    .bind(scan_id)
     .bind(status)
+    .bind(scan_id)
     .execute(db)
     .await
     {
@@ -1019,6 +1065,9 @@ pub async fn start_scan(
         return (StatusCode::INTERNAL_SERVER_ERROR, Json(json!({"error": format!("Failed to create scan: {}", e)}))).into_response();
     }
 
+    // Phase: resolving_target (scan record created, now resolving target)
+    emit_phase_change(&state.scan_output_tx, &state.db, &scan_id, "resolving_target", "Validating target and resolving DNS");
+
     // Track usage
     let usage_id = Uuid::new_v4().to_string();
     let _ = sqlx::query(
@@ -1033,6 +1082,9 @@ pub async fn start_scan(
 
     log_audit(&state.db, "scan_start", "scan", "info", Some(&auth.user_id), Some(&org_id),
         Some(json!({"tool": tool.name, "target": target})), Some("scan"), Some(&scan_id), "success", Some(&headers)).await;
+
+    // Phase: preparing_tool (building command and preparing execution)
+    emit_phase_change(&state.scan_output_tx, &state.db, &scan_id, "preparing_tool", "Building scan command and checking tool availability");
 
     // Execute scan asynchronously
     let db = state.db.clone();

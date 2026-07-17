@@ -1,194 +1,244 @@
-use axum::{extract::State, response::IntoResponse, Json};
-use serde_json::json;
+use axum::{
+    extract::{Path, State},
+    http::StatusCode,
+    response::IntoResponse,
+    Json,
+};
+use serde_json::{json, Value as JsonValue};
 use std::sync::Arc;
 
 use crate::middleware::auth_middleware::AuthUser;
 use crate::AppState;
 
-/// Reference framework metadata. These are real publicly-defined frameworks; the
-/// names, versions and category lists are public reference data, not
-/// simulation. We deliberately do NOT publish fake compliance scores — the
-/// posture object below carries real signals computed from the user's data.
-fn frameworks_reference() -> serde_json::Value {
-    json!([
-        {
-            "id": "nist_csf",
-            "name": "NIST CSF 2.0",
-            "fullName": "NIST Cybersecurity Framework 2.0",
-            "version": "2.0",
-            "color": "blue",
-            "categories": [
-                "Govern", "Identify", "Protect", "Detect", "Respond", "Recover"
-            ]
-        },
-        {
-            "id": "owasp_top10",
-            "name": "OWASP Top 10",
-            "fullName": "OWASP Top 10 Web Application Security Risks",
-            "version": "2021",
-            "color": "emerald",
-            "categories": [
-                "Broken Access Control",
-                "Cryptographic Failures",
-                "Injection",
-                "Insecure Design",
-                "Security Misconfiguration",
-                "Vulnerable Components",
-                "Auth Failures",
-                "Data Integrity Failures",
-                "Logging Failures",
-                "SSRF"
-            ]
-        },
-        {
-            "id": "gdpr",
-            "name": "GDPR",
-            "fullName": "General Data Protection Regulation",
-            "version": "2018",
-            "color": "purple",
-            "categories": [
-                "Lawful Processing",
-                "Data Subject Rights",
-                "Data Breach Notification",
-                "DPIA & Records",
-                "Cross-Border Transfers"
-            ]
-        },
-        {
-            "id": "pci_dss",
-            "name": "PCI DSS 4.0",
-            "fullName": "Payment Card Industry Data Security Standard",
-            "version": "4.0",
-            "color": "orange",
-            "categories": [
-                "Network Security",
-                "Account Data Protection",
-                "Vulnerability Management",
-                "Access Control",
-                "Monitoring & Testing",
-                "Security Policy"
-            ]
-        },
-        {
-            "id": "hipaa",
-            "name": "HIPAA",
-            "fullName": "Health Insurance Portability and Accountability Act",
-            "version": "2013",
-            "color": "cyan",
-            "categories": [
-                "Administrative Safeguards",
-                "Physical Safeguards",
-                "Technical Safeguards",
-                "Organizational Requirements",
-                "Breach Notification"
-            ]
-        },
-        {
-            "id": "soc2",
-            "name": "SOC 2",
-            "fullName": "Service Organization Control 2 (Trust Services Criteria)",
-            "version": "Type II",
-            "color": "yellow",
-            "categories": [
-                "Security",
-                "Availability",
-                "Processing Integrity",
-                "Confidentiality",
-                "Privacy"
-            ]
+/// GET /api/v1/compliance/frameworks
+pub async fn list_frameworks(
+    State(state): State<Arc<AppState>>,
+    _auth: AuthUser,
+) -> impl IntoResponse {
+    match crate::services::compliance_mapper::list_frameworks(&state.db).await {
+        Ok(frameworks) => {
+            let total: i64 = frameworks.iter().map(|f| f.total_controls).sum();
+            let tools: i64 = frameworks.iter().map(|f| f.mapped_tools).sum::<i64>() / frameworks.len().max(1) as i64;
+            Json(json!({
+                "frameworks": frameworks.iter().map(|f| json!({
+                    "id": f.framework.id,
+                    "name": f.framework.name,
+                    "short_name": f.framework.short_name,
+                    "version": f.framework.version,
+                    "description": f.framework.description,
+                    "category": f.framework.category,
+                    "total_controls": f.total_controls,
+                    "mapped_tools": f.mapped_tools,
+                })).collect::<Vec<_>>(),
+                "total_frameworks": frameworks.len(),
+                "total_controls": total,
+            }))
         }
-    ])
+        Err(e) => (StatusCode::INTERNAL_SERVER_ERROR, Json(json!({"error": e.to_string()}))).into_response(),
+    }
 }
 
-/// GET /api/v1/compliance/dashboard
-/// Returns reference framework metadata + REAL security posture signals
-/// derived from the user's actual data. No fake scores or hardcoded counts.
-pub async fn get_dashboard(
-    user: AuthUser,
+/// GET /api/v1/compliance/frameworks/:framework_id
+pub async fn get_framework_controls(
     State(state): State<Arc<AppState>>,
+    _auth: AuthUser,
+    Path(framework_id): Path<String>,
 ) -> impl IntoResponse {
-    // Real posture signals from the database
-    let mfa_enabled: (bool,) = sqlx::query_as(
-        "SELECT COALESCE(mfa_enabled, FALSE) FROM users WHERE id = $1"
+    match crate::services::compliance_mapper::get_framework_controls(&state.db, &framework_id).await {
+        Ok(controls) => Json(json!({
+            "framework_id": framework_id,
+            "controls": controls.iter().map(|c| json!({
+                "control_id": c.control.control_id,
+                "title": c.control.title,
+                "description": c.control.description,
+                "category": c.control.category,
+                "subcategory": c.control.subcategory,
+                "severity": c.control.severity,
+                "mapped_tools": c.mapped_tools,
+                "recent_scans": c.scan_results.len(),
+            })).collect::<Vec<_>>(),
+            "total_controls": controls.len(),
+        })),
+        Err(e) => (StatusCode::INTERNAL_SERVER_ERROR, Json(json!({"error": e.to_string()}))).into_response(),
+    }
+}
+
+/// GET /api/v1/compliance/posture
+pub async fn get_posture(
+    State(state): State<Arc<AppState>>,
+    auth: AuthUser,
+) -> impl IntoResponse {
+    let org_id = auth.org_id.clone().unwrap_or_else(|| auth.user_id.clone());
+    match crate::services::compliance_mapper::get_org_posture(&state.db, &org_id).await {
+        Ok(postures) => Json(json!({
+            "organization_id": org_id,
+            "frameworks": postures,
+            "total_frameworks": postures.len(),
+        })),
+        Err(e) => (StatusCode::INTERNAL_SERVER_ERROR, Json(json!({"error": e.to_string()}))).into_response(),
+    }
+}
+
+/// POST /api/v1/compliance/frameworks/:framework_id/assess
+pub async fn assess_framework(
+    State(state): State<Arc<AppState>>,
+    auth: AuthUser,
+    Path(framework_id): Path<String>,
+) -> impl IntoResponse {
+    let org_id = auth.org_id.clone().unwrap_or_else(|| auth.user_id.clone());
+    match crate::services::compliance_mapper::assess_posture(&state.db, &org_id, &framework_id).await {
+        Ok(result) => Json(result),
+        Err(e) => (StatusCode::INTERNAL_SERVER_ERROR, Json(json!({"error": e.to_string()}))).into_response(),
+    }
+}
+
+/// GET /api/v1/compliance/frameworks/:framework_id/gap-analysis
+pub async fn gap_analysis(
+    State(state): State<Arc<AppState>>,
+    auth: AuthUser,
+    Path(framework_id): Path<String>,
+) -> impl IntoResponse {
+    let org_id = auth.org_id.clone().unwrap_or_else(|| auth.user_id.clone());
+
+    // Get all controls
+    let controls: Vec<(String, String, String, Option<String>)> = sqlx::query_as(
+        "SELECT control_id, title, category, severity FROM compliance_controls WHERE framework_id = $1 ORDER BY control_id"
     )
-    .bind(&user.user_id)
-    .fetch_one(&state.db).await.unwrap_or((false,));
+    .bind(&framework_id)
+    .fetch_all(&state.db)
+    .await
+    .unwrap_or_default();
 
-    let total_scans: (i64,) = sqlx::query_as(
-        "SELECT COUNT(*)::bigint FROM scans WHERE user_id = $1"
-    ).bind(&user.user_id).fetch_one(&state.db).await.unwrap_or((0,));
+    // Get tools for this org that have scans
+    let org_tools: Vec<(String, String)> = sqlx::query_as(
+        "SELECT DISTINCT t.id, t.name FROM tools t \
+         JOIN scans s ON s.tool_id = t.id \
+         WHERE s.organization_id = $1 AND s.status = 'completed'"
+    )
+    .bind(&org_id)
+    .fetch_all(&state.db)
+    .await
+    .unwrap_or_default();
 
-    let completed_scans: (i64,) = sqlx::query_as(
-        "SELECT COUNT(*)::bigint FROM scans WHERE user_id = $1 AND status = 'completed'"
-    ).bind(&user.user_id).fetch_one(&state.db).await.unwrap_or((0,));
+    let tool_ids: Vec<String> = org_tools.iter().map(|(id, _)| id.clone()).collect();
 
-    let failed_scans: (i64,) = sqlx::query_as(
-        "SELECT COUNT(*)::bigint FROM scans WHERE user_id = $1 AND status = 'failed'"
-    ).bind(&user.user_id).fetch_one(&state.db).await.unwrap_or((0,));
+    let mut gaps = Vec::new();
+    let mut covered = Vec::new();
 
-    let scans_30d: (i64,) = sqlx::query_as(
-        "SELECT COUNT(*)::bigint FROM scans WHERE user_id = $1 AND created_at > NOW() - INTERVAL '30 days'"
-    ).bind(&user.user_id).fetch_one(&state.db).await.unwrap_or((0,));
+    for (ctrl_id, title, category, severity) in &controls {
+        let has_mapping: (i64,) = sqlx::query_as(
+            "SELECT COUNT(*) FROM compliance_mappings WHERE control_id IN \
+             (SELECT id FROM compliance_controls WHERE framework_id = $1 AND control_id = $2)"
+        )
+        .bind(&framework_id)
+        .bind(ctrl_id)
+        .fetch_one(&state.db)
+        .await
+        .unwrap_or((0,));
 
-    // Audit events for the org (severity-aware)
-    let org_id_opt = user.org_id.clone();
-    let audit_30d: (i64,) = sqlx::query_as(
-        "SELECT COUNT(*)::bigint FROM audit_logs \
-         WHERE ($1::text IS NULL OR organization_id = $1) \
-           AND created_at > NOW() - INTERVAL '30 days'"
-    ).bind(&org_id_opt).fetch_one(&state.db).await.unwrap_or((0,));
+        if has_mapping.0 == 0 {
+            gaps.push(json!({
+                "control_id": ctrl_id,
+                "title": title,
+                "category": category,
+                "severity": severity,
+                "reason": "no_tool_mapping",
+            }));
+        } else if !tool_ids.is_empty() {
+            let has_scan: (i64,) = sqlx::query_as(
+                "SELECT COUNT(*) FROM scans s JOIN tools t ON s.tool_id = t.id \
+                 JOIN compliance_mappings cm ON cm.tool_id = t.id \
+                 JOIN compliance_controls cc ON cm.control_id = cc.id \
+                 WHERE cc.framework_id = $1 AND cc.control_id = $2 AND s.organization_id = $3 AND s.status = 'completed'"
+            )
+            .bind(&framework_id)
+            .bind(ctrl_id)
+            .bind(&org_id)
+            .fetch_one(&state.db)
+            .await
+            .unwrap_or((0,));
 
-    let audit_critical_30d: (i64,) = sqlx::query_as(
-        "SELECT COUNT(*)::bigint FROM audit_logs \
-         WHERE ($1::text IS NULL OR organization_id = $1) \
-           AND severity = 'critical' \
-           AND created_at > NOW() - INTERVAL '30 days'"
-    ).bind(&org_id_opt).fetch_one(&state.db).await.unwrap_or((0,));
-
-    let audit_high_30d: (i64,) = sqlx::query_as(
-        "SELECT COUNT(*)::bigint FROM audit_logs \
-         WHERE ($1::text IS NULL OR organization_id = $1) \
-           AND severity = 'high' \
-           AND created_at > NOW() - INTERVAL '30 days'"
-    ).bind(&org_id_opt).fetch_one(&state.db).await.unwrap_or((0,));
-
-    // Active agents: registered agents with last_seen recent
-    let agents_total: (i64,) = sqlx::query_as(
-        "SELECT COUNT(*)::bigint FROM agents \
-         WHERE ($1::text IS NULL OR organization_id = $1)"
-    ).bind(&org_id_opt).fetch_one(&state.db).await.unwrap_or((0,));
-
-    // last_login timestamp on users (closest signal we have for active sessions)
-    let users_active_30d: (i64,) = sqlx::query_as(
-        "SELECT COUNT(*)::bigint FROM users \
-         WHERE ($1::text IS NULL OR organization_id = $1) \
-           AND last_login > NOW() - INTERVAL '30 days'"
-    ).bind(&org_id_opt).fetch_one(&state.db).await.unwrap_or((0,));
-
-    // Org IP-whitelist count (best-effort; ignore if table missing)
-    let ip_whitelist: (i64,) = sqlx::query_as(
-        "SELECT COUNT(*)::bigint FROM ip_whitelist \
-         WHERE ($1::text IS NULL OR organization_id = $1)"
-    ).bind(&org_id_opt).fetch_one(&state.db).await.unwrap_or((0,));
-
-    let frameworks = frameworks_reference();
+            if has_scan.0 == 0 {
+                gaps.push(json!({
+                    "control_id": ctrl_id,
+                    "title": title,
+                    "category": category,
+                    "severity": severity,
+                    "reason": "not_scanned",
+                }));
+            } else {
+                covered.push(json!({
+                    "control_id": ctrl_id,
+                    "title": title,
+                    "category": category,
+                }));
+            }
+        } else {
+            gaps.push(json!({
+                "control_id": ctrl_id,
+                "title": title,
+                "category": category,
+                "severity": severity,
+                "reason": "no_scans_performed",
+            }));
+        }
+    }
 
     Json(json!({
-        "frameworks": frameworks,
-        "posture": {
-            "mfa_enabled": mfa_enabled.0,
+        "framework_id": framework_id,
+        "total_controls": controls.len(),
+        "covered": covered.len(),
+        "gaps": gaps.len(),
+        "gap_items": gaps,
+        "covered_items": covered,
+    }))
+}
+
+
+/// GET /api/v1/compliance/dashboard
+pub async fn get_dashboard(
+    State(state): State<Arc<AppState>>,
+    auth: AuthUser,
+) -> impl IntoResponse {
+    let org_id = auth.org_id.clone().unwrap_or_else(|| auth.user_id.clone());
+
+    let frameworks: Vec<(String, String, String, Option<String>)> = sqlx::query_as(
+        "SELECT id, name, short_name, version FROM compliance_frameworks WHERE is_active = true ORDER BY name"
+    )
+    .fetch_all(&state.db)
+    .await
+    .unwrap_or_default();
+
+    let posture_data: Vec<JsonValue> = match crate::services::compliance_mapper::get_org_posture(&state.db, &org_id).await {
+        Ok(p) => p,
+        Err(_) => vec![],
+    };
+
+    let recent_scans: (i64,) = sqlx::query_as(
+        "SELECT COUNT(*) FROM scans WHERE organization_id = $1 AND created_at > NOW() - INTERVAL '30 days'"
+    )
+    .bind(&org_id)
+    .fetch_one(&state.db)
+    .await
+    .unwrap_or((0,));
+
+    let total_scans: (i64,) = sqlx::query_as(
+        "SELECT COUNT(*) FROM scans WHERE organization_id = $1"
+    )
+    .bind(&org_id)
+    .fetch_one(&state.db)
+    .await
+    .unwrap_or((0,));
+
+    Json(json!({
+        "frameworks": frameworks.iter().map(|(id, name, short, ver)| json!({
+            "id": id, "name": name, "short_name": short, "version": ver
+        })).collect::<Vec<_>>(),
+        "posture": posture_data,
+        "stats": {
+            "total_frameworks": frameworks.len(),
+            "recent_scans": recent_scans.0,
             "total_scans": total_scans.0,
-            "completed_scans": completed_scans.0,
-            "failed_scans": failed_scans.0,
-            "scans_30d": scans_30d.0,
-            "audit_events_30d": audit_30d.0,
-            "audit_critical_30d": audit_critical_30d.0,
-            "audit_high_30d": audit_high_30d.0,
-            "agents_total": agents_total.0,
-            "users_active_30d": users_active_30d.0,
-            "ip_whitelist_entries": ip_whitelist.0,
         },
-        "assessment_status": "not_assessed",
-        "note": "Compliance scoring requires a formal assessment. Frameworks listed are reference data only; per-control scores are not auto-generated."
-    })).into_response()
+    }))
 }
