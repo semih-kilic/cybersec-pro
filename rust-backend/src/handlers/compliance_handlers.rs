@@ -32,7 +32,7 @@ pub async fn list_frameworks(
                 })).collect::<Vec<_>>(),
                 "total_frameworks": frameworks.len(),
                 "total_controls": total,
-            }))
+            })).into_response()
         }
         Err(e) => (StatusCode::INTERNAL_SERVER_ERROR, Json(json!({"error": e.to_string()}))).into_response(),
     }
@@ -58,7 +58,7 @@ pub async fn get_framework_controls(
                 "recent_scans": c.scan_results.len(),
             })).collect::<Vec<_>>(),
             "total_controls": controls.len(),
-        })),
+        })).into_response(),
         Err(e) => (StatusCode::INTERNAL_SERVER_ERROR, Json(json!({"error": e.to_string()}))).into_response(),
     }
 }
@@ -74,7 +74,7 @@ pub async fn get_posture(
             "organization_id": org_id,
             "frameworks": postures,
             "total_frameworks": postures.len(),
-        })),
+        })).into_response(),
         Err(e) => (StatusCode::INTERNAL_SERVER_ERROR, Json(json!({"error": e.to_string()}))).into_response(),
     }
 }
@@ -87,7 +87,7 @@ pub async fn assess_framework(
 ) -> impl IntoResponse {
     let org_id = auth.org_id.clone().unwrap_or_else(|| auth.user_id.clone());
     match crate::services::compliance_mapper::assess_posture(&state.db, &org_id, &framework_id).await {
-        Ok(result) => Json(result),
+        Ok(result) => Json(result).into_response(),
         Err(e) => (StatusCode::INTERNAL_SERVER_ERROR, Json(json!({"error": e.to_string()}))).into_response(),
     }
 }
