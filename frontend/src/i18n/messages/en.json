@@ -362,7 +362,7 @@
     "buymeacoffeeDesc": "One-time or monthly support with a quick coffee donation.",
     "githubDesc": "Sponsor directly through GitHub for recurring support.",
     "kofiDesc": "Support with a one-time or monthly Ko-fi donation.",
-    "paypalDesc": "Send a direct contribution via PayPal.",
+    "opencollectiveDesc": "Send a direct contribution via Open Collective.",
     "thankYou": "Every contribution, no matter the size, makes a real difference. Thank you for believing in this project."
   },
   "common": {

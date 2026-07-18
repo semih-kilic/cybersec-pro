@@ -362,7 +362,7 @@
     "buymeacoffeeDesc": "커피 기부로 일회성 또는 월간 후원.",
     "githubDesc": "GitHub을 통해 직접 스폰서하여 정기적으로 후원.",
     "kofiDesc": "Ko-fi로 일회성 또는 월간 기부 후원.",
-    "paypalDesc": "PayPal을 통해 직접 기여하기.",
+    "opencollectiveDesc": "Open Collective을 통해 직접 기여하기.",
     "thankYou": "크기에 관계없이 모든 후원은 진정한 변화를 만듭니다. 이 프로젝트를 믿어주셔서 감사합니다."
   },
   "common": {

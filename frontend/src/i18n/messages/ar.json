@@ -362,7 +362,7 @@
     "buymeacoffeeDesc": "دعم لمرة واحدة أو شهري بتبرع قهوة.",
     "githubDesc": "رعاية مباشرة عبر GitHub للدعم المتكرر.",
     "kofiDesc": "ادعم بتبرع Ko-fi لمرة واحدة أو شهري.",
-    "paypalDesc": "أرسل مساهمة مباشرة عبر PayPal.",
+    "opencollectiveDesc": "أرسل مساهمة مباشرة عبر Open Collective.",
     "thankYou": "كل مساهمة، مهما كان حجمها، تُحدث فرقًا حقيقيًا. شكرًا لإيمانك بهذا المشروع."
   },
   "common": {
