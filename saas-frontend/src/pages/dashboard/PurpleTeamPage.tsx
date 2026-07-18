@@ -910,7 +910,7 @@ export default function PurpleTeamPage() {
           <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
             <StatCard label="Total Exercises" value={stats.total_exercises} icon="🎯" color="purple" />
             <StatCard label="Running" value={stats.running} icon="⚡" color="cyan" />
-            <StatCard label="Detection Rate" value={`${stats.detection_rate}%`} icon="🛡️"
+            <StatCard label="Detection Rate" value={`${Number(stats.detection_rate).toFixed(1)}%`} icon="🛡️"
               color={stats.detection_rate >= 70 ? 'green' : stats.detection_rate >= 40 ? 'yellow' : 'red'} />
             <StatCard label="Avg Risk Score" value={(stats.average_risk_score ?? 0).toFixed(1)} icon="⚠️"
               color={(stats.average_risk_score ?? 0) <= 30 ? 'green' : (stats.average_risk_score ?? 0) <= 60 ? 'yellow' : 'red'} />
