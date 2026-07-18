@@ -123,7 +123,7 @@ export default function ComplianceDashboardPage() {
   const [assessing, setAssessing] = useState(false);
   const [assessment, setAssessment] = useState<AssessmentResult | null>(null);
 
-  const authHeaders = token ? { Authorization: `Bearer ${token}` } : {};
+  const authHeaders: Record<string, string> = token ? { Authorization: `Bearer ${token}` } : {};
 
   const loadDashboard = useCallback(async () => {
     if (!token) return;
