@@ -699,7 +699,7 @@ function ExerciseDetail({
                   exercise.gap_analysis.detection_rate >= 70 ? 'text-green-400' :
                   exercise.gap_analysis.detection_rate >= 40 ? 'text-yellow-400' : 'text-red-400'
                 }`}>
-                  {exercise.gap_analysis.detection_rate}%
+                  {Number(exercise.gap_analysis.detection_rate).toFixed(1)}%
                 </span>
                 <div className="text-xs text-gray-400">{t('purpleTeam.detectionRate', 'Detection Rate')}</div>
               </div>
