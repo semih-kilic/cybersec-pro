@@ -57,20 +57,23 @@ pub async fn check_tool_health_enhanced(
         }
     }
 
-    // 2. Get version
-    let version_output = Command::new(binary_name)
-        .arg("--version")
-        .output()
-        .await;
+    // 2. Get version (with 5s timeout, kill on drop to prevent zombie processes)
+    {
+        let mut cmd = Command::new(binary_name);
+        cmd.arg("--version").kill_on_drop(true);
+        let version_output = tokio::time::timeout(
+            Duration::from_secs(5),
+            cmd.output(),
+        ).await;
 
-    if let Ok(out) = version_output {
-        let stdout = String::from_utf8_lossy(&out.stdout).to_string();
-        let stderr = String::from_utf8_lossy(&out.stderr).to_string();
-        let combined = format!("{}{}", stdout, stderr);
-        // Extract version string (first line, up to 100 chars)
-        let version_str = combined.lines().next().unwrap_or("").chars().take(100).collect::<String>();
-        if !version_str.is_empty() {
-            result.version = Some(version_str);
+        if let Ok(Ok(out)) = version_output {
+            let stdout = String::from_utf8_lossy(&out.stdout).to_string();
+            let stderr = String::from_utf8_lossy(&out.stderr).to_string();
+            let combined = format!("{}{}", stdout, stderr);
+            let version_str = combined.lines().next().unwrap_or("").chars().take(100).collect::<String>();
+            if !version_str.is_empty() {
+                result.version = Some(version_str);
+            }
         }
     }
 
@@ -78,13 +81,10 @@ pub async fn check_tool_health_enhanced(
     if let Some(test_cmd) = quick_test_cmd {
         let parts: Vec<&str> = test_cmd.split_whitespace().collect();
         if let Some((cmd, args)) = parts.split_first() {
+            let mut command = Command::new(cmd);
+            command.args(args).kill_on_drop(true);
             let timeout = Duration::from_secs(10);
-            match tokio::time::timeout(
-                timeout,
-                Command::new(cmd)
-                    .args(args)
-                    .output(),
-            ).await {
+            match tokio::time::timeout(timeout, command.output()).await {
                 Ok(Ok(out)) => {
                     result.runtime_ok = out.status.success() || out.status.code() != None;
                     let stdout = String::from_utf8_lossy(&out.stdout).to_string();
@@ -100,20 +100,26 @@ pub async fn check_tool_health_enhanced(
             }
         }
     } else {
-        // Default quick test: run with --help or --help-like flag
-        let help_output = Command::new(binary_name)
-            .arg("--help")
-            .output()
-            .await;
+        // Default quick test: run with --help (with 5s timeout, kill on drop)
+        let mut cmd = Command::new(binary_name);
+        cmd.arg("--help").kill_on_drop(true);
+        let help_output = tokio::time::timeout(
+            Duration::from_secs(5),
+            cmd.output(),
+        ).await;
 
         match help_output {
-            Ok(out) => {
+            Ok(Ok(out)) => {
                 result.runtime_ok = true;
                 let stdout = String::from_utf8_lossy(&out.stdout);
                 result.runtime_output = Some(format!("{} bytes help output", stdout.len()));
             }
-            Err(e) => {
+            Ok(Err(e)) => {
                 result.error_message = Some(format!("Help test failed: {}", e));
+            }
+            Err(_) => {
+                result.error_message = Some("Help test timed out (5s)".to_string());
+                result.runtime_ok = true;
             }
         }
     }
