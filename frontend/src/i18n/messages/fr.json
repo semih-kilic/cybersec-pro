@@ -362,7 +362,7 @@
     "buymeacoffeeDesc": "Soutien ponctuel ou mensuel avec un don café.",
     "githubDesc": "Sponsorisez directement via GitHub pour un soutien récurrent.",
     "kofiDesc": "Soutenez avec un don Ko-fi ponctuel ou mensuel.",
-    "opencollectiveDesc": "Envoyez une contribution directe via Open Collective.",
+    "stripeDesc": "Envoyez une contribution directe via Stripe.",
     "thankYou": "Chaque contribution, quelle que soit sa taille, fait une vraie différence. Merci de croire en ce projet."
   },
   "common": {

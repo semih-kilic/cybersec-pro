@@ -362,7 +362,7 @@
     "buymeacoffeeDesc": "一次性或每月咖啡捐赠支持。",
     "githubDesc": "通过GitHub直接赞助进行定期支持。",
     "kofiDesc": "通过Ko-fi一次性或每月捐赠支持。",
-    "opencollectiveDesc": "通过Open Collective发送直接贡献。",
+    "stripeDesc": "通过Stripe发送直接贡献。",
     "thankYou": "每一份贡献，无论大小，都会产生真正的影响。感谢您对这个项目的信任。"
   },
   "common": {

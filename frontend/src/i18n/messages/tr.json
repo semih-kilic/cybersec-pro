@@ -362,7 +362,7 @@
     "buymeacoffeeDesc": "Tek seferlik veya aylık kahve bağışı ile destek olun.",
     "githubDesc": "Düzenli destek için doğrudan GitHub üzerinden sponsor olun.",
     "kofiDesc": "Tek seferlik veya aylık Ko-fi bağışı ile destek olun.",
-    "opencollectiveDesc": "Open Collective üzerinden doğrudan katkıda bulunun.",
+    "stripeDesc": "Stripe üzerinden doğrudan katkıda bulunun.",
     "thankYou": "Miktarı ne olursa olsun, her katkı gerçek bir fark yaratır. Bu projeye inandığınız için teşekkürler."
   },
   "common": {

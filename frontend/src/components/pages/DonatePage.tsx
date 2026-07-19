@@ -34,12 +34,12 @@ const donationPlatforms = [
     description: "kofiDesc",
   },
   {
-    id: "opencollective",
+    id: "stripe",
     icon: Gift,
-    name: "Open Collective",
-    url: "https://opencollective.com/cybersec-pro",
-    color: "#3385FF",
-    description: "opencollectiveDesc",
+    name: "Stripe",
+    url: "https://buy.stripe.com/4gM28jfEx3dhcuVbeibo400",
+    color: "#635BFF",
+    description: "stripeDesc",
   },
 ];
 

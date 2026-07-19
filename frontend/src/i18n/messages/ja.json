@@ -362,7 +362,7 @@
     "buymeacoffeeDesc": "コーヒー寄付で一回または月額支援。",
     "githubDesc": "GitHubで直接スポンサーになり継続的に支援。",
     "kofiDesc": "Ko-fiで一回または月額寄付で支援。",
-    "opencollectiveDesc": "Open Collectiveで直接貢献を送信。",
+    "stripeDesc": "Stripeで直接貢献を送信。",
     "thankYou": "金額の大小に関わらず、すべての貢献が本当の違いを生みます。このプロジェクトを信じてくださりありがとうございます。"
   },
   "common": {

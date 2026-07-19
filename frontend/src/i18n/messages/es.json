@@ -362,7 +362,7 @@
     "buymeacoffeeDesc": "Apoyo único o mensual con una donación de café.",
     "githubDesc": "Patrocina directamente a través de GitHub para apoyo recurrente.",
     "kofiDesc": "Apoya con una donación única o mensual en Ko-fi.",
-    "opencollectiveDesc": "Envía una contribución directa vía Open Collective.",
+    "stripeDesc": "Envía una contribución directa vía Stripe.",
     "thankYou": "Cada contribución, sin importar el tamaño, hace una diferencia real. Gracias por creer en este proyecto."
   },
   "common": {
