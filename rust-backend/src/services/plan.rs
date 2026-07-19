@@ -22,20 +22,19 @@ pub struct PlanFeatures {
 pub struct PlanConfig {
     pub level: u8,
     pub price_eur: u32,
-    pub daily_scan_limit: u32,   // 0 = unlimited (trial uses daily)
-    pub monthly_scan_limit: u32, // 0 = unlimited (paid plans use monthly)
-    pub concurrent_scans: u32,   // 0 = unlimited
-    pub max_projects: u32,       // 0 = unlimited
-    pub max_team_members: u32,   // 0 = unlimited
-    pub max_agents: i32,         // -1 = unlimited
-    pub trial_days: u32,         // 0 = no trial period
+    pub daily_scan_limit: u32,
+    pub monthly_scan_limit: u32,
+    pub concurrent_scans: u32,
+    pub max_projects: u32,
+    pub max_team_members: u32,
+    pub max_agents: i32,
+    pub trial_days: u32,
     pub features: PlanFeatures,
 }
 
 pub fn get_plan_configs() -> HashMap<&'static str, PlanConfig> {
     let mut plans = HashMap::new();
 
-    // Trial: 3 days, 3 scans/day, 1 concurrent, all tools accessible
     plans.insert("trial", PlanConfig {
         level: 0,
         price_eur: 0,
@@ -48,7 +47,7 @@ pub fn get_plan_configs() -> HashMap<&'static str, PlanConfig> {
         trial_days: 3,
         features: PlanFeatures {
             basic_reports: true,
-            pdf_reports: false,
+            pdf_reports: true,
             html_reports: false,
             api_access: false,
             sso_saml: false,
@@ -63,10 +62,9 @@ pub fn get_plan_configs() -> HashMap<&'static str, PlanConfig> {
         },
     });
 
-    // Starter: 30 scans/month, 2 concurrent
     plans.insert("starter", PlanConfig {
         level: 1,
-        price_eur: 99,
+        price_eur: 29,
         daily_scan_limit: 0,
         monthly_scan_limit: 30,
         concurrent_scans: 2,
@@ -85,16 +83,15 @@ pub fn get_plan_configs() -> HashMap<&'static str, PlanConfig> {
             scheduled_scans: true,
             ai_suggestions: false,
             ai_remediation: false,
-            priority_support: false,
+            priority_support: true,
             purple_team: false,
             ldap_ad_scan: false,
         },
     });
 
-    // Professional: 250 scans/month, 5 concurrent
     plans.insert("professional", PlanConfig {
         level: 2,
-        price_eur: 299,
+        price_eur: 99,
         daily_scan_limit: 0,
         monthly_scan_limit: 250,
         concurrent_scans: 5,
@@ -106,7 +103,7 @@ pub fn get_plan_configs() -> HashMap<&'static str, PlanConfig> {
             basic_reports: true,
             pdf_reports: true,
             html_reports: true,
-            api_access: false,
+            api_access: true,
             sso_saml: false,
             compliance_reports: true,
             remote_agents: true,
@@ -114,15 +111,14 @@ pub fn get_plan_configs() -> HashMap<&'static str, PlanConfig> {
             ai_suggestions: true,
             ai_remediation: true,
             priority_support: true,
-            purple_team: false,
+            purple_team: true,
             ldap_ad_scan: true,
         },
     });
 
-    // Enterprise: 5000 scans/month, unlimited concurrent
     plans.insert("enterprise", PlanConfig {
         level: 3,
-        price_eur: 799,
+        price_eur: 349,
         daily_scan_limit: 0,
         monthly_scan_limit: 5000,
         concurrent_scans: 0,
@@ -168,8 +164,6 @@ pub fn check_plan_access(user_plan: &str, required_plan: &str) -> bool {
 mod tests {
     use super::{check_plan_access, get_plan_configs, get_plan_level};
 
-    // ── get_plan_level ──────────────────────────────────────────────────
-
     #[test]
     fn get_plan_level_returns_correct_level_for_all_plans() {
         assert_eq!(get_plan_level("trial"), 0);
@@ -183,7 +177,7 @@ mod tests {
     fn get_plan_level_returns_zero_for_unknown_plan() {
         assert_eq!(get_plan_level("unknown"), 0);
         assert_eq!(get_plan_level(""), 0);
-        assert_eq!(get_plan_level("ENTERPRISE"), 0); // case-sensitive
+        assert_eq!(get_plan_level("ENTERPRISE"), 0);
     }
 
     #[test]
@@ -192,8 +186,6 @@ mod tests {
         assert!(get_plan_level("starter") < get_plan_level("professional"));
         assert!(get_plan_level("professional") < get_plan_level("enterprise"));
     }
-
-    // ── check_plan_access ────────────────────────────────────────────
 
     #[test]
     fn check_plan_access_allows_same_level() {
@@ -222,8 +214,6 @@ mod tests {
         assert!(!check_plan_access("free", "starter"));
     }
 
-    // ── get_plan_configs data integrity ──────────────────────────────────
-
     #[test]
     fn get_plan_configs_contains_all_four_plans() {
         let plans = get_plan_configs();
@@ -234,12 +224,12 @@ mod tests {
     }
 
     #[test]
-    fn trial_plan_has_daily_limit_and_restricted_features() {
+    fn trial_plan_has_daily_limit_and_pdf_reports() {
         let plans = get_plan_configs();
         let trial = &plans["trial"];
         assert_eq!(trial.daily_scan_limit, 3);
         assert_eq!(trial.max_projects, 1);
-        assert!(!trial.features.pdf_reports);
+        assert!(trial.features.pdf_reports);
         assert!(!trial.features.sso_saml);
         assert!(!trial.features.purple_team);
     }
@@ -248,9 +238,9 @@ mod tests {
     fn enterprise_plan_has_unlimited_projects_and_all_features() {
         let plans = get_plan_configs();
         let ent = &plans["enterprise"];
-        assert_eq!(ent.max_projects, 0);     // 0 = unlimited
-        assert_eq!(ent.max_agents, -1);       // -1 = unlimited
-        assert_eq!(ent.concurrent_scans, 0); // 0 = unlimited
+        assert_eq!(ent.max_projects, 0);
+        assert_eq!(ent.max_agents, -1);
+        assert_eq!(ent.concurrent_scans, 0);
         assert!(ent.features.sso_saml);
         assert!(ent.features.purple_team);
         assert!(ent.features.api_access);
