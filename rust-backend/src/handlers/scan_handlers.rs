@@ -905,14 +905,8 @@ pub async fn start_scan(
         return (StatusCode::BAD_REQUEST, Json(json!({"error": "Valid target required"}))).into_response();
     }
 
-    // Block GUI-only tools from scan execution
-    if tool.gui_required.unwrap_or(false) {
-        return (StatusCode::BAD_REQUEST, Json(json!({
-            "error": format!("{} is a GUI-based tool and cannot be run as an automated scan. Please use it directly on the desktop.", tool.name),
-            "code": "GUI_TOOL",
-            "hint": "Try a CLI-based alternative tool for automated scanning."
-        }))).into_response();
-    }
+    // GUI tools: wrapped with Xvfb virtual framebuffer in executor
+    let is_gui_tool = tool.gui_required.unwrap_or(false);
 
     // Check plan access
     let org_plan: Option<(String, Option<String>)> = sqlx::query_as("SELECT plan_type, CAST(created_at AS TEXT) FROM organizations WHERE id = $1")

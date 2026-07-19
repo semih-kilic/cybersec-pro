@@ -38,9 +38,24 @@ pub async fn execute_scan(
     tx: &broadcast::Sender<String>,
     scan_id: &str,
     agent_ssh: Option<AgentSshInfo>,
+    is_gui_tool: bool,
 ) -> Result<ScanResult> {
     // Build the command
-    let (program, args) = build_command(tool_name, target, command_template)?;
+    let (mut program, mut args) = build_command(tool_name, target, command_template)?;
+
+    // Wrap GUI tools with Xvfb virtual framebuffer for headless execution
+    if is_gui_tool {
+        let original_cmd = format!("{} {}", program, args.join(" "));
+        program = "xvfb-run".to_string();
+        args = vec![
+            "--auto-servernum".to_string(),
+            "--server-args=-screen 0 1024x768x24".to_string(),
+            "bash".to_string(),
+            "-c".to_string(),
+            original_cmd,
+        ];
+        tracing::info!("GUI tool wrapped with Xvfb: {} {}", program, args.join(" "));
+    }
 
     let (actual_program, actual_args, execution_mode) = if let Some(ssh) = &agent_ssh {
         // Remote execution via SSH
