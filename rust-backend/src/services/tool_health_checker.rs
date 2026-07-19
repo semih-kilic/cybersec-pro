@@ -228,6 +228,17 @@ pub async fn run_full_health_check(pool: &PgPool) -> Vec<HealthCheckResult> {
 /// Background task: run health checks daily
 pub async fn run_health_check_loop(pool: PgPool) {
     info!("Tool health check loop started");
+
+    // Run initial health check on startup (non-blocking, 30 tools per batch)
+    info!("Running startup health check for all tools...");
+    let startup_pool = pool.clone();
+    tokio::spawn(async move {
+        let results = run_full_health_check(&startup_pool).await;
+        let healthy = results.iter().filter(|r| r.status == "healthy").count();
+        let total = results.len();
+        info!("Startup health check completed: {}/{} tools healthy", healthy, total);
+    });
+
     loop {
         // Run at 3:00 AM daily
         let now = chrono::Utc::now();

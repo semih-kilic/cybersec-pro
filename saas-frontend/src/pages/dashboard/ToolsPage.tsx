@@ -676,28 +676,27 @@ function ToolCard({
       <p className="text-vos-xs text-vos-text-3 line-clamp-2 mt-1 mb-vos-3 flex-1">
         {tool.description || 'No description available'}
       </p>
-      {tool.gui_only ? (
-        <div className="h-9 flex items-center justify-center rounded-vos-md bg-vos-warning/10 border border-vos-warning/20 text-vos-warning text-vos-xs font-medium">
-          <Monitor size={12} className="mr-1.5" /> Desktop required
-        </div>
-      ) : (
-        <Link
-          to={`/dashboard/tools/${tool.id}`}
-          className="h-9 inline-flex items-center justify-center gap-1.5 rounded-vos-md bg-vos-bg-elev-3 hover:bg-vos-accent hover:text-white border border-vos-border-1 hover:border-vos-accent text-vos-text text-vos-xs font-medium transition-colors"
-        >
-          {tool.requires_root ? (
-            <>
-              <Lock size={12} />
-              {t('common.runAsRoot', 'Run as Root')}
-            </>
-          ) : (
-            <>
-              <TerminalSquare size={12} />
-              {t('common.runTool', 'Run Tool')}
-            </>
-          )}
-        </Link>
-      )}
+      <Link
+        to={`/dashboard/tools/${tool.id}`}
+        className="h-9 inline-flex items-center justify-center gap-1.5 rounded-vos-md bg-vos-bg-elev-3 hover:bg-vos-accent hover:text-white border border-vos-border-1 hover:border-vos-accent text-vos-text text-vos-xs font-medium transition-colors"
+      >
+        {tool.requires_root ? (
+          <>
+            <Lock size={12} />
+            {t('common.runAsRoot', 'Run as Root')}
+          </>
+        ) : tool.gui_only ? (
+          <>
+            <Monitor size={12} />
+            {t('common.runGuiTool', 'Run via Xvfb')}
+          </>
+        ) : (
+          <>
+            <TerminalSquare size={12} />
+            {t('common.runTool', 'Run Tool')}
+          </>
+        )}
+      </Link>
     </div>
   );
 }

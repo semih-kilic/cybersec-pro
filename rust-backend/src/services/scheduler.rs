@@ -130,7 +130,7 @@ async fn tick(db: &PgPool, scan_tx: &broadcast::Sender<String>) -> Result<(), St
                 ssh_fingerprint: fp,
             });
 
-            let result = execute_scan(&tool_name2, &target2, command_template.as_deref(), &scan_tx2, &scan_id2, agent_info).await;
+            let result = execute_scan(&tool_name2, &target2, command_template.as_deref(), &scan_tx2, &scan_id2, agent_info, tool.gui_required.unwrap_or(false)).await;
 
             let (status, output, findings, error_log) = match &result {
                 Ok(r) => ("completed".to_string(), r.output.clone(), r.findings.clone(), None),

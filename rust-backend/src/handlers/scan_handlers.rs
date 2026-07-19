@@ -1275,7 +1275,7 @@ pub async fn start_scan(
         ));
     } else {
         tokio::spawn(async move {
-            let result = execute_scan(&tool_name, &target_owned, command_template.as_deref(), &scan_tx, &scan_id_clone, agent_ssh).await;
+            let result = execute_scan(&tool_name, &target_owned, command_template.as_deref(), &scan_tx, &scan_id_clone, agent_ssh, is_gui_tool).await;
 
             let (status, output, findings, error_log) = match &result {
                 Ok(r) => {
