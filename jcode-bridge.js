@@ -1,18 +1,16 @@
-
 const { WebSocketServer } = require('ws');
 const pty = require('node-pty');
 
 const PORT = 7600;
-const JCODE_PATH = '/home/cybersec/cybersec-pro/jcode/target/release/jcode';
+const JCODE_PATH = '/usr/local/bin/jcode';
 
 const wss = new WebSocketServer({ port: PORT });
-console.log(`🔌 jcode WebSocket bridge on ws://127.0.0.1:${PORT}`);
+console.log(`jcode WebSocket bridge on ws://127.0.0.1:${PORT}`);
 
 wss.on('connection', (ws) => {
     console.log('Client connected');
     
-    // Spawn jcode with PTY
-    const ptyProcess = pty.spawn(JCODE_PATH, ['--no-config'], {
+    const ptyProcess = pty.spawn(JCODE_PATH, ['--quiet', '--repl'], {
         name: 'xterm-256color',
         cols: 120,
         rows: 40,
@@ -27,14 +25,19 @@ wss.on('connection', (ws) => {
     
     console.log('jcode spawned, PID:', ptyProcess.pid);
     
-    // Forward jcode output to WebSocket
     ptyProcess.onData((data) => {
         if (ws.readyState === 1) {
             ws.send(JSON.stringify({ type: 'output', data }));
         }
     });
     
-    // Forward WebSocket input to jcode
+    ptyProcess.onExit(({ exitCode, signal }) => {
+        console.log('jcode exited, code:', exitCode, 'signal:', signal);
+        if (ws.readyState === 1) {
+            ws.send(JSON.stringify({ type: 'output', data: '\r\njcode session ended. Click disconnect and relaunch.\r\n' }));
+        }
+    });
+    
     ws.on('message', (message) => {
         try {
             const msg = JSON.parse(message.toString());
@@ -46,12 +49,10 @@ wss.on('connection', (ws) => {
                     ptyProcess.resize(msg.cols || 120, msg.rows || 40);
                     break;
                 case 'execute':
-                    // Send command + Enter
                     ptyProcess.write(msg.data + '\r');
                     break;
             }
         } catch (e) {
-            // Plain text input
             ptyProcess.write(message.toString());
         }
     });
