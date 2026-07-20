@@ -17,5 +17,8 @@
   "bugs": {
     "url": "https://github.com/semih-kilic/cybersec-pro/issues"
   },
-  "homepage": "https://github.com/semih-kilic/cybersec-pro#readme"
+  "homepage": "https://github.com/semih-kilic/cybersec-pro#readme",
+  "dependencies": {
+    "ws": "^8.21.1"
+  }
 }
