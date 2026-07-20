@@ -399,21 +399,26 @@ export function TerminalPage() {
       <Header 
         title={jcodeMode ? 'jcode AI Terminal' : t('terminal.title', 'SSH Terminal')}
         subtitle={jcodeMode ? 'AI-powered coding agent with memory' : t('terminal.subtitle', 'Real-time SSH connection to your agents')}
-        actions={
-          <button
-            onClick={jcodeMode ? disconnectJcode : connectJcode}
-            className={`px-4 py-2 rounded-lg font-medium transition ${
-              jcodeMode 
-                ? 'bg-red-600 hover:bg-red-700 text-white' 
-                : 'bg-emerald-600 hover:bg-emerald-700 text-white'
-            }`}
-          >
-            {jcodeMode ? '🔌 Disconnect jcode' : '🤖 Launch jcode'}
-          </button>
-        }
       />
 
       <div className="p-6">
+        {/* jcode Launch Button */}
+        <div className="mb-4">
+          <button
+            onClick={jcodeMode ? disconnectJcode : connectJcode}
+            className={`px-6 py-3 rounded-xl font-bold text-sm transition-all shadow-lg ${
+              jcodeMode 
+                ? 'bg-red-600 hover:bg-red-700 text-white shadow-red-600/20' 
+                : 'bg-emerald-600 hover:bg-emerald-700 text-white shadow-emerald-600/20'
+            }`}
+          >
+            {jcodeMode ? 'Disconnect jcode' : 'Launch jcode - AI Coding Agent'}
+          </button>
+          {jcodeMode && (
+            <span className="ml-3 text-emerald-400 text-sm">AI agent is active</span>
+          )}
+        </div>
+
         {/* Agent Selection Bar */}
         <div className="mb-4 bg-gray-900/50 border border-gray-800 rounded-xl p-4">
           <div className="flex flex-wrap items-center gap-4">
