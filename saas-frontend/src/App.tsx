@@ -376,7 +376,7 @@ function AppRoutes() {
         <Route index element={<OverviewPage />} />
         <Route path="overview" element={<OverviewPage />} />
         <Route path="tools" element={<ToolsPage />} />
-        <Route path="tools/:toolId" element={<ToolDetailPage />} />
+        <Route path="tools/:toolId" element={<ScanExecutionPage />} />
         <Route path="tools/:toolId/run" element={<ScanExecutionPage />} />
         <Route path="scans" element={<ScansPage />} />
         <Route path="scans/new" element={<NewScanPage />} />

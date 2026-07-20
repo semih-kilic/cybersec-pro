@@ -61,6 +61,8 @@ interface ScanProgressProps {
   outputCount?: number;
   /** Optional className for the outer container */
   className?: string;
+  /** Phase data from SSE stream (preferred over wsManager events) */
+  externalPhase?: { phase: string; progress: number; message: string } | null;
 }
 
 const normalizePhase = (raw: unknown): ScanPhaseKey | null => {
@@ -100,6 +102,7 @@ export const ScanProgress: React.FC<ScanProgressProps> = ({
   progress = 0,
   outputCount = 0,
   className = '',
+  externalPhase = null,
 }) => {
   const [currentPhase, setCurrentPhase] = useState<PhaseState | null>(null);
   const [completedPhases, setCompletedPhases] = useState<Set<ScanPhaseKey>>(new Set());
@@ -115,6 +118,47 @@ export const ScanProgress: React.FC<ScanProgressProps> = ({
     setIsFailed(false);
     prevPhaseRef.current = null;
   }, [scanId]);
+
+  // ── Handle externalPhase from SSE stream (preferred over wsManager) ──
+  useEffect(() => {
+    if (!externalPhase || !scanId) return;
+
+    const phase = normalizePhase(externalPhase.phase);
+    if (!phase) return;
+
+    const newState: PhaseState = {
+      phase,
+      description: externalPhase.message || '',
+      progress: externalPhase.progress || 0,
+      timestamp: Date.now(),
+    };
+
+    if (prevPhaseRef.current && prevPhaseRef.current !== phase) {
+      setCompletedPhases(prev => {
+        const next = new Set(prev);
+        next.add(prevPhaseRef.current!);
+        return next;
+      });
+    }
+
+    const currentIndex = PHASES.findIndex(p => p.key === phase);
+    if (currentIndex > 0) {
+      setCompletedPhases(prev => {
+        const next = new Set(prev);
+        for (let i = 0; i < currentIndex; i++) {
+          next.add(PHASES[i].key);
+        }
+        return next;
+      });
+    }
+
+    if (phase === 'FAILED') setIsFailed(true);
+    if (phase === 'COMPLETED') setCompletedPhases(new Set(PHASES.map(p => p.key)));
+
+    setCurrentPhase(newState);
+    setPhaseHistory(prev => [...prev, newState]);
+    prevPhaseRef.current = phase;
+  }, [externalPhase, scanId]);
 
   // ── Subscribe to phase updates via wsManager ──
   useEffect(() => {

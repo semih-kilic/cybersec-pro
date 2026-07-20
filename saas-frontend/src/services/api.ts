@@ -584,6 +584,7 @@ class ApiService {
     onOutput: (line: string) => void,
     onComplete: (result: ScanResult) => void,
     onStatus?: (status: StreamConnectionStatus) => void,
+    onPhaseChange?: (phase: { phase: string; progress: number; message: string }) => void,
   ) {
     const controller = new AbortController();
     const token = this.token || localStorage.getItem('token');
@@ -658,6 +659,12 @@ class ApiService {
                 onStatus?.('disconnected');
                 controller.abort();
                 return;
+              } else if (data.type === 'phase_change') {
+                onPhaseChange?.({
+                  phase: data.phase || '',
+                  progress: data.progress || 0,
+                  message: data.message || '',
+                });
               }
             } catch (e) {
               // Ignore non-JSON keep-alive/noise lines.

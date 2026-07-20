@@ -25,7 +25,7 @@ import {
 } from 'lucide-react';
 import { useDocumentTitle } from '../../hooks/useUtilities';
 import api, { ScanResult, StreamConnectionStatus, ToolConfig } from '../../services/api';
-import { useScanSubscription } from '../../hooks/useWebSocket';
+// import { useScanSubscription } from '../../hooks/useWebSocket'; // REMOVED: Socket.IO not available on backend
 import { useTarget } from '../../contexts/TargetContext';
 import { useAuth } from '../../hooks/useAuth';
 import { ScanProgress } from '../../components/dashboard/ScanProgress';
@@ -157,6 +157,7 @@ export function ScanExecutionPage() {
   const [streamStatus, setStreamStatus] = useState<'idle' | StreamConnectionStatus>('idle');
   const [scanStartTime, setScanStartTime] = useState<number | null>(null);
   const [elapsedSeconds, setElapsedSeconds] = useState(0);
+  const [currentPhase, setCurrentPhase] = useState<{ phase: string; progress: number; message: string } | null>(null);
 
   const [agents, setAgents] = useState<AgentInfo[]>([]);
   const [selectedAgentId, setSelectedAgentId] = useState<string>('auto');
@@ -171,7 +172,7 @@ export function ScanExecutionPage() {
   const outputRef = useRef<HTMLDivElement>(null);
   const toolId = routeToolId || searchParams.get('tool') || '';
 
-  const ws = useScanSubscription(status === 'running' ? currentScanId : null);
+  // const ws = useScanSubscription(status === 'running' ? currentScanId : null); // REMOVED
 
   const { data: toolConfigData } = useQuery({
     queryKey: [...queryKeys.tools.detail(toolId), 'config'],
@@ -320,31 +321,8 @@ export function ScanExecutionPage() {
     if (outputRef.current) outputRef.current.scrollTop = outputRef.current.scrollHeight;
   }, [output]);
 
-  useEffect(() => {
-    if (ws.progress) {
-      setProgress(ws.progress.progress);
-      if (ws.progress.status && ws.progress.status !== 'running') {
-        setStatus(ws.progress.status as 'completed' | 'failed');
-      }
-    }
-  }, [ws.progress]);
-
-  useEffect(() => {
-    if (ws.output.length > 0) {
-      const lastOutput = ws.output[ws.output.length - 1];
-      setOutput((prev) => [...prev, lastOutput.line]);
-    }
-  }, [ws.output]);
-
-  useEffect(() => {
-    if (ws.complete) {
-      setStatus(ws.complete.status as 'completed' | 'failed');
-      setProgress(100);
-      setScanStartTime(null);
-      if (ws.complete.status === 'completed') fetchBusinessResults();
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [ws.complete]);
+  // REMOVED: Socket.IO effects (ws.progress, ws.output, ws.complete)
+  // SSE stream now handles all real-time updates below
 
   useEffect(() => {
     if (status === 'running' && scanStartTime) {
@@ -416,8 +394,13 @@ export function ScanExecutionPage() {
           setStatus(finalStatus as 'completed' | 'failed');
           setProgress(100);
           setScanStartTime(null);
+          setCurrentPhase(null);
         },
-        (nextStatus) => setStreamStatus(nextStatus)
+        (nextStatus) => setStreamStatus(nextStatus),
+        (phase) => {
+          setCurrentPhase(phase);
+          if (phase.progress > 0) setProgress(phase.progress);
+        }
       );
       return cleanup;
     }
@@ -1063,6 +1046,7 @@ export function ScanExecutionPage() {
                   status={status}
                   progress={progress}
                   outputCount={output.length}
+                  externalPhase={currentPhase}
                 />
               )}
 
