@@ -548,13 +548,13 @@ export function TerminalPage() {
               <input
                 ref={inputRef}
                 type="text"
-                value={input}
-                onChange={(e) => setInput(e.target.value)}
+                value={currentInput}
+                onChange={(e) => setCurrentInput(e.target.value)}
                 onKeyDown={(e) => {
-                  if (e.key === 'Enter' && input.trim()) {
-                    jcodeWs?.send(JSON.stringify({ type: 'input', data: input }));
-                    setJcodeOutput(prev => [...prev, `> ${input}`]);
-                    setInput('');
+                  if (e.key === 'Enter' && currentInput.trim()) {
+                    jcodeWs?.send(JSON.stringify({ type: 'input', data: currentInput }));
+                    setJcodeOutput(prev => [...prev, `> ${currentInput}`]);
+                    setCurrentInput('');
                   }
                 }}
                 className="flex-1 bg-transparent text-emerald-400 outline-none font-mono"
