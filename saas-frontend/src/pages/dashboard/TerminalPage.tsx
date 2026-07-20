@@ -38,6 +38,9 @@ export function TerminalPage() {
   const [selectedAgent, setSelectedAgent] = useState<Agent | null>(null);
   const [isConnected, setIsConnected] = useState(false);
   const [isExecuting, setIsExecuting] = useState(false);
+  const [aiMode, setAiMode] = useState(false);
+  const [aiWs, setAiWs] = useState<WebSocket | null>(null);
+  const [aiOutput, setAiOutput] = useState<string[]>([]);
   const [history, setHistory] = useState<HistoryLine[]>([
     { type: 'system', content: '╔════════════════════════════════════════════════════════════════════╗' },
     { type: 'system', content: '║     ██╗  ██╗ █████╗ ██╗     ██╗    ██████╗ ██████╗  ██████╗       ║' },
@@ -78,6 +81,57 @@ export function TerminalPage() {
   }, []);
 
 
+  
+  // AI WebSocket connection
+  const connectAI = useCallback(() => {
+    if (aiWs) return;
+    
+    const ws = new WebSocket(`wss://${window.location.hostname}/jcode/ws`);
+    
+    ws.onopen = () => {
+      setAiOutput(['Connecting to AI...']);
+      setAiMode(true);
+    };
+    
+    ws.onmessage = (event) => {
+      try {
+        const msg = JSON.parse(event.data);
+        if (msg.type === 'output') {
+          setAiOutput(prev => {
+            const newOutput = [...prev];
+            if (newOutput.length > 0) {
+              newOutput[newOutput.length - 1] += msg.data;
+            } else {
+              newOutput.push(msg.data);
+            }
+            return newOutput;
+          });
+        }
+      } catch {
+        setAiOutput(prev => [...prev, event.data]);
+      }
+    };
+    
+    ws.onclose = () => {
+      setAiOutput(prev => [...prev, '', 'Disconnected from AI']);
+      setAiMode(false);
+      setAiWs(null);
+    };
+    
+    ws.onerror = () => {
+      setAiOutput(prev => [...prev, 'Connection error']);
+    };
+    
+    setAiWs(ws);
+  }, [aiWs]);
+  
+  const disconnectAI = useCallback(() => {
+    if (aiWs) {
+      aiWs.close();
+      setAiWs(null);
+      setAiMode(false);
+    }
+  }, [aiWs]);
   
   const testConnection = async () => {
     if (!selectedAgent) return;
@@ -358,7 +412,24 @@ export function TerminalPage() {
       />
 
       <div className="p-6">
-                {/* Agent Selection Bar */}
+                {/* AI Assistant Button */}
+        <div className="mb-4">
+          <button
+            onClick={aiMode ? disconnectAI : connectAI}
+            className={`px-6 py-3 rounded-xl font-bold text-sm transition-all shadow-lg ${
+              aiMode 
+                ? 'bg-red-600 hover:bg-red-700 text-white shadow-red-600/20' 
+                : 'bg-emerald-600 hover:bg-emerald-700 text-white shadow-emerald-600/20'
+            }`}
+          >
+            {aiMode ? 'Disconnect AI' : 'AI Assistant (Local Ollama)'}
+          </button>
+          {aiMode && (
+            <span className="ml-3 text-emerald-400 text-sm">qwen2.5-coder:1.5b active</span>
+          )}
+        </div>
+
+        {/* Agent Selection Bar */}
         <div className="mb-4 bg-gray-900/50 border border-gray-800 rounded-xl p-4">
           <div className="flex flex-wrap items-center gap-4">
             <div className="flex items-center gap-2">
@@ -475,7 +546,43 @@ export function TerminalPage() {
             </div>
           </div>
 
-          {/* Terminal Body */}
+                  {/* AI Mode Output */}
+        {aiMode && (
+          <div className="mb-4 bg-gray-900/50 border border-emerald-800 rounded-xl p-4">
+            <div className="flex items-center gap-2 mb-3">
+              <span className="text-emerald-400 font-medium">AI Assistant</span>
+              <span className="text-xs text-emerald-600">qwen2.5-coder:1.5b</span>
+            </div>
+            <div className="h-64 overflow-auto p-3 bg-black rounded-lg font-mono text-sm">
+              {aiOutput.map((line, i) => (
+                <div key={i} className="whitespace-pre-wrap text-emerald-300">{line}</div>
+              ))}
+              {aiOutput.length === 0 && (
+                <div className="text-gray-500">Ask me anything about security, code, or your scans...</div>
+              )}
+            </div>
+            <div className="mt-2 flex gap-2">
+              <input
+                type="text"
+                id="ai-input"
+                className="flex-1 bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm text-white font-mono"
+                placeholder="Ask AI a question..."
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') {
+                    const input = e.target as HTMLInputElement;
+                    if (input.value.trim() && aiWs) {
+                      aiWs.send(JSON.stringify({ type: 'input', data: input.value }));
+                      setAiOutput(prev => [...prev, '> ' + input.value]);
+                      input.value = '';
+                    }
+                  }
+                }}
+              />
+            </div>
+          </div>
+        )}
+
+        {/* Terminal Body */}
 <div 
             ref={terminalRef}
             className="h-[calc(100vh-420px)] min-h-[400px] overflow-auto p-4 font-mono text-sm cursor-text"
