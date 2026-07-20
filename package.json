@@ -1,0 +1,25 @@
+{
+  "name": "cybersec-pro",
+  "version": "1.0.0",
+  "description": "CyberSec Pro is a multi-service cybersecurity SaaS platform with Rust APIs, a React/Vite application dashboard, and a Next.js marketing site.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/semih-kilic/cybersec-pro.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/semih-kilic/cybersec-pro/issues"
+  },
+  "homepage": "https://github.com/semih-kilic/cybersec-pro#readme",
+  "dependencies": {
+    "node-pty": "^1.1.0",
+    "ws": "^8.21.1"
+  }
+}

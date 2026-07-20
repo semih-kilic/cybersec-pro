@@ -38,6 +38,9 @@ export function TerminalPage() {
   const [selectedAgent, setSelectedAgent] = useState<Agent | null>(null);
   const [isConnected, setIsConnected] = useState(false);
   const [isExecuting, setIsExecuting] = useState(false);
+  const [jcodeMode, setJcodeMode] = useState(false);
+  const [jcodeWs, setJcodeWs] = useState<WebSocket | null>(null);
+  const [jcodeOutput, setJcodeOutput] = useState<string[]>(['Launching jcode...']);
   const [history, setHistory] = useState<HistoryLine[]>([
     { type: 'system', content: '╔════════════════════════════════════════════════════════════════════╗' },
     { type: 'system', content: '║     ██╗  ██╗ █████╗ ██╗     ██╗    ██████╗ ██████╗  ██████╗       ║' },
@@ -77,6 +80,49 @@ export function TerminalPage() {
     inputRef.current?.focus();
   }, []);
 
+  // jcode WebSocket connection
+  const connectJcode = useCallback(() => {
+    if (jcodeWs) return;
+    
+    const ws = new WebSocket(`wss://${window.location.hostname}/jcode/ws`);
+    
+    ws.onopen = () => {
+      setJcodeOutput(['jcode connected', '']);
+      setJcodeMode(true);
+    };
+    
+    ws.onmessage = (event) => {
+      try {
+        const msg = JSON.parse(event.data);
+        if (msg.type === 'output') {
+          setJcodeOutput(prev => [...prev, msg.data]);
+        }
+      } catch {
+        setJcodeOutput(prev => [...prev, event.data]);
+      }
+    };
+    
+    ws.onclose = () => {
+      setJcodeOutput(prev => [...prev, '', 'Disconnected']);
+      setJcodeMode(false);
+      setJcodeWs(null);
+    };
+    
+    ws.onerror = () => {
+      setJcodeOutput(prev => [...prev, 'Connection error']);
+    };
+    
+    setJcodeWs(ws);
+  }, [jcodeWs]);
+  
+  const disconnectJcode = useCallback(() => {
+    if (jcodeWs) {
+      jcodeWs.close();
+      setJcodeWs(null);
+      setJcodeMode(false);
+    }
+  }, [jcodeWs]);
+  
   const testConnection = async () => {
     if (!selectedAgent) return;
     
@@ -351,8 +397,20 @@ export function TerminalPage() {
     <PageTransition>
     <div className="min-h-screen bg-gray-950">
       <Header 
-        title={t('terminal.title', 'SSH Terminal')}
-        subtitle={t('terminal.subtitle', 'Real-time SSH connection to your agents')}
+        title={jcodeMode ? 'jcode AI Terminal' : t('terminal.title', 'SSH Terminal')}
+        subtitle={jcodeMode ? 'AI-powered coding agent with memory' : t('terminal.subtitle', 'Real-time SSH connection to your agents')}
+        actions={
+          <button
+            onClick={jcodeMode ? disconnectJcode : connectJcode}
+            className={`px-4 py-2 rounded-lg font-medium transition ${
+              jcodeMode 
+                ? 'bg-red-600 hover:bg-red-700 text-white' 
+                : 'bg-emerald-600 hover:bg-emerald-700 text-white'
+            }`}
+          >
+            {jcodeMode ? '🔌 Disconnect jcode' : '🤖 Launch jcode'}
+          </button>
+        }
       />
 
       <div className="p-6">
@@ -474,7 +532,39 @@ export function TerminalPage() {
           </div>
 
           {/* Terminal Body */}
-          <div 
+                  {jcodeMode ? (
+          <div
+            ref={terminalRef}
+            className="flex-1 overflow-auto p-4 font-mono text-sm bg-black rounded-b-xl min-h-[500px]"
+            onClick={() => inputRef.current?.focus()}
+          >
+            {jcodeOutput.map((line, i) => (
+              <div key={i} className="whitespace-pre-wrap text-emerald-400">
+                {line}
+              </div>
+            ))}
+            <div className="flex items-center mt-1">
+              <span className="text-emerald-400 mr-2">{'>'}</span>
+              <input
+                ref={inputRef}
+                type="text"
+                value={input}
+                onChange={(e) => setInput(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' && input.trim()) {
+                    jcodeWs?.send(JSON.stringify({ type: 'input', data: input }));
+                    setJcodeOutput(prev => [...prev, `> ${input}`]);
+                    setInput('');
+                  }
+                }}
+                className="flex-1 bg-transparent text-emerald-400 outline-none font-mono"
+                placeholder="Type a command..."
+                autoFocus
+              />
+            </div>
+          </div>
+        ) : (
+<div 
             ref={terminalRef}
             className="h-[calc(100vh-420px)] min-h-[400px] overflow-auto p-4 font-mono text-sm cursor-text"
             onClick={() => inputRef.current?.focus()}
@@ -515,6 +605,7 @@ export function TerminalPage() {
               )}
             </div>
           </div>
+        )}
         </div>
 
         {/* Quick Commands */}
