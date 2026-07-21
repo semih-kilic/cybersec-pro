@@ -5,11 +5,11 @@ import { VosUserMenu } from './VosUserMenu';
 import { cn } from '../../lib/cn';
 
 /**
- * VosTopbar — sticky glass top bar.
+ * VosTopbar — V21 Enhanced. Sticky glass top bar.
  *
  *   • Mobile menu toggle (hidden on lg+)
  *   • Auto-generated breadcrumb from URL pathname
- *   • Inline search trigger (⌘K)
+ *   • Inline search trigger (Cmd+K)
  *   • Notifications + user dropdown menu
  */
 export function VosTopbar({
@@ -70,7 +70,7 @@ export function VosTopbar({
                 ) : (
                   <Link
                     to={c.to}
-                    className="text-vos-text-3 hover:text-vos-text-2 truncate transition-colors"
+                    className="text-vos-text-3 hover:text-vos-text-2 truncate transition-colors duration-200"
                   >
                     {c.label}
                   </Link>
@@ -91,13 +91,13 @@ export function VosTopbar({
           'hidden md:flex items-center gap-vos-2 px-vos-3 h-9',
           'vos-glass-1 rounded-vos-md border border-vos-border-2',
           'text-vos-sm text-vos-text-3 hover:text-vos-text-2 hover:border-vos-border-3',
-          'transition-colors duration-vos-2 min-w-[260px]',
+          'transition-all duration-200 min-w-[260px]',
         )}
       >
         <Search size={14} />
-        <span className="flex-1 text-left">Search…</span>
+        <span className="flex-1 text-left">Search...</span>
         <kbd className="text-vos-2xs font-mono px-1.5 py-0.5 rounded bg-vos-glass-2 border border-vos-border-2">
-          ⌘K
+          Cmd+K
         </kbd>
       </button>
 
@@ -118,7 +118,7 @@ export function VosTopbar({
         className="relative vos-btn vos-btn-ghost vos-btn-icon"
       >
         <Bell size={18} />
-        <span className="absolute top-2 right-2 size-1.5 rounded-full bg-vos-danger" />
+        <span className="absolute top-2 right-2 size-1.5 rounded-full bg-vos-danger animate-pulse" />
       </button>
 
       {/* User dropdown menu */}

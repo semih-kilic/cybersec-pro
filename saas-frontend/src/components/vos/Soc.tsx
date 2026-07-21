@@ -1,13 +1,17 @@
 /**
- * 🛡️ SOC Primitives — CrowdStrike/SentinelOne-class building blocks
+ * SOC Primitives — V21 Enhanced. CrowdStrike/SentinelOne-class building blocks.
  *
- * These are higher-order, opinionated components built on top of the
- * generic Vision OS primitives. They encode the visual language of an
- * enterprise security operations console: dense data grids, severity-
- * driven color, filter chips, command-bars, status pills.
- *
- * All of them stay strictly inside the V20 "Onyx" design system
- * (monochrome surfaces + Apple system blue + Apple semantic colors).
+ * V21 Enhancements:
+ * - Improved PageHeader with animations
+ * - Enhanced StatusPill with pulse animation
+ * - Better FilterChip hover states
+ * - Improved CommandBar styling
+ * - Better SearchField focus states
+ * - Enhanced Section component
+ * - Improved DenseTable row interactions
+ * - Better KeyValueGrid layout
+ * - Enhanced RiskScore animation
+ * - Improved SeverityHeatmap visual
  */
 
 import {
@@ -21,7 +25,7 @@ import { Search, Filter, X, ChevronDown } from 'lucide-react';
 import { cn } from '../../lib/cn';
 
 /* ════════════════════════════════════════════════════════════════════ *
- *  PageHeader — Apple-grade page hero (eyebrow, title, subtitle, actions)
+ *  PageHeader — V21 Enhanced. Apple-grade page hero
  * ════════════════════════════════════════════════════════════════════ */
 
 export function PageHeader({
@@ -31,6 +35,7 @@ export function PageHeader({
   icon,
   badge,
   actions,
+  animated = true,
   className,
 }: {
   eyebrow?: ReactNode;
@@ -39,18 +44,20 @@ export function PageHeader({
   icon?: ReactNode;
   badge?: ReactNode;
   actions?: ReactNode;
+  animated?: boolean;
   className?: string;
 }) {
   return (
     <header
       className={cn(
         'flex flex-col gap-vos-6 sm:flex-row sm:items-end sm:justify-between',
+        animated && 'vos-rise-in',
         className,
       )}
     >
       <div className="flex items-start gap-vos-4 min-w-0">
         {icon && (
-          <span className="size-12 rounded-vos-lg bg-vos-bg-elev-2 border border-vos-border-1 flex items-center justify-center text-vos-text-2 shrink-0">
+          <span className="size-12 rounded-vos-lg bg-vos-bg-elev-2 border border-vos-border-1 flex items-center justify-center text-vos-text-2 shrink-0 transition-colors duration-200 group-hover:text-vos-accent">
             {icon}
           </span>
         )}
@@ -71,13 +78,17 @@ export function PageHeader({
           )}
         </div>
       </div>
-      {actions && <div className="flex items-center gap-vos-2 shrink-0">{actions}</div>}
+      {actions && (
+        <div className="flex items-center gap-vos-2 shrink-0">
+          {actions}
+        </div>
+      )}
     </header>
   );
 }
 
 /* ════════════════════════════════════════════════════════════════════ *
- *  CommandBar — search + filters + actions row above a data grid
+ *  CommandBar — V21 Enhanced. Search + filters + actions row
  * ════════════════════════════════════════════════════════════════════ */
 
 export function CommandBar({
@@ -92,6 +103,7 @@ export function CommandBar({
       className={cn(
         'flex items-center gap-vos-2 flex-wrap',
         'p-vos-2 rounded-vos-lg border border-vos-border-1 bg-vos-bg-elev-2',
+        'transition-all duration-200',
         className,
       )}
     >
@@ -109,8 +121,8 @@ export const SearchField = forwardRef<HTMLInputElement, InputHTMLAttributes<HTML
         className={cn(
           'flex items-center gap-2 px-vos-3 h-9 rounded-vos-md',
           'bg-vos-bg-elev-3 border border-vos-border-1',
-          'focus-within:border-vos-accent focus-within:ring-2 focus-within:ring-vos-accent/30',
-          'transition-colors duration-vos-2 min-w-[260px] flex-1',
+          'focus-within:border-vos-accent focus-within:shadow-[0_0_0_3px_var(--vos-accent-soft)]',
+          'transition-all duration-200 min-w-[260px] flex-1',
           className,
         )}
       >
@@ -129,7 +141,7 @@ export const SearchField = forwardRef<HTMLInputElement, InputHTMLAttributes<HTML
 );
 
 /* ════════════════════════════════════════════════════════════════════ *
- *  FilterChip — toggleable filter pill (selectable, dismissable variants)
+ *  FilterChip — V21 Enhanced. Toggleable filter pill
  * ════════════════════════════════════════════════════════════════════ */
 
 export function FilterChip({
@@ -155,11 +167,11 @@ export function FilterChip({
       onClick={onClick}
       className={cn(
         'inline-flex items-center gap-1.5 h-8 px-vos-3 rounded-vos-md',
-        'text-vos-xs font-medium transition-colors duration-vos-2',
+        'text-vos-xs font-medium transition-all duration-200',
         'border',
         active
-          ? 'bg-vos-accent/15 border-vos-accent/30 text-vos-accent'
-          : 'bg-vos-bg-elev-3 border-vos-border-1 text-vos-text-2 hover:border-vos-border-2 hover:text-vos-text',
+          ? 'bg-vos-accent/15 border-vos-accent/30 text-vos-accent shadow-sm'
+          : 'bg-vos-bg-elev-3 border-vos-border-1 text-vos-text-2 hover:border-vos-border-2 hover:text-vos-text hover:bg-vos-bg-elev-4',
         className,
       )}
     >
@@ -188,7 +200,7 @@ export function FilterChip({
               onRemove();
             }
           }}
-          className="ml-1 -mr-1 inline-flex items-center justify-center size-4 rounded hover:bg-vos-bg-elev-4 text-vos-text-3 hover:text-vos-text"
+          className="ml-1 -mr-1 inline-flex items-center justify-center size-4 rounded hover:bg-vos-bg-elev-4 text-vos-text-3 hover:text-vos-text transition-colors"
           aria-label="Remove filter"
         >
           <X size={10} />
@@ -217,7 +229,8 @@ export function FilterDropdown({
         'inline-flex items-center gap-1.5 h-8 px-vos-3 rounded-vos-md',
         'text-vos-xs font-medium text-vos-text-2',
         'bg-vos-bg-elev-3 border border-vos-border-1',
-        'hover:border-vos-border-2 hover:text-vos-text transition-colors',
+        'hover:border-vos-border-2 hover:text-vos-text hover:bg-vos-bg-elev-4',
+        'transition-all duration-200',
         className,
       )}
     >
@@ -235,7 +248,7 @@ export function FilterDropdown({
 }
 
 /* ════════════════════════════════════════════════════════════════════ *
- *  StatusPill — semantic status badge with leading dot
+ *  StatusPill — V21 Enhanced. Semantic status badge with leading dot
  * ════════════════════════════════════════════════════════════════════ */
 
 type StatusTone = 'success' | 'warning' | 'danger' | 'info' | 'neutral' | 'accent';
@@ -268,6 +281,7 @@ export function StatusPill({
       className={cn(
         'inline-flex items-center gap-1.5 px-2 h-6 rounded-vos-full',
         'text-[11px] font-semibold tracking-vos-snug',
+        'transition-all duration-200',
         c.bg,
         c.text,
         className,
@@ -291,7 +305,7 @@ export function StatusPill({
 }
 
 /* ════════════════════════════════════════════════════════════════════ *
- *  SeverityBadge / SeverityHeatmap — vuln management staples
+ *  SeverityBadge / SeverityHeatmap — V21 Enhanced
  * ════════════════════════════════════════════════════════════════════ */
 
 export type Severity = 'critical' | 'high' | 'medium' | 'low' | 'info';
@@ -318,6 +332,7 @@ export function SeverityTag({
     <span
       className={cn(
         'inline-flex items-center gap-1.5 rounded-vos-sm border font-semibold uppercase tracking-vos-wide',
+        'transition-all duration-200',
         c.bg,
         c.text,
         c.border,
@@ -331,8 +346,7 @@ export function SeverityTag({
 }
 
 /**
- * SeverityHeatmap — single-row stacked bar showing severity composition.
- * Like CrowdStrike's "detections by severity" strip.
+ * SeverityHeatmap — V21 Enhanced. Single-row stacked bar showing severity composition.
  */
 export function SeverityHeatmap({
   counts,
@@ -346,9 +360,7 @@ export function SeverityHeatmap({
   showLabels?: boolean;
   size?: 'sm' | 'md' | 'lg';
   className?: string;
-  /** Optional explicit total; defaults to sum of counts */
   total?: number;
-  /** Hide labels for tight spaces */
   compact?: boolean;
 }) {
   const computedTotal =
@@ -398,7 +410,7 @@ export function SeverityHeatmap({
             return (
               <div
                 key={sev}
-                className={cn('h-full', colorBg[sev])}
+                className={cn('h-full transition-all duration-300', colorBg[sev])}
                 style={{ width: `${(n / total) * 100}%` }}
                 title={`${sev}: ${n}`}
               />
@@ -411,7 +423,7 @@ export function SeverityHeatmap({
 }
 
 /* ════════════════════════════════════════════════════════════════════ *
- *  RiskScore — circular score gauge with semantic tone
+ *  RiskScore — V21 Enhanced. Circular score gauge with semantic tone
  * ════════════════════════════════════════════════════════════════════ */
 
 export function RiskScore({
@@ -422,17 +434,16 @@ export function RiskScore({
   strokeWidth = 6,
   label,
   invert,
+  animated = true,
 }: {
-  /** raw score */
   score?: number;
-  /** alias for score */
   value?: number;
   outOf?: number;
   size?: number;
   strokeWidth?: number;
   label?: ReactNode;
-  /** if true, lower score = better (e.g. risk score). default: higher = better */
   invert?: boolean;
+  animated?: boolean;
 }) {
   const rawScore = score ?? value;
   const effectiveScore = (typeof rawScore === 'number' && Number.isFinite(rawScore)) ? rawScore : 0;
@@ -473,7 +484,7 @@ export function RiskScore({
           strokeDashoffset={offset}
           strokeLinecap="round"
           fill="none"
-          style={{ transition: 'stroke-dashoffset 600ms var(--vos-ease-out)' }}
+          style={animated ? { transition: 'stroke-dashoffset 600ms var(--vos-ease-out)' } : undefined}
         />
       </svg>
       <div className="absolute inset-0 flex flex-col items-center justify-center pt-[2px]">
@@ -487,8 +498,7 @@ export function RiskScore({
 }
 
 /* ════════════════════════════════════════════════════════════════════ *
- *  DenseTable — compact, scannable data grid (SOC default)
- *  Wrapper helpers; consumers compose <thead>/<tbody> themselves.
+ *  DenseTable — V21 Enhanced. Compact, scannable data grid
  * ════════════════════════════════════════════════════════════════════ */
 
 export function DenseTable({
@@ -550,7 +560,7 @@ export function DenseTR({
     <tr
       onClick={onClick}
       className={cn(
-        'border-t border-vos-border-1 transition-colors',
+        'border-t border-vos-border-1 transition-all duration-150',
         onClick && 'cursor-pointer hover:bg-vos-bg-elev-3/60',
         highlighted && 'bg-vos-accent/5',
         className,
@@ -588,7 +598,7 @@ export function DenseTD({
 }
 
 /* ════════════════════════════════════════════════════════════════════ *
- *  Section — reusable card section with header
+ *  Section — V21 Enhanced. Reusable card section with header
  * ════════════════════════════════════════════════════════════════════ */
 
 export function Section({
@@ -598,6 +608,7 @@ export function Section({
   children,
   className,
   bodyClassName,
+  animated = true,
 }: {
   title: ReactNode;
   description?: ReactNode;
@@ -605,11 +616,13 @@ export function Section({
   children: ReactNode;
   className?: string;
   bodyClassName?: string;
+  animated?: boolean;
 }) {
   return (
     <section
       className={cn(
         'rounded-vos-xl border border-vos-border-1 bg-vos-bg-elev-2 overflow-hidden',
+        animated && 'vos-rise-in',
         className,
       )}
     >
@@ -628,7 +641,7 @@ export function Section({
 }
 
 /* ════════════════════════════════════════════════════════════════════ *
- *  KeyValueGrid — 2-col label/value grid for metadata panels
+ *  KeyValueGrid — V21 Enhanced. 2-col label/value grid
  * ════════════════════════════════════════════════════════════════════ */
 
 export function KeyValueGrid({

@@ -9,11 +9,8 @@ export interface VosNavItem {
   icon: ComponentType<{ className?: string; size?: number | string }>;
   badge?: ReactNode;
   external?: boolean;
-  /** Optional section heading shown ABOVE this item */
   section?: string;
-  /** Visible only when current user role is in this list (omit = visible to all) */
   roles?: Array<'user' | 'admin' | 'superadmin'>;
-  /** Render as elevated CTA pill (used for Upgrade) */
   cta?: boolean;
 }
 
@@ -51,7 +48,7 @@ export function VosSidebar({
       className={cn(
         'fixed left-0 top-0 h-screen z-vos-overlay flex flex-col',
         'border-r border-vos-border-1',
-        'transition-[width,transform] duration-vos-2 ease-vos-out',
+        'transition-[width,transform] duration-200 ease-out',
         'lg:translate-x-0',
         mobileOpen ? 'translate-x-0' : '-translate-x-full',
       )}
@@ -64,10 +61,8 @@ export function VosSidebar({
       {/* Brand row */}
       <div className="h-vos-topbar flex items-center gap-vos-3 px-vos-4 border-b border-vos-border-1">
         <div
-          className="size-8 rounded-vos-sm flex items-center justify-center shrink-0"
-          style={{
-            background: 'var(--vos-accent)',
-          }}
+          className="size-8 rounded-vos-sm flex items-center justify-center shrink-0 transition-transform duration-200 hover:scale-105"
+          style={{ background: 'var(--vos-accent)' }}
         >
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden>
             <path
@@ -134,7 +129,7 @@ export function VosSidebar({
           className={cn(
             'w-full flex items-center gap-vos-2 px-vos-3 py-vos-2 rounded-vos-md',
             'text-vos-text-3 hover:text-vos-text hover:bg-vos-glass-2',
-            'transition-colors duration-vos-2',
+            'transition-all duration-200',
           )}
         >
           {collapsed ? <ChevronsRight size={16} /> : <ChevronsLeft size={16} />}
@@ -171,7 +166,7 @@ function NavRow({
         className={cn(
           'group relative flex items-center gap-vos-3 px-vos-3 py-vos-2.5 rounded-vos-md',
           'text-vos-sm font-medium text-vos-text-3 hover:text-vos-text hover:bg-vos-glass-2',
-          'transition-colors duration-vos-2 ease-vos-out',
+          'transition-all duration-200',
           collapsed && 'justify-center',
         )}
       >
@@ -181,7 +176,6 @@ function NavRow({
     );
   }
 
-  // Special CTA styling (Upgrade)
   if (item.cta) {
     return (
       <NavLink
@@ -189,8 +183,8 @@ function NavRow({
         title={collapsed ? item.label : undefined}
         className={cn(
           'group flex items-center gap-vos-3 px-vos-3 py-vos-2.5 rounded-vos-md',
-          'text-vos-sm font-semibold transition-colors duration-vos-2 ease-vos-out',
-          'bg-vos-accent text-white hover:opacity-90',
+          'text-vos-sm font-semibold transition-all duration-200',
+          'bg-vos-accent text-white hover:bg-vos-accent-2',
           collapsed && 'justify-center',
         )}
       >
@@ -206,7 +200,7 @@ function NavRow({
       title={collapsed ? item.label : undefined}
       className={cn(
         'vos-nav-item group flex items-center gap-vos-3 px-vos-3 py-vos-2.5 rounded-vos-md',
-        'text-vos-sm font-medium transition-all duration-vos-2 ease-vos-out',
+        'text-vos-sm font-medium transition-all duration-200',
         isActive
           ? 'vos-nav-item-active'
           : 'text-vos-text-3 hover:text-vos-text hover:bg-vos-glass-2',
@@ -215,7 +209,7 @@ function NavRow({
     >
       <Icon
         size={18}
-        className={cn('shrink-0 transition-transform duration-vos-2', isActive && 'text-vos-accent')}
+        className={cn('shrink-0 transition-colors duration-200', isActive && 'text-vos-accent')}
       />
       {!collapsed && <span className="flex-1 truncate">{item.label}</span>}
       {!collapsed && item.badge && <span>{item.badge}</span>}
