@@ -1,16 +1,13 @@
 /**
- * 🍎 CyberSec Pro — Apple-grade Design System (V20 / "Onyx")
+ * CyberSec Pro — Apple-grade Design System (V21 / "Onyx Enhanced")
  *
- * Philosophy
- * ----------
- * Apple.com is restrained, not maximalist. Black or near-white surfaces.
- * One accent. Massive whitespace. Heavy typography. The chrome stays
- * out of the way so content breathes. No rainbow gradients. No glow.
- * No aurora. Just hairlines, tonal greys, and one disciplined accent.
- *
- * Tokens are still namespaced `--vos-*` for backward compatibility with
- * the components written in V19. The visual *values* changed; the
- * *names* did not.
+ * V21 Enhancements:
+ * - New gradient tokens for subtle backgrounds
+ * - Enhanced transition tokens for smoother animations
+ * - More shadow variations for better depth
+ * - Backdrop-blur tokens for glass effects
+ * - New color tokens for extended palette
+ * - Improved micro-interaction utilities
  */
 
 :root {
@@ -21,11 +18,11 @@
   /* Pure black background, like apple.com */
   --vos-bg:           #000000;
   --vos-bg-deep:      #000000;
-  --vos-bg-canvas:    #0a0a0c;          /* one stop up — content backdrop */
-  --vos-bg-elev-1:    #111114;          /* sidebar / topbar fill */
-  --vos-bg-elev-2:    #16161b;          /* cards */
-  --vos-bg-elev-3:    #1c1c22;          /* hover / popovers */
-  --vos-bg-elev-4:    #22222a;          /* dropdowns, modals */
+  --vos-bg-canvas:    #0a0a0c;
+  --vos-bg-elev-1:    #111114;
+  --vos-bg-elev-2:    #16161b;
+  --vos-bg-elev-3:    #1c1c22;
+  --vos-bg-elev-4:    #22222a;
   --vos-topbar-bg:    rgba(0, 0, 0, 0.72);
 
   /* No mesh, no aurora */
@@ -37,6 +34,14 @@
   --vos-glass-3: rgba(255, 255, 255, 0.07);
   --vos-glass-4: rgba(255, 255, 255, 0.09);
   --vos-glass-tint: rgba(0, 0, 0, 0.55);
+
+  /* ============================================================ *
+   *  GRADIENTS — subtle, Apple-style
+   * ============================================================ */
+  --vos-gradient-subtle: linear-gradient(180deg, rgba(255,255,255,0.02) 0%, rgba(255,255,255,0) 100%);
+  --vos-gradient-accent: linear-gradient(135deg, var(--vos-accent) 0%, var(--vos-accent-2) 100%);
+  --vos-gradient-surface: linear-gradient(180deg, var(--vos-bg-elev-2) 0%, var(--vos-bg-elev-1) 100%);
+  --vos-gradient-glass: linear-gradient(180deg, rgba(255,255,255,0.06) 0%, rgba(255,255,255,0.02) 100%);
 
   /* ============================================================ *
    *  HAIRLINE BORDERS — Apple's signature 1px hairlines
@@ -106,6 +111,12 @@
   --vos-shadow-4:
     0 1px 0 0 rgba(255, 255, 255, 0.08) inset,
     0 28px 64px -16px rgba(0, 0, 0, 0.75);
+
+  /* V21: Enhanced shadow tokens */
+  --vos-shadow-glow: 0 0 20px rgba(10, 132, 255, 0.15);
+  --vos-shadow-glow-strong: 0 0 30px rgba(10, 132, 255, 0.25);
+  --vos-shadow-inner: inset 0 2px 4px 0 rgba(0, 0, 0, 0.3);
+  --vos-shadow-elevated: 0 4px 12px rgba(0, 0, 0, 0.4);
 
   /* Glow — only for focus rings on the accent */
   --vos-glow-accent:  0 0 0 4px var(--vos-accent-soft);
@@ -183,12 +194,17 @@
   --vos-space-32:  8rem;
 
   /* ============================================================ *
-   *  MOTION
+   *  MOTION — V21 enhanced
    * ============================================================ */
   --vos-ease-spring: cubic-bezier(0.16, 1, 0.3, 1);
   --vos-ease-out:    cubic-bezier(0.22, 1, 0.36, 1);
   --vos-ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
   --vos-ease-emph:   cubic-bezier(0.2, 0.8, 0.2, 1);
+
+  /* V21: More easing options */
+  --vos-ease-bounce: cubic-bezier(0.34, 1.56, 0.64, 1);
+  --vos-ease-smooth: cubic-bezier(0.4, 0, 0.2, 1);
+  --vos-ease-snap:   cubic-bezier(0.19, 1, 0.22, 1);
 
   --vos-dur-1:  120ms;
   --vos-dur-2:  200ms;
@@ -196,13 +212,24 @@
   --vos-dur-4:  480ms;
   --vos-dur-5:  720ms;
 
+  /* V21: More duration tokens */
+  --vos-dur-fast:   100ms;
+  --vos-dur-normal: 200ms;
+  --vos-dur-slow:   400ms;
+  --vos-dur-slower: 600ms;
+
   /* ============================================================ *
-   *  BLUR — used only for sticky chrome
+   *  BLUR — used for sticky chrome and glass effects
    * ============================================================ */
   --vos-blur-1:  blur(10px) saturate(150%);
   --vos-blur-2:  blur(16px) saturate(160%);
   --vos-blur-3:  blur(24px) saturate(170%);
   --vos-blur-4:  blur(36px) saturate(180%);
+
+  /* V21: Blur tokens for specific use cases */
+  --vos-blur-nav: blur(20px) saturate(180%);
+  --vos-blur-modal: blur(8px) saturate(120%);
+  --vos-blur-glass: blur(12px) saturate(150%);
 
   /* ============================================================ *
    *  Z-LAYERS
@@ -228,21 +255,27 @@
   --vos-sidebar-w:           260px;
   --vos-sidebar-w-collapsed:  64px;
   --vos-topbar-h:             52px;
+
+  /* V21: Responsive breakpoints (for reference) */
+  --vos-bp-sm:  640px;
+  --vos-bp-md:  768px;
+  --vos-bp-lg:  1024px;
+  --vos-bp-xl:  1280px;
+  --vos-bp-2xl: 1536px;
 }
 
 /* ============================================================ *
- *  LIGHT MODE — Apple System Settings light (restrained, not bright white)
- *  Activated by .light class on <html> (set by ColorModeContext).
+ *  LIGHT MODE — Apple System Settings light
  * ============================================================ */
 html.light {
   /* Surfaces — Apple silver, never pure white */
   --vos-bg:           #f5f5f7;
   --vos-bg-deep:      #ececef;
   --vos-bg-canvas:    #f5f5f7;
-  --vos-bg-elev-1:    #ffffff;          /* sidebar / topbar */
-  --vos-bg-elev-2:    #ffffff;          /* cards */
-  --vos-bg-elev-3:    #f0f0f3;          /* hover */
-  --vos-bg-elev-4:    #ffffff;          /* modals */
+  --vos-bg-elev-1:    #ffffff;
+  --vos-bg-elev-2:    #ffffff;
+  --vos-bg-elev-3:    #f0f0f3;
+  --vos-bg-elev-4:    #ffffff;
   --vos-topbar-bg:    rgba(255, 255, 255, 0.78);
 
   --vos-glass-1: rgba(0, 0, 0, 0.025);
@@ -282,6 +315,11 @@ html.light {
   --vos-danger-soft:   rgba(215, 0, 21, 0.10);
   --vos-info:          #0071a4;
   --vos-info-soft:     rgba(0, 113, 164, 0.10);
+
+  /* V21: Light mode gradients */
+  --vos-gradient-subtle: linear-gradient(180deg, rgba(0,0,0,0.02) 0%, rgba(0,0,0,0) 100%);
+  --vos-gradient-surface: linear-gradient(180deg, var(--vos-bg-elev-2) 0%, var(--vos-bg-elev-1) 100%);
+  --vos-gradient-glass: linear-gradient(180deg, rgba(0,0,0,0.04) 0%, rgba(0,0,0,0.01) 100%);
 }
 
 /* Apply surface bg to html in light mode */
@@ -297,5 +335,9 @@ html.light body {
     --vos-dur-3: 0ms;
     --vos-dur-4: 0ms;
     --vos-dur-5: 0ms;
+    --vos-dur-fast: 0ms;
+    --vos-dur-normal: 0ms;
+    --vos-dur-slow: 0ms;
+    --vos-dur-slower: 0ms;
   }
 }

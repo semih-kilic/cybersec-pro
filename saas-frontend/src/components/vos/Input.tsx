@@ -6,13 +6,15 @@ export interface InputProps extends InputHTMLAttributes<HTMLInputElement> {
   label?: string;
   hint?: string;
   error?: string;
+  success?: string;
   leftIcon?: ReactNode;
   rightSlot?: ReactNode;
   containerClassName?: string;
+  showCount?: boolean;
 }
 
 export const Input = forwardRef<HTMLInputElement, InputProps>(function Input(
-  { label, hint, error, leftIcon, rightSlot, className, containerClassName, id, ...rest },
+  { label, hint, error, success, leftIcon, rightSlot, className, containerClassName, id, showCount, maxLength, ...rest },
   ref,
 ) {
   const inputId = id ?? rest.name;
@@ -35,13 +37,15 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(function Input(
         <input
           ref={ref}
           id={inputId}
+          maxLength={maxLength}
           aria-invalid={!!error || undefined}
-          aria-describedby={error ? `${inputId}-err` : hint ? `${inputId}-hint` : undefined}
+          aria-describedby={error ? `${inputId}-err` : hint ? `${inputId}-hint` : success ? `${inputId}-success` : undefined}
           className={cn(
             'vos-input',
             leftIcon && 'pl-10',
             rightSlot && 'pr-10',
-            error && 'border-vos-danger focus:border-vos-danger focus:shadow-[0_0_0_4px_var(--vos-danger-soft)]',
+            error && 'vos-input-error',
+            success && !error && 'vos-input-success',
             className,
           )}
           {...rest}
@@ -53,14 +57,31 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(function Input(
         )}
       </div>
       {error ? (
-        <span id={`${inputId}-err`} className="text-vos-xs text-vos-danger">
+        <span id={`${inputId}-err`} className="text-vos-xs text-vos-danger flex items-center gap-1">
+          <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
+            <circle cx="6" cy="6" r="5" stroke="currentColor" strokeWidth="1.5"/>
+            <path d="M6 3.5v3M6 8h.005" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
+          </svg>
           {error}
+        </span>
+      ) : success ? (
+        <span id={`${inputId}-success`} className="text-vos-xs text-vos-success flex items-center gap-1">
+          <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
+            <circle cx="6" cy="6" r="5" stroke="currentColor" strokeWidth="1.5"/>
+            <path d="M4 6l1.5 1.5L8 5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+          </svg>
+          {success}
         </span>
       ) : hint ? (
         <span id={`${inputId}-hint`} className="text-vos-xs text-vos-text-muted">
           {hint}
         </span>
       ) : null}
+      {showCount && maxLength && (
+        <span className="text-vos-2xs text-vos-text-muted text-right">
+          {rest.value?.toString().length || 0}/{maxLength}
+        </span>
+      )}
     </div>
   );
 });
@@ -70,11 +91,13 @@ export interface TextareaProps extends TextareaHTMLAttributes<HTMLTextAreaElemen
   label?: string;
   hint?: string;
   error?: string;
+  success?: string;
   containerClassName?: string;
+  showCount?: boolean;
 }
 
 export const Textarea = forwardRef<HTMLTextAreaElement, TextareaProps>(function Textarea(
-  { label, hint, error, className, containerClassName, id, rows = 4, ...rest },
+  { label, hint, error, success, className, containerClassName, id, rows = 4, showCount, maxLength, ...rest },
   ref,
 ) {
   const tId = id ?? rest.name;
@@ -89,19 +112,42 @@ export const Textarea = forwardRef<HTMLTextAreaElement, TextareaProps>(function 
         ref={ref}
         id={tId}
         rows={rows}
+        maxLength={maxLength}
         aria-invalid={!!error || undefined}
         className={cn(
           'vos-input resize-y',
-          error && 'border-vos-danger focus:border-vos-danger focus:shadow-[0_0_0_4px_var(--vos-danger-soft)]',
+          error && 'vos-input-error',
+          success && !error && 'vos-input-success',
           className,
         )}
         {...rest}
       />
-      {error ? (
-        <span className="text-vos-xs text-vos-danger">{error}</span>
-      ) : hint ? (
-        <span className="text-vos-xs text-vos-text-muted">{hint}</span>
-      ) : null}
+      <div className="flex items-center justify-between">
+        {error ? (
+          <span className="text-vos-xs text-vos-danger flex items-center gap-1">
+            <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
+              <circle cx="6" cy="6" r="5" stroke="currentColor" strokeWidth="1.5"/>
+              <path d="M6 3.5v3M6 8h.005" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
+            </svg>
+            {error}
+          </span>
+        ) : success ? (
+          <span className="text-vos-xs text-vos-success flex items-center gap-1">
+            <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
+              <circle cx="6" cy="6" r="5" stroke="currentColor" strokeWidth="1.5"/>
+              <path d="M4 6l1.5 1.5L8 5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+            </svg>
+            {success}
+          </span>
+        ) : hint ? (
+          <span className="text-vos-xs text-vos-text-muted">{hint}</span>
+        ) : <span/>}
+        {showCount && maxLength && (
+          <span className="text-vos-2xs text-vos-text-muted">
+            {rest.value?.toString().length || 0}/{maxLength}
+          </span>
+        )}
+      </div>
     </div>
   );
 });

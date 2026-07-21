@@ -5,6 +5,9 @@ export interface BadgeProps extends HTMLAttributes<HTMLSpanElement> {
   tone?: 'default' | 'accent' | 'success' | 'warning' | 'danger' | 'info';
   size?: 'sm' | 'md';
   dot?: boolean;
+  pulse?: boolean;
+  removable?: boolean;
+  onRemove?: () => void;
   children?: ReactNode;
 }
 
@@ -30,6 +33,9 @@ export function Badge({
   tone = 'default',
   size = 'md',
   dot,
+  pulse,
+  removable,
+  onRemove,
   className,
   children,
   ...rest
@@ -44,8 +50,36 @@ export function Badge({
       )}
       {...rest}
     >
-      {dot && <span className={cn('size-1.5 rounded-full', dotToneClass[tone])} />}
+      {dot && (
+        <span className="relative inline-flex">
+          <span className={cn('size-1.5 rounded-full', dotToneClass[tone])} />
+          {pulse && (
+            <span
+              className={cn(
+                'absolute inset-0 size-1.5 rounded-full animate-ping',
+                dotToneClass[tone],
+                'opacity-60',
+              )}
+            />
+          )}
+        </span>
+      )}
       {children}
+      {removable && onRemove && (
+        <button
+          type="button"
+          onClick={(e) => {
+            e.stopPropagation();
+            onRemove();
+          }}
+          className="ml-0.5 -mr-1 rounded-full p-0.5 opacity-60 transition-opacity hover:opacity-100"
+          aria-label="Remove"
+        >
+          <svg width="10" height="10" viewBox="0 0 10 10" fill="none">
+            <path d="M2.5 2.5l5 5M7.5 2.5l-5 5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+          </svg>
+        </button>
+      )}
     </span>
   );
 }

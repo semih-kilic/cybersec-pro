@@ -1,8 +1,13 @@
 /**
- * 🍎 CyberSec Pro — Apple-grade Globals (V20 / "Onyx")
+ * CyberSec Pro — Apple-grade Globals (V21 / "Onyx Enhanced")
  *
- * No aurora, no mesh, no rainbow. Just hairlines, generous whitespace,
- * and disciplined typography. The chrome stays out of the way.
+ * V21 Enhancements:
+ * - Enhanced button styles with loading states
+ * - Better card interactions (sheen, glow)
+ * - Improved input focus states
+ * - New micro-interaction utilities
+ * - Better animation keyframes
+ * - Enhanced glass effects
  */
 
 /* ============================================================ *
@@ -19,7 +24,7 @@
   letter-spacing: var(--vos-tracking-base);
 }
 
-/* Page canvas — solid, no decoration. Apple's hero pages start from black. */
+/* Page canvas — solid, no decoration. */
 .vos-bg-canvas {
   position: fixed;
   inset: 0;
@@ -31,12 +36,12 @@
 /* Topbar surface — theme-aware blur strip with hairline bottom */
 .vos-topbar-surface {
   background: var(--vos-topbar-bg);
-  backdrop-filter: blur(20px) saturate(180%);
-  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  backdrop-filter: var(--vos-blur-nav);
+  -webkit-backdrop-filter: var(--vos-blur-nav);
   box-shadow: 0 1px 0 0 var(--vos-border-1);
 }
 
-/* Optional very subtle vignette — only visible on huge displays */
+/* Optional very subtle vignette */
 .vos-vignette {
   position: fixed;
   inset: 0;
@@ -47,7 +52,7 @@
       rgba(10, 132, 255, 0.04), transparent 70%);
 }
 
-/* Legacy mesh class — kept as no-op for backward compat */
+/* Legacy mesh class — kept as no-op */
 .vos-bg-mesh {
   position: fixed;
   inset: 0;
@@ -85,7 +90,7 @@
   color: var(--vos-text);
 }
 
-/* Glass tiers — used only for sticky chrome (sidebar/topbar). */
+/* Glass tiers — used only for sticky chrome */
 .vos-glass-1 {
   background: var(--vos-bg-elev-1);
   border: 1px solid var(--vos-border-1);
@@ -110,11 +115,26 @@
   border-radius: var(--vos-radius-2xl);
 }
 
-/* Depth shadow tiers (no border / bg, pair with anything) */
+/* V21: Enhanced glass with backdrop-blur */
+.vos-glass-blur {
+  background: var(--vos-glass-tint);
+  backdrop-filter: var(--vos-blur-glass);
+  -webkit-backdrop-filter: var(--vos-blur-glass);
+  border: 1px solid var(--vos-border-1);
+  border-radius: var(--vos-radius-lg);
+}
+
+/* Depth shadow tiers */
 .vos-elevated-1 { box-shadow: var(--vos-shadow-1); }
 .vos-elevated-2 { box-shadow: var(--vos-shadow-2); }
 .vos-elevated-3 { box-shadow: var(--vos-shadow-3); }
 .vos-elevated-4 { box-shadow: var(--vos-shadow-4); }
+
+/* V21: Enhanced elevation tokens */
+.vos-elevated-glow { box-shadow: var(--vos-shadow-glow); }
+.vos-elevated-glow-strong { box-shadow: var(--vos-shadow-glow-strong); }
+.vos-elevated-inner { box-shadow: var(--vos-shadow-inner); }
+.vos-elevated-lifted { box-shadow: var(--vos-shadow-elevated); }
 
 .vos-hairline        { border: 1px solid var(--vos-border-1); }
 .vos-hairline-strong { border: 1px solid var(--vos-border-2); }
@@ -127,7 +147,7 @@
 }
 
 /* ============================================================ *
- *  INTERACTIONS
+ *  INTERACTIONS — V21 Enhanced
  * ============================================================ */
 
 /* Tactile press — subtle scale, Apple-style */
@@ -149,12 +169,47 @@
   border-color: var(--vos-border-2);
 }
 
+/* V21: Enhanced lift with glow */
+.vos-lift-glow {
+  transition:
+    transform var(--vos-dur-3) var(--vos-ease-spring),
+    box-shadow var(--vos-dur-3) var(--vos-ease-spring),
+    border-color var(--vos-dur-3) var(--vos-ease-spring);
+}
+.vos-lift-glow:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--vos-shadow-2), var(--vos-shadow-glow);
+  border-color: var(--vos-accent-soft);
+}
+
 /* No 3D tilt — Apple does not do this */
 .vos-tilt { transition: transform var(--vos-dur-3) var(--vos-ease-out); }
 .vos-tilt:hover { transform: translateY(-1px); }
 
-/* No moving sheen — flatten to no-op for backward compat */
-.vos-sheen { position: relative; }
+/* V21: Sheen effect — subtle highlight sweep */
+.vos-sheen {
+  position: relative;
+  overflow: hidden;
+}
+.vos-sheen::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 255, 255, 0.05),
+    transparent
+  );
+  transition: left var(--vos-dur-4) var(--vos-ease-out);
+  pointer-events: none;
+}
+.vos-sheen:hover::after {
+  left: 100%;
+}
 
 /* Focus ring — Apple system blue, 4px outer halo */
 .vos-focus-ring:focus-visible {
@@ -162,8 +217,17 @@
   box-shadow: var(--vos-glow-accent);
 }
 
+/* V21: Enhanced focus ring with transition */
+.vos-focus-ring-enhanced {
+  transition: box-shadow var(--vos-dur-2) var(--vos-ease-out);
+}
+.vos-focus-ring-enhanced:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 3px var(--vos-bg), 0 0 0 5px var(--vos-accent);
+}
+
 /* ============================================================ *
- *  CHIPS
+ *  CHIPS — V21 Enhanced
  * ============================================================ */
 .vos-chip {
   display: inline-flex;
@@ -178,6 +242,11 @@
   border: 1px solid var(--vos-border-1);
   color: var(--vos-text-2);
   letter-spacing: var(--vos-tracking-base);
+  transition: all var(--vos-dur-2) var(--vos-ease-out);
+}
+.vos-chip:hover {
+  background: var(--vos-bg-elev-4);
+  border-color: var(--vos-border-2);
 }
 .vos-chip-accent  { background: var(--vos-accent-soft);  color: var(--vos-accent);  border-color: transparent; }
 .vos-chip-success { background: var(--vos-success-soft); color: var(--vos-success); border-color: transparent; }
@@ -185,8 +254,17 @@
 .vos-chip-danger  { background: var(--vos-danger-soft);  color: var(--vos-danger);  border-color: transparent; }
 .vos-chip-info    { background: var(--vos-info-soft);    color: var(--vos-info);    border-color: transparent; }
 
+/* V21: Chip with pulse animation */
+.vos-chip-pulse {
+  animation: vos-chip-pulse 2s var(--vos-ease-in-out) infinite;
+}
+@keyframes vos-chip-pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.7; }
+}
+
 /* ============================================================ *
- *  BUTTONS — Apple's pill/rounded style
+ *  BUTTONS — V21 Enhanced
  * ============================================================ */
 .vos-btn {
   display: inline-flex;
@@ -206,13 +284,16 @@
   transition:
     background var(--vos-dur-2) var(--vos-ease-out),
     border-color var(--vos-dur-2) var(--vos-ease-out),
-    transform var(--vos-dur-1) var(--vos-ease-out);
+    transform var(--vos-dur-1) var(--vos-ease-out),
+    box-shadow var(--vos-dur-2) var(--vos-ease-out);
   white-space: nowrap;
+  position: relative;
+  overflow: hidden;
 }
 .vos-btn:hover { background: var(--vos-bg-elev-3); border-color: var(--vos-border-3); }
 .vos-btn:active { transform: scale(0.97); }
 .vos-btn:focus-visible { outline: none; box-shadow: var(--vos-glow-accent); }
-.vos-btn:disabled { opacity: 0.45; cursor: not-allowed; }
+.vos-btn:disabled { opacity: 0.45; cursor: not-allowed; pointer-events: none; }
 
 .vos-btn-primary {
   background: var(--vos-accent);
@@ -239,8 +320,72 @@
 .vos-btn-sm   { height: 28px; padding: 0 0.75rem; font-size: var(--vos-text-sm); }
 .vos-btn-lg   { height: 44px; padding: 0 1.5rem; font-size: var(--vos-text-md); font-weight: 600; }
 
+/* V21: New button variants */
+.vos-btn-link {
+  background: transparent;
+  border-color: transparent;
+  color: var(--vos-accent);
+  height: auto;
+  padding: 0;
+  border-radius: 0;
+}
+.vos-btn-link:hover {
+  color: var(--vos-accent-2);
+  text-decoration: underline;
+}
+
+.vos-btn-soft {
+  background: var(--vos-accent-soft);
+  color: var(--vos-accent);
+  border-color: transparent;
+}
+.vos-btn-soft:hover {
+  background: var(--vos-accent);
+  color: var(--vos-text-on-accent);
+}
+
+.vos-btn-outline {
+  background: transparent;
+  border-color: var(--vos-border-3);
+  color: var(--vos-text);
+}
+.vos-btn-outline:hover {
+  background: var(--vos-bg-elev-2);
+  border-color: var(--vos-accent);
+  color: var(--vos-accent);
+}
+
+/* V21: Button loading state */
+.vos-btn-loading {
+  color: transparent !important;
+}
+.vos-btn-loading::after {
+  content: '';
+  position: absolute;
+  width: 16px;
+  height: 16px;
+  border: 2px solid transparent;
+  border-top-color: currentColor;
+  border-radius: 50%;
+  animation: vos-btn-spin 0.6s linear infinite;
+}
+.vos-btn-primary.vos-btn-loading::after {
+  border-top-color: var(--vos-text-on-accent);
+}
+
+/* V21: Button with icon animation */
+.vos-btn-icon-animated {
+  transition: transform var(--vos-dur-2) var(--vos-ease-spring);
+}
+.vos-btn-icon-animated:hover {
+  transform: scale(1.05);
+}
+.vos-btn-icon-animated:active {
+  transform: scale(0.95);
+}
+
 /* ============================================================ *
- *  INPUTS
+ *  INPUTS — V21 Enhanced
  * ============================================================ */
 .vos-input {
   display: block;
@@ -266,8 +411,49 @@
   box-shadow: var(--vos-glow-accent);
 }
 
+/* V21: Input with error state */
+.vos-input-error {
+  border-color: var(--vos-danger);
+}
+.vos-input-error:focus {
+  border-color: var(--vos-danger);
+  box-shadow: var(--vos-glow-danger);
+}
+
+/* V21: Input with success state */
+.vos-input-success {
+  border-color: var(--vos-success);
+}
+.vos-input-success:focus {
+  border-color: var(--vos-success);
+  box-shadow: var(--vos-glow-success);
+}
+
+/* V21: Input with left/right icon */
+.vos-input-icon-left {
+  padding-left: 2.5rem;
+}
+.vos-input-icon-right {
+  padding-right: 2.5rem;
+}
+
+/* V21: Input character count */
+.vos-input-count {
+  position: relative;
+}
+.vos-input-count::after {
+  content: attr(data-count);
+  position: absolute;
+  right: 0.75rem;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: var(--vos-text-2xs);
+  color: var(--vos-text-muted);
+  pointer-events: none;
+}
+
 /* ============================================================ *
- *  TYPOGRAPHY UTILITIES — Apple's exact scale & tracking
+ *  TYPOGRAPHY UTILITIES — V21 Enhanced
  * ============================================================ */
 .vos-display {
   font-size: clamp(2.5rem, 5vw, var(--vos-text-6xl));
@@ -313,7 +499,7 @@
 .vos-mono { font-family: var(--vos-font-mono); }
 .vos-num  { font-variant-numeric: tabular-nums; font-feature-settings: 'tnum'; }
 
-/* Gradient text — kept very restrained (white → faint blue) */
+/* Gradient text */
 .vos-text-gradient {
   background: linear-gradient(180deg, #ffffff 0%, #b8b8c0 100%);
   -webkit-background-clip: text;
@@ -329,8 +515,27 @@
   -webkit-text-fill-color: transparent;
 }
 
+/* V21: Text utilities */
+.vos-text-truncate {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.vos-text-clamp-2 {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+.vos-text-clamp-3 {
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
 /* ============================================================ *
- *  ANIMATIONS — entry only, no decorative motion
+ *  ANIMATIONS — V21 Enhanced
  * ============================================================ */
 @keyframes vos-fade-in {
   from { opacity: 0; }
@@ -349,9 +554,57 @@
   to   { background-position: 200% 0; }
 }
 
+/* V21: New keyframes */
+@keyframes vos-btn-spin {
+  to { transform: rotate(360deg); }
+}
+@keyframes vos-slide-in-right {
+  from { opacity: 0; transform: translateX(16px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+@keyframes vos-slide-in-left {
+  from { opacity: 0; transform: translateX(-16px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+@keyframes vos-slide-in-up {
+  from { opacity: 0; transform: translateY(16px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes vos-slide-in-down {
+  from { opacity: 0; transform: translateY(-16px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes vos-pop-in {
+  from { opacity: 0; transform: scale(0.9); }
+  to   { opacity: 1; transform: scale(1); }
+}
+@keyframes vos-shake {
+  0%, 100% { transform: translateX(0); }
+  25% { transform: translateX(-4px); }
+  75% { transform: translateX(4px); }
+}
+@keyframes vos-bounce {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-4px); }
+}
+@keyframes vos-pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+
 .vos-fade-in { animation: vos-fade-in var(--vos-dur-3) var(--vos-ease-out) both; }
 .vos-rise-in { animation: vos-rise-in var(--vos-dur-4) var(--vos-ease-spring) both; }
 .vos-scale-in { animation: vos-scale-in var(--vos-dur-3) var(--vos-ease-spring) both; }
+
+/* V21: New animation utilities */
+.vos-slide-in-right { animation: vos-slide-in-right var(--vos-dur-3) var(--vos-ease-spring) both; }
+.vos-slide-in-left { animation: vos-slide-in-left var(--vos-dur-3) var(--vos-ease-spring) both; }
+.vos-slide-in-up { animation: vos-slide-in-up var(--vos-dur-3) var(--vos-ease-spring) both; }
+.vos-slide-in-down { animation: vos-slide-in-down var(--vos-dur-3) var(--vos-ease-spring) both; }
+.vos-pop-in { animation: vos-pop-in var(--vos-dur-2) var(--vos-ease-bounce) both; }
+.vos-shake { animation: vos-shake 0.3s var(--vos-ease-out); }
+.vos-bounce { animation: vos-bounce 0.5s var(--vos-ease-bounce); }
+.vos-pulse { animation: vos-pulse 2s var(--vos-ease-in-out) infinite; }
 
 /* Skeleton — single tonal grey shimmer */
 .vos-skeleton {
@@ -365,6 +618,16 @@
   animation: vos-shimmer 1.6s linear infinite;
   border-radius: var(--vos-radius-md);
 }
+
+/* V21: Stagger animation delay utilities */
+.vos-stagger-1 { animation-delay: 50ms; }
+.vos-stagger-2 { animation-delay: 100ms; }
+.vos-stagger-3 { animation-delay: 150ms; }
+.vos-stagger-4 { animation-delay: 200ms; }
+.vos-stagger-5 { animation-delay: 250ms; }
+.vos-stagger-6 { animation-delay: 300ms; }
+.vos-stagger-7 { animation-delay: 350ms; }
+.vos-stagger-8 { animation-delay: 400ms; }
 
 /* ============================================================ *
  *  SCROLLBAR — barely visible
@@ -399,7 +662,7 @@
 .vos-stack { position: relative; isolation: isolate; }
 
 /* ============================================================ *
- *  NAV ACTIVE STATE — Apple sidebar style (subtle fill, no glow)
+ *  NAV ACTIVE STATE — Apple sidebar style
  * ============================================================ */
 .vos-nav-item {
   position: relative;
@@ -409,9 +672,8 @@
   background: rgba(255, 255, 255, 0.07);
   color: var(--vos-text);
 }
-/* No gradient bar, no glow — Apple Mail / System Settings sidebars do not have that */
 
-/* Sidebar section header — Apple's group label */
+/* Sidebar section header */
 .vos-nav-section {
   font-size: 11px;
   font-weight: 600;
@@ -427,3 +689,72 @@
 .vos-page-spotlight::before { background: none !important; }
 .vos-ring-aurora::before { display: none !important; }
 .vos-spotlight { display: none !important; }
+
+/* ============================================================ *
+ *  V21: NEW UTILITY CLASSES
+ * ============================================================ */
+
+/* Glass card with hover effect */
+.vos-card-interactive {
+  background: var(--vos-bg-elev-2);
+  border: 1px solid var(--vos-border-1);
+  border-radius: var(--vos-radius-lg);
+  transition: all var(--vos-dur-2) var(--vos-ease-out);
+}
+.vos-card-interactive:hover {
+  background: var(--vos-bg-elev-3);
+  border-color: var(--vos-border-2);
+  box-shadow: var(--vos-shadow-2);
+}
+
+/* Gradient border */
+.vos-border-gradient {
+  position: relative;
+  border: none !important;
+}
+.vos-border-gradient::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  padding: 1px;
+  background: var(--vos-gradient-accent);
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  pointer-events: none;
+}
+
+/* Subtle background gradient */
+.vos-bg-gradient {
+  background: var(--vos-gradient-subtle);
+}
+
+/* Glass effect with blur */
+.vos-glass-effect {
+  background: var(--vos-glass-tint);
+  backdrop-filter: var(--vos-blur-glass);
+  -webkit-backdrop-filter: var(--vos-blur-glass);
+}
+
+/* Focus ring for form elements */
+.vos-focus-ring-form:focus {
+  outline: none;
+  box-shadow: 0 0 0 2px var(--vos-bg), 0 0 0 4px var(--vos-accent);
+}
+
+/* Smooth hover transition */
+.vos-hover-transition {
+  transition: all var(--vos-dur-2) var(--vos-ease-out);
+}
+
+/* Scale on hover */
+.vos-hover-scale {
+  transition: transform var(--vos-dur-2) var(--vos-ease-spring);
+}
+.vos-hover-scale:hover {
+  transform: scale(1.02);
+}
+.vos-hover-scale:active {
+  transform: scale(0.98);
+}

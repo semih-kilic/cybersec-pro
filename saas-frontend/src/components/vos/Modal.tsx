@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { cn } from '../../lib/cn';
 
 /**
- * Modal — centered glass dialog with scale-in transition.
+ * Modal — V21 Enhanced. Centered glass dialog with improved transitions.
  * For destructive confirmations, multi-step forms, etc.
  */
 export function Modal({
@@ -15,7 +15,7 @@ export function Modal({
 }: {
   open: boolean;
   onClose: () => void;
-  size?: 'sm' | 'md' | 'lg' | 'xl';
+  size?: 'sm' | 'md' | 'lg' | 'xl' | 'full';
   children?: ReactNode;
   className?: string;
 }) {
@@ -35,6 +35,7 @@ export function Modal({
     md: 'max-w-lg',
     lg: 'max-w-2xl',
     xl: 'max-w-4xl',
+    full: 'max-w-[calc(100vw-2rem)] max-h-[calc(100vh-2rem)]',
   };
 
   return (
@@ -46,17 +47,17 @@ export function Modal({
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            transition={{ duration: 0.2 }}
+            transition={{ duration: 0.2, ease: [0.22, 1, 0.36, 1] }}
             onClick={onClose}
-            className="absolute inset-0 bg-black/50 backdrop-blur-sm"
+            className="absolute inset-0 bg-black/60 backdrop-blur-sm"
             aria-hidden
           />
           <motion.div
             key="modal"
-            initial={{ opacity: 0, scale: 0.94, y: 12 }}
+            initial={{ opacity: 0, scale: 0.95, y: 8 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
-            exit={{ opacity: 0, scale: 0.96, y: 8 }}
-            transition={{ duration: 0.32, ease: [0.16, 1, 0.3, 1] }}
+            exit={{ opacity: 0, scale: 0.97, y: 4 }}
+            transition={{ duration: 0.25, ease: [0.16, 1, 0.3, 1] }}
             role="dialog"
             aria-modal="true"
             className={cn(
@@ -128,5 +129,55 @@ export function ModalFooter({ className, children }: { className?: string; child
     >
       {children}
     </footer>
+  );
+}
+
+/* ─── ConfirmModal — reusable confirmation dialog ──────────────── */
+export function ConfirmModal({
+  open,
+  onClose,
+  onConfirm,
+  title = 'Confirm Action',
+  description,
+  confirmLabel = 'Confirm',
+  cancelLabel = 'Cancel',
+  danger = false,
+  loading = false,
+}: {
+  open: boolean;
+  onClose: () => void;
+  onConfirm: () => void;
+  title?: string;
+  description?: ReactNode;
+  confirmLabel?: string;
+  cancelLabel?: string;
+  danger?: boolean;
+  loading?: boolean;
+}) {
+  return (
+    <Modal open={open} onClose={onClose} size="sm">
+      <ModalHeader title={title} onClose={onClose} />
+      <ModalBody>
+        {description && <p className="text-vos-sm text-vos-text-2">{description}</p>}
+      </ModalBody>
+      <ModalFooter>
+        <button
+          type="button"
+          onClick={onClose}
+          className="vos-btn"
+          disabled={loading}
+        >
+          {cancelLabel}
+        </button>
+        <button
+          type="button"
+          onClick={onConfirm}
+          className={cn('vos-btn', danger ? 'vos-btn-danger' : 'vos-btn-primary')}
+          disabled={loading}
+        >
+          {loading ? 'Processing...' : confirmLabel}
+        </button>
+      </ModalFooter>
+    </Modal>
   );
 }

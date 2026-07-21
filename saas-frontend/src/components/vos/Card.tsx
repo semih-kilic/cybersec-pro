@@ -2,13 +2,14 @@ import { forwardRef, type HTMLAttributes, type ReactNode } from 'react';
 import { cn } from '../../lib/cn';
 
 /**
- * Card — frosted glass surface, the workhorse container.
+ * Card — V21 Enhanced. Frosted glass surface, the workhorse container.
  *
  * Variants:
  *   - elevation: 1..4   (depth tier; 2 = default resting card)
  *   - interactive       (adds hover lift + subtle border highlight)
  *   - sheen             (animated highlight sweep on hover)
- *   - tilt              (subtle 3D tilt on hover — use sparingly)
+ *   - glow              (accent glow on hover)
+ *   - bordered          (stronger border for emphasis)
  *
  * Composition: pair with <CardHeader/> + <CardContent/> + <CardFooter/>
  * for consistent inner padding, or roll your own children.
@@ -17,7 +18,8 @@ export interface CardProps extends HTMLAttributes<HTMLDivElement> {
   elevation?: 1 | 2 | 3 | 4;
   interactive?: boolean;
   sheen?: boolean;
-  tilt?: boolean;
+  glow?: boolean;
+  bordered?: boolean;
   padded?: boolean;
 }
 
@@ -29,7 +31,7 @@ const elevationClass: Record<NonNullable<CardProps['elevation']>, string> = {
 };
 
 export const Card = forwardRef<HTMLDivElement, CardProps>(function Card(
-  { elevation = 2, interactive, sheen, tilt, padded, className, children, ...rest },
+  { elevation = 2, interactive, sheen, glow, bordered, padded, className, children, ...rest },
   ref,
 ) {
   return (
@@ -39,7 +41,8 @@ export const Card = forwardRef<HTMLDivElement, CardProps>(function Card(
         elevationClass[elevation],
         interactive && 'vos-lift cursor-pointer',
         sheen && 'vos-sheen',
-        tilt && 'vos-tilt',
+        glow && 'vos-lift-glow',
+        bordered && 'border-vos-border-2',
         padded && 'p-vos-6',
         className,
       )}
