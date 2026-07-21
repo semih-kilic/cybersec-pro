@@ -94,7 +94,7 @@ pub fn get_plan_configs() -> HashMap<&'static str, PlanConfig> {
         price_eur: 99,
         daily_scan_limit: 0,
         monthly_scan_limit: 250,
-        concurrent_scans: 50,
+        concurrent_scans: 5,
         max_projects: 5,
         max_team_members: 10,
         max_agents: 5,
