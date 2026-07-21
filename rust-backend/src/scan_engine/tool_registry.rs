@@ -4,7 +4,18 @@ use std::collections::HashMap;
 
 // ── Embedded Kali Tool Registry (518 tools) ────────────────
 
-const KALI_TOOLS_JSON: &str = include_str!("../../kali_tools.json");
+// Runtime-loaded from kali_tools.json (hot-reload support)
+fn load_kali_tools_json() -> String {
+    let paths = ["kali_tools.json", "../kali_tools.json", "../../kali_tools.json", "/home/cybersec/cybersec-pro/rust-backend/kali_tools.json"];
+    for path in &paths {
+        if let Ok(content) = std::fs::read_to_string(path) {
+            tracing::info!("Loaded kali_tools.json from {}", path);
+            return content;
+        }
+    }
+    tracing::warn!("kali_tools.json not found on disk");
+    include_str!("../../kali_tools.json").to_string()
+}
 
 #[derive(Debug, Clone, Deserialize)]
 pub struct KaliTool {
@@ -25,9 +36,10 @@ pub struct KaliTool {
 lazy_static::lazy_static! {
     /// All Kali tools indexed by multiple keys for fast lookup
     static ref KALI_REGISTRY: Vec<KaliTool> = {
-        match serde_json::from_str::<Vec<KaliTool>>(KALI_TOOLS_JSON) {
+        let json_str = load_kali_tools_json();
+        match serde_json::from_str::<Vec<KaliTool>>(&json_str) {
             Ok(tools) => {
-                tracing::info!("Loaded {} tools from kali_tools.json", tools.len());
+                tracing::info!("Loaded {} tools from kali_tools.json (runtime)", tools.len());
                 tools
             }
             Err(e) => {
