@@ -1,0 +1,78 @@
+# Dirsearch started Mon Jul 20 21:42:26 2026 as: /usr/lib/python3/dist-packages/dirsearch/dirsearch.py -u 127.0.0.1
+
+301   169B   http://127.0.0.1/404    -> REDIRECTS TO: http://127.0.0.1/404/
+302   145B   http://127.0.0.1/about    -> REDIRECTS TO: http://127.0.0.1/en/about/
+301   169B   http://127.0.0.1/api    -> REDIRECTS TO: http://127.0.0.1/api/
+404     0B   http://127.0.0.1/api/
+404     0B   http://127.0.0.1/api/2/explore/
+404     0B   http://127.0.0.1/api/__swagger__/
+404     0B   http://127.0.0.1/api/_swagger_/
+404     0B   http://127.0.0.1/api/api-docs
+404     0B   http://127.0.0.1/api/application.wadl
+404     0B   http://127.0.0.1/api/batch
+404     0B   http://127.0.0.1/api/apidocs/swagger.json
+404     0B   http://127.0.0.1/api/config
+404     0B   http://127.0.0.1/api/cask/graphql
+404     0B   http://127.0.0.1/api/apidocs
+303     0B   http://127.0.0.1/api/docs    -> REDIRECTS TO: /api/docs/
+404     0B   http://127.0.0.1/api/error_log
+200   734B   http://127.0.0.1/api/docs/
+404     0B   http://127.0.0.1/api/jsonws
+404     0B   http://127.0.0.1/api/jsonws/invoke
+404     0B   http://127.0.0.1/api/profile
+503   599B   http://127.0.0.1/api/proxy
+404     0B   http://127.0.0.1/api/package_search/v4/documentation
+404     0B   http://127.0.0.1/api/login.json
+503   599B   http://127.0.0.1/api/snapshots
+503   599B   http://127.0.0.1/api/spec/swagger.json
+404     0B   http://127.0.0.1/api/2/issue/createmeta
+404     0B   http://127.0.0.1/api/api
+503   599B   http://127.0.0.1/api/swagger.json
+503   599B   http://127.0.0.1/api/swagger.yaml
+503   599B   http://127.0.0.1/api/swagger.yml
+503   599B   http://127.0.0.1/api/swagger
+503   599B   http://127.0.0.1/api/v1/swagger.json
+404     0B   http://127.0.0.1/api/swagger/ui/index
+503   599B   http://127.0.0.1/api/v1/swagger.yaml
+503   599B   http://127.0.0.1/api/timelion/run
+503   599B   http://127.0.0.1/api/v1/
+503   599B   http://127.0.0.1/api/v2
+503   599B   http://127.0.0.1/api/v2/
+503   599B   http://127.0.0.1/api/v2/swagger.json
+503   599B   http://127.0.0.1/api/v2/helpdesk/discover
+503   599B   http://127.0.0.1/api/v2/swagger.yaml
+503   599B   http://127.0.0.1/api/v4
+503   599B   http://127.0.0.1/api/v3
+503   599B   http://127.0.0.1/api/version
+503   599B   http://127.0.0.1/api/vendor/phpunit/phpunit/phpunit
+404     0B   http://127.0.0.1/api/swagger/swagger
+503   599B   http://127.0.0.1/api/whoami
+503   599B   http://127.0.0.1/api/v1
+302   145B   http://127.0.0.1/blog    -> REDIRECTS TO: http://127.0.0.1/en/blog/
+302   145B   http://127.0.0.1/careers    -> REDIRECTS TO: http://127.0.0.1/en/careers/
+302   145B   http://127.0.0.1/contact    -> REDIRECTS TO: http://127.0.0.1/en/contact/
+302   145B   http://127.0.0.1/dashboard.php    -> REDIRECTS TO: https://app.cyber-sec-pro.com/dashboard.php
+302   145B   http://127.0.0.1/dashboard.aspx    -> REDIRECTS TO: https://app.cyber-sec-pro.com/dashboard.aspx
+302   145B   http://127.0.0.1/dashboard    -> REDIRECTS TO: https://app.cyber-sec-pro.com/dashboard
+302   145B   http://127.0.0.1/dashboard.jsp    -> REDIRECTS TO: https://app.cyber-sec-pro.com/dashboard.jsp
+302   145B   http://127.0.0.1/dashboard/    -> REDIRECTS TO: https://app.cyber-sec-pro.com/dashboard/
+302   145B   http://127.0.0.1/dashboard/phpinfo.php    -> REDIRECTS TO: https://app.cyber-sec-pro.com/dashboard/phpinfo.php
+301   169B   http://127.0.0.1/de    -> REDIRECTS TO: http://127.0.0.1/de/
+302   145B   http://127.0.0.1/docs    -> REDIRECTS TO: http://127.0.0.1/en/docs/
+302   145B   http://127.0.0.1/donate    -> REDIRECTS TO: http://127.0.0.1/en/donate/
+301   169B   http://127.0.0.1/en    -> REDIRECTS TO: http://127.0.0.1/en/
+200    41KB  http://127.0.0.1/en/admin/
+301   169B   http://127.0.0.1/es    -> REDIRECTS TO: http://127.0.0.1/es/
+301   169B   http://127.0.0.1/fr    -> REDIRECTS TO: http://127.0.0.1/fr/
+200     3B   http://127.0.0.1/health
+200     3B   http://127.0.0.1/healthcheck.php
+200     3B   http://127.0.0.1/health.json
+200     3B   http://127.0.0.1/healthz
+200   625B   http://127.0.0.1/manifest.json
+302   145B   http://127.0.0.1/privacy    -> REDIRECTS TO: http://127.0.0.1/en/privacy/
+200   104B   http://127.0.0.1/robots.txt
+301   169B   http://127.0.0.1/ru    -> REDIRECTS TO: http://127.0.0.1/ru/
+302   145B   http://127.0.0.1/security    -> REDIRECTS TO: http://127.0.0.1/en/security/
+200    21KB  http://127.0.0.1/sitemap.xml
+302   145B   http://127.0.0.1/terms    -> REDIRECTS TO: http://127.0.0.1/en/terms/
+302   145B   http://127.0.0.1/tools    -> REDIRECTS TO: http://127.0.0.1/en/tools/

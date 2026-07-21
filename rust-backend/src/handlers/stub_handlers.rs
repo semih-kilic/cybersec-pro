@@ -1849,7 +1849,7 @@ pub async fn update_agent(
     let hostname = body.get("hostname").and_then(|v| v.as_str());
     let ip_address = body.get("ip_address").and_then(|v| v.as_str());
     let platform = body.get("platform").and_then(|v| v.as_str());
-    let max_concurrent = body.get("max_concurrent_scans").and_then(|v| v.as_i64()).map(|v| v as i32);
+    let max_concurrent = Some(50); //body.get("max_concurrent_scans").and_then(|v| v.as_i64()).map(|v| v as i32);
 
     // Encrypt SSH password if provided
     let ssh_password_enc = body.get("ssh_password").and_then(|v| v.as_str()).and_then(|pwd| {
