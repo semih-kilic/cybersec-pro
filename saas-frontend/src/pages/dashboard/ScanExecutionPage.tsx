@@ -620,23 +620,23 @@ export function ScanExecutionPage() {
         icon={<Activity className="w-5 h-5" />}
         badge={<StatusPill tone={statusMeta.tone} pulse={statusMeta.pulse}>{statusMeta.label}</StatusPill>}
         actions={
-          <div className="flex items-center gap-vos-2">
-            {status === 'idle' && (
-              <button onClick={handleStartScan} disabled={!target.trim()} className="vos-btn-primary disabled:opacity-40 disabled:cursor-not-allowed">
-                <Play className="w-4 h-4" />
-                {t('scans.newScan', 'Start scan')}
-              </button>
-            )}
+          <div className="flex items-center gap-3">
             {status === 'running' && (
-              <button onClick={handleStopScan} className="vos-btn-danger">
+              <button onClick={handleStopScan} className="inline-flex items-center gap-2 px-5 py-2.5 bg-red-600 hover:bg-red-700 text-white font-semibold rounded-xl transition-all duration-200 shadow-lg shadow-red-600/20 hover:shadow-red-600/40">
                 <Square className="w-4 h-4" />
-                {t('common.cancel', 'Stop scan')}
+                {t('common.cancel', 'Stop Scan')}
               </button>
             )}
             {(status === 'completed' || status === 'failed' || status === 'cancelled') && (
-              <button onClick={handleNewScan} className="vos-btn-primary">
+              <button onClick={handleNewScan} className="inline-flex items-center gap-2 px-5 py-2.5 bg-gray-800 hover:bg-gray-700 text-white font-semibold rounded-xl border border-gray-700 transition-all duration-200">
                 <RotateCw className="w-4 h-4" />
-                {t('scans.newScan', 'New scan')}
+                {t('scans.newScan', 'New Scan')}
+              </button>
+            )}
+            {status === 'idle' && (
+              <button onClick={handleStartScan} disabled={!target.trim()} className="inline-flex items-center gap-2 px-6 py-2.5 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-500 hover:to-purple-500 text-white font-semibold rounded-xl transition-all duration-200 shadow-lg shadow-blue-600/20 hover:shadow-blue-600/40 disabled:opacity-40 disabled:cursor-not-allowed disabled:shadow-none">
+                <Play className="w-4 h-4" />
+                {t('scans.newScan', 'Run Scan')}
               </button>
             )}
           </div>
@@ -704,43 +704,87 @@ export function ScanExecutionPage() {
             title={
               <span className="flex items-center gap-2">
                 <Server className="w-4 h-4 text-vos-text-3" />
-                {t('scans.executionNode', 'Execution node')}
+                {t('scans.executionNode', 'Execution Node')}
               </span>
             }
             description={t('scans.executionHint', 'Choose where to run the scan. Use a private agent for internal networks.')}
           >
-            <div className="space-y-vos-3">
-              <select
-                value={selectedAgentId}
-                onChange={(e) => setSelectedAgentId(e.target.value)}
-                disabled={status === 'running'}
-                className="vos-input w-full disabled:opacity-50"
-              >
-                <option value="auto">{t('scanExec.runAuto', 'Auto — best available (public targets only)')}</option>
-                <option value="local">{t('scanExec.runLocal', 'Server — run on cloud (can target private IPs)')}</option>
-                {onlineAgents.map((agent) => (
-                  <option key={agent.id} value={agent.id}>
-                    {agent.name} — {agent.ip_address} (private network) · CPU {agent.cpu_usage}%
-                  </option>
-                ))}
-                {agents.filter((a) => a.status !== 'online').map((agent) => (
-                  <option key={agent.id} value={agent.id} disabled>
-                    {agent.name} — {agent.ip_address} · Offline
-                  </option>
-                ))}
-              </select>
-              <div className="flex items-center gap-2 text-vos-xs">
+            <div className="space-y-2">
+              {/* Auto Option */}
+              <label className={`flex items-center gap-3 p-3 rounded-xl border cursor-pointer transition-all duration-200 ${selectedAgentId === 'auto' ? 'border-blue-500 bg-blue-500/10 shadow-lg shadow-blue-500/10' : 'border-gray-700/50 hover:border-gray-600 bg-gray-800/30 hover:bg-gray-800/50'}`}>
+                <input type="radio" name="exec-agent" value="auto" checked={selectedAgentId === 'auto'} onChange={(e) => setSelectedAgentId(e.target.value)} disabled={status === 'running'} className="sr-only" />
+                <div className={`w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 transition-all ${selectedAgentId === 'auto' ? 'bg-blue-500 text-white' : 'bg-gray-700/50 text-gray-400'}`}>
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" /></svg>
+                </div>
+                <div className="flex-1 min-w-0">
+                  <div className="text-white text-sm font-medium">Auto — Best Available</div>
+                  <div className="text-gray-500 text-xs">Automatically select the best node for public targets</div>
+                </div>
+                {selectedAgentId === 'auto' && <div className="w-2.5 h-2.5 rounded-full bg-blue-500 flex-shrink-0" />}
+              </label>
+
+              {/* Server Option */}
+              <label className={`flex items-center gap-3 p-3 rounded-xl border cursor-pointer transition-all duration-200 ${selectedAgentId === 'local' ? 'border-emerald-500 bg-emerald-500/10 shadow-lg shadow-emerald-500/10' : 'border-gray-700/50 hover:border-gray-600 bg-gray-800/30 hover:bg-gray-800/50'}`}>
+                <input type="radio" name="exec-agent" value="local" checked={selectedAgentId === 'local'} onChange={(e) => setSelectedAgentId(e.target.value)} disabled={status === 'running'} className="sr-only" />
+                <div className={`w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 transition-all ${selectedAgentId === 'local' ? 'bg-emerald-500 text-white' : 'bg-gray-700/50 text-gray-400'}`}>
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 15a4 4 0 004 4h9a5 5 0 10-.1-9.999 5.002 5.002 0 10-9.78 2.096A4.001 4.001 0 003 15z" /></svg>
+                </div>
+                <div className="flex-1 min-w-0">
+                  <div className="text-white text-sm font-medium">Cloud Server</div>
+                  <div className="text-gray-500 text-xs">Run on CyberSec Pro infrastructure (can target private IPs)</div>
+                </div>
+                {selectedAgentId === 'local' && <div className="w-2.5 h-2.5 rounded-full bg-emerald-500 flex-shrink-0" />}
+              </label>
+
+              {/* Online Agents */}
+              {onlineAgents.map((agent) => (
+                <label key={agent.id} className={`flex items-center gap-3 p-3 rounded-xl border cursor-pointer transition-all duration-200 ${String(selectedAgentId) === String(agent.id) ? 'border-green-500 bg-green-500/10 shadow-lg shadow-green-500/10' : 'border-gray-700/50 hover:border-gray-600 bg-gray-800/30 hover:bg-gray-800/50'}`}>
+                  <input type="radio" name="exec-agent" value={String(agent.id)} checked={String(selectedAgentId) === String(agent.id)} onChange={(e) => setSelectedAgentId(e.target.value)} disabled={status === 'running'} className="sr-only" />
+                  <div className={`w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 transition-all ${String(selectedAgentId) === String(agent.id) ? 'bg-green-500 text-white' : 'bg-gray-700/50 text-gray-400'}`}>
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 3v2m6-2v2M9 19v2m6-2v2M5 9H3m2 6H3m18-6h-2m2 6h-2M7 19h10a2 2 0 002-2V7a2 2 0 00-2-2H7a2 2 0 00-2 2v10a2 2 0 002 2zM9 9h6v6H9V9z" /></svg>
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <div className="text-white text-sm font-medium">{agent.name}</div>
+                    <div className="text-gray-500 text-xs">{agent.ip_address} (private network) · CPU {agent.cpu_usage}%</div>
+                  </div>
+                  {String(selectedAgentId) === String(agent.id) && <div className="w-2.5 h-2.5 rounded-full bg-green-500 flex-shrink-0" />}
+                </label>
+              ))}
+
+              {/* Offline Agents */}
+              {agents.filter((a) => a.status !== 'online').length > 0 && (
+                <div className="pt-2 mt-2 border-t border-gray-800">
+                  <p className="text-gray-600 text-xs mb-2 px-1">Offline</p>
+                  {agents.filter((a) => a.status !== 'online').map((agent) => (
+                    <div key={agent.id} className="flex items-center gap-3 p-3 rounded-xl opacity-40">
+                      <div className="w-10 h-10 rounded-xl flex items-center justify-center bg-gray-800 text-gray-600 flex-shrink-0">
+                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636" /></svg>
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <div className="text-gray-500 text-sm">{agent.name}</div>
+                        <div className="text-gray-600 text-xs">Offline</div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              {/* Agent count */}
+              <div className="flex items-center gap-2 text-vos-xs pt-1">
                 <span className={`w-2 h-2 rounded-full ${onlineAgents.length > 0 ? 'bg-vos-success' : 'bg-vos-text-3'}`} />
                 <span className="text-vos-text-3">
                   {onlineAgents.length} agent{onlineAgents.length !== 1 ? 's' : ''} online
                 </span>
               </div>
+
+              {/* Private target warning */}
               {isPrivateTarget && selectedAgentId === 'auto' && (
-                <div className="rounded-vos-md border border-vos-warning/30 bg-vos-warning/10 px-vos-3 py-vos-2 text-vos-xs text-vos-warning flex items-start gap-2">
-                  <AlertTriangle className="w-3.5 h-3.5 mt-0.5 shrink-0" />
+                <div className="rounded-xl border border-amber-500/30 bg-amber-500/10 px-4 py-3 text-xs text-amber-400 flex items-start gap-2">
+                  <AlertTriangle className="w-4 h-4 mt-0.5 shrink-0" />
                   <span>Private IP detected. Select <strong>Server</strong> or a private agent to scan internal networks.</span>
                 </div>
               )}
+
               {executionInfo && (
                 <KeyValueGrid
                   cols={1}
@@ -750,10 +794,10 @@ export function ScanExecutionPage() {
                       value: (
                         <StatusPill tone={executionInfo.mode === 'agent' ? 'info' : executionInfo.mode === 'delegated' ? 'accent' : 'neutral'}>
                           {executionInfo.mode === 'delegated'
-                            ? '⚙️ Scan Engine'
+                            ? 'Scan Engine'
                             : executionInfo.mode === 'agent'
-                            ? '🛰️ Agent'
-                            : '🖥️ Running on Server'}
+                            ? 'Agent'
+                            : 'Running on Server'}
                         </StatusPill>
                       ),
                     },
