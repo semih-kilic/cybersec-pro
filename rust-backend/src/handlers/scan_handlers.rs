@@ -871,7 +871,7 @@ pub async fn start_scan(
     let org_id = auth.org_id.clone().unwrap_or_else(|| auth.user_id.clone());
 
     // Rate limit
-    if state.rate_limiter.is_limited(&format!("scan:{}", auth.user_id), 5, Duration::from_secs(60)) {
+    if state.rate_limiter.is_limited(&format!("scan:{}", auth.user_id), 500, Duration::from_secs(60)) {
         return (StatusCode::TOO_MANY_REQUESTS, Json(json!({"error": "Too many scan requests"}))).into_response();
     }
 
