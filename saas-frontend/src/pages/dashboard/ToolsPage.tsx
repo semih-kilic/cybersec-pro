@@ -1,11 +1,10 @@
 /**
- * 🛡️ Tools — Security Arsenal
+ * Tools — Security Arsenal
  *
- * V20 "Onyx" rewrite. Apple-grade restraint: monochrome surfaces,
+ * V21 "Onyx" polish. Apple-grade restraint: monochrome surfaces,
  * Apple system-blue accent, dense data presentation, severity-driven
- * status colors. All business logic (search, multi-category filter,
- * plan gating, virtualization) is preserved verbatim — only the
- * visual layer was rebuilt on top of Vision OS + SOC primitives.
+ * status colors. V21 refinements: tighter card grid, improved hover
+ * micro-interactions, cleaner search bar, better badge layout.
  */
 import { useState, useMemo, useCallback, useRef } from 'react';
 import { Link } from 'react-router-dom';
@@ -39,6 +38,8 @@ import {
   Monitor,
   Zap,
   ArrowRight,
+  SlidersHorizontal,
+  RotateCcw,
 } from 'lucide-react';
 import { useAuth } from '../../hooks/useAuth';
 import { useTranslation } from 'react-i18next';
@@ -76,7 +77,6 @@ interface Tool {
   last_health_check?: string | null;
 }
 
-/* ───────── Category metadata (icons + display names) ───────── */
 const categoryIcon: Record<string, React.ComponentType<{ size?: number | string; className?: string }>> = {
   web: Globe,
   forensics: Microscope,
@@ -236,6 +236,9 @@ export function ToolsPage() {
     setShowOnlyVerified(false);
   };
 
+  const hasActiveFilters =
+    searchQuery || selectedCategories.length > 0 || showOnlyInstalled || showOnlyAvailable || showOnlyVerified;
+
   if (loading) {
     return (
       <div className="min-h-screen">
@@ -248,45 +251,49 @@ export function ToolsPage() {
 
   return (
     <PageTransition>
-      <div className="p-vos-8 max-w-7xl mx-auto space-y-vos-6">
+      <div className="p-vos-8 max-w-[1440px] mx-auto space-y-vos-6">
         <PageHeader
           eyebrow="Arsenal"
           icon={<ShieldCheck size={22} />}
           title={t('tools.title', 'Security Tools')}
           description={
             <>
-              <span className="tabular-nums font-semibold text-vos-text">{totalTools}</span> professional
-              security tools across {Object.keys(allCategories).length} categories. Plan:{' '}
+              <span className="tabular-nums font-semibold text-vos-text">{totalTools}</span>{' '}
+              professional security tools across{' '}
+              <span className="tabular-nums">{Object.keys(allCategories).length}</span> categories.
+              Plan:{' '}
               <span className="text-vos-accent font-medium capitalize">{userPlan}</span>
               {showOnlyAvailable && (
-                <span className="ml-2 text-vos-accent">· showing {filteredCount} in your plan</span>
+                <span className="ml-2 text-vos-accent">
+                  · showing {filteredCount} in your plan
+                </span>
               )}
             </>
           }
           actions={
-            isEntryPlan && (
+            isEntryPlan ? (
               <Link
                 to="/dashboard/upgrade"
-                className="inline-flex items-center gap-2 h-10 px-vos-4 rounded-vos-md bg-vos-accent text-white text-vos-sm font-medium hover:opacity-90"
+                className="inline-flex items-center gap-2 h-10 px-vos-4 rounded-vos-md bg-vos-accent text-white text-vos-sm font-medium hover:bg-vos-accent-2 transition-colors duration-200"
               >
                 <Crown size={14} />
                 {t('common.upgradeNow', 'Upgrade')}
               </Link>
-            )
+            ) : undefined
           }
         />
 
         {/* Quick access — only for entry plans */}
         {isEntryPlan && !showOnlyAvailable && (
-          <section className="rounded-vos-xl border border-vos-border-1 bg-vos-bg-elev-2 p-vos-5">
-            <div className="flex items-center justify-between mb-vos-4">
+          <section className="rounded-vos-xl border border-vos-border-1 bg-vos-bg-elev-2 overflow-hidden">
+            <div className="flex items-center justify-between p-vos-5 pb-vos-4">
               <div className="flex items-center gap-vos-3">
                 <span className="size-9 rounded-vos-md bg-vos-accent/10 border border-vos-accent/20 flex items-center justify-center text-vos-accent">
                   <Sparkles size={16} />
                 </span>
                 <div>
                   <h3 className="text-vos-md font-semibold text-vos-text">
-                    {t('tools.quickAccessTitle', 'Quick Access — Popular Tools')}
+                    {t('tools.quickAccessTitle', 'Quick Access')}
                   </h3>
                   <p className="text-vos-xs text-vos-text-3">
                     {t('tools.quickAccessDesc', 'Click any tool to start scanning immediately')}
@@ -295,26 +302,27 @@ export function ToolsPage() {
               </div>
               <button
                 onClick={() => setShowOnlyAvailable(true)}
-                className="text-vos-xs font-medium text-vos-accent hover:opacity-80 flex items-center gap-1"
+                className="text-vos-xs font-medium text-vos-accent hover:text-vos-accent-2 flex items-center gap-1 transition-colors"
               >
                 Show only my tools <ArrowRight size={12} />
               </button>
             </div>
-            <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 gap-vos-2">
+            <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 gap-px bg-vos-border-1">
               {POPULAR_QUICK_TOOLS.map((tool) => {
                 const Icon = tool.icon;
                 return (
                   <Link
                     key={tool.id}
                     to={`/dashboard/tools/${tool.id}`}
-                    className="group rounded-vos-md border border-vos-border-1 bg-vos-bg-elev-3 hover:border-vos-accent/40 hover:bg-vos-accent/5 transition-colors p-vos-3 text-center"
+                    className="group relative bg-vos-bg-elev-2 p-vos-4 text-center transition-colors duration-150 hover:bg-vos-accent/5"
                   >
-                    <Icon
-                      size={18}
-                      className="mx-auto text-vos-text-2 group-hover:text-vos-accent transition-colors"
-                    />
-                    <div className="text-vos-sm font-medium text-vos-text mt-1.5">{tool.name}</div>
-                    <div className="text-[10px] text-vos-text-3">{tool.desc}</div>
+                    <div className="size-10 rounded-vos-md bg-vos-bg-elev-3 border border-vos-border-1 mx-auto flex items-center justify-center text-vos-text-2 group-hover:text-vos-accent group-hover:border-vos-accent/30 group-hover:bg-vos-accent/10 transition-all duration-200">
+                      <Icon size={18} />
+                    </div>
+                    <div className="text-vos-sm font-medium text-vos-text mt-2.5 group-hover:text-vos-accent transition-colors">
+                      {tool.name}
+                    </div>
+                    <div className="text-[10px] text-vos-text-3 mt-0.5">{tool.desc}</div>
                   </Link>
                 );
               })}
@@ -323,9 +331,10 @@ export function ToolsPage() {
         )}
 
         {/* Command bar — search + filters + view toggle */}
-        <section className="rounded-vos-xl border border-vos-border-1 bg-vos-bg-elev-2 p-vos-4 space-y-vos-4">
-          <div className="flex flex-col lg:flex-row gap-vos-2">
-            <label className="flex items-center gap-2 px-vos-3 h-10 rounded-vos-md bg-vos-bg-elev-3 border border-vos-border-1 focus-within:border-vos-accent focus-within:ring-2 focus-within:ring-vos-accent/30 transition-colors flex-1">
+        <section className="rounded-vos-xl border border-vos-border-1 bg-vos-bg-elev-2 p-vos-4 space-y-vos-3">
+          <div className="flex flex-col lg:flex-row gap-vos-3">
+            {/* Search input */}
+            <label className="relative flex items-center gap-2 px-vos-3 h-10 rounded-vos-md bg-vos-bg-canvas border border-vos-border-1 focus-within:border-vos-accent/60 focus-within:shadow-[0_0_0_3px_var(--vos-accent-soft)] transition-all duration-200 flex-1">
               <Search size={14} className="text-vos-text-3 shrink-0" />
               <input
                 type="search"
@@ -337,7 +346,7 @@ export function ToolsPage() {
               {searchQuery && (
                 <button
                   onClick={() => setSearchQuery('')}
-                  className="size-5 rounded hover:bg-vos-bg-elev-4 flex items-center justify-center text-vos-text-3"
+                  className="size-5 rounded hover:bg-vos-bg-elev-3 flex items-center justify-center text-vos-text-3 hover:text-vos-text transition-colors"
                   aria-label="Clear search"
                 >
                   <X size={12} />
@@ -345,6 +354,7 @@ export function ToolsPage() {
               )}
             </label>
 
+            {/* Filter controls */}
             <div className="flex flex-wrap items-center gap-vos-2">
               <FilterChip
                 label="Installed"
@@ -366,23 +376,25 @@ export function ToolsPage() {
                 onClick={() => setShowOnlyAvailable((v) => !v)}
               />
 
+              <div className="h-6 w-px bg-vos-border-1 mx-0.5" />
+
               <select
                 value={sortBy}
                 onChange={(e) => setSortBy(e.target.value as 'name' | 'category' | 'plan')}
-                className="h-8 px-vos-3 rounded-vos-md bg-vos-bg-elev-3 border border-vos-border-1 text-vos-xs text-vos-text-2 focus:outline-none focus:border-vos-accent"
+                className="h-8 px-vos-3 rounded-vos-md bg-vos-bg-canvas border border-vos-border-1 text-vos-xs text-vos-text-2 focus:outline-none focus:border-vos-accent focus:shadow-[0_0_0_3px_var(--vos-accent-soft)] cursor-pointer transition-all duration-200"
               >
                 <option value="category">{t('tools.sortByCategory', 'Category')}</option>
                 <option value="name">{t('tools.sortByName', 'Name')}</option>
                 <option value="plan">{t('tools.sortByPlan', 'Plan')}</option>
               </select>
 
-              <div className="flex p-0.5 rounded-vos-md bg-vos-bg-elev-3 border border-vos-border-1">
+              <div className="flex p-0.5 rounded-vos-md bg-vos-bg-canvas border border-vos-border-1">
                 <button
                   onClick={() => setViewMode('grid')}
                   aria-label="Grid view"
-                  className={`size-7 rounded flex items-center justify-center transition-colors ${
+                  className={`size-7 rounded flex items-center justify-center transition-all duration-150 ${
                     viewMode === 'grid'
-                      ? 'bg-vos-bg-elev-4 text-vos-text'
+                      ? 'bg-vos-bg-elev-3 text-vos-text shadow-sm'
                       : 'text-vos-text-3 hover:text-vos-text'
                   }`}
                 >
@@ -391,9 +403,9 @@ export function ToolsPage() {
                 <button
                   onClick={() => setViewMode('list')}
                   aria-label="List view"
-                  className={`size-7 rounded flex items-center justify-center transition-colors ${
+                  className={`size-7 rounded flex items-center justify-center transition-all duration-150 ${
                     viewMode === 'list'
-                      ? 'bg-vos-bg-elev-4 text-vos-text'
+                      ? 'bg-vos-bg-elev-3 text-vos-text shadow-sm'
                       : 'text-vos-text-3 hover:text-vos-text'
                   }`}
                 >
@@ -405,14 +417,15 @@ export function ToolsPage() {
 
           {/* Categories */}
           <div>
-            <div className="flex items-center gap-vos-3 mb-vos-2">
+            <div className="flex items-center gap-vos-2 mb-vos-2">
+              <SlidersHorizontal size={10} className="text-vos-text-3" />
               <span className="text-[10px] font-semibold uppercase tracking-vos-wide text-vos-text-3">
                 {t('tools.categoriesLabel', 'Categories')}
               </span>
               {selectedCategories.length > 0 && (
                 <button
                   onClick={() => setSelectedCategories([])}
-                  className="text-vos-xs text-vos-accent hover:opacity-80"
+                  className="text-vos-xs text-vos-accent hover:text-vos-accent-2 transition-colors ml-1"
                 >
                   Clear ({selectedCategories.length})
                 </button>
@@ -452,14 +465,12 @@ export function ToolsPage() {
               <> in {selectedCategories.length} categories</>
             )}
           </p>
-          {(searchQuery ||
-            selectedCategories.length > 0 ||
-            showOnlyInstalled ||
-            showOnlyAvailable) && (
+          {hasActiveFilters && (
             <button
               onClick={clearFilters}
-              className="text-vos-accent hover:opacity-80 font-medium"
+              className="inline-flex items-center gap-1 text-vos-accent hover:text-vos-accent-2 font-medium transition-colors"
             >
+              <RotateCcw size={10} />
               Clear all filters
             </button>
           )}
@@ -476,20 +487,24 @@ export function ToolsPage() {
         )}
 
         {Object.keys(filteredCategories).length === 0 && (
-          <div className="text-center py-vos-16 rounded-vos-xl border border-vos-border-1 bg-vos-bg-elev-2">
-            <span className="size-12 mx-auto rounded-vos-md bg-vos-bg-elev-3 border border-vos-border-1 flex items-center justify-center text-vos-text-3 mb-vos-3">
-              <Search size={20} />
-            </span>
-            <h3 className="text-vos-md font-semibold text-vos-text mb-1">
+          <div className="text-center py-vos-20 rounded-vos-xl border border-vos-border-1 bg-vos-bg-elev-2">
+            <div className="size-16 mx-auto rounded-vos-xl bg-vos-bg-elev-3 border border-vos-border-1 flex items-center justify-center text-vos-text-3 mb-vos-4">
+              <Search size={28} strokeWidth={1.5} />
+            </div>
+            <h3 className="text-vos-lg font-semibold text-vos-text mb-vos-2">
               {t('tools.noToolsFound', 'No tools found')}
             </h3>
-            <p className="text-vos-sm text-vos-text-3 mb-vos-4">
-              {t('tools.adjustFilters', 'Try adjusting your search or filter criteria.')}
+            <p className="text-vos-sm text-vos-text-3 mb-vos-5 max-w-sm mx-auto">
+              {t(
+                'tools.adjustFilters',
+                'Try adjusting your search or filter criteria to find what you\'re looking for.',
+              )}
             </p>
             <button
               onClick={clearFilters}
-              className="px-vos-4 h-9 rounded-vos-md bg-vos-accent text-white text-vos-sm font-medium hover:opacity-90"
+              className="inline-flex items-center gap-2 px-vos-5 h-10 rounded-vos-md bg-vos-accent text-white text-vos-sm font-medium hover:bg-vos-accent-2 transition-colors duration-200"
             >
+              <RotateCcw size={13} />
               Clear all filters
             </button>
           </div>
@@ -534,15 +549,15 @@ function VirtualizedToolGrid({
   const rowVirtualizer = useVirtualizer({
     count: virtualRows.length,
     getScrollElement: () => containerRef.current,
-    estimateSize: (index) => (virtualRows[index].type === 'header' ? 56 : 188),
+    estimateSize: (index) => (virtualRows[index].type === 'header' ? 56 : 260),
     overscan: 5,
   });
 
   return (
     <div
       ref={containerRef}
-      className="overflow-auto"
-      style={{ maxHeight: 'calc(100vh - 460px)' }}
+      className="overflow-auto rounded-vos-xl"
+      style={{ maxHeight: 'calc(100vh - 440px)' }}
     >
       <div
         style={{
@@ -566,7 +581,7 @@ function VirtualizedToolGrid({
                   height: `${virtualRow.size}px`,
                   transform: `translateY(${virtualRow.start}px)`,
                 }}
-                className="flex items-center gap-vos-3 pt-vos-5 pb-vos-2"
+                className="flex items-center gap-vos-3 pt-vos-5 pb-vos-3"
               >
                 <span className="size-9 rounded-vos-md bg-vos-bg-elev-3 border border-vos-border-1 flex items-center justify-center text-vos-text-2">
                   <CategoryIcon name={row.categoryKey} size={16} />
@@ -575,8 +590,11 @@ function VirtualizedToolGrid({
                   <h2 className="text-vos-md font-semibold text-vos-text tracking-vos-snug">
                     {categoryDisplayNames[row.categoryKey] || row.categoryKey}
                   </h2>
-                  <p className="text-vos-xs text-vos-text-3">{row.toolCount} tools</p>
+                  <p className="text-vos-xs text-vos-text-3">
+                    {row.toolCount} {row.toolCount === 1 ? 'tool' : 'tools'}
+                  </p>
                 </div>
+                <div className="flex-1 h-px bg-vos-border-1 ml-vos-3" />
               </div>
             );
           }
@@ -592,7 +610,7 @@ function VirtualizedToolGrid({
                 height: `${virtualRow.size}px`,
                 transform: `translateY(${virtualRow.start}px)`,
               }}
-              className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-vos-3 py-vos-2"
+              className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-vos-3 py-vos-1"
             >
               {row.tools.map(({ tool, categoryKey }) => (
                 <ToolCard
@@ -622,81 +640,106 @@ function ToolCard({
   void canUse;
   const { t } = useTranslation();
   return (
-    <div className="group rounded-vos-xl border border-vos-border-1 bg-vos-bg-elev-2 hover:border-vos-border-2 hover:bg-vos-bg-elev-3/50 transition-colors p-vos-4 flex flex-col">
-      <div className="flex items-start justify-between mb-vos-3">
-        <span className="size-9 rounded-vos-md bg-vos-bg-elev-3 border border-vos-border-1 flex items-center justify-center text-vos-text-2 group-hover:text-vos-accent group-hover:border-vos-accent/30 transition-colors">
+    <Link
+      to={`/dashboard/tools/${tool.id}`}
+      className="group block rounded-vos-lg border border-vos-border-1 bg-vos-bg-elev-2 hover:border-vos-border-2 hover:shadow-[var(--vos-shadow-2)] transition-all duration-200 p-vos-4 focus:outline-none focus:ring-2 focus:ring-vos-accent/40 focus:ring-offset-2 focus:ring-offset-vos-bg"
+    >
+      <div className="flex items-start justify-between gap-vos-2 mb-vos-3">
+        <div className="size-9 rounded-vos-md bg-vos-bg-elev-3 border border-vos-border-1 flex items-center justify-center text-vos-text-2 group-hover:text-vos-accent group-hover:border-vos-accent/30 group-hover:bg-vos-accent/10 transition-all duration-200 shrink-0">
           <CategoryIcon name={categoryKey} size={16} />
-        </span>
-        <div className="flex flex-col items-end gap-1">
-          {tool.maturity === 'verified' && (
-            <StatusPill tone="success">
-              <ShieldCheck size={10} />
-              Verified
-            </StatusPill>
-          )}
-          {tool.health_status === 'healthy' && (
-            <StatusPill tone="success">
-              <CheckCircle2 size={10} />
-              Self-Tested
-            </StatusPill>
-          )}
-          {tool.health_status === 'needs_interactive' && (
-            <StatusPill tone="warning">
-              <Monitor size={10} />
-              Interactive
-            </StatusPill>
-          )}
-          {tool.installed && (
-            <StatusPill tone="success">
-              <CheckCircle2 size={10} />
-              Installed
-            </StatusPill>
-          )}
-          {tool.gui_only && (
-            <StatusPill tone="warning">
-              <Monitor size={10} />
-              GUI
-            </StatusPill>
-          )}
-          {tool.requires_root && (
-            <StatusPill tone="warning">
-              <Lock size={10} />
-              Root
-            </StatusPill>
-          )}
-          {tool.dangerous && (
-            <StatusPill tone="danger">
-              <AlertTriangle size={10} />
-              Dangerous
-            </StatusPill>
-          )}
         </div>
+        <ToolBadges tool={tool} />
       </div>
-      <h3 className="text-vos-sm font-semibold text-vos-text">{tool.name}</h3>
-      <p className="text-vos-xs text-vos-text-3 line-clamp-2 mt-1 mb-vos-3 flex-1">
+      <h3 className="text-vos-sm font-semibold text-vos-text group-hover:text-vos-accent transition-colors duration-150 leading-tight">
+        {tool.name}
+      </h3>
+      <p className="text-vos-xs text-vos-text-3 line-clamp-2 mt-1 leading-relaxed">
         {tool.description || 'No description available'}
       </p>
-      <Link
-        to={`/dashboard/tools/${tool.id}`}
-        className="h-9 inline-flex items-center justify-center gap-1.5 rounded-vos-md bg-vos-bg-elev-3 hover:bg-vos-accent hover:text-white border border-vos-border-1 hover:border-vos-accent text-vos-text text-vos-xs font-medium transition-colors"
-      >
-        {tool.requires_root ? (
-          <>
-            <Lock size={12} />
-            {t('common.runAsRoot', 'Run as Root')}
-          </>
-        ) : tool.gui_only ? (
-          <>
-            <Monitor size={12} />
-            {t('common.runGuiTool', 'Run via Xvfb')}
-          </>
-        ) : (
-          <>
-            <TerminalSquare size={12} />
-            {t('common.runTool', 'Run Tool')}
-          </>
-        )}
-      </Link>
+      <div className="mt-vos-3 pt-vos-3 border-t border-vos-border-1">
+        <span className="h-8 inline-flex items-center justify-center gap-1.5 rounded-vos-md bg-vos-bg-elev-3 group-hover:bg-vos-accent group-hover:text-white border border-vos-border-1 group-hover:border-vos-accent text-vos-text text-vos-xs font-medium transition-all duration-200 w-full">
+          {tool.requires_root ? (
+            <>
+              <Lock size={11} />
+              {t('common.runAsRoot', 'Run as Root')}
+            </>
+          ) : tool.gui_only ? (
+            <>
+              <Monitor size={11} />
+              {t('common.runGuiTool', 'Run via Xvfb')}
+            </>
+          ) : (
+            <>
+              <TerminalSquare size={11} />
+              {t('common.runTool', 'Run Tool')}
+            </>
+          )}
+        </span>
+      </div>
+    </Link>
+  );
+}
+
+function ToolBadges({ tool }: { tool: Tool }) {
+  const badges: React.ReactNode[] = [];
+
+  if (tool.maturity === 'verified') {
+    badges.push(
+      <span key="verified" className="inline-flex items-center gap-1 px-1.5 h-5 rounded-vos-full bg-vos-success-soft text-vos-success text-[10px] font-semibold">
+        <ShieldCheck size={9} />
+        Verified
+      </span>,
+    );
+  }
+  if (tool.installed) {
+    badges.push(
+      <span key="installed" className="inline-flex items-center gap-1 px-1.5 h-5 rounded-vos-full bg-vos-success-soft text-vos-success text-[10px] font-semibold">
+        <CheckCircle2 size={9} />
+        Installed
+      </span>,
+    );
+  }
+  if (tool.health_status === 'needs_interactive') {
+    badges.push(
+      <span key="interactive" className="inline-flex items-center gap-1 px-1.5 h-5 rounded-vos-full bg-vos-warning-soft text-vos-warning text-[10px] font-semibold">
+        <Monitor size={9} />
+        Interactive
+      </span>,
+    );
+  }
+  if (tool.dangerous) {
+    badges.push(
+      <span key="dangerous" className="inline-flex items-center gap-1 px-1.5 h-5 rounded-vos-full bg-vos-danger-soft text-vos-danger text-[10px] font-semibold">
+        <AlertTriangle size={9} />
+        Dangerous
+      </span>,
+    );
+  }
+  if (tool.requires_root) {
+    badges.push(
+      <span key="root" className="inline-flex items-center gap-1 px-1.5 h-5 rounded-vos-full bg-vos-warning-soft text-vos-warning text-[10px] font-semibold">
+        <Lock size={9} />
+        Root
+      </span>,
+    );
+  }
+  if (tool.gui_only) {
+    badges.push(
+      <span key="gui" className="inline-flex items-center gap-1 px-1.5 h-5 rounded-vos-full bg-vos-info-soft text-vos-info text-[10px] font-semibold">
+        <Monitor size={9} />
+        GUI
+      </span>,
+    );
+  }
+
+  if (badges.length === 0) return null;
+
+  return (
+    <div className="flex flex-col items-end gap-0.5 shrink-0">
+      {badges.slice(0, 3)}
+      {badges.length > 3 && (
+        <span className="text-[9px] text-vos-text-3">+{badges.length - 3}</span>
+      )}
     </div>
   );
 }
@@ -730,7 +773,7 @@ function VirtualizedToolList({
 
   return (
     <div className="rounded-vos-xl border border-vos-border-1 bg-vos-bg-elev-2 overflow-hidden">
-      <div className="grid grid-cols-[3fr_2fr_1fr_1fr] px-vos-4 py-vos-2 bg-vos-bg-elev-1/40 border-b border-vos-border-1 text-[10px] uppercase tracking-vos-wide font-semibold text-vos-text-3">
+      <div className="grid grid-cols-[3fr_2fr_1fr_1fr] px-vos-4 py-vos-2.5 bg-vos-bg-elev-1/40 border-b border-vos-border-1 text-[10px] uppercase tracking-vos-wide font-semibold text-vos-text-3">
         <span>{t('tools.colTool', 'Tool')}</span>
         <span>{t('tools.colCategory', 'Category')}</span>
         <span>{t('tools.colStatus', 'Status')}</span>
@@ -739,7 +782,7 @@ function VirtualizedToolList({
       <div
         ref={containerRef}
         className="overflow-auto"
-        style={{ maxHeight: 'calc(100vh - 480px)' }}
+        style={{ maxHeight: 'calc(100vh - 460px)' }}
       >
         <div style={{ height: `${rowVirtualizer.getTotalSize()}px`, position: 'relative' }}>
           {rowVirtualizer.getVirtualItems().map((virtualRow) => {
@@ -755,7 +798,7 @@ function VirtualizedToolList({
                   height: `${virtualRow.size}px`,
                   transform: `translateY(${virtualRow.start}px)`,
                 }}
-                className="grid grid-cols-[3fr_2fr_1fr_1fr] items-center gap-vos-2 px-vos-4 border-t border-vos-border-1 hover:bg-vos-bg-elev-3/40 transition-colors"
+                className="grid grid-cols-[3fr_2fr_1fr_1fr] items-center gap-vos-2 px-vos-4 border-t border-vos-border-1 hover:bg-vos-bg-elev-3/40 transition-colors duration-100"
               >
                 <div className="flex items-center gap-vos-3 min-w-0">
                   <span className="size-7 rounded-vos-sm bg-vos-bg-elev-3 border border-vos-border-1 flex items-center justify-center text-vos-text-2 shrink-0">
@@ -782,7 +825,7 @@ function VirtualizedToolList({
                 <div className="text-right">
                   <Link
                     to={`/dashboard/tools/${tool.id}`}
-                    className="inline-flex items-center gap-1 px-vos-3 h-7 rounded-vos-sm bg-vos-bg-elev-3 hover:bg-vos-accent hover:text-white border border-vos-border-1 hover:border-vos-accent text-vos-xs font-medium transition-colors"
+                    className="inline-flex items-center gap-1 px-vos-3 h-7 rounded-vos-sm bg-vos-bg-elev-3 hover:bg-vos-accent hover:text-white border border-vos-border-1 hover:border-vos-accent text-vos-xs font-medium transition-all duration-150"
                   >
                     <TerminalSquare size={11} />
                     Run
@@ -797,8 +840,6 @@ function VirtualizedToolList({
   );
 }
 
-// Backward-compat default export
 export default ToolsPage;
 
-// Suppress unused import lint for Shield (was used in legacy heading)
 void Shield;
