@@ -274,7 +274,7 @@ export function ScanExecutionPage() {
       } catch (err) {
         console.error('Failed to load scan:', err);
         try {
-          const tk = localStorage.getItem('auth_token') || '';
+          const tk = localStorage.getItem('token') || '';
           const resp = await fetch(`/api/v1/scans/${scanId}`, {
             headers: { Authorization: `Bearer ${tk}` },
           });
@@ -395,6 +395,11 @@ export function ScanExecutionPage() {
           setProgress(100);
           setScanStartTime(null);
           setCurrentPhase(null);
+          if (finalStatus === 'completed') {
+            toast.success('Scan Completed', 'The security scan has finished successfully.');
+          } else if (finalStatus === 'failed') {
+            toast.error('Scan Failed', 'The security scan encountered an error.');
+          }
         },
         (nextStatus) => setStreamStatus(nextStatus),
         (phase) => {
@@ -411,7 +416,7 @@ export function ScanExecutionPage() {
     if (status !== 'running' || !currentScanId) return;
     const poll = setInterval(async () => {
       try {
-        const token = localStorage.getItem('auth_token') || '';
+        const token = localStorage.getItem('token') || '';
         const resp = await fetch(`/api/v1/scans/${currentScanId}`, {
           headers: { Authorization: `Bearer ${token}` },
         });
@@ -424,7 +429,12 @@ export function ScanExecutionPage() {
           setProgress(100);
           setScanStartTime(null);
           setResult(scan);
-          if (scan.status === 'completed') fetchBusinessResults();
+          if (scan.status === 'completed') {
+            toast.success('Scan Completed', 'The security scan has finished successfully.');
+            fetchBusinessResults();
+          } else if (scan.status === 'failed') {
+            toast.error('Scan Failed', 'The security scan encountered an error.');
+          }
         }
       } catch {
         /* polling error - ignore */
@@ -1143,6 +1153,20 @@ export function ScanExecutionPage() {
                     output.map((line, idx) => (
                       <div key={idx} className="whitespace-pre-wrap">{line}</div>
                     ))
+                  )}
+                  {status === 'completed' && (
+                    <div className="mt-4 p-4 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 text-sm flex items-center gap-2">
+                      <svg className="w-5 h-5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                      <span className="font-medium">Scan completed successfully.</span>
+                      <span className="text-emerald-400/60">View results or download the PDF report above.</span>
+                    </div>
+                  )}
+                  {status === 'failed' && (
+                    <div className="mt-4 p-4 rounded-xl bg-red-500/10 border border-red-500/30 text-red-400 text-sm flex items-center gap-2">
+                      <svg className="w-5 h-5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                      <span className="font-medium">Scan failed.</span>
+                      <span className="text-red-400/60">Check the output above for error details.</span>
+                    </div>
                   )}
                   {status === 'running' && (
                     <span className="inline-block w-2 h-4 bg-vos-success animate-pulse ml-1 align-middle" />

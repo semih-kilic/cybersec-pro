@@ -1059,6 +1059,9 @@ pub async fn start_scan(
         return (StatusCode::INTERNAL_SERVER_ERROR, Json(json!({"error": format!("Failed to create scan: {}", e)}))).into_response();
     }
 
+    // Phase: initializing
+    emit_phase_change(&state.scan_output_tx, &state.db, &scan_id, "initializing", "Scan initialized. Starting execution pipeline");
+
     // Phase: resolving_target (scan record created, now resolving target)
     emit_phase_change(&state.scan_output_tx, &state.db, &scan_id, "resolving_target", "Validating target and resolving DNS");
 
@@ -1275,6 +1278,9 @@ pub async fn start_scan(
         ));
     } else {
         tokio::spawn(async move {
+            // Phase: executing
+            emit_phase_change(&scan_tx, &db, &scan_id_clone, "executing", "Executing scan tool against target");
+
             let result = execute_scan(&tool_name, &target_owned, command_template.as_deref(), &scan_tx, &scan_id_clone, agent_ssh, is_gui_tool).await;
 
             let (status, output, findings, error_log) = match &result {
