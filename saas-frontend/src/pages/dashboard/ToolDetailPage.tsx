@@ -356,24 +356,64 @@ export function ToolDetailPage() {
 
             {/* Execution Node */}
             <div className="bg-gray-900 rounded-xl border border-gray-800 p-5">
-              <div className="flex items-center gap-2 mb-2">
+              <div className="flex items-center gap-2 mb-3">
                 <span className="text-lg">🖥️</span>
                 <h3 className="text-white font-semibold">{t('toolDetail.executionNode', 'Execution Node')}</h3>
               </div>
-              <p className="text-gray-500 text-xs mb-3">{t('toolDetail.executionHint', 'Choose where to run the scan. Use a private agent to scan internal networks behind your firewall.')}</p>
-              <select value={selectedAgentId} onChange={(e) => setSelectedAgentId(e.target.value)} disabled={isScanning}
-                className="w-full px-3 py-2.5 bg-gray-800 border border-gray-700 rounded-lg text-white focus:outline-none focus:border-kali-blue transition text-sm disabled:opacity-50">
-                <option value="server">☁️ Server (Default)</option>
+              <p className="text-gray-500 text-xs mb-4">{t('toolDetail.executionHint', 'Choose where to run the scan. Use a private agent to scan internal networks behind your firewall.')}</p>
+              <div className="space-y-2">
+                {/* Server Option */}
+                <label className={`flex items-center gap-3 p-3 rounded-lg border cursor-pointer transition ${selectedAgentId === 'server' ? 'border-kali-blue bg-kali-blue/10' : 'border-gray-700 hover:border-gray-600 bg-gray-800/50'}`}>
+                  <input type="radio" name="agent" value="server" checked={selectedAgentId === 'server'} onChange={(e) => setSelectedAgentId(e.target.value)} disabled={isScanning} className="sr-only" />
+                  <div className={`w-9 h-9 rounded-lg flex items-center justify-center text-sm flex-shrink-0 ${selectedAgentId === 'server' ? 'bg-kali-blue text-white' : 'bg-gray-700 text-gray-400'}`}>
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 15a4 4 0 004 4h9a5 5 0 10-.1-9.999 5.002 5.002 0 10-9.78 2.096A4.001 4.001 0 003 15z" /></svg>
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <div className="text-white text-sm font-medium">Cloud Server</div>
+                    <div className="text-gray-500 text-xs">Run on CyberSec Pro infrastructure</div>
+                  </div>
+                  {selectedAgentId === 'server' && <div className="w-2 h-2 rounded-full bg-kali-blue flex-shrink-0" />}
+                </label>
+
+                {/* Agent Options */}
                 {agents.filter(a => a.status === 'online').map(agent => (
-                  <option key={agent.id} value={String(agent.id)}>🟢 {agent.name} — {agent.ip_address || 'Private Network'}</option>
+                  <label key={agent.id} className={`flex items-center gap-3 p-3 rounded-lg border cursor-pointer transition ${String(selectedAgentId) === String(agent.id) ? 'border-green-500 bg-green-500/10' : 'border-gray-700 hover:border-gray-600 bg-gray-800/50'}`}>
+                    <input type="radio" name="agent" value={String(agent.id)} checked={String(selectedAgentId) === String(agent.id)} onChange={(e) => setSelectedAgentId(e.target.value)} disabled={isScanning} className="sr-only" />
+                    <div className={`w-9 h-9 rounded-lg flex items-center justify-center text-sm flex-shrink-0 ${String(selectedAgentId) === String(agent.id) ? 'bg-green-500 text-white' : 'bg-gray-700 text-gray-400'}`}>
+                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 3v2m6-2v2M9 19v2m6-2v2M5 9H3m2 6H3m18-6h-2m2 6h-2M7 19h10a2 2 0 002-2V7a2 2 0 00-2-2H7a2 2 0 00-2 2v10a2 2 0 002 2zM9 9h6v6H9V9z" /></svg>
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <div className="text-white text-sm font-medium">{agent.name}</div>
+                      <div className="text-gray-500 text-xs">{agent.ip_address || 'Private Network'}{agent.platform ? ` · ${agent.platform}` : ''}</div>
+                    </div>
+                    {String(selectedAgentId) === String(agent.id) && <div className="w-2 h-2 rounded-full bg-green-500 flex-shrink-0" />}
+                  </label>
                 ))}
-                {agents.filter(a => a.status !== 'online').map(agent => (
-                  <option key={agent.id} value={String(agent.id)} disabled>🔴 {agent.name} — Offline</option>
-                ))}
-              </select>
-              <div className="mt-2 flex items-center gap-2">
-                <span className={`w-2 h-2 rounded-full ${agents.filter(a => a.status === 'online').length > 0 ? 'bg-green-500' : 'bg-gray-500'}`} />
-                <span className="text-xs text-gray-400">{agents.filter(a => a.status === 'online').length} agent(s) online</span>
+
+                {agents.filter(a => a.status !== 'online').length > 0 && (
+                  <div className="pt-2 mt-2 border-t border-gray-800">
+                    <p className="text-gray-600 text-xs mb-2 px-1">Offline</p>
+                    {agents.filter(a => a.status !== 'online').map(agent => (
+                      <div key={agent.id} className="flex items-center gap-3 p-3 rounded-lg opacity-40">
+                        <div className="w-9 h-9 rounded-lg flex items-center justify-center text-sm bg-gray-800 text-gray-600 flex-shrink-0">
+                          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636" /></svg>
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <div className="text-gray-500 text-sm">{agent.name}</div>
+                          <div className="text-gray-600 text-xs">Offline</div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+
+                {agents.length === 0 && (
+                  <div className="p-4 rounded-lg border border-dashed border-gray-700 text-center">
+                    <svg className="w-8 h-8 text-gray-600 mx-auto mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 3v2m6-2v2M9 19v2m6-2v2M5 9H3m2 6H3m18-6h-2m2 6h-2M7 19h10a2 2 0 002-2V7a2 2 0 00-2-2H7a2 2 0 00-2 2v10a2 2 0 002 2zM9 9h6v6H9V9z" /></svg>
+                    <p className="text-gray-500 text-xs mb-2">No agents registered yet</p>
+                    <a href="/dashboard/agents" className="text-kali-blue text-xs hover:underline">Register an agent</a>
+                  </div>
+                )}
               </div>
             </div>
 
@@ -481,7 +521,60 @@ export function ToolDetailPage() {
               </div>
             )}
 
-            {/* Command Preview + Run Button */}
+            {/* Scan Actions */}
+            <div className="bg-gray-900 rounded-xl border border-gray-800 p-5">
+              {scanStatus === 'idle' && (
+                <>
+                  {(tool as any).gui_required && (
+                    <div className="mb-3 p-3 bg-blue-900/30 border border-blue-700/50 rounded-lg">
+                      <p className="text-blue-400 text-sm font-medium">⚡ GUI Tool — Runs headlessly via Xvfb virtual framebuffer on the server.</p>
+                    </div>
+                  )}
+                  <button onClick={handleRunScan} disabled={!getTargetValue().trim()}
+                    className="w-full py-3.5 bg-gradient-to-r from-kali-blue to-kali-purple text-white font-bold rounded-lg hover:opacity-90 transition flex items-center justify-center gap-2 disabled:opacity-40 disabled:cursor-not-allowed text-base">
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                    {t('scans.newScan', 'Run Scan')}
+                  </button>
+                </>
+              )}
+              {scanStatus === 'running' && (
+                <div className="space-y-3">
+                  <button onClick={handleStopScan} className="w-full py-3 bg-red-600 hover:bg-red-700 text-white font-bold rounded-lg transition flex items-center justify-center gap-2 text-base">
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><rect x="6" y="6" width="12" height="12" rx="1" /></svg>
+                    {t('common.cancel', 'Stop Scan')}
+                  </button>
+                  <div>
+                    <div className="flex items-center justify-between mb-2">
+                      <div className="flex items-center gap-2">
+                        <div className="w-2 h-2 rounded-full bg-yellow-500 animate-pulse" />
+                        <span className="text-yellow-500 text-sm">Scanning... {scanProgress}%</span>
+                      </div>
+                      <span className="text-gray-500 text-xs">{Math.floor(elapsedSeconds / 60)}:{String(elapsedSeconds % 60).padStart(2, '0')}</span>
+                    </div>
+                    <div className="w-full h-1.5 bg-gray-800 rounded-full overflow-hidden">
+                      <div className="h-full bg-gradient-to-r from-kali-blue to-kali-purple transition-all duration-300" style={{ width: `${Math.max(scanProgress, 5)}%` }} />
+                    </div>
+                  </div>
+                </div>
+              )}
+              {scanDone && (
+                <div className="space-y-3">
+                  <div className={`flex items-center gap-2 p-3 rounded-lg ${scanStatus === 'completed' ? 'bg-green-500/10 border border-green-500/30' : scanStatus === 'cancelled' ? 'bg-orange-500/10 border border-orange-500/30' : 'bg-red-500/10 border border-red-500/30'}`}>
+                    <div className={`w-2.5 h-2.5 rounded-full ${scanStatus === 'completed' ? 'bg-green-500' : scanStatus === 'cancelled' ? 'bg-orange-500' : 'bg-red-500'}`} />
+                    <span className={`text-sm font-medium ${scanStatus === 'completed' ? 'text-green-400' : scanStatus === 'cancelled' ? 'text-orange-400' : 'text-red-400'}`}>
+                      {scanStatus === 'completed' ? 'Scan completed successfully' : scanStatus === 'cancelled' ? 'Scan cancelled' : 'Scan failed'}
+                    </span>
+                  </div>
+                  <button onClick={handleNewScan} className="w-full py-3 bg-kali-blue hover:bg-kali-blue/80 text-white font-bold rounded-lg transition flex items-center justify-center gap-2">
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" /></svg>
+                    New Scan
+                  </button>
+                </div>
+              )}
+              {scanError && <p className="text-red-400 text-sm mt-3">{scanError}</p>}
+            </div>
+
+            {/* Command Preview */}
             <div className="bg-gray-900 rounded-xl border border-gray-800 p-5">
               <div className="flex items-center justify-between mb-3">
                 <h3 className="text-white font-semibold">{t('tools.command', 'Command')}</h3>
@@ -489,59 +582,9 @@ export function ToolDetailPage() {
                   <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" /></svg>
                 </button>
               </div>
-              <div className="bg-gray-950 rounded-lg p-3 mb-4">
+              <div className="bg-gray-950 rounded-lg p-3">
                 <code className="text-green-400 font-mono text-sm break-all">{scanCommand || generatedCommand || getToolSlug(tool)}</code>
               </div>
-
-              {scanStatus === 'idle' && (tool as any).gui_required && (
-                <div className="mb-3 p-3 bg-blue-900/30 border border-blue-700/50 rounded-lg">
-                  <p className="text-blue-400 text-sm font-medium">⚡ GUI Tool — Runs headlessly via Xvfb virtual framebuffer on the server.</p>
-                </div>
-              )}
-              {scanStatus === 'idle' && (
-                <button onClick={handleRunScan} disabled={!getTargetValue().trim()}
-                  className="w-full py-3.5 bg-gradient-to-r from-kali-blue to-kali-purple text-white font-bold rounded-lg hover:opacity-90 transition flex items-center justify-center gap-2 disabled:opacity-40 disabled:cursor-not-allowed text-base">
-                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
-                  {t('scans.newScan', 'Run Scan')}
-                </button>
-              )}
-              {scanStatus === 'running' && (
-                <button onClick={handleStopScan} className="w-full py-3.5 bg-red-600 hover:bg-red-700 text-white font-bold rounded-lg transition flex items-center justify-center gap-2 text-base">
-                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><rect x="6" y="6" width="12" height="12" rx="1" /></svg>
-                  {t('common.cancel', 'Stop Scan')}
-                </button>
-              )}
-              {scanDone && (
-                <button onClick={handleNewScan} className="w-full py-3.5 bg-kali-blue hover:bg-kali-blue/80 text-white font-bold rounded-lg transition flex items-center justify-center gap-2 text-base">
-                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" /></svg>
-                  {t('scans.newScan', 'New Scan')}
-                </button>
-              )}
-
-              {scanStatus === 'running' && (
-                <div className="mt-4">
-                  <div className="flex items-center justify-between mb-2">
-                    <div className="flex items-center gap-2">
-                      <div className="w-2 h-2 rounded-full bg-yellow-500 animate-pulse" />
-                      <span className="text-yellow-500 text-sm">Scanning... {scanProgress}%</span>
-                    </div>
-                    <span className="text-gray-500 text-xs">{Math.floor(elapsedSeconds / 60)}:{String(elapsedSeconds % 60).padStart(2, '0')}</span>
-                  </div>
-                  <div className="w-full h-1.5 bg-gray-800 rounded-full overflow-hidden">
-                    <div className="h-full bg-gradient-to-r from-kali-blue to-kali-purple transition-all duration-300" style={{ width: `${Math.max(scanProgress, 5)}%` }} />
-                  </div>
-                </div>
-              )}
-
-              {scanDone && (
-                <div className="mt-3 flex items-center gap-2">
-                  <div className={`w-2.5 h-2.5 rounded-full ${scanStatus === 'completed' ? 'bg-green-500' : scanStatus === 'cancelled' ? 'bg-orange-500' : 'bg-red-500'}`} />
-                  <span className={`text-sm font-medium ${scanStatus === 'completed' ? 'text-green-400' : scanStatus === 'cancelled' ? 'text-orange-400' : 'text-red-400'}`}>
-                    {scanStatus === 'completed' ? 'Scan Completed' : scanStatus === 'cancelled' ? 'Scan Cancelled' : 'Scan Failed'}
-                  </span>
-                </div>
-              )}
-              {scanError && <p className="text-red-400 text-sm mt-3">{scanError}</p>}
             </div>
 
             {/* Terminal Output */}
