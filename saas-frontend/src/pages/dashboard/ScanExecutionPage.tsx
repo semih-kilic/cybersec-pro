@@ -470,9 +470,12 @@ export function ScanExecutionPage() {
     const response = await api.executeScan(toolId, target, parameters, agentId, execMode);
 
     if (response.error) {
-      setError(response.error);
+      const hint = (response as any).hint;
+      const fullError = hint ? `${response.error}
+💡 Hint: ${hint}` : response.error;
+      setError(fullError);
       setStatus('failed');
-      setOutput((prev) => [...prev, `✖ Error: ${response.error}`]);
+      setOutput((prev) => [...prev, `✖ Error: ${response.error}`, hint ? `💡 ${hint}` : '']);
       return;
     }
 
@@ -684,6 +687,46 @@ export function ScanExecutionPage() {
             </div>
           </Section>
 
+          {tool && (tool.parameters as any)?.target_types && (tool.parameters as any).target_types.length > 0 && (
+            <Section
+              title={
+                <span className="flex items-center gap-2">
+                  <Info className="w-4 h-4 text-vos-info" />
+                  Accepted Target Types
+                </span>
+              }
+            >
+              <div className="flex flex-wrap gap-2">
+                {(tool.parameters as any).target_types.map((tt: string) => (
+                  <span key={tt} className="px-3 py-1 rounded-full text-xs font-medium bg-vos-bg-elev-1 border border-vos-border-1 text-vos-text-2">
+                    {tt === 'ip' && '🌐 IP Address'}
+                    {tt === 'domain' && '🔗 Domain'}
+                    {tt === 'url' && '🔗 URL'}
+                    {tt === 'host' && '🖥️ Host'}
+                    {tt === 'file' && '📄 File / Disk Image'}
+                    {tt === 'binary' && '⚙️ Binary'}
+                    {tt === 'hash' && '#️⃣ Hash'}
+                    {tt === 'target' && '🎯 Target'}
+                    {tt === 'network' && '🌐 Network'}
+                    {tt === 'wireless' && '📡 Wireless'}
+                    {tt === 'cloud' && '☁️ Cloud'}
+                    {tt === 'k8s' && '☸️ Kubernetes'}
+                    {tt === 'image' && '🖼️ Image'}
+                    {tt === 'apk' && '📱 APK'}
+                    {tt === 'mobile' && '📱 Mobile'}
+                    {tt === 'ad' && '🏢 Active Directory'}
+                    {tt === 'email' && '📧 Email'}
+                    {tt === 'username' && '👤 Username'}
+                    {!['ip','domain','url','host','file','binary','hash','target','network','wireless','cloud','k8s','image','apk','mobile','ad','email','username'].includes(tt) && tt}
+                  </span>
+                ))}
+              </div>
+              <p className="mt-2 text-vos-xs text-vos-text-3">
+                This tool only accepts the target types shown above. Using a different type will result in an error.
+              </p>
+            </Section>
+          )}
+
           {executionMode && executionMode.execution_mode !== 'normal' && (
             <Section
               title={
@@ -707,6 +750,46 @@ export function ScanExecutionPage() {
                   {t('scanExecution.notAvailableRemote', 'This scan type is not available for remote execution.')}
                 </p>
               )}
+            </Section>
+          )}
+
+          {tool && (tool.parameters as any)?.target_types && (tool.parameters as any).target_types.length > 0 && (
+            <Section
+              title={
+                <span className="flex items-center gap-2">
+                  <Info className="w-4 h-4 text-vos-info" />
+                  Accepted Target Types
+                </span>
+              }
+            >
+              <div className="flex flex-wrap gap-2">
+                {(tool.parameters as any).target_types.map((tt: string) => (
+                  <span key={tt} className="px-3 py-1 rounded-full text-xs font-medium bg-vos-bg-elev-1 border border-vos-border-1 text-vos-text-2">
+                    {tt === 'ip' && '🌐 IP Address'}
+                    {tt === 'domain' && '🔗 Domain'}
+                    {tt === 'url' && '🔗 URL'}
+                    {tt === 'host' && '🖥️ Host'}
+                    {tt === 'file' && '📄 File / Disk Image'}
+                    {tt === 'binary' && '⚙️ Binary'}
+                    {tt === 'hash' && '#️⃣ Hash'}
+                    {tt === 'target' && '🎯 Target'}
+                    {tt === 'network' && '🌐 Network'}
+                    {tt === 'wireless' && '📡 Wireless'}
+                    {tt === 'cloud' && '☁️ Cloud'}
+                    {tt === 'k8s' && '☸️ Kubernetes'}
+                    {tt === 'image' && '🖼️ Image'}
+                    {tt === 'apk' && '📱 APK'}
+                    {tt === 'mobile' && '📱 Mobile'}
+                    {tt === 'ad' && '🏢 Active Directory'}
+                    {tt === 'email' && '📧 Email'}
+                    {tt === 'username' && '👤 Username'}
+                    {!['ip','domain','url','host','file','binary','hash','target','network','wireless','cloud','k8s','image','apk','mobile','ad','email','username'].includes(tt) && tt}
+                  </span>
+                ))}
+              </div>
+              <p className="mt-2 text-vos-xs text-vos-text-3">
+                This tool only accepts the target types shown above.
+              </p>
             </Section>
           )}
 

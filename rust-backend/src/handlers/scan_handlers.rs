@@ -905,7 +905,73 @@ pub async fn start_scan(
         return (StatusCode::BAD_REQUEST, Json(json!({"error": "Valid target required"}))).into_response();
     }
 
-    // GUI tools: wrapped with Xvfb virtual framebuffer in executor
+
+    // Target type validation: check if target matches tool's expected target_types
+    if let Some(params) = tool.parameters.as_ref() {
+        if let Some(target_types) = params.get("target_types").and_then(|v| v.as_array()) {
+            let allowed: Vec<String> = target_types.iter()
+                .filter_map(|v| v.as_str().map(|s| s.to_lowercase()))
+                .collect();
+            
+            if !allowed.is_empty() {
+                // Classify the target
+                let target_lower = target.to_lowercase();
+                let is_ip = target_lower.parse::<std::net::IpAddr>().is_ok()
+                    || regex::Regex::new(r"^\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}(/\d{1,2})?$").unwrap().is_match(&target_lower)
+                    || target_lower.starts_with("10.") || target_lower.starts_with("172.") 
+                    || target_lower.starts_with("192.168.") || target_lower == "127.0.0.1"
+                    || target_lower == "localhost";
+                let is_url = target_lower.starts_with("http://") || target_lower.starts_with("https://");
+                let is_domain = !is_ip && !is_url && target_lower.contains(".") && !target_lower.contains(" ");
+                let is_file = target_lower.starts_with("/") || target_lower.starts_with("./") 
+                    || target_lower.contains(".txt") || target_lower.contains(".csv")
+                    || target_lower.contains(".json") || target_lower.contains(".pcap")
+                    || target_lower.contains(".img") || target_lower.contains(".raw")
+                    || target_lower.contains(".dd") || target_lower.contains(".E01")
+                    || target_lower.contains(".iso") || target_lower.contains(".bin");
+                let is_hash = target_lower.len() == 32 || target_lower.len() == 40 
+                    || target_lower.len() == 64 || target_lower.len() == 128;
+                
+                let mut detected_type = "unknown";
+                if is_ip { detected_type = "ip"; }
+                else if is_url { detected_type = "url"; }
+                else if is_file { detected_type = "file"; }
+                else if is_domain { detected_type = "domain"; }
+                else if is_hash { detected_type = "hash"; }
+                
+                let type_matches = allowed.iter().any(|a| {
+                    match a.as_str() {
+                        "ip" | "host" | "network" => is_ip,
+                        "url" => is_url,
+                        "domain" => is_domain,
+                        "file" | "path" | "image" | "binary" | "apk" => is_file,
+                        "hash" => is_hash,
+                        "target" => true, // generic target accepts anything
+                        _ => false,
+                    }
+                });
+                
+                if !type_matches && detected_type != "unknown" {
+                    return (StatusCode::BAD_REQUEST, Json(json!({
+                        "error": format!("This tool expects {} targets, but you provided a {}. Target: {}", 
+                            allowed.join(", "), detected_type, target),
+                        "code": "TARGET_TYPE_MISMATCH",
+                        "expected": allowed,
+                        "detected": detected_type,
+                        "hint": match detected_type {
+                            "ip" => "Try using nmap, masscan, or rustscan for IP targets.",
+                            "url" => "Try using nikto, wpscan, or whatweb for URL targets.",
+                            "domain" => "Try using subfinder, amass, or dnsenum for domain targets.",
+                            "file" => "Provide a file path (e.g., /path/to/image.img) for this tool.",
+                            _ => "Check the tool documentation for supported target types.",
+                        }
+                    }))).into_response();
+                }
+            }
+        }
+    }
+
+        // GUI tools: wrapped with Xvfb virtual framebuffer in executor
     let is_gui_tool = tool.gui_required.unwrap_or(false);
 
     // Check plan access
