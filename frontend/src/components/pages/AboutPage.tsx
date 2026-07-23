@@ -10,7 +10,7 @@ const ParticleField = dynamic(() => import("@/components/three/ParticleField"), 
 
 const stats = [
   { value: "2024", label: "Founded" },
-  {value: "325", label: "Kali Tools" },
+  {value: "329", label: "Kali Tools" },
   { value: "2", label: "Continents" },
   { value: "24/7", label: "Scanning" },
 ];
@@ -18,7 +18,7 @@ const stats = [
 const certifications = ["CEH", "MS Azure", "AWS", "CS50X", "15y ITS"];
 
 const values = [
-  { icon: Shield, title: "Accessibility", desc: "325 verified Kali tools accessible through your browser. Plans start free — no VMs, no CLI dependencies, no complex setup." },
+  { icon: Shield, title: "Accessibility", desc: "329 verified Kali tools accessible through your browser. Plans start free — no VMs, no CLI dependencies, no complex setup." },
   { icon: BookOpen, title: "Transparency", desc: "Every scan produces reproducible output. Raw results alongside parsed summaries so you can verify and audit every finding." },
   { icon: Lock, title: "Privacy & Trust", desc: "AES-256 encryption at rest, TLS 1.3 in transit. Multi-tenant isolation ensures your scan data stays yours." },
   { icon: Clock, title: "Continuous Protection", desc: "Scheduled scans, 24/7 monitoring, and real-time WebSocket alerts keep you ahead of emerging threats." },
@@ -36,7 +36,7 @@ const security = [
   { title: "AES-256 Encryption", desc: "Data encrypted at rest and in transit with military-grade encryption standards." },
   { title: "Global Infrastructure", desc: "Multi-region deployment for low-latency scanning and data residency compliance." },
   { title: "GDPR Ready", desc: "Full data subject rights: access, rectify, delete, export, and withdraw consent." },
-  { title: "EU Data Residency", desc: "European data stays in European data centers. Full sovereignty compliance." },
+  { title: "EU Data Residency", desc: "European data stays in European data centers. Data stays in-region for compliance." },
 ];
 
 export default function AboutPage() {
