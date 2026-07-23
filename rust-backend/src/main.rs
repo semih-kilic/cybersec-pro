@@ -17,6 +17,7 @@ use tokio::sync::broadcast;
 use tower_http::cors::CorsLayer;
 use tower_http::trace::TraceLayer;
 use tracing_subscriber::{fmt, EnvFilter};
+use crate::services::cache::CacheService;
 
 use middleware::rate_limiter::RateLimiter;
 use middleware::security_headers::security_headers;

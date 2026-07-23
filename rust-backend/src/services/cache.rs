@@ -1,17 +1,17 @@
-use redis::{AsyncCommands, Client};
-use std::sync::Arc;
+// Cache service for Redis-backed caching
+use redis::AsyncCommands;
 use std::time::Duration;
 
 /// Redis-backed cache service
 #[derive(Clone)]
 pub struct CacheService {
-    client: Client,
+    client: redis::Client,
 }
 
 impl CacheService {
     /// Create new cache service with Redis connection
     pub async fn new(redis_url: &str) -> anyhow::Result<Self> {
-        let client = Client::open(redis_url)?;
+        let client = redis::Client::open(redis_url)?;
         // Test connection
         let mut conn = client.get_multiplexed_async_connection().await?;
         let _: String = redis::cmd("PING").query_async(&mut conn).await?;
@@ -32,21 +32,21 @@ impl CacheService {
     /// Set value in cache with TTL
     pub async fn set(&self, key: &str, value: &str, ttl: Duration) -> anyhow::Result<()> {
         let mut conn = self.conn().await?;
-        conn.set_ex(key, value, ttl.as_secs()).await?;
+        conn.set_ex::<_, _, ()>(key, value, ttl.as_secs()).await?;
         Ok(())
     }
 
     /// Set value in cache without TTL (persistent)
     pub async fn set_permanent(&self, key: &str, value: &str) -> anyhow::Result<()> {
         let mut conn = self.conn().await?;
-        conn.set(key, value).await?;
+        conn.set::<_, _, ()>(key, value).await?;
         Ok(())
     }
 
     /// Delete key from cache
     pub async fn delete(&self, key: &str) -> anyhow::Result<()> {
         let mut conn = self.conn().await?;
-        conn.del(key).await?;
+        conn.del::<_, ()>(key).await?;
         Ok(())
     }
 
@@ -55,7 +55,7 @@ impl CacheService {
         let mut conn = self.conn().await?;
         let keys: Vec<String> = conn.keys(pattern).await?;
         if !keys.is_empty() {
-            conn.del(&keys).await?;
+            conn.del::<_, ()>(&keys).await?;
         }
         Ok(())
     }
@@ -105,8 +105,7 @@ impl CacheService {
     /// Health check
     pub async fn health_check(&self) -> anyhow::Result<bool> {
         let mut conn = self.conn().await?;
-        let result: Result<String, _> = redis::cmd("PING").query_async(&mut conn).await;
-        Ok(result.is_ok())
+        Ok(redis::cmd("PING").query_async::<_, String>(&mut conn).await.is_ok())
     }
 }
 
@@ -166,6 +165,7 @@ mod tests {
             .await
             .expect("Failed to connect to Redis");
 
+        // Test set/get
         cache.set("test_key", "test_value", std::time::Duration::from_secs(60))
             .await
             .expect("Set failed");
@@ -173,6 +173,7 @@ mod tests {
         let value = cache.get("test_key").await.expect("Get failed");
         assert_eq!(value, Some("test_value".to_string()));
 
+        // Test delete
         cache.delete("test_key").await.expect("Delete failed");
         let value = cache.get("test_key").await.expect("Get failed");
         assert_eq!(value, None);
