@@ -1,5 +1,4 @@
 mod handlers;
-mod cache;
 mod middleware;
 mod models;
 mod openapi;
@@ -75,8 +74,7 @@ async fn main() -> anyhow::Result<()> {
     let rate_limiter = RateLimiter::new();
 
     // Broadcast channel for scan SSE streaming
-    let (scan_output_tx,
-        cache, _rx) = broadcast::channel::<String>(1024);
+    let (scan_output_tx, _rx) = broadcast::channel::<String>(1024);
 
     // Initialize cache service
     let cache = Arc::new(
@@ -99,6 +97,7 @@ async fn main() -> anyhow::Result<()> {
         scan_output_tx,
         service_manager: service_manager.clone(),
         site_monitor: site_monitor.clone(),
+        cache,
     });
 
     // Spawn Service Manager monitoring loop (every 10s — auto-recovers crashed services)

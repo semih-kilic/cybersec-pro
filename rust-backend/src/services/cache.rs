@@ -1,19 +1,19 @@
-use redis::AsyncCommands;
-use std::sync::Arc;
+// Cache service for Redis-backed caching
+use redis::aio::MultiplexedConnection;
 use std::time::Duration;
 
 /// Redis-backed cache service
 #[derive(Clone)]
 pub struct CacheService {
     client: redis::Client,
-    connection_manager: redis::aio::ConnectionManager,
+    connection_manager: MultiplexedConnection,
 }
 
 impl CacheService {
     /// Create new cache service with Redis connection
     pub async fn new(redis_url: &str) -> anyhow::Result<Self> {
         let client = redis::Client::open(redis_url)?;
-        let connection_manager = redis::aio::ConnectionManager::new(client.clone()).await?;
+        let connection_manager = MultiplexedConnection::new(client.clone()).await?;
         Ok(Self { client, connection_manager })
     }
 
@@ -26,7 +26,7 @@ impl CacheService {
     /// Set value in cache with TTL
     pub async fn set(&self, key: &str, value: &str, ttl: Duration) -> anyhow::Result<()> {
         let mut conn = self.connection_manager.clone();
-        conn.set_ex(key, value, ttl.as_secs() as usize).await?;
+        conn.set_ex(key, value, ttl.as_secs()).await?;
         Ok(())
     }
 
