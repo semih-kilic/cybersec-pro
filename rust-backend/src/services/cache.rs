@@ -1,52 +1,58 @@
-// Cache service for Redis-backed caching
-use redis::aio::MultiplexedConnection;
+use redis::{AsyncCommands, Client};
+use std::sync::Arc;
 use std::time::Duration;
 
 /// Redis-backed cache service
 #[derive(Clone)]
 pub struct CacheService {
-    client: redis::Client,
-    connection_manager: MultiplexedConnection,
+    client: Client,
 }
 
 impl CacheService {
     /// Create new cache service with Redis connection
     pub async fn new(redis_url: &str) -> anyhow::Result<Self> {
-        let client = redis::Client::open(redis_url)?;
-        let connection_manager = MultiplexedConnection::new(client.clone()).await?;
-        Ok(Self { client, connection_manager })
+        let client = Client::open(redis_url)?;
+        // Test connection
+        let mut conn = client.get_multiplexed_async_connection().await?;
+        let _: String = redis::cmd("PING").query_async(&mut conn).await?;
+        Ok(Self { client })
+    }
+
+    /// Get a connection from the pool
+    async fn conn(&self) -> anyhow::Result<redis::aio::MultiplexedConnection> {
+        Ok(self.client.get_multiplexed_async_connection().await?)
     }
 
     /// Get value from cache
     pub async fn get(&self, key: &str) -> anyhow::Result<Option<String>> {
-        let mut conn = self.connection_manager.clone();
+        let mut conn = self.conn().await?;
         Ok(conn.get(key).await.ok())
     }
 
     /// Set value in cache with TTL
     pub async fn set(&self, key: &str, value: &str, ttl: Duration) -> anyhow::Result<()> {
-        let mut conn = self.connection_manager.clone();
+        let mut conn = self.conn().await?;
         conn.set_ex(key, value, ttl.as_secs()).await?;
         Ok(())
     }
 
     /// Set value in cache without TTL (persistent)
     pub async fn set_permanent(&self, key: &str, value: &str) -> anyhow::Result<()> {
-        let mut conn = self.connection_manager.clone();
+        let mut conn = self.conn().await?;
         conn.set(key, value).await?;
         Ok(())
     }
 
     /// Delete key from cache
     pub async fn delete(&self, key: &str) -> anyhow::Result<()> {
-        let mut conn = self.connection_manager.clone();
+        let mut conn = self.conn().await?;
         conn.del(key).await?;
         Ok(())
     }
 
     /// Delete multiple keys matching pattern
     pub async fn delete_pattern(&self, pattern: &str) -> anyhow::Result<()> {
-        let mut conn = self.connection_manager.clone();
+        let mut conn = self.conn().await?;
         let keys: Vec<String> = conn.keys(pattern).await?;
         if !keys.is_empty() {
             conn.del(&keys).await?;
@@ -56,25 +62,25 @@ impl CacheService {
 
     /// Check if key exists
     pub async fn exists(&self, key: &str) -> anyhow::Result<bool> {
-        let mut conn = self.connection_manager.clone();
+        let mut conn = self.conn().await?;
         Ok(conn.exists(key).await.unwrap_or(false))
     }
 
     /// Get TTL for key
     pub async fn ttl(&self, key: &str) -> anyhow::Result<Option<i64>> {
-        let mut conn = self.connection_manager.clone();
+        let mut conn = self.conn().await?;
         Ok(conn.ttl(key).await.ok())
     }
 
     /// Increment counter
     pub async fn incr(&self, key: &str) -> anyhow::Result<i64> {
-        let mut conn = self.connection_manager.clone();
+        let mut conn = self.conn().await?;
         Ok(conn.incr(key).await?)
     }
 
     /// Increment with TTL
     pub async fn incr_with_ttl(&self, key: &str, ttl: Duration) -> anyhow::Result<i64> {
-        let mut conn = self.connection_manager.clone();
+        let mut conn = self.conn().await?;
         let count: i64 = conn.incr(key).await?;
         if count == 1 {
             conn.expire(key, ttl.as_secs() as usize).await?;
@@ -84,13 +90,13 @@ impl CacheService {
 
     /// Get multiple values at once
     pub async fn mget(&self, keys: &[&str]) -> anyhow::Result<Vec<Option<String>>> {
-        let mut conn = self.connection_manager.clone();
+        let mut conn = self.conn().await?;
         Ok(conn.mget(keys).await?)
     }
 
     /// Set multiple values at once
     pub async fn mset(&self, pairs: &[(&str, &str)]) -> anyhow::Result<()> {
-        let mut conn = self.connection_manager.clone();
+        let mut conn = self.conn().await?;
         let flat: Vec<&str> = pairs.iter().flat_map(|(k, v)| vec![*k, *v]).collect();
         conn.mset(&flat).await?;
         Ok(())
@@ -98,8 +104,9 @@ impl CacheService {
 
     /// Health check
     pub async fn health_check(&self) -> anyhow::Result<bool> {
-        let mut conn = self.connection_manager.clone();
-        Ok(redis::cmd("PING").query_async::<_, String>(&mut conn).await.is_ok())
+        let mut conn = self.conn().await?;
+        let result: Result<String, _> = redis::cmd("PING").query_async(&mut conn).await;
+        Ok(result.is_ok())
     }
 }
 
@@ -159,7 +166,6 @@ mod tests {
             .await
             .expect("Failed to connect to Redis");
 
-        // Test set/get
         cache.set("test_key", "test_value", std::time::Duration::from_secs(60))
             .await
             .expect("Set failed");
@@ -167,7 +173,6 @@ mod tests {
         let value = cache.get("test_key").await.expect("Get failed");
         assert_eq!(value, Some("test_value".to_string()));
 
-        // Test delete
         cache.delete("test_key").await.expect("Delete failed");
         let value = cache.get("test_key").await.expect("Get failed");
         assert_eq!(value, None);
