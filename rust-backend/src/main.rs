@@ -1,4 +1,5 @@
 mod handlers;
+mod cache;
 mod middleware;
 mod models;
 mod openapi;
@@ -31,6 +32,7 @@ pub struct AppState {
     pub scan_output_tx: broadcast::Sender<String>,
     pub service_manager: Arc<ServiceManager>,
     pub site_monitor: Arc<SiteMonitor>,
+    pub cache: Arc<CacheService>,
 }
 
 #[tokio::main]
@@ -73,7 +75,15 @@ async fn main() -> anyhow::Result<()> {
     let rate_limiter = RateLimiter::new();
 
     // Broadcast channel for scan SSE streaming
-    let (scan_output_tx, _rx) = broadcast::channel::<String>(1024);
+    let (scan_output_tx,
+        cache, _rx) = broadcast::channel::<String>(1024);
+
+    // Initialize cache service
+    let cache = Arc::new(
+        CacheService::new("redis://127.0.0.1:6379")
+            .await
+            .expect("Failed to initialize cache service")
+    );
 
     // Initialize Service Manager (auto-recovery watchdog)
     let service_manager = ServiceManager::new();
@@ -634,3 +644,4 @@ async fn sales_plans_handler() -> impl axum::response::IntoResponse {
         "billing_cycle": "monthly"
     }))
 }
+
