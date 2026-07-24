@@ -5,7 +5,10 @@ use sqlx::postgres::PgPoolOptions;
 /// Schema is managed by init-db.sql in the Docker entrypoint.
 pub async fn init_db(database_url: &str) -> anyhow::Result<PgPool> {
     let pool = PgPoolOptions::new()
-        .max_connections(20)
+        .max_connections(10)
+        .min_connections(2)
+        .idle_timeout(std::time::Duration::from_secs(300))
+        .max_lifetime(std::time::Duration::from_secs(1800))
         .connect(database_url)
         .await?;
 
