@@ -234,7 +234,7 @@ export default function AboutPage() {
         <RevealOnScroll>
           <div className="glass-card bg-gradient-to-r from-[var(--color-neon)]/5 to-transparent p-8 text-center">
             <h2 className="text-2xl font-bold text-white mb-3">Ready to Secure Your Infrastructure?</h2>
-            <p className="text-sm text-white/50 mb-6">Start scanning with 325 professional security tools. No credit card required.</p>
+            <p className="text-sm text-white/50 mb-6">Start scanning with 329 professional security tools. No credit card required.</p>
             <div className="flex items-center justify-center gap-4">
               <a href="/dashboard/login" className="btn-primary text-sm">
                 Start Free Scan
