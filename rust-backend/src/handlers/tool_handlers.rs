@@ -5,12 +5,15 @@ use axum::{
     Json,
 };
 use serde::Deserialize;
+use std::time::Duration;
 use serde_json::json;
 use std::sync::Arc;
 
 use crate::middleware::auth_middleware::AuthUser;
 use crate::models::Tool;
 use crate::AppState;
+use crate::services::cache::CacheService;
+use crate::services::cache::keys;
 
 // â”€â”€ Pure helpers (testable without DB) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
@@ -73,6 +76,14 @@ pub async fn list_tools(
     let page = q.page.unwrap_or(1).max(1);
     let per_page = q.per_page.unwrap_or(50).min(200);
     let offset = (page - 1) * per_page;
+
+    // Build cache key
+    let cache_key = keys::tools_list(page, per_page, q.search.as_deref());
+    
+    // Try cache first
+    if let Ok(Some(cached)) = state.cache.get(&cache_key).await {
+        return Json(serde_json::from_str(&cached).unwrap());
+    }
 
     // Get user's plan for informational purposes (no longer filters tools)
     let org_plan = if let Some(ref org_id) = auth.org_id {
@@ -152,14 +163,19 @@ pub async fn list_tools(
 
     let response: Vec<_> = tools.iter().map(|t| t.to_response()).collect();
 
-    Json(json!({
+    let json_response = json!({
         "tools": response,
         "total": total.0,
         "total_tools": total.0,
         "page": page,
         "per_page": per_page,
         "pages": (total.0 as f64 / per_page as f64).ceil() as i64
-    }))
+    });
+
+    // Cache the response
+    let _ = state.cache.set(&cache_key, &json_response.to_string(), Duration::from_secs(300)).await;
+
+    Json(json_response)
 }
 
 // â”€â”€ Get Tool â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
@@ -191,6 +207,12 @@ pub async fn get_tool(
 pub async fn tools_count(
     State(state): State<Arc<AppState>>,
 ) -> impl IntoResponse {
+    // Try cache first
+    let cache_key = keys::tools_count();
+    if let Ok(Some(cached)) = state.cache.get(&cache_key).await {
+        return Json(serde_json::from_str(&cached).unwrap());
+    }
+
     let total: (i64,) = sqlx::query_as("SELECT COUNT(*) FROM tools WHERE is_active = TRUE")
         .fetch_one(&state.db)
         .await
@@ -218,7 +240,7 @@ pub async fn tools_count(
     // All plans now have access to all tools
     let total_tools = total.0;
 
-    Json(json!({
+    let json_response = json!({
         "total": total_tools,
         "categories_total": categories_total,
         "trial_days": trial_days,
@@ -230,7 +252,12 @@ pub async fn tools_count(
             "team": total_tools,
             "enterprise": total_tools,
         }
-    }))
+    });
+
+    // Cache the response
+    let _ = state.cache.set(&cache_key, &json_response.to_string(), Duration::from_secs(300)).await;
+
+    Json(json_response)
 }
 
 // â”€â”€ Tool Health â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
@@ -318,6 +345,12 @@ pub async fn tools_stats(
     State(state): State<Arc<AppState>>,
     _auth: AuthUser,
 ) -> impl IntoResponse {
+    // Try cache first
+    let cache_key = keys::tools_count();
+    if let Ok(Some(cached)) = state.cache.get(&cache_key).await {
+        return Json(serde_json::from_str(&cached).unwrap());
+    }
+
     let total: (i64,) = sqlx::query_as("SELECT COUNT(*) FROM tools WHERE is_active = TRUE")
         .fetch_one(&state.db)
         .await
