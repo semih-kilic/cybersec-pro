@@ -75,13 +75,13 @@ impl CacheService {
     /// Increment counter
     pub async fn incr(&self, key: &str) -> anyhow::Result<i64> {
         let mut conn = self.conn().await?;
-        Ok(conn.incr::<_, i64, i64>(key, 1).await?)
+        Ok(conn.incr(key, 1).await?)
     }
 
     /// Increment with TTL
     pub async fn incr_with_ttl(&self, key: &str, ttl: Duration) -> anyhow::Result<i64> {
         let mut conn = self.conn().await?;
-        let count: i64 = conn.incr::<_, i64, i64>(key, 1).await?;
+        let count: i64 = conn.incr(key, 1).await?;
         if count == 1 {
             conn.expire::<_, ()>(key, ttl.as_secs() as i64).await?;
         }
@@ -104,7 +104,8 @@ impl CacheService {
     /// Health check
     pub async fn health_check(&self) -> anyhow::Result<bool> {
         let mut conn = self.conn().await?;
-        Ok(redis::cmd("PING").query_async::<_, String>(&mut conn).await.is_ok())
+        let _: String = redis::cmd("PING").query_async(&mut conn).await?;
+        Ok(true)
     }
 }
 
