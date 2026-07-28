@@ -121,7 +121,7 @@ def main():
         urls.append("  <url>\n    <loc>https://cyber-sec-pro.com/en/" + slug + "/</loc>\n    <lastmod>" + lastmod + "</lastmod>\n    <changefreq>" + cf + "</changefreq>\n    <priority>" + str(prio) + "</priority>\n    <xhtml:link rel=\"alternate\" hreflang=\"en\" href=\"https://cyber-sec-pro.com/en/" + slug + "/\" />\n    <xhtml:link rel=\"alternate\" hreflang=\"tr\" href=\"https://cyber-sec-pro.com/tr/" + slug + "/\" />\n    <xhtml:link rel=\"alternate\" hreflang=\"x-default\" href=\"https://cyber-sec-pro.com/en/" + slug + "/\" />\n  </url>")
 
         # Turkish version
-        urls.append("  <url>\n    <loc>https://cyber-sec-pro.com/tr/" + slug + "/</loc>\n    <lastmod>" + lastmod + "</lastmod>\n    <changefreq>" + cf + "</changefreq>\n    <priority>" + str(0.8 * 0.875) + "</priority>\n  </url>")
+        urls.append("  <url>\n    <loc>https://cyber-sec-pro.com/tr/" + slug + "/</loc>\n    <lastmod>" + lastmod + "</lastmod>\n    <changefreq>" + cf + "</changefreq>\n    <priority>" + str(prio * 0.875) + "</priority>\n  </url>")
 
     # Other pages
     OTHER_PAGES = [
@@ -142,11 +142,11 @@ def main():
             hreflangs = []
             for lc2, hrf2 in LOCALES:
                 prefix2 = "/" + lc2 if lc2 != "en" else ""
-                links.append((hrf2, "https://cyber-sec-pro.com" + prefix2 + "/" + page + "/"))
-            links.append(("x-default", "https://cyber-sec-pro.com/en/" + page + "/"))
+                hreflangs.append((hrf2, "https://cyber-sec-pro.com" + prefix2 + "/" + page + "/"))
+            hreflangs.append(("x-default", "https://cyber-sec-pro.com/en/" + page + "/"))
             urls.append(add_url(
                 "https://cyber-sec-pro.com" + prefix + "/" + page + "/",
-                "2026-04-14", cf, prio, links
+                "2026-04-14", cf, prio, hreflangs
             ))
 
     # Build XML
