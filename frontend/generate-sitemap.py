@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 import os
 import sys
-from datetime import datetime
 
 LOCALES = [
     ("en", "en"),
@@ -24,7 +23,7 @@ def add_url(loc, lastmod, changefreq, priority, hreflangs=None):
     if hreflangs:
         for hrf, href in hreflangs:
             url += "\n    <xhtml:link rel=\"alternate\" hreflang=\"" + hrf + "\" href=\"" + href + "\" />"
-    url += "\n  </url>"
+        url += "\n  </url>"
     return url
 
 def main():
@@ -63,44 +62,40 @@ def main():
     urls = []
 
     # Home pages for all locales
-    for lc, hrf in LOCALES:
+    for lc, hrf in [("en", "en"), ("tr", "tr"), ("de", "de"), ("fr", "fr"), ("es", "es"), ("ar", "ar"), ("ja", "ja"), ("zh", "zh"), ("ru", "ru"), ("ko", "ko")]:
         prefix = "/" + lc if lc != "en" else ""
         hreflangs = []
-        for lc2, hrf2 in LOCALES:
+        for lc2, hrf2 in [("en", "en"), ("tr", "tr"), ("de", "de"), ("fr", "fr"), ("es", "es"), ("ar", "ar"), ("ja", "ja"), ("zh", "zh"), ("ru", "ru"), ("ko", "ko")]:
             prefix2 = "/" + lc2 if lc2 != "en" else ""
             hreflangs.append((hrf2, "https://cyber-sec-pro.com" + prefix2 + "/"))
         hreflangs.append(("x-default", "https://cyber-sec-pro.com/"))
 
-        urls.append(add_url(
-            "https://cyber-sec-pro.com" + prefix + "/",
-            "2026-04-14", "weekly", 1.0 if lc == "en" else 0.9,
-            [("en", "https://cyber-sec-pro.com/"), ("tr", "https://cyber-sec-pro.com/tr/"),
-             ("de", "https://cyber-sec-pro.com/de/"), ("fr", "https://cyber-sec-pro.com/fr/"),
-             ("es", "https://cyber-sec-pro.com/es/"), ("ar", "https://cyber-sec-pro.com/ar/"),
-             ("ja", "https://cyber-sec-pro.com/ja/"), ("zh", "https://cyber-sec-pro.com/zh/"),
-             ("ru", "https://cyber-sec-pro.com/ru/"), ("ko", "https://cyber-sec-pro.com/ko/"),
-             ("x-default", "https://cyber-sec-pro.com/")]
-        ))
+        urls.append("  <url>\n    <loc>https://cyber-sec-pro.com" + prefix + "/</loc>\n    <lastmod>2026-04-14</lastmod>\n    <changefreq>weekly</changefreq>\n    <priority>" + ("1.0" if lc == "en" else "0.9") + "</priority>\n" + "\n".join(['    <xhtml:link rel="alternate" hreflang="' + hrf2 + '" href="https://cyber-sec-pro.com' + ("/" + lc2 if lc2 != "en" else "") + '/"/> for lc2, hrf2 in [("en", "en"), ("tr", "tr"), ("de", "de"), ("fr", "fr"), ("es", "es"), ("ar", "ar"), ("ja", "ja"), ("zh", "zh"), ("ru", "ru"), ("ko", "ko")]) + '\n    <xhtml:link rel="alternate" hreflang="x-default" href="https://cyber-sec-pro.com/"/> + "\n  </url>")
 
     # Tools page
-    for lc, hrf in LOCALES:
+    for lc, hrf in [("en", "en"), ("tr", "tr"), ("de", "de"), ("fr", "fr"), ("es", "es"), ("ar", "ar"), ("ja", "ja"), ("zh", "zh"), ("ru", "ru"), ("ko", "ko")]:
         prefix = "/" + lc if lc != "en" else ""
         hreflangs = []
-        for lc2, hrf2 in LOCALES:
+        for lc2, hrf2 in [("en", "en"), ("tr", "tr"), ("de", "de"), ("fr", "fr"), ("es", "es"), ("ar", "ar"), ("ja", "ja"), ("zh", "zh"), ("ru", "ru"), ("ko", "ko")]:
             prefix2 = "/" + lc2 if lc2 != "en" else ""
             hreflangs.append((hrf2, "https://cyber-sec-pro.com" + prefix2 + "/tools/"))
         hreflangs.append(("x-default", "https://cyber-sec-pro.com/en/tools/"))
 
-        urls.append(add_url(
-            "https://cyber-sec-pro.com" + prefix + "/tools/",
-            "2026-04-14", "weekly", 0.9,
-            [("en", "https://cyber-sec-pro.com/tools/"), ("tr", "https://cyber-sec-pro.com/tr/tools/"),
-             ("de", "https://cyber-sec-pro.com/de/tools/"), ("fr", "https://cyber-sec-pro.com/fr/tools/"),
-             ("es", "https://cyber-sec-pro.com/es/tools/"), ("ar", "https://cyber-sec-pro.com/ar/tools/"),
-             ("ja", "https://cyber-sec-pro.com/ja/tools/"), ("zh", "https://cyber-sec-pro.com/zh/tools/"),
-             ("ru", "https://cyber-sec-pro.com/ru/tools/"), ("ko", "https://cyber-sec-pro.com/ko/tools/"),
-             ("x-default", "https://cyber-sec-pro.com/en/tools/")]
-        ))
+        hreflang_xml = ""
+        for hrf, href in [("en", "https://cyber-sec-pro.com/tools/"), ("tr", "https://cyber-sec-pro.com/tr/tools/"),
+                         ("de", "https://cyber-sec-pro.com/de/tools/"), ("fr", "https://cyber-sec-pro.com/fr/tools/"),
+                         ("es", "https://cyber-sec-pro.com/es/tools/"), ("ar", "https://cyber-sec-pro.com/ar/tools/"),
+                         ("ja", "https://cyber-sec-pro.com/ja/tools/"), ("zh", "https://cyber-sec-pro.com/zh/tools/"),
+                         ("ru", "https://cyber-sec-pro.com/ru/tools/"), ("ko", "https://cyber-sec-pro.com/ko/tools/"),
+                         ("x-default", "https://cyber-sec-pro.com/en/tools/")]:
+            hreflang_xml += '    <xhtml:link rel="alternate" hreflang="' + hrf + '" href="' + href + '"/>\n'
+
+        urls.append("""  <url>
+    <loc>https://cyber-sec-pro.com""" + prefix + """/tools/</loc>
+    <lastmod>2026-04-14</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.9</priority>
+""" + hreflang_xml + """  </url>""")
 
     # Blog posts
     BLOG_POSTS = [
@@ -115,13 +110,11 @@ def main():
         ("blog/hashcat-password-cracking", "2025-11-28", "monthly", 0.8),
     ]
 
-    urls = []
-
     for slug, lastmod, cf, prio in BLOG_POSTS:
-        urls.append("  <url>\n    <loc>https://cyber-sec-pro.com/en/" + slug + "/</loc>\n    <lastmod>" + lastmod + "</lastmod>\n    <changefreq>" + cf + "</changefreq>\n    <priority>" + str(prio) + "</priority>\n    <xhtml:link rel=\"alternate\" hreflang=\"en\" href=\"https://cyber-sec-pro.com/en/" + slug + "/\" />\n    <xhtml:link rel=\"alternate\" hreflang=\"tr\" href=\"https://cyber-sec-pro.com/tr/" + slug + "/\" />\n    <xhtml:link rel=\"alternate\" hreflang=\"x-default\" href=\"https://cyber-sec-pro.com/en/" + slug + "/\" />\n  </url>")
+        urls.append("  <url>\n    <loc>https://cyber-sec-pro.com/en/" + slug + "/</loc>\n    <lastmod>" + lastmod + "</lastmod>\n    <changefreq>" + cf + "</changefreq>\n    <priority>" + str(prio) + "</priority>\n    <xhtml:link rel=\"alternate\" hreflang=\"en\" href=\"https://cyber-sec-pro.com/en/" + slug + "/\"/>\n    <xhtml:link rel=\"alternate\" hreflang=\"tr\" href=\"https://cyber-sec-pro.com/tr/" + slug + "/\"/>\n    <xhtml:link rel=\"alternate\" hreflang=\"x-default\" href=\"https://cyber-sec-pro.com/en/" + slug + "/\"/>\n  </url>")
 
         # Turkish version
-        urls.append("  <url>\n    <loc>https://cyber-sec-pro.com/tr/" + slug + "/</loc>\n    <lastmod>" + lastmod + "</lastmod>\n    <changefreq>" + cf + "</changefreq>\n    <priority>" + str(prio * 0.875) + "</priority>\n  </url>")
+        urls.append("  <url>\n    <loc>https://cyber-sec-pro.com/tr/" + slug + "/</loc>\n    <lastmod>" + lastmod + "</lastmod>\n    <changefreq>" + cf + "</changefreq>\n    <priority>" + str(0.8 * 0.875) + "</priority>\n  </url>")
 
     # Other pages
     OTHER_PAGES = [
@@ -137,27 +130,29 @@ def main():
     ]
 
     for page, cf, prio in OTHER_PAGES:
-        for lc, hrf in LOCALES:
+        for lc, hrf in [("en", "en"), ("tr", "tr"), ("de", "de"), ("fr", "fr"), ("es", "es"), ("ar", "ar"), ("ja", "ja"), ("zh", "zh"), ("ru", "ru"), ("ko", "ko")]:
             prefix = "/" + lc if lc != "en" else ""
             hreflangs = []
-            for lc2, hrf2 in LOCALES:
+            for lc2, hrf2 in [("en", "en"), ("tr", "tr"), ("de", "de"), ("fr", "fr"), ("es", "es"), ("ar", "ar"), ("ja", "ja"), ("zh", "zh"), ("ru", "ru"), ("ko", "ko")]:
                 prefix2 = "/" + lc2 if lc2 != "en" else ""
                 hreflangs.append((hrf2, "https://cyber-sec-pro.com" + prefix2 + "/" + page + "/"))
             hreflangs.append(("x-default", "https://cyber-sec-pro.com/en/" + page + "/"))
-            urls.append(add_url(
-                "https://cyber-sec-pro.com" + prefix + "/" + page + "/",
-                "2026-04-14", cf, prio, hreflangs
-            ))
+            urls.append("  <url>\n    <loc>https://cyber-sec-pro.com" + prefix + "/" + page + "/</loc>\n    <lastmod>2026-04-14</lastmod>\n    <changefreq>" + cf + "</changefreq>\n    <priority>" + str(prio) + "</priority>\n" + "\n".join(['    <xhtml:link rel="alternate" hreflang="' + hrf2 + '" href="' + h + '"/>' for hrf2, h in hreflangs]) + "\n    <xhtml:link rel=\"alternate\" hreflang=\"x-default\" href=\"https://cyber-sec-pro.com/en/" + page + "/\"/>\n  </url>")
 
     # Build XML
     xml = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<urlset xmlns=\"http://www.sitemaps.org/schemas/sitemap/0.9\" xmlns:xhtml=\"http://www.w3.org/1999/xhtml\">\n" + "\n".join(urls) + "\n</urlset>"
 
+    # Write to out/sitemap.xml
     out_dir = "/home/cybersec/cybersec-pro/frontend/out"
     os.makedirs(out_dir, exist_ok=True)
+
     with open(os.path.join(out_dir, "sitemap.xml"), "w") as f:
         f.write(xml)
-    print("Sitemap generated at", out_dir + "/sitemap.xml")
+
+    print("Sitemap generated at " + out_dir + "/sitemap.xml")
     print("Total URLs:", len(urls))
 
 if __name__ == "__main__":
     main()
+EOF
+"
