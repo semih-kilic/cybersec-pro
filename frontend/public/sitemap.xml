@@ -1,0 +1,1668 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:xhtml="http://www.w3.org/1999/xhtml">
+  <url>
+    <loc>https://cyber-sec-pro.com/en/blog/mastering-wireshark/</loc>
+    <lastmod>2026-01-15</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://cyber-sec-pro.com/en/blog/mastering-wireshark/" />
+    <xhtml:link rel="alternate" hreflang="tr" href="https://cyber-sec-pro.com/tr/blog/mastering-wireshark/" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://cyber-sec-pro.com/en/blog/mastering-wireshark/" />
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/tr/blog/mastering-wireshark/</loc>
+    <lastmod>2026-01-15</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7000000000000001</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/en/blog/hashcat-vs-john/</loc>
+    <lastmod>2026-01-12</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://cyber-sec-pro.com/en/blog/hashcat-vs-john/" />
+    <xhtml:link rel="alternate" hreflang="tr" href="https://cyber-sec-pro.com/tr/blog/hashcat-vs-john/" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://cyber-sec-pro.com/en/blog/hashcat-vs-john/" />
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/tr/blog/hashcat-vs-john/</loc>
+    <lastmod>2026-01-12</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7000000000000001</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/en/blog/owasp-top-10-2026/</loc>
+    <lastmod>2026-01-08</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://cyber-sec-pro.com/en/blog/owasp-top-10-2026/" />
+    <xhtml:link rel="alternate" hreflang="tr" href="https://cyber-sec-pro.com/tr/blog/owasp-top-10-2026/" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://cyber-sec-pro.com/en/blog/owasp-top-10-2026/" />
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/tr/blog/owasp-top-10-2026/</loc>
+    <lastmod>2026-01-08</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7000000000000001</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/en/blog/metasploit-zero-to-exploit/</loc>
+    <lastmod>2026-01-05</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://cyber-sec-pro.com/en/blog/metasploit-zero-to-exploit/" />
+    <xhtml:link rel="alternate" hreflang="tr" href="https://cyber-sec-pro.com/tr/blog/metasploit-zero-to-exploit/" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://cyber-sec-pro.com/en/blog/metasploit-zero-to-exploit/" />
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/tr/blog/metasploit-zero-to-exploit/</loc>
+    <lastmod>2026-01-05</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7000000000000001</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/en/blog/ci-cd-pentest-automation/</loc>
+    <lastmod>2026-01-03</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://cyber-sec-pro.com/en/blog/ci-cd-pentest-automation/" />
+    <xhtml:link rel="alternate" hreflang="tr" href="https://cyber-sec-pro.com/tr/blog/ci-cd-pentest-automation/" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://cyber-sec-pro.com/en/blog/ci-cd-pentest-automation/" />
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/tr/blog/ci-cd-pentest-automation/</loc>
+    <lastmod>2026-01-03</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7000000000000001</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/en/blog/wireless-security-assessment/</loc>
+    <lastmod>2025-12-15</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://cyber-sec-pro.com/en/blog/wireless-security-assessment/" />
+    <xhtml:link rel="alternate" hreflang="tr" href="https://cyber-sec-pro.com/tr/blog/wireless-security-assessment/" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://cyber-sec-pro.com/en/blog/wireless-security-assessment/" />
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/tr/blog/wireless-security-assessment/</loc>
+    <lastmod>2025-12-15</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7000000000000001</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/en/blog/nmap-network-scanning/</loc>
+    <lastmod>2025-12-10</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://cyber-sec-pro.com/en/blog/nmap-network-scanning/" />
+    <xhtml:link rel="alternate" hreflang="tr" href="https://cyber-sec-pro.com/tr/blog/nmap-network-scanning/" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://cyber-sec-pro.com/en/blog/nmap-network-scanning/" />
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/tr/blog/nmap-network-scanning/</loc>
+    <lastmod>2025-12-10</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7000000000000001</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/en/blog/metasploit-exploitation/</loc>
+    <lastmod>2025-12-08</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://cyber-sec-pro.com/en/blog/metasploit-exploitation/" />
+    <xhtml:link rel="alternate" hreflang="tr" href="https://cyber-sec-pro.com/tr/blog/metasploit-exploitation/" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://cyber-sec-pro.com/en/blog/metasploit-exploitation/" />
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/tr/blog/metasploit-exploitation/</loc>
+    <lastmod>2025-12-08</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7000000000000001</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/en/blog/hashcat-password-cracking/</loc>
+    <lastmod>2025-11-28</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://cyber-sec-pro.com/en/blog/hashcat-password-cracking/" />
+    <xhtml:link rel="alternate" hreflang="tr" href="https://cyber-sec-pro.com/tr/blog/hashcat-password-cracking/" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://cyber-sec-pro.com/en/blog/hashcat-password-cracking/" />
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/tr/blog/hashcat-password-cracking/</loc>
+    <lastmod>2025-11-28</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7000000000000001</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/about/</loc>
+    <lastmod>2026-04-14</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://cyber-sec-pro.com/about/" />
+    <xhtml:link rel="alternate" hreflang="tr" href="https://cyber-sec-pro.com/tr/about/" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://cyber-sec-pro.com/de/about/" />
+    <xhtml:link rel="alternate" hreflang="fr" href="https://cyber-sec-pro.com/fr/about/" />
+    <xhtml:link rel="alternate" hreflang="es" href="https://cyber-sec-pro.com/es/about/" />
+    <xhtml:link rel="alternate" hreflang="ar" href="https://cyber-sec-pro.com/ar/about/" />
+    <xhtml:link rel="alternate" hreflang="ja" href="https://cyber-sec-pro.com/ja/about/" />
+    <xhtml:link rel="alternate" hreflang="zh" href="https://cyber-sec-pro.com/zh/about/" />
+    <xhtml:link rel="alternate" hreflang="ru" href="https://cyber-sec-pro.com/ru/about/" />
+    <xhtml:link rel="alternate" hreflang="ko" href="https://cyber-sec-pro.com/ko/about/" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://cyber-sec-pro.com/en/about/" />
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/tr/about/</loc>
+    <lastmod>2026-04-14</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://cyber-sec-pro.com/about/" />
+    <xhtml:link rel="alternate" hreflang="tr" href="https://cyber-sec-pro.com/tr/about/" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://cyber-sec-pro.com/de/about/" />
+    <xhtml:link rel="alternate" hreflang="fr" href="https://cyber-sec-pro.com/fr/about/" />
+    <xhtml:link rel="alternate" hreflang="es" href="https://cyber-sec-pro.com/es/about/" />
+    <xhtml:link rel="alternate" hreflang="ar" href="https://cyber-sec-pro.com/ar/about/" />
+    <xhtml:link rel="alternate" hreflang="ja" href="https://cyber-sec-pro.com/ja/about/" />
+    <xhtml:link rel="alternate" hreflang="zh" href="https://cyber-sec-pro.com/zh/about/" />
+    <xhtml:link rel="alternate" hreflang="ru" href="https://cyber-sec-pro.com/ru/about/" />
+    <xhtml:link rel="alternate" hreflang="ko" href="https://cyber-sec-pro.com/ko/about/" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://cyber-sec-pro.com/en/about/" />
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/de/about/</loc>
+    <lastmod>2026-04-14</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://cyber-sec-pro.com/about/" />
+    <xhtml:link rel="alternate" hreflang="tr" href="https://cyber-sec-pro.com/tr/about/" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://cyber-sec-pro.com/de/about/" />
+    <xhtml:link rel="alternate" hreflang="fr" href="https://cyber-sec-pro.com/fr/about/" />
+    <xhtml:link rel="alternate" hreflang="es" href="https://cyber-sec-pro.com/es/about/" />
+    <xhtml:link rel="alternate" hreflang="ar" href="https://cyber-sec-pro.com/ar/about/" />
+    <xhtml:link rel="alternate" hreflang="ja" href="https://cyber-sec-pro.com/ja/about/" />
+    <xhtml:link rel="alternate" hreflang="zh" href="https://cyber-sec-pro.com/zh/about/" />
+    <xhtml:link rel="alternate" hreflang="ru" href="https://cyber-sec-pro.com/ru/about/" />
+    <xhtml:link rel="alternate" hreflang="ko" href="https://cyber-sec-pro.com/ko/about/" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://cyber-sec-pro.com/en/about/" />
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/fr/about/</loc>
+    <lastmod>2026-04-14</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://cyber-sec-pro.com/about/" />
+    <xhtml:link rel="alternate" hreflang="tr" href="https://cyber-sec-pro.com/tr/about/" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://cyber-sec-pro.com/de/about/" />
+    <xhtml:link rel="alternate" hreflang="fr" href="https://cyber-sec-pro.com/fr/about/" />
+    <xhtml:link rel="alternate" hreflang="es" href="https://cyber-sec-pro.com/es/about/" />
+    <xhtml:link rel="alternate" hreflang="ar" href="https://cyber-sec-pro.com/ar/about/" />
+    <xhtml:link rel="alternate" hreflang="ja" href="https://cyber-sec-pro.com/ja/about/" />
+    <xhtml:link rel="alternate" hreflang="zh" href="https://cyber-sec-pro.com/zh/about/" />
+    <xhtml:link rel="alternate" hreflang="ru" href="https://cyber-sec-pro.com/ru/about/" />
+    <xhtml:link rel="alternate" hreflang="ko" href="https://cyber-sec-pro.com/ko/about/" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://cyber-sec-pro.com/en/about/" />
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/es/about/</loc>
+    <lastmod>2026-04-14</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://cyber-sec-pro.com/about/" />
+    <xhtml:link rel="alternate" hreflang="tr" href="https://cyber-sec-pro.com/tr/about/" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://cyber-sec-pro.com/de/about/" />
+    <xhtml:link rel="alternate" hreflang="fr" href="https://cyber-sec-pro.com/fr/about/" />
+    <xhtml:link rel="alternate" hreflang="es" href="https://cyber-sec-pro.com/es/about/" />
+    <xhtml:link rel="alternate" hreflang="ar" href="https://cyber-sec-pro.com/ar/about/" />
+    <xhtml:link rel="alternate" hreflang="ja" href="https://cyber-sec-pro.com/ja/about/" />
+    <xhtml:link rel="alternate" hreflang="zh" href="https://cyber-sec-pro.com/zh/about/" />
+    <xhtml:link rel="alternate" hreflang="ru" href="https://cyber-sec-pro.com/ru/about/" />
+    <xhtml:link rel="alternate" hreflang="ko" href="https://cyber-sec-pro.com/ko/about/" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://cyber-sec-pro.com/en/about/" />
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/ar/about/</loc>
+    <lastmod>2026-04-14</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://cyber-sec-pro.com/about/" />
+    <xhtml:link rel="alternate" hreflang="tr" href="https://cyber-sec-pro.com/tr/about/" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://cyber-sec-pro.com/de/about/" />
+    <xhtml:link rel="alternate" hreflang="fr" href="https://cyber-sec-pro.com/fr/about/" />
+    <xhtml:link rel="alternate" hreflang="es" href="https://cyber-sec-pro.com/es/about/" />
+    <xhtml:link rel="alternate" hreflang="ar" href="https://cyber-sec-pro.com/ar/about/" />
+    <xhtml:link rel="alternate" hreflang="ja" href="https://cyber-sec-pro.com/ja/about/" />
+    <xhtml:link rel="alternate" hreflang="zh" href="https://cyber-sec-pro.com/zh/about/" />
+    <xhtml:link rel="alternate" hreflang="ru" href="https://cyber-sec-pro.com/ru/about/" />
+    <xhtml:link rel="alternate" hreflang="ko" href="https://cyber-sec-pro.com/ko/about/" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://cyber-sec-pro.com/en/about/" />
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/ja/about/</loc>
+    <lastmod>2026-04-14</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://cyber-sec-pro.com/about/" />
+    <xhtml:link rel="alternate" hreflang="tr" href="https://cyber-sec-pro.com/tr/about/" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://cyber-sec-pro.com/de/about/" />
+    <xhtml:link rel="alternate" hreflang="fr" href="https://cyber-sec-pro.com/fr/about/" />
+    <xhtml:link rel="alternate" hreflang="es" href="https://cyber-sec-pro.com/es/about/" />
+    <xhtml:link rel="alternate" hreflang="ar" href="https://cyber-sec-pro.com/ar/about/" />
+    <xhtml:link rel="alternate" hreflang="ja" href="https://cyber-sec-pro.com/ja/about/" />
+    <xhtml:link rel="alternate" hreflang="zh" href="https://cyber-sec-pro.com/zh/about/" />
+    <xhtml:link rel="alternate" hreflang="ru" href="https://cyber-sec-pro.com/ru/about/" />
+    <xhtml:link rel="alternate" hreflang="ko" href="https://cyber-sec-pro.com/ko/about/" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://cyber-sec-pro.com/en/about/" />
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/zh/about/</loc>
+    <lastmod>2026-04-14</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://cyber-sec-pro.com/about/" />
+    <xhtml:link rel="alternate" hreflang="tr" href="https://cyber-sec-pro.com/tr/about/" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://cyber-sec-pro.com/de/about/" />
+    <xhtml:link rel="alternate" hreflang="fr" href="https://cyber-sec-pro.com/fr/about/" />
+    <xhtml:link rel="alternate" hreflang="es" href="https://cyber-sec-pro.com/es/about/" />
+    <xhtml:link rel="alternate" hreflang="ar" href="https://cyber-sec-pro.com/ar/about/" />
+    <xhtml:link rel="alternate" hreflang="ja" href="https://cyber-sec-pro.com/ja/about/" />
+    <xhtml:link rel="alternate" hreflang="zh" href="https://cyber-sec-pro.com/zh/about/" />
+    <xhtml:link rel="alternate" hreflang="ru" href="https://cyber-sec-pro.com/ru/about/" />
+    <xhtml:link rel="alternate" hreflang="ko" href="https://cyber-sec-pro.com/ko/about/" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://cyber-sec-pro.com/en/about/" />
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/ru/about/</loc>
+    <lastmod>2026-04-14</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://cyber-sec-pro.com/about/" />
+    <xhtml:link rel="alternate" hreflang="tr" href="https://cyber-sec-pro.com/tr/about/" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://cyber-sec-pro.com/de/about/" />
+    <xhtml:link rel="alternate" hreflang="fr" href="https://cyber-sec-pro.com/fr/about/" />
+    <xhtml:link rel="alternate" hreflang="es" href="https://cyber-sec-pro.com/es/about/" />
+    <xhtml:link rel="alternate" hreflang="ar" href="https://cyber-sec-pro.com/ar/about/" />
+    <xhtml:link rel="alternate" hreflang="ja" href="https://cyber-sec-pro.com/ja/about/" />
+    <xhtml:link rel="alternate" hreflang="zh" href="https://cyber-sec-pro.com/zh/about/" />
+    <xhtml:link rel="alternate" hreflang="ru" href="https://cyber-sec-pro.com/ru/about/" />
+    <xhtml:link rel="alternate" hreflang="ko" href="https://cyber-sec-pro.com/ko/about/" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://cyber-sec-pro.com/en/about/" />
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/ko/about/</loc>
+    <lastmod>2026-04-14</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://cyber-sec-pro.com/about/" />
+    <xhtml:link rel="alternate" hreflang="tr" href="https://cyber-sec-pro.com/tr/about/" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://cyber-sec-pro.com/de/about/" />
+    <xhtml:link rel="alternate" hreflang="fr" href="https://cyber-sec-pro.com/fr/about/" />
+    <xhtml:link rel="alternate" hreflang="es" href="https://cyber-sec-pro.com/es/about/" />
+    <xhtml:link rel="alternate" hreflang="ar" href="https://cyber-sec-pro.com/ar/about/" />
+    <xhtml:link rel="alternate" hreflang="ja" href="https://cyber-sec-pro.com/ja/about/" />
+    <xhtml:link rel="alternate" hreflang="zh" href="https://cyber-sec-pro.com/zh/about/" />
+    <xhtml:link rel="alternate" hreflang="ru" href="https://cyber-sec-pro.com/ru/about/" />
+    <xhtml:link rel="alternate" hreflang="ko" href="https://cyber-sec-pro.com/ko/about/" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://cyber-sec-pro.com/en/about/" />
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/docs/</loc>
+    <lastmod>2026-04-14</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://cyber-sec-pro.com/docs/" />
+    <xhtml:link rel="alternate" hreflang="tr" href="https://cyber-sec-pro.com/tr/docs/" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://cyber-sec-pro.com/de/docs/" />
+    <xhtml:link rel="alternate" hreflang="fr" href="https://cyber-sec-pro.com/fr/docs/" />
+    <xhtml:link rel="alternate" hreflang="es" href="https://cyber-sec-pro.com/es/docs/" />
+    <xhtml:link rel="alternate" hreflang="ar" href="https://cyber-sec-pro.com/ar/docs/" />
+    <xhtml:link rel="alternate" hreflang="ja" href="https://cyber-sec-pro.com/ja/docs/" />
+    <xhtml:link rel="alternate" hreflang="zh" href="https://cyber-sec-pro.com/zh/docs/" />
+    <xhtml:link rel="alternate" hreflang="ru" href="https://cyber-sec-pro.com/ru/docs/" />
+    <xhtml:link rel="alternate" hreflang="ko" href="https://cyber-sec-pro.com/ko/docs/" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://cyber-sec-pro.com/en/docs/" />
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/tr/docs/</loc>
+    <lastmod>2026-04-14</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://cyber-sec-pro.com/docs/" />
+    <xhtml:link rel="alternate" hreflang="tr" href="https://cyber-sec-pro.com/tr/docs/" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://cyber-sec-pro.com/de/docs/" />
+    <xhtml:link rel="alternate" hreflang="fr" href="https://cyber-sec-pro.com/fr/docs/" />
+    <xhtml:link rel="alternate" hreflang="es" href="https://cyber-sec-pro.com/es/docs/" />
+    <xhtml:link rel="alternate" hreflang="ar" href="https://cyber-sec-pro.com/ar/docs/" />
+    <xhtml:link rel="alternate" hreflang="ja" href="https://cyber-sec-pro.com/ja/docs/" />
+    <xhtml:link rel="alternate" hreflang="zh" href="https://cyber-sec-pro.com/zh/docs/" />
+    <xhtml:link rel="alternate" hreflang="ru" href="https://cyber-sec-pro.com/ru/docs/" />
+    <xhtml:link rel="alternate" hreflang="ko" href="https://cyber-sec-pro.com/ko/docs/" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://cyber-sec-pro.com/en/docs/" />
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/de/docs/</loc>
+    <lastmod>2026-04-14</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://cyber-sec-pro.com/docs/" />
+    <xhtml:link rel="alternate" hreflang="tr" href="https://cyber-sec-pro.com/tr/docs/" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://cyber-sec-pro.com/de/docs/" />
+    <xhtml:link rel="alternate" hreflang="fr" href="https://cyber-sec-pro.com/fr/docs/" />
+    <xhtml:link rel="alternate" hreflang="es" href="https://cyber-sec-pro.com/es/docs/" />
+    <xhtml:link rel="alternate" hreflang="ar" href="https://cyber-sec-pro.com/ar/docs/" />
+    <xhtml:link rel="alternate" hreflang="ja" href="https://cyber-sec-pro.com/ja/docs/" />
+    <xhtml:link rel="alternate" hreflang="zh" href="https://cyber-sec-pro.com/zh/docs/" />
+    <xhtml:link rel="alternate" hreflang="ru" href="https://cyber-sec-pro.com/ru/docs/" />
+    <xhtml:link rel="alternate" hreflang="ko" href="https://cyber-sec-pro.com/ko/docs/" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://cyber-sec-pro.com/en/docs/" />
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/fr/docs/</loc>
+    <lastmod>2026-04-14</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://cyber-sec-pro.com/docs/" />
+    <xhtml:link rel="alternate" hreflang="tr" href="https://cyber-sec-pro.com/tr/docs/" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://cyber-sec-pro.com/de/docs/" />
+    <xhtml:link rel="alternate" hreflang="fr" href="https://cyber-sec-pro.com/fr/docs/" />
+    <xhtml:link rel="alternate" hreflang="es" href="https://cyber-sec-pro.com/es/docs/" />
+    <xhtml:link rel="alternate" hreflang="ar" href="https://cyber-sec-pro.com/ar/docs/" />
+    <xhtml:link rel="alternate" hreflang="ja" href="https://cyber-sec-pro.com/ja/docs/" />
+    <xhtml:link rel="alternate" hreflang="zh" href="https://cyber-sec-pro.com/zh/docs/" />
+    <xhtml:link rel="alternate" hreflang="ru" href="https://cyber-sec-pro.com/ru/docs/" />
+    <xhtml:link rel="alternate" hreflang="ko" href="https://cyber-sec-pro.com/ko/docs/" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://cyber-sec-pro.com/en/docs/" />
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/es/docs/</loc>
+    <lastmod>2026-04-14</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://cyber-sec-pro.com/docs/" />
+    <xhtml:link rel="alternate" hreflang="tr" href="https://cyber-sec-pro.com/tr/docs/" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://cyber-sec-pro.com/de/docs/" />
+    <xhtml:link rel="alternate" hreflang="fr" href="https://cyber-sec-pro.com/fr/docs/" />
+    <xhtml:link rel="alternate" hreflang="es" href="https://cyber-sec-pro.com/es/docs/" />
+    <xhtml:link rel="alternate" hreflang="ar" href="https://cyber-sec-pro.com/ar/docs/" />
+    <xhtml:link rel="alternate" hreflang="ja" href="https://cyber-sec-pro.com/ja/docs/" />
+    <xhtml:link rel="alternate" hreflang="zh" href="https://cyber-sec-pro.com/zh/docs/" />
+    <xhtml:link rel="alternate" hreflang="ru" href="https://cyber-sec-pro.com/ru/docs/" />
+    <xhtml:link rel="alternate" hreflang="ko" href="https://cyber-sec-pro.com/ko/docs/" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://cyber-sec-pro.com/en/docs/" />
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/ar/docs/</loc>
+    <lastmod>2026-04-14</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://cyber-sec-pro.com/docs/" />
+    <xhtml:link rel="alternate" hreflang="tr" href="https://cyber-sec-pro.com/tr/docs/" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://cyber-sec-pro.com/de/docs/" />
+    <xhtml:link rel="alternate" hreflang="fr" href="https://cyber-sec-pro.com/fr/docs/" />
+    <xhtml:link rel="alternate" hreflang="es" href="https://cyber-sec-pro.com/es/docs/" />
+    <xhtml:link rel="alternate" hreflang="ar" href="https://cyber-sec-pro.com/ar/docs/" />
+    <xhtml:link rel="alternate" hreflang="ja" href="https://cyber-sec-pro.com/ja/docs/" />
+    <xhtml:link rel="alternate" hreflang="zh" href="https://cyber-sec-pro.com/zh/docs/" />
+    <xhtml:link rel="alternate" hreflang="ru" href="https://cyber-sec-pro.com/ru/docs/" />
+    <xhtml:link rel="alternate" hreflang="ko" href="https://cyber-sec-pro.com/ko/docs/" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://cyber-sec-pro.com/en/docs/" />
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/ja/docs/</loc>
+    <lastmod>2026-04-14</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://cyber-sec-pro.com/docs/" />
+    <xhtml:link rel="alternate" hreflang="tr" href="https://cyber-sec-pro.com/tr/docs/" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://cyber-sec-pro.com/de/docs/" />
+    <xhtml:link rel="alternate" hreflang="fr" href="https://cyber-sec-pro.com/fr/docs/" />
+    <xhtml:link rel="alternate" hreflang="es" href="https://cyber-sec-pro.com/es/docs/" />
+    <xhtml:link rel="alternate" hreflang="ar" href="https://cyber-sec-pro.com/ar/docs/" />
+    <xhtml:link rel="alternate" hreflang="ja" href="https://cyber-sec-pro.com/ja/docs/" />
+    <xhtml:link rel="alternate" hreflang="zh" href="https://cyber-sec-pro.com/zh/docs/" />
+    <xhtml:link rel="alternate" hreflang="ru" href="https://cyber-sec-pro.com/ru/docs/" />
+    <xhtml:link rel="alternate" hreflang="ko" href="https://cyber-sec-pro.com/ko/docs/" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://cyber-sec-pro.com/en/docs/" />
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/zh/docs/</loc>
+    <lastmod>2026-04-14</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://cyber-sec-pro.com/docs/" />
+    <xhtml:link rel="alternate" hreflang="tr" href="https://cyber-sec-pro.com/tr/docs/" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://cyber-sec-pro.com/de/docs/" />
+    <xhtml:link rel="alternate" hreflang="fr" href="https://cyber-sec-pro.com/fr/docs/" />
+    <xhtml:link rel="alternate" hreflang="es" href="https://cyber-sec-pro.com/es/docs/" />
+    <xhtml:link rel="alternate" hreflang="ar" href="https://cyber-sec-pro.com/ar/docs/" />
+    <xhtml:link rel="alternate" hreflang="ja" href="https://cyber-sec-pro.com/ja/docs/" />
+    <xhtml:link rel="alternate" hreflang="zh" href="https://cyber-sec-pro.com/zh/docs/" />
+    <xhtml:link rel="alternate" hreflang="ru" href="https://cyber-sec-pro.com/ru/docs/" />
+    <xhtml:link rel="alternate" hreflang="ko" href="https://cyber-sec-pro.com/ko/docs/" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://cyber-sec-pro.com/en/docs/" />
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/ru/docs/</loc>
+    <lastmod>2026-04-14</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://cyber-sec-pro.com/docs/" />
+    <xhtml:link rel="alternate" hreflang="tr" href="https://cyber-sec-pro.com/tr/docs/" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://cyber-sec-pro.com/de/docs/" />
+    <xhtml:link rel="alternate" hreflang="fr" href="https://cyber-sec-pro.com/fr/docs/" />
+    <xhtml:link rel="alternate" hreflang="es" href="https://cyber-sec-pro.com/es/docs/" />
+    <xhtml:link rel="alternate" hreflang="ar" href="https://cyber-sec-pro.com/ar/docs/" />
+    <xhtml:link rel="alternate" hreflang="ja" href="https://cyber-sec-pro.com/ja/docs/" />
+    <xhtml:link rel="alternate" hreflang="zh" href="https://cyber-sec-pro.com/zh/docs/" />
+    <xhtml:link rel="alternate" hreflang="ru" href="https://cyber-sec-pro.com/ru/docs/" />
+    <xhtml:link rel="alternate" hreflang="ko" href="https://cyber-sec-pro.com/ko/docs/" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://cyber-sec-pro.com/en/docs/" />
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/ko/docs/</loc>
+    <lastmod>2026-04-14</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://cyber-sec-pro.com/docs/" />
+    <xhtml:link rel="alternate" hreflang="tr" href="https://cyber-sec-pro.com/tr/docs/" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://cyber-sec-pro.com/de/docs/" />
+    <xhtml:link rel="alternate" hreflang="fr" href="https://cyber-sec-pro.com/fr/docs/" />
+    <xhtml:link rel="alternate" hreflang="es" href="https://cyber-sec-pro.com/es/docs/" />
+    <xhtml:link rel="alternate" hreflang="ar" href="https://cyber-sec-pro.com/ar/docs/" />
+    <xhtml:link rel="alternate" hreflang="ja" href="https://cyber-sec-pro.com/ja/docs/" />
+    <xhtml:link rel="alternate" hreflang="zh" href="https://cyber-sec-pro.com/zh/docs/" />
+    <xhtml:link rel="alternate" hreflang="ru" href="https://cyber-sec-pro.com/ru/docs/" />
+    <xhtml:link rel="alternate" hreflang="ko" href="https://cyber-sec-pro.com/ko/docs/" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://cyber-sec-pro.com/en/docs/" />
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/api-reference/</loc>
+    <lastmod>2026-04-14</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://cyber-sec-pro.com/api-reference/" />
+    <xhtml:link rel="alternate" hreflang="tr" href="https://cyber-sec-pro.com/tr/api-reference/" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://cyber-sec-pro.com/de/api-reference/" />
+    <xhtml:link rel="alternate" hreflang="fr" href="https://cyber-sec-pro.com/fr/api-reference/" />
+    <xhtml:link rel="alternate" hreflang="es" href="https://cyber-sec-pro.com/es/api-reference/" />
+    <xhtml:link rel="alternate" hreflang="ar" href="https://cyber-sec-pro.com/ar/api-reference/" />
+    <xhtml:link rel="alternate" hreflang="ja" href="https://cyber-sec-pro.com/ja/api-reference/" />
+    <xhtml:link rel="alternate" hreflang="zh" href="https://cyber-sec-pro.com/zh/api-reference/" />
+    <xhtml:link rel="alternate" hreflang="ru" href="https://cyber-sec-pro.com/ru/api-reference/" />
+    <xhtml:link rel="alternate" hreflang="ko" href="https://cyber-sec-pro.com/ko/api-reference/" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://cyber-sec-pro.com/en/api-reference/" />
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/tr/api-reference/</loc>
+    <lastmod>2026-04-14</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://cyber-sec-pro.com/api-reference/" />
+    <xhtml:link rel="alternate" hreflang="tr" href="https://cyber-sec-pro.com/tr/api-reference/" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://cyber-sec-pro.com/de/api-reference/" />
+    <xhtml:link rel="alternate" hreflang="fr" href="https://cyber-sec-pro.com/fr/api-reference/" />
+    <xhtml:link rel="alternate" hreflang="es" href="https://cyber-sec-pro.com/es/api-reference/" />
+    <xhtml:link rel="alternate" hreflang="ar" href="https://cyber-sec-pro.com/ar/api-reference/" />
+    <xhtml:link rel="alternate" hreflang="ja" href="https://cyber-sec-pro.com/ja/api-reference/" />
+    <xhtml:link rel="alternate" hreflang="zh" href="https://cyber-sec-pro.com/zh/api-reference/" />
+    <xhtml:link rel="alternate" hreflang="ru" href="https://cyber-sec-pro.com/ru/api-reference/" />
+    <xhtml:link rel="alternate" hreflang="ko" href="https://cyber-sec-pro.com/ko/api-reference/" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://cyber-sec-pro.com/en/api-reference/" />
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/de/api-reference/</loc>
+    <lastmod>2026-04-14</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://cyber-sec-pro.com/api-reference/" />
+    <xhtml:link rel="alternate" hreflang="tr" href="https://cyber-sec-pro.com/tr/api-reference/" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://cyber-sec-pro.com/de/api-reference/" />
+    <xhtml:link rel="alternate" hreflang="fr" href="https://cyber-sec-pro.com/fr/api-reference/" />
+    <xhtml:link rel="alternate" hreflang="es" href="https://cyber-sec-pro.com/es/api-reference/" />
+    <xhtml:link rel="alternate" hreflang="ar" href="https://cyber-sec-pro.com/ar/api-reference/" />
+    <xhtml:link rel="alternate" hreflang="ja" href="https://cyber-sec-pro.com/ja/api-reference/" />
+    <xhtml:link rel="alternate" hreflang="zh" href="https://cyber-sec-pro.com/zh/api-reference/" />
+    <xhtml:link rel="alternate" hreflang="ru" href="https://cyber-sec-pro.com/ru/api-reference/" />
+    <xhtml:link rel="alternate" hreflang="ko" href="https://cyber-sec-pro.com/ko/api-reference/" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://cyber-sec-pro.com/en/api-reference/" />
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/fr/api-reference/</loc>
+    <lastmod>2026-04-14</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://cyber-sec-pro.com/api-reference/" />
+    <xhtml:link rel="alternate" hreflang="tr" href="https://cyber-sec-pro.com/tr/api-reference/" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://cyber-sec-pro.com/de/api-reference/" />
+    <xhtml:link rel="alternate" hreflang="fr" href="https://cyber-sec-pro.com/fr/api-reference/" />
+    <xhtml:link rel="alternate" hreflang="es" href="https://cyber-sec-pro.com/es/api-reference/" />
+    <xhtml:link rel="alternate" hreflang="ar" href="https://cyber-sec-pro.com/ar/api-reference/" />
+    <xhtml:link rel="alternate" hreflang="ja" href="https://cyber-sec-pro.com/ja/api-reference/" />
+    <xhtml:link rel="alternate" hreflang="zh" href="https://cyber-sec-pro.com/zh/api-reference/" />
+    <xhtml:link rel="alternate" hreflang="ru" href="https://cyber-sec-pro.com/ru/api-reference/" />
+    <xhtml:link rel="alternate" hreflang="ko" href="https://cyber-sec-pro.com/ko/api-reference/" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://cyber-sec-pro.com/en/api-reference/" />
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/es/api-reference/</loc>
+    <lastmod>2026-04-14</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://cyber-sec-pro.com/api-reference/" />
+    <xhtml:link rel="alternate" hreflang="tr" href="https://cyber-sec-pro.com/tr/api-reference/" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://cyber-sec-pro.com/de/api-reference/" />
+    <xhtml:link rel="alternate" hreflang="fr" href="https://cyber-sec-pro.com/fr/api-reference/" />
+    <xhtml:link rel="alternate" hreflang="es" href="https://cyber-sec-pro.com/es/api-reference/" />
+    <xhtml:link rel="alternate" hreflang="ar" href="https://cyber-sec-pro.com/ar/api-reference/" />
+    <xhtml:link rel="alternate" hreflang="ja" href="https://cyber-sec-pro.com/ja/api-reference/" />
+    <xhtml:link rel="alternate" hreflang="zh" href="https://cyber-sec-pro.com/zh/api-reference/" />
+    <xhtml:link rel="alternate" hreflang="ru" href="https://cyber-sec-pro.com/ru/api-reference/" />
+    <xhtml:link rel="alternate" hreflang="ko" href="https://cyber-sec-pro.com/ko/api-reference/" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://cyber-sec-pro.com/en/api-reference/" />
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/ar/api-reference/</loc>
+    <lastmod>2026-04-14</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://cyber-sec-pro.com/api-reference/" />
+    <xhtml:link rel="alternate" hreflang="tr" href="https://cyber-sec-pro.com/tr/api-reference/" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://cyber-sec-pro.com/de/api-reference/" />
+    <xhtml:link rel="alternate" hreflang="fr" href="https://cyber-sec-pro.com/fr/api-reference/" />
+    <xhtml:link rel="alternate" hreflang="es" href="https://cyber-sec-pro.com/es/api-reference/" />
+    <xhtml:link rel="alternate" hreflang="ar" href="https://cyber-sec-pro.com/ar/api-reference/" />
+    <xhtml:link rel="alternate" hreflang="ja" href="https://cyber-sec-pro.com/ja/api-reference/" />
+    <xhtml:link rel="alternate" hreflang="zh" href="https://cyber-sec-pro.com/zh/api-reference/" />
+    <xhtml:link rel="alternate" hreflang="ru" href="https://cyber-sec-pro.com/ru/api-reference/" />
+    <xhtml:link rel="alternate" hreflang="ko" href="https://cyber-sec-pro.com/ko/api-reference/" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://cyber-sec-pro.com/en/api-reference/" />
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/ja/api-reference/</loc>
+    <lastmod>2026-04-14</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://cyber-sec-pro.com/api-reference/" />
+    <xhtml:link rel="alternate" hreflang="tr" href="https://cyber-sec-pro.com/tr/api-reference/" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://cyber-sec-pro.com/de/api-reference/" />
+    <xhtml:link rel="alternate" hreflang="fr" href="https://cyber-sec-pro.com/fr/api-reference/" />
+    <xhtml:link rel="alternate" hreflang="es" href="https://cyber-sec-pro.com/es/api-reference/" />
+    <xhtml:link rel="alternate" hreflang="ar" href="https://cyber-sec-pro.com/ar/api-reference/" />
+    <xhtml:link rel="alternate" hreflang="ja" href="https://cyber-sec-pro.com/ja/api-reference/" />
+    <xhtml:link rel="alternate" hreflang="zh" href="https://cyber-sec-pro.com/zh/api-reference/" />
+    <xhtml:link rel="alternate" hreflang="ru" href="https://cyber-sec-pro.com/ru/api-reference/" />
+    <xhtml:link rel="alternate" hreflang="ko" href="https://cyber-sec-pro.com/ko/api-reference/" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://cyber-sec-pro.com/en/api-reference/" />
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/zh/api-reference/</loc>
+    <lastmod>2026-04-14</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://cyber-sec-pro.com/api-reference/" />
+    <xhtml:link rel="alternate" hreflang="tr" href="https://cyber-sec-pro.com/tr/api-reference/" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://cyber-sec-pro.com/de/api-reference/" />
+    <xhtml:link rel="alternate" hreflang="fr" href="https://cyber-sec-pro.com/fr/api-reference/" />
+    <xhtml:link rel="alternate" hreflang="es" href="https://cyber-sec-pro.com/es/api-reference/" />
+    <xhtml:link rel="alternate" hreflang="ar" href="https://cyber-sec-pro.com/ar/api-reference/" />
+    <xhtml:link rel="alternate" hreflang="ja" href="https://cyber-sec-pro.com/ja/api-reference/" />
+    <xhtml:link rel="alternate" hreflang="zh" href="https://cyber-sec-pro.com/zh/api-reference/" />
+    <xhtml:link rel="alternate" hreflang="ru" href="https://cyber-sec-pro.com/ru/api-reference/" />
+    <xhtml:link rel="alternate" hreflang="ko" href="https://cyber-sec-pro.com/ko/api-reference/" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://cyber-sec-pro.com/en/api-reference/" />
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/ru/api-reference/</loc>
+    <lastmod>2026-04-14</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://cyber-sec-pro.com/api-reference/" />
+    <xhtml:link rel="alternate" hreflang="tr" href="https://cyber-sec-pro.com/tr/api-reference/" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://cyber-sec-pro.com/de/api-reference/" />
+    <xhtml:link rel="alternate" hreflang="fr" href="https://cyber-sec-pro.com/fr/api-reference/" />
+    <xhtml:link rel="alternate" hreflang="es" href="https://cyber-sec-pro.com/es/api-reference/" />
+    <xhtml:link rel="alternate" hreflang="ar" href="https://cyber-sec-pro.com/ar/api-reference/" />
+    <xhtml:link rel="alternate" hreflang="ja" href="https://cyber-sec-pro.com/ja/api-reference/" />
+    <xhtml:link rel="alternate" hreflang="zh" href="https://cyber-sec-pro.com/zh/api-reference/" />
+    <xhtml:link rel="alternate" hreflang="ru" href="https://cyber-sec-pro.com/ru/api-reference/" />
+    <xhtml:link rel="alternate" hreflang="ko" href="https://cyber-sec-pro.com/ko/api-reference/" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://cyber-sec-pro.com/en/api-reference/" />
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/ko/api-reference/</loc>
+    <lastmod>2026-04-14</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://cyber-sec-pro.com/api-reference/" />
+    <xhtml:link rel="alternate" hreflang="tr" href="https://cyber-sec-pro.com/tr/api-reference/" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://cyber-sec-pro.com/de/api-reference/" />
+    <xhtml:link rel="alternate" hreflang="fr" href="https://cyber-sec-pro.com/fr/api-reference/" />
+    <xhtml:link rel="alternate" hreflang="es" href="https://cyber-sec-pro.com/es/api-reference/" />
+    <xhtml:link rel="alternate" hreflang="ar" href="https://cyber-sec-pro.com/ar/api-reference/" />
+    <xhtml:link rel="alternate" hreflang="ja" href="https://cyber-sec-pro.com/ja/api-reference/" />
+    <xhtml:link rel="alternate" hreflang="zh" href="https://cyber-sec-pro.com/zh/api-reference/" />
+    <xhtml:link rel="alternate" hreflang="ru" href="https://cyber-sec-pro.com/ru/api-reference/" />
+    <xhtml:link rel="alternate" hreflang="ko" href="https://cyber-sec-pro.com/ko/api-reference/" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://cyber-sec-pro.com/en/api-reference/" />
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/contact/</loc>
+    <lastmod>2026-04-14</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://cyber-sec-pro.com/contact/" />
+    <xhtml:link rel="alternate" hreflang="tr" href="https://cyber-sec-pro.com/tr/contact/" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://cyber-sec-pro.com/de/contact/" />
+    <xhtml:link rel="alternate" hreflang="fr" href="https://cyber-sec-pro.com/fr/contact/" />
+    <xhtml:link rel="alternate" hreflang="es" href="https://cyber-sec-pro.com/es/contact/" />
+    <xhtml:link rel="alternate" hreflang="ar" href="https://cyber-sec-pro.com/ar/contact/" />
+    <xhtml:link rel="alternate" hreflang="ja" href="https://cyber-sec-pro.com/ja/contact/" />
+    <xhtml:link rel="alternate" hreflang="zh" href="https://cyber-sec-pro.com/zh/contact/" />
+    <xhtml:link rel="alternate" hreflang="ru" href="https://cyber-sec-pro.com/ru/contact/" />
+    <xhtml:link rel="alternate" hreflang="ko" href="https://cyber-sec-pro.com/ko/contact/" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://cyber-sec-pro.com/en/contact/" />
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/tr/contact/</loc>
+    <lastmod>2026-04-14</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://cyber-sec-pro.com/contact/" />
+    <xhtml:link rel="alternate" hreflang="tr" href="https://cyber-sec-pro.com/tr/contact/" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://cyber-sec-pro.com/de/contact/" />
+    <xhtml:link rel="alternate" hreflang="fr" href="https://cyber-sec-pro.com/fr/contact/" />
+    <xhtml:link rel="alternate" hreflang="es" href="https://cyber-sec-pro.com/es/contact/" />
+    <xhtml:link rel="alternate" hreflang="ar" href="https://cyber-sec-pro.com/ar/contact/" />
+    <xhtml:link rel="alternate" hreflang="ja" href="https://cyber-sec-pro.com/ja/contact/" />
+    <xhtml:link rel="alternate" hreflang="zh" href="https://cyber-sec-pro.com/zh/contact/" />
+    <xhtml:link rel="alternate" hreflang="ru" href="https://cyber-sec-pro.com/ru/contact/" />
+    <xhtml:link rel="alternate" hreflang="ko" href="https://cyber-sec-pro.com/ko/contact/" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://cyber-sec-pro.com/en/contact/" />
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/de/contact/</loc>
+    <lastmod>2026-04-14</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://cyber-sec-pro.com/contact/" />
+    <xhtml:link rel="alternate" hreflang="tr" href="https://cyber-sec-pro.com/tr/contact/" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://cyber-sec-pro.com/de/contact/" />
+    <xhtml:link rel="alternate" hreflang="fr" href="https://cyber-sec-pro.com/fr/contact/" />
+    <xhtml:link rel="alternate" hreflang="es" href="https://cyber-sec-pro.com/es/contact/" />
+    <xhtml:link rel="alternate" hreflang="ar" href="https://cyber-sec-pro.com/ar/contact/" />
+    <xhtml:link rel="alternate" hreflang="ja" href="https://cyber-sec-pro.com/ja/contact/" />
+    <xhtml:link rel="alternate" hreflang="zh" href="https://cyber-sec-pro.com/zh/contact/" />
+    <xhtml:link rel="alternate" hreflang="ru" href="https://cyber-sec-pro.com/ru/contact/" />
+    <xhtml:link rel="alternate" hreflang="ko" href="https://cyber-sec-pro.com/ko/contact/" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://cyber-sec-pro.com/en/contact/" />
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/fr/contact/</loc>
+    <lastmod>2026-04-14</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://cyber-sec-pro.com/contact/" />
+    <xhtml:link rel="alternate" hreflang="tr" href="https://cyber-sec-pro.com/tr/contact/" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://cyber-sec-pro.com/de/contact/" />
+    <xhtml:link rel="alternate" hreflang="fr" href="https://cyber-sec-pro.com/fr/contact/" />
+    <xhtml:link rel="alternate" hreflang="es" href="https://cyber-sec-pro.com/es/contact/" />
+    <xhtml:link rel="alternate" hreflang="ar" href="https://cyber-sec-pro.com/ar/contact/" />
+    <xhtml:link rel="alternate" hreflang="ja" href="https://cyber-sec-pro.com/ja/contact/" />
+    <xhtml:link rel="alternate" hreflang="zh" href="https://cyber-sec-pro.com/zh/contact/" />
+    <xhtml:link rel="alternate" hreflang="ru" href="https://cyber-sec-pro.com/ru/contact/" />
+    <xhtml:link rel="alternate" hreflang="ko" href="https://cyber-sec-pro.com/ko/contact/" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://cyber-sec-pro.com/en/contact/" />
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/es/contact/</loc>
+    <lastmod>2026-04-14</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://cyber-sec-pro.com/contact/" />
+    <xhtml:link rel="alternate" hreflang="tr" href="https://cyber-sec-pro.com/tr/contact/" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://cyber-sec-pro.com/de/contact/" />
+    <xhtml:link rel="alternate" hreflang="fr" href="https://cyber-sec-pro.com/fr/contact/" />
+    <xhtml:link rel="alternate" hreflang="es" href="https://cyber-sec-pro.com/es/contact/" />
+    <xhtml:link rel="alternate" hreflang="ar" href="https://cyber-sec-pro.com/ar/contact/" />
+    <xhtml:link rel="alternate" hreflang="ja" href="https://cyber-sec-pro.com/ja/contact/" />
+    <xhtml:link rel="alternate" hreflang="zh" href="https://cyber-sec-pro.com/zh/contact/" />
+    <xhtml:link rel="alternate" hreflang="ru" href="https://cyber-sec-pro.com/ru/contact/" />
+    <xhtml:link rel="alternate" hreflang="ko" href="https://cyber-sec-pro.com/ko/contact/" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://cyber-sec-pro.com/en/contact/" />
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/ar/contact/</loc>
+    <lastmod>2026-04-14</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://cyber-sec-pro.com/contact/" />
+    <xhtml:link rel="alternate" hreflang="tr" href="https://cyber-sec-pro.com/tr/contact/" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://cyber-sec-pro.com/de/contact/" />
+    <xhtml:link rel="alternate" hreflang="fr" href="https://cyber-sec-pro.com/fr/contact/" />
+    <xhtml:link rel="alternate" hreflang="es" href="https://cyber-sec-pro.com/es/contact/" />
+    <xhtml:link rel="alternate" hreflang="ar" href="https://cyber-sec-pro.com/ar/contact/" />
+    <xhtml:link rel="alternate" hreflang="ja" href="https://cyber-sec-pro.com/ja/contact/" />
+    <xhtml:link rel="alternate" hreflang="zh" href="https://cyber-sec-pro.com/zh/contact/" />
+    <xhtml:link rel="alternate" hreflang="ru" href="https://cyber-sec-pro.com/ru/contact/" />
+    <xhtml:link rel="alternate" hreflang="ko" href="https://cyber-sec-pro.com/ko/contact/" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://cyber-sec-pro.com/en/contact/" />
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/ja/contact/</loc>
+    <lastmod>2026-04-14</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://cyber-sec-pro.com/contact/" />
+    <xhtml:link rel="alternate" hreflang="tr" href="https://cyber-sec-pro.com/tr/contact/" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://cyber-sec-pro.com/de/contact/" />
+    <xhtml:link rel="alternate" hreflang="fr" href="https://cyber-sec-pro.com/fr/contact/" />
+    <xhtml:link rel="alternate" hreflang="es" href="https://cyber-sec-pro.com/es/contact/" />
+    <xhtml:link rel="alternate" hreflang="ar" href="https://cyber-sec-pro.com/ar/contact/" />
+    <xhtml:link rel="alternate" hreflang="ja" href="https://cyber-sec-pro.com/ja/contact/" />
+    <xhtml:link rel="alternate" hreflang="zh" href="https://cyber-sec-pro.com/zh/contact/" />
+    <xhtml:link rel="alternate" hreflang="ru" href="https://cyber-sec-pro.com/ru/contact/" />
+    <xhtml:link rel="alternate" hreflang="ko" href="https://cyber-sec-pro.com/ko/contact/" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://cyber-sec-pro.com/en/contact/" />
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/zh/contact/</loc>
+    <lastmod>2026-04-14</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://cyber-sec-pro.com/contact/" />
+    <xhtml:link rel="alternate" hreflang="tr" href="https://cyber-sec-pro.com/tr/contact/" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://cyber-sec-pro.com/de/contact/" />
+    <xhtml:link rel="alternate" hreflang="fr" href="https://cyber-sec-pro.com/fr/contact/" />
+    <xhtml:link rel="alternate" hreflang="es" href="https://cyber-sec-pro.com/es/contact/" />
+    <xhtml:link rel="alternate" hreflang="ar" href="https://cyber-sec-pro.com/ar/contact/" />
+    <xhtml:link rel="alternate" hreflang="ja" href="https://cyber-sec-pro.com/ja/contact/" />
+    <xhtml:link rel="alternate" hreflang="zh" href="https://cyber-sec-pro.com/zh/contact/" />
+    <xhtml:link rel="alternate" hreflang="ru" href="https://cyber-sec-pro.com/ru/contact/" />
+    <xhtml:link rel="alternate" hreflang="ko" href="https://cyber-sec-pro.com/ko/contact/" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://cyber-sec-pro.com/en/contact/" />
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/ru/contact/</loc>
+    <lastmod>2026-04-14</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://cyber-sec-pro.com/contact/" />
+    <xhtml:link rel="alternate" hreflang="tr" href="https://cyber-sec-pro.com/tr/contact/" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://cyber-sec-pro.com/de/contact/" />
+    <xhtml:link rel="alternate" hreflang="fr" href="https://cyber-sec-pro.com/fr/contact/" />
+    <xhtml:link rel="alternate" hreflang="es" href="https://cyber-sec-pro.com/es/contact/" />
+    <xhtml:link rel="alternate" hreflang="ar" href="https://cyber-sec-pro.com/ar/contact/" />
+    <xhtml:link rel="alternate" hreflang="ja" href="https://cyber-sec-pro.com/ja/contact/" />
+    <xhtml:link rel="alternate" hreflang="zh" href="https://cyber-sec-pro.com/zh/contact/" />
+    <xhtml:link rel="alternate" hreflang="ru" href="https://cyber-sec-pro.com/ru/contact/" />
+    <xhtml:link rel="alternate" hreflang="ko" href="https://cyber-sec-pro.com/ko/contact/" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://cyber-sec-pro.com/en/contact/" />
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/ko/contact/</loc>
+    <lastmod>2026-04-14</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://cyber-sec-pro.com/contact/" />
+    <xhtml:link rel="alternate" hreflang="tr" href="https://cyber-sec-pro.com/tr/contact/" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://cyber-sec-pro.com/de/contact/" />
+    <xhtml:link rel="alternate" hreflang="fr" href="https://cyber-sec-pro.com/fr/contact/" />
+    <xhtml:link rel="alternate" hreflang="es" href="https://cyber-sec-pro.com/es/contact/" />
+    <xhtml:link rel="alternate" hreflang="ar" href="https://cyber-sec-pro.com/ar/contact/" />
+    <xhtml:link rel="alternate" hreflang="ja" href="https://cyber-sec-pro.com/ja/contact/" />
+    <xhtml:link rel="alternate" hreflang="zh" href="https://cyber-sec-pro.com/zh/contact/" />
+    <xhtml:link rel="alternate" hreflang="ru" href="https://cyber-sec-pro.com/ru/contact/" />
+    <xhtml:link rel="alternate" hreflang="ko" href="https://cyber-sec-pro.com/ko/contact/" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://cyber-sec-pro.com/en/contact/" />
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/careers/</loc>
+    <lastmod>2026-04-14</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://cyber-sec-pro.com/careers/" />
+    <xhtml:link rel="alternate" hreflang="tr" href="https://cyber-sec-pro.com/tr/careers/" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://cyber-sec-pro.com/de/careers/" />
+    <xhtml:link rel="alternate" hreflang="fr" href="https://cyber-sec-pro.com/fr/careers/" />
+    <xhtml:link rel="alternate" hreflang="es" href="https://cyber-sec-pro.com/es/careers/" />
+    <xhtml:link rel="alternate" hreflang="ar" href="https://cyber-sec-pro.com/ar/careers/" />
+    <xhtml:link rel="alternate" hreflang="ja" href="https://cyber-sec-pro.com/ja/careers/" />
+    <xhtml:link rel="alternate" hreflang="zh" href="https://cyber-sec-pro.com/zh/careers/" />
+    <xhtml:link rel="alternate" hreflang="ru" href="https://cyber-sec-pro.com/ru/careers/" />
+    <xhtml:link rel="alternate" hreflang="ko" href="https://cyber-sec-pro.com/ko/careers/" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://cyber-sec-pro.com/en/careers/" />
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/tr/careers/</loc>
+    <lastmod>2026-04-14</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://cyber-sec-pro.com/careers/" />
+    <xhtml:link rel="alternate" hreflang="tr" href="https://cyber-sec-pro.com/tr/careers/" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://cyber-sec-pro.com/de/careers/" />
+    <xhtml:link rel="alternate" hreflang="fr" href="https://cyber-sec-pro.com/fr/careers/" />
+    <xhtml:link rel="alternate" hreflang="es" href="https://cyber-sec-pro.com/es/careers/" />
+    <xhtml:link rel="alternate" hreflang="ar" href="https://cyber-sec-pro.com/ar/careers/" />
+    <xhtml:link rel="alternate" hreflang="ja" href="https://cyber-sec-pro.com/ja/careers/" />
+    <xhtml:link rel="alternate" hreflang="zh" href="https://cyber-sec-pro.com/zh/careers/" />
+    <xhtml:link rel="alternate" hreflang="ru" href="https://cyber-sec-pro.com/ru/careers/" />
+    <xhtml:link rel="alternate" hreflang="ko" href="https://cyber-sec-pro.com/ko/careers/" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://cyber-sec-pro.com/en/careers/" />
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/de/careers/</loc>
+    <lastmod>2026-04-14</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://cyber-sec-pro.com/careers/" />
+    <xhtml:link rel="alternate" hreflang="tr" href="https://cyber-sec-pro.com/tr/careers/" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://cyber-sec-pro.com/de/careers/" />
+    <xhtml:link rel="alternate" hreflang="fr" href="https://cyber-sec-pro.com/fr/careers/" />
+    <xhtml:link rel="alternate" hreflang="es" href="https://cyber-sec-pro.com/es/careers/" />
+    <xhtml:link rel="alternate" hreflang="ar" href="https://cyber-sec-pro.com/ar/careers/" />
+    <xhtml:link rel="alternate" hreflang="ja" href="https://cyber-sec-pro.com/ja/careers/" />
+    <xhtml:link rel="alternate" hreflang="zh" href="https://cyber-sec-pro.com/zh/careers/" />
+    <xhtml:link rel="alternate" hreflang="ru" href="https://cyber-sec-pro.com/ru/careers/" />
+    <xhtml:link rel="alternate" hreflang="ko" href="https://cyber-sec-pro.com/ko/careers/" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://cyber-sec-pro.com/en/careers/" />
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/fr/careers/</loc>
+    <lastmod>2026-04-14</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://cyber-sec-pro.com/careers/" />
+    <xhtml:link rel="alternate" hreflang="tr" href="https://cyber-sec-pro.com/tr/careers/" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://cyber-sec-pro.com/de/careers/" />
+    <xhtml:link rel="alternate" hreflang="fr" href="https://cyber-sec-pro.com/fr/careers/" />
+    <xhtml:link rel="alternate" hreflang="es" href="https://cyber-sec-pro.com/es/careers/" />
+    <xhtml:link rel="alternate" hreflang="ar" href="https://cyber-sec-pro.com/ar/careers/" />
+    <xhtml:link rel="alternate" hreflang="ja" href="https://cyber-sec-pro.com/ja/careers/" />
+    <xhtml:link rel="alternate" hreflang="zh" href="https://cyber-sec-pro.com/zh/careers/" />
+    <xhtml:link rel="alternate" hreflang="ru" href="https://cyber-sec-pro.com/ru/careers/" />
+    <xhtml:link rel="alternate" hreflang="ko" href="https://cyber-sec-pro.com/ko/careers/" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://cyber-sec-pro.com/en/careers/" />
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/es/careers/</loc>
+    <lastmod>2026-04-14</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://cyber-sec-pro.com/careers/" />
+    <xhtml:link rel="alternate" hreflang="tr" href="https://cyber-sec-pro.com/tr/careers/" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://cyber-sec-pro.com/de/careers/" />
+    <xhtml:link rel="alternate" hreflang="fr" href="https://cyber-sec-pro.com/fr/careers/" />
+    <xhtml:link rel="alternate" hreflang="es" href="https://cyber-sec-pro.com/es/careers/" />
+    <xhtml:link rel="alternate" hreflang="ar" href="https://cyber-sec-pro.com/ar/careers/" />
+    <xhtml:link rel="alternate" hreflang="ja" href="https://cyber-sec-pro.com/ja/careers/" />
+    <xhtml:link rel="alternate" hreflang="zh" href="https://cyber-sec-pro.com/zh/careers/" />
+    <xhtml:link rel="alternate" hreflang="ru" href="https://cyber-sec-pro.com/ru/careers/" />
+    <xhtml:link rel="alternate" hreflang="ko" href="https://cyber-sec-pro.com/ko/careers/" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://cyber-sec-pro.com/en/careers/" />
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/ar/careers/</loc>
+    <lastmod>2026-04-14</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://cyber-sec-pro.com/careers/" />
+    <xhtml:link rel="alternate" hreflang="tr" href="https://cyber-sec-pro.com/tr/careers/" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://cyber-sec-pro.com/de/careers/" />
+    <xhtml:link rel="alternate" hreflang="fr" href="https://cyber-sec-pro.com/fr/careers/" />
+    <xhtml:link rel="alternate" hreflang="es" href="https://cyber-sec-pro.com/es/careers/" />
+    <xhtml:link rel="alternate" hreflang="ar" href="https://cyber-sec-pro.com/ar/careers/" />
+    <xhtml:link rel="alternate" hreflang="ja" href="https://cyber-sec-pro.com/ja/careers/" />
+    <xhtml:link rel="alternate" hreflang="zh" href="https://cyber-sec-pro.com/zh/careers/" />
+    <xhtml:link rel="alternate" hreflang="ru" href="https://cyber-sec-pro.com/ru/careers/" />
+    <xhtml:link rel="alternate" hreflang="ko" href="https://cyber-sec-pro.com/ko/careers/" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://cyber-sec-pro.com/en/careers/" />
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/ja/careers/</loc>
+    <lastmod>2026-04-14</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://cyber-sec-pro.com/careers/" />
+    <xhtml:link rel="alternate" hreflang="tr" href="https://cyber-sec-pro.com/tr/careers/" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://cyber-sec-pro.com/de/careers/" />
+    <xhtml:link rel="alternate" hreflang="fr" href="https://cyber-sec-pro.com/fr/careers/" />
+    <xhtml:link rel="alternate" hreflang="es" href="https://cyber-sec-pro.com/es/careers/" />
+    <xhtml:link rel="alternate" hreflang="ar" href="https://cyber-sec-pro.com/ar/careers/" />
+    <xhtml:link rel="alternate" hreflang="ja" href="https://cyber-sec-pro.com/ja/careers/" />
+    <xhtml:link rel="alternate" hreflang="zh" href="https://cyber-sec-pro.com/zh/careers/" />
+    <xhtml:link rel="alternate" hreflang="ru" href="https://cyber-sec-pro.com/ru/careers/" />
+    <xhtml:link rel="alternate" hreflang="ko" href="https://cyber-sec-pro.com/ko/careers/" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://cyber-sec-pro.com/en/careers/" />
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/zh/careers/</loc>
+    <lastmod>2026-04-14</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://cyber-sec-pro.com/careers/" />
+    <xhtml:link rel="alternate" hreflang="tr" href="https://cyber-sec-pro.com/tr/careers/" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://cyber-sec-pro.com/de/careers/" />
+    <xhtml:link rel="alternate" hreflang="fr" href="https://cyber-sec-pro.com/fr/careers/" />
+    <xhtml:link rel="alternate" hreflang="es" href="https://cyber-sec-pro.com/es/careers/" />
+    <xhtml:link rel="alternate" hreflang="ar" href="https://cyber-sec-pro.com/ar/careers/" />
+    <xhtml:link rel="alternate" hreflang="ja" href="https://cyber-sec-pro.com/ja/careers/" />
+    <xhtml:link rel="alternate" hreflang="zh" href="https://cyber-sec-pro.com/zh/careers/" />
+    <xhtml:link rel="alternate" hreflang="ru" href="https://cyber-sec-pro.com/ru/careers/" />
+    <xhtml:link rel="alternate" hreflang="ko" href="https://cyber-sec-pro.com/ko/careers/" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://cyber-sec-pro.com/en/careers/" />
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/ru/careers/</loc>
+    <lastmod>2026-04-14</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://cyber-sec-pro.com/careers/" />
+    <xhtml:link rel="alternate" hreflang="tr" href="https://cyber-sec-pro.com/tr/careers/" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://cyber-sec-pro.com/de/careers/" />
+    <xhtml:link rel="alternate" hreflang="fr" href="https://cyber-sec-pro.com/fr/careers/" />
+    <xhtml:link rel="alternate" hreflang="es" href="https://cyber-sec-pro.com/es/careers/" />
+    <xhtml:link rel="alternate" hreflang="ar" href="https://cyber-sec-pro.com/ar/careers/" />
+    <xhtml:link rel="alternate" hreflang="ja" href="https://cyber-sec-pro.com/ja/careers/" />
+    <xhtml:link rel="alternate" hreflang="zh" href="https://cyber-sec-pro.com/zh/careers/" />
+    <xhtml:link rel="alternate" hreflang="ru" href="https://cyber-sec-pro.com/ru/careers/" />
+    <xhtml:link rel="alternate" hreflang="ko" href="https://cyber-sec-pro.com/ko/careers/" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://cyber-sec-pro.com/en/careers/" />
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/ko/careers/</loc>
+    <lastmod>2026-04-14</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://cyber-sec-pro.com/careers/" />
+    <xhtml:link rel="alternate" hreflang="tr" href="https://cyber-sec-pro.com/tr/careers/" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://cyber-sec-pro.com/de/careers/" />
+    <xhtml:link rel="alternate" hreflang="fr" href="https://cyber-sec-pro.com/fr/careers/" />
+    <xhtml:link rel="alternate" hreflang="es" href="https://cyber-sec-pro.com/es/careers/" />
+    <xhtml:link rel="alternate" hreflang="ar" href="https://cyber-sec-pro.com/ar/careers/" />
+    <xhtml:link rel="alternate" hreflang="ja" href="https://cyber-sec-pro.com/ja/careers/" />
+    <xhtml:link rel="alternate" hreflang="zh" href="https://cyber-sec-pro.com/zh/careers/" />
+    <xhtml:link rel="alternate" hreflang="ru" href="https://cyber-sec-pro.com/ru/careers/" />
+    <xhtml:link rel="alternate" hreflang="ko" href="https://cyber-sec-pro.com/ko/careers/" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://cyber-sec-pro.com/en/careers/" />
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/security/</loc>
+    <lastmod>2026-04-14</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://cyber-sec-pro.com/security/" />
+    <xhtml:link rel="alternate" hreflang="tr" href="https://cyber-sec-pro.com/tr/security/" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://cyber-sec-pro.com/de/security/" />
+    <xhtml:link rel="alternate" hreflang="fr" href="https://cyber-sec-pro.com/fr/security/" />
+    <xhtml:link rel="alternate" hreflang="es" href="https://cyber-sec-pro.com/es/security/" />
+    <xhtml:link rel="alternate" hreflang="ar" href="https://cyber-sec-pro.com/ar/security/" />
+    <xhtml:link rel="alternate" hreflang="ja" href="https://cyber-sec-pro.com/ja/security/" />
+    <xhtml:link rel="alternate" hreflang="zh" href="https://cyber-sec-pro.com/zh/security/" />
+    <xhtml:link rel="alternate" hreflang="ru" href="https://cyber-sec-pro.com/ru/security/" />
+    <xhtml:link rel="alternate" hreflang="ko" href="https://cyber-sec-pro.com/ko/security/" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://cyber-sec-pro.com/en/security/" />
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/tr/security/</loc>
+    <lastmod>2026-04-14</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://cyber-sec-pro.com/security/" />
+    <xhtml:link rel="alternate" hreflang="tr" href="https://cyber-sec-pro.com/tr/security/" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://cyber-sec-pro.com/de/security/" />
+    <xhtml:link rel="alternate" hreflang="fr" href="https://cyber-sec-pro.com/fr/security/" />
+    <xhtml:link rel="alternate" hreflang="es" href="https://cyber-sec-pro.com/es/security/" />
+    <xhtml:link rel="alternate" hreflang="ar" href="https://cyber-sec-pro.com/ar/security/" />
+    <xhtml:link rel="alternate" hreflang="ja" href="https://cyber-sec-pro.com/ja/security/" />
+    <xhtml:link rel="alternate" hreflang="zh" href="https://cyber-sec-pro.com/zh/security/" />
+    <xhtml:link rel="alternate" hreflang="ru" href="https://cyber-sec-pro.com/ru/security/" />
+    <xhtml:link rel="alternate" hreflang="ko" href="https://cyber-sec-pro.com/ko/security/" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://cyber-sec-pro.com/en/security/" />
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/de/security/</loc>
+    <lastmod>2026-04-14</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://cyber-sec-pro.com/security/" />
+    <xhtml:link rel="alternate" hreflang="tr" href="https://cyber-sec-pro.com/tr/security/" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://cyber-sec-pro.com/de/security/" />
+    <xhtml:link rel="alternate" hreflang="fr" href="https://cyber-sec-pro.com/fr/security/" />
+    <xhtml:link rel="alternate" hreflang="es" href="https://cyber-sec-pro.com/es/security/" />
+    <xhtml:link rel="alternate" hreflang="ar" href="https://cyber-sec-pro.com/ar/security/" />
+    <xhtml:link rel="alternate" hreflang="ja" href="https://cyber-sec-pro.com/ja/security/" />
+    <xhtml:link rel="alternate" hreflang="zh" href="https://cyber-sec-pro.com/zh/security/" />
+    <xhtml:link rel="alternate" hreflang="ru" href="https://cyber-sec-pro.com/ru/security/" />
+    <xhtml:link rel="alternate" hreflang="ko" href="https://cyber-sec-pro.com/ko/security/" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://cyber-sec-pro.com/en/security/" />
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/fr/security/</loc>
+    <lastmod>2026-04-14</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://cyber-sec-pro.com/security/" />
+    <xhtml:link rel="alternate" hreflang="tr" href="https://cyber-sec-pro.com/tr/security/" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://cyber-sec-pro.com/de/security/" />
+    <xhtml:link rel="alternate" hreflang="fr" href="https://cyber-sec-pro.com/fr/security/" />
+    <xhtml:link rel="alternate" hreflang="es" href="https://cyber-sec-pro.com/es/security/" />
+    <xhtml:link rel="alternate" hreflang="ar" href="https://cyber-sec-pro.com/ar/security/" />
+    <xhtml:link rel="alternate" hreflang="ja" href="https://cyber-sec-pro.com/ja/security/" />
+    <xhtml:link rel="alternate" hreflang="zh" href="https://cyber-sec-pro.com/zh/security/" />
+    <xhtml:link rel="alternate" hreflang="ru" href="https://cyber-sec-pro.com/ru/security/" />
+    <xhtml:link rel="alternate" hreflang="ko" href="https://cyber-sec-pro.com/ko/security/" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://cyber-sec-pro.com/en/security/" />
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/es/security/</loc>
+    <lastmod>2026-04-14</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://cyber-sec-pro.com/security/" />
+    <xhtml:link rel="alternate" hreflang="tr" href="https://cyber-sec-pro.com/tr/security/" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://cyber-sec-pro.com/de/security/" />
+    <xhtml:link rel="alternate" hreflang="fr" href="https://cyber-sec-pro.com/fr/security/" />
+    <xhtml:link rel="alternate" hreflang="es" href="https://cyber-sec-pro.com/es/security/" />
+    <xhtml:link rel="alternate" hreflang="ar" href="https://cyber-sec-pro.com/ar/security/" />
+    <xhtml:link rel="alternate" hreflang="ja" href="https://cyber-sec-pro.com/ja/security/" />
+    <xhtml:link rel="alternate" hreflang="zh" href="https://cyber-sec-pro.com/zh/security/" />
+    <xhtml:link rel="alternate" hreflang="ru" href="https://cyber-sec-pro.com/ru/security/" />
+    <xhtml:link rel="alternate" hreflang="ko" href="https://cyber-sec-pro.com/ko/security/" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://cyber-sec-pro.com/en/security/" />
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/ar/security/</loc>
+    <lastmod>2026-04-14</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://cyber-sec-pro.com/security/" />
+    <xhtml:link rel="alternate" hreflang="tr" href="https://cyber-sec-pro.com/tr/security/" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://cyber-sec-pro.com/de/security/" />
+    <xhtml:link rel="alternate" hreflang="fr" href="https://cyber-sec-pro.com/fr/security/" />
+    <xhtml:link rel="alternate" hreflang="es" href="https://cyber-sec-pro.com/es/security/" />
+    <xhtml:link rel="alternate" hreflang="ar" href="https://cyber-sec-pro.com/ar/security/" />
+    <xhtml:link rel="alternate" hreflang="ja" href="https://cyber-sec-pro.com/ja/security/" />
+    <xhtml:link rel="alternate" hreflang="zh" href="https://cyber-sec-pro.com/zh/security/" />
+    <xhtml:link rel="alternate" hreflang="ru" href="https://cyber-sec-pro.com/ru/security/" />
+    <xhtml:link rel="alternate" hreflang="ko" href="https://cyber-sec-pro.com/ko/security/" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://cyber-sec-pro.com/en/security/" />
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/ja/security/</loc>
+    <lastmod>2026-04-14</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://cyber-sec-pro.com/security/" />
+    <xhtml:link rel="alternate" hreflang="tr" href="https://cyber-sec-pro.com/tr/security/" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://cyber-sec-pro.com/de/security/" />
+    <xhtml:link rel="alternate" hreflang="fr" href="https://cyber-sec-pro.com/fr/security/" />
+    <xhtml:link rel="alternate" hreflang="es" href="https://cyber-sec-pro.com/es/security/" />
+    <xhtml:link rel="alternate" hreflang="ar" href="https://cyber-sec-pro.com/ar/security/" />
+    <xhtml:link rel="alternate" hreflang="ja" href="https://cyber-sec-pro.com/ja/security/" />
+    <xhtml:link rel="alternate" hreflang="zh" href="https://cyber-sec-pro.com/zh/security/" />
+    <xhtml:link rel="alternate" hreflang="ru" href="https://cyber-sec-pro.com/ru/security/" />
+    <xhtml:link rel="alternate" hreflang="ko" href="https://cyber-sec-pro.com/ko/security/" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://cyber-sec-pro.com/en/security/" />
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/zh/security/</loc>
+    <lastmod>2026-04-14</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://cyber-sec-pro.com/security/" />
+    <xhtml:link rel="alternate" hreflang="tr" href="https://cyber-sec-pro.com/tr/security/" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://cyber-sec-pro.com/de/security/" />
+    <xhtml:link rel="alternate" hreflang="fr" href="https://cyber-sec-pro.com/fr/security/" />
+    <xhtml:link rel="alternate" hreflang="es" href="https://cyber-sec-pro.com/es/security/" />
+    <xhtml:link rel="alternate" hreflang="ar" href="https://cyber-sec-pro.com/ar/security/" />
+    <xhtml:link rel="alternate" hreflang="ja" href="https://cyber-sec-pro.com/ja/security/" />
+    <xhtml:link rel="alternate" hreflang="zh" href="https://cyber-sec-pro.com/zh/security/" />
+    <xhtml:link rel="alternate" hreflang="ru" href="https://cyber-sec-pro.com/ru/security/" />
+    <xhtml:link rel="alternate" hreflang="ko" href="https://cyber-sec-pro.com/ko/security/" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://cyber-sec-pro.com/en/security/" />
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/ru/security/</loc>
+    <lastmod>2026-04-14</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://cyber-sec-pro.com/security/" />
+    <xhtml:link rel="alternate" hreflang="tr" href="https://cyber-sec-pro.com/tr/security/" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://cyber-sec-pro.com/de/security/" />
+    <xhtml:link rel="alternate" hreflang="fr" href="https://cyber-sec-pro.com/fr/security/" />
+    <xhtml:link rel="alternate" hreflang="es" href="https://cyber-sec-pro.com/es/security/" />
+    <xhtml:link rel="alternate" hreflang="ar" href="https://cyber-sec-pro.com/ar/security/" />
+    <xhtml:link rel="alternate" hreflang="ja" href="https://cyber-sec-pro.com/ja/security/" />
+    <xhtml:link rel="alternate" hreflang="zh" href="https://cyber-sec-pro.com/zh/security/" />
+    <xhtml:link rel="alternate" hreflang="ru" href="https://cyber-sec-pro.com/ru/security/" />
+    <xhtml:link rel="alternate" hreflang="ko" href="https://cyber-sec-pro.com/ko/security/" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://cyber-sec-pro.com/en/security/" />
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/ko/security/</loc>
+    <lastmod>2026-04-14</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://cyber-sec-pro.com/security/" />
+    <xhtml:link rel="alternate" hreflang="tr" href="https://cyber-sec-pro.com/tr/security/" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://cyber-sec-pro.com/de/security/" />
+    <xhtml:link rel="alternate" hreflang="fr" href="https://cyber-sec-pro.com/fr/security/" />
+    <xhtml:link rel="alternate" hreflang="es" href="https://cyber-sec-pro.com/es/security/" />
+    <xhtml:link rel="alternate" hreflang="ar" href="https://cyber-sec-pro.com/ar/security/" />
+    <xhtml:link rel="alternate" hreflang="ja" href="https://cyber-sec-pro.com/ja/security/" />
+    <xhtml:link rel="alternate" hreflang="zh" href="https://cyber-sec-pro.com/zh/security/" />
+    <xhtml:link rel="alternate" hreflang="ru" href="https://cyber-sec-pro.com/ru/security/" />
+    <xhtml:link rel="alternate" hreflang="ko" href="https://cyber-sec-pro.com/ko/security/" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://cyber-sec-pro.com/en/security/" />
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/tests/</loc>
+    <lastmod>2026-04-14</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://cyber-sec-pro.com/tests/" />
+    <xhtml:link rel="alternate" hreflang="tr" href="https://cyber-sec-pro.com/tr/tests/" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://cyber-sec-pro.com/de/tests/" />
+    <xhtml:link rel="alternate" hreflang="fr" href="https://cyber-sec-pro.com/fr/tests/" />
+    <xhtml:link rel="alternate" hreflang="es" href="https://cyber-sec-pro.com/es/tests/" />
+    <xhtml:link rel="alternate" hreflang="ar" href="https://cyber-sec-pro.com/ar/tests/" />
+    <xhtml:link rel="alternate" hreflang="ja" href="https://cyber-sec-pro.com/ja/tests/" />
+    <xhtml:link rel="alternate" hreflang="zh" href="https://cyber-sec-pro.com/zh/tests/" />
+    <xhtml:link rel="alternate" hreflang="ru" href="https://cyber-sec-pro.com/ru/tests/" />
+    <xhtml:link rel="alternate" hreflang="ko" href="https://cyber-sec-pro.com/ko/tests/" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://cyber-sec-pro.com/en/tests/" />
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/tr/tests/</loc>
+    <lastmod>2026-04-14</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://cyber-sec-pro.com/tests/" />
+    <xhtml:link rel="alternate" hreflang="tr" href="https://cyber-sec-pro.com/tr/tests/" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://cyber-sec-pro.com/de/tests/" />
+    <xhtml:link rel="alternate" hreflang="fr" href="https://cyber-sec-pro.com/fr/tests/" />
+    <xhtml:link rel="alternate" hreflang="es" href="https://cyber-sec-pro.com/es/tests/" />
+    <xhtml:link rel="alternate" hreflang="ar" href="https://cyber-sec-pro.com/ar/tests/" />
+    <xhtml:link rel="alternate" hreflang="ja" href="https://cyber-sec-pro.com/ja/tests/" />
+    <xhtml:link rel="alternate" hreflang="zh" href="https://cyber-sec-pro.com/zh/tests/" />
+    <xhtml:link rel="alternate" hreflang="ru" href="https://cyber-sec-pro.com/ru/tests/" />
+    <xhtml:link rel="alternate" hreflang="ko" href="https://cyber-sec-pro.com/ko/tests/" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://cyber-sec-pro.com/en/tests/" />
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/de/tests/</loc>
+    <lastmod>2026-04-14</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://cyber-sec-pro.com/tests/" />
+    <xhtml:link rel="alternate" hreflang="tr" href="https://cyber-sec-pro.com/tr/tests/" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://cyber-sec-pro.com/de/tests/" />
+    <xhtml:link rel="alternate" hreflang="fr" href="https://cyber-sec-pro.com/fr/tests/" />
+    <xhtml:link rel="alternate" hreflang="es" href="https://cyber-sec-pro.com/es/tests/" />
+    <xhtml:link rel="alternate" hreflang="ar" href="https://cyber-sec-pro.com/ar/tests/" />
+    <xhtml:link rel="alternate" hreflang="ja" href="https://cyber-sec-pro.com/ja/tests/" />
+    <xhtml:link rel="alternate" hreflang="zh" href="https://cyber-sec-pro.com/zh/tests/" />
+    <xhtml:link rel="alternate" hreflang="ru" href="https://cyber-sec-pro.com/ru/tests/" />
+    <xhtml:link rel="alternate" hreflang="ko" href="https://cyber-sec-pro.com/ko/tests/" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://cyber-sec-pro.com/en/tests/" />
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/fr/tests/</loc>
+    <lastmod>2026-04-14</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://cyber-sec-pro.com/tests/" />
+    <xhtml:link rel="alternate" hreflang="tr" href="https://cyber-sec-pro.com/tr/tests/" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://cyber-sec-pro.com/de/tests/" />
+    <xhtml:link rel="alternate" hreflang="fr" href="https://cyber-sec-pro.com/fr/tests/" />
+    <xhtml:link rel="alternate" hreflang="es" href="https://cyber-sec-pro.com/es/tests/" />
+    <xhtml:link rel="alternate" hreflang="ar" href="https://cyber-sec-pro.com/ar/tests/" />
+    <xhtml:link rel="alternate" hreflang="ja" href="https://cyber-sec-pro.com/ja/tests/" />
+    <xhtml:link rel="alternate" hreflang="zh" href="https://cyber-sec-pro.com/zh/tests/" />
+    <xhtml:link rel="alternate" hreflang="ru" href="https://cyber-sec-pro.com/ru/tests/" />
+    <xhtml:link rel="alternate" hreflang="ko" href="https://cyber-sec-pro.com/ko/tests/" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://cyber-sec-pro.com/en/tests/" />
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/es/tests/</loc>
+    <lastmod>2026-04-14</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://cyber-sec-pro.com/tests/" />
+    <xhtml:link rel="alternate" hreflang="tr" href="https://cyber-sec-pro.com/tr/tests/" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://cyber-sec-pro.com/de/tests/" />
+    <xhtml:link rel="alternate" hreflang="fr" href="https://cyber-sec-pro.com/fr/tests/" />
+    <xhtml:link rel="alternate" hreflang="es" href="https://cyber-sec-pro.com/es/tests/" />
+    <xhtml:link rel="alternate" hreflang="ar" href="https://cyber-sec-pro.com/ar/tests/" />
+    <xhtml:link rel="alternate" hreflang="ja" href="https://cyber-sec-pro.com/ja/tests/" />
+    <xhtml:link rel="alternate" hreflang="zh" href="https://cyber-sec-pro.com/zh/tests/" />
+    <xhtml:link rel="alternate" hreflang="ru" href="https://cyber-sec-pro.com/ru/tests/" />
+    <xhtml:link rel="alternate" hreflang="ko" href="https://cyber-sec-pro.com/ko/tests/" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://cyber-sec-pro.com/en/tests/" />
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/ar/tests/</loc>
+    <lastmod>2026-04-14</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://cyber-sec-pro.com/tests/" />
+    <xhtml:link rel="alternate" hreflang="tr" href="https://cyber-sec-pro.com/tr/tests/" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://cyber-sec-pro.com/de/tests/" />
+    <xhtml:link rel="alternate" hreflang="fr" href="https://cyber-sec-pro.com/fr/tests/" />
+    <xhtml:link rel="alternate" hreflang="es" href="https://cyber-sec-pro.com/es/tests/" />
+    <xhtml:link rel="alternate" hreflang="ar" href="https://cyber-sec-pro.com/ar/tests/" />
+    <xhtml:link rel="alternate" hreflang="ja" href="https://cyber-sec-pro.com/ja/tests/" />
+    <xhtml:link rel="alternate" hreflang="zh" href="https://cyber-sec-pro.com/zh/tests/" />
+    <xhtml:link rel="alternate" hreflang="ru" href="https://cyber-sec-pro.com/ru/tests/" />
+    <xhtml:link rel="alternate" hreflang="ko" href="https://cyber-sec-pro.com/ko/tests/" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://cyber-sec-pro.com/en/tests/" />
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/ja/tests/</loc>
+    <lastmod>2026-04-14</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://cyber-sec-pro.com/tests/" />
+    <xhtml:link rel="alternate" hreflang="tr" href="https://cyber-sec-pro.com/tr/tests/" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://cyber-sec-pro.com/de/tests/" />
+    <xhtml:link rel="alternate" hreflang="fr" href="https://cyber-sec-pro.com/fr/tests/" />
+    <xhtml:link rel="alternate" hreflang="es" href="https://cyber-sec-pro.com/es/tests/" />
+    <xhtml:link rel="alternate" hreflang="ar" href="https://cyber-sec-pro.com/ar/tests/" />
+    <xhtml:link rel="alternate" hreflang="ja" href="https://cyber-sec-pro.com/ja/tests/" />
+    <xhtml:link rel="alternate" hreflang="zh" href="https://cyber-sec-pro.com/zh/tests/" />
+    <xhtml:link rel="alternate" hreflang="ru" href="https://cyber-sec-pro.com/ru/tests/" />
+    <xhtml:link rel="alternate" hreflang="ko" href="https://cyber-sec-pro.com/ko/tests/" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://cyber-sec-pro.com/en/tests/" />
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/zh/tests/</loc>
+    <lastmod>2026-04-14</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://cyber-sec-pro.com/tests/" />
+    <xhtml:link rel="alternate" hreflang="tr" href="https://cyber-sec-pro.com/tr/tests/" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://cyber-sec-pro.com/de/tests/" />
+    <xhtml:link rel="alternate" hreflang="fr" href="https://cyber-sec-pro.com/fr/tests/" />
+    <xhtml:link rel="alternate" hreflang="es" href="https://cyber-sec-pro.com/es/tests/" />
+    <xhtml:link rel="alternate" hreflang="ar" href="https://cyber-sec-pro.com/ar/tests/" />
+    <xhtml:link rel="alternate" hreflang="ja" href="https://cyber-sec-pro.com/ja/tests/" />
+    <xhtml:link rel="alternate" hreflang="zh" href="https://cyber-sec-pro.com/zh/tests/" />
+    <xhtml:link rel="alternate" hreflang="ru" href="https://cyber-sec-pro.com/ru/tests/" />
+    <xhtml:link rel="alternate" hreflang="ko" href="https://cyber-sec-pro.com/ko/tests/" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://cyber-sec-pro.com/en/tests/" />
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/ru/tests/</loc>
+    <lastmod>2026-04-14</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://cyber-sec-pro.com/tests/" />
+    <xhtml:link rel="alternate" hreflang="tr" href="https://cyber-sec-pro.com/tr/tests/" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://cyber-sec-pro.com/de/tests/" />
+    <xhtml:link rel="alternate" hreflang="fr" href="https://cyber-sec-pro.com/fr/tests/" />
+    <xhtml:link rel="alternate" hreflang="es" href="https://cyber-sec-pro.com/es/tests/" />
+    <xhtml:link rel="alternate" hreflang="ar" href="https://cyber-sec-pro.com/ar/tests/" />
+    <xhtml:link rel="alternate" hreflang="ja" href="https://cyber-sec-pro.com/ja/tests/" />
+    <xhtml:link rel="alternate" hreflang="zh" href="https://cyber-sec-pro.com/zh/tests/" />
+    <xhtml:link rel="alternate" hreflang="ru" href="https://cyber-sec-pro.com/ru/tests/" />
+    <xhtml:link rel="alternate" hreflang="ko" href="https://cyber-sec-pro.com/ko/tests/" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://cyber-sec-pro.com/en/tests/" />
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/ko/tests/</loc>
+    <lastmod>2026-04-14</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://cyber-sec-pro.com/tests/" />
+    <xhtml:link rel="alternate" hreflang="tr" href="https://cyber-sec-pro.com/tr/tests/" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://cyber-sec-pro.com/de/tests/" />
+    <xhtml:link rel="alternate" hreflang="fr" href="https://cyber-sec-pro.com/fr/tests/" />
+    <xhtml:link rel="alternate" hreflang="es" href="https://cyber-sec-pro.com/es/tests/" />
+    <xhtml:link rel="alternate" hreflang="ar" href="https://cyber-sec-pro.com/ar/tests/" />
+    <xhtml:link rel="alternate" hreflang="ja" href="https://cyber-sec-pro.com/ja/tests/" />
+    <xhtml:link rel="alternate" hreflang="zh" href="https://cyber-sec-pro.com/zh/tests/" />
+    <xhtml:link rel="alternate" hreflang="ru" href="https://cyber-sec-pro.com/ru/tests/" />
+    <xhtml:link rel="alternate" hreflang="ko" href="https://cyber-sec-pro.com/ko/tests/" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://cyber-sec-pro.com/en/tests/" />
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/privacy/</loc>
+    <lastmod>2026-04-14</lastmod>
+    <changefreq>yearly</changefreq>
+    <priority>0.3</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://cyber-sec-pro.com/privacy/" />
+    <xhtml:link rel="alternate" hreflang="tr" href="https://cyber-sec-pro.com/tr/privacy/" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://cyber-sec-pro.com/de/privacy/" />
+    <xhtml:link rel="alternate" hreflang="fr" href="https://cyber-sec-pro.com/fr/privacy/" />
+    <xhtml:link rel="alternate" hreflang="es" href="https://cyber-sec-pro.com/es/privacy/" />
+    <xhtml:link rel="alternate" hreflang="ar" href="https://cyber-sec-pro.com/ar/privacy/" />
+    <xhtml:link rel="alternate" hreflang="ja" href="https://cyber-sec-pro.com/ja/privacy/" />
+    <xhtml:link rel="alternate" hreflang="zh" href="https://cyber-sec-pro.com/zh/privacy/" />
+    <xhtml:link rel="alternate" hreflang="ru" href="https://cyber-sec-pro.com/ru/privacy/" />
+    <xhtml:link rel="alternate" hreflang="ko" href="https://cyber-sec-pro.com/ko/privacy/" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://cyber-sec-pro.com/en/privacy/" />
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/tr/privacy/</loc>
+    <lastmod>2026-04-14</lastmod>
+    <changefreq>yearly</changefreq>
+    <priority>0.3</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://cyber-sec-pro.com/privacy/" />
+    <xhtml:link rel="alternate" hreflang="tr" href="https://cyber-sec-pro.com/tr/privacy/" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://cyber-sec-pro.com/de/privacy/" />
+    <xhtml:link rel="alternate" hreflang="fr" href="https://cyber-sec-pro.com/fr/privacy/" />
+    <xhtml:link rel="alternate" hreflang="es" href="https://cyber-sec-pro.com/es/privacy/" />
+    <xhtml:link rel="alternate" hreflang="ar" href="https://cyber-sec-pro.com/ar/privacy/" />
+    <xhtml:link rel="alternate" hreflang="ja" href="https://cyber-sec-pro.com/ja/privacy/" />
+    <xhtml:link rel="alternate" hreflang="zh" href="https://cyber-sec-pro.com/zh/privacy/" />
+    <xhtml:link rel="alternate" hreflang="ru" href="https://cyber-sec-pro.com/ru/privacy/" />
+    <xhtml:link rel="alternate" hreflang="ko" href="https://cyber-sec-pro.com/ko/privacy/" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://cyber-sec-pro.com/en/privacy/" />
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/de/privacy/</loc>
+    <lastmod>2026-04-14</lastmod>
+    <changefreq>yearly</changefreq>
+    <priority>0.3</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://cyber-sec-pro.com/privacy/" />
+    <xhtml:link rel="alternate" hreflang="tr" href="https://cyber-sec-pro.com/tr/privacy/" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://cyber-sec-pro.com/de/privacy/" />
+    <xhtml:link rel="alternate" hreflang="fr" href="https://cyber-sec-pro.com/fr/privacy/" />
+    <xhtml:link rel="alternate" hreflang="es" href="https://cyber-sec-pro.com/es/privacy/" />
+    <xhtml:link rel="alternate" hreflang="ar" href="https://cyber-sec-pro.com/ar/privacy/" />
+    <xhtml:link rel="alternate" hreflang="ja" href="https://cyber-sec-pro.com/ja/privacy/" />
+    <xhtml:link rel="alternate" hreflang="zh" href="https://cyber-sec-pro.com/zh/privacy/" />
+    <xhtml:link rel="alternate" hreflang="ru" href="https://cyber-sec-pro.com/ru/privacy/" />
+    <xhtml:link rel="alternate" hreflang="ko" href="https://cyber-sec-pro.com/ko/privacy/" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://cyber-sec-pro.com/en/privacy/" />
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/fr/privacy/</loc>
+    <lastmod>2026-04-14</lastmod>
+    <changefreq>yearly</changefreq>
+    <priority>0.3</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://cyber-sec-pro.com/privacy/" />
+    <xhtml:link rel="alternate" hreflang="tr" href="https://cyber-sec-pro.com/tr/privacy/" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://cyber-sec-pro.com/de/privacy/" />
+    <xhtml:link rel="alternate" hreflang="fr" href="https://cyber-sec-pro.com/fr/privacy/" />
+    <xhtml:link rel="alternate" hreflang="es" href="https://cyber-sec-pro.com/es/privacy/" />
+    <xhtml:link rel="alternate" hreflang="ar" href="https://cyber-sec-pro.com/ar/privacy/" />
+    <xhtml:link rel="alternate" hreflang="ja" href="https://cyber-sec-pro.com/ja/privacy/" />
+    <xhtml:link rel="alternate" hreflang="zh" href="https://cyber-sec-pro.com/zh/privacy/" />
+    <xhtml:link rel="alternate" hreflang="ru" href="https://cyber-sec-pro.com/ru/privacy/" />
+    <xhtml:link rel="alternate" hreflang="ko" href="https://cyber-sec-pro.com/ko/privacy/" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://cyber-sec-pro.com/en/privacy/" />
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/es/privacy/</loc>
+    <lastmod>2026-04-14</lastmod>
+    <changefreq>yearly</changefreq>
+    <priority>0.3</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://cyber-sec-pro.com/privacy/" />
+    <xhtml:link rel="alternate" hreflang="tr" href="https://cyber-sec-pro.com/tr/privacy/" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://cyber-sec-pro.com/de/privacy/" />
+    <xhtml:link rel="alternate" hreflang="fr" href="https://cyber-sec-pro.com/fr/privacy/" />
+    <xhtml:link rel="alternate" hreflang="es" href="https://cyber-sec-pro.com/es/privacy/" />
+    <xhtml:link rel="alternate" hreflang="ar" href="https://cyber-sec-pro.com/ar/privacy/" />
+    <xhtml:link rel="alternate" hreflang="ja" href="https://cyber-sec-pro.com/ja/privacy/" />
+    <xhtml:link rel="alternate" hreflang="zh" href="https://cyber-sec-pro.com/zh/privacy/" />
+    <xhtml:link rel="alternate" hreflang="ru" href="https://cyber-sec-pro.com/ru/privacy/" />
+    <xhtml:link rel="alternate" hreflang="ko" href="https://cyber-sec-pro.com/ko/privacy/" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://cyber-sec-pro.com/en/privacy/" />
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/ar/privacy/</loc>
+    <lastmod>2026-04-14</lastmod>
+    <changefreq>yearly</changefreq>
+    <priority>0.3</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://cyber-sec-pro.com/privacy/" />
+    <xhtml:link rel="alternate" hreflang="tr" href="https://cyber-sec-pro.com/tr/privacy/" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://cyber-sec-pro.com/de/privacy/" />
+    <xhtml:link rel="alternate" hreflang="fr" href="https://cyber-sec-pro.com/fr/privacy/" />
+    <xhtml:link rel="alternate" hreflang="es" href="https://cyber-sec-pro.com/es/privacy/" />
+    <xhtml:link rel="alternate" hreflang="ar" href="https://cyber-sec-pro.com/ar/privacy/" />
+    <xhtml:link rel="alternate" hreflang="ja" href="https://cyber-sec-pro.com/ja/privacy/" />
+    <xhtml:link rel="alternate" hreflang="zh" href="https://cyber-sec-pro.com/zh/privacy/" />
+    <xhtml:link rel="alternate" hreflang="ru" href="https://cyber-sec-pro.com/ru/privacy/" />
+    <xhtml:link rel="alternate" hreflang="ko" href="https://cyber-sec-pro.com/ko/privacy/" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://cyber-sec-pro.com/en/privacy/" />
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/ja/privacy/</loc>
+    <lastmod>2026-04-14</lastmod>
+    <changefreq>yearly</changefreq>
+    <priority>0.3</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://cyber-sec-pro.com/privacy/" />
+    <xhtml:link rel="alternate" hreflang="tr" href="https://cyber-sec-pro.com/tr/privacy/" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://cyber-sec-pro.com/de/privacy/" />
+    <xhtml:link rel="alternate" hreflang="fr" href="https://cyber-sec-pro.com/fr/privacy/" />
+    <xhtml:link rel="alternate" hreflang="es" href="https://cyber-sec-pro.com/es/privacy/" />
+    <xhtml:link rel="alternate" hreflang="ar" href="https://cyber-sec-pro.com/ar/privacy/" />
+    <xhtml:link rel="alternate" hreflang="ja" href="https://cyber-sec-pro.com/ja/privacy/" />
+    <xhtml:link rel="alternate" hreflang="zh" href="https://cyber-sec-pro.com/zh/privacy/" />
+    <xhtml:link rel="alternate" hreflang="ru" href="https://cyber-sec-pro.com/ru/privacy/" />
+    <xhtml:link rel="alternate" hreflang="ko" href="https://cyber-sec-pro.com/ko/privacy/" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://cyber-sec-pro.com/en/privacy/" />
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/zh/privacy/</loc>
+    <lastmod>2026-04-14</lastmod>
+    <changefreq>yearly</changefreq>
+    <priority>0.3</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://cyber-sec-pro.com/privacy/" />
+    <xhtml:link rel="alternate" hreflang="tr" href="https://cyber-sec-pro.com/tr/privacy/" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://cyber-sec-pro.com/de/privacy/" />
+    <xhtml:link rel="alternate" hreflang="fr" href="https://cyber-sec-pro.com/fr/privacy/" />
+    <xhtml:link rel="alternate" hreflang="es" href="https://cyber-sec-pro.com/es/privacy/" />
+    <xhtml:link rel="alternate" hreflang="ar" href="https://cyber-sec-pro.com/ar/privacy/" />
+    <xhtml:link rel="alternate" hreflang="ja" href="https://cyber-sec-pro.com/ja/privacy/" />
+    <xhtml:link rel="alternate" hreflang="zh" href="https://cyber-sec-pro.com/zh/privacy/" />
+    <xhtml:link rel="alternate" hreflang="ru" href="https://cyber-sec-pro.com/ru/privacy/" />
+    <xhtml:link rel="alternate" hreflang="ko" href="https://cyber-sec-pro.com/ko/privacy/" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://cyber-sec-pro.com/en/privacy/" />
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/ru/privacy/</loc>
+    <lastmod>2026-04-14</lastmod>
+    <changefreq>yearly</changefreq>
+    <priority>0.3</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://cyber-sec-pro.com/privacy/" />
+    <xhtml:link rel="alternate" hreflang="tr" href="https://cyber-sec-pro.com/tr/privacy/" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://cyber-sec-pro.com/de/privacy/" />
+    <xhtml:link rel="alternate" hreflang="fr" href="https://cyber-sec-pro.com/fr/privacy/" />
+    <xhtml:link rel="alternate" hreflang="es" href="https://cyber-sec-pro.com/es/privacy/" />
+    <xhtml:link rel="alternate" hreflang="ar" href="https://cyber-sec-pro.com/ar/privacy/" />
+    <xhtml:link rel="alternate" hreflang="ja" href="https://cyber-sec-pro.com/ja/privacy/" />
+    <xhtml:link rel="alternate" hreflang="zh" href="https://cyber-sec-pro.com/zh/privacy/" />
+    <xhtml:link rel="alternate" hreflang="ru" href="https://cyber-sec-pro.com/ru/privacy/" />
+    <xhtml:link rel="alternate" hreflang="ko" href="https://cyber-sec-pro.com/ko/privacy/" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://cyber-sec-pro.com/en/privacy/" />
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/ko/privacy/</loc>
+    <lastmod>2026-04-14</lastmod>
+    <changefreq>yearly</changefreq>
+    <priority>0.3</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://cyber-sec-pro.com/privacy/" />
+    <xhtml:link rel="alternate" hreflang="tr" href="https://cyber-sec-pro.com/tr/privacy/" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://cyber-sec-pro.com/de/privacy/" />
+    <xhtml:link rel="alternate" hreflang="fr" href="https://cyber-sec-pro.com/fr/privacy/" />
+    <xhtml:link rel="alternate" hreflang="es" href="https://cyber-sec-pro.com/es/privacy/" />
+    <xhtml:link rel="alternate" hreflang="ar" href="https://cyber-sec-pro.com/ar/privacy/" />
+    <xhtml:link rel="alternate" hreflang="ja" href="https://cyber-sec-pro.com/ja/privacy/" />
+    <xhtml:link rel="alternate" hreflang="zh" href="https://cyber-sec-pro.com/zh/privacy/" />
+    <xhtml:link rel="alternate" hreflang="ru" href="https://cyber-sec-pro.com/ru/privacy/" />
+    <xhtml:link rel="alternate" hreflang="ko" href="https://cyber-sec-pro.com/ko/privacy/" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://cyber-sec-pro.com/en/privacy/" />
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/terms/</loc>
+    <lastmod>2026-04-14</lastmod>
+    <changefreq>yearly</changefreq>
+    <priority>0.3</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://cyber-sec-pro.com/terms/" />
+    <xhtml:link rel="alternate" hreflang="tr" href="https://cyber-sec-pro.com/tr/terms/" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://cyber-sec-pro.com/de/terms/" />
+    <xhtml:link rel="alternate" hreflang="fr" href="https://cyber-sec-pro.com/fr/terms/" />
+    <xhtml:link rel="alternate" hreflang="es" href="https://cyber-sec-pro.com/es/terms/" />
+    <xhtml:link rel="alternate" hreflang="ar" href="https://cyber-sec-pro.com/ar/terms/" />
+    <xhtml:link rel="alternate" hreflang="ja" href="https://cyber-sec-pro.com/ja/terms/" />
+    <xhtml:link rel="alternate" hreflang="zh" href="https://cyber-sec-pro.com/zh/terms/" />
+    <xhtml:link rel="alternate" hreflang="ru" href="https://cyber-sec-pro.com/ru/terms/" />
+    <xhtml:link rel="alternate" hreflang="ko" href="https://cyber-sec-pro.com/ko/terms/" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://cyber-sec-pro.com/en/terms/" />
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/tr/terms/</loc>
+    <lastmod>2026-04-14</lastmod>
+    <changefreq>yearly</changefreq>
+    <priority>0.3</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://cyber-sec-pro.com/terms/" />
+    <xhtml:link rel="alternate" hreflang="tr" href="https://cyber-sec-pro.com/tr/terms/" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://cyber-sec-pro.com/de/terms/" />
+    <xhtml:link rel="alternate" hreflang="fr" href="https://cyber-sec-pro.com/fr/terms/" />
+    <xhtml:link rel="alternate" hreflang="es" href="https://cyber-sec-pro.com/es/terms/" />
+    <xhtml:link rel="alternate" hreflang="ar" href="https://cyber-sec-pro.com/ar/terms/" />
+    <xhtml:link rel="alternate" hreflang="ja" href="https://cyber-sec-pro.com/ja/terms/" />
+    <xhtml:link rel="alternate" hreflang="zh" href="https://cyber-sec-pro.com/zh/terms/" />
+    <xhtml:link rel="alternate" hreflang="ru" href="https://cyber-sec-pro.com/ru/terms/" />
+    <xhtml:link rel="alternate" hreflang="ko" href="https://cyber-sec-pro.com/ko/terms/" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://cyber-sec-pro.com/en/terms/" />
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/de/terms/</loc>
+    <lastmod>2026-04-14</lastmod>
+    <changefreq>yearly</changefreq>
+    <priority>0.3</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://cyber-sec-pro.com/terms/" />
+    <xhtml:link rel="alternate" hreflang="tr" href="https://cyber-sec-pro.com/tr/terms/" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://cyber-sec-pro.com/de/terms/" />
+    <xhtml:link rel="alternate" hreflang="fr" href="https://cyber-sec-pro.com/fr/terms/" />
+    <xhtml:link rel="alternate" hreflang="es" href="https://cyber-sec-pro.com/es/terms/" />
+    <xhtml:link rel="alternate" hreflang="ar" href="https://cyber-sec-pro.com/ar/terms/" />
+    <xhtml:link rel="alternate" hreflang="ja" href="https://cyber-sec-pro.com/ja/terms/" />
+    <xhtml:link rel="alternate" hreflang="zh" href="https://cyber-sec-pro.com/zh/terms/" />
+    <xhtml:link rel="alternate" hreflang="ru" href="https://cyber-sec-pro.com/ru/terms/" />
+    <xhtml:link rel="alternate" hreflang="ko" href="https://cyber-sec-pro.com/ko/terms/" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://cyber-sec-pro.com/en/terms/" />
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/fr/terms/</loc>
+    <lastmod>2026-04-14</lastmod>
+    <changefreq>yearly</changefreq>
+    <priority>0.3</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://cyber-sec-pro.com/terms/" />
+    <xhtml:link rel="alternate" hreflang="tr" href="https://cyber-sec-pro.com/tr/terms/" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://cyber-sec-pro.com/de/terms/" />
+    <xhtml:link rel="alternate" hreflang="fr" href="https://cyber-sec-pro.com/fr/terms/" />
+    <xhtml:link rel="alternate" hreflang="es" href="https://cyber-sec-pro.com/es/terms/" />
+    <xhtml:link rel="alternate" hreflang="ar" href="https://cyber-sec-pro.com/ar/terms/" />
+    <xhtml:link rel="alternate" hreflang="ja" href="https://cyber-sec-pro.com/ja/terms/" />
+    <xhtml:link rel="alternate" hreflang="zh" href="https://cyber-sec-pro.com/zh/terms/" />
+    <xhtml:link rel="alternate" hreflang="ru" href="https://cyber-sec-pro.com/ru/terms/" />
+    <xhtml:link rel="alternate" hreflang="ko" href="https://cyber-sec-pro.com/ko/terms/" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://cyber-sec-pro.com/en/terms/" />
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/es/terms/</loc>
+    <lastmod>2026-04-14</lastmod>
+    <changefreq>yearly</changefreq>
+    <priority>0.3</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://cyber-sec-pro.com/terms/" />
+    <xhtml:link rel="alternate" hreflang="tr" href="https://cyber-sec-pro.com/tr/terms/" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://cyber-sec-pro.com/de/terms/" />
+    <xhtml:link rel="alternate" hreflang="fr" href="https://cyber-sec-pro.com/fr/terms/" />
+    <xhtml:link rel="alternate" hreflang="es" href="https://cyber-sec-pro.com/es/terms/" />
+    <xhtml:link rel="alternate" hreflang="ar" href="https://cyber-sec-pro.com/ar/terms/" />
+    <xhtml:link rel="alternate" hreflang="ja" href="https://cyber-sec-pro.com/ja/terms/" />
+    <xhtml:link rel="alternate" hreflang="zh" href="https://cyber-sec-pro.com/zh/terms/" />
+    <xhtml:link rel="alternate" hreflang="ru" href="https://cyber-sec-pro.com/ru/terms/" />
+    <xhtml:link rel="alternate" hreflang="ko" href="https://cyber-sec-pro.com/ko/terms/" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://cyber-sec-pro.com/en/terms/" />
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/ar/terms/</loc>
+    <lastmod>2026-04-14</lastmod>
+    <changefreq>yearly</changefreq>
+    <priority>0.3</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://cyber-sec-pro.com/terms/" />
+    <xhtml:link rel="alternate" hreflang="tr" href="https://cyber-sec-pro.com/tr/terms/" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://cyber-sec-pro.com/de/terms/" />
+    <xhtml:link rel="alternate" hreflang="fr" href="https://cyber-sec-pro.com/fr/terms/" />
+    <xhtml:link rel="alternate" hreflang="es" href="https://cyber-sec-pro.com/es/terms/" />
+    <xhtml:link rel="alternate" hreflang="ar" href="https://cyber-sec-pro.com/ar/terms/" />
+    <xhtml:link rel="alternate" hreflang="ja" href="https://cyber-sec-pro.com/ja/terms/" />
+    <xhtml:link rel="alternate" hreflang="zh" href="https://cyber-sec-pro.com/zh/terms/" />
+    <xhtml:link rel="alternate" hreflang="ru" href="https://cyber-sec-pro.com/ru/terms/" />
+    <xhtml:link rel="alternate" hreflang="ko" href="https://cyber-sec-pro.com/ko/terms/" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://cyber-sec-pro.com/en/terms/" />
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/ja/terms/</loc>
+    <lastmod>2026-04-14</lastmod>
+    <changefreq>yearly</changefreq>
+    <priority>0.3</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://cyber-sec-pro.com/terms/" />
+    <xhtml:link rel="alternate" hreflang="tr" href="https://cyber-sec-pro.com/tr/terms/" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://cyber-sec-pro.com/de/terms/" />
+    <xhtml:link rel="alternate" hreflang="fr" href="https://cyber-sec-pro.com/fr/terms/" />
+    <xhtml:link rel="alternate" hreflang="es" href="https://cyber-sec-pro.com/es/terms/" />
+    <xhtml:link rel="alternate" hreflang="ar" href="https://cyber-sec-pro.com/ar/terms/" />
+    <xhtml:link rel="alternate" hreflang="ja" href="https://cyber-sec-pro.com/ja/terms/" />
+    <xhtml:link rel="alternate" hreflang="zh" href="https://cyber-sec-pro.com/zh/terms/" />
+    <xhtml:link rel="alternate" hreflang="ru" href="https://cyber-sec-pro.com/ru/terms/" />
+    <xhtml:link rel="alternate" hreflang="ko" href="https://cyber-sec-pro.com/ko/terms/" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://cyber-sec-pro.com/en/terms/" />
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/zh/terms/</loc>
+    <lastmod>2026-04-14</lastmod>
+    <changefreq>yearly</changefreq>
+    <priority>0.3</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://cyber-sec-pro.com/terms/" />
+    <xhtml:link rel="alternate" hreflang="tr" href="https://cyber-sec-pro.com/tr/terms/" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://cyber-sec-pro.com/de/terms/" />
+    <xhtml:link rel="alternate" hreflang="fr" href="https://cyber-sec-pro.com/fr/terms/" />
+    <xhtml:link rel="alternate" hreflang="es" href="https://cyber-sec-pro.com/es/terms/" />
+    <xhtml:link rel="alternate" hreflang="ar" href="https://cyber-sec-pro.com/ar/terms/" />
+    <xhtml:link rel="alternate" hreflang="ja" href="https://cyber-sec-pro.com/ja/terms/" />
+    <xhtml:link rel="alternate" hreflang="zh" href="https://cyber-sec-pro.com/zh/terms/" />
+    <xhtml:link rel="alternate" hreflang="ru" href="https://cyber-sec-pro.com/ru/terms/" />
+    <xhtml:link rel="alternate" hreflang="ko" href="https://cyber-sec-pro.com/ko/terms/" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://cyber-sec-pro.com/en/terms/" />
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/ru/terms/</loc>
+    <lastmod>2026-04-14</lastmod>
+    <changefreq>yearly</changefreq>
+    <priority>0.3</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://cyber-sec-pro.com/terms/" />
+    <xhtml:link rel="alternate" hreflang="tr" href="https://cyber-sec-pro.com/tr/terms/" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://cyber-sec-pro.com/de/terms/" />
+    <xhtml:link rel="alternate" hreflang="fr" href="https://cyber-sec-pro.com/fr/terms/" />
+    <xhtml:link rel="alternate" hreflang="es" href="https://cyber-sec-pro.com/es/terms/" />
+    <xhtml:link rel="alternate" hreflang="ar" href="https://cyber-sec-pro.com/ar/terms/" />
+    <xhtml:link rel="alternate" hreflang="ja" href="https://cyber-sec-pro.com/ja/terms/" />
+    <xhtml:link rel="alternate" hreflang="zh" href="https://cyber-sec-pro.com/zh/terms/" />
+    <xhtml:link rel="alternate" hreflang="ru" href="https://cyber-sec-pro.com/ru/terms/" />
+    <xhtml:link rel="alternate" hreflang="ko" href="https://cyber-sec-pro.com/ko/terms/" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://cyber-sec-pro.com/en/terms/" />
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/ko/terms/</loc>
+    <lastmod>2026-04-14</lastmod>
+    <changefreq>yearly</changefreq>
+    <priority>0.3</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://cyber-sec-pro.com/terms/" />
+    <xhtml:link rel="alternate" hreflang="tr" href="https://cyber-sec-pro.com/tr/terms/" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://cyber-sec-pro.com/de/terms/" />
+    <xhtml:link rel="alternate" hreflang="fr" href="https://cyber-sec-pro.com/fr/terms/" />
+    <xhtml:link rel="alternate" hreflang="es" href="https://cyber-sec-pro.com/es/terms/" />
+    <xhtml:link rel="alternate" hreflang="ar" href="https://cyber-sec-pro.com/ar/terms/" />
+    <xhtml:link rel="alternate" hreflang="ja" href="https://cyber-sec-pro.com/ja/terms/" />
+    <xhtml:link rel="alternate" hreflang="zh" href="https://cyber-sec-pro.com/zh/terms/" />
+    <xhtml:link rel="alternate" hreflang="ru" href="https://cyber-sec-pro.com/ru/terms/" />
+    <xhtml:link rel="alternate" hreflang="ko" href="https://cyber-sec-pro.com/ko/terms/" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://cyber-sec-pro.com/en/terms/" />
+  </url>
+</urlset>
