@@ -17,7 +17,8 @@
     "contact": "Contact",
     "security": "Security",
     "tests": "Assessments",
-    "donate": "Donate"
+    "donate": "Donate",
+    "trustCenter": "Trust Center"
   },
   "hero": {
     "badge": "Cloud-Based Offensive Security",

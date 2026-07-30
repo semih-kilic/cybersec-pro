@@ -20,6 +20,7 @@ export default function Header() {
     { href: lp("/#pricing"), label: t("pricing") },
     { href: lp("/docs"), label: t("docs") },
     { href: lp("/api-reference"), label: t("api") },
+    { href: lp("/trust-center"), label: t("trustCenter") },
   ];
 
   /** Smooth-scroll to a hash anchor on the same page */

@@ -17,7 +17,8 @@
     "contact": "お問い合わせ",
     "security": "セキュリティ",
     "tests": "アセスメント",
-    "donate": "寄付"
+    "donate": "寄付",
+    "trustCenter": "トラストセンター"
   },
   "hero": {
     "badge": "クラウドベースのオフェンシブセキュリティ",

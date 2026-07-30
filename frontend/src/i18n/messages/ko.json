@@ -17,7 +17,8 @@
     "contact": "문의",
     "security": "보안",
     "tests": "평가",
-    "donate": "후원"
+    "donate": "후원",
+    "trustCenter": "신뢰 센터"
   },
   "hero": {
     "badge": "클라우드 기반 공격적 보안",

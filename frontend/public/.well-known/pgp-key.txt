@@ -1,0 +1,10 @@
+-----BEGIN PGP PUBLIC KEY BLOCK-----
+
+This is a placeholder PGP key for security@cyber-sec-pro.com.
+Replace this file with your actual PGP public key.
+
+To generate a new key:
+  gpg --full-generate-key security@cyber-sec-pro.com
+  gpg --armor --export security@cyber-sec-pro.com > pgp-key.txt
+
+-----END PGP PUBLIC KEY BLOCK-----
