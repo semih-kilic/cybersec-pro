@@ -1,0 +1,8 @@
+Contact:mailto:security@cyber-sec-pro.com
+Expires:2027-01-01T00:00:00.000Z
+Preferred-Languages:en,tr
+Canonical:https://cyber-sec-pro.com/.well-known/security.txt
+Policy:https://cyber-sec-pro.com/security/disclosure
+Handling:https://cyber-sec-pro.com/security/disclosure
+Encryption:https://cyber-sec-pro.com/.well-known/pgp-key.txt
+Acknowledgments:https://cyber-sec-pro.com/security/acknowledgments
