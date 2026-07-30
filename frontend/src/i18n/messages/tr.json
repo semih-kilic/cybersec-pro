@@ -9,7 +9,7 @@
     "pricing": "Fiyatlandırma",
     "docs": "Dokümanlar",
     "api": "API",
-    "login": "$ giriş",
+    "login": "Giriş",
     "getAccess": "Erişim Al",
     "about": "Hakkında",
     "blog": "Blog",
@@ -107,7 +107,7 @@
           "3 ekip üyesi"
         ],
         "priceYearly": "€279",
-        "periodYearly": "/year"
+        "periodYearly": "/yıl"
       },
       "professional": {
         "name": "Profesyonel",
@@ -127,7 +127,7 @@
           "10 ekip üyesi"
         ],
         "priceYearly": "€949",
-        "periodYearly": "/year"
+        "periodYearly": "/yıl"
       },
       "enterprise": {
         "name": "Kurumsal",
@@ -145,12 +145,12 @@
           "SSO / SAML / LDAP",
           "Sınırsız kullanıcı & ekip işbirliği",
           "Gelişmiş API (webhooks, entegrasyonlar)",
-          "Custom SLA available on request",
+          "Talep üzerine özel SLA",
           "Öncelikli destek (mesai saatleri, 2s yanıt)",
           "Üç aylık güvenlik yol haritası incelemeleri"
         ],
         "priceYearly": "€3349",
-        "periodYearly": "/year"
+        "periodYearly": "/yıl"
       }
     }
   },
