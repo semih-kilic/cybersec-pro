@@ -373,7 +373,10 @@
   },
   "terminal": {
     "title": "Çalışırken Görün",
-    "subtitle": "Gerçek bir Nmap ağ keşif taramasını canlı izleyin. Sonuçları profesyonel arayüzümüzde gerçek zamanlı görün."
+    "subtitle": "Gerçek bir Nmap ağ keşif taramasını canlı izleyin. Sonuçları profesyonel arayüzümüzde gerçek zamanlı görün.",
+    "runScan": "Taramayı Başlat",
+    "running": "Çalışıyor...",
+    "clickToStart": "Demoyu başlatmak için \"Taramayı Başlat\"a tıklayın veya buraya kaydırın..."
   },
   "blogSection": {
     "badge": "Güncel Haberler",
@@ -382,5 +385,22 @@
     "readMore": "Devamını Oku",
     "minRead": "dk okuma",
     "viewAll": "Tüm Yazıları Gör"
+  },
+  "upgrade": {
+    "customSla": "Talep üzerinde özel SLA",
+    "perYear": "/yıl",
+    "billedAnnually": "/ay olarak yıllık faturalandırılır",
+    "perMonth": "/ay",
+    "year": "yıl",
+    "costReduction": "maliyet azaltması",
+    "backToSettings": "Ayarlara dön",
+    "faq1q": "Planımı nasıl yükselirim?",
+    "faq1a": "İstediğiniz plandaki \"Yüksel\" düğmesine tıklayın. Güvenli ödeme işlemcimize yönlendirileceksiniz.",
+    "faq2q": "Planımı düşürebilir miyim?",
+    "faq2a": "Evet. Yeni planınız bir sonraki fatura döneminin başlangıcında yürürlüğe girecektir.",
+    "faq3q": "Hangi ödeme yöntemlerini kabul ediyorsunuz?",
+    "faq3a": "Tüm büyük kredi kartları (Visa, MasterCard, Amex), PayPal ve Kurumsal planlar için banka havaleleri.",
+    "faq4q": "Para iade garantisi var mı?",
+    "faq4a": "Evet, 30 günlük para iade garantisi. Memnun kalmazsınız tam iade için bizimle iletişime geçin."
   }
 }

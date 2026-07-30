@@ -36,11 +36,11 @@ interface Plan {
   ring: string;   // tailwind ring color class for popular
 }
 
-function buildPlans(counts: { trial: number; starter: number; professional: number; enterprise: number }): Plan[] {
+function buildPlans(counts: { trial: number; starter: number; professional: number; enterprise: number }, t: (key: string, defaultValue?: string) => string): Plan[] {
   return [
     {
       id: 'trial',
-      name: 'Free Trial',
+      name: t('upgrade.free', 'Free Trial'),
       price: 0,
       yearlyPrice: 0,
       period: '3 days',
@@ -60,7 +60,7 @@ function buildPlans(counts: { trial: number; starter: number; professional: numb
     },
     {
       id: 'starter',
-      name: 'Starter',
+      name: t('upgrade.starter', 'Starter'),
       price: 29,
       yearlyPrice: 279,
       period: '/month',
@@ -82,7 +82,7 @@ function buildPlans(counts: { trial: number; starter: number; professional: numb
     },
     {
       id: 'professional',
-      name: 'Professional',
+      name: t('upgrade.professional', 'Professional'),
       price: 99,
       yearlyPrice: 949,
       period: '/month',
@@ -107,7 +107,7 @@ function buildPlans(counts: { trial: number; starter: number; professional: numb
     },
     {
       id: 'enterprise',
-      name: 'Enterprise',
+      name: t('upgrade.enterprise', 'Enterprise'),
       price: 349,
       yearlyPrice: 3349,
       period: '/month',
@@ -124,7 +124,7 @@ function buildPlans(counts: { trial: number; starter: number; professional: numb
         'SSO / SAML / LDAP',
         'Unlimited users & team collaboration',
         'Advanced API (webhooks, integrations)',
-        'Custom SLA available on request',
+        t('upgrade.customSla', 'Custom SLA available on request'),
         'Priority support (business hours, 2h response)',
         'Quarterly security roadmap reviews',
       ],
@@ -159,8 +159,8 @@ export default function UpgradePage() {
         starter: toolCounts?.plans?.starter ?? totalToolsFallback,
         professional: toolCounts?.plans?.professional ?? totalToolsFallback,
         enterprise: toolCounts?.plans?.enterprise ?? totalToolsFallback,
-      }),
-    [toolCounts, totalToolsFallback]
+      }, t),
+    [toolCounts, totalToolsFallback, t]
   );
 
   const handleUpgrade = async (planId: PlanId) => {
@@ -278,8 +278,8 @@ export default function UpgradePage() {
           const period = plan.price === 0
             ? plan.period
             : billingCycle === 'yearly' && plan.yearlyPrice > 0
-              ? '/mo billed annually'
-              : '/month';
+              ? t('upgrade.billedAnnually', '/mo billed annually')
+              : t('upgrade.perMonth', '/month');
 
           return (
             <motion.div
@@ -324,7 +324,7 @@ export default function UpgradePage() {
               </div>
               {billingCycle === 'yearly' && plan.yearlyPrice > 0 && (
                 <p className="text-vos-xs text-vos-success mb-vos-4">
-                  €{plan.yearlyPrice}/year — save €{plan.price * 12 - plan.yearlyPrice} ({Math.round((1 - plan.yearlyPrice / (plan.price * 12)) * 100)}% off)
+                  €{plan.yearlyPrice}{t('upgrade.perYear', '/year')} — save €{plan.price * 12 - plan.yearlyPrice} ({Math.round((1 - plan.yearlyPrice / (plan.price * 12)) * 100)}% off)
                 </p>
               )}
               {plan.id === 'enterprise' && billingCycle === 'yearly' && (
@@ -432,7 +432,7 @@ export default function UpgradePage() {
                   <span className="text-2xl font-semibold text-vos-success tracking-tight">
                     €{annualSavings.toLocaleString()}
                   </span>
-                  <span className="text-vos-xs text-vos-success ml-1">/ year</span>
+                  <span className="text-vos-xs text-vos-success ml-1">/ {t('upgrade.year', 'year')}</span>
                 </div>
               </div>
               <div className="mt-vos-3 w-full bg-vos-bg-elev-2 rounded-full h-2 overflow-hidden">
@@ -445,7 +445,7 @@ export default function UpgradePage() {
               </div>
               <p className="text-vos-xs text-vos-success font-medium mt-vos-2 inline-flex items-center gap-1">
                 <TrendingDown className="w-3 h-3" />
-                {reductionPct}% cost reduction
+                {reductionPct}% {t('upgrade.costReduction', 'cost reduction')}
               </p>
             </div>
             <p className="text-vos-xs text-vos-text-3">
@@ -467,20 +467,20 @@ export default function UpgradePage() {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-vos-4">
           {[
             {
-              q: 'How do I upgrade my plan?',
-              a: 'Click the “Upgrade” button on your desired plan. You will be redirected to our secure payment processor.',
+              q: t('upgrade.faq1q', 'How do I upgrade my plan?'),
+              a: t('upgrade.faq1a', 'Click the "Upgrade" button on your desired plan. You will be redirected to our secure payment processor.'),
             },
             {
-              q: 'Can I downgrade my plan?',
-              a: 'Yes. Your new plan will take effect at the start of the next billing cycle.',
+              q: t('upgrade.faq2q', 'Can I downgrade my plan?'),
+              a: t('upgrade.faq2a', 'Yes. Your new plan will take effect at the start of the next billing cycle.'),
             },
             {
-              q: 'What payment methods do you accept?',
-              a: 'All major credit cards (Visa, MasterCard, Amex), PayPal, and bank transfers for Enterprise plans.',
+              q: t('upgrade.faq3q', 'What payment methods do you accept?'),
+              a: t('upgrade.faq3a', 'All major credit cards (Visa, MasterCard, Amex), PayPal, and bank transfers for Enterprise plans.'),
             },
             {
-              q: 'Is there a money-back guarantee?',
-              a: 'Yes, a 30-day money-back guarantee. Contact us for a full refund if you are not satisfied.',
+              q: t('upgrade.faq4q', 'Is there a money-back guarantee?'),
+              a: t('upgrade.faq4a', 'Yes, a 30-day money-back guarantee. Contact us for a full refund if you are not satisfied.'),
             },
           ].map((faq, i) => (
             <div key={i} className="rounded-vos-lg border border-vos-border-1 bg-vos-bg-elev-1 p-vos-4">
@@ -497,7 +497,7 @@ export default function UpgradePage() {
           className="inline-flex items-center gap-1.5 text-vos-sm text-vos-accent hover:text-vos-accent/80 transition"
         >
           <ArrowLeft className="w-4 h-4" />
-          Back to settings
+          {t('upgrade.backToSettings', 'Back to settings')}
         </Link>
       </div>
     </div>

@@ -7,8 +7,9 @@ import de from './locales/de.json';
 import fr from './locales/fr.json';
 import es from './locales/es.json';
 import it from './locales/it.json';
+import tr from './locales/tr.json';
 
-const SUPPORTED_LANGS = ['en', 'de', 'fr', 'es', 'it'] as const;
+const SUPPORTED_LANGS = ['en', 'de', 'fr', 'es', 'it', 'tr'] as const;
 type SupportedLang = (typeof SUPPORTED_LANGS)[number];
 
 const readInitialLanguage = (): SupportedLang => {
@@ -33,6 +34,7 @@ i18n
       fr: { translation: fr },
       es: { translation: es },
       it: { translation: it },
+      tr: { translation: tr },
     },
     lng: initialLanguage,
     fallbackLng: 'en',
