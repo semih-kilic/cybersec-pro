@@ -89,3 +89,4 @@ ngrok
 agent-binaries/
 *.exe
 *.mp4
+.env.staging
