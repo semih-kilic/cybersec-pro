@@ -83,3 +83,9 @@ build/
 # Backup env files
 rust-backend/.env.bak*
 *.env.bak.*
+
+# Large binaries (do not commit)
+ngrok
+agent-binaries/
+*.exe
+*.mp4
