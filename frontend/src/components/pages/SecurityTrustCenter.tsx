@@ -34,71 +34,33 @@ import {
 
 /* ─── DATA ────────────────────────────────────────────────────────── */
 
-const trustFeatures = [
-  {
-    icon: Lock,
-    title: "End-to-End Encryption",
-    description: "AES-256 ile rest, TLS 1.3 ile transit. Zero-knowledge tarama sonuçları. Forward secrecy ile anahtar rotasyonu.",
-    color: "var(--color-neon)",
-  },
-  {
-    icon: Server,
-    title: "Isolated Infrastructure",
-    description: "Her tarama izole konteynerde çalışır. Cross-tenant erişim yok. Kurumsal planlarda özel dedicated instance.",
-    color: "var(--color-cyan)",
-  },
-  {
-    icon: Shield,
-    title: "SOC 2 Type II Controls",
-    description: "Altyapı SOC 2 Trust Services Criteria (Security, Availability, Confidentiality, Privacy) uyumlu tasarlanmış.",
-    color: "var(--color-purple)",
-  },
-  {
-    icon: Eye,
-    title: "Immutable Audit Logging",
-    description: "Tüm eylemlerin eksiksiz ve değiştirilemez denetim kaydı. SIEM entegrasyonu. Uyumluluk için WORM depolama.",
-    color: "var(--color-orange)",
-  },
-  {
-    icon: KeyRound,
-    title: "MFA, SSO & Zero Trust",
-    description: "TOTP/WebAuthn ile çok faktörlü kimlik doğrulama. SAML 2.0, OAuth 2.0, OpenID Connect SSO. RBAC + ABAC.",
-    color: "var(--color-neon)",
-  },
-  {
-    icon: RefreshCcw,
-    title: "Continuous Patching",
-    description: "Kritik güvenlik yamaları 24 saat içinde uygulanır. CVE veritabanları saatlik güncellenir. SBOM otomatik oluşturulur.",
-    color: "var(--color-cyan)",
-  },
-  {
-    icon: Fingerprint,
-    title: "Data Minimization",
-    description: "GDPR Madde 5(1)(c) uyumlu veri minimizasyonu. Otomatik veri yaşam döngüsü yönetimi. Anonimleştirme/pseudonimleştirme.",
-    color: "var(--color-purple)",
-  },
-  {
-    icon: Activity,
-    title: "Real-Time Threat Detection",
-    description: "ML destekli anomali tespiti. Gerçek zamanlı IDS/IPS. Otomatik threat intelligence feed entegrasyonu.",
-    color: "var(--color-orange)",
-  },
+const trustFeaturesBase = [
+  { icon: Lock, color: "var(--color-neon)" },
+  { icon: Server, color: "var(--color-cyan)" },
+  { icon: Shield, color: "var(--color-purple)" },
+  { icon: Eye, color: "var(--color-orange)" },
+  { icon: KeyRound, color: "var(--color-neon)" },
+  { icon: RefreshCcw, color: "var(--color-cyan)" },
+  { icon: Fingerprint, color: "var(--color-purple)" },
+  { icon: Activity, color: "var(--color-orange)" },
 ];
 
-const complianceFrameworks = [
-  { name: "SOC 2 Type II", compliant: true, note: "Annual audit — Ernst & Young", icon: ShieldCheck, color: "var(--color-neon)" },
-  { name: "GDPR", compliant: true, note: "Full compliance Art. 6, 17, 25, 28, 32, 35", icon: Scale, color: "var(--color-cyan)" },
-  { name: "ISO 27001:2022", compliant: true, note: "Certified — BSI Group", icon: Award, color: "var(--color-purple)" },
-  { name: "ISO 27701", compliant: true, note: "Privacy Information Management", icon: Fingerprint, color: "var(--color-orange)" },
-  { name: "NIST CSF 2.0", compliant: true, note: "Full framework alignment", icon: Shield, color: "var(--color-neon)" },
-  { name: "PCI DSS v4.0", compliant: true, note: "Level 1 Service Provider", icon: Lock, color: "var(--color-cyan)" },
-  { name: "HIPAA", compliant: true, note: "BAA available — PHI encryption", icon: ShieldCheck, color: "var(--color-purple)" },
-  { name: "KVKK", compliant: true, note: "Türkiye Kişisel Verilerin Korunması", icon: Scale, color: "var(--color-orange)" },
-  { name: "CCPA/CPRA", compliant: true, note: "California Consumer Privacy Act", icon: Users, color: "var(--color-neon)" },
-  { name: "CSA STAR Level 2", compliant: true, note: "Cloud Security Alliance Certification", icon: Award, color: "var(--color-cyan)" },
+const complianceFrameworksBase = [
+  { compliant: true, icon: ShieldCheck, color: "var(--color-neon)" },
+  { compliant: true, icon: Scale, color: "var(--color-cyan)" },
+  { compliant: true, icon: Award, color: "var(--color-purple)" },
+  { compliant: true, icon: Fingerprint, color: "var(--color-orange)" },
+  { compliant: true, icon: Shield, color: "var(--color-neon)" },
+  { compliant: true, icon: Lock, color: "var(--color-cyan)" },
+  { compliant: true, icon: ShieldCheck, color: "var(--color-purple)" },
+  { compliant: true, icon: Scale, color: "var(--color-orange)" },
+  { compliant: true, icon: Users, color: "var(--color-neon)" },
+  { compliant: true, icon: Award, color: "var(--color-cyan)" },
 ];
 
-const subProcessors = [
+
+
+const subProcessorsBase = [
   { name: "Stripe, Inc.", location: "ABD (EU SCC + DPF)", dpa: true, website: "https://stripe.com/privacy" },
   { name: "Vercel, Inc.", location: "Global Edge (EU SCC)", dpa: true, website: "https://vercel.com/legal/privacy-policy" },
   { name: "Cloudflare, Inc.", location: "Global (EU SCC + DPF)", dpa: true, website: "https://www.cloudflare.com/privacypolicy/" },
@@ -108,60 +70,18 @@ const subProcessors = [
   { name: "Sentry", location: "ABD (EU SCC)", dpa: true, website: "https://sentry.io/privacy/" },
 ];
 
-const subProcessorPurposes = [
-  "Payment processing",
-  "Frontend hosting & CDN",
-  "DDoS protection, WAF, CDN",
-  "Backend infrastructure, S3 storage",
-  "Relational database",
-  "Transactional email",
-  "Error tracking and monitoring"
+const pentestHistoryBase = [
+  { date: "2026-06-15", type: "External Penetration Test", auditor: "Cobalt.io — CREST Certified", reportAvailable: true },
+  { date: "2026-03-10", type: "Source Code Review (SAST)", auditor: "NCC Group", reportAvailable: true },
+  { date: "2025-12-01", type: "Cloud Infrastructure Audit", auditor: "Bishop Fox", reportAvailable: true },
+  { date: "2025-09-20", type: "Red Team Exercise", auditor: "Mandiant (Google Cloud)", reportAvailable: false },
 ];
 
-const pentestHistory = [
-  {
-    date: "2026-06-15",
-    type: "External Penetration Test",
-    scope: "Full platform — API, Web App, Infrastructure, Mobile",
-    findings: "0 Critical, 0 High, 2 Medium (fixed), 3 Low (fixed)",
-    status: "Remediated",
-    auditor: "Cobalt.io — CREST Certified",
-    reportAvailable: true,
-  },
-  {
-    date: "2026-03-10",
-    type: "Source Code Review (SAST)",
-    scope: "Backend API, Authentication, Authorization, Crypto",
-    findings: "0 Critical, 0 High, 1 Medium (fixed), 2 Low (fixed)",
-    status: "Remediated",
-    auditor: "NCC Group",
-    reportAvailable: true,
-  },
-  {
-    date: "2025-12-01",
-    type: "Cloud Infrastructure Audit",
-    scope: "AWS, Kubernetes, Network Segmentation, IAM",
-    findings: "0 Critical, 0 High, 0 Medium, 1 Low (fixed)",
-    status: "Remediated",
-    auditor: "Bishop Fox",
-    reportAvailable: true,
-  },
-  {
-    date: "2025-09-20",
-    type: "Red Team Exercise",
-    scope: "Social Engineering, Physical, Digital — Full Kill Chain",
-    findings: "0 Critical, 1 High (fixed), 2 Medium (fixed)",
-    status: "Remediated",
-    auditor: "Mandiant (Google Cloud)",
-    reportAvailable: false,
-  },
-];
-
-const bugBountyRewards = [
-  { severity: "Critical", cvss: "9.0–10.0", reward: "$5,000 – $15,000", examples: "RCE, Authentication Bypass, SQL Injection, Data Breach", color: "#ef4444" },
-  { severity: "High", cvss: "7.0–8.9", reward: "$2,000 – $5,000", examples: "Privilege Escalation, SSRF, Stored XSS", color: "#f97316" },
-  { severity: "Medium", cvss: "4.0–6.9", reward: "$500 – $2,000", examples: "CSRF, IDOR, Information Disclosure", color: "#eab308" },
-  { severity: "Low", cvss: "0.1–3.9", reward: "$100 – $500", examples: "Reflected XSS, Open Redirect, Missing Headers", color: "#22c55e" },
+const bugBountyRewardsBase = [
+  { cvss: "9.0–10.0", reward: "$5,000 – $15,000", color: "#ef4444" },
+  { cvss: "7.0–8.9", reward: "$2,000 – $5,000", color: "#f97316" },
+  { cvss: "4.0–6.9", reward: "$500 – $2,000", color: "#eab308" },
+  { cvss: "0.1–3.9", reward: "$100 – $500", color: "#22c55e" },
 ];
 
 const incidentResponseSLA = [
@@ -187,9 +107,35 @@ const securityCertBadges = [
 export default function SecurityTrustCenter() {
   const t = useTranslations("security.trustCenter");
   
-  // Note: Since trustFeatures descriptions are technically dynamic for i18n, we could also move them to translation files.
-  // But for the sake of simplicity, we keep them as is or translate them inline if needed.
-  // We'll stick to translating the main section headers and static UI strings to satisfy the user's immediate request.
+  const trustFeatures = trustFeaturesBase.map((f, i) => ({
+    ...f,
+    title: t(`arrays.trustFeatures.${i}.title`),
+    description: t(`arrays.trustFeatures.${i}.description`)
+  }));
+
+  const complianceFrameworks = complianceFrameworksBase.map((f, i) => ({
+    ...f,
+    name: t(`arrays.complianceFrameworks.${i}.name`),
+    note: t(`arrays.complianceFrameworks.${i}.note`)
+  }));
+
+  const subProcessors = subProcessorsBase.map((f, i) => ({
+    ...f,
+    purpose: t(`arrays.subProcessorPurposes.${i}`)
+  }));
+
+  const pentestHistory = pentestHistoryBase.map((f, i) => ({
+    ...f,
+    scope: t(`arrays.pentestHistory.${i}.scope`),
+    findings: t(`arrays.pentestHistory.${i}.findings`),
+    status: t(`arrays.pentestHistory.${i}.status`)
+  }));
+
+  const bugBountyRewards = bugBountyRewardsBase.map((f, i) => ({
+    ...f,
+    severity: t(`arrays.bugBountyRewards.${i}.severity`),
+    examples: t(`arrays.bugBountyRewards.${i}.examples`)
+  }));
 
   return (
     <>
@@ -577,7 +523,7 @@ export default function SecurityTrustCenter() {
                           {sp.name}
                         </a>
                       </td>
-                      <td className="py-3 px-2 text-white/60">{subProcessorPurposes[index]}</td>
+                      <td className="py-3 px-2 text-white/60">{sp.purpose}</td>
                       <td className="py-3 px-2 text-white/60">{sp.location}</td>
                       <td className="py-3 px-2">
                         {sp.dpa ? (

@@ -435,6 +435,133 @@
           "privacy": "Gizlilik",
           "footer": "Güven Merkezi son güncelleme: Temmuz 2026 · Politika sürümü: 2.1.0 · Yıllık gözden geçirme: Aralık 2026"
         }
+      },
+      "arrays": {
+        "trustFeatures": [
+          {
+            "title": "Uçtan Uca Şifreleme",
+            "description": "AES-256 ile rest, TLS 1.3 ile transit. Zero-knowledge tarama sonuçları. Forward secrecy ile anahtar rotasyonu."
+          },
+          {
+            "title": "İzole Altyapı",
+            "description": "Her tarama izole konteynerde çalışır. Cross-tenant erişim yok. Kurumsal planlarda özel dedicated instance."
+          },
+          {
+            "title": "SOC 2 Type II Kontrolleri",
+            "description": "Altyapı SOC 2 Trust Services Criteria (Güvenlik, Erişilebilirlik, Gizlilik) uyumlu tasarlanmış."
+          },
+          {
+            "title": "Değiştirilemez Denetim Kayıtları",
+            "description": "Tüm eylemlerin eksiksiz ve değiştirilemez denetim kaydı. SIEM entegrasyonu. Uyumluluk için WORM depolama."
+          },
+          {
+            "title": "MFA, SSO & Zero Trust",
+            "description": "TOTP/WebAuthn ile çok faktörlü kimlik doğrulama. SAML 2.0, OAuth 2.0, OpenID Connect SSO. RBAC + ABAC."
+          },
+          {
+            "title": "Sürekli Yama Yönetimi",
+            "description": "Kritik güvenlik yamaları 24 saat içinde uygulanır. CVE veritabanları saatlik güncellenir. SBOM otomatik oluşturulur."
+          },
+          {
+            "title": "Veri Minimizasyonu",
+            "description": "GDPR Madde 5(1)(c) uyumlu veri minimizasyonu. Otomatik veri yaşam döngüsü yönetimi. Anonimleştirme."
+          },
+          {
+            "title": "Gerçek Zamanlı Tehdit Tespiti",
+            "description": "ML destekli anomali tespiti. Gerçek zamanlı IDS/IPS. Otomatik threat intelligence feed entegrasyonu."
+          }
+        ],
+        "complianceFrameworks": [
+          {
+            "name": "SOC 2 Type II",
+            "note": "Yıllık denetim — Ernst & Young"
+          },
+          {
+            "name": "GDPR",
+            "note": "Tam uyumluluk Madde 6, 17, 25, 28, 32, 35"
+          },
+          {
+            "name": "ISO 27001:2022",
+            "note": "Sertifikalı — BSI Group"
+          },
+          {
+            "name": "ISO 27701",
+            "note": "Gizlilik Bilgi Yönetimi"
+          },
+          {
+            "name": "NIST CSF 2.0",
+            "note": "Tam çerçeve uyumu"
+          },
+          {
+            "name": "PCI DSS v4.0",
+            "note": "Seviye 1 Servis Sağlayıcı"
+          },
+          {
+            "name": "HIPAA",
+            "note": "BAA mevcut — PHI şifreleme"
+          },
+          {
+            "name": "KVKK",
+            "note": "Türkiye Kişisel Verilerin Korunması"
+          },
+          {
+            "name": "CCPA/CPRA",
+            "note": "Kaliforniya Tüketici Gizliliği Yasası"
+          },
+          {
+            "name": "CSA STAR Level 2",
+            "note": "Bulut Güvenliği İttifakı Sertifikası"
+          }
+        ],
+        "subProcessorPurposes": [
+          "Ödeme işleme",
+          "Arayüz barındırma & CDN",
+          "DDoS koruması, WAF, CDN",
+          "Arka uç altyapısı, S3 depolama",
+          "İlişkisel veritabanı",
+          "İşlemsel e-posta",
+          "Hata izleme ve raporlama"
+        ],
+        "pentestHistory": [
+          {
+            "scope": "Tüm platform — API, Web App, Altyapı, Mobil",
+            "findings": "0 Kritik, 0 Yüksek, 2 Orta (düzeltildi), 3 Düşük (düzeltildi)",
+            "status": "Düzeltildi"
+          },
+          {
+            "scope": "Backend API, Kimlik Doğrulama, Yetkilendirme, Kripto",
+            "findings": "0 Kritik, 0 Yüksek, 1 Orta (düzeltildi), 2 Düşük (düzeltildi)",
+            "status": "Düzeltildi"
+          },
+          {
+            "scope": "AWS, Kubernetes, Ağ Segmentasyonu, IAM",
+            "findings": "0 Kritik, 0 Yüksek, 0 Orta, 1 Düşük (düzeltildi)",
+            "status": "Düzeltildi"
+          },
+          {
+            "scope": "Sosyal Mühendislik, Fiziksel, Dijital — Full Kill Chain",
+            "findings": "0 Kritik, 1 Yüksek (düzeltildi), 2 Orta (düzeltildi)",
+            "status": "Düzeltildi"
+          }
+        ],
+        "bugBountyRewards": [
+          {
+            "severity": "Kritik",
+            "examples": "RCE, Kimlik Doğrulama Atlama, SQL Injection, Veri Sızıntısı"
+          },
+          {
+            "severity": "Yüksek",
+            "examples": "Yetki Yükseltme, SSRF, Kalıcı XSS"
+          },
+          {
+            "severity": "Orta",
+            "examples": "CSRF, IDOR, Bilgi İfşası"
+          },
+          {
+            "severity": "Düşük",
+            "examples": "Yansıyan XSS, Açık Yönlendirme, Eksik Başlıklar"
+          }
+        ]
       }
     }
   },
