@@ -1,7 +1,9 @@
 {
   "meta": {
     "title": "CyberSec Pro — Saldırı Güvenliği Platformu",
-    "description": "325 Kali Linux aracıyla bulut tabanlı saldırı güvenliği platformu. Otomatik güvenlik açığı taraması, penetrasyon testi ve güvenlik değerlendirmeleri."
+    "description": "325 Kali Linux aracıyla bulut tabanlı saldırı güvenliği platformu. Otomatik güvenlik açığı taraması, penetrasyon testi ve güvenlik değerlendirmeleri.",
+    "trustCenterTitle": "Güven Merkezi — CyberSec Pro | Güvenlik, Uyumluluk & Şeffaflık",
+    "trustCenterDesc": "CyberSec Pro güvenlik merkezi: SOC 2, ISO 27001, GDPR uyumluluk bilgileri, responsible disclosure politikası, bug bounty programı, alt işlemciler ve DPA."
   },
   "nav": {
     "features": "Özellikler",
@@ -340,7 +342,101 @@
   "security": {
     "badge": "Güvenlik",
     "title": "Önce Güvenlik",
-    "subtitle": "Platformumuzun ve verilerinizin güvenliğini ciddiye alıyoruz."
+    "subtitle": "Platformumuzun ve verilerinizin güvenliğini ciddiye alıyoruz.",
+    "trustCenter": {
+      "badge": "Güven Merkezi",
+      "title": "Güven Merkezi",
+      "subtitle": "Platformumuzun güvenliği, uyumluluğu ve şeffaflığı hakkında bilmeniz gereken her şey. Endüstri lider güvenlik standartlarına tam uyumluluk.",
+      "status": {
+        "operational": "Tüm Sistemler Operasyonel",
+        "link": "status.cyber-sec-pro.com →"
+      },
+      "sections": {
+        "securityTxt": {
+          "title": "security.txt",
+          "description": "IETF RFC 9116 standardına tam uyumlu güvenlik iletişim dosyamız. Bu dosya arama motorları ve güvenlik araştırmacıları tarafından otomatik olarak keşfedilir.",
+          "directAccess": "security.txt doğrudan erişim",
+          "pgpKey": "PGP Anahtarı"
+        },
+        "disclosure": {
+          "title": "Responsible Disclosure & Bug Bounty",
+          "scope": "Kapsam (Scope)",
+          "scopeIn": "In-Scope:",
+          "scopeOut": "Out-of-Scope:",
+          "channel": "Bildirim Kanalı",
+          "channelDesc": "Güvenlik açıklarını PGP şifreli olarak bildirin:",
+          "reportTemplate": "Rapor şablonu:",
+          "sla": "Yanıt SLA",
+          "slaFirst": "İlk onay:",
+          "slaUpdate": "Durum güncellemesi:",
+          "slaFix": "Düzeltme veya istisna:",
+          "safeHarbor": "Safe Harbor (Güvenli Liman)",
+          "safeHarbor1": "Bu politikaya uygun raporlar için yasal işlem başlatılmayacaktır",
+          "safeHarbor2": "Raporlayan kişinin kimliği gizli tutulacaktır",
+          "safeHarbor3": "Düzeltme sonrası Hall of Fame'e eklenecektir",
+          "safeHarbor4": "Yazılı izin olmadan test yapılmamalıdır",
+          "bountyTable": "Bug Bounty Ödül Tablosu",
+          "tableLevel": "Seviye",
+          "tableReward": "Ödül",
+          "tableExamples": "Örnek Bulgular"
+        },
+        "compliance": {
+          "title": "Uyumluluk Çerçeveleri",
+          "compliant": "Uyumlu",
+          "pending": "Bekliyor"
+        },
+        "incident": {
+          "title": "Olay Müdahale SLA",
+          "description": "ISO 27035 ve NIST SP 800-61 Rev.2 uyumlu olay müdahale prosedürlerimiz:",
+          "priority": "Öncelik",
+          "detection": "Tespit",
+          "response": "Müdahale",
+          "notification": "Bildirim",
+          "resolution": "Çözüm"
+        },
+        "subprocessors": {
+          "title": "Alt İşlemciler (Sub-processors)",
+          "description": "GDPR Madde 28(2) kapsamında, veri işleyen üçüncü taraf sağlayıcılar. Tüm alt işlemciler DPA (Veri İşleme Sözleşmesi) imzalamıştır.",
+          "provider": "Sağlayıcı",
+          "purpose": "Amaç",
+          "location": "Konum",
+          "signed": "İmzalı",
+          "pending": "Bekliyor",
+          "footer": "Son güncelleme: Temmuz 2026. Alt işlemci değişikliklerinde 30 gün önceden bildirim yapılır."
+        },
+        "dpa": {
+          "title": "Veri İşleme Sözleşmesi (DPA)",
+          "description": "GDPR Madde 28 kapsamında, tüm müşterilerimiz için Veri İşleme Sözleşmesi (DPA) sunuyoruz. DPA, Avrupa Komisyonu Standart Sözleşme Maddeleri (EU SCC 2021) ve UK IDTA içerir.",
+          "scopeTitle": "DPA Kapsamı",
+          "dpiaTitle": "DPIA (Veri Koruma Etki Değerlendirmesi)",
+          "requestBtn": "DPA Talep Et",
+          "dpoBtn": "DPO İletişim"
+        },
+        "pentest": {
+          "title": "Güvenlik Testleri & Denetimler",
+          "description": "Bağımsız üçüncü taraf güvenlik firmaları tarafından gerçekleştirilen testler. Kurumsal müşteriler NDA imzalayarak özet raporlara erişebilir.",
+          "scope": "Kapsam:",
+          "findings": "Bulgular:",
+          "requestReport": "Özet rapor talep et (NDA gerekli)"
+        },
+        "hallOfFame": {
+          "title": "Security Hall of Fame",
+          "description": "Sorumlu açıklama politikamıza uygun şekilde güvenlik açığı bildiren araştırmacılara teşekkür ederiz.",
+          "empty": "Güvenlik açığı bildirerek Hall of Fame listesine eklenen ilk araştırmacı siz olabilirsiniz.",
+          "reportBtn": "Güvenlik Açığı Bildir"
+        },
+        "contact": {
+          "statusTitle": "Sistem Durumu",
+          "statusDesc": "Tüm hizmetlerin gerçek zamanlı durumunu takip edin.",
+          "statusBtn": "Durum Sayfası",
+          "contactTitle": "Güvenlik İletişimi",
+          "security": "Güvenlik",
+          "legal": "Hukuk/DPA",
+          "privacy": "Gizlilik",
+          "footer": "Güven Merkezi son güncelleme: Temmuz 2026 · Politika sürümü: 2.1.0 · Yıllık gözden geçirme: Aralık 2026"
+        }
+      }
+    }
   },
   "tests": {
     "badge": "Güvenlik Değerlendirmesi",

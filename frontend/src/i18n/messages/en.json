@@ -1,7 +1,9 @@
 {
   "meta": {
     "title": "CyberSec Pro — Offensive Security Platform",
-    "description": "Cloud-based offensive security platform with 325 Kali Linux tools. Automated vulnerability scanning, penetration testing, and security assessments."
+    "description": "Cloud-based offensive security platform with 325 Kali Linux tools. Automated vulnerability scanning, penetration testing, and security assessments.",
+    "trustCenterTitle": "Trust Center — CyberSec Pro | Security, Compliance & Transparency",
+    "trustCenterDesc": "CyberSec Pro Trust Center: SOC 2, ISO 27001, GDPR compliance details, responsible disclosure policy, bug bounty program, sub-processors, and DPA."
   },
   "nav": {
     "features": "Features",
@@ -340,7 +342,101 @@
   "security": {
     "badge": "Security",
     "title": "Security First",
-    "subtitle": "We take the security of our platform and your data seriously."
+    "subtitle": "We take the security of our platform and your data seriously.",
+    "trustCenter": {
+      "badge": "Trust Center",
+      "title": "Trust Center",
+      "subtitle": "Everything you need to know about our platform's security, compliance, and transparency. Full alignment with industry-leading security standards.",
+      "status": {
+        "operational": "All Systems Operational",
+        "link": "status.cyber-sec-pro.com →"
+      },
+      "sections": {
+        "securityTxt": {
+          "title": "security.txt",
+          "description": "Our security contact file, fully compliant with IETF RFC 9116. Automatically discovered by search engines and security researchers.",
+          "directAccess": "Direct access to security.txt",
+          "pgpKey": "PGP Key"
+        },
+        "disclosure": {
+          "title": "Responsible Disclosure & Bug Bounty",
+          "scope": "Scope",
+          "scopeIn": "In-Scope:",
+          "scopeOut": "Out-of-Scope:",
+          "channel": "Reporting Channel",
+          "channelDesc": "Please report security vulnerabilities encrypted with PGP to:",
+          "reportTemplate": "Report template:",
+          "sla": "Response SLA",
+          "slaFirst": "First response:",
+          "slaUpdate": "Status update:",
+          "slaFix": "Fix or exception:",
+          "safeHarbor": "Safe Harbor",
+          "safeHarbor1": "No legal action will be taken for reports complying with this policy",
+          "safeHarbor2": "Reporter's identity will be kept confidential",
+          "safeHarbor3": "Will be added to Hall of Fame after remediation",
+          "safeHarbor4": "Testing without written permission is prohibited",
+          "bountyTable": "Bug Bounty Reward Table",
+          "tableLevel": "Severity",
+          "tableReward": "Reward",
+          "tableExamples": "Example Findings"
+        },
+        "compliance": {
+          "title": "Compliance Frameworks",
+          "compliant": "Compliant",
+          "pending": "Pending"
+        },
+        "incident": {
+          "title": "Incident Response SLA",
+          "description": "Our incident response procedures compliant with ISO 27035 and NIST SP 800-61 Rev.2:",
+          "priority": "Priority",
+          "detection": "Detection",
+          "response": "Response",
+          "notification": "Notification",
+          "resolution": "Resolution"
+        },
+        "subprocessors": {
+          "title": "Sub-processors",
+          "description": "Third-party providers processing data under GDPR Article 28(2). All sub-processors have signed a DPA (Data Processing Agreement).",
+          "provider": "Provider",
+          "purpose": "Purpose",
+          "location": "Location",
+          "signed": "Signed",
+          "pending": "Pending",
+          "footer": "Last updated: July 2026. 30 days prior notice is provided for sub-processor changes."
+        },
+        "dpa": {
+          "title": "Data Processing Agreement (DPA)",
+          "description": "We provide a Data Processing Agreement (DPA) for all customers under GDPR Article 28. The DPA includes EU Standard Contractual Clauses (EU SCC 2021) and UK IDTA.",
+          "scopeTitle": "DPA Scope",
+          "dpiaTitle": "DPIA (Data Protection Impact Assessment)",
+          "requestBtn": "Request DPA",
+          "dpoBtn": "Contact DPO"
+        },
+        "pentest": {
+          "title": "Security Tests & Audits",
+          "description": "Tests conducted by independent third-party security firms. Enterprise customers can access summary reports by signing an NDA.",
+          "scope": "Scope:",
+          "findings": "Findings:",
+          "requestReport": "Request summary report (NDA required)"
+        },
+        "hallOfFame": {
+          "title": "Security Hall of Fame",
+          "description": "We thank the researchers who report vulnerabilities in accordance with our responsible disclosure policy.",
+          "empty": "You could be the first researcher added to our Hall of Fame by reporting a vulnerability.",
+          "reportBtn": "Report Vulnerability"
+        },
+        "contact": {
+          "statusTitle": "System Status",
+          "statusDesc": "Track the real-time status of all services.",
+          "statusBtn": "Status Page",
+          "contactTitle": "Security Contact",
+          "security": "Security",
+          "legal": "Legal/DPA",
+          "privacy": "Privacy",
+          "footer": "Trust Center last updated: July 2026 · Policy version: 2.1.0 · Annual review: December 2026"
+        }
+      }
+    }
   },
   "tests": {
     "badge": "Security Assessment",

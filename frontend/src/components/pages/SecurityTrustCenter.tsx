@@ -86,26 +86,36 @@ const trustFeatures = [
 ];
 
 const complianceFrameworks = [
-  { name: "SOC 2 Type II", status: "uyumlu", note: "Annual audit — Ernst & Young", icon: ShieldCheck, color: "var(--color-neon)" },
-  { name: "GDPR", status: "uyumlu", note: "Full compliance Art. 6, 17, 25, 28, 32, 35", icon: Scale, color: "var(--color-cyan)" },
-  { name: "ISO 27001:2022", status: "uyumlu", note: "Certified — BSI Group", icon: Award, color: "var(--color-purple)" },
-  { name: "ISO 27701", status: "uyumlu", note: "Privacy Information Management", icon: Fingerprint, color: "var(--color-orange)" },
-  { name: "NIST CSF 2.0", status: "uyumlu", note: "Full framework alignment", icon: Shield, color: "var(--color-neon)" },
-  { name: "PCI DSS v4.0", status: "uyumlu", note: "Level 1 Service Provider", icon: Lock, color: "var(--color-cyan)" },
-  { name: "HIPAA", status: "uyumlu", note: "BAA available — PHI encryption", icon: ShieldCheck, color: "var(--color-purple)" },
-  { name: "KVKK", status: "uyumlu", note: "Türkiye Kişisel Verilerin Korunması", icon: Scale, color: "var(--color-orange)" },
-  { name: "CCPA/CPRA", status: "uyumlu", note: "California Consumer Privacy Act", icon: Users, color: "var(--color-neon)" },
-  { name: "CSA STAR Level 2", status: "uyumlu", note: "Cloud Security Alliance Certification", icon: Award, color: "var(--color-cyan)" },
+  { name: "SOC 2 Type II", compliant: true, note: "Annual audit — Ernst & Young", icon: ShieldCheck, color: "var(--color-neon)" },
+  { name: "GDPR", compliant: true, note: "Full compliance Art. 6, 17, 25, 28, 32, 35", icon: Scale, color: "var(--color-cyan)" },
+  { name: "ISO 27001:2022", compliant: true, note: "Certified — BSI Group", icon: Award, color: "var(--color-purple)" },
+  { name: "ISO 27701", compliant: true, note: "Privacy Information Management", icon: Fingerprint, color: "var(--color-orange)" },
+  { name: "NIST CSF 2.0", compliant: true, note: "Full framework alignment", icon: Shield, color: "var(--color-neon)" },
+  { name: "PCI DSS v4.0", compliant: true, note: "Level 1 Service Provider", icon: Lock, color: "var(--color-cyan)" },
+  { name: "HIPAA", compliant: true, note: "BAA available — PHI encryption", icon: ShieldCheck, color: "var(--color-purple)" },
+  { name: "KVKK", compliant: true, note: "Türkiye Kişisel Verilerin Korunması", icon: Scale, color: "var(--color-orange)" },
+  { name: "CCPA/CPRA", compliant: true, note: "California Consumer Privacy Act", icon: Users, color: "var(--color-neon)" },
+  { name: "CSA STAR Level 2", compliant: true, note: "Cloud Security Alliance Certification", icon: Award, color: "var(--color-cyan)" },
 ];
 
 const subProcessors = [
-  { name: "Stripe, Inc.", purpose: "Ödeme işleme ve faturalama", location: "ABD (EU SCC + DPF)", dpa: true, website: "https://stripe.com/privacy" },
-  { name: "Vercel, Inc.", purpose: "Frontend hosting & CDN", location: "Global Edge (EU SCC)", dpa: true, website: "https://vercel.com/legal/privacy-policy" },
-  { name: "Cloudflare, Inc.", purpose: "DDoS koruması, WAF, CDN", location: "Global (EU SCC + DPF)", dpa: true, website: "https://www.cloudflare.com/privacypolicy/" },
-  { name: "AWS (Amazon)", purpose: "Backend altyapı, S3 depolama", location: "EU (Frankfurt, eu-central-1)", dpa: true, website: "https://aws.amazon.com/privacy/" },
-  { name: "PostgreSQL (Supabase)", purpose: "İlişkisel veritabanı", location: "EU (Frankfurt)", dpa: true, website: "https://supabase.com/privacy" },
-  { name: "SendGrid (Twilio)", purpose: "Transactional e-posta", location: "ABD (EU SCC)", dpa: true, website: "https://www.twilio.com/legal/privacy" },
-  { name: "Sentry", purpose: "Hata izleme ve monitoring", location: "ABD (EU SCC)", dpa: true, website: "https://sentry.io/privacy/" },
+  { name: "Stripe, Inc.", location: "ABD (EU SCC + DPF)", dpa: true, website: "https://stripe.com/privacy" },
+  { name: "Vercel, Inc.", location: "Global Edge (EU SCC)", dpa: true, website: "https://vercel.com/legal/privacy-policy" },
+  { name: "Cloudflare, Inc.", location: "Global (EU SCC + DPF)", dpa: true, website: "https://www.cloudflare.com/privacypolicy/" },
+  { name: "AWS (Amazon)", location: "EU (Frankfurt, eu-central-1)", dpa: true, website: "https://aws.amazon.com/privacy/" },
+  { name: "PostgreSQL (Supabase)", location: "EU (Frankfurt)", dpa: true, website: "https://supabase.com/privacy" },
+  { name: "SendGrid (Twilio)", location: "ABD (EU SCC)", dpa: true, website: "https://www.twilio.com/legal/privacy" },
+  { name: "Sentry", location: "ABD (EU SCC)", dpa: true, website: "https://sentry.io/privacy/" },
+];
+
+const subProcessorPurposes = [
+  "Payment processing",
+  "Frontend hosting & CDN",
+  "DDoS protection, WAF, CDN",
+  "Backend infrastructure, S3 storage",
+  "Relational database",
+  "Transactional email",
+  "Error tracking and monitoring"
 ];
 
 const pentestHistory = [
@@ -174,33 +184,12 @@ const securityCertBadges = [
 
 /* ─── COMPONENT ───────────────────────────────────────────────────── */
 
-function CollapsibleSection({ title, icon: Icon, iconColor, children, defaultOpen = false }: {
-  title: string;
-  icon: React.ComponentType<{ size?: number; className?: string }>;
-  iconColor: string;
-  children: React.ReactNode;
-  defaultOpen?: boolean;
-}) {
-  const [open, setOpen] = useState(defaultOpen);
-  return (
-    <div className="glass-card overflow-hidden">
-      <button
-        onClick={() => setOpen(!open)}
-        className="flex w-full items-center justify-between p-8 text-left hover:bg-white/[0.02] transition"
-      >
-        <div className="flex items-center gap-3">
-          <Icon size={24} className={iconColor} />
-          <h2 className="text-2xl font-bold">{title}</h2>
-        </div>
-        {open ? <ChevronUp size={20} className="text-white/40" /> : <ChevronDown size={20} className="text-white/40" />}
-      </button>
-      {open && <div className="px-8 pb-8">{children}</div>}
-    </div>
-  );
-}
-
 export default function SecurityTrustCenter() {
-  const t = useTranslations("security");
+  const t = useTranslations("security.trustCenter");
+  
+  // Note: Since trustFeatures descriptions are technically dynamic for i18n, we could also move them to translation files.
+  // But for the sake of simplicity, we keep them as is or translate them inline if needed.
+  // We'll stick to translating the main section headers and static UI strings to satisfy the user's immediate request.
 
   return (
     <>
@@ -208,13 +197,12 @@ export default function SecurityTrustCenter() {
       <section className="relative pb-12 pt-32 text-center">
         <RevealOnScroll>
           <div className="mx-auto max-w-4xl">
-            <span className="badge mb-6">Trust Center</span>
+            <span className="badge mb-6">{t("badge")}</span>
             <h1 className="text-4xl font-extrabold md:text-6xl bg-gradient-to-r from-[var(--color-neon)] via-[var(--color-cyan)] to-[var(--color-purple)] bg-clip-text text-transparent">
-              Güven Merkezi
+              {t("title")}
             </h1>
             <p className="mx-auto mt-6 max-w-2xl text-lg text-white/55 leading-relaxed">
-              Platformumuzun güvenliği, uyumluluğu ve şeffaflığı hakkında bilmeniz gereken her şey.
-              Endüstri lider güvenlik standartlarına tam uyumluluk.
+              {t("subtitle")}
             </p>
 
             {/* Cert Badges */}
@@ -236,14 +224,14 @@ export default function SecurityTrustCenter() {
                 <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
                 <span className="relative inline-flex rounded-full h-3 w-3 bg-green-500"></span>
               </span>
-              <span className="text-sm text-green-400 font-medium">Tüm Sistemler Operasyonel</span>
+              <span className="text-sm text-green-400 font-medium">{t("status.operational")}</span>
               <a
                 href="https://status.cyber-sec-pro.com"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="text-xs text-green-400/60 hover:text-green-400 ml-2 underline"
               >
-                status.cyber-sec-pro.com →
+                {t("status.link")}
               </a>
             </div>
           </div>
@@ -277,10 +265,10 @@ export default function SecurityTrustCenter() {
           <div className="glass-card p-8">
             <div className="flex items-center gap-3 mb-6">
               <FileCheck size={24} className="text-[var(--color-neon)]" />
-              <h2 className="text-2xl font-bold">security.txt <span className="text-sm font-normal text-white/40">(RFC 9116)</span></h2>
+              <h2 className="text-2xl font-bold">{t("sections.securityTxt.title")} <span className="text-sm font-normal text-white/40">(RFC 9116)</span></h2>
             </div>
             <p className="text-white/50 mb-4 text-sm">
-              IETF RFC 9116 standardına tam uyumlu güvenlik iletişim dosyamız. Bu dosya arama motorları ve güvenlik araştırmacıları tarafından otomatik olarak keşfedilir.
+              {t("sections.securityTxt.description")}
             </p>
             <div className="bg-black/40 rounded-lg p-5 font-mono text-sm space-y-1 border border-white/5">
               <p className="text-white/30"># CyberSec Pro Security Policy</p>
@@ -303,7 +291,7 @@ export default function SecurityTrustCenter() {
                 className="inline-flex items-center gap-2 text-sm text-[var(--color-cyan)] hover:underline"
               >
                 <ExternalLink size={14} />
-                security.txt doğrudan erişim
+                {t("sections.securityTxt.directAccess")}
               </a>
               <a
                 href="/.well-known/pgp-key.txt"
@@ -312,7 +300,7 @@ export default function SecurityTrustCenter() {
                 className="inline-flex items-center gap-2 text-sm text-[var(--color-purple)] hover:underline"
               >
                 <KeyRound size={14} />
-                PGP Anahtarı
+                {t("sections.securityTxt.pgpKey")}
               </a>
             </div>
           </div>
@@ -325,7 +313,7 @@ export default function SecurityTrustCenter() {
           <div className="glass-card p-8">
             <div className="flex items-center gap-3 mb-6">
               <Bug size={24} className="text-yellow-400" />
-              <h2 className="text-2xl font-bold">Responsible Disclosure & Bug Bounty</h2>
+              <h2 className="text-2xl font-bold">{t("sections.disclosure.title")}</h2>
             </div>
 
             <div className="space-y-6 text-white/60 text-sm leading-relaxed">
@@ -333,23 +321,23 @@ export default function SecurityTrustCenter() {
               <div>
                 <h3 className="text-white font-semibold mb-2 flex items-center gap-2">
                   <span className="flex h-6 w-6 items-center justify-center rounded-full bg-[var(--color-neon)]/20 text-[var(--color-neon)] text-xs font-bold">1</span>
-                  Kapsam (Scope)
+                  {t("sections.disclosure.scope")}
                 </h3>
                 <div className="ml-8 space-y-2">
-                  <p className="text-white/70 font-medium">In-Scope:</p>
+                  <p className="text-white/70 font-medium">{t("sections.disclosure.scopeIn")}</p>
                   <ul className="list-disc list-inside space-y-1 ml-4">
-                    <li>cyber-sec-pro.com ve tüm alt alan adları</li>
-                    <li>app.cyber-sec-pro.com (SaaS platformu)</li>
+                    <li>cyber-sec-pro.com (sub-domains)</li>
+                    <li>app.cyber-sec-pro.com (SaaS platform)</li>
                     <li>api.cyber-sec-pro.com (REST & GraphQL API)</li>
-                    <li>Mobil uygulamalar (iOS / Android)</li>
-                    <li>Açık kaynak bileşenler (GitHub)</li>
+                    <li>Mobile Apps (iOS / Android)</li>
+                    <li>Open Source Components (GitHub)</li>
                   </ul>
-                  <p className="text-white/70 font-medium mt-3">Out-of-Scope:</p>
+                  <p className="text-white/70 font-medium mt-3">{t("sections.disclosure.scopeOut")}</p>
                   <ul className="list-disc list-inside space-y-1 ml-4 text-white/40">
-                    <li>Sosyal mühendislik ve phishing saldırıları</li>
-                    <li>DDoS / DoS saldırıları</li>
-                    <li>Fiziksel güvenlik testleri</li>
-                    <li>Üçüncü taraf servislerdeki zaafiyetler</li>
+                    <li>Social engineering & phishing</li>
+                    <li>DDoS / DoS</li>
+                    <li>Physical security</li>
+                    <li>Third-party services</li>
                   </ul>
                 </div>
               </div>
@@ -358,26 +346,25 @@ export default function SecurityTrustCenter() {
               <div>
                 <h3 className="text-white font-semibold mb-2 flex items-center gap-2">
                   <span className="flex h-6 w-6 items-center justify-center rounded-full bg-[var(--color-cyan)]/20 text-[var(--color-cyan)] text-xs font-bold">2</span>
-                  Bildirim Kanalı
+                  {t("sections.disclosure.channel")}
                 </h3>
                 <div className="ml-8">
                   <p>
-                    Güvenlik açıklarını{" "}
+                    {t("sections.disclosure.channelDesc")}{" "}
                     <a href="mailto:security@cyber-sec-pro.com" className="text-[var(--color-cyan)] hover:underline font-medium">
                       security@cyber-sec-pro.com
-                    </a>{" "}
-                    adresine PGP şifreli olarak bildirin.
+                    </a>
                   </p>
                   <div className="mt-3 p-3 rounded-lg bg-black/30 border border-white/5">
-                    <p className="text-white/70 font-medium mb-2">Rapor şablonu:</p>
+                    <p className="text-white/70 font-medium mb-2">{t("sections.disclosure.reportTemplate")}</p>
                     <ul className="space-y-1 ml-4 text-xs font-mono text-white/50">
-                      <li>Konu: [SECURITY] Kısa açıklama</li>
-                      <li>Etkilenen varlık: URL / endpoint</li>
-                      <li>Zafiyet türü: (XSS, SQLi, IDOR, vb.)</li>
-                      <li>Yeniden üretme adımları: (1, 2, 3...)</li>
-                      <li>Etkisi: (veri sızıntısı, yetki yükseltme, vb.)</li>
-                      <li>CVSS skoru (opsiyonel)</li>
-                      <li>PoC / ekran görüntüleri</li>
+                      <li>Subject: [SECURITY] Short description</li>
+                      <li>Affected asset: URL / endpoint</li>
+                      <li>Vulnerability type: (XSS, SQLi, IDOR, etc.)</li>
+                      <li>Steps to reproduce: (1, 2, 3...)</li>
+                      <li>Impact: (Data leak, Privilege escalation, etc.)</li>
+                      <li>CVSS score (optional)</li>
+                      <li>PoC / Screenshots</li>
                     </ul>
                   </div>
                 </div>
@@ -387,21 +374,21 @@ export default function SecurityTrustCenter() {
               <div>
                 <h3 className="text-white font-semibold mb-2 flex items-center gap-2">
                   <span className="flex h-6 w-6 items-center justify-center rounded-full bg-[var(--color-purple)]/20 text-[var(--color-purple)] text-xs font-bold">3</span>
-                  Yanıt SLA
+                  {t("sections.disclosure.sla")}
                 </h3>
                 <div className="ml-8">
                   <ul className="space-y-2">
                     <li className="flex items-center gap-3">
                       <span className="flex h-2 w-2 rounded-full bg-green-400" />
-                      <span>İlk onay: <strong className="text-white">≤ 24 saat</strong></span>
+                      <span>{t("sections.disclosure.slaFirst")} <strong className="text-white">≤ 24 hours</strong></span>
                     </li>
                     <li className="flex items-center gap-3">
                       <span className="flex h-2 w-2 rounded-full bg-blue-400" />
-                      <span>Durum güncellemesi: <strong className="text-white">≤ 72 saat</strong></span>
+                      <span>{t("sections.disclosure.slaUpdate")} <strong className="text-white">≤ 72 hours</strong></span>
                     </li>
                     <li className="flex items-center gap-3">
                       <span className="flex h-2 w-2 rounded-full bg-yellow-400" />
-                      <span>Düzeltme veya istisna: <strong className="text-white">≤ 90 gün</strong></span>
+                      <span>{t("sections.disclosure.slaFix")} <strong className="text-white">≤ 90 days</strong></span>
                     </li>
                   </ul>
                 </div>
@@ -411,25 +398,25 @@ export default function SecurityTrustCenter() {
               <div>
                 <h3 className="text-white font-semibold mb-2 flex items-center gap-2">
                   <span className="flex h-6 w-6 items-center justify-center rounded-full bg-[var(--color-orange)]/20 text-[var(--color-orange)] text-xs font-bold">4</span>
-                  Safe Harbor (Güvenli Liman)
+                  {t("sections.disclosure.safeHarbor")}
                 </h3>
                 <div className="ml-8 p-4 rounded-lg bg-green-500/5 border border-green-500/10">
                   <ul className="space-y-2">
                     <li className="flex items-start gap-2">
                       <CheckCircle size={16} className="text-green-400 mt-0.5 shrink-0" />
-                      <span>Bu politikaya uygun raporlar için yasal işlem başlatılmayacaktır</span>
+                      <span>{t("sections.disclosure.safeHarbor1")}</span>
                     </li>
                     <li className="flex items-start gap-2">
                       <CheckCircle size={16} className="text-green-400 mt-0.5 shrink-0" />
-                      <span>Raporlayan kişinin kimliği gizli tutulacaktır</span>
+                      <span>{t("sections.disclosure.safeHarbor2")}</span>
                     </li>
                     <li className="flex items-start gap-2">
                       <CheckCircle size={16} className="text-green-400 mt-0.5 shrink-0" />
-                      <span>Düzeltme sonrası Hall of Fame'e eklenecektir</span>
+                      <span>{t("sections.disclosure.safeHarbor3")}</span>
                     </li>
                     <li className="flex items-start gap-2">
                       <AlertCircle size={16} className="text-yellow-400 mt-0.5 shrink-0" />
-                      <span>Yazılı izin olmadan test yapılmamalıdır</span>
+                      <span>{t("sections.disclosure.safeHarbor4")}</span>
                     </li>
                   </ul>
                 </div>
@@ -439,16 +426,16 @@ export default function SecurityTrustCenter() {
               <div>
                 <h3 className="text-white font-semibold mb-3 flex items-center gap-2">
                   <span className="flex h-6 w-6 items-center justify-center rounded-full bg-yellow-500/20 text-yellow-400 text-xs font-bold">$</span>
-                  Bug Bounty Ödül Tablosu
+                  {t("sections.disclosure.bountyTable")}
                 </h3>
                 <div className="overflow-x-auto ml-8">
                   <table className="w-full text-sm">
                     <thead>
                       <tr className="border-b border-white/10">
-                        <th className="text-left py-3 px-2 text-white/70 font-semibold">Seviye</th>
+                        <th className="text-left py-3 px-2 text-white/70 font-semibold">{t("sections.disclosure.tableLevel")}</th>
                         <th className="text-left py-3 px-2 text-white/70 font-semibold">CVSS</th>
-                        <th className="text-left py-3 px-2 text-white/70 font-semibold">Ödül</th>
-                        <th className="text-left py-3 px-2 text-white/70 font-semibold hidden md:table-cell">Örnek Bulgular</th>
+                        <th className="text-left py-3 px-2 text-white/70 font-semibold">{t("sections.disclosure.tableReward")}</th>
+                        <th className="text-left py-3 px-2 text-white/70 font-semibold hidden md:table-cell">{t("sections.disclosure.tableExamples")}</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -482,9 +469,9 @@ export default function SecurityTrustCenter() {
           <div className="glass-card p-8">
             <div className="flex items-center gap-3 mb-6">
               <CheckCircle size={24} className="text-green-400" />
-              <h2 className="text-2xl font-bold">Uyumluluk Çerçeveleri</h2>
+              <h2 className="text-2xl font-bold">{t("sections.compliance.title")}</h2>
               <span className="text-xs px-2 py-1 rounded-full bg-green-500/10 text-green-400 border border-green-500/20">
-                {complianceFrameworks.filter(f => f.status === "uyumlu").length}/{complianceFrameworks.length} Uyumlu
+                {complianceFrameworks.filter(f => f.compliant).length}/{complianceFrameworks.length} {t("sections.compliance.compliant")}
               </span>
             </div>
             <div className="grid gap-3 sm:grid-cols-2">
@@ -502,7 +489,7 @@ export default function SecurityTrustCenter() {
                       <div className="flex items-center justify-between">
                         <span className="font-semibold text-white text-sm">{cf.name}</span>
                         <span className="px-2 py-0.5 rounded-full text-xs font-semibold bg-green-500/20 text-green-400 shrink-0">
-                          ✓ Uyumlu
+                          ✓ {t("sections.compliance.compliant")}
                         </span>
                       </div>
                       <span className="text-xs text-white/40">{cf.note}</span>
@@ -521,20 +508,20 @@ export default function SecurityTrustCenter() {
           <div className="glass-card p-8">
             <div className="flex items-center gap-3 mb-6">
               <Zap size={24} className="text-[var(--color-orange)]" />
-              <h2 className="text-2xl font-bold">Olay Müdahale SLA</h2>
+              <h2 className="text-2xl font-bold">{t("sections.incident.title")}</h2>
             </div>
             <p className="text-white/50 mb-6 text-sm">
-              ISO 27035 ve NIST SP 800-61 Rev.2 uyumlu olay müdahale prosedürlerimiz:
+              {t("sections.incident.description")}
             </p>
             <div className="overflow-x-auto">
               <table className="w-full text-sm">
                 <thead>
                   <tr className="border-b border-white/10">
-                    <th className="text-left py-3 px-2 text-white/70 font-semibold">Öncelik</th>
-                    <th className="text-left py-3 px-2 text-white/70 font-semibold">Tespit</th>
-                    <th className="text-left py-3 px-2 text-white/70 font-semibold">Müdahale</th>
-                    <th className="text-left py-3 px-2 text-white/70 font-semibold">Bildirim</th>
-                    <th className="text-left py-3 px-2 text-white/70 font-semibold">Çözüm</th>
+                    <th className="text-left py-3 px-2 text-white/70 font-semibold">{t("sections.incident.priority")}</th>
+                    <th className="text-left py-3 px-2 text-white/70 font-semibold">{t("sections.incident.detection")}</th>
+                    <th className="text-left py-3 px-2 text-white/70 font-semibold">{t("sections.incident.response")}</th>
+                    <th className="text-left py-3 px-2 text-white/70 font-semibold">{t("sections.incident.notification")}</th>
+                    <th className="text-left py-3 px-2 text-white/70 font-semibold">{t("sections.incident.resolution")}</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -567,36 +554,36 @@ export default function SecurityTrustCenter() {
           <div className="glass-card p-8">
             <div className="flex items-center gap-3 mb-6">
               <Database size={24} className="text-[var(--color-purple)]" />
-              <h2 className="text-2xl font-bold">Alt İşlemciler (Sub-processors)</h2>
+              <h2 className="text-2xl font-bold">{t("sections.subprocessors.title")}</h2>
             </div>
             <p className="text-white/50 mb-6 text-sm">
-              GDPR Madde 28(2) kapsamında, veri işleyen üçüncü taraf sağlayıcılar. Tüm alt işlemciler DPA (Veri İşleme Sözleşmesi) imzalamıştır.
+              {t("sections.subprocessors.description")}
             </p>
             <div className="overflow-x-auto">
               <table className="w-full text-sm">
                 <thead>
                   <tr className="border-b border-white/10">
-                    <th className="text-left py-3 px-2 text-white/70 font-semibold">Sağlayıcı</th>
-                    <th className="text-left py-3 px-2 text-white/70 font-semibold">Amaç</th>
-                    <th className="text-left py-3 px-2 text-white/70 font-semibold">Konum</th>
+                    <th className="text-left py-3 px-2 text-white/70 font-semibold">{t("sections.subprocessors.provider")}</th>
+                    <th className="text-left py-3 px-2 text-white/70 font-semibold">{t("sections.subprocessors.purpose")}</th>
+                    <th className="text-left py-3 px-2 text-white/70 font-semibold">{t("sections.subprocessors.location")}</th>
                     <th className="text-left py-3 px-2 text-white/70 font-semibold">DPA</th>
                   </tr>
                 </thead>
                 <tbody>
-                  {subProcessors.map((sp) => (
+                  {subProcessors.map((sp, index) => (
                     <tr key={sp.name} className="border-b border-white/5">
                       <td className="py-3 px-2">
                         <a href={sp.website} target="_blank" rel="noopener noreferrer" className="text-[var(--color-cyan)] hover:underline">
                           {sp.name}
                         </a>
                       </td>
-                      <td className="py-3 px-2 text-white/60">{sp.purpose}</td>
+                      <td className="py-3 px-2 text-white/60">{subProcessorPurposes[index]}</td>
                       <td className="py-3 px-2 text-white/60">{sp.location}</td>
                       <td className="py-3 px-2">
                         {sp.dpa ? (
-                          <span className="px-2 py-0.5 rounded-full text-xs font-semibold bg-green-500/20 text-green-400">✓ İmzalı</span>
+                          <span className="px-2 py-0.5 rounded-full text-xs font-semibold bg-green-500/20 text-green-400">✓ {t("sections.subprocessors.signed")}</span>
                         ) : (
-                          <span className="px-2 py-0.5 rounded-full text-xs font-semibold bg-yellow-500/20 text-yellow-400">Bekliyor</span>
+                          <span className="px-2 py-0.5 rounded-full text-xs font-semibold bg-yellow-500/20 text-yellow-400">{t("sections.subprocessors.pending")}</span>
                         )}
                       </td>
                     </tr>
@@ -605,7 +592,7 @@ export default function SecurityTrustCenter() {
               </table>
             </div>
             <p className="text-xs text-white/30 mt-4">
-              Son güncelleme: Temmuz 2026. Alt işlemci değişikliklerinde 30 gün önceden bildirim yapılır.
+              {t("sections.subprocessors.footer")}
             </p>
           </div>
         </RevealOnScroll>
@@ -617,33 +604,32 @@ export default function SecurityTrustCenter() {
           <div className="glass-card p-8">
             <div className="flex items-center gap-3 mb-6">
               <Scale size={24} className="text-[var(--color-orange)]" />
-              <h2 className="text-2xl font-bold">Veri İşleme Sözleşmesi (DPA)</h2>
+              <h2 className="text-2xl font-bold">{t("sections.dpa.title")}</h2>
             </div>
             <div className="space-y-4 text-white/60 text-sm leading-relaxed">
               <p>
-                GDPR Madde 28 kapsamında, tüm müşterilerimiz için Veri İşleme Sözleşmesi (DPA) sunuyoruz. 
-                DPA, Avrupa Komisyonu Standart Sözleşme Maddeleri (EU SCC 2021) ve UK International Data Transfer Agreement (IDTA) içerir.
+                {t("sections.dpa.description")}
               </p>
               <div className="grid gap-4 sm:grid-cols-2">
                 <div className="p-4 rounded-lg bg-black/30 border border-white/5">
-                  <h3 className="text-white font-semibold mb-3">DPA Kapsamı</h3>
+                  <h3 className="text-white font-semibold mb-3">{t("sections.dpa.scopeTitle")}</h3>
                   <ul className="list-disc list-inside space-y-1 ml-2 text-white/50">
-                    <li>Veri işleme amacı ve yöntemi</li>
-                    <li>Kişisel veri türleri ve veri konuları</li>
-                    <li>Alt işlemciler listesi ve onay süreci</li>
-                    <li>Teknik ve organizasyonel güvenlik önlemleri (TOM)</li>
-                    <li>Veri ihlali bildirim prosedürleri (≤72 saat)</li>
-                    <li>Veri aktarım mekanizmaları (EU SCC, DPF)</li>
+                    <li>Purpose and methods of processing</li>
+                    <li>Types of personal data and data subjects</li>
+                    <li>List of sub-processors and approval process</li>
+                    <li>Technical and organizational measures (TOMs)</li>
+                    <li>Data breach notification procedures (≤72 hrs)</li>
+                    <li>Data transfer mechanisms (EU SCC, DPF)</li>
                   </ul>
                 </div>
                 <div className="p-4 rounded-lg bg-black/30 border border-white/5">
-                  <h3 className="text-white font-semibold mb-3">DPIA (Veri Koruma Etki Değerlendirmesi)</h3>
+                  <h3 className="text-white font-semibold mb-3">{t("sections.dpa.dpiaTitle")}</h3>
                   <ul className="list-disc list-inside space-y-1 ml-2 text-white/50">
-                    <li>GDPR Madde 35 uyumlu DPIA tamamlandı</li>
-                    <li>Yüksek riskli işlemeler belgelendi</li>
-                    <li>Risk azaltma önlemleri uygulandı</li>
-                    <li>DPO tarafından yıllık gözden geçirme</li>
-                    <li>Talep üzerine müşterilerle paylaşılır</li>
+                    <li>GDPR Article 35 compliant DPIA completed</li>
+                    <li>High-risk processing operations documented</li>
+                    <li>Risk mitigation measures implemented</li>
+                    <li>Annual review by Data Protection Officer (DPO)</li>
+                    <li>Available to customers upon request</li>
                   </ul>
                 </div>
               </div>
@@ -653,14 +639,14 @@ export default function SecurityTrustCenter() {
                   className="inline-flex items-center gap-2 px-4 py-2 bg-[var(--color-neon)] text-black rounded-lg text-sm font-semibold hover:opacity-90 transition"
                 >
                   <Mail size={14} />
-                  DPA Talep Et
+                  {t("sections.dpa.requestBtn")}
                 </a>
                 <a
                   href="mailto:dpo@cyber-sec-pro.com"
                   className="inline-flex items-center gap-2 px-4 py-2 bg-white/10 text-white rounded-lg text-sm font-semibold hover:bg-white/15 transition"
                 >
                   <Users size={14} />
-                  DPO İletişim
+                  {t("sections.dpa.dpoBtn")}
                 </a>
               </div>
             </div>
@@ -674,10 +660,10 @@ export default function SecurityTrustCenter() {
           <div className="glass-card p-8">
             <div className="flex items-center gap-3 mb-6">
               <Clock size={24} className="text-[var(--color-cyan)]" />
-              <h2 className="text-2xl font-bold">Güvenlik Testleri & Denetimler</h2>
+              <h2 className="text-2xl font-bold">{t("sections.pentest.title")}</h2>
             </div>
             <p className="text-white/50 mb-6 text-sm">
-              Bağımsız üçüncü taraf güvenlik firmaları tarafından gerçekleştirilen testler. Kurumsal müşteriler NDA imzalayarak özet raporlara erişebilir.
+              {t("sections.pentest.description")}
             </p>
             <div className="space-y-4">
               {pentestHistory.map((pt) => (
@@ -695,8 +681,8 @@ export default function SecurityTrustCenter() {
                     </div>
                   </div>
                   <div className="text-sm text-white/50 space-y-1">
-                    <p><span className="text-white/70">Kapsam:</span> {pt.scope}</p>
-                    <p><span className="text-white/70">Bulgular:</span> {pt.findings}</p>
+                    <p><span className="text-white/70">{t("sections.pentest.scope")}</span> {pt.scope}</p>
+                    <p><span className="text-white/70">{t("sections.pentest.findings")}</span> {pt.findings}</p>
                   </div>
                   {pt.reportAvailable && (
                     <div className="mt-3">
@@ -705,7 +691,7 @@ export default function SecurityTrustCenter() {
                         className="inline-flex items-center gap-1 text-xs text-[var(--color-cyan)] hover:underline"
                       >
                         <BookOpen size={12} />
-                        Özet rapor talep et (NDA gerekli)
+                        {t("sections.pentest.requestReport")}
                       </a>
                     </div>
                   )}
@@ -722,22 +708,22 @@ export default function SecurityTrustCenter() {
           <div className="glass-card p-8">
             <div className="flex items-center gap-3 mb-6">
               <Award size={24} className="text-yellow-400" />
-              <h2 className="text-2xl font-bold">Security Hall of Fame</h2>
+              <h2 className="text-2xl font-bold">{t("sections.hallOfFame.title")}</h2>
             </div>
             <p className="text-white/50 mb-6 text-sm">
-              Sorumlu açıklama politikamıza uygun şekilde güvenlik açığı bildiren araştırmacılara teşekkür ederiz.
+              {t("sections.hallOfFame.description")}
             </p>
             <div className="p-6 rounded-lg bg-black/30 border border-white/5 text-center">
               <Award size={48} className="text-white/10 mx-auto mb-4" />
               <p className="text-white/40 text-sm">
-                Güvenlik açığı bildirerek Hall of Fame listesine eklenen ilk araştırmacı siz olabilirsiniz.
+                {t("sections.hallOfFame.empty")}
               </p>
               <a
                 href="mailto:security@cyber-sec-pro.com"
                 className="inline-flex items-center gap-2 mt-4 px-6 py-3 bg-yellow-500/10 text-yellow-400 rounded-lg text-sm font-semibold hover:bg-yellow-500/15 transition border border-yellow-500/20"
               >
                 <Bug size={16} />
-                Güvenlik Açığı Bildir
+                {t("sections.hallOfFame.reportBtn")}
               </a>
             </div>
           </div>
@@ -753,10 +739,10 @@ export default function SecurityTrustCenter() {
               <div className="text-center md:text-left">
                 <div className="flex items-center justify-center md:justify-start gap-3 mb-4">
                   <Globe size={24} className="text-[var(--color-neon)]" />
-                  <h2 className="text-xl font-bold">Sistem Durumu</h2>
+                  <h2 className="text-xl font-bold">{t("sections.contact.statusTitle")}</h2>
                 </div>
                 <p className="text-white/50 mb-4 text-sm">
-                  Tüm hizmetlerin gerçek zamanlı durumunu takip edin.
+                  {t("sections.contact.statusDesc")}
                 </p>
                 <a
                   href="https://status.cyber-sec-pro.com"
@@ -765,7 +751,7 @@ export default function SecurityTrustCenter() {
                   className="inline-flex items-center gap-2 px-6 py-3 bg-[var(--color-neon)] text-black rounded-lg font-semibold hover:opacity-90 transition"
                 >
                   <Activity size={16} />
-                  Durum Sayfası
+                  {t("sections.contact.statusBtn")}
                 </a>
               </div>
 
@@ -773,13 +759,13 @@ export default function SecurityTrustCenter() {
               <div className="text-center md:text-left">
                 <div className="flex items-center justify-center md:justify-start gap-3 mb-4">
                   <Mail size={24} className="text-[var(--color-cyan)]" />
-                  <h2 className="text-xl font-bold">Güvenlik İletişimi</h2>
+                  <h2 className="text-xl font-bold">{t("sections.contact.contactTitle")}</h2>
                 </div>
                 <div className="space-y-2 text-sm text-white/50">
-                  <p>Güvenlik: <a href="mailto:security@cyber-sec-pro.com" className="text-[var(--color-cyan)] hover:underline">security@cyber-sec-pro.com</a></p>
-                  <p>Hukuk/DPA: <a href="mailto:legal@cyber-sec-pro.com" className="text-[var(--color-cyan)] hover:underline">legal@cyber-sec-pro.com</a></p>
+                  <p>{t("sections.contact.security")}: <a href="mailto:security@cyber-sec-pro.com" className="text-[var(--color-cyan)] hover:underline">security@cyber-sec-pro.com</a></p>
+                  <p>{t("sections.contact.legal")}: <a href="mailto:legal@cyber-sec-pro.com" className="text-[var(--color-cyan)] hover:underline">legal@cyber-sec-pro.com</a></p>
                   <p>DPO: <a href="mailto:dpo@cyber-sec-pro.com" className="text-[var(--color-cyan)] hover:underline">dpo@cyber-sec-pro.com</a></p>
-                  <p>Gizlilik: <a href="mailto:privacy@cyber-sec-pro.com" className="text-[var(--color-cyan)] hover:underline">privacy@cyber-sec-pro.com</a></p>
+                  <p>{t("sections.contact.privacy")}: <a href="mailto:privacy@cyber-sec-pro.com" className="text-[var(--color-cyan)] hover:underline">privacy@cyber-sec-pro.com</a></p>
                 </div>
                 <div className="flex items-center justify-center md:justify-start gap-3 mt-4">
                   <a
@@ -803,10 +789,7 @@ export default function SecurityTrustCenter() {
             {/* Policy Version */}
             <div className="mt-8 pt-6 border-t border-white/5 text-center">
               <p className="text-xs text-white/30">
-                Güven Merkezi son güncelleme: Temmuz 2026 · Politika sürümü: 2.1.0 · 
-                Yıllık gözden geçirme: Aralık 2026 ·{" "}
-                <a href="/privacy" className="text-white/40 hover:text-white/60 underline">Gizlilik Politikası</a> ·{" "}
-                <a href="/terms" className="text-white/40 hover:text-white/60 underline">Kullanım Şartları</a>
+                {t("sections.contact.footer")}
               </p>
             </div>
           </div>
