@@ -10,7 +10,7 @@ WORKDIR /app
 COPY package*.json ./
 
 # Install dependencies from lockfile
-RUN npm ci
+RUN npm install --legacy-peer-deps --no-audit --no-fund
 
 # Copy source
 COPY . .
