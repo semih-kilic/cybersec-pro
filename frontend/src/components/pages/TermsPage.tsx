@@ -54,9 +54,9 @@ export default function TermsPage() {
               <h2 className="text-xl font-bold text-white mb-3">2. Subscription & Pricing</h2>
               <div className="grid gap-3 md:grid-cols-3 mb-4">
                 {[
-                  { plan: "Starter", price: "€99", features: "50 tools, 10 scans/month" },
-                  { plan: "Professional", price: "€299", features: "200 tools, unlimited scans, API access" },
-                  { plan: "Enterprise", price: "€799", features: "329 tools, unlimited everything, priority support" },
+                  { plan: "Starter", price: "€29", features: "325 tools, 30 scans/month" },
+                  { plan: "Professional", price: "€99", features: "325 tools, 250 scans/month, API access" },
+                  { plan: "Enterprise", price: "€349", features: "325 tools, unlimited everything, priority support" },
                 ].map((p) => (
                   <div key={p.plan} className="bg-white/5 rounded-lg p-4 text-center">
                     <h3 className="text-sm font-bold text-[var(--color-neon)]">{p.plan}</h3>
