@@ -143,8 +143,8 @@ export function useDocumentTitle(title: string) {
  * usePrevious — Track previous value of a reactive variable
  */
 export function usePrevious<T>(value: T): T | undefined {
-  const ref = useRef<T>();
-  useEffect(() => { ref.current = value; });
+  const ref = useRef<T | undefined>(undefined);
+  useEffect(() => { ref.current = value; }, [value]);
   return ref.current;
 }
 

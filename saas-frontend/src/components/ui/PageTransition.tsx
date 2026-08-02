@@ -3,7 +3,7 @@
  * Wrap any page content for slide-fade entrance animation.
  */
 import { memo, type ReactNode } from 'react';
-import { motion } from 'framer-motion';
+import { motion, type Transition } from 'framer-motion';
 
 interface PageTransitionProps {
   children: ReactNode;
@@ -16,9 +16,9 @@ const pageVariants = {
   exit: { opacity: 0, y: -8 },
 };
 
-const pageTransition = {
-  type: 'tween' as const,
-  ease: 'easeOut',
+const pageTransition: Transition = {
+  type: 'tween',
+  ease: [0.25, 0.1, 0.25, 1],
   duration: 0.25,
 };
 

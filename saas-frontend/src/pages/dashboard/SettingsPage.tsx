@@ -15,7 +15,7 @@ import {
   CheckCircle2,
   XCircle,
 } from 'lucide-react';
-import type { ComponentType, SVGProps } from 'react';
+import type { ComponentType, ReactElement, SVGProps } from 'react';
 import { useAuth } from '../../hooks/useAuth';
 import { useDocumentTitle } from '../../hooks/useUtilities';
 import {
@@ -90,7 +90,7 @@ export default function SettingsPage() {
 
   const tabProps = { loading, setLoading, setMessage, user, organization, userPlan };
 
-  const TAB_COMPONENTS: Record<TabId, JSX.Element> = {
+  const TAB_COMPONENTS: Record<TabId, ReactElement> = {
     profile:       <ProfileTab {...tabProps} />,
     security:      <SecurityTab {...tabProps} />,
     notifications: <NotificationsTab {...tabProps} />,

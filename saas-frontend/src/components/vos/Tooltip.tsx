@@ -1,4 +1,4 @@
-import { useState, type ReactNode, cloneElement, isValidElement } from 'react';
+import { useState, type ReactNode, cloneElement, isValidElement, type ReactElement } from 'react';
 import { cn } from '../../lib/cn';
 
 /**
@@ -11,7 +11,7 @@ export function Tooltip({
   side = 'top',
   className,
 }: {
-  children: ReactNode;
+  children: ReactElement;
   label: ReactNode;
   side?: 'top' | 'bottom' | 'left' | 'right';
   className?: string;
@@ -26,12 +26,12 @@ export function Tooltip({
   }[side];
 
   const trigger = isValidElement(children)
-    ? cloneElement(children as React.ReactElement, {
+    ? cloneElement(children as ReactElement, {
         onMouseEnter: () => setOpen(true),
         onMouseLeave: () => setOpen(false),
         onFocus:      () => setOpen(true),
         onBlur:       () => setOpen(false),
-      })
+      } as any)
     : children;
 
   return (

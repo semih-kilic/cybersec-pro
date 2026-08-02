@@ -81,13 +81,17 @@ const ToastItem = memo(function ToastItem({
   onRemove: (id: string) => void;
 }) {
   const duration = toast.duration ?? 5000;
-  const timerRef = useRef<ReturnType<typeof setTimeout>>();
+  const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
     if (duration > 0) {
       timerRef.current = setTimeout(() => onRemove(toast.id), duration);
     }
-    return () => clearTimeout(timerRef.current);
+    return () => {
+      if (timerRef.current !== null) {
+        clearTimeout(timerRef.current);
+      }
+    };
   }, [toast.id, duration, onRemove]);
 
   return (

@@ -1,6 +1,7 @@
 import { Link } from 'react-router-dom';
 import { useState, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
+import type { TFunction } from 'i18next';
 import { motion } from 'framer-motion';
 import {
   Check,
@@ -36,7 +37,7 @@ interface Plan {
   ring: string;   // tailwind ring color class for popular
 }
 
-function buildPlans(counts: { trial: number; starter: number; professional: number; enterprise: number }, t: (key: string, defaultValue?: string) => string): Plan[] {
+function buildPlans(counts: { trial: number; starter: number; professional: number; enterprise: number }, t: TFunction): Plan[] {
   return [
     {
       id: 'trial',

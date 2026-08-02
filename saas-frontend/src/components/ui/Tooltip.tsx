@@ -31,7 +31,7 @@ const arrowClasses: Record<TooltipPosition, string> = {
 
 export function Tooltip({ content, position = 'top', delay = 200, children, className = '' }: TooltipProps) {
   const [show, setShow] = useState(false);
-  const timeoutRef = useRef<ReturnType<typeof setTimeout>>();
+  const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const handleEnter = () => {
     timeoutRef.current = setTimeout(() => setShow(true), delay);
