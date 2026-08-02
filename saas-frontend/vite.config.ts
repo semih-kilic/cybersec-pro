@@ -44,27 +44,20 @@ export default defineConfig({
     cssCodeSplit: true,
     rollupOptions: {
       output: {
-        manualChunks: {
-          // Core React runtime — cached long-term
-          vendor: ['react', 'react-dom'],
-          // Routing — loaded on first navigation
-          router: ['react-router-dom'],
-          // Animation — only pages using motion
-          motion: ['framer-motion'],
-          // Data layer
-          query: ['@tanstack/react-query'],
-          // i18n bundle — loaded once
-          i18n: ['i18next', 'react-i18next', 'i18next-browser-languagedetector'],
-          // Charts — only loaded by analytics-heavy pages
-          charts: ['recharts'],
-          // UI primitives — headless UI + heroicons
-          ui: ['@headlessui/react', '@heroicons/react'],
-          // Payments — only loaded by UpgradePage/BillingPage
-          stripe: ['@stripe/stripe-js', '@stripe/react-stripe-js'],
-          // Real-time
-          socket: ['socket.io-client'],
-          // Forms & validation
-          forms: ['react-hook-form', '@hookform/resolvers', 'zod'],
+        // Use a function for manualChunks to be compatible with newer Rollup/Rolldown
+        manualChunks(id: string) {
+          if (!id.includes('node_modules')) return undefined;
+          if (id.includes('react') || id.includes('react-dom')) return 'vendor';
+          if (id.includes('react-router-dom')) return 'router';
+          if (id.includes('framer-motion')) return 'motion';
+          if (id.includes('@tanstack/react-query')) return 'query';
+          if (id.includes('i18next') || id.includes('react-i18next') || id.includes('i18next-browser-languagedetector')) return 'i18n';
+          if (id.includes('recharts')) return 'charts';
+          if (id.includes('@headlessui') || id.includes('@heroicons')) return 'ui';
+          if (id.includes('@stripe/stripe-js') || id.includes('@stripe/react-stripe-js')) return 'stripe';
+          if (id.includes('socket.io-client')) return 'socket';
+          if (id.includes('react-hook-form') || id.includes('@hookform') || id.includes('zod')) return 'forms';
+          return undefined;
         },
       },
     },
