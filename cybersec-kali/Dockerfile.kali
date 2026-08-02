@@ -1,0 +1,15 @@
+FROM debian:bookworm-slim
+
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    curl \
+    wget \
+    jq \
+    && rm -rf /var/lib/apt/lists/*
+
+WORKDIR /opt/cybersec-kali
+
+COPY tools /opt/tools
+
+EXPOSE 5003
+
+CMD ["sh", "-c", "echo '{\"status\":\"healthy\"}' > /tmp/health.json && python3 -m http.server 5003"]

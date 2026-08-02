@@ -27,9 +27,9 @@ FROM debian:bookworm-slim
 
 RUN apt-get update && apt-get install -y \
     ca-certificates libssl3 libpq5 curl \
-    # Kali tools we need at runtime
-    nmap nikto dirb gobuster whois dnsutils \
-    sqlmap hydra john masscan wpscan whatweb \
+    # Runtime tools available in Debian bookworm
+    nmap gobuster whois dnsutils \
+    sqlmap hydra john whatweb \
     netcat-openbsd traceroute tcpdump \
     && rm -rf /var/lib/apt/lists/*
 
