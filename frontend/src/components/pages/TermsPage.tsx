@@ -7,6 +7,25 @@ import { AlertTriangle } from "lucide-react";
 
 export default function TermsPage() {
   const t = useTranslations("terms");
+  const pricing = useTranslations("pricing");
+
+  const plans = [
+    {
+      plan: pricing("plans.starter.name"),
+      price: pricing("plans.starter.price"),
+      features: pricing.raw("plans.starter.features").join(", "),
+    },
+    {
+      plan: pricing("plans.professional.name"),
+      price: pricing("plans.professional.price"),
+      features: pricing.raw("plans.professional.features").join(", "),
+    },
+    {
+      plan: pricing("plans.enterprise.name"),
+      price: pricing("plans.enterprise.price"),
+      features: pricing.raw("plans.enterprise.features").join(", "),
+    },
+  ];
 
   return (
     <>
@@ -53,11 +72,7 @@ export default function TermsPage() {
             <div className="glass-card p-6">
               <h2 className="text-xl font-bold text-white mb-3">2. Subscription & Pricing</h2>
               <div className="grid gap-3 md:grid-cols-3 mb-4">
-                {[
-                  { plan: "Starter", price: "€29", features: "325 tools, 30 scans/month" },
-                  { plan: "Professional", price: "€99", features: "325 tools, 250 scans/month, API access" },
-                  { plan: "Enterprise", price: "€349", features: "325 tools, unlimited everything, priority support" },
-                ].map((p) => (
+                {plans.map((p) => (
                   <div key={p.plan} className="bg-white/5 rounded-lg p-4 text-center">
                     <h3 className="text-sm font-bold text-[var(--color-neon)]">{p.plan}</h3>
                     <p className="text-2xl font-extrabold text-white mt-1">{p.price}<span className="text-xs text-white/40">/mo</span></p>

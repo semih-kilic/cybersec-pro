@@ -8,6 +8,7 @@ import { BookOpen, Rocket, Code2, FileText, Shield, Terminal, AlertTriangle, Che
 
 export default function DocsPage() {
   const t = useTranslations("docs");
+  const pricing = useTranslations("pricing");
   const [activeSection, setActiveSection] = useState("getting-started");
 
   const sections = [
@@ -325,9 +326,24 @@ export default function DocsPage() {
                 <div className="grid gap-3 md:grid-cols-4">
                   {[
                     { plan: "Free Trial", count: "329", desc: "All tools, 1 scan, 3-day trial", color: "white/60" },
-                    { plan: "Starter (€29/mo)", count: "329", desc: "1 domain, weekly scans, reports", color: "var(--color-neon)" },
-                    { plan: "Professional (€99/mo)", count: "329", desc: "5 domains, API, compliance reports", color: "var(--color-cyan)" },
-                    { plan: "Enterprise (€349/mo)", count: "329", desc: "Unlimited, SSO, dedicated support", color: "var(--color-purple)" },
+                    {
+                      plan: `${pricing("plans.starter.name")} (${pricing("plans.starter.price")}${pricing("plans.starter.period")})`,
+                      count: "329",
+                      desc: "1 domain, weekly scans, reports",
+                      color: "var(--color-neon)",
+                    },
+                    {
+                      plan: `${pricing("plans.professional.name")} (${pricing("plans.professional.price")}${pricing("plans.professional.period")})`,
+                      count: "329",
+                      desc: "5 domains, API, compliance reports",
+                      color: "var(--color-cyan)",
+                    },
+                    {
+                      plan: `${pricing("plans.enterprise.name")} (${pricing("plans.enterprise.price")}${pricing("plans.enterprise.period")})`,
+                      count: "329",
+                      desc: "Unlimited, SSO, dedicated support",
+                      color: "var(--color-purple)",
+                    },
                   ].map((p) => (
                     <div key={p.plan} className="glass-card p-4 text-center">
                       <span className="text-2xl font-extrabold font-mono" style={{ color: p.color }}>{p.count}</span>

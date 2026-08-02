@@ -2,15 +2,15 @@
 # Production-ready React SPA with nginx
 
 # Stage 1: Build
-FROM node:24-alpine AS builder
+FROM node:24-bullseye-slim AS builder
 
 WORKDIR /app
 
 # Copy package files
 COPY package*.json ./
 
-# Install dependencies from lockfile
-RUN npm install --legacy-peer-deps --no-audit --no-fund
+# Install dependencies from lockfile with reproducible production workflow
+RUN npm ci --legacy-peer-deps --no-audit --no-fund
 
 # Copy source
 COPY . .
