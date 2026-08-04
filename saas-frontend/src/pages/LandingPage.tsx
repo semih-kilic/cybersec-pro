@@ -64,32 +64,35 @@ export function LandingPage() {
         </nav>
 
         {/* Hero Content */}
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 text-center">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 sm:py-20 text-center">
           <div className="inline-block px-4 py-2 bg-lime-400/10 border-2 border-lime-400/40 text-lime-300 text-sm font-semibold tracking-wide mb-8">
             {dynamicBadge}
           </div>
-          <h1 className="text-5xl md:text-7xl font-bold text-white mb-6">
-            {t('landing.headlinePart1')}<br />
+          <h1 className="text-3xl sm:text-5xl md:text-6xl font-bold text-white mb-4 sm:mb-6 leading-tight">
+            {t('landing.headlinePart1')}{' '}
             <span className="bg-gradient-to-r from-cyan-400 to-blue-500 bg-clip-text text-transparent">
               Kali Linux
-            </span><br />
+            </span>{' '}
             {t('landing.headlinePart2')}
           </h1>
-          <p className="text-xl text-gray-300 max-w-2xl mx-auto mb-10">
+          <p className="text-base sm:text-xl text-gray-300 max-w-2xl mx-auto mb-8 sm:mb-10 px-2">
             {dynamicSubheadline}
           </p>
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
+          <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center px-4">
             {isAuthenticated ? (
-              <Link to="/dashboard" className="px-8 py-4 bg-lime-400 text-black text-lg font-bold rounded-none border-2 border-lime-300 hover:bg-lime-300 transition">
+              <Link to="/dashboard" className="px-6 sm:px-8 py-3 sm:py-4 bg-lime-400 text-black text-base sm:text-lg font-bold rounded-none border-2 border-lime-300 hover:bg-lime-300 transition">
                 {t('landing.goToDashboard')}
               </Link>
             ) : (
-              <Link to="/register" className="px-8 py-4 bg-lime-400 text-black text-lg font-bold rounded-none border-2 border-lime-300 hover:bg-lime-300 transition">
+              <Link to="/register" className="px-6 sm:px-8 py-3 sm:py-4 bg-lime-400 text-black text-base sm:text-lg font-bold rounded-none border-2 border-lime-300 hover:bg-lime-300 transition">
                 {t('landing.startTrial14')}
               </Link>
             )}
-            <a href="#features" className="px-8 py-4 bg-zinc-900 text-white text-lg font-semibold rounded-none hover:bg-zinc-800 transition border-2 border-zinc-600">
+            <a href="#features" className="px-6 sm:px-8 py-3 sm:py-4 bg-zinc-900 text-white text-base sm:text-lg font-semibold rounded-none hover:bg-zinc-800 transition border-2 border-zinc-600">
               {t('landing.seeFeatures')}
+            </a>
+            <a href="/tools" className="px-6 sm:px-8 py-3 sm:py-4 bg-zinc-900/50 text-cyan-400 text-base sm:text-lg font-semibold rounded-none hover:bg-zinc-800 transition border-2 border-cyan-500/30">
+              {t('landing.viewTools', 'View Tools')} →
             </a>
           </div>
         </div>
@@ -120,11 +123,11 @@ export function LandingPage() {
                     <div className="w-2.5 h-2.5 rounded-full bg-red-500" />
                     <div className="w-2.5 h-2.5 rounded-full bg-yellow-500" />
                     <div className="w-2.5 h-2.5 rounded-full bg-green-500" />
-                    <span className="text-gray-500 text-xs ml-2">{t('landing.terminalTitle', 'CyberSec Pro Terminal')}</span>
+                    <span className="text-gray-400 text-xs ml-2">{t('landing.terminalTitle', 'CyberSec Pro Terminal')}</span>
                   </div>
                   <div className="p-4 font-mono text-xs text-left space-y-1">
                     <p className="text-green-400">$ nmap -sV -sC scanme.nmap.org</p>
-                    <p className="text-gray-500">{t('landing.terminalStarting', 'Starting Nmap 7.94 ( https://nmap.org )')}</p>
+                    <p className="text-gray-400">{t('landing.terminalStarting', 'Starting Nmap 7.94 ( https://nmap.org )')}</p>
                     <p className="text-cyan-400">{t('landing.terminalHeader', 'PORT   STATE SERVICE VERSION')}</p>
                     <p className="text-white">22/tcp open  ssh     OpenSSH 6.6p1</p>
                     <p className="text-white">80/tcp open  http    Apache httpd 2.4.7</p>
@@ -139,7 +142,7 @@ export function LandingPage() {
                     ? t('landing.openDashboard', 'Open Dashboard')
                     : t('landing.startTrial', 'Start Free Trial')}
                 </Link>
-                <p className="text-gray-500 text-sm mt-3">{t('landing.noSignup', 'No credit card required')}</p>
+                <p className="text-gray-400 text-sm mt-3">{t('landing.noSignup', 'No credit card required')}</p>
               </div>
             </div>
           </div>
@@ -355,14 +358,14 @@ export function LandingPage() {
             </div>
             <span className="text-white font-semibold">{t('common.appName', 'CyberSec Pro')}</span>
           </div>
-          <p className="text-gray-500 text-sm">
+          <p className="text-gray-400 text-sm">
             {t('landing.copyright')}
           </p>
           <div className="flex items-center gap-4 mt-4 md:mt-0">
-            <Link to="/dashboard/privacy" className="text-gray-500 text-sm hover:text-gray-300 transition">{t('landing.footer.privacyPolicy')}</Link>
-            <Link to="/dashboard/terms" className="text-gray-500 text-sm hover:text-gray-300 transition">{t('landing.footer.termsOfService')}</Link>
-            <Link to="/dashboard/gdpr" className="text-gray-500 text-sm hover:text-gray-300 transition">{t('landing.footer.gdpr')}</Link>
-            <span className="text-gray-600 text-xs">{t('landing.footer.euCompliant')}</span>
+            <Link to="/dashboard/privacy" className="text-gray-400 text-sm hover:text-gray-200 transition">{t('landing.footer.privacyPolicy')}</Link>
+            <Link to="/dashboard/terms" className="text-gray-400 text-sm hover:text-gray-200 transition">{t('landing.footer.termsOfService')}</Link>
+            <Link to="/dashboard/gdpr" className="text-gray-400 text-sm hover:text-gray-200 transition">{t('landing.footer.gdpr')}</Link>
+            <span className="text-gray-400 text-xs">{t('landing.footer.euCompliant')}</span>
           </div>
         </div>
       </footer>

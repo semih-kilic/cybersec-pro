@@ -4,6 +4,8 @@ import { useTranslation } from 'react-i18next';
 
 const CONSENT_KEY = 'cybersecpro_cookie_consent';
 
+declare const gtag: (...args: unknown[]) => void;
+
 interface CookiePreferences {
   essential: boolean;    // Always true, cannot be disabled
   analytics: boolean;
@@ -34,6 +36,23 @@ export function CookieConsentBanner() {
   const saveConsent = (prefs: CookiePreferences) => {
     const consent = { ...prefs, timestamp: new Date().toISOString() };
     localStorage.setItem(CONSENT_KEY, JSON.stringify(consent));
+
+    // Update Google Consent Mode v2
+    if (typeof gtag === 'function') {
+      gtag('consent', 'update', {
+        'ad_storage': prefs.marketing ? 'granted' : 'denied',
+        'ad_user_data': prefs.marketing ? 'granted' : 'denied',
+        'ad_personalization': prefs.marketing ? 'granted' : 'denied',
+        'analytics_storage': prefs.analytics ? 'granted' : 'denied',
+        'functionality_storage': 'granted',
+        'personalization_storage': prefs.marketing ? 'granted' : 'denied',
+        'security_storage': 'granted',
+      });
+      if (prefs.analytics) {
+        gtag('event', 'page_view');
+      }
+    }
+
     setVisible(false);
   };
 
