@@ -16,8 +16,8 @@ export function LandingPage() {
   const trialDays = toolCounts?.trial_days;
   const replaceCounts = (s: string) => {
     let out = s;
-    if (totalTools) out = out.replace(/\b(401|396|325|\d{3,4})(?=\s*(Professional|professional|penetration|Penetration|Penetrationstest|outils|herramientas|strumenti|Kali))/g, String(totalTools));
-    if (totalCategories) out = out.replace(/\b(22|89)\b(?=\s*(categories|catégories|categorías|categorie|Kategorien))/g, String(totalCategories));
+    if (totalTools) out = out.replace(/\b\d{3,4}\b(?=\s*(Professional|professional|penetration|Penetration|Penetrationstest|outils|herramientas|strumenti|Kali|tool|tools|araç|Tool))/g, String(totalTools));
+    if (totalCategories) out = out.replace(/\b\d{1,3}\b(?=\s*(categories|catégories|categorías|categorie|Kategorien|kategori))/g, String(totalCategories));
     if (trialDays) out = out.replace(/\b14\b(?=[\s-]*(day|days|Tage|jours|días|giorni|gün))/g, String(trialDays));
     return out;
   };

@@ -152,7 +152,7 @@ export default function UpgradePage() {
   const toast = useToast();
 
   const { data: toolCounts } = useToolCounts();
-  const totalToolsFallback = toolCounts?.total ?? 325;
+  const totalToolsFallback = toolCounts?.total ?? 0;
   const plans = useMemo(
     () =>
       buildPlans({
