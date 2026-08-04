@@ -1,6 +1,6 @@
 #!/bin/bash
 # 🚀 CyberSec Pro - Production Startup Script
-# Rust/Axum Backend + React Frontend
+# Uses Docker Compose for all services (single deployment model)
 
 set -e
 
@@ -8,8 +8,6 @@ echo "🛡️ CyberSec Pro - Production Startup"
 echo "======================================"
 
 BASEDIR="/home/cybersec/cybersec-pro"
-RUST_DIR="$BASEDIR/rust-backend"
-SCAN_ENGINE_DIR="$BASEDIR/rust-scan-engine"
 
 # Colors
 RED='\033[0;31m'
@@ -25,83 +23,49 @@ print_status() {
     fi
 }
 
-# Load environment variables from rust-backend/.env
-echo -e "\n${YELLOW}Loading environment variables from .env...${NC}"
-if [ -f "$RUST_DIR/.env" ]; then
-    set -a
-    source "$RUST_DIR/.env"
-    set +a
-    print_status 0 "Environment loaded"
+# Check .env file exists
+echo -e "\n${YELLOW}Checking environment configuration...${NC}"
+if [ -f "$BASEDIR/.env" ]; then
+    print_status 0 ".env file found"
 else
-    print_status 1 "Missing .env file in $RUST_DIR"
+    echo -e "${RED}ERROR: Missing .env file in $BASEDIR${NC}"
+    echo "Create one with: DB_PASSWORD, REDIS_PASSWORD, JWT_SECRET_KEY, API_SECRET"
     exit 1
 fi
 
-# 1. Start Redis
-echo -e "\n${YELLOW}1. Starting Redis...${NC}"
-if ! pgrep -x "redis-server" > /dev/null; then
-    sudo systemctl start redis-server 2>/dev/null || redis-server --daemonize yes
-fi
-print_status $? "Redis"
-
-# 2. Stop existing services
-echo -e "\n${YELLOW}2. Stopping existing services...${NC}"
+# Stop any bare-metal processes that might conflict
+echo -e "\n${YELLOW}Stopping any bare-metal processes...${NC}"
 pkill -f "cybersec-pro-backend" 2>/dev/null || true
 pkill -f "cybersec-scan-engine" 2>/dev/null || true
 fuser -k 5001/tcp 2>/dev/null || true
 fuser -k 5002/tcp 2>/dev/null || true
-sleep 2
-print_status 0 "Old processes stopped"
+sleep 1
+print_status 0 "Old processes cleaned"
 
-# 3. Start Rust Scan Engine
-echo -e "\n${YELLOW}3. Starting Rust Scan Engine...${NC}"
-cd $SCAN_ENGINE_DIR
-SCAN_ENGINE_PORT=5002 \
-RUST_LOG=info \
-nohup ./target/release/cybersec-scan-engine > /tmp/rust-scan-engine.log 2>&1 &
+# Start all services via Docker Compose
+echo -e "\n${YELLOW}Starting all services via Docker Compose...${NC}"
+cd "$BASEDIR"
+docker compose up -d --build
+print_status $? "Docker Compose started"
 
-sleep 3
-if curl -s http://localhost:5002/health | grep -q "healthy"; then
-    print_status 0 "Rust Scan Engine (port 5002)"
-else
-    print_status 1 "Rust Scan Engine failed to start"
-    tail -5 /tmp/rust-scan-engine.log
-fi
+# Wait for health checks
+echo -e "\n${YELLOW}Waiting for services to be healthy...${NC}"
+sleep 5
 
-# 4. Start Rust Backend
-echo -e "\n${YELLOW}4. Starting Rust API Backend...${NC}"
-cd $RUST_DIR
-SCAN_ENGINE_URL='http://127.0.0.1:5002' \
-RUST_LOG=info \
-nohup ./target/release/cybersec-pro-backend > /tmp/rust-backend.log 2>&1 &
-
-sleep 3
-if curl -s http://localhost:5001/health | grep -q "healthy"; then
-    print_status 0 "Rust Backend (Axum v4.0.0 on port 5001)"
-else
-    print_status 1 "Rust Backend failed to start"
-    tail -5 /tmp/rust-backend.log
-fi
-
-# 5. Ensure Frontend is running
-echo -e "\n${YELLOW}5. Checking React Frontend...${NC}"
-if curl -s http://localhost:3001 > /dev/null 2>&1; then
-    print_status 0 "React Frontend already running (port 3001)"
-else
-    cd $BASEDIR/saas-frontend
-    nohup npm run dev -- --port 3001 > /tmp/frontend.log 2>&1 &
-    sleep 5
-    if curl -s http://localhost:3001 > /dev/null 2>&1; then
-        print_status 0 "React Frontend started (port 3001)"
+# Check each service
+check_service() {
+    local name=$1
+    local url=$2
+    if curl -sf "$url" > /dev/null 2>&1; then
+        print_status 0 "$name"
     else
-        print_status 1 "React Frontend failed to start"
+        print_status 1 "$name (not ready yet)"
     fi
-fi
+}
 
-# 6. Reload Nginx
-echo -e "\n${YELLOW}6. Skipping Nginx Reload in Dev environment...${NC}"
-# sudo nginx -t && sudo systemctl reload nginx
-# print_status $? "Nginx"
+check_service "API Backend" "http://localhost:5001/health"
+check_service "Scan Engine" "http://localhost:5002/health"
+check_service "Kali Tools" "http://localhost:5003/health"
 
 # Summary
 echo -e "\n======================================"
@@ -111,15 +75,12 @@ echo ""
 echo "📊 Server Status:"
 echo "   API:     http://localhost:5001 (Rust/Axum)"
 echo "   Engine:  http://localhost:5002 (Rust Scan Engine)"
-echo "   Web:     http://localhost:3001 (React/Vite)"
-echo "   Site:    https://semihkilic.com"
+echo "   Kali:    http://localhost:5003 (Tool API)"
 echo ""
 echo "📁 Logs:"
-echo "   • /tmp/rust-backend.log"
-echo "   • /tmp/rust-scan-engine.log"
-echo "   • /tmp/frontend.log"
+echo "   docker compose logs -f [service-name]"
 echo ""
 echo "🔧 Commands:"
-echo "   • Status:  curl -s http://localhost:5001/health"
-echo "   • Restart: $BASEDIR/start-production.sh"
-echo "   • Stop:    pkill -f cybersec-pro-backend"
+echo "   • Status:  docker compose ps"
+echo "   • Restart: docker compose restart"
+echo "   • Stop:    docker compose down"

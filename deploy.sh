@@ -159,19 +159,19 @@ check_health() {
     
     # Check backend
     log_info "Checking backend health..."
-    if curl -sf http://localhost:5001/api/health > /dev/null 2>&1; then
+    if curl -sf http://localhost:5001/health > /dev/null 2>&1; then
         log_success "Backend is healthy"
     else
         log_warning "Backend health check failed (may still be starting)"
         healthy=false
     fi
     
-    # Check frontend
-    log_info "Checking frontend..."
-    if curl -sf http://localhost:3000/health > /dev/null 2>&1; then
-        log_success "Frontend is healthy"
+    # Check scan engine
+    log_info "Checking scan engine..."
+    if curl -sf http://localhost:5002/health > /dev/null 2>&1; then
+        log_success "Scan engine is healthy"
     else
-        log_warning "Frontend health check failed (may still be starting)"
+        log_warning "Scan engine health check failed (may still be starting)"
         healthy=false
     fi
     
