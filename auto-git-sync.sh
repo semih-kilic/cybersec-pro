@@ -11,7 +11,7 @@ export GIT_TERMINAL_PROMPT=0
 if [[ -n $(git status --porcelain) ]]; then
     git add -A
     git commit -m "🔄 Auto-sync: $(date '+%Y-%m-%d %H:%M:%S')"
-    if git push origin master; then
+    if git push origin main; then
         echo "[$(date)] Auto-sync completed"
     else
         echo "[$(date)] Auto-sync push FAILED" >&2

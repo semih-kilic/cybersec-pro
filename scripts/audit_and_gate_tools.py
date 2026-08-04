@@ -33,7 +33,7 @@ from typing import Optional
 
 DSN = os.environ.get(
     "DATABASE_URL",
-    "postgres://cybersec:***REMOVED-BY-AUDIT***@127.0.0.1:5432/cybersec_pro",
+    "postgres://cybersec:${DB_PASSWORD:-changeme}@127.0.0.1:5432/cybersec_pro",
 )
 
 

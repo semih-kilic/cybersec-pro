@@ -48,10 +48,9 @@ check_process() {
     fi
 }
 
-check_process "Enterprise Backend" "5002" "enterprise_app.py"
-check_process "React Frontend" "3000" "npm start"
-check_process "Simple Backend" "5001" "simple_app.py"
-check_process "Static Server" "8080" "http.server 8080"
+check_process "Rust Backend" "5001" "cybersec-pro-backend"
+check_process "Rust Scan Engine" "5002" "cybersec-scan-engine"
+check_process "SaaS Frontend" "3000" "vite"
 check_process "Cloudflare Tunnel" "N/A" "cloudflared tunnel"
 
 # Nginx Status
@@ -67,28 +66,28 @@ echo ""
 echo -e "${CYAN}🔍 API HEALTH CHECK${NC}"
 echo -e "${WHITE}════════════════════════════════════════════════════════════════════════════════════════${NC}"
 
-# Test Enterprise Backend
-ENTERPRISE_STATUS=$(curl -s -o /dev/null -w "%{http_code}" http://localhost:5002/health 2>/dev/null)
-if [ "$ENTERPRISE_STATUS" = "200" ]; then
-    echo -e "✅ Enterprise API (Port 5002): ${GREEN}HEALTHY${NC}"
+# Test Rust Backend
+BACKEND_STATUS=$(curl -s -o /dev/null -w "%{http_code}" http://localhost:5001/api/health 2>/dev/null)
+if [ "$BACKEND_STATUS" = "200" ]; then
+    echo -e "✅ Rust Backend (Port 5001): ${GREEN}HEALTHY${NC}"
 else
-    echo -e "❌ Enterprise API (Port 5002): ${RED}UNHEALTHY${NC} (Status: $ENTERPRISE_STATUS)"
+    echo -e "❌ Rust Backend (Port 5001): ${RED}UNHEALTHY${NC} (Status: $BACKEND_STATUS)"
 fi
 
-# Test Simple Backend
-SIMPLE_STATUS=$(curl -s -o /dev/null -w "%{http_code}" http://localhost:5001/api/v1/status 2>/dev/null)
-if [ "$SIMPLE_STATUS" = "200" ]; then
-    echo -e "✅ Simple API (Port 5001): ${GREEN}HEALTHY${NC}"
+# Test Scan Engine
+SCAN_STATUS=$(curl -s -o /dev/null -w "%{http_code}" http://localhost:5002/health 2>/dev/null)
+if [ "$SCAN_STATUS" = "200" ]; then
+    echo -e "✅ Scan Engine (Port 5002): ${GREEN}HEALTHY${NC}"
 else
-    echo -e "❌ Simple API (Port 5001): ${RED}UNHEALTHY${NC} (Status: $SIMPLE_STATUS)"
+    echo -e "❌ Scan Engine (Port 5002): ${RED}UNHEALTHY${NC} (Status: $SCAN_STATUS)"
 fi
 
 # Test Frontend
 FRONTEND_STATUS=$(curl -s -o /dev/null -w "%{http_code}" http://localhost:3000 2>/dev/null)
 if [ "$FRONTEND_STATUS" = "200" ]; then
-    echo -e "✅ React Frontend (Port 3000): ${GREEN}HEALTHY${NC}"
+    echo -e "✅ SaaS Frontend (Port 3000): ${GREEN}HEALTHY${NC}"
 else
-    echo -e "❌ React Frontend (Port 3000): ${RED}UNHEALTHY${NC} (Status: $FRONTEND_STATUS)"
+    echo -e "❌ SaaS Frontend (Port 3000): ${RED}UNHEALTHY${NC} (Status: $FRONTEND_STATUS)"
 fi
 
 # Test Nginx Proxy
@@ -101,7 +100,7 @@ fi
 
 # Test Public URL
 if command -v curl &> /dev/null; then
-    PUBLIC_STATUS=$(curl -s -o /dev/null -w "%{http_code}" https://peterson-rfc-nick-where.trycloudflare.com/api/v2/tools 2>/dev/null)
+    PUBLIC_STATUS=$(curl -s -o /dev/null -w "%{http_code}" https://cyber-sec-pro.com/api/v2/tools 2>/dev/null)
     if [ "$PUBLIC_STATUS" = "200" ]; then
         echo -e "✅ Public URL: ${GREEN}ACCESSIBLE${NC}"
     else
@@ -158,11 +157,11 @@ echo -e "${CYAN}🛡️ SECURITY TOOLS STATUS${NC}"
 echo -e "${WHITE}════════════════════════════════════════════════════════════════════════════════════════${NC}"
 
 # Get tools count from API
-TOOLS_COUNT=$(curl -s http://localhost:5002/api/v2/tools 2>/dev/null | grep -o '"total_tools":[0-9]*' | cut -d':' -f2 2>/dev/null || echo "0")
+TOOLS_COUNT=$(curl -s http://localhost:5001/api/v2/tools 2>/dev/null | grep -o '"total_tools":[0-9]*' | cut -d':' -f2 2>/dev/null || echo "0")
 echo -e "🔧 Available Tools: ${GREEN}${TOOLS_COUNT}${NC}"
 
 # Categories count
-CATEGORIES_COUNT=$(curl -s http://localhost:5002/api/v2/tools 2>/dev/null | grep -o '"categories":[0-9]*' | cut -d':' -f2 2>/dev/null || echo "0")
+CATEGORIES_COUNT=$(curl -s http://localhost:5001/api/v2/tools 2>/dev/null | grep -o '"categories":[0-9]*' | cut -d':' -f2 2>/dev/null || echo "0")
 echo -e "📂 Tool Categories: ${GREEN}${CATEGORIES_COUNT}${NC}"
 
 echo -e "🏢 Enterprise Features: ${GREEN}ACTIVE${NC}"

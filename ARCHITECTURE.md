@@ -102,7 +102,7 @@ Each row stores `command_template` plus a `parameters` JSONB that — for hackin
 
 ### Tool health monitoring
 
-`scripts/tool-health-probe.py` is a Python runner that probes every binary in `tools` (`shutil.which` + `--version`/`--help`/`-h`/`-V`/`-v`, 12-worker thread pool, TUI denylist for vim/less/htop/etc) and persists results to `tools.health_status` (`ok`|`missing`|`broken`|`timeout`|`skipped`), `tools.health_exit_code`, `tools.health_evidence` (truncated stdout/stderr), `tools.last_health_check`. Resume mode skips rows probed in the last 24 h. The frontend can surface health badges on `ToolDetailPage.tsx` and the catalog grid. Initial baseline (May 11 2026): **613/1543 healthy** (~40%), 554 missing, 345 broken, 23 needs_interactive.
+`scripts/tool-health-probe.py` is a Python runner that probes every binary in `tools` (`shutil.which` + `--version`/`--help`/`-h`/`-V`/`-v`, 12-worker thread pool, TUI denylist for vim/less/htop/etc) and persists results to `tools.health_status` (`ok`|`missing`|`broken`|`timeout`|`skipped`), `tools.health_exit_code`, `tools.health_evidence` (truncated stdout/stderr), `tools.last_health_check`. Resume mode skips rows probed in the last 24 h. The frontend can surface health badges on `ToolDetailPage.tsx` and the catalog grid. Initial baseline (August 4 2026): **613/1543 healthy** (~40%), 554 missing, 345 broken, 23 needs_interactive.
 
 ### Reverse-tunnel job channel
 
