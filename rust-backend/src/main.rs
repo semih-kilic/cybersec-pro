@@ -49,7 +49,7 @@ async fn main() -> anyhow::Result<()> {
 
     // Database — PostgreSQL (DATABASE_URL is required)
     let database_url = std::env::var("DATABASE_URL")
-        .expect("DATABASE_URL environment variable must be set");
+        .map_err(|_| anyhow::anyhow!("DATABASE_URL environment variable must be set"))?;
     let db = services::db::init_db(&database_url).await?;
 
     // Seed Z4nzu/hackingtool catalog (~185 zero-code tools, idempotent upsert).
@@ -66,9 +66,9 @@ async fn main() -> anyhow::Result<()> {
     // JWT secret (required — must be at least 32 chars)
     let jwt_secret = std::env::var("JWT_SECRET_KEY")
         .or_else(|_| std::env::var("SECRET_KEY"))
-        .expect("JWT_SECRET_KEY environment variable must be set");
+        .map_err(|_| anyhow::anyhow!("JWT_SECRET_KEY environment variable must be set"))?;
     if jwt_secret.len() < 32 {
-        panic!("JWT_SECRET_KEY must be at least 32 characters long");
+        anyhow::bail!("JWT_SECRET_KEY must be at least 32 characters long");
     }
 
     // Rate limiter
@@ -77,12 +77,17 @@ async fn main() -> anyhow::Result<()> {
     // Broadcast channel for scan SSE streaming
     let (scan_output_tx, _rx) = broadcast::channel::<String>(1024);
 
-    // Initialize cache service
-    let cache = Arc::new(
-        CacheService::new("redis://127.0.0.1:6379")
-            .await
-            .expect("Failed to initialize cache service")
-    );
+    // Initialize cache service (non-fatal if Redis is unavailable)
+    let cache = match CacheService::new("redis://127.0.0.1:6379").await {
+        Ok(c) => {
+            tracing::info!("Cache service initialized");
+            Arc::new(c)
+        }
+        Err(e) => {
+            tracing::warn!("Cache service unavailable (continuing without cache): {e}");
+            Arc::new(CacheService::new_disabled())
+        }
+    };
 
     // Initialize Service Manager (auto-recovery watchdog)
     let service_manager = ServiceManager::new();
