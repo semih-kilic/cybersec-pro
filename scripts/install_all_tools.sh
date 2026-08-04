@@ -13,9 +13,9 @@
 #
 # Idempotent: re-running skips already-installed tools.
 # Designed to keep going on individual failures; logs everything to
-# /home/cybersec/install-logs/<phase>.log
+# ${LOG_DIR:-$HOME/install-logs}/<phase>.log
 #
-# After completion, run:  python3 /home/cybersec/cybersec-pro/scripts/tool_smoke_test.py --apply
+# After completion, run:  python3 "$(dirname "$0")/tool_smoke_test.py" --apply
 
 set -u
 LOG_DIR="${LOG_DIR:-$HOME/install-logs}"
@@ -29,7 +29,7 @@ sudo -n chown -R "$USER:$USER" "$OPT" 2>/dev/null || true
 
 GOBIN=${GOBIN:-$HOME/go/bin}
 mkdir -p "$GOBIN"
-export PATH="$GOBIN:/home/cybersec/.local/bin:$PATH"
+export PATH="$GOBIN:$HOME/.local/bin:$PATH"
 
 mark()  { echo "[$(date +%H:%M:%S)] $*" | tee -a "$SUMMARY"; }
 phase() { echo; echo "================ $* ================" | tee -a "$SUMMARY"; }
@@ -367,4 +367,4 @@ done
 # ─────────────────────────────────────────────────────────────────────
 phase "DONE — see $LOG_DIR/*.log for per-phase output"
 mark "Run smoke test now:"
-mark "  python3 /home/cybersec/cybersec-pro/scripts/tool_smoke_test.py --apply"
+mark "  python3 $(dirname "$0")/tool_smoke_test.py --apply"
