@@ -91,6 +91,7 @@ const ScanTemplatesPage = lazy(() => import('./pages/dashboard/ScanTemplatesPage
 const PrivacyPolicyPage = lazy(() => import('./pages/PrivacyPolicyPage'));
 const TermsPage = lazy(() => import('./pages/TermsPage'));
 const GDPRPage = lazy(() => import('./pages/GDPRPage'));
+const TrustCenterPage = lazy(() => import('./pages/TrustCenterPage'));
 
 // GDPR Cookie Consent
 import { CookieConsentBanner } from './components/CookieConsent';
@@ -314,6 +315,7 @@ function AppRoutes() {
       <Route path="/dashboard/privacy" element={<Suspense fallback={<LoadingSpinner />}><PrivacyPolicyPage /></Suspense>} />
       <Route path="/dashboard/terms" element={<Suspense fallback={<LoadingSpinner />}><TermsPage /></Suspense>} />
       <Route path="/dashboard/gdpr" element={<Suspense fallback={<LoadingSpinner />}><GDPRPage /></Suspense>} />
+      <Route path="/trust-center" element={<Suspense fallback={<LoadingSpinner />}><TrustCenterPage /></Suspense>} />
       
       {/* Tools Routes - Public (like kali.org/tools) */}
       <Route path="/tools" element={<Suspense fallback={<LoadingSpinner />}><ToolsCatalogPage /></Suspense>} />
