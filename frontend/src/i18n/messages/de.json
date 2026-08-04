@@ -17,7 +17,6 @@
     "contact": "Kontakt",
     "security": "Sicherheit",
     "tests": "Bewertungen",
-    "donate": "Spenden",
     "trustCenter": "Trust Center"
   },
   "hero": {
@@ -352,19 +351,6 @@
     "subtitle": "Willkommen bei CyberSec Pro. Ihr Konto wurde aktiviert.",
     "dashboard": "Zum Dashboard",
     "docs": "Dokumentation lesen"
-  },
-  "donate": {
-    "badge": "Projekt unterstützen",
-    "title": "CyberSec Pro unterstützen",
-    "subtitle": "CyberSec Pro wird von einem einzelnen Entwickler in Toronto, Kanada, entwickelt und gepflegt. Ihre Unterstützung hilft, das Projekt am Leben zu halten.",
-    "storyTitle": "Warum Ihre Unterstützung zählt",
-    "storyText": "Ich bin Semih Kılıç, ein unabhängiger Entwickler mit 15 Jahren IT-Systemerfahrung. Ich entwickle CyberSec Pro komplett allein — vom Backend bis zum Frontend, von der Infrastruktur bis zu den Sicherheitstools. Als arbeitsloser Entwickler in Kanada unterstützt jeder Beitrag direkt die Entwicklung dieser Plattform.",
-    "platformsTitle": "Möglichkeiten zur Unterstützung",
-    "buymeacoffeeDesc": "Einmalige oder monatliche Unterstützung mit einer Kaffee-Spende.",
-    "githubDesc": "Sponsoren Sie direkt über GitHub für wiederkehrende Unterstützung.",
-    "kofiDesc": "Unterstützen Sie mit einer einmaligen oder monatlichen Ko-fi-Spende.",
-    "stripeDesc": "Senden Sie einen direkten Beitrag über Stripe.",
-    "thankYou": "Jeder Beitrag, egal wie groß, macht einen echten Unterschied. Danke, dass Sie an dieses Projekt glauben."
   },
   "common": {
     "email": "support@cyber-sec-pro.com",

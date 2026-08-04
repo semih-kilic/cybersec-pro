@@ -17,7 +17,6 @@
     "contact": "联系我们",
     "security": "安全",
     "tests": "评估",
-    "donate": "捐赠",
     "trustCenter": "信任中心"
   },
   "hero": {
@@ -352,19 +351,6 @@
     "subtitle": "欢迎使用CyberSec Pro。您的账户已激活。",
     "dashboard": "前往控制面板",
     "docs": "阅读文档"
-  },
-  "donate": {
-    "badge": "支持项目",
-    "title": "支持 CyberSec Pro",
-    "subtitle": "CyberSec Pro 由加拿大多伦多的一位独立开发者单独构建和维护。您的支持有助于项目的存续和发展。",
-    "storyTitle": "为什么您的支持很重要",
-    "storyText": "我是Semih Kılıç，一位拥有15年IT系统经验的独立开发者。我完全独自构建CyberSec Pro——从后端到前端，从基础设施到安全工具。作为加拿大的一名失业开发者，每一份贡献都直接支持这个平台的开发。",
-    "platformsTitle": "支持方式",
-    "buymeacoffeeDesc": "一次性或每月咖啡捐赠支持。",
-    "githubDesc": "通过GitHub直接赞助进行定期支持。",
-    "kofiDesc": "通过Ko-fi一次性或每月捐赠支持。",
-    "stripeDesc": "通过Stripe发送直接贡献。",
-    "thankYou": "每一份贡献，无论大小，都会产生真正的影响。感谢您对这个项目的信任。"
   },
   "common": {
     "email": "support@cyber-sec-pro.com",
