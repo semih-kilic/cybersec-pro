@@ -57,8 +57,8 @@ check_engine() {
         pkill -f "cybersec-scan-engine" >/dev/null 2>&1 || true
         sleep 1
         cd "$SCAN_ENGINE_DIR"
-        if [ -f "$RUST_DIR/.env" ]; then
-            set -a; source "$RUST_DIR/.env"; set +a
+        if [ -f "$SCAN_ENGINE_DIR/.env" ]; then
+            set -a; source "$SCAN_ENGINE_DIR/.env"; set +a
         fi
         SCAN_ENGINE_PORT=5002 RUST_LOG=info nohup ./target/release/cybersec-scan-engine > /tmp/engine.log 2>&1 &
         log "Auto-Healing: Scan Engine restart triggered."
