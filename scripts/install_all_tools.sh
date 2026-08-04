@@ -18,16 +18,16 @@
 # After completion, run:  python3 /home/cybersec/cybersec-pro/scripts/tool_smoke_test.py --apply
 
 set -u
-LOG_DIR=/home/cybersec/install-logs
+LOG_DIR="${LOG_DIR:-$HOME/install-logs}"
 mkdir -p "$LOG_DIR"
 SUMMARY="$LOG_DIR/summary.txt"
 : > "$SUMMARY"
 
-OPT=/opt/cybersec-tools
+OPT="${OPT:-/opt/cybersec-tools}"
 sudo -n mkdir -p "$OPT"
-sudo -n chown -R cybersec:cybersec "$OPT" 2>/dev/null || true
+sudo -n chown -R "$USER:$USER" "$OPT" 2>/dev/null || true
 
-GOBIN=${GOBIN:-/home/cybersec/go/bin}
+GOBIN=${GOBIN:-$HOME/go/bin}
 mkdir -p "$GOBIN"
 export PATH="$GOBIN:/home/cybersec/.local/bin:$PATH"
 

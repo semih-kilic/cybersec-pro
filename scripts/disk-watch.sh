@@ -7,7 +7,7 @@
 set -u
 
 LOG="/var/log/cybersec-disk-watch.log"
-CLEANUP="/home/cybersec/cybersec-pro/scripts/disk-cleanup.sh"
+CLEANUP="$(cd "$(dirname "$0")" && pwd)/disk-cleanup.sh"
 
 USAGE=$(df / | awk 'NR==2{ gsub("%",""); print $5 }')
 FREE_MB=$(df -BM / | awk 'NR==2{ gsub("M",""); print $4 }')

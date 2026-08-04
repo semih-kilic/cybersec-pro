@@ -2,12 +2,12 @@
 # Network Monitoring Script
 # Monitors IP address and restarts networking if needed
 
-LOG_FILE="/var/log/cybersec/network-monitor.log"
+LOG_FILE="/var/log/cybersec-pro/network-monitor.log"
 IP_EXPECTED="${MONITOR_EXPECTED_IP:-}"
 
 # Create log directory
-sudo mkdir -p /var/log/cybersec
-sudo chown "$USER:$USER" /var/log/cybersec
+sudo mkdir -p /var/log/cybersec-pro
+sudo chown "$USER:$USER" /var/log/cybersec-pro
 
 check_ip() {
     CURRENT_IP=$(ip addr show eth0 | grep "inet " | awk '{print $2}' | cut -d'/' -f1)

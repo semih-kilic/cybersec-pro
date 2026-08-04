@@ -5,7 +5,7 @@
 set -u
 
 LOG="/var/log/cybersec-disk-cleanup.log"
-USER_HOME="/home/cybersec"
+USER_HOME="$HOME"
 
 log() { echo "[$(date '+%F %T')] $*" | tee -a "$LOG"; }
 

@@ -13,7 +13,7 @@ DISK_LIMIT="${DISK_LIMIT:-85}"          # %85 üstü → dur
 DISK_EMERGENCY="${DISK_EMERGENCY:-92}"  # %92 üstü → acil cleanup
 SKIP_CARGO="${SKIP_CARGO:-1}"           # cargo install KAPALI default (disk yiyor)
 SKIP_DOCKER="${SKIP_DOCKER:-1}"         # docker images KAPALI default
-CLEANUP_SCRIPT="/home/cybersec/cybersec-pro/scripts/disk-cleanup.sh"
+CLEANUP_SCRIPT="$(cd "$(dirname "$0")" && pwd)/disk-cleanup.sh"
 
 disk_used() { df / | awk 'NR==2{ gsub("%",""); print $5 }'; }
 disk_free_gb() { df -BG / | awk 'NR==2{ gsub("G",""); print $4 }'; }

@@ -3,7 +3,7 @@
 # Bu scripti SADECE bir kez çalıştır: sudo ./install-disk-protection.sh
 set -e
 
-SCRIPTS_DIR="/home/cybersec/cybersec-pro/scripts"
+SCRIPTS_DIR="$(cd "$(dirname "$0")" && pwd)"
 
 if [ "$EUID" -ne 0 ]; then
   echo "HATA: sudo ile çalıştır: sudo $0"
