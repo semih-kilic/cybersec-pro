@@ -91,7 +91,7 @@ const ScanTemplatesPage = lazy(() => import('./pages/dashboard/ScanTemplatesPage
 const PrivacyPolicyPage = lazy(() => import('./pages/PrivacyPolicyPage'));
 const TermsPage = lazy(() => import('./pages/TermsPage'));
 const GDPRPage = lazy(() => import('./pages/GDPRPage'));
-const TrustCenterPage = lazy(() => import('./pages/TrustCenterPage'));
+const TrustCenterPage = lazy(() => import('./pages/TrustCenterPage').then(m => ({ default: m.TrustCenterPage })));
 
 // GDPR Cookie Consent
 import { CookieConsentBanner } from './components/CookieConsent';
