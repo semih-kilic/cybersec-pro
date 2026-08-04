@@ -10,24 +10,6 @@ echo "   To use Kali tools: docker compose up -d kali-tools"
 echo "   To use scan engine: docker compose up -d rust-scan-engine"
 echo ""
 exit 0
-    "beef-xss" "armitage" "veil" "shellnoob"
-    "crackmapexec" "impacket-scripts" "evil-winrm" "chisel"
-    
-    # Forensics
-    "volatility3" "bulk-extractor" "pdfid" "pdf-parser"
-    "foremost" "scalpel" "sleuthkit"
-    
-    # Reporting Tools
-    "dradis" "faraday" "eyewitness" "pipal"
-    
-    # Social Engineering
-    "gophish" "king-phisher" "set"
-    
-    # Reverse Engineering
-    "jadx" "ghidra" "radare2" "apktool" "dex2jar"
-    
-    # Password Attacks
-    "cupp" "crunch" "hash-identifier" "hashid" "rsmangler" "cewl" "chntpw"
     
     # Post Exploitation
     "bloodhound" "neo4j" "weevely"

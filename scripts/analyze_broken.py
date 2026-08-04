@@ -1,8 +1,9 @@
 #!/usr/bin/env python3
-import json, re
+import os, json, re
 from collections import Counter
 
-d = json.load(open('/home/cybersec/tool_smoke_results.json'))
+RESULTS_PATH = os.environ.get("TOOL_SMOKE_RESULTS", os.path.expanduser("~/tool_smoke_results.json"))
+d = json.load(open(RESULTS_PATH))
 broken = d['broken']
 
 bins = Counter()
