@@ -1,0 +1,2 @@
+# CyberSec Kali API — no external dependencies needed (stdlib only)
+# Add here if future versions need additional packages.

@@ -1,15 +1,33 @@
 FROM debian:bookworm-slim
 
+# Create non-root user first
+RUN groupadd -r cybersec && useradd -r -g cybersec -d /opt/cybersec-kali cybersec
+
 RUN apt-get update && apt-get install -y --no-install-recommends \
     curl \
     wget \
     jq \
+    python3 \
+    python3-pip \
     && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /opt/cybersec-kali
 
+# Install Python dependencies for the API server
+COPY requirements.txt /tmp/requirements.txt
+RUN pip3 install --no-cache-dir --break-system-packages -r /tmp/requirements.txt && \
+    rm /tmp/requirements.txt
+
 COPY tools /opt/tools
+COPY api_server.py .
+
+# Switch to non-root user
+RUN chown -R cybersec:cybersec /opt/cybersec-kali
+USER cybersec
 
 EXPOSE 5003
 
-CMD ["sh", "-c", "echo '{\"status\":\"healthy\"}' > /tmp/health.json && python3 -m http.server 5003"]
+HEALTHCHECK --interval=30s --timeout=10s --retries=3 --start-period=10s \
+  CMD curl -f http://localhost:5003/health || exit 1
+
+CMD ["python3", "api_server.py"]
