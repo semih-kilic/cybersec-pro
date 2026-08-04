@@ -11,6 +11,7 @@
 //! Zero inbound ports. All traffic is the agent dialing out over TLS.
 
 use serde::{Deserialize, Serialize};
+use std::io::Write;
 use std::path::PathBuf;
 use std::sync::atomic::{AtomicI32, Ordering};
 use std::sync::Arc;
@@ -46,8 +47,18 @@ fn load_state() -> Option<AgentState> {
 
 fn save_state(s: &AgentState) -> std::io::Result<()> {
     let path = state_path();
-    let raw = serde_json::to_string_pretty(s).unwrap();
-    std::fs::write(path, raw)
+    let raw = serde_json::to_string_pretty(s)
+        .map_err(|e| std::io::Error::new(std::io::ErrorKind::Other, e))?;
+    // Set restrictive permissions: owner read/write only
+    let mut opts = std::fs::OpenOptions::new();
+    opts.write(true).create(true).truncate(true);
+    #[cfg(unix)]
+    {
+        use std::os::unix::fs::OpenOptionsExt;
+        opts.mode(0o600);
+    }
+    opts.open(&path)?.write_all(raw.as_bytes())?;
+    Ok(())
 }
 
 #[derive(Deserialize)]
@@ -189,22 +200,26 @@ async fn job_loop(state: AgentState, http: reqwest::Client, active: Arc<AtomicI3
 }
 
 /// Run the job's command with a hard timeout. Captures stdout, stderr, exit
-/// code. Uses `sh -c` on unix and `cmd /C` on Windows.
+/// code. Uses argument vector (no shell) for safety — the command is split
+/// by whitespace and executed directly. Max timeout reduced to 300s.
 async fn execute_job(job: &PolledJob) -> serde_json::Value {
-    let timeout = Duration::from_secs(job.timeout_seconds.unwrap_or(600).clamp(10, 3600));
+    let timeout = Duration::from_secs(job.timeout_seconds.unwrap_or(300).clamp(10, 300));
 
-    #[cfg(unix)]
-    let mut cmd = {
-        let mut c = tokio::process::Command::new("sh");
-        c.arg("-c").arg(&job.command);
-        c
-    };
-    #[cfg(windows)]
-    let mut cmd = {
-        let mut c = tokio::process::Command::new("cmd");
-        c.arg("/C").arg(&job.command);
-        c
-    };
+    // Split command into program + args (no shell, no sh -c)
+    let parts: Vec<&str> = job.command.split_whitespace().collect();
+    if parts.is_empty() {
+        return serde_json::json!({
+            "status": "failed",
+            "exit_code": null,
+            "stdout": "",
+            "stderr": "empty command",
+        });
+    }
+
+    let mut cmd = tokio::process::Command::new(parts[0]);
+    if parts.len() > 1 {
+        cmd.args(&parts[1..]);
+    }
 
     cmd.stdout(std::process::Stdio::piped())
         .stderr(std::process::Stdio::piped());
@@ -246,11 +261,17 @@ async fn execute_job(job: &PolledJob) -> serde_json::Value {
 #[tokio::main]
 async fn main() {
     let api_url = std::env::var("CSP_API_URL").unwrap_or_else(|_| DEFAULT_API.to_string());
-    let http = reqwest::Client::builder()
+    let http = match reqwest::Client::builder()
         .user_agent(USER_AGENT)
         .timeout(Duration::from_secs(20))
         .build()
-        .expect("http client");
+    {
+        Ok(c) => c,
+        Err(e) => {
+            eprintln!("ERROR: failed to build http client: {e}");
+            std::process::exit(1);
+        }
+    };
 
     // Load existing state, or enroll fresh.
     let state = match load_state() {
@@ -294,8 +315,15 @@ async fn main() {
     tokio::spawn(job_loop(state.clone(), http.clone(), active.clone()));
 
     #[cfg(unix)]
-    let mut sigterm = tokio::signal::unix::signal(tokio::signal::unix::SignalKind::terminate())
-        .expect("sigterm handler");
+    let mut sigterm = match tokio::signal::unix::signal(tokio::signal::unix::SignalKind::terminate()) {
+        Ok(s) => s,
+        Err(e) => {
+            eprintln!("WARN: sigterm handler unavailable: {e}");
+            // Continue without graceful shutdown
+            let () = std::future::pending().await;
+            return;
+        }
+    };
 
     loop {
         #[cfg(unix)]
