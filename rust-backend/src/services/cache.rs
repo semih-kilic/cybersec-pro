@@ -5,7 +5,7 @@ use std::time::Duration;
 /// Redis-backed cache service
 #[derive(Clone)]
 pub struct CacheService {
-    client: redis::Client,
+    pub(crate) client: Option<redis::Client>,
 }
 
 impl CacheService {
@@ -15,22 +15,36 @@ impl CacheService {
         // Test connection
         let mut conn = client.get_multiplexed_async_connection().await?;
         let _: String = redis::cmd("PING").query_async(&mut conn).await?;
-        Ok(Self { client })
+        Ok(Self { client: Some(client) })
+    }
+
+    /// Create a disabled cache service (no-op, for when Redis is unavailable)
+    pub fn new_disabled() -> Self {
+        Self { client: None }
     }
 
     /// Get a connection from the pool
     async fn conn(&self) -> anyhow::Result<redis::aio::MultiplexedConnection> {
-        Ok(self.client.get_multiplexed_async_connection().await?)
+        match &self.client {
+            Some(c) => Ok(c.get_multiplexed_async_connection().await?),
+            None => anyhow::bail!("Cache service is disabled"),
+        }
     }
 
-    /// Get value from cache
+    /// Get value from cache (returns None if cache is disabled)
     pub async fn get(&self, key: &str) -> anyhow::Result<Option<String>> {
+        if self.client.is_none() {
+            return Ok(None);
+        }
         let mut conn = self.conn().await?;
         Ok(conn.get(key).await.ok())
     }
 
-    /// Set value in cache with TTL
+    /// Set value in cache with TTL (no-op if cache is disabled)
     pub async fn set(&self, key: &str, value: &str, ttl: Duration) -> anyhow::Result<()> {
+        if self.client.is_none() {
+            return Ok(());
+        }
         let mut conn = self.conn().await?;
         conn.set_ex::<_, _, ()>(key, value, ttl.as_secs()).await?;
         Ok(())
@@ -38,6 +52,9 @@ impl CacheService {
 
     /// Set value in cache without TTL (persistent)
     pub async fn set_permanent(&self, key: &str, value: &str) -> anyhow::Result<()> {
+        if self.client.is_none() {
+            return Ok(());
+        }
         let mut conn = self.conn().await?;
         conn.set::<_, _, ()>(key, value).await?;
         Ok(())
@@ -45,6 +62,9 @@ impl CacheService {
 
     /// Delete key from cache
     pub async fn delete(&self, key: &str) -> anyhow::Result<()> {
+        if self.client.is_none() {
+            return Ok(());
+        }
         let mut conn = self.conn().await?;
         conn.del::<_, ()>(key).await?;
         Ok(())

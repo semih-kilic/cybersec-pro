@@ -215,7 +215,11 @@ pub async fn tools_count(
     // Try cache first
     let cache_key = keys::tools_count();
     if let Ok(Some(cached)) = state.cache.get(&cache_key).await {
-        return Json(serde_json::from_str(&cached).unwrap());
+        if let Ok(parsed) = serde_json::from_str(&cached) {
+            return Json(parsed);
+        }
+        tracing::warn!("Corrupted tool count cache entry, regenerating");
+        let _ = state.cache.delete(&cache_key).await;
     }
 
     let total: (i64,) = sqlx::query_as("SELECT COUNT(*) FROM tools WHERE is_active = TRUE")
