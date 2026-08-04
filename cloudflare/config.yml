@@ -23,13 +23,7 @@ ingress:
     originRequest:
       httpHostHeader: www.cyber-sec-pro.com
   
-  # App subdomain (future dashboard)
-  - hostname: app.cyber-sec-pro.com
-    service: http://localhost:80
-    originRequest:
-      httpHostHeader: app.cyber-sec-pro.com
-  
-  # CyberSec Pro SaaS Platform
+  # App subdomain (SaaS dashboard)
   - hostname: app.cyber-sec-pro.com
     service: http://localhost:80
     originRequest:
