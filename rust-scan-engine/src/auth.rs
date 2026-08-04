@@ -1,11 +1,14 @@
 use axum::{
-    extract::Request,
+    extract::{Request, State},
     http::StatusCode,
     middleware::Next,
     response::Response,
 };
 use jsonwebtoken::{decode, DecodingKey, Validation, Algorithm};
 use serde::{Deserialize, Serialize};
+use std::sync::Arc;
+
+use crate::AppState;
 
 /// JWT claims structure (must match Flask backend)
 #[derive(Debug, Serialize, Deserialize)]
@@ -19,6 +22,7 @@ pub struct Claims {
 
 /// JWT authentication middleware
 pub async fn auth_middleware(
+    State(state): State<Arc<AppState>>,
     request: Request,
     next: Next,
 ) -> Result<Response, StatusCode> {
@@ -33,12 +37,10 @@ pub async fn auth_middleware(
     }
 
     let token = &auth_header[7..];
-    let jwt_secret = std::env::var("JWT_SECRET_KEY")
-        .map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)?;
 
     let _claims = decode::<Claims>(
         token,
-        &DecodingKey::from_secret(jwt_secret.as_bytes()),
+        &DecodingKey::from_secret(state.jwt_secret.as_bytes()),
         &Validation::new(Algorithm::HS256),
     )
     .map_err(|_| StatusCode::UNAUTHORIZED)?;

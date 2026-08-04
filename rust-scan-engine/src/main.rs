@@ -55,6 +55,7 @@ async fn main() -> anyhow::Result<()> {
         .route("/api/v3/scan/:scan_id/status", get(scan_status))
         .route("/api/v3/scan/:scan_id/cancel", post(cancel_scan))
         .route("/api/v3/scan/:scan_id/output", get(scan_output))
+        .layer(middleware::from_fn_with_state(state.clone(), auth::auth_middleware))
         .layer(CorsLayer::permissive())
         .layer(TraceLayer::new_for_http())
         .with_state(state);
