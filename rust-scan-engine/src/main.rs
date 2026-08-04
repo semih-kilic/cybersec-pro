@@ -48,14 +48,17 @@ async fn main() -> anyhow::Result<()> {
         jwt_secret,
     });
 
-    // Build routes
+    // Build routes — health check is unauthenticated, scan endpoints require auth
     let app = Router::new()
         .route("/health", get(health_check))
-        .route("/api/v3/scan", post(start_scan))
-        .route("/api/v3/scan/:scan_id/status", get(scan_status))
-        .route("/api/v3/scan/:scan_id/cancel", post(cancel_scan))
-        .route("/api/v3/scan/:scan_id/output", get(scan_output))
-        .layer(middleware::from_fn_with_state(state.clone(), auth::auth_middleware))
+        .merge(
+            Router::new()
+                .route("/api/v3/scan", post(start_scan))
+                .route("/api/v3/scan/:scan_id/status", get(scan_status))
+                .route("/api/v3/scan/:scan_id/cancel", post(cancel_scan))
+                .route("/api/v3/scan/:scan_id/output", get(scan_output))
+                .layer(middleware::from_fn_with_state(state.clone(), auth::auth_middleware))
+        )
         .layer(CorsLayer::permissive())
         .layer(TraceLayer::new_for_http())
         .with_state(state);
