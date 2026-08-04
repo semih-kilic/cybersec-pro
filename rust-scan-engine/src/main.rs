@@ -38,7 +38,10 @@ async fn main() -> anyhow::Result<()> {
     // Load config
     dotenvy::dotenv().ok();
     let jwt_secret = std::env::var("JWT_SECRET_KEY")
-        .expect("JWT_SECRET_KEY must be set");
+        .unwrap_or_else(|_| {
+            tracing::warn!("JWT_SECRET_KEY not set, using insecure default (development only)");
+            "dev-insecure-jwt-secret-change-in-production".to_string()
+        });
     let port = std::env::var("SCAN_ENGINE_PORT")
         .unwrap_or_else(|_| "5002".to_string());
 

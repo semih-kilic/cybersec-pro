@@ -3,7 +3,8 @@
 cd /home/cybersec/cybersec-pro || exit 1
 
 # Force SSH (cron has no credential helper for HTTPS) and non-interactive auth
-export GIT_SSH_COMMAND="ssh -i /home/cybersec/.ssh/id_ed25519 -o BatchMode=yes -o StrictHostKeyChecking=accept-new"
+SSH_KEY="${GIT_SYNC_SSH_KEY:-$HOME/.ssh/id_ed25519}"
+export GIT_SSH_COMMAND="ssh -i ${SSH_KEY} -o BatchMode=yes -o StrictHostKeyChecking=accept-new"
 export GIT_TERMINAL_PROMPT=0
 
 # Değişiklik var mı kontrol et
