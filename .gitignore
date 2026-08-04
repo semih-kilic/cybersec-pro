@@ -1,5 +1,23 @@
 # CyberSec Pro - Git Ignore File
 
+# === SECURITY: Never commit these ===
+.env
+*.pem
+*.key
+*.crt
+*.pfx
+*.p12
+credentials.json
+service-account.json
+*.secret
+secrets/
+**/state.json
+
+# === Environment & Config ===
+.env.local
+.env.*.local
+*.local.yml
+
 # Nested Git Repositories
 cs50_final_project/
 moneymanager/

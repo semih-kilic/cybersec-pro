@@ -3,31 +3,13 @@
 echo "🔧 CyberSec Pro - Missing Tools Installer"
 echo "=========================================="
 echo ""
-echo "This script will install missing security tools."
-echo "Requires sudo privileges and internet connection."
+echo "⚠️  DEPRECATED: All security tools run inside Docker containers."
+echo "   No bare-metal tool installation needed."
 echo ""
-
-# Update package list first
-echo "📥 Updating package list..."
-sudo apt-get update -qq
-
-# APT packages - Kali Linux tools
-APT_TOOLS=(
-    # Information Gathering
-    "maltego" "enum4linux" "dnsrecon" "fierce" "dmitry" 
-    "wafw00f" "lbd" "sslyze" "sublist3r"
-    
-    # Web Applications
-    "burpsuite" "commix" "joomscan" "skipfish" "dirbuster"
-    "wpscan" "davtest" "whatweb" "xsser" "dotdotpwn" "cutycapt"
-    
-    # Database Assessment
-    "sqlninja" "oscanner"
-    
-    # Wireless Attacks
-    "kismet" "fern-wifi-cracker" "wifite" "pixiewps" "cowpatty" "asleap"
-    
-    # Exploitation Tools
+echo "   To use Kali tools: docker compose up -d kali-tools"
+echo "   To use scan engine: docker compose up -d rust-scan-engine"
+echo ""
+exit 0
     "beef-xss" "armitage" "veil" "shellnoob"
     "crackmapexec" "impacket-scripts" "evil-winrm" "chisel"
     

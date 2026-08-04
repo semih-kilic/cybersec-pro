@@ -1,33 +1,12 @@
 #!/bin/bash
 # CyberSec Pro - Sudoers Configuration Script
-# Bu script root gerektiren güvenlik araçları için NOPASSWD kuralları ekler
-#
-# KULLANIM: sudo bash setup-sudoers.sh
-#
-# ⚠️ GÜVENLİK UYARISI: Bu yapılandırma production ortamında 
-# dikkatli kullanılmalıdır!
+# ⚠️ DEPRECATED: This script is NOT safe for production.
+# All security tools run inside Docker containers with proper isolation.
+# Use docker-compose.yml for all deployments.
 
-set -e
-
-# Renk kodları
-RED='\033[0;31m'
-GREEN='\033[0;32m'
-YELLOW='\033[1;33m'
-NC='\033[0m' # No Color
-
-echo -e "${GREEN}╔═══════════════════════════════════════════════════════════╗${NC}"
-echo -e "${GREEN}║     🛡️ CyberSec Pro - Sudoers Configuration Setup         ║${NC}"
-echo -e "${GREEN}╚═══════════════════════════════════════════════════════════╝${NC}"
-echo ""
-
-# Root kontrolü
-if [ "$EUID" -ne 0 ]; then
-    echo -e "${RED}❌ Bu script root yetkisi gerektirir!${NC}"
-    echo "   Kullanım: sudo bash $0"
-    exit 1
-fi
-
-# Web uygulaması kullanıcısı (değiştirilebilir)
+echo "⚠️  This script is deprecated. All tools run in Docker containers."
+echo "   Use: docker compose up -d"
+exit 0
 WEBAPP_USER="${WEBAPP_USER:-cybersec}"
 
 echo -e "${YELLOW}📋 Yapılandırma:${NC}"

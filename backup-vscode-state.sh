@@ -2,7 +2,7 @@
 # VS Code State Backup Script
 # Copilot chat history ve workspace state'i yedekler
 
-BACKUP_DIR="/home/sam/APPS/vscode-backups"
+BACKUP_DIR="${VSCODE_BACKUP_DIR:-$HOME/APPS/vscode-backups}"
 DATE=$(date +%Y%m%d_%H%M%S)
 
 mkdir -p "$BACKUP_DIR"
