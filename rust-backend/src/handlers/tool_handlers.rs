@@ -82,7 +82,12 @@ pub async fn list_tools(
     
     // Try cache first
     if let Ok(Some(cached)) = state.cache.get(&cache_key).await {
-        return Json(serde_json::from_str(&cached).unwrap());
+        if let Ok(parsed) = serde_json::from_str(&cached) {
+            return Json(parsed);
+        }
+        // Cache corruption — invalidate and continue
+        tracing::warn!("Corrupted tool cache entry, regenerating");
+        let _ = state.cache.delete(&cache_key).await;
     }
 
     // Get user's plan for informational purposes (no longer filters tools)

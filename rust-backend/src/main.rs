@@ -85,7 +85,7 @@ async fn main() -> anyhow::Result<()> {
         }
         Err(e) => {
             tracing::warn!("Cache service unavailable (continuing without cache): {e}");
-            Arc::new(CacheService::new_disabled())
+            Arc::new(CacheService { client: None })
         }
     };
 
