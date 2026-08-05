@@ -899,10 +899,25 @@ pub async fn start_scan(
         None => return (StatusCode::NOT_FOUND, Json(json!({"error": format!("Tool not found: {}", tool_identifier)}))).into_response(),
     };
 
-    // Validate target
+    // Validate target — block shell metacharacters and injection patterns
     let target = body.target.trim();
     if target.is_empty() || target.len() > 500 {
         return (StatusCode::BAD_REQUEST, Json(json!({"error": "Valid target required"}))).into_response();
+    }
+
+    // Block shell injection characters
+    let blocked_patterns = [";", "&&", "||", "|", "`", "$(",  "$(", ">>", ">", "<", "\n", "\r", "\\x", "%0a", "%0d"];
+    for pattern in &blocked_patterns {
+        if target.to_lowercase().contains(pattern) {
+            return (StatusCode::BAD_REQUEST, Json(json!({
+                "error": format!("Invalid target: contains blocked character '{}'", pattern)
+            }))).into_response();
+        }
+    }
+
+    // Block XSS/HTML injection
+    if target.contains('<') || target.contains('>') || target.contains('"') || target.contains('\'') {
+        return (StatusCode::BAD_REQUEST, Json(json!({"error": "Invalid target: contains HTML/script characters"}))).into_response();
     }
 
 
