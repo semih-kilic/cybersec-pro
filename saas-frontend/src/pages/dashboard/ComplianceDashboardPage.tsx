@@ -78,15 +78,17 @@ interface AssessmentResult {
   }>;
 }
 
-function scoreColor(pct: number): string {
-  if (pct >= 80) return 'text-green-400';
-  if (pct >= 50) return 'text-yellow-400';
+function scoreColor(pct: number | null | undefined): string {
+  const v = pct ?? 0;
+  if (v >= 80) return 'text-green-400';
+  if (v >= 50) return 'text-yellow-400';
   return 'text-red-400';
 }
 
-function scoreBg(pct: number): string {
-  if (pct >= 80) return 'from-green-500/20 to-green-600/20 border-green-500/30';
-  if (pct >= 50) return 'from-yellow-500/20 to-yellow-600/20 border-yellow-500/30';
+function scoreBg(pct: number | null | undefined): string {
+  const v = pct ?? 0;
+  if (v >= 80) return 'from-green-500/20 to-green-600/20 border-green-500/30';
+  if (v >= 50) return 'from-yellow-500/20 to-yellow-600/20 border-yellow-500/30';
   return 'from-red-500/20 to-red-600/20 border-red-500/30';
 }
 
@@ -249,7 +251,7 @@ export default function ComplianceDashboardPage() {
                       </div>
                       {score !== null ? (
                         <div className="text-right">
-                          <div className={`text-2xl font-bold ${scoreColor(score!)}`}>{score!.toFixed(0)}%</div>
+                          <div className={`text-2xl font-bold ${scoreColor(score!)}`}>{(score ?? 0).toFixed(0)}%</div>
                           <div className="text-[11px] text-gray-500">score</div>
                         </div>
                       ) : (
@@ -383,7 +385,7 @@ function FrameworkDetail({
         <div className={`bg-gradient-to-br ${scoreBg(assessment.score_pct)} border rounded-xl p-5 mb-6`}>
           <div className="flex items-center gap-6">
             <div>
-              <div className={`text-4xl font-bold ${scoreColor(assessment.score_pct)}`}>{assessment.score_pct.toFixed(0)}%</div>
+              <div className={`text-4xl font-bold ${scoreColor(assessment.score_pct)}`}>{(assessment.score_pct ?? 0).toFixed(0)}%</div>
               <div className="text-sm text-gray-300 mt-1">{t('compliance.complianceScore', 'Compliance Score')}</div>
             </div>
             <div className="flex-1 grid grid-cols-4 gap-3">
