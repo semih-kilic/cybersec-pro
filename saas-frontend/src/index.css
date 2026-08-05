@@ -22,10 +22,9 @@
 /* 🪟 V20 Onyx legacy skin overrides — uses !important so source-order is OK */
 @import './styles/vos-skin-overrides.css';
 
-/* Import Tailwind CSS */
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+/* Import Tailwind CSS v4 */
+@import "tailwindcss";
+@config "../tailwind.config.js";
 
 /* Base styles */
 *,
