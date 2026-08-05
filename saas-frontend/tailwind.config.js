@@ -470,28 +470,23 @@ export default {
     },
     
     // Plugin for responsive dragon graphics
-    function({ addUtilities, theme }) {
+    // NOTE: @media inside addUtilities is invalid in Tailwind v3 — use flat class names instead
+    function({ addUtilities }) {
       addUtilities({
-        '@media (max-width: 767px)': {
-          '.dragon-mobile-hidden': {
-            display: 'none',
-          },
-          '.dragon-mobile-simplified': {
-            opacity: '0.05',
-            transform: 'scale(0.7)',
-          },
+        '.dragon-mobile-hidden': {
+          display: 'none',
         },
-        '@media (min-width: 768px) and (max-width: 1023px)': {
-          '.dragon-tablet-medium': {
-            opacity: '0.08',
-            transform: 'scale(0.85)',
-          },
+        '.dragon-mobile-simplified': {
+          opacity: '0.05',
+          transform: 'scale(0.7)',
         },
-        '@media (min-width: 1024px)': {
-          '.dragon-desktop-full': {
-            opacity: 'var(--dragon-opacity)',
-            transform: 'scale(1)',
-          },
+        '.dragon-tablet-medium': {
+          opacity: '0.08',
+          transform: 'scale(0.85)',
+        },
+        '.dragon-desktop-full': {
+          opacity: 'var(--dragon-opacity)',
+          transform: 'scale(1)',
         },
       });
     },
