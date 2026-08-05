@@ -73,6 +73,12 @@
       "probableHardcodedLines": []
     },
     {
+      "filePath": "src/pages/TrustCenterPage.tsx",
+      "hasUseTranslation": true,
+      "hasTCalls": true,
+      "probableHardcodedLines": []
+    },
+    {
       "filePath": "src/pages/VerifyEmailPage.tsx",
       "hasUseTranslation": true,
       "hasTCalls": true,
@@ -124,7 +130,10 @@
       "filePath": "src/pages/dashboard/ComplianceDashboardPage.tsx",
       "hasUseTranslation": true,
       "hasTCalls": true,
-      "probableHardcodedLines": []
+      "probableHardcodedLines": [
+        255,
+        278
+      ]
     },
     {
       "filePath": "src/pages/dashboard/CyberSecAIPage.tsx",
@@ -184,7 +193,18 @@
       "filePath": "src/pages/dashboard/ScanExecutionPage.tsx",
       "hasUseTranslation": true,
       "hasTCalls": true,
-      "probableHardcodedLines": []
+      "probableHardcodedLines": [
+        813,
+        814,
+        826,
+        827,
+        850,
+        858,
+        1243,
+        1244,
+        1250,
+        1251
+      ]
     },
     {
       "filePath": "src/pages/dashboard/ScanTemplatesPage.tsx",
@@ -232,7 +252,13 @@
       "filePath": "src/pages/dashboard/TerminalPage.tsx",
       "hasUseTranslation": true,
       "hasTCalls": true,
-      "probableHardcodedLines": []
+      "probableHardcodedLines": [
+        428,
+        553,
+        554,
+        561,
+        569
+      ]
     },
     {
       "filePath": "src/pages/dashboard/ThreatIntelPage.tsx",
@@ -244,7 +270,14 @@
       "filePath": "src/pages/dashboard/ToolDetailPage.tsx",
       "hasUseTranslation": true,
       "hasTCalls": true,
-      "probableHardcodedLines": []
+      "probableHardcodedLines": [
+        372,
+        373,
+        395,
+        403,
+        413,
+        414
+      ]
     },
     {
       "filePath": "src/pages/dashboard/ToolsPage.tsx",
