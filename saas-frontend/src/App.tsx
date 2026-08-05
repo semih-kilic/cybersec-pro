@@ -340,9 +340,7 @@ function AppRoutes() {
         </PublicRoute>
       } />
       <Route path="/reset-password" element={
-        <PublicRoute>
-          <Suspense fallback={<LoadingSpinner />}><ResetPasswordPage /></Suspense>
-        </PublicRoute>
+        <Suspense fallback={<LoadingSpinner />}><ResetPasswordPage /></Suspense>
       } />
 
       {/* Auth Routes - /dashboard/ prefixed (nginx serves SPA at /dashboard/) */}
@@ -362,9 +360,7 @@ function AppRoutes() {
         </PublicRoute>
       } />
       <Route path="/dashboard/reset-password" element={
-        <PublicRoute>
-          <Suspense fallback={<LoadingSpinner />}><ResetPasswordPage /></Suspense>
-        </PublicRoute>
+        <Suspense fallback={<LoadingSpinner />}><ResetPasswordPage /></Suspense>
       } />
       <Route path="/dashboard/verify-email" element={<Suspense fallback={<LoadingSpinner />}><VerifyEmailPage /></Suspense>} />
       <Route path="/dashboard/auth/callback" element={<Suspense fallback={<LoadingSpinner />}><OAuthCallback /></Suspense>} />
