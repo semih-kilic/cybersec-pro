@@ -129,8 +129,8 @@ describe('ScanExecutionPage — delegated execution mode', () => {
     const targetInput = screen.getByPlaceholderText(/192\.168\.1\.0/i);
     fireEvent.change(targetInput, { target: { value: '10.0.0.1' } });
 
-    // Click Start Scan
-    const startBtn = screen.getByRole('button', { name: /start scan/i });
+    // Click Run Scan
+    const startBtn = screen.getByRole('button', { name: /run scan/i });
     fireEvent.click(startBtn);
 
     // Badge should appear
@@ -156,7 +156,7 @@ describe('ScanExecutionPage — delegated execution mode', () => {
     const targetInput = screen.getByPlaceholderText(/192\.168\.1\.0/i);
     fireEvent.change(targetInput, { target: { value: '10.0.0.2' } });
 
-    fireEvent.click(screen.getByRole('button', { name: /start scan/i }));
+    fireEvent.click(screen.getByRole('button', { name: /run scan/i }));
 
     await waitFor(() => {
       expect(screen.getByText('⚙️ Scan Engine')).toBeInTheDocument();
@@ -181,7 +181,7 @@ describe('ScanExecutionPage — delegated execution mode', () => {
     const targetInput = screen.getByPlaceholderText(/192\.168\.1\.0/i);
     fireEvent.change(targetInput, { target: { value: '10.0.0.3' } });
 
-    fireEvent.click(screen.getByRole('button', { name: /start scan/i }));
+    fireEvent.click(screen.getByRole('button', { name: /run scan/i }));
 
     await waitFor(() => {
       const el = screen.queryByText((content) =>
@@ -206,7 +206,7 @@ describe('ScanExecutionPage — delegated execution mode', () => {
     const targetInput = screen.getByPlaceholderText(/192\.168\.1\.0/i);
     fireEvent.change(targetInput, { target: { value: '10.0.0.4' } });
 
-    fireEvent.click(screen.getByRole('button', { name: /start scan/i }));
+    fireEvent.click(screen.getByRole('button', { name: /run scan/i }));
 
     await waitFor(() => {
       expect(screen.getByText('🖥️ Running on Server')).toBeInTheDocument();
