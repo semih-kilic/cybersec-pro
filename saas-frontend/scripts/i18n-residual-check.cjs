@@ -7,6 +7,10 @@ const localesDir = path.join(root, 'src', 'i18n', 'locales');
 const baseLocale = 'en';
 const targetLocales = ['de', 'es', 'fr', 'it'];
 
+// Brand/product names that are intentionally identical across all locales
+// and should not be flagged as untranslated residual strings.
+const BRAND_WHITELIST = new Set(['nav.cybersecAI']);
+
 function loadLocale(locale) {
   const filePath = path.join(localesDir, `${locale}.json`);
   return JSON.parse(fs.readFileSync(filePath, 'utf8'));
@@ -41,6 +45,8 @@ function run() {
     const current = loadLocale(locale);
 
     for (const keyPath of allPaths) {
+      if (BRAND_WHITELIST.has(keyPath)) continue;
+
       const baseValue = getValue(base, keyPath);
       const currentValue = getValue(current, keyPath);
 

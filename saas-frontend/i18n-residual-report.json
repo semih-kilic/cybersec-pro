@@ -7,11 +7,6 @@
     "it"
   ],
   "scopesScanned": 52,
-  "sameAsEnglishResidualKeys": 4,
-  "topResidualScopes": [
-    {
-      "scope": "nav",
-      "count": 4
-    }
-  ]
+  "sameAsEnglishResidualKeys": 0,
+  "topResidualScopes": []
 }
