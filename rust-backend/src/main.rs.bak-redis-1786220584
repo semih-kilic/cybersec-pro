@@ -78,8 +78,7 @@ async fn main() -> anyhow::Result<()> {
     let (scan_output_tx, _rx) = broadcast::channel::<String>(1024);
 
     // Initialize cache service (non-fatal if Redis is unavailable)
-    let redis_url = std::env::var("REDIS_URL").unwrap_or_else(|_| "redis://127.0.0.1:6379".to_string());
-    let cache = match CacheService::new(&redis_url).await {
+    let cache = match CacheService::new("redis://127.0.0.1:6379").await {
         Ok(c) => {
             tracing::info!("Cache service initialized");
             Arc::new(c)
