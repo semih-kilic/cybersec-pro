@@ -20,7 +20,10 @@ RUN rm -rf src
 
 # Build real app
 COPY src/ src/
-RUN cargo build --release
+# cargo's mtime-based fingerprint can wrongly consider the dummy binary fresh
+# (COPY preserves source mtimes). Force the app package to rebuild while
+# keeping the already-compiled dependency set cached.
+RUN cargo clean -p cybersec-pro-backend && cargo build --release
 
 # Stage 2: Runtime
 FROM debian:bookworm-slim
