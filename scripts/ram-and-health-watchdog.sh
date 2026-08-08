@@ -1,6 +1,9 @@
 #!/bin/bash
 # 🛡️ CyberSec Pro — Automated RAM & Service Health Watchdog
 # Runs continuously or via cron/timer to keep RAM low & services 100% healthy.
+# 2026-08-08: Backend is now deployed via Docker Compose (cybersec-api).
+# check_backend() was migrated to manage the Docker container instead of the
+# bare-metal process, so it no longer steals port 5001.
 
 BASEDIR="/home/cybersec/cybersec-pro"
 RUST_DIR="$BASEDIR/rust-backend"
@@ -35,18 +38,15 @@ clean_ram() {
     fi
 }
 
-# 2. Auto-Healing: Check Backend (Port 5001)
+# 2. Auto-Healing: Check Backend (Docker container cybersec-api on port 5001)
 check_backend() {
-    if ! curl -s http://localhost:5001/health | grep -q "healthy"; then
-        log "Auto-Healing: Backend on port 5001 is DOWN. Restarting..."
-        pkill -f "cybersec-pro-backend" >/dev/null 2>&1 || true
-        sleep 1
-        cd "$RUST_DIR"
-        if [ -f "$RUST_DIR/.env" ]; then
-            set -a; source "$RUST_DIR/.env"; set +a
-        fi
-        SCAN_ENGINE_URL='http://127.0.0.1:5002' RUST_LOG=info nohup ./target/release/cybersec-pro-backend > /tmp/backend.log 2>&1 &
-        log "Auto-Healing: Backend restart triggered."
+    local status
+    status=$(docker inspect -f '{{.State.Health.Status}}' cybersec-api 2>/dev/null || echo "missing")
+    if [ "$status" != "healthy" ]; then
+        log "Auto-Healing: Backend container (cybersec-api) is $status. Restarting..."
+        cd "$BASEDIR"
+        docker compose up -d rust-backend 2>/dev/null || docker restart cybersec-api 2>/dev/null || true
+        log "Auto-Healing: Backend container restart triggered."
     fi
 }
 
