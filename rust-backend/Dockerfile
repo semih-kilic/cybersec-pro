@@ -18,12 +18,14 @@ RUN mkdir src && echo "fn main() {}" > src/main.rs
 RUN cargo build --release 2>/dev/null || true
 RUN rm -rf src
 
-# Build real app
+# Build real app (include_str!("../../kali_tools.json") needs the file in-tree)
 COPY src/ src/
-# cargo's mtime-based fingerprint can wrongly consider the dummy binary fresh
-# (COPY preserves source mtimes). Force the app package to rebuild while
-# keeping the already-compiled dependency set cached.
-RUN cargo clean -p cybersec-pro-backend && cargo build --release
+COPY kali_tools.json ./
+# Force a real rebuild of the app package: cargo's mtime-based fingerprint can
+# wrongly consider the dummy binary up-to-date (COPY preserves source mtimes),
+# and `cargo clean -p` alone did not reliably trigger recompilation.
+RUN rm -rf target/release/cybersec-pro-backend target/release/deps/cybersec* \
+    && cargo build --release
 
 # Stage 2: Runtime
 FROM debian:bookworm-slim
