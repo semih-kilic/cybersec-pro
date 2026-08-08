@@ -1,0 +1,9 @@
+FROM rust:1.90-bookworm AS builder
+WORKDIR /app
+RUN apt-get update && apt-get install -y pkg-config libssl-dev libpq-dev >/dev/null 2>&1
+COPY Cargo.toml Cargo.lock* ./
+RUN mkdir src && echo "fn main() {}" > src/main.rs
+RUN cargo build --release 2>/dev/null || true
+RUN rm -rf src
+COPY src/ src/
+RUN echo "=== DIAG: src contents after COPY ===" && ls -la src/ && echo "main.rs lines: $(wc -l < src/main.rs)" && echo "main.rs head: $(head -1 src/main.rs)" && echo "=== DIAG: target bin before build ===" && ls -la target/release/cybersec-pro-backend && echo "=== now rebuild ===" && rm -rf target/release/cybersec-pro-backend target/release/deps/cybersec* && cargo build --release 2>&1 | tail -5 && echo "=== DIAG: final bin ===" && ls -la target/release/cybersec-pro-backend && echo "routes: $(grep -c 'api/v1/auth/login' target/release/cybersec-pro-backend || true)"

@@ -1,0 +1,9 @@
+FROM rust:1.90-bookworm AS builder
+WORKDIR /app
+RUN apt-get update && apt-get install -y pkg-config libssl-dev libpq-dev >/dev/null 2>&1
+COPY Cargo.toml Cargo.lock* ./
+RUN mkdir src && echo "fn main() {}" > src/main.rs
+RUN cargo build --release 2>/dev/null || true
+RUN rm -rf src
+COPY src/ src/
+RUN rm -rf target/release/cybersec-pro-backend target/release/deps/cybersec* && cargo build --release 2>&1 | grep -iE '^error|^  -->|error\[' | head -25
