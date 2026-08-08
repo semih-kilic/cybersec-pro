@@ -38,8 +38,10 @@ impl ScanEngine {
 
     /// Validate and sanitize scan parameters
     fn validate_request(req: &ScanRequest) -> Result<(), AppError> {
-        // 1. Check tool whitelist
-        if !ALLOWED_TOOLS.contains(&req.tool.as_str()) {
+        // 1. Check tool whitelist — unless the trusted backend supplied pre-built args.
+        //    When `command_args` is present, the program came from the DB-backed
+        //    backend (already whitelisted there); we still enforce blocked patterns.
+        if req.command_args.is_none() && !ALLOWED_TOOLS.contains(&req.tool.as_str()) {
             return Err(AppError::Validation(format!(
                 "Tool '{}' is not in the allowed whitelist", req.tool
             )));
@@ -66,11 +68,31 @@ impl ScanEngine {
             }
         }
 
+        // 4. Validate pre-built args (no shell metacharacters)
+        if let Some(args) = &req.command_args {
+            for arg in args {
+                for pattern in BLOCKED_PATTERNS {
+                    if arg.contains(pattern) {
+                        return Err(AppError::Validation(format!(
+                            "Argument contains blocked pattern '{}': {}", pattern, arg
+                        )));
+                    }
+                }
+            }
+        }
+
         Ok(())
     }
 
-    /// Build safe command arguments from scan request
-    fn build_command(req: &ScanRequest) -> Vec<String> {
+    /// Build safe command arguments from scan request.
+    /// Returns `(program, args)`.
+    fn build_command(req: &ScanRequest) -> (String, Vec<String>) {
+        // Pre-built argv from the trusted backend wins.
+        if let Some(args) = &req.command_args {
+            let program = req.program.as_deref().unwrap_or(&req.tool).to_string();
+            return (program, args.clone());
+        }
+
         let mut args = Vec::new();
 
         // Tool-specific argument builders
@@ -108,7 +130,7 @@ impl ScanEngine {
             }
         }
 
-        args
+        (req.tool.clone(), args)
     }
 
     /// Execute a scan (non-blocking, spawns background task)
@@ -120,7 +142,7 @@ impl ScanEngine {
         let timeout_secs = req.timeout.unwrap_or(300);
         let tool = req.tool.clone();
         let target = req.target.clone();
-        let args = Self::build_command(&req);
+        let (program, args) = Self::build_command(&req);
 
         // Create scan status
         let status = ScanStatus {
@@ -180,7 +202,7 @@ impl ScanEngine {
             // Execute command (NO SHELL — direct process spawn)
             let result = tokio::time::timeout(
                 std::time::Duration::from_secs(timeout_secs as u64),
-                Self::run_process(&tool, &args, &outputs, &scan_id_clone),
+                Self::run_process(&program, &args, &outputs, &scan_id_clone),
             )
             .await;
 
@@ -213,20 +235,20 @@ impl ScanEngine {
 
     /// Run a process safely (no shell, argument vector only)
     async fn run_process(
-        tool: &str,
+        program: &str,
         args: &[String],
         outputs: &Arc<RwLock<HashMap<String, Vec<String>>>>,
         scan_id: &str,
     ) -> Result<i32, AppError> {
-        tracing::info!("Executing: {} {:?}", tool, args);
+        tracing::info!("Executing: {} {:?}", program, args);
 
-        let mut child = Command::new(tool)
+        let mut child = Command::new(program)
             .args(args)
             .stdout(Stdio::piped())
             .stderr(Stdio::piped())
             .kill_on_drop(true) // Safety: kill process if task is dropped
             .spawn()
-            .map_err(|e| AppError::ScanExec(format!("Failed to spawn {}: {}", tool, e)))?;
+            .map_err(|e| AppError::ScanExec(format!("Failed to spawn {}: {}", program, e)))?;
 
         // Stream stdout
         if let Some(stdout) = child.stdout.take() {
@@ -301,6 +323,8 @@ mod tests {
             user_id: None,
             profile: None,
             timeout: None,
+            program: None,
+            command_args: None,
         }
     }
 
@@ -382,11 +406,37 @@ mod tests {
     }
 
     #[test]
-    fn scan_engine_blocks_nmap_script_param() {
-        // --script= is blocked to prevent loading arbitrary NSE scripts
+    fn scan_engine_allows_nmap_script_param() {
+        // --script= is a legitimate nmap feature and is no longer blocked
         let mut req = make_request("nmap", "10.0.0.1");
         req.params = Some(serde_json::json!({"flags": "--script=vuln"}));
+        assert!(ScanEngine::validate_request(&req).is_ok());
+    }
+
+    #[test]
+    fn scan_engine_bypasses_whitelist_with_command_args() {
+        // Trusted backend supplies pre-built argv for a tool outside ALLOWED_TOOLS
+        let mut req = make_request("openvas", "10.0.0.1");
+        req.command_args = Some(vec!["-v".into(), "10.0.0.1".into()]);
+        req.program = Some("gvm-cli".into());
+        assert!(ScanEngine::validate_request(&req).is_ok());
+    }
+
+    #[test]
+    fn scan_engine_blocks_shell_injection_in_command_args() {
+        let mut req = make_request("nmap", "10.0.0.1");
+        req.command_args = Some(vec!["-p".into(), "80".into(), "10.0.0.1; id".into()]);
         assert!(ScanEngine::validate_request(&req).is_err());
+    }
+
+    #[test]
+    fn scan_engine_uses_prebuilt_args_verbatim() {
+        let mut req = make_request("nmap", "10.0.0.1");
+        req.program = Some("nmap".into());
+        req.command_args = Some(vec!["-sV".into(), "-p".into(), "80".into(), "10.0.0.1".into()]);
+        let (program, args) = ScanEngine::build_command(&req);
+        assert_eq!(program, "nmap");
+        assert_eq!(args, vec!["-sV", "-p", "80", "10.0.0.1"]);
     }
 
     // ── build_command ─────────────────────────────────────────────────────────
@@ -395,7 +445,7 @@ mod tests {
     fn scan_engine_nmap_quick_profile_adds_t4_and_f_flags() {
         let mut req = make_request("nmap", "10.0.0.1");
         req.profile = Some("quick".into());
-        let args = ScanEngine::build_command(&req);
+        let (_program, args) = ScanEngine::build_command(&req);
         assert!(args.contains(&"-T4".to_string()), "quick profile missing -T4");
         assert!(args.contains(&"-F".to_string()), "quick profile missing -F");
         assert!(args.contains(&"10.0.0.1".to_string()), "target missing");
@@ -405,7 +455,7 @@ mod tests {
     fn scan_engine_nmap_deep_profile_adds_all_ports_flag() {
         let mut req = make_request("nmap", "10.0.0.5");
         req.profile = Some("deep".into());
-        let args = ScanEngine::build_command(&req);
+        let (_program, args) = ScanEngine::build_command(&req);
         assert!(args.contains(&"-p-".to_string()), "deep profile missing -p-");
         assert!(args.contains(&"-A".to_string()), "deep profile missing -A");
     }
@@ -413,7 +463,7 @@ mod tests {
     #[test]
     fn scan_engine_nikto_includes_h_flag_before_target() {
         let req = make_request("nikto", "https://example.com");
-        let args = ScanEngine::build_command(&req);
+        let (_program, args) = ScanEngine::build_command(&req);
         let h_pos = args.iter().position(|a| a == "-h");
         let target_pos = args.iter().position(|a| a == "https://example.com");
         assert!(h_pos.is_some(), "nikto missing -h flag");

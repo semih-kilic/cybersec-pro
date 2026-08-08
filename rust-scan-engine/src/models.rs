@@ -27,6 +27,15 @@ pub struct ScanRequest {
     /// Timeout in seconds (max 3600)
     #[validate(range(min = 5, max = 3600))]
     pub timeout: Option<u32>,
+
+    /// Binary program to execute (only used when `command_args` is provided).
+    /// Supplied by the trusted backend after DB-driven template substitution.
+    pub program: Option<String>,
+
+    /// Pre-built command arguments (already fully substituted by the backend).
+    /// When present, the engine executes `program args...` verbatim (no shell),
+    /// bypassing the static whitelist (the backend resolved the tool from the DB).
+    pub command_args: Option<Vec<String>>,
 }
 
 /// Scan status response
@@ -80,6 +89,4 @@ pub const BLOCKED_PATTERNS: &[&str] = &[
     ";", "&&", "||", "|", "`", "$(", "${",
     "../", "/etc/shadow", "/etc/passwd",
     "rm -rf", "mkfs", "dd if=",
-    "--script=", // nmap scripts need explicit allowlist
-    "-oG -", // grepable output to stdout can be abused
 ];

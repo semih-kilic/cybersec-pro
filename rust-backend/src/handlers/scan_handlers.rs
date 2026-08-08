@@ -18,6 +18,7 @@ use uuid::Uuid;
 use crate::middleware::auth_middleware::AuthUser;
 use crate::models::{Scan, Tool};
 use crate::scan_engine::executor::{execute_scan, AgentSshInfo};
+use crate::scan_engine::tool_registry::build_command;
 use crate::services::audit::log_audit;
 use crate::AppState;
 
@@ -41,6 +42,8 @@ struct ScanEngineStartRequest {
     tool: String,
     target: String,
     params: Option<JsonValue>,
+    program: Option<String>,
+    command_args: Option<Vec<String>>,
 }
 
 #[derive(Debug, Deserialize)]
@@ -105,13 +108,27 @@ async fn start_scan_on_engine(
     tool: &str,
     target: &str,
     params: Option<JsonValue>,
+    program: Option<String>,
+    command_args: Option<Vec<String>>,
 ) -> anyhow::Result<ScanEngineStartResponse> {
+    // Mint a short-lived service token so the engine can authenticate us.
+    // The engine validates JWT with the same JWT_SECRET_KEY (shared via env_file).
+    let engine_token = crate::services::auth::jwt::create_access_token(
+        &std::env::var("JWT_SECRET_KEY").unwrap_or_default(),
+        "scan-engine",
+        None,
+        "service",
+    )?;
+
     let response = client
         .post(format!("{}/api/v3/scan", engine_url))
+        .bearer_auth(&engine_token)
         .json(&ScanEngineStartRequest {
             tool: tool.to_string(),
             target: target.to_string(),
             params,
+            program,
+            command_args,
         })
         .send()
         .await?;
@@ -1083,6 +1100,32 @@ pub async fn start_scan(
         }
     }
 
+    // Zero-code: substitute user-supplied parameters into the command_template
+    // (placeholders like {url}, {wordlist}, {lhost}, {lport}, {user}, etc.).
+    // Built-in {target}/{host}/{url}/{ip}/{domain} fall through to parse_template.
+    let command_template = {
+        let mut tpl = tool.command_template.clone();
+        if let (Some(t), Some(obj)) = (tpl.as_mut(), body.parameters.as_ref().and_then(|p| p.as_object())) {
+            for (k, v) in obj {
+                if k == "target" { continue; } // target handled separately
+                let val = v.as_str().map(String::from).unwrap_or_else(|| v.to_string());
+                // Defensive: reject newlines/backticks/$() — never let a param introduce shell metachars.
+                let safe = val.replace(['\n', '\r', '`'], "");
+                if safe.contains("$(") || safe.contains("&&") || safe.contains("||") || safe.contains(';') || safe.contains('|') {
+                    tracing::warn!("scan param '{}' rejected (shell metachars)", k);
+                    continue;
+                }
+                *t = t.replace(&format!("{{{}}}", k), &safe);
+            }
+        }
+        tpl
+    };
+
+    // Build the final program + argv from the (substituted) template.
+    // This is the single source of truth for what the scan engine will execute.
+    let (program, command_args) = build_command(&tool.name, target, command_template.as_deref())
+        .unwrap_or_else(|_| (tool.name.clone(), vec![target.to_string()]));
+
     let scan_engine_metadata = if body.agent_id.is_none() {
         match configured_scan_engine_url() {
             Some(engine_url) => {
@@ -1093,6 +1136,8 @@ pub async fn start_scan(
                     &tool.name,
                     target,
                     body.parameters.clone(),
+                    Some(program.clone()),
+                    Some(command_args.clone()),
                 )
                 .await
                 {
@@ -1167,26 +1212,6 @@ pub async fn start_scan(
     // Execute scan asynchronously
     let db = state.db.clone();
     let tool_name = tool.name.clone();
-    // Zero-code: substitute user-supplied parameters into the command_template
-    // (placeholders like {url}, {wordlist}, {lhost}, {lport}, {user}, etc.).
-    // Built-in {target}/{host}/{url}/{ip}/{domain} fall through to parse_template.
-    let command_template = {
-        let mut tpl = tool.command_template.clone();
-        if let (Some(t), Some(obj)) = (tpl.as_mut(), body.parameters.as_ref().and_then(|p| p.as_object())) {
-            for (k, v) in obj {
-                if k == "target" { continue; } // target handled separately
-                let val = v.as_str().map(String::from).unwrap_or_else(|| v.to_string());
-                // Defensive: reject newlines/backticks/$() — never let a param introduce shell metachars.
-                let safe = val.replace(['\n', '\r', '`'], "");
-                if safe.contains("$(") || safe.contains("&&") || safe.contains("||") || safe.contains(';') || safe.contains('|') {
-                    tracing::warn!("scan param '{}' rejected (shell metachars)", k);
-                    continue;
-                }
-                *t = t.replace(&format!("{{{}}}", k), &safe);
-            }
-        }
-        tpl
-    };
     let target_owned = target.to_string();
     let scan_id_clone = scan_id.clone();
     let scan_tx = state.scan_output_tx.clone();
