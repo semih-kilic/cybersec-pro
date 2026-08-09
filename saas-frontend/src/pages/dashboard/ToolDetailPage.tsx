@@ -95,7 +95,10 @@ export function ToolDetailPage() {
 
   const tool = toolQueryData?.tool || null;
   const toolCategory = toolQueryData?.category || '';
-  const toolConfig = toolQueryData?.config || (tool && toolId ? getToolConfig(toolId, toolCategory || undefined) : null);
+  // config:{} (empty object) from the API must not win over the real static config.
+  const toolConfig = (toolQueryData?.config && (Array.isArray(toolQueryData.config.parameters) || Array.isArray(toolQueryData.config.scanModes)))
+    ? toolQueryData.config
+    : (tool && toolId ? getToolConfig(toolId, toolCategory || undefined) : null);
 
   useDocumentTitle(tool ? `${tool.name} — CyberSec Pro` : 'Tool — CyberSec Pro');
 
@@ -122,9 +125,33 @@ export function ToolDetailPage() {
   useEffect(() => () => { if (sseCleanupRef.current) sseCleanupRef.current(); }, []);
 
   const getNormalizedParams = (): ToolParameter[] => {
-    if (toolConfig) return toolConfig.parameters;
     if (!tool) return [];
+    // 1. DB-backed zero-code form (parameters.form) is the source of truth.
+    //    This ships for all `ht_*` and seeded tools; static configs must NOT shadow it.
+    if (tool.parameters && typeof tool.parameters === 'object' && !Array.isArray(tool.parameters) && Array.isArray((tool.parameters as any).form)) {
+      const form = (tool.parameters as any).form as Array<any>;
+      if (form.length > 0) {
+        return form.map((f) => {
+          const isSecret = f.type === 'password' || SECRET_NAME_RE.test(String(f.name || ''));
+          return {
+            name: f.name,
+            flag: '', // Backend handles substitution via command_template {placeholders}
+            type: (f.type === 'url' || f.type === 'email' || f.type === 'password') ? 'text' : (f.type as ToolParameter['type']),
+            required: !!f.required,
+            default: f.default !== undefined ? String(f.default) : undefined,
+            placeholder: f.placeholder || (f.default !== undefined ? String(f.default) : ''),
+            options: f.options,
+            description: f.label || f.name,
+            group: f.group || 'Parameters',
+            secret: isSecret,
+          } as ToolParameter;
+        });
+      }
+    }
+    // 2. Array-shaped parameters from the API.
     if (Array.isArray(tool.parameters) && tool.parameters.length > 0) return tool.parameters;
+    // 3. Static config fallback (only when DB provided nothing).
+    if (toolConfig && Array.isArray(toolConfig.parameters) && toolConfig.parameters.length > 0) return toolConfig.parameters;
     // Hackingtool seed shape: { form: [{name,label,type,required,placeholder,default,options}], danger_level, target_types }
     if (tool.parameters && typeof tool.parameters === 'object' && Array.isArray((tool.parameters as any).form)) {
       const form = (tool.parameters as any).form as Array<any>;
