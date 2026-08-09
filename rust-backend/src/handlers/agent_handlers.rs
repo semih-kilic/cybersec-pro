@@ -550,13 +550,18 @@ pub async fn agent_binary(
         "linux-amd64", "linux-arm64",
         "darwin-amd64", "darwin-arm64", "darwin-universal",
         "windows-amd64.exe", "windows-arm64.exe",
+        "windows-amd64", "windows-arm64",
     ];
     if !allowed.iter().any(|p| *p == platform.as_str()) {
         return (StatusCode::NOT_FOUND, Json(json!({"error": "Unsupported platform"}))).into_response();
     }
     let dir = std::env::var("AGENT_BIN_DIR")
         .unwrap_or_else(|_| "/home/cybersec/cybersec-pro/agent-binaries".to_string());
-    let path = std::path::PathBuf::from(&dir).join(format!("cybersec-agent-{platform}"));
+    // Try exact name first, then strip .exe suffix as fallback (Cloudflare blocks .exe)
+    let base = format!("cybersec-agent-{platform}");
+    let path_exact = std::path::PathBuf::from(&dir).join(&base);
+    let path_noext = std::path::PathBuf::from(&dir).join(base.trim_end_matches(".exe"));
+    let path = if path_exact.exists() { path_exact } else { path_noext };
     let bytes = match tokio::fs::read(&path).await {
         Ok(b) => b,
         Err(_) => return (StatusCode::NOT_FOUND, Json(json!({
@@ -689,7 +694,7 @@ $Dir = Join-Path $env:LOCALAPPDATA 'CyberSecAgent'
 $Bin = Join-Path $Dir 'cybersec-agent.exe'
 New-Item -ItemType Directory -Force -Path $Dir | Out-Null
 
-$Url = "$Api/api/v1/agents/binary/windows-$Arch.exe"
+$Url = "$Api/api/v1/agents/binary/windows-$Arch"
 Write-Host "==> Downloading $Url"
 
 # TLS 1.2 for older PowerShell 5.x.

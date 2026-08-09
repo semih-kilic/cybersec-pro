@@ -76,6 +76,9 @@ services:
       - RUST_LOG=info
       - HOST=0.0.0.0
       - PORT=5001
+      - AGENT_BIN_DIR=/agent-binaries
+    volumes:
+      - ./agent-binaries:/agent-binaries:ro
     ports:
       - "127.0.0.1:5001:5001"
     depends_on:
