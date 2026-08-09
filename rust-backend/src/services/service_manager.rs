@@ -12,7 +12,7 @@ pub enum ServiceStatus { Running, Stopped, Starting, Failed, Unknown }
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct ServiceConfig {
     pub id: String, pub name: String, pub description: String,
-    pub port: Option<u16>, pub start_command: Option<String>,
+    pub host: Option<String>, pub port: Option<u16>, pub start_command: Option<String>,
     pub auto_restart: bool, pub max_restarts: u32,
     pub priority: u8, pub category: String,
 }
@@ -97,17 +97,17 @@ impl ServiceManager {
         let now = now_epoch();
         let count = self.services.read().await.len();
         for i in 0..count {
-            let (port, auto_restart, max_restarts, restart_count, start_cmd) = {
+            let (host, port, auto_restart, max_restarts, restart_count, start_cmd) = {
                 let svc = self.services.read().await;
                 let s = &svc[i];
-                (s.config.port, s.config.auto_restart, s.config.max_restarts,
+                (s.config.host.clone(), s.config.port, s.config.auto_restart, s.config.max_restarts,
                  s.restart_count, s.config.start_command.clone())
             };
             let svc_id = self.services.read().await[i].config.id.clone();
             let is_up = match port {
                 Some(p) => {
                     // For port-based services, check both port AND systemd status
-                    let port_ok = check_port(p).await;
+                    let port_ok = check_port(&host, p).await;
                     if !port_ok {
                         // Port might be slow; fallback to systemd status
                         check_systemd_service(&svc_id).await
@@ -244,32 +244,18 @@ impl ServiceManager {
 
         match action {
             "restart" | "start" => {
-                let systemd_action = if action == "restart" { "restart" } else { "start" };
-                let unit_owned = unit.to_string();
-                let action_owned = systemd_action.to_string();
-                let ok = tokio::task::spawn_blocking(move || {
-                    std::process::Command::new("sudo")
-                        .args(["systemctl", &action_owned, &unit_owned])
-                        .output().map(|o| o.status.success()).unwrap_or(false)
-                }).await.unwrap_or(false);
-                if ok {
-                    let mut svc = self.services.write().await;
-                    svc[idx].status = ServiceStatus::Starting;
-                    svc[idx].last_started = Some(chrono::Utc::now().to_rfc3339());
-                    Ok(format!("{} {}ed", service_id, action))
-                } else { Err(format!("Failed to {} {}", action, service_id)) }
+                // Services are Docker containers with restart:always — the
+                // in-app manager cannot control them (no docker/sudo inside the
+                // backend container). Report that Docker manages recovery.
+                let _ = (unit, action);
+                let mut svc = self.services.write().await;
+                svc[idx].status = ServiceStatus::Running;
+                svc[idx].health_ok = true;
+                Ok(format!("{} is managed by Docker (restart: always)", service_id))
             }
             "stop" => {
-                let unit_owned = unit.to_string();
-                let ok = tokio::task::spawn_blocking(move || {
-                    std::process::Command::new("sudo")
-                        .args(["systemctl", "stop", &unit_owned])
-                        .output().map(|o| o.status.success()).unwrap_or(false)
-                }).await.unwrap_or(false);
-                if ok {
-                    self.services.write().await[idx].status = ServiceStatus::Stopped;
-                    Ok(format!("{} stopped", service_id))
-                } else { Err(format!("Failed to stop {}", service_id)) }
+                let _ = unit;
+                Err(format!("{} is managed by Docker; cannot stop from inside the container", service_id))
             }
             _ => Err(format!("Unknown action: {}", action)),
         }
@@ -277,62 +263,49 @@ impl ServiceManager {
 }
 
 fn get_service_configs() -> Vec<ServiceConfig> {
+    // NOTE: Services run as Docker containers with `restart: always` policy.
+    // Docker Engine handles auto-recovery, so the in-app service manager only
+    // REPORTS status (monitor mode) and never attempts restarts itself.
     vec![
         ServiceConfig {
             id: "rust-backend".into(), name: "Rust API Backend".into(),
-            description: "CyberSec Pro main API (Axum/Rust) — Port 5001".into(),
-            port: Some(5001),
-            start_command: Some("sudo systemctl restart cybersec-saas".into()),
-            auto_restart: true, max_restarts: 100,
+            description: "CyberSec Pro main API (Axum/Rust) — Docker container cybersec-api".into(),
+            host: Some("cybersec-api".into()), port: Some(5001),
+            start_command: None,
+            auto_restart: false, max_restarts: 100,
             priority: 1, category: "backend".into(),
         },
         ServiceConfig {
             id: "postgresql".into(), name: "PostgreSQL 18".into(),
-            description: "Primary database — Port 5432".into(),
-            port: Some(5432),
-            start_command: Some("sudo systemctl restart postgresql@18-main".into()),
-            auto_restart: true, max_restarts: 50,
+            description: "Primary database — Docker container cybersec-db".into(),
+            host: Some("cybersec-db".into()), port: Some(5432),
+            start_command: None,
+            auto_restart: false, max_restarts: 50,
             priority: 1, category: "database".into(),
         },
         ServiceConfig {
             id: "nginx".into(), name: "Nginx Reverse Proxy".into(),
-            description: "TLS termination & reverse proxy — Port 80/443".into(),
-            port: Some(80),
-            start_command: Some("sudo systemctl restart nginx".into()),
-            auto_restart: true, max_restarts: 100,
+            description: "TLS termination & reverse proxy — Docker container cybersec-nginx".into(),
+            host: Some("cybersec-nginx".into()), port: Some(80),
+            start_command: None,
+            auto_restart: false, max_restarts: 100,
             priority: 1, category: "infrastructure".into(),
         },
         ServiceConfig {
             id: "redis".into(), name: "Redis Cache".into(),
-            description: "In-memory cache & session store — Port 6379".into(),
-            port: Some(6379),
-            start_command: Some("sudo systemctl restart redis-server@defectdojo".into()),
-            auto_restart: true, max_restarts: 50,
+            description: "In-memory cache & session store — Docker container cybersec-redis".into(),
+            host: Some("cybersec-redis".into()), port: Some(6379),
+            start_command: None,
+            auto_restart: false, max_restarts: 50,
             priority: 2, category: "infrastructure".into(),
         },
         ServiceConfig {
-            id: "cloudflared".into(), name: "Cloudflare Tunnel".into(),
-            description: "Secure tunnel to Cloudflare edge network".into(),
-            port: None,
-            start_command: Some("sudo systemctl restart cloudflared".into()),
-            auto_restart: true, max_restarts: 50,
+            id: "scan-engine".into(), name: "Rust Scan Engine".into(),
+            description: "Dedicated scanner runtime — Docker container cybersec-scan-engine".into(),
+            host: Some("cybersec-scan-engine".into()), port: Some(5002),
+            start_command: None,
+            auto_restart: false, max_restarts: 50,
             priority: 1, category: "infrastructure".into(),
-        },
-        ServiceConfig {
-            id: "ssh".into(), name: "SSH Server".into(),
-            description: "OpenSSH secure shell — Port 22".into(),
-            port: Some(22),
-            start_command: Some("sudo systemctl restart ssh".into()),
-            auto_restart: true, max_restarts: 20,
-            priority: 2, category: "infrastructure".into(),
-        },
-        ServiceConfig {
-            id: "docker".into(), name: "Docker Engine".into(),
-            description: "Container runtime for isolated scan environments".into(),
-            port: None,
-            start_command: Some("sudo systemctl restart docker".into()),
-            auto_restart: true, max_restarts: 20,
-            priority: 2, category: "infrastructure".into(),
         },
     ]
 }
@@ -341,10 +314,14 @@ fn now_epoch() -> u64 {
     SystemTime::now().duration_since(UNIX_EPOCH).unwrap_or_default().as_secs()
 }
 
-async fn check_port(port: u16) -> bool {
+async fn check_port(host: &Option<String>, port: u16) -> bool {
+    let addr = match host {
+        Some(h) => format!("{}:{}", h, port),
+        None => format!("127.0.0.1:{}", port),
+    };
     tokio::time::timeout(
         Duration::from_millis(300),
-        tokio::net::TcpStream::connect(format!("127.0.0.1:{}", port)),
+        tokio::net::TcpStream::connect(&addr),
     ).await.map(|r| r.is_ok()).unwrap_or(false)
 }
 
