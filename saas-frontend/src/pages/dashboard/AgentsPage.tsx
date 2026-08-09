@@ -121,6 +121,7 @@ interface TestResult {
 }
 
 type WizardStep = 'type' | 'connection' | 'credentials' | 'review';
+type QuickConnectOS = 'windows' | 'linux' | 'macos' | 'docker';
 
 /* ════════════════════════════════════════════════════════════ *
  *  CONFIG
@@ -139,6 +140,179 @@ const CONNECTION_TYPES: {
   { id: 'docker', name: 'Docker', icon: Container, desc: 'Container environments' },
   { id: 'cloud', name: 'Cloud API', icon: Cloud, desc: 'AWS, Azure, GCP' },
 ];
+
+/* ════════════════════════════════════════════════════════════ *
+ *  QUICK CONNECT MODAL — one-click agent install
+ * ════════════════════════════════════════════════════════════ */
+
+const QC_OS: { id: QuickConnectOS; label: string; icon: React.ComponentType<{ size?: number | string; className?: string }> }[] = [
+  { id: 'windows', label: 'Windows', icon: AppWindow },
+  { id: 'linux',   label: 'Linux',   icon: TerminalIcon },
+  { id: 'macos',   label: 'macOS',   icon: Laptop },
+  { id: 'docker',  label: 'Docker',  icon: Container },
+];
+
+function buildInstallCmd(os: QuickConnectOS, token: string): string {
+  const api = (typeof window !== 'undefined' && window.location?.origin) || 'https://app.cyber-sec-pro.com';
+  const t = token || 'YOUR_TOKEN';
+  switch (os) {
+    case 'windows':
+      return `$env:CSP_TOKEN="${t}"; Invoke-Expression (Invoke-WebRequest -Uri "${api}/api/v1/agents/install.ps1" -UseBasicParsing).Content`;
+    case 'docker':
+      return `docker run -d --name cybersec-agent --restart=always -e CSP_TOKEN="${t}" -e CSP_API_URL="${api}" cybersecpro/cybersec-agent:latest`;
+    default:
+      return `curl -fsSL ${api}/api/v1/agents/install.sh | CSP_TOKEN="${t}" sh`;
+  }
+}
+
+function QuickConnectModal({ onClose }: { onClose: () => void }) {
+  const [os, setOs] = useState<QuickConnectOS>('windows');
+  const [token, setToken] = useState('');
+  const [loading, setLoading] = useState(true);
+  const [copied, setCopied] = useState(false);
+  const [waitingOnline, setWaitingOnline] = useState(false);
+  const [agentOnline, setAgentOnline] = useState(false);
+
+  const fetchToken = useCallback(async () => {
+    setLoading(true);
+    try {
+      const jwt = localStorage.getItem('token') || '';
+      const res = await fetch('/api/v1/agents/enrollment-token', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', ...(jwt ? { Authorization: 'Bearer ' + jwt } : {}) },
+      });
+      if (res.ok) {
+        const data = await res.json();
+        if (data?.token) { setToken(data.token); return; }
+      }
+    } catch { /* noop */ }
+    setLoading(false);
+  }, []);
+
+  React.useEffect(() => { fetchToken().finally(() => setLoading(false)); }, [fetchToken]);
+
+  const cmd = buildInstallCmd(os, token);
+
+  const handleCopy = () => {
+    try { navigator.clipboard.writeText(cmd); } catch { /* noop */ }
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+    // Start polling for agent coming online
+    setWaitingOnline(true);
+    const start = Date.now();
+    const poll = setInterval(async () => {
+      if (Date.now() - start > 120_000) { clearInterval(poll); setWaitingOnline(false); return; }
+      try {
+        const jwt = localStorage.getItem('token') || '';
+        const res = await fetch('/api/v1/agents?status=online', { headers: { Authorization: 'Bearer ' + jwt } });
+        const data = await res.json();
+        const agents = data?.agents || [];
+        if (agents.some((a: any) => a.status === 'online' && Date.now() - new Date(a.last_heartbeat + 'Z').getTime() < 60_000)) {
+          clearInterval(poll);
+          setWaitingOnline(false);
+          setAgentOnline(true);
+        }
+      } catch { /* noop */ }
+    }, 3000);
+  };
+
+  return (
+    <ModalShell onClose={onClose}>
+      {/* Header */}
+      <div className="flex items-center justify-between p-vos-5 border-b border-vos-border-1">
+        <div>
+          <p className="text-[10px] uppercase tracking-vos-wide font-semibold text-vos-text-3">Quick Connect</p>
+          <h2 className="text-vos-lg font-semibold text-vos-text">Add This Device</h2>
+          <p className="text-vos-xs text-vos-text-3 mt-0.5">Copy the command below and run it on the device you want to connect</p>
+        </div>
+        <ModalClose onClose={onClose} />
+      </div>
+
+      <div className="px-vos-5 py-vos-5 space-y-vos-4">
+        {/* OS Picker */}
+        <div>
+          <p className="text-[10px] uppercase tracking-vos-wide font-semibold text-vos-text-3 mb-vos-2">Select OS</p>
+          <div className="grid grid-cols-4 gap-vos-2">
+            {QC_OS.map(({ id, label, icon: Icon }) => (
+              <button
+                key={id}
+                onClick={() => setOs(id)}
+                className={`flex flex-col items-center gap-1.5 py-vos-3 rounded-vos-md border transition-colors ${
+                  os === id
+                    ? 'border-vos-accent bg-vos-accent/10 text-vos-accent'
+                    : 'border-vos-border-1 bg-vos-bg-elev-3 text-vos-text-2 hover:border-vos-border-2'
+                }`}
+              >
+                <Icon size={20} />
+                <span className="text-[11px] font-medium">{label}</span>
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* Command box */}
+        <div>
+          <p className="text-[10px] uppercase tracking-vos-wide font-semibold text-vos-text-3 mb-vos-2">
+            {os === 'windows' ? 'Run in PowerShell (Admin)' : os === 'docker' ? 'Run in terminal' : 'Run in terminal'}
+          </p>
+          <div className="relative rounded-vos-md bg-vos-bg-elev-4 border border-vos-border-1 p-vos-3 pr-12">
+            <code className="block text-[11px] font-mono text-vos-text break-all leading-relaxed">
+              {loading ? 'Generating token…' : cmd}
+            </code>
+            <button
+              onClick={handleCopy}
+              disabled={loading || !token}
+              className="absolute top-vos-2 right-vos-2 size-8 rounded-vos-sm bg-vos-bg-elev-3 border border-vos-border-1 flex items-center justify-center text-vos-text-2 hover:text-vos-accent disabled:opacity-40 transition-colors"
+              title="Copy"
+            >
+              {copied ? <CheckCircle2 size={14} className="text-vos-success" /> : <Copy size={14} />}
+            </button>
+          </div>
+        </div>
+
+        {/* Status */}
+        {agentOnline ? (
+          <div className="flex items-center gap-vos-2 p-vos-3 rounded-vos-md bg-vos-success/10 border border-vos-success/20">
+            <CheckCircle2 size={16} className="text-vos-success shrink-0" />
+            <div>
+              <p className="text-vos-sm font-semibold text-vos-success">Agent connected!</p>
+              <p className="text-vos-xs text-vos-text-3">Your device is now online and ready to scan.</p>
+            </div>
+          </div>
+        ) : waitingOnline ? (
+          <div className="flex items-center gap-vos-2 p-vos-3 rounded-vos-md bg-vos-bg-elev-3 border border-vos-border-1">
+            <Loader2 size={14} className="animate-spin text-vos-accent shrink-0" />
+            <p className="text-vos-xs text-vos-text-3">Waiting for agent to connect… (up to 2 min)</p>
+          </div>
+        ) : (
+          <div className="flex items-start gap-vos-2 p-vos-3 rounded-vos-md bg-vos-bg-elev-3 border border-vos-border-1">
+            <AlertCircle size={14} className="text-vos-info shrink-0 mt-0.5" />
+            <p className="text-vos-xs text-vos-text-3 leading-relaxed">
+              🔒 No firewall rules needed. The agent dials out over TLS and appears here within ~30 seconds.
+            </p>
+          </div>
+        )}
+      </div>
+
+      <div className="flex items-center justify-between px-vos-5 py-vos-4 border-t border-vos-border-1 bg-vos-bg-elev-1/40">
+        <button
+          onClick={onClose}
+          className="h-9 px-vos-3 text-vos-xs font-medium text-vos-text-2 hover:text-vos-text"
+        >
+          {agentOnline ? 'Done' : 'Cancel'}
+        </button>
+        <button
+          onClick={handleCopy}
+          disabled={loading || !token}
+          className="inline-flex items-center gap-2 h-10 px-vos-5 rounded-vos-md bg-vos-accent text-white text-vos-sm font-semibold hover:opacity-90 disabled:opacity-50"
+        >
+          {copied ? <CheckCircle2 size={13} /> : <Copy size={13} />}
+          {copied ? 'Copied!' : 'Copy Command'}
+        </button>
+      </div>
+    </ModalShell>
+  );
+}
 
 const PLATFORM_ICON: Record<
   string,
@@ -1671,6 +1845,7 @@ export default function AgentsPage() {
 
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [showWizard, setShowWizard] = useState(false);
+  const [showQuickConnect, setShowQuickConnect] = useState(false);
   const [showDiscovery, setShowDiscovery] = useState(false);
   const [editingAgent, setEditingAgent] = useState<Agent | null>(null);
   const [testingId, setTestingId] = useState<string | null>(null);
@@ -1792,7 +1967,7 @@ export default function AgentsPage() {
                   {t('agents.discoverNetwork', 'Discover Network')}
                 </button>
                 <button
-                  onClick={() => setShowWizard(true)}
+                  onClick={() => setShowQuickConnect(true)}
                   className="inline-flex items-center gap-2 h-10 px-vos-4 rounded-vos-md bg-vos-accent text-white text-vos-sm font-semibold hover:opacity-90"
                 >
                   <Plus size={13} />
@@ -1854,7 +2029,7 @@ export default function AgentsPage() {
           >
             {agents.length === 0 ? (
               <EmptyState
-                onAdd={() => setShowWizard(true)}
+                onAdd={() => setShowQuickConnect(true)}
                 onDiscover={() => setShowDiscovery(true)}
               />
             ) : (
@@ -1946,6 +2121,9 @@ export default function AgentsPage() {
         </div>
 
         <AnimatePresence>
+          {showQuickConnect && (
+            <QuickConnectModal onClose={() => setShowQuickConnect(false)} />
+          )}
           {showWizard && (
             <AddDeviceWizard
               onClose={() => setShowWizard(false)}
