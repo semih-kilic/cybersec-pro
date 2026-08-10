@@ -1,7 +1,7 @@
 {
   "meta": {
     "title": "CyberSec Pro — Plataforma de Seguridad Ofensiva",
-    "description": "Plataforma de seguridad ofensiva en la nube con 289 herramientas de Kali Linux. Escaneo automatizado de vulnerabilidades, pruebas de penetración y evaluaciones de seguridad."
+    "description": "Plataforma de seguridad ofensiva en la nube con 183 herramientas de Kali Linux. Escaneo automatizado de vulnerabilidades, pruebas de penetración y evaluaciones de seguridad."
   },
   "nav": {
     "features": "Funciones",
@@ -22,14 +22,14 @@
   "hero": {
     "badge": "Seguridad Ofensiva en la Nube",
     "title": "Plataforma de\nSeguridad Ofensiva",
-    "titleHighlight": "289 Herramientas.",
-    "subtitle": "Ejecute 289 herramientas de Kali Linux en 61 categorías desde su navegador. Sin configuración. Sin infraestructura. Solo resultados.",
+    "titleHighlight": "183 Herramientas.",
+    "subtitle": "Ejecute 183 herramientas de Kali Linux en 18 categorías desde su navegador. Sin configuración. Sin infraestructura. Solo resultados.",
     "cta": "Iniciar escaneo gratuito",
     "ctaSecondary": "Ver herramientas",
     "stats": {
-      "tools": "289",
+      "tools": "183",
       "toolsLabel": "Herramientas de seguridad",
-      "categories": "61",
+      "categories": "18",
       "categoriesLabel": "Categorías",
       "uptime": "5",
       "uptimeLabel": "Planes",
@@ -47,7 +47,7 @@
         "description": "Configure y ejecute escaneos de seguridad complejos con unos pocos clics. Programe evaluaciones recurrentes."
       },
       "tools": {
-        "title": "289 herramientas Kali",
+        "title": "183 herramientas Kali",
         "description": "Acceda al arsenal completo de Kali Linux — desde Nmap hasta Metasploit, de Burp Suite a SQLMap."
       },
       "reports": {
@@ -84,7 +84,7 @@
         "price": "0 €",
         "period": "3 días",
         "features": [
-          "Las 289 herramientas de seguridad",
+          "Las 183 herramientas de seguridad",
           "3 escaneos por día",
           "1 escaneo simultáneo",
           "Informe PDF con hallazgos",
@@ -97,7 +97,7 @@
         "price": "29 €",
         "period": "/mes",
         "features": [
-          "Las 289 herramientas de seguridad",
+          "Las 183 herramientas de seguridad",
           "30 escaneos por mes",
           "2 escaneos simultáneos",
           "1 dominio/aplicación",
@@ -114,7 +114,7 @@
         "price": "99 €",
         "period": "/mes",
         "features": [
-          "Las 289 herramientas de seguridad",
+          "Las 183 herramientas de seguridad",
           "250 escaneos por mes",
           "5 escaneos simultáneos",
           "Hasta 5 dominios/aplicaciones",
@@ -134,7 +134,7 @@
         "price": "349 €",
         "period": "/mes",
         "features": [
-          "Las 289 herramientas de seguridad",
+          "Las 183 herramientas de seguridad",
           "5.000 escaneos por mes",
           "Escaneos simultáneos ilimitados",
           "Dominios/aplicaciones ilimitados",
@@ -156,7 +156,7 @@
   },
   "tools": {
     "badge": "Arsenal de seguridad",
-    "title": "289 herramientas. 61 categorías.",
+    "title": "183 herramientas. 18 categorías.",
     "subtitle": "Cada herramienta de la distribución Kali Linux, lista para ejecutar en su navegador.",
     "searchPlaceholder": "Buscar herramientas...",
     "allCategories": "Todas",
@@ -181,7 +181,7 @@
       },
       "q3": {
         "q": "¿Cuántas herramientas hay disponibles?",
-        "a": "289 herramientas Kali Linux en 61 categorías, incluyendo Nmap, Metasploit, Burp Suite y SQLMap."
+        "a": "183 herramientas Kali Linux en 18 categorías, incluyendo Nmap, Metasploit, Burp Suite y SQLMap."
       },
       "q4": {
         "q": "¿Qué tipos de escaneo hay?",
@@ -227,7 +227,7 @@
     "button": "Iniciar escaneo gratuito"
   },
   "footer": {
-    "description": "Plataforma de seguridad ofensiva en la nube. 289 herramientas Kali Linux en 61 categorías.",
+    "description": "Plataforma de seguridad ofensiva en la nube. 183 herramientas Kali Linux en 18 categorías.",
     "platform": "Plataforma",
     "company": "Empresa",
     "legal": "Legal",

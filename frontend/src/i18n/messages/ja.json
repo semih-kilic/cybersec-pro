@@ -23,13 +23,13 @@
     "badge": "クラウドベースのオフェンシブセキュリティ",
     "title": "オフェンシブセキュリティ\nプラットフォーム",
     "titleHighlight": "396ツール。",
-    "subtitle": "ブラウザから61カテゴリの396のKali Linuxツールを実行。セットアップ不要。インフラ不要。結果だけ。",
+    "subtitle": "ブラウザから18カテゴリの396のKali Linuxツールを実行。セットアップ不要。インフラ不要。結果だけ。",
     "cta": "無料スキャンを開始",
     "ctaSecondary": "ツールを見る",
     "stats": {
       "tools": "289",
       "toolsLabel": "セキュリティツール",
-      "categories": "61",
+      "categories": "18",
       "categoriesLabel": "カテゴリ",
       "uptime": "5",
       "uptimeLabel": "プラン",
@@ -156,7 +156,7 @@
   },
   "tools": {
     "badge": "セキュリティツール群",
-    "title": "396ツール。61カテゴリ。",
+    "title": "396ツール。18カテゴリ。",
     "subtitle": "Kali Linuxディストリビューションのすべてのツール。ブラウザで即実行可能。",
     "searchPlaceholder": "ツールを検索...",
     "allCategories": "すべて",
@@ -181,7 +181,7 @@
       },
       "q3": {
         "q": "利用可能なツール数は？",
-        "a": "Nmap、Metasploit、Burp Suite、SQLMapなど61カテゴリ396のKali Linuxツール。"
+        "a": "Nmap、Metasploit、Burp Suite、SQLMapなど18カテゴリ396のKali Linuxツール。"
       },
       "q4": {
         "q": "スキャンタイプは？",
@@ -227,7 +227,7 @@
     "button": "無料スキャンを開始"
   },
   "footer": {
-    "description": "クラウドベースのオフェンシブセキュリティプラットフォーム。61カテゴリの396のKali Linuxツール。",
+    "description": "クラウドベースのオフェンシブセキュリティプラットフォーム。18カテゴリの396のKali Linuxツール。",
     "platform": "プラットフォーム",
     "company": "会社情報",
     "legal": "法的情報",

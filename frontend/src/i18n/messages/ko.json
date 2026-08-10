@@ -23,13 +23,13 @@
     "badge": "클라우드 기반 공격적 보안",
     "title": "공격적 보안\n플랫폼",
     "titleHighlight": "396개 도구.",
-    "subtitle": "브라우저에서 61개 카테고리의 396개 Kali Linux 도구를 실행하세요. 설정 불필요. 인프라 불필요. 결과만 있습니다.",
+    "subtitle": "브라우저에서 18개 카테고리의 396개 Kali Linux 도구를 실행하세요. 설정 불필요. 인프라 불필요. 결과만 있습니다.",
     "cta": "무료 스캔 시작",
     "ctaSecondary": "보안 도구 보기",
     "stats": {
       "tools": "289",
       "toolsLabel": "보안 도구",
-      "categories": "61",
+      "categories": "18",
       "categoriesLabel": "카테고리",
       "uptime": "5",
       "uptimeLabel": "플랜",
@@ -156,7 +156,7 @@
   },
   "tools": {
     "badge": "보안 도구 목록",
-    "title": "396개 도구. 61개 카테고리.",
+    "title": "396개 도구. 18개 카테고리.",
     "subtitle": "Kali Linux 배포판의 모든 도구, 브라우저에서 바로 실행 가능.",
     "searchPlaceholder": "도구 검색...",
     "allCategories": "전체",
@@ -181,7 +181,7 @@
       },
       "q3": {
         "q": "몇 개의 도구가 있나요?",
-        "a": "Nmap, Metasploit, Burp Suite, SQLMap 등 61개 카테고리에 396개 Kali Linux 도구."
+        "a": "Nmap, Metasploit, Burp Suite, SQLMap 등 18개 카테고리에 396개 Kali Linux 도구."
       },
       "q4": {
         "q": "어떤 스캔 유형이 있나요?",
@@ -227,7 +227,7 @@
     "button": "무료 스캔 시작"
   },
   "footer": {
-    "description": "클라우드 기반 공격적 보안 플랫폼. 61개 카테고리의 396개 Kali Linux 도구.",
+    "description": "클라우드 기반 공격적 보안 플랫폼. 18개 카테고리의 396개 Kali Linux 도구.",
     "platform": "플랫폼",
     "company": "회사",
     "legal": "법적 정보",
