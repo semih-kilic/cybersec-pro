@@ -6,12 +6,49 @@
   "binary": "aircrack-ng",
   "gui": false,
   "has_params_db": true,
-  "has_template": false,
-  "derived": true,
-  "form": [],
-  "template": "",
+  "has_template": true,
+  "derived": false,
+  "form": [
+   {
+    "name": "target",
+    "type": "text",
+    "label": "Capture File",
+    "default": "",
+    "required": true,
+    "description": "WPA/WEP capture file",
+    "placeholder": "/path/to/capture.cap"
+   },
+   {
+    "name": "wordlist",
+    "type": "text",
+    "label": "Wordlist",
+    "default": "",
+    "required": false,
+    "description": "Dictionary file (flag value)",
+    "placeholder": "-w /path/wordlist.txt"
+   },
+   {
+    "name": "bssid",
+    "type": "text",
+    "label": "BSSID",
+    "default": "",
+    "required": false,
+    "description": "Target BSSID (flag value)",
+    "placeholder": "-b AA:BB:CC:DD:EE:FF"
+   },
+   {
+    "name": "options",
+    "type": "text",
+    "label": "Extra Options",
+    "default": "",
+    "required": false,
+    "description": "Additional aircrack-ng options",
+    "placeholder": "-a 2 -n 64"
+   }
+  ],
+  "template": "aircrack-ng {target} {wordlist} {bssid} {options}",
   "uncovered": [],
-  "status": "GAP_TEMPLATE"
+  "status": "OK"
  },
  {
   "id": "f8564ddc-aa55-4942-a2a6-15bc26feecf7",
@@ -62,12 +99,31 @@
   "binary": "amass",
   "gui": false,
   "has_params_db": true,
-  "has_template": false,
-  "derived": true,
-  "form": [],
-  "template": "",
+  "has_template": true,
+  "derived": false,
+  "form": [
+   {
+    "name": "target",
+    "type": "text",
+    "label": "Domain",
+    "default": "",
+    "required": true,
+    "description": "Target domain",
+    "placeholder": "example.com"
+   },
+   {
+    "name": "options",
+    "type": "text",
+    "label": "Options",
+    "default": "-passive",
+    "required": false,
+    "description": "Amass options",
+    "placeholder": "-active -brute -w /path/wordlist.txt"
+   }
+  ],
+  "template": "amass enum -d {target} {options}",
   "uncovered": [],
-  "status": "GAP_TEMPLATE"
+  "status": "OK"
  },
  {
   "id": "c3e002bc-e3f0-4baa-90b6-15516fc4c9fb",
@@ -129,13 +185,20 @@
   "category": "Reconnaissance & OSINT",
   "binary": "assetfinder",
   "gui": false,
-  "has_params_db": true,
-  "has_template": false,
+  "has_params_db": false,
+  "has_template": true,
   "derived": true,
-  "form": [],
-  "template": "",
+  "form": [
+   {
+    "name": "domain"
+   },
+   {
+    "name": "subs_only"
+   }
+  ],
+  "template": "assetfinder {domain} {subs_only}",
   "uncovered": [],
-  "status": "GAP_TEMPLATE"
+  "status": "OK"
  },
  {
   "id": "563a0b1c-06d6-4930-afea-e3d449be5f59",
@@ -171,13 +234,20 @@
   "category": "Reconnaissance & OSINT",
   "binary": "bettercap",
   "gui": false,
-  "has_params_db": true,
-  "has_template": false,
+  "has_params_db": false,
+  "has_template": true,
   "derived": true,
-  "form": [],
-  "template": "",
+  "form": [
+   {
+    "name": "target"
+   },
+   {
+    "name": "eval_script"
+   }
+  ],
+  "template": "bettercap -iface {target} {eval_script}",
   "uncovered": [],
-  "status": "GAP_TEMPLATE"
+  "status": "OK"
  },
  {
   "id": "f4c9e66f-b98e-4904-b2a9-cbf99338359a",
@@ -185,13 +255,20 @@
   "category": "Reconnaissance & OSINT",
   "binary": "binwalk",
   "gui": false,
-  "has_params_db": true,
-  "has_template": false,
+  "has_params_db": false,
+  "has_template": true,
   "derived": true,
-  "form": [],
-  "template": "",
+  "form": [
+   {
+    "name": "target"
+   },
+   {
+    "name": "options"
+   }
+  ],
+  "template": "binwalk {target} {options}",
   "uncovered": [],
-  "status": "GAP_TEMPLATE"
+  "status": "OK"
  },
  {
   "id": "d03ec5aa-0491-4fe9-92ce-ce27fb06371f",
@@ -214,12 +291,25 @@
   "binary": "bloodhound-python",
   "gui": false,
   "has_params_db": false,
-  "has_template": false,
+  "has_template": true,
   "derived": true,
-  "form": [],
-  "template": "",
+  "form": [
+   {
+    "name": "username"
+   },
+   {
+    "name": "password"
+   },
+   {
+    "name": "domain"
+   },
+   {
+    "name": "collection"
+   }
+  ],
+  "template": "bloodhound-python -u {username} -p {password} -d {domain} -c {collection}",
   "uncovered": [],
-  "status": "GAP_TEMPLATE"
+  "status": "OK"
  },
  {
   "id": "c94bc225-f2ce-48c8-9b64-448296f9163f",
@@ -228,12 +318,19 @@
   "binary": "bulk_extractor",
   "gui": false,
   "has_params_db": false,
-  "has_template": false,
+  "has_template": true,
   "derived": true,
-  "form": [],
-  "template": "",
+  "form": [
+   {
+    "name": "target"
+   },
+   {
+    "name": "output"
+   }
+  ],
+  "template": "bulk_extractor {target} {output}",
   "uncovered": [],
-  "status": "GAP_TEMPLATE"
+  "status": "OK"
  },
  {
   "id": "36cbce6d-2bc7-4262-88e1-4bad1d47e2ac",
@@ -291,13 +388,26 @@
   "category": "Data Protection & Encryption",
   "binary": "cewl",
   "gui": false,
-  "has_params_db": true,
-  "has_template": false,
+  "has_params_db": false,
+  "has_template": true,
   "derived": true,
-  "form": [],
-  "template": "",
+  "form": [
+   {
+    "name": "url"
+   },
+   {
+    "name": "depth"
+   },
+   {
+    "name": "min_length"
+   },
+   {
+    "name": "output"
+   }
+  ],
+  "template": "cewl {url} {depth} {min_length} {output}",
   "uncovered": [],
-  "status": "GAP_TEMPLATE"
+  "status": "OK"
  },
  {
   "id": "27acce78-2dd0-4f4b-a0f5-a8a3bd5c3724",
@@ -306,12 +416,19 @@
   "binary": "chisel",
   "gui": false,
   "has_params_db": false,
-  "has_template": false,
+  "has_template": true,
   "derived": true,
-  "form": [],
-  "template": "",
+  "form": [
+   {
+    "name": "target"
+   },
+   {
+    "name": "options"
+   }
+  ],
+  "template": "chisel client {target} {options}",
   "uncovered": [],
-  "status": "GAP_TEMPLATE"
+  "status": "OK"
  },
  {
   "id": "9bdcc01a-793a-42fd-a3a6-d5d5a27959af",
@@ -320,12 +437,19 @@
   "binary": "chntpw",
   "gui": false,
   "has_params_db": false,
-  "has_template": false,
+  "has_template": true,
   "derived": true,
-  "form": [],
-  "template": "",
+  "form": [
+   {
+    "name": "target"
+   },
+   {
+    "name": "options"
+   }
+  ],
+  "template": "chntpw {target} {options}",
   "uncovered": [],
-  "status": "GAP_TEMPLATE"
+  "status": "OK"
  },
  {
   "id": "00f30b86-d6b6-4d5b-b6b0-d1dc8814352c",
@@ -376,12 +500,22 @@
   "binary": "crackmapexec",
   "gui": false,
   "has_params_db": false,
-  "has_template": false,
+  "has_template": true,
   "derived": true,
-  "form": [],
-  "template": "",
+  "form": [
+   {
+    "name": "target"
+   },
+   {
+    "name": "creds"
+   },
+   {
+    "name": "options"
+   }
+  ],
+  "template": "netexec smb {target} {creds} {options}",
   "uncovered": [],
-  "status": "GAP_TEMPLATE"
+  "status": "OK"
  },
  {
   "id": "ht_crtsh",
@@ -472,12 +606,22 @@
   "binary": "dirsearch",
   "gui": false,
   "has_params_db": false,
-  "has_template": false,
+  "has_template": true,
   "derived": true,
-  "form": [],
-  "template": "",
+  "form": [
+   {
+    "name": "url"
+   },
+   {
+    "name": "extensions"
+   },
+   {
+    "name": "threads"
+   }
+  ],
+  "template": "dirsearch -u {url} {extensions} {threads}",
   "uncovered": [],
-  "status": "GAP_TEMPLATE"
+  "status": "OK"
  },
  {
   "id": "242cc8d3-7392-4c1f-9e29-bcf59cf3c95d",
@@ -500,12 +644,19 @@
   "binary": "dnsenum",
   "gui": false,
   "has_params_db": false,
-  "has_template": false,
+  "has_template": true,
   "derived": true,
-  "form": [],
-  "template": "",
+  "form": [
+   {
+    "name": "domain"
+   },
+   {
+    "name": "options"
+   }
+  ],
+  "template": "dnsenum {domain} {options}",
   "uncovered": [],
-  "status": "GAP_TEMPLATE"
+  "status": "OK"
  },
  {
   "id": "4dec3ed5-7cec-48cd-9bea-1337333581e9",
@@ -531,13 +682,20 @@
   "category": "Reconnaissance & OSINT",
   "binary": "dnsrecon",
   "gui": false,
-  "has_params_db": true,
-  "has_template": false,
+  "has_params_db": false,
+  "has_template": true,
   "derived": true,
-  "form": [],
-  "template": "",
+  "form": [
+   {
+    "name": "domain"
+   },
+   {
+    "name": "type"
+   }
+  ],
+  "template": "dnsrecon -d {domain} {type}",
   "uncovered": [],
-  "status": "GAP_TEMPLATE"
+  "status": "OK"
  },
  {
   "id": "efd412ba-b90f-4865-994a-b4ba35852ac1",
@@ -573,13 +731,20 @@
   "category": "Reconnaissance & OSINT",
   "binary": "dsniff",
   "gui": false,
-  "has_params_db": true,
-  "has_template": false,
+  "has_params_db": false,
+  "has_template": true,
   "derived": true,
-  "form": [],
-  "template": "",
+  "form": [
+   {
+    "name": "target"
+   },
+   {
+    "name": "options"
+   }
+  ],
+  "template": "dsniff -i {target} {options}",
   "uncovered": [],
-  "status": "GAP_TEMPLATE"
+  "status": "OK"
  },
  {
   "id": "458affa9-0a23-4218-a268-27675fc7936a",
@@ -602,12 +767,19 @@
   "binary": "enum4linux",
   "gui": false,
   "has_params_db": false,
-  "has_template": false,
+  "has_template": true,
   "derived": true,
-  "form": [],
-  "template": "",
+  "form": [
+   {
+    "name": "target"
+   },
+   {
+    "name": "options"
+   }
+  ],
+  "template": "enum4linux {target} {options}",
   "uncovered": [],
-  "status": "GAP_TEMPLATE"
+  "status": "OK"
  },
  {
   "id": "099c849c-634c-4637-91fa-b77c70aec6cd",
@@ -616,12 +788,19 @@
   "binary": "enum4linux-ng",
   "gui": false,
   "has_params_db": false,
-  "has_template": false,
+  "has_template": true,
   "derived": true,
-  "form": [],
-  "template": "",
+  "form": [
+   {
+    "name": "target"
+   },
+   {
+    "name": "options"
+   }
+  ],
+  "template": "enum4linux-ng {target} {options}",
   "uncovered": [],
-  "status": "GAP_TEMPLATE"
+  "status": "OK"
  },
  {
   "id": "50c4ea49-a217-44e9-9bd3-d7b2ec583ecf",
@@ -629,13 +808,20 @@
   "category": "Reconnaissance & OSINT",
   "binary": "ettercap",
   "gui": false,
-  "has_params_db": true,
-  "has_template": false,
+  "has_params_db": false,
+  "has_template": true,
   "derived": true,
-  "form": [],
-  "template": "",
+  "form": [
+   {
+    "name": "target"
+   },
+   {
+    "name": "options"
+   }
+  ],
+  "template": "ettercap -T -i {target} {options}",
   "uncovered": [],
-  "status": "GAP_TEMPLATE"
+  "status": "OK"
  },
  {
   "id": "47779b18-8641-4bb1-a87c-e9ba685e02e0",
@@ -644,12 +830,25 @@
   "binary": "evil-winrm",
   "gui": false,
   "has_params_db": false,
-  "has_template": false,
+  "has_template": true,
   "derived": true,
-  "form": [],
-  "template": "",
+  "form": [
+   {
+    "name": "target"
+   },
+   {
+    "name": "username"
+   },
+   {
+    "name": "password"
+   },
+   {
+    "name": "options"
+   }
+  ],
+  "template": "evil-winrm -i {target} -u {username} -p {password} {options}",
   "uncovered": [],
-  "status": "GAP_TEMPLATE"
+  "status": "OK"
  },
  {
   "id": "486ce52e-a2e4-4c0e-aff7-9ccb1edaebe8",
@@ -703,13 +902,20 @@
   "category": "Data Protection & Encryption",
   "binary": "fcrackzip",
   "gui": false,
-  "has_params_db": true,
-  "has_template": false,
+  "has_params_db": false,
+  "has_template": true,
   "derived": true,
-  "form": [],
-  "template": "",
+  "form": [
+   {
+    "name": "target"
+   },
+   {
+    "name": "wordlist"
+   }
+  ],
+  "template": "fcrackzip {target} {wordlist}",
   "uncovered": [],
-  "status": "GAP_TEMPLATE"
+  "status": "OK"
  },
  {
   "id": "050360bf-9160-4235-b59e-89dc5a039d84",
@@ -717,13 +923,26 @@
   "category": "Web Application Security",
   "binary": "feroxbuster",
   "gui": false,
-  "has_params_db": true,
-  "has_template": false,
+  "has_params_db": false,
+  "has_template": true,
   "derived": true,
-  "form": [],
-  "template": "",
+  "form": [
+   {
+    "name": "url"
+   },
+   {
+    "name": "wordlist"
+   },
+   {
+    "name": "depth"
+   },
+   {
+    "name": "threads"
+   }
+  ],
+  "template": "feroxbuster -u {url} {wordlist} {depth} {threads}",
   "uncovered": [],
-  "status": "GAP_TEMPLATE"
+  "status": "OK"
  },
  {
   "id": "79610b72-038a-4ffa-bbc0-e8d6b9ca0ebb",
@@ -731,13 +950,23 @@
   "category": "Web Application Security",
   "binary": "ffuf",
   "gui": false,
-  "has_params_db": true,
-  "has_template": false,
+  "has_params_db": false,
+  "has_template": true,
   "derived": true,
-  "form": [],
-  "template": "",
+  "form": [
+   {
+    "name": "url"
+   },
+   {
+    "name": "wordlist"
+   },
+   {
+    "name": "matches"
+   }
+  ],
+  "template": "ffuf -u {url} {wordlist} {matches}",
   "uncovered": [],
-  "status": "GAP_TEMPLATE"
+  "status": "OK"
  },
  {
   "id": "ca4d3f74-c9f6-407d-9ef9-df889667b7c8",
@@ -745,13 +974,20 @@
   "category": "Reconnaissance & OSINT",
   "binary": "fierce",
   "gui": false,
-  "has_params_db": true,
-  "has_template": false,
+  "has_params_db": false,
+  "has_template": true,
   "derived": true,
-  "form": [],
-  "template": "",
+  "form": [
+   {
+    "name": "domain"
+   },
+   {
+    "name": "options"
+   }
+  ],
+  "template": "fierce --domain {domain} {options}",
   "uncovered": [],
-  "status": "GAP_TEMPLATE"
+  "status": "OK"
  },
  {
   "id": "c8e71b53-f7c7-4517-b8b8-2b379b7ca78b",
@@ -777,13 +1013,20 @@
   "category": "Compliance & GRC",
   "binary": "foremost",
   "gui": false,
-  "has_params_db": true,
-  "has_template": false,
+  "has_params_db": false,
+  "has_template": true,
   "derived": true,
-  "form": [],
-  "template": "",
+  "form": [
+   {
+    "name": "target"
+   },
+   {
+    "name": "output"
+   }
+  ],
+  "template": "foremost -i {target} {output}",
   "uncovered": [],
-  "status": "GAP_TEMPLATE"
+  "status": "OK"
  },
  {
   "id": "b5fa2d81-177b-4bb4-9068-553109837b12",
@@ -792,12 +1035,19 @@
   "binary": "fping",
   "gui": false,
   "has_params_db": false,
-  "has_template": false,
+  "has_template": true,
   "derived": true,
-  "form": [],
-  "template": "",
+  "form": [
+   {
+    "name": "target"
+   },
+   {
+    "name": "options"
+   }
+  ],
+  "template": "fping {target} {options}",
   "uncovered": [],
-  "status": "GAP_TEMPLATE"
+  "status": "OK"
  },
  {
   "id": "e05cb381-50cb-46af-803e-eb1f581dea9f",
@@ -875,13 +1125,23 @@
   "category": "Data Protection & Encryption",
   "binary": "gospider",
   "gui": false,
-  "has_params_db": true,
-  "has_template": false,
+  "has_params_db": false,
+  "has_template": true,
   "derived": true,
-  "form": [],
-  "template": "",
+  "form": [
+   {
+    "name": "url"
+   },
+   {
+    "name": "depth"
+   },
+   {
+    "name": "options"
+   }
+  ],
+  "template": "gospider -s {url} {depth} {options}",
   "uncovered": [],
-  "status": "GAP_TEMPLATE"
+  "status": "OK"
  },
  {
   "id": "f7f21a86-4f04-4cf7-9226-4873a6ecf3f1",
@@ -936,12 +1196,58 @@
   "binary": "hashcat",
   "gui": false,
   "has_params_db": true,
-  "has_template": false,
-  "derived": true,
-  "form": [],
-  "template": "",
+  "has_template": true,
+  "derived": false,
+  "form": [
+   {
+    "name": "target",
+    "type": "text",
+    "label": "Hash File",
+    "default": "",
+    "required": true,
+    "description": "File containing hashes",
+    "placeholder": "/path/to/hashes.txt"
+   },
+   {
+    "name": "mode",
+    "type": "text",
+    "label": "Hash Mode",
+    "default": "-m 0",
+    "required": false,
+    "description": "Hashcat mode (-m)",
+    "placeholder": "-m 1000"
+   },
+   {
+    "name": "attack_mode",
+    "type": "text",
+    "label": "Attack Mode",
+    "default": "-a 0",
+    "required": false,
+    "description": "Attack mode (-a)",
+    "placeholder": "-a 3"
+   },
+   {
+    "name": "wordlist",
+    "type": "text",
+    "label": "Wordlist / Mask",
+    "default": "",
+    "required": false,
+    "description": "Dictionary or mask",
+    "placeholder": "wordlist.txt or ?a?b?c?d"
+   },
+   {
+    "name": "options",
+    "type": "text",
+    "label": "Extra Options",
+    "default": "",
+    "required": false,
+    "description": "Additional hashcat options",
+    "placeholder": "--force -O -w 2"
+   }
+  ],
+  "template": "hashcat {mode} {attack_mode} {target} {wordlist} {options}",
   "uncovered": [],
-  "status": "GAP_TEMPLATE"
+  "status": "OK"
  },
  {
   "id": "063eb0db-e2e3-414e-9bd6-c009ab0e1cc3",
@@ -949,13 +1255,20 @@
   "category": "Data Protection & Encryption",
   "binary": "hashid",
   "gui": false,
-  "has_params_db": true,
-  "has_template": false,
+  "has_params_db": false,
+  "has_template": true,
   "derived": true,
-  "form": [],
-  "template": "",
+  "form": [
+   {
+    "name": "target"
+   },
+   {
+    "name": "options"
+   }
+  ],
+  "template": "hashid {target} {options}",
   "uncovered": [],
-  "status": "GAP_TEMPLATE"
+  "status": "OK"
  },
  {
   "id": "f63fedeb-7876-4fc9-a934-9170f3d68dd0",
@@ -995,13 +1308,20 @@
   "category": "Reconnaissance & OSINT",
   "binary": "hping3",
   "gui": false,
-  "has_params_db": true,
-  "has_template": false,
+  "has_params_db": false,
+  "has_template": true,
   "derived": true,
-  "form": [],
-  "template": "",
+  "form": [
+   {
+    "name": "target"
+   },
+   {
+    "name": "options"
+   }
+  ],
+  "template": "hping3 {target} {options}",
   "uncovered": [],
-  "status": "GAP_TEMPLATE"
+  "status": "OK"
  },
  {
   "id": "942ea683-6fdd-4602-b8a2-156739b20ff9",
@@ -1116,12 +1436,19 @@
   "binary": "joomscan",
   "gui": false,
   "has_params_db": false,
-  "has_template": false,
+  "has_template": true,
   "derived": true,
-  "form": [],
-  "template": "",
+  "form": [
+   {
+    "name": "url"
+   },
+   {
+    "name": "options"
+   }
+  ],
+  "template": "joomscan --url {url} {options}",
   "uncovered": [],
-  "status": "GAP_TEMPLATE"
+  "status": "OK"
  },
  {
   "id": "7f72db02-0658-4b63-8b68-285ca415576c",
@@ -1176,12 +1503,19 @@
   "binary": "kismet",
   "gui": false,
   "has_params_db": false,
-  "has_template": false,
+  "has_template": true,
   "derived": true,
-  "form": [],
-  "template": "",
+  "form": [
+   {
+    "name": "target"
+   },
+   {
+    "name": "options"
+   }
+  ],
+  "template": "kismet -c {target} {options}",
   "uncovered": [],
-  "status": "GAP_TEMPLATE"
+  "status": "OK"
  },
  {
   "id": "0e26a026-7db3-446c-b317-fe599ba9661a",
@@ -1263,13 +1597,20 @@
   "category": "Reconnaissance & OSINT",
   "binary": "macchanger",
   "gui": false,
-  "has_params_db": true,
-  "has_template": false,
+  "has_params_db": false,
+  "has_template": true,
   "derived": true,
-  "form": [],
-  "template": "",
+  "form": [
+   {
+    "name": "target"
+   },
+   {
+    "name": "options"
+   }
+  ],
+  "template": "macchanger {target} {options}",
   "uncovered": [],
-  "status": "GAP_TEMPLATE"
+  "status": "OK"
  },
  {
   "id": "ht_maigret",
@@ -1332,12 +1673,58 @@
   "binary": "masscan",
   "gui": false,
   "has_params_db": true,
-  "has_template": false,
-  "derived": true,
-  "form": [],
-  "template": "",
+  "has_template": true,
+  "derived": false,
+  "form": [
+   {
+    "name": "target",
+    "type": "text",
+    "label": "Target",
+    "default": "",
+    "required": true,
+    "description": "Target IP range (CIDR)",
+    "placeholder": "192.168.1.0/24"
+   },
+   {
+    "name": "ports",
+    "type": "text",
+    "label": "Ports",
+    "default": "-p 80,443",
+    "required": true,
+    "description": "Ports to scan",
+    "placeholder": "-p 0-65535"
+   },
+   {
+    "name": "rate",
+    "type": "text",
+    "label": "Rate",
+    "default": "--rate 1000",
+    "required": false,
+    "description": "Packets per second",
+    "placeholder": "--rate 10000"
+   },
+   {
+    "name": "banners",
+    "type": "text",
+    "label": "Banners",
+    "default": "",
+    "required": false,
+    "description": "Capture banners (flag value)",
+    "placeholder": "--banners"
+   },
+   {
+    "name": "output",
+    "type": "text",
+    "label": "Output File",
+    "default": "",
+    "required": false,
+    "description": "Output to list file",
+    "placeholder": "-oL results.txt"
+   }
+  ],
+  "template": "masscan {target} {ports} {rate} {banners} {output}",
   "uncovered": [],
-  "status": "GAP_TEMPLATE"
+  "status": "OK"
  },
  {
   "id": "fb08d1b5-c2c4-4ac1-9b63-8dd1599218ff",
@@ -1401,13 +1788,20 @@
   "category": "Web Application Security",
   "binary": "mitmproxy",
   "gui": false,
-  "has_params_db": true,
-  "has_template": false,
+  "has_params_db": false,
+  "has_template": true,
   "derived": true,
-  "form": [],
-  "template": "",
+  "form": [
+   {
+    "name": "target"
+   },
+   {
+    "name": "options"
+   }
+  ],
+  "template": "mitmproxy --listen-port {target} {options}",
   "uncovered": [],
-  "status": "GAP_TEMPLATE"
+  "status": "OK"
  },
  {
   "id": "ht_mobsf",
@@ -1444,12 +1838,67 @@
   "binary": "msfvenom",
   "gui": false,
   "has_params_db": true,
-  "has_template": false,
-  "derived": true,
-  "form": [],
-  "template": "",
+  "has_template": true,
+  "derived": false,
+  "form": [
+   {
+    "name": "target",
+    "type": "text",
+    "label": "Payload",
+    "default": "",
+    "required": true,
+    "description": "Payload name",
+    "placeholder": "linux/x64/shell_reverse_tcp"
+   },
+   {
+    "name": "lhost",
+    "type": "text",
+    "label": "LHOST",
+    "default": "LHOST=127.0.0.1",
+    "required": false,
+    "description": "Listener host",
+    "placeholder": "LHOST=10.0.0.1"
+   },
+   {
+    "name": "lport",
+    "type": "text",
+    "label": "LPORT",
+    "default": "LPORT=4444",
+    "required": false,
+    "description": "Listener port",
+    "placeholder": "LPORT=4444"
+   },
+   {
+    "name": "format",
+    "type": "text",
+    "label": "Format",
+    "default": "-f elf",
+    "required": false,
+    "description": "Output format",
+    "placeholder": "-f exe"
+   },
+   {
+    "name": "output",
+    "type": "text",
+    "label": "Output File",
+    "default": "",
+    "required": false,
+    "description": "Output file (flag value)",
+    "placeholder": "-o /tmp/payload"
+   },
+   {
+    "name": "options",
+    "type": "text",
+    "label": "Extra Options",
+    "default": "",
+    "required": false,
+    "description": "Arch/platform options",
+    "placeholder": "--arch x64 --platform linux"
+   }
+  ],
+  "template": "msfvenom -p {target} {lhost} {lport} {format} {output} {options}",
   "uncovered": [],
-  "status": "GAP_TEMPLATE"
+  "status": "OK"
  },
  {
   "id": "3ff32281-6770-4cea-9f21-7a3b40cb014f",
@@ -1514,12 +1963,19 @@
   "binary": "ncat",
   "gui": false,
   "has_params_db": false,
-  "has_template": false,
+  "has_template": true,
   "derived": true,
-  "form": [],
-  "template": "",
+  "form": [
+   {
+    "name": "target"
+   },
+   {
+    "name": "options"
+   }
+  ],
+  "template": "ncat {target} {options}",
   "uncovered": [],
-  "status": "GAP_TEMPLATE"
+  "status": "OK"
  },
  {
   "id": "d9c01392-33d7-4959-8aff-d81849260943",
@@ -1527,13 +1983,20 @@
   "category": "Data Protection & Encryption",
   "binary": "ncrack",
   "gui": false,
-  "has_params_db": true,
-  "has_template": false,
+  "has_params_db": false,
+  "has_template": true,
   "derived": true,
-  "form": [],
-  "template": "",
+  "form": [
+   {
+    "name": "target"
+   },
+   {
+    "name": "options"
+   }
+  ],
+  "template": "ncrack {target} {options}",
   "uncovered": [],
-  "status": "GAP_TEMPLATE"
+  "status": "OK"
  },
  {
   "id": "b6d04fc5-c76a-4508-b814-afae074f8241",
@@ -1555,13 +2018,20 @@
   "category": "Reconnaissance & OSINT",
   "binary": "netdiscover",
   "gui": false,
-  "has_params_db": true,
-  "has_template": false,
+  "has_params_db": false,
+  "has_template": true,
   "derived": true,
-  "form": [],
-  "template": "",
+  "form": [
+   {
+    "name": "target"
+   },
+   {
+    "name": "options"
+   }
+  ],
+  "template": "netdiscover -r {target} {options}",
   "uncovered": [],
-  "status": "GAP_TEMPLATE"
+  "status": "OK"
  },
  {
   "id": "a9c0b33d-8e1a-475c-84dd-8c2861859fdd",
@@ -1569,13 +2039,23 @@
   "category": "Compliance & GRC",
   "binary": "netexec",
   "gui": false,
-  "has_params_db": true,
-  "has_template": false,
+  "has_params_db": false,
+  "has_template": true,
   "derived": true,
-  "form": [],
-  "template": "",
+  "form": [
+   {
+    "name": "target"
+   },
+   {
+    "name": "creds"
+   },
+   {
+    "name": "options"
+   }
+  ],
+  "template": "netexec smb {target} {creds} {options}",
   "uncovered": [],
-  "status": "GAP_TEMPLATE"
+  "status": "OK"
  },
  {
   "id": "61f7f8ab-e55d-40ec-ac7a-561ce8480f29",
@@ -1584,12 +2064,49 @@
   "binary": "nikto",
   "gui": false,
   "has_params_db": true,
-  "has_template": false,
-  "derived": true,
-  "form": [],
-  "template": "",
+  "has_template": true,
+  "derived": false,
+  "form": [
+   {
+    "name": "target",
+    "type": "text",
+    "label": "Target URL",
+    "default": "",
+    "required": true,
+    "description": "Target host or URL",
+    "placeholder": "http://example.com"
+   },
+   {
+    "name": "maxtime",
+    "type": "text",
+    "label": "Max Time",
+    "default": "-maxtime 60",
+    "required": false,
+    "description": "Max seconds per host",
+    "placeholder": "-maxtime 120"
+   },
+   {
+    "name": "output",
+    "type": "text",
+    "label": "Output",
+    "default": "",
+    "required": false,
+    "description": "Output report",
+    "placeholder": "-o /tmp/nikto.html -Format htm"
+   },
+   {
+    "name": "options",
+    "type": "text",
+    "label": "Extra Options",
+    "default": "",
+    "required": false,
+    "description": "Additional nikto options",
+    "placeholder": "-ssl -nointeractive -Tuning 1234567890"
+   }
+  ],
+  "template": "nikto -h {target} {maxtime} {output} {options}",
   "uncovered": [],
-  "status": "GAP_TEMPLATE"
+  "status": "OK"
  },
  {
   "id": "36551bd5-e9c1-46ad-8627-f09e27f48b88",
@@ -1616,12 +2133,126 @@
   "binary": "nmap",
   "gui": false,
   "has_params_db": true,
-  "has_template": false,
-  "derived": true,
-  "form": [],
-  "template": "",
+  "has_template": true,
+  "derived": false,
+  "form": [
+   {
+    "name": "target",
+    "type": "text",
+    "label": "Target",
+    "default": "",
+    "required": true,
+    "description": "Target IP, hostname or CIDR",
+    "placeholder": "scanme.nmap.org"
+   },
+   {
+    "name": "scan_type",
+    "type": "select",
+    "label": "Scan Type",
+    "secret": true,
+    "default": "-sS",
+    "options": [
+     "-sS (SYN)",
+     "-sT (Connect)",
+     "-sU (UDP)",
+     "-sA (ACK)",
+     "-sN (NULL)"
+    ],
+    "required": false,
+    "placeholder": ""
+   },
+   {
+    "name": "port_range",
+    "type": "text",
+    "label": "Port Range",
+    "default": "",
+    "required": false,
+    "description": "Ports to scan",
+    "placeholder": "-p 22,80,443 or -p 1-1000"
+   },
+   {
+    "name": "top_ports",
+    "type": "text",
+    "label": "Top Ports",
+    "default": "",
+    "required": false,
+    "description": "Scan most common ports",
+    "placeholder": "--top-ports 1000"
+   },
+   {
+    "name": "os_detection",
+    "type": "text",
+    "label": "OS Detection",
+    "default": "",
+    "required": false,
+    "description": "Enable OS detection (flag value)",
+    "placeholder": "-O"
+   },
+   {
+    "name": "service_version",
+    "type": "text",
+    "label": "Service Version",
+    "default": "",
+    "required": false,
+    "description": "Probe for service versions (flag value)",
+    "placeholder": "-sV"
+   },
+   {
+    "name": "script_scan",
+    "type": "text",
+    "label": "Script Scan",
+    "default": "",
+    "required": false,
+    "description": "Run default NSE scripts (flag value)",
+    "placeholder": "-sC"
+   },
+   {
+    "name": "aggressive",
+    "type": "text",
+    "label": "Aggressive",
+    "default": "",
+    "required": false,
+    "description": "OS+Version+Scripts+Traceroute (flag value)",
+    "placeholder": "-A"
+   },
+   {
+    "name": "timing",
+    "type": "select",
+    "label": "Timing",
+    "default": "-T3",
+    "options": [
+     "-T0 (Paranoid)",
+     "-T1 (Sneaky)",
+     "-T2 (Polite)",
+     "-T3 (Normal)",
+     "-T4 (Aggressive)",
+     "-T5 (Insane)"
+    ],
+    "required": false,
+    "placeholder": ""
+   },
+   {
+    "name": "verbose",
+    "type": "text",
+    "label": "Verbose",
+    "default": "",
+    "required": false,
+    "description": "Increase verbosity (flag value)",
+    "placeholder": "-v"
+   },
+   {
+    "name": "no_dns",
+    "type": "text",
+    "label": "No DNS",
+    "default": "",
+    "required": false,
+    "description": "Never do DNS resolution (flag value)",
+    "placeholder": "-n"
+   }
+  ],
+  "template": "nmap {target} {scan_type} {port_range} {top_ports} {os_detection} {service_version} {script_scan} {aggressive} {timing} {verbose} {no_dns}",
   "uncovered": [],
-  "status": "GAP_TEMPLATE"
+  "status": "OK"
  },
  {
   "id": "62522aa5-fd25-41a9-a26d-cdd04ba8b3b6",
@@ -1643,13 +2274,23 @@
   "category": "Vulnerability Assessment",
   "binary": "nuclei",
   "gui": false,
-  "has_params_db": true,
-  "has_template": false,
+  "has_params_db": false,
+  "has_template": true,
   "derived": true,
-  "form": [],
-  "template": "",
+  "form": [
+   {
+    "name": "url"
+   },
+   {
+    "name": "severity"
+   },
+   {
+    "name": "options"
+   }
+  ],
+  "template": "nuclei -u {url} {severity} {options}",
   "uncovered": [],
-  "status": "GAP_TEMPLATE"
+  "status": "OK"
  },
  {
   "id": "24e84f94-4bcb-40d0-860b-41e01a337ec4",
@@ -1745,13 +2386,20 @@
   "category": "Compliance & GRC",
   "binary": "photorec",
   "gui": false,
-  "has_params_db": true,
-  "has_template": false,
+  "has_params_db": false,
+  "has_template": true,
   "derived": true,
-  "form": [],
-  "template": "",
+  "form": [
+   {
+    "name": "output"
+   },
+   {
+    "name": "target"
+   }
+  ],
+  "template": "photorec {output} {target}",
   "uncovered": [],
-  "status": "GAP_TEMPLATE"
+  "status": "OK"
  },
  {
   "id": "936f28f8-52b4-4ed0-883a-fa052b94012a",
@@ -1759,13 +2407,20 @@
   "category": "Reconnaissance & OSINT",
   "binary": "pixiewps",
   "gui": false,
-  "has_params_db": true,
-  "has_template": false,
+  "has_params_db": false,
+  "has_template": true,
   "derived": true,
-  "form": [],
-  "template": "",
+  "form": [
+   {
+    "name": "target"
+   },
+   {
+    "name": "options"
+   }
+  ],
+  "template": "pixiewps {target} {options}",
   "uncovered": [],
-  "status": "GAP_TEMPLATE"
+  "status": "OK"
  },
  {
   "id": "09f9e150-b978-481a-8a30-be7e20faa116",
@@ -1819,13 +2474,20 @@
   "category": "Web Application Security",
   "binary": "radare2",
   "gui": false,
-  "has_params_db": true,
-  "has_template": false,
+  "has_params_db": false,
+  "has_template": true,
   "derived": true,
-  "form": [],
-  "template": "",
+  "form": [
+   {
+    "name": "target"
+   },
+   {
+    "name": "options"
+   }
+  ],
+  "template": "radare2 {target} {options}",
   "uncovered": [],
-  "status": "GAP_TEMPLATE"
+  "status": "OK"
  },
  {
   "id": "46bb0294-09a2-413a-be90-5413500cbb97",
@@ -1833,13 +2495,23 @@
   "category": "Reconnaissance & OSINT",
   "binary": "reaver",
   "gui": false,
-  "has_params_db": true,
-  "has_template": false,
+  "has_params_db": false,
+  "has_template": true,
   "derived": true,
-  "form": [],
-  "template": "",
+  "form": [
+   {
+    "name": "target"
+   },
+   {
+    "name": "bssid"
+   },
+   {
+    "name": "options"
+   }
+  ],
+  "template": "reaver -i {target} -b {bssid} {options}",
   "uncovered": [],
-  "status": "GAP_TEMPLATE"
+  "status": "OK"
  },
  {
   "id": "449e7bdc-a36c-4af8-93f0-127ccf55911a",
@@ -1862,12 +2534,22 @@
   "binary": "regripper",
   "gui": false,
   "has_params_db": false,
-  "has_template": false,
+  "has_template": true,
   "derived": true,
-  "form": [],
-  "template": "",
+  "form": [
+   {
+    "name": "target"
+   },
+   {
+    "name": "plugin"
+   },
+   {
+    "name": "options"
+   }
+  ],
+  "template": "regripper -r {target} -p {plugin} {options}",
   "uncovered": [],
-  "status": "GAP_TEMPLATE"
+  "status": "OK"
  },
  {
   "id": "55520eba-494f-40c0-b6f5-ba5a73494630",
@@ -1875,13 +2557,20 @@
   "category": "Reconnaissance & OSINT",
   "binary": "responder",
   "gui": false,
-  "has_params_db": true,
-  "has_template": false,
+  "has_params_db": false,
+  "has_template": true,
   "derived": true,
-  "form": [],
-  "template": "",
+  "form": [
+   {
+    "name": "target"
+   },
+   {
+    "name": "options"
+   }
+  ],
+  "template": "responder -I {target} {options}",
   "uncovered": [],
-  "status": "GAP_TEMPLATE"
+  "status": "OK"
  },
  {
   "id": "1abeff65-b31d-4c1b-91b2-342f7732238a",
@@ -1890,12 +2579,19 @@
   "binary": "rizin",
   "gui": false,
   "has_params_db": false,
-  "has_template": false,
+  "has_template": true,
   "derived": true,
-  "form": [],
-  "template": "",
+  "form": [
+   {
+    "name": "target"
+   },
+   {
+    "name": "options"
+   }
+  ],
+  "template": "rizin {target} {options}",
   "uncovered": [],
-  "status": "GAP_TEMPLATE"
+  "status": "OK"
  },
  {
   "id": "4f07a06e-6962-4cbf-8771-1083079d8d75",
@@ -1918,12 +2614,19 @@
   "binary": "samdump2",
   "gui": false,
   "has_params_db": false,
-  "has_template": false,
+  "has_template": true,
   "derived": true,
-  "form": [],
-  "template": "",
+  "form": [
+   {
+    "name": "target"
+   },
+   {
+    "name": "system_hive"
+   }
+  ],
+  "template": "samdump2 {target} {system_hive}",
   "uncovered": [],
-  "status": "GAP_TEMPLATE"
+  "status": "OK"
  },
  {
   "id": "95fada2f-bfa9-4858-834a-da8d2bff5925",
@@ -1963,13 +2666,20 @@
   "category": "Vulnerability Assessment",
   "binary": "searchsploit",
   "gui": false,
-  "has_params_db": true,
-  "has_template": false,
+  "has_params_db": false,
+  "has_template": true,
   "derived": true,
-  "form": [],
-  "template": "",
+  "form": [
+   {
+    "name": "target"
+   },
+   {
+    "name": "options"
+   }
+  ],
+  "template": "searchsploit {target} {options}",
   "uncovered": [],
-  "status": "GAP_TEMPLATE"
+  "status": "OK"
  },
  {
   "id": "b26ef0fb-80f0-4714-81ea-e5f026a17131",
@@ -2084,12 +2794,22 @@
   "binary": "smbmap",
   "gui": false,
   "has_params_db": false,
-  "has_template": false,
+  "has_template": true,
   "derived": true,
-  "form": [],
-  "template": "",
+  "form": [
+   {
+    "name": "target"
+   },
+   {
+    "name": "creds"
+   },
+   {
+    "name": "options"
+   }
+  ],
+  "template": "smbmap -H {target} {creds} {options}",
   "uncovered": [],
-  "status": "GAP_TEMPLATE"
+  "status": "OK"
  },
  {
   "id": "c65aa4c6-f8d7-4a7c-830e-8df65fb9af4b",
@@ -2097,13 +2817,20 @@
   "category": "Reconnaissance & OSINT",
   "binary": "socat",
   "gui": false,
-  "has_params_db": true,
-  "has_template": false,
+  "has_params_db": false,
+  "has_template": true,
   "derived": true,
-  "form": [],
-  "template": "",
+  "form": [
+   {
+    "name": "target"
+   },
+   {
+    "name": "options"
+   }
+  ],
+  "template": "socat {target} {options}",
   "uncovered": [],
-  "status": "GAP_TEMPLATE"
+  "status": "OK"
  },
  {
   "id": "8be94f43-29db-4d84-9138-7b2e048675cc",
@@ -2140,12 +2867,19 @@
   "binary": "ssdeep",
   "gui": false,
   "has_params_db": false,
-  "has_template": false,
+  "has_template": true,
   "derived": true,
-  "form": [],
-  "template": "",
+  "form": [
+   {
+    "name": "target"
+   },
+   {
+    "name": "options"
+   }
+  ],
+  "template": "ssdeep {target} {options}",
   "uncovered": [],
-  "status": "GAP_TEMPLATE"
+  "status": "OK"
  },
  {
   "id": "69eddc0c-843d-451a-815e-769bfc5c8e86",
@@ -2154,12 +2888,22 @@
   "binary": "sshuttle",
   "gui": false,
   "has_params_db": false,
-  "has_template": false,
+  "has_template": true,
   "derived": true,
-  "form": [],
-  "template": "",
+  "form": [
+   {
+    "name": "target"
+   },
+   {
+    "name": "subnet"
+   },
+   {
+    "name": "options"
+   }
+  ],
+  "template": "sshuttle -r {target} {subnet} {options}",
   "uncovered": [],
-  "status": "GAP_TEMPLATE"
+  "status": "OK"
  },
  {
   "id": "b34beff3-e211-4ce4-b59b-4261b91869e1",
@@ -2210,12 +2954,31 @@
   "binary": "subfinder",
   "gui": false,
   "has_params_db": true,
-  "has_template": false,
-  "derived": true,
-  "form": [],
-  "template": "",
+  "has_template": true,
+  "derived": false,
+  "form": [
+   {
+    "name": "target",
+    "type": "text",
+    "label": "Domain",
+    "default": "",
+    "required": true,
+    "description": "Target domain",
+    "placeholder": "example.com"
+   },
+   {
+    "name": "options",
+    "type": "text",
+    "label": "Options",
+    "default": "-all -silent",
+    "required": false,
+    "description": "Subfinder options",
+    "placeholder": "-recursive -all"
+   }
+  ],
+  "template": "subfinder -d {target} {options}",
   "uncovered": [],
-  "status": "GAP_TEMPLATE"
+  "status": "OK"
  },
  {
   "id": "3f1d5b40-96fc-4f23-8e07-021cacd8123f",
@@ -2223,13 +2986,20 @@
   "category": "Reconnaissance & OSINT",
   "binary": "tcpdump",
   "gui": false,
-  "has_params_db": true,
-  "has_template": false,
+  "has_params_db": false,
+  "has_template": true,
   "derived": true,
-  "form": [],
-  "template": "",
+  "form": [
+   {
+    "name": "target"
+   },
+   {
+    "name": "options"
+   }
+  ],
+  "template": "tcpdump -i {target} {options}",
   "uncovered": [],
-  "status": "GAP_TEMPLATE"
+  "status": "OK"
  },
  {
   "id": "4c621544-8e80-4e59-af3a-ec05dde780bb",
@@ -2238,12 +3008,19 @@
   "binary": "tcpreplay",
   "gui": false,
   "has_params_db": false,
-  "has_template": false,
+  "has_template": true,
   "derived": true,
-  "form": [],
-  "template": "",
+  "form": [
+   {
+    "name": "target"
+   },
+   {
+    "name": "pcap"
+   }
+  ],
+  "template": "tcpreplay -i {target} {pcap}",
   "uncovered": [],
-  "status": "GAP_TEMPLATE"
+  "status": "OK"
  },
  {
   "id": "11cb9ecc-fce3-4447-80b6-b5d8503751a3",
@@ -2265,13 +3042,20 @@
   "category": "Compliance & GRC",
   "binary": "testdisk",
   "gui": false,
-  "has_params_db": true,
-  "has_template": false,
+  "has_params_db": false,
+  "has_template": true,
   "derived": true,
-  "form": [],
-  "template": "",
+  "form": [
+   {
+    "name": "target"
+   },
+   {
+    "name": "options"
+   }
+  ],
+  "template": "testdisk {target} {options}",
   "uncovered": [],
-  "status": "GAP_TEMPLATE"
+  "status": "OK"
  },
  {
   "id": "949f850d-c33e-488d-aa78-407336099905",
@@ -2294,12 +3078,56 @@
   "binary": "theharvester",
   "gui": false,
   "has_params_db": true,
-  "has_template": false,
-  "derived": true,
-  "form": [],
-  "template": "",
+  "has_template": true,
+  "derived": false,
+  "form": [
+   {
+    "name": "target",
+    "type": "text",
+    "label": "Domain",
+    "default": "",
+    "required": true,
+    "description": "Target domain",
+    "placeholder": "example.com"
+   },
+   {
+    "name": "source",
+    "type": "select",
+    "label": "Search Source",
+    "default": "-b bing",
+    "options": [
+     "-b baidu",
+     "-b bing",
+     "-b crt",
+     "-b duckduckgo",
+     "-b google",
+     "-b yahoo"
+    ],
+    "required": false,
+    "placeholder": ""
+   },
+   {
+    "name": "limit",
+    "type": "text",
+    "label": "Result Limit",
+    "default": "-l 20",
+    "required": false,
+    "description": "Max results per source",
+    "placeholder": "-l 100"
+   },
+   {
+    "name": "options",
+    "type": "text",
+    "label": "Extra Options",
+    "default": "",
+    "required": false,
+    "description": "Additional theHarvester options",
+    "placeholder": "-n"
+   }
+  ],
+  "template": "theHarvester -d {target} {source} {limit} {options}",
   "uncovered": [],
-  "status": "GAP_TEMPLATE"
+  "status": "OK"
  },
  {
   "id": "e1c7389d-68c2-444f-a5a5-39260324a225",
@@ -2350,12 +3178,19 @@
   "binary": "unicornscan",
   "gui": false,
   "has_params_db": false,
-  "has_template": false,
+  "has_template": true,
   "derived": true,
-  "form": [],
-  "template": "",
+  "form": [
+   {
+    "name": "target"
+   },
+   {
+    "name": "options"
+   }
+  ],
+  "template": "unicornscan {target} {options}",
   "uncovered": [],
-  "status": "GAP_TEMPLATE"
+  "status": "OK"
  },
  {
   "id": "23c0e25d-98ef-45fd-b59f-b76effeadd2f",
@@ -2431,13 +3266,20 @@
   "category": "Web Application Security",
   "binary": "wafw00f",
   "gui": false,
-  "has_params_db": true,
-  "has_template": false,
+  "has_params_db": false,
+  "has_template": true,
   "derived": true,
-  "form": [],
-  "template": "",
+  "form": [
+   {
+    "name": "target"
+   },
+   {
+    "name": "options"
+   }
+  ],
+  "template": "wafw00f {target} {options}",
   "uncovered": [],
-  "status": "GAP_TEMPLATE"
+  "status": "OK"
  },
  {
   "id": "2023e74f-ca0d-4b5b-949b-f5641e521ee8",
@@ -2446,12 +3288,22 @@
   "binary": "wapiti",
   "gui": false,
   "has_params_db": false,
-  "has_template": false,
+  "has_template": true,
   "derived": true,
-  "form": [],
-  "template": "",
+  "form": [
+   {
+    "name": "url"
+   },
+   {
+    "name": "module"
+   },
+   {
+    "name": "options"
+   }
+  ],
+  "template": "wapiti --url {url} {module} {options}",
   "uncovered": [],
-  "status": "GAP_TEMPLATE"
+  "status": "OK"
  },
  {
   "id": "3ab21b57-72e7-4cda-9805-b4414292fccc",
@@ -2488,12 +3340,46 @@
   "binary": "whatweb",
   "gui": false,
   "has_params_db": true,
-  "has_template": false,
-  "derived": true,
-  "form": [],
-  "template": "",
+  "has_template": true,
+  "derived": false,
+  "form": [
+   {
+    "name": "target",
+    "type": "text",
+    "label": "Target URL",
+    "default": "",
+    "required": true,
+    "description": "Target URL",
+    "placeholder": "http://example.com"
+   },
+   {
+    "name": "aggression",
+    "type": "select",
+    "label": "Aggression",
+    "secret": true,
+    "default": "-a 3",
+    "options": [
+     "-a 1",
+     "-a 2",
+     "-a 3",
+     "-a 4"
+    ],
+    "required": false,
+    "placeholder": ""
+   },
+   {
+    "name": "options",
+    "type": "text",
+    "label": "Extra Options",
+    "default": "",
+    "required": false,
+    "description": "Additional whatweb options",
+    "placeholder": "--color=never"
+   }
+  ],
+  "template": "whatweb {target} {aggression} {options}",
   "uncovered": [],
-  "status": "GAP_TEMPLATE"
+  "status": "OK"
  },
  {
   "id": "02d6c84e-da13-438b-b461-661a0ec783bc",
@@ -2516,12 +3402,19 @@
   "binary": "wifiphisher",
   "gui": false,
   "has_params_db": false,
-  "has_template": false,
+  "has_template": true,
   "derived": true,
-  "form": [],
-  "template": "",
+  "form": [
+   {
+    "name": "target"
+   },
+   {
+    "name": "options"
+   }
+  ],
+  "template": "wifiphisher -aI {target} {options}",
   "uncovered": [],
-  "status": "GAP_TEMPLATE"
+  "status": "OK"
  },
  {
   "id": "3ee0246f-2627-44d0-af63-a0333445b437",
@@ -2529,13 +3422,20 @@
   "category": "Reconnaissance & OSINT",
   "binary": "wifite",
   "gui": false,
-  "has_params_db": true,
-  "has_template": false,
+  "has_params_db": false,
+  "has_template": true,
   "derived": true,
-  "form": [],
-  "template": "",
+  "form": [
+   {
+    "name": "target"
+   },
+   {
+    "name": "options"
+   }
+  ],
+  "template": "wifite -i {target} {options}",
   "uncovered": [],
-  "status": "GAP_TEMPLATE"
+  "status": "OK"
  },
  {
   "id": "43e5cdb2-8503-4471-b979-43e18f61d279",
@@ -2608,12 +3508,50 @@
   "binary": "wpscan",
   "gui": false,
   "has_params_db": true,
-  "has_template": false,
-  "derived": true,
-  "form": [],
-  "template": "",
+  "has_template": true,
+  "derived": false,
+  "form": [
+   {
+    "name": "target",
+    "type": "text",
+    "label": "WordPress URL",
+    "default": "",
+    "required": true,
+    "description": "Target WordPress site URL",
+    "placeholder": "http://example.com"
+   },
+   {
+    "name": "enumeration",
+    "type": "text",
+    "label": "Enumeration",
+    "default": "--enumerate u,vp,vt,tt,cb,dbe",
+    "required": false,
+    "description": "Enumeration modules",
+    "placeholder": "--enumerate vp"
+   },
+   {
+    "name": "api_token",
+    "type": "text",
+    "label": "WPScan API Token",
+    "secret": true,
+    "default": "",
+    "options": true,
+    "required": false,
+    "placeholder": "--api-token TOKEN"
+   },
+   {
+    "name": "options",
+    "type": "text",
+    "label": "Extra Options",
+    "default": "",
+    "required": false,
+    "description": "Additional wpscan options",
+    "placeholder": "--random-user-agent --disable-tls-checks"
+   }
+  ],
+  "template": "wpscan --url {target} {enumeration} {api_token} {options}",
   "uncovered": [],
-  "status": "GAP_TEMPLATE"
+  "status": "OK"
  },
  {
   "id": "e103cdf1-18fb-42c3-9d27-fada48c932b2",
