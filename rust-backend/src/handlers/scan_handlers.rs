@@ -1930,27 +1930,22 @@ pub async fn network_sweep(
                             .fetch_optional(&db2)
                             .await
                             .unwrap_or(None);
-                            if let Some((status, exit_code, stdout, stderr)) = row {
+                            if let Some((status, exit_code, stdout, _stderr)) = row {
                                 if status == "completed" || status == "failed" || status == "timeout" {
                                     let output = stdout.unwrap_or_default();
                                     let final_status = if status == "completed" && exit_code.unwrap_or(1) == 0 { "completed" } else { "failed" };
-                                    let findings = crate::scan_engine::executor::parse_findings(&output);
                                     let _ = sqlx::query(
-                                        "UPDATE scans SET status=$1, output=$2, findings=$3::jsonb, completed_at=CURRENT_TIMESTAMP, scan_phase='complete' WHERE id=$4"
+                                        "UPDATE scans SET status=$1, output=$2, findings='[]'::jsonb, completed_at=CURRENT_TIMESTAMP, scan_phase='complete' WHERE id=$3"
                                     )
                                     .bind(final_status)
                                     .bind(&output)
-                                    .bind(serde_json::to_value(&findings).unwrap_or(json!([])))
                                     .bind(&scan_id2)
                                     .execute(&db2)
                                     .await;
                                     let _ = sqlx::query(
                                         "UPDATE agents SET status='online', active_scans=GREATEST(0, active_scans-1) WHERE id=$1"
                                     ).bind(&aid2).execute(&db2).await;
-                                    let _ = scan_tx2.send(crate::AppEvent::ScanOutput {
-                                        scan_id: scan_id2.clone(),
-                                        line: format!("[sweep] {} scan complete: {}", final_status, scan_id2),
-                                    });
+                                    let _ = scan_tx2.send(format!("[sweep] {} scan complete: {}", final_status, scan_id2));
                                     break;
                                 }
                             }
