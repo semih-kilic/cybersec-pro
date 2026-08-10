@@ -197,17 +197,19 @@ function QuickConnectModal({ onClose }: { onClose: () => void }) {
     try { navigator.clipboard.writeText(cmd); } catch { /* noop */ }
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
-    // Start polling for agent coming online
+    // Start polling for any online agent
+    if (waitingOnline || agentOnline) return;
     setWaitingOnline(true);
     const start = Date.now();
     const poll = setInterval(async () => {
       if (Date.now() - start > 120_000) { clearInterval(poll); setWaitingOnline(false); return; }
       try {
         const jwt = localStorage.getItem('token') || '';
-        const res = await fetch('/api/v1/agents?status=online', { headers: { Authorization: 'Bearer ' + jwt } });
+        const res = await fetch('/api/v1/agents', { headers: { Authorization: 'Bearer ' + jwt } });
+        if (!res.ok) return;
         const data = await res.json();
-        const agents = data?.agents || [];
-        if (agents.some((a: any) => a.status === 'online' && Date.now() - new Date(a.last_heartbeat + 'Z').getTime() < 60_000)) {
+        const agents: any[] = data?.agents || [];
+        if (agents.some((a) => a.status === 'online')) {
           clearInterval(poll);
           setWaitingOnline(false);
           setAgentOnline(true);
@@ -521,6 +523,7 @@ function AgentCard({
         )}
       </div>
 
+      {agent.connection_type !== 'reverse_tunnel' && (
       <button
         onClick={(e) => {
           e.stopPropagation();
@@ -541,6 +544,7 @@ function AgentCard({
           </>
         )}
       </button>
+      )}
     </motion.div>
   );
 }
@@ -1475,23 +1479,29 @@ function DeviceDetail({
       </div>
 
       <div className="px-vos-5 py-vos-4 border-t border-vos-border-1 bg-vos-bg-elev-1/40 space-y-vos-2">
-        <button
-          onClick={onTest}
-          disabled={isTesting}
-          className="w-full inline-flex items-center justify-center gap-2 h-10 rounded-vos-md bg-vos-accent text-white text-vos-sm font-semibold hover:opacity-90 disabled:opacity-50"
-        >
-          {isTesting ? (
-            <>
-              <Loader2 size={13} className="animate-spin" />
-              {t('agents.testing', 'Testing…')}
-            </>
-          ) : (
-            <>
-              <Zap size={13} />
-              {t('agents.testConnection', 'Test Connection')}
-            </>
-          )}
-        </button>
+        {agent.connection_type === 'reverse_tunnel' ? (
+          <div className={`w-full inline-flex items-center justify-center gap-2 h-10 rounded-vos-md text-vos-sm font-semibold ${
+            agent.status === 'online'
+              ? 'bg-vos-success/10 border border-vos-success/20 text-vos-success'
+              : 'bg-vos-warning/10 border border-vos-warning/20 text-vos-warning'
+          }`}>
+            {agent.status === 'online'
+              ? <><CheckCircle2 size={13} /> Agent Online — last heartbeat {agent.last_heartbeat ? formatTimeSince(agent.last_heartbeat) : 'never'}</>
+              : <><AlertCircle size={13} /> Agent Offline — waiting for heartbeat</>}
+          </div>
+        ) : (
+          <button
+            onClick={onTest}
+            disabled={isTesting}
+            className="w-full inline-flex items-center justify-center gap-2 h-10 rounded-vos-md bg-vos-accent text-white text-vos-sm font-semibold hover:opacity-90 disabled:opacity-50"
+          >
+            {isTesting ? (
+              <><Loader2 size={13} className="animate-spin" />{t('agents.testing', 'Testing…')}</>
+            ) : (
+              <><Zap size={13} />{t('agents.testConnection', 'Test Connection')}</>
+            )}
+          </button>
+        )}
         <button
           onClick={onEdit}
           className="w-full inline-flex items-center justify-center gap-2 h-9 rounded-vos-md bg-vos-bg-elev-3 border border-vos-border-1 text-vos-text text-vos-xs font-medium hover:bg-vos-bg-elev-4"
