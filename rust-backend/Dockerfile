@@ -8,7 +8,7 @@ FROM rust:1.90-bookworm AS builder
 WORKDIR /app
 
 # Install system deps for sqlx (PostgreSQL client libs)
-RUN apt-get update && apt-get install -y \
+RUN apt-get update && apt-get install -y --no-install-recommends \
     pkg-config libssl-dev libpq-dev \
     && rm -rf /var/lib/apt/lists/*
 
@@ -30,7 +30,7 @@ RUN rm -rf target/release/cybersec-pro-backend target/release/deps/cybersec* \
 # Stage 2: Runtime
 FROM debian:bookworm-slim
 
-RUN apt-get update && apt-get install -y \
+RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
     ca-certificates libssl3 libpq5 curl \
     # Runtime tools available in Debian bookworm
     nmap gobuster whois dnsutils \
