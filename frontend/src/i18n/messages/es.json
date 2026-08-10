@@ -157,7 +157,7 @@
   "tools": {
     "badge": "Arsenal de seguridad",
     "title": "183 herramientas. 18 categorías.",
-    "subtitle": "Cada herramienta de la distribución Kali Linux, lista para ejecutar en su navegador.",
+    "subtitle": "183 herramientas Kali Linux seleccionadas en 18 categorías — listas para usar en tu navegador. Sin instalación.",
     "searchPlaceholder": "Buscar herramientas...",
     "allCategories": "Todas",
     "runTool": "Ejecutar herramienta",
@@ -294,7 +294,8 @@
     "subtitle": "Aprenda técnicas de seguridad ofensiva, tutoriales de herramientas y mejores prácticas de la industria.",
     "readMore": "Leer más",
     "minRead": "min de lectura",
-    "backToBlog": "Volver al blog"
+    "backToBlog": "Volver al blog",
+    "tutorialsTitle": "Últimos tutoriales"
   },
   "careers": {
     "badge": "Únase a nuestro equipo",

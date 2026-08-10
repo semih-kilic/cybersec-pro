@@ -1,7 +1,9 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { useTranslations } from "next-intl";
+import { useTranslations, useLocale } from "next-intl";
+import Link from "next/link";
+import { blogPostsList } from "@/lib/blog-posts";
 import dynamic from "next/dynamic";
 import RevealOnScroll from "@/components/animations/RevealOnScroll";
 const MatrixRain = dynamic(() => import("@/components/three/MatrixRain"), { ssr: false });
@@ -51,6 +53,7 @@ function formatDate(iso: string): string {
 
 export default function BlogPage() {
   const t = useTranslations("blog");
+  const locale = useLocale();
   const [activeFilter, setActiveFilter] = useState<CategoryFilter>("All");
   const [showAll, setShowAll] = useState(false);
 
@@ -143,7 +146,47 @@ export default function BlogPage() {
         </RevealOnScroll>
       </section>
 
-      {activeFilter === "All" && featured.length > 0 && (
+            {/* Latest tutorials (internal guides) */}
+      <section className="mx-auto max-w-6xl px-6 pb-12">
+        <RevealOnScroll>
+          <div className="mb-6 flex items-center justify-between">
+            <h2 className="text-xl font-bold text-white">{t("tutorialsTitle")}</h2>
+            <span className="text-xs text-white/40">{blogPostsList.length} guides</span>
+          </div>
+          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+            {blogPostsList.map((post) => (
+              <Link
+                key={post.slug}
+                href={`/${locale}/blog/${post.slug}/`}
+                className="glass-card flex h-full flex-col gap-4 p-6 cursor-pointer hover:border-white/10 transition block"
+              >
+                <div className="flex items-center gap-2">
+                  <span
+                    className="rounded-full px-2.5 py-0.5 text-[10px] font-semibold"
+                    style={{
+                      background: `${categoryColors[post.category] || "var(--color-neon)"}20`,
+                      color: categoryColors[post.category] || "var(--color-neon)",
+                    }}
+                  >
+                    {post.category}
+                  </span>
+                  <span className="text-[11px] text-white/25">{formatDate(post.date)}</span>
+                </div>
+                <h3 className="text-lg font-bold text-white line-clamp-3">{post.title}</h3>
+                <p className="text-sm leading-relaxed text-white/50 line-clamp-3">{post.excerpt}</p>
+                <div className="mt-auto flex items-center justify-between pt-4">
+                  <span className="flex items-center gap-1 text-xs text-white/30">
+                    <Clock size={12} /> {post.readTime} {t("minRead")}
+                  </span>
+                  <span className="text-xs font-semibold text-[var(--color-neon)]">{t("readMore")}</span>
+                </div>
+              </Link>
+            ))}
+          </div>
+        </RevealOnScroll>
+      </section>
+
+{activeFilter === "All" && featured.length > 0 && (
         <section className="mx-auto max-w-6xl px-6 pb-12">
           <RevealOnScroll>
             <h2 className="mb-6 text-xl font-bold text-white">Latest from the security community</h2>

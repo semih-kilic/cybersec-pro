@@ -52,7 +52,7 @@ export async function generateMetadata({
 
   return {
     title: `${toolName} — Security Tool | CyberSec Pro`,
-    description: `Run ${toolName} online with CyberSec Pro. Access 289 professional penetration testing tools in the cloud — no setup required.`,
+    description: `Run ${toolName} online with CyberSec Pro. Access 183 professional penetration testing tools in the cloud — no setup required.`,
     openGraph: {
       title: `${toolName} | CyberSec Pro`,
       description: `Professional cloud-based ${toolName} tool for penetration testing and security assessments.`,

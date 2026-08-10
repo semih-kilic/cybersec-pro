@@ -157,7 +157,7 @@
   "tools": {
     "badge": "보안 도구 목록",
     "title": "396개 도구. 18개 카테고리.",
-    "subtitle": "Kali Linux 배포판의 모든 도구, 브라우저에서 바로 실행 가능.",
+    "subtitle": "18개 카테고리의 엄선된 Kali Linux 도구 183개 — 브라우저에서 바로 실행. 설치 불필요.",
     "searchPlaceholder": "도구 검색...",
     "allCategories": "전체",
     "runTool": "도구 실행",
@@ -294,7 +294,8 @@
     "subtitle": "공격적 보안 기법, 도구 튜토리얼, 업계 모범 사례를 배워보세요.",
     "readMore": "더 보기",
     "minRead": "분 읽기",
-    "backToBlog": "블로그로 돌아가기"
+    "backToBlog": "블로그로 돌아가기",
+    "tutorialsTitle": "최신 튜토리얼"
   },
   "careers": {
     "badge": "함께하세요",

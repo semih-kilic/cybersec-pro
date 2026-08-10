@@ -157,7 +157,7 @@
   "tools": {
     "badge": "Sicherheits-Arsenal",
     "title": "183 Tools. 18 Kategorien.",
-    "subtitle": "Jedes Tool der Kali-Linux-Distribution, direkt im Browser einsatzbereit.",
+    "subtitle": "183 kuratierte Kali-Linux-Tools in 18 Kategorien — sofort im Browser einsatzbereit. Keine Installation nötig.",
     "searchPlaceholder": "Tools suchen...",
     "allCategories": "Alle",
     "runTool": "Tool starten",
@@ -294,7 +294,8 @@
     "subtitle": "Lernen Sie Offensive-Security-Techniken, Tool-Tutorials und Best Practices der Branche.",
     "readMore": "Weiterlesen",
     "minRead": "Min. Lesezeit",
-    "backToBlog": "Zurück zum Blog"
+    "backToBlog": "Zurück zum Blog",
+    "tutorialsTitle": "Neueste Tutorials"
   },
   "careers": {
     "badge": "Karriere bei uns",

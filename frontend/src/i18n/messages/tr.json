@@ -159,7 +159,7 @@
   "tools": {
     "badge": "Güvenlik Cephaneliği",
     "title": "183 Araç. 18 Kategori.",
-    "subtitle": "Kali Linux dağıtımındaki her araç, tarayıcınızda çalışmaya hazır.",
+    "subtitle": "18 kategoride 183 küratörlü Kali Linux aracı — tarayıcınızda çalışmaya hazır. Kurulum yok, indirme yok.",
     "searchPlaceholder": "Araç ara...",
     "allCategories": "Tümü",
     "runTool": "Aracı Çalıştır",
@@ -296,7 +296,8 @@
     "subtitle": "Saldırı güvenliği teknikleri, araç eğitimleri ve sektör en iyi uygulamalarını öğrenin.",
     "readMore": "Devamını Oku",
     "minRead": "dk okuma",
-    "backToBlog": "Bloga Dön"
+    "backToBlog": "Bloga Dön",
+    "tutorialsTitle": "Son Eğitimler"
   },
   "careers": {
     "badge": "Ekibimize Katılın",

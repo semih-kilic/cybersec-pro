@@ -157,7 +157,7 @@
   "tools": {
     "badge": "安全工具库",
     "title": "396个工具。18个类别。",
-    "subtitle": "Kali Linux发行版中的每个工具，随时可在浏览器中运行。",
+    "subtitle": "18 个类别中的 183 个精选 Kali Linux 工具 — 可在浏览器中直接运行。无需安装。",
     "searchPlaceholder": "搜索工具...",
     "allCategories": "全部",
     "runTool": "运行工具",
@@ -294,7 +294,8 @@
     "subtitle": "学习进攻性安全技术、工具教程和行业最佳实践。",
     "readMore": "阅读更多",
     "minRead": "分钟阅读",
-    "backToBlog": "返回博客"
+    "backToBlog": "返回博客",
+    "tutorialsTitle": "最新教程"
   },
   "careers": {
     "badge": "加入我们",

@@ -159,7 +159,7 @@
   "tools": {
     "badge": "Security Arsenal",
     "title": "183 Tools. 18 Categories.",
-    "subtitle": "Every tool from the Kali Linux distribution, ready to run in your browser.",
+    "subtitle": "183 curated Kali Linux tools across 18 categories — ready to run in your browser. No setup, no installs.",
     "searchPlaceholder": "Search tools...",
     "allCategories": "All",
     "runTool": "Run Tool",
@@ -296,7 +296,8 @@
     "subtitle": "Learn offensive security techniques, tool tutorials, and industry best practices.",
     "readMore": "Read More",
     "minRead": "min read",
-    "backToBlog": "Back to Blog"
+    "backToBlog": "Back to Blog",
+    "tutorialsTitle": "Latest Tutorials"
   },
   "careers": {
     "badge": "Join Our Team",

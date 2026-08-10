@@ -157,7 +157,7 @@
   "tools": {
     "badge": "セキュリティツール群",
     "title": "396ツール。18カテゴリ。",
-    "subtitle": "Kali Linuxディストリビューションのすべてのツール。ブラウザで即実行可能。",
+    "subtitle": "18カテゴリにわたる183の厳選Kali Linuxツール — ブラウザですぐ利用可能。インストール不要。",
     "searchPlaceholder": "ツールを検索...",
     "allCategories": "すべて",
     "runTool": "ツールを実行",
@@ -294,7 +294,8 @@
     "subtitle": "オフェンシブセキュリティの技術、ツールチュートリアル、業界のベストプラクティスを学びましょう。",
     "readMore": "続きを読む",
     "minRead": "分で読める",
-    "backToBlog": "ブログに戻る"
+    "backToBlog": "ブログに戻る",
+    "tutorialsTitle": "最新チュートリアル"
   },
   "careers": {
     "badge": "採用情報",
