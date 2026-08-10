@@ -60,7 +60,7 @@ async fn tick(db: &PgPool, scan_tx: &broadcast::Sender<String>) -> Result<(), St
 
         // Resolve tool
         let tool: Option<crate::models::Tool> = sqlx::query_as(
-            "SELECT * FROM tools WHERE name = $1 OR business_name = $2 OR id = $3 LIMIT 1",
+            "SELECT * FROM tools WHERE (name = $1 OR business_name = $2 OR id = $3) AND is_active = TRUE LIMIT 1",
         )
         .bind(&tool_name)
         .bind(&tool_name)

@@ -191,7 +191,7 @@ pub async fn get_tool(
     Path(tool_id): Path<String>,
 ) -> impl IntoResponse {
     let tool: Option<Tool> = sqlx::query_as(
-        "SELECT * FROM tools WHERE id = $1 OR name = $2 OR business_name = $3"
+        "SELECT * FROM tools WHERE (id = $1 OR name = $2 OR business_name = $3) AND is_active = TRUE"
     )
     .bind(&tool_id)
     .bind(&tool_id)
@@ -276,7 +276,7 @@ pub async fn tool_health(
     _auth: AuthUser,
     Path(tool_id): Path<String>,
 ) -> impl IntoResponse {
-    let tool: Option<Tool> = sqlx::query_as("SELECT * FROM tools WHERE id = $1 OR name = $2")
+    let tool: Option<Tool> = sqlx::query_as("SELECT * FROM tools WHERE (id = $1 OR name = $2) AND is_active = TRUE")
         .bind(&tool_id)
         .bind(&tool_id)
         .fetch_optional(&state.db)
