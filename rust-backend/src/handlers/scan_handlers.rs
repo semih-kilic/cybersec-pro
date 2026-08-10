@@ -151,8 +151,16 @@ async fn fetch_scan_engine_status(
     engine_url: &str,
     remote_scan_id: &str,
 ) -> anyhow::Result<ScanEngineStatusResponse> {
+    let engine_token = crate::services::auth::jwt::create_access_token(
+        &std::env::var("JWT_SECRET_KEY").unwrap_or_default(),
+        "scan-engine",
+        None,
+        "service",
+    )?;
+
     let response = client
         .get(format!("{}/api/v3/scan/{}/status", engine_url, remote_scan_id))
+        .bearer_auth(&engine_token)
         .send()
         .await?;
 
@@ -174,8 +182,16 @@ async fn fetch_scan_engine_output(
     engine_url: &str,
     remote_scan_id: &str,
 ) -> anyhow::Result<Vec<String>> {
+    let engine_token = crate::services::auth::jwt::create_access_token(
+        &std::env::var("JWT_SECRET_KEY").unwrap_or_default(),
+        "scan-engine",
+        None,
+        "service",
+    )?;
+
     let response = client
         .get(format!("{}/api/v3/scan/{}/output", engine_url, remote_scan_id))
+        .bearer_auth(&engine_token)
         .send()
         .await?;
 
@@ -197,8 +213,16 @@ async fn cancel_scan_on_engine(
     engine_url: &str,
     remote_scan_id: &str,
 ) -> anyhow::Result<()> {
+    let engine_token = crate::services::auth::jwt::create_access_token(
+        &std::env::var("JWT_SECRET_KEY").unwrap_or_default(),
+        "scan-engine",
+        None,
+        "service",
+    )?;
+
     let response = client
         .post(format!("{}/api/v3/scan/{}/cancel", engine_url, remote_scan_id))
+        .bearer_auth(&engine_token)
         .send()
         .await?;
 
