@@ -289,13 +289,21 @@ pub async fn agent_heartbeat(
 
     let (cpu, mem, active) = parse_heartbeat_metrics(&body);
 
+    // Extract first non-loopback IP from heartbeat
+    let ip_address = body.get("ip_addresses")
+        .and_then(|v| v.as_array())
+        .and_then(|arr| arr.first())
+        .and_then(|v| v.as_str())
+        .map(|s| s.to_string());
+
     let _ = sqlx::query(
-        "UPDATE agents SET status = 'online', last_heartbeat = CURRENT_TIMESTAMP, cpu_usage = $1, memory_usage = $2, active_scans = $3 WHERE id = $4"
+        "UPDATE agents SET status = 'online', last_heartbeat = CURRENT_TIMESTAMP, cpu_usage = $1, memory_usage = $2, active_scans = $3, ip_address = COALESCE($5, ip_address) WHERE id = $4"
     )
     .bind(cpu)
     .bind(mem)
     .bind(active)
     .bind(&agent_id)
+    .bind(&ip_address)
     .execute(&state.db)
     .await;
 

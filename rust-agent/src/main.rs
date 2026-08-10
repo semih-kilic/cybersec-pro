@@ -17,6 +17,7 @@ use std::sync::atomic::{AtomicI32, Ordering};
 use std::sync::Arc;
 use std::time::Duration;
 use sysinfo::System;
+use local_ip_address::list_afinet_netifas;
 
 const DEFAULT_API: &str = "https://app.cyber-sec-pro.com";
 const HEARTBEAT_SECS: u64 = 30;
@@ -110,10 +111,24 @@ async fn heartbeat(state: &AgentState, http: &reqwest::Client, sys: &mut System,
     } else {
         0.0
     };
+    // Collect local IP addresses
+    let ip_addresses: Vec<String> = {
+        let mut ips = Vec::new();
+        if let Ok(ifaces) = local_ip_address::list_afinet_netifas() {
+            for (_name, ip) in ifaces {
+                let s = ip.to_string();
+                if !s.starts_with("127.") && !s.starts_with("::1") && !s.starts_with("fe80") {
+                    ips.push(s);
+                }
+            }
+        }
+        ips
+    };
     let body = serde_json::json!({
         "cpu_usage": cpu,
         "memory_usage": mem_pct,
         "active_scans": active,
+        "ip_addresses": ip_addresses,
     });
     let url = format!("{}/api/v1/agents/{}/heartbeat", state.api_url, state.agent_id);
     let resp = http

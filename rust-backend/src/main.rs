@@ -297,6 +297,7 @@ fn build_router(state: Arc<AppState>) -> Router {
             "/api/v1/scans",
             get(scan_handlers::list_scans).post(scan_handlers::start_scan),
         )
+        .route("/api/v1/scans/network-sweep", post(scan_handlers::network_sweep))
         .route("/api/v1/scans/create", post(scan_handlers::create_scan))
         .route("/api/v1/scans/:scan_id", get(scan_handlers::get_scan).delete(scan_handlers::delete_scan))
         .route(

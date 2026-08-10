@@ -1735,3 +1735,285 @@ pub async fn create_scan(
 }
 
 
+
+// ── POST /api/v1/scans/network-sweep ──────────────────────────────────────
+// 1. Runs nmap host discovery on the subnet via the agent (or server)
+// 2. For each live host, queues a start_scan job with the chosen tool
+// Returns { sweep_id, subnet, status: "running", scan_ids: [] } immediately;
+// individual scans appear in /api/v1/scans as they complete.
+
+#[derive(Deserialize)]
+pub struct NetworkSweepRequest {
+    pub subnet: String,
+    pub tool: Option<String>,       // tool to run on each host (default: nmap)
+    pub agent_id: Option<String>,
+    pub project_id: Option<i64>,
+}
+
+pub async fn network_sweep(
+    State(state): State<Arc<AppState>>,
+    auth: AuthUser,
+    Json(body): Json<NetworkSweepRequest>,
+) -> impl IntoResponse {
+    let org_id = auth.org_id.clone().unwrap_or_else(|| auth.user_id.clone());
+
+    // Validate subnet — must look like x.x.x.x/y
+    let subnet = body.subnet.trim().to_string();
+    if subnet.is_empty() || !subnet.contains('/') {
+        return (StatusCode::BAD_REQUEST, Json(json!({"error": "Valid subnet required (e.g. 10.0.0.0/24)"}))).into_response();
+    }
+    // Block shell injection
+    for ch in [';', '&', '|', '`', '$', '<', '>', '\n', '\r'] {
+        if subnet.contains(ch) {
+            return (StatusCode::BAD_REQUEST, Json(json!({"error": "Invalid subnet"}))).into_response();
+        }
+    }
+
+    let tool_name = body.tool.as_deref().unwrap_or("nmap").to_string();
+    let sweep_id = Uuid::new_v4().to_string();
+
+    // Resolve agent
+    let agent_id = body.agent_id.clone();
+    let is_reverse_tunnel = if let Some(ref aid) = agent_id {
+        let row: Option<(String,)> = sqlx::query_as(
+            "SELECT connection_type FROM agents WHERE id = $1 AND organization_id = $2"
+        )
+        .bind(aid)
+        .bind(&org_id)
+        .fetch_optional(&state.db)
+        .await
+        .unwrap_or(None);
+        row.map(|(ct,)| ct == "reverse_tunnel").unwrap_or(false)
+    } else {
+        false
+    };
+
+    // Build nmap discovery command
+    let discovery_cmd = format!("nmap -sn -T4 --open -oG - {}", subnet);
+
+    let db = state.db.clone();
+    let scan_tx = state.scan_output_tx.clone();
+    let org_id_spawn = org_id.clone();
+    let user_id_spawn = auth.user_id.clone();
+    let tool_name_spawn = tool_name.clone();
+    let project_id = body.project_id;
+    let sweep_id_spawn = sweep_id.clone();
+    let subnet_spawn = subnet.clone();
+
+    // Spawn background task: discover hosts → start individual scans
+    tokio::spawn(async move {
+        // Step 1: discover live hosts
+        let hosts: Vec<String> = if is_reverse_tunnel {
+            // Queue discovery job on agent
+            if let Some(ref aid) = agent_id {
+                let job_id = Uuid::new_v4().to_string();
+                let _ = sqlx::query(
+                    "INSERT INTO agent_jobs (id, agent_id, organization_id, command, timeout_seconds, status) \
+                     VALUES ($1, $2, $3, $4, 120, 'pending')"
+                )
+                .bind(&job_id)
+                .bind(aid)
+                .bind(&org_id_spawn)
+                .bind(&discovery_cmd)
+                .execute(&db)
+                .await;
+
+                // Poll for result up to 2 minutes
+                let mut output = String::new();
+                for _ in 0..60u32 {
+                    tokio::time::sleep(std::time::Duration::from_secs(2)).await;
+                    let row: Option<(String, Option<String>)> = sqlx::query_as(
+                        "SELECT status, stdout FROM agent_jobs WHERE id = $1"
+                    )
+                    .bind(&job_id)
+                    .fetch_optional(&db)
+                    .await
+                    .unwrap_or(None);
+                    if let Some((status, stdout)) = row {
+                        if status == "completed" || status == "failed" {
+                            output = stdout.unwrap_or_default();
+                            break;
+                        }
+                    }
+                }
+                parse_nmap_hosts(&output)
+            } else {
+                vec![]
+            }
+        } else {
+            // Run nmap locally on the server
+            match tokio::process::Command::new("nmap")
+                .args(["-sn", "-T4", "--open", "-oG", "-", &subnet_spawn])
+                .output()
+                .await
+            {
+                Ok(out) => parse_nmap_hosts(&String::from_utf8_lossy(&out.stdout)),
+                Err(_) => vec![],
+            }
+        };
+
+        if hosts.is_empty() {
+            tracing::warn!("network_sweep {}: no hosts found in {}", sweep_id_spawn, subnet_spawn);
+            return;
+        }
+
+        tracing::info!("network_sweep {}: found {} hosts, starting {} scans", sweep_id_spawn, hosts.len(), hosts.len());
+
+        // Step 2: start a scan for each host
+        for host in hosts {
+            let tool: Option<crate::models::Tool> = sqlx::query_as(
+                "SELECT * FROM tools WHERE id = $1 OR name = $2 LIMIT 1"
+            )
+            .bind(&tool_name_spawn)
+            .bind(&tool_name_spawn)
+            .fetch_optional(&db)
+            .await
+            .unwrap_or(None);
+
+            let tool = match tool {
+                Some(t) => t,
+                None => continue,
+            };
+
+            let scan_id = Uuid::new_v4().to_string();
+            let params = json!({"sweep_id": sweep_id_spawn, "subnet": subnet_spawn});
+
+            let _ = sqlx::query(
+                "INSERT INTO scans (id, organization_id, user_id, tool_id, target, parameters, status, scan_phase, agent_id, project_id, started_at) \
+                 VALUES ($1, $2, $3, $4, $5, $6::jsonb, 'running', 'initializing', $7, $8, CURRENT_TIMESTAMP)"
+            )
+            .bind(&scan_id)
+            .bind(&org_id_spawn)
+            .bind(&user_id_spawn)
+            .bind(&tool.id)
+            .bind(&host)
+            .bind(&params)
+            .bind(&agent_id)
+            .bind(project_id)
+            .execute(&db)
+            .await;
+
+            // Queue agent job or run locally
+            if is_reverse_tunnel {
+                if let Some(ref aid) = agent_id {
+                    let (program, args) = crate::scan_engine::tool_registry::build_command(
+                        &tool.name, &host, tool.command_template.as_deref()
+                    ).unwrap_or_else(|_| (tool.name.clone(), vec![host.clone()]));
+                    let cmd = std::iter::once(program).chain(args).collect::<Vec<_>>().join(" ");
+                    let job_id = Uuid::new_v4().to_string();
+                    let _ = sqlx::query(
+                        "INSERT INTO agent_jobs (id, agent_id, organization_id, scan_id, tool_id, command, timeout_seconds, status) \
+                         VALUES ($1, $2, $3, $4, $5, $6, 1800, 'pending')"
+                    )
+                    .bind(&job_id)
+                    .bind(aid)
+                    .bind(&org_id_spawn)
+                    .bind(&scan_id)
+                    .bind(&tool.name)
+                    .bind(&cmd)
+                    .execute(&db)
+                    .await;
+
+                    // Poll for result
+                    let db2 = db.clone();
+                    let scan_id2 = scan_id.clone();
+                    let job_id2 = job_id.clone();
+                    let scan_tx2 = scan_tx.clone();
+                    let aid2 = aid.clone();
+                    tokio::spawn(async move {
+                        for _ in 0..900u32 {
+                            tokio::time::sleep(std::time::Duration::from_secs(2)).await;
+                            let row: Option<(String, Option<i32>, Option<String>, Option<String>)> = sqlx::query_as(
+                                "SELECT status, exit_code, stdout, stderr FROM agent_jobs WHERE id = $1"
+                            )
+                            .bind(&job_id2)
+                            .fetch_optional(&db2)
+                            .await
+                            .unwrap_or(None);
+                            if let Some((status, exit_code, stdout, stderr)) = row {
+                                if status == "completed" || status == "failed" || status == "timeout" {
+                                    let output = stdout.unwrap_or_default();
+                                    let final_status = if status == "completed" && exit_code.unwrap_or(1) == 0 { "completed" } else { "failed" };
+                                    let findings = crate::scan_engine::executor::parse_findings(&output);
+                                    let _ = sqlx::query(
+                                        "UPDATE scans SET status=$1, output=$2, findings=$3::jsonb, completed_at=CURRENT_TIMESTAMP, scan_phase='complete' WHERE id=$4"
+                                    )
+                                    .bind(final_status)
+                                    .bind(&output)
+                                    .bind(serde_json::to_value(&findings).unwrap_or(json!([])))
+                                    .bind(&scan_id2)
+                                    .execute(&db2)
+                                    .await;
+                                    let _ = sqlx::query(
+                                        "UPDATE agents SET status='online', active_scans=GREATEST(0, active_scans-1) WHERE id=$1"
+                                    ).bind(&aid2).execute(&db2).await;
+                                    let _ = scan_tx2.send(crate::AppEvent::ScanOutput {
+                                        scan_id: scan_id2.clone(),
+                                        line: format!("[sweep] {} scan complete: {}", final_status, scan_id2),
+                                    });
+                                    break;
+                                }
+                            }
+                        }
+                    });
+                }
+            } else {
+                // Local execution
+                let db2 = db.clone();
+                let scan_id2 = scan_id.clone();
+                let tool2 = tool.clone();
+                let host2 = host.clone();
+                let scan_tx2 = scan_tx.clone();
+                tokio::spawn(async move {
+                    let (program, args) = crate::scan_engine::tool_registry::build_command(
+                        &tool2.name, &host2, tool2.command_template.as_deref()
+                    ).unwrap_or_else(|_| (tool2.name.clone(), vec![host2.clone()]));
+                    let result = tokio::process::Command::new(&program)
+                        .args(&args)
+                        .output()
+                        .await;
+                    let (status, output) = match result {
+                        Ok(out) => {
+                            let o = String::from_utf8_lossy(&out.stdout).to_string();
+                            let s = if out.status.success() { "completed" } else { "failed" };
+                            (s, o)
+                        }
+                        Err(e) => ("failed", e.to_string()),
+                    };
+                    let findings = crate::scan_engine::executor::parse_findings(&output);
+                    let _ = sqlx::query(
+                        "UPDATE scans SET status=$1, output=$2, findings=$3::jsonb, completed_at=CURRENT_TIMESTAMP, scan_phase='complete' WHERE id=$4"
+                    )
+                    .bind(status)
+                    .bind(&output)
+                    .bind(serde_json::to_value(&findings).unwrap_or(json!([])))
+                    .bind(&scan_id2)
+                    .execute(&db2)
+                    .await;
+                    let _ = scan_tx2.send(crate::AppEvent::ScanOutput {
+                        scan_id: scan_id2.clone(),
+                        line: format!("[sweep] {} complete", scan_id2),
+                    });
+                });
+            }
+        }
+    });
+
+    (StatusCode::ACCEPTED, Json(json!({
+        "sweep_id": sweep_id,
+        "subnet": subnet,
+        "tool": tool_name,
+        "status": "running",
+        "message": "Network sweep started. Individual scans will appear in /dashboard/scans as hosts are discovered."
+    }))).into_response()
+}
+
+/// Parse nmap greppable output (-oG) and return list of live host IPs.
+fn parse_nmap_hosts(output: &str) -> Vec<String> {
+    output.lines()
+        .filter(|l| l.starts_with("Host:") && l.contains("Status: Up"))
+        .filter_map(|l| {
+            l.split_whitespace().nth(1).map(|ip| ip.to_string())
+        })
+        .collect()
+}
