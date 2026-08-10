@@ -97,6 +97,10 @@ async fn enroll(api_url: &str, token: &str, http: &reqwest::Client) -> Result<Ag
     })
 }
 
+fn delete_state() {
+    let _ = std::fs::remove_file(state_path());
+}
+
 async fn heartbeat(state: &AgentState, http: &reqwest::Client, sys: &mut System, active: i32) -> Result<(), String> {
     sys.refresh_cpu();
     sys.refresh_memory();
@@ -119,6 +123,10 @@ async fn heartbeat(state: &AgentState, http: &reqwest::Client, sys: &mut System,
         .send()
         .await
         .map_err(|e| format!("heartbeat send: {e}"))?;
+    if resp.status() == reqwest::StatusCode::UNAUTHORIZED {
+        delete_state();
+        return Err("UNAUTHORIZED".into());
+    }
     if !resp.status().is_success() {
         return Err(format!("heartbeat status {}", resp.status()));
     }
@@ -160,6 +168,11 @@ async fn job_loop(state: AgentState, http: reqwest::Client, active: Arc<AtomicI3
         if status == reqwest::StatusCode::NO_CONTENT {
             backoff = JOB_POLL_BACKOFF_SECS;
             continue;
+        }
+        if status == reqwest::StatusCode::UNAUTHORIZED {
+            eprintln!("[agent] 401 on job poll — state invalidated, exiting for re-enrollment");
+            delete_state();
+            std::process::exit(10);
         }
         if !status.is_success() {
             let body = resp.text().await.unwrap_or_default();
@@ -331,6 +344,10 @@ async fn main() {
             _ = interval.tick() => {
                 let n = active.load(Ordering::SeqCst);
                 if let Err(e) = heartbeat(&state, &http, &mut sys, n).await {
+                    if e == "UNAUTHORIZED" {
+                        eprintln!("[agent] 401 on heartbeat — state invalidated, exiting for re-enrollment");
+                        std::process::exit(10);
+                    }
                     eprintln!("[agent] heartbeat error: {e}");
                 }
             }
@@ -348,6 +365,10 @@ async fn main() {
             _ = interval.tick() => {
                 let n = active.load(Ordering::SeqCst);
                 if let Err(e) = heartbeat(&state, &http, &mut sys, n).await {
+                    if e == "UNAUTHORIZED" {
+                        eprintln!("[agent] 401 on heartbeat — state invalidated, exiting for re-enrollment");
+                        std::process::exit(10);
+                    }
                     eprintln!("[agent] heartbeat error: {e}");
                 }
             }

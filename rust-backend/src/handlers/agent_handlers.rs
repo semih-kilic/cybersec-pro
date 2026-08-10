@@ -676,65 +676,53 @@ if (-not $env:CSP_TOKEN) {
   exit 1
 }
 
-if ($env:CSP_TOKEN -notmatch '^(agt_|eyJ)') {
-  Write-Error "CSP_TOKEN looks malformed (expected agt_... or JWT)."
-  exit 1
-}
-
 $Api = if ($env:CSP_API_URL) { $env:CSP_API_URL } else { 'https://app.cyber-sec-pro.com' }
+$Arch = if ($env:PROCESSOR_ARCHITECTURE -eq 'ARM64') { 'arm64' } else { 'amd64' }
+$Dir  = Join-Path $env:LOCALAPPDATA 'CyberSecAgent'
+$Bin  = Join-Path $Dir 'cybersec-agent.exe'
+$State = Join-Path $Dir 'state.json'
 
-# Detect architecture (amd64 / arm64).
-$Arch = switch -regex ($env:PROCESSOR_ARCHITECTURE) {
-  '^AMD64$'   { 'amd64'; break }
-  '^ARM64$'   { 'arm64'; break }
-  default     { 'amd64' }
-}
+# 1. Kill any running agent and wipe stale state so re-enrollment is clean.
+Get-Process -Name 'cybersec-agent' -ErrorAction SilentlyContinue | Stop-Process -Force -ErrorAction SilentlyContinue
+Stop-ScheduledTask -TaskName 'CyberSecAgent' -ErrorAction SilentlyContinue
+if (Test-Path $State) { Remove-Item $State -Force }
 
-$Dir = Join-Path $env:LOCALAPPDATA 'CyberSecAgent'
-$Bin = Join-Path $Dir 'cybersec-agent.exe'
 New-Item -ItemType Directory -Force -Path $Dir | Out-Null
 
+# 2. Download binary.
 $Url = "$Api/api/v1/agents/binary/windows-$Arch"
 Write-Host "==> Downloading $Url"
-
-# TLS 1.2 for older PowerShell 5.x.
 [Net.ServicePointManager]::SecurityProtocol = [Net.ServicePointManager]::SecurityProtocol -bor [Net.SecurityProtocolType]::Tls12
 Invoke-WebRequest -Uri $Url -OutFile $Bin -UseBasicParsing
-
-if (-not (Test-Path $Bin)) {
-  Write-Error "Download failed: $Bin not found."
-  exit 1
-}
-
+if (-not (Test-Path $Bin)) { Write-Error "Download failed."; exit 1 }
 Write-Host "==> Installed: $Bin"
 
-# Register a per-user scheduled task so the agent runs at login and is restarted on failure.
-$TaskName = 'CyberSecAgent'
-$Action = New-ScheduledTaskAction -Execute $Bin
-$Trigger = New-ScheduledTaskTrigger -AtLogOn
-$Settings = New-ScheduledTaskSettingsSet -StartWhenAvailable -RestartCount 999 -RestartInterval (New-TimeSpan -Minutes 1)
-$Principal = New-ScheduledTaskPrincipal -UserId $env:USERNAME -LogonType Interactive
-
-# Pass CSP_TOKEN/CSP_API_URL through the task definition's environment via a wrapper.
+# 3. Write wrapper that sets env vars and restarts on exit code 10 (re-enroll).
 $Wrapper = Join-Path $Dir 'run-agent.ps1'
 @"
-`$env:CSP_TOKEN  = '$($env:CSP_TOKEN)'
+`$env:CSP_TOKEN   = '$($env:CSP_TOKEN)'
 `$env:CSP_API_URL = '$Api'
-& '$Bin'
+while (`$true) {
+    & '$Bin'
+    if (`$LASTEXITCODE -ne 10) { break }
+    Write-Host '[agent] Re-enrolling...'
+    Start-Sleep -Seconds 2
+}
 "@ | Set-Content -Path $Wrapper -Encoding UTF8
 
-$Action = New-ScheduledTaskAction -Execute 'powershell.exe' -Argument "-NoProfile -ExecutionPolicy Bypass -File `"$Wrapper`""
-
+# 4. Register scheduled task.
+$Action   = New-ScheduledTaskAction -Execute 'powershell.exe' -Argument "-NoProfile -ExecutionPolicy Bypass -File `"$Wrapper`""
+$Trigger  = New-ScheduledTaskTrigger -AtLogOn
+$Settings = New-ScheduledTaskSettingsSet -StartWhenAvailable -RestartCount 999 -RestartInterval (New-TimeSpan -Minutes 1)
+$Principal = New-ScheduledTaskPrincipal -UserId $env:USERNAME -LogonType Interactive
 try {
-  Register-ScheduledTask -TaskName $TaskName -Action $Action -Trigger $Trigger -Settings $Settings -Principal $Principal -Force | Out-Null
-  Start-ScheduledTask -TaskName $TaskName
-  Write-Host "==> Scheduled task '$TaskName' registered and started."
+  Register-ScheduledTask -TaskName 'CyberSecAgent' -Action $Action -Trigger $Trigger -Settings $Settings -Principal $Principal -Force | Out-Null
+  Start-ScheduledTask -TaskName 'CyberSecAgent'
+  Write-Host "==> Agent started. It will appear online in the dashboard within ~30 seconds."
 } catch {
-  Write-Warning "Could not register scheduled task: $_"
-  Write-Host "==> Run manually: $Bin"
+  Write-Warning "Scheduled task failed: $_. Starting directly..."
+  Start-Process powershell -ArgumentList "-NoProfile -ExecutionPolicy Bypass -File `"$Wrapper`"" -WindowStyle Hidden
 }
-
-Write-Host "==> Done. The agent will enroll on first run and heartbeat every 30s."
 exit 0
 "#;
     (
