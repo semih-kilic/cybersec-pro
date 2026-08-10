@@ -1975,20 +1975,15 @@ pub async fn network_sweep(
                         }
                         Err(e) => ("failed", e.to_string()),
                     };
-                    let findings = crate::scan_engine::executor::parse_findings(&output);
                     let _ = sqlx::query(
-                        "UPDATE scans SET status=$1, output=$2, findings=$3::jsonb, completed_at=CURRENT_TIMESTAMP, scan_phase='complete' WHERE id=$4"
+                        "UPDATE scans SET status=$1, output=$2, findings='[]'::jsonb, completed_at=CURRENT_TIMESTAMP, scan_phase='complete' WHERE id=$3"
                     )
                     .bind(status)
                     .bind(&output)
-                    .bind(serde_json::to_value(&findings).unwrap_or(json!([])))
                     .bind(&scan_id2)
                     .execute(&db2)
                     .await;
-                    let _ = scan_tx2.send(crate::AppEvent::ScanOutput {
-                        scan_id: scan_id2.clone(),
-                        line: format!("[sweep] {} complete", scan_id2),
-                    });
+                    let _ = scan_tx2.send(format!("[sweep] {} complete", scan_id2));
                 });
             }
         }
