@@ -1,7 +1,6 @@
 /**
  * NewScanPage — Smart Scan
- * Agent seç → mod seç (Single / Network Sweep) → araç seç → başlat
- * Kullanıcı dostu, minimum adım, maksimum otomatik.
+ * Agent seç → mod seç → araç seç → başlat
  */
 import { useState, useEffect, useMemo } from 'react';
 import { useSearchParams, useNavigate, Link } from 'react-router-dom';
@@ -21,19 +20,18 @@ import { NewScanPageSkeleton } from '../../components/ui/Skeleton';
 import { PageHeader } from '../../components/vos';
 
 type ScanMode = 'single' | 'network';
-
 interface Agent { id: string; name: string; ip_address: string; platform: string; status: string; connection_type: string; }
 interface Tool  { id: string; name: string; slug?: string; category: string; description?: string; dangerous?: boolean; }
 
 const QUICK_TOOLS = [
-  { id: 'nmap',     label: 'Port Scan',       icon: '🔍', desc: 'Open ports & services' },
-  { id: 'nikto',    label: 'Web Scan',         icon: '🌐', desc: 'Web vulnerabilities' },
-  { id: 'nuclei',   label: 'Vuln Scan',        icon: '⚡', desc: 'Known CVEs & misconfigs' },
-  { id: 'gobuster', label: 'Dir Brute',        icon: '📂', desc: 'Hidden paths & files' },
-  { id: 'sqlmap',   label: 'SQL Injection',    icon: '💉', desc: 'SQL injection testing' },
-  { id: 'hydra',    label: 'Password Audit',   icon: '🔑', desc: 'Credential brute-force' },
-  { id: 'wpscan',   label: 'WordPress Scan',   icon: '📝', desc: 'WordPress vulnerabilities' },
-  { id: 'subfinder',label: 'Subdomain Enum',   icon: '🗺️', desc: 'Discover subdomains' },
+  { id: 'nmap',      label: 'Port Scan',      icon: '🔍', desc: 'Open ports & services' },
+  { id: 'nikto',     label: 'Web Scan',        icon: '🌐', desc: 'Web vulnerabilities' },
+  { id: 'nuclei',    label: 'Vuln Scan',       icon: '⚡', desc: 'Known CVEs & misconfigs' },
+  { id: 'gobuster',  label: 'Dir Brute',       icon: '📂', desc: 'Hidden paths & files' },
+  { id: 'sqlmap',    label: 'SQL Injection',   icon: '💉', desc: 'SQL injection testing' },
+  { id: 'hydra',     label: 'Password Audit',  icon: '🔑', desc: 'Credential brute-force' },
+  { id: 'wpscan',    label: 'WordPress',       icon: '📝', desc: 'WordPress vulnerabilities' },
+  { id: 'subfinder', label: 'Subdomains',      icon: '🗺️', desc: 'Discover subdomains' },
 ];
 
 export function NewScanPage() {
@@ -63,25 +61,12 @@ export function NewScanPage() {
 
   const projects = fetchedProjects as any[];
 
-  // Flatten tools
   const allTools: Tool[] = useMemo(() => {
     if (!toolsData) return [];
     return Object.values((toolsData as any).categories || {}).flatMap((cat: any) =>
       cat.tools.map((t: any) => ({ ...t, slug: t.id }))
     );
   }, [toolsData]);
-
-  // Load agents, auto-select first online
-  useEffect(() => {
-    if (!agentsListData) return;
-    const list = agentsListData as Agent[];
-    setAgents(list);
-    const online = list.find(a => a.status === 'online');
-    if (online) {
-      setSelectedAgent(online.id);
-      autoFillTarget(online, scanMode);
-    }
-  }, [agentsListData]);
 
   function autoFillTarget(agent: Agent, mode: ScanMode) {
     if (!agent.ip_address) return;
@@ -93,18 +78,26 @@ export function NewScanPage() {
     }
   }
 
+  useEffect(() => {
+    if (!agentsListData) return;
+    const list = agentsListData as Agent[];
+    setAgents(list);
+    const online = list.find(a => a.status === 'online');
+    if (online) { setSelectedAgent(online.id); autoFillTarget(online, scanMode); }
+  }, [agentsListData]);
+
   function handleAgentChange(id: string) {
     setSelectedAgent(id);
     const agent = agents.find(a => a.id === id);
     if (agent) autoFillTarget(agent, scanMode);
+    else setTarget('');
   }
 
   function handleModeChange(mode: ScanMode) {
     setScanMode(mode);
     const agent = agents.find(a => a.id === selectedAgent);
     if (agent) autoFillTarget(agent, mode);
-    // Network sweep → nmap is best default
-    if (mode === 'network' && selectedTool !== 'nmap') setSelectedTool('nmap');
+    if (mode === 'network') setSelectedTool('nmap');
   }
 
   const selectedToolObj = allTools.find(t => t.id === selectedTool || t.slug === selectedTool);
@@ -115,17 +108,11 @@ export function NewScanPage() {
     setSubmitting(true);
     try {
       if (scanMode === 'network') {
-        // Network sweep endpoint
         const jwt = localStorage.getItem('token') || '';
         const res = await fetch('/api/v1/scans/network-sweep', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + jwt },
-          body: JSON.stringify({
-            subnet: target.trim(),
-            tool: selectedTool,
-            agent_id: selectedAgent || null,
-            project_id: projectId,
-          }),
+          body: JSON.stringify({ subnet: target.trim(), tool: selectedTool, agent_id: selectedAgent || null, project_id: projectId }),
         });
         const data = await res.json();
         if (res.ok) {
@@ -157,10 +144,7 @@ export function NewScanPage() {
   };
 
   const filteredTools = toolSearch
-    ? allTools.filter(t =>
-        t.name.toLowerCase().includes(toolSearch.toLowerCase()) ||
-        (t.description || '').toLowerCase().includes(toolSearch.toLowerCase())
-      )
+    ? allTools.filter(t => t.name.toLowerCase().includes(toolSearch.toLowerCase()) || (t.description || '').toLowerCase().includes(toolSearch.toLowerCase()))
     : allTools;
 
   if (toolsLoading) return <NewScanPageSkeleton />;
@@ -178,7 +162,7 @@ export function NewScanPage() {
           description="Configure and launch a security scan"
         />
 
-        {/* ── 1. Agent ── */}
+        {/* 1. Agent */}
         <Card>
           <SectionLabel icon={<Server size={13} />} text="Where to scan from" />
           {onlineAgents.length === 0 ? (
@@ -195,10 +179,9 @@ export function NewScanPage() {
             </div>
           ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-vos-2">
-              {/* Server option */}
               <AgentCard
                 active={selectedAgent === ''}
-                onClick={() => { setSelectedAgent(''); setTarget(''); }}
+                onClick={() => handleAgentChange('')}
                 icon={<Globe2 size={16} />}
                 name="CyberSec Server"
                 sub="Scan internet-facing targets"
@@ -219,7 +202,7 @@ export function NewScanPage() {
           )}
         </Card>
 
-        {/* ── 2. Scan Mode ── */}
+        {/* 2. Scan Mode + Target */}
         <Card>
           <SectionLabel icon={<Crosshair size={13} />} text="What to scan" />
           <div className="grid grid-cols-2 gap-vos-2 mb-vos-4">
@@ -235,11 +218,12 @@ export function NewScanPage() {
               onClick={() => handleModeChange('network')}
               icon="🌐"
               title="Network Sweep"
-              desc={selectedAgentObj ? `Scan entire ${selectedAgentObj.ip_address?.split('.').slice(0,3).join('.')}.x/24 network` : 'Discover & scan all hosts in a subnet'}
+              desc={selectedAgentObj?.ip_address
+                ? `Scan entire ${selectedAgentObj.ip_address.split('.').slice(0,3).join('.')}.x/24`
+                : 'Discover & scan all hosts in subnet'}
               badge={selectedAgentObj ? 'Recommended' : undefined}
             />
           </div>
-
           <div>
             <label className="text-[10px] uppercase tracking-vos-wide font-semibold text-vos-text-3 mb-1.5 block">
               {scanMode === 'network' ? 'Subnet (CIDR)' : 'Target'}
@@ -247,7 +231,7 @@ export function NewScanPage() {
             <input
               value={target}
               onChange={e => setTarget(e.target.value)}
-              placeholder={scanMode === 'network' ? '10.0.0.0/24' : 'IP, domain, or URL'}
+              placeholder={scanMode === 'network' ? '10.0.0.0/24' : 'IP address, domain, or URL'}
               className="w-full px-vos-3 h-11 rounded-vos-md bg-vos-bg-elev-3 border border-vos-border-1 text-vos-text font-mono text-vos-sm placeholder:text-vos-text-muted focus:outline-none focus:border-vos-accent focus:ring-2 focus:ring-vos-accent/30 transition-colors"
             />
             {scanMode === 'network' && (
@@ -258,11 +242,9 @@ export function NewScanPage() {
           </div>
         </Card>
 
-        {/* ── 3. Tool ── */}
+        {/* 3. Tool */}
         <Card>
           <SectionLabel icon={<Zap size={13} />} text="Select tool" />
-
-          {/* Quick picks */}
           {!showAllTools && (
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-vos-2 mb-vos-3">
               {QUICK_TOOLS.map(qt => (
@@ -282,18 +264,15 @@ export function NewScanPage() {
               ))}
             </div>
           )}
-
-          {/* All tools toggle */}
           <button
             onClick={() => setShowAllTools(v => !v)}
-            className="text-vos-xs text-vos-accent hover:underline mb-vos-2 flex items-center gap-1"
+            className="text-vos-xs text-vos-accent hover:underline flex items-center gap-1"
           >
             {showAllTools ? 'Show quick picks' : 'Browse all tools'}
             <ChevronRight size={11} className={`transition-transform ${showAllTools ? 'rotate-90' : ''}`} />
           </button>
-
           {showAllTools && (
-            <div className="space-y-vos-2">
+            <div className="space-y-vos-2 mt-vos-2">
               <label className="flex items-center gap-2 px-vos-3 h-9 rounded-vos-md bg-vos-bg-elev-3 border border-vos-border-1 focus-within:border-vos-accent transition-colors">
                 <Search size={13} className="text-vos-text-3 shrink-0" />
                 <input
@@ -326,7 +305,7 @@ export function NewScanPage() {
           )}
         </Card>
 
-        {/* ── 4. Options (collapsed) ── */}
+        {/* 4. Options */}
         {projects.length > 0 && (
           <Card>
             <SectionLabel icon={<Network size={13} />} text="Options" />
@@ -344,27 +323,24 @@ export function NewScanPage() {
           </Card>
         )}
 
-        {/* ── Legal notice ── */}
+        {/* Legal */}
         <div className="flex items-start gap-vos-2 p-vos-3 rounded-vos-md bg-vos-warning/5 border border-vos-warning/20">
           <ShieldAlert size={13} className="text-vos-warning shrink-0 mt-0.5" />
           <p className="text-[11px] text-vos-warning/80">Only scan targets you own or have written permission to test. Unauthorized scanning is illegal.</p>
         </div>
 
-        {/* ── Start button ── */}
+        {/* Start */}
         <div className="flex items-center justify-between">
-          <Link to="/dashboard/scans" className="text-vos-sm text-vos-text-3 hover:text-vos-text">
-            Cancel
-          </Link>
+          <Link to="/dashboard/scans" className="text-vos-sm text-vos-text-3 hover:text-vos-text">Cancel</Link>
           <button
             onClick={handleStart}
             disabled={!canStart || submitting}
             className="inline-flex items-center gap-2 h-12 px-vos-8 rounded-vos-md bg-vos-accent text-white text-vos-sm font-semibold hover:opacity-90 disabled:opacity-40 disabled:cursor-not-allowed transition-opacity shadow-vos-elev-1"
           >
-            {submitting ? (
-              <><Loader2 size={15} className="animate-spin" /> Starting…</>
-            ) : (
-              <><Play size={15} /> {scanMode === 'network' ? 'Start Network Sweep' : 'Start Scan'}</>
-            )}
+            {submitting
+              ? <><Loader2 size={15} className="animate-spin" /> Starting…</>
+              : <><Play size={15} /> {scanMode === 'network' ? 'Start Network Sweep' : 'Start Scan'}</>
+            }
           </button>
         </div>
       </div>
@@ -398,38 +374,24 @@ export function NewScanPage() {
   );
 }
 
-/* ── Local components ── */
-
 function Card({ children }: { children: React.ReactNode }) {
-  return (
-    <div className="rounded-vos-xl border border-vos-border-1 bg-vos-bg-elev-2 p-vos-5 space-y-vos-3">
-      {children}
-    </div>
-  );
+  return <div className="rounded-vos-xl border border-vos-border-1 bg-vos-bg-elev-2 p-vos-5 space-y-vos-3">{children}</div>;
 }
 
 function SectionLabel({ icon, text }: { icon: React.ReactNode; text: string }) {
   return (
-    <div className="flex items-center gap-1.5 text-[10px] uppercase tracking-vos-wide font-semibold text-vos-text-3 mb-vos-1">
+    <div className="flex items-center gap-1.5 text-[10px] uppercase tracking-vos-wide font-semibold text-vos-text-3">
       {icon}{text}
     </div>
   );
 }
 
 function AgentCard({ active, onClick, icon, name, sub, status }: {
-  active: boolean; onClick: () => void;
-  icon: React.ReactNode; name: string; sub: string; status: string;
+  active: boolean; onClick: () => void; icon: React.ReactNode; name: string; sub: string; status: string;
 }) {
   return (
-    <button
-      onClick={onClick}
-      className={`flex items-center gap-vos-3 p-vos-3 rounded-vos-md border text-left transition-colors ${
-        active ? 'border-vos-accent bg-vos-accent/10' : 'border-vos-border-1 bg-vos-bg-elev-3 hover:border-vos-border-2'
-      }`}
-    >
-      <span className={`size-9 rounded-vos-md flex items-center justify-center shrink-0 ${active ? 'bg-vos-accent/15 text-vos-accent' : 'bg-vos-bg-elev-4 text-vos-text-2'}`}>
-        {icon}
-      </span>
+    <button onClick={onClick} className={`flex items-center gap-vos-3 p-vos-3 rounded-vos-md border text-left transition-colors ${active ? 'border-vos-accent bg-vos-accent/10' : 'border-vos-border-1 bg-vos-bg-elev-3 hover:border-vos-border-2'}`}>
+      <span className={`size-9 rounded-vos-md flex items-center justify-center shrink-0 ${active ? 'bg-vos-accent/15 text-vos-accent' : 'bg-vos-bg-elev-4 text-vos-text-2'}`}>{icon}</span>
       <div className="min-w-0 flex-1">
         <p className={`text-vos-xs font-semibold truncate ${active ? 'text-vos-accent' : 'text-vos-text'}`}>{name}</p>
         <p className="text-[10px] text-vos-text-3 truncate font-mono">{sub}</p>
@@ -441,21 +403,11 @@ function AgentCard({ active, onClick, icon, name, sub, status }: {
 }
 
 function ModeCard({ active, onClick, icon, title, desc, badge }: {
-  active: boolean; onClick: () => void;
-  icon: string; title: string; desc: string; badge?: string;
+  active: boolean; onClick: () => void; icon: string; title: string; desc: string; badge?: string;
 }) {
   return (
-    <button
-      onClick={onClick}
-      className={`flex flex-col items-start gap-1 p-vos-4 rounded-vos-md border text-left transition-colors relative ${
-        active ? 'border-vos-accent bg-vos-accent/10' : 'border-vos-border-1 bg-vos-bg-elev-3 hover:border-vos-border-2'
-      }`}
-    >
-      {badge && (
-        <span className="absolute top-vos-2 right-vos-2 text-[9px] font-bold uppercase tracking-wide text-vos-success bg-vos-success/10 border border-vos-success/20 px-1.5 py-0.5 rounded">
-          {badge}
-        </span>
-      )}
+    <button onClick={onClick} className={`flex flex-col items-start gap-1 p-vos-4 rounded-vos-md border text-left transition-colors relative ${active ? 'border-vos-accent bg-vos-accent/10' : 'border-vos-border-1 bg-vos-bg-elev-3 hover:border-vos-border-2'}`}>
+      {badge && <span className="absolute top-vos-2 right-vos-2 text-[9px] font-bold uppercase tracking-wide text-vos-success bg-vos-success/10 border border-vos-success/20 px-1.5 py-0.5 rounded">{badge}</span>}
       <span className="text-2xl">{icon}</span>
       <p className={`text-vos-sm font-semibold ${active ? 'text-vos-accent' : 'text-vos-text'}`}>{title}</p>
       <p className="text-vos-xs text-vos-text-3 leading-snug">{desc}</p>
