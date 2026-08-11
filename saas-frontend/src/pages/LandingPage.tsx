@@ -55,7 +55,7 @@ export function LandingPage() {
                     {t('auth.signIn')}
                   </Link>
                   <Link to="/register" className="px-4 py-2 bg-lime-400 text-black font-bold rounded-none hover:bg-lime-300 transition">
-                    {t('landing.startTrial')}
+                    {t('landing.startTrial', 'Start 14-Day Free Trial')}
                   </Link>
                 </>
               )}
@@ -85,7 +85,7 @@ export function LandingPage() {
               </Link>
             ) : (
               <Link to="/register" className="px-6 sm:px-8 py-3 sm:py-4 bg-lime-400 text-black text-base sm:text-lg font-bold rounded-none border-2 border-lime-300 hover:bg-lime-300 transition">
-                {t('landing.startTrial14')}
+                {t('landing.startTrial14', 'Start 14-Day Free Trial — No Credit Card Required')}
               </Link>
             )}
             <a href="#features" className="px-6 sm:px-8 py-3 sm:py-4 bg-zinc-900 text-white text-base sm:text-lg font-semibold rounded-none hover:bg-zinc-800 transition border-2 border-zinc-600">
@@ -140,7 +140,7 @@ export function LandingPage() {
                 >
                   {isAuthenticated
                     ? t('landing.openDashboard', 'Open Dashboard')
-                    : t('landing.startTrial', 'Start Free Trial')}
+                    : t('landing.launchScan', 'Launch Live Cloud Scan')}
                 </Link>
                 <p className="text-gray-400 text-sm mt-3">{t('landing.noSignup', 'No credit card required')}</p>
               </div>
@@ -203,10 +203,10 @@ export function LandingPage() {
             {/* Free Trial */}
             <div className="bg-gray-800/50 rounded-2xl p-6 border border-gray-700 flex flex-col">
               <div className="text-lg font-medium text-green-400 mb-2">{t('landing.plan.freeTrial', 'Free Trial')}</div>
-              <div className="flex items-baseline gap-1 mb-4">
-                <span className="text-4xl font-bold text-white">€0</span>
-                <span className="text-gray-400">{t('landing.plan.freeCycle', '/3 days')}</span>
-              </div>
+               <div className="flex items-baseline gap-1 mb-4">
+                 <span className="text-4xl font-bold text-white">€0</span>
+                 <span className="text-gray-400">{t('landing.plan.freeCycle', '/14 days')}</span>
+               </div>
               <ul className="space-y-2 mb-6 text-gray-300 text-sm">
                 <li className="flex items-center gap-2">
                   <span className="text-green-400">✓</span> {t('landing.plan.freeItem1', '1 free security scan')}
