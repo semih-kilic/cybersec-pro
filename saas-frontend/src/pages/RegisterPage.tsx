@@ -7,7 +7,6 @@ import { CountryFlags } from '../components/CountryFlags';
 
 const GOOGLE_CLIENT_ID = '547951331800-kqkuc6aohfr7ptt26p38mnqfdvt7b6mu.apps.googleusercontent.com';
 const GITHUB_CLIENT_ID = 'Ov23lizk4YnG8pDKXpWV';
-const LINKEDIN_CLIENT_ID = 'YOUR_LINKEDIN_CLIENT_ID';
 
 export function RegisterPage() {
   const [formData, setFormData] = useState({
@@ -43,14 +42,6 @@ export function RegisterPage() {
     localStorage.setItem('oauth_provider', 'github');
     const githubAuthUrl = `https://github.com/login/oauth/authorize?client_id=${GITHUB_CLIENT_ID}&redirect_uri=${encodeURIComponent(redirectUri)}&scope=${encodeURIComponent(scope)}`;
     window.location.href = githubAuthUrl;
-  };
-
-  const handleLinkedInLogin = () => {
-    const redirectUri = `${window.location.origin}/dashboard/auth/callback`;
-    const scope = 'openid profile email';
-    localStorage.setItem('oauth_provider', 'linkedin');
-    const linkedinAuthUrl = `https://www.linkedin.com/oauth/v2/authorization?response_type=code&client_id=${LINKEDIN_CLIENT_ID}&redirect_uri=${encodeURIComponent(redirectUri)}&scope=${encodeURIComponent(scope)}`;
-    window.location.href = linkedinAuthUrl;
   };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
