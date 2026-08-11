@@ -547,25 +547,4 @@ r#"CREATE TABLE IF NOT EXISTS community_post_replies (
     created_at TIMESTAMP NOT NULL DEFAULT NOW()
 )"#,
 "CREATE INDEX IF NOT EXISTS idx_community_replies_post ON community_post_replies(post_id, created_at)",
-
-// ── Target authorization (bypass-proof ownership confirmation) ────────
-r#"CREATE TABLE IF NOT EXISTS target_authorizations (
-    id TEXT PRIMARY KEY,
-    organization_id TEXT NOT NULL REFERENCES organizations(id),
-    user_id TEXT NOT NULL REFERENCES users(id),
-    target TEXT NOT NULL,
-    target_type TEXT NOT NULL,
-    scope_statement TEXT NOT NULL,
-    statement_version TEXT NOT NULL,
-    confirmed_at TIMESTAMP NOT NULL DEFAULT NOW(),
-    expires_at TIMESTAMP,
-    revoked_at TIMESTAMP,
-    last_used_at TIMESTAMP
-)"#,
-"CREATE UNIQUE INDEX IF NOT EXISTS idx_target_auth_org_target ON target_authorizations(organization_id, target)",
-"CREATE INDEX IF NOT EXISTS idx_target_auth_org ON target_authorizations(organization_id)",
-r#"ALTER TABLE scans ADD COLUMN IF NOT EXISTS authorization_id TEXT REFERENCES target_authorizations(id)"#,
-r#"ALTER TABLE scheduled_scans ADD COLUMN IF NOT EXISTS authorization_id TEXT REFERENCES target_authorizations(id)"#,
-r#"ALTER TABLE scheduled_scans ADD COLUMN IF NOT EXISTS scope_statement TEXT"#,
-r#"ALTER TABLE scheduled_scans ADD COLUMN IF NOT EXISTS statement_version TEXT"#,
 ];

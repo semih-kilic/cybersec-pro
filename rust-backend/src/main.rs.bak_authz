@@ -361,24 +361,6 @@ fn build_router(state: Arc<AppState>) -> Router {
             "/api/v1/agents/jobs",
             get(agent_handlers::list_agent_jobs),
         )
-        // ── Target authorization (ownership confirmation) ─────
-        .route(
-            "/api/v1/authorizations/statement",
-            get(target_authorization_handlers::authorization_statement),
-        )
-        .route(
-            "/api/v1/authorizations/preview",
-            post(target_authorization_handlers::preview_statement),
-        )
-        .route(
-            "/api/v1/authorizations",
-            get(target_authorization_handlers::list_authorizations)
-                .post(target_authorization_handlers::authorize_target),
-        )
-        .route(
-            "/api/v1/authorizations/:id/revoke",
-            post(target_authorization_handlers::revoke_authorization),
-        )
         // ── Billing / Subscriptions ───────────────────────────
         .route(
             "/api/v1/billing/subscription",

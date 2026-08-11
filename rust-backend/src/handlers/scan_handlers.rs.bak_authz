@@ -893,13 +893,6 @@ pub async fn get_scan(
 
 #[derive(Deserialize)]
 #[allow(dead_code)]
-pub struct ScanAuthorizationBody {
-    pub confirmed: bool,
-    pub scope_statement: String,
-}
-
-#[derive(Deserialize)]
-#[allow(dead_code)]
 pub struct StartScanRequest {
     pub tool: Option<String>,
     pub tool_id: Option<String>,
@@ -908,7 +901,6 @@ pub struct StartScanRequest {
     pub execution_mode: Option<String>,
     pub agent_id: Option<String>,
     pub project_id: Option<i64>,
-    pub authorization: Option<ScanAuthorizationBody>,
 }
 
 pub async fn start_scan(
@@ -923,33 +915,6 @@ pub async fn start_scan(
     if state.rate_limiter.is_limited(&format!("scan:{}", auth.user_id), 5, Duration::from_secs(60)) {
         return (StatusCode::TOO_MANY_REQUESTS, Json(json!({"error": "Too many scan requests"}))).into_response();
     }
-
-    // ── Target authorization gate (bypass-proof) ────────────────────────
-    // Every scan requires an explicit, timestamped ownership/permission
-    // confirmation BEFORE any tool is resolved, scan record created, or job
-    // spawned. The statement must match the server-side canonical text and is
-    // recorded in the audit log with a timestamp.
-    let authz_confirmation = body.authorization.as_ref().map(|a| {
-        crate::services::target_authorization::AuthConfirmation {
-            confirmed: a.confirmed,
-            scope_statement: a.scope_statement.clone(),
-        }
-    });
-    let authorization_id = match crate::services::target_authorization::authorize_and_check(
-        &state.db,
-        &org_id,
-        &auth.user_id,
-        body.target.trim(),
-        authz_confirmation.as_ref(),
-        Some(&headers),
-    )
-    .await
-    {
-        Ok((authz_id, _, _)) => authz_id,
-        Err(e) => {
-            return (StatusCode::FORBIDDEN, Json(json!({"error": e}))).into_response();
-        }
-    };
 
     // Resolve tool by name or ID
     let tool_identifier = body.tool.as_deref()
@@ -1227,8 +1192,8 @@ pub async fn start_scan(
         params_json = merge_scan_parameters(&params_json, metadata);
     }
     if let Err(e) = sqlx::query(
-        "INSERT INTO scans (id, organization_id, user_id, tool_id, target, parameters, status, scan_phase, agent_id, project_id, authorization_id, started_at)
-         VALUES ($1, $2, $3, $4, $5, $6::jsonb, 'running', 'initializing', $7, $8, $9, CURRENT_TIMESTAMP)"
+        "INSERT INTO scans (id, organization_id, user_id, tool_id, target, parameters, status, scan_phase, agent_id, project_id, started_at)
+         VALUES ($1, $2, $3, $4, $5, $6::jsonb, 'running', 'initializing', $7, $8, CURRENT_TIMESTAMP)"
     )
     .bind(&scan_id)
     .bind(&org_id)
@@ -1238,7 +1203,6 @@ pub async fn start_scan(
     .bind(&params_json)
     .bind(&body.agent_id)
     .bind(&body.project_id)
-    .bind(&authorization_id)
     .execute(&state.db)
     .await {
         tracing::error!("Failed to insert scan: {}", e);
@@ -1264,7 +1228,7 @@ pub async fn start_scan(
     .await;
 
     log_audit(&state.db, "scan_start", "scan", "info", Some(&auth.user_id), Some(&org_id),
-        Some(json!({"tool": tool.name, "target": target, "authorization_id": authorization_id})), Some("scan"), Some(&scan_id), "success", Some(&headers)).await;
+        Some(json!({"tool": tool.name, "target": target})), Some("scan"), Some(&scan_id), "success", Some(&headers)).await;
 
     // Phase: preparing_tool (building command and preparing execution)
     emit_phase_change(&state.scan_output_tx, &state.db, &scan_id, "preparing_tool", "Building scan command and checking tool availability");
@@ -1810,7 +1774,6 @@ pub struct NetworkSweepRequest {
     pub tool: Option<String>,
     pub agent_id: Option<String>,
     pub project_id: Option<i64>,
-    pub authorization: Option<ScanAuthorizationBody>,
 }
 
 pub async fn network_sweep(
@@ -1850,31 +1813,6 @@ pub async fn network_sweep(
         }
     }
 
-    // ── Target authorization gate (bypass-proof) ────────────────────────
-    // Sweeping a subnet scans every live host inside it, so the subnet itself
-    // must carry an explicit, timestamped ownership confirmation.
-    let authz_confirmation = body.authorization.as_ref().map(|a| {
-        crate::services::target_authorization::AuthConfirmation {
-            confirmed: a.confirmed,
-            scope_statement: a.scope_statement.clone(),
-        }
-    });
-    let authorization_id = match crate::services::target_authorization::authorize_and_check(
-        &state.db,
-        &org_id,
-        &auth.user_id,
-        &subnet,
-        authz_confirmation.as_ref(),
-        None,
-    )
-    .await
-    {
-        Ok((authz_id, _, _)) => authz_id,
-        Err(e) => {
-            return (StatusCode::FORBIDDEN, Json(json!({"error": e}))).into_response();
-        }
-    };
-
     let tool_name = body.tool.as_deref().unwrap_or("nmap").to_string();
     let sweep_id = Uuid::new_v4().to_string();
 
@@ -1913,8 +1851,8 @@ pub async fn network_sweep(
     let sweep_scan_id = Uuid::new_v4().to_string();
     let sweep_params = json!({"sweep_id": sweep_id, "subnet": subnet, "kind": "network-sweep"});
     let _ = sqlx::query(
-        "INSERT INTO scans (id, organization_id, user_id, tool_id, target, parameters, status, scan_phase, agent_id, project_id, authorization_id, started_at) \
-         VALUES ($1, $2, $3, $4, $5, $6::jsonb, 'running', 'sweeping', $7, $8::int, $9, CURRENT_TIMESTAMP)"
+        "INSERT INTO scans (id, organization_id, user_id, tool_id, target, parameters, status, scan_phase, agent_id, project_id, started_at) \
+         VALUES ($1, $2, $3, $4, $5, $6::jsonb, 'running', 'sweeping', $7, $8::int, CURRENT_TIMESTAMP)"
     )
     .bind(&sweep_scan_id)
     .bind(&org_id)
@@ -1924,7 +1862,6 @@ pub async fn network_sweep(
     .bind(&sweep_params)
     .bind(&agent_id)
     .bind(&body.project_id)
-    .bind(&authorization_id)
     .execute(&state.db)
     .await;
 
@@ -1937,7 +1874,6 @@ pub async fn network_sweep(
     let sweep_id_spawn = sweep_id.clone();
     let sweep_scan_id_spawn = sweep_scan_id.clone();
     let subnet_spawn = subnet.clone();
-    let authorization_id_spawn = authorization_id.clone();
 
     // Spawn background task: discover hosts → start individual scans
     tokio::spawn(async move {
@@ -2024,8 +1960,8 @@ pub async fn network_sweep(
             let params = json!({"sweep_id": sweep_id_spawn, "subnet": subnet_spawn});
 
             let _ = sqlx::query(
-                "INSERT INTO scans (id, organization_id, user_id, tool_id, target, parameters, status, scan_phase, agent_id, project_id, authorization_id, started_at) \
-                 VALUES ($1, $2, $3, $4, $5, $6::jsonb, 'running', 'initializing', $7, $8, $9, CURRENT_TIMESTAMP)"
+                "INSERT INTO scans (id, organization_id, user_id, tool_id, target, parameters, status, scan_phase, agent_id, project_id, started_at) \
+                 VALUES ($1, $2, $3, $4, $5, $6::jsonb, 'running', 'initializing', $7, $8, CURRENT_TIMESTAMP)"
             )
             .bind(&scan_id)
             .bind(&org_id_spawn)
@@ -2035,7 +1971,6 @@ pub async fn network_sweep(
             .bind(&params)
             .bind(&agent_id)
             .bind(project_id)
-            .bind(&authorization_id_spawn)
             .execute(&db)
             .await;
 

@@ -2195,45 +2195,16 @@ pub async fn create_schedule(
     let agent_id = body.get("agent_id").and_then(|v| v.as_str());
     let params = body.get("parameters").cloned().unwrap_or(json!({}));
 
-    // ── Target authorization gate (bypass-proof) ────────────────────────
-    // Schedules run non-interactively, so the target must be authorized at
-    // creation time; the scheduler re-checks validity on every run.
-    if target.trim().is_empty() {
-        return (StatusCode::BAD_REQUEST, Json(json!({"error": "Target required for a scheduled scan"}))).into_response();
-    }
-    let authz_org = user.org_id.clone().unwrap_or_else(|| user.user_id.clone());
-    let authz_confirmation = body.get("authorization").map(|a| {
-        crate::services::target_authorization::AuthConfirmation {
-            confirmed: a.get("confirmed").and_then(|v| v.as_bool()).unwrap_or(false),
-            scope_statement: a.get("scope_statement").and_then(|v| v.as_str()).unwrap_or("").to_string(),
-        }
-    });
-    let (authz_id, statement, statement_version) = match authz_confirmation {
-        Some(confirmation) => {
-            match crate::services::target_authorization::authorize_and_check(
-                &state.db, &authz_org, &user.user_id, target.trim(), Some(&confirmation), None,
-            ).await {
-                Ok(v) => v,
-                Err(e) => return (StatusCode::FORBIDDEN, Json(json!({"error": e}))).into_response(),
-            }
-        }
-        None => {
-            return (StatusCode::FORBIDDEN, Json(json!({
-                "error": "Target authorization required. Confirm that you own or have permission to test this target before scheduling scans."
-            }))).into_response();
-        }
-    };
-
     // Compute first next_run
     let next_run = crate::services::scheduler::next_cron_fire(cron, chrono::Utc::now());
 
     let result = sqlx::query(
-        "INSERT INTO scheduled_scans (id, user_id, organization_id, name, cron_expression, tool_name, target, schedule_type, parameters, agent_id, authorization_id, scope_statement, statement_version, is_active, next_run, created_at, updated_at)
-         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9::jsonb, $10, $11, $12, $13, TRUE, $14, NOW(), NOW())"
+        "INSERT INTO scheduled_scans (id, user_id, organization_id, name, cron_expression, tool_name, target, schedule_type, parameters, agent_id, is_active, next_run, created_at, updated_at)
+         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9::jsonb, $10, TRUE, $11, NOW(), NOW())"
     )
     .bind(&id)
     .bind(&user.user_id)
-    .bind(&authz_org)
+    .bind(&user.org_id.as_deref().unwrap_or(""))
     .bind(name)
     .bind(cron)
     .bind(tool_name)
@@ -2241,9 +2212,6 @@ pub async fn create_schedule(
     .bind(schedule_type)
     .bind(&params)
     .bind(agent_id)
-    .bind(&authz_id)
-    .bind(&statement)
-    .bind(&statement_version)
     .bind(next_run)
     .execute(&state.db)
     .await;
@@ -2268,31 +2236,6 @@ pub async fn update_schedule(
     let tool_name = body.get("tool_name").and_then(|v| v.as_str())
         .or_else(|| body.get("tool").and_then(|v| v.as_str()));
     let target = body.get("target").and_then(|v| v.as_str());
-
-    // ── Target authorization gate (bypass-proof) ────────────────────────
-    // Changing a schedule's target requires a fresh authorization; without it
-    // the scheduler refuses to run scans against the new target.
-    if target.is_some() {
-        let authz_org = user.org_id.clone().unwrap_or_else(|| user.user_id.clone());
-        let confirmation = body.get("authorization").map(|a| {
-            crate::services::target_authorization::AuthConfirmation {
-                confirmed: a.get("confirmed").and_then(|v| v.as_bool()).unwrap_or(false),
-                scope_statement: a.get("scope_statement").and_then(|v| v.as_str()).unwrap_or("").to_string(),
-            }
-        });
-        match crate::services::target_authorization::authorize_and_check(
-            &state.db, &authz_org, &user.user_id, target.unwrap_or("").trim(), confirmation.as_ref(), None,
-        ).await {
-            Ok((authz_id, stmt, ver)) => {
-                let _ = sqlx::query(
-                    "UPDATE scheduled_scans SET authorization_id = $1, scope_statement = $2, statement_version = $3 WHERE id = $4"
-                )
-                .bind(&authz_id).bind(&stmt).bind(&ver).bind(&schedule_id)
-                .execute(&state.db).await;
-            }
-            Err(e) => return (StatusCode::FORBIDDEN, Json(json!({"error": e}))).into_response(),
-        }
-    }
 
     let mut sets = Vec::new();
     let mut idx = 1;

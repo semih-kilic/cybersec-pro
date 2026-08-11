@@ -58,24 +58,6 @@ async fn tick(db: &PgPool, scan_tx: &broadcast::Sender<String>) -> Result<(), St
     for (sched_id, user_id, org_id, tool_name, target, cron_expr, params_text, agent_id, project_id) in rows {
         tracing::info!("📅 Triggering scheduled scan '{}' — tool={}, target={}", sched_id, tool_name, target);
 
-        // Bypass-proof authorization guard: scheduled scans only run against
-        // targets with a currently-valid ownership authorization. The original
-        // confirmation is recorded in the audit log at creation time.
-        let authz_id = match crate::services::target_authorization::current_authorization_id(db, &org_id, &target).await {
-            Some(id) => id,
-            None => {
-                tracing::warn!("Scheduled scan {} blocked: target '{}' has no valid authorization", sched_id, target);
-                crate::services::audit::log_audit(
-                    db, "scheduled_scan_blocked", "target", "warning",
-                    Some(&user_id), Some(&org_id),
-                    Some(serde_json::json!({"scheduled_scan_id": sched_id, "target": target, "reason": "no valid target authorization"})),
-                    Some("scheduled_scan"), Some(&sched_id), "blocked", None,
-                ).await;
-                advance_next_run(db, &sched_id, cron_expr.as_deref()).await;
-                continue;
-            }
-        };
-
         // Resolve tool
         let tool: Option<crate::models::Tool> = sqlx::query_as(
             "SELECT * FROM tools WHERE (name = $1 OR business_name = $2 OR id = $3) AND is_active = TRUE LIMIT 1",
@@ -106,8 +88,8 @@ async fn tick(db: &PgPool, scan_tx: &broadcast::Sender<String>) -> Result<(), St
         // Create scan record
         let scan_id = uuid::Uuid::new_v4().to_string();
         if let Err(e) = sqlx::query(
-            "INSERT INTO scans (id, organization_id, user_id, tool_id, target, parameters, status, agent_id, project_id, authorization_id, started_at)
-             VALUES ($1, $2, $3, $4, $5, $6::jsonb, 'running', $7, $8, $9, CURRENT_TIMESTAMP)",
+            "INSERT INTO scans (id, organization_id, user_id, tool_id, target, parameters, status, agent_id, project_id, started_at)
+             VALUES ($1, $2, $3, $4, $5, $6::jsonb, 'running', $7, $8, CURRENT_TIMESTAMP)",
         )
         .bind(&scan_id)
         .bind(&org_id)
@@ -117,7 +99,6 @@ async fn tick(db: &PgPool, scan_tx: &broadcast::Sender<String>) -> Result<(), St
         .bind(&params)
         .bind(&agent_id)
         .bind(&project_id.map(|v| v as i32))
-        .bind(&authz_id)
         .execute(db)
         .await
         {

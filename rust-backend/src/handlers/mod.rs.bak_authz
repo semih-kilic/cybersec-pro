@@ -1,7 +1,6 @@
 pub mod auth_handlers;
 pub mod tool_handlers;
 pub mod scan_handlers;
-pub mod target_authorization_handlers;
 pub mod report_handlers;
 pub mod agent_handlers;
 pub mod billing_handlers;
