@@ -685,7 +685,8 @@ pub async fn social_auth(
         Some(c) => c.to_string(),
         None => return (StatusCode::BAD_REQUEST, Json(json!({"error": "Authorization code required"}))).into_response(),
     };
-    let redirect_uri = body.get("redirect_uri").and_then(|r| r.as_str()).unwrap_or("").to_string();
+    let redirect_uri_fallback = std::env::var("LINKEDIN_REDIRECT_URI").unwrap_or_default();
+    let redirect_uri = body.get("redirect_uri").and_then(|r| r.as_str()).unwrap_or(&redirect_uri_fallback).to_string();
 
     // Detect provider from URI path
     let path = uri.path();
