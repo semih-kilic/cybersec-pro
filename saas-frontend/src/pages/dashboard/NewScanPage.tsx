@@ -20,7 +20,7 @@ import { NewScanPageSkeleton } from '../../components/ui/Skeleton';
 import { PageHeader } from '../../components/vos';
 
 type ScanMode = 'single' | 'network';
-interface Agent { id: string; name: string; ip_address: string; platform: string; status: string; connection_type: string; }
+interface Agent { id: string; name: string; ip_address: string; platform: string; status: string; connection_type: string; subnets?: string[]; }
 interface Tool  { id: string; name: string; slug?: string; category: string; description?: string; dangerous?: boolean; }
 
 const QUICK_TOOLS = [
@@ -69,12 +69,16 @@ export function NewScanPage() {
   }, [toolsData]);
 
   function autoFillTarget(agent: Agent, mode: ScanMode) {
-    if (!agent.ip_address) return;
     if (mode === 'network') {
+      if (agent.subnets && agent.subnets.length > 0) {
+        setTarget(agent.subnets[0]);
+        return;
+      }
+      if (!agent.ip_address) return;
       const parts = agent.ip_address.split('.');
       if (parts.length === 4) setTarget(`${parts[0]}.${parts[1]}.${parts[2]}.0/24`);
     } else {
-      setTarget(agent.ip_address);
+      if (agent.ip_address) setTarget(agent.ip_address);
     }
   }
 
@@ -101,7 +105,7 @@ export function NewScanPage() {
   }
 
   const selectedToolObj = allTools.find(t => t.id === selectedTool || t.slug === selectedTool);
-  const canStart = target.trim().length > 0 && selectedTool.length > 0;
+  const canStart = (target.trim().length > 0 || (scanMode === 'network' && !!selectedAgent)) && selectedTool.length > 0;
 
   const handleStart = async () => {
     if (selectedToolObj?.dangerous && !showDanger) { setShowDanger(true); return; }
@@ -231,7 +235,7 @@ export function NewScanPage() {
             <input
               value={target}
               onChange={e => setTarget(e.target.value)}
-              placeholder={scanMode === 'network' ? '10.0.0.0/24' : 'IP address, domain, or URL'}
+              placeholder={scanMode === 'network' ? (selectedAgent ? '10.0.0.0/24 (leave empty to use agent network)' : '10.0.0.0/24') : 'IP address, domain, or URL'}
               className="w-full px-vos-3 h-11 rounded-vos-md bg-vos-bg-elev-3 border border-vos-border-1 text-vos-text font-mono text-vos-sm placeholder:text-vos-text-muted focus:outline-none focus:border-vos-accent focus:ring-2 focus:ring-vos-accent/30 transition-colors"
             />
             {scanMode === 'network' && (
