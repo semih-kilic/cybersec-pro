@@ -44,7 +44,7 @@ function buildPlans(counts: { trial: number; starter: number; professional: numb
       name: t('upgrade.free', 'Free Trial'),
       price: 0,
       yearlyPrice: 0,
-      period: '3 days',
+      period: '14 days',
       description: 'Test drive the full platform.',
       features: [
         `All ${counts.trial} security tools`,

@@ -270,7 +270,7 @@
     "registrationFailed": "Registration failed",
     "checkEmailTitle": "Check Your Email",
     "checkEmailSentTo": "We sent a verification link to:",
-    "checkEmailBody": "Click the link in the email to verify your account and start your 3-day free trial. The link expires in 24 hours.",
+    "checkEmailBody": "Click the link in the email to verify your account and start your 14-day free trial. The link expires in 24 hours.",
     "sent": "✅ Sent!",
     "newVerificationSent": "New verification link sent!",
     "firstNamePlaceholder": "John",

@@ -63,7 +63,7 @@ export default function DocsPage() {
                 <p className="text-sm text-white/50 mb-6">Get up and running with CyberSec Pro in under 5 minutes. Follow these steps to launch your first security assessment.</p>
                 <div className="grid gap-6 md:grid-cols-3">
                   {[
-                    { n: "1", title: "Create Account", desc: "Register at cyber-sec-pro.com with your email address or GitHub OAuth. Verify your email to activate. You'll receive a 3-day free trial with access to basic scanning tools." },
+                    { n: "1", title: "Create Account", desc: "Register at cyber-sec-pro.com with your email address or GitHub OAuth. Verify your email to activate. You'll receive a 14-day free trial with access to basic scanning tools." },
                     { n: "2", title: "Set Up MFA", desc: "Navigate to Settings → Security and enable TOTP-based MFA using Google Authenticator, Authy, or any RFC 6238 compatible app. MFA is mandatory for all accounts." },
                     { n: "3", title: "Add Your First Target", desc: "Go to Targets → Add Target. Enter your domain or IP address. Verify ownership via DNS TXT record, HTTP file upload, or HTML meta tag verification." },
                     { n: "4", title: "Configure Scan Profile", desc: "Choose a scan type (Quick, Full, Custom, or Scheduled). Select tools and set parameters. Save as a reusable profile for future scans." },
@@ -325,7 +325,7 @@ export default function DocsPage() {
                 <h2 className="text-xl font-bold text-white mb-4">Tool Access by Plan</h2>
                 <div className="grid gap-3 md:grid-cols-4">
                   {[
-                    { plan: "Free Trial", count: "183", desc: "All tools, 1 scan, 3-day trial", color: "white/60" },
+                    { plan: "Free Trial", count: "183", desc: "All tools, 1 scan, 14-day trial", color: "white/60" },
                     {
                       plan: `${pricing("plans.starter.name")} (${pricing("plans.starter.price")}${pricing("plans.starter.period")})`,
                       count: "183",
