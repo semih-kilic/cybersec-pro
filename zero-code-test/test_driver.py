@@ -205,28 +205,40 @@ def pick_target(tt, tpl, name):
     return "127.0.0.1"
 
 
+GENERIC_TOKENS = {"type", "format", "value", "name", "text", "list", "level", "size", "mode"}
+
+
+def select_value(f):
+    """Mimic the real frontend: <option value={opt.split(' ')[0]}>. Prefer default."""
+    d = f.get("default")
+    if d and str(d).strip():
+        return str(d).strip()
+    for o in f.get("options") or []:
+        if isinstance(o, dict) and o.get("value"):
+            return str(o["value"])
+        if isinstance(o, str) and o.strip():
+            return o.strip().split(" ")[0]
+    return "1"
+
+
 def real_field_value(f):
-    name = (f.get("name") or "").lower()
-    for k, v in FIELD_VALUES.items():
-        if k in name:
-            return v
     t = f.get("type", "text")
+    if t == "select":
+        return select_value(f)
     if t == "boolean":
         return "true"
     if t == "number":
         return "10"
-    if t == "select":
-        opts = f.get("options") or []
-        for o in opts:
-            if isinstance(o, dict) and o.get("value"):
-                return o["value"]
-            if isinstance(o, str) and o:
-                return o
-        return f.get("default") or "1"
     if t == "password":
         return "password"
     if t == "url":
         return "http://127.0.0.1:8088"
+    name = (f.get("name") or "").lower()
+    if name in FIELD_VALUES:
+        return FIELD_VALUES[name]
+    for k in sorted(FIELD_VALUES, key=len, reverse=True):
+        if k in name and k not in GENERIC_TOKENS:
+            return FIELD_VALUES[k]
     return f.get("default") or "1"
 
 
