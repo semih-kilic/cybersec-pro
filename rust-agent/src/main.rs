@@ -13,8 +13,8 @@
 use serde::{Deserialize, Serialize};
 use std::io::Write;
 use std::path::PathBuf;
-use std::sync::atomic::{AtomicI32, Ordering};
-use std::sync::Arc;
+use std::sync::atomic::{AtomicI32, AtomicU64, Ordering};
+use std::sync::{Arc, Mutex, OnceLock};
 use std::time::Duration;
 use sysinfo::System;
 use local_ip_address::list_afinet_netifas;
@@ -129,6 +129,7 @@ async fn heartbeat(state: &AgentState, http: &reqwest::Client, sys: &mut System,
         "memory_usage": mem_pct,
         "active_scans": active,
         "ip_addresses": ip_addresses,
+        "subnets": local_subnets(),
     });
     let url = format!("{}/api/v1/agents/{}/heartbeat", state.api_url, state.agent_id);
     let resp = http
@@ -146,6 +147,75 @@ async fn heartbeat(state: &AgentState, http: &reqwest::Client, sys: &mut System,
         return Err(format!("heartbeat status {}", resp.status()));
     }
     Ok(())
+}
+
+/// Local networks reachable by this agent, as CIDR strings (e.g. "10.0.0.0/24").
+/// This is the "target context" the backend uses when the operator starts a
+/// sweep with this agent but no explicit subnet. Tools always run server-side.
+fn local_subnets() -> Vec<String> {
+    const SUBNET_REFRESH_SECS: u64 = 300;
+    static LAST_REFRESH: AtomicU64 = AtomicU64::new(0);
+    static CACHE: OnceLock<Mutex<Vec<String>>> = OnceLock::new();
+    let cache = CACHE.get_or_init(|| Mutex::new(Vec::new()));
+
+    let now = std::time::SystemTime::now()
+        .duration_since(std::time::UNIX_EPOCH)
+        .map(|d| d.as_secs())
+        .unwrap_or(0);
+    if now.saturating_sub(LAST_REFRESH.load(Ordering::Relaxed)) < SUBNET_REFRESH_SECS {
+        if let Ok(guard) = cache.lock() {
+            return guard.clone();
+        }
+    }
+
+    let mut nets = collect_subnets();
+    nets.sort();
+    nets.dedup();
+    if let Ok(mut guard) = cache.lock() {
+        *guard = nets.clone();
+    }
+    LAST_REFRESH.store(now, Ordering::Relaxed);
+    nets
+}
+
+fn collect_subnets() -> Vec<String> {
+    let mut nets = Vec::new();
+    #[cfg(target_os = "windows")]
+    {
+        // Get-NetIPAddress prints plain "IP/PrefixLength" lines, independent of
+        // the OS display language. WellKnown covers loopback + APIPA; we also
+        // filter those out defensively below.
+        const SCRIPT: &str = "Get-NetIPAddress -AddressFamily IPv4 | Where-Object { $_.PrefixOrigin -ne 'WellKnown' } | ForEach-Object { \"$($_.IPAddress)/$($_.PrefixLength)\" }";
+        if let Ok(out) = std::process::Command::new("powershell")
+            .args(["-NoProfile", "-NonInteractive", "-Command", SCRIPT])
+            .output()
+        {
+            for line in String::from_utf8_lossy(&out.stdout).lines() {
+                let s = line.trim();
+                if s.contains('/') && !s.starts_with("127.") && !s.starts_with("169.254.") {
+                    nets.push(s.to_string());
+                }
+            }
+        }
+    }
+    #[cfg(target_os = "linux")]
+    {
+        if let Ok(out) = std::process::Command::new("ip")
+            .args(["-o", "-f", "inet", "addr", "show"])
+            .output()
+        {
+            for line in String::from_utf8_lossy(&out.stdout).lines() {
+                if let Some(idx) = line.find(" inet ") {
+                    let rest = line[idx + 6..].trim();
+                    let cidr = rest.split_whitespace().next().unwrap_or("").to_string();
+                    if cidr.contains('/') && !cidr.starts_with("127.") && !cidr.starts_with("169.254.") {
+                        nets.push(cidr);
+                    }
+                }
+            }
+        }
+    }
+    nets
 }
 
 #[derive(Deserialize, Debug)]
