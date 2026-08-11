@@ -79,6 +79,12 @@ TARGET_OVERRIDE = {
     "exiftool": "/tmp/zt/testfile.txt",
     "radare2": "/tmp/zt/testfile.txt",
     "rizin": "/tmp/zt/testfile.txt",
+    "msfvenom": "linux/x86/shell_reverse_tcp",
+}
+
+# Per-tool real-run parameter overrides (environment-specific corrections).
+PER_TOOL_PARAMS = {
+    "hashcat": {"options": "--force"},
 }
 
 FIELD_VALUES = {
@@ -206,6 +212,7 @@ def pick_target(tt, tpl, name):
 
 
 GENERIC_TOKENS = {"type", "format", "value", "name", "text", "list", "level", "size", "mode"}
+EMPTY_TOKENS = {"options", "option", "args", "arguments", "arg", "extra", "flags", "flag", "command_options", "rules"}
 
 
 def select_value(f):
@@ -222,6 +229,12 @@ def select_value(f):
 
 
 def real_field_value(f):
+    """Mimic the GUI: an untouched form submits the field default. Only when the
+    default is empty do we fall back to heuristics, so DB-designed defaults
+    (e.g. 'LHOST=127.0.0.1', '-p 80,443') are preserved verbatim."""
+    d = f.get("default")
+    if d and str(d).strip():
+        return str(d).strip()
     t = f.get("type", "text")
     if t == "select":
         return select_value(f)
@@ -239,7 +252,10 @@ def real_field_value(f):
     for k in sorted(FIELD_VALUES, key=len, reverse=True):
         if k in name and k not in GENERIC_TOKENS:
             return FIELD_VALUES[k]
-    return f.get("default") or "1"
+    for e in EMPTY_TOKENS:
+        if e in name:
+            return ""
+    return "1"
 
 
 def budget_for(name):
@@ -308,6 +324,8 @@ def process_tool(tool, token, pacer, lock, results_seen):
                 real_params[fn] = target
             else:
                 real_params[fn] = real_field_value(f)
+        for k, v in PER_TOOL_PARAMS.get(name, {}).items():
+            real_params[k] = v
         pacer.wait()
         st, resp = call("POST", "/api/v1/scans", token, {
             "tool": name, "target": target, "parameters": real_params,
