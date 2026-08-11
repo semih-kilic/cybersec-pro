@@ -1812,6 +1812,34 @@ pub async fn network_sweep(
     // Build nmap discovery command
     let discovery_cmd = format!("nmap -sn -T4 --open -oG - {}", subnet);
 
+    // Resolve the sweep tool once (used for the sweep scan row and per-host scans)
+    let tool: Option<crate::models::Tool> = sqlx::query_as(
+        "SELECT * FROM tools WHERE (id = $1 OR name = $2) AND is_active = TRUE LIMIT 1"
+    )
+    .bind(&tool_name)
+    .bind(&tool_name)
+    .fetch_optional(&state.db)
+    .await
+    .unwrap_or(None);
+
+    // Create a visible sweep scan row so the sweep shows up in /dashboard/scans
+    let sweep_scan_id = Uuid::new_v4().to_string();
+    let sweep_params = json!({"sweep_id": sweep_id, "subnet": subnet, "kind": "network-sweep"});
+    let _ = sqlx::query(
+        "INSERT INTO scans (id, organization_id, user_id, tool_id, target, parameters, status, scan_phase, agent_id, project_id, started_at) \
+         VALUES ($1, $2, $3, $4, $5, $6::jsonb, 'running', 'sweeping', $7, $8::int, CURRENT_TIMESTAMP)"
+    )
+    .bind(&sweep_scan_id)
+    .bind(&org_id)
+    .bind(&auth.user_id)
+    .bind(tool.as_ref().map(|t| t.id.clone()).unwrap_or_else(|| tool_name.clone()))
+    .bind(&subnet)
+    .bind(&sweep_params)
+    .bind(&agent_id)
+    .bind(&body.project_id)
+    .execute(&state.db)
+    .await;
+
     let db = state.db.clone();
     let scan_tx = state.scan_output_tx.clone();
     let org_id_spawn = org_id.clone();
@@ -1819,11 +1847,14 @@ pub async fn network_sweep(
     let tool_name_spawn = tool_name.clone();
     let project_id = body.project_id;
     let sweep_id_spawn = sweep_id.clone();
+    let sweep_scan_id_spawn = sweep_scan_id.clone();
     let subnet_spawn = subnet.clone();
 
     // Spawn background task: discover hosts → start individual scans
     tokio::spawn(async move {
         // Step 1: discover live hosts
+        let mut discovery_status = "completed".to_string();
+        let mut discovery_output = String::new();
         let hosts: Vec<String> = if is_reverse_tunnel {
             // Queue discovery job on agent
             if let Some(ref aid) = agent_id {
@@ -1841,21 +1872,31 @@ pub async fn network_sweep(
 
                 // Poll for result up to 2 minutes
                 let mut output = String::new();
+                let mut stderr = String::new();
+                let mut job_status = "pending".to_string();
                 for _ in 0..60u32 {
                     tokio::time::sleep(std::time::Duration::from_secs(2)).await;
-                    let row: Option<(String, Option<String>)> = sqlx::query_as(
-                        "SELECT status, stdout FROM agent_jobs WHERE id = $1"
+                    let row: Option<(String, Option<String>, Option<String>)> = sqlx::query_as(
+                        "SELECT status, stdout, stderr FROM agent_jobs WHERE id = $1"
                     )
                     .bind(&job_id)
                     .fetch_optional(&db)
                     .await
                     .unwrap_or(None);
-                    if let Some((status, stdout)) = row {
-                        if status == "completed" || status == "failed" {
+                    if let Some((status, stdout, err)) = row {
+                        if status == "completed" || status == "failed" || status == "timeout" {
                             output = stdout.unwrap_or_default();
+                            stderr = err.unwrap_or_default();
+                            job_status = status;
                             break;
                         }
                     }
+                }
+                discovery_status = job_status;
+                if !stderr.trim().is_empty() {
+                    discovery_output = stderr;
+                } else {
+                    discovery_output = output.clone();
                 }
                 parse_nmap_hosts(&output)
             } else {
@@ -1868,15 +1909,57 @@ pub async fn network_sweep(
                 .output()
                 .await
             {
-                Ok(out) => parse_nmap_hosts(&String::from_utf8_lossy(&out.stdout)),
-                Err(_) => vec![],
+                Ok(out) => {
+                    let out_str = String::from_utf8_lossy(&out.stdout).to_string();
+                    discovery_status = if out.status.success() { "completed".to_string() } else { "failed".to_string() };
+                    discovery_output = out_str.clone();
+                    parse_nmap_hosts(&out_str)
+                }
+                Err(e) => {
+                    discovery_status = "failed".to_string();
+                    discovery_output = e.to_string();
+                    vec![]
+                }
             }
         };
 
+        // Always finalize the sweep scan row so the sweep is visible with a result/error
         if hosts.is_empty() {
-            tracing::warn!("network_sweep {}: no hosts found in {}", sweep_id_spawn, subnet_spawn);
+            let (final_status, out) = if discovery_status == "completed" {
+                ("completed", format!("Network sweep completed: no live hosts found in {}", subnet_spawn))
+            } else {
+                ("failed", format!("Network sweep discovery failed: {}", discovery_output.trim()))
+            };
+            let _ = sqlx::query(
+                "UPDATE scans SET status=$1, output=$2, completed_at=CURRENT_TIMESTAMP, scan_phase='complete' WHERE id=$3"
+            )
+            .bind(final_status)
+            .bind(&out)
+            .bind(&sweep_scan_id_spawn)
+            .execute(&db)
+            .await;
+            let _ = scan_tx.send(json!({
+                "type": "complete",
+                "scan_id": sweep_scan_id_spawn.clone(),
+                "status": final_status
+            }).to_string());
+            tracing::warn!("network_sweep {}: {} in {}", sweep_id_spawn, out, subnet_spawn);
             return;
         }
+
+        // Discovery succeeded - mark the sweep scan completed with the host list
+        let _ = sqlx::query(
+            "UPDATE scans SET status='completed', output=$1, completed_at=CURRENT_TIMESTAMP, scan_phase='complete' WHERE id=$2"
+        )
+        .bind(format!("Network sweep found {} live host(s): {}", hosts.len(), hosts.join(", ")))
+        .bind(&sweep_scan_id_spawn)
+        .execute(&db)
+        .await;
+        let _ = scan_tx.send(json!({
+            "type": "complete",
+            "scan_id": sweep_scan_id_spawn.clone(),
+            "status": "completed"
+        }).to_string());
 
         tracing::info!("network_sweep {}: found {} hosts, starting {} scans", sweep_id_spawn, hosts.len(), hosts.len());
 
