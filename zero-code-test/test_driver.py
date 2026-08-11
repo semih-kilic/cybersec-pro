@@ -267,7 +267,7 @@ def budget_for(name):
     return DEFAULT_BUDGET
 
 
-def process_tool(tool, token, pacer, lock, results_seen):
+def process_tool(tool, token, pacer, lock, results_seen, agent_id):
     name = tool["name"]
     if name in results_seen:
         return None
@@ -302,7 +302,7 @@ def process_tool(tool, token, pacer, lock, results_seen):
         pacer.wait()
         st, resp = call("POST", "/api/v1/scan/start", token, {
             "tool": name, "target": target, "parameters": dry_params,
-            "agent_id": "e104758e-19a3-4a5e-bf80-6a183385af15",
+            "agent_id": agent_id,
         })
         cmd = resp.get("command", "") if isinstance(resp, dict) else ""
         missing = []
@@ -370,6 +370,7 @@ def process_tool(tool, token, pacer, lock, results_seen):
 
 def main():
     harness, tools, users, tokens = load()
+    agent_id = harness.get("agent_id")
     workers = int(os.environ.get("ZT_WORKERS", "8"))
     only = os.environ.get("ZT_TOOLS", "").strip()
     if only:
@@ -397,7 +398,7 @@ def main():
                     return
                 tool = tools[idx[0]]
                 idx[0] += 1
-            rec = process_tool(tool, token, pacer, lock, results_seen)
+            rec = process_tool(tool, token, pacer, lock, results_seen, agent_id)
             if rec is None:
                 continue
             with lock:
