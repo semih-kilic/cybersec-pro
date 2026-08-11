@@ -296,14 +296,20 @@ pub async fn agent_heartbeat(
         .and_then(|v| v.as_str())
         .map(|s| s.to_string());
 
+    let subnets: Vec<String> = body.get("subnets")
+        .and_then(|v| v.as_array())
+        .map(|a| a.iter().filter_map(|x| x.as_str().map(String::from)).collect())
+        .unwrap_or_default();
+
     let _ = sqlx::query(
-        "UPDATE agents SET status = 'online', last_heartbeat = CURRENT_TIMESTAMP, cpu_usage = $1, memory_usage = $2, active_scans = $3, ip_address = COALESCE($5, ip_address) WHERE id = $4"
+        "UPDATE agents SET status = 'online', last_heartbeat = CURRENT_TIMESTAMP, cpu_usage = $1, memory_usage = $2, active_scans = $3, ip_address = COALESCE($5, ip_address), discovered_subnets = $6 WHERE id = $4"
     )
     .bind(cpu)
     .bind(mem)
     .bind(active)
     .bind(&agent_id)
     .bind(&ip_address)
+    .bind(serde_json::to_value(&subnets).unwrap_or(json!([])))
     .execute(&state.db)
     .await;
 

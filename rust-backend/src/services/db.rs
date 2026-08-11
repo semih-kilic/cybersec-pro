@@ -120,6 +120,7 @@ r#"CREATE TABLE IF NOT EXISTS agents (
     proxy_protocol TEXT DEFAULT 'https',
     agent_websocket_id TEXT,
     agent_capabilities JSONB,
+    discovered_subnets JSONB,
     agent_docker_enabled BOOLEAN DEFAULT FALSE,
     auto_update BOOLEAN DEFAULT TRUE,
     registration_token TEXT UNIQUE,

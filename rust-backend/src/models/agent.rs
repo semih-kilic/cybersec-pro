@@ -32,6 +32,7 @@ pub struct Agent {
     // Agent WebSocket
     pub agent_websocket_id: Option<String>,
     pub agent_capabilities: Option<JsonValue>,
+    pub discovered_subnets: Option<JsonValue>,
     pub agent_docker_enabled: Option<bool>,
     pub auto_update: Option<bool>,
     // Common
@@ -61,6 +62,7 @@ pub struct AgentResponse {
     pub version: Option<String>,
     pub status: String,
     pub connection_type: String,
+    pub subnets: Vec<String>,
     pub network_zone: String,
     pub agent_docker_enabled: bool,
     pub max_concurrent_scans: i32,
@@ -86,6 +88,10 @@ impl Agent {
             version: self.version.clone(),
             status: self.status.clone().unwrap_or_else(|| "pending".into()),
             connection_type: self.connection_type.clone().unwrap_or_else(|| "direct".into()),
+            subnets: self.discovered_subnets.as_ref()
+                .and_then(|v| v.as_array())
+                .map(|a| a.iter().filter_map(|x| x.as_str().map(String::from)).collect())
+                .unwrap_or_default(),
             network_zone: self.network_zone.clone().unwrap_or_else(|| "public".into()),
             agent_docker_enabled: self.agent_docker_enabled.unwrap_or(false),
             max_concurrent_scans: self.max_concurrent_scans.unwrap_or(5),
@@ -129,6 +135,7 @@ mod tests {
             proxy_protocol: None,
             agent_websocket_id: None,
             agent_capabilities: None,
+            discovered_subnets: None,
             agent_docker_enabled: None,
             auto_update: None,
             registration_token: None,

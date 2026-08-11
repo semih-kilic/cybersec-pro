@@ -1256,6 +1256,10 @@ pub async fn start_scan(
     };
     let connection_type = agent_meta.as_ref().and_then(|m| m.0.clone()).unwrap_or_else(|| "direct".into());
     let is_reverse_tunnel = connection_type == "reverse_tunnel";
+    // Reverse-tunnel agents are target context + connectivity — tools run
+    // server-side inside the app. Agent-side routing stays off until a traffic
+    // tunnel is implemented, so these scans execute on the backend.
+    let tunnel_routing_enabled = false;
     // Only dispatch via SSH when the agent is explicitly configured for SSH.
     // "direct"/"local" agents (and anything misconfigured without SSH host/user)
     // fall through to local execution on the backend host, which has all tools installed.
@@ -1295,7 +1299,8 @@ pub async fn start_scan(
     // ── Reverse-tunnel branch ────────────────────────────────────────
     // Queue an agent_job and spawn a poller that finalizes the scan when the
     // agent posts its result back. Skip the in-process executor entirely.
-    if is_reverse_tunnel {
+    // NOTE: disabled while reverse-tunnel routing is off — tools run server-side.
+    if is_reverse_tunnel && tunnel_routing_enabled {
         let aid = body.agent_id.clone().unwrap_or_default();
         let (program, args) = crate::scan_engine::tool_registry::build_command(
             &tool.name, target, command_template.as_deref()
@@ -1765,7 +1770,7 @@ pub async fn create_scan(
 
 #[derive(Deserialize)]
 pub struct NetworkSweepRequest {
-    pub subnet: String,
+    pub subnet: Option<String>,
     pub tool: Option<String>,
     pub agent_id: Option<String>,
     pub project_id: Option<i64>,
@@ -1778,10 +1783,28 @@ pub async fn network_sweep(
 ) -> impl IntoResponse {
     let org_id = auth.org_id.clone().unwrap_or_else(|| auth.user_id.clone());
 
-    // Validate subnet — must look like x.x.x.x/y
-    let subnet = body.subnet.trim().to_string();
+    // The agent only identifies the target network; all tools run server-side.
+    // When no subnet is given, use the network the agent reported via heartbeat.
+    let mut subnet = body.subnet.as_deref().unwrap_or("").trim().to_string();
+    if subnet.is_empty() {
+        if let Some(ref aid) = body.agent_id {
+            let row: Option<(Option<serde_json::Value>,)> = sqlx::query_as(
+                "SELECT discovered_subnets FROM agents WHERE id = $1 AND organization_id = $2"
+            )
+            .bind(aid)
+            .bind(&org_id)
+            .fetch_optional(&state.db)
+            .await
+            .unwrap_or(None);
+            if let Some((Some(v),)) = row {
+                if let Some(first) = v.as_array().and_then(|a| a.first()).and_then(|x| x.as_str()) {
+                    subnet = first.to_string();
+                }
+            }
+        }
+    }
     if subnet.is_empty() || !subnet.contains('/') {
-        return (StatusCode::BAD_REQUEST, Json(json!({"error": "Valid subnet required (e.g. 10.0.0.0/24)"}))).into_response();
+        return (StatusCode::BAD_REQUEST, Json(json!({"error": "Valid subnet required (e.g. 10.0.0.0/24), or select an agent whose network is known"}))).into_response();
     }
     // Block shell injection
     for ch in [';', '&', '|', '`', '$', '<', '>', '\n', '\r'] {
@@ -1809,8 +1832,10 @@ pub async fn network_sweep(
         false
     };
 
-    // Build nmap discovery command
-    let discovery_cmd = format!("nmap -sn -T4 --open -oG - {}", subnet);
+    // Reverse-tunnel agents are target context + connectivity: they never run or
+    // install tools. All tools execute server-side inside the app. Agent-side
+    // traffic routing stays off until a traffic tunnel is implemented.
+    let tunnel_routing_enabled = false;
 
     // Resolve the sweep tool once (used for the sweep scan row and per-host scans)
     let tool: Option<crate::models::Tool> = sqlx::query_as(
@@ -1855,71 +1880,23 @@ pub async fn network_sweep(
         // Step 1: discover live hosts
         let mut discovery_status = "completed".to_string();
         let mut discovery_output = String::new();
-        let hosts: Vec<String> = if is_reverse_tunnel {
-            // Queue discovery job on agent
-            if let Some(ref aid) = agent_id {
-                let job_id = Uuid::new_v4().to_string();
-                let _ = sqlx::query(
-                    "INSERT INTO agent_jobs (id, agent_id, organization_id, command, timeout_seconds, status) \
-                     VALUES ($1, $2, $3, $4, 120, 'pending')"
-                )
-                .bind(&job_id)
-                .bind(aid)
-                .bind(&org_id_spawn)
-                .bind(&discovery_cmd)
-                .execute(&db)
-                .await;
-
-                // Poll for result up to 2 minutes
-                let mut output = String::new();
-                let mut stderr = String::new();
-                let mut job_status = "pending".to_string();
-                for _ in 0..60u32 {
-                    tokio::time::sleep(std::time::Duration::from_secs(2)).await;
-                    let row: Option<(String, Option<String>, Option<String>)> = sqlx::query_as(
-                        "SELECT status, stdout, stderr FROM agent_jobs WHERE id = $1"
-                    )
-                    .bind(&job_id)
-                    .fetch_optional(&db)
-                    .await
-                    .unwrap_or(None);
-                    if let Some((status, stdout, err)) = row {
-                        if status == "completed" || status == "failed" || status == "timeout" {
-                            output = stdout.unwrap_or_default();
-                            stderr = err.unwrap_or_default();
-                            job_status = status;
-                            break;
-                        }
-                    }
-                }
-                discovery_status = job_status;
-                if !stderr.trim().is_empty() {
-                    discovery_output = stderr;
-                } else {
-                    discovery_output = output.clone();
-                }
-                parse_nmap_hosts(&output)
-            } else {
-                vec![]
+        // Step 1: discover live hosts — tools run server-side in the app; the
+        // agent only identifies the target network.
+        let hosts: Vec<String> = match tokio::process::Command::new("nmap")
+            .args(["-sn", "-T4", "--open", "-oG", "-", &subnet_spawn])
+            .output()
+            .await
+        {
+            Ok(out) => {
+                let out_str = String::from_utf8_lossy(&out.stdout).to_string();
+                discovery_status = if out.status.success() { "completed".to_string() } else { "failed".to_string() };
+                discovery_output = out_str.clone();
+                parse_nmap_hosts(&out_str)
             }
-        } else {
-            // Run nmap locally on the server
-            match tokio::process::Command::new("nmap")
-                .args(["-sn", "-T4", "--open", "-oG", "-", &subnet_spawn])
-                .output()
-                .await
-            {
-                Ok(out) => {
-                    let out_str = String::from_utf8_lossy(&out.stdout).to_string();
-                    discovery_status = if out.status.success() { "completed".to_string() } else { "failed".to_string() };
-                    discovery_output = out_str.clone();
-                    parse_nmap_hosts(&out_str)
-                }
-                Err(e) => {
-                    discovery_status = "failed".to_string();
-                    discovery_output = e.to_string();
-                    vec![]
-                }
+            Err(e) => {
+                discovery_status = "failed".to_string();
+                discovery_output = e.to_string();
+                vec![]
             }
         };
 
@@ -1997,8 +1974,8 @@ pub async fn network_sweep(
             .execute(&db)
             .await;
 
-            // Queue agent job or run locally
-            if is_reverse_tunnel {
+            // Queue agent job or run locally (reverse-tunnel routing off -> local)
+            if is_reverse_tunnel && tunnel_routing_enabled {
                 if let Some(ref aid) = agent_id {
                     let (program, args) = crate::scan_engine::tool_registry::build_command(
                         &tool.name, &host, tool.command_template.as_deref()
