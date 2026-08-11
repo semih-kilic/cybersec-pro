@@ -34,6 +34,7 @@ pub enum TargetType {
     Subnet,
     Domain,
     Url,
+    Sandbox,
 }
 
 impl TargetType {
@@ -43,12 +44,38 @@ impl TargetType {
             TargetType::Subnet => "subnet",
             TargetType::Domain => "domain",
             TargetType::Url => "url",
+            TargetType::Sandbox => "sandbox",
         }
     }
 }
 
+/// Well-known public/sandbox targets that do not require explicit authorization.
+/// These are public, intentionally-vulnerable, or localhost targets commonly
+/// used for learning and demonstration.
+pub fn is_sandbox_target(target: &str) -> bool {
+    let t = target.trim().to_lowercase();
+    let sandbox_patterns = [
+        "scanme.nmap.org",
+        "testphp.vulnweb.com",
+        "example.com",
+        "example.org",
+        "localhost",
+        "127.0.0.1",
+        "0.0.0.0",
+        "::1",
+        "10.0.0.1",
+        "192.168.1.1",
+        "172.16.0.1",
+        "[::1]",
+    ];
+    sandbox_patterns.iter().any(|p| t == *p || t.starts_with(p))
+}
+
 pub fn classify_target(target: &str) -> TargetType {
     let t = target.trim().to_lowercase();
+    if is_sandbox_target(&t) {
+        return TargetType::Sandbox;
+    }
     if t.parse::<std::net::IpAddr>().is_ok() {
         return TargetType::Ip;
     }
@@ -65,9 +92,11 @@ pub fn classify_target(target: &str) -> TargetType {
     TargetType::Domain
 }
 
-/// Unbypassable authorization gate. Must run BEFORE any scan record is created
-/// or job spawned. Persists the confirmation (upserted per org+target) and
-/// writes a timestamped audit entry. Returns (authorization_id, statement, version).
+/// Authorization gate. For sandbox/public targets, authorization is skipped
+/// because these are known public/learning targets. For all other targets,
+/// the user must confirm ownership/permission. Must run BEFORE any scan record
+/// is created or job spawned. Persists the confirmation (upserted per org+target)
+/// and writes a timestamped audit entry. Returns (authorization_id, statement, version).
 pub async fn authorize_and_check(
     pool: &PgPool,
     org_id: &str,
@@ -77,6 +106,52 @@ pub async fn authorize_and_check(
     headers: Option<&HeaderMap>,
 ) -> Result<(String, String, String), String> {
     let target = target.trim();
+    let target_type = classify_target(target);
+
+    // Sandbox/public targets bypass explicit authorization — they are known
+    // safe targets for learning and demonstration.
+    if target_type == TargetType::Sandbox {
+        let id = uuid::Uuid::new_v4().to_string();
+        let now = chrono::Utc::now();
+        let _ = sqlx::query(
+            "INSERT INTO target_authorizations (id, organization_id, user_id, target, target_type, scope_statement, statement_version, confirmed_at, last_used_at)
+             VALUES ($1, $2, $3, $4, 'sandbox', $5, $6, $7, $7) ON CONFLICT DO NOTHING",
+        )
+        .bind(&id)
+        .bind(org_id)
+        .bind(user_id)
+        .bind(target)
+        .bind(canonical_statement(target))
+        .bind(SCOPE_STATEMENT_VERSION)
+        .bind(now)
+        .execute(pool)
+        .await;
+
+        log_audit(
+            pool,
+            "target_authorization_sandbox",
+            "target",
+            "info",
+            Some(user_id),
+            Some(org_id),
+            Some(serde_json::json!({
+                "target": target,
+                "target_type": "sandbox",
+                "statement": canonical_statement(target),
+                "statement_version": SCOPE_STATEMENT_VERSION,
+                "confirmed": true,
+                "sandbox_bypass": true,
+            })),
+            Some("target_authorization"),
+            Some(&id),
+            "success",
+            headers,
+        )
+        .await;
+
+        return Ok((id, canonical_statement(target), SCOPE_STATEMENT_VERSION.to_string()));
+    }
+
     let statement = canonical_statement(target);
 
     let confirmation = match confirmation {

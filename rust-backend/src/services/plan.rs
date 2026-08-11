@@ -44,7 +44,7 @@ pub fn get_plan_configs() -> HashMap<&'static str, PlanConfig> {
         max_projects: 1,
         max_team_members: 1,
         max_agents: 1,
-        trial_days: 3,
+        trial_days: 14,
         features: PlanFeatures {
             basic_reports: true,
             pdf_reports: true,

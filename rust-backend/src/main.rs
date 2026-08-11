@@ -468,6 +468,7 @@ fn build_router(state: Arc<AppState>) -> Router {
         // ── Auth extras ───────────────────────────────────────
         .route("/api/v1/auth/google", post(stub_handlers::social_auth))
         .route("/api/v1/auth/github", post(stub_handlers::social_auth))
+        .route("/api/v1/auth/linkedin", post(stub_handlers::social_auth))
         .route("/api/v1/auth/resend-verification", post(stub_handlers::resend_verification))
         .route("/api/v1/auth/verify-email", get(stub_handlers::verify_email))
         .route("/api/v1/auth/avatar", post(stub_handlers::upload_avatar))

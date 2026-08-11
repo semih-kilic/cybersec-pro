@@ -689,7 +689,7 @@ pub async fn social_auth(
 
     // Detect provider from URI path
     let path = uri.path();
-    let provider = if path.contains("/github") { "github" } else if path.contains("/google") { "google" } else { "unknown" };
+    let provider = if path.contains("/linkedin") { "linkedin" } else if path.contains("/github") { "github" } else if path.contains("/google") { "google" } else { "unknown" };
 
     let http = reqwest::Client::new();
 
@@ -703,6 +703,12 @@ pub async fn social_auth(
         }
         "google" => {
             match google_oauth(&http, &code, &redirect_uri).await {
+                Ok(info) => info,
+                Err(resp) => return resp,
+            }
+        }
+        "linkedin" => {
+            match linkedin_oauth(&http, &code, &redirect_uri).await {
                 Ok(info) => info,
                 Err(resp) => return resp,
             }
@@ -955,6 +961,60 @@ async fn google_oauth(
     }
 
     Ok((email, first, last, picture, "Google"))
+}
+
+// ── LinkedIn OAuth helper ──
+async fn linkedin_oauth(
+    http: &reqwest::Client,
+    code: &str,
+    redirect_uri: &str,
+) -> Result<(String, String, String, String, &'static str), axum::response::Response> {
+    let client_id = std::env::var("LINKEDIN_CLIENT_ID").unwrap_or_else(|_| "***REDACTED_LI_OAUTH_CLIENT_ID***".to_string());
+    let client_secret = match std::env::var("LINKEDIN_CLIENT_SECRET") {
+        Ok(s) => s,
+        Err(_) => return Err((StatusCode::INTERNAL_SERVER_ERROR, Json(json!({"error": "LinkedIn OAuth not configured"}))).into_response()),
+    };
+
+    let token_res = http.post("https://www.linkedin.com/oauth/v2/accessToken")
+        .header("Content-Type", "application/x-www-form-urlencoded")
+        .form(&[
+            ("grant_type", "authorization_code"),
+            ("code", code),
+            ("redirect_uri", redirect_uri),
+            ("client_id", &client_id),
+            ("client_secret", &client_secret),
+        ])
+        .send()
+        .await;
+
+    let token_data: serde_json::Value = match token_res {
+        Ok(resp) => resp.json().await.unwrap_or_default(),
+        Err(_) => return Err((StatusCode::BAD_GATEWAY, Json(json!({"error": "Failed to contact LinkedIn"}))).into_response()),
+    };
+
+    let access_token = token_data.get("access_token").and_then(|t| t.as_str()).unwrap_or("");
+    if access_token.is_empty() {
+        let err = token_data.get("error_description").and_then(|e| e.as_str()).unwrap_or("Token exchange failed");
+        return Err((StatusCode::UNAUTHORIZED, Json(json!({"error": format!("LinkedIn OAuth failed: {}", err)}))).into_response());
+    }
+
+    let userinfo: serde_json::Value = http.get("https://api.linkedin.com/v2/userinfo")
+        .header("Authorization", format!("Bearer {}", access_token))
+        .send().await
+        .map_err(|_| (StatusCode::BAD_GATEWAY, Json(json!({"error": "Failed to get LinkedIn user info"}))).into_response())?
+        .json().await
+        .map_err(|_| (StatusCode::BAD_GATEWAY, Json(json!({"error": "Failed to parse LinkedIn user info"}))).into_response())?;
+
+    let email = userinfo.get("email").and_then(|e| e.as_str()).unwrap_or("").to_string();
+    let first = userinfo.get("given_name").and_then(|n| n.as_str()).unwrap_or("").to_string();
+    let last = userinfo.get("family_name").and_then(|n| n.as_str()).unwrap_or("").to_string();
+    let picture = userinfo.get("picture").and_then(|p| p.as_str()).unwrap_or("").to_string();
+
+    if email.is_empty() {
+        return Err((StatusCode::BAD_REQUEST, Json(json!({"error": "Could not retrieve email from LinkedIn"}))).into_response());
+    }
+
+    Ok((email, first, last, picture, "LinkedIn"))
 }
 
 pub async fn resend_verification(
