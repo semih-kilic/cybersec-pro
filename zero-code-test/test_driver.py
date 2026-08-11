@@ -80,6 +80,11 @@ TARGET_OVERRIDE = {
     "radare2": "/tmp/zt/testfile.txt",
     "rizin": "/tmp/zt/testfile.txt",
     "msfvenom": "linux/x86/shell_reverse_tcp",
+    "capa": "/tmp/zt/testfile.txt",
+    "upx": "/tmp/zt/testfile.txt",
+    "crtsh": "example.com",
+    "maigret": "johndoe",
+    "mobsf": "mobile",
 }
 
 # Per-tool real-run parameter overrides (environment-specific corrections).

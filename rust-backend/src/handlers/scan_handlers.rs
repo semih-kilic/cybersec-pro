@@ -1394,6 +1394,10 @@ pub async fn start_scan(
         }))).into_response();
     }
 
+    // Snapshot the substituted template before it is moved into the executor
+    // spawn, so the API response can report the actual command.
+    let response_command = command_template.clone();
+
     if let Some(metadata) = scan_engine_metadata.clone() {
         tokio::spawn(monitor_scan_engine(
             db,
@@ -1453,8 +1457,9 @@ pub async fn start_scan(
         });
     }
 
-    // Build command string for response
-    let (program, args) = crate::scan_engine::tool_registry::build_command(&tool.name, target, tool.command_template.as_deref())
+    // Build command string for response from the SUBSTITUTED template so the
+    // API reports the actual command that will be executed (not raw placeholders).
+    let (program, args) = crate::scan_engine::tool_registry::build_command(&tool.name, target, response_command.as_deref())
         .unwrap_or_else(|_| (tool.name.clone(), vec![target.to_string()]));
     let command_str = format!("{} {}", program, args.join(" "));
 
