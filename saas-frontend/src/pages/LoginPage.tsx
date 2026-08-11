@@ -184,7 +184,7 @@ export function LoginPage() {
   };
 
   const handleGoogleLogin = () => {
-    const redirectUri = `${window.location.origin}/dashboard/auth/callback`;
+    const redirectUri = 'https://app.cyber-sec-pro.com/dashboard/auth/callback';
     const scope = 'openid email profile';
     localStorage.setItem('oauth_provider', 'google');
     const googleAuthUrl = `https://accounts.google.com/o/oauth2/v2/auth?client_id=${GOOGLE_CLIENT_ID}&redirect_uri=${encodeURIComponent(redirectUri)}&response_type=code&scope=${encodeURIComponent(scope)}&access_type=offline&prompt=consent`;
@@ -192,7 +192,7 @@ export function LoginPage() {
   };
 
   const handleGitHubLogin = () => {
-    const redirectUri = `${window.location.origin}/dashboard/auth/callback`;
+    const redirectUri = 'https://app.cyber-sec-pro.com/dashboard/auth/callback';
     const scope = 'user:email';
     localStorage.setItem('oauth_provider', 'github');
     const githubAuthUrl = `https://github.com/login/oauth/authorize?client_id=${GITHUB_CLIENT_ID}&redirect_uri=${encodeURIComponent(redirectUri)}&scope=${encodeURIComponent(scope)}`;
@@ -200,7 +200,7 @@ export function LoginPage() {
   };
 
   const handleLinkedInLogin = () => {
-    const redirectUri = `${window.location.origin}/dashboard/auth/callback`;
+    const redirectUri = 'https://app.cyber-sec-pro.com/dashboard/auth/callback';
     const scope = 'openid profile email';
     localStorage.setItem('oauth_provider', 'linkedin');
     const linkedinAuthUrl = `https://www.linkedin.com/oauth/v2/authorization?response_type=code&client_id=${LINKEDIN_CLIENT_ID}&redirect_uri=${encodeURIComponent(redirectUri)}&scope=${encodeURIComponent(scope)}`;
