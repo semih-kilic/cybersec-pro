@@ -431,7 +431,10 @@ pub async fn sample_report(
                 Err(_) => {
                     return (
                         StatusCode::OK,
-                        [(header::CONTENT_TYPE, "text/html; charset=utf-8")],
+                        [
+                            (header::CONTENT_TYPE, "text/html; charset=utf-8"),
+                            (header::CONTENT_DISPOSITION, &format!("attachment; filename=\"{}.html\"", template)),
+                        ],
                         html_content,
                     ).into_response();
                 }
@@ -440,7 +443,10 @@ pub async fn sample_report(
         _ => {
             (
                 StatusCode::OK,
-                [(header::CONTENT_TYPE, "text/html; charset=utf-8")],
+                [
+                    (header::CONTENT_TYPE, "text/html; charset=utf-8"),
+                    (header::CONTENT_DISPOSITION, &format!("attachment; filename=\"{}.html\"", template)),
+                ],
                 html_content,
             ).into_response()
         }

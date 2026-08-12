@@ -7,7 +7,7 @@ export default function SampleReportsSection() {
   const t = useTranslations("sampleReports");
 
   const download = async (template: string) => {
-    const res = await fetch(`/api/v1/reports/sample/${template}?format=pdf`);
+    const res = await fetch(`/api/v1/reports/sample/${template}?format=html`);
     if (!res.ok) {
       alert("Download failed");
       return;
@@ -16,7 +16,7 @@ export default function SampleReportsSection() {
     const url = window.URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
-    a.download = `${template}-report.pdf`;
+    a.download = `${template}-report.html`;
     document.body.appendChild(a);
     a.click();
     window.URL.revokeObjectURL(url);
