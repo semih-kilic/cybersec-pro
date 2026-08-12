@@ -652,12 +652,12 @@
     "technical": {
         "title": "Technical Report",
         "description": "Full Nmap, Nikto & SSL Labs findings with remediation steps.",
-        "cta": "Download Sample Technical Report (HTML)"
+        "cta": "Download Sample Technical Report (PDF)"
     },
     "executive": {
         "title": "Executive Summary",
         "description": "High-level risk score, compliance gaps, and prioritized action items for management.",
-        "cta": "Download Executive Summary (HTML)"
+        "cta": "Download Executive Summary (PDF)"
     }
   },
   "demo": {
