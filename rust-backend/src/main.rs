@@ -319,8 +319,11 @@ fn build_router(state: Arc<AppState>) -> Router {
         )
         .route(
             "/api/v1/reports/templates",
-            .route("/api/v1/reports/sample/:template", get(report_handlers::sample_report)),
             get(report_handlers::report_templates),
+        )
+        .route(
+            "/api/v1/reports/sample/:template",
+            get(report_handlers::sample_report),
         )
         .route(
             "/api/v1/reports/:report_id",
