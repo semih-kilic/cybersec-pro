@@ -650,14 +650,14 @@
     "title": "Sample Reports",
     "subtitle": "Download example reports to see the quality and depth of our findings.",
     "technical": {
-      "title": "Technical Report",
-      "description": "Full Nmap, Nikto & SSL Labs findings with remediation steps.",
-      "cta": "Download Sample Technical Report (PDF)"
+        "title": "Technical Report",
+        "description": "Full Nmap, Nikto & SSL Labs findings with remediation steps.",
+        "cta": "Download Sample Technical Report (HTML)"
     },
     "executive": {
-      "title": "Executive Summary",
-      "description": "High-level risk score, compliance gaps, and prioritized action items for management.",
-      "cta": "Download Executive Summary (PDF)"
+        "title": "Executive Summary",
+        "description": "High-level risk score, compliance gaps, and prioritized action items for management.",
+        "cta": "Download Executive Summary (HTML)"
     }
   },
   "demo": {
