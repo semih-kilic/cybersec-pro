@@ -379,8 +379,144 @@ pub async fn report_templates() -> impl IntoResponse {
     }))
 }
 
+pub async fn sample_report(
+    Path(template): Path<String>,
+    Query(params): Query<std::collections::HashMap<String, String>>,
+) -> impl IntoResponse {
+    let format = params.get("format").map(|s| s.as_str()).unwrap_or("html");
+    let now = chrono::Utc::now().format("%Y-%m-%d %H:%M UTC").to_string();
+    let date_short = chrono::Utc::now().format("%Y-%m-%d").to_string();
+
+    let dummy_scans: Vec<(ScanRow, String)> = vec![
+        (ScanRow {
+            id: "sample-1".into(),
+            tool_id: "nmap".into(),
+            target: "scanme.nmap.org".into(),
+            output: Some("22/tcp open ssh\n80/tcp open http".into()),
+            findings: Some(json!({"summary": {"total": 2, "critical": 0, "high": 0, "medium": 0, "low": 0, "info": 2}}),
+            started_at: Some(chrono::Utc::now().naive_utc()),
+            completed_at: Some(chrono::Utc::now().naive_utc()),
+        }, "Nmap".into()),
+    ];
+
+    let total_findings = 2;
+    let critical = 0;
+    let high = 0;
+    let medium = 0;
+    let low = 0;
+    let info = 2;
+    let risk_score = 5;
+    let risk_level = "Low";
+
+    let html_content = generate_html_report(
+        "Sample Report", &template, &now, &date_short,
+        &dummy_scans, total_findings, critical, high, medium, low, info,
+        risk_score, risk_level, None, Some("CyberSec Pro Demo"),
+        183, 18,
+    );
+
+    match format {
+        "pdf" => {
+            match html_to_pdf(&html_content).await {
+                Ok(pdf_bytes) => {
+                    return (
+                        StatusCode::OK,
+                        [
+                            (header::CONTENT_TYPE, "application/pdf"),
+                            (header::CONTENT_DISPOSITION, &format!("attachment; filename="{}.pdf"", template)),
+                        ],
+                        pdf_bytes,
+                    ).into_response();
+                }
+                Err(_) => {
+                    return (
+                        StatusCode::OK,
+                        [(header::CONTENT_TYPE, "text/html; charset=utf-8")],
+                        html_content,
+                    ).into_response();
+                }
+            }
+        }
+        _ => {
+            (
+                StatusCode::OK,
+                [(header::CONTENT_TYPE, "text/html; charset=utf-8")],
+                html_content,
+            ).into_response()
+        }
+    }
+}
+
 // ═══════════════════════════════════════════════════════════
 // HTML → PDF via headless Chromium
+pub async fn sample_report(
+    Path(template): Path<String>,
+    Query(params): Query<std::collections::HashMap<String, String>>,
+) -> impl IntoResponse {
+    let format = params.get("format").map(|s| s.as_str()).unwrap_or("html");
+    let now = chrono::Utc::now().format("%Y-%m-%d %H:%M UTC").to_string();
+    let date_short = chrono::Utc::now().format("%Y-%m-%d").to_string();
+
+    let dummy_scans: Vec<(ScanRow, String)> = vec![
+        (ScanRow {
+            id: "sample-1".into(),
+            tool_id: "nmap".into(),
+            target: "scanme.nmap.org".into(),
+            output: Some("22/tcp open ssh\n80/tcp open http".into()),
+            findings: Some(json!({"summary": {"total": 2, "critical": 0, "high": 0, "medium": 0, "low": 0, "info": 2}}),
+            started_at: Some(chrono::Utc::now().naive_utc()),
+            completed_at: Some(chrono::Utc::now().naive_utc()),
+        }, "Nmap".into()),
+    ];
+
+    let total_findings = 2;
+    let critical = 0;
+    let high = 0;
+    let medium = 0;
+    let low = 0;
+    let info = 2;
+    let risk_score = 5;
+    let risk_level = "Low";
+
+    let html_content = generate_html_report(
+        "Sample Report", &template, &now, &date_short,
+        &dummy_scans, total_findings, critical, high, medium, low, info,
+        risk_score, risk_level, None, Some("CyberSec Pro Demo"),
+        183, 18,
+    );
+
+    match format {
+        "pdf" => {
+            match html_to_pdf(&html_content).await {
+                Ok(pdf_bytes) => {
+                    return (
+                        StatusCode::OK,
+                        [
+                            (header::CONTENT_TYPE, "application/pdf"),
+                            (header::CONTENT_DISPOSITION, &format!("attachment; filename="{}.pdf"", template)),
+                        ],
+                        pdf_bytes,
+                    ).into_response();
+                }
+                Err(_) => {
+                    return (
+                        StatusCode::OK,
+                        [(header::CONTENT_TYPE, "text/html; charset=utf-8")],
+                        html_content,
+                    ).into_response();
+                }
+            }
+        }
+        _ => {
+            (
+                StatusCode::OK,
+                [(header::CONTENT_TYPE, "text/html; charset=utf-8")],
+                html_content,
+            ).into_response()
+        }
+    }
+}
+
 // ═══════════════════════════════════════════════════════════
 async fn html_to_pdf(html: &str) -> Result<Vec<u8>, String> {
     use tokio::process::Command;
@@ -454,8 +590,144 @@ async fn html_to_pdf(html: &str) -> Result<Vec<u8>, String> {
     Err("PDF file was not generated".to_string())
 }
 
+pub async fn sample_report(
+    Path(template): Path<String>,
+    Query(params): Query<std::collections::HashMap<String, String>>,
+) -> impl IntoResponse {
+    let format = params.get("format").map(|s| s.as_str()).unwrap_or("html");
+    let now = chrono::Utc::now().format("%Y-%m-%d %H:%M UTC").to_string();
+    let date_short = chrono::Utc::now().format("%Y-%m-%d").to_string();
+
+    let dummy_scans: Vec<(ScanRow, String)> = vec![
+        (ScanRow {
+            id: "sample-1".into(),
+            tool_id: "nmap".into(),
+            target: "scanme.nmap.org".into(),
+            output: Some("22/tcp open ssh\n80/tcp open http".into()),
+            findings: Some(json!({"summary": {"total": 2, "critical": 0, "high": 0, "medium": 0, "low": 0, "info": 2}}),
+            started_at: Some(chrono::Utc::now().naive_utc()),
+            completed_at: Some(chrono::Utc::now().naive_utc()),
+        }, "Nmap".into()),
+    ];
+
+    let total_findings = 2;
+    let critical = 0;
+    let high = 0;
+    let medium = 0;
+    let low = 0;
+    let info = 2;
+    let risk_score = 5;
+    let risk_level = "Low";
+
+    let html_content = generate_html_report(
+        "Sample Report", &template, &now, &date_short,
+        &dummy_scans, total_findings, critical, high, medium, low, info,
+        risk_score, risk_level, None, Some("CyberSec Pro Demo"),
+        183, 18,
+    );
+
+    match format {
+        "pdf" => {
+            match html_to_pdf(&html_content).await {
+                Ok(pdf_bytes) => {
+                    return (
+                        StatusCode::OK,
+                        [
+                            (header::CONTENT_TYPE, "application/pdf"),
+                            (header::CONTENT_DISPOSITION, &format!("attachment; filename="{}.pdf"", template)),
+                        ],
+                        pdf_bytes,
+                    ).into_response();
+                }
+                Err(_) => {
+                    return (
+                        StatusCode::OK,
+                        [(header::CONTENT_TYPE, "text/html; charset=utf-8")],
+                        html_content,
+                    ).into_response();
+                }
+            }
+        }
+        _ => {
+            (
+                StatusCode::OK,
+                [(header::CONTENT_TYPE, "text/html; charset=utf-8")],
+                html_content,
+            ).into_response()
+        }
+    }
+}
+
 // ═══════════════════════════════════════════════════════════
 // HTML Report Generator
+pub async fn sample_report(
+    Path(template): Path<String>,
+    Query(params): Query<std::collections::HashMap<String, String>>,
+) -> impl IntoResponse {
+    let format = params.get("format").map(|s| s.as_str()).unwrap_or("html");
+    let now = chrono::Utc::now().format("%Y-%m-%d %H:%M UTC").to_string();
+    let date_short = chrono::Utc::now().format("%Y-%m-%d").to_string();
+
+    let dummy_scans: Vec<(ScanRow, String)> = vec![
+        (ScanRow {
+            id: "sample-1".into(),
+            tool_id: "nmap".into(),
+            target: "scanme.nmap.org".into(),
+            output: Some("22/tcp open ssh\n80/tcp open http".into()),
+            findings: Some(json!({"summary": {"total": 2, "critical": 0, "high": 0, "medium": 0, "low": 0, "info": 2}}),
+            started_at: Some(chrono::Utc::now().naive_utc()),
+            completed_at: Some(chrono::Utc::now().naive_utc()),
+        }, "Nmap".into()),
+    ];
+
+    let total_findings = 2;
+    let critical = 0;
+    let high = 0;
+    let medium = 0;
+    let low = 0;
+    let info = 2;
+    let risk_score = 5;
+    let risk_level = "Low";
+
+    let html_content = generate_html_report(
+        "Sample Report", &template, &now, &date_short,
+        &dummy_scans, total_findings, critical, high, medium, low, info,
+        risk_score, risk_level, None, Some("CyberSec Pro Demo"),
+        183, 18,
+    );
+
+    match format {
+        "pdf" => {
+            match html_to_pdf(&html_content).await {
+                Ok(pdf_bytes) => {
+                    return (
+                        StatusCode::OK,
+                        [
+                            (header::CONTENT_TYPE, "application/pdf"),
+                            (header::CONTENT_DISPOSITION, &format!("attachment; filename="{}.pdf"", template)),
+                        ],
+                        pdf_bytes,
+                    ).into_response();
+                }
+                Err(_) => {
+                    return (
+                        StatusCode::OK,
+                        [(header::CONTENT_TYPE, "text/html; charset=utf-8")],
+                        html_content,
+                    ).into_response();
+                }
+            }
+        }
+        _ => {
+            (
+                StatusCode::OK,
+                [(header::CONTENT_TYPE, "text/html; charset=utf-8")],
+                html_content,
+            ).into_response()
+        }
+    }
+}
+
 // ═══════════════════════════════════════════════════════════
 fn generate_html_report(
     name: &str, template: &str, now: &str, date_short: &str,
@@ -1003,8 +1275,144 @@ fn build_recommendations(crit: i32, high: i32, med: i32, low: i32) -> String {
     recs
 }
 
+pub async fn sample_report(
+    Path(template): Path<String>,
+    Query(params): Query<std::collections::HashMap<String, String>>,
+) -> impl IntoResponse {
+    let format = params.get("format").map(|s| s.as_str()).unwrap_or("html");
+    let now = chrono::Utc::now().format("%Y-%m-%d %H:%M UTC").to_string();
+    let date_short = chrono::Utc::now().format("%Y-%m-%d").to_string();
+
+    let dummy_scans: Vec<(ScanRow, String)> = vec![
+        (ScanRow {
+            id: "sample-1".into(),
+            tool_id: "nmap".into(),
+            target: "scanme.nmap.org".into(),
+            output: Some("22/tcp open ssh\n80/tcp open http".into()),
+            findings: Some(json!({"summary": {"total": 2, "critical": 0, "high": 0, "medium": 0, "low": 0, "info": 2}}),
+            started_at: Some(chrono::Utc::now().naive_utc()),
+            completed_at: Some(chrono::Utc::now().naive_utc()),
+        }, "Nmap".into()),
+    ];
+
+    let total_findings = 2;
+    let critical = 0;
+    let high = 0;
+    let medium = 0;
+    let low = 0;
+    let info = 2;
+    let risk_score = 5;
+    let risk_level = "Low";
+
+    let html_content = generate_html_report(
+        "Sample Report", &template, &now, &date_short,
+        &dummy_scans, total_findings, critical, high, medium, low, info,
+        risk_score, risk_level, None, Some("CyberSec Pro Demo"),
+        183, 18,
+    );
+
+    match format {
+        "pdf" => {
+            match html_to_pdf(&html_content).await {
+                Ok(pdf_bytes) => {
+                    return (
+                        StatusCode::OK,
+                        [
+                            (header::CONTENT_TYPE, "application/pdf"),
+                            (header::CONTENT_DISPOSITION, &format!("attachment; filename="{}.pdf"", template)),
+                        ],
+                        pdf_bytes,
+                    ).into_response();
+                }
+                Err(_) => {
+                    return (
+                        StatusCode::OK,
+                        [(header::CONTENT_TYPE, "text/html; charset=utf-8")],
+                        html_content,
+                    ).into_response();
+                }
+            }
+        }
+        _ => {
+            (
+                StatusCode::OK,
+                [(header::CONTENT_TYPE, "text/html; charset=utf-8")],
+                html_content,
+            ).into_response()
+        }
+    }
+}
+
 // ═══════════════════════════════════════════════════════════
 // JSON Report Generator
+pub async fn sample_report(
+    Path(template): Path<String>,
+    Query(params): Query<std::collections::HashMap<String, String>>,
+) -> impl IntoResponse {
+    let format = params.get("format").map(|s| s.as_str()).unwrap_or("html");
+    let now = chrono::Utc::now().format("%Y-%m-%d %H:%M UTC").to_string();
+    let date_short = chrono::Utc::now().format("%Y-%m-%d").to_string();
+
+    let dummy_scans: Vec<(ScanRow, String)> = vec![
+        (ScanRow {
+            id: "sample-1".into(),
+            tool_id: "nmap".into(),
+            target: "scanme.nmap.org".into(),
+            output: Some("22/tcp open ssh\n80/tcp open http".into()),
+            findings: Some(json!({"summary": {"total": 2, "critical": 0, "high": 0, "medium": 0, "low": 0, "info": 2}}),
+            started_at: Some(chrono::Utc::now().naive_utc()),
+            completed_at: Some(chrono::Utc::now().naive_utc()),
+        }, "Nmap".into()),
+    ];
+
+    let total_findings = 2;
+    let critical = 0;
+    let high = 0;
+    let medium = 0;
+    let low = 0;
+    let info = 2;
+    let risk_score = 5;
+    let risk_level = "Low";
+
+    let html_content = generate_html_report(
+        "Sample Report", &template, &now, &date_short,
+        &dummy_scans, total_findings, critical, high, medium, low, info,
+        risk_score, risk_level, None, Some("CyberSec Pro Demo"),
+        183, 18,
+    );
+
+    match format {
+        "pdf" => {
+            match html_to_pdf(&html_content).await {
+                Ok(pdf_bytes) => {
+                    return (
+                        StatusCode::OK,
+                        [
+                            (header::CONTENT_TYPE, "application/pdf"),
+                            (header::CONTENT_DISPOSITION, &format!("attachment; filename="{}.pdf"", template)),
+                        ],
+                        pdf_bytes,
+                    ).into_response();
+                }
+                Err(_) => {
+                    return (
+                        StatusCode::OK,
+                        [(header::CONTENT_TYPE, "text/html; charset=utf-8")],
+                        html_content,
+                    ).into_response();
+                }
+            }
+        }
+        _ => {
+            (
+                StatusCode::OK,
+                [(header::CONTENT_TYPE, "text/html; charset=utf-8")],
+                html_content,
+            ).into_response()
+        }
+    }
+}
+
 // ═══════════════════════════════════════════════════════════
 fn generate_json_report(
     name: &str, template: &str, now: &str,
@@ -1046,8 +1454,144 @@ fn generate_json_report(
     })).unwrap_or_else(|_| "{}".into())
 }
 
+pub async fn sample_report(
+    Path(template): Path<String>,
+    Query(params): Query<std::collections::HashMap<String, String>>,
+) -> impl IntoResponse {
+    let format = params.get("format").map(|s| s.as_str()).unwrap_or("html");
+    let now = chrono::Utc::now().format("%Y-%m-%d %H:%M UTC").to_string();
+    let date_short = chrono::Utc::now().format("%Y-%m-%d").to_string();
+
+    let dummy_scans: Vec<(ScanRow, String)> = vec![
+        (ScanRow {
+            id: "sample-1".into(),
+            tool_id: "nmap".into(),
+            target: "scanme.nmap.org".into(),
+            output: Some("22/tcp open ssh\n80/tcp open http".into()),
+            findings: Some(json!({"summary": {"total": 2, "critical": 0, "high": 0, "medium": 0, "low": 0, "info": 2}}),
+            started_at: Some(chrono::Utc::now().naive_utc()),
+            completed_at: Some(chrono::Utc::now().naive_utc()),
+        }, "Nmap".into()),
+    ];
+
+    let total_findings = 2;
+    let critical = 0;
+    let high = 0;
+    let medium = 0;
+    let low = 0;
+    let info = 2;
+    let risk_score = 5;
+    let risk_level = "Low";
+
+    let html_content = generate_html_report(
+        "Sample Report", &template, &now, &date_short,
+        &dummy_scans, total_findings, critical, high, medium, low, info,
+        risk_score, risk_level, None, Some("CyberSec Pro Demo"),
+        183, 18,
+    );
+
+    match format {
+        "pdf" => {
+            match html_to_pdf(&html_content).await {
+                Ok(pdf_bytes) => {
+                    return (
+                        StatusCode::OK,
+                        [
+                            (header::CONTENT_TYPE, "application/pdf"),
+                            (header::CONTENT_DISPOSITION, &format!("attachment; filename="{}.pdf"", template)),
+                        ],
+                        pdf_bytes,
+                    ).into_response();
+                }
+                Err(_) => {
+                    return (
+                        StatusCode::OK,
+                        [(header::CONTENT_TYPE, "text/html; charset=utf-8")],
+                        html_content,
+                    ).into_response();
+                }
+            }
+        }
+        _ => {
+            (
+                StatusCode::OK,
+                [(header::CONTENT_TYPE, "text/html; charset=utf-8")],
+                html_content,
+            ).into_response()
+        }
+    }
+}
+
 // ═══════════════════════════════════════════════════════════
 // CSV Report Generator
+pub async fn sample_report(
+    Path(template): Path<String>,
+    Query(params): Query<std::collections::HashMap<String, String>>,
+) -> impl IntoResponse {
+    let format = params.get("format").map(|s| s.as_str()).unwrap_or("html");
+    let now = chrono::Utc::now().format("%Y-%m-%d %H:%M UTC").to_string();
+    let date_short = chrono::Utc::now().format("%Y-%m-%d").to_string();
+
+    let dummy_scans: Vec<(ScanRow, String)> = vec![
+        (ScanRow {
+            id: "sample-1".into(),
+            tool_id: "nmap".into(),
+            target: "scanme.nmap.org".into(),
+            output: Some("22/tcp open ssh\n80/tcp open http".into()),
+            findings: Some(json!({"summary": {"total": 2, "critical": 0, "high": 0, "medium": 0, "low": 0, "info": 2}}),
+            started_at: Some(chrono::Utc::now().naive_utc()),
+            completed_at: Some(chrono::Utc::now().naive_utc()),
+        }, "Nmap".into()),
+    ];
+
+    let total_findings = 2;
+    let critical = 0;
+    let high = 0;
+    let medium = 0;
+    let low = 0;
+    let info = 2;
+    let risk_score = 5;
+    let risk_level = "Low";
+
+    let html_content = generate_html_report(
+        "Sample Report", &template, &now, &date_short,
+        &dummy_scans, total_findings, critical, high, medium, low, info,
+        risk_score, risk_level, None, Some("CyberSec Pro Demo"),
+        183, 18,
+    );
+
+    match format {
+        "pdf" => {
+            match html_to_pdf(&html_content).await {
+                Ok(pdf_bytes) => {
+                    return (
+                        StatusCode::OK,
+                        [
+                            (header::CONTENT_TYPE, "application/pdf"),
+                            (header::CONTENT_DISPOSITION, &format!("attachment; filename="{}.pdf"", template)),
+                        ],
+                        pdf_bytes,
+                    ).into_response();
+                }
+                Err(_) => {
+                    return (
+                        StatusCode::OK,
+                        [(header::CONTENT_TYPE, "text/html; charset=utf-8")],
+                        html_content,
+                    ).into_response();
+                }
+            }
+        }
+        _ => {
+            (
+                StatusCode::OK,
+                [(header::CONTENT_TYPE, "text/html; charset=utf-8")],
+                html_content,
+            ).into_response()
+        }
+    }
+}
+
 // ═══════════════════════════════════════════════════════════
 fn generate_csv_report(scans: &[(ScanRow, String)], now: &str) -> String {
     let mut csv = String::from("Scan ID,Tool,Target,Port,Protocol,State,Service,Severity,Finding,Generated\n");
@@ -1080,8 +1624,144 @@ fn generate_csv_report(scans: &[(ScanRow, String)], now: &str) -> String {
     csv
 }
 
+pub async fn sample_report(
+    Path(template): Path<String>,
+    Query(params): Query<std::collections::HashMap<String, String>>,
+) -> impl IntoResponse {
+    let format = params.get("format").map(|s| s.as_str()).unwrap_or("html");
+    let now = chrono::Utc::now().format("%Y-%m-%d %H:%M UTC").to_string();
+    let date_short = chrono::Utc::now().format("%Y-%m-%d").to_string();
+
+    let dummy_scans: Vec<(ScanRow, String)> = vec![
+        (ScanRow {
+            id: "sample-1".into(),
+            tool_id: "nmap".into(),
+            target: "scanme.nmap.org".into(),
+            output: Some("22/tcp open ssh\n80/tcp open http".into()),
+            findings: Some(json!({"summary": {"total": 2, "critical": 0, "high": 0, "medium": 0, "low": 0, "info": 2}}),
+            started_at: Some(chrono::Utc::now().naive_utc()),
+            completed_at: Some(chrono::Utc::now().naive_utc()),
+        }, "Nmap".into()),
+    ];
+
+    let total_findings = 2;
+    let critical = 0;
+    let high = 0;
+    let medium = 0;
+    let low = 0;
+    let info = 2;
+    let risk_score = 5;
+    let risk_level = "Low";
+
+    let html_content = generate_html_report(
+        "Sample Report", &template, &now, &date_short,
+        &dummy_scans, total_findings, critical, high, medium, low, info,
+        risk_score, risk_level, None, Some("CyberSec Pro Demo"),
+        183, 18,
+    );
+
+    match format {
+        "pdf" => {
+            match html_to_pdf(&html_content).await {
+                Ok(pdf_bytes) => {
+                    return (
+                        StatusCode::OK,
+                        [
+                            (header::CONTENT_TYPE, "application/pdf"),
+                            (header::CONTENT_DISPOSITION, &format!("attachment; filename="{}.pdf"", template)),
+                        ],
+                        pdf_bytes,
+                    ).into_response();
+                }
+                Err(_) => {
+                    return (
+                        StatusCode::OK,
+                        [(header::CONTENT_TYPE, "text/html; charset=utf-8")],
+                        html_content,
+                    ).into_response();
+                }
+            }
+        }
+        _ => {
+            (
+                StatusCode::OK,
+                [(header::CONTENT_TYPE, "text/html; charset=utf-8")],
+                html_content,
+            ).into_response()
+        }
+    }
+}
+
 // ═══════════════════════════════════════════════════════════
 // Markdown Report Generator
+pub async fn sample_report(
+    Path(template): Path<String>,
+    Query(params): Query<std::collections::HashMap<String, String>>,
+) -> impl IntoResponse {
+    let format = params.get("format").map(|s| s.as_str()).unwrap_or("html");
+    let now = chrono::Utc::now().format("%Y-%m-%d %H:%M UTC").to_string();
+    let date_short = chrono::Utc::now().format("%Y-%m-%d").to_string();
+
+    let dummy_scans: Vec<(ScanRow, String)> = vec![
+        (ScanRow {
+            id: "sample-1".into(),
+            tool_id: "nmap".into(),
+            target: "scanme.nmap.org".into(),
+            output: Some("22/tcp open ssh\n80/tcp open http".into()),
+            findings: Some(json!({"summary": {"total": 2, "critical": 0, "high": 0, "medium": 0, "low": 0, "info": 2}}),
+            started_at: Some(chrono::Utc::now().naive_utc()),
+            completed_at: Some(chrono::Utc::now().naive_utc()),
+        }, "Nmap".into()),
+    ];
+
+    let total_findings = 2;
+    let critical = 0;
+    let high = 0;
+    let medium = 0;
+    let low = 0;
+    let info = 2;
+    let risk_score = 5;
+    let risk_level = "Low";
+
+    let html_content = generate_html_report(
+        "Sample Report", &template, &now, &date_short,
+        &dummy_scans, total_findings, critical, high, medium, low, info,
+        risk_score, risk_level, None, Some("CyberSec Pro Demo"),
+        183, 18,
+    );
+
+    match format {
+        "pdf" => {
+            match html_to_pdf(&html_content).await {
+                Ok(pdf_bytes) => {
+                    return (
+                        StatusCode::OK,
+                        [
+                            (header::CONTENT_TYPE, "application/pdf"),
+                            (header::CONTENT_DISPOSITION, &format!("attachment; filename="{}.pdf"", template)),
+                        ],
+                        pdf_bytes,
+                    ).into_response();
+                }
+                Err(_) => {
+                    return (
+                        StatusCode::OK,
+                        [(header::CONTENT_TYPE, "text/html; charset=utf-8")],
+                        html_content,
+                    ).into_response();
+                }
+            }
+        }
+        _ => {
+            (
+                StatusCode::OK,
+                [(header::CONTENT_TYPE, "text/html; charset=utf-8")],
+                html_content,
+            ).into_response()
+        }
+    }
+}
+
 // ═══════════════════════════════════════════════════════════
 fn generate_markdown_report(
     name: &str, template: &str, now: &str,

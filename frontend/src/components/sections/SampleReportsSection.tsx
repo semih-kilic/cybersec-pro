@@ -6,6 +6,23 @@ import { motion } from "framer-motion";
 export default function SampleReportsSection() {
   const t = useTranslations("sampleReports");
 
+  const download = async (template: string) => {
+    const res = await fetch(`/api/v1/reports/sample/${template}?format=pdf`);
+    if (!res.ok) {
+      alert("Download failed");
+      return;
+    }
+    const blob = await res.blob();
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `${template}-report.pdf`;
+    document.body.appendChild(a);
+    a.click();
+    window.URL.revokeObjectURL(url);
+    document.body.removeChild(a);
+  };
+
   return (
     <section className="relative py-28 bg-white/5">
       <div className="mx-auto max-w-5xl px-6">
@@ -31,7 +48,10 @@ export default function SampleReportsSection() {
             <div className="text-4xl mb-4">📄</div>
             <h3 className="text-xl font-bold text-white">{t("technical.title")}</h3>
             <p className="mt-2 text-sm text-white/50">{t("technical.description")}</p>
-            <button className="mt-6 rounded-xl border border-white/10 px-6 py-2 font-mono text-sm text-white/70 transition hover:border-[var(--color-neon-dim)] hover:text-[var(--color-neon)]">
+            <button
+              onClick={() => download("technical")}
+              className="mt-6 rounded-xl border border-white/10 px-6 py-2 font-mono text-sm text-white/70 transition hover:border-[var(--color-neon-dim)] hover:text-[var(--color-neon)]"
+            >
               {t("technical.cta")}
             </button>
           </div>
@@ -39,7 +59,10 @@ export default function SampleReportsSection() {
             <div className="text-4xl mb-4">📊</div>
             <h3 className="text-xl font-bold text-white">{t("executive.title")}</h3>
             <p className="mt-2 text-sm text-white/50">{t("executive.description")}</p>
-            <button className="mt-6 rounded-xl border border-white/10 px-6 py-2 font-mono text-sm text-white/70 transition hover:border-[var(--color-neon-dim)] hover:text-[var(--color-neon)]">
+            <button
+              onClick={() => download("executive")}
+              className="mt-6 rounded-xl border border-white/10 px-6 py-2 font-mono text-sm text-white/70 transition hover:border-[var(--color-neon-dim)] hover:text-[var(--color-neon)]"
+            >
               {t("executive.cta")}
             </button>
           </div>
