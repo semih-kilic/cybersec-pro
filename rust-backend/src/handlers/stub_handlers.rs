@@ -1037,7 +1037,7 @@ pub async fn demo_scan(
         return (StatusCode::BAD_REQUEST, Json(json!({"error": "Valid target required"})));
     }
 
-    let blocked = [";", "&", "|", "`", "$", "<", ">", "\n", "\r", "\x", "%0a", "%0d"];
+    let blocked = [";", "&", "|", "`", "$", "<", ">", "\\n", "\\r", "\\x", "%0a", "%0d"];
     for p in &blocked {
         if target.to_lowercase().contains(p) {
             return (StatusCode::BAD_REQUEST, Json(json!({"error": format!("Invalid target: contains blocked character '{}'", p)})));
