@@ -1019,33 +1019,34 @@ async fn linkedin_oauth(
     Ok((email, first, last, picture, "LinkedIn"))
 }
 
+
 pub async fn demo_scan(
     State(state): State<Arc<AppState>>,
     Json(body): Json<serde_json::Value>,
 ) -> impl IntoResponse {
     let tool_name = match body.get("tool").and_then(|t| t.as_str()) {
         Some(t) => t,
-        None => return (StatusCode::BAD_REQUEST, Json(json!({"error": "Tool name required"}))).into_response(),
+        None => return (StatusCode::BAD_REQUEST, Json(json!({"error": "Tool name required"})).into_response()),
     };
     let target = match body.get("target").and_then(|t| t.as_str()) {
         Some(t) => t.trim().to_string(),
-        None => return (StatusCode::BAD_REQUEST, Json(json!({"error": "Target required"}))).into_response(),
+        None => return (StatusCode::BAD_REQUEST, Json(json!({"error": "Target required"})).into_response()),
     };
 
     if target.is_empty() || target.len() > 500 {
-        return (StatusCode::BAD_REQUEST, Json(json!({"error": "Valid target required"}))).into_response();
+        return (StatusCode::BAD_REQUEST, Json(json!({"error": "Valid target required"})).into_response());
     }
 
-    let blocked = [";", "&", "|", "`", "$", "<", ">", "\n", "\r", "\\x", "%0a", "%0d"];
+    let blocked = [";", "&", "|", "`", "$", "<", ">", "\n", "\r", "\x", "%0a", "%0d"];
     for p in &blocked {
         if target.to_lowercase().contains(p) {
-            return (StatusCode::BAD_REQUEST, Json(json!({"error": format!("Invalid target: contains blocked character '{}'", p)}))).into_response();
+            return (StatusCode::BAD_REQUEST, Json(json!({"error": format!("Invalid target: contains blocked character '{}'", p)})).into_response());
         }
     }
 
     let target_type = crate::services::target_authorization::classify_target(&target);
     if target_type != crate::services::target_authorization::TargetType::Sandbox {
-        return (StatusCode::FORBIDDEN, Json(json!({"error": "Demo scans are only allowed for sandbox/public targets. Please sign up for full access."}))).into_response();
+        return (StatusCode::FORBIDDEN, Json(json!({"error": "Demo scans are only allowed for sandbox/public targets. Please sign up for full access."})).into_response());
     }
 
     let tool: Option<crate::models::tool::Tool> = sqlx::query_as(
@@ -1060,14 +1061,14 @@ pub async fn demo_scan(
 
     let tool = match tool {
         Some(t) => t,
-        None => return (StatusCode::NOT_FOUND, Json(json!({"error": format!("Tool not found: {}", tool_name)}))).into_response(),
+        None => return (StatusCode::NOT_FOUND, Json(json!({"error": format!("Tool not found: {}", tool_name)})).into_response()),
     };
 
     let demo_user_id = "demo-user";
     let demo_org_id = "demo-org";
 
     let _ = sqlx::query(
-        "INSERT INTO organizations (id, name, slug, plan, created_at, updated_at) VALUES ($1, $2, $3, 'trial', NOW(), NOW()) ON CONFLICT DO NOTHING"
+        "INSERT INTO organizations (id, name, slug, plan_type, created_at, is_active) VALUES ($1, $2, $3, 'trial', NOW(), true) ON CONFLICT (id) DO NOTHING"
     )
     .bind(demo_org_id)
     .bind("Demo Organization")
@@ -1076,7 +1077,7 @@ pub async fn demo_scan(
     .await;
 
     let _ = sqlx::query(
-        "INSERT INTO users (id, email, first_name, last_name, role, organization_id, email_verified, created_at, updated_at) VALUES ($1, $2, $3, $4, 'user', $5, true, NOW(), NOW()) ON CONFLICT DO NOTHING"
+        "INSERT INTO users (id, email, first_name, last_name, role, organization_id, email_verified, is_active, created_at) VALUES ($1, $2, $3, $4, 'user', $5, true, true, NOW()) ON CONFLICT (id) DO NOTHING"
     )
     .bind(demo_user_id)
     .bind("demo@cyber-sec-pro.com")
@@ -1102,7 +1103,7 @@ pub async fn demo_scan(
     .await
     {
         Ok((id, _, _)) => id,
-        Err(e) => return (StatusCode::FORBIDDEN, Json(json!({"error": e}))).into_response(),
+        Err(e) => return (StatusCode::FORBIDDEN, Json(json!({"error": e})).into_response()),
     };
 
     let scan_id = uuid::Uuid::new_v4().to_string();
@@ -1123,7 +1124,7 @@ pub async fn demo_scan(
     .await
     {
         tracing::error!("Failed to insert demo scan: {}", e);
-        return (StatusCode::INTERNAL_SERVER_ERROR, Json(json!({"error": "Failed to create demo scan"}))).into_response();
+        return (StatusCode::INTERNAL_SERVER_ERROR, Json(json!({"error": format!("Failed to create demo scan: {}", e)})).into_response());
     }
 
     let _ = sqlx::query(
@@ -1151,14 +1152,14 @@ pub async fn demo_scan(
     )
     .await;
 
-    (StatusCode::OK, Json(json!({
+    Json(json!({
         "scan_id": scan_id,
         "status": "running",
         "tool": tool.name,
         "target": target,
         "message": "Demo scan started. Sign up to track results and get full reports.",
         "demo": true,
-    }))).into_response()
+    }))
 }
 
 pub async fn resend_verification(
