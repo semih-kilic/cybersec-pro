@@ -460,19 +460,81 @@ pub async fn sample_report(
 async fn html_to_pdf(html: &str) -> Result<Vec<u8>, String> {
     use tokio::process::Command;
 
-    // Resolve Chromium binary (try multiple common names)
-    let chromium_bin = ["chromium", "chromium-browser", "google-chrome-stable", "google-chrome"]
-        .iter()
-        .find(|bin| std::process::Command::new("which").arg(bin).output().map(|o| o.status.success()).unwrap_or(false))
-        .ok_or_else(|| "No Chromium/Chrome binary found on system. Install chromium or google-chrome.".to_string())?;
-
     // Write HTML to a temp file
     let tmp_html = format!("/tmp/report_{}.html", Uuid::new_v4());
     let tmp_pdf = format!("/tmp/report_{}.pdf", Uuid::new_v4());
 
     std::fs::write(&tmp_html, html).map_err(|e| format!("Write HTML: {}", e))?;
 
-    // Execute with timeout (30 seconds max)
+    // Try wkhtmltopdf first (more reliable in Docker)
+    let wkhtmltopdf = ["wkhtmltopdf", "wkhtmltopdf-bin"]
+        .iter()
+        .find(|bin| std::process::Command::new("which").arg(bin).output().map(|o| o.status.success()).unwrap_or(false));
+
+    if let Some(bin) = wkhtmltopdf {
+        let result = tokio::time::timeout(
+            std::time::Duration::from_secs(30),
+            Command::new(bin)
+                .args([
+                    "--enable-local-file-access",
+                    "--page-size", "A4",
+                    "--margin-top", "15mm",
+                    "--margin-bottom", "15mm",
+                    "--margin-left", "15mm",
+                    "--margin-right", "15mm",
+                    "--footer-center", "Page [page] of [topage]",
+                    "--footer-font-size", "9",
+                    "--footer-spacing", "5",
+                    &tmp_html,
+                    &tmp_pdf,
+                ])
+                .output()
+        ).await;
+
+        let cleanup = || {
+            let _ = std::fs::remove_file(&tmp_html);
+            let _ = std::fs::remove_file(&tmp_pdf);
+        };
+
+        let output = match result {
+            Ok(Ok(o)) => o,
+            Ok(Err(e)) => {
+                cleanup();
+                return Err(format!("wkhtmltopdf exec: {}", e));
+            }
+            Err(_) => {
+                cleanup();
+                return Err("PDF generation timed out after 30 seconds".to_string());
+            }
+        };
+
+        if !output.status.success() {
+            let err = String::from_utf8_lossy(&output.stderr);
+            cleanup();
+            return Err(format!("wkhtmltopdf failed: {}", err));
+        }
+
+        if std::path::Path::new(&tmp_pdf).exists() {
+            let pdf_bytes = std::fs::read(&tmp_pdf).map_err(|e| {
+                cleanup();
+                format!("Read PDF: {}", e)
+            })?;
+            cleanup();
+            if pdf_bytes.len() > 500 {
+                return Ok(pdf_bytes);
+            }
+        }
+
+        cleanup();
+        return Err("PDF generation produced empty file".to_string());
+    }
+
+    // Fallback: try Chromium if wkhtmltopdf not available
+    let chromium_bin = ["chromium", "chromium-browser", "google-chrome-stable", "google-chrome"]
+        .iter()
+        .find(|bin| std::process::Command::new("which").arg(bin).output().map(|o| o.status.success()).unwrap_or(false))
+        .ok_or_else(|| "No PDF generator found. Install wkhtmltopdf or chromium.".to_string())?;
+
     let user_data_dir = format!("/tmp/chromium_{}", Uuid::new_v4());
     let _ = std::fs::create_dir_all(&user_data_dir);
     let result = tokio::time::timeout(
@@ -511,7 +573,6 @@ async fn html_to_pdf(html: &str) -> Result<Vec<u8>, String> {
         }
     };
 
-    // Chromium often returns non-zero exit but still produces a valid PDF
     if std::path::Path::new(&tmp_pdf).exists() {
         let pdf_bytes = std::fs::read(&tmp_pdf).map_err(|e| {
             cleanup();
@@ -523,14 +584,8 @@ async fn html_to_pdf(html: &str) -> Result<Vec<u8>, String> {
         }
     }
 
-    if !output.status.success() {
-        let stderr = String::from_utf8_lossy(&output.stderr);
-        cleanup();
-        return Err(format!("Chromium failed (exit {}): {}", output.status, stderr));
-    }
-
     cleanup();
-    Err("PDF file was not generated".to_string())
+    Err(format!("PDF generation failed. Exit: {:?}", output.status.code()))
 }
 
 // ═══════════════════════════════════════════════════════════
