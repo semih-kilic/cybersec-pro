@@ -584,6 +584,17 @@ class ApiService {
     });
   }
 
+  async aiInterpretResults(scanId: string, findings: any[]) {
+    return this.request<{
+      total_findings: number;
+      severity_counts: Record<string, number>;
+      summary: string;
+    }>('/ai/interpret-results', {
+      method: 'POST',
+      body: JSON.stringify({ scan_id: scanId, findings, use_llm: true }),
+    });
+  }
+
   async stopScan(scanId: string) {
     return this.request<{
       success: boolean;

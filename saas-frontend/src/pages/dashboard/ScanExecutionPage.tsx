@@ -207,6 +207,8 @@ export function ScanExecutionPage() {
   const [scanStartTime, setScanStartTime] = useState<number | null>(null);
   const [elapsedSeconds, setElapsedSeconds] = useState(0);
   const [currentPhase, setCurrentPhase] = useState<{ phase: string; progress: number; message: string } | null>(null);
+  const [aiSummary, setAiSummary] = useState<string | null>(null);
+  const [aiLoading, setAiLoading] = useState(false);
 
   // === OWNERSHIP CONFIRMATION STATE ===
   const [authzConfirmed, setAuthzConfirmed] = useState(false);
@@ -461,6 +463,19 @@ export function ScanExecutionPage() {
       );
     } finally {
       setPdfDownloading(false);
+    }
+  };
+
+  const handleAiInterpret = async () => {
+    if (!currentScanId || !businessResults?.findings) return;
+    setAiLoading(true);
+    try {
+      const res = await api.aiInterpretResults(currentScanId, businessResults.findings);
+      setAiSummary(res.summary);
+    } catch {
+      setAiSummary('AI analysis failed. Please try again.');
+    } finally {
+      setAiLoading(false);
     }
   };
 
@@ -1027,9 +1042,47 @@ export function ScanExecutionPage() {
                     {renderParameterInput(name, param)}
                   </div>
                 ))}
-              </div>
-            </Section>
-          )}
+                  </div>
+                </Section>
+              )}
+
+              {businessResults?.findings && businessResults.findings.length > 0 && (
+                <Section
+                  title={
+                    <span className="flex items-center gap-2">
+                      <Zap className="w-4 h-4 text-vos-accent" />
+                      AI-Powered Remediation
+                    </span>
+                  }
+                >
+                  {!aiSummary ? (
+                    <div className="text-center py-vos-4">
+                      <p className="text-vos-sm text-vos-text-2 mb-3">
+                        Get AI-generated remediation steps and CVSS analysis for this scan.
+                      </p>
+                      <button
+                        onClick={handleAiInterpret}
+                        disabled={aiLoading}
+                        className="px-vos-4 py-vos-2 bg-vos-accent text-vos-bg rounded-vos-md text-vos-sm font-semibold hover:bg-vos-accent/90 transition disabled:opacity-50 disabled:cursor-not-allowed"
+                      >
+                        {aiLoading ? 'Analyzing...' : 'Analyze with AI'}
+                      </button>
+                    </div>
+                  ) : (
+                    <div className="rounded-vos-lg border border-vos-border-1 bg-vos-bg-elev-1 p-vos-4">
+                      <div className="flex items-start justify-between gap-vos-3">
+                        <p className="text-vos-sm text-vos-text whitespace-pre-wrap">{aiSummary}</p>
+                        <button
+                          onClick={() => setAiSummary(null)}
+                          className="text-vos-xs text-vos-text-3 hover:text-vos-text transition"
+                        >
+                          Clear
+                        </button>
+                      </div>
+                    </div>
+                  )}
+                </Section>
+              )}
 
           <Section
             title={
