@@ -1025,27 +1025,27 @@ pub async fn demo_scan(
 ) -> impl IntoResponse {
     let tool_name = match body.get("tool").and_then(|t| t.as_str()) {
         Some(t) => t,
-        None => return (StatusCode::BAD_REQUEST, Json(json!({"error": "Tool name required"})).into_response()),
+        None => return (StatusCode::BAD_REQUEST, Json(json!({"error": "Tool name required"}))).into_response(),
     };
     let target = match body.get("target").and_then(|t| t.as_str()) {
         Some(t) => t.trim().to_string(),
-        None => return (StatusCode::BAD_REQUEST, Json(json!({"error": "Target required"})).into_response()),
+        None => return (StatusCode::BAD_REQUEST, Json(json!({"error": "Target required"}))).into_response(),
     };
 
     if target.is_empty() || target.len() > 500 {
-        return (StatusCode::BAD_REQUEST, Json(json!({"error": "Valid target required"})).into_response());
+        return (StatusCode::BAD_REQUEST, Json(json!({"error": "Valid target required"}))).into_response();
     }
 
     let blocked = [";", "&", "|", "`", "$", "<", ">", "\n", "\r", "\x", "%0a", "%0d"];
     for p in &blocked {
         if target.to_lowercase().contains(p) {
-            return (StatusCode::BAD_REQUEST, Json(json!({"error": format!("Invalid target: contains blocked character '{}'", p)})).into_response());
+            return (StatusCode::BAD_REQUEST, Json(json!({"error": format!("Invalid target: contains blocked character '{}'", p)}))).into_response();
         }
     }
 
     let target_type = crate::services::target_authorization::classify_target(&target);
     if target_type != crate::services::target_authorization::TargetType::Sandbox {
-        return (StatusCode::FORBIDDEN, Json(json!({"error": "Demo scans are only allowed for sandbox/public targets. Please sign up for full access."})).into_response());
+        return (StatusCode::FORBIDDEN, Json(json!({"error": "Demo scans are only allowed for sandbox/public targets. Please sign up for full access."}))).into_response();
     }
 
     let tool: Option<crate::models::tool::Tool> = sqlx::query_as(
@@ -1060,7 +1060,7 @@ pub async fn demo_scan(
 
     let tool = match tool {
         Some(t) => t,
-        None => return (StatusCode::NOT_FOUND, Json(json!({"error": format!("Tool not found: {}", tool_name)})).into_response()),
+        None => return (StatusCode::NOT_FOUND, Json(json!({"error": format!("Tool not found: {}", tool_name)}))).into_response(),
     };
 
     let demo_user_id = "demo-user";
@@ -1102,7 +1102,7 @@ pub async fn demo_scan(
     .await
     {
         Ok((id, _, _)) => id,
-        Err(e) => return (StatusCode::FORBIDDEN, Json(json!({"error": e})).into_response()),
+        Err(e) => return (StatusCode::FORBIDDEN, Json(json!({"error": e}))).into_response(),
     };
 
     let scan_id = uuid::Uuid::new_v4().to_string();
@@ -1123,7 +1123,7 @@ pub async fn demo_scan(
     .await
     {
         tracing::error!("Failed to insert demo scan: {}", e);
-        return (StatusCode::INTERNAL_SERVER_ERROR, Json(json!({"error": "Failed to create demo scan"})).into_response());
+        return (StatusCode::INTERNAL_SERVER_ERROR, Json(json!({"error": "Failed to create demo scan"}))).into_response();
     }
 
     let _ = sqlx::query(
@@ -1151,14 +1151,14 @@ pub async fn demo_scan(
     )
     .await;
 
-    Json(json!({
+    (StatusCode::OK, Json(json!({
         "scan_id": scan_id,
         "status": "running",
         "tool": tool.name,
         "target": target,
         "message": "Demo scan started. Sign up to track results and get full reports.",
         "demo": true,
-    })).into_response()
+    }))).into_response()
 }
 
 pub async fn resend_verification(
