@@ -402,6 +402,20 @@ class ApiService {
     }>(`/scan/${scanId}/result`);
   }
 
+  async demoScan(tool: string, target: string) {
+    return this.request<{
+      demo: boolean;
+      scan_id: string;
+      status: string;
+      tool: string;
+      target: string;
+      message: string;
+    }>('/demo/scan', {
+      method: 'POST',
+      body: JSON.stringify({ tool, target }),
+    });
+  }
+
   async executeScan(toolId: string, target: string, parameters: Record<string, unknown>, agentId?: string, executionMode?: string, authorization?: { confirmed?: boolean; scope_statement?: string }) {
     return this.request<{
       success: boolean;

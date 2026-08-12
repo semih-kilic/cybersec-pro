@@ -59,6 +59,55 @@ const BUSINESS_CATEGORIES: Record<string, { label: string }> = {
   forensics_monitoring: { label: 'Forensics & Monitoring' },
 };
 
+const ANSI_COLORS: Record<string, string> = {
+  '30': 'text-gray-400',
+  '31': 'text-red-400',
+  '32': 'text-green-400',
+  '33': 'text-yellow-400',
+  '34': 'text-blue-400',
+  '35': 'text-purple-400',
+  '36': 'text-cyan-400',
+  '37': 'text-white',
+  '90': 'text-gray-500',
+  '91': 'text-red-300',
+  '92': 'text-green-300',
+  '93': 'text-yellow-300',
+  '94': 'text-blue-300',
+  '95': 'text-purple-300',
+  '96': 'text-cyan-300',
+  '97': 'text-gray-200',
+};
+
+function parseAnsiLine(line: string): { parts: { text: string; color?: string }[]; isBold: boolean } {
+  const parts: { text: string; color?: string }[] = [];
+  let currentColor: string | undefined;
+  let isBold = false;
+  const regex = /\x1b\[([0-9;]+)m/g;
+  let lastIndex = 0;
+  let match: RegExpExecArray | null;
+  while ((match = regex.exec(line)) !== null) {
+    if (match.index > lastIndex) {
+      parts.push({ text: line.slice(lastIndex, match.index), color: currentColor });
+    }
+    const codes = match[1].split(';');
+    for (const code of codes) {
+      if (code === '0') {
+        currentColor = undefined;
+        isBold = false;
+      } else if (code === '1') {
+        isBold = true;
+      } else if (ANSI_COLORS[code]) {
+        currentColor = ANSI_COLORS[code];
+      }
+    }
+    lastIndex = match.index + match[0].length;
+  }
+  if (lastIndex < line.length) {
+    parts.push({ text: line.slice(lastIndex), color: currentColor });
+  }
+  return { parts, isBold };
+}
+
 interface ToolExecutionMode {
   tool_id: string;
   execution_mode: string;

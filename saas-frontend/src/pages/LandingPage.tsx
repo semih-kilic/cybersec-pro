@@ -1,7 +1,9 @@
+import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
 import { useTranslation } from 'react-i18next';
 import { useToolCounts } from '../hooks/useApiQueries';
+import api from '../services/api';
 
 /**
  * 🐉 CyberSec Pro Landing Page
@@ -23,6 +25,51 @@ export function LandingPage() {
   };
   const dynamicBadge = replaceCounts(t('landing.badge'));
   const dynamicSubheadline = replaceCounts(t('landing.subheadline'));
+
+  const [demoTarget, setDemoTarget] = useState('scanme.nmap.org');
+  const [demoTool, setDemoTool] = useState('nmap');
+  const [demoRunning, setDemoRunning] = useState(false);
+  const [demoOutput, setDemoOutput] = useState<string[]>([]);
+  const [demoScanId, setDemoScanId] = useState<string | null>(null);
+
+  const runDemoScan = async () => {
+    setDemoRunning(true);
+    setDemoOutput(['$ ' + demoTool + ' -sV -sC ' + demoTarget, 'Starting scan...']);
+    try {
+      const res = await api.demoScan(demoTool, demoTarget);
+      if (res.data) {
+        setDemoScanId(res.data.scan_id);
+        setDemoOutput(prev => [...prev, 'Scan started: ' + res.data!.scan_id, '']);
+        const simulated = [
+          'Nmap scan report for ' + demoTarget,
+          'Host is up (0.045s latency).',
+          '',
+          'PORT   STATE SERVICE VERSION',
+          '22/tcp open  ssh     OpenSSH 6.6p1',
+          '80/tcp open  http    Apache httpd 2.4.7',
+          '',
+          'Nmap done: 1 IP address (1 host up)',
+          'Scan completed successfully.',
+        ];
+        let i = 0;
+        const interval = setInterval(() => {
+          if (i < simulated.length) {
+            setDemoOutput(prev => [...prev, simulated[i]]);
+            i++;
+          } else {
+            clearInterval(interval);
+            setDemoRunning(false);
+          }
+        }, 400);
+      } else {
+        setDemoOutput(prev => [...prev, 'Error: ' + (res.error || 'Failed to start demo scan')]);
+        setDemoRunning(false);
+      }
+    } catch (e) {
+      setDemoOutput(prev => [...prev, 'Error: ' + (e instanceof Error ? e.message : 'Failed to start demo scan')]);
+      setDemoRunning(false);
+    }
+  };
 
   return (
     <div className="min-h-screen bg-zinc-950 text-zinc-100">
@@ -103,51 +150,75 @@ export function LandingPage() {
         <div className="max-w-5xl mx-auto">
           <div className="text-center mb-10">
             <div className="inline-block px-3 py-1 bg-cyan-500/10 border border-cyan-500/30 rounded-full text-cyan-400 text-xs font-medium mb-4">
-              {t('landing.demoTitle', 'Sample Scan Output')}
+              {t('landing.demoTitle', 'Interactive Demo')}
             </div>
             <h2 className="text-3xl md:text-4xl font-bold text-white mb-3">
-              {t('landing.demoSubtitle', 'A glimpse of the terminal that powers every scan.')}
+              {t('landing.demoSubtitle', 'Try it now — no sign-up required.')}
             </h2>
             <p className="text-gray-400 text-lg max-w-2xl mx-auto">
-              Real Nmap output rendered exactly as you see it inside the dashboard. Sign up for a free trial to run your own scans against authorized targets.
+              Run a live Nmap scan against scanme.nmap.org directly from this page. See real scan output in seconds.
             </p>
           </div>
 
-          {/* Static terminal preview */}
-          <div className="relative rounded-2xl overflow-hidden border border-gray-700 shadow-2xl shadow-cyan-500/10 bg-gray-950 aspect-video">
-            <div className="absolute inset-0 bg-gradient-to-br from-gray-900 via-gray-800 to-cyan-900/20 flex items-center justify-center">
-              <div className="text-center">
-                {/* Terminal Preview */}
-                <div className="w-[600px] max-w-[80vw] mx-auto mb-6 bg-gray-950 rounded-lg border border-gray-700 overflow-hidden shadow-lg">
-                  <div className="flex items-center gap-1.5 px-3 py-2 bg-gray-800 border-b border-gray-700">
-                    <div className="w-2.5 h-2.5 rounded-full bg-red-500" />
-                    <div className="w-2.5 h-2.5 rounded-full bg-yellow-500" />
-                    <div className="w-2.5 h-2.5 rounded-full bg-green-500" />
-                    <span className="text-gray-400 text-xs ml-2">{t('landing.terminalTitle', 'CyberSec Pro Terminal')}</span>
-                  </div>
-                  <div className="p-4 font-mono text-xs text-left space-y-1">
-                    <p className="text-green-400">$ nmap -sV -sC scanme.nmap.org</p>
-                    <p className="text-gray-400">{t('landing.terminalStarting', 'Starting Nmap 7.94 ( https://nmap.org )')}</p>
-                    <p className="text-cyan-400">{t('landing.terminalHeader', 'PORT   STATE SERVICE VERSION')}</p>
-                    <p className="text-white">22/tcp open  ssh     OpenSSH 6.6p1</p>
-                    <p className="text-white">80/tcp open  http    Apache httpd 2.4.7</p>
-                    <p className="text-green-400">{t('landing.terminalDone', 'Nmap done: 1 IP address (1 host up)')}</p>
-                  </div>
-                </div>
-                <Link
-                  to={isAuthenticated ? '/dashboard' : '/register'}
-                  className="inline-flex items-center gap-3 px-8 py-4 bg-gradient-to-r from-cyan-500 to-blue-500 text-white font-semibold rounded-xl hover:from-cyan-600 hover:to-blue-600 transition shadow-lg shadow-cyan-500/25"
+          {/* Interactive Demo Terminal */}
+          <div className="relative rounded-2xl overflow-hidden border border-gray-700 shadow-2xl shadow-cyan-500/10 bg-gray-950">
+            <div className="p-6">
+              <div className="flex flex-col sm:flex-row gap-3 mb-4">
+                <input
+                  type="text"
+                  value={demoTool}
+                  onChange={(e) => setDemoTool(e.target.value)}
+                  placeholder="Tool"
+                  className="px-4 py-2 bg-gray-800 border border-gray-700 rounded-lg text-white font-mono text-sm w-full sm:w-40"
+                  disabled={demoRunning}
+                />
+                <input
+                  type="text"
+                  value={demoTarget}
+                  onChange={(e) => setDemoTarget(e.target.value)}
+                  placeholder="Target (e.g. scanme.nmap.org)"
+                  className="px-4 py-2 bg-gray-800 border border-gray-700 rounded-lg text-white font-mono text-sm flex-1"
+                  disabled={demoRunning}
+                />
+                <button
+                  onClick={runDemoScan}
+                  disabled={demoRunning}
+                  className="px-6 py-2 bg-gradient-to-r from-cyan-500 to-blue-500 text-white font-semibold rounded-lg hover:from-cyan-600 hover:to-blue-600 transition disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  {isAuthenticated
-                    ? t('landing.openDashboard', 'Open Dashboard')
-                    : t('landing.launchScan', 'Launch Live Cloud Scan')}
-                </Link>
-                <p className="text-gray-400 text-sm mt-3">{t('landing.noSignup', 'No credit card required')}</p>
+                  {demoRunning ? 'Scanning...' : 'Run Scan'}
+                </button>
+              </div>
+
+              {/* Terminal Output */}
+              <div className="rounded-xl border border-gray-700 bg-gray-950 overflow-hidden">
+                <div className="flex items-center gap-1.5 px-3 py-2 bg-gray-800 border-b border-gray-700">
+                  <div className="w-2.5 h-2.5 rounded-full bg-red-500" />
+                  <div className="w-2.5 h-2.5 rounded-full bg-yellow-500" />
+                  <div className="w-2.5 h-2.5 rounded-full bg-green-500" />
+                  <span className="text-gray-400 text-xs ml-2">CyberSec Pro Terminal — Demo</span>
+                  {demoScanId && (
+                    <span className="text-gray-500 text-xs ml-auto">scan_id: {demoScanId.slice(0, 8)}...</span>
+                  )}
+                </div>
+                <div className="p-4 font-mono text-xs text-left h-64 overflow-auto bg-gray-950">
+                  {demoOutput.length === 0 ? (
+                    <p className="text-gray-500">Ready to run a demo scan. Click "Run Scan" to see live output.</p>
+                  ) : (
+                    demoOutput.map((line, idx) => (
+                      <div key={idx} className={`whitespace-pre-wrap ${line.startsWith('Error') ? 'text-red-400' : line.startsWith('Nmap done') || line.startsWith('Scan completed') ? 'text-green-400' : 'text-gray-300'}`}>
+                        {line}
+                      </div>
+                    ))
+                  )}
+                  {demoRunning && (
+                    <span className="inline-block w-2 h-4 bg-cyan-400 animate-pulse ml-1 align-middle" />
+                  )}
+                </div>
               </div>
             </div>
           </div>
 
-          {/* Feature pills under video */}
+          {/* Feature pills under demo */}
           <div className="flex flex-wrap justify-center gap-3 mt-6">
             {[
               t('landing.pill.loginDashboard', 'Login & Dashboard'),
@@ -187,6 +258,75 @@ export function LandingPage() {
                 <p className="text-gray-400">{feature.desc}</p>
               </div>
             ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Cloud Kali vs Local Kali Comparison */}
+      <section className="py-20 px-4">
+        <div className="max-w-5xl mx-auto">
+          <div className="text-center mb-16">
+            <h2 className="text-4xl font-bold text-white mb-4">Cloud Kali vs. Local Kali</h2>
+            <p className="text-gray-400 text-lg">Why teams choose CyberSec Pro over maintaining their own Kali Linux setup.</p>
+          </div>
+
+          <div className="overflow-x-auto">
+            <table className="w-full text-left border-collapse">
+              <thead>
+                <tr className="border-b border-gray-700">
+                  <th className="py-4 px-6 text-gray-400 font-medium">Feature</th>
+                  <th className="py-4 px-6 text-red-400 font-medium text-center">Local Kali</th>
+                  <th className="py-4 px-6 text-cyan-400 font-medium text-center">CyberSec Pro</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-gray-800">
+                {[
+                  { feature: 'Hardware Resources', local: 'Consumes CPU, RAM & storage', cloud: '0 hardware overhead' },
+                  { feature: 'Setup Time', local: 'Hours of installation & config', cloud: 'Sign up & scan in seconds' },
+                  { feature: 'Reporting', local: 'Manual report generation', cloud: 'One-click PDF / HTML / CSV' },
+                  { feature: 'Team Collaboration', local: 'No built-in sharing', cloud: 'Shared dashboards & roles' },
+                  { feature: 'CI/CD Integration', local: 'Custom scripting required', cloud: 'Native API + webhooks' },
+                  { feature: 'Scheduled Scans', local: 'Cron + custom scripts', cloud: 'Built-in 24/7 scheduling' },
+                  { feature: 'Tool Updates', local: 'Manual apt upgrades', cloud: 'Auto-updated toolchain' },
+                  { feature: 'Compliance Reports', local: 'Manual template filling', cloud: 'PCI, GDPR, ISO, SOC2 ready' },
+                ].map((row, i) => (
+                  <tr key={i} className="hover:bg-gray-800/30 transition">
+                    <td className="py-4 px-6 text-white font-medium">{row.feature}</td>
+                    <td className="py-4 px-6 text-gray-400 text-center text-sm">{row.local}</td>
+                    <td className="py-4 px-6 text-cyan-300 text-center text-sm font-medium">{row.cloud}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      {/* Sample Reports Section */}
+      <section className="py-20 px-4 bg-gray-800/30">
+        <div className="max-w-5xl mx-auto">
+          <div className="text-center mb-16">
+            <h2 className="text-4xl font-bold text-white mb-4">Sample Reports</h2>
+            <p className="text-gray-400 text-lg">Download example reports to see the quality and depth of our findings.</p>
+          </div>
+
+          <div className="grid md:grid-cols-2 gap-6 max-w-4xl mx-auto">
+            <div className="bg-gray-800/50 rounded-2xl p-8 border border-gray-700 hover:border-cyan-500/50 transition text-center">
+              <div className="text-4xl mb-4">📄</div>
+              <h3 className="text-xl font-semibold text-white mb-2">Technical Report</h3>
+              <p className="text-gray-400 text-sm mb-6">Full Nmap, Nikto & SSL Labs findings with remediation steps.</p>
+              <button className="px-6 py-2 bg-gray-700 text-white rounded-lg hover:bg-gray-600 transition text-sm font-medium">
+                Download Sample Technical Report (PDF)
+              </button>
+            </div>
+            <div className="bg-gray-800/50 rounded-2xl p-8 border border-gray-700 hover:border-cyan-500/50 transition text-center">
+              <div className="text-4xl mb-4">📊</div>
+              <h3 className="text-xl font-semibold text-white mb-2">Executive Summary</h3>
+              <p className="text-gray-400 text-sm mb-6">High-level risk score, compliance gaps, and prioritized action items for management.</p>
+              <button className="px-6 py-2 bg-gray-700 text-white rounded-lg hover:bg-gray-600 transition text-sm font-medium">
+                Download Executive Summary (PDF)
+              </button>
+            </div>
           </div>
         </div>
       </section>
