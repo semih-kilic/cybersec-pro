@@ -142,6 +142,7 @@ services:
       - ./nginx/ssl:/etc/nginx/ssl:ro
       - ./frontend/out:/srv/marketing:ro
       - ./saas-frontend/dist:/srv/dashboard:ro
+      - ./status:/srv/status:ro
       - nginx_logs:/var/log/nginx
     depends_on:
       - rust-backend
