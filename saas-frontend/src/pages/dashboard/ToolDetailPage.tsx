@@ -72,6 +72,13 @@ export function ToolDetailPage() {
   const outputRef = useRef<HTMLDivElement>(null);
   const sseCleanupRef = useRef<(() => void) | null>(null);
 
+  // === OWNERSHIP CONFIRMATION STATE ===
+  const [authzConfirmed, setAuthzConfirmed] = useState(false);
+  const [authzStatement, setAuthzStatement] = useState('');
+  const [authzVersion, setAuthzVersion] = useState('');
+  const [authzLoading, setAuthzLoading] = useState(false);
+  const lastAuthzTargetRef = useRef('');
+
   const { data: agentsList } = useAgentsList();
   const agents = (agentsList || []) as { id: string | number; name: string; ip_address?: string; status: string; platform?: string }[];
 
@@ -123,6 +130,35 @@ export function ToolDetailPage() {
   }, [scanStatus, scanStartTime]);
 
   useEffect(() => () => { if (sseCleanupRef.current) sseCleanupRef.current(); }, []);
+
+  // Fetch the canonical ownership-confirmation statement for the current target.
+  // The checkbox must be checked before the scan can start; every scan is
+  // recorded in the audit log with this statement and a timestamp.
+  useEffect(() => {
+    let cancelled = false;
+    const t = getTargetValue().trim();
+    if (t === lastAuthzTargetRef.current) return;
+    lastAuthzTargetRef.current = t;
+    setAuthzConfirmed(false);
+    setAuthzStatement('');
+    if (!t) return;
+    const jwt = localStorage.getItem('token') || '';
+    setAuthzLoading(true);
+    fetch('/api/v1/authorizations/preview', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + jwt },
+      body: JSON.stringify({ target: t }),
+    })
+      .then(r => r.json())
+      .then(d => {
+        if (cancelled) return;
+        setAuthzStatement(d.scope_statement || '');
+        setAuthzVersion(d.statement_version || '');
+      })
+      .catch(() => {})
+      .finally(() => { if (!cancelled) setAuthzLoading(false); });
+    return () => { cancelled = true; };
+  }, [paramValues, tool]);
 
   const getNormalizedParams = (): ToolParameter[] => {
     if (!tool) return [];
@@ -221,6 +257,7 @@ export function ToolDetailPage() {
   const handleRunScan = async () => {
     const scanTarget = getTargetValue();
     if (!scanTarget) { toast.warning('Target Required', 'Please enter a target to scan'); return; }
+    if (!authzConfirmed) { toast.warning('Ownership Confirmation Required', 'Confirm that you own or have permission to test this target before starting the scan.'); return; }
 
     addGlobalTarget(scanTarget);
     addRecentTarget(scanTarget);
@@ -242,7 +279,7 @@ export function ToolDetailPage() {
 
     const agentId = selectedAgentId !== 'server' ? selectedAgentId : undefined;
     try {
-      const response = await api.executeScan(toolId || '', scanTarget, paramValues, agentId, agentId ? 'agent' : 'local');
+      const response = await api.executeScan(toolId || '', scanTarget, paramValues, agentId, agentId ? 'agent' : 'local', { confirmed: true, scope_statement: authzStatement });
 
       if (response.error) {
         setScanError(response.error);
@@ -378,6 +415,22 @@ export function ToolDetailPage() {
                     </div>
                   )}
                 </div>
+              )}
+              {scanStatus === 'idle' && (
+                <label className={`mt-4 flex items-start gap-2 p-3 rounded-lg border transition ${authzConfirmed ? 'bg-green-500/5 border-green-500/25' : 'bg-yellow-500/5 border-yellow-600/25'}`}>
+                  <input
+                    type="checkbox"
+                    checked={authzConfirmed}
+                    onChange={(e) => setAuthzConfirmed(e.target.checked)}
+                    disabled={!getTargetValue().trim() || authzLoading}
+                    className="mt-0.5 accent-kali-blue"
+                  />
+                  <span className="flex-1 min-w-0">
+                    <span className="block text-xs font-medium text-gray-200">I confirm that I own or have written authorization to test this target.</span>
+                    <span className="block text-[11px] text-gray-500 mt-0.5 leading-relaxed">{authzStatement || (authzLoading ? 'Loading authorization scope…' : 'Enter a target to load the authorization scope.')}</span>
+                    {authzStatement && <span className="block text-[10px] text-gray-600 font-mono mt-0.5">v{authzVersion} • This statement will be recorded in the audit log.</span>}
+                  </span>
+                </label>
               )}
             </div>
 
@@ -557,7 +610,7 @@ export function ToolDetailPage() {
                       <p className="text-blue-400 text-sm font-medium">⚡ GUI Tool — Runs headlessly via Xvfb virtual framebuffer on the server.</p>
                     </div>
                   )}
-                  <button onClick={handleRunScan} disabled={!getTargetValue().trim()}
+                  <button onClick={handleRunScan} disabled={!getTargetValue().trim() || !authzConfirmed}
                     className="w-full py-3.5 bg-gradient-to-r from-kali-blue to-kali-purple text-white font-bold rounded-lg hover:opacity-90 transition flex items-center justify-center gap-2 disabled:opacity-40 disabled:cursor-not-allowed text-base">
                     <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
                     {t('scans.newScan', 'Run Scan')}

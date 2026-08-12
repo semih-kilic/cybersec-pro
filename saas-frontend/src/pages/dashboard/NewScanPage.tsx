@@ -58,6 +58,10 @@ export function NewScanPage() {
   const [submitting, setSubmitting] = useState(false);
   const [showDanger, setShowDanger] = useState(false);
   const [projectId, setProjectId] = useState<number | null>(null);
+  const [authzConfirmed, setAuthzConfirmed] = useState(false);
+  const [authzStatement, setAuthzStatement] = useState('');
+  const [authzVersion, setAuthzVersion] = useState('');
+  const [authzLoading, setAuthzLoading] = useState(false);
 
   const projects = fetchedProjects as any[];
 
@@ -90,6 +94,33 @@ export function NewScanPage() {
     if (online) { setSelectedAgent(online.id); autoFillTarget(online, scanMode); }
   }, [agentsListData]);
 
+  // Fetch the canonical ownership-confirmation statement for the current target.
+  // The checkbox must be checked before the scan can start; every scan is
+  // recorded in the audit log with this statement and a timestamp.
+  useEffect(() => {
+    let cancelled = false;
+    const t = target.trim();
+    setAuthzConfirmed(false);
+    setAuthzStatement('');
+    if (!t) return;
+    const jwt = localStorage.getItem('token') || '';
+    setAuthzLoading(true);
+    fetch('/api/v1/authorizations/preview', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + jwt },
+      body: JSON.stringify({ target: t }),
+    })
+      .then(r => r.json())
+      .then(d => {
+        if (cancelled) return;
+        setAuthzStatement(d.scope_statement || '');
+        setAuthzVersion(d.statement_version || '');
+      })
+      .catch(() => {})
+      .finally(() => { if (!cancelled) setAuthzLoading(false); });
+    return () => { cancelled = true; };
+  }, [target]);
+
   function handleAgentChange(id: string) {
     setSelectedAgent(id);
     const agent = agents.find(a => a.id === id);
@@ -105,18 +136,20 @@ export function NewScanPage() {
   }
 
   const selectedToolObj = allTools.find(t => t.id === selectedTool || t.slug === selectedTool);
-  const canStart = (target.trim().length > 0 || (scanMode === 'network' && !!selectedAgent)) && selectedTool.length > 0;
+  const canStart = (target.trim().length > 0 || (scanMode === 'network' && !!selectedAgent)) && selectedTool.length > 0 && authzConfirmed;
 
   const handleStart = async () => {
     if (selectedToolObj?.dangerous && !showDanger) { setShowDanger(true); return; }
+    if (!authzConfirmed) { toast.error('You must confirm ownership before starting a scan.'); return; }
     setSubmitting(true);
     try {
+      const authz = { confirmed: true, scope_statement: authzStatement, statement_version: authzVersion };
       if (scanMode === 'network') {
         const jwt = localStorage.getItem('token') || '';
         const res = await fetch('/api/v1/scans/network-sweep', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + jwt },
-          body: JSON.stringify({ subnet: target.trim(), tool: selectedTool, agent_id: selectedAgent || null, project_id: projectId }),
+          body: JSON.stringify({ subnet: target.trim(), tool: selectedTool, agent_id: selectedAgent || null, project_id: projectId, authorization: authz }),
         });
         const data = await res.json();
         if (res.ok) {
@@ -132,6 +165,7 @@ export function NewScanPage() {
           parameters: getSmartDefaults(selectedTool, 'standard'),
           agent_id: selectedAgent || null,
           project_id: projectId,
+          authorization: authz,
         } as any);
         if ((result as any).success) {
           navigate(`/dashboard/scans/${(result as any).scan_id}`);
@@ -327,10 +361,32 @@ export function NewScanPage() {
           </Card>
         )}
 
-        {/* Legal */}
-        <div className="flex items-start gap-vos-2 p-vos-3 rounded-vos-md bg-vos-warning/5 border border-vos-warning/20">
-          <ShieldAlert size={13} className="text-vos-warning shrink-0 mt-0.5" />
-          <p className="text-[11px] text-vos-warning/80">Only scan targets you own or have written permission to test. Unauthorized scanning is illegal.</p>
+        {/* Ownership confirmation */}
+        <div className={`flex items-start gap-vos-2 p-vos-3 rounded-vos-md border transition-colors ${authzConfirmed ? 'bg-vos-success/5 border-vos-success/25' : 'bg-vos-warning/5 border-vos-warning/20'}`}>
+          {authzLoading
+            ? <Loader2 size={13} className="text-vos-text-3 shrink-0 mt-0.5 animate-spin" />
+            : authzConfirmed
+              ? <CheckCircle2 size={13} className="text-vos-success shrink-0 mt-0.5" />
+              : <ShieldAlert size={13} className="text-vos-warning shrink-0 mt-0.5" />
+          }
+          <label className="flex-1 cursor-pointer select-none">
+            <span className="flex items-start gap-2">
+              <input
+                type="checkbox"
+                checked={authzConfirmed}
+                onChange={e => setAuthzConfirmed(e.target.checked)}
+                disabled={!target.trim() || authzLoading}
+                className="mt-0.5 accent-vos-accent"
+              />
+              <span className="text-[11px] leading-relaxed">
+                <span className="font-medium text-vos-text">I confirm that I own or have written authorization to test this target. </span>
+                <span className="text-vos-text-3">{authzStatement || (authzLoading ? 'Loading authorization scope…' : 'Enter a target to load the authorization scope.')}</span>
+              </span>
+            </span>
+            {authzStatement && (
+              <span className="block mt-1 text-[10px] text-vos-text-3 font-mono">v{authzVersion} • This statement will be recorded in the audit log.</span>
+            )}
+          </label>
         </div>
 
         {/* Start */}

@@ -11,6 +11,7 @@ use serde_json::json;
 
 use crate::middleware::auth_middleware::{AuthUser, AdminUser};
 use crate::services::auth::{create_access_token, create_refresh_token};
+use crate::services::audit::log_audit;
 use crate::AppState;
 
 fn purple_team_chains_catalog() -> Vec<serde_json::Value> {
@@ -1027,7 +1028,7 @@ pub async fn demo_scan(
         None => return (StatusCode::BAD_REQUEST, Json(json!({"error": "Tool name required"})).into_response()),
     };
     let target = match body.get("target").and_then(|t| t.as_str()) {
-        Some(t) => t.trim(),
+        Some(t) => t.trim().to_string(),
         None => return (StatusCode::BAD_REQUEST, Json(json!({"error": "Target required"})).into_response()),
     };
 
@@ -1042,12 +1043,12 @@ pub async fn demo_scan(
         }
     }
 
-    let target_type = crate::services::target_authorization::classify_target(target);
+    let target_type = crate::services::target_authorization::classify_target(&target);
     if target_type != crate::services::target_authorization::TargetType::Sandbox {
         return (StatusCode::FORBIDDEN, Json(json!({"error": "Demo scans are only allowed for sandbox/public targets. Please sign up for full access."})).into_response());
     }
 
-    let tool: Option<crate::services::tools::Tool> = sqlx::query_as(
+    let tool: Option<crate::models::tool::Tool> = sqlx::query_as(
         "SELECT * FROM tools WHERE (id = $1 OR name = $2 OR business_name = $3) AND is_active = TRUE LIMIT 1"
     )
     .bind(tool_name)
@@ -1087,14 +1088,14 @@ pub async fn demo_scan(
 
     let authz_confirmation = crate::services::target_authorization::AuthConfirmation {
         confirmed: true,
-        scope_statement: crate::services::target_authorization::canonical_statement(target),
+        scope_statement: crate::services::target_authorization::canonical_statement(&target),
     };
 
     let authorization_id = match crate::services::target_authorization::authorize_and_check(
         &state.db,
         demo_org_id,
         demo_user_id,
-        target,
+        &target,
         Some(&authz_confirmation),
         None,
     )
@@ -1115,7 +1116,7 @@ pub async fn demo_scan(
     .bind(demo_org_id)
     .bind(demo_user_id)
     .bind(&tool.id)
-    .bind(target)
+    .bind(&target)
     .bind(&params_json)
     .bind(&authorization_id)
     .execute(&state.db)
@@ -1135,7 +1136,7 @@ pub async fn demo_scan(
     .execute(&state.db)
     .await;
 
-    log_audit(
+    let _ = log_audit(
         &state.db,
         "demo_scan_start",
         "scan",
@@ -2331,11 +2332,11 @@ pub async fn list_schedules(
     let schedules = sqlx::query_as::<_, (
         String, String, Option<String>, String, bool, String,
         Option<String>, Option<String>, Option<i32>, i32,
-        Option<String>, String,
+        Option<String>, String, String, String,
     )>(
         "SELECT id, name, cron_expression, COALESCE(tool_name,''), is_active, COALESCE(target,''),
                 CAST(last_run AS TEXT), CAST(next_run AS TEXT), run_count, COALESCE(hour,0),
-                schedule_type, CAST(created_at AS TEXT)
+                schedule_type, CAST(created_at AS TEXT), COALESCE(scope_statement,''), COALESCE(statement_version,'')
          FROM scheduled_scans WHERE organization_id = $1 ORDER BY created_at DESC"
     )
     .bind(&user.org_id.as_deref().unwrap_or(""))
@@ -2343,7 +2344,7 @@ pub async fn list_schedules(
     .await
     .unwrap_or_default();
 
-    let list: Vec<serde_json::Value> = schedules.iter().map(|(id, name, cron, tool_name, active, target, last_run, next_run, run_count, _hour, sched_type, created)| {
+    let list: Vec<serde_json::Value> = schedules.iter().map(|(id, name, cron, tool_name, active, target, last_run, next_run, run_count, _hour, sched_type, created, scope_statement, statement_version)| {
         let status = if *active { "active" } else { "paused" };
         json!({
             "id": id,
@@ -2358,7 +2359,9 @@ pub async fn list_schedules(
             "last_run": last_run,
             "run_count": run_count.unwrap_or(0),
             "schedule_type": sched_type,
-            "created_at": created
+            "created_at": created,
+            "scope_statement": scope_statement,
+            "statement_version": statement_version
         })
     }).collect();
 

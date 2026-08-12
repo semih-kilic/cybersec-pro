@@ -737,6 +737,8 @@ export interface ScheduledScanFull {
   status?: 'active' | 'paused' | 'error';
   run_count: number;
   created_at: string;
+  scope_statement?: string;
+  statement_version?: string;
 }
 
 export function useSchedules() {
@@ -1142,7 +1144,7 @@ export function useStartScan() {
   const qc = useQueryClient();
 
   return useMutation({
-    mutationFn: (data: { tool: string; target: string; parameters?: Record<string, unknown>; agent_id?: number | null; project_id?: number | null; sandbox?: boolean }) =>
+    mutationFn: (data: { tool: string; target: string; parameters?: Record<string, unknown>; agent_id?: number | null; project_id?: number | null; sandbox?: boolean; authorization?: { confirmed?: boolean; scope_statement?: string; statement_version?: string } }) =>
       authFetch<{ success: boolean; scan_id: string; error?: string; hint?: string; requires_confirmation?: boolean }>(
         '/api/v1/scan/start', token, {
           method: 'POST',
@@ -1153,6 +1155,7 @@ export function useStartScan() {
             ...(data.agent_id ? { agent_id: String(data.agent_id) } : {}),
             ...(data.project_id ? { project_id: data.project_id } : {}),
             ...(data.sandbox ? { sandbox: true } : {}),
+            ...(data.authorization && data.authorization.scope_statement ? { authorization: { confirmed: true, scope_statement: data.authorization.scope_statement } } : {}),
           }),
         }
       ),
@@ -1357,10 +1360,14 @@ export function useSaveSchedule() {
 export function useRunScheduleNow() {
   const { token } = useAuth();
   return useMutation({
-    mutationFn: (data: { tool: string; target: string }) =>
+    mutationFn: (data: { tool: string; target: string; authorization?: { confirmed?: boolean; scope_statement?: string } }) =>
       authFetch('/api/v1/scan/start', token, {
         method: 'POST',
-        body: JSON.stringify(data),
+        body: JSON.stringify({
+          tool: data.tool,
+          target: data.target,
+          ...(data.authorization && data.authorization.scope_statement ? { authorization: { confirmed: true, scope_statement: data.authorization.scope_statement } } : {}),
+        }),
       }),
   });
 }

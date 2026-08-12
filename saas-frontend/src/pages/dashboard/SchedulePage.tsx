@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Header } from '../../components/layout/Header';
 import { PageTransition } from '../../components/ui';
@@ -25,6 +25,8 @@ interface ScheduledScan {
   status?: 'active' | 'paused' | 'error';
   run_count: number;
   created_at: string;
+  scope_statement?: string;
+  statement_version?: string;
 }
 
 const presetSchedules = [
@@ -58,6 +60,39 @@ export function SchedulePage() {
     notifications: true,
   });
 
+  // === OWNERSHIP CONFIRMATION STATE ===
+  const [authzConfirmed, setAuthzConfirmed] = useState(false);
+  const [authzStatement, setAuthzStatement] = useState('');
+  const [authzVersion, setAuthzVersion] = useState('');
+  const [authzLoading, setAuthzLoading] = useState(false);
+
+  // Fetch the canonical ownership-confirmation statement for the target being
+  // scheduled. The checkbox must be checked before a schedule can be saved; the
+  // statement is stored with the schedule and re-validated on every run.
+  useEffect(() => {
+    let cancelled = false;
+    const t = formData.target.trim();
+    setAuthzConfirmed(false);
+    setAuthzStatement('');
+    if (!t) return;
+    const jwt = localStorage.getItem('token') || '';
+    setAuthzLoading(true);
+    fetch('/api/v1/authorizations/preview', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + jwt },
+      body: JSON.stringify({ target: t }),
+    })
+      .then(r => r.json())
+      .then(d => {
+        if (cancelled) return;
+        setAuthzStatement(d.scope_statement || '');
+        setAuthzVersion(d.statement_version || '');
+      })
+      .catch(() => {})
+      .finally(() => { if (!cancelled) setAuthzLoading(false); });
+    return () => { cancelled = true; };
+  }, [formData.target]);
+
   const handleToggleStatus = async (schedule: ScheduledScan) => {
     try {
       await toggleScheduleMutation.mutateAsync(schedule.id);
@@ -80,6 +115,7 @@ export function SchedulePage() {
       await runNowMutation.mutateAsync({
         tool: schedule.tool_name || schedule.tool || '',
         target: schedule.target,
+        authorization: schedule.scope_statement ? { confirmed: true, scope_statement: schedule.scope_statement } : undefined,
       });
       toast.success(t('schedule.scanStarted', 'Scan Started'), `${schedule.name} ${t('schedule.scanLaunched', 'scan launched successfully')}`);
     } catch (error) {
@@ -93,6 +129,10 @@ export function SchedulePage() {
   };
 
   const handleSave = async () => {
+    if (!authzConfirmed) {
+      toast.error(t('schedule.saveFailed', 'Save Failed'), 'Confirm that you own or have permission to test this target before scheduling.');
+      return;
+    }
     try {
       const schedPreset = presetSchedules.find(p => p.label.toLowerCase() === formData.schedulePreset.toLowerCase());
       const cronExpr = formData.schedulePreset === 'custom' ? formData.customCron : schedPreset?.value;
@@ -103,6 +143,7 @@ export function SchedulePage() {
         target: formData.target,
         schedule_type: formData.schedulePreset === 'custom' ? 'cron' : formData.schedulePreset,
         cron_expression: cronExpr,
+        authorization: { confirmed: true, scope_statement: authzStatement },
       };
       
       await saveScheduleMutation.mutateAsync({ id: editingSchedule?.id, data: body });
@@ -514,6 +555,21 @@ export function SchedulePage() {
                     <span className="text-white">{t('schedule.emailNotifications', 'Email notifications on completion')}</span>
                   </label>
                 </div>
+
+                <div className={`flex items-start gap-2 p-3 rounded-lg border transition ${authzConfirmed ? 'bg-green-500/5 border-green-500/25' : 'bg-yellow-500/5 border-yellow-600/25'}`}>
+                  <input
+                    type="checkbox"
+                    checked={authzConfirmed}
+                    onChange={(e) => setAuthzConfirmed(e.target.checked)}
+                    disabled={!formData.target.trim() || authzLoading}
+                    className="mt-0.5 accent-kali-blue"
+                  />
+                  <div className="flex-1 min-w-0">
+                    <p className="text-xs font-medium text-gray-200">I confirm that I own or have written authorization to test this target.</p>
+                    <p className="text-[11px] text-gray-500 mt-0.5 leading-relaxed">{authzStatement || (authzLoading ? 'Loading authorization scope…' : 'Enter a target to load the authorization scope.')}</p>
+                    {authzStatement && <p className="text-[10px] text-gray-600 font-mono mt-0.5">v{authzVersion} • This statement will be recorded in the audit log.</p>}
+                  </div>
+                </div>
               </div>
 
               <div className="flex justify-end gap-3 p-6 border-t border-gray-800">
@@ -528,7 +584,7 @@ export function SchedulePage() {
                 </button>
                 <button
                   onClick={handleSave}
-                  disabled={!formData.name || !formData.tool || !formData.target}
+                  disabled={!formData.name || !formData.tool || !formData.target || !authzConfirmed || authzLoading}
                   className="px-6 py-2 bg-kali-blue hover:bg-kali-blue/90 text-white rounded-lg transition disabled:opacity-50"
                 >
                   {editingSchedule ? 'Save Changes' : 'Create Schedule'}

@@ -159,6 +159,12 @@ export function ScanExecutionPage() {
   const [elapsedSeconds, setElapsedSeconds] = useState(0);
   const [currentPhase, setCurrentPhase] = useState<{ phase: string; progress: number; message: string } | null>(null);
 
+  // === OWNERSHIP CONFIRMATION STATE ===
+  const [authzConfirmed, setAuthzConfirmed] = useState(false);
+  const [authzStatement, setAuthzStatement] = useState('');
+  const [authzVersion, setAuthzVersion] = useState('');
+  const [authzLoading, setAuthzLoading] = useState(false);
+
   const [agents, setAgents] = useState<AgentInfo[]>([]);
   const [selectedAgentId, setSelectedAgentId] = useState<string>('auto');
   const [executionInfo, setExecutionInfo] = useState<{
@@ -223,6 +229,33 @@ export function ScanExecutionPage() {
   useEffect(() => {
     setAgents(normalizeAgentsPayload<AgentInfo>(agentsData as unknown));
   }, [agentsData]);
+
+  // Fetch the canonical ownership-confirmation statement for the current target.
+  // The checkbox must be checked before the scan can start; every scan is
+  // recorded in the audit log with this statement and a timestamp.
+  useEffect(() => {
+    let cancelled = false;
+    const t = target.trim();
+    setAuthzConfirmed(false);
+    setAuthzStatement('');
+    if (!t) return;
+    const jwt = localStorage.getItem('token') || '';
+    setAuthzLoading(true);
+    fetch('/api/v1/authorizations/preview', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + jwt },
+      body: JSON.stringify({ target: t }),
+    })
+      .then(r => r.json())
+      .then(d => {
+        if (cancelled) return;
+        setAuthzStatement(d.scope_statement || '');
+        setAuthzVersion(d.statement_version || '');
+      })
+      .catch(() => {})
+      .finally(() => { if (!cancelled) setAuthzLoading(false); });
+    return () => { cancelled = true; };
+  }, [target]);
 
   const { data: executionModeData } = useToolExecutionMode(toolId);
   const businessReportMutation = useFetchBusinessReport();
@@ -448,6 +481,10 @@ export function ScanExecutionPage() {
       setError('Target is required');
       return;
     }
+    if (!authzConfirmed) {
+      setError('Confirm that you own or have permission to test this target before starting the scan.');
+      return;
+    }
     addGlobalTarget(target);
     setError(null);
     setOutput([]);
@@ -467,7 +504,7 @@ export function ScanExecutionPage() {
 
     const agentId = selectedAgentId !== 'auto' && selectedAgentId !== 'local' ? selectedAgentId : undefined;
     const execMode = selectedAgentId === 'local' ? 'local' : selectedAgentId === 'auto' ? 'auto' : 'agent';
-    const response = await api.executeScan(toolId, target, parameters, agentId, execMode);
+    const response = await api.executeScan(toolId, target, parameters, agentId, execMode, { confirmed: true, scope_statement: authzStatement });
 
     if (response.error) {
       const hint = (response as any).hint;
@@ -647,7 +684,7 @@ export function ScanExecutionPage() {
               </button>
             )}
             {status === 'idle' && (
-              <button onClick={handleStartScan} disabled={!target.trim()} className="inline-flex items-center gap-2 px-6 py-2.5 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-500 hover:to-purple-500 text-white font-semibold rounded-xl transition-all duration-200 shadow-lg shadow-blue-600/20 hover:shadow-blue-600/40 disabled:opacity-40 disabled:cursor-not-allowed disabled:shadow-none">
+              <button onClick={handleStartScan} disabled={!target.trim() || !authzConfirmed} className="inline-flex items-center gap-2 px-6 py-2.5 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-500 hover:to-purple-500 text-white font-semibold rounded-xl transition-all duration-200 shadow-lg shadow-blue-600/20 hover:shadow-blue-600/40 disabled:opacity-40 disabled:cursor-not-allowed disabled:shadow-none">
                 <Play className="w-4 h-4" />
                 {t('scans.newScan', 'Run Scan')}
               </button>
@@ -683,6 +720,22 @@ export function ScanExecutionPage() {
                   <XCircle className="w-3.5 h-3.5" />
                   {error}
                 </div>
+              )}
+              {status === 'idle' && (
+                <label className={`flex items-start gap-2 p-vos-3 rounded-vos-md border transition ${authzConfirmed ? 'bg-vos-success/5 border-vos-success/25' : 'bg-vos-warning/5 border-vos-warning/20'}`}>
+                  <input
+                    type="checkbox"
+                    checked={authzConfirmed}
+                    onChange={(e) => setAuthzConfirmed(e.target.checked)}
+                    disabled={!target.trim() || authzLoading}
+                    className="mt-0.5 accent-vos-accent"
+                  />
+                  <span className="flex-1 min-w-0">
+                    <span className="block text-vos-xs font-medium text-vos-text">I confirm that I own or have written authorization to test this target.</span>
+                    <span className="block text-[11px] text-vos-text-3 mt-0.5 leading-relaxed">{authzStatement || (authzLoading ? 'Loading authorization scope…' : 'Enter a target to load the authorization scope.')}</span>
+                    {authzStatement && <span className="block text-[10px] text-vos-text-3 font-mono mt-0.5">v{authzVersion} • This statement will be recorded in the audit log.</span>}
+                  </span>
+                </label>
               )}
             </div>
           </Section>

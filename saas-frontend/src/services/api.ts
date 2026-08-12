@@ -402,7 +402,7 @@ class ApiService {
     }>(`/scan/${scanId}/result`);
   }
 
-  async executeScan(toolId: string, target: string, parameters: Record<string, unknown>, agentId?: string, executionMode?: string) {
+  async executeScan(toolId: string, target: string, parameters: Record<string, unknown>, agentId?: string, executionMode?: string, authorization?: { confirmed?: boolean; scope_statement?: string }) {
     return this.request<{
       success: boolean;
       scan_id: string;
@@ -425,6 +425,7 @@ class ApiService {
         parameters,
         ...(executionMode && { execution_mode: executionMode }),
         ...(agentId && { agent_id: agentId }),
+        ...(authorization && authorization.scope_statement ? { authorization: { confirmed: true, scope_statement: authorization.scope_statement } } : {}),
       }),
     });
   }
