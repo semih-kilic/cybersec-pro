@@ -471,7 +471,7 @@ export function ScanExecutionPage() {
     setAiLoading(true);
     try {
       const res = await api.aiInterpretResults(currentScanId, businessResults.findings);
-      setAiSummary(res.summary);
+      setAiSummary(res.data?.summary || 'No summary available.');
     } catch {
       setAiSummary('AI analysis failed. Please try again.');
     } finally {
