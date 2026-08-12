@@ -200,7 +200,7 @@
     "startTrial": "Start Free Trial",
     "createAccount": "Create Account",
     "registerTitle": "Start Free Trial",
-      "registerSubtitle": "14 days free • No credit card required",
+    "registerSubtitle": "14 days free • No credit card required",
     "firstName": "First Name",
     "lastName": "Last Name",
     "confirmPassword": "Confirm Password",
@@ -238,7 +238,7 @@
     "registrationFailed": "Registration failed",
     "checkEmailTitle": "Check Your Email",
     "checkEmailSentTo": "We sent a verification link to:",
-      "checkEmailBody": "Click the link in the email to verify your account and start your 14-day free trial. The link expires in 24 hours.",
+    "checkEmailBody": "Click the link in the email to verify your account and start your 14-day free trial. The link expires in 24 hours.",
     "sent": "✅ Sent!",
     "newVerificationSent": "New verification link sent!",
     "firstNamePlaceholder": "John",
@@ -1703,5 +1703,72 @@
     "serviceCloudflared": "cloudflared",
     "serviceHealthcheck": "healthcheck",
     "featureFlagPlaceholder": "my_new_feature"
+  },
+  "trust": {
+    "pageTitle": "Trust Center — CyberSec Pro",
+    "metaDesc": "Security policies, compliance certifications, responsible disclosure, sub-processors, and data protection information for CyberSec Pro.",
+    "title": "Trust Center",
+    "subtitle": "Security is the foundation of everything we build. This page documents our security practices, compliance posture, and how to report vulnerabilities.",
+    "quick": {
+      "securityTxt": "security.txt",
+      "securityTxtDesc": "RFC 9116 security policy",
+      "pgpKey": "PGP Key",
+      "pgpKeyDesc": "Encrypt vulnerability reports",
+      "dpa": "DPA",
+      "dpaDesc": "Data Processing Agreement"
+    },
+    "disclosure": {
+      "title": "Responsible Disclosure",
+      "p1": "We take the security of CyberSec Pro seriously. If you discover a security vulnerability, we appreciate your help in disclosing it to us in a responsible manner.",
+      "scope": "Scope: All CyberSec Pro services, APIs, and infrastructure at cyber-sec-pro.com and app.cyber-sec-pro.com.",
+      "contact": "Contact: security@cyber-sec-pro.com (PGP key available at /.well-known/pgp-key.txt)",
+      "response": "Response time: We will acknowledge your report within 48 hours and provide a timeline for resolution within 5 business days.",
+      "safeHarbor": "Safe Harbor: We will not pursue legal action against researchers who follow this policy and act in good faith.",
+      "policyDuration": "Policy effective: 2025-01-01. Last reviewed: 2026-08-12."
+    },
+    "pentest": {
+      "title": "Last Penetration Test",
+      "date": "Date",
+      "scope": "Scope",
+      "scopeValue": "Full infrastructure + API",
+      "status": "Status",
+      "statusValue": "All findings remediated"
+    },
+    "subprocessors": {
+      "title": "Sub-processors",
+      "name": "Name",
+      "purpose": "Purpose",
+      "location": "Data Location"
+    },
+    "dpa": {
+      "title": "Data Processing Agreement (DPA)",
+      "description": "Our DPA is incorporated into our Terms of Service. It includes Standard Contractual Clauses (SCCs) for international data transfers and details our technical and organizational measures.",
+      "viewDpa": "View DPA in Terms of Service"
+    },
+    "status": {
+      "title": "System Status",
+      "description": "For real-time service status and incident history, visit our status page."
+    },
+    "dataResidency": {
+      "title": "Data Residency & Privacy",
+      "subtitle": "Your data stays in Canada. Always.",
+      "storageLocation": "Primary Data Storage",
+      "storageLocationValue": "Canada",
+      "storageDescription": "All customer data stored exclusively in Canadian data centers.",
+      "encryptionAtRest": "Encryption at Rest",
+      "encryptionAtRestValue": "AES-256-GCM",
+      "encryptionDescription": "Per-tenant keys with 90-day rotation, stored in HSM.",
+      "encryptionInTransit": "Encryption in Transit",
+      "encryptionInTransitValue": "TLS 1.3",
+      "encryptionInTransitDescription": "Perfect forward secrecy on all API and web traffic.",
+      "noLogging": "No Raw Traffic Logging",
+      "noLoggingValue": "Zero-Knowledge",
+      "noLoggingDescription": "No raw packet capture or payload content stored.",
+      "noLoggingPolicy": "Our No-Logging Commitment",
+      "noLoggingPolicy1": "No raw packet capture storage",
+      "noLoggingPolicy2": "No payload content retention",
+      "noLoggingPolicy3": "No personal data in scan results",
+      "noLoggingPolicy4": "Scan results auto-delete after 30 days"
+    }
   }
 }
