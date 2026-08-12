@@ -472,6 +472,8 @@ async fn html_to_pdf(html: &str) -> Result<Vec<u8>, String> {
     std::fs::write(&tmp_html, html).map_err(|e| format!("Write HTML: {}", e))?;
 
     // Execute with timeout (30 seconds max)
+    let user_data_dir = format!("/tmp/chromium_{}", Uuid::new_v4());
+    let _ = std::fs::create_dir_all(&user_data_dir);
     let result = tokio::time::timeout(
         std::time::Duration::from_secs(30),
         Command::new(chromium_bin)
@@ -481,6 +483,7 @@ async fn html_to_pdf(html: &str) -> Result<Vec<u8>, String> {
                 "--no-sandbox",
                 "--disable-software-rasterizer",
                 "--disable-dev-shm-usage",
+                &format!("--user-data-dir={}", user_data_dir),
                 "--run-all-compositor-stages-before-draw",
                 &format!("--print-to-pdf={}", tmp_pdf),
                 "--print-to-pdf-no-header",
@@ -492,6 +495,7 @@ async fn html_to_pdf(html: &str) -> Result<Vec<u8>, String> {
     let cleanup = || {
         let _ = std::fs::remove_file(&tmp_html);
         let _ = std::fs::remove_file(&tmp_pdf);
+        let _ = std::fs::remove_dir_all(&user_data_dir);
     };
 
     let output = match result {
