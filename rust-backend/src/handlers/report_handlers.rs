@@ -428,7 +428,8 @@ pub async fn sample_report(
                         pdf_bytes,
                     ).into_response();
                 }
-                Err(_) => {
+                Err(e) => {
+                    tracing::error!("PDF generation failed: {}, falling back to HTML", e);
                     return (
                         StatusCode::OK,
                         [
