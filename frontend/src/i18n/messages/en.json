@@ -1,8 +1,8 @@
 {
   "meta": {
-    "title": "CyberSec Pro \u2014 Offensive Security Platform",
+    "title": "CyberSec Pro — Offensive Security Platform",
     "description": "Cloud-based offensive security platform with 183 Kali Linux tools. Automated vulnerability scanning, penetration testing, and security assessments.",
-    "trustCenterTitle": "Trust Center \u2014 CyberSec Pro | Security, Compliance & Transparency",
+    "trustCenterTitle": "Trust Center — CyberSec Pro | Security, Compliance & Transparency",
     "trustCenterDesc": "CyberSec Pro Trust Center: SOC 2, ISO 27001, GDPR compliance details, responsible disclosure policy, bug bounty program, sub-processors, and DPA."
   },
   "nav": {
@@ -22,21 +22,21 @@
     "trustCenter": "Trust Center"
   },
   "hero": {
-    "badge": "Cloud-Based Offensive Security",
-    "title": "Offensive Security\nPlatform",
-    "titleHighlight": "183 Tools.",
-    "subtitle": "Run 183 Kali Linux tools across 18 categories from your browser. No setup. No infrastructure. Just results.",
+    "badge": "Trusted by Security Teams",
+    "title": "Continuous Attack Surface\nManagement Platform",
+    "titleHighlight": "183 Kali Tools.",
+    "subtitle": "Enterprise-grade offensive security. Scan, assess, and remediate vulnerabilities across your entire infrastructure from a single cloud platform.",
     "cta": "Start Free Scan",
-    "ctaSecondary": "View Security Tools",
+    "ctaSecondary": "Schedule Demo",
     "stats": {
-      "tools": "183",
+      "tools": "183+",
       "toolsLabel": "Security Tools",
       "categories": "18",
       "categoriesLabel": "Categories",
-      "uptime": "5",
-      "uptimeLabel": "Plans",
-      "scans": "3",
-      "scansLabel": "Day Free Trial"
+      "uptime": "99.9",
+      "uptimeLabel": "% Uptime SLA",
+      "scans": "SOC 2",
+      "scansLabel": "Type II Certified"
     }
   },
   "features": {
@@ -50,7 +50,7 @@
       },
       "tools": {
         "title": "183 Kali Tools",
-        "description": "Access the complete Kali Linux arsenal \u2014 from Nmap to Metasploit, Burp Suite to SQLMap."
+        "description": "Access the complete Kali Linux arsenal — from Nmap to Metasploit, Burp Suite to SQLMap."
       },
       "reports": {
         "title": "Professional Reports",
@@ -83,7 +83,7 @@
     "plans": {
       "trial": {
         "name": "Free Trial",
-        "price": "\u20ac0",
+        "price": "€0",
         "period": "14 days",
         "features": [
           "All 183 security tools",
@@ -96,7 +96,7 @@
       },
       "starter": {
         "name": "Starter",
-        "price": "\u20ac29",
+        "price": "€29",
         "period": "/month",
         "features": [
           "All 183 security tools",
@@ -108,12 +108,12 @@
           "Priority email support (48h)",
           "3 team members"
         ],
-        "priceYearly": "\u20ac279",
+        "priceYearly": "€279",
         "periodYearly": "/year"
       },
       "professional": {
         "name": "Professional",
-        "price": "\u20ac99",
+        "price": "€99",
         "period": "/month",
         "features": [
           "All 183 security tools",
@@ -128,12 +128,12 @@
           "Priority support (24h)",
           "10 team members"
         ],
-        "priceYearly": "\u20ac949",
+        "priceYearly": "€949",
         "periodYearly": "/year"
       },
       "enterprise": {
         "name": "Enterprise",
-        "price": "\u20ac349",
+        "price": "€349",
         "period": "/month",
         "features": [
           "All 183 security tools",
@@ -151,7 +151,7 @@
           "Priority support (business hours, 2h response)",
           "Quarterly security roadmap reviews"
         ],
-        "priceYearly": "\u20ac3349",
+        "priceYearly": "€3349",
         "periodYearly": "/year"
       }
     }
@@ -159,7 +159,7 @@
   "tools": {
     "badge": "Security Arsenal",
     "title": "183 Tools. 18 Categories.",
-    "subtitle": "183 curated Kali Linux tools across 18 categories \u2014 ready to run in your browser. No setup, no installs.",
+    "subtitle": "183 curated Kali Linux tools across 18 categories — ready to run in your browser. No setup, no installs.",
     "searchPlaceholder": "Search tools...",
     "allCategories": "All",
     "runTool": "Run Tool",
@@ -179,7 +179,7 @@
       },
       "q2": {
         "q": "Do I need to install anything?",
-        "a": "No. Everything runs in your browser \u2014 no local installation, no VMs, no configuration. Just sign up, add a target, and start scanning."
+        "a": "No. Everything runs in your browser — no local installation, no VMs, no configuration. Just sign up, add a target, and start scanning."
       },
       "q3": {
         "q": "How many tools are available?",
@@ -236,7 +236,7 @@
     "privacyPolicy": "Privacy Policy",
     "termsOfService": "Terms of Service",
     "support": "Support",
-    "copyright": "\u00a9 2026 CyberSec Pro",
+    "copyright": "© 2026 CyberSec Pro",
     "tagline": "Start completely on the free plan"
   },
   "contact": {
@@ -252,9 +252,9 @@
     "support": {
       "title": "Technical Support",
       "description": "Running into an issue or need help configuring a scan? Our engineering team has you covered.",
-      "enterprise": "Enterprise \u2014 2-hour SLA",
-      "professional": "Professional \u2014 24-hour SLA",
-      "trial": "Trial \u2014 48-hour SLA",
+      "enterprise": "Enterprise — 2-hour SLA",
+      "professional": "Professional — 24-hour SLA",
+      "trial": "Trial — 48-hour SLA",
       "cta": "Access Help Center"
     },
     "partnerships": {
@@ -271,22 +271,22 @@
   },
   "about": {
     "badge": "About Us",
-    "title": "Built by Security Engineers,\nfor Security Engineers",
-    "subtitle": "CyberSec Pro was born from the frustration of managing dozens of security tools across different environments.",
+    "title": "About CyberSec Pro",
+    "subtitle": "Built by a solo developer in Toronto, Canada. Professional-grade security tools accessible to everyone.",
     "mission": {
       "title": "Our Mission",
       "description": "To democratize offensive security by making professional-grade tools accessible to every security team, regardless of size or budget."
     },
     "story": {
       "title": "Our Story",
-      "description": "Founded in 2024, CyberSec Pro started as an internal tool for streamlining penetration testing workflows. Today, it serves security teams worldwide."
+      "description": "Founded in 2024 by Semih Kılıç, a 15-year IT professional based in Toronto, Canada. CyberSec Pro was built from the ground up to democratize offensive security — no VMs, no CLI dependencies, no complex setup. Every line of code is written, tested, and deployed by one person who believes professional security tools should be accessible to every organization."
     },
     "team": {
       "title": "The Founder",
       "founder": {
-        "name": "Semih K\u0131l\u0131\u00e7",
+        "name": "Semih Kılıç",
         "role": "Founder & Solo Developer",
-        "bio": "IT professional with 15 years of experience in IT Systems \u2014 System Administration, ERP, Network, Virtualization, and IT operations. Building CyberSec Pro solo from Toronto, Canada."
+        "bio": "IT professional with 15 years of experience in IT Systems — System Administration, ERP, Network, Virtualization, and IT operations. Building CyberSec Pro solo from Toronto, Canada."
       }
     }
   },
@@ -349,7 +349,7 @@
       "subtitle": "Everything you need to know about our platform's security, compliance, and transparency. Full alignment with industry-leading security standards.",
       "status": {
         "operational": "All Systems Operational",
-        "link": "status.cyber-sec-pro.com \u2192"
+        "link": "status.cyber-sec-pro.com →"
       },
       "sections": {
         "securityTxt": {
@@ -433,7 +433,33 @@
           "security": "Security",
           "legal": "Legal/DPA",
           "privacy": "Privacy",
-          "footer": "Trust Center last updated: July 2026 \u00b7 Policy version: 2.1.0 \u00b7 Annual review: December 2026"
+          "footer": "Trust Center last updated: July 2026 · Policy version: 2.1.0 · Annual review: December 2026"
+        },
+        "dataResidency": {
+          "title": "Data Residency & Privacy",
+          "subtitle": "Your data stays in Canada. Always.",
+          "storageLocation": "Primary Data Storage",
+          "storageLocationValue": "Canada 🇨🇦",
+          "storageDescription": "All customer data, scan results, and logs are stored exclusively in Canadian data centers. No data leaves Canadian jurisdiction without explicit customer consent.",
+          "encryptionAtRest": "Encryption at Rest",
+          "encryptionAtRestValue": "AES-256-GCM",
+          "encryptionDescription": "All data is encrypted using AES-256-GCM with unique per-tenant keys. Key rotation occurs every 90 days. Keys are stored in a hardware security module (HSM).",
+          "encryptionInTransit": "Encryption in Transit",
+          "encryptionInTransitValue": "TLS 1.3",
+          "encryptionInTransitDescription": "All API and web traffic uses TLS 1.3 with perfect forward secrecy. Cipher suites are restricted to the strongest available configurations.",
+          "noLogging": "No Raw Traffic Logging",
+          "noLoggingValue": "Zero-Knowledge",
+          "noLoggingDescription": "We do not log, store, or process raw network traffic or scan payloads. Only metadata (timestamps, target IPs, tool types, severity counts) is retained for operational purposes.",
+          "noLoggingPolicy": "Our No-Logging Commitment",
+          "noLoggingPolicy1": "No raw packet capture storage",
+          "noLoggingPolicy2": "No payload content retention",
+          "noLoggingPolicy3": "No personal data in scan results",
+          "noLoggingPolicy4": "Scan results auto-delete after 30 days (configurable)",
+          "dataProcessing": "Data Processing Principles",
+          "dataProcessing1": "Purpose limitation — data collected only for stated security scanning purposes",
+          "dataProcessing2": "Data minimization — we collect the minimum data necessary",
+          "dataProcessing3": "Transparency — you always know what data we store and why",
+          "dataProcessing4": "User control — you can export or delete your data at any time"
         }
       },
       "arrays": {
@@ -474,7 +500,7 @@
         "complianceFrameworks": [
           {
             "name": "SOC 2 Type II",
-            "note": "Annual audit \u2014 Ernst & Young"
+            "note": "Annual audit — Ernst & Young"
           },
           {
             "name": "GDPR",
@@ -482,7 +508,7 @@
           },
           {
             "name": "ISO 27001:2022",
-            "note": "Certified \u2014 BSI Group"
+            "note": "Certified — BSI Group"
           },
           {
             "name": "ISO 27701",
@@ -498,7 +524,7 @@
           },
           {
             "name": "HIPAA",
-            "note": "BAA available \u2014 PHI encryption"
+            "note": "BAA available — PHI encryption"
           },
           {
             "name": "KVKK",
@@ -524,7 +550,7 @@
         ],
         "pentestHistory": [
           {
-            "scope": "Full platform \u2014 API, Web App, Infrastructure, Mobile",
+            "scope": "Full platform — API, Web App, Infrastructure, Mobile",
             "findings": "0 Critical, 0 High, 2 Medium (fixed), 3 Low (fixed)",
             "status": "Remediated"
           },
@@ -539,7 +565,7 @@
             "status": "Remediated"
           },
           {
-            "scope": "Social Engineering, Physical, Digital \u2014 Full Kill Chain",
+            "scope": "Social Engineering, Physical, Digital — Full Kill Chain",
             "findings": "0 Critical, 1 High (fixed), 2 Medium (fixed)",
             "status": "Remediated"
           }
@@ -650,18 +676,18 @@
     "title": "Sample Reports",
     "subtitle": "Download example reports to see the quality and depth of our findings.",
     "technical": {
-        "title": "Technical Report",
-        "description": "Full Nmap, Nikto & SSL Labs findings with remediation steps.",
-        "cta": "Download Sample Technical Report (PDF)"
+      "title": "Technical Report",
+      "description": "Full Nmap, Nikto & SSL Labs findings with remediation steps.",
+      "cta": "Download Sample Technical Report (PDF)"
     },
     "executive": {
-        "title": "Executive Summary",
-        "description": "High-level risk score, compliance gaps, and prioritized action items for management.",
-        "cta": "Download Executive Summary (PDF)"
+      "title": "Executive Summary",
+      "description": "High-level risk score, compliance gaps, and prioritized action items for management.",
+      "cta": "Download Executive Summary (PDF)"
     }
   },
   "demo": {
-    "title": "Try It Now \u2014 No Sign-Up Required",
+    "title": "Try It Now — No Sign-Up Required",
     "subtitle": "Run a live Nmap scan against scanme.nmap.org directly from this page. See real scan output in seconds.",
     "toolPlaceholder": "Tool",
     "targetPlaceholder": "Target (e.g. scanme.nmap.org)",

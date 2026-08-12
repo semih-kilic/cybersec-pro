@@ -52,6 +52,54 @@ export function TrustCenterPage() {
             ))}
           </div>
 
+          {/* Data Residency & Privacy */}
+          <section id="data-residency" className="mb-16 p-6 rounded-2xl border border-zinc-700/50 bg-zinc-900/30">
+            <h2 className="text-xl font-bold text-white mb-4">
+              {t('trust.dataResidency.title', 'Data Residency & Privacy')}
+            </h2>
+            <p className="text-gray-400 text-sm mb-6">
+              {t('trust.dataResidency.subtitle', 'Your data stays in Canada. Always.')}
+            </p>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
+              <div className="p-4 rounded-lg bg-black/30 border border-white/5">
+                <div className="text-xs text-gray-500 mb-1">{t('trust.dataResidency.storageLocation', 'Primary Data Storage')}</div>
+                <div className="text-lg font-mono font-bold text-cyan-400 mb-1">{t('trust.dataResidency.storageLocationValue', 'Canada 🇨🇦')}</div>
+                <div className="text-xs text-gray-400">{t('trust.dataResidency.storageDescription', 'All customer data stored exclusively in Canadian data centers.')}</div>
+              </div>
+              <div className="p-4 rounded-lg bg-black/30 border border-white/5">
+                <div className="text-xs text-gray-500 mb-1">{t('trust.dataResidency.encryptionAtRest', 'Encryption at Rest')}</div>
+                <div className="text-lg font-mono font-bold text-purple-400 mb-1">{t('trust.dataResidency.encryptionAtRestValue', 'AES-256-GCM')}</div>
+                <div className="text-xs text-gray-400">{t('trust.dataResidency.encryptionDescription', 'Per-tenant keys with 90-day rotation, stored in HSM.')}</div>
+              </div>
+              <div className="p-4 rounded-lg bg-black/30 border border-white/5">
+                <div className="text-xs text-gray-500 mb-1">{t('trust.dataResidency.encryptionInTransit', 'Encryption in Transit')}</div>
+                <div className="text-lg font-mono font-bold text-green-400 mb-1">{t('trust.dataResidency.encryptionInTransitValue', 'TLS 1.3')}</div>
+                <div className="text-xs text-gray-400">{t('trust.dataResidency.encryptionInTransitDescription', 'Perfect forward secrecy on all API and web traffic.')}</div>
+              </div>
+              <div className="p-4 rounded-lg bg-black/30 border border-white/5">
+                <div className="text-xs text-gray-500 mb-1">{t('trust.dataResidency.noLogging', 'No Raw Traffic Logging')}</div>
+                <div className="text-lg font-mono font-bold text-orange-400 mb-1">{t('trust.dataResidency.noLoggingValue', 'Zero-Knowledge')}</div>
+                <div className="text-xs text-gray-400">{t('trust.dataResidency.noLoggingDescription', 'No raw packet capture or payload content stored.')}</div>
+              </div>
+            </div>
+            <div className="p-4 rounded-lg bg-green-500/5 border border-green-500/10">
+              <h3 className="text-sm font-bold text-white mb-2">{t('trust.dataResidency.noLoggingPolicy', 'Our No-Logging Commitment')}</h3>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                {[
+                  t('trust.dataResidency.noLoggingPolicy1', 'No raw packet capture storage'),
+                  t('trust.dataResidency.noLoggingPolicy2', 'No payload content retention'),
+                  t('trust.dataResidency.noLoggingPolicy3', 'No personal data in scan results'),
+                  t('trust.dataResidency.noLoggingPolicy4', 'Scan results auto-delete after 30 days'),
+                ].map((item, i) => (
+                  <div key={i} className="flex items-center gap-2 text-xs text-gray-400">
+                    <span className="h-1.5 w-1.5 rounded-full bg-green-400 shrink-0" />
+                    {item}
+                  </div>
+                ))}
+              </div>
+            </div>
+          </section>
+
           {/* Responsible Disclosure */}
           <section id="responsible-disclosure" className="mb-12 p-6 rounded-2xl border border-zinc-700/50 bg-zinc-900/30">
             <h2 className="text-xl font-bold text-white mb-4">

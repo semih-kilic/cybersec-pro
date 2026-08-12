@@ -184,6 +184,96 @@ export default function SecurityTrustCenter() {
         </RevealOnScroll>
       </section>
 
+      {/* ── Data Residency & Privacy ── */}
+      <section id="data-residency" className="mx-auto max-w-4xl px-6 pb-16">
+        <RevealOnScroll>
+          <div className="glass-card p-8">
+            <div className="flex items-center gap-3 mb-6">
+              <Server size={24} className="text-[var(--color-neon)]" />
+              <h2 className="text-2xl font-bold">{t("sections.dataResidency.title")}</h2>
+              <span className="text-xs px-2 py-1 rounded-full bg-[var(--color-neon)]/10 text-[var(--color-neon)] border border-[var(--color-neon)]/20 font-semibold">
+                {t("sections.dataResidency.subtitle")}
+              </span>
+            </div>
+
+            {/* Location & Encryption Grid */}
+            <div className="grid gap-6 sm:grid-cols-2 mb-8">
+              <div className="p-5 rounded-lg bg-black/30 border border-white/5">
+                <div className="flex items-center gap-2 mb-2">
+                  <Globe size={16} className="text-[var(--color-cyan)]" />
+                  <h3 className="text-sm font-bold text-white">{t("sections.dataResidency.storageLocation")}</h3>
+                </div>
+                <p className="text-xl font-mono font-bold text-[var(--color-cyan)] mb-1">{t("sections.dataResidency.storageLocationValue")}</p>
+                <p className="text-xs text-white/50 leading-relaxed">{t("sections.dataResidency.storageDescription")}</p>
+              </div>
+              <div className="p-5 rounded-lg bg-black/30 border border-white/5">
+                <div className="flex items-center gap-2 mb-2">
+                  <Lock size={16} className="text-[var(--color-purple)]" />
+                  <h3 className="text-sm font-bold text-white">{t("sections.dataResidency.encryptionAtRest")}</h3>
+                </div>
+                <p className="text-xl font-mono font-bold text-[var(--color-purple)] mb-1">{t("sections.dataResidency.encryptionAtRestValue")}</p>
+                <p className="text-xs text-white/50 leading-relaxed">{t("sections.dataResidency.encryptionDescription")}</p>
+              </div>
+              <div className="p-5 rounded-lg bg-black/30 border border-white/5">
+                <div className="flex items-center gap-2 mb-2">
+                  <Shield size={16} className="text-[var(--color-neon)]" />
+                  <h3 className="text-sm font-bold text-white">{t("sections.dataResidency.encryptionInTransit")}</h3>
+                </div>
+                <p className="text-xl font-mono font-bold text-[var(--color-neon)] mb-1">{t("sections.dataResidency.encryptionInTransitValue")}</p>
+                <p className="text-xs text-white/50 leading-relaxed">{t("sections.dataResidency.encryptionInTransitDescription")}</p>
+              </div>
+              <div className="p-5 rounded-lg bg-black/30 border border-white/5">
+                <div className="flex items-center gap-2 mb-2">
+                  <Eye size={16} className="text-[var(--color-orange)]" />
+                  <h3 className="text-sm font-bold text-white">{t("sections.dataResidency.noLogging")}</h3>
+                </div>
+                <p className="text-xl font-mono font-bold text-[var(--color-orange)] mb-1">{t("sections.dataResidency.noLoggingValue")}</p>
+                <p className="text-xs text-white/50 leading-relaxed">{t("sections.dataResidency.noLoggingDescription")}</p>
+              </div>
+            </div>
+
+            {/* No-Logging Commitment */}
+            <div className="p-5 rounded-lg bg-green-500/5 border border-green-500/10">
+              <h3 className="text-sm font-bold text-white mb-3 flex items-center gap-2">
+                <CheckCircle size={16} className="text-green-400" />
+                {t("sections.dataResidency.noLoggingPolicy")}
+              </h3>
+              <div className="grid gap-2 sm:grid-cols-2">
+                {[
+                  t("sections.dataResidency.noLoggingPolicy1"),
+                  t("sections.dataResidency.noLoggingPolicy2"),
+                  t("sections.dataResidency.noLoggingPolicy3"),
+                  t("sections.dataResidency.noLoggingPolicy4"),
+                ].map((item, i) => (
+                  <div key={i} className="flex items-center gap-2 text-xs text-white/60">
+                    <span className="flex h-1.5 w-1.5 rounded-full bg-green-400 shrink-0" />
+                    {item}
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Data Processing Principles */}
+            <div className="mt-6 p-5 rounded-lg bg-black/30 border border-white/5">
+              <h3 className="text-sm font-bold text-white mb-3">{t("sections.dataResidency.dataProcessing")}</h3>
+              <div className="grid gap-2 sm:grid-cols-2">
+                {[
+                  t("sections.dataResidency.dataProcessing1"),
+                  t("sections.dataResidency.dataProcessing2"),
+                  t("sections.dataResidency.dataProcessing3"),
+                  t("sections.dataResidency.dataProcessing4"),
+                ].map((item, i) => (
+                  <div key={i} className="flex items-start gap-2 text-xs text-white/60">
+                    <span className="flex h-4 w-4 items-center justify-center rounded-full bg-[var(--color-cyan)]/20 text-[var(--color-cyan)] text-[10px] font-bold shrink-0 mt-0.5">{i + 1}</span>
+                    {item}
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        </RevealOnScroll>
+      </section>
+
       {/* ── Trust Features ── */}
       <section className="mx-auto grid max-w-6xl gap-6 px-6 pb-16 md:grid-cols-2 lg:grid-cols-4">
         {trustFeatures.map((f) => {

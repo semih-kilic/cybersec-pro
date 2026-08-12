@@ -434,6 +434,32 @@
           "legal": "Hukuk/DPA",
           "privacy": "Gizlilik",
           "footer": "Güven Merkezi son güncelleme: Temmuz 2026 · Politika sürümü: 2.1.0 · Yıllık gözden geçirme: Aralık 2026"
+        },
+        "dataResidency": {
+          "title": "Veri Yerleşimi & Gizlilik",
+          "subtitle": "Verileriniz Kanada'da kalır. Her zaman.",
+          "storageLocation": "Birincil Veri Depolama",
+          "storageLocationValue": "Kanada 🇨🇦",
+          "storageDescription": "Tüm müşteri verileri, tarama sonuçları ve günlükler yalnızca Kanada veri merkezlerinde depolanır. Açık müşteri onayı olmadan veriler Kanada dışına çıkmaz.",
+          "encryptionAtRest": "Duruştaki Şifreleme",
+          "encryptionAtRestValue": "AES-256-GCM",
+          "encryptionDescription": "Tüm veriler, her kiracı için benzersiz anahtarlarla AES-256-GCM kullanılarak şifrelenir. Anahtar rotasyonu her 90 günde bir gerçekleştirilir. Anahtarlar donanım güvenlik modülünde (HSM) saklanır.",
+          "encryptionInTransit": "Aktarım Şifreleme",
+          "encryptionInTransitValue": "TLS 1.3",
+          "encryptionInTransitDescription": "Tüm API ve web trafiği, mükemmel ileri gizlilik ile TLS 1.3 kullanır. Şifreleme paketleri, kullanılabilir en güçlü yapılandırmalarla sınırlandırılmıştır.",
+          "noLogging": "Ham Trafik Günlüğü Yok",
+          "noLoggingValue": "Sıfır Bilgi (Zero-Knowledge)",
+          "noLoggingDescription": "Ham ağ trafiğini veya tarama yükünü günlüğe kaydetmiyor, saklamıyor veya işlemiyoruz. Yalnızca meta veriler (zaman damgaları, hedef IP'leri, araç türleri, önem derecesi sayımları) operasyonel amaçlarla saklanır.",
+          "noLoggingPolicy": "Günlük Tutmama Taahhüdümüz",
+          "noLoggingPolicy1": "Ham paket yakalama depolama yok",
+          "noLoggingPolicy2": "Yük içeriği saklama yok",
+          "noLoggingPolicy3": "Tarama sonuçlarında kişisel veri yok",
+          "noLoggingPolicy4": "Tarama sonuçları 30 gün sonra otomatik silinir (yapılandırılabilir)",
+          "dataProcessing": "Veri İşleme İlkeleri",
+          "dataProcessing1": "Amaç sınırlaması — veriler yalnızca belirtilen güvenlik taraması amaçları için toplanır",
+          "dataProcessing2": "Veri azaltma — yalnızca gerekli olan minimum veriyi toplarız",
+          "dataProcessing3": "Şeffaflık — her zaman hangi veriyi neden depoladığımızı bilirsiniz",
+          "dataProcessing4": "Kullanıcı kontrolü — verilerinizi istediğiniz zaman dışa aktarabilir veya silebilirsiniz"
         }
       },
       "arrays": {
