@@ -1853,6 +1853,148 @@ let target_type = crate::services::target_authorization::classify_target(&target
     Json(json!({"scan_id": "test", "status": "running", "tool": tool.name, "target": target, "demo": true}))
 }
 
+pub async fn demo_scan(
+    State(state): State<Arc<AppState>>,
+    Json(body): Json<serde_json::Value>,
+) -> impl IntoResponse {
+    let tool_name = match body.get("tool").and_then(|t| t.as_str()) {
+        Some(t) => t,
+        None => return (StatusCode::BAD_REQUEST, Json(json!({"error": "Tool name required"}))),
+    };
+    let target = match body.get("target").and_then(|t| t.as_str()) {
+        Some(t) => t.trim().to_string(),
+        None => return (StatusCode::BAD_REQUEST, Json(json!({"error": "Target required"}))),
+    };
+
+    if target.is_empty() || target.len() > 500 {
+        return (StatusCode::BAD_REQUEST, Json(json!({"error": "Valid target required"})));
+    }
+
+    let blocked = [";", "&", "|", "`", "$", "<", ">", "\n", "\r", "\x", "%0a", "%0d"];
+    for p in &blocked {
+        if target.to_lowercase().contains(p) {
+            return (StatusCode::BAD_REQUEST, Json(json!({"error": format!("Invalid target: contains blocked character '{}'", p)})));
+        }
+    }
+
+    let target_type = crate::services::target_authorization::classify_target(&target);
+    if target_type != crate::services::target_authorization::TargetType::Sandbox {
+        return (StatusCode::FORBIDDEN, Json(json!({"error": "Demo scans are only allowed for sandbox/public targets. Please sign up for full access."})));
+    }
+
+    let tool: Option<Tool> = sqlx::query_as(
+        "SELECT * FROM tools WHERE (id = $1 OR name = $2 OR business_name = $3) AND is_active = TRUE LIMIT 1"
+    )
+    .bind(tool_name)
+    .bind(tool_name)
+    .bind(tool_name)
+    .fetch_optional(&state.db)
+    .await
+    .unwrap_or(None);
+
+    let tool = match tool {
+        Some(t) => t,
+        None => return (StatusCode::NOT_FOUND, Json(json!({"error": format!("Tool not found: {}", tool_name)}))),
+    };
+
+    let demo_user_id = "demo-user";
+    let demo_org_id = "demo-org";
+
+    let _ = sqlx::query(
+        "INSERT INTO organizations (id, name, slug, plan_type, created_at, is_active) VALUES ($1, $2, $3, 'trial', NOW(), true) ON CONFLICT (id) DO NOTHING"
+    )
+    .bind(demo_org_id)
+    .bind("Demo Organization")
+    .bind("demo-org")
+    .execute(&state.db)
+    .await;
+
+    let _ = sqlx::query(
+        "INSERT INTO users (id, email, first_name, last_name, role, organization_id, email_verified, is_active, created_at) VALUES ($1, $2, $3, $4, 'user', $5, true, true, NOW()) ON CONFLICT (id) DO NOTHING"
+    )
+    .bind(demo_user_id)
+    .bind("demo@cyber-sec-pro.com")
+    .bind("Demo")
+    .bind("User")
+    .bind(demo_org_id)
+    .execute(&state.db)
+    .await;
+
+    let authz_confirmation = crate::services::target_authorization::AuthConfirmation {
+        confirmed: true,
+        scope_statement: crate::services::target_authorization::canonical_statement(&target),
+    };
+
+    let authorization_id = match crate::services::target_authorization::authorize_and_check(
+        &state.db,
+        demo_org_id,
+        demo_user_id,
+        &target,
+        Some(&authz_confirmation),
+        None,
+    )
+    .await
+    {
+        Ok((id, _, _)) => id,
+        Err(e) => return (StatusCode::FORBIDDEN, Json(json!({"error": e}))),
+    };
+
+    let scan_id = uuid::Uuid::new_v4().to_string();
+    let params_json = serde_json::json!({});
+
+    if let Err(e) = sqlx::query(
+        "INSERT INTO scans (id, organization_id, user_id, tool_id, target, parameters, status, scan_phase, agent_id, project_id, authorization_id, started_at)
+         VALUES ($1, $2, $3, $4, $5, $6::jsonb, 'running', 'initializing', NULL, NULL, $7, CURRENT_TIMESTAMP)"
+    )
+    .bind(&scan_id)
+    .bind(demo_org_id)
+    .bind(demo_user_id)
+    .bind(&tool.id)
+    .bind(&target)
+    .bind(&params_json)
+    .bind(&authorization_id)
+    .execute(&state.db)
+    .await
+    {
+        tracing::error!("Failed to insert demo scan: {}", e);
+        return (StatusCode::INTERNAL_SERVER_ERROR, Json(json!({"error": format!("Failed to create demo scan: {}", e)})));
+    }
+
+    let _ = sqlx::query(
+        "INSERT INTO usage_tracking (id, organization_id, tool_id, scan_id) VALUES ($1, $2, $3, $4)"
+    )
+    .bind(uuid::Uuid::new_v4().to_string())
+    .bind(demo_org_id)
+    .bind(&tool.id)
+    .bind(&scan_id)
+    .execute(&state.db)
+    .await;
+
+    let _ = log_audit(
+        &state.db,
+        "demo_scan_start",
+        "scan",
+        "info",
+        Some(demo_user_id),
+        Some(demo_org_id),
+        Some(json!({"tool": tool.name, "target": target, "authorization_id": authorization_id})),
+        Some("scan"),
+        Some(&scan_id),
+        "success",
+        None,
+    )
+    .await;
+
+    (StatusCode::OK, Json(json!({
+        "scan_id": scan_id,
+        "status": "running",
+        "tool": tool.name,
+        "target": target,
+        "message": "Demo scan started. Sign up to track results and get full reports.",
+        "demo": true,
+    })))
+}
+
 pub async fn network_sweep(
     State(state): State<Arc<AppState>>,
     auth: AuthUser,
