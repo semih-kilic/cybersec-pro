@@ -36,6 +36,10 @@ RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-ins
     nmap gobuster whois dnsutils \
     sqlmap hydra john whatweb \
     netcat-openbsd traceroute tcpdump \
+    # Headless Chromium for PDF report generation
+    chromium \
+    fonts-liberation \
+    fonts-noto-color-emoji \
     && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /app
