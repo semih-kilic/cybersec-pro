@@ -2,10 +2,13 @@ import type { Metadata } from "next";
 import { setRequestLocale } from "next-intl/server";
 import { getPageMetadata } from "@/lib/seo";
 import HeroSection from "@/components/sections/HeroSection";
+import DemoSection from "@/components/sections/DemoSection";
 import FeaturesSection from "@/components/sections/FeaturesSection";
+import ComparisonSection from "@/components/sections/ComparisonSection";
 import TerminalDemo from "@/components/sections/TerminalDemo";
 import BlogSection from "@/components/sections/BlogSection";
 import PricingSection from "@/components/sections/PricingSection";
+import SampleReportsSection from "@/components/sections/SampleReportsSection";
 import RoiCalculatorSection from "@/components/sections/RoiCalculatorSection";
 import CtaSection from "@/components/sections/CtaSection";
 
@@ -21,10 +24,13 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
   return (
     <>
       <HeroSection />
+      <DemoSection />
       <FeaturesSection />
+      <ComparisonSection />
       <TerminalDemo />
       <BlogSection />
       <PricingSection />
+      <SampleReportsSection />
       <RoiCalculatorSection />
       <CtaSection />
     </>
