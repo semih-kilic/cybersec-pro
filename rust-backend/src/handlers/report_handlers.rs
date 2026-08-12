@@ -682,11 +682,11 @@ fn generate_html_report(
     let logo_html = if let Some(data_uri) = org_logo_data_uri {
         let org_display = org_name.unwrap_or("Organization");
         format!(
-            "<div class="header-logos">                <img class="org-logo" src="{}" alt="{}" />                <div class="platform-logo">{}</div>            </div>",
+            r##"<div class="header-logos">                <img class="org-logo" src="{}" alt="{}" />                <div class="platform-logo">{}</div>            </div>"##,
             data_uri, org_display, cybersec_svg
         )
     } else {
-        format!("<div class="header-logo">{}</div>", cybersec_svg)
+        format!("<div class=\"header-logo\">{}</div>", cybersec_svg)
     };
 
     // SVG Charts
@@ -696,7 +696,7 @@ fn generate_html_report(
         <text x="100" y="95" text-anchor="middle" font-size="32" font-weight="800" fill="{risk_color}">{risk_score}</text>
         <text x="100" y="115" text-anchor="middle" font-size="12" fill="#64748b">/ 100</text>
     </svg>"##,
-        risk_score = risk_score * 2.51,
+        risk_score = (risk_score as f64 * 2.51) as i32,
         risk_level = risk_level,
         risk_color = risk_color
     );
@@ -707,6 +707,10 @@ fn generate_html_report(
     let high_pct = if total_sev > 0 { (high as f64 / total_sev as f64) * 100.0 } else { 0.0 };
     let med_pct = if total_sev > 0 { (med as f64 / total_sev as f64) * 100.0 } else { 0.0 };
     let low_pct = if total_sev > 0 { (low as f64 / total_sev as f64) * 100.0 } else { 0.0 };
+    let crit_pct_str = format!("{:.1}", crit_pct);
+    let high_pct_str = format!("{:.1}", high_pct);
+    let med_pct_str = format!("{:.1}", med_pct);
+    let low_pct_str = format!("{:.1}", low_pct);
 
     format!(r##"<!DOCTYPE html>
 <html lang="en">
@@ -930,22 +934,22 @@ h4{{font-size:13px;font-weight:600;color:#475569;margin:16px 0 10px;text-transfo
         <div class="summary-card">
             <div class="label">Critical</div>
             <div class="value" style="color:#dc2626">{crit}</div>
-            <div style="font-size:11px;color:#94a8b8;margin-top:4px">{crit_pct:.1f}%</div>
+            <div style="font-size:11px;color:#94a8b8;margin-top:4px">{crit_pct_str}%</div>
         </div>
         <div class="summary-card">
             <div class="label">High</div>
             <div class="value" style="color:#ea580c">{high}</div>
-            <div style="font-size:11px;color:#94a8b8;margin-top:4px">{high_pct:.1f}%</div>
+            <div style="font-size:11px;color:#94a8b8;margin-top:4px">{high_pct_str}%</div>
         </div>
         <div class="summary-card">
             <div class="label">Medium</div>
             <div class="value" style="color:#ca8a04">{med}</div>
-            <div style="font-size:11px;color:#94a8b8;margin-top:4px">{med_pct:.1f}%</div>
+            <div style="font-size:11px;color:#94a8b8;margin-top:4px">{med_pct_str}%</div>
         </div>
         <div class="summary-card">
             <div class="label">Low / Info</div>
             <div class="value" style="color:#16a34a">{low_info}</div>
-            <div style="font-size:11px;color:#94a8b8;margin-top:4px">{low_pct:.1f}%</div>
+            <div style="font-size:11px;color:#94a8b8;margin-top:4px">{low_pct_str}%</div>
         </div>
     </div>
 
@@ -1004,7 +1008,7 @@ h4{{font-size:13px;font-weight:600;color:#475569;margin:16px 0 10px;text-transfo
         date_short = date_short,
         scan_count = scans.len(),
         scan_id = scans.first().map(|(s, _)| &s.id).unwrap_or(&"N/A".to_string()),
-        sha = format!("{:x}", md5::compute(format!("{}-{}-{}", name, now, template))),
+        sha = format!("{:016x}", ((name.len() + now.len() + template.len()) as u64).wrapping_mul(0x9E3779B97F4A7C15)),
         tools_count = tools_count,
         categories_count = categories_count,
         total = total,
@@ -1016,10 +1020,10 @@ h4{{font-size:13px;font-weight:600;color:#475569;margin:16px 0 10px;text-transfo
         risk_score = risk_score,
         risk_level = risk_level,
         risk_color = risk_color,
-        crit_pct = crit_pct,
-        high_pct = high_pct,
-        med_pct = med_pct,
-        low_pct = low_pct,
+        crit_pct_str = crit_pct_str,
+        high_pct_str = high_pct_str,
+        med_pct_str = med_pct_str,
+        low_pct_str = low_pct_str,
         risk_gauge_svg = risk_gauge_svg,
         logo_html = logo_html,
         exec_summary = exec_summary,
