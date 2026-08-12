@@ -1335,9 +1335,22 @@ export function ScanExecutionPage() {
                       </p>
                     </div>
                   ) : (
-                    output.map((line, idx) => (
-                      <div key={idx} className="whitespace-pre-wrap">{line}</div>
-                    ))
+                    output.map((line, idx) => {
+                      const { parts, isBold } = parseAnsiLine(line);
+                      if (parts.length === 0) {
+                        return <div key={idx} className="whitespace-pre-wrap">&nbsp;</div>;
+                      }
+                      if (parts.length === 1 && !parts[0].color) {
+                        return <div key={idx} className="whitespace-pre-wrap">{line}</div>;
+                      }
+                      return (
+                        <div key={idx} className={`whitespace-pre-wrap ${isBold ? 'font-bold' : ''}`}>
+                          {parts.map((part, pIdx) => (
+                            <span key={pIdx} className={part.color || ''}>{part.text}</span>
+                          ))}
+                        </div>
+                      );
+                    })
                   )}
                   {status === 'completed' && (
                     <div className="mt-4 p-4 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 text-sm flex items-center gap-2">
