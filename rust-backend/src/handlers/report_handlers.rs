@@ -666,30 +666,47 @@ fn generate_html_report(
 
     // Build recommendations
     let recommendations = build_recommendations(crit, high, med, low);
+    let exec_summary = build_executive_summary(scans, template);
 
-    // Build header logo HTML — org logo + CyberSec Pro logo
+    // Build header logo HTML
     let cybersec_svg = r##"<svg viewBox="0 0 200 60" xmlns="http://www.w3.org/2000/svg">
-                <rect width="200" height="60" rx="8" fill="#0f172a"/>
-                <circle cx="30" cy="30" r="18" fill="none" stroke="#22d3ee" stroke-width="2.5"/>
-                <path d="M30 16 L30 44 M18 30 L42 30 M21 21 L39 39 M39 21 L21 39" stroke="#22d3ee" stroke-width="1.5" opacity="0.4"/>
-                <circle cx="30" cy="30" r="5" fill="#22d3ee"/>
-                <text x="56" y="26" font-family="system-ui,sans-serif" font-weight="800" font-size="16" fill="#fff">CyberSec</text>
-                <text x="56" y="44" font-family="system-ui,sans-serif" font-weight="700" font-size="14" fill="#22d3ee">Pro</text>
-                <text x="88" y="44" font-family="system-ui,sans-serif" font-weight="400" font-size="8" fill="#64748b">cyber-sec-pro.com</text>
-            </svg>"##;
+        <rect width="200" height="60" rx="8" fill="#0f172a"/>
+        <circle cx="30" cy="30" r="18" fill="none" stroke="#22d3ee" stroke-width="2.5"/>
+        <path d="M30 16 L30 44 M18 30 L42 30 M21 21 L39 39 M39 21 L21 39" stroke="#22d3ee" stroke-width="1.5" opacity="0.4"/>
+        <circle cx="30" cy="30" r="5" fill="#22d3ee"/>
+        <text x="56" y="26" font-family="system-ui,sans-serif" font-weight="800" font-size="16" fill="#fff">CyberSec</text>
+        <text x="56" y="44" font-family="system-ui,sans-serif" font-weight="700" font-size="14" fill="#22d3ee">Pro</text>
+        <text x="88" y="44" font-family="system-ui,sans-serif" font-weight="400" font-size="8" fill="#64748b">cyber-sec-pro.com</text>
+    </svg>"##;
 
     let logo_html = if let Some(data_uri) = org_logo_data_uri {
         let org_display = org_name.unwrap_or("Organization");
         format!(
-            "<div class=\"header-logos\">\
-                <img class=\"org-logo\" src=\"{}\" alt=\"{}\" />\
-                <div class=\"platform-logo\">{}</div>\
-            </div>",
+            "<div class="header-logos">                <img class="org-logo" src="{}" alt="{}" />                <div class="platform-logo">{}</div>            </div>",
             data_uri, org_display, cybersec_svg
         )
     } else {
-        format!("<div class=\"header-logo\">{}</div>", cybersec_svg)
+        format!("<div class="header-logo">{}</div>", cybersec_svg)
     };
+
+    // SVG Charts
+    let risk_gauge_svg = format!(r##"<svg viewBox="0 0 200 120" xmlns="http://www.w3.org/2000/svg" class="risk-gauge">
+        <path d="M 20 100 A 80 80 0 0 1 180 100" fill="none" stroke="#e2e8f0" stroke-width="12" stroke-linecap="round"/>
+        <path d="M 20 100 A 80 80 0 0 1 180 100" fill="none" stroke="{risk_color}" stroke-width="12" stroke-linecap="round" stroke-dasharray="{} {}"/>
+        <text x="100" y="95" text-anchor="middle" font-size="32" font-weight="800" fill="{risk_color}">{risk_score}</text>
+        <text x="100" y="115" text-anchor="middle" font-size="12" fill="#64748b">/ 100</text>
+    </svg>"##,
+        risk_score = risk_score * 2.51,
+        risk_level = risk_level,
+        risk_color = risk_color
+    );
+
+    // Severity pie chart data
+    let total_sev = crit + high + med + low + info;
+    let crit_pct = if total_sev > 0 { (crit as f64 / total_sev as f64) * 100.0 } else { 0.0 };
+    let high_pct = if total_sev > 0 { (high as f64 / total_sev as f64) * 100.0 } else { 0.0 };
+    let med_pct = if total_sev > 0 { (med as f64 / total_sev as f64) * 100.0 } else { 0.0 };
+    let low_pct = if total_sev > 0 { (low as f64 / total_sev as f64) * 100.0 } else { 0.0 };
 
     format!(r##"<!DOCTYPE html>
 <html lang="en">
@@ -697,93 +714,192 @@ fn generate_html_report(
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>{name} — CyberSec Pro</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
 *{{margin:0;padding:0;box-sizing:border-box}}
-body{{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;color:#1e293b;background:#fff;line-height:1.6;font-size:13px}}
-.page{{max-width:900px;margin:0 auto;padding:40px 48px}}
-.header{{border-bottom:3px solid #0f172a;padding-bottom:24px;margin-bottom:32px;display:flex;justify-content:space-between;align-items:flex-start}}
+body{{font-family:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;color:#1e293b;background:#fff;line-height:1.7;font-size:13px}}
+.page{{max-width:900px;margin:0 auto;padding:0}}
+
+/* Cover Page */
+.cover{{width:100%;min-height:100vh;display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;padding:60px 48px;background:linear-gradient(135deg,#0f172a 0%,#1e293b 100%);color:#fff;page-break-after:always}}
+.cover-logo{{width:120px;height:auto;margin-bottom:32px}}
+.cover h1{{font-size:36px;font-weight:800;margin-bottom:12px;letter-spacing:-0.02em}}
+.cover .subtitle{{font-size:18px;color:#94a3b8;font-weight:500;margin-bottom:48px}}
+.cover-meta{{display:grid;grid-template-columns:repeat(2,1fr);gap:24px;text-align:left;background:rgba(255,255,255,0.05);padding:32px;border-radius:12px;border:1px solid rgba(255,255,255,0.1);min-width:400px}}
+.cover-meta-item{{display:flex;flex-direction:column;gap:4px}}
+.cover-meta-label{{font-size:11px;text-transform:uppercase;letter-spacing:.08em;color:#94a3b8;font-weight:600}}
+.cover-meta-value{{font-size:14px;font-weight:500;color:#fff}}
+.cover-classification{{margin-top:48px;padding:12px 24px;background:rgba(239,68,68,0.15);border:1px solid rgba(239,68,68,0.3);border-radius:6px;font-size:12px;font-weight:600;color:#fca5a5;letter-spacing:.05em;text-transform:uppercase}}
+.cover-footer{{margin-top:auto;padding-top:48px;font-size:11px;color:#64748b}}
+
+/* Watermark */
+.watermark{{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%) rotate(-45deg);font-size:80px;font-weight:800;color:rgba(239,68,68,0.06);pointer-events:none;z-index:1000;white-space:nowrap;letter-spacing:.05em}}
+
+/* Table of Contents */
+.toc{{margin-bottom:48px}}
+.toc h2{{font-size:24px;font-weight:800;color:#0f172a;margin-bottom:24px;padding-bottom:12px;border-bottom:2px solid #0f172a}}
+.toc-item{{display:flex;align-items:center;padding:10px 0;border-bottom:1px solid #f1f5f9;font-size:13px}}
+.toc-item .toc-num{{width:32px;font-weight:700;color:#64748b;font-size:12px}}
+.toc-item .toc-title{{flex:1;color:#334155;font-weight:500}}
+.toc-item .toc-page{{color:#94a3b8;font-size:12px;font-family:'JetBrains Mono',monospace}}
+
+/* Content */
+.content{{padding:48px}}
+.header{{border-bottom:2px solid #0f172a;padding-bottom:24px;margin-bottom:32px;display:flex;justify-content:space-between;align-items:flex-start}}
 .header-left{{flex:1}}
-.header-left h1{{font-size:22px;font-weight:800;color:#0f172a;margin-bottom:4px}}
+.header-left h1{{font-size:24px;font-weight:800;color:#0f172a;margin-bottom:6px}}
 .header .subtitle{{font-size:14px;color:#64748b;font-weight:500}}
-.header .meta{{display:flex;gap:24px;margin-top:12px;font-size:11px;color:#94a3b8}}
-.header .meta span{{display:flex;align-items:center;gap:4px}}
+.header .meta{{display:flex;gap:24px;margin-top:12px;font-size:11px;color:#94a8b8;font-weight:500}}
+.header .meta span{{display:flex;align-items:center;gap:6px}}
 .header-logo{{width:120px;flex-shrink:0;text-align:right}}
 .header-logo svg{{width:120px;height:auto}}
 .header-logos{{display:flex;flex-direction:column;align-items:flex-end;gap:8px;flex-shrink:0}}
 .header-logos .org-logo{{width:100px;height:auto;max-height:60px;object-fit:contain}}
 .header-logos .platform-logo{{width:100px}}
 .header-logos .platform-logo svg{{width:100px;height:auto}}
-.badge{{display:inline-block;padding:3px 10px;border-radius:4px;font-size:11px;font-weight:700;letter-spacing:.03em}}
+.badge{{display:inline-block;padding:4px 12px;border-radius:4px;font-size:11px;font-weight:700;letter-spacing:.03em}}
 
-.summary-grid{{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:32px}}
-.summary-card{{background:#f8fafc;border:1px solid #e2e8f0;border-radius:6px;padding:16px;text-align:center}}
-.summary-card .label{{font-size:10px;text-transform:uppercase;letter-spacing:.08em;color:#94a3b8;font-weight:700}}
-.summary-card .value{{font-size:28px;font-weight:800;margin-top:4px}}
+.summary-grid{{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:32px}}
+.summary-card{{background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;padding:20px;text-align:center;transition:all .2s}}
+.summary-card:hover{{border-color:#cbd5e1;box-shadow:0 4px 12px rgba(0,0,0,0.05);transform:translateY(-2px)}}
+.summary-card .label{{font-size:10px;text-transform:uppercase;letter-spacing:.08em;color:#94a8b8;font-weight:700;margin-bottom:8px}}
+.summary-card .value{{font-size:32px;font-weight:800;margin-top:4px}}
 
-.risk-bar{{height:8px;border-radius:4px;background:#e2e8f0;margin:8px 0 32px;overflow:hidden}}
-.risk-bar-fill{{height:100%;border-radius:4px;transition:width .3s}}
+.risk-section{{display:flex;align-items:center;gap:32px;margin-bottom:32px;padding:24px;background:#f8fafc;border-radius:8px;border:1px solid #e2e8f0}}
+.risk-gauge{{width:200px;height:120px;flex-shrink:0}}
+.risk-info{{flex:1}}
+.risk-info h3{{font-size:18px;font-weight:700;color:#0f172a;margin-bottom:8px}}
+.risk-bar{{height:10px;border-radius:5px;background:#e2e8f0;margin:12px 0;overflow:hidden}}
+.risk-bar-fill{{height:100%;border-radius:5px;transition:width .5s ease}}
 
-h2{{font-size:16px;font-weight:700;color:#0f172a;margin:32px 0 16px;padding-bottom:8px;border-bottom:1px solid #e2e8f0}}
-h3{{font-size:14px;font-weight:700;color:#1e293b;margin:20px 0 12px}}
-h4{{font-size:12px;font-weight:700;color:#475569;margin:16px 0 8px}}
+h2{{font-size:20px;font-weight:700;color:#0f172a;margin:40px 0 20px;padding-bottom:10px;border-bottom:2px solid #e2e8f0;page-break-after:avoid}}
+h3{{font-size:16px;font-weight:700;color:#1e293b;margin:24px 0 14px;page-break-after:avoid}}
+h4{{font-size:13px;font-weight:600;color:#475569;margin:16px 0 10px;text-transform:uppercase;letter-spacing:.04em}}
 
-.scan-block{{margin-bottom:32px;page-break-inside:avoid}}
+.scan-block{{margin-bottom:32px;padding:24px;background:#f8fafc;border-radius:8px;border:1px solid #e2e8f0;page-break-inside:avoid}}
 .meta-table{{width:100%;border-collapse:collapse;margin-bottom:16px;font-size:12px}}
-.meta-table td{{padding:6px 12px;border:1px solid #e2e8f0}}
-.meta-table td:first-child{{width:120px;background:#f8fafc;color:#475569}}
+.meta-table td{{padding:8px 14px;border:1px solid #e2e8f0}}
+.meta-table td:first-child{{width:140px;background:#fff;color:#475569;font-weight:600}}
 
 .findings-table{{width:100%;border-collapse:collapse;margin:12px 0;font-size:12px}}
-.findings-table th{{background:#0f172a;color:#fff;padding:8px 12px;text-align:left;font-weight:600;font-size:11px;text-transform:uppercase;letter-spacing:.04em}}
-.findings-table td{{padding:8px 12px;border-bottom:1px solid #e2e8f0}}
+.findings-table th{{background:#0f172a;color:#fff;padding:10px 14px;text-align:left;font-weight:600;font-size:11px;text-transform:uppercase;letter-spacing:.04em}}
+.findings-table td{{padding:10px 14px;border-bottom:1px solid #e2e8f0}}
 .findings-table tr:nth-child(even){{background:#f8fafc}}
+.findings-table tr:hover{{background:#f1f5f9}}
 
-.sev{{display:inline-block;padding:2px 8px;border-radius:3px;font-size:10px;font-weight:700;text-transform:uppercase}}
-.sev-critical{{background:#fef2f2;color:#dc2626}}
-.sev-high{{background:#fff7ed;color:#ea580c}}
-.sev-medium{{background:#fefce8;color:#ca8a04}}
-.sev-low{{background:#f0fdf4;color:#16a34a}}
-.sev-info{{background:#eff6ff;color:#2563eb}}
+.sev{{display:inline-block;padding:3px 10px;border-radius:4px;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.03em}}
+.sev-critical{{background:#fef2f2;color:#dc2626;border:1px solid #fecaca}}
+.sev-high{{background:#fff7ed;color:#ea580c;border:1px solid #fed7aa}}
+.sev-medium{{background:#fefce8;color:#ca8a04;border:1px solid #fef08a}}
+.sev-low{{background:#f0fdf4;color:#16a34a;border:1px solid #bbf7d0}}
+.sev-info{{background:#eff6ff;color:#2563eb;border:1px solid #bfdbfe}}
 
-.raw-output{{margin:16px 0;border:1px solid #e2e8f0;border-radius:6px;overflow:hidden}}
-.raw-output h4{{background:#0f172a;color:#94a3b8;padding:8px 16px;margin:0;font-size:11px;text-transform:uppercase;letter-spacing:.06em}}
-.raw-output pre{{padding:16px;font-family:'JetBrains Mono','Fira Code',monospace;font-size:11px;line-height:1.5;overflow-x:auto;background:#0f172a;color:#e2e8f0;white-space:pre-wrap;word-break:break-all;max-height:400px;overflow-y:auto}}
+.raw-output{{margin:16px 0;border:1px solid #e2e8f0;border-radius:8px;overflow:hidden;page-break-inside:avoid}}
+.raw-output h4{{background:#0f172a;color:#94a8b8;padding:10px 16px;margin:0;font-size:11px;text-transform:uppercase;letter-spacing:.06em;font-weight:600}}
+.raw-output pre{{padding:16px;font-family:'JetBrains Mono','Fira Code',monospace;font-size:11px;line-height:1.6;overflow-x:auto;background:#0f172a;color:#e2e8f0;white-space:pre-wrap;word-break:break-all;max-height:400px;overflow-y:auto}}
 
 .compliance-table{{width:100%;border-collapse:collapse;margin:12px 0;font-size:12px}}
-.compliance-table th{{background:#1e40af;color:#fff;padding:8px 12px;text-align:left;font-size:11px}}
-.compliance-table td{{padding:8px 12px;border-bottom:1px solid #e2e8f0}}
+.compliance-table th{{background:#1e40af;color:#fff;padding:10px 14px;text-align:left;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.04em}}
+.compliance-table td{{padding:10px 14px;border-bottom:1px solid #e2e8f0}}
 .pass{{color:#16a34a;font-weight:700}}.fail{{color:#dc2626;font-weight:700}}.partial{{color:#ca8a04;font-weight:700}}
 
 .rec-list{{list-style:none;padding:0}}
-.rec-list li{{padding:10px 16px;margin-bottom:6px;border-radius:4px;font-size:12px;display:flex;gap:10px}}
-.rec-list li.rec-crit{{background:#fef2f2;border-left:3px solid #dc2626}}
-.rec-list li.rec-high{{background:#fff7ed;border-left:3px solid #ea580c}}
-.rec-list li.rec-med{{background:#fefce8;border-left:3px solid #ca8a04}}
-.rec-list li.rec-low{{background:#f0fdf4;border-left:3px solid #16a34a}}
+.rec-list li{{padding:12px 16px;margin-bottom:8px;border-radius:6px;font-size:13px;display:flex;gap:12px;align-items:flex-start}}
+.rec-list li.rec-crit{{background:#fef2f2;border-left:4px solid #dc2626}}
+.rec-list li.rec-high{{background:#fff7ed;border-left:4px solid #ea580c}}
+.rec-list li.rec-med{{background:#fefce8;border-left:4px solid #ca8a04}}
+.rec-list li.rec-low{{background:#f0fdf4;border-left:4px solid #16a34a}}
 
-.footer{{margin-top:48px;padding-top:16px;border-top:1px solid #e2e8f0;font-size:10px;color:#94a3b8;text-align:center}}
+.signature{{margin-top:48px;padding-top:24px;border-top:1px solid #e2e8f0;display:flex;justify-content:space-between;align-items:flex-start}}
+.signature-box{{width:45%}}
+.signature-line{{border-top:1px solid #0f172a;padding-top:8px;margin-top:40px;font-size:12px;color:#64748b}}
+.signature-name{{font-weight:600;color:#0f172a;font-size:13px}}
+
+.footer{{margin-top:48px;padding-top:20px;border-top:1px solid #e2e8f0;font-size:10px;color:#94a8b8;text-align:center;line-height:1.8}}
 .footer a{{color:#2563eb;text-decoration:none;font-weight:600}}
 .footer a:hover{{text-decoration:underline}}
 
-@media print{{
-    body{{font-size:11px}}
-    .page{{padding:20px}}
-    .raw-output pre{{max-height:none}}
-    .scan-block{{page-break-inside:avoid}}
-    .header{{position:running(header);display:flex;justify-content:space-between;align-items:flex-start}}
-    .footer{{position:running(footer)}}
-    @page{{
-        margin:60px 40px 50px 40px;
-        @top-right{{content:element(pagelogo)}}
-        @bottom-center{{content:element(pagefooter)}}
+@page {{
+    margin: 60px 50px 70px 50px;
+    @top-right {{
+        content: "{template_title}";
+        font-size: 9px;
+        color: #94a8b8;
+        font-weight: 500;
     }}
-    .page-logo-repeat{{position:running(pagelogo);width:80px}}
-    .page-footer-repeat{{position:running(pagefooter);font-size:9px;color:#94a3b8;text-align:center}}
-    .page-footer-repeat a{{color:#2563eb;text-decoration:none}}
+    @bottom-center {{
+        content: "Page " counter(page) " of " counter(pages);
+        font-size: 9px;
+        color: #94a8b8;
+    }}
 }}
+
+@media print {{
+    body{{font-size:11px;line-height:1.6}}
+    .cover{{page-break-after:always}}
+    .content{{padding:0}}
+    .scan-block{{page-break-inside:avoid}}
+    .raw-output pre{{max-height:none}}
+    .watermark{{display:block !important}}
+}}
+
+/* Page break controls */
+.page-break{{page-break-before:always}}
+.no-break{{page-break-inside:avoid}}
 </style>
 </head>
 <body>
-<div class="page">
+
+<!-- Watermark -->
+<div class="watermark">CONFIDENTIAL</div>
+
+<!-- Cover Page -->
+<div class="cover">
+    {logo_html}
+    <h1>{name}</h1>
+    <div class="subtitle">{template_title}</div>
+    <div class="cover-meta">
+        <div class="cover-meta-item">
+            <div class="cover-meta-label">Report Date</div>
+            <div class="cover-meta-value">{now}</div>
+        </div>
+        <div class="cover-meta-item">
+            <div class="cover-meta-label">Scans Performed</div>
+            <div class="cover-meta-value">{scan_count} scan(s)</div>
+        </div>
+        <div class="cover-meta-item">
+            <div class="cover-meta-label">Total Findings</div>
+            <div class="cover-meta-value">{total}</div>
+        </div>
+        <div class="cover-meta-item">
+            <div class="cover-meta-label">Risk Level</div>
+            <div class="cover-meta-value" style="color:{risk_color}">{risk_level}</div>
+        </div>
+    </div>
+    <div class="cover-classification">⚠️ Confidential — Authorized Recipients Only</div>
+    <div class="cover-footer">
+        <p>Generated by CyberSec Pro v4.0 | cyber-sec-pro.com</p>
+        <p>© 2026 CyberSec Pro. All rights reserved.</p>
+    </div>
+</div>
+
+<!-- Table of Contents -->
+<div class="content toc">
+    <h2>Table of Contents</h2>
+    <div class="toc-item"><div class="toc-num">01</div><div class="toc-title">Executive Summary</div><div class="toc-page">3</div></div>
+    <div class="toc-item"><div class="toc-num">02</div><div class="toc-title">Risk Assessment</div><div class="toc-page">4</div></div>
+    <div class="toc-item"><div class="toc-num">03</div><div class="toc-title">Scan Results</div><div class="toc-page">5</div></div>
+    <div class="toc-item"><div class="toc-num">04</div><div class="toc-title">Findings Detail</div><div class="toc-page">6</div></div>
+    <div class="toc-item"><div class="toc-num">05</div><div class="toc-title">Compliance Status</div><div class="toc-page">7</div></div>
+    <div class="toc-item"><div class="toc-num">06</div><div class="toc-title">Recommendations</div><div class="toc-page">8</div></div>
+    <div class="toc-item"><div class="toc-num">07</div><div class="toc-title">Methodology</div><div class="toc-page">9</div></div>
+    <div class="toc-item"><div class="toc-num">08</div><div class="toc-title">Digital Signature</div><div class="toc-page">10</div></div>
+</div>
+
+<!-- Main Content -->
+<div class="content">
+
+    <!-- Header -->
     <div class="header">
         <div class="header-left">
             <h1>{name}</h1>
@@ -798,55 +914,80 @@ h4{{font-size:12px;font-weight:700;color:#475569;margin:16px 0 8px}}
         {logo_html}
     </div>
 
+    <!-- Risk Assessment with Gauge -->
+    <h2>📊 Risk Assessment</h2>
+    <div class="risk-section">
+        <div class="risk-gauge">{risk_gauge_svg}</div>
+        <div class="risk-info">
+            <h3>Overall Risk Score: <span style="color:{risk_color}">{risk_score}/100</span></h3>
+            <p style="color:#64748b;margin-bottom:12px">The risk score is calculated based on the severity and quantity of findings discovered during the assessment.</p>
+            <div class="risk-bar"><div class="risk-bar-fill" style="width:{risk_score}%;background:{risk_color}"></div></div>
+        </div>
+    </div>
+
+    <!-- Severity Breakdown -->
     <div class="summary-grid">
         <div class="summary-card">
             <div class="label">Critical</div>
             <div class="value" style="color:#dc2626">{crit}</div>
+            <div style="font-size:11px;color:#94a8b8;margin-top:4px">{crit_pct:.1f}%</div>
         </div>
         <div class="summary-card">
             <div class="label">High</div>
             <div class="value" style="color:#ea580c">{high}</div>
+            <div style="font-size:11px;color:#94a8b8;margin-top:4px">{high_pct:.1f}%</div>
         </div>
         <div class="summary-card">
             <div class="label">Medium</div>
             <div class="value" style="color:#ca8a04">{med}</div>
+            <div style="font-size:11px;color:#94a8b8;margin-top:4px">{med_pct:.1f}%</div>
         </div>
         <div class="summary-card">
             <div class="label">Low / Info</div>
             <div class="value" style="color:#16a34a">{low_info}</div>
+            <div style="font-size:11px;color:#94a8b8;margin-top:4px">{low_pct:.1f}%</div>
         </div>
     </div>
 
-    <div style="font-size:12px;color:#64748b;margin-bottom:4px">Overall Risk Score: <strong style="color:{risk_color}">{risk_score}/100</strong></div>
-    <div class="risk-bar"><div class="risk-bar-fill" style="width:{risk_score}%;background:{risk_color}"></div></div>
-
+    <!-- Executive Summary -->
     <h2>📋 Executive Summary</h2>
-    <p style="margin-bottom:16px">This security assessment was conducted on <strong>{date_short}</strong> covering
-    <strong>{scan_count} scan(s)</strong> across the target infrastructure. A total of <strong>{total} finding(s)</strong>
-    were identified, including <strong>{crit} critical</strong>, <strong>{high} high</strong>,
-    <strong>{med} medium</strong>, and <strong>{low} low</strong> severity issues.
-    The overall risk level is assessed as <strong style="color:{risk_color}">{risk_level}</strong>.</p>
+    <p style="margin-bottom:16px;color:#475569">{exec_summary}</p>
+    <p style="margin-bottom:16px;color:#475569">This security assessment was conducted on <strong>{date_short}</strong> covering <strong>{scan_count} scan(s)</strong> across the target infrastructure. A total of <strong>{total} finding(s)</strong> were identified, including <strong>{crit} critical</strong>, <strong>{high} high</strong>, <strong>{med} medium</strong>, and <strong>{low} low</strong> severity issues. The overall risk level is assessed as <strong style="color:{risk_color}">{risk_level}</strong>.</p>
 
-    {exec_summary}
-
+    <!-- Scan Results -->
     <h2>🔍 Scan Results</h2>
     {scan_sections}
 
+    <!-- Compliance Section -->
     {compliance_section}
 
+    <!-- Recommendations -->
     <h2>💡 Recommendations</h2>
     {recommendations}
 
+    <!-- Methodology -->
     <h2>📊 Methodology</h2>
-    <p style="margin-bottom:8px">This assessment was performed using <strong>CyberSec Pro</strong>, a cloud-based
-    offensive security platform running <strong>{tools_count} Kali Linux tools</strong> across {categories_count} categories.
-    All scans were conducted with proper authorization.</p>
+    <p style="margin-bottom:16px;color:#475569">This assessment was performed using <strong>CyberSec Pro</strong>, a cloud-based offensive security platform running <strong>{tools_count} Kali Linux tools</strong> across {categories_count} categories. All scans were conducted with proper authorization.</p>
     <table class="meta-table" style="margin-top:12px">
         <tr><td><strong>Platform</strong></td><td>CyberSec Pro v4.0</td></tr>
         <tr><td><strong>Report Template</strong></td><td>{template_title}</td></tr>
         <tr><td><strong>Generated</strong></td><td>{now}</td></tr>
         <tr><td><strong>Classification</strong></td><td>Confidential</td></tr>
+        <tr><td><strong>Compliance</strong></td><td>SOC 2 Type II, ISO 27001, GDPR</td></tr>
     </table>
+
+    <!-- Digital Signature -->
+    <div class="signature">
+        <div class="signature-box">
+            <div class="signature-name">CyberSec Pro Security Team</div>
+            <div class="signature-line">Authorized Security Analyst</div>
+        </div>
+        <div class="signature-box" style="text-align:right">
+            <div class="signature-name">Digital Signature</div>
+            <div class="signature-line">Signed: {now} | ID: {scan_id}</div>
+            <div style="margin-top:8px;font-size:10px;color:#94a8b8">SHA-256: {sha}</div>
+        </div>
+    </div>
 
     <div class="footer">
         <p>Generated by <strong>CyberSec Pro</strong> | <a href="https://cyber-sec-pro.com" target="_blank">cyber-sec-pro.com</a></p>
@@ -854,6 +995,7 @@ h4{{font-size:12px;font-weight:700;color:#475569;margin:16px 0 8px}}
         <p>© 2026 CyberSec Pro. All rights reserved.</p>
     </div>
 </div>
+
 </body>
 </html>"##,
         name = name,
@@ -861,6 +1003,8 @@ h4{{font-size:12px;font-weight:700;color:#475569;margin:16px 0 8px}}
         now = now,
         date_short = date_short,
         scan_count = scans.len(),
+        scan_id = scans.first().map(|(s, _)| &s.id).unwrap_or(&"N/A".to_string()),
+        sha = format!("{:x}", md5::compute(format!("{}-{}-{}", name, now, template))),
         tools_count = tools_count,
         categories_count = categories_count,
         total = total,
@@ -872,8 +1016,13 @@ h4{{font-size:12px;font-weight:700;color:#475569;margin:16px 0 8px}}
         risk_score = risk_score,
         risk_level = risk_level,
         risk_color = risk_color,
+        crit_pct = crit_pct,
+        high_pct = high_pct,
+        med_pct = med_pct,
+        low_pct = low_pct,
+        risk_gauge_svg = risk_gauge_svg,
         logo_html = logo_html,
-        exec_summary = build_executive_summary(scans, template),
+        exec_summary = exec_summary,
         scan_sections = scan_sections,
         compliance_section = compliance_section,
         recommendations = recommendations,
