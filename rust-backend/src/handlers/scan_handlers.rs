@@ -1819,15 +1819,20 @@ pub async fn demo_scan(
 ) -> impl IntoResponse {
     let tool_name = match body.get("tool").and_then(|t| t.as_str()) {
         Some(t) => t,
-        None => return (StatusCode::BAD_REQUEST, Json(json!({"error": "Tool name required"}))).into_response(),
+        None => return (StatusCode::BAD_REQUEST, Json(json!({"error": "Tool name required"}))),
     };
     let target = match body.get("target").and_then(|t| t.as_str()) {
         Some(t) => t.trim().to_string(),
-        None => return (StatusCode::BAD_REQUEST, Json(json!({"error": "Target required"}))).into_response(),
+        None => return (StatusCode::BAD_REQUEST, Json(json!({"error": "Target required"}))),
     };
 
     if target.is_empty() || target.len() > 500 {
-        return (StatusCode::BAD_REQUEST, Json(json!({"error": "Valid target required"}))).into_response();
+        return (StatusCode::BAD_REQUEST, Json(json!({"error": "Valid target required"})));
+    }
+
+let target_type = crate::services::target_authorization::classify_target(&target);
+    if target_type != crate::services::target_authorization::TargetType::Sandbox {
+        return (StatusCode::FORBIDDEN, Json(json!({"error": "Demo scans are only allowed for sandbox/public targets. Please sign up for full access."})));
     }
 
     let tool: Option<Tool> = sqlx::query_as(
@@ -1842,10 +1847,10 @@ pub async fn demo_scan(
 
     let tool = match tool {
         Some(t) => t,
-        None => return (StatusCode::NOT_FOUND, Json(json!({"error": format!("Tool not found: {}", tool_name)}))).into_response(),
+        None => return (StatusCode::NOT_FOUND, Json(json!({"error": format!("Tool not found: {}", tool_name)}))),
     };
 
-    Json(json!({"scan_id": "test", "status": "running", "tool": tool.name, "target": target, "demo": true})).into_response()
+    Json(json!({"scan_id": "test", "status": "running", "tool": tool.name, "target": target, "demo": true}))
 }
 
 pub async fn network_sweep(
