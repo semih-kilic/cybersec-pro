@@ -12,6 +12,7 @@ use serde_json::json;
 use crate::middleware::auth_middleware::{AuthUser, AdminUser};
 use crate::services::auth::{create_access_token, create_refresh_token};
 use crate::services::audit::log_audit;
+use crate::scan_engine::parsers::deduplicate_findings;
 use crate::AppState;
 
 fn purple_team_chains_catalog() -> Vec<serde_json::Value> {
@@ -1882,7 +1883,7 @@ pub async fn scan_business_report(
     }
 
     // Return flat structure that frontend expects directly
-    Json(json!({
+    let mut findings_json = json!({
         "scan_id": scan_id,
         "summary": {
             "score": score,
@@ -1894,7 +1895,20 @@ pub async fn scan_business_report(
             "open_ports": open_ports
         },
         "findings": all_findings
-    })).into_response()
+    });
+
+    // Smart deduplication: merge duplicate findings from multiple tools
+    if let Some(findings_arr) = findings_json.get_mut("findings").and_then(|f| f.as_array_mut()) {
+        deduplicate_findings(&mut json!(findings_arr));
+        if let Some(deduped) = findings_json.get("findings").and_then(|f| f.as_array()) {
+            let deduped_total = deduped.len() as i64;
+            if let Some(summary) = findings_json.get_mut("summary") {
+                summary["total"] = json!(deduped_total);
+            }
+        }
+    }
+
+    Json(findings_json).into_response()
 }
 
 pub async fn scan_status(

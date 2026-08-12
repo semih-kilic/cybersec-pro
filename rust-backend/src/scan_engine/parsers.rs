@@ -212,6 +212,169 @@ pub fn parse_output(tool_name: &str, output: &str) -> Option<JsonValue> {
     }
 }
 
+// ═══════════════════════════════════════════════════════════
+// Smart Deduplication & Aggregation
+// ═══════════════════════════════════════════════════════════
+
+/// Deduplicate findings from multiple tools by normalizing titles and locations.
+/// This prevents the same vulnerability from being reported multiple times
+/// when different tools detect it (e.g., Nmap and Nikto both reporting port 80 open).
+pub fn deduplicate_findings(findings: &mut JsonValue) {
+    let arr = match findings.as_array_mut() {
+        Some(arr) => arr,
+        None => return,
+    };
+
+    let mut seen: std::collections::HashMap<String, usize> = std::collections::HashMap::new();
+    let mut deduped: Vec<JsonValue> = Vec::new();
+
+    for finding in arr.iter() {
+        let title = finding.get("title")
+            .or_else(|| finding.get("business_title"))
+            .and_then(|v| v.as_str())
+            .unwrap_or("")
+            .to_lowercase()
+            .trim()
+            .to_string();
+
+        let location = finding.get("location")
+            .and_then(|v| v.as_str())
+            .unwrap_or("")
+            .to_lowercase()
+            .trim()
+            .to_string();
+
+        let severity = finding.get("severity")
+            .and_then(|v| v.as_str())
+            .unwrap_or("info")
+            .to_lowercase();
+
+        let key = format!("{}|{}|{}", severity, title, location);
+
+        if let Some(&existing_idx) = seen.get(&key) {
+            if let Some(existing) = deduped.get_mut(existing_idx) {
+                let count = existing.get("tool_count").and_then(|v| v.as_u64()).unwrap_or(1) + 1;
+                existing["tool_count"] = json!(count);
+
+                let mut tools = existing.get("tools")
+                    .and_then(|v| v.as_array())
+                    .map(|a| a.iter().collect::<Vec<_>>())
+                    .unwrap_or_default();
+
+                if let Some(tool) = finding.get("tool") {
+                    if !tools.iter().any(|t| *t == tool) {
+                        tools.push(tool);
+                        existing["tools"] = json!(tools);
+                    }
+                }
+
+                existing["description"] = json!(format!(
+                    "Detected by {} tools: {}",
+                    count,
+                    existing.get("description")
+                        .and_then(|v| v.as_str())
+                        .unwrap_or("Multiple tools")
+                ));
+            }
+        } else {
+            let mut f = finding.clone();
+            f["tool_count"] = json!(1);
+            let tools = vec![finding.get("tool").cloned().unwrap_or(json!("unknown"))];
+            f["tools"] = json!(tools);
+            seen.insert(key, deduped.len());
+            deduped.push(f);
+        }
+    }
+
+    *arr = deduped;
+}
+
+/// Aggregate findings from multiple scans into a unified view.
+/// This is used when generating reports from multiple scan IDs.
+pub fn aggregate_findings(findings_list: Vec<JsonValue>) -> JsonValue {
+    let mut all_findings: Vec<JsonValue> = Vec::new();
+    let mut total_critical = 0;
+    let mut total_high = 0;
+    let mut total_medium = 0;
+    let mut total_low = 0;
+    let mut total_info = 0;
+
+    for findings in findings_list {
+        if let Some(arr) = findings.as_array() {
+            for f in arr {
+                all_findings.push(f.clone());
+                let sev = f.get("severity")
+                    .and_then(|v| v.as_str())
+                    .unwrap_or("info")
+                    .to_lowercase();
+                match sev.as_str() {
+                    "critical" => total_critical += 1,
+                    "high" => total_high += 1,
+                    "medium" => total_medium += 1,
+                    "low" => total_low += 1,
+                    _ => total_info += 1,
+                }
+            }
+        }
+    }
+
+    let mut aggregated = json!({
+        "summary": {
+            "total": all_findings.len(),
+            "critical": total_critical,
+            "high": total_high,
+            "medium": total_medium,
+            "low": total_low,
+            "info": total_info,
+        },
+        "findings": all_findings,
+    });
+
+    deduplicate_findings(aggregated.get_mut("findings").unwrap());
+
+    aggregated
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_deduplicate_findings() {
+        let mut findings = json!([
+            {"title": "Port 80 open", "location": "scanme.nmap.org", "severity": "low", "tool": "nmap"},
+            {"title": "Port 80 open", "location": "scanme.nmap.org", "severity": "low", "tool": "nikto"},
+            {"title": "Port 80 open", "location": "scanme.nmap.org", "severity": "low", "tool": "nmap"},
+        ]);
+
+        deduplicate_findings(&mut findings);
+
+        let arr = findings.as_array().unwrap();
+        assert_eq!(arr.len(), 1);
+        assert_eq!(arr[0]["tool_count"], 3);
+        assert!(arr[0]["tools"].is_array());
+    }
+
+    #[test]
+    fn test_aggregate_findings() {
+        let f1 = json!([
+            {"title": "Port 80 open", "location": "scanme.nmap.org", "severity": "low", "tool": "nmap"}
+        ]);
+        let f2 = json!([
+            {"title": "Port 80 open", "location": "scanme.nmap.org", "severity": "low", "tool": "nikto"},
+            {"title": "SSL issue", "location": "scanme.nmap.org", "severity": "high", "tool": "testssl"}
+        ]);
+
+        let result = aggregate_findings(vec![f1, f2]);
+        let summary = result.get("summary").unwrap();
+        assert_eq!(summary["total"], 3);
+        assert_eq!(summary["high"], 1);
+
+        let findings = result.get("findings").unwrap().as_array().unwrap();
+        assert_eq!(findings.len(), 2);
+    }
+}
+
 fn parse_nmap(output: &str) -> Option<JsonValue> {
     let mut open_ports = Vec::new();
     let mut services = Vec::new();

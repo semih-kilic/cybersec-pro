@@ -1,0 +1,61 @@
+name: CyberSec Pro Security Scan
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+    branches: [main, master]
+  schedule:
+    - cron: '0 2 * * *' # Daily at 2 AM
+
+jobs:
+  security-scan:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install CyberSec Pro CLI
+        run: |
+          curl -fsSL https://cyber-sec-pro.com/install-cli.sh | sh
+
+      - name: Run Nmap Scan
+        env:
+          CYBERSEC_API_KEY: ${{ secrets.CYBERSEC_API_KEY }}
+        run: |
+          cybersec-pro scan \
+            --tool nmap \
+            --target ${{ github.repository_owner }}.github.io \
+            --wait
+
+      - name: Run Nikto Scan
+        env:
+          CYBERSEC_API_KEY: ${{ secrets.CYBERSEC_API_KEY }}
+        run: |
+          cybersec-pro scan \
+            --tool nikto \
+            --target https://${{ github.repository_owner }}.github.io \
+            --wait
+
+      - name: Generate Report
+        env:
+          CYBERSEC_API_KEY: ${{ secrets.CYBERSEC_API_KEY }}
+        run: |
+          SCAN_ID=$(cybersec-pro list --limit 1 --json | jq -r '.[0].id')
+          cybersec-pro report --scan-id $SCAN_ID --format html --template full
+
+      - name: Upload Report
+        uses: actions/upload-artifact@v4
+        with:
+          name: security-report
+          path: report.html
+          retention-days: 30
+
+      - name: Comment PR with Results
+        if: github.event_name == 'pull_request'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              body: '🔒 Security scan completed. Check the artifacts for the full report.'
+            })

@@ -1,0 +1,54 @@
+include:
+  - template: Security/SAST.gitlab-ci.yml
+
+stages:
+  - security-scan
+  - report
+
+variables:
+  CYBERSEC_API_URL: "https://cyber-sec-pro.com"
+  CYBERSEC_API_KEY: $CYBERSEC_API_KEY
+
+cybersec-nmap-scan:
+  stage: security-scan
+  image: ubuntu:latest
+  before_script:
+    - apt-get update && apt-get install -y curl jq
+    - curl -fsSL https://cyber-sec-pro.com/install-cli.sh | sh
+  script:
+    - cybersec-pro scan --tool nmap --target $CI_PROJECT_URL --wait
+  only:
+    - merge_requests
+    - main
+    - schedules
+
+cybersec-nikto-scan:
+  stage: security-scan
+  image: ubuntu:latest
+  before_script:
+    - apt-get update && apt-get install -y curl jq
+    - curl -fsSL https://cyber-sec-pro.com/install-cli.sh | sh
+  script:
+    - cybersec-pro scan --tool nikto --target $CI_PROJECT_URL --wait
+  only:
+    - merge_requests
+    - main
+    - schedules
+
+cybersec-report:
+  stage: report
+  image: ubuntu:latest
+  before_script:
+    - apt-get update && apt-get install -y curl jq
+    - curl -fsSL https://cyber-sec-pro.com/install-cli.sh | sh
+  script:
+    - SCAN_ID=$(cybersec-pro list --limit 1 --json | jq -r '.[0].id')
+    - cybersec-pro report --scan-id $SCAN_ID --format html --template full
+  artifacts:
+    paths:
+      - report.html
+    expire_in: 1 week
+  only:
+    - merge_requests
+    - main
+    - schedules
