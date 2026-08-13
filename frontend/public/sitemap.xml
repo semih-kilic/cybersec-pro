@@ -56,6 +56,11 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://cyber-sec-pro.com/ar/tools/aircrack-ng/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://cyber-sec-pro.com/ar/tools/aireplay-ng/</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
@@ -71,12 +76,37 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://cyber-sec-pro.com/ar/tools/amass/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/ar/tools/apktool/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://cyber-sec-pro.com/ar/tools/armitage/</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://cyber-sec-pro.com/ar/tools/arping/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/ar/tools/assetfinder/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://cyber-sec-pro.com/ar/tools/autopsy/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/ar/tools/beef/</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -106,7 +136,17 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://cyber-sec-pro.com/ar/tools/burpsuite/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://cyber-sec-pro.com/ar/tools/capa/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/ar/tools/certipy/</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -127,6 +167,11 @@
   </url>
   <url>
     <loc>https://cyber-sec-pro.com/ar/tools/cloudfox/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/ar/tools/commix/</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -156,12 +201,42 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://cyber-sec-pro.com/ar/tools/dirb/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/ar/tools/dirsearch/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://cyber-sec-pro.com/ar/tools/dnscat2/</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://cyber-sec-pro.com/ar/tools/dnsenum/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/ar/tools/dnsmap/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/ar/tools/dnsrecon/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://cyber-sec-pro.com/ar/tools/dnsx/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/ar/tools/dradis/</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -177,6 +252,11 @@
   </url>
   <url>
     <loc>https://cyber-sec-pro.com/ar/tools/enum4linux-ng/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/ar/tools/enum4linux/</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -201,7 +281,27 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://cyber-sec-pro.com/ar/tools/faraday/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://cyber-sec-pro.com/ar/tools/fcrackzip/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/ar/tools/feroxbuster/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/ar/tools/ffuf/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/ar/tools/fierce/</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -216,6 +316,16 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://cyber-sec-pro.com/ar/tools/fping/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/ar/tools/frida/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://cyber-sec-pro.com/ar/tools/gdb/</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
@@ -226,7 +336,17 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://cyber-sec-pro.com/ar/tools/gobuster/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://cyber-sec-pro.com/ar/tools/gophish/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/ar/tools/gospider/</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -237,6 +357,11 @@
   </url>
   <url>
     <loc>https://cyber-sec-pro.com/ar/tools/guymager/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/ar/tools/hakrawler/</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -261,6 +386,21 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://cyber-sec-pro.com/ar/tools/hping3/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/ar/tools/httpx/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/ar/tools/hydra/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://cyber-sec-pro.com/ar/tools/impacket-scripts/</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
@@ -271,12 +411,22 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://cyber-sec-pro.com/ar/tools/jadx/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://cyber-sec-pro.com/ar/tools/john/</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
     <loc>https://cyber-sec-pro.com/ar/tools/johnny/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/ar/tools/joomscan/</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -292,6 +442,11 @@
   </url>
   <url>
     <loc>https://cyber-sec-pro.com/ar/tools/kerbrute/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/ar/tools/kismet/</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -316,6 +471,11 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://cyber-sec-pro.com/ar/tools/ltrace/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://cyber-sec-pro.com/ar/tools/macchanger/</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
@@ -326,7 +486,32 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://cyber-sec-pro.com/ar/tools/maltego/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://cyber-sec-pro.com/ar/tools/maskprocessor/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/ar/tools/masscan/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/ar/tools/medusa/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/ar/tools/metasploit/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/ar/tools/mimikatz/</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -341,12 +526,27 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://cyber-sec-pro.com/ar/tools/mitmproxy/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/ar/tools/msfconsole/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://cyber-sec-pro.com/ar/tools/msfvenom/</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
     <loc>https://cyber-sec-pro.com/ar/tools/mtr/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/ar/tools/naabu/</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -361,12 +561,62 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://cyber-sec-pro.com/ar/tools/ncat/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/ar/tools/ncrack/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/ar/tools/netdiscover/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/ar/tools/netexec/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/ar/tools/nikto/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/ar/tools/nishang/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/ar/tools/nmap/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://cyber-sec-pro.com/ar/tools/nslookup/</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://cyber-sec-pro.com/ar/tools/nuclei/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/ar/tools/objdump/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://cyber-sec-pro.com/ar/tools/oletools/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/ar/tools/openvas/</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -381,7 +631,17 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://cyber-sec-pro.com/ar/tools/patator/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://cyber-sec-pro.com/ar/tools/photorec/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/ar/tools/pixiewps/</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -391,12 +651,42 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://cyber-sec-pro.com/ar/tools/proxychains4/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://cyber-sec-pro.com/ar/tools/pypykatz/</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://cyber-sec-pro.com/ar/tools/radare2/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/ar/tools/reaver/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/ar/tools/recon-ng/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/ar/tools/regripper/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://cyber-sec-pro.com/ar/tools/responder/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/ar/tools/rizin/</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -441,7 +731,17 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://cyber-sec-pro.com/ar/tools/sherlock/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://cyber-sec-pro.com/ar/tools/sleuthkit/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/ar/tools/sliver/</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -461,6 +761,16 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://cyber-sec-pro.com/ar/tools/spiderfoot/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/ar/tools/sqlmap/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://cyber-sec-pro.com/ar/tools/ssdeep/</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
@@ -476,7 +786,17 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://cyber-sec-pro.com/ar/tools/strace/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://cyber-sec-pro.com/ar/tools/strings/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/ar/tools/subfinder/</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -501,12 +821,37 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://cyber-sec-pro.com/ar/tools/testssl/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/ar/tools/theharvester/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/ar/tools/tlsx/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://cyber-sec-pro.com/ar/tools/traceroute/</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
     <loc>https://cyber-sec-pro.com/ar/tools/tshark/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/ar/tools/unicornscan/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/ar/tools/unix-privesc-check/</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -526,6 +871,16 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://cyber-sec-pro.com/ar/tools/wafw00f/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/ar/tools/wapiti/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://cyber-sec-pro.com/ar/tools/waybackurls/</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
@@ -536,7 +891,22 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://cyber-sec-pro.com/ar/tools/whatweb/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://cyber-sec-pro.com/ar/tools/whois/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/ar/tools/wifiphisher/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/ar/tools/wifite/</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -547,6 +917,36 @@
   </url>
   <url>
     <loc>https://cyber-sec-pro.com/ar/tools/winpeas/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/ar/tools/wireshark/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/ar/tools/wordlists/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/ar/tools/wpscan/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/ar/tools/xsser/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/ar/tools/xsstrike/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/ar/tools/zaproxy/</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -616,6 +1016,11 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://cyber-sec-pro.com/de/tools/aircrack-ng/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://cyber-sec-pro.com/de/tools/aireplay-ng/</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
@@ -631,12 +1036,37 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://cyber-sec-pro.com/de/tools/amass/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/de/tools/apktool/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://cyber-sec-pro.com/de/tools/armitage/</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://cyber-sec-pro.com/de/tools/arping/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/de/tools/assetfinder/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://cyber-sec-pro.com/de/tools/autopsy/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/de/tools/beef/</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -666,7 +1096,17 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://cyber-sec-pro.com/de/tools/burpsuite/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://cyber-sec-pro.com/de/tools/capa/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/de/tools/certipy/</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -687,6 +1127,11 @@
   </url>
   <url>
     <loc>https://cyber-sec-pro.com/de/tools/cloudfox/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/de/tools/commix/</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -716,12 +1161,42 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://cyber-sec-pro.com/de/tools/dirb/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/de/tools/dirsearch/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://cyber-sec-pro.com/de/tools/dnscat2/</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://cyber-sec-pro.com/de/tools/dnsenum/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/de/tools/dnsmap/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/de/tools/dnsrecon/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://cyber-sec-pro.com/de/tools/dnsx/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/de/tools/dradis/</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -737,6 +1212,11 @@
   </url>
   <url>
     <loc>https://cyber-sec-pro.com/de/tools/enum4linux-ng/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/de/tools/enum4linux/</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -761,7 +1241,27 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://cyber-sec-pro.com/de/tools/faraday/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://cyber-sec-pro.com/de/tools/fcrackzip/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/de/tools/feroxbuster/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/de/tools/ffuf/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/de/tools/fierce/</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -776,6 +1276,16 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://cyber-sec-pro.com/de/tools/fping/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/de/tools/frida/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://cyber-sec-pro.com/de/tools/gdb/</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
@@ -786,7 +1296,17 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://cyber-sec-pro.com/de/tools/gobuster/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://cyber-sec-pro.com/de/tools/gophish/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/de/tools/gospider/</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -797,6 +1317,11 @@
   </url>
   <url>
     <loc>https://cyber-sec-pro.com/de/tools/guymager/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/de/tools/hakrawler/</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -821,6 +1346,21 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://cyber-sec-pro.com/de/tools/hping3/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/de/tools/httpx/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/de/tools/hydra/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://cyber-sec-pro.com/de/tools/impacket-scripts/</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
@@ -831,12 +1371,22 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://cyber-sec-pro.com/de/tools/jadx/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://cyber-sec-pro.com/de/tools/john/</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
     <loc>https://cyber-sec-pro.com/de/tools/johnny/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/de/tools/joomscan/</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -852,6 +1402,11 @@
   </url>
   <url>
     <loc>https://cyber-sec-pro.com/de/tools/kerbrute/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/de/tools/kismet/</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -876,6 +1431,11 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://cyber-sec-pro.com/de/tools/ltrace/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://cyber-sec-pro.com/de/tools/macchanger/</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
@@ -886,7 +1446,32 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://cyber-sec-pro.com/de/tools/maltego/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://cyber-sec-pro.com/de/tools/maskprocessor/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/de/tools/masscan/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/de/tools/medusa/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/de/tools/metasploit/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/de/tools/mimikatz/</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -901,12 +1486,27 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://cyber-sec-pro.com/de/tools/mitmproxy/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/de/tools/msfconsole/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://cyber-sec-pro.com/de/tools/msfvenom/</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
     <loc>https://cyber-sec-pro.com/de/tools/mtr/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/de/tools/naabu/</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -921,12 +1521,62 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://cyber-sec-pro.com/de/tools/ncat/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/de/tools/ncrack/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/de/tools/netdiscover/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/de/tools/netexec/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/de/tools/nikto/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/de/tools/nishang/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/de/tools/nmap/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://cyber-sec-pro.com/de/tools/nslookup/</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://cyber-sec-pro.com/de/tools/nuclei/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/de/tools/objdump/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://cyber-sec-pro.com/de/tools/oletools/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/de/tools/openvas/</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -941,7 +1591,17 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://cyber-sec-pro.com/de/tools/patator/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://cyber-sec-pro.com/de/tools/photorec/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/de/tools/pixiewps/</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -951,12 +1611,42 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://cyber-sec-pro.com/de/tools/proxychains4/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://cyber-sec-pro.com/de/tools/pypykatz/</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://cyber-sec-pro.com/de/tools/radare2/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/de/tools/reaver/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/de/tools/recon-ng/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/de/tools/regripper/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://cyber-sec-pro.com/de/tools/responder/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/de/tools/rizin/</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -1001,7 +1691,17 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://cyber-sec-pro.com/de/tools/sherlock/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://cyber-sec-pro.com/de/tools/sleuthkit/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/de/tools/sliver/</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -1021,6 +1721,16 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://cyber-sec-pro.com/de/tools/spiderfoot/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/de/tools/sqlmap/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://cyber-sec-pro.com/de/tools/ssdeep/</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
@@ -1036,7 +1746,17 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://cyber-sec-pro.com/de/tools/strace/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://cyber-sec-pro.com/de/tools/strings/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/de/tools/subfinder/</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -1061,12 +1781,37 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://cyber-sec-pro.com/de/tools/testssl/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/de/tools/theharvester/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/de/tools/tlsx/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://cyber-sec-pro.com/de/tools/traceroute/</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
     <loc>https://cyber-sec-pro.com/de/tools/tshark/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/de/tools/unicornscan/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/de/tools/unix-privesc-check/</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -1086,6 +1831,16 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://cyber-sec-pro.com/de/tools/wafw00f/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/de/tools/wapiti/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://cyber-sec-pro.com/de/tools/waybackurls/</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
@@ -1096,7 +1851,22 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://cyber-sec-pro.com/de/tools/whatweb/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://cyber-sec-pro.com/de/tools/whois/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/de/tools/wifiphisher/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/de/tools/wifite/</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -1107,6 +1877,36 @@
   </url>
   <url>
     <loc>https://cyber-sec-pro.com/de/tools/winpeas/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/de/tools/wireshark/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/de/tools/wordlists/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/de/tools/wpscan/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/de/tools/xsser/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/de/tools/xsstrike/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/de/tools/zaproxy/</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -1171,6 +1971,11 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://cyber-sec-pro.com/en/tools/aircrack-ng/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://cyber-sec-pro.com/en/tools/aireplay-ng/</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
@@ -1186,12 +1991,37 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://cyber-sec-pro.com/en/tools/amass/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/en/tools/apktool/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://cyber-sec-pro.com/en/tools/armitage/</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://cyber-sec-pro.com/en/tools/arping/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/en/tools/assetfinder/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://cyber-sec-pro.com/en/tools/autopsy/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/en/tools/beef/</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -1221,7 +2051,17 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://cyber-sec-pro.com/en/tools/burpsuite/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://cyber-sec-pro.com/en/tools/capa/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/en/tools/certipy/</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -1242,6 +2082,11 @@
   </url>
   <url>
     <loc>https://cyber-sec-pro.com/en/tools/cloudfox/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/en/tools/commix/</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -1271,12 +2116,42 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://cyber-sec-pro.com/en/tools/dirb/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/en/tools/dirsearch/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://cyber-sec-pro.com/en/tools/dnscat2/</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://cyber-sec-pro.com/en/tools/dnsenum/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/en/tools/dnsmap/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/en/tools/dnsrecon/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://cyber-sec-pro.com/en/tools/dnsx/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/en/tools/dradis/</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -1292,6 +2167,11 @@
   </url>
   <url>
     <loc>https://cyber-sec-pro.com/en/tools/enum4linux-ng/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/en/tools/enum4linux/</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -1316,7 +2196,27 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://cyber-sec-pro.com/en/tools/faraday/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://cyber-sec-pro.com/en/tools/fcrackzip/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/en/tools/feroxbuster/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/en/tools/ffuf/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/en/tools/fierce/</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -1331,6 +2231,16 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://cyber-sec-pro.com/en/tools/fping/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/en/tools/frida/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://cyber-sec-pro.com/en/tools/gdb/</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
@@ -1341,7 +2251,17 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://cyber-sec-pro.com/en/tools/gobuster/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://cyber-sec-pro.com/en/tools/gophish/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/en/tools/gospider/</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -1352,6 +2272,11 @@
   </url>
   <url>
     <loc>https://cyber-sec-pro.com/en/tools/guymager/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/en/tools/hakrawler/</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -1376,6 +2301,21 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://cyber-sec-pro.com/en/tools/hping3/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/en/tools/httpx/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/en/tools/hydra/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://cyber-sec-pro.com/en/tools/impacket-scripts/</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
@@ -1386,12 +2326,22 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://cyber-sec-pro.com/en/tools/jadx/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://cyber-sec-pro.com/en/tools/john/</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
     <loc>https://cyber-sec-pro.com/en/tools/johnny/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/en/tools/joomscan/</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -1407,6 +2357,11 @@
   </url>
   <url>
     <loc>https://cyber-sec-pro.com/en/tools/kerbrute/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/en/tools/kismet/</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -1431,6 +2386,11 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://cyber-sec-pro.com/en/tools/ltrace/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://cyber-sec-pro.com/en/tools/macchanger/</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
@@ -1441,7 +2401,32 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://cyber-sec-pro.com/en/tools/maltego/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://cyber-sec-pro.com/en/tools/maskprocessor/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/en/tools/masscan/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/en/tools/medusa/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/en/tools/metasploit/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/en/tools/mimikatz/</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -1456,12 +2441,27 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://cyber-sec-pro.com/en/tools/mitmproxy/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/en/tools/msfconsole/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://cyber-sec-pro.com/en/tools/msfvenom/</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
     <loc>https://cyber-sec-pro.com/en/tools/mtr/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/en/tools/naabu/</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -1476,12 +2476,62 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://cyber-sec-pro.com/en/tools/ncat/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/en/tools/ncrack/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/en/tools/netdiscover/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/en/tools/netexec/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/en/tools/nikto/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/en/tools/nishang/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/en/tools/nmap/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://cyber-sec-pro.com/en/tools/nslookup/</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://cyber-sec-pro.com/en/tools/nuclei/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/en/tools/objdump/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://cyber-sec-pro.com/en/tools/oletools/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/en/tools/openvas/</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -1496,7 +2546,17 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://cyber-sec-pro.com/en/tools/patator/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://cyber-sec-pro.com/en/tools/photorec/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/en/tools/pixiewps/</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -1506,12 +2566,42 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://cyber-sec-pro.com/en/tools/proxychains4/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://cyber-sec-pro.com/en/tools/pypykatz/</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://cyber-sec-pro.com/en/tools/radare2/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/en/tools/reaver/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/en/tools/recon-ng/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/en/tools/regripper/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://cyber-sec-pro.com/en/tools/responder/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/en/tools/rizin/</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -1556,7 +2646,17 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://cyber-sec-pro.com/en/tools/sherlock/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://cyber-sec-pro.com/en/tools/sleuthkit/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/en/tools/sliver/</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -1576,6 +2676,16 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://cyber-sec-pro.com/en/tools/spiderfoot/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/en/tools/sqlmap/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://cyber-sec-pro.com/en/tools/ssdeep/</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
@@ -1591,7 +2701,17 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://cyber-sec-pro.com/en/tools/strace/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://cyber-sec-pro.com/en/tools/strings/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/en/tools/subfinder/</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -1616,12 +2736,37 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://cyber-sec-pro.com/en/tools/testssl/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/en/tools/theharvester/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/en/tools/tlsx/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://cyber-sec-pro.com/en/tools/traceroute/</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
     <loc>https://cyber-sec-pro.com/en/tools/tshark/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/en/tools/unicornscan/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/en/tools/unix-privesc-check/</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -1641,6 +2786,16 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://cyber-sec-pro.com/en/tools/wafw00f/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/en/tools/wapiti/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://cyber-sec-pro.com/en/tools/waybackurls/</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
@@ -1651,7 +2806,22 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://cyber-sec-pro.com/en/tools/whatweb/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://cyber-sec-pro.com/en/tools/whois/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/en/tools/wifiphisher/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/en/tools/wifite/</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -1662,6 +2832,36 @@
   </url>
   <url>
     <loc>https://cyber-sec-pro.com/en/tools/winpeas/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/en/tools/wireshark/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/en/tools/wordlists/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/en/tools/wpscan/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/en/tools/xsser/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/en/tools/xsstrike/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/en/tools/zaproxy/</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -1721,6 +2921,11 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://cyber-sec-pro.com/es/tools/aircrack-ng/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://cyber-sec-pro.com/es/tools/aireplay-ng/</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
@@ -1736,12 +2941,37 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://cyber-sec-pro.com/es/tools/amass/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/es/tools/apktool/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://cyber-sec-pro.com/es/tools/armitage/</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://cyber-sec-pro.com/es/tools/arping/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/es/tools/assetfinder/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://cyber-sec-pro.com/es/tools/autopsy/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/es/tools/beef/</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -1771,7 +3001,17 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://cyber-sec-pro.com/es/tools/burpsuite/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://cyber-sec-pro.com/es/tools/capa/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/es/tools/certipy/</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -1792,6 +3032,11 @@
   </url>
   <url>
     <loc>https://cyber-sec-pro.com/es/tools/cloudfox/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/es/tools/commix/</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -1821,12 +3066,42 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://cyber-sec-pro.com/es/tools/dirb/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/es/tools/dirsearch/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://cyber-sec-pro.com/es/tools/dnscat2/</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://cyber-sec-pro.com/es/tools/dnsenum/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/es/tools/dnsmap/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/es/tools/dnsrecon/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://cyber-sec-pro.com/es/tools/dnsx/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/es/tools/dradis/</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -1842,6 +3117,11 @@
   </url>
   <url>
     <loc>https://cyber-sec-pro.com/es/tools/enum4linux-ng/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/es/tools/enum4linux/</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -1866,7 +3146,27 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://cyber-sec-pro.com/es/tools/faraday/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://cyber-sec-pro.com/es/tools/fcrackzip/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/es/tools/feroxbuster/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/es/tools/ffuf/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/es/tools/fierce/</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -1881,6 +3181,16 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://cyber-sec-pro.com/es/tools/fping/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/es/tools/frida/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://cyber-sec-pro.com/es/tools/gdb/</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
@@ -1891,7 +3201,17 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://cyber-sec-pro.com/es/tools/gobuster/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://cyber-sec-pro.com/es/tools/gophish/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/es/tools/gospider/</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -1902,6 +3222,11 @@
   </url>
   <url>
     <loc>https://cyber-sec-pro.com/es/tools/guymager/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/es/tools/hakrawler/</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -1926,6 +3251,21 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://cyber-sec-pro.com/es/tools/hping3/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/es/tools/httpx/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/es/tools/hydra/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://cyber-sec-pro.com/es/tools/impacket-scripts/</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
@@ -1936,12 +3276,22 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://cyber-sec-pro.com/es/tools/jadx/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://cyber-sec-pro.com/es/tools/john/</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
     <loc>https://cyber-sec-pro.com/es/tools/johnny/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/es/tools/joomscan/</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -1957,6 +3307,11 @@
   </url>
   <url>
     <loc>https://cyber-sec-pro.com/es/tools/kerbrute/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/es/tools/kismet/</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -1981,6 +3336,11 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://cyber-sec-pro.com/es/tools/ltrace/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://cyber-sec-pro.com/es/tools/macchanger/</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
@@ -1991,7 +3351,32 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://cyber-sec-pro.com/es/tools/maltego/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://cyber-sec-pro.com/es/tools/maskprocessor/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/es/tools/masscan/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/es/tools/medusa/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/es/tools/metasploit/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/es/tools/mimikatz/</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -2006,12 +3391,27 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://cyber-sec-pro.com/es/tools/mitmproxy/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/es/tools/msfconsole/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://cyber-sec-pro.com/es/tools/msfvenom/</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
     <loc>https://cyber-sec-pro.com/es/tools/mtr/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/es/tools/naabu/</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -2026,12 +3426,62 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://cyber-sec-pro.com/es/tools/ncat/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/es/tools/ncrack/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/es/tools/netdiscover/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/es/tools/netexec/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/es/tools/nikto/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/es/tools/nishang/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/es/tools/nmap/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://cyber-sec-pro.com/es/tools/nslookup/</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://cyber-sec-pro.com/es/tools/nuclei/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/es/tools/objdump/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://cyber-sec-pro.com/es/tools/oletools/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/es/tools/openvas/</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -2046,7 +3496,17 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://cyber-sec-pro.com/es/tools/patator/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://cyber-sec-pro.com/es/tools/photorec/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/es/tools/pixiewps/</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -2056,12 +3516,42 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://cyber-sec-pro.com/es/tools/proxychains4/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://cyber-sec-pro.com/es/tools/pypykatz/</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://cyber-sec-pro.com/es/tools/radare2/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/es/tools/reaver/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/es/tools/recon-ng/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/es/tools/regripper/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://cyber-sec-pro.com/es/tools/responder/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/es/tools/rizin/</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -2106,7 +3596,17 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://cyber-sec-pro.com/es/tools/sherlock/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://cyber-sec-pro.com/es/tools/sleuthkit/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/es/tools/sliver/</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -2126,6 +3626,16 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://cyber-sec-pro.com/es/tools/spiderfoot/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/es/tools/sqlmap/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://cyber-sec-pro.com/es/tools/ssdeep/</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
@@ -2141,7 +3651,17 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://cyber-sec-pro.com/es/tools/strace/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://cyber-sec-pro.com/es/tools/strings/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/es/tools/subfinder/</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -2166,12 +3686,37 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://cyber-sec-pro.com/es/tools/testssl/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/es/tools/theharvester/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/es/tools/tlsx/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://cyber-sec-pro.com/es/tools/traceroute/</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
     <loc>https://cyber-sec-pro.com/es/tools/tshark/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/es/tools/unicornscan/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/es/tools/unix-privesc-check/</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -2191,6 +3736,16 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://cyber-sec-pro.com/es/tools/wafw00f/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/es/tools/wapiti/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://cyber-sec-pro.com/es/tools/waybackurls/</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
@@ -2201,7 +3756,22 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://cyber-sec-pro.com/es/tools/whatweb/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://cyber-sec-pro.com/es/tools/whois/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/es/tools/wifiphisher/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/es/tools/wifite/</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -2212,6 +3782,36 @@
   </url>
   <url>
     <loc>https://cyber-sec-pro.com/es/tools/winpeas/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/es/tools/wireshark/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/es/tools/wordlists/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/es/tools/wpscan/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/es/tools/xsser/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/es/tools/xsstrike/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/es/tools/zaproxy/</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -2271,6 +3871,11 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://cyber-sec-pro.com/fr/tools/aircrack-ng/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://cyber-sec-pro.com/fr/tools/aireplay-ng/</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
@@ -2286,12 +3891,37 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://cyber-sec-pro.com/fr/tools/amass/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/fr/tools/apktool/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://cyber-sec-pro.com/fr/tools/armitage/</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://cyber-sec-pro.com/fr/tools/arping/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/fr/tools/assetfinder/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://cyber-sec-pro.com/fr/tools/autopsy/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/fr/tools/beef/</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -2321,7 +3951,17 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://cyber-sec-pro.com/fr/tools/burpsuite/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://cyber-sec-pro.com/fr/tools/capa/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/fr/tools/certipy/</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -2342,6 +3982,11 @@
   </url>
   <url>
     <loc>https://cyber-sec-pro.com/fr/tools/cloudfox/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/fr/tools/commix/</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -2371,12 +4016,42 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://cyber-sec-pro.com/fr/tools/dirb/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/fr/tools/dirsearch/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://cyber-sec-pro.com/fr/tools/dnscat2/</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://cyber-sec-pro.com/fr/tools/dnsenum/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/fr/tools/dnsmap/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/fr/tools/dnsrecon/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://cyber-sec-pro.com/fr/tools/dnsx/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/fr/tools/dradis/</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -2392,6 +4067,11 @@
   </url>
   <url>
     <loc>https://cyber-sec-pro.com/fr/tools/enum4linux-ng/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/fr/tools/enum4linux/</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -2416,7 +4096,27 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://cyber-sec-pro.com/fr/tools/faraday/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://cyber-sec-pro.com/fr/tools/fcrackzip/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/fr/tools/feroxbuster/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/fr/tools/ffuf/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/fr/tools/fierce/</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -2431,6 +4131,16 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://cyber-sec-pro.com/fr/tools/fping/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/fr/tools/frida/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://cyber-sec-pro.com/fr/tools/gdb/</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
@@ -2441,7 +4151,17 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://cyber-sec-pro.com/fr/tools/gobuster/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://cyber-sec-pro.com/fr/tools/gophish/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/fr/tools/gospider/</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -2452,6 +4172,11 @@
   </url>
   <url>
     <loc>https://cyber-sec-pro.com/fr/tools/guymager/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/fr/tools/hakrawler/</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -2476,6 +4201,21 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://cyber-sec-pro.com/fr/tools/hping3/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/fr/tools/httpx/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/fr/tools/hydra/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://cyber-sec-pro.com/fr/tools/impacket-scripts/</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
@@ -2486,12 +4226,22 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://cyber-sec-pro.com/fr/tools/jadx/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://cyber-sec-pro.com/fr/tools/john/</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
     <loc>https://cyber-sec-pro.com/fr/tools/johnny/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/fr/tools/joomscan/</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -2507,6 +4257,11 @@
   </url>
   <url>
     <loc>https://cyber-sec-pro.com/fr/tools/kerbrute/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/fr/tools/kismet/</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -2531,6 +4286,11 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://cyber-sec-pro.com/fr/tools/ltrace/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://cyber-sec-pro.com/fr/tools/macchanger/</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
@@ -2541,7 +4301,32 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://cyber-sec-pro.com/fr/tools/maltego/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://cyber-sec-pro.com/fr/tools/maskprocessor/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/fr/tools/masscan/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/fr/tools/medusa/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/fr/tools/metasploit/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/fr/tools/mimikatz/</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -2556,12 +4341,27 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://cyber-sec-pro.com/fr/tools/mitmproxy/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/fr/tools/msfconsole/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://cyber-sec-pro.com/fr/tools/msfvenom/</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
     <loc>https://cyber-sec-pro.com/fr/tools/mtr/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/fr/tools/naabu/</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -2576,12 +4376,62 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://cyber-sec-pro.com/fr/tools/ncat/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/fr/tools/ncrack/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/fr/tools/netdiscover/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/fr/tools/netexec/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/fr/tools/nikto/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/fr/tools/nishang/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/fr/tools/nmap/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://cyber-sec-pro.com/fr/tools/nslookup/</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://cyber-sec-pro.com/fr/tools/nuclei/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/fr/tools/objdump/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://cyber-sec-pro.com/fr/tools/oletools/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/fr/tools/openvas/</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -2596,7 +4446,17 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://cyber-sec-pro.com/fr/tools/patator/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://cyber-sec-pro.com/fr/tools/photorec/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/fr/tools/pixiewps/</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -2606,12 +4466,42 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://cyber-sec-pro.com/fr/tools/proxychains4/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://cyber-sec-pro.com/fr/tools/pypykatz/</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://cyber-sec-pro.com/fr/tools/radare2/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/fr/tools/reaver/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/fr/tools/recon-ng/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/fr/tools/regripper/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://cyber-sec-pro.com/fr/tools/responder/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/fr/tools/rizin/</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -2656,7 +4546,17 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://cyber-sec-pro.com/fr/tools/sherlock/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://cyber-sec-pro.com/fr/tools/sleuthkit/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/fr/tools/sliver/</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -2676,6 +4576,16 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://cyber-sec-pro.com/fr/tools/spiderfoot/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/fr/tools/sqlmap/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://cyber-sec-pro.com/fr/tools/ssdeep/</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
@@ -2691,7 +4601,17 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://cyber-sec-pro.com/fr/tools/strace/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://cyber-sec-pro.com/fr/tools/strings/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/fr/tools/subfinder/</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -2716,12 +4636,37 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://cyber-sec-pro.com/fr/tools/testssl/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/fr/tools/theharvester/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/fr/tools/tlsx/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://cyber-sec-pro.com/fr/tools/traceroute/</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
     <loc>https://cyber-sec-pro.com/fr/tools/tshark/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/fr/tools/unicornscan/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/fr/tools/unix-privesc-check/</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -2741,6 +4686,16 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://cyber-sec-pro.com/fr/tools/wafw00f/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/fr/tools/wapiti/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://cyber-sec-pro.com/fr/tools/waybackurls/</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
@@ -2751,7 +4706,22 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://cyber-sec-pro.com/fr/tools/whatweb/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://cyber-sec-pro.com/fr/tools/whois/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/fr/tools/wifiphisher/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/fr/tools/wifite/</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -2762,6 +4732,36 @@
   </url>
   <url>
     <loc>https://cyber-sec-pro.com/fr/tools/winpeas/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/fr/tools/wireshark/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/fr/tools/wordlists/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/fr/tools/wpscan/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/fr/tools/xsser/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/fr/tools/xsstrike/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/fr/tools/zaproxy/</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -2821,6 +4821,11 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://cyber-sec-pro.com/ja/tools/aircrack-ng/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://cyber-sec-pro.com/ja/tools/aireplay-ng/</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
@@ -2836,12 +4841,37 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://cyber-sec-pro.com/ja/tools/amass/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/ja/tools/apktool/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://cyber-sec-pro.com/ja/tools/armitage/</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://cyber-sec-pro.com/ja/tools/arping/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/ja/tools/assetfinder/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://cyber-sec-pro.com/ja/tools/autopsy/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/ja/tools/beef/</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -2871,7 +4901,17 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://cyber-sec-pro.com/ja/tools/burpsuite/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://cyber-sec-pro.com/ja/tools/capa/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/ja/tools/certipy/</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -2892,6 +4932,11 @@
   </url>
   <url>
     <loc>https://cyber-sec-pro.com/ja/tools/cloudfox/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/ja/tools/commix/</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -2921,12 +4966,42 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://cyber-sec-pro.com/ja/tools/dirb/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/ja/tools/dirsearch/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://cyber-sec-pro.com/ja/tools/dnscat2/</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://cyber-sec-pro.com/ja/tools/dnsenum/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/ja/tools/dnsmap/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/ja/tools/dnsrecon/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://cyber-sec-pro.com/ja/tools/dnsx/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/ja/tools/dradis/</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -2942,6 +5017,11 @@
   </url>
   <url>
     <loc>https://cyber-sec-pro.com/ja/tools/enum4linux-ng/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/ja/tools/enum4linux/</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -2966,7 +5046,27 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://cyber-sec-pro.com/ja/tools/faraday/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://cyber-sec-pro.com/ja/tools/fcrackzip/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/ja/tools/feroxbuster/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/ja/tools/ffuf/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/ja/tools/fierce/</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -2981,6 +5081,16 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://cyber-sec-pro.com/ja/tools/fping/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/ja/tools/frida/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://cyber-sec-pro.com/ja/tools/gdb/</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
@@ -2991,7 +5101,17 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://cyber-sec-pro.com/ja/tools/gobuster/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://cyber-sec-pro.com/ja/tools/gophish/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/ja/tools/gospider/</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -3002,6 +5122,11 @@
   </url>
   <url>
     <loc>https://cyber-sec-pro.com/ja/tools/guymager/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/ja/tools/hakrawler/</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -3026,6 +5151,21 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://cyber-sec-pro.com/ja/tools/hping3/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/ja/tools/httpx/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/ja/tools/hydra/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://cyber-sec-pro.com/ja/tools/impacket-scripts/</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
@@ -3036,12 +5176,22 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://cyber-sec-pro.com/ja/tools/jadx/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://cyber-sec-pro.com/ja/tools/john/</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
     <loc>https://cyber-sec-pro.com/ja/tools/johnny/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/ja/tools/joomscan/</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -3057,6 +5207,11 @@
   </url>
   <url>
     <loc>https://cyber-sec-pro.com/ja/tools/kerbrute/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/ja/tools/kismet/</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -3081,6 +5236,11 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://cyber-sec-pro.com/ja/tools/ltrace/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://cyber-sec-pro.com/ja/tools/macchanger/</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
@@ -3091,7 +5251,32 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://cyber-sec-pro.com/ja/tools/maltego/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://cyber-sec-pro.com/ja/tools/maskprocessor/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/ja/tools/masscan/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/ja/tools/medusa/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/ja/tools/metasploit/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/ja/tools/mimikatz/</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -3106,12 +5291,27 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://cyber-sec-pro.com/ja/tools/mitmproxy/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/ja/tools/msfconsole/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://cyber-sec-pro.com/ja/tools/msfvenom/</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
     <loc>https://cyber-sec-pro.com/ja/tools/mtr/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/ja/tools/naabu/</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -3126,12 +5326,62 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://cyber-sec-pro.com/ja/tools/ncat/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/ja/tools/ncrack/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/ja/tools/netdiscover/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/ja/tools/netexec/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/ja/tools/nikto/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/ja/tools/nishang/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/ja/tools/nmap/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://cyber-sec-pro.com/ja/tools/nslookup/</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://cyber-sec-pro.com/ja/tools/nuclei/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/ja/tools/objdump/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://cyber-sec-pro.com/ja/tools/oletools/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/ja/tools/openvas/</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -3146,7 +5396,17 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://cyber-sec-pro.com/ja/tools/patator/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://cyber-sec-pro.com/ja/tools/photorec/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/ja/tools/pixiewps/</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -3156,12 +5416,42 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://cyber-sec-pro.com/ja/tools/proxychains4/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://cyber-sec-pro.com/ja/tools/pypykatz/</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://cyber-sec-pro.com/ja/tools/radare2/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/ja/tools/reaver/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/ja/tools/recon-ng/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/ja/tools/regripper/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://cyber-sec-pro.com/ja/tools/responder/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/ja/tools/rizin/</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -3206,7 +5496,17 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://cyber-sec-pro.com/ja/tools/sherlock/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://cyber-sec-pro.com/ja/tools/sleuthkit/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/ja/tools/sliver/</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -3226,6 +5526,16 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://cyber-sec-pro.com/ja/tools/spiderfoot/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/ja/tools/sqlmap/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://cyber-sec-pro.com/ja/tools/ssdeep/</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
@@ -3241,7 +5551,17 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://cyber-sec-pro.com/ja/tools/strace/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://cyber-sec-pro.com/ja/tools/strings/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/ja/tools/subfinder/</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -3266,12 +5586,37 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://cyber-sec-pro.com/ja/tools/testssl/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/ja/tools/theharvester/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/ja/tools/tlsx/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://cyber-sec-pro.com/ja/tools/traceroute/</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
     <loc>https://cyber-sec-pro.com/ja/tools/tshark/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/ja/tools/unicornscan/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/ja/tools/unix-privesc-check/</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -3291,6 +5636,16 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://cyber-sec-pro.com/ja/tools/wafw00f/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/ja/tools/wapiti/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://cyber-sec-pro.com/ja/tools/waybackurls/</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
@@ -3301,7 +5656,22 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://cyber-sec-pro.com/ja/tools/whatweb/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://cyber-sec-pro.com/ja/tools/whois/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/ja/tools/wifiphisher/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/ja/tools/wifite/</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -3312,6 +5682,36 @@
   </url>
   <url>
     <loc>https://cyber-sec-pro.com/ja/tools/winpeas/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/ja/tools/wireshark/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/ja/tools/wordlists/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/ja/tools/wpscan/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/ja/tools/xsser/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/ja/tools/xsstrike/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/ja/tools/zaproxy/</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -3371,6 +5771,11 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://cyber-sec-pro.com/ko/tools/aircrack-ng/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://cyber-sec-pro.com/ko/tools/aireplay-ng/</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
@@ -3386,12 +5791,37 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://cyber-sec-pro.com/ko/tools/amass/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/ko/tools/apktool/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://cyber-sec-pro.com/ko/tools/armitage/</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://cyber-sec-pro.com/ko/tools/arping/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/ko/tools/assetfinder/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://cyber-sec-pro.com/ko/tools/autopsy/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/ko/tools/beef/</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -3421,7 +5851,17 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://cyber-sec-pro.com/ko/tools/burpsuite/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://cyber-sec-pro.com/ko/tools/capa/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/ko/tools/certipy/</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -3442,6 +5882,11 @@
   </url>
   <url>
     <loc>https://cyber-sec-pro.com/ko/tools/cloudfox/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/ko/tools/commix/</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -3471,12 +5916,42 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://cyber-sec-pro.com/ko/tools/dirb/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/ko/tools/dirsearch/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://cyber-sec-pro.com/ko/tools/dnscat2/</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://cyber-sec-pro.com/ko/tools/dnsenum/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/ko/tools/dnsmap/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/ko/tools/dnsrecon/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://cyber-sec-pro.com/ko/tools/dnsx/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/ko/tools/dradis/</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -3492,6 +5967,11 @@
   </url>
   <url>
     <loc>https://cyber-sec-pro.com/ko/tools/enum4linux-ng/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/ko/tools/enum4linux/</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -3516,7 +5996,27 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://cyber-sec-pro.com/ko/tools/faraday/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://cyber-sec-pro.com/ko/tools/fcrackzip/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/ko/tools/feroxbuster/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/ko/tools/ffuf/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/ko/tools/fierce/</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -3531,6 +6031,16 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://cyber-sec-pro.com/ko/tools/fping/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/ko/tools/frida/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://cyber-sec-pro.com/ko/tools/gdb/</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
@@ -3541,7 +6051,17 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://cyber-sec-pro.com/ko/tools/gobuster/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://cyber-sec-pro.com/ko/tools/gophish/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/ko/tools/gospider/</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -3552,6 +6072,11 @@
   </url>
   <url>
     <loc>https://cyber-sec-pro.com/ko/tools/guymager/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/ko/tools/hakrawler/</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -3576,6 +6101,21 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://cyber-sec-pro.com/ko/tools/hping3/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/ko/tools/httpx/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/ko/tools/hydra/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://cyber-sec-pro.com/ko/tools/impacket-scripts/</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
@@ -3586,12 +6126,22 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://cyber-sec-pro.com/ko/tools/jadx/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://cyber-sec-pro.com/ko/tools/john/</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
     <loc>https://cyber-sec-pro.com/ko/tools/johnny/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/ko/tools/joomscan/</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -3607,6 +6157,11 @@
   </url>
   <url>
     <loc>https://cyber-sec-pro.com/ko/tools/kerbrute/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/ko/tools/kismet/</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -3631,6 +6186,11 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://cyber-sec-pro.com/ko/tools/ltrace/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://cyber-sec-pro.com/ko/tools/macchanger/</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
@@ -3641,7 +6201,32 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://cyber-sec-pro.com/ko/tools/maltego/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://cyber-sec-pro.com/ko/tools/maskprocessor/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/ko/tools/masscan/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/ko/tools/medusa/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/ko/tools/metasploit/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/ko/tools/mimikatz/</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -3656,12 +6241,27 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://cyber-sec-pro.com/ko/tools/mitmproxy/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/ko/tools/msfconsole/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://cyber-sec-pro.com/ko/tools/msfvenom/</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
     <loc>https://cyber-sec-pro.com/ko/tools/mtr/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/ko/tools/naabu/</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -3676,12 +6276,62 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://cyber-sec-pro.com/ko/tools/ncat/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/ko/tools/ncrack/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/ko/tools/netdiscover/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/ko/tools/netexec/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/ko/tools/nikto/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/ko/tools/nishang/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/ko/tools/nmap/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://cyber-sec-pro.com/ko/tools/nslookup/</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://cyber-sec-pro.com/ko/tools/nuclei/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/ko/tools/objdump/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://cyber-sec-pro.com/ko/tools/oletools/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/ko/tools/openvas/</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -3696,7 +6346,17 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://cyber-sec-pro.com/ko/tools/patator/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://cyber-sec-pro.com/ko/tools/photorec/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/ko/tools/pixiewps/</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -3706,12 +6366,42 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://cyber-sec-pro.com/ko/tools/proxychains4/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://cyber-sec-pro.com/ko/tools/pypykatz/</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://cyber-sec-pro.com/ko/tools/radare2/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/ko/tools/reaver/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/ko/tools/recon-ng/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/ko/tools/regripper/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://cyber-sec-pro.com/ko/tools/responder/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/ko/tools/rizin/</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -3756,7 +6446,17 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://cyber-sec-pro.com/ko/tools/sherlock/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://cyber-sec-pro.com/ko/tools/sleuthkit/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/ko/tools/sliver/</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -3776,6 +6476,16 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://cyber-sec-pro.com/ko/tools/spiderfoot/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/ko/tools/sqlmap/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://cyber-sec-pro.com/ko/tools/ssdeep/</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
@@ -3791,7 +6501,17 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://cyber-sec-pro.com/ko/tools/strace/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://cyber-sec-pro.com/ko/tools/strings/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/ko/tools/subfinder/</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -3816,12 +6536,37 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://cyber-sec-pro.com/ko/tools/testssl/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/ko/tools/theharvester/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/ko/tools/tlsx/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://cyber-sec-pro.com/ko/tools/traceroute/</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
     <loc>https://cyber-sec-pro.com/ko/tools/tshark/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/ko/tools/unicornscan/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/ko/tools/unix-privesc-check/</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -3841,6 +6586,16 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://cyber-sec-pro.com/ko/tools/wafw00f/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/ko/tools/wapiti/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://cyber-sec-pro.com/ko/tools/waybackurls/</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
@@ -3851,7 +6606,22 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://cyber-sec-pro.com/ko/tools/whatweb/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://cyber-sec-pro.com/ko/tools/whois/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/ko/tools/wifiphisher/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/ko/tools/wifite/</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -3862,6 +6632,36 @@
   </url>
   <url>
     <loc>https://cyber-sec-pro.com/ko/tools/winpeas/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/ko/tools/wireshark/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/ko/tools/wordlists/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/ko/tools/wpscan/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/ko/tools/xsser/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/ko/tools/xsstrike/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/ko/tools/zaproxy/</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -3926,6 +6726,11 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://cyber-sec-pro.com/ru/tools/aircrack-ng/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://cyber-sec-pro.com/ru/tools/aireplay-ng/</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
@@ -3941,12 +6746,37 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://cyber-sec-pro.com/ru/tools/amass/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/ru/tools/apktool/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://cyber-sec-pro.com/ru/tools/armitage/</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://cyber-sec-pro.com/ru/tools/arping/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/ru/tools/assetfinder/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://cyber-sec-pro.com/ru/tools/autopsy/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/ru/tools/beef/</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -3976,7 +6806,17 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://cyber-sec-pro.com/ru/tools/burpsuite/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://cyber-sec-pro.com/ru/tools/capa/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/ru/tools/certipy/</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -3997,6 +6837,11 @@
   </url>
   <url>
     <loc>https://cyber-sec-pro.com/ru/tools/cloudfox/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/ru/tools/commix/</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -4026,12 +6871,42 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://cyber-sec-pro.com/ru/tools/dirb/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/ru/tools/dirsearch/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://cyber-sec-pro.com/ru/tools/dnscat2/</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://cyber-sec-pro.com/ru/tools/dnsenum/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/ru/tools/dnsmap/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/ru/tools/dnsrecon/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://cyber-sec-pro.com/ru/tools/dnsx/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/ru/tools/dradis/</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -4047,6 +6922,11 @@
   </url>
   <url>
     <loc>https://cyber-sec-pro.com/ru/tools/enum4linux-ng/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/ru/tools/enum4linux/</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -4071,7 +6951,27 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://cyber-sec-pro.com/ru/tools/faraday/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://cyber-sec-pro.com/ru/tools/fcrackzip/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/ru/tools/feroxbuster/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/ru/tools/ffuf/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/ru/tools/fierce/</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -4086,6 +6986,16 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://cyber-sec-pro.com/ru/tools/fping/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/ru/tools/frida/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://cyber-sec-pro.com/ru/tools/gdb/</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
@@ -4096,7 +7006,17 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://cyber-sec-pro.com/ru/tools/gobuster/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://cyber-sec-pro.com/ru/tools/gophish/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/ru/tools/gospider/</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -4107,6 +7027,11 @@
   </url>
   <url>
     <loc>https://cyber-sec-pro.com/ru/tools/guymager/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/ru/tools/hakrawler/</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -4131,6 +7056,21 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://cyber-sec-pro.com/ru/tools/hping3/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/ru/tools/httpx/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/ru/tools/hydra/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://cyber-sec-pro.com/ru/tools/impacket-scripts/</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
@@ -4141,12 +7081,22 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://cyber-sec-pro.com/ru/tools/jadx/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://cyber-sec-pro.com/ru/tools/john/</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
     <loc>https://cyber-sec-pro.com/ru/tools/johnny/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/ru/tools/joomscan/</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -4162,6 +7112,11 @@
   </url>
   <url>
     <loc>https://cyber-sec-pro.com/ru/tools/kerbrute/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/ru/tools/kismet/</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -4186,6 +7141,11 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://cyber-sec-pro.com/ru/tools/ltrace/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://cyber-sec-pro.com/ru/tools/macchanger/</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
@@ -4196,7 +7156,32 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://cyber-sec-pro.com/ru/tools/maltego/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://cyber-sec-pro.com/ru/tools/maskprocessor/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/ru/tools/masscan/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/ru/tools/medusa/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/ru/tools/metasploit/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/ru/tools/mimikatz/</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -4211,12 +7196,27 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://cyber-sec-pro.com/ru/tools/mitmproxy/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/ru/tools/msfconsole/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://cyber-sec-pro.com/ru/tools/msfvenom/</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
     <loc>https://cyber-sec-pro.com/ru/tools/mtr/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/ru/tools/naabu/</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -4231,12 +7231,62 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://cyber-sec-pro.com/ru/tools/ncat/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/ru/tools/ncrack/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/ru/tools/netdiscover/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/ru/tools/netexec/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/ru/tools/nikto/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/ru/tools/nishang/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/ru/tools/nmap/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://cyber-sec-pro.com/ru/tools/nslookup/</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://cyber-sec-pro.com/ru/tools/nuclei/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/ru/tools/objdump/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://cyber-sec-pro.com/ru/tools/oletools/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/ru/tools/openvas/</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -4251,7 +7301,17 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://cyber-sec-pro.com/ru/tools/patator/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://cyber-sec-pro.com/ru/tools/photorec/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/ru/tools/pixiewps/</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -4261,12 +7321,42 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://cyber-sec-pro.com/ru/tools/proxychains4/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://cyber-sec-pro.com/ru/tools/pypykatz/</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://cyber-sec-pro.com/ru/tools/radare2/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/ru/tools/reaver/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/ru/tools/recon-ng/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/ru/tools/regripper/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://cyber-sec-pro.com/ru/tools/responder/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/ru/tools/rizin/</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -4311,7 +7401,17 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://cyber-sec-pro.com/ru/tools/sherlock/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://cyber-sec-pro.com/ru/tools/sleuthkit/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/ru/tools/sliver/</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -4331,6 +7431,16 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://cyber-sec-pro.com/ru/tools/spiderfoot/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/ru/tools/sqlmap/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://cyber-sec-pro.com/ru/tools/ssdeep/</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
@@ -4346,7 +7456,17 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://cyber-sec-pro.com/ru/tools/strace/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://cyber-sec-pro.com/ru/tools/strings/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/ru/tools/subfinder/</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -4371,12 +7491,37 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://cyber-sec-pro.com/ru/tools/testssl/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/ru/tools/theharvester/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/ru/tools/tlsx/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://cyber-sec-pro.com/ru/tools/traceroute/</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
     <loc>https://cyber-sec-pro.com/ru/tools/tshark/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/ru/tools/unicornscan/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/ru/tools/unix-privesc-check/</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -4396,6 +7541,16 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://cyber-sec-pro.com/ru/tools/wafw00f/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/ru/tools/wapiti/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://cyber-sec-pro.com/ru/tools/waybackurls/</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
@@ -4406,7 +7561,22 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://cyber-sec-pro.com/ru/tools/whatweb/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://cyber-sec-pro.com/ru/tools/whois/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/ru/tools/wifiphisher/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/ru/tools/wifite/</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -4417,6 +7587,36 @@
   </url>
   <url>
     <loc>https://cyber-sec-pro.com/ru/tools/winpeas/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/ru/tools/wireshark/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/ru/tools/wordlists/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/ru/tools/wpscan/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/ru/tools/xsser/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/ru/tools/xsstrike/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/ru/tools/zaproxy/</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -4536,6 +7736,11 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://cyber-sec-pro.com/tr/tools/aircrack-ng/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://cyber-sec-pro.com/tr/tools/aireplay-ng/</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
@@ -4551,12 +7756,37 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://cyber-sec-pro.com/tr/tools/amass/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/tr/tools/apktool/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://cyber-sec-pro.com/tr/tools/armitage/</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://cyber-sec-pro.com/tr/tools/arping/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/tr/tools/assetfinder/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://cyber-sec-pro.com/tr/tools/autopsy/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/tr/tools/beef/</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -4586,7 +7816,17 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://cyber-sec-pro.com/tr/tools/burpsuite/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://cyber-sec-pro.com/tr/tools/capa/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/tr/tools/certipy/</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -4607,6 +7847,11 @@
   </url>
   <url>
     <loc>https://cyber-sec-pro.com/tr/tools/cloudfox/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/tr/tools/commix/</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -4636,12 +7881,42 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://cyber-sec-pro.com/tr/tools/dirb/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/tr/tools/dirsearch/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://cyber-sec-pro.com/tr/tools/dnscat2/</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://cyber-sec-pro.com/tr/tools/dnsenum/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/tr/tools/dnsmap/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/tr/tools/dnsrecon/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://cyber-sec-pro.com/tr/tools/dnsx/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/tr/tools/dradis/</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -4657,6 +7932,11 @@
   </url>
   <url>
     <loc>https://cyber-sec-pro.com/tr/tools/enum4linux-ng/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/tr/tools/enum4linux/</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -4681,7 +7961,27 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://cyber-sec-pro.com/tr/tools/faraday/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://cyber-sec-pro.com/tr/tools/fcrackzip/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/tr/tools/feroxbuster/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/tr/tools/ffuf/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/tr/tools/fierce/</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -4696,6 +7996,16 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://cyber-sec-pro.com/tr/tools/fping/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/tr/tools/frida/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://cyber-sec-pro.com/tr/tools/gdb/</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
@@ -4706,7 +8016,17 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://cyber-sec-pro.com/tr/tools/gobuster/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://cyber-sec-pro.com/tr/tools/gophish/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/tr/tools/gospider/</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -4717,6 +8037,11 @@
   </url>
   <url>
     <loc>https://cyber-sec-pro.com/tr/tools/guymager/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/tr/tools/hakrawler/</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -4741,6 +8066,21 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://cyber-sec-pro.com/tr/tools/hping3/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/tr/tools/httpx/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/tr/tools/hydra/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://cyber-sec-pro.com/tr/tools/impacket-scripts/</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
@@ -4751,12 +8091,22 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://cyber-sec-pro.com/tr/tools/jadx/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://cyber-sec-pro.com/tr/tools/john/</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
     <loc>https://cyber-sec-pro.com/tr/tools/johnny/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/tr/tools/joomscan/</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -4772,6 +8122,11 @@
   </url>
   <url>
     <loc>https://cyber-sec-pro.com/tr/tools/kerbrute/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/tr/tools/kismet/</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -4796,6 +8151,11 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://cyber-sec-pro.com/tr/tools/ltrace/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://cyber-sec-pro.com/tr/tools/macchanger/</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
@@ -4806,7 +8166,32 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://cyber-sec-pro.com/tr/tools/maltego/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://cyber-sec-pro.com/tr/tools/maskprocessor/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/tr/tools/masscan/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/tr/tools/medusa/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/tr/tools/metasploit/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/tr/tools/mimikatz/</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -4821,12 +8206,27 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://cyber-sec-pro.com/tr/tools/mitmproxy/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/tr/tools/msfconsole/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://cyber-sec-pro.com/tr/tools/msfvenom/</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
     <loc>https://cyber-sec-pro.com/tr/tools/mtr/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/tr/tools/naabu/</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -4841,12 +8241,62 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://cyber-sec-pro.com/tr/tools/ncat/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/tr/tools/ncrack/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/tr/tools/netdiscover/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/tr/tools/netexec/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/tr/tools/nikto/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/tr/tools/nishang/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/tr/tools/nmap/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://cyber-sec-pro.com/tr/tools/nslookup/</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://cyber-sec-pro.com/tr/tools/nuclei/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/tr/tools/objdump/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://cyber-sec-pro.com/tr/tools/oletools/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/tr/tools/openvas/</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -4861,7 +8311,17 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://cyber-sec-pro.com/tr/tools/patator/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://cyber-sec-pro.com/tr/tools/photorec/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/tr/tools/pixiewps/</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -4871,12 +8331,42 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://cyber-sec-pro.com/tr/tools/proxychains4/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://cyber-sec-pro.com/tr/tools/pypykatz/</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://cyber-sec-pro.com/tr/tools/radare2/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/tr/tools/reaver/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/tr/tools/recon-ng/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/tr/tools/regripper/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://cyber-sec-pro.com/tr/tools/responder/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/tr/tools/rizin/</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -4921,7 +8411,17 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://cyber-sec-pro.com/tr/tools/sherlock/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://cyber-sec-pro.com/tr/tools/sleuthkit/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/tr/tools/sliver/</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -4941,6 +8441,16 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://cyber-sec-pro.com/tr/tools/spiderfoot/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/tr/tools/sqlmap/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://cyber-sec-pro.com/tr/tools/ssdeep/</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
@@ -4956,7 +8466,17 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://cyber-sec-pro.com/tr/tools/strace/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://cyber-sec-pro.com/tr/tools/strings/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/tr/tools/subfinder/</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -4981,12 +8501,37 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://cyber-sec-pro.com/tr/tools/testssl/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/tr/tools/theharvester/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/tr/tools/tlsx/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://cyber-sec-pro.com/tr/tools/traceroute/</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
     <loc>https://cyber-sec-pro.com/tr/tools/tshark/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/tr/tools/unicornscan/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/tr/tools/unix-privesc-check/</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -5006,6 +8551,16 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://cyber-sec-pro.com/tr/tools/wafw00f/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/tr/tools/wapiti/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://cyber-sec-pro.com/tr/tools/waybackurls/</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
@@ -5016,7 +8571,22 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://cyber-sec-pro.com/tr/tools/whatweb/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://cyber-sec-pro.com/tr/tools/whois/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/tr/tools/wifiphisher/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/tr/tools/wifite/</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -5027,6 +8597,36 @@
   </url>
   <url>
     <loc>https://cyber-sec-pro.com/tr/tools/winpeas/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/tr/tools/wireshark/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/tr/tools/wordlists/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/tr/tools/wpscan/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/tr/tools/xsser/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/tr/tools/xsstrike/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/tr/tools/zaproxy/</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -5086,6 +8686,11 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://cyber-sec-pro.com/zh/tools/aircrack-ng/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://cyber-sec-pro.com/zh/tools/aireplay-ng/</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
@@ -5101,12 +8706,37 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://cyber-sec-pro.com/zh/tools/amass/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/zh/tools/apktool/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://cyber-sec-pro.com/zh/tools/armitage/</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://cyber-sec-pro.com/zh/tools/arping/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/zh/tools/assetfinder/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://cyber-sec-pro.com/zh/tools/autopsy/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/zh/tools/beef/</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -5136,7 +8766,17 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://cyber-sec-pro.com/zh/tools/burpsuite/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://cyber-sec-pro.com/zh/tools/capa/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/zh/tools/certipy/</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -5157,6 +8797,11 @@
   </url>
   <url>
     <loc>https://cyber-sec-pro.com/zh/tools/cloudfox/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/zh/tools/commix/</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -5186,12 +8831,42 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://cyber-sec-pro.com/zh/tools/dirb/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/zh/tools/dirsearch/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://cyber-sec-pro.com/zh/tools/dnscat2/</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://cyber-sec-pro.com/zh/tools/dnsenum/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/zh/tools/dnsmap/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/zh/tools/dnsrecon/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://cyber-sec-pro.com/zh/tools/dnsx/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/zh/tools/dradis/</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -5207,6 +8882,11 @@
   </url>
   <url>
     <loc>https://cyber-sec-pro.com/zh/tools/enum4linux-ng/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/zh/tools/enum4linux/</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -5231,7 +8911,27 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://cyber-sec-pro.com/zh/tools/faraday/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://cyber-sec-pro.com/zh/tools/fcrackzip/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/zh/tools/feroxbuster/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/zh/tools/ffuf/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/zh/tools/fierce/</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -5246,6 +8946,16 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://cyber-sec-pro.com/zh/tools/fping/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/zh/tools/frida/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://cyber-sec-pro.com/zh/tools/gdb/</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
@@ -5256,7 +8966,17 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://cyber-sec-pro.com/zh/tools/gobuster/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://cyber-sec-pro.com/zh/tools/gophish/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/zh/tools/gospider/</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -5267,6 +8987,11 @@
   </url>
   <url>
     <loc>https://cyber-sec-pro.com/zh/tools/guymager/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/zh/tools/hakrawler/</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -5291,6 +9016,21 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://cyber-sec-pro.com/zh/tools/hping3/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/zh/tools/httpx/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/zh/tools/hydra/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://cyber-sec-pro.com/zh/tools/impacket-scripts/</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
@@ -5301,12 +9041,22 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://cyber-sec-pro.com/zh/tools/jadx/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://cyber-sec-pro.com/zh/tools/john/</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
     <loc>https://cyber-sec-pro.com/zh/tools/johnny/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/zh/tools/joomscan/</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -5322,6 +9072,11 @@
   </url>
   <url>
     <loc>https://cyber-sec-pro.com/zh/tools/kerbrute/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/zh/tools/kismet/</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -5346,6 +9101,11 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://cyber-sec-pro.com/zh/tools/ltrace/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://cyber-sec-pro.com/zh/tools/macchanger/</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
@@ -5356,7 +9116,32 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://cyber-sec-pro.com/zh/tools/maltego/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://cyber-sec-pro.com/zh/tools/maskprocessor/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/zh/tools/masscan/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/zh/tools/medusa/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/zh/tools/metasploit/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/zh/tools/mimikatz/</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -5371,12 +9156,27 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://cyber-sec-pro.com/zh/tools/mitmproxy/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/zh/tools/msfconsole/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://cyber-sec-pro.com/zh/tools/msfvenom/</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
     <loc>https://cyber-sec-pro.com/zh/tools/mtr/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/zh/tools/naabu/</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -5391,12 +9191,62 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://cyber-sec-pro.com/zh/tools/ncat/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/zh/tools/ncrack/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/zh/tools/netdiscover/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/zh/tools/netexec/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/zh/tools/nikto/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/zh/tools/nishang/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/zh/tools/nmap/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://cyber-sec-pro.com/zh/tools/nslookup/</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://cyber-sec-pro.com/zh/tools/nuclei/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/zh/tools/objdump/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://cyber-sec-pro.com/zh/tools/oletools/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/zh/tools/openvas/</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -5411,7 +9261,17 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://cyber-sec-pro.com/zh/tools/patator/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://cyber-sec-pro.com/zh/tools/photorec/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/zh/tools/pixiewps/</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -5421,12 +9281,42 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://cyber-sec-pro.com/zh/tools/proxychains4/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://cyber-sec-pro.com/zh/tools/pypykatz/</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://cyber-sec-pro.com/zh/tools/radare2/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/zh/tools/reaver/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/zh/tools/recon-ng/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/zh/tools/regripper/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://cyber-sec-pro.com/zh/tools/responder/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/zh/tools/rizin/</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -5471,7 +9361,17 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://cyber-sec-pro.com/zh/tools/sherlock/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://cyber-sec-pro.com/zh/tools/sleuthkit/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/zh/tools/sliver/</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -5491,6 +9391,16 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://cyber-sec-pro.com/zh/tools/spiderfoot/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/zh/tools/sqlmap/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://cyber-sec-pro.com/zh/tools/ssdeep/</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
@@ -5506,7 +9416,17 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://cyber-sec-pro.com/zh/tools/strace/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://cyber-sec-pro.com/zh/tools/strings/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/zh/tools/subfinder/</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -5531,12 +9451,37 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://cyber-sec-pro.com/zh/tools/testssl/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/zh/tools/theharvester/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/zh/tools/tlsx/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://cyber-sec-pro.com/zh/tools/traceroute/</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
     <loc>https://cyber-sec-pro.com/zh/tools/tshark/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/zh/tools/unicornscan/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/zh/tools/unix-privesc-check/</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -5556,6 +9501,16 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://cyber-sec-pro.com/zh/tools/wafw00f/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/zh/tools/wapiti/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://cyber-sec-pro.com/zh/tools/waybackurls/</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
@@ -5566,7 +9521,22 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://cyber-sec-pro.com/zh/tools/whatweb/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://cyber-sec-pro.com/zh/tools/whois/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/zh/tools/wifiphisher/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/zh/tools/wifite/</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -5577,6 +9547,36 @@
   </url>
   <url>
     <loc>https://cyber-sec-pro.com/zh/tools/winpeas/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/zh/tools/wireshark/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/zh/tools/wordlists/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/zh/tools/wpscan/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/zh/tools/xsser/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/zh/tools/xsstrike/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cyber-sec-pro.com/zh/tools/zaproxy/</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
