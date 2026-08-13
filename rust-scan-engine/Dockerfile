@@ -25,6 +25,8 @@ ENV SCAN_ENGINE_PORT=5002
 COPY tools/tools.txt /tmp/tools.txt
 COPY tools/install_tools.sh /tmp/install_tools.sh
 RUN bash /tmp/install_tools.sh
+COPY tools/install_extra.sh /tmp/install_extra.sh
+RUN bash /tmp/install_extra.sh
 
 WORKDIR /app
 COPY --from=builder /app/target/release/cybersec-scan-engine /usr/local/bin/cybersec-scan-engine
