@@ -71,7 +71,7 @@ async fn tick(db: &PgPool, scan_tx: &broadcast::Sender<String>) -> Result<(), St
                     Some(serde_json::json!({"scheduled_scan_id": sched_id, "target": target, "reason": "no valid target authorization"})),
                     Some("scheduled_scan"), Some(&sched_id), "blocked", None,
                 ).await;
-                advance_next_run(db, &sched_id, cron_expr.as_deref()).await;
+                advance_next_run(db, &sched_id2, cron_expr.as_deref()).await;
                 continue;
             }
         };
@@ -92,7 +92,7 @@ async fn tick(db: &PgPool, scan_tx: &broadcast::Sender<String>) -> Result<(), St
             None => {
                 tracing::warn!("Scheduled scan {}: tool '{}' not found, skipping", sched_id, tool_name);
                 // Still advance next_run so we don't loop forever
-                advance_next_run(db, &sched_id, cron_expr.as_deref()).await;
+                advance_next_run(db, &sched_id2, cron_expr.as_deref()).await;
                 continue;
             }
         };
@@ -122,7 +122,7 @@ async fn tick(db: &PgPool, scan_tx: &broadcast::Sender<String>) -> Result<(), St
         .await
         {
             tracing::error!("Scheduled scan {} — failed to insert scan: {}", sched_id, e);
-            advance_next_run(db, &sched_id, cron_expr.as_deref()).await;
+            advance_next_run(db, &sched_id2, cron_expr.as_deref()).await;
             continue;
         }
 
@@ -137,6 +137,7 @@ async fn tick(db: &PgPool, scan_tx: &broadcast::Sender<String>) -> Result<(), St
         let target2 = target.clone();
         let scan_id2 = scan_id.clone();
         let agent_id2 = agent_id.clone();
+        let sched_id2 = sched_id.clone();
 
         tokio::spawn(async move {
             use crate::scan_engine::executor::{execute_scan, AgentSshInfo};
@@ -177,7 +178,7 @@ async fn tick(db: &PgPool, scan_tx: &broadcast::Sender<String>) -> Result<(), St
                  VALUES ($1, $2, $3, $4, $5, NOW(), NOW(), $6, $7)",
             )
             .bind(&history_id)
-            .bind(&sched_id)
+            .bind(&sched_id2)
             .bind(&org_id)
             .bind(&scan_id2)
             .bind(&status)
@@ -188,37 +189,24 @@ async fn tick(db: &PgPool, scan_tx: &broadcast::Sender<String>) -> Result<(), St
 
             // Retry logic for failed scans
             if status == "failed" {
-                let max_retries: i32 = sqlx::query_scalar("SELECT COALESCE(max_retries, 3) FROM scheduled_scans WHERE id = $1")
+                let _max_retries: i32 = sqlx::query_scalar("SELECT COALESCE(max_retries, 3) FROM scheduled_scans WHERE id = $1")
                     .bind(&sched_id)
                     .fetch_one(&db2)
                     .await
                     .unwrap_or(3);
 
-                let current_retries: i32 = sqlx::query_scalar("SELECT COALESCE(retry_count, 0) FROM scheduled_scans WHERE id = $1")
+                let _current_retries: i32 = sqlx::query_scalar("SELECT COALESCE(retry_count, 0) FROM scheduled_scans WHERE id = $1")
                     .bind(&sched_id)
                     .fetch_one(&db2)
                     .await
                     .unwrap_or(0);
 
-                if current_retries < max_retries {
-                    tracing::warn!("Scheduled scan {} failed, retrying ({}/{})", sched_id, current_retries + 1, max_retries);
-                    let _ = sqlx::query(
-                        "UPDATE scheduled_scans SET retry_count = COALESCE(retry_count,0) + 1, last_error = $1, next_run = NOW() WHERE id = $2",
-                    )
-                    .bind(&error_log)
-                    .bind(&sched_id)
-                    .execute(&db2)
-                    .await;
-                    continue;
-                } else {
-                    tracing::error!("Scheduled scan {} failed permanently after {} retries", sched_id, current_retries);
+                if status == "completed" {
+                    let _ = sqlx::query("UPDATE scheduled_scans SET retry_count = 0, last_error = NULL WHERE id = $1")
+                        .bind(&sched_id)
+                        .execute(&db2)
+                        .await;
                 }
-            } else {
-                // Reset retry count on success
-                let _ = sqlx::query("UPDATE scheduled_scans SET retry_count = 0, last_error = NULL WHERE id = $1")
-                    .bind(&sched_id)
-                    .execute(&db2)
-                    .await;
             }
 
             let _ = scan_tx2.send(
@@ -237,7 +225,7 @@ async fn tick(db: &PgPool, scan_tx: &broadcast::Sender<String>) -> Result<(), St
         });
 
         // Update schedule: increment run_count, set last_run, compute next_run
-        advance_next_run(db, &sched_id, cron_expr.as_deref()).await;
+        advance_next_run(db, &sched_id2, cron_expr.as_deref()).await;
     }
 
     Ok(())

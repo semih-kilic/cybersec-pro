@@ -1,8 +1,8 @@
-# Stage 1: Rust builder (unchanged)
+# Stage 1: Rust builder
 FROM rust:latest AS builder
 WORKDIR /app
-COPY rust-scan-engine/Cargo.toml ./
-COPY rust-scan-engine/src ./src
+COPY Cargo.toml ./
+COPY src ./src
 RUN cargo build --release
 
 # Stage 2: runtime — base is the previously built image (already has all

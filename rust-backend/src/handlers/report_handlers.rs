@@ -221,7 +221,7 @@ pub async fn create_report(
     .unwrap_or(None);
 
     let (primary_color, secondary_color, hide_platform_logo, custom_footer_text) = org_branding
-        .map(|(p, s, h, c)| (Some(p), Some(s), h, Some(c)))
+        .map(|(p, s, h, c)| (Some(p), s, h, c))
         .unwrap_or((None, None, Some(false), None));
 
     let html_content = generate_html_report(
@@ -426,6 +426,7 @@ pub async fn sample_report(
         "Sample Report", &template, &now, &date_short,
         &dummy_scans, total_findings, critical, high, medium, low, info,
         risk_score, risk_level, None, Some("CyberSec Pro Demo"),
+        None, None, false, None,
         183, 18,
     );
 
@@ -728,8 +729,8 @@ fn generate_html_report(
     } else {
         format!("<p style=\"margin-top:8px;font-size:10px;color:#94a8b8\">{}</p>", footer_html)
     };
-    let generator = if hide_platform_logo {
-        org_name.unwrap_or_else(|| "CyberSec Pro".to_string())
+    let generator: String = if hide_platform_logo {
+        org_name.unwrap_or("CyberSec Pro").to_string()
     } else {
         "CyberSec Pro".to_string()
     };

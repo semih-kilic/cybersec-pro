@@ -284,7 +284,7 @@ pub async fn register(
         .execute(&mut *tx).await {
             let _ = tx.rollback().await;
             tracing::error!("Failed to create organization: {}", e);
-            return (StatusCode::INTERNAL_SERVER_ERROR, Json(json!({"error": "Registration failed"}))).into_response());
+            return (StatusCode::INTERNAL_SERVER_ERROR, Json(json!({"error": "Registration failed"}))).into_response();
         }
     }
 
@@ -298,7 +298,7 @@ pub async fn register(
     .execute(&mut *tx).await {
         let _ = tx.rollback().await;
         tracing::error!("Failed to create user: {}", e);
-        return (StatusCode::INTERNAL_SERVER_ERROR, Json(json!({"error": "Registration failed"}))).into_response());
+        return (StatusCode::INTERNAL_SERVER_ERROR, Json(json!({"error": "Registration failed"}))).into_response();
     }
 
     // Mark invitation as accepted if this was an invite
@@ -313,7 +313,7 @@ pub async fn register(
 
     if let Err(e) = tx.commit().await {
         tracing::error!("Transaction commit failed: {}", e);
-        return (StatusCode::INTERNAL_SERVER_ERROR, Json(json!({"error": "Registration failed"}))).into_response());
+        return (StatusCode::INTERNAL_SERVER_ERROR, Json(json!({"error": "Registration failed"}))).into_response();
     }
 
     log_audit(&state.db, "register", "auth", "info", Some(&user_id), Some(&org_id), None, Some("user"), Some(&user_id), "success", Some(&headers)).await;
