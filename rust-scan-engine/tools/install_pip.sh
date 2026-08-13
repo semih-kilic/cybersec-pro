@@ -7,6 +7,8 @@ pip3 install --no-input --break-system-packages -q flare-capa 2>/dev/null || pip
 pip3 install --no-input --break-system-packages --ignore-installed -q maigret 2>/dev/null || echo "SKIP: maigret"
 echo ">>> [pip] volatility3"
 pip3 install --no-input --break-system-packages -q volatility3 2>/dev/null || echo "SKIP: volatility3"
+echo ">>> [pip] frida-tools"
+pip3 install --no-input --break-system-packages -q frida-tools 2>/dev/null || echo "SKIP: frida"
 echo ">>> [pip] prowler (may be heavy)"
 pip3 install --no-input --break-system-packages -q prowler 2>/tmp/prowler_err.log || pip3 install --no-input --break-system-packages --ignore-installed -q prowler 2>/dev/null || echo "SKIP: prowler"
 echo ">>> [pip] scoutsuite"
