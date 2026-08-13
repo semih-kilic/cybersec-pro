@@ -205,7 +205,7 @@ async fn send_jira(config: &Value, event_type: &str, payload: &Value) -> Result<
     let client = Client::new();
     let resp = client
         .post(format!("{}/rest/api/3/issue", base_url.trim_end_matches('/')))
-        .basic_auth(username, api_token)
+        .basic_auth(username, Some(api_token))
         .header("Accept", "application/json")
         .header("Content-Type", "application/json")
         .json(&issue_payload)
@@ -290,7 +290,7 @@ async fn send_servicenow(config: &Value, event_type: &str, payload: &Value) -> R
     let client = Client::new();
     let resp = client
         .post(format!("{}/api/now/table/{}", base_url.trim_end_matches('/'), table))
-        .basic_auth(username, password)
+        .basic_auth(username, Some(password))
         .header("Accept", "application/json")
         .header("Content-Type", "application/json")
         .json(&record_payload)
