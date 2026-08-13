@@ -1,37 +1,22 @@
-# ============================================
-# CyberSec Scan Engine — Kali runtime with tools
-# ============================================
-
-# Stage 1: Build the Rust engine binary
-FROM rust:1.90-bookworm AS builder
-
+# Stage 1: Rust builder (unchanged)
+FROM rust:latest AS builder
 WORKDIR /app
-RUN apt-get update && apt-get install -y --no-install-recommends \
-    pkg-config libssl-dev \
-    && rm -rf /var/lib/apt/lists/*
-
-COPY Cargo.toml Cargo.lock ./
-COPY src ./src
-
+COPY rust-scan-engine/Cargo.toml ./
+COPY rust-scan-engine/src ./src
 RUN cargo build --release
 
-# Stage 2: Kali Linux runtime with all security tools pre-installed
-FROM kalilinux/kali-rolling
+# Stage 2: runtime — base is the previously built image (already has all
+# apt packages from tools.txt installed, 12.4GB layer). Only install the
+# EXTRA packages + pip/gem/go/git tools on top.
+FROM cybersec-pro-rust-scan-engine:cache
 
 ENV DEBIAN_FRONTEND=noninteractive
 ENV SCAN_ENGINE_PORT=5002
 
-# Tool package list + tolerant installer (missing packages are skipped)
-COPY tools/tools.txt /tmp/tools.txt
-COPY tools/install_tools.sh /tmp/install_tools.sh
-COPY tools/apt_filter.py /tmp/apt_filter.py
-RUN bash /tmp/install_tools.sh
-
-# Extra packages required for GUI smoke tests + newly installed tools
-# (kept separate so the 321-package layer above can be cached)
+# Extra packages (chunked installer to stay gentle on low-resource hosts)
 COPY tools/extra_apt.txt /tmp/extra_apt.txt
-RUN apt-get update && apt-get install -y --no-install-recommends $(cat /tmp/extra_apt.txt) \
-    && rm -rf /var/lib/apt/lists/*
+COPY tools/extra_apt.sh /tmp/extra_apt.sh
+RUN bash /tmp/extra_apt.sh
 
 # pip / gem / go / git based tools (tolerant installs)
 COPY tools/install_extra.sh /tmp/install_extra.sh

@@ -170,6 +170,57 @@ async fn tick(db: &PgPool, scan_tx: &broadcast::Sender<String>) -> Result<(), St
             .execute(&db2)
             .await;
 
+            // Record in schedule run history
+            let history_id = uuid::Uuid::new_v4().to_string();
+            let _ = sqlx::query(
+                "INSERT INTO schedule_run_history (id, scheduled_scan_id, organization_id, scan_id, status, started_at, completed_at, output, error)
+                 VALUES ($1, $2, $3, $4, $5, NOW(), NOW(), $6, $7)",
+            )
+            .bind(&history_id)
+            .bind(&sched_id)
+            .bind(&org_id)
+            .bind(&scan_id2)
+            .bind(&status)
+            .bind(&output)
+            .bind(&error_log)
+            .execute(&db2)
+            .await;
+
+            // Retry logic for failed scans
+            if status == "failed" {
+                let max_retries: i32 = sqlx::query_scalar("SELECT COALESCE(max_retries, 3) FROM scheduled_scans WHERE id = $1")
+                    .bind(&sched_id)
+                    .fetch_one(&db2)
+                    .await
+                    .unwrap_or(3);
+
+                let current_retries: i32 = sqlx::query_scalar("SELECT COALESCE(retry_count, 0) FROM scheduled_scans WHERE id = $1")
+                    .bind(&sched_id)
+                    .fetch_one(&db2)
+                    .await
+                    .unwrap_or(0);
+
+                if current_retries < max_retries {
+                    tracing::warn!("Scheduled scan {} failed, retrying ({}/{})", sched_id, current_retries + 1, max_retries);
+                    let _ = sqlx::query(
+                        "UPDATE scheduled_scans SET retry_count = COALESCE(retry_count,0) + 1, last_error = $1, next_run = NOW() WHERE id = $2",
+                    )
+                    .bind(&error_log)
+                    .bind(&sched_id)
+                    .execute(&db2)
+                    .await;
+                    continue;
+                } else {
+                    tracing::error!("Scheduled scan {} failed permanently after {} retries", sched_id, current_retries);
+                }
+            } else {
+                // Reset retry count on success
+                let _ = sqlx::query("UPDATE scheduled_scans SET retry_count = 0, last_error = NULL WHERE id = $1")
+                    .bind(&sched_id)
+                    .execute(&db2)
+                    .await;
+            }
+
             let _ = scan_tx2.send(
                 serde_json::json!({"type": "complete", "scan_id": scan_id2, "status": status, "scheduled": true}).to_string(),
             );

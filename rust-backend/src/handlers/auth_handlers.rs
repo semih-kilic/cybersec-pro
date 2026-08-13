@@ -145,6 +145,7 @@ pub struct RegisterRequest {
     pub first_name: Option<String>,
     pub last_name: Option<String>,
     pub organization_name: Option<String>,
+    pub invite_token: Option<String>,
 }
 
 pub async fn register(
@@ -232,8 +233,35 @@ pub async fn register(
         Err(_) => return (StatusCode::INTERNAL_SERVER_ERROR, Json(json!({"error": "Password hashing failed"}))).into_response(),
     };
 
+    // Check for invitation token
+    let invite_data = if let Some(token) = &body.invite_token {
+        sqlx::query_as::<_, (String, String, String)>(
+            "SELECT organization_id, role, email FROM team_invitations WHERE token = $1 AND status = 'pending' AND expires_at > NOW()"
+        )
+        .bind(token)
+        .fetch_optional(&state.db)
+        .await
+        .unwrap_or(None)
+    } else {
+        None
+    };
+
+    let (org_id, role, invited_email) = match invite_data {
+        Some((inv_org_id, inv_role, inv_email)) => {
+            if inv_email != email {
+                return (StatusCode::BAD_REQUEST, Json(json!({"error": "Invitation email does not match registration email"}))).into_response();
+            }
+            (inv_org_id, inv_role, Some(inv_email))
+        }
+        None => {
+            if body.invite_token.is_some() {
+                return (StatusCode::BAD_REQUEST, Json(json!({"error": "Invalid or expired invitation token"}))).into_response();
+            }
+            (Uuid::new_v4().to_string(), "admin".to_string(), None)
+        }
+    };
+
     // Create org + user atomically in a transaction
-    let org_id = Uuid::new_v4().to_string();
     let org_name = body.organization_name.as_deref().unwrap_or("My Organization");
     let slug = format!("{}-{}", org_name.to_lowercase().replace(' ', "-"), &org_id[..8]);
     let user_id = Uuid::new_v4().to_string();
@@ -247,32 +275,45 @@ pub async fn register(
         }
     };
 
-    if let Err(e) = sqlx::query(
-        "INSERT INTO organizations (id, name, slug, plan_type) VALUES ($1, $2, $3, 'trial')"
-    )
-    .bind(&org_id).bind(org_name).bind(&slug)
-    .execute(&mut *tx).await {
-        let _ = tx.rollback().await;
-        tracing::error!("Failed to create organization: {}", e);
-        return (StatusCode::INTERNAL_SERVER_ERROR, Json(json!({"error": "Registration failed"}))).into_response();
+    // Only create organization if this is not an invite acceptance
+    if invited_email.is_none() {
+        if let Err(e) = sqlx::query(
+            "INSERT INTO organizations (id, name, slug, plan_type) VALUES ($1, $2, $3, 'trial')"
+        )
+        .bind(&org_id).bind(org_name).bind(&slug)
+        .execute(&mut *tx).await {
+            let _ = tx.rollback().await;
+            tracing::error!("Failed to create organization: {}", e);
+            return (StatusCode::INTERNAL_SERVER_ERROR, Json(json!({"error": "Registration failed"}))).into_response());
+        }
     }
 
     if let Err(e) = sqlx::query(
         "INSERT INTO users (id, email, email_normalized, signup_ip, password_hash, first_name, last_name, role, organization_id, email_verified, verification_token, verification_sent_at)
-         VALUES ($1, $2, $3, $4, $5, $6, $7, 'admin', $8, FALSE, $9, CURRENT_TIMESTAMP)"
+         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, FALSE, $10, CURRENT_TIMESTAMP)"
     )
     .bind(&user_id).bind(&email).bind(&email_normalized).bind(&ip).bind(&pw_hash)
     .bind(&body.first_name).bind(&body.last_name)
-    .bind(&org_id).bind(&verification_token)
+    .bind(&role).bind(&org_id).bind(&verification_token)
     .execute(&mut *tx).await {
         let _ = tx.rollback().await;
         tracing::error!("Failed to create user: {}", e);
-        return (StatusCode::INTERNAL_SERVER_ERROR, Json(json!({"error": "Registration failed"}))).into_response();
+        return (StatusCode::INTERNAL_SERVER_ERROR, Json(json!({"error": "Registration failed"}))).into_response());
+    }
+
+    // Mark invitation as accepted if this was an invite
+    if let Some(ref token) = body.invite_token {
+        let _ = sqlx::query(
+            "UPDATE team_invitations SET status = 'accepted', updated_at = NOW() WHERE token = $1"
+        )
+        .bind(token)
+        .execute(&mut *tx)
+        .await;
     }
 
     if let Err(e) = tx.commit().await {
         tracing::error!("Transaction commit failed: {}", e);
-        return (StatusCode::INTERNAL_SERVER_ERROR, Json(json!({"error": "Registration failed"}))).into_response();
+        return (StatusCode::INTERNAL_SERVER_ERROR, Json(json!({"error": "Registration failed"}))).into_response());
     }
 
     log_audit(&state.db, "register", "auth", "info", Some(&user_id), Some(&org_id), None, Some("user"), Some(&user_id), "success", Some(&headers)).await;
