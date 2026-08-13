@@ -1,6 +1,6 @@
 # FAZ 6: B2B Kurumsal Özellikler & Monetizasyon - Test Raporu
 
-**Test Tarihi:** 2026-08-13 13:56:26
+**Test Tarihi:** 2026-08-13 14:04:23
 **Test Ortamı:** CyberSec Pro v4.0.0
 **Backend:** Rust/Axum
 **Veritabanı:** PostgreSQL
@@ -11,10 +11,10 @@
 
 | Metrik | Değer |
 |--------|-------|
-| Toplam Test | 28 |
-| Geçen | 27 |
-| Başarısız | 1 |
-| Başarı Oranı | 96.4% |
+| Toplam Test | 31 |
+| Geçen | 31 |
+| Başarısız | 0 |
+| Başarı Oranı | 100.0% |
 
 ---
 
@@ -138,13 +138,30 @@
 ### 6.4.1
 
 - **Create scheduled scan**
-  - Durum: ❌ **FAIL**
-  - Detay: Status: 500, Response: {'error': 'Failed to create schedule: error returned from database: insert or update on table "scheduled_scans" violates foreign key constraint "scheduled_scans_authorization_id_fkey"'}
+  - Durum: ✅ **PASS**
 
 
 ### 6.4.2
 
 - **List scheduled scans**
+  - Durum: ✅ **PASS**
+
+
+### 6.4.3
+
+- **Toggle scheduled scan**
+  - Durum: ✅ **PASS**
+
+
+### 6.4.4
+
+- **Update scheduled scan**
+  - Durum: ✅ **PASS**
+
+
+### 6.4.5
+
+- **Delete scheduled scan**
   - Durum: ✅ **PASS**
 
 
@@ -296,8 +313,7 @@ CREATE TABLE IF NOT EXISTS schedule_run_history (
 
 ### Düzeltilecek Noktalar
 
-#### Başarısız Testler
-- ❌ 6.4.1 - Create scheduled scan: Status: 500, Response: {'error': 'Failed to create schedule: error returned from database: insert or update on table "scheduled_scans" violates foreign key constraint "scheduled_scans_authorization_id_fkey"'}
+Tüm testler başarıyla geçti! ✅
 
 ### Sonraki Adımlar
 1. Frontend UI'ları Phase 6 özellikleri ile güncellenmeli
