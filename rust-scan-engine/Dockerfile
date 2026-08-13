@@ -24,6 +24,7 @@ ENV SCAN_ENGINE_PORT=5002
 # Tool package list + tolerant installer (missing packages are skipped)
 COPY tools/tools.txt /tmp/tools.txt
 COPY tools/install_tools.sh /tmp/install_tools.sh
+COPY tools/apt_filter.py /tmp/apt_filter.py
 RUN bash /tmp/install_tools.sh
 
 # Extra packages required for GUI smoke tests + newly installed tools
