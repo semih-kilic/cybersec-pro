@@ -1,13 +1,11 @@
-# Stage 1: Rust builder
-FROM rust:latest AS builder
-WORKDIR /app
-COPY Cargo.toml ./
-COPY src ./src
-RUN cargo build --release
+# Single-stage runtime image. Base is the previously built image which
+# already contains ALL apt packages from tools.txt AND the compiled binary
+# at /usr/local/bin/cybersec-scan-engine. We only add the EXTRA packages
+# (75 delta + GUI tools) and pip/gem/go/git tools on top.
+#
+# IMPORTANT: no builder stage here — parallel cargo builds + 12GB extract
+# used to hang this 2-vCPU host.
 
-# Stage 2: runtime — base is the previously built image (already has all
-# apt packages from tools.txt installed, 12.4GB layer). Only install the
-# EXTRA packages + pip/gem/go/git tools on top.
 FROM cybersec-pro-rust-scan-engine:cache
 
 ENV DEBIAN_FRONTEND=noninteractive
@@ -23,8 +21,6 @@ COPY tools/install_extra.sh /tmp/install_extra.sh
 RUN bash /tmp/install_extra.sh
 
 WORKDIR /app
-COPY --from=builder /app/target/release/cybersec-scan-engine /usr/local/bin/cybersec-scan-engine
-
 EXPOSE 5002
 
 CMD ["cybersec-scan-engine"]
