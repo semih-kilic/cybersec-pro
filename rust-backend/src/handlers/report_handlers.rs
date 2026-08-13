@@ -1617,7 +1617,7 @@ pub async fn update_org_branding(
         tracing::error!("Failed to update org branding: {}", e);
     }
 
-    Json(json!({"message": "Branding updated", "rows_affected": result.map(|r| r.rows_affected()).unwrap_or(Ok(0)).unwrap_or(0)})).into_response()
+    Json(json!({"message": "Branding updated"})).into_response()
 }
 
 /// Read org logo from disk and return as a base64 data URI for embedding in reports.

@@ -4577,7 +4577,7 @@ pub async fn create_integration(
     let events = body.get("events").cloned().unwrap_or(json!(["scan_completed","scan_failed","vulnerability_critical"]));
 
     // Validate integration type
-    let valid_types = ["slack", "teams", "jira", "github", "webhook"];
+    let valid_types = ["slack", "teams", "jira", "github", "servicenow", "webhook"];
     if !valid_types.contains(&int_type) {
         return (StatusCode::BAD_REQUEST, Json(json!({"error": format!("Invalid type. Must be one of: {:?}", valid_types)}))).into_response();
     }
