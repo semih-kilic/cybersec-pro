@@ -1,9 +1,3 @@
-# Single-stage runtime image. Base = previously built image (all tools.txt
-# apt packages + compiled binary already inside). We add the 75 delta +
-# GUI packages in 4 small chunks and pip/gem/go/git tools on top.
-#
-# Low priority (ionice nice) + small chunks to avoid hanging the 2-vCPU host.
-
 FROM cybersec-pro-rust-scan-engine:cache
 
 ENV DEBIAN_FRONTEND=noninteractive
@@ -25,9 +19,21 @@ RUN apt-get update -y && ionice -c 3 nice -n 19 bash -c 'xargs -a /tmp/extra_apt
 COPY tools/extra_apt.4.txt /tmp/extra_apt.4.txt
 RUN apt-get update -y && ionice -c 3 nice -n 19 bash -c 'xargs -a /tmp/extra_apt.4.txt -r apt-get install -y --no-install-recommends' && rm -rf /var/lib/apt/lists/*
 
-# pip / gem / go / git based tools (tolerant installs, low priority)
-COPY tools/install_extra.sh /tmp/install_extra.sh
-RUN ionice -c 3 nice -n 19 bash /tmp/install_extra.sh
+# pip tools (separate RUN so a heavy step can be resumed / cached)
+COPY tools/install_pip.sh /tmp/install_pip.sh
+RUN ionice -c 3 nice -n 19 bash /tmp/install_pip.sh
+
+# gem tools
+COPY tools/install_gem.sh /tmp/install_gem.sh
+RUN ionice -c 3 nice -n 19 bash /tmp/install_gem.sh
+
+# go tools
+COPY tools/install_go.sh /tmp/install_go.sh
+RUN ionice -c 3 nice -n 19 bash /tmp/install_go.sh
+
+# git / release tools
+COPY tools/install_git.sh /tmp/install_git.sh
+RUN ionice -c 3 nice -n 19 bash /tmp/install_git.sh
 
 WORKDIR /app
 EXPOSE 5002
