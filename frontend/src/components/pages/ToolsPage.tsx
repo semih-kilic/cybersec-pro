@@ -174,6 +174,31 @@ export default function ToolsPage() {
         </div>
       </section>
 
+      {/* Free Mini Tools */}
+      <section className="mx-auto max-w-6xl px-6 pb-12">
+        <div className="mb-6">
+          <h2 className="text-2xl font-bold">Free Online Security Tools</h2>
+          <p className="text-sm text-white/50 mt-1">No sign-up required. Instant results.</p>
+        </div>
+        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+          <div className="glass-card p-6">
+            <h3 className="font-bold mb-2">Online Subdomain Finder</h3>
+            <p className="text-sm text-white/50 mb-4">Discover subdomains without installing anything.</p>
+            <a href="/tools/mini-tools" className="text-sm text-[var(--color-neon)] hover:underline">Try it free →</a>
+          </div>
+          <div className="glass-card p-6">
+            <h3 className="font-bold mb-2">Header Security Checker</h3>
+            <p className="text-sm text-white/50 mb-4">Analyze HTTP security headers of any public URL.</p>
+            <a href="/tools/mini-tools" className="text-sm text-[var(--color-neon)] hover:underline">Try it free →</a>
+          </div>
+          <div className="glass-card p-6">
+            <h3 className="font-bold mb-2">DNS Lookup Tool</h3>
+            <p className="text-sm text-white/50 mb-4">Check A, AAAA, MX, TXT, NS records instantly.</p>
+            <a href="/tools/mini-tools" className="text-sm text-[var(--color-neon)] hover:underline">Try it free →</a>
+          </div>
+        </div>
+      </section>
+
       {/* Tools Grid */}
       <section className="mx-auto max-w-6xl px-6 pb-28">
         {loading ? (

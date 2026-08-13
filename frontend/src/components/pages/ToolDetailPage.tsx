@@ -18,6 +18,10 @@ import {
   AlertTriangle,
 } from "lucide-react";
 
+import OnlineSubdomainFinder from "@/components/tools/OnlineSubdomainFinder";
+import HeaderSecurityChecker from "@/components/tools/HeaderSecurityChecker";
+import DnsLookupTool from "@/components/tools/DnsLookupTool";
+
 const NetworkMesh = dynamic(() => import("@/components/three/NetworkMesh"), { ssr: false });
 
 interface Tool {
@@ -108,6 +112,22 @@ export default function ToolDetailPage({ slug }: { slug: string }) {
   }
 
   if (notFound || !tool) {
+    if (slug === "mini-tools") {
+      return (
+        <>
+          <NetworkMesh />
+          <div className="mx-auto max-w-6xl px-6 pb-28 pt-32">
+            <h1 className="text-4xl font-extrabold mb-4">Free Online Security Tools</h1>
+            <p className="text-white/50 mb-8">No sign-up. No installation. Instant results.</p>
+            <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+              <OnlineSubdomainFinder />
+              <HeaderSecurityChecker />
+              <DnsLookupTool />
+            </div>
+          </div>
+        </>
+      );
+    }
     return (
       <>
         <NetworkMesh />

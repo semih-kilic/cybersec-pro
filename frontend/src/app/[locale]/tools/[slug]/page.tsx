@@ -1,69 +1,47 @@
 import type { Metadata } from "next";
 import { setRequestLocale } from "next-intl/server";
+import { getPageMetadata } from "@/lib/seo";
 import ToolDetailPage from "@/components/pages/ToolDetailPage";
-
-function slugToTitle(slug: string): string {
-  return slug
-    .split("-")
-    .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
-    .join(" ");
-}
-
-export async function generateStaticParams() {
-  const locales = ["en", "tr", "de", "fr", "es", "ar", "ja", "zh", "ru", "ko"];
-
-  try {
-    const apiBase = process.env.INTERNAL_API_URL ?? "http://127.0.0.1:5001";
-    const res = await fetch(`${apiBase}/api/v2/tools`, {
-      cache: "no-store",
-      signal: AbortSignal.timeout(8000),
-    });
-    if (!res.ok) return [];
-
-    const data = await res.json();
-    const slugSet = new Set<string>();
-
-    for (const cat of Object.values(data.categories || {})) {
-      const c = cat as { tools?: { name: string }[] };
-      for (const t of c.tools || []) {
-        const slug = t.name
-          .toLowerCase()
-          .replace(/[^a-z0-9]+/g, "-")
-          .replace(/^-|-$/g, "");
-        if (slug) slugSet.add(slug);
-      }
-    }
-
-    return Array.from(slugSet).flatMap((slug) =>
-      locales.map((locale) => ({ locale, slug }))
-    );
-  } catch {
-    return [];
-  }
-}
 
 export async function generateMetadata({
   params,
 }: {
-  params: Promise<{ slug: string; locale: string }>;
+  params: Promise<{ locale: string; slug: string }>;
 }): Promise<Metadata> {
-  const { slug } = await params;
-  const toolName = slugToTitle(slug);
+  const { locale, slug } = await params;
+  const toolName = slug.replace(/-/g, " ");
+  return getPageMetadata("tools", locale);
+}
 
-  return {
-    title: `${toolName} — Security Tool | CyberSec Pro`,
-    description: `Run ${toolName} online with CyberSec Pro. Access 183 professional penetration testing tools in the cloud — no setup required.`,
-    openGraph: {
-      title: `${toolName} | CyberSec Pro`,
-      description: `Professional cloud-based ${toolName} tool for penetration testing and security assessments.`,
-    },
-  };
+export async function generateStaticParams() {
+  try {
+    const base = process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:5001";
+    const res = await fetch(`${base}/api/v2/tools?plan=trial`, {
+      next: { revalidate: 3600 },
+    });
+    if (!res.ok) return [];
+    const data = await res.json();
+    const tools: { name?: string }[] = [];
+    for (const cat of Object.values(data.categories || {})) {
+      const c = cat as { tools?: { name?: string }[] };
+      for (const t of c.tools || []) {
+        if (t.name) tools.push({ name: t.name });
+      }
+    }
+    const params = tools.map((t) => ({
+      slug: t.name!.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, ""),
+    }));
+    params.push({ slug: "mini-tools" });
+    return params;
+  } catch {
+    return [{ slug: "mini-tools" }];
+  }
 }
 
 export default async function Page({
   params,
 }: {
-  params: Promise<{ slug: string; locale: string }>;
+  params: Promise<{ locale: string; slug: string }>;
 }) {
   const { locale, slug } = await params;
   setRequestLocale(locale);
