@@ -24,8 +24,15 @@ ENV SCAN_ENGINE_PORT=5002
 # Tool package list + tolerant installer (missing packages are skipped)
 COPY tools/tools.txt /tmp/tools.txt
 COPY tools/install_tools.sh /tmp/install_tools.sh
-COPY tools/apt_filter.py /tmp/apt_filter.py
 RUN bash /tmp/install_tools.sh
+
+# Extra packages required for GUI smoke tests + newly installed tools
+# (kept separate so the 321-package layer above can be cached)
+COPY tools/extra_apt.txt /tmp/extra_apt.txt
+RUN apt-get update && apt-get install -y --no-install-recommends $(cat /tmp/extra_apt.txt) \
+    && rm -rf /var/lib/apt/lists/*
+
+# pip / gem / go / git based tools (tolerant installs)
 COPY tools/install_extra.sh /tmp/install_extra.sh
 RUN bash /tmp/install_extra.sh
 

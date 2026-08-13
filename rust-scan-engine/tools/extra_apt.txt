@@ -1,0 +1,10 @@
+xauth
+x11-utils
+x11-xserver-utils
+pciutils
+fluxion
+dnscat2
+sliver
+oletools
+golang-go
+set
