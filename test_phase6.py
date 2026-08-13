@@ -179,7 +179,7 @@ def test_6_2_white_label_reporting(token: str) -> bool:
         "primary_color": "#ff0000",
         "secondary_color": "#00ff00",
         "hide_platform_logo": True,
-        "custom_footer_text": "Custom Footer Text"
+        "custom_footer_text": "Phase6 Test Footer"
     })
     if status == 200:
         log_test("6.2.1 - Update organization branding", True)
@@ -195,7 +195,7 @@ def test_6_2_white_label_reporting(token: str) -> bool:
             org.get("primary_color") == "#ff0000" and
             org.get("secondary_color") == "#00ff00" and
             org.get("hide_platform_logo") == True and
-            org.get("custom_footer_text") == "Custom Footer Text"
+            org.get("custom_footer_text") == "Phase6 Test Footer"
         )
         if has_branding:
             log_test("6.2.2 - Branding fields saved correctly", True)
@@ -207,7 +207,7 @@ def test_6_2_white_label_reporting(token: str) -> bool:
         all_passed = False
     
     # 6.2.3 Generate sample report
-    status, data = make_request("GET", "/api/v1/reports/sample-report?template=executive&format=html", token)
+    status, data = make_request("GET", "/api/v1/reports/sample/executive?format=html", token)
     if status == 200:
         log_test("6.2.3 - Generate sample report", True)
     else:
@@ -382,9 +382,8 @@ def test_6_4_scheduled_scans(token: str) -> bool:
     # This is required for scheduled scans
     status, data = make_request("POST", "/api/v1/authorizations", token, {
         "target": "scanme.nmap.org",
-        "target_type": "host",
-        "scope_statement": "I authorize scanning of scanme.nmap.org for security testing purposes.",
-        "statement_version": "1.0"
+        "confirmed": True,
+        "scope_statement": "I authorize scanning of scanme.nmap.org for security testing purposes."
     })
     
     if status == 200 or status == 201:
@@ -399,7 +398,11 @@ def test_6_4_scheduled_scans(token: str) -> bool:
         "name": "Daily Security Scan",
         "tool_name": "nmap",
         "target": "scanme.nmap.org",
-        "cron_expression": "0 2 * * *"
+        "cron_expression": "0 2 * * *",
+        "authorization": {
+            "confirmed": True,
+            "scope_statement": "I authorize scanning of scanme.nmap.org for security testing purposes."
+        }
     })
     
     if status == 200 and "id" in data:

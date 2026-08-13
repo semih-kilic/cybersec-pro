@@ -1,6 +1,6 @@
 # FAZ 6: B2B Kurumsal Özellikler & Monetizasyon - Test Raporu
 
-**Test Tarihi:** 2026-08-13 13:43:22
+**Test Tarihi:** 2026-08-13 13:56:26
 **Test Ortamı:** CyberSec Pro v4.0.0
 **Backend:** Rust/Axum
 **Veritabanı:** PostgreSQL
@@ -12,9 +12,9 @@
 | Metrik | Değer |
 |--------|-------|
 | Toplam Test | 28 |
-| Geçen | 23 |
-| Başarısız | 5 |
-| Başarı Oranı | 82.1% |
+| Geçen | 27 |
+| Başarısız | 1 |
+| Başarı Oranı | 96.4% |
 
 ---
 
@@ -54,15 +54,13 @@
 ### 6.2.2
 
 - **Branding fields saved correctly**
-  - Durum: ❌ **FAIL**
-  - Detay: Login failed: 405
+  - Durum: ✅ **PASS**
 
 
 ### 6.2.3
 
 - **Generate sample report**
-  - Durum: ❌ **FAIL**
-  - Detay: Status: 404
+  - Durum: ✅ **PASS**
 
 
 ### 6.3.1
@@ -92,8 +90,7 @@
 ### 6.3.5
 
 - **Create ServiceNow integration**
-  - Durum: ❌ **FAIL**
-  - Detay: Status: 400, Response: {'error': 'Invalid type. Must be one of: ["slack", "teams", "jira", "github", "webhook"]'}
+  - Durum: ✅ **PASS**
 
 
 ### 6.3.6
@@ -135,15 +132,14 @@
 ### 6.4.0
 
 - **Create target authorization**
-  - Durum: ❌ **FAIL**
-  - Detay: Status: 404, Response: {'raw': ''}
+  - Durum: ✅ **PASS**
 
 
 ### 6.4.1
 
 - **Create scheduled scan**
   - Durum: ❌ **FAIL**
-  - Detay: Status: 403, Response: {'error': 'Target authorization required. Confirm that you own or have permission to test this target before scheduling scans.'}
+  - Detay: Status: 500, Response: {'error': 'Failed to create schedule: error returned from database: insert or update on table "scheduled_scans" violates foreign key constraint "scheduled_scans_authorization_id_fkey"'}
 
 
 ### 6.4.2
@@ -301,11 +297,7 @@ CREATE TABLE IF NOT EXISTS schedule_run_history (
 ### Düzeltilecek Noktalar
 
 #### Başarısız Testler
-- ❌ 6.2.2 - Branding fields saved correctly: Login failed: 405
-- ❌ 6.2.3 - Generate sample report: Status: 404
-- ❌ 6.3.5 - Create ServiceNow integration: Status: 400, Response: {'error': 'Invalid type. Must be one of: ["slack", "teams", "jira", "github", "webhook"]'}
-- ❌ 6.4.0 - Create target authorization: Status: 404, Response: {'raw': ''}
-- ❌ 6.4.1 - Create scheduled scan: Status: 403, Response: {'error': 'Target authorization required. Confirm that you own or have permission to test this target before scheduling scans.'}
+- ❌ 6.4.1 - Create scheduled scan: Status: 500, Response: {'error': 'Failed to create schedule: error returned from database: insert or update on table "scheduled_scans" violates foreign key constraint "scheduled_scans_authorization_id_fkey"'}
 
 ### Sonraki Adımlar
 1. Frontend UI'ları Phase 6 özellikleri ile güncellenmeli

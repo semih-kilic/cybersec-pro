@@ -115,7 +115,7 @@ pub async fn authorize_and_check(
         let now = chrono::Utc::now();
         let _ = sqlx::query(
             "INSERT INTO target_authorizations (id, organization_id, user_id, target, target_type, scope_statement, statement_version, confirmed_at, last_used_at)
-             VALUES ($1, $2, $3, $4, 'sandbox', $5, $6, $7, $7) ON CONFLICT DO NOTHING",
+             VALUES ($1, $2, $3, $4, 'sandbox', $5, $6, $7, $7) ON CONFLICT (organization_id, target) DO NOTHING",
         )
         .bind(&id)
         .bind(org_id)
@@ -126,6 +126,18 @@ pub async fn authorize_and_check(
         .bind(now)
         .execute(pool)
         .await;
+
+        // Fetch the actual authorization ID (either the one we just inserted or the existing one)
+        let actual_id: Option<(String,)> = sqlx::query_as(
+            "SELECT id FROM target_authorizations WHERE organization_id = $1 AND target = $2"
+        )
+        .bind(org_id)
+        .bind(target)
+        .fetch_optional(pool)
+        .await
+        .map_err(|e| format!("Authorization check failed: {}", e))?;
+
+        let authz_id = actual_id.map(|(id,)| id).unwrap_or(id.clone());
 
         log_audit(
             pool,
@@ -149,7 +161,7 @@ pub async fn authorize_and_check(
         )
         .await;
 
-        return Ok((id, canonical_statement(target), SCOPE_STATEMENT_VERSION.to_string()));
+        return Ok((authz_id, canonical_statement(target), SCOPE_STATEMENT_VERSION.to_string()));
     }
 
     let statement = canonical_statement(target);
