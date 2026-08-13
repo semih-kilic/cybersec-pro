@@ -1584,6 +1584,42 @@ pub async fn get_org_logo(
     Json(json!({"logo_url": logo_url})).into_response()
 }
 
+#[derive(Deserialize)]
+pub struct UpdateOrgBrandingRequest {
+    pub primary_color: Option<String>,
+    pub secondary_color: Option<String>,
+    pub hide_platform_logo: Option<bool>,
+    pub custom_footer_text: Option<String>,
+}
+
+pub async fn update_org_branding(
+    auth: AuthUser,
+    State(state): State<Arc<AppState>>,
+    Json(body): Json<UpdateOrgBrandingRequest>,
+) -> impl IntoResponse {
+    let org_id = match &auth.org_id {
+        Some(id) => id.clone(),
+        None => return (StatusCode::FORBIDDEN, Json(json!({"error": "Organization required"}))).into_response(),
+    };
+
+    let result = sqlx::query(
+        "UPDATE organizations SET primary_color = COALESCE($1, primary_color), secondary_color = COALESCE($2, secondary_color), hide_platform_logo = COALESCE($3, hide_platform_logo), custom_footer_text = COALESCE($4, custom_footer_text), updated_at = NOW() WHERE id = $5"
+    )
+    .bind(&body.primary_color)
+    .bind(&body.secondary_color)
+    .bind(&body.hide_platform_logo)
+    .bind(&body.custom_footer_text)
+    .bind(&org_id)
+    .execute(&state.db)
+    .await;
+
+    if let Err(e) = &result {
+        tracing::error!("Failed to update org branding: {}", e);
+    }
+
+    Json(json!({"message": "Branding updated", "rows_affected": result.map(|r| r.rows_affected()).unwrap_or(Ok(0)).unwrap_or(0)})).into_response()
+}
+
 /// Read org logo from disk and return as a base64 data URI for embedding in reports.
 /// Returns None if no logo is set or file can't be read.
 async fn load_org_logo_data_uri(db: &sqlx::PgPool, org_id: &str) -> Option<String> {

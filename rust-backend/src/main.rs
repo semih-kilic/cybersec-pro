@@ -336,6 +336,10 @@ fn build_router(state: Arc<AppState>) -> Router {
                 .post(report_handlers::upload_org_logo)
                 .delete(report_handlers::delete_org_logo),
         )
+        .route(
+            "/api/v1/organization/branding",
+            put(report_handlers::update_org_branding),
+        )
         // ── Agents ────────────────────────────────────────────
         .route(
             "/api/v1/agents",
