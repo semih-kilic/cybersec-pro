@@ -11,6 +11,10 @@ pub struct Organization {
     pub plan_type: Option<String>,
     pub stripe_customer_id: Option<String>,
     pub logo_url: Option<String>,
+    pub primary_color: Option<String>,
+    pub secondary_color: Option<String>,
+    pub hide_platform_logo: Option<bool>,
+    pub custom_footer_text: Option<String>,
     pub created_at: Option<NaiveDateTime>,
     pub is_active: Option<bool>,
 }
@@ -22,6 +26,10 @@ pub struct OrganizationResponse {
     pub slug: String,
     pub plan_type: String,
     pub logo_url: Option<String>,
+    pub primary_color: Option<String>,
+    pub secondary_color: Option<String>,
+    pub hide_platform_logo: Option<bool>,
+    pub custom_footer_text: Option<String>,
     pub created_at: Option<String>,
     pub is_active: bool,
 }
@@ -34,6 +42,10 @@ impl Organization {
             slug: self.slug.clone(),
             plan_type: self.plan_type.clone().unwrap_or_else(|| "starter".into()),
             logo_url: self.logo_url.clone(),
+            primary_color: self.primary_color.clone(),
+            secondary_color: self.secondary_color.clone(),
+            hide_platform_logo: self.hide_platform_logo,
+            custom_footer_text: self.custom_footer_text.clone(),
             created_at: self.created_at.map(|d| d.format("%Y-%m-%dT%H:%M:%S").to_string()),
             is_active: self.is_active.unwrap_or(true),
         }
