@@ -27,9 +27,15 @@ RUN ionice -c 3 nice -n 19 bash /tmp/install_pip.sh
 COPY tools/install_gem.sh /tmp/install_gem.sh
 RUN ionice -c 3 nice -n 19 bash /tmp/install_gem.sh
 
-# go tools
-COPY tools/install_go.sh /tmp/install_go.sh
-RUN ionice -c 3 nice -n 19 bash /tmp/install_go.sh
+# go tools (per-tool RUNs, single-process compile to stay gentle on 2-vCPU host)
+COPY tools/install_go_a.sh /tmp/install_go_a.sh
+RUN ionice -c 3 nice -n 19 bash /tmp/install_go_a.sh
+COPY tools/install_go_b.sh /tmp/install_go_b.sh
+RUN ionice -c 3 nice -n 19 bash /tmp/install_go_b.sh
+COPY tools/install_go_c.sh /tmp/install_go_c.sh
+RUN ionice -c 3 nice -n 19 bash /tmp/install_go_c.sh
+COPY tools/install_go_d.sh /tmp/install_go_d.sh
+RUN ionice -c 3 nice -n 19 bash /tmp/install_go_d.sh
 
 # git / release tools
 COPY tools/install_git.sh /tmp/install_git.sh
