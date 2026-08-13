@@ -17,22 +17,31 @@ installable=$(wc -l < /tmp/installable.txt)
 echo ">>> installable=$installable"
 echo ">>> not in apt repos: $(cat /tmp/apt_skipped.log)"
 
-echo ">>> batch install of installable packages"
-if apt-get install -y --no-install-recommends $(cat /tmp/installable.txt) >/tmp/apt_batch.log 2>&1; then
-  echo ">>> all installable packages installed (batch)"
-else
-  echo ">>> batch failed, falling back to per-package install (tolerant)"
-  ok=0; failed=0
-  while IFS= read -r pkg; do
-    [ -z "$pkg" ] && continue
-    if apt-get install -y --no-install-recommends "$pkg" >/dev/null 2>&1; then
-      ok=$((ok+1))
-    else
-      failed=$((failed+1)); echo "SKIP: $pkg"
-    fi
-  done < /tmp/installable.txt
-  echo ">>> individually ok=$ok failed=$failed"
-fi
+# Install in small chunks (30 packages per apt-get) to avoid exhausting
+# memory/disk on low-resource hosts during dpkg unpack.
+echo ">>> installing in chunks of 30"
+ok=0; failed=0; total=0
+mapfile -t PKGS < /tmp/installable.txt
+for ((i=0; i<${#PKGS[@]}; i+=30)); do
+  chunk=("${PKGS[@]:i:30}")
+  if apt-get install -y --no-install-recommends "${chunk[@]}" >/tmp/apt_chunk.log 2>&1; then
+    ok=$((ok+${#chunk[@]}))
+    total=$((total+${#chunk[@]}))
+    echo ">>> chunk $((i/30+1)): ${#chunk[@]} ok"
+  else
+    # one or more packages in this chunk failed; fall back per-package
+    for pkg in "${chunk[@]}"; do
+      if apt-get install -y --no-install-recommends "$pkg" >/dev/null 2>&1; then
+        ok=$((ok+1))
+      else
+        failed=$((failed+1)); echo "SKIP: $pkg"
+      fi
+      total=$((total+1))
+    done
+    echo ">>> chunk $((i/30+1)): per-package done"
+  fi
+done
+echo ">>> result: ok=$ok failed=$failed total=$total"
 
 apt-get clean
 rm -rf /var/lib/apt/lists/*
