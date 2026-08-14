@@ -822,7 +822,7 @@ pub async fn agent_next_job(
 
     // Long-poll: try up to 25 times with 1s sleep between attempts.
     for _ in 0..25 {
-        let claimed: Option<(String, String, Option<String>, Option<String>, i32)> = sqlx::query_as(
+        let claimed: Option<(String, String, Option<String>, Option<String>, i32, Option<serde_json::Value>)> = sqlx::query_as(
             "UPDATE agent_jobs SET status = 'claimed', claimed_at = now() \
              WHERE id = ( \
                  SELECT id FROM agent_jobs \
@@ -831,20 +831,21 @@ pub async fn agent_next_job(
                  FOR UPDATE SKIP LOCKED \
                  LIMIT 1 \
              ) \
-             RETURNING id, command, scan_id, tool_id, timeout_seconds"
+             RETURNING id, command, scan_id, tool_id, timeout_seconds, args"
         )
         .bind(&agent_id)
         .fetch_optional(&state.db)
         .await
         .unwrap_or(None);
 
-        if let Some((job_id, command, scan_id, tool_id, timeout_seconds)) = claimed {
+        if let Some((job_id, command, scan_id, tool_id, timeout_seconds, args)) = claimed {
             return (StatusCode::OK, Json(json!({
                 "job_id": job_id,
                 "command": command,
                 "scan_id": scan_id,
                 "tool_id": tool_id,
                 "timeout_seconds": timeout_seconds,
+                "args": args,
             }))).into_response();
         }
 

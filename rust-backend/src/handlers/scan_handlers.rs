@@ -1292,10 +1292,12 @@ pub async fn start_scan(
     };
     let connection_type = agent_meta.as_ref().and_then(|m| m.0.clone()).unwrap_or_else(|| "direct".into());
     let is_reverse_tunnel = connection_type == "reverse_tunnel";
-    // Reverse-tunnel agents are target context + connectivity — tools run
-    // server-side inside the app. Agent-side routing stays off until a traffic
-    // tunnel is implemented, so these scans execute on the backend.
-    let tunnel_routing_enabled = false;
+    // Reverse-tunnel agents execute scan tools on the user's own machine (local-first
+    // architecture). Routing is enabled by default and can be force-disabled for
+    // compliance/testing via AGENT_ROUTING_ENABLED=false.
+    let tunnel_routing_enabled = std::env::var("AGENT_ROUTING_ENABLED")
+        .map(|v| v == "1" || v.eq_ignore_ascii_case("true") || v.eq_ignore_ascii_case("yes"))
+        .unwrap_or(true);
     // Only dispatch via SSH when the agent is explicitly configured for SSH.
     // "direct"/"local" agents (and anything misconfigured without SSH host/user)
     // fall through to local execution on the backend host, which has all tools installed.
@@ -1341,18 +1343,22 @@ pub async fn start_scan(
         let (program, args) = crate::scan_engine::tool_registry::build_command(
             &tool.name, target, command_template.as_deref()
         ).unwrap_or_else(|_| (tool.name.clone(), vec![target.to_string()]));
-        // shell-escape each arg defensively (single-quote, escape internal quotes).
-        let mut parts: Vec<String> = Vec::with_capacity(args.len() + 1);
-        parts.push(program);
-        for a in &args {
+        // JSON argv protocol: send the exact argument array so the agent runs the
+        // tool without shell interpolation (no shell-escape issues). Also keep a
+        // display command string for logs/backward-compat.
+        let mut argv: Vec<String> = Vec::with_capacity(args.len() + 1);
+        argv.push(program.clone());
+        argv.extend(args);
+        let mut parts: Vec<String> = Vec::with_capacity(argv.len());
+        for a in &argv {
             let escaped = a.replace('\'', "'\\''");
             parts.push(format!("'{}'", escaped));
         }
         let cmd_string = parts.join(" ");
         let job_id = uuid::Uuid::new_v4().to_string();
         let _ = sqlx::query(
-            "INSERT INTO agent_jobs (id, agent_id, organization_id, scan_id, tool_id, command, timeout_seconds, status) \
-             VALUES ($1, $2, $3, $4, $5, $6, $7, 'pending')"
+            "INSERT INTO agent_jobs (id, agent_id, organization_id, scan_id, tool_id, command, args, timeout_seconds, status) \
+             VALUES ($1, $2, $3, $4, $5, $6, $7, $8, 'pending')"
         )
         .bind(&job_id)
         .bind(&aid)
@@ -1360,6 +1366,7 @@ pub async fn start_scan(
         .bind(&scan_id)
         .bind(&tool.name)
         .bind(&cmd_string)
+        .bind(serde_json::Value::Array(argv.into_iter().map(serde_json::Value::String).collect()))
         .bind(1800_i32)
         .execute(&state.db)
         .await;
@@ -2103,11 +2110,14 @@ pub async fn network_sweep(
                     let (program, args) = crate::scan_engine::tool_registry::build_command(
                         &tool.name, &host, tool.command_template.as_deref()
                     ).unwrap_or_else(|_| (tool.name.clone(), vec![host.clone()]));
-                    let cmd = std::iter::once(program).chain(args).collect::<Vec<_>>().join(" ");
+                    let mut argv: Vec<String> = Vec::with_capacity(args.len() + 1);
+                    argv.push(program);
+                    argv.extend(args);
+                    let cmd = argv.join(" ");
                     let job_id = Uuid::new_v4().to_string();
                     let _ = sqlx::query(
-                        "INSERT INTO agent_jobs (id, agent_id, organization_id, scan_id, tool_id, command, timeout_seconds, status) \
-                         VALUES ($1, $2, $3, $4, $5, $6, 1800, 'pending')"
+                        "INSERT INTO agent_jobs (id, agent_id, organization_id, scan_id, tool_id, command, args, timeout_seconds, status) \
+                         VALUES ($1, $2, $3, $4, $5, $6, $7, 1800, 'pending')"
                     )
                     .bind(&job_id)
                     .bind(aid)
@@ -2115,6 +2125,7 @@ pub async fn network_sweep(
                     .bind(&scan_id)
                     .bind(&tool.name)
                     .bind(&cmd)
+                    .bind(serde_json::Value::Array(argv.into_iter().map(serde_json::Value::String).collect()))
                     .execute(&db)
                     .await;
 

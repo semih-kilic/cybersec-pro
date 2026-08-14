@@ -142,9 +142,22 @@ r#"CREATE TABLE IF NOT EXISTS agents (
 // hashes, drops the legacy column and enforces uniqueness on the hash so
 // credentials at rest are never readable.
 r#"ALTER TABLE agents ADD COLUMN IF NOT EXISTS api_key_hash TEXT"#,
-r#"UPDATE agents SET api_key_hash = encode(sha256(api_key::bytea), 'hex') WHERE api_key IS NOT NULL AND api_key_hash IS NULL"#,
-r#"ALTER TABLE agents DROP COLUMN IF EXISTS api_key"#,
+r#"DO $$
+BEGIN
+    IF EXISTS (SELECT 1 FROM information_schema.columns
+               WHERE table_schema='public' AND table_name='agents' AND column_name='api_key') THEN
+        EXECUTE 'UPDATE agents SET api_key_hash = encode(sha256(api_key::bytea), ''hex'') WHERE api_key IS NOT NULL AND api_key_hash IS NULL';
+        EXECUTE 'ALTER TABLE agents DROP COLUMN api_key';
+    END IF;
+END $$;"#,
 r#"CREATE UNIQUE INDEX IF NOT EXISTS idx_agents_api_key_hash ON agents(api_key_hash) WHERE api_key_hash IS NOT NULL"#,
+
+// Agent job execution protocol v2: `args` carries a JSON argv array so the agent
+// runs tools without shell interpolation (fixes the shell-escape bug) and can
+// report exact invocation details. The legacy `command` string is kept for
+// backwards compatibility with already-deployed agents.
+r#"ALTER TABLE agent_jobs ADD COLUMN IF NOT EXISTS args JSONB"#,
+r#"CREATE INDEX IF NOT EXISTS idx_agent_jobs_agent_status ON agent_jobs (agent_id, status, created_at)"#,
 
 r#"CREATE TABLE IF NOT EXISTS tools (
     id TEXT PRIMARY KEY,

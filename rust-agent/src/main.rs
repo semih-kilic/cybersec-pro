@@ -224,6 +224,11 @@ struct PolledJob {
     command: String,
     #[serde(default)]
     timeout_seconds: Option<u64>,
+    /// JSON argv protocol (v2). When present, the tool is spawned with this
+    /// exact argument vector — no shell, no whitespace splitting, so paths and
+    /// arguments with spaces/quotes work correctly.
+    #[serde(default)]
+    args: Option<Vec<String>>,
 }
 
 /// Polls `/jobs/next` (long-poll, 25s server-side wait), executes the command,
@@ -298,31 +303,42 @@ async fn job_loop(state: AgentState, http: reqwest::Client, active: Arc<AtomicI3
 }
 
 /// Run the job's command with a hard timeout. Captures stdout, stderr, exit
-/// code. Uses argument vector (no shell) for safety — the command is split
-/// by whitespace and executed directly. Max timeout reduced to 300s.
+/// code. Uses argument vector (no shell) for safety. Prefers the JSON `args`
+/// protocol when the backend provides it; falls back to whitespace splitting of
+/// `command` for older backends.
 async fn execute_job(job: &PolledJob) -> serde_json::Value {
-    let timeout = Duration::from_secs(job.timeout_seconds.unwrap_or(300).clamp(10, 300));
+    // Allow the backend to specify up to 30 minutes (1800s).
+    let timeout = Duration::from_secs(job.timeout_seconds.unwrap_or(300).clamp(10, 1800));
 
-    // Split command into program + args (no shell, no sh -c)
-    let parts: Vec<&str> = job.command.split_whitespace().collect();
-    if parts.is_empty() {
-        return serde_json::json!({
-            "status": "failed",
-            "exit_code": null,
-            "stdout": "",
-            "stderr": "empty command",
-        });
-    }
+    // Resolve program + args: JSON argv protocol first, whitespace split fallback.
+    let argv: Vec<String> = if let Some(args) = &job.args {
+        if args.is_empty() {
+            vec![job.command.clone()]
+        } else {
+            args.clone()
+        }
+    } else {
+        let parts: Vec<&str> = job.command.split_whitespace().collect();
+        if parts.is_empty() {
+            return serde_json::json!({
+                "status": "failed",
+                "exit_code": null,
+                "stdout": "",
+                "stderr": "empty command",
+            });
+        }
+        parts.iter().map(|s| s.to_string()).collect()
+    };
 
-    let mut cmd = tokio::process::Command::new(parts[0]);
-    if parts.len() > 1 {
-        cmd.args(&parts[1..]);
+    let mut cmd = tokio::process::Command::new(&argv[0]);
+    if argv.len() > 1 {
+        cmd.args(&argv[1..]);
     }
 
     cmd.stdout(std::process::Stdio::piped())
         .stderr(std::process::Stdio::piped());
 
-    let child = match cmd.spawn() {
+    let mut child = match cmd.spawn() {
         Ok(c) => c,
         Err(e) => {
             return serde_json::json!({
@@ -347,12 +363,17 @@ async fn execute_job(job: &PolledJob) -> serde_json::Value {
             "stdout": "",
             "stderr": format!("wait error: {e}"),
         }),
-        Err(_) => serde_json::json!({
-            "status": "timeout",
-            "exit_code": null,
-            "stdout": "",
-            "stderr": format!("command exceeded {}s timeout", timeout.as_secs()),
-        }),
+        Err(_) => {
+            // Kill the process tree so a long-running tool can't linger.
+            let _ = child.kill().await;
+            let _ = child.wait().await;
+            serde_json::json!({
+                "status": "timeout",
+                "exit_code": null,
+                "stdout": "",
+                "stderr": format!("command exceeded {}s timeout", timeout.as_secs()),
+            })
+        }
     }
 }
 
