@@ -50,7 +50,6 @@ COPY --from=builder /app/target/release/cybersec-pro-backend /app/cybersec-pro-b
 
 # Non-root user
 RUN useradd -r -s /bin/false cybersec && \
-    groupadd -f docker && usermod -aG docker cybersec && \
     chown -R cybersec:cybersec /app
 USER cybersec
 

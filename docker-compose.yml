@@ -80,6 +80,8 @@ services:
     volumes:
       - ./agent-binaries:/agent-binaries:ro
       - /var/run/docker.sock:/var/run/docker.sock
+    group_add:
+      - "131"
     ports:
       - "127.0.0.1:5001:5001"
     depends_on:
