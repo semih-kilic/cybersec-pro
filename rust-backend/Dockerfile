@@ -37,6 +37,7 @@ RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-ins
     nmap gobuster whois dnsutils \
     sqlmap hydra john whatweb \
     netcat-openbsd traceroute tcpdump \
+    docker.io \
     # PDF generation for reports
     wkhtmltopdf \
     fonts-liberation \
@@ -49,6 +50,7 @@ COPY --from=builder /app/target/release/cybersec-pro-backend /app/cybersec-pro-b
 
 # Non-root user
 RUN useradd -r -s /bin/false cybersec && \
+    groupadd -f docker && usermod -aG docker cybersec && \
     chown -R cybersec:cybersec /app
 USER cybersec
 

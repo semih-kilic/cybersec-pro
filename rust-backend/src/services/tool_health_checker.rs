@@ -33,7 +33,7 @@ async fn run_in_scan_engine(
     binary_name: &str,
     args: &[&str],
     timeout_secs: u64,
-) -> Result<std::process::Output, tokio::process::CommandError> {
+) -> Result<std::process::Output, std::io::Error> {
     let mut cmd = exec_in_scan_engine(binary_name);
     cmd.args(args);
     tokio::time::timeout(Duration::from_secs(timeout_secs), cmd.output())
