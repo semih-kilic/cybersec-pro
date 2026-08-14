@@ -288,7 +288,7 @@ fn get_service_configs() -> Vec<ServiceConfig> {
             description: "TLS termination & reverse proxy — Docker container cybersec-nginx".into(),
             host: Some("cybersec-nginx".into()), port: Some(80),
             start_command: None,
-            auto_restart: false, max_restarts: 100,
+            auto_restart: true, max_restarts: 100,
             priority: 1, category: "infrastructure".into(),
         },
         ServiceConfig {

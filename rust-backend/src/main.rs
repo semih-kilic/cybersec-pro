@@ -449,6 +449,7 @@ fn build_router(state: Arc<AppState>) -> Router {
         .route("/api/v1/auth/sso/saml/init", get(sso_handlers::sso_saml_init))
         .route("/api/v1/auth/sso/saml/callback", post(sso_handlers::sso_saml_callback))
         .route("/api/v1/auth/sso/oidc/init", get(sso_handlers::sso_oidc_init))
+        .route("/api/v1/auth/sso/oidc/callback", get(sso_handlers::sso_oidc_callback))
         // ── Settings: Notification Preferences ────────────────
         .route("/api/v1/settings/notifications", get(settings_handlers::get_notification_preferences).put(settings_handlers::update_notification_preferences))
         // ── Settings: API Keys ────────────────────────────────
@@ -511,7 +512,8 @@ fn build_router(state: Arc<AppState>) -> Router {
         .route("/api/v1/schedules/:schedule_id/toggle", post(stub_handlers::toggle_schedule))
         .route("/api/v1/monitoring/continuous", post(stub_handlers::enable_continuous_monitoring))
         // ── Targets ───────────────────────────────────────────
-        .route("/api/v1/targets", get(stub_handlers::list_targets))
+        .route("/api/v1/targets", get(stub_handlers::list_targets).post(stub_handlers::create_target))
+        .route("/api/v1/targets/:id", put(stub_handlers::update_target).delete(stub_handlers::delete_target))
         .route("/api/v1/target-groups", get(stub_handlers::list_target_groups))
         // ── Analytics / Activity ──────────────────────────────
         .route("/api/v1/analytics/overview", get(stub_handlers::analytics_overview))

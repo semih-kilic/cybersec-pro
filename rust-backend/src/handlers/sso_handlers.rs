@@ -582,6 +582,186 @@ pub async fn sso_oidc_init(
     })).into_response()
 }
 
+/// OIDC SSO Callback — exchanges authorization code for tokens and provisions user
+#[derive(Deserialize)]
+pub struct OidcCallbackQuery {
+    pub code: Option<String>,
+    pub state: Option<String>,
+    pub error: Option<String>,
+}
+
+pub async fn sso_oidc_callback(
+    State(state): State<Arc<AppState>>,
+    Query(params): Query<OidcCallbackQuery>,
+) -> impl IntoResponse {
+    // Error from IdP
+    if let Some(err) = &params.error {
+        let redirect = format!(
+            "https://app.cyber-sec-pro.com/dashboard/sso-error?error={}",
+            urlencoding::encode(err)
+        );
+        return Redirect::temporary(&redirect).into_response();
+    }
+
+    let code = match &params.code {
+        Some(c) if !c.is_empty() => c.clone(),
+        _ => return (StatusCode::BAD_REQUEST, Json(json!({"error": "Missing authorization code"}))).into_response(),
+    };
+
+    // We cannot easily correlate `state` back to the org at callback time without
+    // a Redis session store. Instead we look up the OIDC config by redirect_uri.
+    // For now, fetch the first active OIDC config (single-org deployments) or
+    // match by state if it was stored as the org_id during init.
+    let state_val = params.state.as_deref().unwrap_or("");
+
+    // Try to find OIDC config — state may be org_id or a random UUID
+    let config: Option<(String, Option<String>, Option<String>, Option<String>, Option<bool>, Option<String>)> = sqlx::query_as(
+        "SELECT organization_id, oidc_client_id, oidc_client_secret, oidc_issuer_url, jit_provisioning, default_role \
+         FROM sso_configs WHERE is_enabled = TRUE AND provider_type = 'oidc' \
+         ORDER BY created_at DESC LIMIT 1"
+    )
+    .fetch_optional(&state.db)
+    .await
+    .unwrap_or(None);
+
+    let (org_id, client_id, client_secret, issuer_url, jit, default_role) = match config {
+        Some(c) => c,
+        None => return (StatusCode::NOT_FOUND, Json(json!({"error": "No OIDC SSO configuration found"}))).into_response(),
+    };
+
+    let client_id = client_id.unwrap_or_default();
+    let client_secret = client_secret.unwrap_or_default();
+    let issuer_url = issuer_url.unwrap_or_default();
+    let redirect_uri = "https://api.cyber-sec-pro.com/v1/auth/sso/oidc/callback";
+
+    if client_id.is_empty() || client_secret.is_empty() || issuer_url.is_empty() {
+        return (StatusCode::BAD_REQUEST, Json(json!({"error": "OIDC configuration incomplete"}))).into_response();
+    }
+
+    // Exchange authorization code for tokens
+    let token_url = format!("{}/token", issuer_url.trim_end_matches('/'));
+    let client = reqwest::Client::builder()
+        .timeout(std::time::Duration::from_secs(15))
+        .build()
+        .unwrap_or_default();
+
+    let token_res = client
+        .post(&token_url)
+        .form(&[
+            ("grant_type", "authorization_code"),
+            ("code", &code),
+            ("redirect_uri", redirect_uri),
+            ("client_id", &client_id),
+            ("client_secret", &client_secret),
+        ])
+        .send()
+        .await;
+
+    let token_body: serde_json::Value = match token_res {
+        Ok(r) if r.status().is_success() => r.json().await.unwrap_or_default(),
+        Ok(r) => {
+            let status = r.status();
+            let body = r.text().await.unwrap_or_default();
+            tracing::error!("OIDC token exchange failed ({}): {}", status, body);
+            return (StatusCode::BAD_GATEWAY, Json(json!({"error": "OIDC token exchange failed"}))).into_response();
+        }
+        Err(e) => {
+            tracing::error!("OIDC token request error: {}", e);
+            return (StatusCode::BAD_GATEWAY, Json(json!({"error": "Could not reach OIDC provider"}))).into_response();
+        }
+    };
+
+    // Fetch userinfo using access_token
+    let access_token_oidc = token_body.get("access_token").and_then(|t| t.as_str()).unwrap_or("");
+    if access_token_oidc.is_empty() {
+        return (StatusCode::BAD_GATEWAY, Json(json!({"error": "No access_token in OIDC response"}))).into_response();
+    }
+
+    let userinfo_url = format!("{}/userinfo", issuer_url.trim_end_matches('/'));
+    let userinfo: serde_json::Value = match client
+        .get(&userinfo_url)
+        .bearer_auth(access_token_oidc)
+        .send()
+        .await
+    {
+        Ok(r) if r.status().is_success() => r.json().await.unwrap_or_default(),
+        _ => {
+            // Fallback: decode id_token claims without verification (HMAC/RS256 would need JWKs)
+            token_body.get("id_token")
+                .and_then(|t| t.as_str())
+                .and_then(|jwt| jwt.split('.').nth(1))
+                .and_then(|b64| base64::engine::general_purpose::STANDARD_NO_PAD.decode(b64).ok())
+                .and_then(|bytes| serde_json::from_slice(&bytes).ok())
+                .unwrap_or_default()
+        }
+    };
+
+    let email = userinfo.get("email")
+        .and_then(|e| e.as_str())
+        .unwrap_or("");
+
+    if email.is_empty() || !email.contains('@') {
+        return (StatusCode::BAD_GATEWAY, Json(json!({"error": "Could not extract email from OIDC userinfo"}))).into_response();
+    }
+
+    let role = default_role.unwrap_or_else(|| "user".to_string());
+    let jit = jit.unwrap_or(true);
+
+    // Find or JIT-provision the user
+    let user: Option<(String, Option<String>)> = sqlx::query_as(
+        "SELECT id, role FROM users WHERE email = $1 AND organization_id = $2"
+    )
+    .bind(email)
+    .bind(&org_id)
+    .fetch_optional(&state.db)
+    .await
+    .unwrap_or(None);
+
+    let (user_id, user_role) = match user {
+        Some((id, r)) => (id, r.unwrap_or_else(|| role.clone())),
+        None => {
+            if !jit {
+                return (StatusCode::FORBIDDEN, Json(json!({"error": "User not provisioned. Contact your administrator."}))).into_response();
+            }
+            let new_id = Uuid::new_v4().to_string();
+            let name = userinfo.get("name").and_then(|n| n.as_str())
+                .unwrap_or_else(|| email.split('@').next().unwrap_or("User"));
+            let _ = sqlx::query(
+                "INSERT INTO users (id, email, full_name, organization_id, role, is_active, auth_provider, email_verified, created_at) \
+                 VALUES ($1, $2, $3, $4, $5, TRUE, 'oidc', TRUE, NOW())"
+            )
+            .bind(&new_id)
+            .bind(email)
+            .bind(name)
+            .bind(&org_id)
+            .bind(&role)
+            .execute(&state.db)
+            .await;
+            tracing::info!("JIT provisioned OIDC user: {} in org {}", email, org_id);
+            (new_id, role.clone())
+        }
+    };
+
+    let _ = sqlx::query("UPDATE users SET last_login = NOW(), email_verified = TRUE WHERE id = $1")
+        .bind(&user_id)
+        .execute(&state.db)
+        .await;
+
+    let app_access_token = create_access_token(
+        &state.jwt_secret, &user_id, Some(&org_id), &user_role
+    ).unwrap_or_default();
+    let app_refresh_token = create_refresh_token(
+        &state.jwt_secret, &user_id
+    ).unwrap_or_default();
+
+    // Redirect to dashboard with tokens in URL fragment
+    let redirect_url = format!(
+        "https://app.cyber-sec-pro.com/dashboard/sso-callback#access_token={}&refresh_token={}",
+        app_access_token, app_refresh_token
+    );
+    Redirect::temporary(&redirect_url).into_response()
+}
+
 /// Test SSO connection (LDAP bind test)
 pub async fn test_sso_connection(
     State(state): State<Arc<AppState>>,

@@ -590,4 +590,81 @@ r#"ALTER TABLE scans ADD COLUMN IF NOT EXISTS authorization_id TEXT REFERENCES t
 r#"ALTER TABLE scheduled_scans ADD COLUMN IF NOT EXISTS authorization_id TEXT REFERENCES target_authorizations(id)"#,
 r#"ALTER TABLE scheduled_scans ADD COLUMN IF NOT EXISTS scope_statement TEXT"#,
 r#"ALTER TABLE scheduled_scans ADD COLUMN IF NOT EXISTS statement_version TEXT"#,
+
+// ── users: missing columns used by SSO JIT provisioning and OAuth handlers ─
+r#"ALTER TABLE users ADD COLUMN IF NOT EXISTS full_name TEXT"#,
+r#"ALTER TABLE users ADD COLUMN IF NOT EXISTS auth_provider TEXT"#,
+
+// ── agents: SSH fingerprint for known-host verification ───────────────────
+r#"ALTER TABLE agents ADD COLUMN IF NOT EXISTS ssh_fingerprint TEXT"#,
+
+// ── scheduled_scans: retry tracking ──────────────────────────────────────
+r#"ALTER TABLE scheduled_scans ADD COLUMN IF NOT EXISTS retry_count INTEGER DEFAULT 0"#,
+r#"ALTER TABLE scheduled_scans ADD COLUMN IF NOT EXISTS max_retries INTEGER DEFAULT 3"#,
+r#"ALTER TABLE scheduled_scans ADD COLUMN IF NOT EXISTS last_error TEXT"#,
+
+// ── agent_jobs: core table for reverse-tunnel scan dispatch ───────────────
+r#"CREATE TABLE IF NOT EXISTS agent_jobs (
+    id TEXT PRIMARY KEY,
+    agent_id TEXT NOT NULL REFERENCES agents(id) ON DELETE CASCADE,
+    organization_id TEXT NOT NULL REFERENCES organizations(id),
+    scan_id TEXT REFERENCES scans(id) ON DELETE SET NULL,
+    tool_id TEXT REFERENCES tools(id),
+    command TEXT NOT NULL,
+    args JSONB,
+    status TEXT DEFAULT 'pending',
+    exit_code INTEGER,
+    stdout TEXT,
+    stderr TEXT,
+    timeout_seconds INTEGER DEFAULT 300,
+    claimed_at TIMESTAMP,
+    started_at TIMESTAMP,
+    completed_at TIMESTAMP,
+    created_at TIMESTAMP DEFAULT NOW()
+)"#,
+"CREATE INDEX IF NOT EXISTS idx_agent_jobs_agent_status ON agent_jobs (agent_id, status, created_at)",
+"CREATE INDEX IF NOT EXISTS idx_agent_jobs_scan ON agent_jobs (scan_id)",
+
+// ── schedule_run_history: audit trail for every scheduler tick ────────────
+r#"CREATE TABLE IF NOT EXISTS schedule_run_history (
+    id TEXT PRIMARY KEY,
+    scheduled_scan_id TEXT NOT NULL REFERENCES scheduled_scans(id) ON DELETE CASCADE,
+    organization_id TEXT NOT NULL REFERENCES organizations(id),
+    scan_id TEXT,
+    status TEXT NOT NULL,
+    started_at TIMESTAMP DEFAULT NOW(),
+    completed_at TIMESTAMP,
+    output TEXT,
+    error TEXT
+)"#,
+"CREATE INDEX IF NOT EXISTS idx_schedule_run_history_sched ON schedule_run_history (scheduled_scan_id, started_at DESC)",
+
+// ── stripe_events: idempotency table for Stripe webhook deduplication ─────
+r#"CREATE TABLE IF NOT EXISTS stripe_events (
+    event_id TEXT PRIMARY KEY,
+    event_type TEXT NOT NULL,
+    processed_at TIMESTAMP DEFAULT NOW()
+)"#,
+
+// ── targets: dedicated target management table ────────────────────────────
+r#"CREATE TABLE IF NOT EXISTS targets (
+    id TEXT PRIMARY KEY,
+    organization_id TEXT NOT NULL REFERENCES organizations(id) ON DELETE CASCADE,
+    created_by TEXT REFERENCES users(id),
+    value TEXT NOT NULL,
+    target_type TEXT NOT NULL DEFAULT 'domain',
+    label TEXT,
+    notes TEXT,
+    tags JSONB NOT NULL DEFAULT '[]'::jsonb,
+    group_name TEXT,
+    is_active BOOLEAN NOT NULL DEFAULT TRUE,
+    last_scanned_at TIMESTAMP,
+    scan_count INTEGER NOT NULL DEFAULT 0,
+    created_at TIMESTAMP NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMP NOT NULL DEFAULT NOW(),
+    UNIQUE(organization_id, value)
+)"#,
+"CREATE INDEX IF NOT EXISTS idx_targets_org ON targets (organization_id)",
+"CREATE INDEX IF NOT EXISTS idx_targets_group ON targets (organization_id, group_name)",
+"CREATE INDEX IF NOT EXISTS idx_targets_tags ON targets USING GIN (tags)",
 ];

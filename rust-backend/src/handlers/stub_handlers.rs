@@ -2567,56 +2567,228 @@ pub async fn enable_continuous_monitoring(
     })).into_response()
 }
 
-// ── Targets ────────────────────────────────────────────────
+// ── Targets — full CRUD backed by the `targets` table ──────
+
+#[derive(serde::Deserialize)]
+pub struct CreateTargetRequest {
+    pub value: String,
+    pub target_type: Option<String>,
+    pub label: Option<String>,
+    pub notes: Option<String>,
+    pub tags: Option<serde_json::Value>,
+    pub group_name: Option<String>,
+}
+
+#[derive(serde::Deserialize)]
+pub struct UpdateTargetRequest {
+    pub label: Option<String>,
+    pub notes: Option<String>,
+    pub tags: Option<serde_json::Value>,
+    pub group_name: Option<String>,
+    pub is_active: Option<bool>,
+}
+
+fn detect_target_type(value: &str) -> &'static str {
+    if value.contains('/') && value.chars().any(|c| c.is_ascii_digit()) { "cidr" }
+    else if value.starts_with("http://") || value.starts_with("https://") { "url" }
+    else if value.chars().all(|c| c.is_ascii_digit() || c == '.') { "ip" }
+    else if value.contains('-') && value.chars().all(|c| c.is_ascii_digit() || c == '.' || c == '-') { "range" }
+    else { "domain" }
+}
 
 pub async fn list_targets(
     user: AuthUser,
     State(state): State<Arc<AppState>>,
 ) -> impl IntoResponse {
-    // Derive targets from scans with full details
-    let targets = sqlx::query_as::<_, (String, i64, Option<String>, Option<String>)>(
-        "SELECT target, COUNT(*) as cnt, CAST(MAX(created_at) AS TEXT) as last_scan, CAST(MIN(created_at) AS TEXT) as first_scan FROM scans WHERE user_id = $1 GROUP BY target ORDER BY cnt DESC LIMIT 50"
+    let org_id = match &user.org_id {
+        Some(id) => id.clone(),
+        None => return (axum::http::StatusCode::FORBIDDEN, Json(json!({"error": "Organization required"}))).into_response(),
+    };
+
+    // Read from dedicated targets table; fallback to scan-derived view for orgs
+    // that pre-date the targets table (backward compat).
+    let rows = sqlx::query_as::<_, (String, String, String, Option<String>, Option<String>, Option<serde_json::Value>, Option<String>, bool, Option<String>, i32, String)>(
+        "SELECT id, value, target_type, label, notes, tags, group_name, is_active, \
+                CAST(last_scanned_at AS TEXT), scan_count, CAST(created_at AS TEXT) \
+         FROM targets WHERE organization_id = $1 AND is_active = TRUE \
+         ORDER BY created_at DESC LIMIT 200"
     )
-    .bind(&user.user_id)
+    .bind(&org_id)
     .fetch_all(&state.db)
     .await
     .unwrap_or_default();
 
-    let list: Vec<serde_json::Value> = targets.iter().enumerate().map(|(i, (t, c, last, first))| {
-        // Detect target type
-        let target_type = if t.contains('/') && t.chars().any(|c| c.is_numeric()) {
-            "cidr"
-        } else if t.starts_with("http://") || t.starts_with("https://") {
-            "url"
-        } else if t.chars().all(|c| c.is_numeric() || c == '.') {
-            "ip"
-        } else if t.contains('-') && t.chars().all(|c| c.is_numeric() || c == '.' || c == '-') {
-            "range"
-        } else {
-            "domain"
-        };
+    if rows.is_empty() {
+        // Fallback: derive from historical scans and auto-seed the targets table
+        let legacy = sqlx::query_as::<_, (String, i64, Option<String>, Option<String>)>(
+            "SELECT target, COUNT(*) as cnt, CAST(MAX(created_at) AS TEXT), CAST(MIN(created_at) AS TEXT) \
+             FROM scans WHERE organization_id = $1 GROUP BY target ORDER BY cnt DESC LIMIT 200"
+        )
+        .bind(&org_id)
+        .fetch_all(&state.db)
+        .await
+        .unwrap_or_default();
+
+        // Seed targets table from historical scan data (idempotent INSERT … ON CONFLICT)
+        for (value, scan_count, last_scan, created_at) in &legacy {
+            let ttype = detect_target_type(value);
+            let id = uuid::Uuid::new_v4().to_string();
+            let _ = sqlx::query(
+                "INSERT INTO targets (id, organization_id, created_by, value, target_type, scan_count, last_scanned_at, created_at, updated_at) \
+                 VALUES ($1, $2, $3, $4, $5, $6, $7::TIMESTAMP, $8::TIMESTAMP, NOW()) \
+                 ON CONFLICT (organization_id, value) DO NOTHING"
+            )
+            .bind(&id).bind(&org_id).bind(&user.user_id).bind(value).bind(ttype)
+            .bind(*scan_count as i32)
+            .bind(last_scan).bind(created_at)
+            .execute(&state.db).await;
+        }
+
+        let list: Vec<serde_json::Value> = legacy.iter().map(|(t, c, last, first)| {
+            json!({
+                "id": format!("t-{}", uuid::Uuid::new_v4()),
+                "value": t, "label": null, "target_type": detect_target_type(t),
+                "tags": [], "notes": null, "group_name": null, "is_active": true,
+                "scan_count": c, "last_scanned_at": last, "created_at": first,
+            })
+        }).collect();
+        return Json(json!({"targets": list, "total": list.len()})).into_response();
+    }
+
+    let list: Vec<serde_json::Value> = rows.into_iter().map(|(id, value, ttype, label, notes, tags, group, active, last_scan, scan_count, created_at)| {
         json!({
-            "id": format!("target-{}", i+1),
-            "name": t,
-            "value": t,
-            "type": target_type,
-            "tags": [],
-            "last_scan": last,
-            "scans_count": c,
-            "risk_score": null,
-            "created_at": first.clone().unwrap_or_default(),
-            "notes": null,
+            "id": id, "value": value, "target_type": ttype,
+            "label": label, "notes": notes,
+            "tags": tags.unwrap_or(json!([])),
+            "group_name": group, "is_active": active,
+            "last_scanned_at": last_scan, "scan_count": scan_count, "created_at": created_at,
         })
     }).collect();
 
-    Json(json!({"targets": list})).into_response()
+    Json(json!({"targets": list, "total": list.len()})).into_response()
+}
+
+pub async fn create_target(
+    user: AuthUser,
+    State(state): State<Arc<AppState>>,
+    Json(body): Json<CreateTargetRequest>,
+) -> impl IntoResponse {
+    let org_id = match &user.org_id {
+        Some(id) => id.clone(),
+        None => return (axum::http::StatusCode::FORBIDDEN, Json(json!({"error": "Organization required"}))).into_response(),
+    };
+
+    if body.value.trim().is_empty() {
+        return (axum::http::StatusCode::BAD_REQUEST, Json(json!({"error": "Target value required"}))).into_response();
+    }
+
+    let id = uuid::Uuid::new_v4().to_string();
+    let ttype = body.target_type.as_deref().unwrap_or_else(|| detect_target_type(&body.value));
+    let tags = body.tags.unwrap_or(json!([]));
+
+    match sqlx::query(
+        "INSERT INTO targets (id, organization_id, created_by, value, target_type, label, notes, tags, group_name) \
+         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)"
+    )
+    .bind(&id).bind(&org_id).bind(&user.user_id)
+    .bind(body.value.trim()).bind(ttype)
+    .bind(&body.label).bind(&body.notes).bind(&tags).bind(&body.group_name)
+    .execute(&state.db).await {
+        Ok(_) => (axum::http::StatusCode::CREATED, Json(json!({"id": id, "message": "Target created"}))).into_response(),
+        Err(e) if e.to_string().contains("unique") || e.to_string().contains("duplicate") =>
+            (axum::http::StatusCode::CONFLICT, Json(json!({"error": "Target already exists"}))).into_response(),
+        Err(e) => {
+            tracing::error!("create_target error: {}", e);
+            (axum::http::StatusCode::INTERNAL_SERVER_ERROR, Json(json!({"error": "Failed to create target"}))).into_response()
+        }
+    }
+}
+
+pub async fn update_target(
+    user: AuthUser,
+    State(state): State<Arc<AppState>>,
+    axum::extract::Path(target_id): axum::extract::Path<String>,
+    Json(body): Json<UpdateTargetRequest>,
+) -> impl IntoResponse {
+    let org_id = match &user.org_id {
+        Some(id) => id.clone(),
+        None => return (axum::http::StatusCode::FORBIDDEN, Json(json!({"error": "Organization required"}))).into_response(),
+    };
+
+    let result = sqlx::query(
+        "UPDATE targets SET \
+            label      = COALESCE($1, label), \
+            notes      = COALESCE($2, notes), \
+            tags       = COALESCE($3, tags), \
+            group_name = COALESCE($4, group_name), \
+            is_active  = COALESCE($5, is_active), \
+            updated_at = NOW() \
+         WHERE id = $6 AND organization_id = $7"
+    )
+    .bind(&body.label).bind(&body.notes).bind(&body.tags).bind(&body.group_name)
+    .bind(body.is_active).bind(&target_id).bind(&org_id)
+    .execute(&state.db).await;
+
+    match result {
+        Ok(r) if r.rows_affected() > 0 => Json(json!({"message": "Target updated"})).into_response(),
+        Ok(_) => (axum::http::StatusCode::NOT_FOUND, Json(json!({"error": "Target not found"}))).into_response(),
+        Err(e) => {
+            tracing::error!("update_target error: {}", e);
+            (axum::http::StatusCode::INTERNAL_SERVER_ERROR, Json(json!({"error": "Failed to update target"}))).into_response()
+        }
+    }
+}
+
+pub async fn delete_target(
+    user: AuthUser,
+    State(state): State<Arc<AppState>>,
+    axum::extract::Path(target_id): axum::extract::Path<String>,
+) -> impl IntoResponse {
+    let org_id = match &user.org_id {
+        Some(id) => id.clone(),
+        None => return (axum::http::StatusCode::FORBIDDEN, Json(json!({"error": "Organization required"}))).into_response(),
+    };
+
+    let result = sqlx::query(
+        "DELETE FROM targets WHERE id = $1 AND organization_id = $2"
+    )
+    .bind(&target_id).bind(&org_id)
+    .execute(&state.db).await;
+
+    match result {
+        Ok(r) if r.rows_affected() > 0 => Json(json!({"message": "Target deleted"})).into_response(),
+        Ok(_) => (axum::http::StatusCode::NOT_FOUND, Json(json!({"error": "Target not found"}))).into_response(),
+        Err(e) => {
+            tracing::error!("delete_target error: {}", e);
+            (axum::http::StatusCode::INTERNAL_SERVER_ERROR, Json(json!({"error": "Failed to delete target"}))).into_response()
+        }
+    }
 }
 
 pub async fn list_target_groups(
-    _user: AuthUser,
-    State(_state): State<Arc<AppState>>,
+    user: AuthUser,
+    State(state): State<Arc<AppState>>,
 ) -> impl IntoResponse {
-    Json(json!({"target_groups": []})).into_response()
+    let org_id = match &user.org_id {
+        Some(id) => id.clone(),
+        None => return (axum::http::StatusCode::FORBIDDEN, Json(json!({"error": "Organization required"}))).into_response(),
+    };
+
+    let rows = sqlx::query_as::<_, (String, i64)>(
+        "SELECT group_name, COUNT(*) as cnt FROM targets \
+         WHERE organization_id = $1 AND group_name IS NOT NULL AND is_active = TRUE \
+         GROUP BY group_name ORDER BY cnt DESC"
+    )
+    .bind(&org_id)
+    .fetch_all(&state.db)
+    .await
+    .unwrap_or_default();
+
+    let groups: Vec<serde_json::Value> = rows.into_iter().map(|(name, count)| {
+        json!({"name": name, "target_count": count})
+    }).collect();
+
+    Json(json!({"target_groups": groups})).into_response()
 }
 
 // ── Analytics / Activity ───────────────────────────────────

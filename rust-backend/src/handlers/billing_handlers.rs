@@ -526,6 +526,61 @@ pub async fn stripe_webhook(
                     .await;
             }
         }
+        // invoice.payment_succeeded fires on every successful payment (initial + renewals).
+        // This is the authoritative event for keeping plan_type active on monthly/yearly cycles.
+        "invoice.payment_succeeded" | "invoice.paid" => {
+            if let Some(data) = event.get("data").and_then(|d| d.get("object")) {
+                let customer_id = data.get("customer").and_then(|c| c.as_str()).unwrap_or("");
+                let sub_id      = data.get("subscription").and_then(|s| s.as_str()).unwrap_or("");
+                let billing_reason = data.get("billing_reason").and_then(|r| r.as_str()).unwrap_or("");
+
+                // Only act on subscription renewals and initial creation; skip one-off invoices
+                if billing_reason == "subscription_cycle" || billing_reason == "subscription_create" || billing_reason == "subscription_update" {
+                    // Resolve plan from the subscription's price if available
+                    let price_id = data.get("lines")
+                        .and_then(|l| l.get("data"))
+                        .and_then(|d| d.as_array())
+                        .and_then(|arr| arr.first())
+                        .and_then(|item| item.get("price"))
+                        .and_then(|p| p.get("id"))
+                        .and_then(|id| id.as_str())
+                        .unwrap_or("");
+                    let plan_type = resolve_plan_from_price_id(price_id);
+
+                    if !customer_id.is_empty() && !plan_type.is_empty() {
+                        let _ = sqlx::query(
+                            "UPDATE organizations SET plan_type = $1 WHERE stripe_customer_id = $2"
+                        )
+                        .bind(plan_type)
+                        .bind(customer_id)
+                        .execute(&state.db)
+                        .await;
+
+                        // Keep subscriptions table in sync with new period dates
+                        if !sub_id.is_empty() {
+                            let period_start = data.get("period_start")
+                                .and_then(|t| t.as_i64())
+                                .map(|ts| chrono::DateTime::from_timestamp(ts, 0).unwrap_or_default().naive_utc());
+                            let period_end = data.get("period_end")
+                                .and_then(|t| t.as_i64())
+                                .map(|ts| chrono::DateTime::from_timestamp(ts, 0).unwrap_or_default().naive_utc());
+                            let _ = sqlx::query(
+                                "UPDATE subscriptions SET status = 'active', plan_type = $1, current_period_start = $2, current_period_end = $3 WHERE stripe_subscription_id = $4"
+                            )
+                            .bind(plan_type)
+                            .bind(period_start)
+                            .bind(period_end)
+                            .bind(sub_id)
+                            .execute(&state.db)
+                            .await;
+                        }
+                        tracing::info!("invoice.payment_succeeded: customer={} plan={} reason={}", customer_id, plan_type, billing_reason);
+                    } else {
+                        tracing::debug!("invoice.payment_succeeded: customer={} unrecognised price_id='{}' — plan unchanged", customer_id, price_id);
+                    }
+                }
+            }
+        }
         "invoice.payment_failed" => {
             if let Some(data) = event.get("data").and_then(|d| d.get("object")) {
                 let customer_id = data.get("customer").and_then(|c| c.as_str()).unwrap_or("");

@@ -376,15 +376,51 @@ pub struct SuggestRequest {
 
 pub async fn suggest_tools(
     _user: AuthUser,
-    State(_state): State<Arc<AppState>>,
+    State(state): State<Arc<AppState>>,
     Json(req): Json<SuggestRequest>,
 ) -> impl IntoResponse {
-    let tools = search_tools(&req.query, req.target_type.as_deref());
-    let suggestions: Vec<Value> = tools.iter().map(|t| tool_to_json(t)).collect();
+    let local_tools = search_tools(&req.query, req.target_type.as_deref());
+
+    // DB-augmented suggestions: search the tools table for matches not in the
+    // hard-coded catalog (covers the 1500+ seeded tools).
+    let q_lower = req.query.to_lowercase();
+    let db_rows: Vec<(String, String, String, Option<String>, Option<String>)> = sqlx::query_as(
+        "SELECT id, name, category, description, example_usage FROM tools \
+         WHERE is_active = TRUE \
+           AND (LOWER(name) LIKE $1 OR LOWER(description) LIKE $1 OR LOWER(category) LIKE $1 \
+                OR LOWER(business_name) LIKE $1 OR LOWER(business_description) LIKE $1) \
+           AND ($2 = '' OR target_type IS NULL OR $2 = ANY(STRING_TO_ARRAY(LOWER(target_type), ',')))\
+         ORDER BY name ASC LIMIT 20"
+    )
+    .bind(format!("%{}%", q_lower))
+    .bind(req.target_type.as_deref().unwrap_or(""))
+    .fetch_all(&state.db)
+    .await
+    .unwrap_or_default();
+
+    // Merge: local catalog first (scored), then DB extras not already present
+    let local_ids: std::collections::HashSet<&str> = local_tools.iter().map(|t| t.id).collect();
+    let mut suggestions: Vec<Value> = local_tools.iter().map(|t| tool_to_json(t)).collect();
+
+    for (id, name, category, description, example) in &db_rows {
+        if local_ids.contains(id.as_str()) { continue; }
+        suggestions.push(json!({
+            "id": id,
+            "name": name,
+            "category": category,
+            "target_types": [],
+            "use_cases": description.as_deref().unwrap_or("").split('.').take(2).collect::<Vec<_>>(),
+            "example_command": example.as_deref().unwrap_or(""),
+            "danger_level": 1,
+            "source": "db",
+        }));
+    }
 
     let mut llm_explanation: Option<String> = None;
     if req.use_llm && !suggestions.is_empty() {
-        let names: Vec<&str> = tools.iter().map(|t| t.name).collect();
+        let names: Vec<&str> = local_tools.iter().map(|t| t.name).chain(
+            db_rows.iter().map(|(_, n, _, _, _)| n.as_str())
+        ).take(8).collect();
         let sys = "You are a senior penetration tester. Briefly explain in 2-3 sentences WHY these tools fit the user's goal and how they complement each other.";
         let usr = format!("User goal: {}\nSuggested tools: {}", req.query, names.join(", "));
         llm_explanation = llm_enrich(sys, &usr).await;
@@ -394,7 +430,7 @@ pub async fn suggest_tools(
         "query": req.query,
         "suggestions": suggestions,
         "explanation": llm_explanation,
-        "source": if llm_explanation.is_some() { "hybrid" } else { "local" },
+        "source": if llm_explanation.is_some() { "hybrid" } else if !db_rows.is_empty() { "db+local" } else { "local" },
     })).into_response()
 }
 
