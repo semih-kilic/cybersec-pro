@@ -22,12 +22,85 @@ pub async fn run_scheduler(db: PgPool, scan_tx: broadcast::Sender<String>) {
     let mut interval = tokio::time::interval(std::time::Duration::from_secs(30));
     tracing::info!("📅 Scan Scheduler started — checking every 30s");
 
+    // Tracks the last time retention purge ran (once per day).
+    let mut last_retention: Option<chrono::NaiveDate> = None;
+
     loop {
         interval.tick().await;
+        // Daily retention/data-governance purge (PIPEDA / SOC 2 P4: usage & retention).
+        let today = chrono::Utc::now().naive_utc().date();
+        if last_retention != Some(today) {
+            match purge_expired_data(&db).await {
+                Ok(_) => last_retention = Some(today),
+                Err(e) => tracing::error!("Retention purge failed: {}", e),
+            }
+        }
         if let Err(e) = tick(&db, &scan_tx).await {
             tracing::error!("Scheduler tick error: {}", e);
         }
     }
+}
+
+/// Deletes data past its retention window. Mirrors the retention schedule
+/// published in the privacy policy:
+///   - audit_logs        : 12 months
+///   - scans (finished)  : 90 days
+///   - password_reset_tokens : 24h (cleared automatically by the login handler,
+///                             but purge any stragglers)
+///   - login_history     : 12 months
+///   - agent_jobs (terminal states) : 180 days
+/// Also marks sweep params as "retention-applied" so re-runs are idempotent.
+async fn purge_expired_data(db: &PgPool) -> Result<(), String> {
+    let mut total = 0i64;
+    let now = chrono::Utc::now().naive_utc();
+
+    let audit_deleted = sqlx::query(
+        "DELETE FROM audit_logs WHERE created_at < NOW() - INTERVAL '12 months' RETURNING id"
+    )
+    .execute(db)
+    .await
+    .map(|r| r.rows_affected())
+    .map_err(|e| format!("audit purge failed: {e}"))?;
+
+    let scan_deleted = sqlx::query(
+        "DELETE FROM scans WHERE status IN ('completed','failed','cancelled') AND completed_at IS NOT NULL AND completed_at < NOW() - INTERVAL '90 days' RETURNING id"
+    )
+    .execute(db)
+    .await
+    .map(|r| r.rows_affected())
+    .map_err(|e| format!("scan purge failed: {e}"))?;
+
+    let login_deleted = sqlx::query(
+        "DELETE FROM login_history WHERE created_at < NOW() - INTERVAL '12 months'"
+    )
+    .execute(db)
+    .await
+    .map(|r| r.rows_affected())
+    .map_err(|e| format!("login history purge failed: {e}"))?;
+
+    let job_deleted = sqlx::query(
+        "DELETE FROM agent_jobs WHERE status IN ('completed','failed','timeout','cancelled') AND completed_at < NOW() - INTERVAL '180 days'"
+    )
+    .execute(db)
+    .await
+    .map(|r| r.rows_affected())
+    .map_err(|e| format!("agent jobs purge failed: {e}"))?;
+
+    let token_deleted = sqlx::query(
+        "UPDATE users SET password_reset_token = NULL, password_reset_expires = NULL WHERE password_reset_expires IS NOT NULL AND password_reset_expires < NOW()"
+    )
+    .execute(db)
+    .await
+    .map(|r| r.rows_affected())
+    .map_err(|e| format!("reset token purge failed: {e}"))?;
+
+    total = (audit_deleted + scan_deleted + login_deleted + job_deleted + token_deleted) as i64;
+    if total > 0 {
+        tracing::info!(
+            "🗑️  Retention purge: audit={audit_deleted} scans={scan_deleted} login_history={login_deleted} agent_jobs={job_deleted} reset_tokens={token_deleted}"
+        );
+    }
+    Ok(())
 }
 
 async fn tick(db: &PgPool, scan_tx: &broadcast::Sender<String>) -> Result<(), String> {

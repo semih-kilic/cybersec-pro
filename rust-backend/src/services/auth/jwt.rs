@@ -11,6 +11,7 @@ pub struct Claims {
     pub iat: i64,
     pub token_type: String, // "access" or "refresh"
     pub fresh: bool,        // Flask-JWT-Extended compatibility
+    pub jti: Option<String>, // unique token id (refresh tokens) for rotation/revocation
 }
 
 pub fn create_access_token(
@@ -28,6 +29,7 @@ pub fn create_access_token(
         iat: now.timestamp(),
         token_type: "access".to_string(),
         fresh: true,
+        jti: None,
     };
     let token = encode(
         &Header::default(),
@@ -50,6 +52,7 @@ pub fn create_refresh_token(
         iat: now.timestamp(),
         token_type: "refresh".to_string(),
         fresh: false,
+        jti: Some(uuid::Uuid::new_v4().to_string()),
     };
     let token = encode(
         &Header::default(),

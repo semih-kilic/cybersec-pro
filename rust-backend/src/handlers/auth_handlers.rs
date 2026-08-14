@@ -531,6 +531,20 @@ pub async fn refresh(
         return (StatusCode::UNAUTHORIZED, Json(json!({"error": "Invalid token type"}))).into_response();
     }
 
+    // ── Token rotation + reuse detection (SOC 2 CC6.1, OAuth2 best practice) ──
+    // Each refresh token carries a unique `jti`. On every successful refresh the
+    // old jti is revoked in Redis, so a stolen/rotated token can never be replayed.
+    if let Some(jti) = &claims.jti {
+        let revoked_key = format!("revoked:refresh:{}", jti);
+        match state.cache.exists(&revoked_key).await {
+            Ok(true) => {
+                return (StatusCode::UNAUTHORIZED, Json(json!({"error": "Refresh token has been revoked"}))).into_response();
+            }
+            Ok(false) => {}
+            Err(e) => tracing::warn!("refresh blacklist lookup failed: {e}"),
+        }
+    }
+
     // Fetch user to get current org/role
     let user: Option<User> = sqlx::query_as("SELECT * FROM users WHERE id = $1 AND is_active = TRUE")
         .bind(&claims.sub)
@@ -548,8 +562,22 @@ pub async fn refresh(
 
     let access_token = create_access_token(&state.jwt_secret, &user.id, org_id, role).unwrap_or_default();
 
+    // Rotate: revoke the old refresh token, issue a fresh one.
+    let new_refresh = create_refresh_token(&state.jwt_secret, &user.id).unwrap_or_default();
+    if let Some(jti) = &claims.jti {
+        // Blacklist the old jti for the remainder of its 30-day lifetime.
+        let now = chrono::Utc::now().timestamp();
+        let ttl = (claims.exp - now).max(60) as u64;
+        let revoked_key = format!("revoked:refresh:{}", jti);
+        match state.cache.set(&revoked_key, "1", std::time::Duration::from_secs(ttl)).await {
+            Ok(_) => {}
+            Err(e) => tracing::warn!("refresh blacklist write failed: {e}"),
+        }
+    }
+
     (StatusCode::OK, Json(json!({
-        "access_token": access_token
+        "access_token": access_token,
+        "refresh_token": new_refresh
     }))).into_response()
 }
 
