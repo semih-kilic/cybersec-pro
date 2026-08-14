@@ -336,9 +336,11 @@ async fn execute_job(job: &PolledJob) -> serde_json::Value {
     }
 
     cmd.stdout(std::process::Stdio::piped())
-        .stderr(std::process::Stdio::piped());
+        .stderr(std::process::Stdio::piped())
+        // If the timeout future is dropped, the child is killed automatically.
+        .kill_on_drop(true);
 
-    let mut child = match cmd.spawn() {
+    let child = match cmd.spawn() {
         Ok(c) => c,
         Err(e) => {
             return serde_json::json!({
@@ -364,9 +366,7 @@ async fn execute_job(job: &PolledJob) -> serde_json::Value {
             "stderr": format!("wait error: {e}"),
         }),
         Err(_) => {
-            // Kill the process tree so a long-running tool can't linger.
-            let _ = child.kill().await;
-            let _ = child.wait().await;
+            // Child is killed by kill_on_drop when the timeout future is dropped.
             serde_json::json!({
                 "status": "timeout",
                 "exit_code": null,
