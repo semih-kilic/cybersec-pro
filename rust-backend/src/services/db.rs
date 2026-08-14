@@ -124,7 +124,7 @@ r#"CREATE TABLE IF NOT EXISTS agents (
     agent_docker_enabled BOOLEAN DEFAULT FALSE,
     auto_update BOOLEAN DEFAULT TRUE,
     registration_token TEXT UNIQUE,
-    api_key TEXT UNIQUE,
+    api_key_hash TEXT UNIQUE,
     last_heartbeat TIMESTAMP,
     cpu_usage REAL DEFAULT 0,
     memory_usage REAL DEFAULT 0,
@@ -136,6 +136,15 @@ r#"CREATE TABLE IF NOT EXISTS agents (
     created_at TIMESTAMP DEFAULT NOW(),
     updated_at TIMESTAMP DEFAULT NOW()
 )"#,
+
+// ── Security hardening: API keys stored hashed (SHA-256), never plaintext ──
+// Adds an `api_key_hash` column, converts any existing plaintext keys to
+// hashes, drops the legacy column and enforces uniqueness on the hash so
+// credentials at rest are never readable.
+r#"ALTER TABLE agents ADD COLUMN IF NOT EXISTS api_key_hash TEXT"#,
+r#"UPDATE agents SET api_key_hash = encode(sha256(api_key::bytea), 'hex') WHERE api_key IS NOT NULL AND api_key_hash IS NULL"#,
+r#"ALTER TABLE agents DROP COLUMN IF EXISTS api_key"#,
+r#"CREATE UNIQUE INDEX IF NOT EXISTS idx_agents_api_key_hash ON agents(api_key_hash) WHERE api_key_hash IS NOT NULL"#,
 
 r#"CREATE TABLE IF NOT EXISTS tools (
     id TEXT PRIMARY KEY,

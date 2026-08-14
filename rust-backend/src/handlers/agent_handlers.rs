@@ -13,20 +13,28 @@ use crate::middleware::auth_middleware::AuthUser;
 use crate::models::Agent;
 use crate::AppState;
 
-/// Returns the HMAC secret used for agent enrollment JWTs. Prefers `JWT_SECRET_KEY`
-/// (the canonical app-wide secret loaded by main.rs from .env) and falls back to
-/// `JWT_SECRET` then "default-secret" for legacy compatibility.
+/// Returns the HMAC secret used for agent enrollment JWTs. Requires `JWT_SECRET_KEY`
+/// (the canonical app-wide secret loaded by main.rs from .env). Fails closed rather
+/// than falling back to a predictable default — a misconfigured environment must
+/// not silently weaken enrollment token signatures.
 fn jwt_secret() -> String {
-    std::env::var("JWT_SECRET_KEY")
-        .or_else(|_| std::env::var("JWT_SECRET"))
-        .unwrap_or_else(|_| "default-secret".into())
+    std::env::var("JWT_SECRET_KEY").expect(
+        "JWT_SECRET_KEY must be set: refusing to sign agent enrollment tokens with a default secret",
+    )
 }
 
 /// Returns the symmetric key used to encrypt SSH passwords stored in the `agents`
 /// table. Kept separate from `jwt_secret()` so we don't break decryption of
-/// passwords already in the DB when the JWT signing secret rotates.
+/// passwords already in the DB when the JWT signing secret rotates. Requires
+/// `JWT_SECRET_KEY` — fails closed on missing config instead of a known default.
 pub(crate) fn password_encryption_key() -> String {
-    std::env::var("JWT_SECRET").unwrap_or_else(|_| "default-secret".into())
+    std::env::var("JWT_SECRET_KEY").unwrap_or_else(|_| {
+        std::env::var("JWT_SECRET").unwrap_or_else(|_| {
+            panic!(
+                "JWT_SECRET_KEY must be set: refusing to encrypt agent SSH passwords with a default secret"
+            )
+        })
+    })
 }
 
 /// Extracts a Bearer token from the Authorization header.
@@ -36,6 +44,15 @@ fn bearer_from_headers(headers: &HeaderMap) -> Option<String> {
         .and_then(|v| v.to_str().ok())
         .and_then(|s| s.strip_prefix("Bearer "))
         .map(|s| s.trim().to_string())
+}
+
+/// Hashes an agent API key for storage using SHA-256. The plaintext key is
+/// returned to the agent exactly once at enrollment and never persisted.
+fn hash_agent_api_key(key: &str) -> String {
+    use sha2::{Digest, Sha256};
+    let mut h = Sha256::new();
+    h.update(key.as_bytes());
+    format!("{:x}", h.finalize())
 }
 
 // ── Pure helpers (testable without DB) ─────────────────────────────────
@@ -163,6 +180,7 @@ pub async fn create_agent(
     let agent_id = Uuid::new_v4().to_string();
     let reg_token = format!("agt_{}", Uuid::new_v4().to_string().replace('-', ""));
     let api_key = format!("ak_{}", Uuid::new_v4().to_string().replace('-', ""));
+    let api_key_hash = hash_agent_api_key(&api_key);
     let conn_type = body.connection_type.as_deref().unwrap_or("direct");
 
     // Encrypt SSH password if provided
@@ -173,7 +191,7 @@ pub async fn create_agent(
     });
 
     let _ = sqlx::query(
-        "INSERT INTO agents (id, organization_id, name, connection_type, hostname, ip_address, platform, network_zone, max_concurrent_scans, ssh_host, ssh_port, ssh_username, ssh_password_encrypted, ssh_key_path, location, vpn_config_path, proxy_endpoint, registration_token, api_key, status)
+        "INSERT INTO agents (id, organization_id, name, connection_type, hostname, ip_address, platform, network_zone, max_concurrent_scans, ssh_host, ssh_port, ssh_username, ssh_password_encrypted, ssh_key_path, location, vpn_config_path, proxy_endpoint, registration_token, api_key_hash, status)
          VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, 'pending')"
     )
     .bind(&agent_id)
@@ -194,7 +212,7 @@ pub async fn create_agent(
     .bind(&body.vpn_config_path)
     .bind(&body.proxy_endpoint)
     .bind(&reg_token)
-    .bind(&api_key)
+    .bind(&api_key_hash)
     .execute(&state.db)
     .await;
 
@@ -263,14 +281,16 @@ pub async fn agent_heartbeat(
 ) -> impl IntoResponse {
     // Authenticate via the Bearer api_key issued at enrollment. The api_key is
     // bound to the agent row and never leaves the agent — this prevents anyone
-    // who knows an agent_id from spoofing heartbeats.
+    // who knows an agent_id from spoofing heartbeats. Only the SHA-256 hash of
+    // the key is stored; the presented key is hashed and compared constant-time.
     let presented = match bearer_from_headers(&headers) {
         Some(k) if is_valid_agent_api_key_format(&k) => k,
         _ => return (StatusCode::UNAUTHORIZED, Json(json!({"error": "Missing or malformed Bearer api_key"}))).into_response(),
     };
+    let presented_hash = hash_agent_api_key(&presented);
 
     let row: Option<(String,)> = sqlx::query_as(
-        "SELECT api_key FROM agents WHERE id = $1"
+        "SELECT api_key_hash FROM agents WHERE id = $1"
     )
     .bind(&agent_id)
     .fetch_optional(&state.db)
@@ -283,7 +303,7 @@ pub async fn agent_heartbeat(
     };
 
     // Constant-time compare to avoid timing oracles on api_key.
-    if !constant_time_eq(stored.as_bytes(), presented.as_bytes()) {
+    if !constant_time_eq(stored.as_bytes(), presented_hash.as_bytes()) {
         return (StatusCode::UNAUTHORIZED, Json(json!({"error": "Invalid api_key"}))).into_response();
     }
 
@@ -512,6 +532,7 @@ pub async fn enroll_agent(
 
     let agent_id = Uuid::new_v4().to_string();
     let api_key = format!("ak_{}", Uuid::new_v4().to_string().replace('-', ""));
+    let api_key_hash = hash_agent_api_key(&api_key);
     let name = format!("agent-{}", &agent_id[..8]);
     // Store SHA-256 hash of the enrollment JWT (not the raw token) so the
     // unique constraint enforces single-use without persisting credentials.
@@ -524,7 +545,7 @@ pub async fn enroll_agent(
 
     // status='pending' until the first heartbeat flips it to 'online'.
     let res = sqlx::query(
-        "INSERT INTO agents (id, organization_id, name, connection_type, hostname, platform, network_zone, max_concurrent_scans, registration_token, api_key, status)
+        "INSERT INTO agents (id, organization_id, name, connection_type, hostname, platform, network_zone, max_concurrent_scans, registration_token, api_key_hash, status)
          VALUES ($1, $2, $3, 'reverse_tunnel', $4, $5, 'public', 5, $6, $7, 'pending')"
     )
     .bind(&agent_id)
@@ -533,7 +554,7 @@ pub async fn enroll_agent(
     .bind(&hostname)
     .bind(&platform)
     .bind(&token_hash)
-    .bind(&api_key)
+    .bind(&api_key_hash)
     .execute(&state.db)
     .await;
 
@@ -766,9 +787,10 @@ async fn authenticate_agent(
         Some(k) if is_valid_agent_api_key_format(&k) => k,
         _ => return Err((StatusCode::UNAUTHORIZED, Json(json!({"error": "Missing or malformed Bearer api_key"})))),
     };
+    let presented_hash = hash_agent_api_key(&presented);
 
     let row: Option<(String, String)> = sqlx::query_as(
-        "SELECT api_key, organization_id FROM agents WHERE id = $1"
+        "SELECT api_key_hash, organization_id FROM agents WHERE id = $1"
     )
     .bind(agent_id)
     .fetch_optional(&state.db)
@@ -780,7 +802,7 @@ async fn authenticate_agent(
         _ => return Err((StatusCode::UNAUTHORIZED, Json(json!({"error": "Unknown agent"})))),
     };
 
-    if !constant_time_eq(stored.as_bytes(), presented.as_bytes()) {
+    if !constant_time_eq(stored.as_bytes(), presented_hash.as_bytes()) {
         return Err((StatusCode::UNAUTHORIZED, Json(json!({"error": "Invalid api_key"}))));
     }
     Ok(org_id)

@@ -7,11 +7,16 @@ set -euo pipefail
 DB_USER="${DB_USER:-cybersec}"
 DB_NAME="${DB_NAME:-cybersec_pro}"
 BACKUP_DIR="${BACKUP_DIR:-/home/cybersec/cybersec-pro/backups}"
-ENCRYPTION_KEY="${BACKUP_ENCRYPTION_KEY:-}"
+KEYFILE="${BACKUP_KEY_FILE:-/home/cybersec/cybersec-pro/.backup-key}"
 KEEP_DAYS="${KEEP_DAYS:-30}"
 
+if [ ! -f "$KEYFILE" ]; then
+  echo "[backup] key file not found: $KEYFILE" >&2
+  exit 1
+fi
+ENCRYPTION_KEY=$(cat "$KEYFILE")
 if [ -z "$ENCRYPTION_KEY" ]; then
-  echo "[backup] BACKUP_ENCRYPTION_KEY not set — refusing to run unencrypted" >&2
+  echo "[backup] BACKUP_ENCRYPTION_KEY empty — refusing" >&2
   exit 1
 fi
 
@@ -25,14 +30,12 @@ docker exec cybersec-db pg_dump -U "$DB_USER" -d "$DB_NAME" --format=custom > /t
 gzip -c /tmp/cybersec_dump.dump > "$TMP"
 rm -f /tmp/cybersec_dump.dump
 
-echo -n "$ENCRYPTION_KEY" | openssl enc -aes-256-cbc -pbkdf2 -iter 200000 -salt -in "$TMP" -out "$OUT"
+echo -n "$ENCRYPTION_KEY" | openssl enc -aes-256-cbc -pbkdf2 -iter 200000 -salt -pass stdin -in "$TMP" -out "$OUT"
 rm -f "$TMP"
 
 SIZE=$(stat -c%s "$OUT" 2>/dev/null || stat -f%z "$OUT")
 echo "[backup] OK: $OUT ($SIZE bytes)"
 echo "[backup] completed at $(date -u +%FT%TZ)"
 
-# Prune old backups (keep KEEP_DAYS)
 find "$BACKUP_DIR" -name 'cybersec_pro-*.sql.gz.enc' -mtime +"$KEEP_DAYS" -delete
-echo "[backup] pruned backups older than ${KEEP_DAYS}d; remaining:"
-ls -1 "$BACKUP_DIR"/cybersec_pro-*.sql.gz.enc 2>/dev/null | wc -l
+echo "[backup] pruned backups older than ${KEEP_DAYS}d"

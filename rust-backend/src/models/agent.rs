@@ -37,7 +37,7 @@ pub struct Agent {
     pub auto_update: Option<bool>,
     // Common
     pub registration_token: Option<String>,
-    pub api_key: Option<String>,
+    pub api_key_hash: Option<String>,
     pub last_heartbeat: Option<NaiveDateTime>,
     pub cpu_usage: Option<f32>,
     pub memory_usage: Option<f32>,
@@ -139,7 +139,7 @@ mod tests {
             agent_docker_enabled: None,
             auto_update: None,
             registration_token: None,
-            api_key: None,
+            api_key_hash: None,
             last_heartbeat: None,
             cpu_usage: None,
             memory_usage: None,
