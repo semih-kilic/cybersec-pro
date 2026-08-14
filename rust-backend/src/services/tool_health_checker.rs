@@ -3,6 +3,45 @@ use std::time::Duration;
 use tokio::process::Command;
 use tracing::info;
 
+const SCAN_ENGINE_CONTAINER: &str = "cybersec-scan-engine";
+
+/// Build a docker-exec command that runs the given binary inside the scan-engine container.
+/// Keeps binary name as a single argument to avoid shell injection.
+fn exec_in_scan_engine(binary_name: &str) -> Command {
+    let mut cmd = Command::new("docker");
+    cmd.arg("exec")
+        .arg(SCAN_ENGINE_CONTAINER)
+        .arg(binary_name)
+        .kill_on_drop(true);
+    cmd
+}
+
+/// Check whether the binary exists inside the scan-engine container.
+async fn binary_installed(binary_name: &str) -> bool {
+    let out = Command::new("docker")
+        .arg("exec")
+        .arg(SCAN_ENGINE_CONTAINER)
+        .arg("which")
+        .arg(binary_name)
+        .output()
+        .await;
+    matches!(out, Ok(o) if o.status.success())
+}
+
+/// Run a quick test command inside the scan-engine container.
+async fn run_in_scan_engine(
+    binary_name: &str,
+    args: &[&str],
+    timeout_secs: u64,
+) -> Result<std::process::Output, tokio::process::CommandError> {
+    let mut cmd = exec_in_scan_engine(binary_name);
+    cmd.args(args);
+    tokio::time::timeout(Duration::from_secs(timeout_secs), cmd.output())
+        .await
+        .map_err(|_| tokio::io::Error::new(tokio::io::ErrorKind::TimedOut, "timeout").into())
+        .and_then(|r| r)
+}
+
 #[derive(Debug, Clone)]
 pub struct HealthCheckResult {
     pub tool_id: String,
@@ -38,35 +77,22 @@ pub async fn check_tool_health_enhanced(
         status: "unhealthy".to_string(),
     };
 
-    // 1. Check if binary exists
-    let which_output = Command::new("which")
-        .arg(binary_name)
-        .output()
-        .await;
-
-    match which_output {
-        Ok(out) if out.status.success() => {
-            result.installed = true;
-        }
-        _ => {
-            result.status = "not_installed".to_string();
-            result.error_message = Some(format!("Binary '{}' not found in PATH", binary_name));
-            result.response_time_ms = Some(start.elapsed().as_millis() as i64);
-            persist_health_check(pool, &result).await;
-            return result;
-        }
+    // 1. Check if binary exists inside the scan-engine container
+    let installed = binary_installed(binary_name).await;
+    if !installed {
+        result.status = "not_installed".to_string();
+        result.error_message = Some(format!("Binary '{}' not found in scan-engine container", binary_name));
+        result.response_time_ms = Some(start.elapsed().as_millis() as i64);
+        persist_health_check(pool, &result).await;
+        return result;
     }
+    result.installed = true;
 
     // 2. Get version (with 5s timeout, kill on drop to prevent zombie processes)
     {
-        let mut cmd = Command::new(binary_name);
-        cmd.arg("--version").kill_on_drop(true);
-        let version_output = tokio::time::timeout(
-            Duration::from_secs(5),
-            cmd.output(),
-        ).await;
+        let version_output = run_in_scan_engine(binary_name, &["--version"], 5).await;
 
-        if let Ok(Ok(out)) = version_output {
+        if let Ok(out) = version_output {
             let stdout = String::from_utf8_lossy(&out.stdout).to_string();
             let stderr = String::from_utf8_lossy(&out.stderr).to_string();
             let combined = format!("{}{}", stdout, stderr);
@@ -81,7 +107,8 @@ pub async fn check_tool_health_enhanced(
     if let Some(test_cmd) = quick_test_cmd {
         let parts: Vec<&str> = test_cmd.split_whitespace().collect();
         if let Some((cmd, args)) = parts.split_first() {
-            let mut command = Command::new(cmd);
+            let mut command = Command::new("docker");
+            command.arg("exec").arg(SCAN_ENGINE_CONTAINER).arg(cmd);
             command.args(args).kill_on_drop(true);
             let timeout = Duration::from_secs(10);
             match tokio::time::timeout(timeout, command.output()).await {
@@ -101,24 +128,16 @@ pub async fn check_tool_health_enhanced(
         }
     } else {
         // Default quick test: run with --help (with 5s timeout, kill on drop)
-        let mut cmd = Command::new(binary_name);
-        cmd.arg("--help").kill_on_drop(true);
-        let help_output = tokio::time::timeout(
-            Duration::from_secs(5),
-            cmd.output(),
-        ).await;
+        let help_output = run_in_scan_engine(binary_name, &["--help"], 5).await;
 
         match help_output {
-            Ok(Ok(out)) => {
+            Ok(out) => {
                 result.runtime_ok = true;
                 let stdout = String::from_utf8_lossy(&out.stdout);
                 result.runtime_output = Some(format!("{} bytes help output", stdout.len()));
             }
-            Ok(Err(e)) => {
+            Err(e) => {
                 result.error_message = Some(format!("Help test failed: {}", e));
-            }
-            Err(_) => {
-                result.error_message = Some("Help test timed out (5s)".to_string());
                 result.runtime_ok = true;
             }
         }
