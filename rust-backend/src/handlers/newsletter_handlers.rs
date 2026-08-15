@@ -121,3 +121,67 @@ pub async fn subscribe_newsletter(
     )
         .into_response()
 }
+
+#[derive(Deserialize)]
+pub struct UnsubscribeRequest {
+    pub email: String,
+}
+
+/// CASL one-click unsubscribe. Deactivates the email for all commercial
+/// communication:
+///   - newsletter_subscribers -> is_active = FALSE (marketing)
+///   - notification_preferences -> email_scan_complete = FALSE (operational)
+///   - users -> marketing opt-out flag so future campaigns skip them
+/// Idempotent and instant — no login required (CASL requires frictionless opt-out).
+pub async fn unsubscribe_newsletter(
+    State(state): State<Arc<AppState>>,
+    Json(body): Json<UnsubscribeRequest>,
+) -> impl IntoResponse {
+    let email = body.email.trim().to_lowercase();
+    if !looks_like_email(&email) {
+        return (
+            StatusCode::BAD_REQUEST,
+            Json(json!({"error": "Please provide a valid email address."})),
+        )
+            .into_response();
+    }
+
+    let _ = sqlx::query(
+        "UPDATE newsletter_subscribers SET is_active = FALSE WHERE email = $1",
+    )
+    .bind(&email)
+    .execute(&state.db)
+    .await;
+
+    let _ = sqlx::query(
+        "UPDATE notification_preferences np SET email_scan_complete = FALSE \
+         FROM users u WHERE np.user_id = u.id AND u.email = $1",
+    )
+    .bind(&email)
+    .execute(&state.db)
+    .await;
+
+    let _ = sqlx::query(
+        "UPDATE users SET marketing_opt_out = TRUE, updated_at = NOW() WHERE email = $1",
+    )
+    .bind(&email)
+    .execute(&state.db)
+    .await;
+
+    crate::services::audit::log_audit(
+        &state.db, "unsubscribe", "marketing", "info",
+        None, None,
+        Some(serde_json::json!({"email": email})),
+        Some("user"), None, "success", None,
+    ).await;
+
+    (
+        StatusCode::OK,
+        Json(json!({
+            "ok": true,
+            "message": "You have been unsubscribed. Consent withdrawal is effective immediately.",
+            "email": email,
+        })),
+    )
+        .into_response()
+}

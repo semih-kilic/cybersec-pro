@@ -4665,6 +4665,46 @@ pub async fn gdpr_export(
         "email": email, "first_name": first, "last_name": last, "role": role
     })).unwrap_or(json!({}));
 
+    // Consent records (PIPEDA/CCPA/GDPR evidence trail)
+    let consents = sqlx::query_as::<_, (String, String, String, Option<String>, String)>(
+        "SELECT purpose, category, status, version, CAST(recorded_at AS TEXT) FROM consent_records WHERE user_id = $1 ORDER BY recorded_at DESC"
+    ).bind(&user.user_id).fetch_all(&state.db).await.unwrap_or_default();
+    let consent_list: Vec<serde_json::Value> = consents.iter().map(|(p, c, s, v, t)| {
+        json!({"purpose": p, "category": c, "status": s, "version": v, "recorded_at": t})
+    }).collect();
+
+    // Login history (last 200)
+    let logins = sqlx::query_as::<_, (String, Option<String>, Option<String>, String)>(
+        "SELECT CAST(created_at AS TEXT), ip_address, city, COALESCE(success::text,'') FROM login_history WHERE user_id = $1 ORDER BY created_at DESC LIMIT 200"
+    ).bind(&user.user_id).fetch_all(&state.db).await.unwrap_or_default();
+    let login_list: Vec<serde_json::Value> = logins.iter().map(|(t, ip, city, ok)| {
+        json!({"created_at": t, "ip": ip, "city": city, "success": ok})
+    }).collect();
+
+    // Notification preferences
+    let prefs = sqlx::query_as::<_, (Option<bool>, Option<bool>, Option<bool>, Option<bool>)>(
+        "SELECT email_scan_complete, email_security_alerts, email_weekly_report, email_product_news FROM notification_preferences WHERE user_id = $1"
+    ).bind(&user.user_id).fetch_optional(&state.db).await.unwrap_or(None);
+    let pref_json = prefs.map(|(a, b, c, d)| json!({
+        "email_scan_complete": a, "email_security_alerts": b, "email_weekly_report": c, "email_product_news": d
+    })).unwrap_or(json!({}));
+
+    // API keys (masked — never export full secrets)
+    let api_keys = sqlx::query_as::<_, (String, Option<String>, String)>(
+        "SELECT name, description, CAST(created_at AS TEXT) FROM api_keys WHERE user_id = $1 ORDER BY created_at DESC"
+    ).bind(&user.user_id).fetch_all(&state.db).await.unwrap_or_default();
+    let api_key_list: Vec<serde_json::Value> = api_keys.iter().map(|(n, d, t)| {
+        json!({"name": n, "description": d, "created_at": t})
+    }).collect();
+
+    // Integrations (org-level, masked config)
+    let integrations = sqlx::query_as::<_, (String, String, Option<String>, String)>(
+        "SELECT name, integration_type, webhook_url, CAST(created_at AS TEXT) FROM integrations WHERE organization_id = $1 ORDER BY created_at DESC"
+    ).bind(org_id).fetch_all(&state.db).await.unwrap_or_default();
+    let integration_list: Vec<serde_json::Value> = integrations.iter().map(|(n, t, u, c)| {
+        json!({"name": n, "type": t, "webhook_url": u, "created_at": c})
+    }).collect();
+
     Json(json!({
         "status": "complete",
         "exported_at": chrono::Utc::now().to_rfc3339(),
@@ -4672,6 +4712,11 @@ pub async fn gdpr_export(
             "profile": profile,
             "scans": scan_list,
             "audit_logs": audit_list,
+            "consent_records": consent_list,
+            "login_history": login_list,
+            "notification_preferences": pref_json,
+            "api_keys": api_key_list,
+            "integrations": integration_list,
             "organization_id": org_id
         }
     })).into_response()
@@ -4695,6 +4740,19 @@ pub async fn gdpr_delete_account(
         Ok(_) => {
             // Delete personal audit logs
             let _ = sqlx::query("DELETE FROM audit_logs WHERE user_id = $1").bind(&user.user_id).execute(&state.db).await;
+
+            // Withdraw all consents (PIPEDA/CCPA/GDPR right-to-erasure evidence)
+            let _ = sqlx::query(
+                "UPDATE consent_records SET status = 'withdrawn', withdrawn_at = NOW() WHERE user_id = $1 AND status = 'active'"
+            ).bind(&user.user_id).execute(&state.db).await;
+
+            // Drop API keys
+            let _ = sqlx::query("DELETE FROM api_keys WHERE user_id = $1").bind(&user.user_id).execute(&state.db).await;
+
+            // Revoke all cached sessions (Redis)
+            let _ = state.cache.delete_pattern(&format!("refresh_token:user:{}", user.user_id)).await;
+            let _ = state.cache.delete_pattern(&format!("session:user:{}", user.user_id)).await;
+
             Json(json!({"message": "Account data deleted and anonymized", "status": "complete"})).into_response()
         }
         Err(e) => (StatusCode::INTERNAL_SERVER_ERROR, Json(json!({"error": format!("Failed: {}", e)}))).into_response(),

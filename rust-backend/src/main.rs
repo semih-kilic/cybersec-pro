@@ -527,6 +527,9 @@ fn build_router(state: Arc<AppState>) -> Router {
         // ── Public marketing endpoints (no auth) ──────────────
         .route("/api/v1/blog/feed", get(news_handlers::list_blog_public))
         .route("/api/v1/newsletter/subscribe", post(newsletter_handlers::subscribe_newsletter))
+        .route("/api/v1/newsletter/unsubscribe", post(newsletter_handlers::unsubscribe_newsletter))
+        .route("/api/v1/consent", get(compliance_handlers::list_consent_records))
+        .route("/api/v1/consent/withdraw", post(compliance_handlers::withdraw_consent))
         // ── Admin ─────────────────────────────────────────────
         .route("/api/v1/admin/overview", get(stub_handlers::admin_overview))
         .route("/api/v1/admin/impersonate", post(stub_handlers::admin_impersonate))

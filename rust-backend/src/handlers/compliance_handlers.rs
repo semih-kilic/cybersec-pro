@@ -4,11 +4,92 @@ use axum::{
     response::IntoResponse,
     Json,
 };
+use serde::Deserialize;
 use serde_json::{json, Value as JsonValue};
 use std::sync::Arc;
 
 use crate::middleware::auth_middleware::AuthUser;
 use crate::AppState;
+
+/// GET /api/v1/consent — list the caller's consent records (GDPR Art. 15,
+/// PIPEDA accountability, CCPA/CPRA "right to know").
+pub async fn list_consent_records(
+    State(state): State<Arc<AppState>>,
+    auth: AuthUser,
+) -> impl IntoResponse {
+    let rows = sqlx::query_as::<_, (String, String, String, Option<String>, String, Option<String>, Option<String>)>(
+        "SELECT purpose, category, status, version, CAST(recorded_at AS TEXT), CAST(withdrawn_at AS TEXT), ip_address \
+         FROM consent_records WHERE user_id = $1 ORDER BY recorded_at DESC"
+    )
+    .bind(&auth.user_id)
+    .fetch_all(&state.db)
+    .await
+    .unwrap_or_default();
+
+    let consents: Vec<JsonValue> = rows.iter().map(|(p, c, s, v, rec, wit, ip)| json!({
+        "purpose": p,
+        "category": c,
+        "status": s,
+        "version": v,
+        "recorded_at": rec,
+        "withdrawn_at": wit,
+        "ip_address": ip,
+    })).collect();
+
+    Json(json!({
+        "consents": consents,
+        "total": consents.len(),
+    })).into_response()
+}
+
+#[derive(Deserialize)]
+pub struct WithdrawConsentRequest {
+    pub purpose: String,
+}
+
+/// POST /api/v1/consent/withdraw — withdraw consent for a purpose
+/// (CCPA/CPRA right to opt-out, PIPEDA consent withdrawal). Immediate effect.
+pub async fn withdraw_consent(
+    State(state): State<Arc<AppState>>,
+    auth: AuthUser,
+    Json(body): Json<WithdrawConsentRequest>,
+) -> impl IntoResponse {
+    let purpose = body.purpose.trim().to_lowercase();
+    if purpose.is_empty() {
+        return (StatusCode::BAD_REQUEST, Json(json!({"error": "purpose is required"}))).into_response();
+    }
+
+    let result = sqlx::query(
+        "UPDATE consent_records SET status = 'withdrawn', withdrawn_at = NOW() \
+         WHERE user_id = $1 AND LOWER(purpose) = $2 AND status = 'active'"
+    )
+    .bind(&auth.user_id)
+    .bind(&purpose)
+    .execute(&state.db)
+    .await;
+
+    match result {
+        Ok(r) => {
+            if r.rows_affected() == 0 {
+                return (StatusCode::NOT_FOUND, Json(json!({"error": "No active consent found for this purpose"}))).into_response();
+            }
+            let _ = crate::services::audit::log_audit(
+                &state.db, "consent.withdraw", "consent", "info",
+                None, None,
+                Some(json!({"purpose": purpose, "user_id": auth.user_id})),
+                Some("user"), None, "success", None,
+            ).await;
+            Json(json!({
+                "ok": true,
+                "message": "Consent withdrawn",
+                "purpose": purpose,
+                "status": "withdrawn",
+                "withdrawn_at": chrono::Utc::now().to_rfc3339(),
+            })).into_response()
+        }
+        Err(e) => (StatusCode::INTERNAL_SERVER_ERROR, Json(json!({"error": e.to_string()}))).into_response(),
+    }
+}
 
 /// GET /api/v1/compliance/frameworks
 pub async fn list_frameworks(

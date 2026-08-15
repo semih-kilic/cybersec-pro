@@ -7,6 +7,20 @@ pub struct EmailTemplate {
     pub text_body: String,
 }
 
+/// CASL-compliant footer: sender identity (business name + address), a working
+/// unsubscribe link, and the free consent/withdrawal notice. Applies to every
+/// commercial electronic message (CEM). Unsubscribe is instant and honoured.
+pub fn mail_footer(unsubscribe_url: &str) -> String {
+    format!(
+        r#"<div style="border-top:1px solid #334155;margin-top:24px;padding-top:16px">
+<p style="color:#64748b;font-size:11px;margin:0 0 4px;text-align:center">CyberSec Pro (Cyber Security Pro Ltd, Teknopark Istanbul, 34906 Pendik, Istanbul, Turkiye)</p>
+<p style="color:#64748b;font-size:11px;margin:0 0 8px;text-align:center">This email was sent to you because you have an account with CyberSec Pro.</p>
+<p style="color:#64748b;font-size:11px;margin:0;text-align:center">You can <a href="{url}" style="color:#60a5fa">unsubscribe from marketing emails</a> at any time — consent withdrawal is effective immediately.</p>
+</div>"#,
+        url = unsubscribe_url,
+    )
+}
+
 /// Generate scan complete email template
 pub fn scan_complete(
     tool_name: &str,
@@ -15,6 +29,7 @@ pub fn scan_complete(
     findings_count: usize,
     duration: &str,
     dashboard_url: &str,
+    unsubscribe_url: &str,
 ) -> EmailTemplate {
     let status_color = if status == "completed" { "#10b981" } else { "#ef4444" };
     let status_icon = if status == "completed" { "&#x2705;" } else { "&#x274C;" };
@@ -49,6 +64,7 @@ pub fn scan_complete(
 </div>
 
 <p style="color:#64748b;font-size:12px;text-align:center;margin-top:24px">This is an automated notification from CyberSec Pro</p>
+{footer}
 </div></body></html>"#,
             icon = status_icon,
             status = status,
@@ -58,6 +74,7 @@ pub fn scan_complete(
             duration = duration,
             findings = findings_html,
             dashboard_url = dashboard_url,
+            footer = mail_footer(unsubscribe_url),
         ),
         text_body: format!(
             "Scan {} - {} on {}\nStatus: {}\nDuration: {}\nFindings: {}\n\nView results: {}",
@@ -73,6 +90,7 @@ pub fn security_alert(
     description: &str,
     severity: &str,
     dashboard_url: &str,
+    unsubscribe_url: &str,
 ) -> EmailTemplate {
     let severity_color = match severity {
         "critical" => "#dc2626",
@@ -104,6 +122,7 @@ pub fn security_alert(
 <div style="text-align:center;margin:24px 0">
 <a href="{dashboard_url}" style="background:#ef4444;color:white;padding:12px 32px;border-radius:8px;text-decoration:none;font-weight:600">Investigate Now</a>
 </div>
+{footer}
 </div></body></html>"#,
             severity_color = severity_color,
             title = title,
@@ -111,6 +130,7 @@ pub fn security_alert(
             alert_type = alert_type,
             severity = severity,
             dashboard_url = dashboard_url,
+            footer = mail_footer(unsubscribe_url),
         ),
         text_body: format!(
             "Security Alert: {} ({})\nType: {}\nSeverity: {}\n\n{}\n\nInvestigate: {}",
@@ -126,6 +146,7 @@ pub fn weekly_report(
     total_scans: i64,
     findings_summary: &str,
     dashboard_url: &str,
+    unsubscribe_url: &str,
 ) -> EmailTemplate {
     let framework_rows: String = frameworks.iter()
         .map(|(name, score)| {
@@ -164,6 +185,7 @@ pub fn weekly_report(
 </div>
 
 <p style="color:#64748b;font-size:12px;text-align:center;margin-top:24px">Weekly report from CyberSec Pro</p>
+{footer}
 </div></body></html>"#,
             org_name = org_name,
             framework_rows = framework_rows,
@@ -174,6 +196,7 @@ pub fn weekly_report(
                 String::new()
             },
             dashboard_url = dashboard_url,
+            footer = mail_footer(unsubscribe_url),
         ),
         text_body: format!(
             "Weekly Security Report - {}\n\nCompliance Scores:\n{}\n\nScans this week: {}\n\nView dashboard: {}",

@@ -44,6 +44,18 @@ pub fn in_quiet_range(now: &str, from: &str, to: &str) -> bool {
     }
 }
 
+/// CASL-compliant email footer: sender identity (business name + physical
+/// address) and a working unsubscribe link. Required on every commercial
+/// electronic message sent to Canadian recipients.
+fn casl_footer(email: &str) -> String {
+    format!(
+        r#"<p style="color:#4a5568;font-size:11px;margin-top:16px">CyberSec Pro — Cyber Security Pro Ltd, Teknopark Istanbul, 34906 Pendik, Istanbul, Turkiye</p>
+<p style="color:#4a5568;font-size:11px;margin:0">You received this because you have an account with CyberSec Pro. Consent can be withdrawn anytime.</p>
+<p style="color:#4a5568;font-size:11px;margin:0"><a href="https://app.cyber-sec-pro.com/unsubscribe?email={email}" style="color:#00d4ff">Unsubscribe from marketing emails</a></p>"#,
+        email = email,
+    )
+}
+
 /// Send scan completion email to the user who started the scan, if they have
 /// `email_scan_complete = true` in notification_preferences.
 pub async fn notify_scan_complete(
@@ -116,7 +128,7 @@ pub async fn notify_scan_complete(
 </table>
 <a href="https://app.cyber-sec-pro.com/dashboard/scans/{scan_id}" style="display:inline-block;padding:14px 36px;background:linear-gradient(135deg,#00ff88,#00d4ff);color:#0a0a0a;text-decoration:none;font-weight:bold;border-radius:50px;margin:10px 0">View Results</a>
 <p style="color:#4a5568;font-size:12px;margin-top:20px">You can adjust email preferences in Settings → Notifications</p>
-<p style="color:#4a5568;font-size:12px">© 2026 CyberSec Professional</p>
+{footer}
 </td></tr></table></body></html>"#,
         status_color = status_color,
         status = status,
@@ -126,11 +138,12 @@ pub async fn notify_scan_complete(
         scan_id = scan_id,
         scan_id_short = &scan_id[..8.min(scan_id.len())],
         findings_text = findings_text,
+        footer = casl_footer(&email),
     );
 
     let plain = format!(
-        "Hi {},\n\nYour {} scan on {} has {}.\nFindings: {}\n\nView: https://app.cyber-sec-pro.com/dashboard/scans/{}\n\n© 2026 CyberSec Professional",
-        name, tool_name, target, status, findings_text, scan_id
+        "Hi {},\n\nYour {} scan on {} has {}.\nFindings: {}\n\nView: https://app.cyber-sec-pro.com/dashboard/scans/{}\n\n---\nCyberSec Pro (Cyber Security Pro Ltd, Teknopark Istanbul, 34906 Pendik, Istanbul, Turkiye)\nTo unsubscribe from emails: https://app.cyber-sec-pro.com/unsubscribe?email={}",
+        name, tool_name, target, status, findings_text, scan_id, email
     );
 
     if let Err(e) = super::email::send_email_public(&cfg, &email, &subject, &plain, &html).await {
@@ -183,17 +196,18 @@ pub async fn notify_security_alert(
 <p style="color:#8892b0;margin:0">{body}</p>
 </div>
 <a href="https://app.cyber-sec-pro.com/dashboard" style="display:inline-block;padding:14px 36px;background:linear-gradient(135deg,#ff4444,#ff6600);color:#fff;text-decoration:none;font-weight:bold;border-radius:50px;margin:10px 0">Review Now</a>
-<p style="color:#4a5568;font-size:12px;margin-top:20px">© 2026 CyberSec Professional</p>
+{footer}
 </td></tr></table></body></html>"#,
             sev_color = severity_color,
             name = name,
             severity = severity,
             title = alert_title,
             body = alert_body,
+            footer = casl_footer(email),
         );
         let plain = format!(
-            "Hi {},\n\n🚨 {} ALERT: {}\n{}\n\nReview: https://app.cyber-sec-pro.com/dashboard\n\n© 2026 CyberSec Professional",
-            name, severity.to_uppercase(), alert_title, alert_body
+            "Hi {},\n\n🚨 {} ALERT: {}\n{}\n\nReview: https://app.cyber-sec-pro.com/dashboard\n\n---\nCyberSec Pro — Cyber Security Pro Ltd, Teknopark Istanbul, 34906 Pendik, Istanbul, Turkiye\nTo unsubscribe from emails: https://app.cyber-sec-pro.com/unsubscribe?email={}",
+            name, severity.to_uppercase(), alert_title, alert_body, email
         );
         if let Err(e) = super::email::send_email_public(&cfg, email, &subject, &plain, &html).await {
             tracing::error!("Failed to send security alert to {}: {}", email, e);

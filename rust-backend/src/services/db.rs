@@ -590,81 +590,102 @@ r#"ALTER TABLE scans ADD COLUMN IF NOT EXISTS authorization_id TEXT REFERENCES t
 r#"ALTER TABLE scheduled_scans ADD COLUMN IF NOT EXISTS authorization_id TEXT REFERENCES target_authorizations(id)"#,
 r#"ALTER TABLE scheduled_scans ADD COLUMN IF NOT EXISTS scope_statement TEXT"#,
 r#"ALTER TABLE scheduled_scans ADD COLUMN IF NOT EXISTS statement_version TEXT"#,
+// CASL opt-out flag: users who withdrew consent to commercial email.
+r#"ALTER TABLE users ADD COLUMN IF NOT EXISTS marketing_opt_out BOOLEAN NOT NULL DEFAULT FALSE"#,
 
-// ── users: missing columns used by SSO JIT provisioning and OAuth handlers ─
-r#"ALTER TABLE users ADD COLUMN IF NOT EXISTS full_name TEXT"#,
-r#"ALTER TABLE users ADD COLUMN IF NOT EXISTS auth_provider TEXT"#,
-
-// ── agents: SSH fingerprint for known-host verification ───────────────────
-r#"ALTER TABLE agents ADD COLUMN IF NOT EXISTS ssh_fingerprint TEXT"#,
-
-// ── scheduled_scans: retry tracking ──────────────────────────────────────
-r#"ALTER TABLE scheduled_scans ADD COLUMN IF NOT EXISTS retry_count INTEGER DEFAULT 0"#,
-r#"ALTER TABLE scheduled_scans ADD COLUMN IF NOT EXISTS max_retries INTEGER DEFAULT 3"#,
-r#"ALTER TABLE scheduled_scans ADD COLUMN IF NOT EXISTS last_error TEXT"#,
-
-// ── agent_jobs: core table for reverse-tunnel scan dispatch ───────────────
-r#"CREATE TABLE IF NOT EXISTS agent_jobs (
-    id TEXT PRIMARY KEY,
-    agent_id TEXT NOT NULL REFERENCES agents(id) ON DELETE CASCADE,
-    organization_id TEXT NOT NULL REFERENCES organizations(id),
-    scan_id TEXT REFERENCES scans(id) ON DELETE SET NULL,
-    tool_id TEXT REFERENCES tools(id),
-    command TEXT NOT NULL,
-    args JSONB,
-    status TEXT DEFAULT 'pending',
-    exit_code INTEGER,
-    stdout TEXT,
-    stderr TEXT,
-    timeout_seconds INTEGER DEFAULT 300,
-    claimed_at TIMESTAMP,
-    started_at TIMESTAMP,
-    completed_at TIMESTAMP,
-    created_at TIMESTAMP DEFAULT NOW()
+// ── Consent & privacy records (PIPEDA 5.1 / CCPA CPRA / GDPR) ─────────
+// Every consent event (registration, policy updates, withdrawal) is logged so
+// the org can demonstrate lawful processing on request.
+r#"CREATE TABLE IF NOT EXISTS consent_records (
+    id              TEXT PRIMARY KEY DEFAULT gen_random_uuid()::text,
+    user_id         TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    organization_id TEXT NOT NULL,
+    purpose         TEXT NOT NULL,               -- 'account', 'marketing', 'analytics', 'data_sharing', 'processed_personal_data'
+    category        TEXT NOT NULL DEFAULT 'essential',  -- essential | functional | marketing
+    status          TEXT NOT NULL DEFAULT 'granted',    -- granted | withdrawn
+    version         TEXT NOT NULL DEFAULT '2026-01-01',
+    ip_address      TEXT,
+    user_agent      TEXT,
+    recorded_at     TIMESTAMPTZ NOT NULL DEFAULT now(),
+    withdrawn_at    TIMESTAMPTZ
 )"#,
-"CREATE INDEX IF NOT EXISTS idx_agent_jobs_agent_status ON agent_jobs (agent_id, status, created_at)",
-"CREATE INDEX IF NOT EXISTS idx_agent_jobs_scan ON agent_jobs (scan_id)",
+"CREATE INDEX IF NOT EXISTS idx_consent_records_user ON consent_records(user_id, purpose)",
+"CREATE INDEX IF NOT EXISTS idx_consent_records_org ON consent_records(organization_id)",
 
-// ── schedule_run_history: audit trail for every scheduler tick ────────────
-r#"CREATE TABLE IF NOT EXISTS schedule_run_history (
-    id TEXT PRIMARY KEY,
-    scheduled_scan_id TEXT NOT NULL REFERENCES scheduled_scans(id) ON DELETE CASCADE,
-    organization_id TEXT NOT NULL REFERENCES organizations(id),
-    scan_id TEXT,
-    status TEXT NOT NULL,
-    started_at TIMESTAMP DEFAULT NOW(),
-    completed_at TIMESTAMP,
-    output TEXT,
-    error TEXT
+// ── Compliance framework mapping tables (mirror migrations/006) ───────
+r#"CREATE TABLE IF NOT EXISTS compliance_frameworks (
+    id TEXT PRIMARY KEY DEFAULT gen_random_uuid()::text,
+    name TEXT NOT NULL,
+    short_name TEXT NOT NULL UNIQUE,
+    version TEXT,
+    description TEXT,
+    category TEXT DEFAULT 'security',
+    website_url TEXT,
+    is_active BOOLEAN DEFAULT true,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 )"#,
-"CREATE INDEX IF NOT EXISTS idx_schedule_run_history_sched ON schedule_run_history (scheduled_scan_id, started_at DESC)",
-
-// ── stripe_events: idempotency table for Stripe webhook deduplication ─────
-r#"CREATE TABLE IF NOT EXISTS stripe_events (
-    event_id TEXT PRIMARY KEY,
-    event_type TEXT NOT NULL,
-    processed_at TIMESTAMP DEFAULT NOW()
+r#"CREATE TABLE IF NOT EXISTS compliance_controls (
+    id TEXT PRIMARY KEY DEFAULT gen_random_uuid()::text,
+    framework_id TEXT NOT NULL REFERENCES compliance_frameworks(id) ON DELETE CASCADE,
+    control_id TEXT NOT NULL,
+    title TEXT NOT NULL,
+    description TEXT,
+    category TEXT,
+    subcategory TEXT,
+    severity TEXT DEFAULT 'medium',
+    is_active BOOLEAN DEFAULT true,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    UNIQUE(framework_id, control_id)
 )"#,
-
-// ── targets: dedicated target management table ────────────────────────────
-r#"CREATE TABLE IF NOT EXISTS targets (
-    id TEXT PRIMARY KEY,
-    organization_id TEXT NOT NULL REFERENCES organizations(id) ON DELETE CASCADE,
-    created_by TEXT REFERENCES users(id),
-    value TEXT NOT NULL,
-    target_type TEXT NOT NULL DEFAULT 'domain',
-    label TEXT,
+r#"CREATE TABLE IF NOT EXISTS compliance_mappings (
+    id TEXT PRIMARY KEY DEFAULT gen_random_uuid()::text,
+    control_id TEXT NOT NULL REFERENCES compliance_controls(id) ON DELETE CASCADE,
+    tool_id TEXT NOT NULL REFERENCES tools(id) ON DELETE CASCADE,
+    coverage_type TEXT DEFAULT 'full',
     notes TEXT,
-    tags JSONB NOT NULL DEFAULT '[]'::jsonb,
-    group_name TEXT,
-    is_active BOOLEAN NOT NULL DEFAULT TRUE,
-    last_scanned_at TIMESTAMP,
-    scan_count INTEGER NOT NULL DEFAULT 0,
-    created_at TIMESTAMP NOT NULL DEFAULT NOW(),
-    updated_at TIMESTAMP NOT NULL DEFAULT NOW(),
-    UNIQUE(organization_id, value)
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    UNIQUE(control_id, tool_id)
 )"#,
-"CREATE INDEX IF NOT EXISTS idx_targets_org ON targets (organization_id)",
-"CREATE INDEX IF NOT EXISTS idx_targets_group ON targets (organization_id, group_name)",
-"CREATE INDEX IF NOT EXISTS idx_targets_tags ON targets USING GIN (tags)",
+
+// ── Compliance frameworks: PIPEDA, CCPA, CPRA (Canada & California) ───
+// Idempotent seeds; ON CONFLICT (short_name) keeps them safe on re-runs.
+r#"INSERT INTO compliance_frameworks (name, short_name, version, description, category) VALUES
+('Personal Information Protection and Electronic Documents Act', 'PIPEDA', '2023', 'Canadian federal privacy law governing how private-sector organizations collect, use and disclose personal information', 'privacy'),
+('California Consumer Privacy Act', 'CCPA', '2020', 'California consumer privacy rights — access, deletion, opt-out of sale', 'privacy'),
+('California Privacy Rights Act', 'CPRA', '2023', 'Amends CCPA: adds right to correct, sensitive data limits, proportionate use', 'privacy')
+ON CONFLICT (short_name) DO NOTHING"#,
+
+// PIPEDA principles (10 fair information practices) — SSP (Schedule 1 of PIPEDA).
+r#"INSERT INTO compliance_controls (framework_id, control_id, title, description, category, subcategory, severity) VALUES
+((SELECT id FROM compliance_frameworks WHERE short_name='PIPEDA'), 'PIPEDA-1', 'Accountability', 'Organization is responsible for personal information under its control and designates someone accountable', 'Privacy', 'Governance', 'high'),
+((SELECT id FROM compliance_frameworks WHERE short_name='PIPEDA'), 'PIPEDA-2', 'Identifying Purposes', 'Purposes for which personal information is collected shall be identified at or before collection', 'Privacy', 'Purpose', 'high'),
+((SELECT id FROM compliance_frameworks WHERE short_name='PIPEDA'), 'PIPEDA-3', 'Consent', 'Knowledge and consent of the individual are required for the collection, use, or disclosure', 'Privacy', 'Consent', 'high'),
+((SELECT id FROM compliance_frameworks WHERE short_name='PIPEDA'), 'PIPEDA-4', 'Limiting Collection', 'Collection of personal information shall be limited to that which is necessary for the identified purposes', 'Privacy', 'Minimization', 'high'),
+((SELECT id FROM compliance_frameworks WHERE short_name='PIPEDA'), 'PIPEDA-5', 'Limiting Use, Disclosure, Retention', 'Personal information shall not be used or disclosed for purposes other than those identified, and retained only as long as necessary', 'Privacy', 'Retention', 'high'),
+((SELECT id FROM compliance_frameworks WHERE short_name='PIPEDA'), 'PIPEDA-6', 'Accuracy', 'Personal information shall be as accurate, complete, and up-to-date as is necessary for the purposes', 'Privacy', 'Data Quality', 'medium'),
+((SELECT id FROM compliance_frameworks WHERE short_name='PIPEDA'), 'PIPEDA-7', 'Safeguards', 'Personal information shall be protected by security safeguards appropriate to the sensitivity', 'Privacy', 'Security', 'high'),
+((SELECT id FROM compliance_frameworks WHERE short_name='PIPEDA'), 'PIPEDA-8', 'Openness', 'An organization shall make readily available specific information about its policies and practices', 'Privacy', 'Transparency', 'medium'),
+((SELECT id FROM compliance_frameworks WHERE short_name='PIPEDA'), 'PIPEDA-9', 'Individual Access', 'An individual shall be able to challenge the accuracy and completeness of their information and have it amended', 'Privacy', 'Access', 'high'),
+((SELECT id FROM compliance_frameworks WHERE short_name='PIPEDA'), 'PIPEDA-10', 'Challenging Compliance', 'An individual shall be able to address a challenge concerning compliance with the principles', 'Privacy', 'Redress', 'medium')
+ON CONFLICT DO NOTHING"#,
+
+// CCPA/CPRA consumer rights + business obligations.
+r#"INSERT INTO compliance_controls (framework_id, control_id, title, description, category, subcategory, severity) VALUES
+((SELECT id FROM compliance_frameworks WHERE short_name='CCPA'), 'CCPA-1', 'Right to Know', 'Consumers may request disclosure of personal information collected, used, shared or sold', 'Privacy', 'Access', 'high'),
+((SELECT id FROM compliance_frameworks WHERE short_name='CCPA'), 'CCPA-2', 'Right to Delete', 'Consumers may request deletion of personal information, subject to exceptions', 'Privacy', 'Deletion', 'high'),
+((SELECT id FROM compliance_frameworks WHERE short_name='CCPA'), 'CCPA-3', 'Right to Opt-Out of Sale', 'Consumers may direct a business not to sell or share their personal information', 'Privacy', 'Opt-Out', 'high'),
+((SELECT id FROM compliance_frameworks WHERE short_name='CCPA'), 'CCPA-4', 'Right to Non-Discrimination', 'Businesses may not discriminate against consumers exercising privacy rights', 'Privacy', 'Fairness', 'medium'),
+((SELECT id FROM compliance_frameworks WHERE short_name='CCPA'), 'CCPA-5', 'Notice at Collection', 'Businesses must notify consumers at or before collection of categories and purposes', 'Privacy', 'Transparency', 'high'),
+((SELECT id FROM compliance_frameworks WHERE short_name='CCPA'), 'CCPA-6', 'Privacy Policy Disclosure', 'The privacy policy must disclose categories collected, purposes, categories of third parties', 'Privacy', 'Transparency', 'medium'),
+((SELECT id FROM compliance_frameworks WHERE short_name='CCPA'), 'CCPA-7', 'Service Provider Contracts', 'Contracts with service providers must restrict use of personal information', 'Privacy', 'Governance', 'medium'),
+((SELECT id FROM compliance_frameworks WHERE short_name='CPRA'), 'CPRA-1', 'Right to Correct', 'Consumers may request correction of inaccurate personal information', 'Privacy', 'Access', 'high'),
+((SELECT id FROM compliance_frameworks WHERE short_name='CPRA'), 'CPRA-2', 'Right to Limit Sensitive Data Use', 'Consumers may direct a business to limit use of sensitive personal information', 'Privacy', 'Consent', 'high'),
+((SELECT id FROM compliance_frameworks WHERE short_name='CPRA'), 'CPRA-3', 'Proportionate Collection & Use', 'Collection and use of personal information must be reasonably necessary and proportionate', 'Privacy', 'Minimization', 'high'),
+((SELECT id FROM compliance_frameworks WHERE short_name='CPRA'), 'CPRA-4', 'Sensitive Data Retention', 'Sensitive personal information must not be retained longer than reasonably necessary', 'Privacy', 'Retention', 'high'),
+((SELECT id FROM compliance_frameworks WHERE short_name='CPRA'), 'CPRA-5', 'Automated Decision-Making', 'Access and explanation rights for automated decision-making and profiling', 'Privacy', 'Transparency', 'medium')
+ON CONFLICT DO NOTHING"#,
+
+// CCPA 100k+ household threshold: US residents with $25M+ revenue etc. require
+// annual audits and risk assessments. Kept as an informational control set.
 ];
+

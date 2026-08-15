@@ -146,6 +146,10 @@ pub struct RegisterRequest {
     pub last_name: Option<String>,
     pub organization_name: Option<String>,
     pub invite_token: Option<String>,
+    /// Explicit consent to the Privacy Policy / Terms (PIPEDA 5.1 "Consent",
+    /// CCPA notice-at-collection). Required for account creation.
+    #[serde(default)]
+    pub consent: Option<bool>,
 }
 
 pub async fn register(
@@ -183,6 +187,15 @@ pub async fn register(
     // Validate password strength
     if body.password.len() < 8 {
         return (StatusCode::BAD_REQUEST, Json(json!({"error": "Password must be at least 8 characters"}))).into_response();
+    }
+
+    // Consent to Privacy Policy / Terms is mandatory (PIPEDA "Consent", CCPA
+    // notice-at-collection). Registration without explicit consent is refused.
+    if body.consent != Some(true) {
+        return (StatusCode::BAD_REQUEST, Json(json!({
+            "error": "Consent to the Privacy Policy and Terms of Service is required to create an account.",
+            "code": "CONSENT_REQUIRED"
+        }))).into_response();
     }
 
     // Trial-abuse prevention: normalize the email so aliases like
@@ -317,6 +330,22 @@ pub async fn register(
     }
 
     log_audit(&state.db, "register", "auth", "info", Some(&user_id), Some(&org_id), None, Some("user"), Some(&user_id), "success", Some(&headers)).await;
+
+    // Record explicit consent (PIPEDA/CCPA/CASL evidence trail). Best-effort:
+    // a failed consent write must not block account creation.
+    if body.consent == Some(true) {
+        let ua = headers.get("user-agent").and_then(|v| v.to_str().ok()).unwrap_or("").to_string();
+        let _ = sqlx::query(
+            "INSERT INTO consent_records (user_id, organization_id, purpose, category, status, version, ip_address, user_agent) \
+             VALUES ($1, $2, 'account', 'essential', 'granted', '2026-01-01', $3, $4)"
+        )
+        .bind(&user_id)
+        .bind(&org_id)
+        .bind(&ip)
+        .bind(&ua)
+        .execute(&state.db)
+        .await;
+    }
 
     // Send verification email (best-effort, don't block registration response).
     // We DO NOT issue access/refresh tokens until the user clicks the link —

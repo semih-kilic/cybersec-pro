@@ -83,6 +83,7 @@ export function RegisterPage() {
           organization_name: formData.organization_name,
           first_name: formData.first_name,
           last_name: formData.last_name,
+          consent: agreedTerms,
         }),
       });
       
@@ -400,6 +401,7 @@ export function RegisterPage() {
                 {' '}{t('auth.and', 'and')}{' '}
                 <a href="/privacy" className="text-cyan-400 hover:underline">{t('privacy.title', 'Privacy Policy')}</a>.
                 {' '}{t('auth.gdprStorageNote', 'Your data is stored in EU (Finland) and processed per GDPR.')}
+                {' '}{t('auth.consentNote', 'Consent may be withdrawn at any time.')}
               </span>
             </label>
 
