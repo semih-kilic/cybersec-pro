@@ -26,7 +26,7 @@ export default function PrivacyPolicyPage() {
       <div className="max-w-4xl mx-auto px-4 pb-20">
         <div className="bg-gray-800/50 rounded-2xl p-8 md:p-12 border border-gray-700">
           <h1 className="text-4xl font-bold text-white mb-2">{t('privacy.title', 'Privacy Policy')}</h1>
-          <p className="text-gray-400 mb-8">{t('common.lastUpdated', 'Last updated')}: February 11, 2026</p>
+          <p className="text-gray-400 mb-8">{t('common.lastUpdated', 'Last updated')}: August 15, 2026</p>
 
           <div className="prose prose-invert max-w-none space-y-6 text-gray-300">
             <section>
@@ -114,6 +114,39 @@ export default function PrivacyPolicyPage() {
             </section>
 
             <section>
+              <h2 className="text-2xl font-semibold text-white mb-3">5a. PIPEDA Rights (Canada)</h2>
+              <p>As a resident of Canada, the Personal Information Protection and Electronic Documents Act (PIPEDA) gives you the following rights:</p>
+              <ul className="list-disc list-inside space-y-1 mt-3">
+                <li><strong className="text-white">Right to Access</strong> — Request a copy of your personal information we hold (PIPEDA s.8)</li>
+                <li><strong className="text-white">Right to Correction</strong> — Correct inaccurate or outdated personal information (PIPEDA s.8)</li>
+                <li><strong className="text-white">Consent Requirement</strong> — We collect, use, and disclose your personal information only with your knowledge and consent (PIPEDA s.7)</li>
+                <li><strong className="text-white">Right to Withdraw Consent</strong> — Withdraw consent to collection, use, or disclosure at any time, subject to legal/contractual restrictions (PIPEDA s.7(2))</li>
+                <li><strong className="text-white">Right to Challenge Compliance</strong> — Challenge our compliance with PIPEDA; complaints can be escalated to the Office of the Privacy Commissioner of Canada</li>
+              </ul>
+              <p className="mt-3">To exercise these rights, use the <Link to="/dashboard/gdpr" className="text-cyan-400 hover:underline">Consent Management</Link> page or email <a href="mailto:support@cyber-sec-pro.com" className="text-cyan-400 hover:underline">support@cyber-sec-pro.com</a>.</p>
+            </section>
+
+            <section>
+              <h2 className="text-2xl font-semibold text-white mb-3">5b. CCPA / CPRA Rights (California)</h2>
+              <p>As a resident of California, the California Consumer Privacy Act (CCPA) as amended by the California Privacy Rights Act (CPRA) gives you the following rights:</p>
+              <ul className="list-disc list-inside space-y-1 mt-3">
+                <li><strong className="text-white">Right to Know</strong> — Request disclosure of the categories and specific pieces of personal information we have collected about you (CCPA s.1798.110)</li>
+                <li><strong className="text-white">Right to Delete</strong> — Request deletion of personal information we have collected, subject to certain exceptions (CCPA s.1798.105)</li>
+                <li><strong className="text-white">Right to Correct</strong> — Request correction of inaccurate personal information (CPRA s.1798.106)</li>
+                <li><strong className="text-white">Right to Opt-Out of Sale/Sharing</strong> — We do not sell or share your personal information. You may nonetheless opt out of any future sale/sharing or cross-context behavioral advertising (CCPA s.1798.120)</li>
+                <li><strong className="text-white">Right to Limit Use of Sensitive PI</strong> — Limit our use of sensitive personal information to that necessary for business purposes (CPRA s.1798.121)</li>
+                <li><strong className="text-white">Right to Non-Discrimination</strong> — We will not discriminate against you for exercising any of these rights (CCPA s.1798.125)</li>
+              </ul>
+              <div className="mt-4 rounded-lg border border-amber-500/30 bg-amber-500/5 p-4">
+                <p className="text-amber-300 text-sm font-medium mb-2">Notice of Collection</p>
+                <p className="text-gray-400 text-sm">
+                  We collect the following categories of personal information: identifiers (name, email, IP address), commercial information (scan history, payment records via Stripe), internet activity (usage logs, device data), and geolocation data (approximate, from IP). We do not sell personal information and do not use it for cross-context behavioral advertising. Your information is retained for the periods described in Section 6 and deleted upon request.
+                </p>
+              </div>
+              <p className="mt-3">To submit a verifiable request under CCPA/CPRA, email <a href="mailto:support@cyber-sec-pro.com" className="text-cyan-400 hover:underline">support@cyber-sec-pro.com</a> or use the <Link to="/dashboard/gdpr" className="text-cyan-400 hover:underline">Data Rights</Link> page. We will respond within 45 days (extendable by 45 additional days with notice). Authorized agents may submit requests on your behalf.</p>
+            </section>
+
+            <section>
               <h2 className="text-2xl font-semibold text-white mb-3">{t('privacy.section6Title', '6. Data Retention')}</h2>
               <ul className="list-disc list-inside space-y-1">
                 <li>{t('privacy.section6.item1', 'Account data: Retained while your account is active + 30 days after deletion')}</li>
@@ -126,6 +159,7 @@ export default function PrivacyPolicyPage() {
             <section>
               <h2 className="text-2xl font-semibold text-white mb-3">{t('privacy.section7Title', '7. Data Transfers')}</h2>
               <p>{t('privacy.section7Body', 'Your data is processed within the European Union. If data must be transferred outside the EU/EEA, we ensure appropriate safeguards are in place (Standard Contractual Clauses or adequacy decisions per Art. 46 GDPR).')}</p>
+              <p className="mt-3">For Canadian residents, your personal information may be transferred outside of Canada. Under PIPEDA s.4.1.4, we remain responsible for the protection of your personal information while it is processed by our service providers. Transfers outside Canada are subject to contractual clauses requiring equivalent privacy protection. Contact us for details on the jurisdictions where your data may be processed.</p>
             </section>
 
             <section>

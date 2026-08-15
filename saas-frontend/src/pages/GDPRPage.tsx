@@ -252,6 +252,14 @@ export default function GDPRPage() {
                 <p className="text-gray-300 text-sm mb-4">
                   {t('gdpr.consentBody', 'Your privacy choices in one place. Withdraw consent for marketing and non-essential processing at any time — the change is immediate (PIPEDA / CCPA / CPRA / GDPR Art. 7).')}
                 </p>
+                <div className="mb-4 rounded-lg border border-cyan-500/20 bg-cyan-900/10 p-4">
+                  <p className="text-cyan-300 text-sm font-medium mb-1">CCPA / CPRA — Your Privacy Choices</p>
+                  <p className="text-gray-400 text-sm">
+                    CyberSec Pro does not sell or share your personal information. If you wish to exercise your right to opt out of any future sale/sharing or restrict the use of sensitive personal information, email{' '}
+                    <a href="mailto:support@cyber-sec-pro.com?subject=CCPA%20Opt-Out" className="text-cyan-400 hover:underline">support@cyber-sec-pro.com</a>{' '}
+                    with subject "CCPA Opt-Out". We respond to verifiable requests within 45 days.
+                  </p>
+                </div>
                 {consentError && (
                   <div className="mb-4 p-3 bg-red-900/20 border border-red-500/30 rounded-lg">
                     <p className="text-red-400 text-sm">{consentError}</p>
