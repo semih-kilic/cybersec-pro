@@ -2,7 +2,7 @@ import { Link } from 'react-router-dom';
 import { useState, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import type { TFunction } from 'i18next';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import {
   Check,
   Sparkles,
@@ -11,6 +11,7 @@ import {
   Rocket,
   Zap,
   ArrowLeft,
+  ChevronDown,
   TrendingDown,
   Calculator,
   HelpCircle,
@@ -138,6 +139,54 @@ function buildPlans(counts: { trial: number; starter: number; professional: numb
 }
 
 const PLAN_LEVELS: PlanId[] = ['trial', 'starter', 'professional', 'enterprise'];
+
+/** Number of features to show before collapsing behind "Read more" */
+const VISIBLE_LIMIT = 5;
+
+function FeatureList({ features, accent }: { features: string[]; accent: string }) {
+  const [expanded, setExpanded] = useState(false);
+  const needsCollapse = features.length > VISIBLE_LIMIT;
+  const visibleFeatures = needsCollapse && !expanded ? features.slice(0, VISIBLE_LIMIT) : features;
+  const hiddenCount = features.length - VISIBLE_LIMIT;
+
+  return (
+    <div className="mb-vos-6 flex-grow">
+      <ul className="space-y-vos-2">
+        {visibleFeatures.map((feature, i) => (
+          <li key={i} className="flex items-start gap-2 text-vos-sm text-vos-text-2">
+            <Check className={`w-4 h-4 mt-0.5 shrink-0 ${accent}`} />
+            <span>{feature}</span>
+          </li>
+        ))}
+      </ul>
+
+      <AnimatePresence initial={false}>
+        {needsCollapse && expanded && (
+          <motion.div
+            key="extra"
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: 'auto', opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            transition={{ duration: 0.3, ease: 'easeInOut' }}
+            className="overflow-hidden"
+          />
+        )}
+      </AnimatePresence>
+
+      {needsCollapse && (
+        <button
+          onClick={() => setExpanded(!expanded)}
+          className="mt-vos-2 flex items-center gap-1 text-vos-xs font-medium text-vos-accent/70 transition-colors hover:text-vos-accent"
+        >
+          <ChevronDown
+            className={`w-3.5 h-3.5 transition-transform duration-300 ${expanded ? 'rotate-180' : ''}`}
+          />
+          {expanded ? 'Show less' : `Read more (+${hiddenCount})`}
+        </button>
+      )}
+    </div>
+  );
+}
 
 export default function UpgradePage() {
   useDocumentTitle('Upgrade — CyberSec Pro');
@@ -337,14 +386,7 @@ export default function UpgradePage() {
                 <div className="mb-vos-4" />
               )}
 
-              <ul className="space-y-vos-2 mb-vos-6 flex-grow">
-                {plan.features.map((feature, i) => (
-                  <li key={i} className="flex items-start gap-2 text-vos-sm text-vos-text-2">
-                    <Check className={`w-4 h-4 mt-0.5 shrink-0 ${plan.accent}`} />
-                    <span>{feature}</span>
-                  </li>
-                ))}
-              </ul>
+              <FeatureList features={plan.features} accent={plan.accent} />
 
               <button
                 onClick={() => handleUpgrade(plan.id)}
