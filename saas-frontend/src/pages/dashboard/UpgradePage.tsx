@@ -146,13 +146,14 @@ const VISIBLE_LIMIT = 5;
 function FeatureList({ features, accent }: { features: string[]; accent: string }) {
   const [expanded, setExpanded] = useState(false);
   const needsCollapse = features.length > VISIBLE_LIMIT;
-  const visibleFeatures = needsCollapse && !expanded ? features.slice(0, VISIBLE_LIMIT) : features;
-  const hiddenCount = features.length - VISIBLE_LIMIT;
+  const baseFeatures = features.slice(0, VISIBLE_LIMIT);
+  const extraFeatures = features.slice(VISIBLE_LIMIT);
+  const hiddenCount = extraFeatures.length;
 
   return (
-    <div className="mb-vos-6 flex-grow">
+    <div className="mb-vos-6 flex-grow flex flex-col">
       <ul className="space-y-vos-2">
-        {visibleFeatures.map((feature, i) => (
+        {baseFeatures.map((feature, i) => (
           <li key={i} className="flex items-start gap-2 text-vos-sm text-vos-text-2">
             <Check className={`w-4 h-4 mt-0.5 shrink-0 ${accent}`} />
             <span>{feature}</span>
@@ -167,16 +168,26 @@ function FeatureList({ features, accent }: { features: string[]; accent: string 
             initial={{ height: 0, opacity: 0 }}
             animate={{ height: 'auto', opacity: 1 }}
             exit={{ height: 0, opacity: 0 }}
-            transition={{ duration: 0.3, ease: 'easeInOut' }}
+            transition={{ duration: 0.28, ease: 'easeInOut' }}
             className="overflow-hidden"
-          />
+          >
+            <ul className="space-y-vos-2 mt-vos-2">
+              {extraFeatures.map((feature, i) => (
+                <li key={i} className="flex items-start gap-2 text-vos-sm text-vos-text-2">
+                  <Check className={`w-4 h-4 mt-0.5 shrink-0 ${accent}`} />
+                  <span>{feature}</span>
+                </li>
+              ))}
+            </ul>
+          </motion.div>
         )}
       </AnimatePresence>
 
       {needsCollapse && (
         <button
+          type="button"
           onClick={() => setExpanded(!expanded)}
-          className="mt-vos-2 flex items-center gap-1 text-vos-xs font-medium text-vos-accent/70 transition-colors hover:text-vos-accent"
+          className="mt-vos-3 inline-flex items-center gap-1 self-start text-vos-xs font-medium text-vos-accent transition-colors hover:underline"
         >
           <ChevronDown
             className={`w-3.5 h-3.5 transition-transform duration-300 ${expanded ? 'rotate-180' : ''}`}

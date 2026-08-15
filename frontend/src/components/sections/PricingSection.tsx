@@ -34,8 +34,9 @@ function PricingCard({
   const needsCollapse = features.length > VISIBLE_LIMIT;
   const [expanded, setExpanded] = useState(false);
 
-  const visibleFeatures = needsCollapse && !expanded ? features.slice(0, VISIBLE_LIMIT) : features;
-  const hiddenCount = features.length - VISIBLE_LIMIT;
+  const baseFeatures = features.slice(0, VISIBLE_LIMIT);
+  const extraFeatures = features.slice(VISIBLE_LIMIT);
+  const hiddenCount = extraFeatures.length;
 
   return (
     <div
@@ -64,14 +65,16 @@ function PricingCard({
         </span>
       </div>
 
-      <ul className="mt-6 flex flex-1 flex-col gap-3">
-        {visibleFeatures.map((f: string) => (
-          <li key={f} className="flex items-center gap-2 text-sm text-white/55">
-            <Check size={14} className="shrink-0 text-[var(--color-neon)]" /> {f}
-          </li>
-        ))}
+      <div className="mt-6 flex flex-1 flex-col">
+        <ul className="flex flex-col gap-3">
+          {baseFeatures.map((f: string) => (
+            <li key={f} className="flex items-center gap-2 text-sm text-white/55">
+              <Check size={14} className="shrink-0 text-[var(--color-neon)]" /> {f}
+            </li>
+          ))}
+        </ul>
 
-        {/* Collapsed extra features with animation */}
+        {/* Collapsed extra features with smooth animation */}
         <AnimatePresence initial={false}>
           {needsCollapse && expanded && (
             <motion.div
@@ -79,30 +82,37 @@ function PricingCard({
               initial={{ height: 0, opacity: 0 }}
               animate={{ height: "auto", opacity: 1 }}
               exit={{ height: 0, opacity: 0 }}
-              transition={{ duration: 0.3, ease: "easeInOut" }}
+              transition={{ duration: 0.28, ease: "easeInOut" }}
               className="overflow-hidden"
             >
-              {/* This div is intentionally left empty — visible features are rendered above */}
+              <ul className="mt-3 flex flex-col gap-3">
+                {extraFeatures.map((f: string) => (
+                  <li key={f} className="flex items-center gap-2 text-sm text-white/55">
+                    <Check size={14} className="shrink-0 text-[var(--color-neon)]" /> {f}
+                  </li>
+                ))}
+              </ul>
             </motion.div>
           )}
         </AnimatePresence>
-      </ul>
 
-      {/* Read more / Show less toggle */}
-      {needsCollapse && (
-        <button
-          onClick={() => setExpanded(!expanded)}
-          className="mt-3 flex items-center gap-1 text-xs font-medium text-[var(--color-neon)]/70 transition-colors hover:text-[var(--color-neon)]"
-        >
-          <ChevronDown
-            size={14}
-            className={`transition-transform duration-300 ${expanded ? "rotate-180" : ""}`}
-          />
-          {expanded
-            ? t.has("showLess") ? t("showLess") : "Show less"
-            : t.has("readMore") ? `${t("readMore")} (+${hiddenCount})` : `Read more (+${hiddenCount})`}
-        </button>
-      )}
+        {/* Read more / Show less toggle */}
+        {needsCollapse && (
+          <button
+            type="button"
+            onClick={() => setExpanded(!expanded)}
+            className="mt-4 inline-flex items-center gap-1.5 self-start text-xs font-semibold text-[var(--color-neon)] transition-opacity hover:opacity-80"
+          >
+            <ChevronDown
+              size={14}
+              className={`transition-transform duration-300 ${expanded ? "rotate-180" : ""}`}
+            />
+            {expanded
+              ? (t.has("showLess") ? t("showLess") : "Show less")
+              : `${t.has("readMore") ? t("readMore") : "Read more"} (+${hiddenCount})`}
+          </button>
+        )}
+      </div>
 
       <button
         className={`mt-8 w-full rounded-xl py-3 font-mono text-sm font-bold transition-all ${
