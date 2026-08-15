@@ -137,8 +137,8 @@ Covered above under CC7.
 
 | # | Gap | Priority | Action |
 |---|---|---|---|
-| 1 | No formal incident response playbook | High | Publish IR runbook in `compliance/` |
-| 2 | No external penetration test evidence | High | Commission third-party pentest |
+| 1 | ~~No formal incident response playbook~~ | High | ✅ Done — `compliance/IR-playbook.md` |
+| 2 | No external penetration test evidence | High | Commission third-party pentest per `compliance/pentest-plan.md` |
 | 3 | Single-node infrastructure, no failover | Medium | Plan multi-node; document DR |
 | 4 | No vendor DPAs published | Medium | Request DPAs from Hetzner/Stripe/Cloudflare/Mailjet |
 | 5 | No formal change management | Medium | Document release process |
@@ -154,7 +154,7 @@ Covered above under CC7.
 - [x] Consent records implementation
 - [x] Retention engine implementation
 - [x] Backup encryption + restore test log
-- [ ] Pentest report
-- [ ] Incident response playbook
+- [ ] Pentest report (plan published — `compliance/pentest-plan.md`)
+- [x] Incident response playbook (`compliance/IR-playbook.md`)
 - [ ] Vendor DPAs
 - [ ] Uptime/monitoring reports (export from status dashboard)
