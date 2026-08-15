@@ -216,6 +216,57 @@ fn collect_subnets() -> Vec<String> {
             }
         }
     }
+    #[cfg(target_os = "macos")]
+    {
+        // macOS has no `ip` command; parse `ifconfig -l` interfaces with an
+        // inet address and derive the /prefix from the netmask.
+        let list = std::process::Command::new("ifconfig")
+            .arg("-l")
+            .output()
+            .map(|o| String::from_utf8_lossy(&o.stdout).to_string())
+            .unwrap_or_default();
+        for iface in list.split_whitespace() {
+            if iface == "lo0" {
+                continue;
+            }
+            let out = std::process::Command::new("ifconfig")
+                .arg(iface)
+                .output()
+                .map(|o| String::from_utf8_lossy(&o.stdout).to_string())
+                .unwrap_or_default();
+            let mut ip = String::new();
+            let mut netmask = String::new();
+            for line in out.lines() {
+                let line = line.trim();
+                if line.starts_with("inet ") {
+                    ip = line
+                        .split_whitespace()
+                        .nth(1)
+                        .unwrap_or("")
+                        .to_string();
+                    for (i, part) in line.split_whitespace().enumerate() {
+                        if part == "netmask" {
+                            if let Some(m) = line.split_whitespace().nth(i + 1) {
+                                netmask = m.to_string();
+                            }
+                        }
+                    }
+                    break;
+                }
+            }
+            if ip.is_empty() || ip.starts_with("127.") || ip.starts_with("169.254.") {
+                continue;
+            }
+            let prefix = netmask
+                .trim_start_matches("0x")
+                .chars()
+                .map(|c| c.to_digit(16).map(|v| v.count_ones()).unwrap_or(0))
+                .sum::<u32>();
+            if prefix > 0 {
+                nets.push(format!("{}/{}", ip, prefix));
+            }
+        }
+    }
     nets
 }
 

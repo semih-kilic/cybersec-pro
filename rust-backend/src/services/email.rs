@@ -16,6 +16,9 @@ pub struct EmailConfig {
     pub from_name: String,
     /// FROM header address. Falls back to smtp_email if SMTP_FROM is not set.
     pub from_address: String,
+    /// Optional secondary SMTP provider used when the primary fails (e.g.
+    /// quota exceeded, temporary outage). Configured via SMTP_FALLBACK_* env.
+    pub fallback: Option<Box<EmailConfig>>,
 }
 
 impl EmailConfig {
@@ -30,6 +33,31 @@ impl EmailConfig {
             .ok()
             .filter(|s| !s.trim().is_empty())
             .unwrap_or_else(|| smtp_email.clone());
+        let fallback_password = std::env::var("SMTP_FALLBACK_PASSWORD").unwrap_or_default();
+        let fallback = if fallback_password.is_empty() {
+            None
+        } else {
+            let fb_email = std::env::var("SMTP_FALLBACK_EMAIL")
+                .unwrap_or_else(|_| smtp_email.clone());
+            let fb_from = std::env::var("SMTP_FALLBACK_FROM")
+                .ok()
+                .filter(|s| !s.trim().is_empty())
+                .unwrap_or_else(|| fb_email.clone());
+            Some(Box::new(EmailConfig {
+                smtp_server: std::env::var("SMTP_FALLBACK_SERVER")
+                    .unwrap_or_else(|_| "smtp.gmail.com".into()),
+                smtp_port: std::env::var("SMTP_FALLBACK_PORT")
+                    .ok()
+                    .and_then(|p| p.parse().ok())
+                    .unwrap_or(465),
+                smtp_email: fb_email,
+                smtp_password: fallback_password,
+                from_name: std::env::var("SMTP_FALLBACK_FROM_NAME")
+                    .unwrap_or_else(|_| "CyberSec Pro".into()),
+                from_address: fb_from,
+                fallback: None,
+            }))
+        };
         Some(Self {
             smtp_server: std::env::var("SMTP_SERVER").unwrap_or_else(|_| "smtp.yandex.com".into()),
             smtp_port: std::env::var("SMTP_PORT")
@@ -41,6 +69,7 @@ impl EmailConfig {
             from_name: std::env::var("SMTP_FROM_NAME")
                 .unwrap_or_else(|_| "CyberSec Pro".into()),
             from_address,
+            fallback,
         })
     }
 }
@@ -238,6 +267,36 @@ async fn send_email(
         )
         .map_err(|e| format!("Failed to build email: {}", e))?;
 
+    match try_send_provider(cfg, &email).await {
+        Ok(()) => {
+            tracing::info!("✅ Email sent to {} via {}", to, cfg.smtp_server);
+            Ok(())
+        }
+        Err(primary_err) => match &cfg.fallback {
+            None => Err(primary_err),
+            Some(fb) => {
+                tracing::warn!(
+                    "Primary SMTP {} failed ({}); failing over to {}",
+                    cfg.smtp_server,
+                    primary_err,
+                    fb.smtp_server
+                );
+                match try_send_provider(fb, &email).await {
+                    Ok(()) => {
+                        tracing::info!("✅ Email sent to {} via fallback {}", to, fb.smtp_server);
+                        Ok(())
+                    }
+                    Err(fb_err) => Err(format!(
+                        "Primary SMTP error: {}; fallback {} error: {}",
+                        primary_err, fb.smtp_server, fb_err
+                    )),
+                }
+            }
+        },
+    }
+}
+
+async fn try_send_provider(cfg: &EmailConfig, email: &Message) -> Result<(), String> {
     let creds = Credentials::new(cfg.smtp_email.clone(), cfg.smtp_password.clone());
 
     let mailer = if cfg.smtp_port == 465 {
@@ -259,11 +318,11 @@ async fn send_email(
     };
 
     mailer
-        .send(email)
+        .send(email.clone())
         .await
         .map_err(|e| format!("SMTP send error: {}", e))?;
 
-    tracing::info!("✅ Email sent to {}", to);
+    tracing::info!("✅ Email sent via {}", cfg.smtp_server);
     Ok(())
 }
 
