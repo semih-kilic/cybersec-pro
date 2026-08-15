@@ -238,7 +238,7 @@
     "organizationPlaceholder": "Acme Security SAS",
     "agreeTermsPrefix": "J'accepte les",
     "and": "et",
-    "gdprStorageNote": "Vos données sont stockées dans l'UE (Finlande) et traitées conformément au RGPD.",
+    "gdprStorageNote": "Vos données sont stockées dans l'UE et traitées conformément au RGPD.",
     "passwordReset": "Réinitialisation du mot de passe réussie",
     "passwordResetDesc": "Votre mot de passe a été mis à jour. Vous pouvez maintenant vous connecter avec votre nouveau mot de passe.",
     "setNewPassword": "Définir un nouveau mot de passe",

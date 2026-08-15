@@ -238,7 +238,7 @@
     "organizationPlaceholder": "Acme Security Srl",
     "agreeTermsPrefix": "Accetto i",
     "and": "e",
-    "gdprStorageNote": "I tuoi dati sono archiviati nell'UE (Finlandia) e trattati in conformità al GDPR.",
+    "gdprStorageNote": "I tuoi dati sono archiviati nell'UE e trattati in conformità al GDPR.",
     "passwordReset": "Password reimpostata con successo",
     "passwordResetDesc": "La tua password è stata aggiornata. Ora puoi accedere con la tua nuova password.",
     "setNewPassword": "Imposta nuova password",

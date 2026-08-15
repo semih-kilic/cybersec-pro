@@ -278,7 +278,7 @@
     "organizationPlaceholder": "Acme Security Oy",
     "agreeTermsPrefix": "I agree to the",
     "and": "and",
-    "gdprStorageNote": "Your data is stored in EU (Finland) and processed per GDPR.",
+    "gdprStorageNote": "Verileriniz AB'de saklanır ve GDPR kapsamında işlenir.",
     "passwordReset": "Password reset successful",
     "passwordResetDesc": "Your password has been updated. You can now sign in with your new password.",
     "setNewPassword": "Set new password",

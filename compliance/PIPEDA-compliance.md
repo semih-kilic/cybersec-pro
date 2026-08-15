@@ -108,7 +108,7 @@ only as long as necessary.
 ---
 
 ## Cross-Border Considerations (s.4.1.4)
-- Data processed in EU (Hetzner Finland). Canadian customers' data transfers
+- Data processed in the EU (Hetzner). Canadian customers' data transfers
   outside Canada are protected by contractual clauses requiring equivalent
   safeguards. Documented in Privacy Policy §7.
 - CyberSec Pro remains accountable for personal information while processed by

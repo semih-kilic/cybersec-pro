@@ -400,7 +400,7 @@ export function RegisterPage() {
                 <a href="/terms" className="text-cyan-400 hover:underline">{t('terms.title', 'Terms of Service')}</a>
                 {' '}{t('auth.and', 'and')}{' '}
                 <a href="/privacy" className="text-cyan-400 hover:underline">{t('privacy.title', 'Privacy Policy')}</a>.
-                {' '}{t('auth.gdprStorageNote', 'Your data is stored in EU (Finland) and processed per GDPR.')}
+                {' '}{t('auth.gdprStorageNote', 'Your data is stored in the EU and processed per GDPR.')}
                 {' '}{t('auth.consentNote', 'Consent may be withdrawn at any time.')}
               </span>
             </label>

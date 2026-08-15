@@ -79,7 +79,7 @@
 ## Sub-Processors (CCPA disclosure)
 | Vendor | Purpose | Location |
 |---|---|---|
-| Hetzner | Infrastructure hosting | Finland (EU) |
+| Hetzner | Infrastructure hosting | EU |
 | Stripe | Payment processing | Ireland (EU) |
 | Cloudflare | CDN & DDoS protection | Global |
 | Mailjet | Transactional email | EU |

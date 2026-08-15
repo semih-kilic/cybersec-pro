@@ -10,7 +10,7 @@ export function TrustCenterPage() {
   const { t } = useTranslation();
 
   const subProcessors = [
-    { name: 'Hetzner', purpose: t('trust.subprocessors.hosting', 'Infrastructure hosting'), location: 'Finland (EU)' },
+    { name: 'Hetzner', purpose: t('trust.subprocessors.hosting', 'Infrastructure hosting'), location: 'EU' },
     { name: 'Stripe', purpose: t('trust.subprocessors.payments', 'Payment processing'), location: 'Ireland (EU)' },
     { name: 'Cloudflare', purpose: t('trust.subprocessors.cdn', 'CDN & DDoS protection'), location: 'Global (EU data residency)' },
   ];
