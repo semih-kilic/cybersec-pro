@@ -1,8 +1,17 @@
 import { Link } from 'react-router-dom';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '../hooks/useAuth';
 import { useDocumentTitle } from '../hooks/useUtilities';
+
+interface ConsentRecord {
+  purpose: string;
+  category: string;
+  status: string;
+  version: string | null;
+  recorded_at: string;
+  withdrawn_at: string | null;
+}
 
 export default function GDPRPage() {
   const { t } = useTranslation();
@@ -11,13 +20,69 @@ export default function GDPRPage() {
   const [exportLoading, setExportLoading] = useState(false);
   const [deleteLoading, setDeleteLoading] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [consents, setConsents] = useState<ConsentRecord[]>([]);
+  const [consentsLoaded, setConsentsLoaded] = useState(false);
+  const [withdrawing, setWithdrawing] = useState<string | null>(null);
+  const [consentError, setConsentError] = useState('');
+
+  const loadConsents = async () => {
+    if (!token) return;
+    try {
+      const res = await fetch('/api/v1/consent', {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setConsents(data.consents || []);
+      }
+    } catch {
+      // non-fatal
+    } finally {
+      setConsentsLoaded(true);
+    }
+  };
+
+  useEffect(() => {
+    if (isAuthenticated) loadConsents();
+  }, [isAuthenticated]);
+
+  const handleWithdraw = async (purpose: string) => {
+    if (!token) return;
+    setWithdrawing(purpose);
+    setConsentError('');
+    try {
+      const res = await fetch('/api/v1/consent/withdraw', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ purpose })
+      });
+      if (res.ok) {
+        await loadConsents();
+      } else {
+        const data = await res.json().catch(() => ({}));
+        setConsentError(data.error || 'Failed to withdraw consent.');
+      }
+    } catch {
+      setConsentError('Request failed. Please try again.');
+    } finally {
+      setWithdrawing(null);
+    }
+  };
 
   const handleDataExport = async () => {
     if (!token) return;
     setExportLoading(true);
     try {
       const res = await fetch('/api/v1/gdpr/export', {
-        headers: { 'Authorization': `Bearer ${token}` }
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({})
       });
       if (res.ok) {
         const blob = await res.blob();
@@ -50,7 +115,7 @@ export default function GDPRPage() {
         body: JSON.stringify({ confirm: true })
       });
       if (res.ok) {
-        alert('Account deletion request submitted. Your account and data will be deleted within 30 days. You will receive a confirmation email.');
+        alert('Your account data has been deleted and anonymized immediately. You are now signed out.');
         window.location.href = '/';
       } else {
         alert('Failed to submit deletion request. Please contact support@cyber-sec-pro.com');
@@ -180,6 +245,52 @@ export default function GDPRPage() {
               )}
             </section>
 
+            {/* Consent Management */}
+            {isAuthenticated && (
+              <section>
+                <h2 className="text-2xl font-semibold text-white mb-3">{t('gdpr.consentTitle', 'Consent Management')}</h2>
+                <p className="text-gray-300 text-sm mb-4">
+                  {t('gdpr.consentBody', 'Your privacy choices in one place. Withdraw consent for marketing and non-essential processing at any time — the change is immediate (PIPEDA / CCPA / CPRA / GDPR Art. 7).')}
+                </p>
+                {consentError && (
+                  <div className="mb-4 p-3 bg-red-900/20 border border-red-500/30 rounded-lg">
+                    <p className="text-red-400 text-sm">{consentError}</p>
+                  </div>
+                )}
+                {consentsLoaded && consents.length === 0 ? (
+                  <p className="text-gray-500 text-sm">{t('gdpr.noConsent', 'No consent records found.')}</p>
+                ) : (
+                  <div className="space-y-2">
+                    {consents.map((c, i) => (
+                      <div key={i} className="bg-gray-900/50 rounded-lg p-4 border border-gray-700 flex items-center justify-between gap-4">
+                        <div className="flex items-center gap-3">
+                          <span className={`w-2.5 h-2.5 rounded-full ${c.status === 'active' ? 'bg-emerald-500' : 'bg-gray-600'}`}></span>
+                          <div>
+                            <p className="text-white font-medium capitalize">{c.purpose.replace(/-/g, ' ')}</p>
+                            <p className="text-gray-500 text-xs">
+                              {c.category} · {t('gdpr.recorded', 'Recorded')}: {new Date(c.recorded_at).toLocaleDateString()}
+                              {c.withdrawn_at && ` · ${t('gdpr.withdrawn', 'Withdrawn')}: ${new Date(c.withdrawn_at).toLocaleDateString()}`}
+                            </p>
+                          </div>
+                        </div>
+                        {c.status === 'active' ? (
+                          <button
+                            onClick={() => handleWithdraw(c.purpose)}
+                            disabled={withdrawing === c.purpose}
+                            className="px-3 py-1.5 bg-amber-600/20 text-amber-400 text-xs rounded-lg hover:bg-amber-600/30 transition border border-amber-500/20 disabled:opacity-50 whitespace-nowrap"
+                          >
+                            {withdrawing === c.purpose ? t('common.processing', 'Processing...') : t('gdpr.withdraw', 'Withdraw')}
+                          </button>
+                        ) : (
+                          <span className="text-gray-500 text-xs whitespace-nowrap">{t('gdpr.withdrawnStatus', 'Withdrawn')}</span>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </section>
+            )}
+
             {/* Data Processing */}
             <section>
               <h2 className="text-2xl font-semibold text-white mb-3">{t('gdpr.dpaTitle', 'Data Processing Agreement')}</h2>
@@ -246,7 +357,7 @@ export default function GDPRPage() {
               </div>
               <h3 className="text-xl font-bold text-white text-center mb-2">{t('gdpr.deleteModal.title', 'Delete Your Account?')}</h3>
               <p className="text-gray-400 text-center text-sm mb-6">
-                {t('gdpr.deleteModal.bodyPrefix', 'This action is')} <strong className="text-red-400">{t('gdpr.deleteModal.irreversible', 'irreversible')}</strong>. {t('gdpr.deleteModal.bodySuffix', 'All your data including scan results, reports, projects, and agent configurations will be permanently deleted within 30 days.')}
+                {t('gdpr.deleteModal.bodyPrefix', 'This action is')} <strong className="text-red-400">{t('gdpr.deleteModal.irreversible', 'irreversible')}</strong>. {t('gdpr.deleteModal.bodySuffix', 'All your data including scan results, reports, projects, and agent configurations will be permanently deleted and anonymized immediately.')}
               </p>
               <div className="bg-red-900/20 border border-red-500/20 rounded-lg p-3 mb-6">
                 <p className="text-red-400 text-sm">

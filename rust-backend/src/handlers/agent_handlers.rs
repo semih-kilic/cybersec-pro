@@ -321,8 +321,15 @@ pub async fn agent_heartbeat(
         .map(|a| a.iter().filter_map(|x| x.as_str().map(String::from)).collect())
         .unwrap_or_default();
 
+    // Tool manifest: agent reports installed security tools so the scheduler
+    // only queues jobs the agent can actually run (tool capabilities).
+    let capabilities: Option<serde_json::Value> = body
+        .get("tools")
+        .filter(|v| v.is_array())
+        .cloned();
+
     let _ = sqlx::query(
-        "UPDATE agents SET status = 'online', last_heartbeat = CURRENT_TIMESTAMP, cpu_usage = $1, memory_usage = $2, active_scans = $3, ip_address = COALESCE($5, ip_address), discovered_subnets = $6 WHERE id = $4"
+        "UPDATE agents SET status = 'online', last_heartbeat = CURRENT_TIMESTAMP, cpu_usage = $1, memory_usage = $2, active_scans = $3, ip_address = COALESCE($5, ip_address), discovered_subnets = $6, agent_capabilities = COALESCE($7, agent_capabilities) WHERE id = $4"
     )
     .bind(cpu)
     .bind(mem)
@@ -330,6 +337,7 @@ pub async fn agent_heartbeat(
     .bind(&agent_id)
     .bind(&ip_address)
     .bind(serde_json::to_value(&subnets).unwrap_or(json!([])))
+    .bind(&capabilities)
     .execute(&state.db)
     .await;
 

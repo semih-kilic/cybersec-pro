@@ -61,7 +61,7 @@ pub async fn withdraw_consent(
 
     let result = sqlx::query(
         "UPDATE consent_records SET status = 'withdrawn', withdrawn_at = NOW() \
-         WHERE user_id = $1 AND LOWER(purpose) = $2 AND status = 'active'"
+         WHERE user_id = $1 AND LOWER(purpose) = $2 AND status IN ('active', 'granted')"
     )
     .bind(&auth.user_id)
     .bind(&purpose)

@@ -130,6 +130,7 @@ async fn heartbeat(state: &AgentState, http: &reqwest::Client, sys: &mut System,
         "active_scans": active,
         "ip_addresses": ip_addresses,
         "subnets": local_subnets(),
+        "tools": detect_tools(),
     });
     let url = format!("{}/api/v1/agents/{}/heartbeat", state.api_url, state.agent_id);
     let resp = http
@@ -216,6 +217,51 @@ fn collect_subnets() -> Vec<String> {
         }
     }
     nets
+}
+
+/// Tool manifest: detect installed security tooling so the backend scheduler
+/// only queues jobs this agent can execute. Reported on every heartbeat and
+/// stored in `agents.agent_capabilities`. Refreshed every 5 minutes.
+fn detect_tools() -> Vec<serde_json::Value> {
+    const TOOLS: &[&str] = &[
+        "amass", "nmap", "masscan", "naabu", "nuclei", "httpx", "subfinder",
+        "assetfinder", "ffuf", "gobuster", "gau", "waybackurls", "gospider",
+        "katana", "nikto", "wpscan", "hydra", "sqlmap", "enum4linux", "smbmap",
+        "whatweb", "dnsx", "tlsx", "jq", "curl", "openssl",
+    ];
+    let mut tools = Vec::new();
+    for name in TOOLS {
+        let found = std::process::Command::new("which")
+            .arg(name)
+            .output()
+            .map(|o| o.status.success())
+            .unwrap_or(false);
+        let version = if found {
+            std::process::Command::new(name)
+                .arg("--version")
+                .output()
+                .ok()
+                .map(|o| {
+                    let s = String::from_utf8_lossy(&o.stdout).trim().to_string();
+                    if s.is_empty() {
+                        String::from_utf8_lossy(&o.stderr).trim().to_string()
+                    } else {
+                        s
+                    }
+                })
+                .filter(|s| !s.is_empty())
+        } else {
+            None
+        };
+        if found {
+            tools.push(serde_json::json!({
+                "name": name,
+                "available": true,
+                "version": version,
+            }));
+        }
+    }
+    tools
 }
 
 #[derive(Deserialize, Debug)]
