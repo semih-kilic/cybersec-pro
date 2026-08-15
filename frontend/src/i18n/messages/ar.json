@@ -152,7 +152,9 @@
         "priceYearly": "€3349",
         "periodYearly": "/year"
       }
-    }
+    },
+    "readMore": "اقرأ المزيد",
+    "showLess": "عرض أقل"
   },
   "tools": {
     "badge": "ترسانة الأمان",

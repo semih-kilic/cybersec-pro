@@ -152,7 +152,9 @@
         "priceYearly": "€3349",
         "periodYearly": "/year"
       }
-    }
+    },
+    "readMore": "查看更多",
+    "showLess": "收起"
   },
   "tools": {
     "badge": "安全工具库",

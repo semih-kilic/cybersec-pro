@@ -152,7 +152,9 @@
         "priceYearly": "€3349",
         "periodYearly": "/year"
       }
-    }
+    },
+    "readMore": "Подробнее",
+    "showLess": "Свернуть"
   },
   "tools": {
     "badge": "Арсенал безопасности",

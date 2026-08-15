@@ -152,7 +152,9 @@
         "priceYearly": "€3349",
         "periodYearly": "/year"
       }
-    }
+    },
+    "readMore": "En savoir plus",
+    "showLess": "Voir moins"
   },
   "tools": {
     "badge": "Arsenal de sécurité",

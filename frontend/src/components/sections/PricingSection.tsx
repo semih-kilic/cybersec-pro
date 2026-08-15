@@ -2,10 +2,13 @@
 
 import { useState } from "react";
 import { useTranslations } from "next-intl";
-import { motion } from "framer-motion";
-import { Check, Star } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
+import { Check, Star, ChevronDown } from "lucide-react";
 
 const planKeys = ["trial", "starter", "professional", "enterprise"] as const;
+
+/** Number of features to show before collapsing behind "Read more" */
+const VISIBLE_LIMIT = 5;
 
 const container = {
   hidden: {},
@@ -16,6 +19,121 @@ const cardVariant = {
   hidden: { opacity: 0, y: 40 },
   show: { opacity: 1, y: 0, transition: { duration: 0.5, ease: "easeOut" as const } },
 };
+
+function PricingCard({
+  planKey,
+  annual,
+  t,
+}: {
+  planKey: (typeof planKeys)[number];
+  annual: boolean;
+  t: ReturnType<typeof useTranslations<"pricing">>;
+}) {
+  const features: string[] = t.raw(`plans.${planKey}.features`);
+  const isPopular = planKey === "professional";
+  const needsCollapse = features.length > VISIBLE_LIMIT;
+  const [expanded, setExpanded] = useState(false);
+
+  const visibleFeatures = needsCollapse && !expanded ? features.slice(0, VISIBLE_LIMIT) : features;
+  const hiddenCount = features.length - VISIBLE_LIMIT;
+
+  return (
+    <div
+      className={`neon-border-card group relative flex h-full flex-col p-8 ${
+        isPopular ? "!border-[var(--color-neon)]/40 !shadow-[0_0_40px_rgba(159,239,0,0.12)]" : ""
+      }`}
+    >
+      {isPopular && (
+        <div className="absolute -top-3 left-1/2 -translate-x-1/2">
+          <span className="flex items-center gap-1 rounded-full bg-[var(--color-neon)] px-3 py-1 text-xs font-bold text-[var(--color-bg)]">
+            <Star size={12} /> {t("popular")}
+          </span>
+        </div>
+      )}
+      <h3 className="text-lg font-bold text-white">{t(`plans.${planKey}.name`)}</h3>
+      <div className="mt-4 flex items-baseline gap-1">
+        <span className="font-mono text-4xl font-extrabold text-[var(--color-neon)]">
+          {annual && planKey !== "trial"
+            ? t(`plans.${planKey}.priceYearly`)
+            : t(`plans.${planKey}.price`)}
+        </span>
+        <span className="text-sm text-white/40">
+          {annual && planKey !== "trial"
+            ? t(`plans.${planKey}.periodYearly`)
+            : t(`plans.${planKey}.period`)}
+        </span>
+      </div>
+
+      <ul className="mt-6 flex flex-1 flex-col gap-3">
+        {visibleFeatures.map((f: string) => (
+          <li key={f} className="flex items-center gap-2 text-sm text-white/55">
+            <Check size={14} className="shrink-0 text-[var(--color-neon)]" /> {f}
+          </li>
+        ))}
+
+        {/* Collapsed extra features with animation */}
+        <AnimatePresence initial={false}>
+          {needsCollapse && expanded && (
+            <motion.div
+              key="extra-features"
+              initial={{ height: 0, opacity: 0 }}
+              animate={{ height: "auto", opacity: 1 }}
+              exit={{ height: 0, opacity: 0 }}
+              transition={{ duration: 0.3, ease: "easeInOut" }}
+              className="overflow-hidden"
+            >
+              {/* This div is intentionally left empty — visible features are rendered above */}
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </ul>
+
+      {/* Read more / Show less toggle */}
+      {needsCollapse && (
+        <button
+          onClick={() => setExpanded(!expanded)}
+          className="mt-3 flex items-center gap-1 text-xs font-medium text-[var(--color-neon)]/70 transition-colors hover:text-[var(--color-neon)]"
+        >
+          <ChevronDown
+            size={14}
+            className={`transition-transform duration-300 ${expanded ? "rotate-180" : ""}`}
+          />
+          {expanded
+            ? t.has("showLess") ? t("showLess") : "Show less"
+            : t.has("readMore") ? `${t("readMore")} (+${hiddenCount})` : `Read more (+${hiddenCount})`}
+        </button>
+      )}
+
+      <button
+        className={`mt-8 w-full rounded-xl py-3 font-mono text-sm font-bold transition-all ${
+          isPopular
+            ? "bg-[var(--color-neon)] text-[var(--color-bg)] hover:shadow-[0_0_30px_var(--color-neon-glow)]"
+            : "border border-white/10 text-white/70 hover:border-[var(--color-neon-dim)] hover:text-[var(--color-neon)]"
+        }`}
+        onClick={() => {
+          fetch("/api/create-checkout-session", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              plan: planKey,
+              billing: annual ? "annual" : "monthly",
+              success_url: `${window.location.origin}/dashboard/settings?tab=billing&success=true`,
+              cancel_url: window.location.href,
+            }),
+          })
+            .then((r) => r.json())
+            .then((d) => {
+              if (d.url || d.checkout_url) window.location.href = d.url || d.checkout_url;
+              else window.location.href = "/dashboard/login";
+            })
+            .catch(() => (window.location.href = "/dashboard/login"));
+        }}
+      >
+        {t("cta")}
+      </button>
+    </div>
+  );
+}
 
 export default function PricingSection() {
   const t = useTranslations("pricing");
@@ -60,74 +178,11 @@ export default function PricingSection() {
           viewport={{ once: true, margin: "-80px" }}
           className="grid gap-6 md:grid-cols-2 lg:grid-cols-4"
         >
-          {planKeys.map((key) => {
-            const features: string[] = t.raw(`plans.${key}.features`);
-            const isPopular = key === "professional";
-            return (
-              <motion.div key={key} variants={cardVariant} className="h-full">
-                <div
-                  className={`neon-border-card group relative flex h-full flex-col p-8 ${
-                    isPopular ? "!border-[var(--color-neon)]/40 !shadow-[0_0_40px_rgba(159,239,0,0.12)]" : ""
-                  }`}
-                >
-                  {isPopular && (
-                    <div className="absolute -top-3 left-1/2 -translate-x-1/2">
-                      <span className="flex items-center gap-1 rounded-full bg-[var(--color-neon)] px-3 py-1 text-xs font-bold text-[var(--color-bg)]">
-                        <Star size={12} /> {t("popular")}
-                      </span>
-                    </div>
-                  )}
-                  <h3 className="text-lg font-bold text-white">{t(`plans.${key}.name`)}</h3>
-                  <div className="mt-4 flex items-baseline gap-1">
-                    <span className="font-mono text-4xl font-extrabold text-[var(--color-neon)]">
-                      {annual && key !== "trial"
-                        ? t(`plans.${key}.priceYearly`)
-                        : t(`plans.${key}.price`)}
-                    </span>
-                    <span className="text-sm text-white/40">
-                      {annual && key !== "trial"
-                        ? t(`plans.${key}.periodYearly`)
-                        : t(`plans.${key}.period`)}
-                    </span>
-                  </div>
-                  <ul className="mt-6 flex flex-1 flex-col gap-3">
-                    {features.map((f: string) => (
-                      <li key={f} className="flex items-center gap-2 text-sm text-white/55">
-                        <Check size={14} className="shrink-0 text-[var(--color-neon)]" /> {f}
-                      </li>
-                    ))}
-                  </ul>
-                  <button
-                    className={`mt-8 w-full rounded-xl py-3 font-mono text-sm font-bold transition-all ${
-                      isPopular
-                        ? "bg-[var(--color-neon)] text-[var(--color-bg)] hover:shadow-[0_0_30px_var(--color-neon-glow)]"
-                        : "border border-white/10 text-white/70 hover:border-[var(--color-neon-dim)] hover:text-[var(--color-neon)]"
-                    }`}
-                    onClick={() => {
-                      fetch("/api/create-checkout-session", {
-                        method: "POST",
-                        headers: { "Content-Type": "application/json" },
-                        body: JSON.stringify({
-                          plan: key,
-                          billing: annual ? "annual" : "monthly",
-                          success_url: `${window.location.origin}/dashboard/settings?tab=billing&success=true`,
-                          cancel_url: window.location.href,
-                        }),
-                      })
-                        .then((r) => r.json())
-                        .then((d) => {
-                          if (d.url || d.checkout_url) window.location.href = d.url || d.checkout_url;
-                          else window.location.href = "/dashboard/login";
-                        })
-                        .catch(() => (window.location.href = "/dashboard/login"));
-                    }}
-                  >
-                    {t("cta")}
-                  </button>
-                </div>
-              </motion.div>
-            );
-          })}
+          {planKeys.map((key) => (
+            <motion.div key={key} variants={cardVariant} className="h-full">
+              <PricingCard planKey={key} annual={annual} t={t} />
+            </motion.div>
+          ))}
         </motion.div>
       </div>
     </section>

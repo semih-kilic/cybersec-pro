@@ -154,7 +154,9 @@
         "priceYearly": "€3349",
         "periodYearly": "/yıl"
       }
-    }
+    },
+    "readMore": "Devamını gör",
+    "showLess": "Daha az göster"
   },
   "tools": {
     "badge": "Güvenlik Cephaneliği",

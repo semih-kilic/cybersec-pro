@@ -152,7 +152,9 @@
         "priceYearly": "€3349",
         "periodYearly": "/year"
       }
-    }
+    },
+    "readMore": "더 보기",
+    "showLess": "접기"
   },
   "tools": {
     "badge": "보안 도구 목록",
