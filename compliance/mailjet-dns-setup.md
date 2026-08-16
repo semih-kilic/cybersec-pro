@@ -1,58 +1,62 @@
 # Mailjet DNS Setup — cyber-sec-pro.com
 
-> Bu kayıtlar Cloudflare dashboard'undan (cyber-sec-pro.com → DNS → Records)
-> eklenecek. Değerler Mailjet hesabına özeldir; aşağıdakiler standardıdır.
-> Mailjet → "Sender domains & authentication" bölümünden domain doğrulama
-> sürecini başlatınca Mailjet size tam değerleri verir. Aşağıdaki reçete
-> doğrulama süreci boyunca gereken kayıtları gösterir.
-
-## Adım 1 — Sender domain ekle (Mailjet paneli)
-1. app.mailjet.com → **Account settings** → **Sender domains & authentication**
-2. `cyber-sec-pro.com` ekle → "Add and verify" 
-3. Mailjet size 3 kayıt verecek:
-
-| Tip | Hostname | Değer |
-|---|---|---|
-| TXT | cyber-sec-pro.com (veya Mailjet'in verdiği) | Mailjet'in verdiği doğrulama TXT'si (dashboard'dan kopyalanır) |
-| CNAME | mj1._domainkey.cyber-sec-pro.com | dkim.mailjet.com |
-| CNAME | mj2._domainkey.cyber-sec-pro.com | dkim.mailjet.com |
-
-*(Not: Bazı Mailjet hesaplarında DKIM CNAME hostname'leri farklı olabilir —
-  s1._domainkey / s2._domainkey — dashboard'daki tam değeri kullanın.)*
-
-## Adım 2 — SPF'i Mailjet dahil edecek şekilde güncelle
-Mevcut: `v=spf1 include:_spf.mx.cloudflare.net ~all`
-Yeni:   `v=spf1 include:_spf.mx.cloudflare.net include:spf.mailjet.com ~all`
-
-> ⚠️ SPF güncellemesi TXT kaydını DEĞİŞTİRİR (düzeltir), yeni kayıt EKLEMEZ.
-> Cloudflare'da mevcut `TXT _spf` kaydını düzenleyin — iki ayrı SPF TXT kaydı
-> geçersiz olur.
-
-## Adım 3 — MX dokunma
-Mevcut MX (Cloudflare Email Routing) aynen kalıyor:
-- route1.mx.cloudflare.net
-- route2.mx.cloudflare.net
-- route3.mx.cloudflare.net
-
-## Adım 4 — SMTP_FROM güncelle
-Doğrulama tamamlanınca `rust-backend/.env` içinde:
-```
-SMTP_FROM=semihkilic@cyber-sec-pro.com
-```
-Fallback Gmail'de FROM ayrı olarak `SMTP_FALLBACK_FROM` — bu Gmail hesabı
-üzerinden gönderileceği için `SMTP_FALLBACK_FROM` değerini gmail adresinde
-tutmak gerekir (Gmail, başka domain'den FROM kabul etmez).
-
-## Adım 5 — Doğrulama (DNS yayıldıktan sonra)
-```bash
-dig +short TXT cyber-sec-pro.com | grep mailjet
-dig +short CNAME mj1._domainkey.cyber-sec-pro.com
-```
-Sonra Mailjet panelinde "Check again" → status "Verified" olunca:
-backend rebuild + restart → `docker compose up -d --no-deps rust-backend`
+> Status: ✅ **TAMAMLANDI — doğrulandı** (2026-08-15)
+> Mailjet: `DKIMStatus: OK`, `SPFStatus: OK`. E-posta `semihkilic@cyber-sec-pro.com`
+> adresinden DKIM imzalı gönderiliyor.
 
 ---
 
-## Alternatif: E-posta yönlendirme yoksa MX'i Mailjet'e taşıma
-Mailjet, gönderim için MX gerektirmez (yalnızca alıcı taraf). MX'i olduğu gibi
-bırakın — Cloudflare Email Routing ile gelen mailler zaten yönlendiriliyor.
+## Gerçekleşen kayıtlar (Cloudflare)
+
+| # | Tür | Name | Value | Durum |
+|---|---|---|---|---|
+| 1 | TXT | `mailjet._0c9cd178` | `0c9cd178f86108b39eef957b3a0c67ee` | ✅ eklenmiş |
+| 2 | TXT | `mailjet._domainkey` | `k=rsa; p=MIIBIj...IDAQAB` (DKIM, 255-char Cloudflare otomatik böler) | ✅ eklenmiş |
+| 3 | TXT | `@` (SPF) | `v=spf1 include:_spf.mx.cloudflare.net include:spf.mailjet.com ~all` | ✅ güncellenmiş |
+| 4 | TXT | `_dmarc` | `v=DMARC1; p=none; rua=mailto:76790b60de854e34ac07bbca9b17041b@dmarc-reports.cloudflare.net` | ✅ mevcuttu, dokunulmadı |
+| 5 | MX | `@` | route1-3.mx.cloudflare.net | ✅ mevcuttu, dokunulmadı |
+
+## Mailjet tarafı (API ile yapıldı)
+
+- Sender eklendi: `semihkilic@cyber-sec-pro.com` (DNSID `4759408907`)
+- DNS check tetiklendi: **DKIM OK + SPF OK**, `DKIMErrors: []`, `SPFErrors: []`
+
+## Backend
+
+```env
+# rust-backend/.env
+SMTP_SERVER=in-v3.mailjet.com        # primary (Mailjet)
+SMTP_PORT=587
+SMTP_EMAIL=<mailjet-api-key>
+SMTP_PASSWORD=<mailjet-secret>
+SMTP_FROM=semihkilic@cyber-sec-pro.com   # güncellendi
+
+# SMTP fallback (Gmail) — Mailjet kesilirse otomatik devreye girer
+SMTP_FALLBACK_SERVER=smtp.gmail.com
+SMTP_FALLBACK_PORT=465
+SMTP_FALLBACK_EMAIL=<gmail-hesabı>
+SMTP_FALLBACK_PASSWORD=<gmail-app-password>
+SMTP_FALLBACK_FROM=cyber.sec.pro.email.send@gmail.com  # Gmail başka domain'den FROM kabul etmez
+SMTP_FALLBACK_FROM_NAME=CyberSec Pro
+```
+
+`SMTP_FROM` değişikliği `docker compose up -d --no-deps rust-backend` ile uygulandı.
+
+## Doğrulama komutları
+
+```bash
+# DNS kayıtları
+dig +short TXT mailjet._0c9cd178.cyber-sec-pro.com
+dig +short TXT mailjet._domainkey.cyber-sec-pro.com
+dig +short TXT cyber-sec-pro.com | grep spf
+
+# Gönderim testi (log'da görünür)
+docker logs cybersec-api 2>&1 | grep "Email sent via"
+```
+
+## Notlar / gelecekte yapılacaklar
+
+- `SMTP_FROM_NAME` env'den geliyor, değişiklik gerekmiyor.
+- Sender `Status: Inactive` — ilk gerçek gönderim Mailjet tarafında otomatik
+  active olur; panelden kontrol edilebilir.
+- Alternatif MX taşıma gerekmedi (gönderim için MX gerekmez, yalnızca alıcı taraf).
