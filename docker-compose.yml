@@ -143,8 +143,8 @@ services:
     volumes:
       - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
       - ./nginx/ssl:/etc/nginx/ssl:ro
-      - ./frontend/out:/srv/marketing:ro
-      - ./saas-frontend/dist:/srv/dashboard:ro
+      - ./frontend:/srv/frontend:ro
+      - ./saas-frontend:/srv/saas-frontend:ro
       - ./status:/srv/status:ro
       - nginx_logs:/var/log/nginx
     depends_on:
