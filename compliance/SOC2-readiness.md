@@ -139,9 +139,9 @@ Covered above under CC7.
 |---|---|---|---|
 | 1 | ~~No formal incident response playbook~~ | High | ✅ Done — `compliance/IR-playbook.md` |
 | 2 | No external penetration test evidence | High | Commission third-party pentest per `compliance/pentest-plan.md` |
-| 3 | Single-node infrastructure, no failover | Medium | Plan multi-node; document DR |
-| 4 | No vendor DPAs published | Medium | Request DPAs from Hetzner/Stripe/Cloudflare/Mailjet |
-| 5 | No formal change management | Medium | Document release process |
+| 3 | Single-node infrastructure, no failover | Medium | Plan v1 — compliance/DR-plan.md |
+| 4 | No vendor DPAs published | Medium | Register + request tracking — compliance/vendor-dpa-register.md |
+| 5 | No formal change management | Medium | Procedure v1 — compliance/change-management.md |
 | 6 | HR/access-review controls missing | Low | Solo-operator compensations documented |
 
 ---
@@ -156,5 +156,5 @@ Covered above under CC7.
 - [x] Backup encryption + restore test log
 - [ ] Pentest report (plan published — `compliance/pentest-plan.md`)
 - [x] Incident response playbook (`compliance/IR-playbook.md`)
-- [ ] Vendor DPAs
+- [ ] Vendor DPAs (register + request tracker — compliance/vendor-dpa-register.md; signed copies pending)
 - [ ] Uptime/monitoring reports (export from status dashboard)
