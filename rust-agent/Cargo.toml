@@ -1,6 +1,6 @@
 [package]
 name = "cybersec-agent"
-version = "0.1.0"
+version = "4.0.1"
 edition = "2021"
 description = "CyberSec Pro reverse-tunnel agent — phones home with TLS, no inbound port required."
 license = "MIT"
