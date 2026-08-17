@@ -1,0 +1,16 @@
+# Hetzner DPSA Status
+# 
+# Action required: Manual acceptance in Hetzner Cloud Console
+# 
+# Steps:
+#   1. Login to https://console.hetzner.cloud
+#   2. Go to Account → Settings → Data Processing Agreement (DPSA)
+#   3. Review and accept the DPSA
+#   4. Download the signed copy
+#   5. File to compliance/dpas/hetzner-dpsa-signed.pdf
+#
+# Hetzner's DPSA is auto-accepted digitally in the console.
+# No support ticket required.
+# 
+# Status: Pending manual acceptance
+# Requested: 2026-08-17

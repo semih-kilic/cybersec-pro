@@ -10,10 +10,10 @@
 
 | Vendor | Service | Data Processed | Location | DPA Status |
 |---|---|---|---|---|
-| **Hetzner** | Infrastructure hosting | All hosted data (DB, Redis, app, backups) | EU (Hetzner Finland) | ⬜ Requested |
-| **Cloudflare** | CDN, DNS, Tunnel, Email Routing, DDoS | IP addresses, email routing, edge traffic | Global | ⬜ Requested |
+| **Hetzner** | Infrastructure hosting | All hosted data (DB, Redis, app, backups) | EU (Hetzner Finland) | 🟡 DPSA pending console acceptance |
+| **Cloudflare** | CDN, DNS, Tunnel, Email Routing, DDoS | IP addresses, email routing, edge traffic | Global | ✅ Auto-accepted (SSA) |
 | **Stripe** | Payment processing | Cardholder data (PCI DSS), billing info | EU (Ireland) | ✅ Standard DPA (Stripe.com/legal/dpa) |
-| **Mailjet** | Transactional email (SMTP) | Recipient emails, sender identity | EU | ⬜ Requested |
+| **Mailjet** | Transactional email (SMTP) | Recipient emails, sender identity | EU | 🟡 DPA request sent 2026-08-17 |
 | **Google (Gmail)** | SMTP fallback | Recipient emails | Global | ⬜ Requested |
 | **GitHub** | Code repository (source only) | Source code (no personal data) | Global | ⬜ Not required (no PI) |
 
