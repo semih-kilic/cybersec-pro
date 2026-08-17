@@ -15,6 +15,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 # Cache dependencies — copy manifests first
 COPY Cargo.toml Cargo.lock* ./
 COPY cybersec-proto/ ./cybersec-proto/
+RUN sed -i 's|path = \"../cybersec-proto\"|path = \"./cybersec-proto\"|' Cargo.toml
 RUN mkdir src && echo "fn main() {}" > src/main.rs
 RUN cargo build --release 2>/dev/null || true
 RUN rm -rf src
