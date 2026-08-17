@@ -138,7 +138,7 @@ Covered above under CC7.
 | # | Gap | Priority | Action |
 |---|---|---|---|
 | 1 | ~~No formal incident response playbook~~ | High | ✅ Done — `compliance/IR-playbook.md` |
-| 2 | No external penetration test evidence | High | Commission third-party pentest per `compliance/pentest-plan.md` |
+| 2 | No external pentest evidence | High | Open-source pentest active — Nuclei + Wapiti, weekly cron + `compliance/pentest/` |
 | 3 | Single-node infrastructure, no failover | Medium | Plan v1 — compliance/DR-plan.md |
 | 4 | No vendor DPAs published | Medium | Register + request tracking — compliance/vendor-dpa-register.md |
 | 5 | No formal change management | Medium | Procedure v1 — compliance/change-management.md |
@@ -154,7 +154,7 @@ Covered above under CC7.
 - [x] Consent records implementation
 - [x] Retention engine implementation
 - [x] Backup encryption + restore test log
-- [ ] Pentest report (plan published — `compliance/pentest-plan.md`)
+- [x] Pentest scan reports (Nuclei + Wapiti — `compliance/pentest/scan-summary-*.md`, weekly cron)
 - [x] Incident response playbook (`compliance/IR-playbook.md`)
-- [ ] Vendor DPAs (register + request tracker — compliance/vendor-dpa-register.md; signed copies pending)
+- [~] Vendor DPAs (register ready — `compliance/vendor-dpa-register.md`; Hetzner/Mailjet pending)
 - [ ] Uptime/monitoring reports (export from status dashboard)
