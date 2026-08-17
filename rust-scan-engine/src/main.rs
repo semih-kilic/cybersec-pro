@@ -79,9 +79,17 @@ async fn main() -> anyhow::Result<()> {
     let grpc_app = grpc_server::grpc_router(grpc_state);
     let grpc_addr = format!("0.0.0.0:{}", grpc_port);
     tokio::spawn(async move {
-        let listener = tokio::net::TcpListener::bind(&grpc_addr).await.unwrap();
-        tracing::info!("🦀 gRPC server listening on {}", grpc_addr);
-        axum::serve(listener, grpc_app).await.unwrap();
+        match tokio::net::TcpListener::bind(&grpc_addr).await {
+            Ok(listener) => {
+                tracing::info!("🦀 gRPC server listening on {}", grpc_addr);
+                if let Err(e) = axum::serve(listener, grpc_app).await {
+                    tracing::error!("gRPC server error: {}", e);
+                }
+            }
+            Err(e) => {
+                tracing::error!("Failed to bind gRPC on {}: {}", grpc_addr, e);
+            }
+        }
     });
     let listener = tokio::net::TcpListener::bind(&addr).await?;
     axum::serve(listener, app).await?;
