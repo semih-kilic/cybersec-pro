@@ -9,7 +9,7 @@ WORKDIR /app
 
 # Install system deps for sqlx (PostgreSQL client libs)
 RUN apt-get update && apt-get install -y --no-install-recommends \
-    pkg-config libssl-dev libpq-dev \
+    pkg-config libssl-dev libpq-dev protobuf-compiler \
     && rm -rf /var/lib/apt/lists/*
 
 # Cache dependencies — copy manifests first
