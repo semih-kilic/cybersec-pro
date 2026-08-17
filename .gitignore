@@ -108,3 +108,7 @@ agent-binaries/
 *.exe
 *.mp4
 .env.staging
+
+# Docker build copies (not committed)
+rust-backend/cybersec-proto/
+rust-scan-engine/cybersec-proto/

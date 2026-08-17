@@ -42,6 +42,7 @@ COPY tools/install_git.sh /tmp/install_git.sh
 RUN ionice -c 3 nice -n 19 bash /tmp/install_git.sh
 
 WORKDIR /app
+COPY cybersec-proto/ ./cybersec-proto/
 EXPOSE 5002
 
 CMD ["cybersec-scan-engine"]

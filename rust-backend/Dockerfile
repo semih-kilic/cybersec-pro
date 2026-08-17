@@ -14,6 +14,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 
 # Cache dependencies — copy manifests first
 COPY Cargo.toml Cargo.lock* ./
+COPY cybersec-proto/ ./cybersec-proto/
 RUN mkdir src && echo "fn main() {}" > src/main.rs
 RUN cargo build --release 2>/dev/null || true
 RUN rm -rf src
@@ -21,7 +22,7 @@ RUN rm -rf src
 # Build real app (include_str!("../../kali_tools.json") needs the file in-tree)
 COPY src/ src/
 COPY kali_tools.json ./
-ARG REBUILD=2026-08-13-v5
+ARG REBUILD=2026-08-17-grpc-v5
 # Force a real rebuild of the app package: cargo's mtime-based fingerprint can
 # wrongly consider the dummy binary up-to-date (COPY preserves source mtimes),
 # and `cargo clean -p` alone did not reliably trigger recompilation.
