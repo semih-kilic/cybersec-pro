@@ -2,19 +2,18 @@ Subject: Data Processing Agreement (DPA) Request — CyberSec Pro
 
 Dear Mailjet Legal/Compliance Team,
 
-We are CyberSec Pro (https://cyber-sec-pro.com), a cybersecurity SaaS platform
+We are CyberSec Pro, a cybersecurity SaaS platform
 headquartered in Canada. We use Mailjet as our primary transactional email
 service provider under account: semihkilic@cyber-sec-pro.com.
 
 In compliance with PIPEDA (Canada) and GDPR Art.28, we require a signed
 Data Processing Agreement (DPA) between CyberSec Pro and Mailjet (Sinch AB).
 
-Please find our company details below:
+Please find our details below:
 
-  Company name:    CyberSec Pro
-  Legal entity:    [LLC/Corp name TBD]
-  Address:         [Registered address, Canada]
+  Company name:    CyberSec Pro (sole proprietorship, incorporation pending)
   Contact person:  Semih Kilic, semihkilic@cyber-sec-pro.com
+  Address:         Canada
   Data subjects:   End users of our SaaS platform
   Data processed:  Recipient email addresses, sender identity, email content
   Processing purpose: Transactional email delivery (scan reports, alerts, notifications)
@@ -30,6 +29,9 @@ We request the DPA cover the following standard elements:
   7. Audit rights
 
 Please provide a countersigned DPA in PDF format for our records.
+Our legal entity registration is currently in progress; we will update
+the DPA with the full registered name and address once incorporation
+is complete.
 
 Thank you for your prompt attention.
 
