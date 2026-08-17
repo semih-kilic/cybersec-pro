@@ -1,48 +1,38 @@
-FROM cybersec-pro-rust-scan-engine:cache
+# ============================================
+# CyberSec Pro — Rust Scan Engine (Multi-stage)
+# ============================================
 
-ENV DEBIAN_FRONTEND=noninteractive
-ENV SCAN_ENGINE_PORT=5002
-
-# Chunk 1/4
-COPY tools/extra_apt.1.txt /tmp/extra_apt.1.txt
-RUN apt-get update -y && ionice -c 3 nice -n 19 bash -c 'xargs -a /tmp/extra_apt.1.txt -r apt-get install -y --no-install-recommends' && rm -rf /var/lib/apt/lists/*
-
-# Chunk 2/4
-COPY tools/extra_apt.2.txt /tmp/extra_apt.2.txt
-RUN apt-get update -y && ionice -c 3 nice -n 19 bash -c 'xargs -a /tmp/extra_apt.2.txt -r apt-get install -y --no-install-recommends' && rm -rf /var/lib/apt/lists/*
-
-# Chunk 3/4
-COPY tools/extra_apt.3.txt /tmp/extra_apt.3.txt
-RUN apt-get update -y && ionice -c 3 nice -n 19 bash -c 'xargs -a /tmp/extra_apt.3.txt -r apt-get install -y --no-install-recommends' && rm -rf /var/lib/apt/lists/*
-
-# Chunk 4/4
-COPY tools/extra_apt.4.txt /tmp/extra_apt.4.txt
-RUN apt-get update -y && ionice -c 3 nice -n 19 bash -c 'xargs -a /tmp/extra_apt.4.txt -r apt-get install -y --no-install-recommends' && rm -rf /var/lib/apt/lists/*
-
-# pip tools (separate RUN so a heavy step can be resumed / cached)
-COPY tools/install_pip.sh /tmp/install_pip.sh
-RUN ionice -c 3 nice -n 19 bash /tmp/install_pip.sh
-
-# gem tools
-COPY tools/install_gem.sh /tmp/install_gem.sh
-RUN ionice -c 3 nice -n 19 bash /tmp/install_gem.sh
-
-# go tools (per-tool RUNs, single-process compile to stay gentle on 2-vCPU host)
-COPY tools/install_go_a.sh /tmp/install_go_a.sh
-RUN ionice -c 3 nice -n 19 bash /tmp/install_go_a.sh
-COPY tools/install_go_b.sh /tmp/install_go_b.sh
-RUN ionice -c 3 nice -n 19 bash /tmp/install_go_b.sh
-COPY tools/install_go_c.sh /tmp/install_go_c.sh
-RUN ionice -c 3 nice -n 19 bash /tmp/install_go_c.sh
-COPY tools/install_go_d.sh /tmp/install_go_d.sh
-RUN ionice -c 3 nice -n 19 bash /tmp/install_go_d.sh
-
-# git / release tools
-COPY tools/install_git.sh /tmp/install_git.sh
-RUN ionice -c 3 nice -n 19 bash /tmp/install_git.sh
+# Stage 1: Build Rust binary
+FROM rust:1.90-bookworm AS builder
 
 WORKDIR /app
+
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    pkg-config libssl-dev protobuf-compiler \
+    && rm -rf /var/lib/apt/lists/*
+
 COPY cybersec-proto/ ./cybersec-proto/
+COPY rust-scan-engine/Cargo.toml rust-scan-engine/Cargo.lock* rust-scan-engine/
+RUN cd rust-scan-engine && sed -i 's|path = "../cybersec-proto"|path = "../cybersec-proto"|' Cargo.toml
+RUN mkdir -p rust-scan-engine/src && echo "fn main() {}" > rust-scan-engine/src/main.rs
+RUN cd rust-scan-engine && cargo build --release 2>/dev/null || true
+RUN rm -rf rust-scan-engine/src
+
+COPY rust-scan-engine/src/ rust-scan-engine/src/
+ARG REBUILD=2026-08-17-grpc-final
+RUN cd rust-scan-engine && rm -rf target/release/cybersec-scan-engine target/release/deps/cybersec* \
+    && cargo build --release
+
+# Stage 2: Runtime (base on existing cache image for tools)
+FROM cybersec-pro-rust-scan-engine:cache AS runtime
+
+# Copy the newly built binary (replaces old one)
+COPY --from=builder /app/rust-scan-engine/target/release/cybersec-scan-engine /usr/local/bin/cybersec-scan-engine
+
+ENV SCAN_ENGINE_PORT=5002
 EXPOSE 5002
+
+HEALTHCHECK --interval=30s --timeout=5s --retries=3 \
+    CMD curl -f http://localhost:5002/health || exit 1
 
 CMD ["cybersec-scan-engine"]
