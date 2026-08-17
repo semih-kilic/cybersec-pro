@@ -482,14 +482,14 @@ async fn monitor_scan_engine(
     tool_name: String,
     target: String,
 ) {
-    let _client = reqwest::Client::new(); // kept as fallback
+    let client = reqwest::Client::new(); // kept as fallback
     let mut latest_output: Vec<String> = Vec::new();
     let mut streamed_lines = 0usize;
     let mut status_failures = 0u8;
     let mut heartbeat_counter: u32 = 0;
 
     loop {
-        match fetch_scan_engine_output_grpc(&remote_scan_id).or_else(|_| fetch_scan_engine_output(&client, &engine_url, &remote_scan_id)).await {
+        match { match fetch_scan_engine_output_grpc(&remote_scan_id).await { Ok(v) => Ok(v), Err(_) => fetch_scan_engine_output(&client, &engine_url, &remote_scan_id).await } } {
             Ok(output_lines) => {
                 latest_output = output_lines;
                 if streamed_lines < latest_output.len() {
@@ -515,7 +515,7 @@ async fn monitor_scan_engine(
             }
         }
 
-        let remote_status = match fetch_scan_engine_status_grpc(&remote_scan_id).or_else(|_| fetch_scan_engine_status(&client, &engine_url, &remote_scan_id)).await {
+        let remote_status = match { match fetch_scan_engine_status_grpc(&remote_scan_id).await { Ok(v) => Ok(v), Err(_) => fetch_scan_engine_status(&client, &engine_url, &remote_scan_id).await } } {
             Ok(status) => {
                 status_failures = 0;
                 status
@@ -927,7 +927,7 @@ pub async fn get_scan(
     if let Some(metadata) = extract_scan_engine_metadata(&scan.parameters) {
         let current_status = scan.status.clone().unwrap_or_else(|| "pending".to_string());
         if current_status == "pending" || current_status == "running" {
-            let _client = reqwest::Client::new(); // kept as fallback
+            let client = reqwest::Client::new(); // kept as fallback
             match fetch_scan_engine_status(&client, &metadata.url, &metadata.remote_scan_id).await {
                 Ok(remote_status) => {
                     let normalized_status = normalize_scan_engine_status(&remote_status.status).to_string();
@@ -1275,7 +1275,7 @@ pub async fn start_scan(
     let scan_engine_metadata = if body.agent_id.is_none() {
         match configured_scan_engine_url() {
             Some(engine_url) => {
-                let _client = reqwest::Client::new(); // kept as fallback
+                let client = reqwest::Client::new(); // kept as fallback
                 match start_scan_on_engine(
                     &client,
                     &engine_url,
@@ -1777,7 +1777,7 @@ pub async fn cancel_scan(
     };
 
     if let Some(metadata) = extract_scan_engine_metadata(&scan.parameters) {
-        let _client = reqwest::Client::new(); // kept as fallback
+        let client = reqwest::Client::new(); // kept as fallback
         if let Err(error) = cancel_scan_on_engine(&client, &metadata.url, &metadata.remote_scan_id).await {
             tracing::error!("Failed to cancel delegated scan {}: {}", scan_id, error);
             return (
