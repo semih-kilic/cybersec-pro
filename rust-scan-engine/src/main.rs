@@ -73,12 +73,15 @@ async fn main() -> anyhow::Result<()> {
     
     // ─── gRPC server (port = SCAN_ENGINE_PORT + 1) ──────────────
     let grpc_port: u16 = port.parse::<u16>().unwrap_or(5002) + 1;
+    let grpc_addr = format!("0.0.0.0:{}", grpc_port);
+    tracing::info!("🦀 Initializing gRPC server on {}", grpc_addr);
     let grpc_state = grpc_server::GrpcScanState {
         scan_engine: Arc::clone(&state.scan_engine),
     };
     let grpc_app = grpc_server::grpc_router(grpc_state);
-    let grpc_addr = format!("0.0.0.0:{}", grpc_port);
+    tracing::info!("🦀 gRPC router built successfully, spawning listener");
     tokio::spawn(async move {
+        tracing::info!("🦀 gRPC task: binding to {}", grpc_addr);
         match tokio::net::TcpListener::bind(&grpc_addr).await {
             Ok(listener) => {
                 tracing::info!("🦀 gRPC server listening on {}", grpc_addr);
@@ -87,7 +90,7 @@ async fn main() -> anyhow::Result<()> {
                 }
             }
             Err(e) => {
-                tracing::error!("Failed to bind gRPC on {}: {}", grpc_addr, e);
+                tracing::error!("❌ Failed to bind gRPC on {}: {}", grpc_addr, e);
             }
         }
     });
