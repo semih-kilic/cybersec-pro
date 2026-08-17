@@ -6,6 +6,13 @@ description = "High-performance scan execution engine for CyberSec Pro"
 authors = ["CyberSec Pro Team"]
 
 [dependencies]
+# gRPC (internal service communication)
+tonic = "0.12"
+prost = "0.13"
+
+# Shared proto definitions
+cybersec-proto = { path = "../cybersec-proto" }
+
 # Web framework
 axum = { version = "0.7", features = ["ws", "macros"] }
 tokio = { version = "1", features = ["full"] }

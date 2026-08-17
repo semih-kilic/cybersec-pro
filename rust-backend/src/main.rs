@@ -4,6 +4,7 @@ mod models;
 mod openapi;
 mod scan_engine;
 mod services;
+mod grpc_client;
 
 use axum::{
     extract::Extension,

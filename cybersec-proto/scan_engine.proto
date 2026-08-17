@@ -1,0 +1,79 @@
+syntax = "proto3";
+
+package cybersec.scanengine;
+
+
+// ─── Service Definition ────────────────────────────────────────────
+// Replaces the 4 JSON/REST endpoints between rust-backend ↔ rust-scan-engine.
+
+service ScanEngineService {
+  // POST /api/v3/scan
+  rpc StartScan(StartScanRequest) returns (StartScanResponse);
+
+  // GET  /api/v3/scan/:scan_id/status
+  rpc GetScanStatus(GetScanStatusRequest) returns (ScanStatus);
+
+  // POST /api/v3/scan/:scan_id/cancel
+  rpc CancelScan(CancelScanRequest) returns (CancelScanResponse);
+
+  // GET  /api/v3/scan/:scan_id/output
+  rpc GetScanOutput(GetScanOutputRequest) returns (ScanOutputResponse);
+
+  // GET /health
+  rpc HealthCheck(HealthCheckRequest) returns (HealthCheckResponse);
+}
+
+// ─── Messages ──────────────────────────────────────────────────────
+
+message StartScanRequest {
+  string tool           = 1;  // e.g. "nmap", "nikto", "sqlmap"
+  string target         = 2;  // IP, domain, URL
+  string params_json    = 3;  // tool-specific params (serialised JSON string)
+  string program        = 4;  // resolved binary path (from backend DB)
+  repeated string command_args = 5;  // pre-built args (substituted by backend)
+}
+
+message StartScanResponse {
+  string scan_id  = 1;
+  string status   = 2;  // "running"
+}
+
+message GetScanStatusRequest {
+  string scan_id = 1;
+}
+
+message ScanStatus {
+  string scan_id     = 1;
+  string status      = 2;  // queued|running|completed|failed|cancelled|timeout
+  string tool        = 3;
+  string target      = 4;
+  int64  started_at  = 5;  // UNIX epoch seconds
+  int64  finished_at = 6;  // 0 if not yet finished
+  uint32 progress    = 7;  // 0-100
+  int32  exit_code   = 8;  // null → 0 (protobuf has no null)
+  string error       = 9;
+}
+
+message CancelScanRequest {
+  string scan_id = 1;
+}
+
+message CancelScanResponse {
+  string status = 1;  // "cancelled"
+}
+
+message GetScanOutputRequest {
+  string scan_id = 1;
+}
+
+message ScanOutputResponse {
+  repeated string output = 1;
+}
+
+message HealthCheckRequest {}
+
+message HealthCheckResponse {
+  string status  = 1;  // "healthy"
+  string engine  = 2;  // "rust-scan-engine"
+  string version = 3;
+}

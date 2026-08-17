@@ -6,6 +6,13 @@ description = "CyberSec Pro SaaS Backend — Rust/Axum Edition"
 authors = ["Semih Kılıç"]
 
 [dependencies]
+# gRPC client (scan engine communication)
+tonic = "0.12"
+prost = "0.13"
+
+# Shared proto definitions
+cybersec-proto = { path = "../cybersec-proto" }
+
 # Web framework
 axum = { version = "0.7", features = ["ws", "macros", "multipart"] }
 axum-extra = { version = "0.9", features = ["cookie", "typed-header"] }

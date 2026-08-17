@@ -63,41 +63,6 @@ struct ScanEngineOutputResponse {
     output: Vec<String>,
 }
 
-
-
-/// gRPC endpoint for scan engine (port = SCAN_ENGINE_PORT + 1, default 5003)
-fn configured_grpc_url() -> Option<String> {
-    // Allow explicit GRPC_SCAN_ENGINE_URL override
-    if let Ok(url) = std::env::var("GRPC_SCAN_ENGINE_URL") {
-        let trimmed = url.trim().trim_end_matches('/').to_string();
-        if !trimmed.is_empty() {
-            return Some(trimmed);
-        }
-    }
-    // Derive from SCAN_ENGINE_URL: change port to +1
-    std::env::var("SCAN_ENGINE_URL")
-        .ok()
-        .map(|value| {
-            let base = value.trim().trim_end_matches('/').to_string();
-            // Replace port: http://host:5002 → http://host:5003
-            if let Some(pos) = base.rfind(':') {
-                if let Ok(port) = base[pos+1..].parse::<u16>() {
-                    return format!("{}:{}", &base[..pos], port + 1);
-                }
-            }
-            format!("{}:5003", base)
-        })
-        .filter(|value| !value.is_empty())
-}
-
-/// Create a gRPC client to the scan engine
-async fn grpc_client() -> anyhow::Result<crate::grpc_client::ScanEngineGrpcClient> {
-    let url = configured_grpc_url()
-        .ok_or_else(|| anyhow::anyhow!("no scan engine URL configured"))?;
-    crate::grpc_client::ScanEngineGrpcClient::connect(&url).await
-        .map_err(|e| anyhow::anyhow!("gRPC connect failed: {}", e))
-}
-
 fn configured_scan_engine_url() -> Option<String> {
     std::env::var("SCAN_ENGINE_URL")
         .ok()
@@ -274,58 +239,6 @@ async fn cancel_scan_on_engine(
     Ok(())
 }
 
-
-
-/// Start scan via gRPC (replaces HTTP POST /api/v3/scan)
-async fn start_scan_on_engine_grpc(
-    tool: &str,
-    target: &str,
-    params: Option<JsonValue>,
-    program: Option<String>,
-    command_args: Option<Vec<String>>,
-) -> anyhow::Result<ScanEngineStartResponse> {
-    let mut client = grpc_client().await?;
-    let resp = client.start_scan(tool, target, params, program, command_args).await
-        .map_err(|e| anyhow::anyhow!("gRPC StartScan failed: {}", e))?;
-    Ok(ScanEngineStartResponse {
-        scan_id: resp.scan_id,
-    })
-}
-
-/// Get status via gRPC
-async fn fetch_scan_engine_status_grpc(
-    remote_scan_id: &str,
-) -> anyhow::Result<ScanEngineStatusResponse> {
-    let mut client = grpc_client().await?;
-    let resp = client.get_status(remote_scan_id).await
-        .map_err(|e| anyhow::anyhow!("gRPC GetStatus failed: {}", e))?;
-    Ok(ScanEngineStatusResponse {
-        status: normalize_scan_engine_status(&resp.status).to_string(),
-        exit_code: if resp.exit_code == 0 { None } else { Some(resp.exit_code) },
-        error: if resp.error.is_empty() { None } else { Some(resp.error) },
-    })
-}
-
-/// Get output via gRPC
-async fn fetch_scan_engine_output_grpc(
-    remote_scan_id: &str,
-) -> anyhow::Result<Vec<String>> {
-    let mut client = grpc_client().await?;
-    let resp = client.get_output(remote_scan_id).await
-        .map_err(|e| anyhow::anyhow!("gRPC GetOutput failed: {}", e))?;
-    Ok(resp.output)
-}
-
-/// Cancel scan via gRPC
-async fn cancel_scan_on_engine_grpc(
-    remote_scan_id: &str,
-) -> anyhow::Result<()> {
-    let mut client = grpc_client().await?;
-    client.cancel(remote_scan_id).await
-        .map_err(|e| anyhow::anyhow!("gRPC Cancel failed: {}", e))?;
-    Ok(())
-}
-
 async fn persist_scan_output(db: &sqlx::PgPool, scan_id: &str, output_lines: &[String]) {
     let joined_output = output_lines.join("\n");
     let line_count = output_lines.len() as i64;
@@ -482,14 +395,14 @@ async fn monitor_scan_engine(
     tool_name: String,
     target: String,
 ) {
-    let _client = reqwest::Client::new(); // kept as fallback
+    let client = reqwest::Client::new();
     let mut latest_output: Vec<String> = Vec::new();
     let mut streamed_lines = 0usize;
     let mut status_failures = 0u8;
     let mut heartbeat_counter: u32 = 0;
 
     loop {
-        match fetch_scan_engine_output_grpc(&remote_scan_id).or_else(|_| fetch_scan_engine_output(&client, &engine_url, &remote_scan_id)).await {
+        match fetch_scan_engine_output(&client, &engine_url, &remote_scan_id).await {
             Ok(output_lines) => {
                 latest_output = output_lines;
                 if streamed_lines < latest_output.len() {
@@ -515,7 +428,7 @@ async fn monitor_scan_engine(
             }
         }
 
-        let remote_status = match fetch_scan_engine_status_grpc(&remote_scan_id).or_else(|_| fetch_scan_engine_status(&client, &engine_url, &remote_scan_id)).await {
+        let remote_status = match fetch_scan_engine_status(&client, &engine_url, &remote_scan_id).await {
             Ok(status) => {
                 status_failures = 0;
                 status
@@ -927,7 +840,7 @@ pub async fn get_scan(
     if let Some(metadata) = extract_scan_engine_metadata(&scan.parameters) {
         let current_status = scan.status.clone().unwrap_or_else(|| "pending".to_string());
         if current_status == "pending" || current_status == "running" {
-            let _client = reqwest::Client::new(); // kept as fallback
+            let client = reqwest::Client::new();
             match fetch_scan_engine_status(&client, &metadata.url, &metadata.remote_scan_id).await {
                 Ok(remote_status) => {
                     let normalized_status = normalize_scan_engine_status(&remote_status.status).to_string();
@@ -1275,7 +1188,7 @@ pub async fn start_scan(
     let scan_engine_metadata = if body.agent_id.is_none() {
         match configured_scan_engine_url() {
             Some(engine_url) => {
-                let _client = reqwest::Client::new(); // kept as fallback
+                let client = reqwest::Client::new();
                 match start_scan_on_engine(
                     &client,
                     &engine_url,
@@ -1777,7 +1690,7 @@ pub async fn cancel_scan(
     };
 
     if let Some(metadata) = extract_scan_engine_metadata(&scan.parameters) {
-        let _client = reqwest::Client::new(); // kept as fallback
+        let client = reqwest::Client::new();
         if let Err(error) = cancel_scan_on_engine(&client, &metadata.url, &metadata.remote_scan_id).await {
             tracing::error!("Failed to cancel delegated scan {}: {}", scan_id, error);
             return (

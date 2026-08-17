@@ -18,11 +18,12 @@ mod auth;
 mod error;
 mod models;
 
+mod grpc_server;
 use scanner::ScanEngine;
 
 /// Shared application state
 pub struct AppState {
-    pub scan_engine: ScanEngine,
+    pub scan_engine: Arc<ScanEngine>,
     pub jwt_secret: String,
 }
 
@@ -47,7 +48,7 @@ async fn main() -> anyhow::Result<()> {
 
     // Initialize scan engine
     let state = Arc::new(AppState {
-        scan_engine: ScanEngine::new(8), // 8 concurrent workers
+        scan_engine: Arc::new(ScanEngine::new(8)), // 8 concurrent workers
         jwt_secret,
     });
 
@@ -64,11 +65,24 @@ async fn main() -> anyhow::Result<()> {
         )
         .layer(CorsLayer::permissive())
         .layer(TraceLayer::new_for_http())
-        .with_state(state);
+        .with_state(state.clone());
 
     let addr = format!("0.0.0.0:{}", port);
     tracing::info!("🦀 CyberSec Scan Engine starting on {}", addr);
 
+    
+    // ─── gRPC server (port = SCAN_ENGINE_PORT + 1) ──────────────
+    let grpc_port: u16 = port.parse::<u16>().unwrap_or(5002) + 1;
+    let grpc_state = grpc_server::GrpcScanState {
+        scan_engine: Arc::clone(&state.scan_engine),
+    };
+    let grpc_app = grpc_server::grpc_router(grpc_state);
+    let grpc_addr = format!("0.0.0.0:{}", grpc_port);
+    tokio::spawn(async move {
+        let listener = tokio::net::TcpListener::bind(&grpc_addr).await.unwrap();
+        tracing::info!("🦀 gRPC server listening on {}", grpc_addr);
+        axum::serve(listener, grpc_app).await.unwrap();
+    });
     let listener = tokio::net::TcpListener::bind(&addr).await?;
     axum::serve(listener, app).await?;
 
