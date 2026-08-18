@@ -14,6 +14,9 @@
 # ═══════════════════════════════════════════════════════════════════════════════
 set -euo pipefail
 
+# ── Cargo PATH ────────────────────────────────────────────────────────────────
+export PATH="$HOME/.cargo/bin:/usr/local/bin:/usr/bin:/bin:$PATH"
+
 # ── Configuration ─────────────────────────────────────────────────────────────
 BASEDIR="/home/cybersec/cybersec-pro"
 BACKUP_DIR="/home/cybersec/dep-backups"
