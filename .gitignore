@@ -112,3 +112,8 @@ agent-binaries/
 # Docker build copies (not committed)
 rust-backend/cybersec-proto/
 rust-scan-engine/cybersec-proto/
+cybersec-wasm/target/
+cybersec-wasm/pkg/
+!frontend/src/lib/
+cybersec-wasm/target/
+cybersec-wasm/pkg/
