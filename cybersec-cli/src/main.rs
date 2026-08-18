@@ -160,7 +160,7 @@ async fn main() -> anyhow::Result<()> {
             }
 
             let result: serde_json::Value = resp.json().await?;
-            let scans = result["scans"].as_array().unwrap_or(&[]);
+            let scans = result["scans"].as_array().cloned().unwrap_or_default();
 
             if scans.is_empty() {
                 println!("No scans found.");
@@ -215,7 +215,7 @@ async fn main() -> anyhow::Result<()> {
             }
 
             let result: serde_json::Value = resp.json().await?;
-            let tools = result["tools"].as_array().unwrap_or(&[]);
+            let tools = result["tools"].as_array().cloned().unwrap_or_default();
 
             println!("Available tools ({}/183):", tools.len());
             println!("{:<20} {:<25} {:<15}", "Name", "Category", "Danger Level");
