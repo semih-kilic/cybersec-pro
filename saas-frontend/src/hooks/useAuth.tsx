@@ -142,10 +142,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const data = await response.json();
 
     // V20: Handle MFA challenge
-    if (data.requires_mfa) {
-      const e: any = new Error('MFA verification required');
+    if (data.mfa_required) {
+      const e: any = new Error(data.message || 'MFA verification required');
       e.requires_mfa = true;
-      e.user_id = data.user_id;
       throw e;
     }
 
@@ -160,32 +159,35 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const register = async (data: RegisterData) => {
     const response = await fetch(`${API_URL}/auth/register`, {
       method: 'POST',
-      credentials: 'include',  // V18: Send/receive httpOnly cookies
+      credentials: 'include',
       headers: {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify(data),
     });
 
+    const result = await response.json();
+
     if (!response.ok) {
-      let error: any = {};
-      try {
-        const ct = response.headers.get('content-type') || '';
-        if (ct.includes('application/json')) {
-          error = await response.json();
-        } else {
-          error = { error: `Server error (${response.status})` };
-        }
-      } catch { error = { error: 'Registration failed' }; }
-      throw new Error(error.error || 'Registration failed');
+      throw new Error(result.error || 'Registration failed');
     }
 
-    const result = await response.json();
-    localStorage.setItem('token', result.access_token);
-    setToken(result.access_token);
-    setUser(result.user);
-    setOrganization(result.organization);
-    setInitialFetchDone(true);
+    // Backend returns verification_required: true — no tokens issued yet
+    if (result.verification_required) {
+      const e: any = new Error(result.message || 'Please verify your email before logging in.');
+      e.requires_verification = true;
+      e.email = result.user?.email;
+      throw e;
+    }
+
+    // Shouldn't happen for normal registration (tokens require email verification)
+    if (result.access_token) {
+      localStorage.setItem('token', result.access_token);
+      setToken(result.access_token);
+      setUser(result.user);
+      setOrganization(result.organization);
+      setInitialFetchDone(true);
+    }
   };
 
   // V18: Auto-refresh token before expiry using the refresh cookie
