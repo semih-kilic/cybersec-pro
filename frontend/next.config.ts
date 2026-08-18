@@ -15,6 +15,18 @@ const nextConfig: NextConfig = {
     optimizePackageImports: ["lucide-react", "@radix-ui/react-icons"],
     useTypeScriptCli: true,
   },
+  // WASM support
+  async headers() {
+    return [
+      {
+        source: "/(.*)\\.wasm",
+        headers: [
+          { key: "Content-Type", value: "application/wasm" },
+          { key: "Cache-Control", value: "public, max-age=31536000, immutable" },
+        ],
+      },
+    ];
+  },
 };
 
 export default withNextIntl(nextConfig);

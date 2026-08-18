@@ -7,6 +7,7 @@ import dynamic from "next/dynamic";
 import Link from "next/link";
 import RevealOnScroll from "@/components/animations/RevealOnScroll";
 import { Search, Terminal, Play, Shield, Loader2, Info } from "lucide-react";
+import { useWasmSearch } from "@/lib/wasm/useWasmSearch";
 
 const NetworkMesh = dynamic(() => import("@/components/three/NetworkMesh"), { ssr: false });
 
@@ -61,7 +62,6 @@ export default function ToolsPage() {
             tools.push({ ...tool, category: catName });
           }
         }
-        // Sort alphabetically
         tools.sort((a, b) => a.name.localeCompare(b.name));
         catNames.sort();
 
@@ -70,14 +70,21 @@ export default function ToolsPage() {
         setTotalTools(data.total_tools || tools.length);
         setLoading(false);
       } catch {
-        // Fallback if API unavailable
         setLoading(false);
       }
     })();
     return () => { cancelled = true; };
   }, []);
 
+  // WASM search engine
+  const { ready: wasmReady, search: wasmSearch, error: wasmError } = useWasmSearch(allTools);
+
+  // Use WASM search when ready, fallback to JS useMemo
   const filtered = useMemo(() => {
+    if (wasmReady && wasmSearch) {
+      return wasmSearch(search, category);
+    }
+    // JS fallback
     return allTools.filter((tool) => {
       const q = search.toLowerCase();
       const matchSearch = !q || tool.name.toLowerCase().includes(q) ||
@@ -86,9 +93,8 @@ export default function ToolsPage() {
       const matchCategory = category === "All" || tool.category === category;
       return matchSearch && matchCategory;
     });
-  }, [search, category, allTools]);
+  }, [search, category, allTools, wasmReady, wasmSearch]);
 
-  // Paginate for performance
   const [visibleCount, setVisibleCount] = useState(60);
   const visibleTools = filtered.slice(0, visibleCount);
   const hasMore = visibleCount < filtered.length;
@@ -105,7 +111,6 @@ export default function ToolsPage() {
           <h1 className="text-4xl font-extrabold md:text-6xl">{t("title")}</h1>
           <p className="mx-auto mt-4 max-w-lg text-white/55">{t("subtitle")}</p>
 
-          {/* Stats bar */}
           <div className="mt-8 flex items-center justify-center gap-6 text-sm">
             <div className="flex items-center gap-2">
               <span className="font-mono text-2xl font-bold text-[var(--color-neon)]">{totalTools}</span>
@@ -121,11 +126,19 @@ export default function ToolsPage() {
               <span className="font-mono text-2xl font-bold text-[var(--color-neon)]">100%</span>
               <span className="text-white/40">Kali Linux</span>
             </div>
+            {wasmReady && (
+              <>
+                <div className="h-6 w-px bg-white/10" />
+                <div className="flex items-center gap-2">
+                  <span className="font-mono text-lg font-bold text-green-400">WASM</span>
+                  <span className="text-white/40">Fast Search</span>
+                </div>
+              </>
+            )}
           </div>
         </RevealOnScroll>
       </section>
 
-      {/* Search & Filter */}
       <section className="mx-auto max-w-6xl px-6 pb-6">
         <div className="flex flex-col gap-4 md:flex-row md:items-center">
           <div className="relative flex-1">
@@ -143,7 +156,6 @@ export default function ToolsPage() {
           </div>
         </div>
 
-        {/* Category bar */}
         <div className="mt-4 flex flex-wrap gap-2">
           <button
             onClick={() => { setCategory("All"); setVisibleCount(60); }}
@@ -174,7 +186,6 @@ export default function ToolsPage() {
         </div>
       </section>
 
-      {/* Free Mini Tools */}
       <section className="mx-auto max-w-6xl px-6 pb-12">
         <div className="mb-6">
           <h2 className="text-2xl font-bold">Free Online Security Tools</h2>
@@ -199,7 +210,6 @@ export default function ToolsPage() {
         </div>
       </section>
 
-      {/* Tools Grid */}
       <section className="mx-auto max-w-6xl px-6 pb-28">
         {loading ? (
           <div className="flex flex-col items-center justify-center py-20 gap-4">
