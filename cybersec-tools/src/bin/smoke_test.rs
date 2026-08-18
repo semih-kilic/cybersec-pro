@@ -1,9 +1,8 @@
 use anyhow::Result;
 use clap::Parser;
-use colored::*;
-use sqlx::Row;
+
 use std::collections::HashMap;
-use std::path::{Path, PathBuf};
+use std::path::Path;
 
 #[derive(Parser)]
 #[command(name = "csec-smoke-test", about = "Test if tool binaries are reachable")]

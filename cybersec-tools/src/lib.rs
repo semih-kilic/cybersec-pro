@@ -28,6 +28,6 @@ pub mod tools {
         pub health_status: Option<String>,
         pub health_exit_code: Option<i32>,
         pub health_evidence: Option<String>,
-        pub last_health_check: Option<chrono::NaiveDateTime>,
+        pub last_health_check: Option<chrono::DateTime<chrono::Utc>>,
     }
 }
