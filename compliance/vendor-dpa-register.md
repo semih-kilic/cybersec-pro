@@ -13,7 +13,7 @@
 | **Hetzner** | Infrastructure hosting | All hosted data (DB, Redis, app, backups) | EU (Hetzner Finland) | 🟡 DPSA pending console acceptance |
 | **Cloudflare** | CDN, DNS, Tunnel, Email Routing, DDoS | IP addresses, email routing, edge traffic | Global | ✅ Auto-accepted (SSA) |
 | **Stripe** | Payment processing | Cardholder data (PCI DSS), billing info | EU (Ireland) | ✅ Standard DPA (Stripe.com/legal/dpa) |
-| **Mailjet** | Transactional email (SMTP) | Recipient emails, sender identity | EU | 🟡 DPA request sent 2026-08-17 |
+| **Mailjet** (Sinch) | Transactional email (SMTP) | Recipient emails, sender identity | EU | ✅ Standard DPA v8 (public, sinch.com) |
 | **Google (Gmail)** | SMTP fallback | Recipient emails | Global | ⬜ Requested |
 | **GitHub** | Code repository (source only) | Source code (no personal data) | Global | ⬜ Not required (no PI) |
 
@@ -33,7 +33,7 @@ Each DPA must cover:
 | **Hetzner** | Hetzner cloud console → account → Data Processing Agreement (DPSA); auto-accepted in console | Instant (digital) |
 | **Cloudflare** | Cloudflare dashboard → "DPA" via account settings; enterprise or click-through | Instant (digital) |
 | **Stripe** | Standard DPA in Stripe dashboard (Settings → Legal) | Instant |
-| **Mailjet** | Mailjet support ticket → request signed DPA | 1–5 business days |
+| **Mailjet** (Sinch) | Public DPA at sinch.com/legal; DPO: dpo@sinch.com | Instant (online) |
 | **Gmail/Google** | Google Workspace terms include DPA; Gmail SMTP under Google's DPA | Refer to Google DPA (online) |
 
 ## 4. Tracking
