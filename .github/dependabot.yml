@@ -1,0 +1,223 @@
+version: 2
+updates:
+  # ── Frontend (Next.js marketing site) ──
+  - package-ecosystem: "npm"
+    directory: "/frontend"
+    schedule:
+      interval: "daily"
+      time: "06:00"
+      timezone: "America/New_York"
+    open-pull-requests-limit: 10
+    reviewers:
+      - "semih-kilic"
+    labels:
+      - "dependencies"
+      - "frontend"
+    commit-message:
+      prefix: "deps(frontend)"
+    groups:
+      nextjs:
+        patterns: ["next", "eslint-config-next", "@next/*"]
+      react:
+        patterns: ["react", "react-dom", "@types/react", "@types/react-dom"]
+      three:
+        patterns: ["three", "@react-three/*", "@types/three"]
+      stripe:
+        patterns: ["@stripe/*"]
+      framer:
+        patterns: ["framer-motion"]
+      ui:
+        patterns: ["lucide-react", "clsx", "tailwind-merge", "tailwindcss", "@tailwindcss/*"]
+      devtools:
+        patterns: ["typescript", "eslint", "@types/*"]
+    ignore:
+      # TypeScript major upgrade — handle manually
+      - dependency-name: "typescript"
+        update-types: ["version-update:semver-major"]
+      # ESLint major upgrade — breaking config changes
+      - dependency-name: "eslint"
+        update-types: ["version-update:semver-major"]
+
+  # ── SaaS Frontend (React/Vite dashboard) ──
+  - package-ecosystem: "npm"
+    directory: "/saas-frontend"
+    schedule:
+      interval: "daily"
+      time: "06:00"
+      timezone: "America/New_York"
+    open-pull-requests-limit: 10
+    reviewers:
+      - "semih-kilic"
+    labels:
+      - "dependencies"
+      - "saas-frontend"
+    commit-message:
+      prefix: "deps(saas-frontend)"
+    groups:
+      react:
+        patterns: ["react", "react-dom"]
+      vite:
+        patterns: ["vite", "vitest", "@vitejs/*"]
+      stripe:
+        patterns: ["@stripe/*"]
+      forms:
+        patterns: ["react-hook-form", "@hookform/*"]
+      query:
+        patterns: ["@tanstack/*"]
+      ui:
+        patterns: ["lucide-react", "clsx", "framer-motion", "@headlessui/*", "@heroicons/*"]
+      i18n:
+        patterns: ["i18next", "i18next-*"]
+      devtools:
+        patterns: ["typescript", "eslint", "@typescript-eslint/*", "postcss", "tailwindcss"]
+      testing:
+        patterns: ["@testing-library/*", "vitest"]
+    ignore:
+      - dependency-name: "typescript"
+        update-types: ["version-update:semver-major"]
+      - dependency-name: "eslint"
+        update-types: ["version-update:semver-major"]
+      - dependency-name: "vite"
+        update-types: ["version-update:semver-major"]
+
+  # ── Rust Backend ──
+  - package-ecosystem: "cargo"
+    directory: "/rust-backend"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "06:00"
+      timezone: "America/New_York"
+    open-pull-requests-limit: 5
+    reviewers:
+      - "semih-kilic"
+    labels:
+      - "dependencies"
+      - "rust"
+    commit-message:
+      prefix: "deps(backend)"
+    groups:
+      axum:
+        patterns: ["axum", "axum-*", "tower", "tower-http"]
+      sqlx:
+        patterns: ["sqlx", "sqlx-*"]
+      tokio:
+        patterns: ["tokio", "tokio-*"]
+      serde:
+        patterns: ["serde", "serde_*"]
+      grpc:
+        patterns: ["tonic", "tonic-*", "prost", "prost-*"]
+
+  # ── Rust Scan Engine ──
+  - package-ecosystem: "cargo"
+    directory: "/rust-scan-engine"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "06:00"
+      timezone: "America/New_York"
+    open-pull-requests-limit: 5
+    reviewers:
+      - "semih-kilic"
+    labels:
+      - "dependencies"
+      - "rust"
+      - "scan-engine"
+    commit-message:
+      prefix: "deps(scan-engine)"
+    groups:
+      axum:
+        patterns: ["axum", "axum-*", "tower", "tower-http"]
+      grpc:
+        patterns: ["tonic", "tonic-*", "prost", "prost-*"]
+      tokio:
+        patterns: ["tokio", "tokio-*"]
+
+  # ── Rust Agent ──
+  - package-ecosystem: "cargo"
+    directory: "/rust-agent"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "06:00"
+      timezone: "America/New_York"
+    open-pull-requests-limit: 3
+    reviewers:
+      - "semih-kilic"
+    labels:
+      - "dependencies"
+      - "rust"
+      - "agent"
+    commit-message:
+      prefix: "deps(agent)"
+
+  # ── Rust WASM Module ──
+  - package-ecosystem: "cargo"
+    directory: "/cybersec-wasm"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "06:00"
+      timezone: "America/New_York"
+    open-pull-requests-limit: 3
+    reviewers:
+      - "semih-kilic"
+    labels:
+      - "dependencies"
+      - "rust"
+      - "wasm"
+    commit-message:
+      prefix: "deps(wasm)"
+
+  # ── CyberSec Tools (Rust workspace) ──
+  - package-ecosystem: "cargo"
+    directory: "/cybersec-tools"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "06:00"
+      timezone: "America/New_York"
+    open-pull-requests-limit: 3
+    reviewers:
+      - "semih-kilic"
+    labels:
+      - "dependencies"
+      - "rust"
+      - "tools"
+    commit-message:
+      prefix: "deps(tools)"
+
+  # ── CyberSec CLI ──
+  - package-ecosystem: "cargo"
+    directory: "/cybersec-cli"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "06:00"
+      timezone: "America/New_York"
+    open-pull-requests-limit: 3
+    reviewers:
+      - "semih-kilic"
+    labels:
+      - "dependencies"
+      - "rust"
+      - "cli"
+    commit-message:
+      prefix: "deps(cli)"
+
+  # ── GitHub Actions ──
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "08:00"
+      timezone: "America/New_York"
+    open-pull-requests-limit: 3
+    reviewers:
+      - "semih-kilic"
+    labels:
+      - "dependencies"
+      - "ci"
+    commit-message:
+      prefix: "deps(actions)"

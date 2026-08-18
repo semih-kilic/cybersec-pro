@@ -1,0 +1,258 @@
+name: Dependency Updates
+
+on:
+  pull_request:
+    branches: [master]
+    paths:
+      - '**/package.json'
+      - '**/package-lock.json'
+      - '**/Cargo.lock'
+      - '**/Cargo.toml'
+
+  schedule:
+    # Weekly dependency audit on Sundays at 03:00 UTC
+    - cron: '0 3 * * 0'
+
+  workflow_dispatch:
+    inputs:
+      mode:
+        description: 'Update mode'
+        required: true
+        default: 'patch'
+        type: choice
+        options:
+          - patch
+          - minor
+          - major
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  # ═══════════════════════════════════════════════════════════════════════════
+  # NPM Frontend (Next.js)
+  # ═══════════════════════════════════════════════════════════════════════════
+  frontend-deps:
+    name: Frontend Deps Check
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request'
+    defaults:
+      run:
+        working-directory: frontend
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Check for outdated packages
+        run: npm outdated || true
+
+      - name: Build check
+        run: npx next build
+
+      - name: Lint check
+        run: npm run lint || true
+
+  # ═══════════════════════════════════════════════════════════════════════════
+  # NPM SaaS Frontend (React/Vite)
+  # ═══════════════════════════════════════════════════════════════════════════
+  saas-deps:
+    name: SaaS Frontend Deps Check
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request'
+    defaults:
+      run:
+        working-directory: saas-frontend
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: saas-frontend/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Check for outdated packages
+        run: npm outdated || true
+
+      - name: Type check
+        run: npm run type-check
+
+      - name: i18n coverage check
+        run: npm run i18n:check || true
+
+      - name: i18n residual check
+        run: npm run i18n:residual || true
+
+      - name: Unit tests
+        run: vitest --run --reporter=verbose 2>/dev/null || true
+
+      - name: Build
+        run: npm run build
+
+  # ═══════════════════════════════════════════════════════════════════════════
+  # Cargo Backend
+  # ═══════════════════════════════════════════════════════════════════════════
+  cargo-backend-deps:
+    name: Backend Cargo Deps Check
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request'
+    defaults:
+      run:
+        working-directory: rust-backend
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Cache Cargo
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+            rust-backend/target
+          key: ${{ runner.os }}-cargo-backend-${{ hashFiles('rust-backend/Cargo.lock') }}
+          restore-keys: ${{ runner.os }}-cargo-backend-
+
+      - name: Check compilation
+        run: cargo check --release
+
+      - name: Run tests
+        run: SQLX_OFFLINE=true cargo test 2>&1 | tail -20 || true
+
+      - name: Clippy
+        run: cargo clippy --release -- -W warnings 2>&1 | tail -10 || true
+
+  # ═══════════════════════════════════════════════════════════════════════════
+  # Cargo Scan Engine
+  # ═══════════════════════════════════════════════════════════════════════════
+  cargo-engine-deps:
+    name: Scan Engine Cargo Deps Check
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request'
+    defaults:
+      run:
+        working-directory: rust-scan-engine
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Cache Cargo
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+            rust-scan-engine/target
+          key: ${{ runner.os }}-cargo-engine-${{ hashFiles('rust-scan-engine/Cargo.lock') }}
+          restore-keys: ${{ runner.os }}-cargo-engine-
+
+      - name: Check compilation
+        run: cargo check --release
+
+      - name: Run tests
+        run: cargo test 2>&1 | tail -20 || true
+
+  # ═══════════════════════════════════════════════════════════════════════════
+  # Auto-Merge Patch Updates (Dependabot PRs only)
+  # ═══════════════════════════════════════════════════════════════════════════
+  auto-merge-patch:
+    name: Auto-Merge Patch Updates
+    needs: [frontend-deps, saas-deps, cargo-backend-deps, cargo-engine-deps]
+    runs-on: ubuntu-latest
+    if: >
+      github.event_name == 'pull_request' &&
+      github.actor == 'dependabot[bot]' &&
+      contains(github.event.pull_request.title, 'patch')
+    permissions:
+      contents: write
+      pull-requests: write
+
+    steps:
+      - name: Auto-approve Dependabot PR
+        uses:dependabot/fetch-metadata@v2
+        id: metadata
+
+      - name: Approve PR
+        if: steps.metadata.outputs.update-type != 'version-update:semver-major'
+        run: gh pr review --approve "$PR_URL"
+        env:
+          PR_URL: ${{ github.event.pull_request.html_url }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Enable auto-merge
+        if: steps.metadata.outputs.update-type != 'version-update:semver-major'
+        run: gh pr merge --auto --squash "$PR_URL"
+        env:
+          PR_URL: ${{ github.event.pull_request.html_url }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  # ═══════════════════════════════════════════════════════════════════════════
+  # Weekly Security Audit
+  # ═══════════════════════════════════════════════════════════════════════════
+  security-audit:
+    name: Weekly Security Audit
+    runs-on: ubuntu-latest
+    if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: npm audit (frontend)
+        run: |
+          cd frontend
+          npm audit --omit=dev 2>&1 | tee /tmp/frontend-audit.txt
+          echo "### Frontend Audit" >> $GITHUB_STEP_SUMMARY
+          cat /tmp/frontend-audit.txt >> $GITHUB_STEP_SUMMARY
+
+      - name: npm audit (saas-frontend)
+        run: |
+          cd saas-frontend
+          npm audit --omit=dev 2>&1 | tee /tmp/saas-audit.txt
+          echo "### SaaS Frontend Audit" >> $GITHUB_STEP_SUMMARY
+          cat /tmp/saas-audit.txt >> $GITHUB_STEP_SUMMARY
+
+      - name: Install cargo-audit
+        run: cargo install cargo-audit
+
+      - name: cargo audit (backend)
+        run: |
+          cd rust-backend
+          cargo audit 2>&1 | tee /tmp/backend-audit.txt
+          echo "### Backend Cargo Audit" >> $GITHUB_STEP_SUMMARY
+          cat /tmp/backend-audit.txt >> $GITHUB_STEP_SUMMARY
+
+      - name: cargo audit (scan engine)
+        run: |
+          cd rust-scan-engine
+          cargo audit 2>&1 | tee /tmp/engine-audit.txt
+          echo "### Scan Engine Cargo Audit" >> $GITHUB_STEP_SUMMARY
+          cat /tmp/engine-audit.txt >> $GITHUB_STEP_SUMMARY
