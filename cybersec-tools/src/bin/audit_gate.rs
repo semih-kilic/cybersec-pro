@@ -38,15 +38,32 @@ fn binary_exists(path_or_name: &str) -> bool {
     }
 }
 
+fn is_hw_restricted(val: &Option<serde_json::Value>) -> bool {
+    match val {
+        None => false,
+        Some(serde_json::Value::Null) => false,
+        Some(serde_json::Value::String(s)) => !s.trim().is_empty(),
+        Some(serde_json::Value::Bool(b)) => *b,
+        Some(serde_json::Value::Array(a)) => !a.is_empty(),
+        Some(serde_json::Value::Object(o)) => !o.is_empty(),
+        Some(serde_json::Value::Number(_)) => true,
+    }
+}
+
 #[tokio::main]
 async fn main() -> Result<()> {
     let cli = Cli::parse();
     let pool = sqlx::PgPool::connect(&cli.database_url).await?;
 
     let rows: Vec<cybersec_tools::tools::Tool> = sqlx::query_as(
-        "SELECT id, name, category, binary_name, command_template, is_active,
-                exclusion_reason, hardware_required, gui_required,
-                health_status, health_exit_code, health_evidence, last_health_check
+        "SELECT id, name, category, description, command_template, parameters, plan_required,
+                is_active, tool_type, hardware_required, gui_required,
+                install_command, example_usage, official_url,
+                business_name, business_description, business_category, subcategory,
+                risk_context, tool_group, binary_name, kali_package,
+                exclusion_reason, maturity, output_parser, command_profiles,
+                health_status, health_exit_code, health_evidence, health_probe,
+                last_health_check, priority_score, version
          FROM tools ORDER BY name"
     ).fetch_all(&pool).await?;
 
@@ -61,7 +78,7 @@ async fn main() -> Result<()> {
         let tmpl = r.command_template.as_deref().unwrap_or("").trim();
         let is_active = r.is_active.unwrap_or(false);
         let existing_excl = r.exclusion_reason.as_deref().unwrap_or("");
-        let hw = r.hardware_required.unwrap_or(false);
+        let hw = is_hw_restricted(&r.hardware_required);
         let gui = r.gui_required.unwrap_or(false);
 
         let permanent = matches!(existing_excl, "paid_license" | "ios_only" | "windows_only" | "discontinued");

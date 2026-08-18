@@ -8,17 +8,13 @@ use std::time::Duration;
 struct Cli {
     #[arg(long, default_value = "/home/cybersec/cybersec-pro")]
     basedir: String,
-
-    /// Check interval in seconds
     #[arg(long, default_value = "60")]
     interval: u64,
-
-    /// Run once and exit (for cron)
     #[arg(long)]
     once: bool,
 }
 
-fn log(msg: &str) {
+fn log_msg(msg: &str) {
     let line = format!("[{}] {}", chrono::Local::now().format("%Y-%m-%d %H:%M:%S"), msg);
     let _ = std::fs::OpenOptions::new()
         .create(true).append(true)
@@ -30,14 +26,18 @@ fn log(msg: &str) {
     println!("{}", line);
 }
 
-fn check_container_health(name: &str) -> String {
+fn check_container_health(container_name: &str) -> String {
     Command::new("docker")
-        .args(["inspect", "-f", "{{.State.Health.Status}}", name])
+        .args(["inspect", "-f", "{{if .State.Health}}{{.State.Health.Status}}{{else}}{{.State.Status}}{{end}}", container_name])
         .output()
         .ok()
         .and_then(|o| String::from_utf8(o.stdout).ok())
         .map(|s| s.trim().to_string())
         .unwrap_or_else(|| "missing".into())
+}
+
+fn is_container_ok(status: &str) -> bool {
+    status == "healthy" || status == "running"
 }
 
 fn check_url(url: &str) -> bool {
@@ -64,19 +64,26 @@ fn free_mem_mb() -> u64 {
         .unwrap_or(0)
 }
 
-fn restart_container(name: &str, basedir: &str) {
-    log(&format!("Restarting container {}...", name));
+fn restart_service(service_name: &str, basedir: &str) {
+    log_msg(&format!("Restarting service {}...", service_name));
     let _ = Command::new("sh")
         .arg("-c")
-        .arg(format!("cd {} && docker compose up -d {}", basedir, name))
+        .arg(format!("cd {} && docker compose up -d {}", basedir, service_name))
+        .status();
+}
+
+fn restart_container(container_name: &str, basedir: &str) {
+    log_msg(&format!("Restarting container {}...", container_name));
+    let _ = Command::new("sh")
+        .arg("-c")
+        .arg(format!("cd {} && docker compose up -d {}", basedir, container_name))
         .status();
 }
 
 fn main_loop(basedir: &str) {
-    // 1. RAM check
     let free = free_mem_mb();
     if free < 1000 {
-        log(&format!("Low RAM ({}MB). Dropping caches...", free));
+        log_msg(&format!("Low RAM ({}MB). Dropping caches...", free));
         let _ = Command::new("sync").status();
         let _ = Command::new("sh")
             .arg("-c")
@@ -84,49 +91,37 @@ fn main_loop(basedir: &str) {
             .status();
     }
 
-    // 2. Kill zombie processes
     let zombies = ["maltego", "vite.config.staging.ts"];
     for proc in &zombies {
-        let output = Command::new("pgrep")
-            .args(["-f", proc])
-            .output()
-            .ok();
-        if let Some(o) = output {
+        if let Ok(o) = Command::new("pgrep").args(["-f", proc]).output() {
             if !o.stdout.is_empty() {
-                let _ = Command::new("pkill")
-                    .args(["-f", proc])
-                    .status();
-                log(&format!("Killed zombie process: {}", proc));
+                let _ = Command::new("pkill").args(["-f", proc]).status();
+                log_msg(&format!("Killed zombie: {}", proc));
             }
         }
     }
 
-    // 3. Check backend
-    let status = check_container_health("cybersec-api");
-    if status != "healthy" {
-        log(&format!("Backend is {}. Restarting...", status));
-        restart_container("rust-backend", basedir);
+    let api_status = check_container_health("cybersec-api");
+    if !is_container_ok(&api_status) {
+        log_msg(&format!("Backend is {} (container: cybersec-api). Restarting...", api_status));
+        restart_service("rust-backend", basedir);
     }
 
-    // 4. Check scan engine
+    let engine_status = check_container_health("cybersec-scan-engine");
+    if !is_container_ok(&engine_status) {
+        log_msg(&format!("Scan engine is {} (container: cybersec-scan-engine). Restarting...", engine_status));
+        restart_service("rust-scan-engine", basedir);
+    }
+
     if !check_url("http://localhost:5002/health") {
-        log("Scan engine DOWN. Restarting...");
-        let _ = Command::new("pkill")
-            .args(["-f", "cybersec-scan-engine"])
-            .status();
-        std::thread::sleep(Duration::from_secs(1));
-        let engine_dir = format!("{}/rust-scan-engine", basedir);
-        let _ = Command::new("sh")
-            .arg("-c")
-            .arg(format!("cd {} && ./target/release/cybersec-scan-engine &", engine_dir))
-            .status();
+        log_msg("Scan engine port 5002 DOWN. Restarting scan engine...");
+        restart_service("rust-scan-engine", basedir);
     }
 
-    // 5. Check nginx
     let nginx_status = check_container_health("cybersec-nginx");
-    if nginx_status != "running" {
-        log(&format!("Nginx is {}. Restarting...", nginx_status));
-        restart_container("cybersec-nginx", basedir);
+    if !is_container_ok(&nginx_status) {
+        log_msg(&format!("Nginx is {} (container: cybersec-nginx). Restarting...", nginx_status));
+        restart_service("nginx", basedir);
     }
 }
 
@@ -139,7 +134,7 @@ async fn main() -> Result<()> {
         return Ok(());
     }
 
-    log("Watchdog started (continuous mode)");
+    log_msg("Watchdog started (continuous mode)");
     loop {
         main_loop(&cli.basedir);
         tokio::time::sleep(Duration::from_secs(cli.interval)).await;
