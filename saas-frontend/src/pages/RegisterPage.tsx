@@ -89,7 +89,7 @@ export function RegisterPage() {
       
       const data = await res.json();
       
-      if (res.ok && data.requires_verification) {
+      if (res.ok && (data.requires_verification || data.verification_required)) {
         setVerificationSent(true);
         setVerificationEmail(formData.email);
       } else if (res.ok && data.access_token) {

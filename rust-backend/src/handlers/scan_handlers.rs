@@ -1269,7 +1269,7 @@ pub async fn start_scan(
 
     // Build the final program + argv from the (substituted) template.
     // This is the single source of truth for what the scan engine will execute.
-    let (program, command_args) = build_command(&tool.name, target, command_template.as_deref())
+    let (program, command_args) = build_command(&tool.binary_name.as_deref().unwrap_or(&tool.name), target, command_template.as_deref())
         .unwrap_or_else(|_| (tool.name.clone(), vec![target.to_string()]));
 
     let scan_engine_metadata = if body.agent_id.is_none() {
@@ -1594,7 +1594,7 @@ pub async fn start_scan(
 
     // Build command string for response from the SUBSTITUTED template so the
     // API reports the actual command that will be executed (not raw placeholders).
-    let (program, args) = crate::scan_engine::tool_registry::build_command(&tool.name, target, response_command.as_deref())
+    let (program, args) = crate::scan_engine::tool_registry::build_command(&tool.binary_name.as_deref().unwrap_or(&tool.name), target, response_command.as_deref())
         .unwrap_or_else(|_| (tool.name.clone(), vec![target.to_string()]));
     let command_str = format!("{} {}", program, args.join(" "));
 

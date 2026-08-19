@@ -9,10 +9,17 @@ interface Language {
 
 const languages: Language[] = [
   { code: 'en', flag: '🇬🇧', name: 'English' },
+  { code: 'tr', flag: '🇹🇷', name: 'Türkçe' },
   { code: 'de', flag: '🇩🇪', name: 'Deutsch' },
   { code: 'fr', flag: '🇫🇷', name: 'Français' },
   { code: 'es', flag: '🇪🇸', name: 'Español' },
+  { code: 'pt', flag: '🇧🇷', name: 'Português' },
   { code: 'it', flag: '🇮🇹', name: 'Italiano' },
+  { code: 'ar', flag: '🇸🇦', name: 'العربية' },
+  { code: 'ja', flag: '🇯🇵', name: '日本語' },
+  { code: 'zh', flag: '🇨🇳', name: '中文' },
+  { code: 'ko', flag: '🇰🇷', name: '한국어' },
+  { code: 'ru', flag: '🇷🇺', name: 'Русский' },
 ];
 
 interface LanguageSwitcherProps {
