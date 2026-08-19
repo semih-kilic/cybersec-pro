@@ -177,7 +177,15 @@
       "enterpriseItem1": "Todas las herramientas",
       "enterpriseItem2": "Todo ilimitado",
       "enterpriseItem3": "Integracion SSO / SAML / LDAP",
-      "enterpriseItem4": "Gestor de cuenta dedicado"
+      "enterpriseItem4": "Gestor de cuenta dedicado",
+      "runtimeCredential": "Credenciales",
+      "runtimeDefault": "Predeterminado",
+      "runtimeDevBonus": "Bonus de desarrollo",
+      "runtimeLateral": "Lateral",
+      "runtimeProdPenalty": "Penalización de producción",
+      "runtimeTuningSource": "Origen",
+      "runtimeTuningSubtitle": "Configuración de detección a nivel organizativo activa aplicada a simulaciones de equipo púrpura.",
+      "runtimeTuningTitle": "Ajuste en tiempo de ejecución"
     }
   },
   "auth": {
@@ -380,7 +388,8 @@
     "startFirstScan": "Inicia tu primer escaneo de seguridad para ver resultados aquí.",
     "noRunningScans": "No hay escaneos en ejecución",
     "startNewScan": "Inicia un nuevo escaneo para ver aquí la salida en vivo.",
-    "readyHint": "Introduce un objetivo y haz clic en \"Ejecutar escaneo\" para comenzar."
+    "readyHint": "Introduce un objetivo y haz clic en \"Ejecutar escaneo\" para comenzar.",
+    "duration": "Duración"
   },
   "agents": {
     "title": "Gestión de agentes",
@@ -476,7 +485,10 @@
       "pending": "Pendiente",
       "offline": "Desconectado",
       "error": "Con error"
-    }
+    },
+    "placeholderPassword": "contraseña",
+    "placeholderRoot": "root",
+    "placeholderServer": "server.local"
   },
   "targets": {
     "title": "Gestión de objetivos",
@@ -1009,7 +1021,118 @@
     "connectionError": "Error de conexion. Revisa tu internet e intentalo de nuevo.",
     "botName": "CyberBot IA",
     "subtitle": "Asistente de seguridad con IA - siempre aqui para ayudarte",
-    "inputPlaceholder": "Pregunta a CyberBot cualquier cosa sobre seguridad, escaneos y precios..."
+    "inputPlaceholder": "Pregunta a CyberBot cualquier cosa sobre seguridad, escaneos y precios...",
+    "command": {
+      "building": "Construyendo…",
+      "generated": "Comando generado",
+      "submit": "Generar comando",
+      "targetLabel": "Objetivo",
+      "targetPlaceholder": "ejemplo.com o 192.168.1.0/24",
+      "toolLabel": "Herramienta"
+    },
+    "danger": {
+      "destructive": "Destructivo",
+      "intrusive": "Invasivo",
+      "safe": "Seguro"
+    },
+    "explain": {
+      "commandPlaceholder": "p. ej. nmap -sV -A scanme.nmap.org",
+      "deepDive": "Análisis profundo",
+      "explaining": "Explicando…",
+      "explanation": "Explicación",
+      "modeCommand": "comando",
+      "modeTool": "herramienta",
+      "quickSummary": "Resumen rápido",
+      "submit": "Explicar",
+      "toolPlaceholder": "p. ej. nmap, sqlmap, nuclei…"
+    },
+    "headerBadge": "Copiloto inteligente",
+    "headerDescription": "Su experto en seguridad. Pregunte qué herramienta usar, construya comandos seguros, diseñe guiones de varios pasos, valide comandos peligrosos y deje que la IA interprete sus resultados de escaneo.",
+    "interpret": {
+      "analysing": "Analizando…",
+      "analystSummary": "Resumen del analista",
+      "invalidJson": "JSON no válido",
+      "placeholderHeader": "Pegue el arreglo JSON de hallazgos, p. ej.",
+      "submit": "Interpretar",
+      "totalFindings": "Hallazgos totales"
+    },
+    "llmEnrichment": " Enriquecimiento LLM",
+    "llmHint": "(más lento, más inteligente)",
+    "pageTitle": "CyberSec Pro IA",
+    "playbook": {
+      "designing": "Diseñando…",
+      "goalLabel": "Objetivo",
+      "goalPlaceholder": "p. ej. Reconocimiento de bug bounty",
+      "presets": {
+        "api": "Prueba de seguridad de API",
+        "bugBounty": "Reconocimiento de bug bounty",
+        "internal": "Pentest de red interno",
+        "secrets": "Encontrar secretos filtrados",
+        "ssl": "Auditoría SSL/TLS",
+        "wordpress": "Auditoría de WordPress"
+      },
+      "rationale": "Por qué este orden",
+      "submit": "Generar guion",
+      "targetLabel": "Objetivo",
+      "targetPlaceholder": "ejemplo.com"
+    },
+    "safety": {
+      "command": "Comando",
+      "warning_one": "{{count}} advertencia",
+      "warning_other": "{{count}} advertencias"
+    },
+    "suggest": {
+      "aiAnalysisTitle": "Análisis de IA · {{source}}",
+      "bestFor": "Ideal para: ",
+      "empty": "No hay herramientas coincidentes — intente reformular su objetivo.",
+      "example": "Ejemplo",
+      "examples": {
+        "docker": "Verificar imagen Docker en busca de CVEs",
+        "secrets": "Encontrar secretos filtrados en el repositorio git",
+        "ssh": "Forzar acceso SSH por fuerza bruta",
+        "ssl": "Probar configuración SSL",
+        "subdomains": "Encontrar subdominios para bug bounty",
+        "wordpress": "Quiero escanear un sitio WordPress"
+      },
+      "label": "¿Qué desea hacer?",
+      "placeholder": "p. ej. Quiero encontrar vulnerabilidades de inyección SQL en un formulario de inicio de sesión…",
+      "shortcut": "Ctrl+Enter para enviar",
+      "submit": "Sugerir herramientas",
+      "targetTypeAny": "Cualquiera",
+      "targetTypeDomain": "Dominio",
+      "targetTypeFile": "Archivo",
+      "targetTypeImage": "Imagen de contenedor",
+      "targetTypeIp": "IP / CIDR",
+      "targetTypeLabel": "Tipo de objetivo (opcional)",
+      "targetTypeRepo": "Repositorio git",
+      "targetTypeUrl": "URL",
+      "thinking": "Pensando…"
+    },
+    "tabs": {
+      "command": "Generar comando",
+      "commandDesc": "Comando seguro para el objetivo",
+      "explain": "Explicar",
+      "explainDesc": "¿Cómo funciona esto?",
+      "interpret": "Interpretar",
+      "interpretDesc": "Resumir hallazgos",
+      "playbook": "Guion",
+      "playbookDesc": "Flujo de trabajo de varios pasos",
+      "suggest": "Sugerir herramientas",
+      "suggestDesc": "¿Qué herramienta se adapta a mi objetivo?",
+      "validate": "Validar",
+      "validateDesc": "Verificación de seguridad de un comando"
+    },
+    "validate": {
+      "analysing": "Analizando…",
+      "placeholder": "Pegue cualquier comando de shell para verificar patrones destructivos…",
+      "submit": "Validar",
+      "try": "Intentar:"
+    },
+    "verdict": {
+      "blocked": "Bloqueado",
+      "ok": "Seguro para ejecutar",
+      "review": "Revisión necesaria"
+    }
   },
   "admin": {
     "title": "Administración",
@@ -1054,7 +1177,70 @@
     "revQuarterly": "Trimestral (est.)",
     "revAnnual": "Anual (est.)",
     "statTotalAgents": "Agentes totales",
-    "statOnlineNow": "En línea ahora"
+    "statOnlineNow": "En línea ahora",
+    "agentStatus": "Estado del agente",
+    "allOrganizations": "Todas las organizaciones ({{total}})",
+    "arpu": "ARPU",
+    "auditEventsDescription": "Últimas 25 acciones de la plataforma, las más recientes primero.",
+    "auditEventsTitle": "Eventos de auditoría recientes",
+    "colAction": "Acción",
+    "colActions": "Acciones",
+    "colActive": "Activo",
+    "colCategory": "Categoría",
+    "colJoined": "Se unió",
+    "colName": "Nombre",
+    "colSeverity": "Severidad",
+    "colStatus": "Estado",
+    "colSubscribed": "Suscrito",
+    "colTarget": "Objetivo",
+    "colWhen": "Cuándo",
+    "dismiss": "Descartar",
+    "fullPlatformControl": "Control total de la plataforma — {{email}}",
+    "godMode": "Modo Admin Dios",
+    "impersonate": "Suplantar",
+    "impersonateDescription": "Cambiar a la sesión de cualquier usuario para soporte y depuración.",
+    "impersonateNote": "Se iniciará sesión como el usuario objetivo. Actualice la página para volver a su cuenta.",
+    "kpiARR": "ARR",
+    "kpiAgents": "Agentes",
+    "kpiAgentsWithOnline": "{{total}} ({{online}} en línea)",
+    "kpiMRR": "MRR",
+    "kpiNewsletter": "Boletín",
+    "kpiOrganizations": "Organizaciones",
+    "kpiScansWithRunning": "{{total}} ({{running}} en ejecución)",
+    "kpiSignups24h": "Registros · 24h",
+    "kpiTotalScans": "Escaneos totales",
+    "kpiTotalUsers": "Usuarios totales",
+    "kpiUsersWithActive": "{{total}} ({{active}} activos)",
+    "monthlyRate": "{{count}} × €{{price}}/mes",
+    "newsletterDescription": "Los suscriptores activos recibirán actualizaciones de producto y avisos de amenazas.",
+    "newsletterSubscribers": "Suscriptores del boletín ({{total}})",
+    "noAuditEvents": "Aún no hay eventos de auditoría",
+    "noRecentSignups": "No hay registros en los últimos 14 días",
+    "noScansYet": "Aún no hay escaneos",
+    "noSignupData": "No hay datos de registro disponibles.",
+    "noSubscribers": "Aún no hay suscriptores",
+    "operational": "Operativo",
+    "payingOrgs": "Organizaciones de pago",
+    "platformServices": "Servicios de la plataforma",
+    "recentSignups": "Registros recientes (últimos 14 días)",
+    "revenueByPlan": "Ingresos por plan",
+    "selected": "{{count}} seleccionados",
+    "signupsLast24h": "Últimas 24 horas",
+    "signupsLast30d": "Últimos 30 días",
+    "signupsLast7d": "Últimos 7 días",
+    "statusActive": "Activo",
+    "statusInactive": "Inactivo",
+    "statusUnsubscribed": "Dado de baja",
+    "superadmin": "SUPERADMIN",
+    "switching": "Cambiando…",
+    "tabAuditLog": "Registro de auditoría",
+    "tabNewsletter": "Boletín",
+    "tabOrganizations": "Organizaciones",
+    "tabOverview": "Resumen",
+    "tabRevenue": "Ingresos",
+    "tabSignups": "Registros",
+    "tabSystemHealth": "Salud del sistema",
+    "tabUsers": "Usuarios"
   },
   "analytics": {
     "title": "Analítica",
@@ -1115,7 +1301,8 @@
       "categoryLabel": "Categoría",
       "contentLabel": "Contenido",
       "contentPlaceholder": "Comparte tus ideas, preguntas o hallazgos..."
-    }
+    },
+    "tagsPlaceholder": "nmap, recon, web-pentest"
   },
   "compliance": {
     "title": "Panel de cumplimiento",
@@ -1330,7 +1517,8 @@
     "subtitle": "Ultimas noticias de ciberseguridad, brechas y novedades del sector",
     "featured": "Destacado",
     "searchPlaceholder": "Buscar noticias, temas, etiquetas...",
-    "noArticles": "Ninguna noticia coincide con tus criterios."
+    "noArticles": "Ninguna noticia coincide con tus criterios.",
+    "closeButton": "✕"
   },
   "serviceManager": {
     "title": "Gestor de servicios",
@@ -1395,7 +1583,8 @@
     "medium": "Medio",
     "low": "Bajo",
     "exploit": "EXPLOTACIÓN",
-    "noResults": "No hay vulnerabilidades que coincidan con tus criterios de búsqueda."
+    "noResults": "No hay vulnerabilidades que coincidan con tus criterios de búsqueda.",
+    "ransomware": "RANSOMWARE"
   },
   "apiKeys": {
     "namePlaceholder": "Introduce el nombre de la clave (p. ej., API de produccion)",
@@ -1497,5 +1686,94 @@
     "availableRoles": "Roles disponibles",
     "upgradeRequired": "La gestión de equipos requiere el plan Professional o superior",
     "upgradeLink": "Actualizar para invitar miembros del equipo →"
+  },
+  "cybersecAI": {
+    "description": "Pruebas de penetración autónomas con IA, descubrimiento de vulnerabilidades y verificación de prueba de concepto en toda su superficie de ataque.",
+    "eyebrow": "Autónomo",
+    "newJob": "Nuevo trabajo de pentest con IA",
+    "targetPlaceholder": "https://ejemplo.com o github.com/propietario/repo",
+    "title": "CyberSec Pro IA"
+  },
+  "godMode": {
+    "featureFlagPlaceholder": "mi_nueva_funcionalidad",
+    "serviceCloudflared": "cloudflared",
+    "serviceCybersecRust": "cybersec-rust (backend)",
+    "serviceHealthcheck": "healthcheck",
+    "serviceNginx": "nginx",
+    "servicePostgresql": "postgresql",
+    "serviceRedis": "redis"
+  },
+  "scanTemplates": {
+    "createTemplate": "+ Crear plantilla",
+    "subtitle": "Perfiles de escaneo preconfigurados para evaluaciones de seguridad comunes",
+    "title": "Plantillas de escaneo",
+    "toolPlaceholder": "nmap, sqlmap, nikto…"
+  },
+  "trust": {
+    "dataResidency": {
+      "encryptionAtRest": "Cifrado en reposo",
+      "encryptionAtRestValue": "AES-256-GCM",
+      "encryptionDescription": "Claves por inquilino con rotación de 90 días, almacenadas en HSM.",
+      "encryptionInTransit": "Cifrado en tránsito",
+      "encryptionInTransitDescription": "Secreto perfecto hacia adelante en todo el tráfico de API y web.",
+      "encryptionInTransitValue": "TLS 1.3",
+      "noLogging": "Sin registro de tráfico sin procesar",
+      "noLoggingDescription": "No se almacena contenido de paquetes sin procesar ni payloads.",
+      "noLoggingPolicy": "Nuestro compromiso de no registro",
+      "noLoggingPolicy1": "Sin almacenamiento de paquetes sin procesar",
+      "noLoggingPolicy2": "Sin retención de contenido de payload",
+      "noLoggingPolicy3": "Sin datos personales en los resultados de escaneo",
+      "noLoggingPolicy4": "Los resultados de escaneo se eliminan automáticamente después de 30 días",
+      "noLoggingValue": "Conocimiento cero",
+      "storageDescription": "Todos los datos del cliente se almacenan exclusivamente en centros de datos canadienses.",
+      "storageLocation": "Ubicación principal de almacenamiento de datos",
+      "storageLocationValue": "Canadá",
+      "subtitle": "Sus datos permanecen en Canadá. Siempre.",
+      "title": "Residencia de datos y privacidad"
+    },
+    "disclosure": {
+      "contact": "Contacto: security@cyber-sec-pro.com (clave PGP disponible en /.well-known/pgp-key.txt)",
+      "p1": "Nos tomamos la seguridad de CyberSec Pro en serio. Si descubre una vulnerabilidad de seguridad, apreciamos su ayuda para divulgarla de manera responsable.",
+      "policyDuration": "Política vigente desde: 01/01/2025. Última revisión: 12/08/2026.",
+      "response": "Tiempo de respuesta: Confirmaremos su informe dentro de las 48 horas y proporcionaremos un plazo de resolución dentro de los 5 días hábiles.",
+      "safeHarbor": "Puerto seguro: No tomaremos acciones legales contra investigadores que sigan esta política y actúen de buena fe.",
+      "scope": "Alcance: Todos los servicios, API e infraestructura de CyberSec Pro en cyber-sec-pro.com y app.cyber-sec-pro.com.",
+      "title": "Divulgación responsable"
+    },
+    "dpa": {
+      "description": "Nuestro DPA está incorporado en nuestros Términos de servicio. Incluye Cláusulas Contractuales Estándar (SCC) para transferencias internacionales de datos y detalla nuestras medidas técnicas y organizativas.",
+      "title": "Acuerdo de procesamiento de datos (DPA)",
+      "viewDpa": "Ver DPA en los Términos de servicio"
+    },
+    "metaDesc": "Políticas de seguridad, certificaciones de cumplimiento, divulgación responsable, subprocesadores e información de protección de datos de CyberSec Pro.",
+    "pageTitle": "Centro de confianza — CyberSec Pro",
+    "pentest": {
+      "date": "Fecha",
+      "scope": "Alcance",
+      "scopeValue": "Infraestructura completa + API",
+      "status": "Estado",
+      "statusValue": "Todos los hallazgos remediados",
+      "title": "Última prueba de penetración"
+    },
+    "quick": {
+      "dpa": "DPA",
+      "dpaDesc": "Acuerdo de procesamiento de datos",
+      "pgpKey": "Clave PGP",
+      "pgpKeyDesc": "Cifrar informes de vulnerabilidades",
+      "securityTxt": "security.txt",
+      "securityTxtDesc": "Política de seguridad RFC 9116"
+    },
+    "status": {
+      "description": "Para el estado del sistema en tiempo real y el historial de incidentes, visite nuestra página de estado.",
+      "title": "Estado del sistema"
+    },
+    "subprocessors": {
+      "location": "Ubicación de datos",
+      "name": "Nombre",
+      "purpose": "Propósito",
+      "title": "Subprocesadores"
+    },
+    "subtitle": "La seguridad es la base de todo lo que construimos. Esta página documenta nuestras prácticas de seguridad, estado de cumplimiento y cómo reportar vulnerabilidades.",
+    "title": "Centro de confianza"
   }
 }
