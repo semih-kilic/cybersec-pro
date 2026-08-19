@@ -264,13 +264,45 @@ pub async fn delete_agent(
         None => return (StatusCode::FORBIDDEN, Json(json!({"error": "Organization required"}))).into_response(),
     };
 
-    let _ = sqlx::query("DELETE FROM agents WHERE id = $1 AND organization_id = $2")
+    // Verify agent exists and belongs to this org
+    let existing = sqlx::query_scalar::<_, String>("SELECT id FROM agents WHERE id = $1 AND organization_id = $2")
+        .bind(&agent_id)
+        .bind(org_id)
+        .fetch_optional(&state.db)
+        .await;
+
+    match existing {
+        Ok(None) => return (StatusCode::NOT_FOUND, Json(json!({"error": "Agent not found"}))).into_response(),
+        Err(e) => return (StatusCode::INTERNAL_SERVER_ERROR, Json(json!({"error": format!("Database error: {}", e)}))).into_response(),
+        _ => {}
+    }
+
+    // Delete dependent rows first (scans, scheduled_scans reference agents without CASCADE)
+    let _ = sqlx::query("DELETE FROM scans WHERE agent_id = $1")
+        .bind(&agent_id)
+        .execute(&state.db)
+        .await;
+    let _ = sqlx::query("DELETE FROM scheduled_scans WHERE agent_id = $1")
+        .bind(&agent_id)
+        .execute(&state.db)
+        .await;
+    // agent_jobs has ON DELETE CASCADE, but delete explicitly to be safe
+    let _ = sqlx::query("DELETE FROM agent_jobs WHERE agent_id = $1")
+        .bind(&agent_id)
+        .execute(&state.db)
+        .await;
+
+    let result = sqlx::query("DELETE FROM agents WHERE id = $1 AND organization_id = $2")
         .bind(&agent_id)
         .bind(org_id)
         .execute(&state.db)
         .await;
 
-    Json(json!({"message": "Agent deleted"})).into_response()
+    match result {
+        Ok(r) if r.rows_affected() > 0 => Json(json!({"message": "Agent deleted"})).into_response(),
+        Ok(_) => (StatusCode::NOT_FOUND, Json(json!({"error": "Agent not found"}))).into_response(),
+        Err(e) => (StatusCode::INTERNAL_SERVER_ERROR, Json(json!({"error": format!("Failed to delete agent: {}", e)}))).into_response(),
+    }
 }
 
 pub async fn agent_heartbeat(
