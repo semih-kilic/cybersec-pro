@@ -29,7 +29,7 @@ const DEMO_OUTPUT_NIKTO = [
   '+ Server: Apache/2.4.7 (Ubuntu)',
   '+ Retrieved x-powered-by header: PHP/5.5.9-1ubuntu4.29',
   '+ /: The anti-clickjacking X-Frame-Options header is not present.',
-  '+ /: Uncommon header 'x-content-type-options' found, with contents: nosniff',
+  "+ /: Uncommon header 'x-content-type-options' found, with contents: nosniff",
   '+ OSVDB-3233: /icons/README: Apache default file found.',
   '+ 7915 requests: 0 error(s) and 5 item(s) reported on remote host',
   '',
