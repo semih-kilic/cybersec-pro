@@ -216,7 +216,7 @@ pub async fn assess_posture(
         let ctrl_status = if scan_findings.is_empty() {
             // No scan results yet - check if any completed scans exist for mapped tools
             let has_scans: (i32,) = sqlx::query_as(
-                "SELECT COUNT(*) FROM scans s JOIN tools t ON s.tool_id = t.id \
+                "SELECT COUNT(*)::int4 FROM scans s JOIN tools t ON s.tool_id = t.id \
                  WHERE s.organization_id = $1 AND t.name = ANY($2) AND s.status = 'completed'"
             )
             .bind(org_id)
