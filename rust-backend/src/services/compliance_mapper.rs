@@ -89,15 +89,15 @@ pub async fn list_frameworks(pool: &PgPool) -> Result<Vec<FrameworkSummary>, sql
 
     let mut results = Vec::new();
     for fw in frameworks {
-        let (control_count,): (i64,) = sqlx::query_as(
-            "SELECT COUNT(*) FROM compliance_controls WHERE framework_id = $1"
+        let (control_count,): (i32,) = sqlx::query_as(
+            "SELECT COUNT(*)::int4 FROM compliance_controls WHERE framework_id = $1"
         )
         .bind(&fw.id)
         .fetch_one(pool)
         .await?;
 
-        let (tool_count,): (i64,) = sqlx::query_as(
-            "SELECT COUNT(DISTINCT cm.tool_id) FROM compliance_mappings cm \
+        let (tool_count,): (i32,) = sqlx::query_as(
+            "SELECT COUNT(DISTINCT cm.tool_id)::int4 FROM compliance_mappings cm \
              JOIN compliance_controls cc ON cm.control_id = cc.id \
              WHERE cc.framework_id = $1"
         )
@@ -170,11 +170,11 @@ pub async fn assess_posture(
     .fetch_all(pool)
     .await?;
 
-    let total = controls.len() as i64;
-    let mut passed = 0i64;
-    let mut failed = 0i64;
-    let mut partial = 0i64;
-    let mut untested = 0i64;
+    let total = controls.len() as i32;
+    let mut passed = 0i32;
+    let mut failed = 0i32;
+    let mut partial = 0i32;
+    let mut untested = 0i32;
     let mut control_results = Vec::new();
 
     for ctrl in &controls {
@@ -215,7 +215,7 @@ pub async fn assess_posture(
 
         let ctrl_status = if scan_findings.is_empty() {
             // No scan results yet - check if any completed scans exist for mapped tools
-            let has_scans: (i64,) = sqlx::query_as(
+            let has_scans: (i32,) = sqlx::query_as(
                 "SELECT COUNT(*) FROM scans s JOIN tools t ON s.tool_id = t.id \
                  WHERE s.organization_id = $1 AND t.name = ANY($2) AND s.status = 'completed'"
             )

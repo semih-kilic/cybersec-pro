@@ -98,8 +98,8 @@ pub async fn list_frameworks(
 ) -> impl IntoResponse {
     match crate::services::compliance_mapper::list_frameworks(&state.db).await {
         Ok(frameworks) => {
-            let total: i64 = frameworks.iter().map(|f| f.total_controls).sum();
-            let tools: i64 = frameworks.iter().map(|f| f.mapped_tools).sum::<i64>() / frameworks.len().max(1) as i64;
+            let total: i32 = frameworks.iter().map(|f| f.total_controls).sum();
+            let tools: i32 = frameworks.iter().map(|f| f.mapped_tools).sum::<i32>() / frameworks.len().max(1) as i32;
             Json(json!({
                 "frameworks": frameworks.iter().map(|f| json!({
                     "id": f.framework.id,
