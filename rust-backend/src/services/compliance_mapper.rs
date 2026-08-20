@@ -50,19 +50,19 @@ pub struct CompliancePosture {
     pub id: String,
     pub organization_id: String,
     pub framework_id: String,
-    pub total_controls: i64,
-    pub passed: i64,
-    pub failed: i64,
-    pub partial: i64,
-    pub untested: i64,
+    pub total_controls: i32,
+    pub passed: i32,
+    pub failed: i32,
+    pub partial: i32,
+    pub untested: i32,
     pub score_pct: Option<f64>,
 }
 
 #[derive(Debug, Serialize)]
 pub struct FrameworkSummary {
     pub framework: ComplianceFramework,
-    pub total_controls: i64,
-    pub mapped_tools: i64,
+    pub total_controls: i32,
+    pub mapped_tools: i32,
 }
 
 #[derive(Debug, Serialize)]
