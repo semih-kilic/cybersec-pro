@@ -284,7 +284,7 @@ pub async fn get_org_posture(
     org_id: &str,
 ) -> Result<Vec<JsonValue>, sqlx::Error> {
     let postures: Vec<CompliancePosture> = sqlx::query_as(
-        "SELECT id, organization_id, framework_id, total_controls, passed, failed, partial, untested, score_pct \
+        "SELECT id, organization_id, framework_id, total_controls, passed, failed, partial, untested, CAST(score_pct AS float8) as score_pct \
          FROM compliance_posture WHERE organization_id = $1 ORDER BY framework_id"
     )
     .bind(org_id)

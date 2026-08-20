@@ -292,7 +292,10 @@ pub async fn get_dashboard(
 
     let posture_data: Vec<JsonValue> = match crate::services::compliance_mapper::get_org_posture(&state.db, &org_id).await {
         Ok(p) => p,
-        Err(_) => vec![],
+        Err(e) => {
+            tracing::warn!("get_org_posture failed for org {}: {}", org_id, e);
+            vec![]
+        }
     };
 
     let recent_scans: (i64,) = sqlx::query_as(
