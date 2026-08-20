@@ -9,6 +9,7 @@ mod grpc_client;
 use axum::{
     extract::Extension,
     middleware as axum_middleware,
+    response::IntoResponse,
     routing::{delete, get, post, put},
     Router,
 };
@@ -222,6 +223,28 @@ async fn main() -> anyhow::Result<()> {
     axum::serve(listener, app).await?;
 
     Ok(())
+}
+
+
+
+
+async fn gdpr_erase_handler(
+    axum::extract::Path(user_id): axum::extract::Path<String>,
+    axum::extract::Extension(state): axum::extract::Extension<std::sync::Arc<AppState>>,
+) -> impl IntoResponse {
+    match services::data_retention::erase_user_data(&state.db, &user_id).await {
+        Ok(msg) => axum::Json(serde_json::json!({"success": true, "message": msg})).into_response(),
+        Err(e) => (axum::http::StatusCode::INTERNAL_SERVER_ERROR, axum::Json(serde_json::json!({"error": e}))).into_response(),
+    }
+}
+
+async fn data_retention_health_handler(
+    axum::extract::Extension(state): axum::extract::Extension<std::sync::Arc<AppState>>,
+) -> impl IntoResponse {
+    match services::data_retention::data_retention_health(&state.db).await {
+        Ok(result) => axum::Json(result).into_response(),
+        Err(e) => (axum::http::StatusCode::INTERNAL_SERVER_ERROR, axum::Json(serde_json::json!({"error": e}))).into_response(),
+    }
 }
 
 fn build_router(state: Arc<AppState>) -> Router {
@@ -635,6 +658,23 @@ fn build_router(state: Arc<AppState>) -> Router {
         .route("/api/v1/cybersec-ai/jobs", get(security_handlers::list_cybersec_ai_jobs).post(security_handlers::create_cybersec_ai_job))
         .route("/api/v1/cybersec-ai/jobs/:job_id", get(security_handlers::get_cybersec_ai_job).delete(security_handlers::delete_cybersec_ai_job))
         .route("/api/v1/cybersec-ai/jobs/:job_id/cancel", post(security_handlers::cancel_cybersec_ai_job))
+        
+        // ── P6+P7: AI Patch Generator + CVSS 4.0 ─────────────
+        .route("/api/v1/ai/generate-patch", post(ai_handlers::generate_patch_handler))
+        .route("/api/v1/ai/cvss-score", post(ai_handlers::cvss_score_handler))
+        .route("/api/v1/ai/auto-cvss", post(ai_handlers::auto_cvss_handler))
+        // ── P13: Data Retention + GDPR Erasure ────────────────
+        .route("/api/v1/data-retention/health", get(data_retention_health_handler))
+        .route("/api/v1/gdpr/erase/:user_id", delete(gdpr_erase_handler))
+        // ── P10: Real Integrations ────────────────────────────
+        .route("/api/v1/integrations/jira", post(stub_handlers::create_integration))
+        .route("/api/v1/integrations/slack", post(stub_handlers::create_integration))
+        .route("/api/v1/integrations/webhook", post(stub_handlers::create_integration))
+        // ── P12: RBAC Roles ───────────────────────────────────
+        .route("/api/v1/auth/roles", get(stub_handlers::roles_list))
+        // ── P14: Founding Member Plan ─────────────────────────
+        .route("/api/v1/plans/founding-member", get(stub_handlers::plan_info))
+
         .merge(swagger_ui)
         .with_state(state)
 }

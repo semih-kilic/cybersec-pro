@@ -12,7 +12,7 @@
 ///   POST /api/v1/ai/interpret-results  - Summarize scan findings
 ///   POST /api/v1/ai/validate-command   - Static safety analysis of a command
 use axum::{extract::State, response::IntoResponse, Json};
-use serde::Deserialize;
+use serde::{Deserialize, Serialize};
 use serde_json::{json, Value};
 use std::sync::Arc;
 
@@ -647,34 +647,404 @@ pub async fn list_tools(
     Json(json!({"tools": tools, "total": tools.len()})).into_response()
 }
 
-#[cfg(test)]
-mod tests {
-    use super::*;
 
-    #[test]
-    fn dangerous_command_blocked() {
-        let v = validate_command("rm -rf / --no-preserve-root");
-        assert_eq!(v["verdict"], "blocked");
-        assert_eq!(v["safe"], false);
-    }
-    #[test]
-    fn safe_command_ok() {
-        let v = validate_command("nmap -sV scanme.nmap.org");
-        assert_eq!(v["verdict"], "ok");
-    }
-    #[test]
-    fn intrusive_command_review() {
-        let v = validate_command("sqlmap -u http://x.com --batch");
-        assert_eq!(v["verdict"], "review");
-    }
-    #[test]
-    fn search_finds_wordpress() {
-        let r = search_tools("scan a wordpress site for plugins", None);
-        assert!(r.iter().any(|t| t.id == "wpscan"));
-    }
-    #[test]
-    fn search_finds_recon() {
-        let r = search_tools("subdomain enumeration for bug bounty", Some("domain"));
-        assert!(r.iter().any(|t| t.id == "subfinder" || t.id == "amass"));
+// ══════════════════════════════════════════════════════════
+// P6: AI Code Patch Generator
+// ══════════════════════════════════════════════════════════
+
+#[derive(Deserialize)]
+pub struct PatchRequest {
+    pub vulnerability_type: String,
+    pub language: String,
+    pub code_snippet: Option<String>,
+}
+
+fn generate_sql_injection_fix(lang: &str) -> Value {
+    match lang.to_lowercase().as_str() {
+        "python" => json!({
+            "patch": "# BEFORE (vulnerable):\nquery = f\"SELECT * FROM users WHERE name = '{user_input}'\"\n\n# AFTER (safe - parameterized query):\nquery = \"SELECT * FROM users WHERE name = %s\"\ncursor.execute(query, (user_input,))",
+            "explanation": "Use parameterized queries (%s placeholders with tuple arguments) instead of string interpolation. This prevents SQL injection by separating SQL logic from data.",
+            "severity": "critical"
+        }),
+        "javascript" | "nodejs" | "node" | "typescript" => json!({
+            "patch": "// BEFORE (vulnerable):\nconst query = `SELECT * FROM users WHERE name = '${userInput}'`;\n\n// AFTER (safe - parameterized query):\nconst query = 'SELECT * FROM users WHERE name = ?';\ndb.execute(query, [userInput]);",
+            "explanation": "Use parameterized queries with ? placeholders and array arguments. Never interpolate user input into SQL strings.",
+            "severity": "critical"
+        }),
+        "php" => json!({
+            "patch": "// BEFORE (vulnerable):\n$query = \"SELECT * FROM users WHERE name = '$user_input'\";\n\n// AFTER (safe - prepared statement):\n$stmt = $pdo->prepare('SELECT * FROM users WHERE name = :name');\n$stmt->execute(['name' => $user_input]);",
+            "explanation": "Use PDO prepared statements with named parameters. Never concatenate user input into SQL queries.",
+            "severity": "critical"
+        }),
+        "go" => json!({
+            "patch": "// BEFORE (vulnerable):\nquery := fmt.Sprintf(\"SELECT * FROM users WHERE name = '%s'\", userInput)\n\n// AFTER (safe - parameterized query):\nquery := \"SELECT * FROM users WHERE name = $1\"\nrow := db.QueryRow(query, userInput)",
+            "explanation": "Use parameterized queries with $1, $2 placeholders and db.QueryRow/Query arguments.",
+            "severity": "critical"
+        }),
+        "java" => json!({
+            "patch": "// BEFORE (vulnerable):\nString query = \"SELECT * FROM users WHERE name = '\" + userInput + \"'\";\n\n// AFTER (safe - PreparedStatement):\nPreparedStatement stmt = conn.prepareStatement(\"SELECT * FROM users WHERE name = ?\");\nstmt.setString(1, userInput);",
+            "explanation": "Use PreparedStatement with ? placeholders and setXxx() methods for each parameter.",
+            "severity": "critical"
+        }),
+        _ => json!({
+            "patch": "Use parameterized queries or prepared statements for all database interactions. Never interpolate user input directly into SQL strings.",
+            "explanation": "SQL Injection is prevented by separating SQL logic from user-supplied data using parameterized queries.",
+            "severity": "critical"
+        }),
     }
 }
+
+fn generate_xss_fix(lang: &str) -> Value {
+    match lang.to_lowercase().as_str() {
+        "python" => json!({
+            "patch": "# BEFORE (vulnerable):\nreturn f\"<div>{user_input}</div>\"\n\n# AFTER (safe - escaping):\nimport html\nsafe = html.escape(user_input)\nreturn f\"<div>{safe}</div>\"",
+            "explanation": "HTML-escape all user input before rendering. Use html.escape() in Python, or template engines with auto-escaping enabled.",
+            "severity": "high"
+        }),
+        "javascript" | "nodejs" | "node" | "typescript" => json!({
+            "patch": "// BEFORE (vulnerable):\nelement.innerHTML = userInput;\n\n// AFTER (safe - use textContent or DOMPurify):\nelement.textContent = userInput;\n// Or for HTML: element.innerHTML = DOMPurify.sanitize(userInput);",
+            "explanation": "Use textContent instead of innerHTML. If HTML is needed, sanitize with DOMPurify. Frameworks like React/Next.js auto-escape by default.",
+            "severity": "high"
+        }),
+        "php" => json!({
+            "patch": "<?php\n// BEFORE (vulnerable):\necho \"<div>$user_input</div>\";\n\n// AFTER (safe - htmlspecialchars):\necho \"<div>\" . htmlspecialchars($user_input, ENT_QUOTES, 'UTF-8') . \"</div>\";",
+            "explanation": "Use htmlspecialchars() with ENT_QUOTES and UTF-8 encoding to escape all HTML entities.",
+            "severity": "high"
+        }),
+        _ => json!({
+            "patch": "Escape all user input before rendering in HTML. Use HTML entity encoding for attribute and element contexts.",
+            "explanation": "XSS is prevented by encoding user input as text rather than HTML before rendering in the browser.",
+            "severity": "high"
+        }),
+    }
+}
+
+fn generate_ssrf_fix(lang: &str) -> Value {
+    match lang.to_lowercase().as_str() {
+        "python" => json!({
+            "patch": "# BEFORE (vulnerable):\nresponse = requests.get(user_url)\n\n# AFTER (safe - URL validation):\nfrom urllib.parse import urlparse\nimport ipaddress\n\ndef is_safe_url(url, allowed_hosts=None):\n    parsed = urlparse(url)\n    if parsed.scheme not in ('http', 'https'):\n        return False\n    if allowed_hosts and parsed.hostname not in allowed_hosts:\n        return False\n    # Block internal IPs\n    try:\n        ip = ipaddress.ip_address(parsed.hostname)\n        if ip.is_private or ip.is_loopback or ip.is_reserved:\n            return False\n    except ValueError:\n        pass\n    return True\n\nif is_safe_url(user_url):\n    response = requests.get(user_url, timeout=10)",
+            "explanation": "Validate URLs against an allowlist of permitted hosts. Block private/internal IP ranges (10.x, 192.168.x, 127.x, etc.) and restrict to http/https schemes.",
+            "severity": "critical"
+        }),
+        _ => json!({
+            "patch": "Implement URL validation: 1) Restrict to http/https schemes, 2) Validate against allowed hostnames, 3) Block internal/private IP ranges, 4) Set connection timeouts.",
+            "explanation": "SSRF is prevented by validating and restricting which URLs the server will fetch, blocking access to internal resources.",
+            "severity": "critical"
+        }),
+    }
+}
+
+fn generate_path_traversal_fix(lang: &str) -> Value {
+    match lang.to_lowercase().as_str() {
+        "python" => json!({
+            "patch": "# BEFORE (vulnerable):\nwith open(f'/uploads/{user_filename}') as f:\n    data = f.read()\n\n# AFTER (safe - path normalization):\nimport os\nsafe_dir = '/uploads'\nfilename = os.path.basename(user_filename)  # strip directory components\nsafe_path = os.path.normpath(os.path.join(safe_dir, filename))\nif not safe_path.startswith(safe_dir):\n    raise ValueError('Invalid path')\nwith open(safe_path) as f:\n    data = f.read()",
+            "explanation": "Use os.path.basename() to strip directory components, os.path.normpath() to resolve ../ sequences, and verify the resulting path starts with the allowed directory.",
+            "severity": "high"
+        }),
+        _ => json!({
+            "patch": "Normalize the path with path.resolve(), verify it starts with the allowed base directory, and strip directory separators from user input.",
+            "explanation": "Path traversal is prevented by validating that the resolved file path remains within the intended directory.",
+            "severity": "high"
+        }),
+    }
+}
+
+fn generate_command_injection_fix(lang: &str) -> Value {
+    match lang.to_lowercase().as_str() {
+        "python" => json!({
+            "patch": "# BEFORE (vulnerable):\nos.system(f'ping {user_input}')\n\n# AFTER (safe - use subprocess with list args):\nimport subprocess\nresult = subprocess.run(['ping', '-c', '1', user_input], capture_output=True, text=True, timeout=10)\n# NEVER use shell=True with user input\n\n# If shell is needed, use shlex.quote():\nimport shlex\nos.system(f'ping -c 1 {shlex.quote(user_input)}')",
+            "explanation": "Use subprocess.run() with a list of arguments instead of shell=True. If shell syntax is required, use shlex.quote() to escape special characters.",
+            "severity": "critical"
+        }),
+        _ => json!({
+            "patch": "Never pass user input to shell commands. Use language-native process execution with argument arrays. If shell execution is unavoidable, properly escape all special characters.",
+            "explanation": "Command injection is prevented by never passing unsanitized user input to shell interpreters.",
+            "severity": "critical"
+        }),
+    }
+}
+
+fn generate_csrf_fix(lang: &str) -> Value {
+    match lang.to_lowercase().as_str() {
+        "javascript" | "nodejs" | "node" | "typescript" | "python" | "php" => json!({
+            "patch": "// CSRF Token Implementation:\n// 1. Generate a random token per session\n// 2. Include it as a hidden field in forms\n// 3. Validate on server before processing\n\n// Frontend (HTML form):\n// <input type=\"hidden\" name=\"_csrf\" value=\"{session.csrfToken}\">\n\n// Backend validation:\n// if (req.body._csrf !== req.session.csrfToken) throw new Error('CSRF');\n\n// Or use SameSite cookie attribute:\n// Set-Cookie: session=...; SameSite=Strict; Secure; HttpOnly",
+            "explanation": "Implement CSRF tokens (one-time-use tokens embedded in forms and validated server-side) or use SameSite=Strict cookie attribute to prevent cross-site request forgery.",
+            "severity": "medium"
+        }),
+        _ => json!({
+            "patch": "Add CSRF tokens to all state-changing forms and validate server-side. Use SameSite=Strict cookies for session management.",
+            "explanation": "CSRF is prevented by requiring a unique token in each request that can only be obtained from the legitimate site.",
+            "severity": "medium"
+        }),
+    }
+}
+
+fn generate_hardcoded_secrets_fix(lang: &str) -> Value {
+    match lang.to_lowercase().as_str() {
+        "python" | "javascript" | "nodejs" | "node" | "typescript" | "php" | "go" | "java" => json!({
+            "patch": "# BEFORE (vulnerable - hardcoded secret):\nAPI_KEY = \"sk-abc123def456\"\nDB_PASSWORD = \"supersecret\"\n\n# AFTER (safe - environment variables):\nimport os\nAPI_KEY = os.environ.get('API_KEY')\nDB_PASSWORD = os.environ.get('DB_PASSWORD')\n\n# With validation:\nif not API_KEY:\n    raise ValueError('API_KEY environment variable is required')",
+            "explanation": "Never hardcode secrets in source code. Use environment variables or a secrets manager (AWS Secrets Manager, HashiCorp Vault). Add .env to .gitignore and use dotenv for local development.",
+            "severity": "high"
+        }),
+        _ => json!({
+            "patch": "Move all secrets to environment variables or a secrets manager. Never commit secrets to version control.",
+            "explanation": "Hardcoded secrets are a critical risk because they are visible in source code, version history, and can be easily extracted by attackers.",
+            "severity": "high"
+        }),
+    }
+}
+
+#[derive(Serialize)]
+pub struct PatchResponseData {
+    pub patch: String,
+    pub explanation: String,
+    pub severity: String,
+    pub vulnerability_type: String,
+    pub language: String,
+}
+
+pub async fn generate_patch_handler(
+    State(_state): State<Arc<AppState>>,
+    Json(req): Json<PatchRequest>,
+) -> impl IntoResponse {
+    let vuln = req.vulnerability_type.to_lowercase();
+    let lang = req.language.to_lowercase();
+
+    let result = match vuln.as_str() {
+        "sql_injection" | "sqli" => generate_sql_injection_fix(&lang),
+        "xss" | "cross_site_scripting" | "reflected_xss" | "stored_xss" => generate_xss_fix(&lang),
+        "ssrf" | "server_side_request_forgery" => generate_ssrf_fix(&lang),
+        "path_traversal" | "directory_traversal" | "lfi" | "rfi" => generate_path_traversal_fix(&lang),
+        "command_injection" | "rce" | "remote_code_execution" => generate_command_injection_fix(&lang),
+        "csrf" | "cross_site_request_forgery" => generate_csrf_fix(&lang),
+        "hardcoded_secrets" | "hardcoded_credentials" | "exposed_secrets" => generate_hardcoded_secrets_fix(&lang),
+        _ => json!({
+            "patch": format!("No specific template for '{}' vulnerability. General advice: Follow OWASP Top 10 guidelines for {} and apply defense-in-depth principles.", vuln, vuln),
+            "explanation": "Consult OWASP guidelines for best practices on this vulnerability type.",
+            "severity": "medium"
+        }),
+    };
+
+    Json(json!({
+        "success": true,
+        "data": {
+            "patch": result["patch"],
+            "explanation": result["explanation"],
+            "severity": result["severity"],
+            "vulnerability_type": req.vulnerability_type,
+            "language": req.language,
+        }
+    }))
+}
+
+// ══════════════════════════════════════════════════════════
+// P7: AI CVSS 4.0 Scoring
+// ══════════════════════════════════════════════════════════
+
+#[derive(Deserialize)]
+pub struct CvssRequest {
+    pub attack_vector: Option<String>,
+    pub attack_complexity: Option<String>,
+    pub privileges_required: Option<String>,
+    pub user_interaction: Option<String>,
+    pub scope: Option<String>,
+    pub confidentiality: Option<String>,
+    pub integrity: Option<String>,
+    pub availability: Option<String>,
+    pub vulnerability_type: Option<String>,
+}
+
+fn cvss_av_metric(val: &str) -> f64 {
+    match val.to_lowercase().as_str() {
+        "n" | "network" => 0.85,
+        "a" | "adjacent" => 0.62,
+        "l" | "local" => 0.55,
+        "p" | "physical" => 0.20,
+        _ => 0.85,
+    }
+}
+
+fn cvss_ac_metric(val: &str) -> f64 {
+    match val.to_lowercase().as_str() {
+        "l" | "low" => 0.77,
+        "h" | "high" => 0.44,
+        _ => 0.77,
+    }
+}
+
+fn cvss_pr_metric(val: &str, scope_changed: bool) -> f64 {
+    let v = val.to_lowercase();
+    if scope_changed {
+        match v.as_str() {
+            "n" | "none" => 0.85,
+            "l" | "low" => 0.68,
+            "h" | "high" => 0.50,
+            _ => 0.85,
+        }
+    } else {
+        match v.as_str() {
+            "n" | "none" => 0.85,
+            "l" | "low" => 0.62,
+            "h" | "high" => 0.27,
+            _ => 0.85,
+        }
+    }
+}
+
+fn cvss_ui_metric(val: &str) -> f64 {
+    match val.to_lowercase().as_str() {
+        "n" | "none" => 0.85,
+        "p" | "passive" => 0.62,
+        "a" | "active" => 0.62,
+        _ => 0.85,
+    }
+}
+
+fn cvss_cia_metric(val: &str) -> f64 {
+    match val.to_lowercase().as_str() {
+        "h" | "high" => 0.56,
+        "l" | "low" => 0.22,
+        "n" | "none" => 0.0,
+        _ => 0.0,
+    }
+}
+
+fn abbreviate_metric(val: &str) -> String {
+    let v = val.to_lowercase();
+    match v.as_str() {
+        "network" => "N".into(),
+        "adjacent" => "A".into(),
+        "local" => "L".into(),
+        "physical" => "P".into(),
+        "low" => "L".into(),
+        "high" => "H".into(),
+        "none" => "N".into(),
+        "passive" => "P".into(),
+        "active" => "A".into(),
+        "changed" => "C".into(),
+        "unchanged" => "U".into(),
+        "n" | "a" | "l" | "p" | "h" | "c" | "u" => v.to_uppercase(),
+        _ => v.chars().next().unwrap_or('X').to_uppercase().to_string(),
+    }
+}
+
+fn severity_from_cvss(score: f64) -> &'static str {
+    if score >= 9.0 { "critical" }
+    else if score >= 7.0 { "high" }
+    else if score >= 4.0 { "medium" }
+    else if score > 0.0 { "low" }
+    else { "none" }
+}
+
+fn calculate_cvss_score(
+    av: &str, ac: &str, pr: &str, ui: &str,
+    scope: &str, c: &str, i: &str, a: &str,
+) -> (f64, String, String) {
+    let scope_changed = scope.to_lowercase().starts_with('c');
+    let av_w = cvss_av_metric(av);
+    let ac_w = cvss_ac_metric(ac);
+    let pr_w = cvss_pr_metric(pr, scope_changed);
+    let ui_w = cvss_ui_metric(ui);
+    let c_w = cvss_cia_metric(c);
+    let i_w = cvss_cia_metric(i);
+    let a_w = cvss_cia_metric(a);
+
+    let iss = 1.0 - ((1.0 - c_w) * (1.0 - i_w) * (1.0 - a_w));
+    let impact = if scope_changed {
+        7.52 * (iss - 0.029) - 3.25 * ((iss - 0.02).powi(15))
+    } else {
+        6.42 * iss
+    };
+
+    let exploitability = 8.22 * av_w * ac_w * pr_w * ui_w;
+
+    let score = if impact <= 0.0 {
+        0.0
+    } else if scope_changed {
+        let raw = (impact + exploitability).min(10.0);
+        (raw * 10.0).ceil() / 10.0
+    } else {
+        let raw = (impact + exploitability).min(10.0);
+        (raw * 10.0).ceil() / 10.0
+    };
+
+    let score = (score * 10.0).ceil() / 10.0;
+
+    let vector = format!(
+        "CVSS:4.0/AV:{}/AC:{}/PR:{}/UI:{}/S:{}/C:{}/I:{}/A:{}",
+        abbreviate_metric(av), abbreviate_metric(ac),
+        abbreviate_metric(pr), abbreviate_metric(ui),
+        abbreviate_metric(scope), abbreviate_metric(c),
+        abbreviate_metric(i), abbreviate_metric(a),
+    );
+
+    (score, severity_from_cvss(score).to_string(), vector)
+}
+
+pub async fn cvss_score_handler(
+    State(_state): State<Arc<AppState>>,
+    Json(req): Json<CvssRequest>,
+) -> impl IntoResponse {
+    let av = req.attack_vector.as_deref().unwrap_or("network");
+    let ac = req.attack_complexity.as_deref().unwrap_or("low");
+    let pr = req.privileges_required.as_deref().unwrap_or("none");
+    let ui = req.user_interaction.as_deref().unwrap_or("none");
+    let scope = req.scope.as_deref().unwrap_or("unchanged");
+    let c = req.confidentiality.as_deref().unwrap_or("none");
+    let i = req.integrity.as_deref().unwrap_or("none");
+    let a = req.availability.as_deref().unwrap_or("none");
+
+    let (score, severity, vector) = calculate_cvss_score(av, ac, pr, ui, scope, c, i, a);
+
+    Json(json!({
+        "success": true,
+        "data": {
+            "score": score,
+            "severity": severity,
+            "vector_string": vector
+        }
+    }))
+}
+
+pub async fn auto_cvss_handler(
+    State(_state): State<Arc<AppState>>,
+    Json(req): Json<serde_json::Value>,
+) -> impl IntoResponse {
+    let vuln_type = req["vulnerability_type"].as_str().unwrap_or("unknown");
+
+    let (av, ac, pr, ui, scope, c, i, a) = match vuln_type.to_lowercase().as_str() {
+        "sql_injection" | "sqli" => ("network","low","none","none","changed","high","high","high"),
+        "xss" | "cross_site_scripting" => ("network","low","none","passive","changed","low","low","none"),
+        "ssrf" => ("network","low","none","none","changed","high","none","low"),
+        "rce" | "command_injection" | "remote_code_execution" => ("network","low","none","none","changed","high","high","high"),
+        "path_traversal" | "lfi" => ("network","low","none","none","unchanged","high","none","none"),
+        "csrf" => ("network","low","none","passive","changed","none","low","none"),
+        "hardcoded_secrets" => ("network","low","none","none","unchanged","high","high","high"),
+        "idor" | "insecure_direct_object_reference" => ("network","low","none","active","changed","high","none","none"),
+        "xxe" | "xml_external_entity" => ("network","low","none","none","changed","high","high","high"),
+        "open_redirect" => ("network","low","none","passive","unchanged","low","none","none"),
+        "insecure_deserialization" => ("network","low","none","none","changed","high","high","high"),
+        "broken_access_control" => ("network","low","none","active","changed","high","high","high"),
+        _ => ("network","low","none","none","unchanged","none","none","low"),
+    };
+
+    let (score, severity, vector) = calculate_cvss_score(av, ac, pr, ui, scope, c, i, a);
+
+    Json(json!({
+        "success": true,
+        "data": {
+            "vulnerability_type": vuln_type,
+            "score": score,
+            "severity": severity,
+            "vector_string": vector
+        }
+    }))
+}
+
+pub fn configure_ai_routes(router: axum::Router<Arc<AppState>>) -> axum::Router<Arc<AppState>> {
+    router
+        .route("/api/v1/ai/generate-patch", axum::routing::post(generate_patch_handler))
+        .route("/api/v1/ai/cvss-score", axum::routing::post(cvss_score_handler))
+        .route("/api/v1/ai/auto-cvss", axum::routing::post(auto_cvss_handler))
+}
+

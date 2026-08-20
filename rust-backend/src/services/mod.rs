@@ -22,3 +22,4 @@ pub mod tool_health_checker;
 pub mod stuck_scan_detector;
 pub mod compliance_mapper;
 pub mod email_templates;
+pub mod data_retention;

@@ -22,7 +22,7 @@ import { useToast } from '../../components/ui/Toast';
 import { useDocumentTitle } from '../../hooks/useUtilities';
 import { PageHeader, StatusPill, Section } from '../../components/vos';
 
-type PlanId = 'trial' | 'starter' | 'professional' | 'enterprise';
+type PlanId = 'trial' | 'founding_member' | 'starter' | 'professional' | 'enterprise';
 
 interface Plan {
   id: PlanId;
@@ -60,8 +60,33 @@ function buildPlans(counts: { trial: number; starter: number; professional: numb
       accent: 'text-vos-success',
       ring: 'ring-vos-success/30',
     },
+
     {
-      id: 'starter',
+      id: 'founding_member' as PlanId,
+      name: 'Founding Member',
+      price: 19,
+      yearlyPrice: 190,
+      period: '/month',
+      description: 'Limited offer — 50% lifetime discount.',
+      features: [
+        `All security tools`,
+        '100 scans per month',
+        '3 concurrent scans',
+        'Up to 3 domains',
+        'PDF & HTML reports',
+        'Scheduled scans',
+        'Priority email support',
+        '5 team members',
+        '1-on-1 Founder Support',
+      ],
+      popular: false,
+      icon: Rocket,
+      accent: 'text-orange-400',
+      ring: 'ring-orange-400/30',
+    },
+    
+    {
+      id: 'founding_member',
       name: t('upgrade.starter', 'Starter'),
       price: 29,
       yearlyPrice: 279,
@@ -138,7 +163,7 @@ function buildPlans(counts: { trial: number; starter: number; professional: numb
   ];
 }
 
-const PLAN_LEVELS: PlanId[] = ['trial', 'starter', 'professional', 'enterprise'];
+const PLAN_LEVELS: PlanId[] = ['trial', 'founding_member', 'starter', 'professional', 'enterprise'];
 
 /** Number of features to show before collapsing behind "Read more" */
 const VISIBLE_LIMIT = 5;
