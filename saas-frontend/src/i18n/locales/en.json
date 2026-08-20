@@ -1770,5 +1770,51 @@
       "noLoggingPolicy3": "No personal data in scan results",
       "noLoggingPolicy4": "Scan results auto-delete after 30 days"
     }
+  },
+  "demo": {
+    "title": "Try CyberSec Pro — Free Live Scan",
+    "subtitle": "Experience real security scanning directly in your browser. No sign-up required.",
+    "targetLabel": "Target",
+    "toolLabel": "Select Tool",
+    "startButton": "Start Demo Scan",
+    "running": "Scanning...",
+    "disclaimer": "This is a simulated demo. No real scans are executed from your browser.",
+    "results": "Scan Results",
+    "cta": "Ready for a full security assessment?",
+    "ctaButton": "Create Free Account"
+  },
+  "freeScan": {
+    "badge": "100% Free — No Credit Card",
+    "heroTitle": "Get Your Free Vulnerability Report",
+    "heroSubtitle": "Enter your domain below and receive a professional security assessment report within minutes.",
+    "domainLabel": "Domain to Scan",
+    "emailLabel": "Email Address",
+    "companyLabel": "Company",
+    "optional": "optional",
+    "submitButton": "Generate Free Report",
+    "successTitle": "Report Generation Started!",
+    "successBody": "We are scanning your domain now. Your report will be sent to",
+    "successBodySuffix": "within minutes.",
+    "backHome": "Back to Home",
+    "featuresTitle": "What You Get",
+    "feature1Title": "Automated Vulnerability Scanning",
+    "feature1Desc": "Enterprise-grade Nmap and Nikto scans run against your domain to identify open ports and web vulnerabilities.",
+    "feature2Title": "Professional PDF Report",
+    "feature2Desc": "Receive a comprehensive, audit-ready PDF report with severity ratings, screenshots, and actionable remediation steps.",
+    "feature3Title": "Results in Under 5 Minutes",
+    "feature3Desc": "Our parallelized scanning infrastructure delivers your vulnerability report in minutes, not days.",
+    "faqTitle": "Frequently Asked Questions",
+    "faq1Q": "Is this really free?",
+    "faq1A": "Yes. You get one complete vulnerability report at no cost, with no credit card required. We believe every organization deserves access to basic security testing.",
+    "faq2Q": "Is it safe to scan my domain?",
+    "faq2A": "Absolutely. Our scans use passive and safe active techniques that will not disrupt your services. We never perform exploit-level testing in the free report.",
+    "faq3Q": "What do I receive?",
+    "faq3A": "You will receive a professional PDF report covering open ports, running services, web technology fingerprinting, known vulnerabilities, and prioritized remediation advice.",
+    "faq4Q": "Can I scan multiple domains?",
+    "faq4A": "The free report covers one domain. For unlimited domains and recurring scans, sign up for a CyberSec Pro Starter or Professional plan.",
+    "socialProof": "Trusted by 2,400+ security teams worldwide"
+  },
+  "foundingBanner": {
+    "message": "Only 6 Founding Member spots left — 50% Lifetime Discount"
   }
 }

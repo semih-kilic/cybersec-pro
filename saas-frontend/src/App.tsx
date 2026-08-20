@@ -93,6 +93,9 @@ const TermsPage = lazy(() => import('./pages/TermsPage'));
 const GDPRPage = lazy(() => import('./pages/GDPRPage'));
 const TrustCenterPage = lazy(() => import('./pages/TrustCenterPage').then(m => ({ default: m.TrustCenterPage })));
 
+const DemoPage = lazy(() => import('./pages/DemoPage').then(m => ({ default: m.DemoPage })));
+const FreeScanPage = lazy(() => import('./pages/FreeScanPage').then(m => ({ default: m.FreeScanPage })));
+
 // GDPR Cookie Consent
 import { CookieConsentBanner } from './components/CookieConsent';
 
@@ -321,6 +324,10 @@ function AppRoutes() {
       <Route path="/tools" element={<Suspense fallback={<LoadingSpinner />}><ToolsCatalogPage /></Suspense>} />
       <Route path="/tools/:slug" element={<Suspense fallback={<LoadingSpinner />}><ToolDetailPagePublic /></Suspense>} />
       
+      {/* Public Demo & Campaign Pages */}
+      <Route path="/demo" element={<Suspense fallback={<LoadingSpinner />}><DemoPage /></Suspense>} />
+      <Route path="/free-scan" element={<Suspense fallback={<LoadingSpinner />}><FreeScanPage /></Suspense>} />
+
       {/* Auth Routes */}
       <Route path="/login" element={
         <PublicRoute>

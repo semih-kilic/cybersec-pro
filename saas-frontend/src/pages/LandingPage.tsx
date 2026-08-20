@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
 import { useTranslation } from 'react-i18next';
+import { FoundingMemberBanner } from '../components/FoundingMemberBanner';
 import { useToolCounts } from '../hooks/useApiQueries';
 import api from '../services/api';
 
@@ -73,6 +74,8 @@ export function LandingPage() {
 
   return (
     <div className="min-h-screen bg-zinc-950 text-zinc-100">
+      <FoundingMemberBanner />
+
       {/* Hero Section */}
       <header className="relative overflow-hidden">
         {/* Nav */}
