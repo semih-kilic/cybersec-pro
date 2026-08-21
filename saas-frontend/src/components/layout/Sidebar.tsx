@@ -24,6 +24,7 @@ const navigation = [
   { nameKey: 'nav.analytics', href: '/dashboard/analytics', icon: AnalyticsIcon },
   { nameKey: 'nav.ai', href: '/dashboard/ai', icon: AIIcon },
   { nameKey: 'nav.purpleTeam', href: '/dashboard/purple-team', icon: PurpleTeamIcon },
+  { nameKey: 'nav.pipelineBuilder', href: '/dashboard/pipeline-builder', icon: TerminalIcon },
   { nameKey: 'nav.terminal', href: '/dashboard/terminal', icon: TerminalIcon },
   { nameKey: 'nav.threatIntel', href: '/dashboard/threat-intel', icon: ThreatIntelIcon },
   { nameKey: 'nav.vulnerabilities', href: '/dashboard/vulnerabilities', icon: VulnDBIcon },

@@ -83,7 +83,8 @@
     "documentation": "Documentation",
     "system": "System",
     "upgradePlan": "Upgrade Plan",
-    "signOut": "Sign Out"
+    "signOut": "Sign Out",
+    "pipelineBuilder": "Pipeline Builder"
   },
   "landing": {
     "badge": "289 Professional Security Tools • GDPR Compliant 🇪🇺",
