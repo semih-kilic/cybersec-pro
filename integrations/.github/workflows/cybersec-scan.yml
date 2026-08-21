@@ -1,0 +1,105 @@
+name: CyberSec Pro Security Scan
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+env:
+  CYBERSEC_API_URL: ${{ secrets.CYBERSEC_API_URL }}
+  CYBERSEC_API_KEY: ${{ secrets.CYBERSEC_API_KEY }}
+
+jobs:
+  security-scan:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Start CyberSec Pro scan
+        id: scan
+        run: |
+          RESPONSE=$(curl -s -X POST "$CYBERSEC_API_URL/api/v1/scans" \
+            -H "Authorization: Bearer $CYBERSEC_API_KEY" \
+            -H "Content-Type: application/json" \
+            -d '{
+              "target": "${{ github.server_url }}/${{ github.repository }}",
+              "scan_type": "full",
+              "ref": "${{ github.sha }}"
+            }')
+          echo "scan_id=$(echo $RESPONSE | jq -r '.scan_id')" >> $GITHUB_OUTPUT
+          echo "status=$(echo $RESPONSE | jq -r '.status')" >> $GITHUB_OUTPUT
+
+      - name: Wait for scan completion
+        run: |
+          SCAN_ID="${{ steps.scan.outputs.scan_id }}"
+          echo "Waiting for scan $SCAN_ID to complete..."
+          for i in $(seq 1 60); do
+            STATUS=$(curl -s "$CYBERSEC_API_URL/api/v1/scans/$SCAN_ID" \
+              -H "Authorization: Bearer $CYBERSEC_API_KEY" | jq -r '.status')
+            if [ "$STATUS" = "completed" ]; then
+              echo "Scan completed"
+              break
+            elif [ "$STATUS" = "failed" ]; then
+              echo "Scan failed"
+              exit 1
+            fi
+            echo "Scan status: $STATUS (attempt $i/60)"
+            sleep 30
+          done
+
+      - name: Get scan results
+        id: results
+        run: |
+          SCAN_ID="${{ steps.scan.outputs.scan_id }}"
+          RESULTS=$(curl -s "$CYBERSEC_API_URL/api/v1/scans/$SCAN_ID/results" \
+            -H "Authorization: Bearer $CYBERSEC_API_KEY")
+          echo "results<<EOF" >> $GITHUB_OUTPUT
+          echo "$RESULTS" >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
+          
+          CRITICAL=$(echo "$RESULTS" | jq '[.findings[] | select(.severity == "critical")] | length')
+          HIGH=$(echo "$RESULTS" | jq '[.findings[] | select(.severity == "high")] | length')
+          MEDIUM=$(echo "$RESULTS" | jq '[.findings[] | select(.severity == "medium")] | length')
+          echo "critical=$CRITICAL" >> $GITHUB_OUTPUT
+          echo "high=$HIGH" >> $GITHUB_OUTPUT
+          echo "medium=$MEDIUM" >> $GITHUB_OUTPUT
+
+      - name: Post results as PR comment
+        if: github.event_name == 'pull_request'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const critical = ${{ steps.results.outputs.critical }};
+            const high = ${{ steps.results.outputs.high }};
+            const medium = ${{ steps.results.outputs.medium }};
+            
+            let emoji = '✅';
+            if (critical > 0) emoji = '🔴';
+            else if (high > 0) emoji = '🟠';
+            else if (medium > 0) emoji = '🟡';
+            
+            const body = `## ${emoji} CyberSec Pro Security Scan Results
+            
+            | Severity | Count |
+            |----------|-------|
+            | Critical | ${critical} |
+            | High | ${high} |
+            | Medium | ${medium} |
+            
+            **Scan ID:** ${{ steps.scan.outputs.scan_id }}
+            **Full Report:** ${{ env.CYBERSEC_API_URL }}/scans/${{ steps.scan.outputs.scan_id }}`;
+            
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: body
+            });
+
+      - name: Fail on critical findings
+        if: steps.results.outputs.critical > 0
+        run: |
+          echo "Critical vulnerabilities found! Failing build."
+          exit 1
