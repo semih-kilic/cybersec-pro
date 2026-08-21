@@ -1,584 +1,653 @@
-import { Link } from 'react-router-dom';
-import { useState, useMemo } from 'react';
+import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import type { TFunction } from 'i18next';
-import { motion, AnimatePresence } from 'framer-motion';
-import {
-  Check,
-  Sparkles,
-  ShieldCheck,
-  Crown,
-  Rocket,
-  Zap,
-  ArrowLeft,
-  ChevronDown,
-  TrendingDown,
-  Calculator,
-  HelpCircle,
-} from 'lucide-react';
-import { useAuth } from '../../hooks/useAuth';
-import { useToolCounts, useCreateCheckout } from '../../hooks/useApiQueries';
-import { useToast } from '../../components/ui/Toast';
-import { useDocumentTitle } from '../../hooks/useUtilities';
-import { PageHeader, StatusPill, Section } from '../../components/vos';
+import FoundingMemberBanner from '../../components/FoundingMemberBanner';
 
-type PlanId = 'trial' | 'founding_member' | 'starter' | 'professional' | 'enterprise';
+interface PlanFeature {
+  name: string;
+  included: boolean;
+}
 
 interface Plan {
-  id: PlanId;
+  id: string;
   name: string;
-  price: number;
+  monthlyPrice: number;
   yearlyPrice: number;
-  period: string;
-  description: string;
-  features: string[];
-  popular: boolean;
-  icon: typeof Rocket;
-  accent: string; // tailwind text color class for icon
-  ring: string;   // tailwind ring color class for popular
+  originalMonthlyPrice?: number;
+  originalYearlyPrice?: number;
+  features: PlanFeature[];
+  highlighted?: boolean;
+  badge?: string;
+  urgencyText?: string;
 }
 
-function buildPlans(counts: { trial: number; starter: number; professional: number; enterprise: number }, t: TFunction): Plan[] {
-  return [
-    {
-      id: 'trial',
-      name: t('upgrade.free', 'Free Trial'),
-      price: 0,
-      yearlyPrice: 0,
-      period: '14 days',
-      description: 'Test drive the full platform.',
-      features: [
-        `All ${counts.trial} security tools`,
-        '3 scans per day',
-        '1 concurrent scan',
-        'PDF report with findings',
-        'Email support',
-        'No credit card required',
-      ],
-      popular: false,
-      icon: Sparkles,
-      accent: 'text-vos-success',
-      ring: 'ring-vos-success/30',
-    },
-
-    {
-      id: 'founding_member' as PlanId,
-      name: 'Founding Member',
-      price: 19,
-      yearlyPrice: 190,
-      period: '/month',
-      description: 'Limited offer — 50% lifetime discount.',
-      features: [
-        `All security tools`,
-        '100 scans per month',
-        '3 concurrent scans',
-        'Up to 3 domains',
-        'PDF & HTML reports',
-        'Scheduled scans',
-        'Priority email support',
-        '5 team members',
-        '1-on-1 Founder Support',
-      ],
-      popular: false,
-      icon: Rocket,
-      accent: 'text-orange-400',
-      ring: 'ring-orange-400/30',
-    },
-    
-    {
-      id: 'founding_member',
-      name: t('upgrade.starter', 'Starter'),
-      price: 29,
-      yearlyPrice: 279,
-      period: '/month',
-      description: 'For a single website or app.',
-      features: [
-        `All ${counts.starter} security tools`,
-        '30 scans per month',
-        '2 concurrent scans',
-        '1 domain / application',
-        'PDF & HTML reports',
-        'Scheduled scans',
-        'Priority email support (48h)',
-        '3 team members',
-      ],
-      popular: false,
-      icon: Rocket,
-      accent: 'text-vos-info',
-      ring: 'ring-vos-info/30',
-    },
-    {
-      id: 'professional',
-      name: t('upgrade.professional', 'Professional'),
-      price: 99,
-      yearlyPrice: 949,
-      period: '/month',
-      description: 'For growing SaaS and tech companies.',
-      features: [
-        `All ${counts.professional} security tools`,
-        '250 scans per month',
-        '5 concurrent scans',
-        'Up to 5 domains / applications',
-        'API access for CI/CD',
-        'Slack / Teams / Email notifications',
-        'Compliance: NIST, OWASP, GDPR, PCI DSS, HIPAA, SOC 2',
-        'White-label PDF reports',
-        'LDAP / Active Directory scan',
-        'Priority support (24h)',
-        '10 team members',
-      ],
-      popular: true,
-      icon: ShieldCheck,
-      accent: 'text-vos-accent',
-      ring: 'ring-vos-accent/40',
-    },
-    {
-      id: 'enterprise',
-      name: t('upgrade.enterprise', 'Enterprise'),
-      price: 349,
-      yearlyPrice: 3349,
-      period: '/month',
-      description: 'For security-conscious organisations.',
-      features: [
-        `All ${counts.enterprise} security tools`,
-        '5,000 scans per month',
-        'Unlimited concurrent scans',
-        'Unlimited domains / applications',
-        'Continuous monitoring (hourly)',
-        'Dedicated account manager',
-        'All compliance frameworks',
-        'White-label reports with company logo',
-        'SSO / SAML / LDAP',
-        'Unlimited users & team collaboration',
-        'Advanced API (webhooks, integrations)',
-        t('upgrade.customSla', 'Custom SLA available on request'),
-        'Priority support (business hours, 2h response)',
-        'Quarterly security roadmap reviews',
-      ],
-      popular: false,
-      icon: Crown,
-      accent: 'text-[var(--vos-purple,#a855f7)]',
-      ring: 'ring-purple-400/30',
-    },
-  ];
-}
-
-const PLAN_LEVELS: PlanId[] = ['trial', 'founding_member', 'starter', 'professional', 'enterprise'];
-
-/** Number of features to show before collapsing behind "Read more" */
-const VISIBLE_LIMIT = 5;
-
-function FeatureList({ features, accent }: { features: string[]; accent: string }) {
-  const [expanded, setExpanded] = useState(false);
-  const needsCollapse = features.length > VISIBLE_LIMIT;
-  const baseFeatures = features.slice(0, VISIBLE_LIMIT);
-  const extraFeatures = features.slice(VISIBLE_LIMIT);
-  const hiddenCount = extraFeatures.length;
-
-  return (
-    <div className="mb-vos-6 flex-grow flex flex-col">
-      <ul className="space-y-vos-2">
-        {baseFeatures.map((feature, i) => (
-          <li key={i} className="flex items-start gap-2 text-vos-sm text-vos-text-2">
-            <Check className={`w-4 h-4 mt-0.5 shrink-0 ${accent}`} />
-            <span>{feature}</span>
-          </li>
-        ))}
-      </ul>
-
-      <AnimatePresence initial={false}>
-        {needsCollapse && expanded && (
-          <motion.div
-            key="extra"
-            initial={{ height: 0, opacity: 0 }}
-            animate={{ height: 'auto', opacity: 1 }}
-            exit={{ height: 0, opacity: 0 }}
-            transition={{ duration: 0.28, ease: 'easeInOut' }}
-            className="overflow-hidden"
-          >
-            <ul className="space-y-vos-2 mt-vos-2">
-              {extraFeatures.map((feature, i) => (
-                <li key={i} className="flex items-start gap-2 text-vos-sm text-vos-text-2">
-                  <Check className={`w-4 h-4 mt-0.5 shrink-0 ${accent}`} />
-                  <span>{feature}</span>
-                </li>
-              ))}
-            </ul>
-          </motion.div>
-        )}
-      </AnimatePresence>
-
-      {needsCollapse && (
-        <button
-          type="button"
-          onClick={() => setExpanded(!expanded)}
-          className="mt-vos-3 inline-flex items-center gap-1 self-start text-vos-xs font-medium text-vos-accent transition-colors hover:underline"
-        >
-          <ChevronDown
-            className={`w-3.5 h-3.5 transition-transform duration-300 ${expanded ? 'rotate-180' : ''}`}
-          />
-          {expanded ? 'Show less' : `Read more (+${hiddenCount})`}
-        </button>
-      )}
-    </div>
-  );
-}
+const PLANS: Plan[] = [
+  {
+    id: 'free',
+    name: 'Free',
+    monthlyPrice: 0,
+    yearlyPrice: 0,
+    features: [
+      { name: '5 scans per month', included: true },
+      { name: 'Basic vulnerability reports', included: true },
+      { name: 'Community support', included: true },
+      { name: 'Advanced threat intelligence', included: false },
+      { name: 'API access', included: false },
+      { name: 'Custom scan rules', included: false },
+      { name: 'Priority support', included: false },
+      { name: 'Team collaboration', included: false },
+    ],
+  },
+  {
+    id: 'founding_member',
+    name: 'Founding Member',
+    monthlyPrice: 19,
+    yearlyPrice: 190,
+    originalMonthlyPrice: 49,
+    originalYearlyPrice: 490,
+    badge: '50% Lifetime Discount',
+    urgencyText: 'Only 6 spots left',
+    highlighted: true,
+    features: [
+      { name: 'Unlimited scans', included: true },
+      { name: 'Detailed vulnerability reports', included: true },
+      { name: 'Priority support', included: true },
+      { name: 'Advanced threat intelligence', included: true },
+      { name: 'API access', included: true },
+      { name: 'Custom scan rules', included: true },
+      { name: 'Team collaboration', included: true },
+      { name: '1-on-1 Founder Support', included: true },
+    ],
+  },
+  {
+    id: 'starter',
+    name: 'Starter',
+    monthlyPrice: 29,
+    yearlyPrice: 290,
+    originalMonthlyPrice: undefined,
+    originalYearlyPrice: undefined,
+    features: [
+      { name: '50 scans per month', included: true },
+      { name: 'Detailed vulnerability reports', included: true },
+      { name: 'Email support', included: true },
+      { name: 'Advanced threat intelligence', included: true },
+      { name: 'API access', included: false },
+      { name: 'Custom scan rules', included: false },
+      { name: 'Team collaboration', included: false },
+    ],
+  },
+  {
+    id: 'professional',
+    name: 'Professional',
+    monthlyPrice: 49,
+    yearlyPrice: 490,
+    features: [
+      { name: 'Unlimited scans', included: true },
+      { name: 'Detailed vulnerability reports', included: true },
+      { name: 'Priority support', included: true },
+      { name: 'Advanced threat intelligence', included: true },
+      { name: 'API access', included: true },
+      { name: 'Custom scan rules', included: true },
+      { name: 'Team collaboration', included: true },
+    ],
+  },
+  {
+    id: 'enterprise',
+    name: 'Enterprise',
+    monthlyPrice: 149,
+    yearlyPrice: 1490,
+    features: [
+      { name: 'Unlimited scans', included: true },
+      { name: 'Detailed vulnerability reports', included: true },
+      { name: 'Dedicated support', included: true },
+      { name: 'Advanced threat intelligence', included: true },
+      { name: 'API access', included: true },
+      { name: 'Custom scan rules', included: true },
+      { name: 'Team collaboration', included: true },
+      { name: 'Custom integrations', included: true },
+      { name: 'SLA guarantee', included: true },
+    ],
+  },
+];
 
 export default function UpgradePage() {
-  useDocumentTitle('Upgrade — CyberSec Pro');
-  const { organization } = useAuth();
   const { t } = useTranslation();
-  const checkoutMutation = useCreateCheckout();
-  const [loading, setLoading] = useState<string | null>(null);
-  const [billingCycle, setBillingCycle] = useState<'monthly' | 'yearly'>('monthly');
-  const [pentestsPerYear, setPentestsPerYear] = useState(2);
-  const [costPerPentest, setCostPerPentest] = useState(12000);
-  const currentPlan = (organization?.plan_type as PlanId) || 'starter';
-  const toast = useToast();
+  const [billingPeriod, setBillingPeriod] = useState<'month' | 'year'>('month');
+  const [selectedPlan, setSelectedPlan] = useState<string | null>(null);
+  const [showCheckout, setShowCheckout] = useState(false);
 
-  const { data: toolCounts } = useToolCounts();
-  const totalToolsFallback = toolCounts?.total ?? 0;
-  const plans = useMemo(
-    () =>
-      buildPlans({
-        trial: toolCounts?.plans?.trial ?? totalToolsFallback,
-        starter: toolCounts?.plans?.starter ?? totalToolsFallback,
-        professional: toolCounts?.plans?.professional ?? totalToolsFallback,
-        enterprise: toolCounts?.plans?.enterprise ?? totalToolsFallback,
-      }, t),
-    [toolCounts, totalToolsFallback, t]
-  );
+  const getPrice = (plan: Plan) => {
+    return billingPeriod === 'year' ? plan.yearlyPrice : plan.monthlyPrice;
+  };
 
-  const handleUpgrade = async (planId: PlanId) => {
-    if (planId === currentPlan) return;
-    if (planId === 'trial') return;
+  const getOriginalPrice = (plan: Plan) => {
+    return billingPeriod === 'year' ? plan.originalYearlyPrice : plan.originalMonthlyPrice;
+  };
 
-    if (planId === 'enterprise') {
-      setLoading(planId);
-      try {
-        const data: any = await checkoutMutation.mutateAsync({ plan: planId, billing: billingCycle });
-        if (data.checkout_url || data.url) {
-          window.location.href = data.checkout_url || data.url;
-          return;
-        }
-        toast.success('For Enterprise activation, contact support@cyber-sec-pro.com.');
-      } catch {
-        toast.success('Enterprise plan available — contact support@cyber-sec-pro.com for activation.');
-      } finally {
-        setLoading(null);
-      }
+  const getMonthlyEquivalent = (plan: Plan) => {
+    if (billingPeriod === 'year') {
+      return Math.round(plan.yearlyPrice / 12);
+    }
+    return plan.monthlyPrice;
+  };
+
+  const getYearlySavings = (plan: Plan) => {
+    if (billingPeriod === 'year' && plan.monthlyPrice > 0) {
+      const totalMonthly = plan.monthlyPrice * 12;
+      return totalMonthly - plan.yearlyPrice;
+    }
+    return 0;
+  };
+
+  const handleSelectPlan = (planId: string) => {
+    setSelectedPlan(planId);
+    setShowCheckout(true);
+  };
+
+  const handleCheckout = async () => {
+    if (!selectedPlan) return;
+
+    if (selectedPlan === 'founding_member') {
+      window.location.href = 'mailto:founders@cyber-sec-pro.com?subject=Founding%20Member%20Signup&body=Hi%2C%0A%0AI%20want%20to%20claim%20a%20Founding%20Member%20spot.%0A%0AName%3A%0ACompany%3A%0AEmail%3A';
+      setShowCheckout(false);
       return;
     }
 
-    setLoading(planId);
+    if (selectedPlan === 'free') {
+      window.location.href = '/dashboard';
+      setShowCheckout(false);
+      return;
+    }
+
     try {
-      const data: any = await checkoutMutation.mutateAsync({ plan: planId, billing: billingCycle });
-      if (data.checkout_url || data.url) {
-        window.location.href = data.checkout_url || data.url;
-        return;
-      }
-      toast.success('Please contact support@cyber-sec-pro.com to upgrade your plan.');
-    } catch (error: any) {
-      const msg = error?.response?.data?.error || error?.message || '';
-      if (msg.includes('not configured') || msg.includes('Stripe')) {
-        toast.success('Please contact support@cyber-sec-pro.com to upgrade your plan.');
+      const token = localStorage.getItem('auth_token');
+      const response = await fetch('/api/v1/billing/create-checkout', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
+        body: JSON.stringify({
+          plan: selectedPlan,
+          billing: billingPeriod === 'year' ? 'yearly' : 'monthly',
+          success_url: window.location.origin + '/dashboard/settings?tab=billing&success=true',
+          cancel_url: window.location.origin + '/dashboard/upgrade',
+        }),
+      });
+
+      const data = await response.json();
+
+      if (data.checkout_url) {
+        window.location.href = data.checkout_url;
       } else {
-        toast.error('Connection error. Please try again or contact support@cyber-sec-pro.com.');
+        alert('Checkout session created. Redirecting to payment...');
+        setShowCheckout(false);
       }
-    } finally {
-      setLoading(null);
+    } catch {
+      alert('Payment system is being configured. Please contact support@cyber-sec-pro.com to activate your plan.');
+      setShowCheckout(false);
     }
   };
 
-  const getButtonText = (planId: PlanId) => {
-    if (loading === planId) return 'Processing…';
-    if (planId === currentPlan) return 'Current plan';
-    if (planId === 'trial') return 'Start free trial';
-    const currentLevel = PLAN_LEVELS.indexOf(currentPlan);
-    const targetLevel = PLAN_LEVELS.indexOf(planId);
-    if (targetLevel < currentLevel) return 'Downgrade';
-    return 'Upgrade';
-  };
-
-  const annualSavings = Math.max(0, pentestsPerYear * costPerPentest - 3588);
-  const reductionPct = Math.max(
-    0,
-    Math.min(100, Math.round((1 - 3588 / Math.max(1, pentestsPerYear * costPerPentest)) * 100))
-  );
+  const selectedPlanData = PLANS.find((p) => p.id === selectedPlan);
 
   return (
-    <div className="space-y-vos-8">
-      <PageHeader
-        eyebrow="Plans"
-        title={t('upgrade.title', 'Upgrade your workspace')}
-        description={t(
-          'upgrade.subtitle',
-          'Choose the plan that matches your security operations. Cancel or change at any time.'
-        )}
-        icon={<Zap className="w-5 h-5" />}
-        badge={
-          <StatusPill tone="accent">
-            Current: <span className="capitalize ml-1">{currentPlan}</span>
-          </StatusPill>
+    <div className="upgrade-page">
+      <style>{`
+        .upgrade-page {
+          max-width: 1200px;
+          margin: 0 auto;
+          padding: 40px 20px;
+          font-family: 'Inter', sans-serif;
         }
-        actions={
-          <div className="inline-flex items-center rounded-vos-pill border border-vos-border-1 bg-vos-bg-elev-2 p-1">
-            <button
-              onClick={() => setBillingCycle('monthly')}
-              className={`px-vos-4 py-1.5 rounded-vos-pill text-vos-sm font-medium transition ${
-                billingCycle === 'monthly'
-                  ? 'bg-vos-accent text-white shadow-sm'
-                  : 'text-vos-text-3 hover:text-vos-text'
-              }`}
-            >
-              {t('upgrade.monthly', 'Monthly')}
-            </button>
-            <button
-              onClick={() => setBillingCycle('yearly')}
-              className={`px-vos-4 py-1.5 rounded-vos-pill text-vos-sm font-medium transition flex items-center gap-1.5 ${
-                billingCycle === 'yearly'
-                  ? 'bg-vos-accent text-white shadow-sm'
-                  : 'text-vos-text-3 hover:text-vos-text'
-              }`}
-            >
-              {t('upgrade.yearly', 'Yearly')}
-              <span className="text-[10px] uppercase tracking-vos-wide font-bold text-vos-success bg-vos-success/15 px-1.5 py-0.5 rounded">
-                {t('upgrade.savePercent', 'Save 17%')}
-              </span>
-            </button>
-          </div>
+        .upgrade-page__header {
+          text-align: center;
+          margin-bottom: 32px;
         }
-      />
+        .upgrade-page__title {
+          font-size: 32px;
+          font-weight: 700;
+          color: #0f172a;
+          margin: 0 0 12px;
+        }
+        .upgrade-page__subtitle {
+          font-size: 16px;
+          color: #64748b;
+          margin: 0 0 24px;
+        }
+        .billing-toggle {
+          display: inline-flex;
+          align-items: center;
+          gap: 0;
+          background: #f1f5f9;
+          border-radius: 12px;
+          padding: 4px;
+          margin-bottom: 8px;
+        }
+        .billing-toggle__btn {
+          padding: 10px 24px;
+          border: none;
+          border-radius: 10px;
+          font-size: 14px;
+          font-weight: 600;
+          cursor: pointer;
+          transition: all 0.2s;
+          background: transparent;
+          color: #64748b;
+          position: relative;
+        }
+        .billing-toggle__btn--active {
+          background: #ffffff;
+          color: #0f172a;
+          box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+        .billing-toggle__badge {
+          background: linear-gradient(135deg, #22c55e, #16a34a);
+          color: #ffffff;
+          font-size: 11px;
+          font-weight: 700;
+          padding: 2px 8px;
+          border-radius: 10px;
+          margin-left: 8px;
+          white-space: nowrap;
+        }
+        .upgrade-page__savings-note {
+          font-size: 13px;
+          color: #22c55e;
+          font-weight: 600;
+          margin-top: 4px;
+          margin-bottom: 24px;
+        }
+        .upgrade-page__grid {
+          display: grid;
+          grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+          gap: 24px;
+          align-items: start;
+        }
+        .plan-card {
+          background: #ffffff;
+          border: 1px solid #e2e8f0;
+          border-radius: 12px;
+          padding: 32px 24px;
+          position: relative;
+          transition: box-shadow 0.2s, transform 0.2s;
+        }
+        .plan-card:hover {
+          box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
+        }
+        .plan-card--highlighted {
+          border: 2px solid #f97316;
+          box-shadow: 0 4px 20px rgba(249, 115, 22, 0.15);
+        }
+        .plan-card--highlighted:hover {
+          box-shadow: 0 8px 32px rgba(249, 115, 22, 0.2);
+        }
+        .plan-card__badge {
+          position: absolute;
+          top: -12px;
+          left: 50%;
+          transform: translateX(-50%);
+          background: linear-gradient(135deg, #f97316, #f59e0b);
+          color: #ffffff;
+          font-size: 12px;
+          font-weight: 700;
+          padding: 4px 14px;
+          border-radius: 20px;
+          white-space: nowrap;
+          text-transform: uppercase;
+          letter-spacing: 0.04em;
+        }
+        .plan-card__urgency {
+          text-align: center;
+          color: #dc2626;
+          font-size: 13px;
+          font-weight: 600;
+          margin-top: 8px;
+          margin-bottom: 4px;
+        }
+        .plan-card__name {
+          font-size: 20px;
+          font-weight: 700;
+          color: #0f172a;
+          margin: 0 0 16px;
+          text-align: center;
+        }
+        .plan-card__price-block {
+          text-align: center;
+          margin-bottom: 4px;
+        }
+        .plan-card__price {
+          font-size: 40px;
+          font-weight: 800;
+          color: #0f172a;
+        }
+        .plan-card__original-price {
+          font-size: 18px;
+          color: #94a3b8;
+          text-decoration: line-through;
+          margin-right: 8px;
+          font-weight: 400;
+        }
+        .plan-card__interval {
+          font-size: 14px;
+          color: #64748b;
+          font-weight: 400;
+        }
+        .plan-card__yearly-note {
+          text-align: center;
+          font-size: 13px;
+          color: #64748b;
+          margin-bottom: 20px;
+          min-height: 20px;
+        }
+        .plan-card__yearly-savings {
+          display: inline-block;
+          background: #dcfce7;
+          color: #16a34a;
+          font-size: 12px;
+          font-weight: 600;
+          padding: 2px 8px;
+          border-radius: 6px;
+        }
+        .plan-card__features {
+          list-style: none;
+          padding: 0;
+          margin: 0 0 24px;
+        }
+        .plan-card__feature {
+          display: flex;
+          align-items: center;
+          gap: 10px;
+          padding: 8px 0;
+          font-size: 14px;
+          color: #334155;
+        }
+        .plan-card__feature-icon {
+          flex-shrink: 0;
+          width: 20px;
+          height: 20px;
+          border-radius: 50%;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          font-size: 12px;
+        }
+        .plan-card__feature-icon--included {
+          background: #dcfce7;
+          color: #16a34a;
+        }
+        .plan-card__feature-icon--excluded {
+          background: #f1f5f9;
+          color: #cbd5e1;
+        }
+        .plan-card__cta {
+          width: 100%;
+          padding: 12px;
+          border-radius: 8px;
+          font-size: 15px;
+          font-weight: 600;
+          cursor: pointer;
+          border: none;
+          transition: background 0.2s, transform 0.1s;
+        }
+        .plan-card__cta--primary {
+          background: linear-gradient(135deg, #f97316, #f59e0b);
+          color: #ffffff;
+        }
+        .plan-card__cta--primary:hover {
+          transform: translateY(-1px);
+          box-shadow: 0 4px 12px rgba(249, 115, 22, 0.3);
+        }
+        .plan-card__cta--secondary {
+          background: #f1f5f9;
+          color: #475569;
+          border: 1px solid #e2e8f0;
+        }
+        .plan-card__cta--secondary:hover {
+          background: #e2e8f0;
+        }
+        .checkout-overlay {
+          position: fixed;
+          inset: 0;
+          background: rgba(0,0,0,0.5);
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          z-index: 1000;
+        }
+        .checkout-modal {
+          background: #ffffff;
+          border-radius: 16px;
+          padding: 32px;
+          max-width: 440px;
+          width: 90%;
+          box-shadow: 0 24px 48px rgba(0,0,0,0.2);
+        }
+        .checkout-modal__title {
+          font-size: 22px;
+          font-weight: 700;
+          color: #0f172a;
+          margin: 0 0 8px;
+        }
+        .checkout-modal__subtitle {
+          font-size: 14px;
+          color: #64748b;
+          margin: 0 0 24px;
+        }
+        .checkout-modal__summary {
+          background: #f8fafc;
+          border-radius: 10px;
+          padding: 16px;
+          margin-bottom: 24px;
+        }
+        .checkout-modal__row {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          padding: 6px 0;
+          font-size: 14px;
+          color: #334155;
+        }
+        .checkout-modal__row--total {
+          border-top: 1px solid #e2e8f0;
+          margin-top: 8px;
+          padding-top: 12px;
+          font-weight: 700;
+          font-size: 16px;
+          color: #0f172a;
+        }
+        .checkout-modal__actions {
+          display: flex;
+          gap: 12px;
+        }
+        .checkout-modal__btn {
+          flex: 1;
+          padding: 12px;
+          border-radius: 8px;
+          font-size: 15px;
+          font-weight: 600;
+          cursor: pointer;
+          border: none;
+          transition: all 0.2s;
+        }
+        .checkout-modal__btn--pay {
+          background: linear-gradient(135deg, #f97316, #f59e0b);
+          color: #ffffff;
+        }
+        .checkout-modal__btn--pay:hover {
+          box-shadow: 0 4px 12px rgba(249, 115, 22, 0.3);
+        }
+        .checkout-modal__btn--cancel {
+          background: #f1f5f9;
+          color: #475569;
+          border: 1px solid #e2e8f0;
+        }
+        .checkout-modal__btn--cancel:hover {
+          background: #e2e8f0;
+        }
+        .checkout-modal__secure {
+          text-align: center;
+          font-size: 12px;
+          color: #94a3b8;
+          margin-top: 12px;
+        }
+      `}</style>
 
-      {/* Pricing Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-vos-5 items-stretch">
-        {plans.map((plan, idx) => {
-          const Icon = plan.icon;
-          const isCurrent = plan.id === currentPlan;
-          const isPopular = plan.popular;
-          const monthly = plan.price === 0
-            ? '€0'
-            : billingCycle === 'yearly' && plan.yearlyPrice > 0
-              ? `€${Math.round(plan.yearlyPrice / 12)}`
-              : `€${plan.price}`;
-          const period = plan.price === 0
-            ? plan.period
-            : billingCycle === 'yearly' && plan.yearlyPrice > 0
-              ? t('upgrade.billedAnnually', '/mo billed annually')
-              : t('upgrade.perMonth', '/month');
+      <div className="upgrade-page__header">
+        <h1 className="upgrade-page__title">Choose Your Plan</h1>
+        <p className="upgrade-page__subtitle">
+          Scale your cybersecurity with the right plan for your team
+        </p>
+
+        <div className="billing-toggle">
+          <button
+            className={`billing-toggle__btn ${billingPeriod === 'month' ? 'billing-toggle__btn--active' : ''}`}
+            onClick={() => setBillingPeriod('month')}
+          >
+            Monthly
+          </button>
+          <button
+            className={`billing-toggle__btn ${billingPeriod === 'year' ? 'billing-toggle__btn--active' : ''}`}
+            onClick={() => setBillingPeriod('year')}
+          >
+            Yearly
+            <span className="billing-toggle__badge">Save 2 months</span>
+          </button>
+        </div>
+        {billingPeriod === 'year' && (
+          <p className="upgrade-page__savings-note">
+            Pay for 10 months, get 12 — save up to 17% annually
+          </p>
+        )}
+      </div>
+
+      <div className="upgrade-page__grid">
+        {PLANS.map((plan) => {
+          const price = getPrice(plan);
+          const originalPrice = getOriginalPrice(plan);
+          const savings = getYearlySavings(plan);
+          const monthlyEquiv = getMonthlyEquivalent(plan);
 
           return (
-            <motion.div
+            <div
               key={plan.id}
-              initial={{ opacity: 0, y: 14 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: idx * 0.06, duration: 0.32, ease: [0.22, 1, 0.36, 1] }}
-              className={`relative flex flex-col rounded-vos-xl border bg-vos-bg-elev-2 p-vos-6 transition ${
-                isPopular ? `border-vos-accent ring-2 ${plan.ring} shadow-vos-lg` : 'border-vos-border-1 hover:border-vos-border-2'
-              }`}
+              className={`plan-card ${plan.highlighted ? 'plan-card--highlighted' : ''}`}
             >
-              {isPopular && (
-                <div className="absolute -top-3 left-1/2 -translate-x-1/2">
-                  <span className="inline-flex items-center gap-1 px-vos-3 py-1 rounded-vos-pill bg-vos-accent text-white text-[10px] uppercase tracking-vos-wide font-bold shadow-sm">
-                    <Sparkles className="w-3 h-3" />
-                    {t('upgrade.popular', 'Most popular')}
-                  </span>
-                </div>
+              {plan.badge && (
+                <div className="plan-card__badge">{plan.badge}</div>
               )}
-              {isCurrent && !isPopular && (
-                <div className="absolute -top-3 left-1/2 -translate-x-1/2">
-                  <span className="inline-flex items-center gap-1 px-vos-3 py-1 rounded-vos-pill bg-vos-success text-white text-[10px] uppercase tracking-vos-wide font-bold shadow-sm">
-                    <Check className="w-3 h-3" />
-                    Current
-                  </span>
-                </div>
+              {plan.urgencyText && (
+                <div className="plan-card__urgency">{plan.urgencyText}</div>
               )}
-
-              <div className="flex items-center gap-vos-3 mb-vos-4">
-                <span className={`w-10 h-10 rounded-vos-md bg-vos-bg-elev-1 border border-vos-border-1 flex items-center justify-center ${plan.accent}`}>
-                  <Icon className="w-5 h-5" />
+              <h3 className="plan-card__name">{plan.name}</h3>
+              <div className="plan-card__price-block">
+                {originalPrice && (
+                  <span className="plan-card__original-price">
+                    €{originalPrice}
+                  </span>
+                )}
+                <span className="plan-card__price">
+                  €{price}
                 </span>
-                <div>
-                  <h3 className="text-vos-md font-semibold text-vos-text tracking-vos-snug">{plan.name}</h3>
-                  <p className="text-vos-xs text-vos-text-3">{plan.description}</p>
-                </div>
+                <span className="plan-card__interval">
+                  /{billingPeriod === 'year' ? 'year' : 'month'}
+                </span>
               </div>
-
-              <div className="flex items-baseline gap-1.5 mb-1">
-                <span className="text-4xl font-semibold text-vos-text tracking-tight">{monthly}</span>
-                <span className="text-vos-xs text-vos-text-3">{period}</span>
+              <div className="plan-card__yearly-note">
+                {billingPeriod === 'year' && price > 0 ? (
+                  <>
+                    <span>That's just <strong>€{monthlyEquiv}/mo</strong></span>
+                    {savings > 0 && (
+                      <>
+                        {' '}
+                        <span className="plan-card__yearly-savings">
+                          Save €{savings}/year
+                        </span>
+                      </>
+                    )}
+                  </>
+                ) : (
+                  <span>&nbsp;</span>
+                )}
               </div>
-              {billingCycle === 'yearly' && plan.yearlyPrice > 0 && (
-                <p className="text-vos-xs text-vos-success mb-vos-4">
-                  €{plan.yearlyPrice}{t('upgrade.perYear', '/year')} — save €{plan.price * 12 - plan.yearlyPrice} ({Math.round((1 - plan.yearlyPrice / (plan.price * 12)) * 100)}% off)
-                </p>
-              )}
-              {plan.id === 'enterprise' && billingCycle === 'yearly' && (
-                <p className="text-vos-xs text-vos-text-3 mb-vos-4">
-                  {t('upgrade.customPricing', 'Custom annual pricing — contact sales.')}
-                </p>
-              )}
-              {(plan.price === 0 || (billingCycle === 'monthly' && plan.id !== 'enterprise')) && (
-                <div className="mb-vos-4" />
-              )}
-
-              <FeatureList features={plan.features} accent={plan.accent} />
-
+              <ul className="plan-card__features">
+                {plan.features.map((feature, idx) => (
+                  <li key={idx} className="plan-card__feature">
+                    <span
+                      className={`plan-card__feature-icon plan-card__feature-icon--${feature.included ? 'included' : 'excluded'}`}
+                    >
+                      {feature.included ? '✓' : '—'}
+                    </span>
+                    {feature.name}
+                  </li>
+                ))}
+              </ul>
               <button
-                onClick={() => handleUpgrade(plan.id)}
-                disabled={isCurrent || loading === plan.id}
-                className={`w-full py-vos-3 rounded-vos-md font-semibold text-vos-sm transition ${
-                  isCurrent
-                    ? 'bg-vos-bg-elev-1 text-vos-text-3 border border-vos-border-1 cursor-not-allowed'
-                    : isPopular
-                      ? 'bg-vos-accent text-white hover:bg-vos-accent/90 shadow-sm'
-                      : 'bg-vos-bg-elev-1 text-vos-text border border-vos-border-1 hover:border-vos-accent/50 hover:text-vos-accent'
-                }`}
+                className={`plan-card__cta ${plan.highlighted ? 'plan-card__cta--primary' : 'plan-card__cta--secondary'}`}
+                onClick={() => handleSelectPlan(plan.id)}
               >
-                {getButtonText(plan.id)}
+                {plan.id === 'free' ? 'Current Plan' : plan.highlighted ? 'Claim Founding Spot' : 'Select Plan'}
               </button>
-            </motion.div>
+            </div>
           );
         })}
       </div>
 
-      {/* ROI Calculator */}
-      <Section
-        title={
-          <span className="flex items-center gap-2">
-            <Calculator className="w-4 h-4 text-vos-accent" />
-            {t('upgrade.roiCalculator', 'ROI calculator')}
-          </span>
-        }
-        description={t('upgrade.roiDesc', 'See how much you save compared to traditional penetration testing.')}
-      >
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-vos-6 items-start">
-          <div className="space-y-vos-5">
-            <div>
-              <label className="text-vos-xs uppercase tracking-vos-wide font-semibold text-vos-text-3 mb-1.5 block">
-                {t('upgrade.pentestsPerYear', 'Pentests per year')}
-              </label>
-              <input
-                type="range"
-                min={1}
-                max={6}
-                value={pentestsPerYear}
-                onChange={(e) => setPentestsPerYear(Number(e.target.value))}
-                className="w-full accent-vos-accent"
-              />
-              <div className="flex justify-between text-vos-xs text-vos-text-3 mt-1">
-                <span>1</span>
-                <span className="text-vos-accent font-bold text-vos-sm">{pentestsPerYear}</span>
-                <span>6</span>
-              </div>
-            </div>
-            <div>
-              <label className="text-vos-xs uppercase tracking-vos-wide font-semibold text-vos-text-3 mb-1.5 block">
-                {t('upgrade.avgCostPerPentest', 'Average cost per pentest (€)')}
-              </label>
-              <input
-                type="range"
-                min={5000}
-                max={25000}
-                step={1000}
-                value={costPerPentest}
-                onChange={(e) => setCostPerPentest(Number(e.target.value))}
-                className="w-full accent-vos-accent"
-              />
-              <div className="flex justify-between text-vos-xs text-vos-text-3 mt-1">
-                <span>€5K</span>
-                <span className="text-vos-accent font-bold text-vos-sm">€{costPerPentest.toLocaleString()}</span>
-                <span>€25K</span>
-              </div>
-            </div>
-          </div>
+      {showCheckout && selectedPlanData && (
+        <div className="checkout-overlay" onClick={() => setShowCheckout(false)}>
+          <div className="checkout-modal" onClick={(e) => e.stopPropagation()}>
+            <h2 className="checkout-modal__title">Complete Your Upgrade</h2>
+            <p className="checkout-modal__subtitle">
+              {selectedPlanData.name} Plan — {billingPeriod === 'year' ? 'Annual' : 'Monthly'} Billing
+            </p>
 
-          <div className="rounded-vos-lg border border-vos-border-1 bg-vos-bg-elev-1 p-vos-5 space-y-vos-4">
-            <div className="flex justify-between items-center">
-              <span className="text-vos-sm text-vos-text-3">{t('upgrade.traditionalPentests', 'Traditional pentests')}</span>
-              <span className="text-vos-md font-semibold text-vos-danger">
-                €{(pentestsPerYear * costPerPentest).toLocaleString()}/yr
-              </span>
-            </div>
-            <div className="flex justify-between items-center">
-              <span className="text-vos-sm text-vos-text-3">{t('upgrade.cybersecPro', 'CyberSec Pro Professional')}</span>
-              <span className="text-vos-md font-semibold text-vos-success">€3,588/yr</span>
-            </div>
-            <div className="border-t border-vos-border-1 pt-vos-4">
-              <div className="flex justify-between items-baseline">
-                <span className="text-vos-sm font-semibold text-vos-text">{t('upgrade.yourSavings', 'Your savings')}</span>
-                <div className="text-right">
-                  <span className="text-2xl font-semibold text-vos-success tracking-tight">
-                    €{annualSavings.toLocaleString()}
-                  </span>
-                  <span className="text-vos-xs text-vos-success ml-1">/ {t('upgrade.year', 'year')}</span>
+            <div className="checkout-modal__summary">
+              <div className="checkout-modal__row">
+                <span>Plan</span>
+                <span>{selectedPlanData.name}</span>
+              </div>
+              <div className="checkout-modal__row">
+                <span>Billing period</span>
+                <span>{billingPeriod === 'year' ? 'Annual' : 'Monthly'}</span>
+              </div>
+              {billingPeriod === 'year' && getYearlySavings(selectedPlanData) > 0 && (
+                <div className="checkout-modal__row" style={{ color: '#16a34a' }}>
+                  <span>Annual savings</span>
+                  <span>-€{getYearlySavings(selectedPlanData)}</span>
                 </div>
+              )}
+              <div className="checkout-modal__row checkout-modal__row--total">
+                <span>Total</span>
+                <span>
+                  €{getPrice(selectedPlanData)}
+                  {selectedPlanData.id !== 'free' && (
+                    <span style={{ fontWeight: 400, fontSize: 13, color: '#64748b' }}>
+                      {' '}/ {billingPeriod === 'year' ? 'year' : 'month'}
+                    </span>
+                  )}
+                </span>
               </div>
-              <div className="mt-vos-3 w-full bg-vos-bg-elev-2 rounded-full h-2 overflow-hidden">
-                <motion.div
-                  className="h-full rounded-full bg-gradient-to-r from-vos-success to-vos-accent"
-                  initial={{ width: 0 }}
-                  animate={{ width: `${reductionPct}%` }}
-                  transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
-                />
-              </div>
-              <p className="text-vos-xs text-vos-success font-medium mt-vos-2 inline-flex items-center gap-1">
-                <TrendingDown className="w-3 h-3" />
-                {reductionPct}% {t('upgrade.costReduction', 'cost reduction')}
-              </p>
             </div>
-            <p className="text-vos-xs text-vos-text-3">
-              {t('upgrade.plusDesc', 'Plus continuous monitoring, automated scans, and real-time alerts — not just point-in-time testing.')}
+
+            <div className="checkout-modal__actions">
+              <button
+                className="checkout-modal__btn checkout-modal__btn--cancel"
+                onClick={() => setShowCheckout(false)}
+              >
+                Cancel
+              </button>
+              <button
+                className="checkout-modal__btn checkout-modal__btn--pay"
+                onClick={handleCheckout}
+              >
+                {selectedPlanData.id === 'free' ? 'Continue Free' : 'Proceed to Payment'}
+              </button>
+            </div>
+            <p className="checkout-modal__secure">
+              Secured by 256-bit SSL encryption. Cancel anytime.
             </p>
           </div>
         </div>
-      </Section>
-
-      {/* FAQ */}
-      <Section
-        title={
-          <span className="flex items-center gap-2">
-            <HelpCircle className="w-4 h-4 text-vos-text-3" />
-            {t('upgrade.faqTitle', 'Frequently asked questions')}
-          </span>
-        }
-      >
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-vos-4">
-          {[
-            {
-              q: t('upgrade.faq1q', 'How do I upgrade my plan?'),
-              a: t('upgrade.faq1a', 'Click the "Upgrade" button on your desired plan. You will be redirected to our secure payment processor.'),
-            },
-            {
-              q: t('upgrade.faq2q', 'Can I downgrade my plan?'),
-              a: t('upgrade.faq2a', 'Yes. Your new plan will take effect at the start of the next billing cycle.'),
-            },
-            {
-              q: t('upgrade.faq3q', 'What payment methods do you accept?'),
-              a: t('upgrade.faq3a', 'All major credit cards (Visa, MasterCard, Amex), PayPal, and bank transfers for Enterprise plans.'),
-            },
-            {
-              q: t('upgrade.faq4q', 'Is there a money-back guarantee?'),
-              a: t('upgrade.faq4a', 'Yes, a 30-day money-back guarantee. Contact us for a full refund if you are not satisfied.'),
-            },
-          ].map((faq, i) => (
-            <div key={i} className="rounded-vos-lg border border-vos-border-1 bg-vos-bg-elev-1 p-vos-4">
-              <h3 className="text-vos-sm font-semibold text-vos-text mb-1.5">{faq.q}</h3>
-              <p className="text-vos-xs text-vos-text-3 leading-relaxed">{faq.a}</p>
-            </div>
-          ))}
-        </div>
-      </Section>
-
-      <div className="text-center">
-        <Link
-          to="/dashboard/settings"
-          className="inline-flex items-center gap-1.5 text-vos-sm text-vos-accent hover:text-vos-accent/80 transition"
-        >
-          <ArrowLeft className="w-4 h-4" />
-          {t('upgrade.backToSettings', 'Back to settings')}
-        </Link>
-      </div>
+      )}
     </div>
   );
 }
