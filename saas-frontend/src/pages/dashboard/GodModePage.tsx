@@ -63,6 +63,7 @@ import {
   type FeatureFlag,
   type SuperadminOrg,
 } from '../../hooks/useApiQueries';
+import { FoundingMemberPanel } from './FoundingMemberPanel';
 
 // ---------- helpers ----------
 function fmtBytes(n: number | undefined | null): string {
@@ -230,6 +231,7 @@ export default function GodModePage() {
           </TabsContent>
 
           <TabsContent value="flags">
+            <FoundingMemberPanel />
             <FeatureFlagsPanel />
           </TabsContent>
 

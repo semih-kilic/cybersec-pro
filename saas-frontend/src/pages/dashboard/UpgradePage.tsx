@@ -46,7 +46,7 @@ const PLANS: Plan[] = [
     originalMonthlyPrice: 99,
     originalYearlyPrice: 949,
     badge: '81% Lifetime Discount',
-    urgencyText: 'Only 6 spots left',
+    urgencyText: 'Limited spots',
     highlighted: true,
     features: [
       { name: 'Unlimited scans', included: true },
@@ -120,12 +120,26 @@ export default function UpgradePage() {
     searchParams.get('plan') || null
   );
   const [showCheckout, setShowCheckout] = useState(false);
+  const [foundingAvailable, setFoundingAvailable] = useState(true);
 
   useEffect(() => {
     const planParam = searchParams.get('plan');
     const billingParam = searchParams.get('billing');
     if (billingParam === 'year') setBillingPeriod('year');
     if (planParam) setSelectedPlan(planParam);
+  }, []);
+
+  // Founding Member offer availability (public probe; auto-closes at 10 spots
+  // or when a superadmin disables it).
+  useEffect(() => {
+    fetch('/api/v1/billing/founding-member/status')
+      .then((r) => r.json())
+      .then((d) => {
+        const avail = !!d.available;
+        setFoundingAvailable(avail);
+        if (!avail) setSelectedPlan((cur) => (cur === 'founding_member' ? null : cur));
+      })
+      .catch(() => {});
   }, []);
 
   const getPrice = (plan: Plan) => {
@@ -158,12 +172,6 @@ export default function UpgradePage() {
 
   const handleCheckout = async () => {
     if (!selectedPlan) return;
-
-    if (selectedPlan === 'founding_member') {
-      window.location.href = 'mailto:founders@cyber-sec-pro.com?subject=Founding%20Member%20Signup&body=Hi%2C%0A%0AI%20want%20to%20claim%20a%20Founding%20Member%20spot.%0A%0AName%3A%0ACompany%3A%0AEmail%3A';
-      setShowCheckout(false);
-      return;
-    }
 
     if (selectedPlan === 'free') {
       window.location.href = '/dashboard';
@@ -534,7 +542,7 @@ export default function UpgradePage() {
       </div>
 
       <div className="upgrade-page__grid">
-        {PLANS.map((plan) => {
+        {PLANS.filter((p) => p.id !== 'founding_member' || foundingAvailable).map((plan) => {
           const price = getPrice(plan);
           const originalPrice = getOriginalPrice(plan);
           const savings = getYearlySavings(plan);
