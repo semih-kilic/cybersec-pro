@@ -172,7 +172,7 @@ export default function UpgradePage() {
     }
 
     try {
-      const token = localStorage.getItem('auth_token');
+      const token = localStorage.getItem('token');
       const response = await fetch('/api/v1/billing/create-checkout', {
         method: 'POST',
         headers: {
