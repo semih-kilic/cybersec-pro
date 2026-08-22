@@ -52,7 +52,6 @@ export default defineConfig({
           if (id.includes('framer-motion')) return 'motion';
           if (id.includes('@tanstack/react-query')) return 'query';
           if (id.includes('i18next') || id.includes('react-i18next') || id.includes('i18next-browser-languagedetector')) return 'i18n';
-          if (id.includes('recharts')) return 'charts';
           if (id.includes('@headlessui') || id.includes('@heroicons')) return 'ui';
           if (id.includes('@stripe/stripe-js') || id.includes('@stripe/react-stripe-js')) return 'stripe';
           if (id.includes('socket.io-client')) return 'socket';
