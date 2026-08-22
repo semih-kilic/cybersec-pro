@@ -235,6 +235,7 @@ async fn main() -> anyhow::Result<()> {
 
 async fn gdpr_erase_handler(
     axum::extract::Path(user_id): axum::extract::Path<String>,
+    _su: crate::middleware::auth_middleware::SuperAdminUser,
     axum::extract::Extension(state): axum::extract::Extension<std::sync::Arc<AppState>>,
 ) -> impl IntoResponse {
     match services::data_retention::erase_user_data(&state.db, &user_id).await {
@@ -244,6 +245,7 @@ async fn gdpr_erase_handler(
 }
 
 async fn data_retention_health_handler(
+    _u: crate::middleware::auth_middleware::AuthUser,
     axum::extract::Extension(state): axum::extract::Extension<std::sync::Arc<AppState>>,
 ) -> impl IntoResponse {
     match services::data_retention::data_retention_health(&state.db).await {

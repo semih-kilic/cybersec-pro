@@ -517,6 +517,8 @@ r#"CREATE TABLE IF NOT EXISTS newsletter_subscribers (
 )"#,
 "CREATE INDEX IF NOT EXISTS idx_newsletter_active ON newsletter_subscribers(is_active)",
 
+r#"ALTER TABLE users ADD COLUMN IF NOT EXISTS password_changed_at BIGINT NOT NULL DEFAULT 0"#,
+
 // ── Phase 8: God Mode feature flags ─────────────────────────────────────
 r#"CREATE TABLE IF NOT EXISTS feature_flags (
     key TEXT PRIMARY KEY,

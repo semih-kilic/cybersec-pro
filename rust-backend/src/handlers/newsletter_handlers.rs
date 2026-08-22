@@ -57,7 +57,7 @@ pub async fn subscribe_newsletter(
     let ip = headers
         .get("x-forwarded-for")
         .and_then(|v| v.to_str().ok())
-        .and_then(|s| s.split(',').next())
+        .and_then(|s| s.split(',').last())
         .unwrap_or("unknown")
         .trim()
         .to_string();

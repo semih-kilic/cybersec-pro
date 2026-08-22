@@ -804,6 +804,7 @@ pub struct PatchResponseData {
 }
 
 pub async fn generate_patch_handler(
+    _auth: crate::middleware::auth_middleware::AuthUser,
     State(_state): State<Arc<AppState>>,
     Json(req): Json<PatchRequest>,
 ) -> impl IntoResponse {
@@ -982,6 +983,7 @@ fn calculate_cvss_score(
 }
 
 pub async fn cvss_score_handler(
+    _auth: crate::middleware::auth_middleware::AuthUser,
     State(_state): State<Arc<AppState>>,
     Json(req): Json<CvssRequest>,
 ) -> impl IntoResponse {
@@ -1007,6 +1009,7 @@ pub async fn cvss_score_handler(
 }
 
 pub async fn auto_cvss_handler(
+    _auth: crate::middleware::auth_middleware::AuthUser,
     State(_state): State<Arc<AppState>>,
     Json(req): Json<serde_json::Value>,
 ) -> impl IntoResponse {

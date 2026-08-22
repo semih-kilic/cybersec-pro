@@ -160,7 +160,7 @@ pub async fn register(
     // Rate limit check
     let ip = headers.get("x-forwarded-for")
         .and_then(|v| v.to_str().ok())
-        .and_then(|s| s.split(',').next())
+        .and_then(|s| s.split(',').last())
         .map(|s| s.trim())
         .unwrap_or("unknown")
         .to_string();
@@ -571,6 +571,21 @@ pub async fn refresh(
             }
             Ok(false) => {}
             Err(e) => tracing::warn!("refresh blacklist lookup failed: {e}"),
+        }
+    }
+
+    // Revoke sessions issued before a password change/reset.
+    {
+        let pwd_changed_at: i64 = sqlx::query_scalar(
+            "SELECT COALESCE(password_changed_at, 0) FROM users WHERE id = $1",
+        )
+        .bind(&claims.sub)
+        .fetch_one(&state.db)
+        .await
+        .unwrap_or(0);
+        let issued_at: i64 = claims.iat;
+        if pwd_changed_at > 0 && issued_at > 0 && issued_at < pwd_changed_at {
+            return (StatusCode::UNAUTHORIZED, Json(json!({"error": "Session revoked: password was changed"}))).into_response();
         }
     }
 
@@ -1022,7 +1037,7 @@ pub async fn reset_password(
 
     // Update password and clear reset token atomically
     if let Err(e) = sqlx::query(
-        "UPDATE users SET password_hash = $1, password_reset_token = NULL, password_reset_expires = NULL WHERE id = $2"
+        "UPDATE users SET password_hash = $1, password_reset_token = NULL, password_reset_expires = NULL, password_changed_at = EXTRACT(EPOCH FROM NOW())::BIGINT WHERE id = $2"
     )
     .bind(&pw_hash)
     .bind(&user_id)

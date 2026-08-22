@@ -350,6 +350,12 @@ pub async fn sso_saml_init(
     State(state): State<Arc<AppState>>,
     Query(params): Query<SSOInitQuery>,
 ) -> impl IntoResponse {
+
+    // SECURITY AUDIT 2026-08: SAML assertion signature verification is not
+    // implemented (certificate parsed then discarded). Endpoint disabled until
+    // a proper SAML SP library validates signatures/audience/expiry.
+    return (StatusCode::SERVICE_UNAVAILABLE, Json(json!({"error": "SAML login temporarily disabled for security review"}))).into_response();
+
     let domain = params.domain.as_deref()
         .or_else(|| params.email.as_deref().and_then(|e| e.split('@').nth(1)))
         .unwrap_or("");
@@ -405,6 +411,12 @@ pub async fn sso_saml_callback(
     State(state): State<Arc<AppState>>,
     axum::Form(body): axum::Form<SAMLCallbackRequest>,
 ) -> impl IntoResponse {
+
+    // SECURITY AUDIT 2026-08: SAML assertion signature verification is not
+    // implemented (certificate parsed then discarded). Endpoint disabled until
+    // a proper SAML SP library validates signatures/audience/expiry.
+    return (StatusCode::SERVICE_UNAVAILABLE, Json(json!({"error": "SAML login temporarily disabled for security review"}))).into_response();
+
     let saml_response = match &body.saml_response {
         Some(r) if !r.is_empty() => r,
         _ => return (StatusCode::BAD_REQUEST, Json(json!({"error": "Missing SAMLResponse"}))).into_response(),
@@ -569,6 +581,13 @@ pub async fn sso_oidc_init(
     let client_id = client_id.unwrap_or_default();
     let issuer_url = issuer_url.unwrap_or_default();
     let oidc_state = Uuid::new_v4().to_string();
+    // Bind state -> domain in Redis (one-time, 10 min TTL) so the callback can
+    // select the correct org config and reject forged cross-org flows.
+    let _ = state.cache.set(
+        &format!("oidc_state:{}", oidc_state),
+        domain,
+        std::time::Duration::from_secs(600),
+    ).await;
     let redirect_uri = "https://api.cyber-sec-pro.com/v1/auth/sso/oidc/callback";
 
     let auth_url = format!(
@@ -608,18 +627,30 @@ pub async fn sso_oidc_callback(
         _ => return (StatusCode::BAD_REQUEST, Json(json!({"error": "Missing authorization code"}))).into_response(),
     };
 
-    // We cannot easily correlate `state` back to the org at callback time without
-    // a Redis session store. Instead we look up the OIDC config by redirect_uri.
-    // For now, fetch the first active OIDC config (single-org deployments) or
-    // match by state if it was stored as the org_id during init.
-    let state_val = params.state.as_deref().unwrap_or("");
+    let state_val = params.state.as_deref().unwrap_or("").trim().to_string();
 
-    // Try to find OIDC config — state may be org_id or a random UUID
+    // One-time server-side state validation (login-CSRF defense)
+    if state_val.is_empty() {
+        return (StatusCode::BAD_REQUEST, Json(json!({"error": "Missing state parameter"}))).into_response();
+    }
+    let state_key = format!("oidc_state:{}", state_val);
+    let state_domain = match state.cache.get(&state_key).await {
+        Ok(Some(d)) => {
+            let _ = state.cache.delete(&state_key).await;
+            d
+        }
+        _ => {
+            return (StatusCode::UNAUTHORIZED, Json(json!({"error": "Invalid or expired OIDC state"}))).into_response();
+        }
+    };
+
+    // Config is selected by the domain bound to this state (never "latest")
     let config: Option<(String, Option<String>, Option<String>, Option<String>, Option<bool>, Option<String>)> = sqlx::query_as(
         "SELECT organization_id, oidc_client_id, oidc_client_secret, oidc_issuer_url, jit_provisioning, default_role \
-         FROM sso_configs WHERE is_enabled = TRUE AND provider_type = 'oidc' \
+         FROM sso_configs WHERE is_enabled = TRUE AND provider_type = 'oidc' AND domain_hint = $1 \
          ORDER BY created_at DESC LIMIT 1"
     )
+    .bind(&state_domain)
     .fetch_optional(&state.db)
     .await
     .unwrap_or(None);
@@ -686,13 +717,9 @@ pub async fn sso_oidc_callback(
     {
         Ok(r) if r.status().is_success() => r.json().await.unwrap_or_default(),
         _ => {
-            // Fallback: decode id_token claims without verification (HMAC/RS256 would need JWKs)
-            token_body.get("id_token")
-                .and_then(|t| t.as_str())
-                .and_then(|jwt| jwt.split('.').nth(1))
-                .and_then(|b64| base64::engine::general_purpose::STANDARD_NO_PAD.decode(b64).ok())
-                .and_then(|bytes| serde_json::from_slice(&bytes).ok())
-                .unwrap_or_default()
+            // SECURITY AUDIT 2026-08: unverified id_token claim decoding removed.
+            // Identity must come from the verified userinfo endpoint only.
+            serde_json::Value::Null
         }
     };
 

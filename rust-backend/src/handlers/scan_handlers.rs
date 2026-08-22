@@ -1078,6 +1078,16 @@ pub async fn start_scan(
         }
     }
 
+    // Block cloud metadata endpoints (SSRF hardening)
+    {
+        let tl = target.to_lowercase();
+        if tl.contains("169.254.169.254") || tl == "metadata.google.internal" || tl.ends_with(".metadata.google.internal") {
+            return (StatusCode::FORBIDDEN, Json(json!({
+                "error": "Scanning cloud metadata endpoints is not allowed"
+            }))).into_response();
+        }
+    }
+
     // Block XSS/HTML injection
     if target.contains('<') || target.contains('>') || target.contains('"') || target.contains('\'') {
         return (StatusCode::BAD_REQUEST, Json(json!({"error": "Invalid target: contains HTML/script characters"}))).into_response();

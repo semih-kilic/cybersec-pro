@@ -658,7 +658,7 @@ pub async fn change_password(
         }
     };
 
-    let _ = sqlx::query("UPDATE users SET password_hash = $1 WHERE id = $2")
+    let _ = sqlx::query("UPDATE users SET password_changed_at = EXTRACT(EPOCH FROM NOW())::BIGINT, password_hash = $1 WHERE id = $2")
         .bind(&new_hash)
         .bind(&user.user_id)
         .execute(&state.db)

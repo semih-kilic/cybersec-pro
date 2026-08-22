@@ -1487,9 +1487,10 @@ pub async fn upload_org_logo(
     } else if body.starts_with(b"RIFF") && body.len() > 12 && &body[8..12] == b"WEBP" {
         "webp"
     } else if body.starts_with(b"<?xml") || body.starts_with(b"<svg") {
-        "svg"
+        // SECURITY: SVG allows embedded scripts (stored-XSS vector). Rejected.
+        return (StatusCode::BAD_REQUEST, Json(json!({"error": "SVG uploads are not allowed. Use PNG, JPG, GIF or WebP"}))).into_response();
     } else {
-        return (StatusCode::BAD_REQUEST, Json(json!({"error": "Invalid image format. Accepted: PNG, JPG, GIF, WebP, SVG"}))).into_response();
+        return (StatusCode::BAD_REQUEST, Json(json!({"error": "Invalid image format. Accepted: PNG, JPG, GIF, WebP"}))).into_response();
     };
 
     // Validate org_id is a valid UUID to prevent path traversal

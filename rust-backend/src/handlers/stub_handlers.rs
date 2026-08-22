@@ -1765,7 +1765,11 @@ pub async fn scan_rerun(
     _user: AuthUser,
     State(_state): State<Arc<AppState>>,
 ) -> impl IntoResponse {
-    Json(json!({"message": "Scan rerun queued", "scan_id": scan_id})).into_response()
+    // Honesty fix: previous version returned fake success without queueing anything.
+    (StatusCode::NOT_IMPLEMENTED, Json(json!({
+        "error": "Scan rerun is not implemented yet",
+        "scan_id": scan_id
+    }))).into_response()
 }
 
 pub async fn scan_business_report(
@@ -3444,7 +3448,7 @@ pub async fn admin_overview(
 }
 
 pub async fn admin_impersonate(
-    _admin: AdminUser,
+    su: crate::middleware::auth_middleware::SuperAdminUser,
     State(state): State<Arc<AppState>>,
     Json(body): Json<serde_json::Value>,
 ) -> impl IntoResponse {
@@ -3464,8 +3468,27 @@ pub async fn admin_impersonate(
         None => return (StatusCode::NOT_FOUND, Json(json!({"error": "User not found"}))).into_response(),
     };
 
-    let org_id = user.organization_id.as_deref();
+    // Privilege-escalation guard: never impersonate another superadmin.
     let role = user.role.as_deref().unwrap_or("user");
+    if role == "superadmin" && user.id != su.0.user_id {
+        return (StatusCode::FORBIDDEN, Json(json!({"error": "Cannot impersonate a superadmin"}))).into_response();
+    }
+
+    crate::services::audit::log_audit(
+        &state.db,
+        "admin_impersonate",
+        "superadmin",
+        "warning",
+        Some(&su.0.user_id),
+        su.0.org_id.as_deref(),
+        Some(json!({"target_user": &user.id, "target_email": &email, "target_role": role})),
+        Some("user"),
+        Some(&user.id),
+        "success",
+        None,
+    ).await;
+
+    let org_id = user.organization_id.as_deref();
     let token = create_access_token(&state.jwt_secret, &user.id, org_id, role).unwrap_or_default();
     let refresh = create_refresh_token(&state.jwt_secret, &user.id).unwrap_or_default();
 
@@ -4154,15 +4177,22 @@ pub async fn purple_team_ingest_telemetry(
 // ── Terminal endpoints ─────────────────────────────────────
 
 pub async fn terminal_agents(
-    _user: AuthUser,
+    user: AuthUser,
     State(state): State<Arc<AppState>>,
 ) -> impl IntoResponse {
-    let agents = sqlx::query_as::<_, (String, String, String, String, String, String, Option<i32>, Option<String>)>(
-        "SELECT id, name, COALESCE(hostname,''), COALESCE(ip_address,''), COALESCE(platform,'linux'), COALESCE(status,'offline'), ssh_port, ssh_username FROM agents LIMIT 50"
+    let mut agents: Vec<(String, String, String, String, String, String, Option<i32>, Option<String>)> = Vec::new();
+    match user.org_id.as_deref() {
+        Some(org) => {
+            agents = sqlx::query_as::<_, (String, String, String, String, String, String, Option<i32>, Option<String>)>(
+        "SELECT id, name, COALESCE(hostname,''), COALESCE(ip_address,''), COALESCE(platform,'linux'), COALESCE(status,'offline'), ssh_port, ssh_username FROM agents WHERE organization_id = $1 ORDER BY created_at DESC LIMIT 50"
     )
+    .bind(org)
     .fetch_all(&state.db)
     .await
     .unwrap_or_default();
+        }
+        None => {}
+    }
 
     let list: Vec<serde_json::Value> = agents.iter().map(|(id, name, host, ip, platform, status, port, user)| {
         json!({

@@ -232,6 +232,8 @@ pub async fn create_checkout_public(
     // Rate limit: 10 checkout attempts per IP per hour (prevent Stripe API abuse)
     let ip = headers.get("x-forwarded-for")
         .and_then(|v| v.to_str().ok())
+        .and_then(|s| s.rsplit(',').next())
+        .map(|s| s.trim())
         .unwrap_or("unknown");
     if _state.rate_limiter.is_limited(&format!("checkout:{}", ip), 10, std::time::Duration::from_secs(3600)) {
         return (StatusCode::TOO_MANY_REQUESTS, Json(json!({"error": "Too many checkout attempts. Try again later."}))).into_response();
