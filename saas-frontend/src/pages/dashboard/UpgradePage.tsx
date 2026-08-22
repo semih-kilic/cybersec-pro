@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import FoundingMemberBanner from '../../components/FoundingMemberBanner';
+import { FoundingMemberBanner } from '../../components/FoundingMemberBanner';
 
 interface PlanFeature {
   name: string;
