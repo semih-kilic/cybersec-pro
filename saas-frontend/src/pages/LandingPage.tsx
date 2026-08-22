@@ -11,6 +11,18 @@ import api from '../services/api';
  * Modern cybersecurity SaaS platform landing
  */
 export function LandingPage() {
+
+  const [billingPeriod, setBillingPeriod] = useState<'month' | 'year'>('month');
+  
+  const prices = {
+    starter: { month: 29, year: 290 },
+    professional: { month: 99, year: 990 },
+    enterprise: { month: 349, year: 3490 },
+  };
+  
+  const getPrice = (plan: keyof typeof prices) => billingPeriod === 'year' ? prices[plan].year : prices[plan].month;
+  const getUpgradeUrl = (plan: string) => `/dashboard/upgrade?billing=${billingPeriod}&plan=${plan}`;
+
   const { isAuthenticated, user } = useAuth();
   const { t } = useTranslation();
   const { data: toolCounts } = useToolCounts();
@@ -342,6 +354,25 @@ export function LandingPage() {
             <p className="text-gray-400 text-lg">{t('landing.pricingSubtitle')}</p>
           </div>
           
+
+          <div className="flex justify-center mb-10">
+            <div className="inline-flex items-center bg-gray-800/80 rounded-full p-1 border border-gray-700">
+              <button
+                onClick={() => setBillingPeriod('month')}
+                className={`px-5 py-2 rounded-full text-sm font-semibold transition-all ${billingPeriod === 'month' ? 'bg-white text-gray-900' : 'text-gray-400 hover:text-white'}`}
+              >
+                Monthly
+              </button>
+              <button
+                onClick={() => setBillingPeriod('year')}
+                className={`px-5 py-2 rounded-full text-sm font-semibold transition-all flex items-center gap-2 ${billingPeriod === 'year' ? 'bg-white text-gray-900' : 'text-gray-400 hover:text-white'}`}
+              >
+                Yearly
+                <span className="px-2 py-0.5 text-[10px] font-bold bg-emerald-500 text-white rounded-full">SAVE 2 MONTHS</span>
+              </button>
+            </div>
+          </div>
+
           <div className="grid md:grid-cols-4 gap-6 max-w-6xl mx-auto">
             {/* Free Trial */}
             <div className="bg-gray-800/50 rounded-2xl p-6 border border-gray-700 flex flex-col">
@@ -375,8 +406,8 @@ export function LandingPage() {
             <div className="bg-gray-800/50 rounded-2xl p-6 border border-blue-500/50 flex flex-col">
               <div className="text-lg font-medium text-blue-400 mb-2">{t('landing.plan.starter', 'Starter')}</div>
               <div className="flex items-baseline gap-1 mb-4">
-                <span className="text-4xl font-bold text-white">€29</span>
-                <span className="text-gray-400">{t('landing.plan.monthly', '/month')}</span>
+                <span className="text-4xl font-bold text-white">{billingPeriod === "year" ? "€290" : "€29"}</span>
+                <span className="text-gray-400">{t('landing.plan.monthly', billingPeriod === 'year' ? '/year' : '/month')}</span>
               </div>
               <ul className="space-y-2 mb-6 text-gray-300 text-sm">
                 <li className="flex items-center gap-2">
@@ -396,7 +427,7 @@ export function LandingPage() {
                 </li>
               </ul>
               <div className="mt-auto">
-                <Link to="/register" className="block w-full py-2 bg-blue-500/20 text-blue-400 border border-blue-500/50 text-center rounded-xl hover:bg-blue-500/30 transition text-sm">
+                <Link to={getUpgradeUrl("starter")} className="block w-full py-2 bg-blue-500/20 text-blue-400 border border-blue-500/50 text-center rounded-xl hover:bg-blue-500/30 transition text-sm">
                   {t('common.getStarted', 'Get Started')}
                 </Link>
               </div>
@@ -410,8 +441,8 @@ export function LandingPage() {
               </div>
               <div className="text-lg font-medium text-emerald-400 mb-2">{t('landing.plan.professional', 'Professional')}</div>
               <div className="flex items-baseline gap-1 mb-4">
-                <span className="text-4xl font-bold text-white">€99</span>
-                <span className="text-gray-400">{t('landing.plan.monthly', '/month')}</span>
+                <span className="text-4xl font-bold text-white">{billingPeriod === "year" ? "€990" : "€99"}</span>
+                <span className="text-gray-400">{t('landing.plan.monthly', billingPeriod === 'year' ? '/year' : '/month')}</span>
               </div>
               <ul className="space-y-2 mb-6 text-gray-300 text-sm">
                 <li className="flex items-center gap-2">
@@ -431,7 +462,7 @@ export function LandingPage() {
                 </li>
               </ul>
               <div className="mt-auto">
-                <Link to="/register" className="block w-full py-2 bg-gradient-to-r from-emerald-500 to-cyan-500 text-white text-center rounded-xl hover:from-emerald-600 hover:to-cyan-600 transition text-sm">
+                <Link to={getUpgradeUrl("professional")} className="block w-full py-2 bg-gradient-to-r from-emerald-500 to-cyan-500 text-white text-center rounded-xl hover:from-emerald-600 hover:to-cyan-600 transition text-sm">
                   {t('common.getStarted', 'Get Started')}
                 </Link>
               </div>
@@ -441,8 +472,8 @@ export function LandingPage() {
             <div className="bg-gray-800/50 rounded-2xl p-6 border border-purple-500/50 flex flex-col">
               <div className="text-lg font-medium text-purple-400 mb-2">{t('landing.plan.enterprise', 'Enterprise')}</div>
               <div className="flex items-baseline gap-1 mb-4">
-                <span className="text-4xl font-bold text-white">€349</span>
-                <span className="text-gray-400">{t('landing.plan.monthly', '/month')}</span>
+                <span className="text-4xl font-bold text-white">{billingPeriod === "year" ? "€3,490" : "€349"}</span>
+                <span className="text-gray-400">{t('landing.plan.monthly', billingPeriod === 'year' ? '/year' : '/month')}</span>
               </div>
               <ul className="space-y-2 mb-6 text-gray-300 text-sm">
                 <li className="flex items-center gap-2">
