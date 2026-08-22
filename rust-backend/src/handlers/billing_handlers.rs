@@ -34,10 +34,12 @@ pub fn resolve_plan_from_price_id(price_id: &str) -> &'static str {
     let pro_yr       = std::env::var("STRIPE_PROFESSIONAL_PRICE_ID_YEARLY").unwrap_or_default();
     let ent          = std::env::var("STRIPE_ENTERPRISE_PRICE_ID").unwrap_or_default();
     let ent_yr       = std::env::var("STRIPE_ENTERPRISE_PRICE_ID_YEARLY").unwrap_or_default();
+    let founding     = std::env::var("STRIPE_FOUNDING_MEMBER_PRICE_ID").unwrap_or_default();
 
     if (!starter.is_empty()    && price_id == starter)    || (!starter_yr.is_empty() && price_id == starter_yr) { return "starter"; }
     if (!pro.is_empty()        && price_id == pro)        || (!pro_yr.is_empty()     && price_id == pro_yr)     { return "professional"; }
     if (!ent.is_empty()        && price_id == ent)        || (!ent_yr.is_empty()     && price_id == ent_yr)     { return "enterprise"; }
+    if !founding.is_empty() && price_id == founding { return "founding_member"; }
     ""
 }
 
@@ -134,6 +136,13 @@ pub async fn create_checkout(
         ("professional", true)  => std::env::var("STRIPE_PROFESSIONAL_PRICE_ID_YEARLY").unwrap_or_default(),
         ("enterprise", false)   => std::env::var("STRIPE_ENTERPRISE_PRICE_ID").unwrap_or_default(),
         ("enterprise", true)    => std::env::var("STRIPE_ENTERPRISE_PRICE_ID_YEARLY").unwrap_or_default(),
+        ("founding_member", _) => {
+            let (fm_enabled, fm_claimed) = founding_availability(&state.db).await;
+            if !(fm_enabled && fm_claimed < FOUNDING_MEMBER_SPOTS) {
+                return (StatusCode::GONE, Json(json!({"error": "Founding Member offer is no longer available"}))).into_response();
+            }
+            std::env::var("STRIPE_FOUNDING_MEMBER_PRICE_ID").unwrap_or_default()
+        }
         _ => return (StatusCode::BAD_REQUEST, Json(json!({"error": "Invalid plan"}))).into_response(),
     };
 
@@ -242,6 +251,13 @@ pub async fn create_checkout_public(
         ("professional", false) => std::env::var("STRIPE_PROFESSIONAL_PRICE_ID").unwrap_or_default(),
         ("professional", true)  => std::env::var("STRIPE_PROFESSIONAL_PRICE_ID_YEARLY").unwrap_or_default(),
         ("enterprise", false)   => std::env::var("STRIPE_ENTERPRISE_PRICE_ID").unwrap_or_default(),
+        ("founding_member", _) => {
+            let (fm_enabled, fm_claimed) = founding_availability(&_state.db).await;
+            if !(fm_enabled && fm_claimed < FOUNDING_MEMBER_SPOTS) {
+                return (StatusCode::GONE, Json(json!({"error": "Founding Member offer is no longer available"}))).into_response();
+            }
+            std::env::var("STRIPE_FOUNDING_MEMBER_PRICE_ID").unwrap_or_default()
+        }
         ("enterprise", true)    => std::env::var("STRIPE_ENTERPRISE_PRICE_ID_YEARLY").unwrap_or_default(),
         _ => return (StatusCode::BAD_REQUEST, Json(json!({"error": "Invalid plan"}))).into_response(),
     };
@@ -551,6 +567,13 @@ pub async fn stripe_webhook(
                         .and_then(|id| id.as_str())
                         .unwrap_or("");
                     let plan_type = resolve_plan_from_price_id(price_id);
+
+                    // Founding Member first-year promise: once the subscription is
+                    // older than 365 days, swap it onto Professional monthly pricing.
+                    if plan_type == "founding_member" && !sub_id.is_empty() {
+                        let fm_secret = std::env::var("STRIPE_SECRET_KEY").unwrap_or_default();
+                        migrate_founding_subscription(&fm_secret, sub_id).await;
+                    }
 
                     if !customer_id.is_empty() && !plan_type.is_empty() {
                         let _ = sqlx::query(
@@ -886,5 +909,114 @@ mod tests {
         assert_eq!(customer_id, "cus_xyz");
         assert_eq!(sub_id, "sub_abc");
         assert_eq!(attempt, 2);
+    }
+}
+
+
+// ── Founding Member offer ───────────────────────────────────────────────────
+
+pub const FOUNDING_MEMBER_FLAG: &str = "founding_member_enabled";
+pub const FOUNDING_MEMBER_SPOTS: i64 = 10;
+
+/// Returns (admin_enabled, claimed_spots). The flag defaults to TRUE when
+/// unset. Claimed counts organizations whose canonical plan is
+/// founding_member; when such a subscription is cancelled the webhook resets
+/// the organization to 'trial', which automatically frees the spot.
+pub async fn founding_availability(db: &sqlx::PgPool) -> (bool, i64) {
+    let enabled = sqlx::query_scalar::<_, bool>(
+        "SELECT COALESCE((SELECT enabled FROM feature_flags WHERE key = $1), TRUE)",
+    )
+    .bind(FOUNDING_MEMBER_FLAG)
+    .fetch_one(db)
+    .await
+    .unwrap_or(true);
+
+    let claimed = sqlx::query_scalar::<_, i64>(
+        "SELECT COUNT(*) FROM organizations WHERE plan_type = 'founding_member'",
+    )
+    .fetch_one(db)
+    .await
+    .unwrap_or(0);
+
+    (enabled, claimed)
+}
+
+/// GET /api/v1/billing/founding-member/status — public availability probe.
+/// Deliberately does NOT expose remaining spot counts.
+pub async fn founding_member_status(State(state): State<Arc<AppState>>) -> impl IntoResponse {
+    let (enabled, claimed) = founding_availability(&state.db).await;
+    Json(json!({ "available": enabled && claimed < FOUNDING_MEMBER_SPOTS }))
+}
+
+/// First-year-only founding discount: once the subscription is older than 365
+/// days, swap it from the EUR 19 founding price onto Professional monthly. The
+/// resulting Stripe events keep organizations.plan_type in sync via the
+/// existing webhook handlers.
+pub async fn migrate_founding_subscription(stripe_secret: &str, sub_id: &str) {
+    if stripe_secret.is_empty() || sub_id.is_empty() {
+        return;
+    }
+    let client = reqwest::Client::new();
+    let url = format!("https://api.stripe.com/v1/subscriptions/{}", sub_id);
+    let resp = match client
+        .get(&url)
+        .basic_auth(stripe_secret, None::<&str>)
+        .send()
+        .await
+    {
+        Ok(r) if r.status().is_success() => r,
+        _ => return,
+    };
+    let sub: serde_json::Value = match resp.json().await {
+        Ok(v) => v,
+        Err(_) => return,
+    };
+
+    let founding_price = std::env::var("STRIPE_FOUNDING_MEMBER_PRICE_ID").unwrap_or_default();
+    let pro_price = std::env::var("STRIPE_PROFESSIONAL_PRICE_ID").unwrap_or_default();
+    if founding_price.is_empty() || pro_price.is_empty() {
+        return;
+    }
+
+    let item = sub
+        .get("items")
+        .and_then(|i| i.get("data"))
+        .and_then(|d| d.as_array())
+        .and_then(|a| a.first())
+        .cloned()
+        .unwrap_or_default();
+    let cur_price = item.pointer("/price/id").and_then(|v| v.as_str()).unwrap_or("");
+    let si = item.get("id").and_then(|v| v.as_str()).unwrap_or("");
+    let started = sub.get("start_date").and_then(|v| v.as_i64()).unwrap_or(0);
+    if cur_price != founding_price || si.is_empty() || started == 0 {
+        return;
+    }
+
+    let now = chrono::Utc::now().timestamp();
+    if now - started < 365 * 24 * 3600 {
+        return;
+    }
+
+    let form = [
+        ("items[0][id]", si.to_string()),
+        ("items[0][price]", pro_price.clone()),
+        ("proration_behavior", "none".to_string()),
+    ];
+    match client
+        .post(&url)
+        .basic_auth(stripe_secret, None::<&str>)
+        .form(&form)
+        .send()
+        .await
+    {
+        Ok(r) if r.status().is_success() => {
+            tracing::info!("Founding Member year-end migration applied: subscription {}", sub_id);
+        }
+        Ok(r) => {
+            tracing::warn!("Founding migration failed for {}: HTTP {}", sub_id, r.status());
+        }
+        Err(e) => {
+            tracing::warn!("Founding migration error for {}: {}", sub_id, e);
+        }
     }
 }

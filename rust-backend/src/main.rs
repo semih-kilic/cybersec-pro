@@ -428,6 +428,10 @@ fn build_router(state: Arc<AppState>) -> Router {
             "/api/v1/billing/sync-plan",
             post(billing_handlers::sync_plan),
         )
+        .route(
+            "/api/v1/billing/founding-member/status",
+            get(billing_handlers::founding_member_status),
+        )
         // ── Dashboard ─────────────────────────────────────────
         .route(
             "/api/v1/dashboard/security-summary",
@@ -575,6 +579,7 @@ fn build_router(state: Arc<AppState>) -> Router {
         .route("/api/v1/superadmin/logs", get(superadmin_handlers::logs))
         .route("/api/v1/superadmin/feature-flags", get(superadmin_handlers::list_feature_flags))
         .route("/api/v1/superadmin/feature-flags/:key", put(superadmin_handlers::upsert_feature_flag))
+        .route("/api/v1/superadmin/founding-member", get(superadmin_handlers::founding_member_status).put(superadmin_handlers::set_founding_member))
         .route("/api/v1/superadmin/kill-switch", get(superadmin_handlers::kill_switch_status).post(superadmin_handlers::kill_switch))
         .route("/api/v1/superadmin/organizations", get(superadmin_handlers::list_organizations))
         .route("/api/v1/superadmin/organizations/:org_id/plan", put(superadmin_handlers::change_org_plan))

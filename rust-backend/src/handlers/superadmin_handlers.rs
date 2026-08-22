@@ -541,3 +541,77 @@ pub async fn change_org_plan(
         "plan_type": body.plan_type,
     })).into_response()
 }
+
+
+// ── Founding Member offer control ───────────────────────────────────────────
+
+use crate::handlers::billing_handlers::{founding_availability, FOUNDING_MEMBER_FLAG, FOUNDING_MEMBER_SPOTS};
+
+/// GET /api/v1/superadmin/founding-member — offer status + spot usage.
+pub async fn founding_member_status(_su: SuperAdminUser, State(state): State<Arc<AppState>>) -> impl IntoResponse {
+    let (enabled, claimed) = founding_availability(&state.db).await;
+    Json(json!({
+        "flag": FOUNDING_MEMBER_FLAG,
+        "enabled": enabled,
+        "claimed": claimed,
+        "total_spots": FOUNDING_MEMBER_SPOTS,
+        "remaining": (FOUNDING_MEMBER_SPOTS - claimed).max(0),
+        "available": enabled && claimed < FOUNDING_MEMBER_SPOTS,
+    }))
+}
+
+#[derive(Deserialize)]
+pub struct FoundingMemberBody {
+    pub enabled: bool,
+    pub reason: Option<String>,
+}
+
+/// PUT /api/v1/superadmin/founding-member — manually open/close the offer.
+pub async fn set_founding_member(
+    su: SuperAdminUser,
+    State(state): State<Arc<AppState>>,
+    Json(body): Json<FoundingMemberBody>,
+) -> impl IntoResponse {
+    let res = sqlx::query(
+        r#"
+        INSERT INTO feature_flags (key, enabled, description, updated_at, created_at)
+        VALUES ($1, $2, $3, NOW(), NOW())
+        ON CONFLICT (key) DO UPDATE
+            SET enabled = EXCLUDED.enabled,
+                description = COALESCE(EXCLUDED.description, feature_flags.description),
+                updated_at = NOW()
+        "#,
+    )
+    .bind(FOUNDING_MEMBER_FLAG)
+    .bind(body.enabled)
+    .bind(Some("Founding Member 10-spot lifetime-deal offer"))
+    .execute(&state.db)
+    .await;
+
+    if let Err(e) = res {
+        return (StatusCode::INTERNAL_SERVER_ERROR, Json(json!({"error": e.to_string()}))).into_response();
+    }
+
+    audit::log_audit(
+        &state.db,
+        "founding_member_toggled",
+        "superadmin",
+        if body.enabled { "info" } else { "warning" },
+        Some(&su.0.user_id),
+        su.0.org_id.as_deref(),
+        Some(json!({"enabled": body.enabled, "reason": &body.reason})),
+        Some("feature_flag"),
+        Some(FOUNDING_MEMBER_FLAG),
+        "success",
+        None,
+    ).await;
+
+    let (_, claimed) = founding_availability(&state.db).await;
+    Json(json!({
+        "flag": FOUNDING_MEMBER_FLAG,
+        "enabled": body.enabled,
+        "claimed": claimed,
+        "total_spots": FOUNDING_MEMBER_SPOTS,
+        "available": body.enabled && claimed < FOUNDING_MEMBER_SPOTS,
+    })).into_response()
+}
