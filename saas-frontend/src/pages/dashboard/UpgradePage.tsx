@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { FoundingMemberBanner } from '../../components/FoundingMemberBanner';
+import FoundingMemberBanner from '../../components/FoundingMemberBanner';
 
 interface PlanFeature {
   name: string;
@@ -42,9 +42,9 @@ const PLANS: Plan[] = [
     name: 'Founding Member',
     monthlyPrice: 19,
     yearlyPrice: 190,
-    originalMonthlyPrice: 49,
-    originalYearlyPrice: 490,
-    badge: '50% Lifetime Discount',
+    originalMonthlyPrice: 99,
+    originalYearlyPrice: 990,
+    badge: '81% Lifetime Discount',
     urgencyText: 'Only 6 spots left',
     highlighted: true,
     features: [
@@ -78,8 +78,8 @@ const PLANS: Plan[] = [
   {
     id: 'professional',
     name: 'Professional',
-    monthlyPrice: 49,
-    yearlyPrice: 490,
+    monthlyPrice: 99,
+    yearlyPrice: 990,
     features: [
       { name: 'Unlimited scans', included: true },
       { name: 'Detailed vulnerability reports', included: true },
@@ -93,8 +93,8 @@ const PLANS: Plan[] = [
   {
     id: 'enterprise',
     name: 'Enterprise',
-    monthlyPrice: 149,
-    yearlyPrice: 1490,
+    monthlyPrice: 349,
+    yearlyPrice: 3490,
     features: [
       { name: 'Unlimited scans', included: true },
       { name: 'Detailed vulnerability reports', included: true },
