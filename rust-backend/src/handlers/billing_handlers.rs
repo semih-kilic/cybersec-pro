@@ -35,11 +35,13 @@ pub fn resolve_plan_from_price_id(price_id: &str) -> &'static str {
     let ent          = std::env::var("STRIPE_ENTERPRISE_PRICE_ID").unwrap_or_default();
     let ent_yr       = std::env::var("STRIPE_ENTERPRISE_PRICE_ID_YEARLY").unwrap_or_default();
     let founding     = std::env::var("STRIPE_FOUNDING_MEMBER_PRICE_ID").unwrap_or_default();
+    let founding_yr  = std::env::var("STRIPE_FOUNDING_MEMBER_PRICE_ID_YEARLY").unwrap_or_default();
 
     if (!starter.is_empty()    && price_id == starter)    || (!starter_yr.is_empty() && price_id == starter_yr) { return "starter"; }
     if (!pro.is_empty()        && price_id == pro)        || (!pro_yr.is_empty()     && price_id == pro_yr)     { return "professional"; }
     if (!ent.is_empty()        && price_id == ent)        || (!ent_yr.is_empty()     && price_id == ent_yr)     { return "enterprise"; }
     if !founding.is_empty() && price_id == founding { return "founding_member"; }
+    if !founding_yr.is_empty() && price_id == founding_yr { return "founding_member"; }
     ""
 }
 
@@ -136,12 +138,19 @@ pub async fn create_checkout(
         ("professional", true)  => std::env::var("STRIPE_PROFESSIONAL_PRICE_ID_YEARLY").unwrap_or_default(),
         ("enterprise", false)   => std::env::var("STRIPE_ENTERPRISE_PRICE_ID").unwrap_or_default(),
         ("enterprise", true)    => std::env::var("STRIPE_ENTERPRISE_PRICE_ID_YEARLY").unwrap_or_default(),
-        ("founding_member", _) => {
+        ("founding_member", false) => {
             let (fm_enabled, fm_claimed) = founding_availability(&state.db).await;
             if !(fm_enabled && fm_claimed < FOUNDING_MEMBER_SPOTS) {
                 return (StatusCode::GONE, Json(json!({"error": "Founding Member offer is no longer available"}))).into_response();
             }
             std::env::var("STRIPE_FOUNDING_MEMBER_PRICE_ID").unwrap_or_default()
+        }
+        ("founding_member", true) => {
+            let (fm_enabled, fm_claimed) = founding_availability(&state.db).await;
+            if !(fm_enabled && fm_claimed < FOUNDING_MEMBER_SPOTS) {
+                return (StatusCode::GONE, Json(json!({"error": "Founding Member offer is no longer available"}))).into_response();
+            }
+            std::env::var("STRIPE_FOUNDING_MEMBER_PRICE_ID_YEARLY").unwrap_or_default()
         }
         _ => return (StatusCode::BAD_REQUEST, Json(json!({"error": "Invalid plan"}))).into_response(),
     };
@@ -253,12 +262,19 @@ pub async fn create_checkout_public(
         ("professional", false) => std::env::var("STRIPE_PROFESSIONAL_PRICE_ID").unwrap_or_default(),
         ("professional", true)  => std::env::var("STRIPE_PROFESSIONAL_PRICE_ID_YEARLY").unwrap_or_default(),
         ("enterprise", false)   => std::env::var("STRIPE_ENTERPRISE_PRICE_ID").unwrap_or_default(),
-        ("founding_member", _) => {
+        ("founding_member", false) => {
             let (fm_enabled, fm_claimed) = founding_availability(&_state.db).await;
             if !(fm_enabled && fm_claimed < FOUNDING_MEMBER_SPOTS) {
                 return (StatusCode::GONE, Json(json!({"error": "Founding Member offer is no longer available"}))).into_response();
             }
             std::env::var("STRIPE_FOUNDING_MEMBER_PRICE_ID").unwrap_or_default()
+        }
+        ("founding_member", true) => {
+            let (fm_enabled, fm_claimed) = founding_availability(&_state.db).await;
+            if !(fm_enabled && fm_claimed < FOUNDING_MEMBER_SPOTS) {
+                return (StatusCode::GONE, Json(json!({"error": "Founding Member offer is no longer available"}))).into_response();
+            }
+            std::env::var("STRIPE_FOUNDING_MEMBER_PRICE_ID_YEARLY").unwrap_or_default()
         }
         ("enterprise", true)    => std::env::var("STRIPE_ENTERPRISE_PRICE_ID_YEARLY").unwrap_or_default(),
         _ => return (StatusCode::BAD_REQUEST, Json(json!({"error": "Invalid plan"}))).into_response(),
