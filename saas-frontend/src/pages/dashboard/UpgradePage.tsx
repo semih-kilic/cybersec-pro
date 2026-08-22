@@ -1,5 +1,6 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
+import { useSearchParams } from 'react-router-dom';
 import { FoundingMemberBanner } from '../../components/FoundingMemberBanner';
 
 interface PlanFeature {
@@ -111,9 +112,21 @@ const PLANS: Plan[] = [
 
 export default function UpgradePage() {
   const { t } = useTranslation();
-  const [billingPeriod, setBillingPeriod] = useState<'month' | 'year'>('month');
-  const [selectedPlan, setSelectedPlan] = useState<string | null>(null);
+  const [searchParams] = useSearchParams();
+  const [billingPeriod, setBillingPeriod] = useState<'month' | 'year'>(
+    (searchParams.get('billing') === 'year' ? 'year' : 'month')
+  );
+  const [selectedPlan, setSelectedPlan] = useState<string | null>(
+    searchParams.get('plan') || null
+  );
   const [showCheckout, setShowCheckout] = useState(false);
+
+  useEffect(() => {
+    const planParam = searchParams.get('plan');
+    const billingParam = searchParams.get('billing');
+    if (billingParam === 'year') setBillingPeriod('year');
+    if (planParam) setSelectedPlan(planParam);
+  }, []);
 
   const getPrice = (plan: Plan) => {
     return billingPeriod === 'year' ? plan.yearlyPrice : plan.monthlyPrice;
