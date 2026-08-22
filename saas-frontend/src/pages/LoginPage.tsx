@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import { useNavigate, Link, useLocation } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
 import { useTranslation } from 'react-i18next';
 import { LanguageSwitcher } from '../components/LanguageSwitcher';
@@ -135,6 +135,7 @@ export function LoginPage() {
   const [rememberMe, setRememberMe] = useState(false);
   const { login } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
   const { t } = useTranslation();
 
   const handleResendVerification = async () => {
@@ -159,7 +160,8 @@ export function LoginPage() {
 
     try {
       await login(email, password, requiresMfa ? mfaCode : undefined);
-      navigate('/dashboard');
+      const from = (location.state as { from?: { pathname: string; search: string } } | null)?.from;
+      navigate(from ? `${from.pathname}${from.search}` : '/dashboard');
     } catch (err: any) {
       if (err.requires_mfa) {
         setRequiresMfa(true);
