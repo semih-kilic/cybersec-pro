@@ -44,7 +44,7 @@ const PLANS: Plan[] = [
     monthlyPrice: 19,
     yearlyPrice: 190,
     originalMonthlyPrice: 99,
-    originalYearlyPrice: 990,
+    originalYearlyPrice: 949,
     badge: '81% Lifetime Discount',
     urgencyText: 'Only 6 spots left',
     highlighted: true,
@@ -63,7 +63,7 @@ const PLANS: Plan[] = [
     id: 'starter',
     name: 'Starter',
     monthlyPrice: 29,
-    yearlyPrice: 290,
+    yearlyPrice: 279,
     originalMonthlyPrice: undefined,
     originalYearlyPrice: undefined,
     features: [
@@ -80,7 +80,7 @@ const PLANS: Plan[] = [
     id: 'professional',
     name: 'Professional',
     monthlyPrice: 99,
-    yearlyPrice: 990,
+    yearlyPrice: 949,
     features: [
       { name: 'Unlimited scans', included: true },
       { name: 'Detailed vulnerability reports', included: true },
@@ -95,7 +95,7 @@ const PLANS: Plan[] = [
     id: 'enterprise',
     name: 'Enterprise',
     monthlyPrice: 349,
-    yearlyPrice: 3490,
+    yearlyPrice: 3349,
     features: [
       { name: 'Unlimited scans', included: true },
       { name: 'Detailed vulnerability reports', included: true },
