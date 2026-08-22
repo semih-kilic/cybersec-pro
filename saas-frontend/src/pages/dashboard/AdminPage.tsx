@@ -125,7 +125,7 @@ const SEVERITY_TONE: Record<string, 'danger' | 'warning' | 'info' | 'neutral' | 
 };
 
 const PLAN_PRICES: Record<string, number> = {
-  free: 0, starter: 99, professional: 299, enterprise: 799,
+  free: 0, starter: 29, professional: 99, enterprise: 349,
 };
 
 export function AdminPage() {

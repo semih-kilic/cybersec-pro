@@ -121,6 +121,10 @@ function PricingCard({
             : "border border-white/10 text-white/70 hover:border-[var(--color-neon-dim)] hover:text-[var(--color-neon)]"
         }`}
         onClick={() => {
+          if (planKey === "trial") {
+            window.location.href = "https://app.cyber-sec-pro.com/register";
+            return;
+          }
           fetch("/api/create-checkout-session", {
             method: "POST",
             headers: { "Content-Type": "application/json" },

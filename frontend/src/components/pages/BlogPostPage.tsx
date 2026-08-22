@@ -820,7 +820,14 @@ export default function BlogPostPage({ slug }: { slug: string }) {
 
 /** Simple markdown-to-HTML renderer for blog content */
 function renderMarkdown(md: string): string {
-  return md
+  // SECURITY: escape raw HTML first so injected <script>/<img onerror> cannot
+  // survive the markdown pass into dangerouslySetInnerHTML.
+  const safe = md
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;');
+  return safe
     .replace(/^### (.*$)/gm, '<h3>$1</h3>')
     .replace(/^## (.*$)/gm, '<h2>$1</h2>')
     .replace(/^# (.*$)/gm, '<h1>$1</h1>')

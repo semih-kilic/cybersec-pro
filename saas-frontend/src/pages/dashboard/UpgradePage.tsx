@@ -28,7 +28,7 @@ const PLANS: Plan[] = [
     monthlyPrice: 0,
     yearlyPrice: 0,
     features: [
-      { name: '5 scans per month', included: true },
+      { name: '3 scans per day', included: true },
       { name: 'Basic vulnerability reports', included: true },
       { name: 'Community support', included: true },
       { name: 'Advanced threat intelligence', included: false },
