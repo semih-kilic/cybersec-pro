@@ -83,7 +83,8 @@
     "documentation": "Documentação",
     "system": "Sistema",
     "upgradePlan": "Fazer Upgrade do Plano",
-    "signOut": "Sair"
+    "signOut": "Sair",
+    "pipelineBuilder": "Construtor de Pipeline"
   },
   "landing": {
     "badge": "289 Ferramentas Profissionais de Segurança • Conforme com GDPR 🇪🇺",
@@ -1770,5 +1771,51 @@
       "noLoggingPolicy3": "Sem dados pessoais nos resultados de varredura",
       "noLoggingPolicy4": "Resultados de varredura são excluídos automaticamente após 30 dias"
     }
+  },
+  "demo": {
+    "title": "Experimente o CyberSec Pro — Scan ao vivo grátis",
+    "subtitle": "Experimente uma análise de segurança real diretamente no seu navegador. Sem cadastro.",
+    "targetLabel": "Alvo",
+    "toolLabel": "Selecionar ferramenta",
+    "startButton": "Iniciar scan de demonstração",
+    "running": "Escaneando...",
+    "disclaimer": "Esta é uma demonstração simulada. Nenhum scan real é executado do seu navegador.",
+    "results": "Resultados do scan",
+    "cta": "Pronto para uma avaliação de segurança completa?",
+    "ctaButton": "Criar conta gratuita"
+  },
+  "freeScan": {
+    "badge": "100% grátis — sem cartão de crédito",
+    "heroTitle": "Receba seu relatório gratuito de vulnerabilidades",
+    "heroSubtitle": "Insira seu domínio abaixo e receba um relatório profissional de avaliação de segurança em minutos.",
+    "domainLabel": "Domínio para escanear",
+    "emailLabel": "Endereço de e-mail",
+    "companyLabel": "Empresa",
+    "optional": "opcional",
+    "submitButton": "Gerar relatório gratuito",
+    "successTitle": "Geração do relatório iniciada!",
+    "successBody": "Estamos escaneando seu domínio agora. Seu relatório será enviado para",
+    "successBodySuffix": "em poucos minutos.",
+    "backHome": "Voltar para a página inicial",
+    "featuresTitle": "O que você recebe",
+    "feature1Title": "Varredura automatizada de vulnerabilidades",
+    "feature1Desc": "Scans Nmap e Nikto de nível empresarial analisam seu domínio para identificar portas abertas e vulnerabilidades web.",
+    "feature2Title": "Relatório PDF profissional",
+    "feature2Desc": "Receba um relatório PDF completo, pronto para auditoria, com níveis de severidade, capturas de tela e etapas práticas de correção.",
+    "feature3Title": "Resultados em menos de 5 minutos",
+    "feature3Desc": "Nossa infraestrutura de varredura paralelizada entrega seu relatório de vulnerabilidades em minutos, não dias.",
+    "faqTitle": "Perguntas frequentes",
+    "faq1Q": "É realmente grátis?",
+    "faq1A": "Sim. Você recebe um relatório completo de vulnerabilidades sem custo e sem cartão de crédito. Acreditamos que toda organização merece acesso a testes básicos de segurança.",
+    "faq2Q": "É seguro escanear meu domínio?",
+    "faq2A": "Absolutamente. Nossos scans usam técnicas passivas e ativas seguras que não interromperão seus serviços. Nunca realizamos testes de exploração no relatório gratuito.",
+    "faq3Q": "O que eu recebo?",
+    "faq3A": "Você receberá um relatório PDF profissional cobrindo portas abertas, serviços em execução, fingerprinting de tecnologias web, vulnerabilidades conhecidas e recomendações priorizadas de correção.",
+    "faq4Q": "Posso escanear vários domínios?",
+    "faq4A": "O relatório gratuito cobre um domínio. Para domínios ilimitados e scans recorrentes, assine o plano Starter ou Professional do CyberSec Pro.",
+    "socialProof": "Confiado por mais de 2.400 equipes de segurança no mundo todo"
+  },
+  "foundingBanner": {
+    "message": "Restam apenas 6 vagas de Membro Fundador — 50% de desconto vitalício"
   }
 }

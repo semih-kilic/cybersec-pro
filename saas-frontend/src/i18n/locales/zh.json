@@ -83,7 +83,8 @@
     "documentation": "文档",
     "system": "系统",
     "upgradePlan": "升级套餐",
-    "signOut": "退出登录"
+    "signOut": "退出登录",
+    "pipelineBuilder": "流水线构建器"
   },
   "landing": {
     "badge": "289 款专业安全工具 · 符合 GDPR 合规要求 ≡",
@@ -1770,5 +1771,51 @@
       "noLoggingPolicy3": "扫描结果中不含个人数据",
       "noLoggingPolicy4": "扫描结果 30 天后自动删除"
     }
+  },
+  "demo": {
+    "title": "试用 CyberSec Pro — 免费实时扫描",
+    "subtitle": "直接在浏览器中体验真实的安全扫描。无需注册。",
+    "targetLabel": "目标",
+    "toolLabel": "选择工具",
+    "startButton": "开始演示扫描",
+    "running": "扫描中...",
+    "disclaimer": "这是一个模拟演示。不会从您的浏览器执行任何真实扫描。",
+    "results": "扫描结果",
+    "cta": "准备好进行完整的安全评估了吗？",
+    "ctaButton": "创建免费账户"
+  },
+  "freeScan": {
+    "badge": "100% 免费 — 无需信用卡",
+    "heroTitle": "获取您的免费漏洞报告",
+    "heroSubtitle": "在下方输入您的域名，几分钟内即可收到专业的安全评估报告。",
+    "domainLabel": "要扫描的域名",
+    "emailLabel": "电子邮箱",
+    "companyLabel": "公司",
+    "optional": "可选",
+    "submitButton": "生成免费报告",
+    "successTitle": "报告生成已启动！",
+    "successBody": "我们正在扫描您的域名。您的报告将发送至：",
+    "successBodySuffix": "几分钟内送达。",
+    "backHome": "返回首页",
+    "featuresTitle": "您将获得",
+    "feature1Title": "自动化漏洞扫描",
+    "feature1Desc": "企业级 Nmap 和 Nikto 扫描会检查您的域名，以识别开放端口和 Web 漏洞。",
+    "feature2Title": "专业 PDF 报告",
+    "feature2Desc": "接收一份全面的、可供审计的 PDF 报告，包含严重程度评级、截图和可执行的修复步骤。",
+    "feature3Title": "5分钟内出结果",
+    "feature3Desc": "我们的并行扫描基础架构可在几分钟（而非几天）内交付漏洞报告。",
+    "faqTitle": "常见问题",
+    "faq1Q": "这真的免费吗？",
+    "faq1A": "是的。您将免费获得一份完整的漏洞报告，无需信用卡。我们相信每个组织都应该有机会进行基本的安全测试。",
+    "faq2Q": "扫描我的域名安全吗？",
+    "faq2A": "当然安全。我们的扫描采用被动且安全的主动技术，不会中断您的服务。免费报告中绝不会进行漏洞利用级别的测试。",
+    "faq3Q": "我会收到什么？",
+    "faq3A": "您将收到一份专业的 PDF 报告，涵盖开放端口、运行中的服务、Web 技术指纹、已知漏洞以及按优先级排列的修复建议。",
+    "faq4Q": "我可以扫描多个域名吗？",
+    "faq4A": "免费报告仅涵盖一个域名。如需不限域名数量和定期扫描，请注册 CyberSec Pro 的 Starter 或 Professional 套餐。",
+    "socialProof": "全球 2,400 多个安全团队的信赖之选"
+  },
+  "foundingBanner": {
+    "message": "创始会员名额仅剩 6 个 — 终身 5 折优惠"
   }
 }

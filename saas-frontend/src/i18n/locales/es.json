@@ -83,7 +83,8 @@
     "upgradePlan": "Mejorar plan",
     "cybersecAI": "CyberSec Pro AI",
     "scanTemplates": "Plantillas de escaneo",
-    "signOut": "Cerrar sesión"
+    "signOut": "Cerrar sesión",
+    "pipelineBuilder": "Creador de Pipelines"
   },
   "landing": {
     "badge": "289 herramientas de seguridad profesionales • Cumple con RGPD 🇪🇺",
@@ -1775,5 +1776,51 @@
     },
     "subtitle": "La seguridad es la base de todo lo que construimos. Esta página documenta nuestras prácticas de seguridad, estado de cumplimiento y cómo reportar vulnerabilidades.",
     "title": "Centro de confianza"
+  },
+  "demo": {
+    "title": "Prueba CyberSec Pro — Escaneo en vivo gratis",
+    "subtitle": "Experimente el escaneo de seguridad real directamente en su navegador. Sin registro.",
+    "targetLabel": "Objetivo",
+    "toolLabel": "Seleccionar herramienta",
+    "startButton": "Iniciar escaneo de demostración",
+    "running": "Escaneando...",
+    "disclaimer": "Esta es una demostración simulada. No se ejecutan escaneos reales desde su navegador.",
+    "results": "Resultados del escaneo",
+    "cta": "¿Listo para una evaluación de seguridad completa?",
+    "ctaButton": "Crear cuenta gratuita"
+  },
+  "freeScan": {
+    "badge": "100% gratis — sin tarjeta de crédito",
+    "heroTitle": "Obtenga su informe de vulnerabilidades gratuito",
+    "heroSubtitle": "Introduzca su dominio abajo y reciba un informe profesional de evaluación de seguridad en minutos.",
+    "domainLabel": "Dominio a escanear",
+    "emailLabel": "Correo electrónico",
+    "companyLabel": "Empresa",
+    "optional": "opcional",
+    "submitButton": "Generar informe gratuito",
+    "successTitle": "¡Generación de informe iniciada!",
+    "successBody": "Estamos escaneando su dominio ahora. Su informe será enviado a",
+    "successBodySuffix": "en minutos.",
+    "backHome": "Volver al inicio",
+    "featuresTitle": "Lo que obtiene",
+    "feature1Title": "Escaneo automatizado de vulnerabilidades",
+    "feature1Desc": "Los escaneos Nmap y Nikto de nivel empresarial analizan su dominio en busca de puertos abiertos y vulnerabilidades web.",
+    "feature2Title": "Informe PDF profesional",
+    "feature2Desc": "Reciba un informe PDF completo, listo para auditoría, con niveles de gravedad, capturas de pantalla y pasos de remediación accionables.",
+    "feature3Title": "Resultados en menos de 5 minutos",
+    "feature3Desc": "Nuestra infraestructura de escaneo paralelizado entrega su informe de vulnerabilidades en minutos, no días.",
+    "faqTitle": "Preguntas frecuentes",
+    "faq1Q": "¿Es realmente gratis?",
+    "faq1A": "Sí. Recibe un informe completo de vulnerabilidades sin costo y sin tarjeta de crédito. Creemos que toda organización merece acceso a pruebas de seguridad básicas.",
+    "faq2Q": "¿Es seguro escanear mi dominio?",
+    "faq2A": "Absolutamente. Nuestros escaneos usan técnicas pasivas y activas seguras que no interrumpirán sus servicios. Nunca realizamos pruebas de explotación en el informe gratuito.",
+    "faq3Q": "¿Qué recibo?",
+    "faq3A": "Recibirá un informe PDF profesional que cubre puertos abiertos, servicios en ejecución, huella tecnológica web, vulnerabilidades conocidas y recomendaciones priorizadas de remediación.",
+    "faq4Q": "¿Puedo escanear varios dominios?",
+    "faq4A": "El informe gratuito cubre un dominio. Para dominios ilimitados y escaneos recurrentes, regístrese en el plan Starter o Professional de CyberSec Pro.",
+    "socialProof": "Con la confianza de más de 2.400 equipos de seguridad en todo el mundo"
+  },
+  "foundingBanner": {
+    "message": "Quedan solo 6 plazas de Miembro Fundador — 50% de descuento de por vida"
   }
 }

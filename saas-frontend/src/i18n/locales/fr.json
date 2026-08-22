@@ -83,7 +83,8 @@
     "upgradePlan": "Améliorer le plan",
     "cybersecAI": "CyberSec Pro AI",
     "scanTemplates": "Modèles de scan",
-    "signOut": "Déconnexion"
+    "signOut": "Déconnexion",
+    "pipelineBuilder": "Générateur de pipeline"
   },
   "landing": {
     "badge": "289 outils de sécurité professionnels • Conforme au RGPD 🇪🇺",
@@ -1775,5 +1776,51 @@
     },
     "subtitle": "La sécurité est le fondement de tout ce que nous construisons. Cette page documente nos pratiques de sécurité, notre état de conformité et comment signaler des vulnérabilités.",
     "title": "Centre de confiance"
+  },
+  "demo": {
+    "title": "Essayez CyberSec Pro — Scan en direct gratuit",
+    "subtitle": "Découvrez un véritable scan de sécurité directement dans votre navigateur. Sans inscription.",
+    "targetLabel": "Cible",
+    "toolLabel": "Choisir l'outil",
+    "startButton": "Lancer le scan de démo",
+    "running": "Analyse...",
+    "disclaimer": "Ceci est une démonstration simulée. Aucun scan réel n'est exécuté depuis votre navigateur.",
+    "results": "Résultats du scan",
+    "cta": "Prêt pour une évaluation de sécurité complète ?",
+    "ctaButton": "Créer un compte gratuit"
+  },
+  "freeScan": {
+    "badge": "100% gratuit — sans carte bancaire",
+    "heroTitle": "Obtenez votre rapport de vulnérabilités gratuit",
+    "heroSubtitle": "Saisissez votre domaine ci-dessous et recevez un rapport d'évaluation de sécurité professionnel en quelques minutes.",
+    "domainLabel": "Domaine à analyser",
+    "emailLabel": "Adresse e-mail",
+    "companyLabel": "Entreprise",
+    "optional": "facultatif",
+    "submitButton": "Générer le rapport gratuit",
+    "successTitle": "Génération du rapport lancée !",
+    "successBody": "Nous analysons votre domaine. Votre rapport sera envoyé à",
+    "successBodySuffix": "sous peu.",
+    "backHome": "Retour à l'accueil",
+    "featuresTitle": "Ce que vous obtenez",
+    "feature1Title": "Scan automatisé des vulnérabilités",
+    "feature1Desc": "Des scans Nmap et Nikto de niveau entreprise analysent votre domaine pour détecter les ports ouverts et les vulnérabilités web.",
+    "feature2Title": "Rapport PDF professionnel",
+    "feature2Desc": "Recevez un rapport PDF complet, prêt pour audit, avec niveaux de gravité, captures d'écran et étapes de correction actionnables.",
+    "feature3Title": "Résultats en moins de 5 minutes",
+    "feature3Desc": "Notre infrastructure d'analyse parallélisée livre votre rapport de vulnérabilités en minutes, pas en jours.",
+    "faqTitle": "Questions fréquentes",
+    "faq1Q": "Est-ce vraiment gratuit ?",
+    "faq1A": "Oui. Vous obtenez un rapport complet de vulnérabilités sans frais ni carte bancaire. Nous croyons que chaque organisation mérite l'accès aux tests de sécurité de base.",
+    "faq2Q": "Est-il sûr de scanner mon domaine ?",
+    "faq2A": "Absolument. Nos scans utilisent des techniques passives et actives sûres qui ne perturberont pas vos services. Nous ne réalisons jamais de tests d'exploitation dans le rapport gratuit.",
+    "faq3Q": "Que vais-je recevoir ?",
+    "faq3A": "Vous recevrez un rapport PDF professionnel couvrant les ports ouverts, les services en cours, les empreintes technologiques web, les vulnérabilités connues et des conseils de correction priorisés.",
+    "faq4Q": "Puis-je scanner plusieurs domaines ?",
+    "faq4A": "Le rapport gratuit couvre un seul domaine. Pour des domaines illimités et des scans récurrents, inscrivez-vous au plan Starter ou Professional de CyberSec Pro.",
+    "socialProof": "Approuvé par plus de 2 400 équipes de sécurité dans le monde"
+  },
+  "foundingBanner": {
+    "message": "Plus que 6 places de Membre Fondateur — 50% de réduction à vie"
   }
 }

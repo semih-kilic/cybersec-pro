@@ -83,7 +83,8 @@
     "documentation": "Dokümantasyon",
     "system": "Sistem",
     "upgradePlan": "Planı Yükselt",
-    "signOut": "Çıkış Yap"
+    "signOut": "Çıkış Yap",
+    "pipelineBuilder": "Pipeline Oluşturucu"
   },
   "landing": {
     "badge": "GÜVENLİK PLATFORMU",
@@ -1770,5 +1771,51 @@
       "noLoggingPolicy3": "Tarama sonuçlarında kişisel veri yok",
       "noLoggingPolicy4": "Tarama sonuçları 30 gün sonra otomatik silinir"
     }
+  },
+  "demo": {
+    "title": "CyberSec Pro'yu Deneyin — Ücretsiz Canlı Tarama",
+    "subtitle": "Gerçek güvenlik taramasını doğrudan tarayıcınızda deneyimleyin. Kayıt gerekmez.",
+    "targetLabel": "Hedef",
+    "toolLabel": "Araç Seçin",
+    "startButton": "Demo Taramayı Başlat",
+    "running": "Taranıyor...",
+    "disclaimer": "Bu simüle edilmiş bir demodur. Tarayıcınızdan gerçek tarama yapılmaz.",
+    "results": "Tarama Sonuçları",
+    "cta": "Kapsamlı güvenlik değerlendirmesine hazır mısınız?",
+    "ctaButton": "Ücretsiz Hesap Oluştur"
+  },
+  "freeScan": {
+    "badge": "%100 Ücretsiz — Kredi Kartı Gerekmez",
+    "heroTitle": "Ücretsiz Zafiyet Raporunuzu Alın",
+    "heroSubtitle": "Alan adınızı aşağıya girin ve dakikalar içinde profesyonel bir güvenlik değerlendirme raporu alın.",
+    "domainLabel": "Taranacak Alan Adı",
+    "emailLabel": "E-posta Adresi",
+    "companyLabel": "Şirket",
+    "optional": "isteğe bağlı",
+    "submitButton": "Ücretsiz Rapor Oluştur",
+    "successTitle": "Rapor Oluşturma Başladı!",
+    "successBody": "Alan adınız şu anda taranıyor. Raporunuz gönderilecek:",
+    "successBodySuffix": "birkaç dakika içinde.",
+    "backHome": "Ana Sayfaya Dön",
+    "featuresTitle": "Neler Elde Edersiniz",
+    "feature1Title": "Otomatik Zafiyet Taraması",
+    "feature1Desc": "Kurumsal düzeyde Nmap ve Nikto taramaları alan adınızı açık portlar ve web zafiyetleri açısından inceler.",
+    "feature2Title": "Profesyonel PDF Rapor",
+    "feature2Desc": "Önem dereceleri, ekran görüntüleri ve uygulanabilir iyileştirme adımları içeren kapsamlı, denetime hazır PDF raporu alın.",
+    "feature3Title": "5 Dakikadan Kısa Sürede Sonuçlar",
+    "feature3Desc": "Paralel tarama altyapımız zafiyet raporunuzu günler değil dakikalar içinde teslim eder.",
+    "faqTitle": "Sıkça Sorulan Sorular",
+    "faq1Q": "Bu gerçekten ücretsiz mi?",
+    "faq1A": "Evet. Kredi kartı gerekmeden eksiksiz bir zafiyet raporu alırsınız. Her kuruluşun temel güvenlik testine erişmeyi hak ettiğine inanıyoruz.",
+    "faq2Q": "Alan adımı taramak güvenli mi?",
+    "faq2A": "Kesinlikle. Taramalarımız hizmetlerinizi kesintiye uğratmayan pasif ve güvenli aktif teknikler kullanır. Ücretsiz raporda asla istismar düzeyinde test yapmayız.",
+    "faq3Q": "Neler alıyorum?",
+    "faq3A": "Açık portları, çalışan hizmetleri, web teknolojisi parmak izlerini, bilinen zafiyetleri ve önceliklendirilmiş iyileştirme önerilerini kapsayan profesyonel bir PDF raporu alırsınız.",
+    "faq4Q": "Birden fazla alan adı tarayabilir miyim?",
+    "faq4A": "Ücretsiz rapor tek alan adını kapsar. Sınırsız alan adı ve yinelenen taramalar için CyberSec Pro Starter veya Professional planına kaydolun.",
+    "socialProof": "Dünya genelinde 2.400+ güvenlik ekibinin güvendiği"
+  },
+  "foundingBanner": {
+    "message": "Sadece 6 Kurucu Üye kontenjanı kaldı — %50 Ömür Boyu İndirim"
   }
 }

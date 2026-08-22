@@ -83,7 +83,8 @@
     "upgradePlan": "Plan upgraden",
     "cybersecAI": "CyberSec Pro AI",
     "scanTemplates": "Scan-Vorlagen",
-    "signOut": "Abmelden"
+    "signOut": "Abmelden",
+    "pipelineBuilder": "Pipeline-Builder"
   },
   "landing": {
     "badge": "289 Professionelle Sicherheitstools • DSGVO-konform 🇪🇺",
@@ -1775,5 +1776,51 @@
     },
     "subtitle": "Sicherheit ist die Grundlage von allem, was wir bauen. Diese Seite dokumentiert unsere Sicherheitspraktiken, Compliance-Status und wie Sie Schwachstellen melden können.",
     "title": "Trust Center"
+  },
+  "demo": {
+    "title": "CyberSec Pro testen — kostenloser Live-Scan",
+    "subtitle": "Erleben Sie echtes Security-Scanning direkt im Browser. Keine Registrierung nötig.",
+    "targetLabel": "Ziel",
+    "toolLabel": "Tool auswählen",
+    "startButton": "Demo-Scan starten",
+    "running": "Scanne...",
+    "disclaimer": "Dies ist eine simulierte Demo. Es werden keine echten Scans aus Ihrem Browser ausgeführt.",
+    "results": "Scan-Ergebnisse",
+    "cta": "Bereit für eine vollständige Sicherheitsanalyse?",
+    "ctaButton": "Kostenloses Konto erstellen"
+  },
+  "freeScan": {
+    "badge": "100 % kostenlos — keine Kreditkarte",
+    "heroTitle": "Erhalten Sie Ihren kostenlosen Schwachstellenbericht",
+    "heroSubtitle": "Geben Sie Ihre Domain unten ein und erhalten Sie in wenigen Minuten einen professionellen Sicherheitsbericht.",
+    "domainLabel": "Zu scannende Domain",
+    "emailLabel": "E-Mail-Adresse",
+    "companyLabel": "Unternehmen",
+    "optional": "optional",
+    "submitButton": "Kostenlosen Bericht erstellen",
+    "successTitle": "Berichterstellung gestartet!",
+    "successBody": "Ihre Domain wird jetzt gescannt. Ihr Bericht wird gesendet an",
+    "successBodySuffix": "innerhalb weniger Minuten.",
+    "backHome": "Zurück zur Startseite",
+    "featuresTitle": "Das erhalten Sie",
+    "feature1Title": "Automatisiertes Schwachstellen-Scanning",
+    "feature1Desc": "Nmap- und Nikto-Scans auf Enterprise-Niveau prüfen Ihre Domain auf offene Ports und Web-Schwachstellen.",
+    "feature2Title": "Professioneller PDF-Bericht",
+    "feature2Desc": "Umfassender, auditreifer PDF-Bericht mit Schweregraden, Screenshots und umsetzbaren Behebungsschritten.",
+    "feature3Title": "Ergebnisse in unter 5 Minuten",
+    "feature3Desc": "Unsere parallelisierte Scan-Infrastruktur liefert Ihren Schwachstellenbericht in Minuten statt Tagen.",
+    "faqTitle": "Häufige Fragen",
+    "faq1Q": "Ist das wirklich kostenlos?",
+    "faq1A": "Ja. Sie erhalten einen vollständigen Schwachstellenbericht kostenlos, ohne Kreditkarte. Wir glauben, dass jede Organisation grundlegende Sicherheitstests verdient.",
+    "faq2Q": "Ist das Scannen meiner Domain sicher?",
+    "faq2A": "Absolut. Unsere Scans nutzen passive und sichere aktive Techniken, die Ihre Dienste nicht stören. Im kostenlosen Bericht führen wir niemals Exploit-Tests durch.",
+    "faq3Q": "Was erhalte ich?",
+    "faq3A": "Sie erhalten einen professionellen PDF-Bericht mit offenen Ports, laufenden Diensten, Web-Technologie-Fingerprints, bekannten Schwachstellen und priorisierten Behebungsempfehlungen.",
+    "faq4Q": "Kann ich mehrere Domains scannen?",
+    "faq4A": "Der kostenlose Bericht deckt eine Domain ab. Für unbegrenzte Domains und wiederkehrende Scans registrieren Sie sich für CyberSec Pro Starter oder Professional.",
+    "socialProof": "Über 2.400 Security-Teams weltweit vertrauen uns"
+  },
+  "foundingBanner": {
+    "message": "Nur noch 6 Gründungsmitglieder-Plätze — 50 % lebenslanger Rabatt"
   }
 }

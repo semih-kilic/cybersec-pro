@@ -83,7 +83,8 @@
     "upgradePlan": "Aggiorna piano",
     "cybersecAI": "CyberSec Pro AI",
     "scanTemplates": "Modelli di scansione",
-    "signOut": "Esci"
+    "signOut": "Esci",
+    "pipelineBuilder": "Pipeline Builder"
   },
   "landing": {
     "badge": "289 strumenti di sicurezza professionali • Conforme al GDPR 🇪🇺",
@@ -1775,5 +1776,51 @@
     },
     "subtitle": "La sicurezza è la base di tutto ciò che costruiamo. Questa pagina documenta le nostre pratiche di sicurezza, lo stato di conformità e come segnalare le vulnerabilità.",
     "title": "Trust Center"
+  },
+  "demo": {
+    "title": "Prova CyberSec Pro — Scan live gratuito",
+    "subtitle": "Sperimenta una vera scansione di sicurezza direttamente nel tuo browser. Nessuna registrazione richiesta.",
+    "targetLabel": "Target",
+    "toolLabel": "Seleziona strumento",
+    "startButton": "Avvia scan demo",
+    "running": "Scansione in corso...",
+    "disclaimer": "Questa è una demo simulata. Nessuna scansione reale viene eseguita dal tuo browser.",
+    "results": "Risultati della scansione",
+    "cta": "Pronto per una valutazione della sicurezza completa?",
+    "ctaButton": "Crea account gratuito"
+  },
+  "freeScan": {
+    "badge": "100% gratuito — senza carta di credito",
+    "heroTitle": "Ottieni il tuo report gratuito sulle vulnerabilità",
+    "heroSubtitle": "Inserisci il tuo dominio qui sotto e ricevi una valutazione di sicurezza professionale in pochi minuti.",
+    "domainLabel": "Dominio da scansionare",
+    "emailLabel": "Indirizzo email",
+    "companyLabel": "Azienda",
+    "optional": "opzionale",
+    "submitButton": "Genera report gratuito",
+    "successTitle": "Generazione del report avviata!",
+    "successBody": "Stiamo scansionando il tuo dominio. Il report sarà inviato a",
+    "successBodySuffix": "entro pochi minuti.",
+    "backHome": "Torna alla home",
+    "featuresTitle": "Cosa ottieni",
+    "feature1Title": "Scansione automatica delle vulnerabilità",
+    "feature1Desc": "Scan Nmap e Nikto di livello enterprise analizzano il tuo dominio per identificare porte aperte e vulnerabilità web.",
+    "feature2Title": "Report PDF professionale",
+    "feature2Desc": "Ricevi un report PDF completo e pronto per l'audit con livelli di gravità, screenshot e passaggi di remedazione azionabili.",
+    "feature3Title": "Risultati in meno di 5 minuti",
+    "feature3Desc": "La nostra infrastruttura di scansione parallela consegna il report delle vulnerabilità in minuti, non giorni.",
+    "faqTitle": "Domande frequenti",
+    "faq1Q": "È davvero gratuito?",
+    "faq1A": "Sì. Ricevi un report completo sulle vulnerabilità senza costi né carta di credito. Crediamo che ogni organizzazione meriti l'accesso ai test di sicurezza di base.",
+    "faq2Q": "É sicuro scansionare il mio dominio?",
+    "faq2A": "Assolutamente. Le nostre scansioni usano tecniche passive e attive sicure che non interrompono i tuoi servizi. Nel report gratuito non eseguiamo mai test a livello di exploit.",
+    "faq3Q": "Cosa ricevo?",
+    "faq3A": "Riceverai un report PDF professionale che copre porte aperte, servizi attivi, fingerprinting delle tecnologie web, vulnerabilità note e consigli di remedazione prioritizzati.",
+    "faq4Q": "Posso scansionare più domini?",
+    "faq4A": "Il report gratuito copre un solo dominio. Per domini illimitati e scansioni ricorrenti, registrati ai piani Starter o Professional di CyberSec Pro.",
+    "socialProof": "Scelto da oltre 2.400 team di sicurezza nel mondo"
+  },
+  "foundingBanner": {
+    "message": "Solo 6 posti Membro Fondatore rimasti — Sconto a vita del 50%"
   }
 }
