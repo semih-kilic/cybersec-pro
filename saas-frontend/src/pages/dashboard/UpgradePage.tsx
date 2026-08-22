@@ -563,11 +563,11 @@ export default function UpgradePage() {
               <div className="plan-card__price-block">
                 {originalPrice && (
                   <span className="plan-card__original-price">
-                    €{originalPrice}
+                    ${originalPrice}
                   </span>
                 )}
                 <span className="plan-card__price">
-                  €{price}
+                  ${price}
                 </span>
                 <span className="plan-card__interval">
                   /{billingPeriod === 'year' ? 'year' : 'month'}
@@ -576,12 +576,12 @@ export default function UpgradePage() {
               <div className="plan-card__yearly-note">
                 {billingPeriod === 'year' && price > 0 ? (
                   <>
-                    <span>That's just <strong>€{monthlyEquiv}/mo</strong></span>
+                    <span>That's just <strong>${monthlyEquiv}/mo</strong></span>
                     {savings > 0 && (
                       <>
                         {' '}
                         <span className="plan-card__yearly-savings">
-                          Save €{savings}/year
+                          Save ${savings}/year
                         </span>
                       </>
                     )}
@@ -633,13 +633,13 @@ export default function UpgradePage() {
               {billingPeriod === 'year' && getYearlySavings(selectedPlanData) > 0 && (
                 <div className="checkout-modal__row" style={{ color: '#16a34a' }}>
                   <span>Annual savings</span>
-                  <span>-€{getYearlySavings(selectedPlanData)}</span>
+                  <span>-${getYearlySavings(selectedPlanData)}</span>
                 </div>
               )}
               <div className="checkout-modal__row checkout-modal__row--total">
                 <span>Total</span>
                 <span>
-                  €{getPrice(selectedPlanData)}
+                  ${getPrice(selectedPlanData)}
                   {selectedPlanData.id !== 'free' && (
                     <span style={{ fontWeight: 400, fontSize: 13, color: '#64748b' }}>
                       {' '}/ {billingPeriod === 'year' ? 'year' : 'month'}

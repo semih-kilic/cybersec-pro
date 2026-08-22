@@ -21,7 +21,7 @@ pub struct PlanFeatures {
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct PlanConfig {
     pub level: u8,
-    pub price_eur: u32,
+    pub price_usd: u32,
     pub daily_scan_limit: u32,
     pub monthly_scan_limit: u32,
     pub concurrent_scans: u32,
@@ -37,7 +37,7 @@ pub fn get_plan_configs() -> HashMap<&'static str, PlanConfig> {
 
     plans.insert("trial", PlanConfig {
         level: 0,
-        price_eur: 0,
+        price_usd: 0,
         daily_scan_limit: 3,
         monthly_scan_limit: 0,
         concurrent_scans: 1,
@@ -64,7 +64,7 @@ pub fn get_plan_configs() -> HashMap<&'static str, PlanConfig> {
 
     plans.insert("starter", PlanConfig {
         level: 1,
-        price_eur: 29,
+        price_usd: 29,
         daily_scan_limit: 0,
         monthly_scan_limit: 30,
         concurrent_scans: 2,
@@ -91,7 +91,7 @@ pub fn get_plan_configs() -> HashMap<&'static str, PlanConfig> {
 
     plans.insert("professional", PlanConfig {
         level: 2,
-        price_eur: 99,
+        price_usd: 99,
         daily_scan_limit: 0,
         monthly_scan_limit: 250,
         concurrent_scans: 5,
@@ -118,7 +118,7 @@ pub fn get_plan_configs() -> HashMap<&'static str, PlanConfig> {
 
     plans.insert("enterprise", PlanConfig {
         level: 3,
-        price_eur: 349,
+        price_usd: 349,
         daily_scan_limit: 0,
         monthly_scan_limit: 5000,
         concurrent_scans: 0,

@@ -83,7 +83,7 @@
     "plans": {
       "trial": {
         "name": "Ücretsiz Deneme",
-        "price": "€0",
+        "price": "$0",
         "period": "14 gün",
         "features": [
           "Tüm 183 güvenlik aracı",
@@ -96,7 +96,7 @@
       },
       "starter": {
         "name": "Başlangıç",
-        "price": "€29",
+        "price": "$29",
         "period": "/ay",
         "features": [
           "Tüm 183 güvenlik aracı",
@@ -108,12 +108,12 @@
           "Öncelikli e-posta desteği (48s)",
           "3 ekip üyesi"
         ],
-        "priceYearly": "€279",
+        "priceYearly": "$279",
         "periodYearly": "/yıl"
       },
       "professional": {
         "name": "Profesyonel",
-        "price": "€99",
+        "price": "$99",
         "period": "/ay",
         "features": [
           "Tüm 183 güvenlik aracı",
@@ -128,12 +128,12 @@
           "Öncelikli destek (24s)",
           "10 ekip üyesi"
         ],
-        "priceYearly": "€949",
+        "priceYearly": "$949",
         "periodYearly": "/yıl"
       },
       "enterprise": {
         "name": "Kurumsal",
-        "price": "€349",
+        "price": "$349",
         "period": "/ay",
         "features": [
           "Tüm 183 güvenlik aracı",
@@ -151,7 +151,7 @@
           "Öncelikli destek (mesai saatleri, 2s yanıt)",
           "Üç aylık güvenlik yol haritası incelemeleri"
         ],
-        "priceYearly": "€3349",
+        "priceYearly": "$3349",
         "periodYearly": "/yıl"
       }
     },

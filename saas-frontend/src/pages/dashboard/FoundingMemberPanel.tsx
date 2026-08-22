@@ -57,7 +57,7 @@ export function FoundingMemberPanel() {
             <span aria-hidden>👑</span> Founding Member Offer
           </h3>
           <p className="mt-1 text-xs text-white/50">
-            10-spot lifetime deal (EUR 19/month, first year). Auto-closes when all spots are claimed.
+            10-spot lifetime deal ($19/month, first year). Auto-closes when all spots are claimed.
           </p>
         </div>
         <button

@@ -81,7 +81,7 @@
     "plans": {
       "trial": {
         "name": "Prueba Gratuita",
-        "price": "0 €",
+        "price": "0 $",
         "period": "3 días",
         "features": [
           "Las 183 herramientas de seguridad",
@@ -94,7 +94,7 @@
       },
       "starter": {
         "name": "Starter",
-        "price": "29 €",
+        "price": "29 $",
         "period": "/mes",
         "features": [
           "Las 183 herramientas de seguridad",
@@ -106,12 +106,12 @@
           "Soporte email prioritario (48h)",
           "3 miembros de equipo"
         ],
-        "priceYearly": "€279",
+        "priceYearly": "$279",
         "periodYearly": "/year"
       },
       "professional": {
         "name": "Professional",
-        "price": "99 €",
+        "price": "99 $",
         "period": "/mes",
         "features": [
           "Las 183 herramientas de seguridad",
@@ -126,12 +126,12 @@
           "Soporte prioritario (24h)",
           "10 miembros de equipo"
         ],
-        "priceYearly": "€949",
+        "priceYearly": "$949",
         "periodYearly": "/year"
       },
       "enterprise": {
         "name": "Enterprise",
-        "price": "349 €",
+        "price": "349 $",
         "period": "/mes",
         "features": [
           "Las 183 herramientas de seguridad",
@@ -149,7 +149,7 @@
           "Soporte prioritario (horario laboral, respuesta 2h)",
           "Revisiones trimestrales de hoja de ruta de seguridad"
         ],
-        "priceYearly": "€3349",
+        "priceYearly": "$3349",
         "periodYearly": "/year"
       }
     },

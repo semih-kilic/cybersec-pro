@@ -81,7 +81,7 @@
     "plans": {
       "trial": {
         "name": "Kostenlose Testversion",
-        "price": "€0",
+        "price": "$0",
         "period": "3 Tage",
         "features": [
           "Alle 183 Sicherheitstools",
@@ -94,7 +94,7 @@
       },
       "starter": {
         "name": "Starter",
-        "price": "29 €",
+        "price": "29 $",
         "period": "/Monat",
         "features": [
           "Alle 183 Sicherheitstools",
@@ -106,12 +106,12 @@
           "Prioritäts-E-Mail-Support (48h)",
           "3 Teammitglieder"
         ],
-        "priceYearly": "€279",
+        "priceYearly": "$279",
         "periodYearly": "/year"
       },
       "professional": {
         "name": "Professional",
-        "price": "99 €",
+        "price": "99 $",
         "period": "/Monat",
         "features": [
           "Alle 183 Sicherheitstools",
@@ -126,12 +126,12 @@
           "Prioritäts-Support (24h)",
           "10 Teammitglieder"
         ],
-        "priceYearly": "€949",
+        "priceYearly": "$949",
         "periodYearly": "/year"
       },
       "enterprise": {
         "name": "Enterprise",
-        "price": "349 €",
+        "price": "349 $",
         "period": "/Monat",
         "features": [
           "Alle 183 Sicherheitstools",
@@ -149,7 +149,7 @@
           "Priorisierter Support (Geschäftszeiten, 2h Antwort)",
           "Vierteljährliche Sicherheits-Roadmap-Reviews"
         ],
-        "priceYearly": "€3349",
+        "priceYearly": "$3349",
         "periodYearly": "/year"
       }
     },

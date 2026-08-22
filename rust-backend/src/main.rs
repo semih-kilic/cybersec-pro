@@ -714,7 +714,7 @@ async fn sales_plans_handler() -> impl axum::response::IntoResponse {
                         "enterprise" => "Enterprise",
                         _ => name,
                     },
-                    "price": cfg.price_eur,
+                    "price": cfg.price_usd,
                     "currency": "eur",
                     "interval": "month",
                     "monthly_scan_limit": cfg.monthly_scan_limit,

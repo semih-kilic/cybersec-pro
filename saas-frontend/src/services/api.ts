@@ -468,7 +468,7 @@ class ApiService {
       plan: string;
       config: {
         level: number;
-        price_eur: number;
+        price_usd: number;
         tool_limit: number;
         daily_scan_limit: number;
         max_projects: number;
@@ -500,7 +500,7 @@ class ApiService {
   async getAllPlans() {
     return this.request<{
       plans: Record<string, {
-        price_eur: number;
+        price_usd: number;
         tool_count: number;
         daily_scan_limit: number | string;
         features: Record<string, boolean>;

@@ -30,6 +30,10 @@ FROM cybersec-pro-rust-scan-engine:cache AS runtime
 COPY --from=builder /app/rust-scan-engine/target/release/cybersec-scan-engine /usr/local/bin/cybersec-scan-engine
 
 ENV SCAN_ENGINE_PORT=5002
+
+# Run as an unprivileged user (image ships tooling; binary needs no root).
+RUN useradd --create-home --shell /usr/sbin/nologin cybersec || true
+USER cybersec
 EXPOSE 5002
 
 HEALTHCHECK --interval=30s --timeout=5s --retries=3 \

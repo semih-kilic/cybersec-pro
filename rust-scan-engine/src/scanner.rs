@@ -22,6 +22,8 @@ use crate::models::*;
 pub struct ScanEngine {
     scans: Arc<RwLock<HashMap<String, ScanStatus>>>,
     outputs: Arc<RwLock<HashMap<String, Vec<String>>>>,
+    /// Live child processes keyed by scan_id — enables real cancellation.
+    children: Arc<RwLock<HashMap<String, Arc<tokio::sync::Mutex<tokio::process::Child>>>>>,
     semaphore: Arc<Semaphore>,
     max_workers: usize,
 }
@@ -31,8 +33,44 @@ impl ScanEngine {
         Self {
             scans: Arc::new(RwLock::new(HashMap::new())),
             outputs: Arc::new(RwLock::new(HashMap::new())),
+            children: Arc::new(RwLock::new(HashMap::new())),
             semaphore: Arc::new(Semaphore::new(max_workers)),
             max_workers,
+        }
+    }
+
+    /// Drop terminal scans (and their buffered output / child handles) older
+    /// than `max_age_secs`. Called at the top of `execute` to bound memory.
+    pub async fn sweep_stale(&self, max_age_secs: i64) {
+        let cutoff = Utc::now() - chrono::Duration::seconds(max_age_secs);
+        let mut stale: Vec<String> = Vec::new();
+        {
+            let mut scans = self.scans.write().await;
+            scans.retain(|id, s| {
+                let keep = s.finished_at.map(|f| f > cutoff).unwrap_or(true);
+                if !keep { stale.push(id.clone()); }
+                keep
+            });
+        }
+        if stale.is_empty() { return; }
+        {
+            let mut outputs = self.outputs.write().await;
+            for id in &stale { outputs.remove(id); }
+        }
+        {
+            let mut kids = self.children.write().await;
+            for id in &stale { kids.remove(id); }
+        }
+        tracing::debug!("swept {} stale scan entries", stale.len());
+    }
+
+    /// Kill a live child process (best-effort).
+    async fn kill_child(
+        children: &Arc<RwLock<HashMap<String, Arc<tokio::sync::Mutex<tokio::process::Child>>>>>,
+        scan_id: &str,
+    ) {
+        if let Some(child) = children.read().await.get(scan_id) {
+            let _ = child.lock().await.start_kill();
         }
     }
 
@@ -157,6 +195,9 @@ impl ScanEngine {
             error: None,
         };
 
+        // Bound memory: evict long-finished entries before registering a new one.
+        self.sweep_stale(900).await;
+
         // Register scan
         {
             let mut scans = self.scans.write().await;
@@ -170,6 +211,7 @@ impl ScanEngine {
         // Spawn execution task
         let scans = self.scans.clone();
         let outputs = self.outputs.clone();
+        let children = self.children.clone();
         let semaphore = self.semaphore.clone();
         let scan_id_clone = scan_id.clone();
 
@@ -202,7 +244,7 @@ impl ScanEngine {
             // Execute command (NO SHELL — direct process spawn)
             let result = tokio::time::timeout(
                 std::time::Duration::from_secs(timeout_secs as u64),
-                Self::run_process(&program, &args, &outputs, &scan_id_clone),
+                Self::run_process(&program, &args, &outputs, &children, &scan_id_clone),
             )
             .await;
 
@@ -224,6 +266,9 @@ impl ScanEngine {
                         scan.status = ScanState::Timeout;
                         scan.error = Some(format!("Scan timed out after {}s", timeout_secs));
                         scan.progress = 100;
+                        // Timeout alone does not kill the process (it lives in
+                        // `children` until completion) — kill it explicitly.
+                        Self::kill_child(&children, &scan_id_clone).await;
                     }
                 }
                 scan.finished_at = Some(Utc::now());
@@ -238,6 +283,7 @@ impl ScanEngine {
         program: &str,
         args: &[String],
         outputs: &Arc<RwLock<HashMap<String, Vec<String>>>>,
+        children: &Arc<RwLock<HashMap<String, Arc<tokio::sync::Mutex<tokio::process::Child>>>>>,
         scan_id: &str,
     ) -> Result<i32, AppError> {
         tracing::info!("Executing: {} {:?}", program, args);
@@ -250,7 +296,7 @@ impl ScanEngine {
             .spawn()
             .map_err(|e| AppError::ScanExec(format!("Failed to spawn {}: {}", program, e)))?;
 
-        // Stream stdout
+        // Stream stdout into the shared buffer
         if let Some(stdout) = child.stdout.take() {
             let reader = BufReader::new(stdout);
             let mut lines = reader.lines();
@@ -270,8 +316,34 @@ impl ScanEngine {
             });
         }
 
-        let status = child.wait().await
+        // Drain stderr (prevents pipe-buffer deadlock on chatty tools) and
+        // surface it as prefixed lines, capped like stdout.
+        if let Some(stderr) = child.stderr.take() {
+            let reader = BufReader::new(stderr);
+            let mut lines = reader.lines();
+            let outputs = outputs.clone();
+            let scan_id = scan_id.to_string();
+
+            tokio::spawn(async move {
+                while let Ok(Some(line)) = lines.next_line().await {
+                    let mut out = outputs.write().await;
+                    if let Some(buffer) = out.get_mut(&scan_id) {
+                        if buffer.len() < 10000 {
+                            buffer.push(format!("[stderr] {}", line));
+                        }
+                    }
+                }
+            });
+        }
+
+        // Register the live child so `cancel` can terminate it.
+        let child = Arc::new(tokio::sync::Mutex::new(child));
+        children.write().await.insert(scan_id.to_string(), child.clone());
+
+        let status = child.lock().await.wait().await
             .map_err(|e| AppError::ScanExec(format!("Process wait failed: {}", e)))?;
+
+        children.write().await.remove(scan_id);
 
         Ok(status.code().unwrap_or(-1))
     }
@@ -286,6 +358,9 @@ impl ScanEngine {
 
     /// Cancel a running scan
     pub async fn cancel(&self, scan_id: &str) -> Result<(), AppError> {
+        // Terminate the live process first (status flip alone left orphans).
+        Self::kill_child(&self.children, scan_id).await;
+
         let mut scans = self.scans.write().await;
         if let Some(scan) = scans.get_mut(scan_id) {
             if scan.status == ScanState::Running || scan.status == ScanState::Queued {

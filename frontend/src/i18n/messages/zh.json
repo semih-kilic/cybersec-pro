@@ -81,7 +81,7 @@
     "plans": {
       "trial": {
         "name": "免费试用",
-        "price": "€0",
+        "price": "$0",
         "period": "3天",
         "features": [
           "全部396个安全工具",
@@ -94,7 +94,7 @@
       },
       "starter": {
         "name": "入门版",
-        "price": "€29",
+        "price": "$29",
         "period": "/月",
         "features": [
           "全部396个安全工具",
@@ -106,12 +106,12 @@
           "优先邮件支持(48小时)",
           "3个团队成员"
         ],
-        "priceYearly": "€279",
+        "priceYearly": "$279",
         "periodYearly": "/year"
       },
       "professional": {
         "name": "专业版",
-        "price": "€99",
+        "price": "$99",
         "period": "/月",
         "features": [
           "全部396个安全工具",
@@ -126,12 +126,12 @@
           "优先支持(24小时)",
           "10个团队成员"
         ],
-        "priceYearly": "€949",
+        "priceYearly": "$949",
         "periodYearly": "/year"
       },
       "enterprise": {
         "name": "企业版",
-        "price": "€349",
+        "price": "$349",
         "period": "/月",
         "features": [
           "全部396个安全工具",
@@ -149,7 +149,7 @@
           "优先支持(工作时间，2小时响应)",
           "季度安全路线图评审"
         ],
-        "priceYearly": "€3349",
+        "priceYearly": "$3349",
         "periodYearly": "/year"
       }
     },

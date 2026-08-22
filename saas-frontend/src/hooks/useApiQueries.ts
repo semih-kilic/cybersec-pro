@@ -149,7 +149,7 @@ export interface PlanInfo {
   plan: string;
   config: {
     level: number;
-    price_eur: number;
+    price_usd: number;
     tool_limit: number;
     daily_scan_limit: number;
     max_projects: number;

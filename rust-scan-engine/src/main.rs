@@ -61,6 +61,7 @@ async fn main() -> anyhow::Result<()> {
                 .route("/api/v3/scan/:scan_id/status", get(scan_status))
                 .route("/api/v3/scan/:scan_id/cancel", post(cancel_scan))
                 .route("/api/v3/scan/:scan_id/output", get(scan_output))
+                .route("/api/v3/tools/check", post(tool_check))
                 .layer(middleware::from_fn_with_state(state.clone(), auth::auth_middleware))
         )
         .layer(CorsLayer::permissive())
@@ -146,4 +147,94 @@ async fn scan_output(
 ) -> Result<impl IntoResponse, error::AppError> {
     let output = state.scan_engine.get_output(&scan_id).await?;
     Ok(Json(serde_json::json!({"output": output})))
+}
+
+#[derive(Deserialize)]
+struct ToolCheckRequest {
+    binary: String,
+    quick_test_cmd: Option<String>,
+}
+
+/// POST /api/v3/tools/check — runs availability probes for one CLI tool inside
+/// the engine container. Replaces backend `docker exec` health checks so the
+/// API container no longer needs a docker.sock mount.
+async fn tool_check(Json(body): Json<ToolCheckRequest>) -> impl IntoResponse {
+    use std::process::Stdio;
+
+    let binary = body.binary.trim().to_string();
+    let valid = !binary.is_empty()
+        && binary.len() <= 64
+        && binary.chars().all(|ch| ch.is_alphanumeric() || ch == '-' || ch == '_' || ch == '.');
+    if !valid {
+        return (StatusCode::BAD_REQUEST, Json(serde_json::json!({"error": "invalid binary name"}))).into_response();
+    }
+
+    let installed = match tokio::process::Command::new("which")
+        .arg(&binary)
+        .stdout(Stdio::piped())
+        .stderr(Stdio::piped())
+        .output()
+        .await
+    {
+        Ok(o) => o.status.success(),
+        Err(_) => false,
+    };
+
+    let mut version: Option<String> = None;
+    let mut runtime_ok = false;
+    let mut runtime_output: Option<String> = None;
+
+    if installed {
+        if let Ok(out) = tokio::time::timeout(
+            std::time::Duration::from_secs(5),
+            tokio::process::Command::new(&binary)
+                .arg("--version")
+                .stdout(Stdio::piped())
+                .stderr(Stdio::piped())
+                .output(),
+        ).await {
+            if let Ok(o) = out {
+                let combined = format!("{}{}", String::from_utf8_lossy(&o.stdout), String::from_utf8_lossy(&o.stderr));
+                let first = combined.lines().next().unwrap_or("").chars().take(100).collect::<String>();
+                if !first.is_empty() { version = Some(first); }
+            }
+        }
+
+        let (cmd, args): (String, Vec<String>) = match body.quick_test_cmd.as_deref() {
+            Some(qt) if !qt.trim().is_empty() => {
+                let parts: Vec<String> = qt.split_whitespace().map(String::from).collect();
+                (parts[0].clone(), parts[1..].to_vec())
+            }
+            _ => (binary.clone(), vec!["--help".to_string()]),
+        };
+
+        match tokio::time::timeout(
+            std::time::Duration::from_secs(10),
+            tokio::process::Command::new(&cmd)
+                .args(&args)
+                .stdout(Stdio::piped())
+                .stderr(Stdio::piped())
+                .output(),
+        ).await {
+            Ok(Ok(o)) => {
+                runtime_ok = true;
+                let combined = format!("{}{}", String::from_utf8_lossy(&o.stdout), String::from_utf8_lossy(&o.stderr));
+                runtime_output = Some(combined.chars().take(500).collect());
+            }
+            _ => {
+                runtime_ok = false;
+                runtime_output = Some("runtime probe failed/timed out".to_string());
+            }
+        }
+    }
+
+    (
+        StatusCode::OK,
+        Json(serde_json::json!({
+            "installed": installed,
+            "version": version,
+            "runtime_ok": runtime_ok,
+            "runtime_output": runtime_output,
+        })),
+    ).into_response()
 }

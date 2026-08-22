@@ -292,8 +292,8 @@ export function AdminPage() {
               { label: t('admin.kpiOrganizations', 'Organizations'), value: d.organizations.total },
               { label: t('admin.kpiTotalScans', 'Total Scans'), value: t('admin.kpiScansWithRunning', '{{total}} ({{running}} running)', { total: d.scans.total, running: d.scans.running }) },
               { label: t('admin.kpiAgents', 'Agents'), value: t('admin.kpiAgentsWithOnline', '{{total}} ({{online}} online)', { total: d.agents.total, online: d.agents.online }) },
-              { label: t('admin.kpiMRR', 'MRR'), value: `€${Math.round(d.revenue.mrr).toLocaleString()}` },
-              { label: t('admin.kpiARR', 'ARR'), value: `€${Math.round(d.revenue.arr).toLocaleString()}` },
+              { label: t('admin.kpiMRR', 'MRR'), value: `$${Math.round(d.revenue.mrr).toLocaleString()}` },
+              { label: t('admin.kpiARR', 'ARR'), value: `$${Math.round(d.revenue.arr).toLocaleString()}` },
               { label: t('admin.kpiSignups24h', 'Signups · 24h'), value: d.signups?.last_24h ?? 0 },
               { label: t('admin.kpiNewsletter', 'Newsletter'), value: d.newsletter?.total ?? 0 },
             ]}
@@ -678,10 +678,10 @@ function RevenueTab({ d }: { d: AdminOverview }) {
       <KeyValueGrid
         cols={4}
         items={[
-          { label: t('admin.kpiMRR', 'MRR'), value: `€${Math.round(d.revenue.mrr).toLocaleString()}` },
-          { label: t('admin.kpiARR', 'ARR'), value: `€${Math.round(d.revenue.arr).toLocaleString()}` },
+          { label: t('admin.kpiMRR', 'MRR'), value: `$${Math.round(d.revenue.mrr).toLocaleString()}` },
+          { label: t('admin.kpiARR', 'ARR'), value: `$${Math.round(d.revenue.arr).toLocaleString()}` },
           { label: t('admin.payingOrgs', 'Paying Orgs'), value: `${paying} / ${d.organizations.total}` },
-          { label: t('admin.arpu', 'ARPU'), value: `€${arpu}` },
+          { label: t('admin.arpu', 'ARPU'), value: `$${arpu}` },
         ]}
       />
       <Section title={t('admin.revenueByPlan', 'Revenue by Plan')}>
@@ -692,8 +692,8 @@ function RevenueTab({ d }: { d: AdminOverview }) {
             return (
               <div key={plan} className="rounded-vos-md border border-vos-border-1 bg-vos-bg-elev-1 p-vos-4 text-center">
                 <div className="text-[10px] uppercase tracking-vos-wide text-vos-text-3">{plan}</div>
-                <div className="text-vos-2xl font-bold text-vos-text mt-1">€{(price * count).toLocaleString()}</div>
-                <div className="text-vos-xs text-vos-text-3 mt-1">{t('admin.monthlyRate', '{{count}} × €{{price}}/mo', { count, price })}</div>
+                <div className="text-vos-2xl font-bold text-vos-text mt-1">${(price * count).toLocaleString()}</div>
+                <div className="text-vos-xs text-vos-text-3 mt-1">{t('admin.monthlyRate', '{{count}} × ${{price}}/mo', { count, price })}</div>
               </div>
             );
           })}
@@ -703,9 +703,9 @@ function RevenueTab({ d }: { d: AdminOverview }) {
         <KeyValueGrid
           cols={3}
           items={[
-            { label: t('admin.revThisMonth', 'This Month'), value: `€${Math.round(d.revenue.mrr).toLocaleString()}` },
-            { label: t('admin.revQuarterly', 'Quarterly (est.)'), value: `€${Math.round(d.revenue.mrr * 3).toLocaleString()}` },
-            { label: t('admin.revAnnual', 'Annual (est.)'), value: `€${Math.round(d.revenue.arr).toLocaleString()}` },
+            { label: t('admin.revThisMonth', 'This Month'), value: `$${Math.round(d.revenue.mrr).toLocaleString()}` },
+            { label: t('admin.revQuarterly', 'Quarterly (est.)'), value: `$${Math.round(d.revenue.mrr * 3).toLocaleString()}` },
+            { label: t('admin.revAnnual', 'Annual (est.)'), value: `$${Math.round(d.revenue.arr).toLocaleString()}` },
           ]}
         />
       </Section>

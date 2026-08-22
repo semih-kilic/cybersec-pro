@@ -10,11 +10,11 @@ import api from '../../../services/api';
 import { useOpenBillingPortal } from '../../../hooks/useApiQueries';
 
 const PLAN_DETAILS: Record<string, { label: string; color: string; gradient: string; price: string }> = {
-  founding_member: { label: 'Founding Member', color: 'text-orange-400', gradient: 'from-orange-500 to-amber-600', price: 'EUR 19/mo' },
-    trial:         { label: 'Free Trial',    color: 'text-gray-400',   gradient: 'from-gray-600 to-gray-700',     price: '€0' },
-  starter:       { label: 'Starter',       color: 'text-blue-400',   gradient: 'from-blue-600 to-blue-700',     price: '€29/mo' },
-  professional:  { label: 'Professional',  color: 'text-purple-400', gradient: 'from-purple-600 to-purple-700', price: '€99/mo' },
-  enterprise:    { label: 'Enterprise',    color: 'text-yellow-400', gradient: 'from-yellow-600 to-orange-600', price: '€349/mo' },
+  founding_member: { label: 'Founding Member', color: 'text-orange-400', gradient: 'from-orange-500 to-amber-600', price: '$19/mo' },
+    trial:         { label: 'Free Trial',    color: 'text-gray-400',   gradient: 'from-gray-600 to-gray-700',     price: '$0' },
+  starter:       { label: 'Starter',       color: 'text-blue-400',   gradient: 'from-blue-600 to-blue-700',     price: '$29/mo' },
+  professional:  { label: 'Professional',  color: 'text-purple-400', gradient: 'from-purple-600 to-purple-700', price: '$99/mo' },
+  enterprise:    { label: 'Enterprise',    color: 'text-yellow-400', gradient: 'from-yellow-600 to-orange-600', price: '$349/mo' },
 };
 
 interface BillingData {
@@ -22,7 +22,7 @@ interface BillingData {
   stripe_customer_id: string | null;
   config: {
     level: number;
-    price_eur: number;
+    price_usd: number;
     tool_limit: number;
     daily_scan_limit: number;
     max_agents: number;
@@ -75,7 +75,7 @@ export function BillingTab({ userPlan }: SettingsTabProps) {
               <span>🛡️ {toolCount} tools</span>
               <span>🔄 {scanLimit} scans/day</span>
               <span>🤖 {agentLimit} agents</span>
-              {config && <span>💰 €{config.price_eur}/month</span>}
+              {config && <span>💰 ${config.price_usd}/month</span>}
             </div>
           </div>
           {planKey !== 'enterprise' && (

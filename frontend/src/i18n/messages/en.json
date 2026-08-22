@@ -83,7 +83,7 @@
     "plans": {
       "trial": {
         "name": "Free Trial",
-        "price": "€0",
+        "price": "$0",
         "period": "14 days",
         "features": [
           "All 183 security tools",
@@ -96,7 +96,7 @@
       },
       "starter": {
         "name": "Starter",
-        "price": "€29",
+        "price": "$29",
         "period": "/month",
         "features": [
           "All 183 security tools",
@@ -108,12 +108,12 @@
           "Priority email support (48h)",
           "3 team members"
         ],
-        "priceYearly": "€279",
+        "priceYearly": "$279",
         "periodYearly": "/year"
       },
       "professional": {
         "name": "Professional",
-        "price": "€99",
+        "price": "$99",
         "period": "/month",
         "features": [
           "All 183 security tools",
@@ -128,12 +128,12 @@
           "Priority support (24h)",
           "10 team members"
         ],
-        "priceYearly": "€949",
+        "priceYearly": "$949",
         "periodYearly": "/year"
       },
       "enterprise": {
         "name": "Enterprise",
-        "price": "€349",
+        "price": "$349",
         "period": "/month",
         "features": [
           "All 183 security tools",
@@ -151,7 +151,7 @@
           "Priority support (business hours, 2h response)",
           "Quarterly security roadmap reviews"
         ],
-        "priceYearly": "€3349",
+        "priceYearly": "$3349",
         "periodYearly": "/year"
       }
     },

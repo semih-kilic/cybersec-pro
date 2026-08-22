@@ -81,7 +81,7 @@
     "plans": {
       "trial": {
         "name": "無料トライアル",
-        "price": "€0",
+        "price": "$0",
         "period": "3日間",
         "features": [
           "全396セキュリティツール",
@@ -94,7 +94,7 @@
       },
       "starter": {
         "name": "スターター",
-        "price": "€29",
+        "price": "$29",
         "period": "/月",
         "features": [
           "全396セキュリティツール",
@@ -106,12 +106,12 @@
           "優先メールサポート(48h)",
           "3チームメンバー"
         ],
-        "priceYearly": "€279",
+        "priceYearly": "$279",
         "periodYearly": "/year"
       },
       "professional": {
         "name": "プロフェッショナル",
-        "price": "€99",
+        "price": "$99",
         "period": "/月",
         "features": [
           "全396セキュリティツール",
@@ -126,12 +126,12 @@
           "優先サポート(24h)",
           "10チームメンバー"
         ],
-        "priceYearly": "€949",
+        "priceYearly": "$949",
         "periodYearly": "/year"
       },
       "enterprise": {
         "name": "エンタープライズ",
-        "price": "€349",
+        "price": "$349",
         "period": "/月",
         "features": [
           "全396セキュリティツール",
@@ -149,7 +149,7 @@
           "優先サポート(営業時間内、2時間応答)",
           "四半期セキュリティロードマップレビュー"
         ],
-        "priceYearly": "€3349",
+        "priceYearly": "$3349",
         "periodYearly": "/year"
       }
     },

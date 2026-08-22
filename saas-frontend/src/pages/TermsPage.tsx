@@ -73,7 +73,7 @@ export default function TermsPage() {
             <section>
               <h2 className="text-2xl font-semibold text-white mb-3">{t('terms.section5Title', '5. Subscription & Payment')}</h2>
               <ul className="list-disc list-inside space-y-1">
-                <li>{t('terms.section5.item1', 'All prices are displayed in Euros (€) and exclude applicable VAT')}</li>
+                <li>{t('terms.section5.item1', 'All prices are displayed in US Dollars ($) and exclude applicable VAT')}</li>
                 <li>{t('terms.section5.item2', 'Subscriptions are billed monthly or annually, depending on your selection')}</li>
                 <li>{t('terms.section5.item3', 'Payments are processed securely via Stripe')}</li>
                 <li>{t('terms.section5.item4', 'You may cancel your subscription at any time; access continues until the end of the billing period')}</li>

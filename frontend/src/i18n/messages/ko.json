@@ -81,7 +81,7 @@
     "plans": {
       "trial": {
         "name": "무료 체험",
-        "price": "€0",
+        "price": "$0",
         "period": "3일",
         "features": [
           "전체 396개 보안 도구",
@@ -94,7 +94,7 @@
       },
       "starter": {
         "name": "스타터",
-        "price": "€29",
+        "price": "$29",
         "period": "/월",
         "features": [
           "전체 396개 보안 도구",
@@ -106,12 +106,12 @@
           "우선 이메일 지원 (48시간)",
           "3명 팀원"
         ],
-        "priceYearly": "€279",
+        "priceYearly": "$279",
         "periodYearly": "/year"
       },
       "professional": {
         "name": "프로페셔널",
-        "price": "€99",
+        "price": "$99",
         "period": "/월",
         "features": [
           "전체 396개 보안 도구",
@@ -126,12 +126,12 @@
           "우선 지원 (24시간)",
           "10명 팀원"
         ],
-        "priceYearly": "€949",
+        "priceYearly": "$949",
         "periodYearly": "/year"
       },
       "enterprise": {
         "name": "엔터프라이즈",
-        "price": "€349",
+        "price": "$349",
         "period": "/월",
         "features": [
           "전체 396개 보안 도구",
@@ -149,7 +149,7 @@
           "우선 지원 (업무 시간, 2시간 응답)",
           "분기별 보안 로드맵 검토"
         ],
-        "priceYearly": "€3349",
+        "priceYearly": "$3349",
         "periodYearly": "/year"
       }
     },
