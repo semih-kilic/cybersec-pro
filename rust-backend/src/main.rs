@@ -23,6 +23,7 @@ use crate::services::cache::CacheService;
 
 use middleware::rate_limiter::RateLimiter;
 use middleware::security_headers::security_headers;
+use middleware::kill_switch;
 use services::service_manager::ServiceManager;
 use services::monitor::SiteMonitor;
 
@@ -183,6 +184,10 @@ async fn main() -> anyhow::Result<()> {
 
     // Build router
     let app = build_router(state.clone())
+        .layer(axum_middleware::from_fn_with_state(
+            state.clone(),
+            kill_switch::guard,
+        ))
         .layer(axum_middleware::from_fn(security_headers))
         .layer(TraceLayer::new_for_http())
         .layer(

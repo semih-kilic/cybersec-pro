@@ -404,7 +404,7 @@ function AppRoutes() {
         <Route path="ai" element={<AIAssistantPage />} />
         <Route path="purple-team" element={<PurpleTeamPage />} />
             <Route path="pipeline-builder" element={<PipelineBuilderPage />} />
-        <Route path="admin" element={<AdminPage />} />
+        <Route path="admin" element={<SuperadminRoute><AdminPage /></SuperadminRoute>} />
         <Route path="service-manager" element={<SuperadminRoute><ServiceManagerPage /></SuperadminRoute>} />
         <Route path="god-mode" element={<SuperadminRoute><GodModePage /></SuperadminRoute>} />
         <Route path="threat-intel" element={<ThreatIntelPage />} />

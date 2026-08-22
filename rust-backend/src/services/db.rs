@@ -526,6 +526,13 @@ r#"CREATE TABLE IF NOT EXISTS feature_flags (
     updated_at TIMESTAMP DEFAULT NOW()
 )"#,
 
+// ── Stripe webhook idempotency — prevents duplicate event processing ────
+r#"CREATE TABLE IF NOT EXISTS stripe_events (
+    event_id    TEXT PRIMARY KEY,
+    event_type  TEXT NOT NULL,
+    processed_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP
+)"#,
+
 // ── Phase 18.6: trial-abuse prevention ──────────────────────────────────
 // Normalized email = lowercase, +tag stripped, gmail dots removed.
 // Used to block the same person registering twice via aliases.
