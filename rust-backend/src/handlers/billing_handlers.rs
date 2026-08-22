@@ -234,10 +234,15 @@ pub async fn create_checkout_public(
     }
 
     let plan = body.get("plan").and_then(|p| p.as_str()).unwrap_or("");
-    let price_id = match plan {
-        "starter" => std::env::var("STRIPE_STARTER_PRICE_ID").unwrap_or_default(),
-        "professional" => std::env::var("STRIPE_PROFESSIONAL_PRICE_ID").unwrap_or_default(),
-        "enterprise" => std::env::var("STRIPE_ENTERPRISE_PRICE_ID").unwrap_or_default(),
+    let billing = body.get("billing").and_then(|b| b.as_str()).unwrap_or("monthly");
+    let yearly = billing.eq_ignore_ascii_case("yearly") || billing.eq_ignore_ascii_case("annual");
+    let price_id = match (plan, yearly) {
+        ("starter", false)      => std::env::var("STRIPE_STARTER_PRICE_ID").unwrap_or_default(),
+        ("starter", true)       => std::env::var("STRIPE_STARTER_PRICE_ID_YEARLY").unwrap_or_default(),
+        ("professional", false) => std::env::var("STRIPE_PROFESSIONAL_PRICE_ID").unwrap_or_default(),
+        ("professional", true)  => std::env::var("STRIPE_PROFESSIONAL_PRICE_ID_YEARLY").unwrap_or_default(),
+        ("enterprise", false)   => std::env::var("STRIPE_ENTERPRISE_PRICE_ID").unwrap_or_default(),
+        ("enterprise", true)    => std::env::var("STRIPE_ENTERPRISE_PRICE_ID_YEARLY").unwrap_or_default(),
         _ => return (StatusCode::BAD_REQUEST, Json(json!({"error": "Invalid plan"}))).into_response(),
     };
 
