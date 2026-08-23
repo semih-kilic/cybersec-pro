@@ -110,6 +110,7 @@ services:
       context: .
       dockerfile: rust-scan-engine/Dockerfile
     container_name: cybersec-scan-engine
+    user: "0"
     cap_add:
     - NET_RAW
     - NET_ADMIN
