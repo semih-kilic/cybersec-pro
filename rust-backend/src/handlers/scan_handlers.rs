@@ -1235,6 +1235,14 @@ pub async fn start_scan(
             }
         }
 
+        // Capture the effective concurrent limit while `config` is in scope;
+        // used by the atomic INSERT guard below.
+        let concurrent_limit: i64 = if config.concurrent_scans > 0 {
+            config.concurrent_scans as i64
+        } else {
+            i64::MAX
+        };
+
         // Check concurrent scan limit
         if config.concurrent_scans > 0 {
             let running_count: (i64,) = sqlx::query_as(
@@ -1288,7 +1296,6 @@ pub async fn start_scan(
     // non-atomic COUNT check and overshoot `concurrent_scans`.
     let scan_id = Uuid::new_v4().to_string();
     let params_json = body.parameters.as_ref().cloned().unwrap_or(serde_json::json!({}));
-    let concurrent_limit: i64 = if config.concurrent_scans > 0 { config.concurrent_scans as i64 } else { i64::MAX };
     let insert_res = sqlx::query(
         "INSERT INTO scans (id, organization_id, user_id, tool_id, target, parameters, status, scan_phase, agent_id, project_id, authorization_id, started_at)
          SELECT $1, $2, $3, $4, $5, $6::jsonb, 'running', 'initializing', $7, $8, $9, CURRENT_TIMESTAMP
@@ -1314,9 +1321,8 @@ pub async fn start_scan(
         }
         Ok(r) if r.rows_affected() == 0 => {
             return (StatusCode::TOO_MANY_REQUESTS, Json(json!({
-                "error": format!("Concurrent scan limit reached ({}/{}). Wait for running scans to complete or upgrade.", concurrent_limit, config.concurrent_scans),
-                "code": "CONCURRENT_LIMIT",
-                "limit": config.concurrent_scans
+                "error": "Concurrent scan limit reached. Wait for running scans to complete or upgrade.",
+                "code": "CONCURRENT_LIMIT"
             }))).into_response();
         }
         _ => {}
