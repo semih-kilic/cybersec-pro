@@ -78,7 +78,6 @@ services:
     - AGENT_BIN_DIR=/agent-binaries
     volumes:
     - ./agent-binaries:/agent-binaries:ro
-    group_add:
     ports:
     - 127.0.0.1:5001:5001
     depends_on:

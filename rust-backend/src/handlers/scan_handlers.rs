@@ -817,7 +817,7 @@ pub async fn list_scans(
     let (scans, total): (Vec<Scan>, i64) = match (&auth.org_id, &q.status) {
         (Some(org_id), Some(status)) => {
             let rows = sqlx::query_as(
-                "SELECT * FROM scans WHERE organization_id = $1 AND status = $2 ORDER BY created_at DESC LIMIT $3 OFFSET $4"
+                "SELECT id, organization_id, user_id, tool_id, target, parameters, status, agent_id, project_id, NULL::TEXT AS output, error_log, NULL::JSONB AS findings, report_path, started_at, completed_at, created_at FROM scans FROM scans WHERE organization_id = $1 AND status = $2 ORDER BY created_at DESC LIMIT $3 OFFSET $4"
             )
             .bind(org_id).bind(status).bind(per_page as i64).bind(offset as i64)
             .fetch_all(&state.db).await.unwrap_or_default();
@@ -828,7 +828,7 @@ pub async fn list_scans(
         }
         (Some(org_id), None) => {
             let rows = sqlx::query_as(
-                "SELECT * FROM scans WHERE organization_id = $1 ORDER BY created_at DESC LIMIT $2 OFFSET $3"
+                "SELECT id, organization_id, user_id, tool_id, target, parameters, status, agent_id, project_id, NULL::TEXT AS output, error_log, NULL::JSONB AS findings, report_path, started_at, completed_at, created_at FROM scans FROM scans WHERE organization_id = $1 ORDER BY created_at DESC LIMIT $2 OFFSET $3"
             )
             .bind(org_id).bind(per_page as i64).bind(offset as i64)
             .fetch_all(&state.db).await.unwrap_or_default();
@@ -839,7 +839,7 @@ pub async fn list_scans(
         }
         (None, Some(status)) => {
             let rows = sqlx::query_as(
-                "SELECT * FROM scans WHERE user_id = $1 AND status = $2 ORDER BY created_at DESC LIMIT $3 OFFSET $4"
+                "SELECT id, organization_id, user_id, tool_id, target, parameters, status, agent_id, project_id, NULL::TEXT AS output, error_log, NULL::JSONB AS findings, report_path, started_at, completed_at, created_at FROM scans FROM scans WHERE user_id = $1 AND status = $2 ORDER BY created_at DESC LIMIT $3 OFFSET $4"
             )
             .bind(&auth.user_id).bind(status).bind(per_page as i64).bind(offset as i64)
             .fetch_all(&state.db).await.unwrap_or_default();
@@ -850,7 +850,7 @@ pub async fn list_scans(
         }
         (None, None) => {
             let rows = sqlx::query_as(
-                "SELECT * FROM scans WHERE user_id = $1 ORDER BY created_at DESC LIMIT $2 OFFSET $3"
+                "SELECT id, organization_id, user_id, tool_id, target, parameters, status, agent_id, project_id, NULL::TEXT AS output, error_log, NULL::JSONB AS findings, report_path, started_at, completed_at, created_at FROM scans FROM scans WHERE user_id = $1 ORDER BY created_at DESC LIMIT $2 OFFSET $3"
             )
             .bind(&auth.user_id).bind(per_page as i64).bind(offset as i64)
             .fetch_all(&state.db).await.unwrap_or_default();
@@ -1282,6 +1282,46 @@ pub async fn start_scan(
     let (program, command_args) = build_command(&tool.binary_name.as_deref().unwrap_or(&tool.name), target, command_template.as_deref())
         .unwrap_or_else(|_| (tool.name.clone(), vec![target.to_string()]));
 
+    // Create scan record FIRST with an atomic concurrency guard: the INSERT only
+    // proceeds when the org's running+pending count is below the plan limit.
+    // This closes the TOCTOU race where parallel requests each pass the earlier
+    // non-atomic COUNT check and overshoot `concurrent_scans`.
+    let scan_id = Uuid::new_v4().to_string();
+    let params_json = body.parameters.as_ref().cloned().unwrap_or(serde_json::json!({}));
+    let concurrent_limit: i64 = if config.concurrent_scans > 0 { config.concurrent_scans as i64 } else { i64::MAX };
+    let insert_res = sqlx::query(
+        "INSERT INTO scans (id, organization_id, user_id, tool_id, target, parameters, status, scan_phase, agent_id, project_id, authorization_id, started_at)
+         SELECT $1, $2, $3, $4, $5, $6::jsonb, 'running', 'initializing', $7, $8, $9, CURRENT_TIMESTAMP
+         WHERE (SELECT COUNT(*) FROM scans WHERE organization_id = $2 AND status IN ('running','pending')) < $10"
+    )
+    .bind(&scan_id)
+    .bind(&org_id)
+    .bind(&auth.user_id)
+    .bind(&tool.id)
+    .bind(target)
+    .bind(&params_json)
+    .bind(&body.agent_id)
+    .bind(&body.project_id)
+    .bind(&authorization_id)
+    .bind(concurrent_limit)
+    .execute(&state.db)
+    .await;
+
+    match insert_res {
+        Err(e) => {
+            tracing::error!("Failed to insert scan: {}", e);
+            return (StatusCode::INTERNAL_SERVER_ERROR, Json(json!({"error": format!("Failed to create scan: {}", e)}))).into_response();
+        }
+        Ok(r) if r.rows_affected() == 0 => {
+            return (StatusCode::TOO_MANY_REQUESTS, Json(json!({
+                "error": format!("Concurrent scan limit reached ({}/{}). Wait for running scans to complete or upgrade.", concurrent_limit, config.concurrent_scans),
+                "code": "CONCURRENT_LIMIT",
+                "limit": config.concurrent_scans
+            }))).into_response();
+        }
+        _ => {}
+    }
+
     let scan_engine_metadata = if body.agent_id.is_none() {
         match configured_scan_engine_url() {
             Some(engine_url) => {
@@ -1302,6 +1342,11 @@ pub async fn start_scan(
                         remote_scan_id: remote_scan.scan_id,
                     }),
                     Err(error) => {
+                        // Roll back the local record so the concurrency slot is freed.
+                        let _ = sqlx::query("DELETE FROM scans WHERE id = $1")
+                            .bind(&scan_id)
+                            .execute(&state.db)
+                            .await;
                         tracing::error!("Failed to delegate scan to scan-engine: {}", error);
                         return (
                             StatusCode::BAD_GATEWAY,
@@ -1317,29 +1362,14 @@ pub async fn start_scan(
         None
     };
 
-    // Create scan record
-    let scan_id = Uuid::new_v4().to_string();
-    let mut params_json = body.parameters.as_ref().cloned().unwrap_or(serde_json::json!({}));
+    // Merge engine metadata into parameters after a successful dispatch.
     if let Some(metadata) = &scan_engine_metadata {
-        params_json = merge_scan_parameters(&params_json, metadata);
-    }
-    if let Err(e) = sqlx::query(
-        "INSERT INTO scans (id, organization_id, user_id, tool_id, target, parameters, status, scan_phase, agent_id, project_id, authorization_id, started_at)
-         VALUES ($1, $2, $3, $4, $5, $6::jsonb, 'running', 'initializing', $7, $8, $9, CURRENT_TIMESTAMP)"
-    )
-    .bind(&scan_id)
-    .bind(&org_id)
-    .bind(&auth.user_id)
-    .bind(&tool.id)
-    .bind(target)
-    .bind(&params_json)
-    .bind(&body.agent_id)
-    .bind(&body.project_id)
-    .bind(&authorization_id)
-    .execute(&state.db)
-    .await {
-        tracing::error!("Failed to insert scan: {}", e);
-        return (StatusCode::INTERNAL_SERVER_ERROR, Json(json!({"error": format!("Failed to create scan: {}", e)}))).into_response();
+        let merged = merge_scan_parameters(&params_json, metadata);
+        let _ = sqlx::query("UPDATE scans SET parameters = $1::jsonb WHERE id = $2")
+            .bind(&merged)
+            .bind(&scan_id)
+            .execute(&state.db)
+            .await;
     }
 
     // Phase: initializing

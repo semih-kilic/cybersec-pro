@@ -648,10 +648,10 @@ fn generate_html_report(
 
         scan_sections.push_str(&format!(r#"
         <div class="scan-block">
-            <h3>Scan #{n}: {tool} → {target}</h3>
+            <h3>Scan #{n}: {html_escape(tool)} → {html_escape(target)}</h3>
             <table class="meta-table">
                 <tr><td><strong>Tool</strong></td><td>{tool}</td></tr>
-                <tr><td><strong>Target</strong></td><td>{target}</td></tr>
+                <tr><td><strong>Target</strong></td><td>{html_escape(target)}</td></tr>
                 <tr><td><strong>Started</strong></td><td>{started}</td></tr>
                 <tr><td><strong>Completed</strong></td><td>{completed}</td></tr>
                 <tr><td><strong>Scan ID</strong></td><td style="font-family:monospace;font-size:11px">{sid}</td></tr>
@@ -1120,7 +1120,7 @@ fn build_findings_html(scan: &ScanRow) -> String {
                     let state_color = if state == "open" { "#16a34a" } else { "#94a3b8" };
                     html.push_str(&format!(
                         "<tr><td><strong>{}</strong></td><td>{}</td><td style=\"color:{}\">{}</td><td>{}</td></tr>",
-                        port, proto, state_color, state, service
+                        port, html_escape(proto), state_color, html_escape(state), html_escape(service)
                     ));
                 }
                 html.push_str("</table>");
@@ -1145,7 +1145,7 @@ fn build_findings_html(scan: &ScanRow) -> String {
                     };
                     html.push_str(&format!(
                         "<tr><td><span class=\"sev {}\">{}</span></td><td>{}</td><td>{}</td><td>{}</td></tr>",
-                        sev_class, sev.to_uppercase(), title, desc, cve
+                        sev_class, html_escape(&sev.to_uppercase()), html_escape(title), html_escape(desc), html_escape(cve)
                     ));
                 }
                 html.push_str("</table>");
@@ -1388,29 +1388,45 @@ fn generate_json_report(
 // ═══════════════════════════════════════════════════════════
 // CSV Report Generator
 // ═══════════════════════════════════════════════════════════
+/// Escape text interpolated into HTML report bodies (stored-XSS guard).
+fn html_escape(s: &str) -> String {
+    s.replace('&', "&amp;")
+     .replace('<', "&lt;")
+     .replace('>', "&gt;")
+     .replace('"', "&quot;")
+}
+
 fn generate_csv_report(scans: &[(ScanRow, String)], now: &str) -> String {
-    let mut csv = String::from("Scan ID,Tool,Target,Port,Protocol,State,Service,Severity,Finding,Generated\n");
+    // Quote every field and neutralize spreadsheet formula injection.
+    let q = |s: &str| -> String {
+        let mut t = s.to_string();
+        if t.starts_with('=') || t.starts_with('+') || t.starts_with('-') || t.starts_with('@') {
+            t = format!("'{}", t);
+        }
+        format!("\"{}\"", t.replace('"', "\"\"\""))
+    };
+    let mut csv = String::from("\"Scan ID\",\"Tool\",\"Target\",\"Port\",\"Protocol\",\"State\",\"Service\",\"Severity\",\"Finding\",\"Generated\"\n");
     for (scan, tool_name) in scans {
         if let Some(ref f) = scan.findings {
             if let Some(services) = f.get("services").and_then(|v| v.as_array()) {
                 for svc in services {
-                    csv.push_str(&format!("{},{},{},{},{},{},{},info,open port,{}\n",
-                        scan.id, tool_name, scan.target,
+                    csv.push_str(&format!("{},{},{},{},{},{},{},{},{},{}\n",
+                        q(&scan.id), q(tool_name), q(&scan.target),
                         svc.get("port").and_then(|v| v.as_i64()).unwrap_or(0),
-                        svc.get("protocol").and_then(|v| v.as_str()).unwrap_or("tcp"),
-                        svc.get("state").and_then(|v| v.as_str()).unwrap_or(""),
-                        svc.get("service").and_then(|v| v.as_str()).unwrap_or(""),
-                        now,
+                        q(svc.get("protocol").and_then(|v| v.as_str()).unwrap_or("tcp")),
+                        q(svc.get("state").and_then(|v| v.as_str()).unwrap_or("")),
+                        q(svc.get("service").and_then(|v| v.as_str()).unwrap_or("")),
+                        q("info"), q("open port"), q(now),
                     ));
                 }
             }
             if let Some(vulns) = f.get("vulnerabilities").and_then(|v| v.as_array()) {
                 for vuln in vulns {
-                    let title = vuln.get("title").and_then(|v| v.as_str()).unwrap_or("").replace(',', ";");
-                    csv.push_str(&format!("{},{},{},,,,,{},{},{}\n",
-                        scan.id, tool_name, scan.target,
-                        vuln.get("severity").and_then(|v| v.as_str()).unwrap_or("info"),
-                        title, now,
+                    let title = vuln.get("title").and_then(|v| v.as_str()).unwrap_or("");
+                    csv.push_str(&format!("{},{},{},,,,,{}, {},{}\n",
+                        q(&scan.id), q(tool_name), q(&scan.target),
+                        q(vuln.get("severity").and_then(|v| v.as_str()).unwrap_or("info")),
+                        q(title), q(now),
                     ));
                 }
             }
