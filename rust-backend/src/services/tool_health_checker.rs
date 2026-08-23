@@ -1,45 +1,63 @@
 use sqlx::PgPool;
 use std::time::Duration;
-use tokio::process::Command;
 use tracing::info;
 
-const SCAN_ENGINE_CONTAINER: &str = "cybersec-scan-engine";
+/// Tool health checks now run INSIDE the scan-engine container and are exposed
+/// over an authenticated HTTP endpoint (`POST /api/v3/tools/check`). This lets
+/// the API container drop its docker.sock mount entirely (container-escape
+/// hardening). One HTTP round-trip replaces 2-3 `docker exec` calls per tool.
 
-/// Build a docker-exec command that runs the given binary inside the scan-engine container.
-/// Keeps binary name as a single argument to avoid shell injection.
-fn exec_in_scan_engine(binary_name: &str) -> Command {
-    let mut cmd = Command::new("docker");
-    cmd.arg("exec")
-        .arg(SCAN_ENGINE_CONTAINER)
-        .arg(binary_name)
-        .kill_on_drop(true);
-    cmd
+fn engine_url() -> String {
+    std::env::var("SCAN_ENGINE_URL").unwrap_or_else(|_| "http://rust-scan-engine:5002".to_string())
 }
 
-/// Check whether the binary exists inside the scan-engine container.
-async fn binary_installed(binary_name: &str) -> bool {
-    let out = Command::new("docker")
-        .arg("exec")
-        .arg(SCAN_ENGINE_CONTAINER)
-        .arg("which")
-        .arg(binary_name)
-        .output()
-        .await;
-    matches!(out, Ok(o) if o.status.success())
+async fn engine_token() -> String {
+    crate::services::auth::jwt::create_access_token(
+        &std::env::var("JWT_SECRET_KEY").unwrap_or_default(),
+        "scan-engine",
+        None,
+        "service",
+    )
+    .unwrap_or_default()
 }
 
-/// Run a quick test command inside the scan-engine container.
-async fn run_in_scan_engine(
+#[derive(Debug, serde::Deserialize)]
+struct EngineToolCheck {
+    #[serde(default)]
+    installed: bool,
+    #[serde(default)]
+    version: Option<String>,
+    #[serde(default)]
+    runtime_ok: bool,
+    #[serde(default)]
+    runtime_output: Option<String>,
+}
+
+async fn engine_tool_check(
     binary_name: &str,
-    args: &[&str],
-    timeout_secs: u64,
-) -> Result<std::process::Output, std::io::Error> {
-    let mut cmd = exec_in_scan_engine(binary_name);
-    cmd.args(args);
-    tokio::time::timeout(Duration::from_secs(timeout_secs), cmd.output())
+    quick_test_cmd: Option<&str>,
+) -> Result<EngineToolCheck, String> {
+    let client = reqwest::Client::builder()
+        .timeout(Duration::from_secs(25))
+        .build()
+        .map_err(|e| e.to_string())?;
+
+    let resp = client
+        .post(format!("{}/api/v3/tools/check", engine_url()))
+        .bearer_auth(&engine_token().await)
+        .json(&serde_json::json!({
+            "binary": binary_name,
+            "quick_test_cmd": quick_test_cmd,
+        }))
+        .send()
         .await
-        .map_err(|_| tokio::io::Error::new(tokio::io::ErrorKind::TimedOut, "timeout").into())
-        .and_then(|r| r)
+        .map_err(|e| format!("engine unreachable: {}", e))?;
+
+    let status = resp.status();
+    if !status.is_success() {
+        return Err(format!("engine returned {}", status));
+    }
+    resp.json::<EngineToolCheck>().await.map_err(|e| format!("bad engine payload: {}", e))
 }
 
 #[derive(Debug, Clone)]
@@ -77,86 +95,38 @@ pub async fn check_tool_health_enhanced(
         status: "unhealthy".to_string(),
     };
 
-    // 1. Check if binary exists inside the scan-engine container
-    let installed = binary_installed(binary_name).await;
-    if !installed {
-        result.status = "not_installed".to_string();
-        result.error_message = Some(format!("Binary '{}' not found in scan-engine container", binary_name));
-        result.response_time_ms = Some(start.elapsed().as_millis() as i64);
-        persist_health_check(pool, &result).await;
-        return result;
-    }
-    result.installed = true;
-
-    // 2. Get version (with 5s timeout, kill on drop to prevent zombie processes)
-    {
-        let version_output = run_in_scan_engine(binary_name, &["--version"], 5).await;
-
-        if let Ok(out) = version_output {
-            let stdout = String::from_utf8_lossy(&out.stdout).to_string();
-            let stderr = String::from_utf8_lossy(&out.stderr).to_string();
-            let combined = format!("{}{}", stdout, stderr);
-            let version_str = combined.lines().next().unwrap_or("").chars().take(100).collect::<String>();
-            if !version_str.is_empty() {
-                result.version = Some(version_str);
+    match engine_tool_check(binary_name, quick_test_cmd).await {
+        Ok(check) => {
+            result.installed = check.installed;
+            result.version = check.version.filter(|v| !v.is_empty());
+            result.runtime_ok = check.runtime_ok;
+            result.runtime_output = check.runtime_output;
+            if !check.installed {
+                result.status = "not_installed".to_string();
+                result.error_message = Some(format!("Binary '{}' not found in scan-engine", binary_name));
             }
+        }
+        Err(err) => {
+            // Engine unreachable is a degraded signal, not proof the tool is missing.
+            result.error_message = Some(format!("Health probe failed: {}", err));
+            result.status = "degraded".to_string();
+            result.response_time_ms = Some(start.elapsed().as_millis() as i64);
+            persist_health_check(pool, &result).await;
+            return result;
         }
     }
 
-    // 3. Quick runtime test (if provided)
-    if let Some(test_cmd) = quick_test_cmd {
-        let parts: Vec<&str> = test_cmd.split_whitespace().collect();
-        if let Some((cmd, args)) = parts.split_first() {
-            let mut command = Command::new("docker");
-            command.arg("exec").arg(SCAN_ENGINE_CONTAINER).arg(cmd);
-            command.args(args).kill_on_drop(true);
-            let timeout = Duration::from_secs(10);
-            match tokio::time::timeout(timeout, command.output()).await {
-                Ok(Ok(out)) => {
-                    result.runtime_ok = out.status.success() || out.status.code() != None;
-                    let stdout = String::from_utf8_lossy(&out.stdout).to_string();
-                    let stderr = String::from_utf8_lossy(&out.stderr).to_string();
-                    result.runtime_output = Some(format!("{}{}", stdout, stderr).chars().take(500).collect());
-                }
-                Ok(Err(e)) => {
-                    result.error_message = Some(format!("Runtime test failed: {}", e));
-                }
-                Err(_) => {
-                    result.error_message = Some("Runtime test timed out (10s)".to_string());
-                }
-            }
-        }
-    } else {
-        // Default quick test: run with --help (with 5s timeout, kill on drop)
-        let help_output = run_in_scan_engine(binary_name, &["--help"], 5).await;
-
-        match help_output {
-            Ok(out) => {
-                result.runtime_ok = true;
-                let stdout = String::from_utf8_lossy(&out.stdout);
-                result.runtime_output = Some(format!("{} bytes help output", stdout.len()));
-            }
-            Err(e) => {
-                result.error_message = Some(format!("Help test failed: {}", e));
-                result.runtime_ok = true;
-            }
-        }
-    }
-
-    // 4. Determine final status
     result.response_time_ms = Some(start.elapsed().as_millis() as i64);
     result.status = if result.runtime_ok {
         "healthy".to_string()
     } else if result.installed {
         "degraded".to_string()
     } else {
-        "unhealthy".to_string()
+        "not_installed".to_string()
     };
 
-    // 5. Persist to DB
     persist_health_check(pool, &result).await;
 
-    // 6. Update tools table health columns
     let _ = sqlx::query(
         "UPDATE tools SET health_status = $1, health_exit_code = $2, health_evidence = $3, health_probe = $4, last_health_check = NOW() WHERE id = $5"
     )
@@ -174,8 +144,8 @@ pub async fn check_tool_health_enhanced(
 /// Persist health check result to tool_health_checks table
 async fn persist_health_check(pool: &PgPool, result: &HealthCheckResult) {
     let _ = sqlx::query(
-        r#"INSERT INTO tool_health_checks 
-           (tool_id, check_type, status, installed, version, runtime_ok, runtime_output, 
+        r#"INSERT INTO tool_health_checks
+           (tool_id, check_type, status, installed, version, runtime_ok, runtime_output,
             dependency_ok, dependency_output, response_time_ms, error_message, checked_at)
            VALUES ($1, 'full', $2, $3, $4, $5, $6, $7, $8, $9, $10, NOW())"#
     )
@@ -248,7 +218,6 @@ pub async fn run_full_health_check(pool: &PgPool) -> Vec<HealthCheckResult> {
 pub async fn run_health_check_loop(pool: PgPool) {
     info!("Tool health check loop started");
 
-    // Run initial health check on startup (non-blocking, 30 tools per batch)
     info!("Running startup health check for all tools...");
     let startup_pool = pool.clone();
     tokio::spawn(async move {
@@ -259,7 +228,6 @@ pub async fn run_health_check_loop(pool: PgPool) {
     });
 
     loop {
-        // Run at 3:00 AM daily
         let now = chrono::Utc::now();
         let tomorrow_3am = {
             let mut target = now + chrono::Duration::hours(24);
