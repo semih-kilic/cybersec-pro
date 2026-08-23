@@ -1171,6 +1171,8 @@ pub async fn start_scan(
     let plan = org_plan.as_ref().map(|p| p.0.clone()).unwrap_or_else(|| "trial".into());
     let org_created_at = org_plan.as_ref().and_then(|p| p.1.clone());
 
+    let mut concurrent_limit: i64 = i64::MAX;
+
     // Check plan limits (no tool-level blocking — all tools accessible to all plans)
     let plan_configs = crate::services::plan::get_plan_configs();
     if let Some(config) = plan_configs.get(plan.as_str()) {
@@ -1235,9 +1237,7 @@ pub async fn start_scan(
             }
         }
 
-        // Capture the effective concurrent limit while `config` is in scope;
-        // used by the atomic INSERT guard below.
-        let concurrent_limit: i64 = if config.concurrent_scans > 0 {
+        concurrent_limit = if config.concurrent_scans > 0 {
             config.concurrent_scans as i64
         } else {
             i64::MAX

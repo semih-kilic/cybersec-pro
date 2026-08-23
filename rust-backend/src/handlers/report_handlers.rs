@@ -645,13 +645,15 @@ fn generate_html_report(
             .replace('&', "&amp;").replace('<', "&lt;").replace('>', "&gt;");
         let started = scan.started_at.map(|d| d.format("%Y-%m-%d %H:%M").to_string()).unwrap_or_default();
         let completed = scan.completed_at.map(|d| d.format("%Y-%m-%d %H:%M").to_string()).unwrap_or_default();
+        let tn = html_escape(tool_name);
+        let tg = html_escape(scan.target.as_str());
 
         scan_sections.push_str(&format!(r#"
         <div class="scan-block">
-            <h3>Scan #{n}: {html_escape(tool)} → {html_escape(target)}</h3>
+            <h3>Scan #{n}: {tn} → {tg}</h3>
             <table class="meta-table">
                 <tr><td><strong>Tool</strong></td><td>{tool}</td></tr>
-                <tr><td><strong>Target</strong></td><td>{html_escape(target)}</td></tr>
+                <tr><td><strong>Target</strong></td><td>{tg}</td></tr>
                 <tr><td><strong>Started</strong></td><td>{started}</td></tr>
                 <tr><td><strong>Completed</strong></td><td>{completed}</td></tr>
                 <tr><td><strong>Scan ID</strong></td><td style="font-family:monospace;font-size:11px">{sid}</td></tr>
