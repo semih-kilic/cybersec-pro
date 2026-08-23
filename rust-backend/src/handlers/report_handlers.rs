@@ -665,8 +665,6 @@ fn generate_html_report(
             </div>
         </div>"#,
             n = i + 1,
-            tool = tool_name,
-            target = scan.target,
             started = started,
             completed = completed,
             sid = scan.id,
