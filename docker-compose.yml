@@ -110,6 +110,9 @@ services:
       context: .
       dockerfile: rust-scan-engine/Dockerfile
     container_name: cybersec-scan-engine
+    cap_add:
+    - NET_RAW
+    - NET_ADMIN
     restart: always
     env_file:
     - ./rust-backend/.env
