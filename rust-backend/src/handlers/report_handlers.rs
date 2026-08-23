@@ -652,7 +652,7 @@ fn generate_html_report(
         <div class="scan-block">
             <h3>Scan #{n}: {tn} → {tg}</h3>
             <table class="meta-table">
-                <tr><td><strong>Tool</strong></td><td>{tool}</td></tr>
+                <tr><td><strong>Tool</strong></td><td>{tn}</td></tr>
                 <tr><td><strong>Target</strong></td><td>{tg}</td></tr>
                 <tr><td><strong>Started</strong></td><td>{started}</td></tr>
                 <tr><td><strong>Completed</strong></td><td>{completed}</td></tr>
