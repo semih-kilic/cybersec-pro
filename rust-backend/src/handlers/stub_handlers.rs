@@ -3344,12 +3344,25 @@ pub async fn admin_overview(
         .fetch_all(&state.db).await.unwrap_or_default();
     let plans_dist: serde_json::Map<String, serde_json::Value> = plans.into_iter().map(|(p, c)| (p, json!(c))).collect();
 
-    // Recent users
-    let recent_users = sqlx::query_as::<_, (String, String, String, String, Option<String>, bool, String)>(
-        "SELECT id, email, COALESCE(first_name,''), COALESCE(role,'user'), organization_id, is_active, CAST(created_at AS TEXT) FROM users ORDER BY created_at DESC LIMIT 10"
+    // Users — enriched full list for the admin panel (org, plan, verification, activity)
+    let user_rows = sqlx::query(
+        "SELECT u.id, u.email, COALESCE(u.first_name,'') AS first_name, COALESCE(u.last_name,'') AS last_name,                 COALESCE(u.role,'user') AS role, u.organization_id, u.is_active,                 COALESCE(u.email_verified, FALSE) AS email_verified,                 CAST(u.created_at AS TEXT) AS created_at,                 CAST(u.last_login AS TEXT) AS last_login,                 COALESCE(o.name, '') AS org_name, COALESCE(o.plan_type, 'trial') AS plan_type          FROM users u LEFT JOIN organizations o ON u.organization_id = o.id          ORDER BY u.created_at DESC LIMIT 500"
     ).fetch_all(&state.db).await.unwrap_or_default();
-    let user_list: Vec<serde_json::Value> = recent_users.iter().map(|(id, email, name, role, org, active, created)| {
-        json!({"id": id, "email": email, "first_name": name, "last_name": "", "role": role, "organization_id": org, "is_active": active, "created_at": created})
+    let user_list: Vec<serde_json::Value> = user_rows.iter().map(|r| {
+        json!({
+            "id": r.get::<String, _>("id"),
+            "email": r.get::<String, _>("email"),
+            "first_name": r.get::<String, _>("first_name"),
+            "last_name": r.get::<String, _>("last_name"),
+            "role": r.get::<String, _>("role"),
+            "organization_id": r.get::<Option<String>, _>("organization_id"),
+            "is_active": r.get::<bool, _>("is_active"),
+            "email_verified": r.get::<bool, _>("email_verified"),
+            "created_at": r.get::<String, _>("created_at"),
+            "last_login": r.try_get::<Option<String>, _>("last_login").unwrap_or(None),
+            "org_name": r.get::<String, _>("org_name"),
+            "plan_type": r.get::<String, _>("plan_type"),
+        })
     }).collect();
 
     // Recent orgs

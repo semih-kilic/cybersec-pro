@@ -623,3 +623,9 @@ html.light .register-dark input {
 }
 html.light .register-dark input::placeholder { color: #6b7280 !important; }
 html.light .register-dark input:focus { border-color: #06b6d4 !important; }
+
+
+/* ── ADMIN SCROLL GUARANTEE ──────────────────────────────────────────────
+   Document-level scrolling must never be suppressed inside the app shell. */
+html, body { overflow-y: auto !important; height: auto !important; }
+[data-vos-app] { min-height: 100vh; }
