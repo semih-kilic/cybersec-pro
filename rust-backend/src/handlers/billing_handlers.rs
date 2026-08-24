@@ -586,13 +586,6 @@ pub async fn stripe_webhook(
                         .unwrap_or("");
                     let plan_type = resolve_plan_from_price_id(price_id);
 
-                    // Founding Member first-year promise: once the subscription is
-                    // older than 365 days, swap it onto Professional monthly pricing.
-                    if plan_type == "founding_member" && !sub_id.is_empty() {
-                        let fm_secret = std::env::var("STRIPE_SECRET_KEY").unwrap_or_default();
-                        migrate_founding_subscription(&fm_secret, sub_id).await;
-                    }
-
                     if !customer_id.is_empty() && !plan_type.is_empty() {
                         let _ = sqlx::query(
                             "UPDATE organizations SET plan_type = $1 WHERE stripe_customer_id = $2"
