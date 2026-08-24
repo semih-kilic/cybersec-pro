@@ -48,30 +48,41 @@ export function LanguageSwitcher({ variant = 'default' }: LanguageSwitcherProps)
     setIsOpen(false);
   }
 
+  // Arbitrary color values (bg-[#...]) are immune to the html.light global
+  // overrides — auth pages are intentionally dark in both color modes.
   const renderDropdownItems = (position: 'above' | 'below') => (
-    <div className={`absolute ${position === 'above' ? 'bottom-full mb-2' : 'top-full mt-2'} ${variant === 'sidebar' ? 'left-0' : 'right-0'} w-48 bg-gray-800 border border-gray-700 rounded-xl shadow-xl overflow-hidden z-50`}>
-      <div className="px-3 py-2 border-b border-gray-700">
-        <span className="text-xs font-semibold text-gray-500 uppercase">Language</span>
+    <div
+      className={`absolute ${position === 'above' ? 'bottom-full mb-2' : 'top-full mt-2'} ${
+        variant === 'sidebar' ? 'left-0' : 'right-0'
+      } w-56 rounded-xl border border-[rgba(255,255,255,0.12)] bg-[#0b1220] shadow-[0_20px_50px_rgba(0,0,0,0.6)] overflow-hidden z-50 backdrop-blur`}
+    >
+      <div className="px-4 py-2.5 border-b border-[rgba(255,255,255,0.08)]">
+        <span className="text-[11px] font-bold tracking-wider text-[#6b7280] uppercase">Language</span>
       </div>
-      {languages.map(lang => (
-        <button
-          key={lang.code}
-          onClick={() => selectLanguage(lang)}
-          className={`flex items-center gap-3 w-full px-3 py-2.5 text-sm transition-colors ${
-            lang.code === i18n.language
-              ? 'bg-cyan-500/10 text-cyan-400'
-              : 'text-gray-300 hover:bg-gray-700'
-          }`}
-        >
-          <span className="text-base">{lang.flag}</span>
-          <span>{lang.name}</span>
-          {lang.code === i18n.language && (
-            <svg className="w-4 h-4 ml-auto text-cyan-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" />
-            </svg>
-          )}
-        </button>
-      ))}
+      <div className="py-1 max-h-72 overflow-y-auto">
+        {languages.map(lang => {
+          const active = lang.code === i18n.language;
+          return (
+            <button
+              key={lang.code}
+              onClick={() => selectLanguage(lang)}
+              className={`flex items-center gap-3 w-full px-4 py-2.5 text-sm transition-colors text-left ${
+                active
+                  ? 'bg-[rgba(6,182,212,0.12)] text-[#22d3ee]'
+                  : 'text-[#d1d5db] hover:bg-[rgba(255,255,255,0.06)] hover:text-white'
+              }`}
+            >
+              <span className="text-xl leading-none">{lang.flag}</span>
+              <span className="font-medium">{lang.name}</span>
+              {active && (
+                <svg className="w-4 h-4 ml-auto text-[#22d3ee]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" />
+                </svg>
+              )}
+            </button>
+          );
+        })}
+      </div>
     </div>
   );
 
@@ -85,7 +96,8 @@ export function LanguageSwitcher({ variant = 'default' }: LanguageSwitcherProps)
           <svg className="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5h12M9 3v2m1.048 9.5A18.022 18.022 0 016.412 9m6.088 9h7M11 21l5-10 5 10M12.751 5C11.783 10.77 8.07 15.61 3 18.129" />
           </svg>
-          <span>{current.flag} {current.code.toUpperCase()}</span>
+          <span className="text-lg leading-none">{current.flag}</span>
+          <span>{current.code.toUpperCase()}</span>
           <svg className={`w-3.5 h-3.5 ml-auto transition-transform ${isOpen ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
           </svg>
@@ -95,19 +107,21 @@ export function LanguageSwitcher({ variant = 'default' }: LanguageSwitcherProps)
     );
   }
 
+  const trigger =
+    variant === 'compact'
+      ? 'px-3.5 py-2 text-sm border-[rgba(255,255,255,0.16)] bg-[rgba(255,255,255,0.07)] text-white hover:bg-[rgba(255,255,255,0.13)] hover:border-[rgba(34,211,238,0.55)] shadow-[0_2px_10px_rgba(0,0,0,0.35)]'
+      : 'px-4 py-2.5 text-sm border-[rgba(255,255,255,0.16)] bg-[rgba(255,255,255,0.07)] text-white hover:bg-[rgba(255,255,255,0.13)] hover:border-[rgba(34,211,238,0.55)] shadow-[0_2px_10px_rgba(0,0,0,0.35)]';
+
   return (
     <div ref={dropdownRef} className="relative">
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className={`flex items-center gap-1.5 rounded-lg border transition-all ${
-          variant === 'compact'
-            ? 'px-2.5 py-1.5 text-xs border-gray-700 bg-gray-800/50 text-gray-300 hover:border-gray-600 hover:text-white'
-            : 'px-3 py-2 text-sm border-gray-700 bg-gray-800/60 text-gray-300 hover:border-cyan-500/50 hover:text-white'
-        }`}
+        aria-label="Change language"
+        className={`flex items-center gap-2.5 rounded-xl border transition-all backdrop-blur ${trigger}`}
       >
-        <span>{current.flag}</span>
-        <span className="font-medium">{current.code.toUpperCase()}</span>
-        <svg className={`w-3 h-3 transition-transform ${isOpen ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <span className="text-xl leading-none drop-shadow">{current.flag}</span>
+        <span className="font-bold tracking-wide">{current.code.toUpperCase()}</span>
+        <svg className={`w-3.5 h-3.5 text-[#9ca3af] transition-transform ${isOpen ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M19 9l-7 7-7-7" />
         </svg>
       </button>

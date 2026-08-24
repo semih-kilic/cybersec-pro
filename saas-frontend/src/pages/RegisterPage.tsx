@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useNavigate, Link , useSearchParams } from 'react-router-dom';
+import { LanguageSwitcher } from '../components/LanguageSwitcher';
 import { useAuth } from '../hooks/useAuth';
 import { useTranslation } from 'react-i18next';
 import MatrixRainBg from '../components/ui/MatrixRainBg';
@@ -259,6 +260,10 @@ export function RegisterPage() {
               </div>
               <span className="text-white font-bold text-xl">{t('common.appName', 'CyberSec Pro')}</span>
             </Link>
+          </div>
+
+          <div className="flex justify-center mb-5">
+            <LanguageSwitcher variant="compact" />
           </div>
 
           {searchParams.get('plan') === 'founding_member' && (
