@@ -4,19 +4,19 @@ import { useMemo, useState } from "react";
 import { motion } from "framer-motion";
 import { Calculator, TrendingDown } from "lucide-react";
 
-// Annual cost of the Professional plan (matches PricingSection: €99 × 12 → use
-// the discounted yearly price €949 to be honest about what the user actually
+// Annual cost of the Professional plan (matches PricingSection: $99 × 12 → use
+// the discounted yearly price $949 to be honest about what the user actually
 // pays). Keep in sync with the i18n `pricing.plans.professional.priceYearly`.
-const PRO_ANNUAL_EUR = 949;
+const PRO_ANNUAL_USD = 949;
 
 export default function RoiCalculatorSection() {
   const [pentestsPerYear, setPentestsPerYear] = useState(2);
   const [costPerPentest, setCostPerPentest] = useState(12000);
 
   const traditional = pentestsPerYear * costPerPentest;
-  const savings = useMemo(() => Math.max(0, traditional - PRO_ANNUAL_EUR), [traditional]);
+  const savings = useMemo(() => Math.max(0, traditional - PRO_ANNUAL_USD), [traditional]);
   const reductionPct = useMemo(
-    () => Math.min(100, Math.round((1 - PRO_ANNUAL_EUR / Math.max(1, traditional)) * 100)),
+    () => Math.min(100, Math.round((1 - PRO_ANNUAL_USD / Math.max(1, traditional)) * 100)),
     [traditional]
   );
 
@@ -69,7 +69,7 @@ export default function RoiCalculatorSection() {
 
             <div>
               <label className="mb-2 block text-[11px] font-semibold uppercase tracking-wider text-white/50">
-                Average cost per pentest (€)
+                Average cost per pentest ($)
               </label>
               <input
                 type="range"
@@ -82,11 +82,11 @@ export default function RoiCalculatorSection() {
                 aria-label="Average cost per pentest"
               />
               <div className="mt-1 flex justify-between text-xs text-white/40">
-                <span>€5K</span>
+                <span>$5K</span>
                 <span className="font-mono text-sm font-bold text-[var(--color-neon)]">
-                  €{costPerPentest.toLocaleString()}
+                  ${costPerPentest.toLocaleString()}
                 </span>
-                <span>€25K</span>
+                <span>$25K</span>
               </div>
             </div>
           </div>
@@ -96,13 +96,13 @@ export default function RoiCalculatorSection() {
             <div className="flex items-center justify-between border-b border-white/5 pb-3">
               <span className="text-sm text-white/60">Traditional pentests</span>
               <span className="font-mono text-sm font-semibold text-rose-400">
-                €{traditional.toLocaleString()}/yr
+                ${traditional.toLocaleString()}/yr
               </span>
             </div>
             <div className="flex items-center justify-between border-b border-white/5 py-3">
               <span className="text-sm text-white/60">CyberSec Pro (Professional)</span>
               <span className="font-mono text-sm font-semibold text-[var(--color-neon)]">
-                €{PRO_ANNUAL_EUR.toLocaleString()}/yr
+                ${PRO_ANNUAL_USD.toLocaleString()}/yr
               </span>
             </div>
             <div className="pt-4">
@@ -110,7 +110,7 @@ export default function RoiCalculatorSection() {
                 <span className="text-sm font-semibold text-white">Your savings</span>
                 <div className="text-right">
                   <span className="font-mono text-3xl font-extrabold text-[var(--color-neon)]">
-                    €{savings.toLocaleString()}
+                    ${savings.toLocaleString()}
                   </span>
                   <span className="ml-1 text-xs text-white/40">/ year</span>
                 </div>

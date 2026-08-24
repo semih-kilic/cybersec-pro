@@ -942,7 +942,7 @@
     },
     "section5Title": "5. Abonelik ve Ödeme",
     "section5": {
-      "item1": "Tüm fiyatlar Euro (€) cinsindendir ve geçerli KDV hariçtir",
+      "item1": "Tüm fiyatlar Euro ($) cinsindendir ve geçerli KDV hariçtir",
       "item2": "Abonelikler seçiminize göre aylık veya yıllık faturalandırılır",
       "item3": "Ödemeler Stripe aracılığıyla güvenli bir şekilde işlenir",
       "item4": "Aboneliğinizi istediğiniz zaman iptal edebilirsiniz; erişim fatura döneminin sonuna kadar devam eder",
@@ -1112,7 +1112,7 @@
     "payingOrgs": "Ödeme Yapan Kuruluşlar",
     "arpu": "Kullanıcı Başına Ortalama Gelir",
     "revenueByPlan": "Plan Bazında Gelir",
-    "monthlyRate": "{{count}} × €{{price}}/ay",
+    "monthlyRate": "{{count}} × ${{price}}/ay",
     "auditEventsTitle": "Son Denetim Olayları",
     "auditEventsDescription": "Son 25 platform genelinde işlem, en yeniden en eskiye.",
     "colSeverity": "Önem Derecesi",

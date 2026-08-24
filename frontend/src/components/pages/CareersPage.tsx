@@ -49,7 +49,7 @@ const sponsorTiers = [
   },
   {
     name: "Gold Sponsor",
-    contribution: "€5,000+ / year",
+    contribution: "$5,000+ / year",
     benefits: [
       "Logo on the website and documentation",
       "Quarterly product briefings",
@@ -60,7 +60,7 @@ const sponsorTiers = [
   },
   {
     name: "Platinum Sponsor",
-    contribution: "€15,000+ / year",
+    contribution: "$15,000+ / year",
     benefits: [
       "All Gold benefits",
       "Joint marketing campaigns",
