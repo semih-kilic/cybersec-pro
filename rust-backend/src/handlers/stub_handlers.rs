@@ -3593,6 +3593,33 @@ pub async fn admin_delete_organization(
 
 // ── Admin User Management ──────────────────────────────────
 
+pub async fn admin_toggle_user(
+    _admin: AdminUser,
+    State(state): State<Arc<AppState>>,
+    Path(user_id): Path<String>,
+) -> impl IntoResponse {
+    if user_id == _admin.0.user_id {
+        return (StatusCode::BAD_REQUEST, Json(json!({"error": "Cannot toggle yourself"}))).into_response();
+    }
+
+    // Flip active state; superadmin accounts are untouchable.
+    let updated: Option<(bool,)> = sqlx::query_as(
+        "UPDATE users SET is_active = NOT COALESCE(is_active, TRUE)          WHERE id = $1 AND COALESCE(role,'user') != 'superadmin'          RETURNING COALESCE(is_active, TRUE)"
+    )
+    .bind(&user_id)
+    .fetch_optional(&state.db)
+    .await
+    .unwrap_or(None);
+
+    match updated {
+        Some((active,)) => (
+            StatusCode::OK,
+            Json(json!({"message": "User toggled", "is_active": active})),
+        ).into_response(),
+        _ => (StatusCode::NOT_FOUND, Json(json!({"error": "User not found or protected"}))).into_response(),
+    }
+}
+
 pub async fn admin_delete_user(
     admin: AdminUser,
     State(state): State<Arc<AppState>>,
