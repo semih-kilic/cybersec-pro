@@ -38,6 +38,43 @@ export function BillingTab({ userPlan }: SettingsTabProps) {
   const [billing, setBilling] = useState<BillingData | null>(null);
   const portalMutation = useOpenBillingPortal();
 
+  // ── Danger zone state ──
+  const [delPassword, setDelPassword] = useState('');
+  const [delConfirm, setDelConfirm] = useState('');
+  const [deleting, setDeleting] = useState(false);
+  const [delError, setDelError] = useState('');
+
+  const handleDeleteAccount = async () => {
+    setDelError('');
+    if (delConfirm !== 'DELETE') {
+      setDelError('Type DELETE to confirm');
+      return;
+    }
+    if (!delPassword) {
+      setDelError('Enter your password to confirm');
+      return;
+    }
+    setDeleting(true);
+    try {
+      const token = localStorage.getItem('token');
+      const res = await fetch('/api/v1/gdpr/delete-account', {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
+        body: JSON.stringify({ password: delPassword, confirm_text: delConfirm }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(data.error || 'Deletion failed');
+      localStorage.clear();
+      window.location.href = '/dashboard/login?deleted=1';
+    } catch (e) {
+      setDelError((e as Error).message);
+      setDeleting(false);
+    }
+  };
+
   useEffect(() => {
     (async () => {
       const res = await api.get<BillingData>('/billing/subscription');
@@ -149,6 +186,52 @@ export function BillingTab({ userPlan }: SettingsTabProps) {
             )}
           </div>
         )}
+      </div>
+
+      {/* ── Danger Zone ── */}
+      <div className="p-5 border border-red-500/30 rounded-xl bg-red-500/[0.03]">
+        <h3 className="text-red-400 font-semibold mb-1">{t('billing.dangerZone', 'Danger Zone')}</h3>
+        <p className="text-gray-500 text-sm mb-4">
+          {t('billing.dangerDesc', 'Permanently delete your account. If you are the only member, your organization and all of its data (scans, reports, agents, API keys) will also be deleted, and any active subscription will be cancelled immediately.')}
+        </p>
+
+        {delError && (
+          <div className="mb-3 px-3 py-2 bg-red-500/10 border border-red-500/30 rounded-lg text-red-400 text-sm">{delError}</div>
+        )}
+
+        <div className="grid sm:grid-cols-2 gap-3 mb-3">
+          <div>
+            <label className="block text-xs text-gray-400 mb-1.5">{t('billing.dangerPassword', 'Your password')}</label>
+            <input
+              type="password"
+              value={delPassword}
+              onChange={(e) => setDelPassword(e.target.value)}
+              placeholder="••••••••"
+              className="w-full px-3 py-2 bg-gray-900/70 border border-gray-700 rounded-lg text-white text-sm placeholder-gray-600 focus:outline-none focus:border-red-500"
+              autoComplete="current-password"
+            />
+          </div>
+          <div>
+            <label className="block text-xs text-gray-400 mb-1.5">
+              {t('billing.dangerType', 'Type')} <span className="font-mono font-bold text-red-400">DELETE</span> {t('billing.dangerToConfirm', 'to confirm')}
+            </label>
+            <input
+              type="text"
+              value={delConfirm}
+              onChange={(e) => setDelConfirm(e.target.value)}
+              placeholder="DELETE"
+              className="w-full px-3 py-2 bg-gray-900/70 border border-gray-700 rounded-lg text-white text-sm font-mono placeholder-gray-600 focus:outline-none focus:border-red-500"
+            />
+          </div>
+        </div>
+
+        <button
+          onClick={handleDeleteAccount}
+          disabled={deleting || delConfirm !== 'DELETE' || !delPassword}
+          className="px-5 py-2.5 bg-red-600 hover:bg-red-500 disabled:opacity-40 disabled:cursor-not-allowed text-white font-semibold rounded-lg transition text-sm"
+        >
+          {deleting ? t('billing.deleting', 'Deleting account…') : t('billing.deleteAccount', 'Permanently delete my account')}
+        </button>
       </div>
     </motion.div>
   );

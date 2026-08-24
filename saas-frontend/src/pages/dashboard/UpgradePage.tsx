@@ -121,6 +121,7 @@ export default function UpgradePage() {
   );
   const [showCheckout, setShowCheckout] = useState(false);
   const [foundingAvailable, setFoundingAvailable] = useState(true);
+  const [currentPlanType, setCurrentPlanType] = useState<string>('trial');
 
   useEffect(() => {
     const planParam = searchParams.get('plan');
@@ -138,6 +139,20 @@ export default function UpgradePage() {
         const avail = !!d.available;
         setFoundingAvailable(avail);
         if (!avail) setSelectedPlan((cur) => (cur === 'founding_member' ? null : cur));
+      })
+      .catch(() => {});
+  }, []);
+
+  // Current plan — paid subscribers route changes via Stripe portal.
+  useEffect(() => {
+    const token = localStorage.getItem('token');
+    if (!token) return;
+    fetch('/api/v1/billing/subscription', {
+      headers: { Authorization: `Bearer ${token}` },
+    })
+      .then((r) => r.json())
+      .then((d) => {
+        if (d?.plan_type) setCurrentPlanType(d.plan_type);
       })
       .catch(() => {});
   }, []);
@@ -170,12 +185,44 @@ export default function UpgradePage() {
     setShowCheckout(true);
   };
 
+  // Paid subscribers manage plan changes through the Stripe portal —
+  // creating a second checkout subscription would double-bill them.
+  const openPortal = async () => {
+    const token = localStorage.getItem('token');
+    const res = await fetch('/api/v1/billing/portal', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        ...(token ? { Authorization: `Bearer ${token}` } : {}),
+      },
+    });
+    const data = await res.json().catch(() => ({}));
+    if (data.portal_url) {
+      window.location.href = data.portal_url;
+    } else {
+      alert(data.error || 'Could not open the billing portal. Please try from Settings → Billing.');
+    }
+  };
+
   const handleCheckout = async () => {
     if (!selectedPlan) return;
 
     if (selectedPlan === 'free') {
       window.location.href = '/dashboard';
       setShowCheckout(false);
+      return;
+    }
+
+    // Paid subscribers: route plan changes through the Stripe portal.
+    const paidPlans = ['starter', 'professional', 'enterprise', 'founding_member'];
+    if (currentPlanType && paidPlans.includes(currentPlanType)) {
+      if (selectedPlan === currentPlanType) {
+        alert('You are already on this plan. Use Manage Subscription to update it.');
+        setShowCheckout(false);
+        return;
+      }
+      setShowCheckout(false);
+      await openPortal();
       return;
     }
 
