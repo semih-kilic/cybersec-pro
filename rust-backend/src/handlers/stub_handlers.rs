@@ -3733,41 +3733,52 @@ pub async fn admin_delete_user(
         }
     }
 
-    // ── 3. Delete the user row ──────────────────────────────────────────
-    let result = sqlx::query("DELETE FROM users WHERE id = $1")
-        .bind(&user_id)
-        .execute(&state.db)
-        .await;
-
-    match result {
-        Ok(r) if r.rows_affected() > 0 => {
-            crate::services::audit::log_audit(
-                &state.db,
-                "admin_delete_user",
-                "superadmin",
-                "warning",
-                Some(&admin.0.user_id),
-                admin.0.org_id.as_deref(),
-                Some(json!({
-                    "deleted_user": &user_id,
-                    "email": &email,
-                    "role": &role,
-                    "org_deleted": org_deleted,
-                })),
-                Some("user"),
-                Some(&user_id),
-                "success",
-                None,
-            ).await;
-
-            (StatusCode::OK, Json(json!({
-                "message": if org_deleted { "User and their organization (with all data) deleted" } else { "User deleted" },
-                "org_deleted": org_deleted,
-            }))).into_response()
-        },
-        Ok(_) => (StatusCode::NOT_FOUND, Json(json!({"error": "User not found"}))).into_response(),
-        Err(e) => (StatusCode::INTERNAL_SERVER_ERROR, Json(json!({"error": format!("Database error: {}", e)}))).into_response(),
+    // ── 3. Delete the user row (already gone when the org cascade ran) ──
+    let mut not_found = false;
+    if !org_deleted {
+        let result = sqlx::query("DELETE FROM users WHERE id = $1")
+            .bind(&user_id)
+            .execute(&state.db)
+            .await;
+        match result {
+            Ok(r) if r.rows_affected() > 0 => {}
+            Ok(_) => not_found = true,
+            Err(e) => {
+                return (StatusCode::INTERNAL_SERVER_ERROR, Json(json!({"error": format!("Database error: {}", e)}))).into_response();
+            }
+        }
     }
+
+    if not_found {
+        return (StatusCode::NOT_FOUND, Json(json!({"error": "User not found"}))).into_response();
+    }
+
+    crate::services::audit::log_audit(
+        &state.db,
+        "admin_delete_user",
+        "superadmin",
+        "warning",
+        Some(&admin.0.user_id),
+        admin.0.org_id.as_deref(),
+        Some(json!({
+            "deleted_user": &user_id,
+            "email": &email,
+            "role": &role,
+            "org_deleted": org_deleted,
+        })),
+        Some("user"),
+        Some(&user_id),
+        "success",
+        None,
+    ).await;
+
+    (
+        StatusCode::OK,
+        Json(json!({
+            "message": if org_deleted { "User and their organization (with all data) deleted" } else { "User deleted" },
+            "org_deleted": org_deleted,
+        })),
+    ).into_response()
 }
 pub async fn admin_change_role(
     _admin: AdminUser,
