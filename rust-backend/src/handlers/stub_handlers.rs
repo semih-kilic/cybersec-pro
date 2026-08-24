@@ -4931,11 +4931,8 @@ pub async fn gdpr_delete_account(
         Some((h,)) => h,
         None => return (StatusCode::NOT_FOUND, Json(json!({"error": "User not found"}))).into_response(),
     };
-    let parsed = match argon2::PasswordHash::new(&pw_hash) {
-        Ok(h) => h,
-        Err(_) => return (StatusCode::INTERNAL_SERVER_ERROR, Json(json!({"error": "Password check failed"}))).into_response(),
-    };
-    if argon2::Argon2::default().verify_password(body.password.as_bytes(), &parsed).is_err() {
+    // verify_password supports both scrypt (seeded accounts) and argon2 hashes.
+    if !crate::services::auth::verify_password(&body.password, &pw_hash) {
         return (StatusCode::UNAUTHORIZED, Json(json!({"error": "Incorrect password"}))).into_response();
     }
 

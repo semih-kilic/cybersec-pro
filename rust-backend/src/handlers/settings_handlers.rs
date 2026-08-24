@@ -636,12 +636,7 @@ pub async fn change_password(
         None => return (StatusCode::NOT_FOUND, Json(json!({"error": "User not found"}))).into_response(),
     };
 
-    use argon2::PasswordVerifier;
-    let parsed = match argon2::PasswordHash::new(&pw_hash) {
-        Ok(h) => h,
-        Err(_) => return (StatusCode::INTERNAL_SERVER_ERROR, Json(json!({"error": "Password check failed"}))).into_response(),
-    };
-    if argon2::Argon2::default().verify_password(current.as_bytes(), &parsed).is_err() {
+    if !crate::services::auth::verify_password(&current, &pw_hash) {
         return (StatusCode::UNAUTHORIZED, Json(json!({"error": "Current password is incorrect"}))).into_response();
     }
 
