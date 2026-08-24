@@ -8,6 +8,7 @@ use axum::{
     Json,
 };
 use serde_json::json;
+use sqlx::Row;
 
 use crate::middleware::auth_middleware::{AuthUser, AdminUser};
 use crate::services::auth::{create_access_token, create_refresh_token};
