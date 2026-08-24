@@ -598,3 +598,28 @@ html.theme-transition *::before,
 html.theme-transition *::after {
   transition: background-color 0.3s ease, color 0.2s ease, border-color 0.3s ease, box-shadow 0.3s ease !important;
 }
+
+/* ── Register page: force dark palette regardless of color mode ───────────
+   The global html.light overrides (above) flatten the intentionally-dark
+   register page into an unreadable wash. Scope it back to a premium dark
+   experience with higher-specificity re-pins. */
+html.light .register-dark { color: #d1d5db; }
+html.light .register-dark .text-white { color: #ffffff !important; }
+html.light .register-dark .text-gray-100 { color: #f3f4f6 !important; }
+html.light .register-dark .text-gray-200 { color: #e5e7eb !important; }
+html.light .register-dark .text-gray-300 { color: #d1d5db !important; }
+html.light .register-dark .text-gray-400 { color: #9ca3af !important; }
+html.light .register-dark .text-gray-500 { color: #6b7280 !important; }
+html.light .register-dark .bg-gray-950 { background-color: #030712 !important; }
+html.light .register-dark .bg-gray-900 { background-color: #111827 !important; }
+html.light .register-dark .bg-gray-900\/80 { background-color: rgba(17,24,39,0.8) !important; }
+html.light .register-dark .bg-gray-800 { background-color: #1f2937 !important; }
+html.light .register-dark .border-gray-700 { border-color: #374151 !important; }
+html.light .register-dark .border-gray-800 { border-color: #1f2937 !important; }
+html.light .register-dark input {
+  background-color: rgba(17,24,39,0.85) !important;
+  color: #ffffff !important;
+  border-color: #374151 !important;
+}
+html.light .register-dark input::placeholder { color: #6b7280 !important; }
+html.light .register-dark input:focus { border-color: #06b6d4 !important; }

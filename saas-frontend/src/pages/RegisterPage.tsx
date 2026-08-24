@@ -261,6 +261,15 @@ export function RegisterPage() {
             </Link>
           </div>
 
+          {searchParams.get('plan') === 'founding_member' && (
+            <div className="mb-5 flex items-center gap-2.5 rounded-xl border border-amber-500/40 bg-gradient-to-r from-amber-500/15 to-orange-500/10 px-4 py-3">
+              <span className="text-lg" aria-hidden>👑</span>
+              <p className="text-sm text-amber-300">
+                <span className="font-bold">Founding Member:</span> your{' '}
+                <span className="font-bold">$19/mo lifetime</span> price is locked right after signup.
+              </p>
+            </div>
+          )}
           <h1 className="text-2xl font-bold text-white mb-1">{t('auth.createAccount')}</h1>
           <p className="text-gray-300 mb-8">{t('auth.registerSubtitle')}</p>
 
@@ -315,7 +324,7 @@ export function RegisterPage() {
 
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <label className="block text-sm text-gray-400 mb-1.5">{t('auth.firstName')}</label>
+                <label className="block text-sm text-gray-300 mb-1.5">{t('auth.firstName')}</label>
                 <input
                   type="text"
                   name="first_name"
@@ -326,7 +335,7 @@ export function RegisterPage() {
                 />
               </div>
               <div>
-                <label className="block text-sm text-gray-400 mb-1.5">{t('auth.lastName')}</label>
+                <label className="block text-sm text-gray-300 mb-1.5">{t('auth.lastName')}</label>
                 <input
                   type="text"
                   name="last_name"
@@ -339,7 +348,7 @@ export function RegisterPage() {
             </div>
 
             <div>
-              <label className="block text-sm text-gray-400 mb-1.5">{t('auth.email')} *</label>
+              <label className="block text-sm text-gray-300 mb-1.5">{t('auth.email')} *</label>
               <input
                 type="email"
                 name="email"
@@ -352,7 +361,7 @@ export function RegisterPage() {
             </div>
 
             <div>
-              <label className="block text-sm text-gray-400 mb-1.5">{t('auth.organizationName')} *</label>
+              <label className="block text-sm text-gray-300 mb-1.5">{t('auth.organizationName')} *</label>
               <input
                 type="text"
                 name="organization_name"
@@ -365,7 +374,7 @@ export function RegisterPage() {
             </div>
 
             <div>
-              <label className="block text-sm text-gray-400 mb-1.5">{t('auth.password')} *</label>
+              <label className="block text-sm text-gray-300 mb-1.5">{t('auth.password')} *</label>
               <input
                 type="password"
                 name="password"
@@ -378,7 +387,7 @@ export function RegisterPage() {
             </div>
 
             <div>
-              <label className="block text-sm text-gray-400 mb-1.5">{t('auth.confirmPassword')} *</label>
+              <label className="block text-sm text-gray-300 mb-1.5">{t('auth.confirmPassword')} *</label>
               <input
                 type="password"
                 name="confirmPassword"
