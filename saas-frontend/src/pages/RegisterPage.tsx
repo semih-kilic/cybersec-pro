@@ -113,7 +113,7 @@ export function RegisterPage() {
   };
 
   return (
-    <div className="min-h-screen flex">
+    <div className="register-dark min-h-screen flex">
       <MatrixRainBg />
       {verificationSent && (
         <div className="fixed inset-0 bg-gray-950 z-50 flex items-center justify-center p-6">
