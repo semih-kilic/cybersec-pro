@@ -3594,21 +3594,119 @@ pub async fn admin_delete_organization(
 // ── Admin User Management ──────────────────────────────────
 
 pub async fn admin_delete_user(
-    _admin: AdminUser,
+    admin: AdminUser,
     State(state): State<Arc<AppState>>,
     Path(user_id): Path<String>,
 ) -> impl IntoResponse {
+    use crate::middleware::auth_middleware::SuperAdminUser as _SAType; // keep tier imports warm
+
     // Don't allow deleting yourself
-    if user_id == _admin.0.user_id {
+    if user_id == admin.0.user_id {
         return (StatusCode::BAD_REQUEST, Json(json!({"error": "Cannot delete yourself"}))).into_response();
     }
 
-    // Delete related records first to avoid FK constraint violations
+    // Fetch target before removal
+    let target: Option<(String, Option<String>, String)> = sqlx::query_as(
+        "SELECT email, organization_id, COALESCE(role,'user') FROM users WHERE id = $1"
+    )
+    .bind(&user_id)
+    .fetch_optional(&state.db)
+    .await
+    .unwrap_or(None);
+
+    let (email, org_id, role) = match target {
+        Some(t) => t,
+        None => return (StatusCode::NOT_FOUND, Json(json!({"error": "User not found"}))).into_response(),
+    };
+
+    // Never delete a superadmin (privilege-integrity guard)
+    if role == "superadmin" {
+        return (StatusCode::FORBIDDEN, Json(json!({"error": "Cannot delete a superadmin"}))).into_response();
+    }
+
+    // ── 1. User-scoped cleanup (always) ─────────────────────────────────
     let _ = sqlx::query("DELETE FROM audit_logs WHERE user_id = $1").bind(&user_id).execute(&state.db).await;
+    let _ = sqlx::query("DELETE FROM login_history WHERE user_id = $1").bind(&user_id).execute(&state.db).await;
     let _ = sqlx::query("DELETE FROM reports WHERE user_id = $1").bind(&user_id).execute(&state.db).await;
     let _ = sqlx::query("DELETE FROM scheduled_scans WHERE user_id = $1").bind(&user_id).execute(&state.db).await;
-    let _ = sqlx::query("UPDATE scans SET user_id = NULL WHERE user_id = $1").bind(&user_id).execute(&state.db).await;
+    let _ = sqlx::query("DELETE FROM api_keys WHERE user_id = $1").bind(&user_id).execute(&state.db).await;
+    let _ = sqlx::query("DELETE FROM notifications WHERE user_id = $1").bind(&user_id).execute(&state.db).await;
+    let _ = sqlx::query("DELETE FROM ip_whitelist WHERE user_id = $1").bind(&user_id).execute(&state.db).await;
+    let _ = sqlx::query("DELETE FROM consent_records WHERE user_id = $1").bind(&user_id).execute(&state.db).await;
+    let _ = sqlx::query("DELETE FROM team_invitations WHERE invited_by = $1").bind(&user_id).execute(&state.db).await;
 
+    // ── 2. Organization cascade when this user is the LAST member ───────
+    let mut org_deleted = false;
+    if let Some(ref org) = org_id {
+        let siblings: (i64,) = sqlx::query_as(
+            "SELECT COUNT(*) FROM users WHERE organization_id = $1 AND id != $2"
+        )
+        .bind(org)
+        .bind(&user_id)
+        .fetch_one(&state.db)
+        .await
+        .unwrap_or((0,));
+
+        if siblings.0 == 0 {
+            // Best-effort: cancel the Stripe subscription so billing stops.
+            let sub_id: Option<String> = sqlx::query_scalar(
+                "SELECT stripe_subscription_id FROM subscriptions WHERE organization_id = $1 AND stripe_subscription_id IS NOT NULL LIMIT 1"
+            )
+            .bind(org)
+            .fetch_optional(&state.db)
+            .await
+            .unwrap_or(None);
+
+            if let Some(sid) = sub_id {
+                let secret = std::env::var("STRIPE_SECRET_KEY").unwrap_or_default();
+                if !secret.is_empty() {
+                    let client = reqwest::Client::new();
+                    let _ = client
+                        .delete(&format!("https://api.stripe.com/v1/subscriptions/{}", sid))
+                        .basic_auth(&secret, None::<&str>)
+                        .send()
+                        .await;
+                }
+            }
+
+            // Org-scoped cascade (FK-safe order)
+            let _ = sqlx::query("DELETE FROM agent_jobs WHERE agent_id IN (SELECT id FROM agents WHERE organization_id = $1)").bind(org).execute(&state.db).await;
+            let _ = sqlx::query("DELETE FROM usage_tracking WHERE organization_id = $1").bind(org).execute(&state.db).await;
+            let _ = sqlx::query("DELETE FROM scan_compliance_results WHERE scan_id IN (SELECT id FROM scans WHERE organization_id = $1)").bind(org).execute(&state.db).await;
+            let _ = sqlx::query("DELETE FROM analytics_snapshots WHERE organization_id = $1").bind(org).execute(&state.db).await;
+            let _ = sqlx::query("DELETE FROM compliance_posture WHERE organization_id = $1").bind(org).execute(&state.db).await;
+            let _ = sqlx::query("DELETE FROM compliance_frameworks WHERE organization_id = $1").bind(org).execute(&state.db).await;
+            let _ = sqlx::query("DELETE FROM purple_team_exercises WHERE organization_id = $1").bind(org).execute(&state.db).await;
+            let _ = sqlx::query("DELETE FROM purple_team_profiles WHERE organization_id = $1").bind(org).execute(&state.db).await;
+            let _ = sqlx::query("DELETE FROM cybersec_ai_jobs WHERE organization_id = $1").bind(org).execute(&state.db).await;
+            let _ = sqlx::query("DELETE FROM strix_jobs WHERE organization_id = $1").bind(org).execute(&state.db).await;
+            let _ = sqlx::query("DELETE FROM target_authorizations WHERE organization_id = $1").bind(org).execute(&state.db).await;
+            let _ = sqlx::query("DELETE FROM targets WHERE organization_id = $1").bind(org).execute(&state.db).await;
+            let _ = sqlx::query("DELETE FROM scan_templates WHERE organization_id = $1").bind(org).execute(&state.db).await;
+            let _ = sqlx::query("DELETE FROM schedule_run_history WHERE schedule_id IN (SELECT id FROM scheduled_scans WHERE organization_id = $1)").bind(org).execute(&state.db).await;
+            let _ = sqlx::query("DELETE FROM scheduled_scans WHERE organization_id = $1").bind(org).execute(&state.db).await;
+            let _ = sqlx::query("DELETE FROM integrations WHERE organization_id = $1").bind(org).execute(&state.db).await;
+            let _ = sqlx::query("DELETE FROM api_keys WHERE organization_id = $1").bind(org).execute(&state.db).await;
+            let _ = sqlx::query("DELETE FROM notification_preferences WHERE organization_id = $1").bind(org).execute(&state.db).await;
+            let _ = sqlx::query("DELETE FROM team_invitations WHERE organization_id = $1").bind(org).execute(&state.db).await;
+            let _ = sqlx::query("DELETE FROM sso_configs WHERE organization_id = $1").bind(org).execute(&state.db).await;
+            let _ = sqlx::query("DELETE FROM subscriptions WHERE organization_id = $1").bind(org).execute(&state.db).await;
+            let _ = sqlx::query("DELETE FROM projects WHERE organization_id = $1").bind(org).execute(&state.db).await;
+            let _ = sqlx::query("DELETE FROM agents WHERE organization_id = $1").bind(org).execute(&state.db).await;
+            let _ = sqlx::query("DELETE FROM scans WHERE organization_id = $1").bind(org).execute(&state.db).await;
+            let _ = sqlx::query("DELETE FROM reports WHERE organization_id = $1").bind(org).execute(&state.db).await;
+            let _ = sqlx::query("DELETE FROM audit_logs WHERE user_id IN (SELECT id FROM users WHERE organization_id = $1)").bind(org).execute(&state.db).await;
+            let _ = sqlx::query("DELETE FROM users WHERE organization_id = $1").bind(org).execute(&state.db).await;
+            let _ = sqlx::query("DELETE FROM organizations WHERE id = $1").bind(org).execute(&state.db).await;
+
+            org_deleted = true;
+        } else {
+            // Org survives with other members — orphan the user's scans.
+            let _ = sqlx::query("UPDATE scans SET user_id = NULL WHERE user_id = $1").bind(&user_id).execute(&state.db).await;
+        }
+    }
+
+    // ── 3. Delete the user row ──────────────────────────────────────────
     let result = sqlx::query("DELETE FROM users WHERE id = $1")
         .bind(&user_id)
         .execute(&state.db)
@@ -3616,33 +3714,34 @@ pub async fn admin_delete_user(
 
     match result {
         Ok(r) if r.rows_affected() > 0 => {
-            (StatusCode::OK, Json(json!({"message": "User deleted"}))).into_response()
+            crate::services::audit::log_audit(
+                &state.db,
+                "admin_delete_user",
+                "superadmin",
+                "warning",
+                Some(&admin.0.user_id),
+                admin.0.org_id.as_deref(),
+                Some(json!({
+                    "deleted_user": &user_id,
+                    "email": &email,
+                    "role": &role,
+                    "org_deleted": org_deleted,
+                })),
+                Some("user"),
+                Some(&user_id),
+                "success",
+                None,
+            ).await;
+
+            (StatusCode::OK, Json(json!({
+                "message": if org_deleted { "User and their organization (with all data) deleted" } else { "User deleted" },
+                "org_deleted": org_deleted,
+            }))).into_response()
         },
         Ok(_) => (StatusCode::NOT_FOUND, Json(json!({"error": "User not found"}))).into_response(),
         Err(e) => (StatusCode::INTERNAL_SERVER_ERROR, Json(json!({"error": format!("Database error: {}", e)}))).into_response(),
     }
 }
-
-pub async fn admin_toggle_user(
-    _admin: AdminUser,
-    State(state): State<Arc<AppState>>,
-    Path(user_id): Path<String>,
-) -> impl IntoResponse {
-    let result = sqlx::query("UPDATE users SET is_active = NOT COALESCE(is_active, true) WHERE id = $1 RETURNING is_active")
-        .bind(&user_id)
-        .fetch_optional(&state.db)
-        .await;
-
-    match result {
-        Ok(Some(row)) => {
-            let is_active: bool = sqlx::Row::get(&row, "is_active");
-            (StatusCode::OK, Json(json!({"message": if is_active { "User activated" } else { "User deactivated" }, "is_active": is_active}))).into_response()
-        },
-        Ok(None) => (StatusCode::NOT_FOUND, Json(json!({"error": "User not found"}))).into_response(),
-        Err(e) => (StatusCode::INTERNAL_SERVER_ERROR, Json(json!({"error": format!("Database error: {}", e)}))).into_response(),
-    }
-}
-
 pub async fn admin_change_role(
     _admin: AdminUser,
     State(state): State<Arc<AppState>>,
