@@ -58,7 +58,7 @@ export function BillingTab({ userPlan }: SettingsTabProps) {
     try {
       const token = localStorage.getItem('token');
       const res = await fetch('/api/v1/gdpr/delete-account', {
-        method: 'DELETE',
+        method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           ...(token ? { Authorization: `Bearer ${token}` } : {}),
