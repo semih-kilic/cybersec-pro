@@ -824,7 +824,7 @@ export function useAnalyticsOverview(timeRange?: string) {
 // ==========================================
 
 export interface AdminOverview {
-  users: { total: number; active: number; list: Array<{ id: string; email: string; first_name: string; last_name: string; role: string; organization_id: string; is_active: boolean; created_at: string }> };
+  users: { total: number; active: number; list: Array<{ id: string; email: string; first_name: string; last_name: string; role: string; organization_id: string | null; is_active: boolean; created_at: string; email_verified?: boolean; last_login?: string | null; org_name?: string; plan_type?: string }> };
   organizations: { total: number; plans_distribution: Record<string, number>; list: Array<{ id: string; name: string; slug: string; plan_type: string; is_active: boolean }> };
   scans: { total: number; running: number; recent: Array<{ id: string; target: string; status: string; created_at: string }> };
   agents: { total: number; online: number };

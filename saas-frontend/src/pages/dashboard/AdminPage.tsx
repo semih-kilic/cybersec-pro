@@ -7,22 +7,7 @@
  */
 import { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import {
-  Crown,
-  ShieldCheck,
-  Users,
-  Building2,
-  Activity,
-  CreditCard,
-  Mail,
-  ScrollText,
-  HeartPulse,
-  Lock,
-  BadgeCheck,
-  Trash2,
-  UserCheck,
-  AlertCircle,
-} from 'lucide-react';
+import { Activity, AlertCircle, BadgeCheck, Building2, CheckCircle2, CreditCard, Crown, HeartPulse, Lock, Mail, ScrollText, Search, ShieldCheck, Trash2, UserCheck, Users } from 'lucide-react';
 
 import { useAuth } from '../../hooks/useAuth';
 import { PageTransition } from '../../components/ui';
