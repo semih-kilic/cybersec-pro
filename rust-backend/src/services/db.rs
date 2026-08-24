@@ -529,6 +529,18 @@ r#"CREATE TABLE IF NOT EXISTS feature_flags (
 )"#,
 
 // ── Stripe webhook idempotency — prevents duplicate event processing ────
+r#"CREATE TABLE IF NOT EXISTS feedback (
+    id TEXT PRIMARY KEY,
+    user_id TEXT,
+    email TEXT,
+    type TEXT,
+    subject TEXT,
+    message TEXT,
+    priority TEXT DEFAULT 'normal',
+    status TEXT DEFAULT 'open',
+    created_at TIMESTAMP DEFAULT NOW()
+)"#,
+
 r#"CREATE TABLE IF NOT EXISTS stripe_events (
     event_id    TEXT PRIMARY KEY,
     event_type  TEXT NOT NULL,

@@ -39,13 +39,19 @@ pub async fn list_projects(
         None => return (StatusCode::FORBIDDEN, Json(json!({"error": "Organization required"}))).into_response(),
     };
 
-    let projects: Vec<Project> = sqlx::query_as(
+    let projects: Vec<Project> = match sqlx::query_as(
         "SELECT * FROM projects WHERE organization_id = $1 ORDER BY created_at DESC"
     )
     .bind(org_id)
     .fetch_all(&state.db)
     .await
-    .unwrap_or_default();
+    {
+        Ok(v) => v,
+        Err(e) => {
+            tracing::error!("list_projects decode failed: {}", e);
+            return (StatusCode::INTERNAL_SERVER_ERROR, Json(json!({"error": "Failed to load projects"}))).into_response();
+        }
+    };
 
     let response: Vec<_> = projects.iter().map(|p| p.to_response()).collect();
     (StatusCode::OK, Json(json!({"projects": response}))).into_response()

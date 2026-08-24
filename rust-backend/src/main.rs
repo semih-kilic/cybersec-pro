@@ -664,6 +664,7 @@ fn build_router(state: Arc<AppState>) -> Router {
         // ── Phase 3: Scan Templates ────────────────────────────────────────
         .route("/api/v1/scan-templates", get(security_handlers::list_scan_templates).post(security_handlers::create_scan_template))
         .route("/api/v1/scan-templates/:template_id", delete(security_handlers::delete_scan_template))
+        .route("/api/v1/scan-templates/:template_id/use", post(security_handlers::use_scan_template))
         // ── Phase 5: Analytics Trend ──────────────────────────────────────
         .route("/api/v1/analytics/trend", get(security_handlers::get_analytics_trend))
         // ── Phase 6: Strix AI Jobs ────────────────────────────────────────

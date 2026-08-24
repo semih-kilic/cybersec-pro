@@ -4,7 +4,7 @@ use sqlx::FromRow;
 
 #[derive(Debug, Clone, Serialize, Deserialize, FromRow)]
 pub struct Project {
-    pub id: i64,
+    pub id: i32,
     pub organization_id: String,
     pub name: String,
     pub description: Option<String>,
@@ -18,7 +18,7 @@ pub struct Project {
 
 #[derive(Debug, Serialize)]
 pub struct ProjectResponse {
-    pub id: i64,
+    pub id: i32,
     pub name: String,
     pub description: String,
     pub target_type: String,

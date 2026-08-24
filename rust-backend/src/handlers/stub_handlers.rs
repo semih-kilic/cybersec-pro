@@ -2800,19 +2800,28 @@ pub async fn list_target_groups(
 
 pub async fn analytics_overview(
     user: AuthUser,
+    axum::extract::Query(q): axum::extract::Query<std::collections::HashMap<String, String>>,
     State(state): State<Arc<AppState>>,
 ) -> impl IntoResponse {
+    // scope=org (default) counts the whole organization; scope=mine counts only
+    // the signed-in user's scans.
+    let scope_org = q.get("scope").map(|s| s != "mine").unwrap_or(true);
+    let scope_val = if scope_org {
+        user.org_id.clone().unwrap_or_else(|| user.user_id.clone())
+    } else {
+        user.user_id.clone()
+    };
     let total_scans = sqlx::query_as::<_, (i64,)>(
-        "SELECT COUNT(*) FROM scans WHERE user_id = $1"
-    ).bind(&user.user_id).fetch_one(&state.db).await.unwrap_or((0,));
+        "SELECT COUNT(*) FROM scans WHERE (CASE WHEN $2::boolean THEN organization_id ELSE user_id END) = $1"
+    ).bind(&scope_val).bind(scope_org).fetch_one(&state.db).await.unwrap_or((0,));
 
     let completed = sqlx::query_as::<_, (i64,)>(
-        "SELECT COUNT(*) FROM scans WHERE user_id = $1 AND status = 'completed'"
-    ).bind(&user.user_id).fetch_one(&state.db).await.unwrap_or((0,));
+        "SELECT COUNT(*) FROM scans WHERE (CASE WHEN $2::boolean THEN organization_id ELSE user_id END) = $1 AND status = 'completed'"
+    ).bind(&scope_val).bind(scope_org).fetch_one(&state.db).await.unwrap_or((0,));
 
     let failed = sqlx::query_as::<_, (i64,)>(
-        "SELECT COUNT(*) FROM scans WHERE user_id = $1 AND status = 'failed'"
-    ).bind(&user.user_id).fetch_one(&state.db).await.unwrap_or((0,));
+        "SELECT COUNT(*) FROM scans WHERE (CASE WHEN $2::boolean THEN organization_id ELSE user_id END) = $1 AND status = 'failed'"
+    ).bind(&scope_val).bind(scope_org).fetch_one(&state.db).await.unwrap_or((0,));
 
     let success_rate = if total_scans.0 > 0 {
         (completed.0 as f64 / total_scans.0 as f64 * 100.0).round()
@@ -2825,9 +2834,9 @@ pub async fn analytics_overview(
                 AVG(EXTRACT(EPOCH FROM (completed_at - started_at))) FILTER (WHERE status='completed' AND started_at IS NOT NULL AND completed_at IS NOT NULL)::float8 AS avg_dur, \
                 (COUNT(*) FILTER (WHERE status='completed')::float8 * 100.0 / NULLIF(COUNT(*),0)) AS success_rate \
          FROM scans \
-         WHERE user_id = $1 AND created_at > NOW() - INTERVAL '30 days' \
+         WHERE (CASE WHEN $2::boolean THEN organization_id ELSE user_id END) = $1 AND created_at > NOW() - INTERVAL '30 days' \
          GROUP BY d ORDER BY d"
-    ).bind(&user.user_id).fetch_all(&state.db).await.unwrap_or_default();
+    ).bind(&scope_val).bind(scope_org).fetch_all(&state.db).await.unwrap_or_default();
     let daily_trend: Vec<serde_json::Value> = trend_rows.iter().map(|(d, c, avg, sr)| json!({
         "date": d,
         "scans": c,
@@ -2837,14 +2846,14 @@ pub async fn analytics_overview(
 
     // Build tool_usage from scans joined with tools
     let tool_rows = sqlx::query_as::<_, (String, i64)>(
-        "SELECT COALESCE(t.name,'unknown'), COUNT(*) FROM scans s LEFT JOIN tools t ON s.tool_id = t.id WHERE s.user_id = $1 GROUP BY t.name ORDER BY COUNT(*) DESC LIMIT 10"
-    ).bind(&user.user_id).fetch_all(&state.db).await.unwrap_or_default();
+        "SELECT COALESCE(t.name,'unknown'), COUNT(*) FROM scans s LEFT JOIN tools t ON s.tool_id = t.id WHERE s.(CASE WHEN $2::boolean THEN organization_id ELSE user_id END) = $1 GROUP BY t.name ORDER BY COUNT(*) DESC LIMIT 10"
+    ).bind(&scope_val).bind(scope_org).fetch_all(&state.db).await.unwrap_or_default();
     let tool_usage: Vec<serde_json::Value> = tool_rows.iter().map(|(n, c)| json!({"name": n, "count": c})).collect();
 
     // Status distribution
     let status_rows = sqlx::query_as::<_, (String, i64)>(
-        "SELECT COALESCE(status,'unknown'), COUNT(*) FROM scans WHERE user_id = $1 GROUP BY status"
-    ).bind(&user.user_id).fetch_all(&state.db).await.unwrap_or_default();
+        "SELECT COALESCE(status,'unknown'), COUNT(*) FROM scans WHERE (CASE WHEN $2::boolean THEN organization_id ELSE user_id END) = $1 GROUP BY status"
+    ).bind(&scope_val).bind(scope_org).fetch_all(&state.db).await.unwrap_or_default();
     let mut status_dist = serde_json::Map::new();
     for (s, c) in &status_rows {
         status_dist.insert(s.clone(), json!(c));
@@ -2853,19 +2862,19 @@ pub async fn analytics_overview(
     // Target distribution — top 10 by frequency.
     let target_rows = sqlx::query_as::<_, (String, i64)>(
         "SELECT COALESCE(NULLIF(target,''),'(none)'), COUNT(*) FROM scans \
-         WHERE user_id = $1 GROUP BY target ORDER BY COUNT(*) DESC LIMIT 10"
-    ).bind(&user.user_id).fetch_all(&state.db).await.unwrap_or_default();
+         WHERE (CASE WHEN $2::boolean THEN organization_id ELSE user_id END) = $1 GROUP BY target ORDER BY COUNT(*) DESC LIMIT 10"
+    ).bind(&scope_val).bind(scope_org).fetch_all(&state.db).await.unwrap_or_default();
     let target_distribution: Vec<serde_json::Value> = target_rows.iter()
         .map(|(t, c)| json!({"target": t, "count": c})).collect();
 
     // This-week vs last-week comparison.
     let this_week: (i64,) = sqlx::query_as(
-        "SELECT COUNT(*) FROM scans WHERE user_id = $1 AND created_at >= NOW() - INTERVAL '7 days'"
-    ).bind(&user.user_id).fetch_one(&state.db).await.unwrap_or((0,));
+        "SELECT COUNT(*) FROM scans WHERE (CASE WHEN $2::boolean THEN organization_id ELSE user_id END) = $1 AND created_at >= NOW() - INTERVAL '7 days'"
+    ).bind(&scope_val).bind(scope_org).fetch_one(&state.db).await.unwrap_or((0,));
     let last_week: (i64,) = sqlx::query_as(
-        "SELECT COUNT(*) FROM scans WHERE user_id = $1 \
+        "SELECT COUNT(*) FROM scans WHERE (CASE WHEN $2::boolean THEN organization_id ELSE user_id END) = $1 \
          AND created_at >= NOW() - INTERVAL '14 days' AND created_at < NOW() - INTERVAL '7 days'"
-    ).bind(&user.user_id).fetch_one(&state.db).await.unwrap_or((0,));
+    ).bind(&scope_val).bind(scope_org).fetch_one(&state.db).await.unwrap_or((0,));
     let change_pct = if last_week.0 > 0 {
         ((this_week.0 - last_week.0) as f64 / last_week.0 as f64 * 100.0 * 10.0).round() / 10.0
     } else if this_week.0 > 0 { 100.0 } else { 0.0 };
@@ -2873,9 +2882,9 @@ pub async fn analytics_overview(
     // Average scan duration (only for scans we have timing for).
     let avg_dur: (Option<f64>,) = sqlx::query_as(
         "SELECT AVG(EXTRACT(EPOCH FROM (completed_at - started_at)))::float8 \
-         FROM scans WHERE user_id = $1 \
+         FROM scans WHERE (CASE WHEN $2::boolean THEN organization_id ELSE user_id END) = $1 \
          AND status = 'completed' AND started_at IS NOT NULL AND completed_at IS NOT NULL"
-    ).bind(&user.user_id).fetch_one(&state.db).await.unwrap_or((None,));
+    ).bind(&scope_val).bind(scope_org).fetch_one(&state.db).await.unwrap_or((None,));
     let avg_duration_seconds = avg_dur.0.map(|v| v.round() as i64).unwrap_or(0);
 
     // Risk aggregation from scans.findings JSONB.
@@ -2891,7 +2900,7 @@ pub async fn analytics_overview(
                 COALESCE((findings->>'low')::int,      0) AS low,
                 COALESCE((findings->>'info')::int,     0) AS info
             FROM scans
-            WHERE user_id = $1
+            WHERE (CASE WHEN $2::boolean THEN organization_id ELSE user_id END) = $1
               AND findings IS NOT NULL
               AND jsonb_typeof(findings) = 'object'
         )
@@ -2901,7 +2910,7 @@ pub async fn analytics_overview(
         UNION ALL SELECT 'low',      COALESCE(SUM(low),0)::bigint      FROM per_scan
         UNION ALL SELECT 'info',     COALESCE(SUM(info),0)::bigint     FROM per_scan
         "#
-    ).bind(&user.user_id).fetch_all(&state.db).await.unwrap_or_default();
+    ).bind(&scope_val).bind(scope_org).fetch_all(&state.db).await.unwrap_or_default();
 
     let mut sev = std::collections::HashMap::new();
     for (k, v) in &sev_rows { sev.insert(k.clone(), *v); }
@@ -4661,6 +4670,21 @@ pub async fn feedback(
             Json(json!({"error": "Valid reply email is required"}))).into_response();
     }
 
+    // ─── Persist FIRST — the ticket must survive mail failures ──
+    let feedback_id = uuid::Uuid::new_v4().to_string();
+    let _ = sqlx::query(
+        "INSERT INTO feedback (id, user_id, email, type, subject, message, priority) VALUES ($1,$2,$3,$4,$5,$6,$7)"
+    )
+    .bind(&feedback_id)
+    .bind(&user.user_id)
+    .bind(&account_email)
+    .bind(&feedback_type)
+    .bind(&subject)
+    .bind(&message)
+    .bind(&priority)
+    .execute(&state.db)
+    .await;
+
     // ─── Load SMTP config ──────────────────────────────────────
     let cfg = match EmailConfig::from_env() {
         Some(c) => c,
@@ -4799,7 +4823,7 @@ pub async fn feedback(
     }
 
     Json(json!({
-        "message": "Thank you for your feedback! A confirmation has been sent to your email.",
+        "message": "Thank you for your feedback! A confirmation has been sent to your email.", "ticket_id": feedback_id,
         "delivered": delivery,
     })).into_response()
 }

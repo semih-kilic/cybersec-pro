@@ -740,3 +740,36 @@ mod tests {
         assert!(!validate_ip_cidr(""));
     }
 }
+
+pub async fn use_scan_template(
+    auth: AuthUser,
+    State(state): State<Arc<AppState>>,
+    Path(template_id): Path<String>,
+) -> impl IntoResponse {
+    let row: Option<(String, Option<String>, Option<serde_json::Value>, Option<i64>)> = sqlx::query_as(
+        "SELECT tool_id, target, parameters, use_count FROM scan_templates WHERE id = $1 AND (organization_id = $2 OR is_public = TRUE)"
+    )
+    .bind(&template_id)
+    .bind(auth.org_id.as_deref().unwrap_or(""))
+    .fetch_optional(&state.db)
+    .await
+    .unwrap_or(None);
+
+    let (tool_id, target, parameters, use_count) = match row {
+        Some(t) => t,
+        None => return (StatusCode::NOT_FOUND, Json(json!({"error": "Template not found"}))).into_response(),
+    };
+
+    let _ = sqlx::query("UPDATE scan_templates SET use_count = COALESCE(use_count,0) + 1 WHERE id = $1")
+        .bind(&template_id)
+        .execute(&state.db)
+        .await;
+
+    Json(json!({
+        "tool_id": tool_id,
+        "target": target,
+        "parameters": parameters,
+        "use_count": use_count.unwrap_or(0) + 1,
+    })).into_response()
+}
+
