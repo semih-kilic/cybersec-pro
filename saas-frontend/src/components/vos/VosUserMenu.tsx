@@ -184,7 +184,7 @@ export function VosUserMenu({ user, onLogout, onShortcuts }: VosUserMenuProps) {
                 </kbd>
               </Item>
             )}
-            <Item href="/en/docs/" icon={HelpCircle} external>
+            <Item href="https://cyber-sec-pro.com/en/docs/" icon={HelpCircle} external>
               {t('userMenu.help', 'Help & documentation')}
             </Item>
           </Section>
