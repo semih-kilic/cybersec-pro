@@ -716,10 +716,16 @@ pub async fn billing_portal(
     );
 
     let client = reqwest::Client::new();
-    let params = vec![
+    let mut params = vec![
         ("customer", customer_id.as_str()),
         ("return_url", return_url.as_str()),
     ];
+    // Self-serve configuration: plan switching (monthly tiers), cancel at
+    // period end, payment-method update and invoice history.
+    let portal_config = std::env::var("STRIPE_PORTAL_CONFIG_ID").unwrap_or_default();
+    if !portal_config.is_empty() {
+        params.push(("configuration", portal_config.as_str()));
+    }
 
     let res = client
         .post("https://api.stripe.com/v1/billing_portal/sessions")

@@ -4903,43 +4903,153 @@ pub async fn gdpr_export(
     })).into_response()
 }
 
+#[derive(serde::Deserialize)]
+pub struct DeleteAccountBody {
+    pub password: String,
+    pub confirm_text: Option<String>,
+}
+
 pub async fn gdpr_delete_account(
     user: AuthUser,
     State(state): State<Arc<AppState>>,
+    axum::Json(body): axum::Json<DeleteAccountBody>,
 ) -> impl IntoResponse {
-    // Anonymize user data instead of hard delete (preserves referential integrity)
-    let anon_email = format!("deleted-{}@deleted.local", &user.user_id[..8]);
-    let result = sqlx::query(
-        "UPDATE users SET email = $1, first_name = 'Deleted', last_name = 'User', is_active = FALSE, mfa_enabled = FALSE, mfa_secret = NULL, password_hash = 'DELETED' WHERE id = $2"
-    )
-    .bind(&anon_email)
-    .bind(&user.user_id)
-    .execute(&state.db)
-    .await;
+    use argon2::PasswordVerifier;
+
+    // ── 0. Type-to-confirm guard ────────────────────────────────────────
+    if body.confirm_text.as_deref() != Some("DELETE") {
+        return (StatusCode::BAD_REQUEST, Json(json!({"error": "Type DELETE to confirm account deletion"}))).into_response();
+    }
+
+    // ── 1. Password re-authentication (world-standard for destructive actions)
+    let row: Option<(String,)> = sqlx::query_as("SELECT password_hash FROM users WHERE id = $1")
+        .bind(&user.user_id)
+        .fetch_optional(&state.db)
+        .await
+        .unwrap_or(None);
+    let pw_hash = match row {
+        Some((h,)) => h,
+        None => return (StatusCode::NOT_FOUND, Json(json!({"error": "User not found"}))).into_response(),
+    };
+    let parsed = match argon2::PasswordHash::new(&pw_hash) {
+        Ok(h) => h,
+        Err(_) => return (StatusCode::INTERNAL_SERVER_ERROR, Json(json!({"error": "Password check failed"}))).into_response(),
+    };
+    if argon2::Argon2::default().verify_password(body.password.as_bytes(), &parsed).is_err() {
+        return (StatusCode::UNAUTHORIZED, Json(json!({"error": "Incorrect password"}))).into_response();
+    }
+
+    // ── 2. User-scoped cleanup ──────────────────────────────────────────
+    let _ = sqlx::query("DELETE FROM audit_logs WHERE user_id = $1").bind(&user.user_id).execute(&state.db).await;
+    let _ = sqlx::query("DELETE FROM login_history WHERE user_id = $1").bind(&user.user_id).execute(&state.db).await;
+    let _ = sqlx::query("DELETE FROM reports WHERE user_id = $1").bind(&user.user_id).execute(&state.db).await;
+    let _ = sqlx::query("DELETE FROM scheduled_scans WHERE user_id = $1").bind(&user.user_id).execute(&state.db).await;
+    let _ = sqlx::query("DELETE FROM api_keys WHERE user_id = $1").bind(&user.user_id).execute(&state.db).await;
+    let _ = sqlx::query("DELETE FROM notifications WHERE user_id = $1").bind(&user.user_id).execute(&state.db).await;
+    let _ = sqlx::query("DELETE FROM ip_whitelist WHERE user_id = $1").bind(&user.user_id).execute(&state.db).await;
+    let _ = sqlx::query("DELETE FROM team_invitations WHERE invited_by = $1").bind(&user.user_id).execute(&state.db).await;
+    let _ = sqlx::query(
+        "UPDATE consent_records SET status = 'withdrawn', withdrawn_at = NOW() WHERE user_id = $1 AND status = 'active'"
+    ).bind(&user.user_id).execute(&state.db).await;
+
+    // ── 3. Sole-member organization cascade + Stripe cancellation ───────
+    let mut org_deleted = false;
+    if let Some(ref org) = user.org_id {
+        let siblings: (i64,) = sqlx::query_as(
+            "SELECT COUNT(*) FROM users WHERE organization_id = $1 AND id != $2"
+        )
+        .bind(org)
+        .bind(&user.user_id)
+        .fetch_one(&state.db)
+        .await
+        .unwrap_or((0,));
+
+        if siblings.0 == 0 {
+            let sub_id: Option<String> = sqlx::query_scalar(
+                "SELECT stripe_subscription_id FROM subscriptions WHERE organization_id = $1 AND stripe_subscription_id IS NOT NULL LIMIT 1"
+            )
+            .bind(org)
+            .fetch_optional(&state.db)
+            .await
+            .unwrap_or(None);
+
+            if let Some(sid) = sub_id {
+                let secret = std::env::var("STRIPE_SECRET_KEY").unwrap_or_default();
+                if !secret.is_empty() {
+                    let _ = reqwest::Client::new()
+                        .delete(&format!("https://api.stripe.com/v1/subscriptions/{}", sid))
+                        .basic_auth(&secret, None::<&str>)
+                        .send()
+                        .await;
+                }
+            }
+
+            let _ = sqlx::query("DELETE FROM agent_jobs WHERE agent_id IN (SELECT id FROM agents WHERE organization_id = $1)").bind(org).execute(&state.db).await;
+            let _ = sqlx::query("DELETE FROM usage_tracking WHERE organization_id = $1").bind(org).execute(&state.db).await;
+            let _ = sqlx::query("DELETE FROM scan_compliance_results WHERE scan_id IN (SELECT id FROM scans WHERE organization_id = $1)").bind(org).execute(&state.db).await;
+            let _ = sqlx::query("DELETE FROM analytics_snapshots WHERE organization_id = $1").bind(org).execute(&state.db).await;
+            let _ = sqlx::query("DELETE FROM compliance_posture WHERE organization_id = $1").bind(org).execute(&state.db).await;
+            let _ = sqlx::query("DELETE FROM compliance_frameworks WHERE organization_id = $1").bind(org).execute(&state.db).await;
+            let _ = sqlx::query("DELETE FROM purple_team_exercises WHERE organization_id = $1").bind(org).execute(&state.db).await;
+            let _ = sqlx::query("DELETE FROM purple_team_profiles WHERE organization_id = $1").bind(org).execute(&state.db).await;
+            let _ = sqlx::query("DELETE FROM cybersec_ai_jobs WHERE organization_id = $1").bind(org).execute(&state.db).await;
+            let _ = sqlx::query("DELETE FROM strix_jobs WHERE organization_id = $1").bind(org).execute(&state.db).await;
+            let _ = sqlx::query("DELETE FROM target_authorizations WHERE organization_id = $1").bind(org).execute(&state.db).await;
+            let _ = sqlx::query("DELETE FROM targets WHERE organization_id = $1").bind(org).execute(&state.db).await;
+            let _ = sqlx::query("DELETE FROM scan_templates WHERE organization_id = $1").bind(org).execute(&state.db).await;
+            let _ = sqlx::query("DELETE FROM schedule_run_history WHERE schedule_id IN (SELECT id FROM scheduled_scans WHERE organization_id = $1)").bind(org).execute(&state.db).await;
+            let _ = sqlx::query("DELETE FROM scheduled_scans WHERE organization_id = $1").bind(org).execute(&state.db).await;
+            let _ = sqlx::query("DELETE FROM integrations WHERE organization_id = $1").bind(org).execute(&state.db).await;
+            let _ = sqlx::query("DELETE FROM api_keys WHERE organization_id = $1").bind(org).execute(&state.db).await;
+            let _ = sqlx::query("DELETE FROM notification_preferences WHERE organization_id = $1").bind(org).execute(&state.db).await;
+            let _ = sqlx::query("DELETE FROM team_invitations WHERE organization_id = $1").bind(org).execute(&state.db).await;
+            let _ = sqlx::query("DELETE FROM sso_configs WHERE organization_id = $1").bind(org).execute(&state.db).await;
+            let _ = sqlx::query("DELETE FROM subscriptions WHERE organization_id = $1").bind(org).execute(&state.db).await;
+            let _ = sqlx::query("DELETE FROM projects WHERE organization_id = $1").bind(org).execute(&state.db).await;
+            let _ = sqlx::query("DELETE FROM agents WHERE organization_id = $1").bind(org).execute(&state.db).await;
+            let _ = sqlx::query("DELETE FROM scans WHERE organization_id = $1").bind(org).execute(&state.db).await;
+            let _ = sqlx::query("DELETE FROM reports WHERE organization_id = $1").bind(org).execute(&state.db).await;
+            let _ = sqlx::query("DELETE FROM audit_logs WHERE user_id IN (SELECT id FROM users WHERE organization_id = $1)").bind(org).execute(&state.db).await;
+            let _ = sqlx::query("DELETE FROM users WHERE organization_id = $1").bind(org).execute(&state.db).await;
+            let _ = sqlx::query("DELETE FROM organizations WHERE id = $1").bind(org).execute(&state.db).await;
+
+            org_deleted = true;
+        } else {
+            let _ = sqlx::query("UPDATE scans SET user_id = NULL WHERE user_id = $1").bind(&user.user_id).execute(&state.db).await;
+        }
+    }
+
+    // ── 4. Revoke cached sessions, then delete the user row ─────────────
+    let _ = state.cache.delete_pattern(&format!("revoked:refresh:%")).await;
+    let result = sqlx::query("DELETE FROM users WHERE id = $1")
+        .bind(&user.user_id)
+        .execute(&state.db)
+        .await;
 
     match result {
-        Ok(_) => {
-            // Delete personal audit logs
-            let _ = sqlx::query("DELETE FROM audit_logs WHERE user_id = $1").bind(&user.user_id).execute(&state.db).await;
+        Ok(r) if r.rows_affected() > 0 => {
+            crate::services::audit::log_audit(
+                &state.db,
+                "account_self_deleted",
+                "user",
+                "warning",
+                Some(&user.user_id),
+                user.org_id.as_deref(),
+                Some(json!({"org_deleted": org_deleted})),
+                Some("user"),
+                Some(&user.user_id),
+                "success",
+                None,
+            ).await;
 
-            // Withdraw all consents (PIPEDA/CCPA/GDPR right-to-erasure evidence)
-            let _ = sqlx::query(
-                "UPDATE consent_records SET status = 'withdrawn', withdrawn_at = NOW() WHERE user_id = $1 AND status = 'active'"
-            ).bind(&user.user_id).execute(&state.db).await;
-
-            // Drop API keys
-            let _ = sqlx::query("DELETE FROM api_keys WHERE user_id = $1").bind(&user.user_id).execute(&state.db).await;
-
-            // Revoke all cached sessions (Redis)
-            let _ = state.cache.delete_pattern(&format!("refresh_token:user:{}", user.user_id)).await;
-            let _ = state.cache.delete_pattern(&format!("session:user:{}", user.user_id)).await;
-
-            Json(json!({"message": "Account data deleted and anonymized", "status": "complete"})).into_response()
+            Json(json!({
+                "message": if org_deleted { "Account and organization fully deleted" } else { "Account deleted" },
+                "status": "complete"
+            })).into_response()
         }
-        Err(e) => (StatusCode::INTERNAL_SERVER_ERROR, Json(json!({"error": format!("Failed: {}", e)}))).into_response(),
+        _ => (StatusCode::INTERNAL_SERVER_ERROR, Json(json!({"error": "Deletion failed"}))).into_response(),
     }
 }
-
 // ── Integrations ───────────────────────────────────────────
 
 pub async fn list_integrations(
