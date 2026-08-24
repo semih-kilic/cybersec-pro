@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import { useNavigate, Link , useSearchParams } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
 import { useTranslation } from 'react-i18next';
 import MatrixRainBg from '../components/ui/MatrixRainBg';
@@ -27,6 +27,7 @@ export function RegisterPage() {
   const { register: _register } = useAuth();
   void _register;
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const { t } = useTranslation();
 
   const handleGoogleLogin = () => {
@@ -95,7 +96,12 @@ export function RegisterPage() {
       } else if (res.ok && data.access_token) {
         localStorage.setItem('access_token', data.access_token);
         localStorage.setItem('user', JSON.stringify(data.user));
-        navigate('/dashboard');
+        const planParam = searchParams.get('plan');
+        if (planParam === 'founding_member') {
+          navigate('/dashboard/upgrade?plan=founding_member&billing=monthly');
+        } else {
+          navigate('/dashboard');
+        }
       } else {
         setError(data.error || t('auth.registrationFailed', 'Registration failed'));
       }

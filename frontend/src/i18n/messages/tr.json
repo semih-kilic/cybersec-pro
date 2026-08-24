@@ -641,5 +641,12 @@
     "faq3a": "Tüm büyük kredi kartları (Visa, MasterCard, Amex), PayPal ve Kurumsal planlar için banka havaleleri.",
     "faq4q": "Para iade garantisi var mı?",
     "faq4a": "Evet, 30 günlük para iade garantisi. Memnun kalmazsınız tam iade için bizimle iletişime geçin."
+  },
+  "founding": {
+    "bar": "Kurucu Üye fırsatı — ömür boyu $19/ay (%81 indirim). Sadece 10 kişi.",
+    "barCta": "Yerini ayır",
+    "foundingTitle": "Kurucu Üye — ömür boyu $19/ay",
+    "foundingSub": "İlk 10 üye ömür boyu %81 indirim kazanır. Normal fiyat: $99/ay.",
+    "foundingCta": "Kurucu Yerini Ayır"
   }
 }

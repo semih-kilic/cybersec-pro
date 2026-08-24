@@ -1,9 +1,9 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useTranslations } from "next-intl";
 import { motion, AnimatePresence } from "framer-motion";
-import { Check, Star, ChevronDown } from "lucide-react";
+import { Check, Star, ChevronDown, Crown } from "lucide-react";
 
 const planKeys = ["trial", "starter", "professional", "enterprise"] as const;
 
@@ -152,6 +152,16 @@ function PricingCard({
 export default function PricingSection() {
   const t = useTranslations("pricing");
   const [annual, setAnnual] = useState(false);
+  const [foundingLive, setFoundingLive] = useState(false);
+
+  useEffect(() => {
+    fetch("/api/v1/billing/founding-member/status")
+      .then((r) => r.json())
+      .then((d) => {
+        if (d && d.available) setFoundingLive(true);
+      })
+      .catch(() => {});
+  }, []);
 
   return (
     <section id="pricing" className="relative py-28">
@@ -184,6 +194,28 @@ export default function PricingSection() {
             {t("annual")} <span className="text-[var(--color-neon)]">{t("annualSave")}</span>
           </span>
         </div>
+
+        {foundingLive && (
+          <div className="mb-10 flex flex-col items-center justify-between gap-4 rounded-2xl border border-[var(--color-neon)]/40 bg-gradient-to-r from-amber-500/15 via-orange-500/10 to-amber-500/15 p-6 sm:flex-row">
+            <div className="flex items-center gap-3">
+              <Crown size={26} className="shrink-0 text-amber-400" />
+              <div>
+                <h3 className="text-base font-bold text-white">
+                  {t.has("foundingTitle") ? t("foundingTitle") : "Founding Member — $19/mo lifetime"}
+                </h3>
+                <p className="text-xs text-white/55">
+                  {t.has("foundingSub") ? t("foundingSub") : "First 10 members lock 81% off forever. Normal price: $99/mo."}
+                </p>
+              </div>
+            </div>
+            <a
+              href="https://app.cyber-sec-pro.com/register?plan=founding_member"
+              className="shrink-0 rounded-xl bg-[var(--color-neon)] px-6 py-3 font-mono text-sm font-bold text-[var(--color-bg)] transition hover:shadow-[0_0_30px_var(--color-neon-glow)]"
+            >
+              {t.has("foundingCta") ? t("foundingCta") : "Claim Founding Spot"}
+            </a>
+          </div>
+        )}
 
         <motion.div
           variants={container}

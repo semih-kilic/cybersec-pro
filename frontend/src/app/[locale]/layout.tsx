@@ -5,6 +5,7 @@ import { notFound } from "next/navigation";
 import { Inter, JetBrains_Mono } from "next/font/google";
 import { locales, rtlLocales, type Locale } from "@/i18n/config";
 import { getOrganizationJsonLd, getWebsiteJsonLd, getSoftwareJsonLd } from "@/lib/seo";
+import AnnouncementBar from "@/components/AnnouncementBar";
 import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
 import HashScrollHandler from "@/components/HashScrollHandler";
@@ -122,7 +123,10 @@ export default async function LocaleLayout({
         <NextIntlClientProvider messages={messages}>
           <HashScrollHandler />
           <Header />
-          <main className="min-h-screen pt-16">{children}</main>
+          <main className="min-h-screen pt-16">
+            <AnnouncementBar />
+            {children}
+          </main>
           <Footer />
         </NextIntlClientProvider>
       </body>

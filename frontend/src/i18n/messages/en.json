@@ -697,5 +697,12 @@
     "scanning": "Scanning...",
     "scanStarted": "Scan started",
     "error": "Error"
+  },
+  "founding": {
+    "bar": "Founding Member offer — $19/mo lifetime (81% off). Only 10 spots.",
+    "barCta": "Claim your spot",
+    "foundingTitle": "Founding Member — $19/mo lifetime",
+    "foundingSub": "First 10 members lock 81% off forever. Normal price: $99/mo.",
+    "foundingCta": "Claim Founding Spot"
   }
 }
