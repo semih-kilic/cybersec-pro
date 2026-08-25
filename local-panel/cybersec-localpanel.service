@@ -1,0 +1,14 @@
+[Unit]
+Description=CyberSec Pro Local Service Manager Panel
+After=network.target docker.service
+
+[Service]
+Type=simple
+User=cybersec
+WorkingDirectory=/home/cybersec/cybersec-pro/local-panel
+ExecStart=/usr/bin/python3 /home/cybersec/cybersec-pro/local-panel/server.py
+Restart=always
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target

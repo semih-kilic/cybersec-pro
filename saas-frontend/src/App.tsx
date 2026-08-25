@@ -232,8 +232,6 @@ const DASHBOARD_NAV: VosNavItem[] = [
   // ── System (superadmin only — regular admins manage everything via Settings) ──
   { label: 'Admin',           to: '/dashboard/admin',            icon: Crown,         section: 'System',
     roles: ['superadmin'] },
-  { label: 'Service Manager', to: '/dashboard/service-manager',  icon: ShieldAlert,
-    roles: ['superadmin'] },
   { label: 'God Mode',        to: '/dashboard/god-mode',         icon: Wand2,
     roles: ['superadmin'] },
 ];
