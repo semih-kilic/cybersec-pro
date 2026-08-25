@@ -18,7 +18,7 @@ use tokio::process::Command;
 use tokio::time::{sleep, timeout};
 
 const POLL_INTERVAL_SECS: u64 = 6;
-const AGENT_TIMEOUT_SECS: u64 = 90;
+const AGENT_TIMEOUT_SECS: u64 = 180;  // nuclei first pass needs >90s even with cached templates
 const CANCEL_POLL_SECS: u64 = 2;
 const MAX_OUTPUT_BYTES: usize = 64 * 1024;
 
