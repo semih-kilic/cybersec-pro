@@ -4425,6 +4425,7 @@ pub async fn terminal_execute(
     let ssh_port: Option<i32> = agent.get("ssh_port");
     let ssh_username: Option<String> = agent.get("ssh_username");
     let ssh_password_enc: Option<String> = agent.get("ssh_password_encrypted");
+    let ssh_passphrase_enc: Option<String> = agent.get("ssh_passphrase_encrypted");
     let ssh_key_path: Option<String> = agent.get("ssh_key_path");
 
     let host = match ssh_host {
