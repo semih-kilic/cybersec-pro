@@ -426,6 +426,8 @@ async fn run_vuln_scan(
                 "-silent",
                 "-no-color",
                 "-jsonl",
+                "-duc",  // disable update check — hangs without it
+                "-ni",   // no interactsh — avoids startup handshake delay
             ],
         )
         .await;
