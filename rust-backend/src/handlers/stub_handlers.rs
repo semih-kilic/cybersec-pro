@@ -4482,7 +4482,7 @@ pub async fn terminal_test_connection(
 
     use sqlx::Row;
     let agent = sqlx::query(
-        "SELECT ssh_host, ssh_port, ssh_username, ssh_password_encrypted, ssh_key_path, name, platform FROM agents WHERE id = $1 AND organization_id = $2"
+        "SELECT ssh_host, ssh_port, ssh_username, ssh_password_encrypted, ssh_passphrase_encrypted, ssh_key_path, name, platform FROM agents WHERE id = $1 AND organization_id = $2"
     )
     .bind(agent_id_val)
     .bind(org_id)
@@ -4499,6 +4499,7 @@ pub async fn terminal_test_connection(
     let ssh_port: Option<i32> = agent.get("ssh_port");
     let ssh_username: Option<String> = agent.get("ssh_username");
     let ssh_password_enc: Option<String> = agent.get("ssh_password_encrypted");
+    let ssh_passphrase_enc: Option<String> = agent.get("ssh_passphrase_encrypted");
     let ssh_key_path: Option<String> = agent.get("ssh_key_path");
     let agent_name: Option<String> = agent.get("name");
     let platform: Option<String> = agent.get("platform");
@@ -4519,7 +4520,10 @@ pub async fn terminal_test_connection(
         username: ssh_username.clone().unwrap_or_else(|| "root".into()),
         password,
         private_key: ssh_key_path,
-        passphrase: None,
+        passphrase: ssh_passphrase_enc.as_deref().and_then(|enc| {
+            let secret = crate::handlers::agent_handlers::password_encryption_key();
+            crate::services::connection_engine::crypto::decrypt_password(&enc, &secret).ok()
+        }),
         timeout_secs: 10,
     };
 
