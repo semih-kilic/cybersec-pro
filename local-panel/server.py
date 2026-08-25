@@ -53,7 +53,7 @@ async function login(){
   const r = await fetch('/login',{method:'POST',headers:{'Content-Type':'application/json'},
     body:JSON.stringify({email:em.value,password:pw.value})});
   const d = await r.json();
-  if(d.token){localStorage.setItem('sm_token',d.token);boot();}else{err.textContent=d.error||'Login failed';}
+  if(d.access_token||d.token){localStorage.setItem('sm_token',d.access_token||d.token);boot();}else{err.textContent=d.error||'Login failed';}
 }
 async function api(p,method='GET'){
   const r = await fetch('/api'+p,{method,headers:{Authorization:'Bearer '+T()}});
@@ -113,7 +113,7 @@ class H(BaseHTTPRequestHandler):
             self.send_header("Content-Type", "text/html; charset=utf-8"); self.end_headers()
             self.wfile.write(HTML.encode()); return
         if self.path.startswith("/api/"):
-            self.proxy("GET", self.path[4:]); return
+            self.proxy("GET", self.path); return
         self.send_response(404); self.end_headers()
 
     def do_POST(self):
@@ -122,7 +122,7 @@ class H(BaseHTTPRequestHandler):
         if self.path == "/login":
             self.proxy("POST", "/api/v1/auth/login", body, forward_auth=False); return
         if self.path.startswith("/api/"):
-            self.proxy("POST", self.path[4:], body); return
+            self.proxy("POST", self.path, body); return
         self.send_response(404); self.end_headers()
 
     def proxy(self, method, path, body=None, forward_auth=True):
