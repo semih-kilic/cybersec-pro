@@ -229,6 +229,56 @@ export function ScanExecutionPage() {
   const outputRef = useRef<HTMLDivElement>(null);
   const toolId = routeToolId || searchParams.get('tool') || '';
 
+  // ── Normalize `.form`-shaped tool parameters (ht_* + seeded tools) into the
+  //    map shape the parameter renderer expects. Without this, those tools
+  //    rendered bogus inputs named "form"/"danger_level"/"target_types".
+  useEffect(() => {
+    if (!tool) return;
+    const p: any = tool.parameters;
+    if (p && typeof p === 'object' && !Array.isArray(p) && Array.isArray(p.form)) {
+      const normalized: Record<string, any> = {};
+      for (const f of p.form) {
+        normalized[f.name] = {
+          type: f.type === 'url' || f.type === 'email' || f.type === 'password' ? 'text' : (f.type || 'text'),
+          required: !!f.required,
+          label: f.label || f.name,
+          placeholder: f.placeholder || (f.default !== undefined ? String(f.default) : ''),
+          default: f.default,
+          options: f.options,
+        };
+      }
+      setTool({ ...tool, parameters: normalized });
+    }
+  }, [tool]);
+
+  // ── Scan Template prefill: ?template=<id> bumps use_count and fills fields ──
+  useEffect(() => {
+    const tid = searchParams.get('template');
+    if (!tid || !tool) return;
+    const token = localStorage.getItem('token');
+    fetch(`/api/v1/scan-templates/${tid}/use`, {
+      method: 'POST',
+      headers: { ...(token ? { Authorization: `Bearer ${token}` } : {}) },
+    })
+      .then((r) => r.json())
+      .then((d) => {
+        if (d.target && !target) setTarget(d.target);
+        if (d.parameters && typeof d.parameters === 'object') {
+          setParameters((prev) => ({
+            ...prev,
+            ...Object.fromEntries(
+              Object.entries(d.parameters).map(([k, v]) => [
+                k,
+                typeof v === 'boolean' || typeof v === 'number' ? v : String(v),
+              ])
+            ),
+          }));
+        }
+      })
+      .catch(() => {});
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [tool]);
+
   // const ws = useScanSubscription(status === 'running' ? currentScanId : null); // REMOVED
 
   const { data: toolConfigData } = useQuery({

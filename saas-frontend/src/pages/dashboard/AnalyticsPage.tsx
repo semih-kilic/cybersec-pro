@@ -63,8 +63,45 @@ export default function AnalyticsPage() {
   const { t } = useTranslation();
   useDocumentTitle(`${t('analytics.title', 'Analytics')} — CyberSec Pro`);
   const [timeRange, setTimeRange] = useState<'7d' | '30d' | '90d'>('30d');
-  const { data, isLoading: loading, refetch: loadAnalytics } = useAnalyticsOverview(timeRange);
+  const [scope, setScope] = useState<'org' | 'mine'>('org');
+  const { data, isLoading: loading, refetch: loadAnalytics } = useAnalyticsOverview(timeRange, scope);
   const trendDays = timeRange === '7d' ? 7 : timeRange === '30d' ? 30 : 90;
+
+  const exportReport = () => {
+    if (!data) return;
+    const rows = (data.daily_trend || []).map((d: any) =>
+      `<tr><td>${d.date}</td><td>${d.scans}</td><td>${d.avg_duration_seconds ?? 0}s</td><td>${d.success_rate ?? 0}%</td></tr>`
+    ).join('');
+    const sev = Object.entries(data.risk?.severity_totals || {})
+      .map(([k, v]) => `<tr><td>${k}</td><td>${v as number}</td></tr>`).join('');
+    const html = `<!doctype html><html><head><meta charset="utf-8"><title>Analytics Report</title>
+<style>body{font-family:system-ui;max-width:900px;margin:40px auto;color:#0f172a}
+h1{font-size:24px}table{border-collapse:collapse;width:100%;margin:16px 0}
+td,th{border:1px solid #cbd5e1;padding:8px;text-align:left}
+.kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin:20px 0}
+.kpi{border:1px solid #cbd5e1;border-radius:8px;padding:12px}
+.kpi b{font-size:22px;display:block}
+@media print{.noprint{display:none}}</style></head><body>
+<h1>CyberSec Pro — Analytics Report</h1>
+<p>Scope: ${scope === 'org' ? 'Organization' : 'Personal'} · Generated ${new Date().toLocaleString()}</p>
+<div class="kpis">
+<div class="kpi">Total Scans<b>${data.performance.total_scans}</b></div>
+<div class="kpi">Success Rate<b>${data.performance.success_rate}%</b></div>
+<div class="kpi">Avg Duration<b>${data.performance.avg_duration_seconds}s</b></div>
+<div class="kpi">Risk Score<b>${data.risk?.score ?? 0}</b></div>
+</div>
+<h3>Severity Totals</h3><table><tr><th>Severity</th><th>Count</th></tr>${sev}</table>
+<h3>Daily Trend</h3><table><tr><th>Date</th><th>Scans</th><th>Avg Duration</th><th>Success</th></tr>${rows}</table>
+<p class="noprint"><button onclick="window.print()" style="padding:10px 20px;font-size:14px">Print / Save as PDF</button></p>
+</body></html>`;
+    const blob = new Blob([html], { type: 'text/html' });
+    const url = URL.createObjectURL(blob);
+    const aEl = document.createElement('a');
+    aEl.href = url;
+    aEl.download = `analytics-report-${scope}-${new Date().toISOString().slice(0, 10)}.html`;
+    aEl.click();
+    URL.revokeObjectURL(url);
+  };
   const { data: trendApiData } = useAnalyticsTrend(trendDays);
 
   if (loading) {
@@ -153,7 +190,8 @@ export default function AnalyticsPage() {
           <div className="flex items-center gap-2">
             <div className="flex bg-gray-800/60 border border-gray-700/50 rounded-lg p-0.5">
               {(['7d', '30d', '90d'] as const).map(range => (
-                <button
+
+                            <button
                   key={range}
                   onClick={() => setTimeRange(range)}
                   className={`px-3 py-1.5 text-xs font-medium rounded-md transition-all ${
@@ -166,6 +204,11 @@ export default function AnalyticsPage() {
                 </button>
               ))}
             </div>
+            <div className="inline-flex rounded-lg border border-gray-300 overflow-hidden">
+              <button onClick={() => setScope('org')} className={`px-3 py-2 text-sm ${scope === 'org' ? 'bg-gray-900 text-white' : 'bg-white text-gray-600'}`}>Org</button>
+              <button onClick={() => setScope('mine')} className={`px-3 py-2 text-sm ${scope === 'mine' ? 'bg-gray-900 text-white' : 'bg-white text-gray-600'}`}>Mine</button>
+            </div>
+            <button onClick={exportReport} className="px-4 py-2 border border-gray-300 rounded-lg text-sm text-gray-700 hover:bg-gray-50">Export</button>
             <Button variant="secondary" size="sm" onClick={() => loadAnalytics()} icon={
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />

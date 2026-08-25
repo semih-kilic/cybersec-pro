@@ -808,12 +808,12 @@ export interface AnalyticsData {
   risk: { score: number; level: string; severity_totals: Record<string, number>; total_issues: number };
 }
 
-export function useAnalyticsOverview(timeRange?: string) {
+export function useAnalyticsOverview(timeRange?: string, scope: 'org' | 'mine' = 'org') {
   const { token } = useAuth();
 
   return useQuery<AnalyticsData>({
-    queryKey: queryKeys.analytics.overview(timeRange),
-    queryFn: () => authFetch<AnalyticsData>('/api/v1/analytics/overview', token),
+    queryKey: [...queryKeys.analytics.overview(timeRange), scope],
+    queryFn: () => authFetch<AnalyticsData>(`/api/v1/analytics/overview?scope=${scope}`, token),
     ...CACHE_TIMES.analytics,
     enabled: !!token,
   });

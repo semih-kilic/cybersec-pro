@@ -3,9 +3,12 @@
  * Phase 3 — Pre-defined and custom scan configurations
  */
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { motion } from 'framer-motion';
 import { useScanTemplates, useCreateScanTemplate, useDeleteScanTemplate } from '../../hooks/useApiQueries';
+
+const navigate = useNavigate();
 
 const TOOL_ICONS: Record<string, string> = {
   nmap: '🔍', sqlmap: '💉', testssl: '🔐', wpscan: '🌐',
@@ -204,6 +207,12 @@ function TemplateCard({ template, onDelete, deleteConfirm, setDeleteConfirm, isO
       )}
       <div className="flex items-center justify-between mt-auto pt-2 border-t border-gray-700">
         <span className="text-gray-500 text-xs">{t('scanTemplates.usedTimes', 'Used {{count}}×', { count: template.use_count })}</span>
+        <button
+          onClick={() => navigate(`/dashboard/tools/${template.tool_id}?template=${template.id}`)}
+          className="px-3 py-1.5 bg-cyan-600 hover:bg-cyan-500 text-white rounded text-xs font-semibold"
+        >
+          {t('scanTemplates.use', 'Use Template')}
+        </button>
         {isOwned && (
           deleteConfirm === template.id ? (
             <div className="flex gap-2">
