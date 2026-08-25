@@ -1982,6 +1982,10 @@ pub async fn update_agent(
     let ssh_port = body.get("ssh_port").and_then(|v| v.as_i64()).map(|v| v as i32);
     let ssh_username = body.get("ssh_username").and_then(|v| v.as_str());
     let ssh_key_path = body.get("ssh_key_path").and_then(|v| v.as_str());
+    let ssh_passphrase = body.get("ssh_passphrase").and_then(|v| v.as_str()).and_then(|p| {
+        let secret = crate::handlers::agent_handlers::password_encryption_key();
+        crate::services::connection_engine::crypto::encrypt_password(p, &secret).ok()
+    });
     let location = body.get("location").and_then(|v| v.as_str());
     let connection_type = body.get("connection_type").and_then(|v| v.as_str());
     let hostname = body.get("hostname").and_then(|v| v.as_str());
@@ -2052,7 +2056,7 @@ pub async fn test_agent(
 
     // Fetch agent details
     let agent = sqlx::query(
-        "SELECT ssh_host, ssh_port, ssh_username, ssh_password_encrypted, ssh_key_path, connection_type, platform FROM agents WHERE id = $1 AND organization_id = $2"
+        "SELECT ssh_host, ssh_port, ssh_username, ssh_password_encrypted, ssh_passphrase_encrypted, ssh_key_path, connection_type, platform FROM agents WHERE id = $1 AND organization_id = $2"
     )
     .bind(&agent_id)
     .bind(org_id)
@@ -2071,6 +2075,7 @@ pub async fn test_agent(
     let ssh_username: Option<String> = agent.get("ssh_username");
     let ssh_password_enc: Option<String> = agent.get("ssh_password_encrypted");
     let ssh_key_path: Option<String> = agent.get("ssh_key_path");
+    let ssh_passphrase_enc: Option<String> = agent.get("ssh_passphrase_encrypted");
     let _platform: Option<String> = agent.get("platform");
 
     let host = match ssh_host {
@@ -2085,6 +2090,10 @@ pub async fn test_agent(
         let secret = crate::handlers::agent_handlers::password_encryption_key();
         crate::services::connection_engine::crypto::decrypt_password(&enc, &secret).ok()
     });
+    let passphrase = ssh_passphrase_enc.and_then(|enc| {
+        let secret = crate::handlers::agent_handlers::password_encryption_key();
+        crate::services::connection_engine::crypto::decrypt_password(&enc, &secret).ok()
+    });
 
     // Real SSH connection test
     let params = crate::services::connection_engine::SshConnParams {
@@ -2093,7 +2102,7 @@ pub async fn test_agent(
         username: username.clone(),
         password,
         private_key: ssh_key_path,
-        passphrase: None,
+        passphrase,
         timeout_secs: 10,
     };
 
@@ -4425,6 +4434,10 @@ pub async fn terminal_execute(
         let secret = crate::handlers::agent_handlers::password_encryption_key();
         crate::services::connection_engine::crypto::decrypt_password(&enc, &secret).ok()
     });
+    let passphrase = ssh_passphrase_enc.and_then(|enc| {
+        let secret = crate::handlers::agent_handlers::password_encryption_key();
+        crate::services::connection_engine::crypto::decrypt_password(&enc, &secret).ok()
+    });
 
     let params = crate::services::connection_engine::SshConnParams {
         host: host.clone(),
@@ -4432,7 +4445,7 @@ pub async fn terminal_execute(
         username: ssh_username.unwrap_or_else(|| "root".into()),
         password,
         private_key: ssh_key_path,
-        passphrase: None,
+        passphrase,
         timeout_secs: 30,
     };
 

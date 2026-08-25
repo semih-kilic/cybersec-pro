@@ -53,7 +53,23 @@ pub async fn list_projects(
         }
     };
 
-    let response: Vec<_> = projects.iter().map(|p| p.to_response()).collect();
+    // Scan counts per project (match scans.target to project target fields)
+    let count_rows: Vec<(String, i64)> = sqlx::query_as(
+        "SELECT target, COUNT(*) FROM scans WHERE organization_id = $1 GROUP BY target"
+    )
+    .bind(org_id)
+    .fetch_all(&state.db)
+    .await
+    .unwrap_or_default();
+    let count_map: std::collections::HashMap<String, i64> = count_rows.into_iter().collect();
+
+    let response: Vec<serde_json::Value> = projects.iter().map(|p| {
+        let mut v = serde_json::to_value(p.to_response()).unwrap_or_default();
+        let url_count = p.target_url.as_deref().and_then(|t| count_map.get(t)).copied().unwrap_or(0);
+        let ip_count = p.target_ip.as_deref().and_then(|t| count_map.get(t)).copied().unwrap_or(0);
+        v["scan_count"] = json!(url_count + ip_count);
+        v
+    }).collect();
     (StatusCode::OK, Json(json!({"projects": response}))).into_response()
 }
 

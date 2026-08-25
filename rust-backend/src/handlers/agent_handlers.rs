@@ -131,6 +131,7 @@ pub struct CreateAgentRequest {
     pub ssh_username: Option<String>,
     pub ssh_password: Option<String>,
     pub ssh_key: Option<String>,
+    pub ssh_passphrase: Option<String>,
     // Location
     pub location: Option<String>,
     // VPN
@@ -190,9 +191,15 @@ pub async fn create_agent(
         crate::services::connection_engine::crypto::encrypt_password(pwd, &secret).ok()
     });
 
+    let encrypted_passphrase = body.ssh_passphrase.as_ref().and_then(|pwd| {
+        if pwd.is_empty() { return None; }
+        let secret = password_encryption_key();
+        crate::services::connection_engine::crypto::encrypt_password(pwd, &secret).ok()
+    });
+
     let _ = sqlx::query(
-        "INSERT INTO agents (id, organization_id, name, connection_type, hostname, ip_address, platform, network_zone, max_concurrent_scans, ssh_host, ssh_port, ssh_username, ssh_password_encrypted, ssh_key_path, location, vpn_config_path, proxy_endpoint, registration_token, api_key_hash, status)
-         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, 'pending')"
+        "INSERT INTO agents (id, organization_id, name, connection_type, hostname, ip_address, platform, network_zone, max_concurrent_scans, ssh_host, ssh_port, ssh_username, ssh_password_encrypted, ssh_passphrase_encrypted, ssh_key_path, location, vpn_config_path, proxy_endpoint, registration_token, api_key_hash, status)
+         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, 'pending')"
     )
     .bind(&agent_id)
     .bind(org_id)
@@ -207,6 +214,7 @@ pub async fn create_agent(
     .bind(body.ssh_port.unwrap_or(22))
     .bind(&body.ssh_username)
     .bind(&encrypted_password)
+    .bind(&encrypted_passphrase)
     .bind(&body.ssh_key)
     .bind(&body.location)
     .bind(&body.vpn_config_path)

@@ -752,6 +752,7 @@ function AddDeviceWizard({
     ssh_username: 'root',
     ssh_password: '',
     ssh_key: '',
+    ssh_passphrase: '',
     platform: 'linux',
     network_zone: 'internal',
     location: '',
@@ -803,6 +804,8 @@ function AddDeviceWizard({
       ssh_username: form.ssh_username,
       ssh_password: authMethod === 'password' ? form.ssh_password : undefined,
       ssh_key: authMethod === 'key' ? form.ssh_key : undefined,
+      ssh_passphrase: authMethod === 'key' ? form.ssh_passphrase : undefined,
+      ssh_passphrase: authMethod === 'key' ? form.ssh_passphrase : undefined,
       platform: form.platform,
       network_zone: form.network_zone,
       location: form.location,
@@ -990,7 +993,15 @@ function AddDeviceWizard({
                     placeholder={'-----BEGIN OPENSSH PRIVATE KEY-----\n...'}
                     className="w-full px-vos-3 py-vos-2 rounded-vos-md bg-vos-bg-elev-3 border border-vos-border-1 text-vos-xs font-mono text-vos-text focus:outline-none focus:border-vos-accent"
                   />
-                  <p className="text-vos-xs text-vos-text-3 mt-1">Passphrase-protected keys: coming soon. The key is encrypted at rest (AES-256-GCM).</p>
+                  <label className="block text-vos-xs text-vos-text-3 mb-1 mt-2">Key passphrase (if any)</label>
+                  <input
+                    type="password"
+                    value={form.ssh_passphrase}
+                    onChange={(e) => updateForm('ssh_passphrase', e.target.value)}
+                    placeholder="••••••••"
+                    className="w-full px-vos-3 py-vos-2 rounded-vos-md bg-vos-bg-elev-3 border border-vos-border-1 text-vos-sm text-vos-text focus:outline-none focus:border-vos-accent"
+                  />
+                  <p className="text-vos-xs text-vos-text-3 mt-1">Key and passphrase are encrypted at rest (AES-256-GCM).</p>
                 </div>
               )}
 
