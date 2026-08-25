@@ -629,3 +629,47 @@ html.light .register-dark input:focus { border-color: #06b6d4 !important; }
    Document-level scrolling must never be suppressed inside the app shell. */
 html, body { overflow-y: auto !important; height: auto !important; }
 [data-vos-app] { min-height: 100vh; }
+
+
+/* ── Generic dark-page scope (Knowledge/Intel pages) ─────────────────────
+   Pages designed dark-on-dark must opt out of the html.light overrides.
+   Add className="scope-dark" to the page root container. */
+html.light .scope-dark { color: #d1d5db; }
+html.light .scope-dark .text-white { color: #ffffff !important; }
+html.light .scope-dark .text-gray-100 { color: #f3f4f6 !important; }
+html.light .scope-dark .text-gray-200 { color: #e5e7eb !important; }
+html.light .scope-dark .text-gray-300 { color: #d1d5db !important; }
+html.light .scope-dark .text-gray-400 { color: #9ca3af !important; }
+html.light .scope-dark .text-gray-500 { color: #6b7280 !important; }
+html.light .scope-dark .bg-gray-950 { background-color: #030712 !important; }
+html.light .scope-dark .bg-gray-900 { background-color: #111827 !important; }
+html.light .scope-dark .bg-gray-900\/95 { background-color: rgba(17,24,39,0.95) !important; }
+html.light .scope-dark .bg-gray-900\/80 { background-color: rgba(17,24,39,0.8) !important; }
+html.light .scope-dark .bg-gray-900\/70 { background-color: rgba(17,24,39,0.7) !important; }
+html.light .scope-dark .bg-gray-900\/60 { background-color: rgba(17,24,39,0.6) !important; }
+html.light .scope-dark .bg-gray-900\/50 { background-color: rgba(17,24,39,0.5) !important; }
+html.light .scope-dark .bg-gray-900\/40 { background-color: rgba(17,24,39,0.4) !important; }
+html.light .scope-dark .bg-gray-900\/30 { background-color: rgba(17,24,39,0.3) !important; }
+html.light .scope-dark .bg-gray-900\/20 { background-color: rgba(17,24,39,0.2) !important; }
+html.light .scope-dark .bg-gray-800 { background-color: #1f2937 !important; }
+html.light .scope-dark .bg-gray-800\/80 { background-color: rgba(31,41,55,0.8) !important; }
+html.light .scope-dark .bg-gray-800\/70 { background-color: rgba(31,41,55,0.7) !important; }
+html.light .scope-dark .bg-gray-800\/60 { background-color: rgba(31,41,55,0.6) !important; }
+html.light .scope-dark .bg-gray-800\/50 { background-color: rgba(31,41,55,0.5) !important; }
+html.light .scope-dark .bg-gray-800\/40 { background-color: rgba(31,41,55,0.4) !important; }
+html.light .scope-dark .bg-gray-800\/30 { background-color: rgba(31,41,55,0.3) !important; }
+html.light .scope-dark .bg-gray-800\/20 { background-color: rgba(31,41,55,0.2) !important; }
+html.light .scope-dark .bg-gray-700 { background-color: #374151 !important; }
+html.light .scope-dark .border-gray-700 { border-color: #374151 !important; }
+html.light .scope-dark .border-gray-800 { border-color: #1f2937 !important; }
+html.light .scope-dark input {
+  background-color: rgba(17,24,39,0.85) !important;
+  color: #ffffff !important;
+  border-color: #374151 !important;
+}
+html.light .scope-dark input::placeholder { color: #6b7280 !important; }
+html.light .scope-dark select {
+  background-color: #1f2937 !important;
+  color: #ffffff !important;
+  border-color: #374151 !important;
+}
