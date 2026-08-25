@@ -112,6 +112,13 @@ export default function AgentJobsPage() {
   const [autoRefresh, setAutoRefresh] = useState(true);
   const [statusFilter, setStatusFilter] = useState<string>('');
   const [searchTerm, setSearchTerm] = useState('');
+  const [showNewJob, setShowNewJob] = useState(false);
+  const [rtAgents, setRtAgents] = useState<Array<{ id: string; name: string }>>([]);
+  const [jobAgent, setJobAgent] = useState('');
+  const [jobCommand, setJobCommand] = useState('');
+  const [jobTimeout, setJobTimeout] = useState(600);
+  const [creatingJob, setCreatingJob] = useState(false);
+  const [jobError, setJobError] = useState('');
 
   const load = useCallback(async () => {
     try {
@@ -156,6 +163,42 @@ export default function AgentJobsPage() {
     );
   }, [data, searchTerm]);
 
+
+  const openNewJob = async () => {
+    setShowNewJob(true);
+    try {
+      const token = localStorage.getItem('token');
+      const res = await fetch('/api/v1/agents', { headers: { Authorization: `Bearer ${token}` } });
+      const d = await res.json();
+      const list = (d.agents || d || []).filter((x: any) => x.connection_type === 'reverse_tunnel');
+      setRtAgents(list.map((x: any) => ({ id: x.id, name: x.name })));
+      if (list.length > 0) setJobAgent(list[0].id);
+    } catch { setRtAgents([]); }
+  };
+
+  const createJob = async () => {
+    setJobError('');
+    if (!jobAgent || !jobCommand.trim()) { setJobError('Select an agent and enter a command'); return; }
+    setCreatingJob(true);
+    try {
+      const token = localStorage.getItem('token');
+      const res = await fetch(`/api/v1/agents/${jobAgent}/jobs`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        body: JSON.stringify({ command: jobCommand.trim(), timeout_seconds: jobTimeout }),
+      });
+      const d = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(d.error || 'Failed to queue job');
+      setShowNewJob(false);
+      setJobCommand('');
+      refetch?.();
+    } catch (e) {
+      setJobError((e as Error).message);
+    } finally {
+      setCreatingJob(false);
+    }
+  };
+
   const counts = data?.by_status || {};
   const statKeys: Array<{ key: string; label: string; tone: keyof typeof STATUS_TONES }> = [
     { key: 'pending',   label: 'Pending',   tone: 'pending' },
@@ -175,6 +218,41 @@ export default function AgentJobsPage() {
           title={t('agent_jobs.title', 'Agent Jobs')}
           description={t('agent_jobs.description', 'Recent commands queued to your reverse-tunnel agents. Auto-refreshes every 6 s.') as string}
           icon={<Activity className="size-6" />}
+        />
+
+        <div className="flex justify-end px-vos-4 -mt-vos-2 mb-vos-2">
+          <button
+            onClick={openNewJob}
+            className="inline-flex items-center gap-1.5 px-4 h-9 rounded-vos-md bg-vos-accent text-white text-vos-sm font-semibold hover:bg-vos-accent/90"
+          >
+            + New Job
+          </button>
+        </div>
+
+        {showNewJob && (
+          <div className="fixed inset-0 z-vos-overlay bg-black/50 backdrop-blur-sm flex items-center justify-center p-4" onClick={() => setShowNewJob(false)}>
+            <div className="bg-vos-bg-elev-2 border border-vos-border-1 rounded-vos-xl p-vos-5 w-full max-w-md" onClick={(e) => e.stopPropagation()}>
+              <h3 className="text-vos-text font-bold text-vos-base mb-1">Queue Manual Job</h3>
+              <p className="text-vos-xs text-vos-text-3 mb-vos-3">Runs on the selected reverse-tunnel agent. Shell metacharacters are rejected.</p>
+              {jobError && <div className="mb-vos-2 px-vos-3 py-vos-2 rounded-vos-md bg-vos-danger/10 border border-vos-danger/30 text-vos-danger text-vos-xs">{jobError}</div>}
+              <label className="block text-vos-xs text-vos-text-3 mb-1">Agent (reverse-tunnel)</label>
+              <select value={jobAgent} onChange={(e) => setJobAgent(e.target.value)} className="w-full h-9 px-vos-3 rounded-vos-md bg-vos-bg-elev-3 border border-vos-border-1 text-vos-sm text-vos-text mb-vos-3">
+                {rtAgents.length === 0 && <option value="">No reverse-tunnel agents available</option>}
+                {rtAgents.map((ag) => <option key={ag.id} value={ag.id}>{ag.name}</option>)}
+              </select>
+              <label className="block text-vos-xs text-vos-text-3 mb-1">Command</label>
+              <input value={jobCommand} onChange={(e) => setJobCommand(e.target.value)} placeholder="uname -a" className="w-full h-9 px-vos-3 rounded-vos-md bg-vos-bg-elev-3 border border-vos-border-1 text-vos-sm font-mono text-vos-text mb-vos-3" />
+              <label className="block text-vos-xs text-vos-text-3 mb-1">Timeout (seconds, 10–3600)</label>
+              <input type="number" min={10} max={3600} value={jobTimeout} onChange={(e) => setJobTimeout(Number(e.target.value) || 600)} className="w-full h-9 px-vos-3 rounded-vos-md bg-vos-bg-elev-3 border border-vos-border-1 text-vos-sm text-vos-text mb-vos-4" />
+              <div className="flex justify-end gap-vos-2">
+                <button onClick={() => setShowNewJob(false)} className="px-vos-4 h-9 rounded-vos-md border border-vos-border-1 text-vos-sm text-vos-text-3">Cancel</button>
+                <button onClick={createJob} disabled={creatingJob || !jobAgent} className="px-vos-4 h-9 rounded-vos-md bg-vos-accent text-white text-vos-sm font-semibold disabled:opacity-50">
+                  {creatingJob ? 'Queuing…' : 'Queue Job'}
+                </button>
+              </div>
+            </div>
+          </div>
+        )}}
           actions={
             <div className="flex items-center gap-vos-3">
               <button

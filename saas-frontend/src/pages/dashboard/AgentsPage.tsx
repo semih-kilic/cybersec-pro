@@ -743,6 +743,7 @@ function AddDeviceWizard({
 }) {
   const { t } = useTranslation();
   const [step, setStep] = useState<WizardStep>('type');
+  const [authMethod, setAuthMethod] = useState<'password' | 'key'>('password');
   const [connType, setConnType] = useState('ssh');
   const [form, setForm] = useState({
     name: '',
@@ -750,6 +751,7 @@ function AddDeviceWizard({
     ssh_port: 22,
     ssh_username: 'root',
     ssh_password: '',
+    ssh_key: '',
     platform: 'linux',
     network_zone: 'internal',
     location: '',
@@ -799,7 +801,8 @@ function AddDeviceWizard({
       ssh_host: form.ssh_host,
       ssh_port: form.ssh_port,
       ssh_username: form.ssh_username,
-      ssh_password: form.ssh_password,
+      ssh_password: authMethod === 'password' ? form.ssh_password : undefined,
+      ssh_key: authMethod === 'key' ? form.ssh_key : undefined,
       platform: form.platform,
       network_zone: form.network_zone,
       location: form.location,
@@ -955,18 +958,46 @@ function AddDeviceWizard({
                 value={form.ssh_username}
                 onChange={(v) => updateForm('ssh_username', v)}
               />
-              <WizardInput
-                label={t('agents.labelPassword', 'Password')}
-                placeholder={t("agents.placeholderPassword", "password")}
-                value={form.ssh_password}
-                onChange={(v) => updateForm('ssh_password', v)}
-                type="password"
-              />
+
+              <div className="flex gap-2">
+                <button type="button"
+                  onClick={() => setAuthMethod('password')}
+                  className={`flex-1 py-2 rounded-vos-md text-vos-xs font-semibold border transition ${authMethod === 'password' ? 'bg-vos-accent/15 border-vos-accent text-vos-accent' : 'bg-vos-bg-elev-3 border-vos-border-1 text-vos-text-3'}`}>
+                  Password
+                </button>
+                <button type="button"
+                  onClick={() => setAuthMethod('key')}
+                  className={`flex-1 py-2 rounded-vos-md text-vos-xs font-semibold border transition ${authMethod === 'key' ? 'bg-vos-accent/15 border-vos-accent text-vos-accent' : 'bg-vos-bg-elev-3 border-vos-border-1 text-vos-text-3'}`}>
+                  SSH Private Key
+                </button>
+              </div>
+
+              {authMethod === 'password' ? (
+                <WizardInput
+                  label={t('agents.labelPassword', 'Password')}
+                  placeholder={t("agents.placeholderPassword", "password")}
+                  value={form.ssh_password}
+                  onChange={(v) => updateForm('ssh_password', v)}
+                  type="password"
+                />
+              ) : (
+                <div>
+                  <label className="block text-vos-xs text-vos-text-3 mb-1">Private key (paste PEM content)</label>
+                  <textarea
+                    value={form.ssh_key}
+                    onChange={(e) => updateForm('ssh_key', e.target.value)}
+                    rows={6}
+                    placeholder={'-----BEGIN OPENSSH PRIVATE KEY-----\n...'}
+                    className="w-full px-vos-3 py-vos-2 rounded-vos-md bg-vos-bg-elev-3 border border-vos-border-1 text-vos-xs font-mono text-vos-text focus:outline-none focus:border-vos-accent"
+                  />
+                  <p className="text-vos-xs text-vos-text-3 mt-1">Passphrase-protected keys: coming soon. The key is encrypted at rest (AES-256-GCM).</p>
+                </div>
+              )}
+
               <div className="rounded-vos-md bg-vos-info/5 border border-vos-info/20 p-vos-3 flex items-start gap-vos-2">
                 <Lock size={12} className="text-vos-info mt-0.5 shrink-0" />
                 <p className="text-vos-xs text-vos-info">
-                  Password is encrypted with AES-256-GCM before storage. SSH key auth
-                  coming soon.
+                  Credentials are encrypted with AES-256-GCM before storage and never returned to the browser.
                 </p>
               </div>
             </motion.div>
