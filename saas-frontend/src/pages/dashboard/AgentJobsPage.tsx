@@ -191,7 +191,7 @@ export default function AgentJobsPage() {
       if (!res.ok) throw new Error(d.error || 'Failed to queue job');
       setShowNewJob(false);
       setJobCommand('');
-      refetch?.();
+      load();
     } catch (e) {
       setJobError((e as Error).message);
     } finally {
@@ -218,6 +218,29 @@ export default function AgentJobsPage() {
           title={t('agent_jobs.title', 'Agent Jobs')}
           description={t('agent_jobs.description', 'Recent commands queued to your reverse-tunnel agents. Auto-refreshes every 6 s.') as string}
           icon={<Activity className="size-6" />}
+          actions={
+            <div className="flex items-center gap-vos-3">
+              <button
+                onClick={() => setAutoRefresh((v) => !v)}
+                className={
+                  'px-vos-3 py-vos-2 rounded-vos-md border text-vos-sm font-medium transition-colors ' +
+                  (autoRefresh
+                    ? 'bg-emerald-500/10 border-emerald-500/40 text-emerald-300'
+                    : 'bg-vos-bg-elev-2 border-vos-border-1 text-vos-text-2 hover:text-vos-text-1')
+                }
+              >
+                {autoRefresh ? t('agent_jobs.autoRefreshOn', 'Auto-refresh on') : t('agent_jobs.autoRefreshOff', 'Auto-refresh off')}
+              </button>
+              <button
+                onClick={load}
+                disabled={loading}
+                className="px-vos-3 py-vos-2 rounded-vos-md bg-vos-bg-elev-2 border border-vos-border-1 text-vos-sm font-medium text-vos-text-2 hover:text-vos-text-1 transition-colors flex items-center gap-vos-2 disabled:opacity-50"
+              >
+                <RefreshCw className={'size-4 ' + (loading ? 'animate-spin' : '')} />
+                {t('agent_jobs.refresh', 'Refresh')}
+              </button>
+            </div>
+          }
         />
 
         <div className="flex justify-end px-vos-4 -mt-vos-2 mb-vos-2">
@@ -252,31 +275,7 @@ export default function AgentJobsPage() {
               </div>
             </div>
           </div>
-        )}}
-          actions={
-            <div className="flex items-center gap-vos-3">
-              <button
-                onClick={() => setAutoRefresh((v) => !v)}
-                className={
-                  'px-vos-3 py-vos-2 rounded-vos-md border text-vos-sm font-medium transition-colors ' +
-                  (autoRefresh
-                    ? 'bg-emerald-500/10 border-emerald-500/40 text-emerald-300'
-                    : 'bg-vos-bg-elev-2 border-vos-border-1 text-vos-text-2 hover:text-vos-text-1')
-                }
-              >
-                {autoRefresh ? t('agent_jobs.autoRefreshOn', 'Auto-refresh on') : t('agent_jobs.autoRefreshOff', 'Auto-refresh off')}
-              </button>
-              <button
-                onClick={load}
-                disabled={loading}
-                className="px-vos-3 py-vos-2 rounded-vos-md bg-vos-bg-elev-2 border border-vos-border-1 text-vos-sm font-medium text-vos-text-2 hover:text-vos-text-1 transition-colors flex items-center gap-vos-2 disabled:opacity-50"
-              >
-                <RefreshCw className={'size-4 ' + (loading ? 'animate-spin' : '')} />
-                {t('agent_jobs.refresh', 'Refresh')}
-              </button>
-            </div>
-          }
-        />
+        )}
 
         {/* Status counters */}
         <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 gap-vos-3">
