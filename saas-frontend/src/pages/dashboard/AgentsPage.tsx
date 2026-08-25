@@ -805,7 +805,6 @@ function AddDeviceWizard({
       ssh_password: authMethod === 'password' ? form.ssh_password : undefined,
       ssh_key: authMethod === 'key' ? form.ssh_key : undefined,
       ssh_passphrase: authMethod === 'key' ? form.ssh_passphrase : undefined,
-      ssh_passphrase: authMethod === 'key' ? form.ssh_passphrase : undefined,
       platform: form.platform,
       network_zone: form.network_zone,
       location: form.location,

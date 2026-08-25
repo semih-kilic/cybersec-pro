@@ -4408,7 +4408,7 @@ pub async fn terminal_execute(
     // Fetch agent
     use sqlx::Row;
     let agent = sqlx::query(
-        "SELECT ssh_host, ssh_port, ssh_username, ssh_password_encrypted, ssh_key_path FROM agents WHERE id = $1 AND organization_id = $2"
+        "SELECT ssh_host, ssh_port, ssh_username, ssh_password_encrypted, ssh_passphrase_encrypted, ssh_key_path FROM agents WHERE id = $1 AND organization_id = $2"
     )
     .bind(agent_id_val)
     .bind(org_id)
