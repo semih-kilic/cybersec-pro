@@ -34,7 +34,8 @@ RUN rm -rf target/release/cybersec-pro-backend target/release/deps/cybersec* \
 FROM debian:bookworm-slim
 
 RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
-    ca-certificates libssl3 libpq5 curl \
+    ca-certificates libssl3 libpq5 curl unzip \
+
     # Runtime tools available in Debian bookworm
     nmap gobuster whois dnsutils \
     sqlmap hydra john whatweb \
@@ -50,10 +51,26 @@ WORKDIR /app
 
 COPY --from=builder /app/target/release/cybersec-pro-backend /app/cybersec-pro-backend
 
+# ── Security tooling for the CyberSec AI pipeline (pinned releases) ──────
+ARG SUBFINDER_VERSION=2.16.0
+ARG HTTPX_VERSION=1.10.0
+ARG NUCLEI_VERSION=3.11.1
+RUN curl -sL "https://github.com/projectdiscovery/subfinder/releases/download/v${SUBFINDER_VERSION}/subfinder_${SUBFINDER_VERSION}_linux_amd64.zip" -o /tmp/subfinder.zip \
+ && curl -sL "https://github.com/projectdiscovery/httpx/releases/download/v${HTTPX_VERSION}/httpx_${HTTPX_VERSION}_linux_amd64.zip" -o /tmp/httpx.zip \
+ && curl -sL "https://github.com/projectdiscovery/nuclei/releases/download/v${NUCLEI_VERSION}/nuclei_${NUCLEI_VERSION}_linux_amd64.zip" -o /tmp/nuclei.zip \
+ && unzip -o /tmp/subfinder.zip -d /usr/local/bin subfinder \
+ && unzip -o /tmp/httpx.zip -d /usr/local/bin httpx \
+ && unzip -o /tmp/nuclei.zip -d /usr/local/bin nuclei \
+ && chmod +x /usr/local/bin/subfinder /usr/local/bin/httpx /usr/local/bin/nuclei \
+ && rm -f /tmp/*.zip
+
 # Non-root user
-RUN useradd -r -s /bin/false cybersec && \
-    chown -R cybersec:cybersec /app
+RUN useradd -r -m -s /bin/false cybersec && \
+    chown -R cybersec:cybersec /app /home/cybersec
 USER cybersec
+
+# Pre-fetch nuclei templates so first scans don't pay the download cost
+RUN HOME=/home/cybersec /usr/local/bin/nuclei -update-templates -silent || true
 
 ENV RUST_LOG=info
 EXPOSE 5001

@@ -414,7 +414,6 @@ function AppRoutes() {
         <Route path="compliance" element={<ComplianceDashboardPage />} />
         <Route path="community" element={<CommunityPage />} />
         <Route path="cybersec-ai" element={<CyberSecAIPage />} />
-        <Route path="strix" element={<CyberSecAIPage />} />
         <Route path="scan-templates" element={<ScanTemplatesPage />} />
       </Route>
       
