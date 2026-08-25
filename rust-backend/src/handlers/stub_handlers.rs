@@ -2014,6 +2014,7 @@ pub async fn update_agent(
          platform = COALESCE($10, platform), \
          max_concurrent_scans = COALESCE($11, max_concurrent_scans), \
          ssh_password_encrypted = COALESCE($12, ssh_password_encrypted), \
+         ssh_passphrase_encrypted = COALESCE($15, ssh_passphrase_encrypted), \
          updated_at = CURRENT_TIMESTAMP \
          WHERE id = $13 AND organization_id = $14"
     )
@@ -2029,6 +2030,7 @@ pub async fn update_agent(
     .bind(platform)
     .bind(max_concurrent)
     .bind(ssh_password_enc.as_deref())
+    .bind(ssh_passphrase.as_deref())
     .bind(&agent_id)
     .bind(org_id)
     .execute(&state.db)
