@@ -162,7 +162,7 @@ export default function CommunityPage() {
 
   return (
     <PageTransition>
-      <div className="p-6 max-w-7xl mx-auto">
+      <div className="scope-dark p-6 max-w-7xl mx-auto">
         {/* Header */}
         <div className="mb-8 flex items-center gap-3">
           <div className="w-10 h-10 rounded-xl bg-purple-500/10 border border-purple-500/30 flex items-center justify-center">

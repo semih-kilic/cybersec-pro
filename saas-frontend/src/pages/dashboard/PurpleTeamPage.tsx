@@ -215,7 +215,7 @@ function TuningSummaryCard({
   const { t } = useTranslation();
 
   return (
-    <div className="bg-gray-900/50 border border-gray-700/50 rounded-xl p-4">
+    <div className="scope-dark bg-gray-900/50 border border-gray-700/50 rounded-xl p-4">
       <div className="flex items-start justify-between gap-4 mb-4">
         <div>
           <h3 className="text-lg font-bold text-white flex items-center gap-2">

@@ -307,7 +307,7 @@ export default function ComplianceDashboardPage() {
 
 function StatCard({ label, value }: { label: string; value: string }) {
   return (
-    <div className="bg-gray-900/50 border border-gray-800 rounded-xl p-4">
+    <div className="scope-dark bg-gray-900/50 border border-gray-800 rounded-xl p-4">
       <p className="text-gray-500 text-[11px] uppercase tracking-wider mb-1">{label}</p>
       <p className="text-xl font-bold text-white">{value}</p>
     </div>
