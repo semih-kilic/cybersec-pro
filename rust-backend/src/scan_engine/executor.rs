@@ -107,7 +107,8 @@ pub async fn execute_scan(
             }
         }
         if askpass_path.is_none() {
-            ssh_args.push("-o".to_string(), "BatchMode=yes".to_string());
+            ssh_args.push("-o".to_string());
+            ssh_args.push("BatchMode=yes".to_string());
         }
         ssh_args.push(format!("{}@{}", ssh.ssh_username, ssh.ssh_host));
         ssh_args.push(remote_cmd);
