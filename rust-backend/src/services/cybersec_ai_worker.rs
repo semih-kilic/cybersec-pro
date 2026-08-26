@@ -261,6 +261,21 @@ async fn process_job(
         save_progress!(db, id, steps, findings);
     }
 
+    // ── LLM enrichment (optional) ──────────────────────────────────────────
+    let llm_analysis = llm_enrich_findings(&findings).await;
+    if llm_analysis != Value::Null {
+        // Store the LLM analysis alongside the findings
+        // We add it as the last finding with type "llm_analysis" so the frontend can render it
+        findings.push(json!({
+            "type": "llm_analysis",
+            "analysis": llm_analysis,
+            "source": "openai",
+            "model": "gpt-4o-mini",
+            "enriched_at": chrono::Utc::now().to_rfc3339(),
+        }));
+        save_progress!(db, id, steps, findings);
+    }
+
     // Mark verified count = findings with verified == true
     let verified = findings
         .iter()
@@ -614,6 +629,118 @@ fn truncate(s: &str, max: usize) -> String {
         let mut out = s[..max].to_string();
         out.push_str("\n… [truncated]");
         out
+    }
+}
+
+
+fn openai_api_key() -> Option<String> {
+    std::env::var("OPENAI_API_KEY").ok().filter(|k| !k.trim().is_empty())
+}
+
+/// Sends all findings to OpenAI for risk-prioritised analysis, remediation
+/// recommendations, and business-impact context.  Returns a single JSON value
+/// with `recommendations` (array) and `executive_summary` (string), or `null`
+/// if the API key is missing or the call fails.
+async fn llm_enrich_findings(findings: &[Value]) -> Value {
+    let api_key = match openai_api_key() {
+        Some(k) => k,
+        None => return Value::Null,
+    };
+    if findings.is_empty() {
+        return Value::Null;
+    }
+
+    // Build a compact representation of findings for the LLM
+    let compact: Vec<Value> = findings.iter().enumerate().map(|(i, f)| {
+        json!({
+            "id": i + 1,
+            "title": f.get("title").and_then(|v| v.as_str()).unwrap_or("unknown"),
+            "severity": f.get("severity").and_then(|v| v.as_str()).unwrap_or("info"),
+            "category": f.get("category").and_then(|v| v.as_str()).unwrap_or("general"),
+            "detail": f.get("detail").and_then(|v| v.as_str()).unwrap_or(""),
+            "verified": f.get("verified").and_then(|v| v.as_bool()).unwrap_or(false),
+        })
+    }).collect();
+
+    let prompt = format!(
+        "You are a senior security analyst. Analyze the following {} findings from an automated pentest scan of {}.
+
+         Findings:
+{}
+
+         Return a JSON object with exactly these fields:
+         - "executive_summary": 2-3 sentence risk overview for a CISO
+         - "recommendations": array of objects, each with:
+           - "finding_id": the finding id number this applies to
+           - "priority": "immediate" | "short-term" | "long-term"
+           - "action": concise remediation step
+           - "business_impact": one sentence on business risk if unaddressed
+         - "overall_risk": "critical" | "high" | "medium" | "low"
+
+         Return ONLY the JSON object, no markdown fencing.",
+        findings.len(),
+        "the target",
+        serde_json::to_string_pretty(&compact).unwrap_or_default(),
+    );
+
+    let body = json!({
+        "model": "gpt-4o-mini",
+        "messages": [
+            {"role": "system", "content": "You are an expert cybersecurity analyst. Respond only with valid JSON."},
+            {"role": "user", "content": prompt}
+        ],
+        "temperature": 0.3,
+        "max_tokens": 2000,
+    });
+
+    let client = reqwest::Client::builder()
+        .timeout(std::time::Duration::from_secs(60))
+        .build()
+        .unwrap_or_default();
+
+    let resp = match client
+        .post("https://api.openai.com/v1/chat/completions")
+        .header("Authorization", format!("Bearer {}", api_key))
+        .header("Content-Type", "application/json")
+        .json(&body)
+        .send()
+        .await
+    {
+        Ok(r) => r,
+        Err(e) => {
+            tracing::warn!("LLM enrichment request failed: {e}");
+            return Value::Null;
+        }
+    };
+
+    if !resp.status().is_success() {
+        let status = resp.status();
+        let err_body = resp.text().await.unwrap_or_default();
+        tracing::warn!("LLM enrichment HTTP {status}: {}", truncate(&err_body, 300));
+        return Value::Null;
+    }
+
+    let resp_body: Value = match resp.json().await {
+        Ok(v) => v,
+        Err(e) => {
+            tracing::warn!("LLM enrichment parse failed: {e}");
+            return Value::Null;
+        }
+    };
+
+    let content = resp_body
+        .pointer("/choices/0/message/content")
+        .and_then(|v| v.as_str())
+        .unwrap_or("");
+
+    // Strip markdown fencing if present
+    let stripped = content.trim().trim_start_matches("```json").trim_start_matches("```").trim_end_matches("```").trim();
+    match serde_json::from_str::<Value>(stripped) {
+        Ok(v) => v,
+        Err(e) => {
+            tracing::warn!("LLM enrichment JSON parse failed: {e} — content: {}", truncate(stripped, 200));
+            Value::Null
+        }
     }
 }
 
