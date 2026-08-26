@@ -533,7 +533,7 @@ fn build_router(state: Arc<AppState>) -> Router {
         .route("/api/v1/scans/:scan_id/rerun", post(stub_handlers::scan_rerun))
         .route("/api/v1/scans/:scan_id/business-report", get(stub_handlers::scan_business_report))
         .route("/api/v1/scans/:scan_id/status", get(stub_handlers::scan_status))
-        .route("/api/v1/scans/execute", post(stub_handlers::scans_execute))
+        .route("/api/v1/scans/execute", post(scan_handlers::start_scan))
         .route("/api/v1/demo/scan", post(stub_handlers::demo_scan))
         // ── Agent extras ──────────────────────────────────────
         .route("/api/v1/agents/:agent_id/test", post(stub_handlers::test_agent))
