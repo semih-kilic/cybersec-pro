@@ -215,11 +215,12 @@ async fn tick(db: &PgPool, scan_tx: &broadcast::Sender<String>) -> Result<(), St
         tokio::spawn(async move {
             use crate::scan_engine::executor::{execute_scan, AgentSshInfo};
 
-            let agent_info: Option<AgentSshInfo> = agent_ssh.map(|(h, p, u, k, fp)| AgentSshInfo {
+            let agent_info: Option<AgentSshInfo> = agent_ssh.map(|(h, p, u, k, pp, fp)| AgentSshInfo {
                 ssh_host: h,
                 ssh_port: p,
                 ssh_username: u,
                 ssh_key_path: k,
+                ssh_passphrase: pp,
                 ssh_fingerprint: fp,
             });
 
@@ -319,13 +320,13 @@ async fn resolve_agent_ssh(
     db: &PgPool,
     agent_id: Option<&str>,
     org_id: &str,
-) -> Option<(String, i32, String, Option<String>, Option<String>)> {
+) -> Option<(String, i32, String, Option<String>, Option<String>, Option<String>)> {
     let aid = agent_id?;
     if aid.is_empty() {
         return None;
     }
-    let row: Option<(Option<String>, Option<String>, Option<i32>, Option<String>, Option<String>, Option<String>)> = sqlx::query_as(
-        "SELECT connection_type, ssh_host, ssh_port, ssh_username, ssh_key_path, ssh_fingerprint FROM agents WHERE id = $1 AND organization_id = $2",
+    let row: Option<(Option<String>, Option<String>, Option<i32>, Option<String>, Option<String>, Option<String>, Option<String>)> = sqlx::query_as(
+        "SELECT connection_type, ssh_host, ssh_port, ssh_username, ssh_key_path, ssh_passphrase_encrypted, ssh_fingerprint FROM agents WHERE id = $1 AND organization_id = $2",
     )
     .bind(aid)
     .bind(org_id)
@@ -333,14 +334,18 @@ async fn resolve_agent_ssh(
     .await
     .unwrap_or(None);
 
-    row.and_then(|(ct, host, port, user, key, fp)| {
+    row.and_then(|(ct, host, port, user, key, pp_enc, fp)| {
         // Only SSH-configured agents are dispatched remotely. Other connection types
         // (direct/local/reverse_tunnel) execute on the backend host.
         if ct.as_deref() != Some("ssh") {
             return None;
         }
+        let passphrase = pp_enc.as_deref().and_then(|enc| {
+            let secret = crate::handlers::agent_handlers::password_encryption_key();
+            crate::services::connection_engine::crypto::decrypt_password(enc, &secret).ok()
+        });
         match (host, user) {
-            (Some(h), Some(u)) if !h.is_empty() && !u.is_empty() => Some((h, port.unwrap_or(22), u, key, fp)),
+            (Some(h), Some(u)) if !h.is_empty() && !u.is_empty() => Some((h, port.unwrap_or(22), u, key, passphrase, fp)),
             _ => None,
         }
     })
