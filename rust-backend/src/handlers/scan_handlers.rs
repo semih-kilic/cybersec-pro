@@ -1411,9 +1411,9 @@ pub async fn start_scan(
 
     // Look up agent connection_type + SSH info. Reverse-tunnel agents run jobs
     // by long-polling the backend; SSH agents are dialled directly.
-    let agent_meta: Option<(Option<String>, Option<String>, Option<i32>, Option<String>, Option<String>, Option<String>)> = if let Some(ref aid) = body.agent_id {
+    let agent_meta: Option<(Option<String>, Option<String>, Option<i32>, Option<String>, Option<String>, Option<String>, Option<String>)> = if let Some(ref aid) = body.agent_id {
         sqlx::query_as(
-            "SELECT connection_type, ssh_host, ssh_port, ssh_username, ssh_key_path, ssh_fingerprint FROM agents WHERE id = $1 AND organization_id = $2"
+            "SELECT connection_type, ssh_host, ssh_port, ssh_username, ssh_key_path, ssh_passphrase_encrypted, ssh_fingerprint FROM agents WHERE id = $1 AND organization_id = $2"
         )
         .bind(aid)
         .bind(&org_id)
@@ -1435,13 +1435,18 @@ pub async fn start_scan(
     // "direct"/"local" agents (and anything misconfigured without SSH host/user)
     // fall through to local execution on the backend host, which has all tools installed.
     let agent_ssh: Option<AgentSshInfo> = if connection_type == "ssh" && !is_reverse_tunnel {
-        agent_meta.as_ref().and_then(|(_ct, host, port, user, key, fingerprint)| {
+        agent_meta.as_ref().and_then(|(_ct, host, port, user, key, pp_enc, fingerprint)| {
+            let passphrase = pp_enc.as_deref().and_then(|enc| {
+                let secret = crate::handlers::agent_handlers::password_encryption_key();
+                crate::services::connection_engine::crypto::decrypt_password(enc, &secret).ok()
+            });
             match (host.clone(), user.clone()) {
                 (Some(h), Some(u)) if !h.is_empty() && !u.is_empty() => Some(AgentSshInfo {
                     ssh_host: h,
                     ssh_port: port.unwrap_or(22),
                     ssh_username: u,
                     ssh_key_path: key.clone(),
+                    ssh_passphrase: passphrase,
                     ssh_fingerprint: fingerprint.clone(),
                 }),
                 _ => None,
