@@ -662,25 +662,25 @@ async fn llm_enrich_findings(findings: &[Value]) -> Value {
         })
     }).collect();
 
+    let findings_json = serde_json::to_string_pretty(&compact).unwrap_or_default();
     let prompt = format!(
-        "You are a senior security analyst. Analyze the following {} findings from an automated pentest scan of {}.
+        "You are a senior security analyst. Analyze the following {} findings from an automated pentest scan.
 
          Findings:
 {}
 
          Return a JSON object with exactly these fields:
-         - "executive_summary": 2-3 sentence risk overview for a CISO
-         - "recommendations": array of objects, each with:
-           - "finding_id": the finding id number this applies to
-           - "priority": "immediate" | "short-term" | "long-term"
-           - "action": concise remediation step
-           - "business_impact": one sentence on business risk if unaddressed
-         - "overall_risk": "critical" | "high" | "medium" | "low"
+         - executive_summary: 2-3 sentence risk overview for a CISO
+         - recommendations: array of objects, each with:
+           - finding_id: the finding id number this applies to
+           - priority: immediate, short-term, or long-term
+           - action: concise remediation step
+           - business_impact: one sentence on business risk if unaddressed
+         - overall_risk: critical, high, medium, or low
 
          Return ONLY the JSON object, no markdown fencing.",
         findings.len(),
-        "the target",
-        serde_json::to_string_pretty(&compact).unwrap_or_default(),
+        findings_json,
     );
 
     let body = json!({
