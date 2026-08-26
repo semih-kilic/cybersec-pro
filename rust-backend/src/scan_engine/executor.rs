@@ -24,6 +24,8 @@ pub struct AgentSshInfo {
     pub ssh_port: i32,
     pub ssh_username: String,
     pub ssh_key_path: Option<String>,
+    /// Passphrase for the private key (decrypted at dispatch time).
+    pub ssh_passphrase: Option<String>,
     /// Known host fingerprint stored at agent registration time.
     /// If Some, StrictHostKeyChecking is enabled and fingerprint is verified.
     pub ssh_fingerprint: Option<String>,
@@ -57,7 +59,7 @@ pub async fn execute_scan(
         tracing::info!("GUI tool wrapped with Xvfb: {} {}", program, args.join(" "));
     }
 
-    let (actual_program, actual_args, execution_mode) = if let Some(ssh) = &agent_ssh {
+    let (actual_program, actual_args, execution_mode, askpass_file) = if let Some(ssh) = &agent_ssh {
         // Remote execution via SSH
         let remote_cmd = format!("{} {}", shell_escape(&program), args.iter().map(|a| shell_escape(a)).collect::<Vec<_>>().join(" "));
         let mut ssh_args = vec![
@@ -91,9 +93,25 @@ pub async fn execute_scan(
             ssh_args.push("-i".to_string());
             ssh_args.push(key_path.clone());
         }
+        // Passphrase-protected key: OpenSSH ≥8.4 forces the SSH_ASKPASS helper
+        // (BatchMode must be OFF for that, so it is only added when needed).
+        let mut askpass_path: Option<String> = None;
+        if let Some(pp) = &ssh.ssh_passphrase {
+            if !pp.is_empty() {
+                let ap = format!("/tmp/cybersec_askpass_{}", uuid::Uuid::new_v4());
+                let esc = pp.replace('\'', "'\\''");
+                if tokio::fs::write(&ap, format!("#!/bin/sh\necho '{}'\n", esc)).await.is_ok() {
+                    let _ = tokio::fs::set_permissions(&ap, std::os::unix::fs::PermissionsExt::from_mode(0o700)).await;
+                    askpass_path = Some(ap);
+                }
+            }
+        }
+        if askpass_path.is_none() {
+            ssh_args.push("-o".to_string(), "BatchMode=yes".to_string());
+        }
         ssh_args.push(format!("{}@{}", ssh.ssh_username, ssh.ssh_host));
         ssh_args.push(remote_cmd);
-        ("ssh".to_string(), ssh_args, "remote")
+        ("ssh".to_string(), ssh_args, "remote", askpass_path)
     } else {
         // Local execution — verify binary exists
         let which = Command::new("which")
@@ -103,7 +121,7 @@ pub async fn execute_scan(
         if !which.status.success() {
             return Err(anyhow!("Tool binary not found: {}", program));
         }
-        (program.clone(), args, "local")
+        (program.clone(), args, "local", None)
     };
 
     // Send scan phase update
@@ -117,16 +135,30 @@ pub async fn execute_scan(
     }).to_string());
 
     // Spawn process in its own process group for clean cleanup
-    let mut child = Command::new(&actual_program)
-        .args(&actual_args)
+    let mut cmd = Command::new(&actual_program);
+    cmd.args(&actual_args)
         .stdout(Stdio::piped())
         .stderr(Stdio::piped())
         .kill_on_drop(true)
-        .process_group(0)  // Create new process group so we can kill entire tree
+        .process_group(0); // Create new process group so we can kill entire tree
+    if let Some(ap) = &askpass_file {
+        cmd.env("SSH_ASKPASS", ap);
+        cmd.env("SSH_ASKPASS_REQUIRE", "force");
+        cmd.env("DISPLAY", ":0");
+    }
+    let mut child = cmd
         .spawn()
         .map_err(|e| anyhow!("Failed to spawn {}: {}", program, e))?;
 
     let child_pid = child.id().unwrap_or(0) as i32;
+    if let Some(ap) = &askpass_file {
+        let ap = ap.clone();
+        tokio::spawn(async move {
+            tokio::time::sleep(std::time::Duration::from_secs(45)).await;
+            let _ = tokio::fs::remove_file(&ap).await;
+        });
+    }
+
 
     let stdout = child.stdout.take().ok_or_else(|| anyhow!("No stdout"))?;
     let stderr = child.stderr.take().ok_or_else(|| anyhow!("No stderr"))?;
