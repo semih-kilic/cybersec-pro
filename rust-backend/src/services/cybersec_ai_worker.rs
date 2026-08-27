@@ -350,7 +350,7 @@ async fn run_recon(
             }
             output.push_str("── subfinder ──\n");
             output.push_str(out);
-            output.push('\\n');
+            output.push('\n');
             for line in out.lines().take(50) {
                 let s = line.trim();
                 if !s.is_empty() && s != host {
