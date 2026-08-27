@@ -350,7 +350,7 @@ async fn run_recon(
             }
             output.push_str("── subfinder ──\n");
             output.push_str(out);
-            output.push('\n');
+            output.push('\\n');
             for line in out.lines().take(50) {
                 let s = line.trim();
                 if !s.is_empty() && s != host {
@@ -731,7 +731,7 @@ async fn llm_enrich_findings(findings: &[Value]) -> Value {
         }
     };
 
-    let lines: Vec<&str> = raw.rsplitn(2, '
+    let lines: Vec<&str> = raw.rsplitn(2, '\\n');
 ').collect();
     let http_code = lines.first().and_then(|s| s.trim().parse::<u16>().ok()).unwrap_or(0);
     let resp_text = if lines.len() > 1 { lines[1] } else { "" };
@@ -756,7 +756,7 @@ async fn llm_enrich_findings(findings: &[Value]) -> Value {
             // If still failing, try to extract just the content field with regex
             tracing::warn!("LLM enrichment parse failed: {e} — trying fallback extraction");
             // Try to extract content between quotes after "content":
-            if let Some(content_start) = resp_text.find(""content":") {
+            if let Some(content_start) = resp_text.find("content":") {
                 let rest = &resp_text[content_start + 10..];
                 let trimmed = rest.trim_start();
                 if trimmed.starts_with('"') && trimmed.len() > 2 {
