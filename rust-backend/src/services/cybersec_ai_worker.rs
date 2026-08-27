@@ -731,7 +731,7 @@ async fn llm_enrich_findings(findings: &[Value]) -> Value {
         }
     };
 
-    let lines: Vec<&str> = raw.rsplitn(2, '\\n');
+    let lines: Vec<&str> = raw.rsplitn(2, chr(92) + "n");
 ').collect();
     let http_code = lines.first().and_then(|s| s.trim().parse::<u16>().ok()).unwrap_or(0);
     let resp_text = if lines.len() > 1 { lines[1] } else { "" };
