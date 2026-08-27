@@ -696,8 +696,9 @@ async fn llm_enrich_findings(findings: &[Value]) -> Value {
         findings_json,
     );
 
+    let model_name = llm_model();
     let body = json!({
-        "model": "gpt-4o-mini",
+        "model": model_name.clone(),
         "messages": [
             {"role": "system", "content": "You are an expert cybersecurity analyst. Respond only with valid JSON."},
             {"role": "user", "content": prompt}
