@@ -707,45 +707,45 @@ async fn llm_enrich_findings(findings: &[Value]) -> Value {
         "max_tokens": 2000,
     });
 
-    let client = reqwest::Client::builder()
-        .timeout(std::time::Duration::from_secs(120))
-        .use_rustls_tls()
-        .build()
-        .unwrap_or_default();
+    let url = format!("{}/chat/completions", llm_base_url());
+    tracing::info!("LLM enrichment calling: {}", url);
+    tracing::info!("LLM model: {}", body.get("model").and_then(|v| v.as_str()).unwrap_or("?"));
 
-    let resp = match client
-        .post({
-            let url = format!("{}/chat/completions", llm_base_url());
-            tracing::info!("LLM enrichment calling: {}", url);
-            tracing::info!("LLM model: {}", body.get("model").and_then(|v| v.as_str()).unwrap_or("?"));
-            tracing::info!("LLM key prefix: {}...", &api_key[..api_key.len().min(15)]);
-            url
-        })
-        .header("Authorization", format!("Bearer {}", api_key))
-        .header("Content-Type", "application/json")
-        .json(&body)
-        .send()
-        .await
-    {
-        Ok(r) => r,
+    let body_json = serde_json::to_string(&body).unwrap_or_default();
+
+    // Use curl via subprocess since reqwest has TLS issues in the container
+    let output = tokio::process::Command::new("curl")
+        .args(["-s", "-w", "\n%{http_code}", &url,
+               "-H", &format!("Authorization: Bearer {}", api_key),
+               "-H", "Content-Type: application/json",
+               "-d", &body_json,
+               "--max-time", "120"])
+        .output()
+        .await;
+
+    let raw = match output {
+        Ok(o) => String::from_utf8_lossy(&o.stdout).to_string(),
         Err(e) => {
-            tracing::warn!("LLM enrichment request failed: {e}");
+            tracing::warn!("LLM enrichment curl failed: {e}");
             return Value::Null;
         }
     };
 
-    tracing::info!("LLM enrichment response status: {}", resp.status());
-    if !resp.status().is_success() {
-        let status = resp.status();
-        let err_body = resp.text().await.unwrap_or_default();
-        tracing::warn!("LLM enrichment HTTP {status}: {}", truncate(&err_body, 300));
+    let lines: Vec<&str> = raw.rsplitn(2, '
+').collect();
+    let http_code = lines.first().and_then(|s| s.trim().parse::<u16>().ok()).unwrap_or(0);
+    let resp_text = if lines.len() > 1 { lines[1] } else { "" };
+
+    tracing::info!("LLM enrichment response status: {}", http_code);
+    if http_code < 200 || http_code >= 300 {
+        tracing::warn!("LLM enrichment HTTP {http_code}: {}", truncate(resp_text, 300));
         return Value::Null;
     }
 
-    let resp_body: Value = match resp.json().await {
+    let resp_body: Value = match serde_json::from_str(resp_text) {
         Ok(v) => v,
         Err(e) => {
-            tracing::warn!("LLM enrichment parse failed: {e}");
+            tracing::warn!("LLM enrichment parse failed: {e} — body: {}", truncate(resp_text, 200));
             return Value::Null;
         }
     };
