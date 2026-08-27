@@ -712,7 +712,13 @@ async fn llm_enrich_findings(findings: &[Value]) -> Value {
         .unwrap_or_default();
 
     let resp = match client
-        .post(format!("{}/chat/completions", llm_base_url()))
+        .post({
+            let url = format!("{}/chat/completions", llm_base_url());
+            tracing::info!("LLM enrichment calling: {}", url);
+            tracing::info!("LLM model: {}", body.get("model").and_then(|v| v.as_str()).unwrap_or("?"));
+            tracing::info!("LLM key prefix: {}...", &api_key[..api_key.len().min(15)]);
+            url
+        })
         .header("Authorization", format!("Bearer {}", api_key))
         .header("Content-Type", "application/json")
         .json(&body)
@@ -726,6 +732,7 @@ async fn llm_enrich_findings(findings: &[Value]) -> Value {
         }
     };
 
+    tracing::info!("LLM enrichment response status: {}", resp.status());
     if !resp.status().is_success() {
         let status = resp.status();
         let err_body = resp.text().await.unwrap_or_default();
