@@ -741,9 +741,15 @@ async fn llm_enrich_findings(findings: &[Value]) -> Value {
         }
     };
 
+    // Reasoning models (DeepSeek V4) may put output in reasoning_content
+    // when content is null; fall back to reasoning_content.
     let content = resp_body
         .pointer("/choices/0/message/content")
         .and_then(|v| v.as_str())
+        .filter(|s| !s.is_empty() && *s != "null")
+        .or_else(|| resp_body
+            .pointer("/choices/0/message/reasoning_content")
+            .and_then(|v| v.as_str()))
         .unwrap_or("");
 
     // Strip markdown fencing if present
