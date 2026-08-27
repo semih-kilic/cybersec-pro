@@ -731,7 +731,7 @@ async fn llm_enrich_findings(findings: &[Value]) -> Value {
         }
     };
 
-    let lines: Vec<&str> = raw.rsplitn(2, chr(92) + "n");
+    let lines: Vec<&str> = raw.rsplitn(2, '\n');
 ').collect();
     let http_code = lines.first().and_then(|s| s.trim().parse::<u16>().ok()).unwrap_or(0);
     let resp_text = if lines.len() > 1 { lines[1] } else { "" };
@@ -742,38 +742,17 @@ async fn llm_enrich_findings(findings: &[Value]) -> Value {
         return Value::Null;
     }
 
-    // Truncate response to avoid DeepSeek V4 reasoning_content bloat
-    let truncated = if resp_text.len() > 8000 { &resp_text[..8000] } else { resp_text };
-    // Try to find a valid JSON end
-    let cleaned = if let Some(last_brace) = truncated.rfind('}') {
-        &truncated[..=last_brace]
-    } else {
-        truncated
-    };
-    let resp_body: Value = match serde_json::from_str(&cleaned) {
-        Ok(v) => v,
-        Err(e) => {
-            // If still failing, try to extract just the content field with regex
-            tracing::warn!("LLM enrichment parse failed: {e} — trying fallback extraction");
-            // Try to extract content between quotes after "content":
-            if let Some(content_start) = resp_text.find("content":") {
-                let rest = &resp_text[content_start + 10..];
-                let trimmed = rest.trim_start();
-                if trimmed.starts_with('"') && trimmed.len() > 2 {
-                    let inner = &trimmed[1..];
-                    if let Some(end) = inner.find('"') {
-                        let content = &inner[..end];
-                        return json!({
-                            "executive_summary": content,
-                            "recommendations": [],
-                            "overall_risk": "medium"
-                        });
-                    }
-                }
-            }
-            return Value::Null;
-        }
-    };
+    // Extract the content JSON from the OpenAI-compatible response.
+    // DeepSeek V4 returns a reasoning_content field that can be huge; we only
+    // care about the final `content` if present, then the top-level response.
+    let resp_body: Value = serde_json::from_str(resp_text)
+        .ok()
+        .unwrap_or(Value::Null);
+
+    if resp_body == Value::Null {
+        tracing::warn!("LLM enrichment response parse failed");
+        return Value::Null;
+    }
 
     // Reasoning models (DeepSeek V4) may put output in reasoning_content
     // when content is null; fall back to reasoning_content.
