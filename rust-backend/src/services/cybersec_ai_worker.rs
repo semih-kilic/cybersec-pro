@@ -704,7 +704,7 @@ async fn llm_enrich_findings(findings: &[Value]) -> Value {
             {"role": "user", "content": prompt}
         ],
         "temperature": 0.3,
-        "max_tokens": 2000,
+        "max_tokens": 4000,
     });
 
     let url = format!("{}/chat/completions", llm_base_url());
@@ -742,10 +742,62 @@ async fn llm_enrich_findings(findings: &[Value]) -> Value {
         return Value::Null;
     }
 
-    let resp_body: Value = match serde_json::from_str(resp_text) {
+    // Strip reasoning_content to reduce JSON size (DeepSeek V4 reasoning
+    // generates huge reasoning_content that truncates at max_tokens)
+    let cleaned = {
+        let mut s = resp_text.to_string();
+        // Remove reasoning_content fields to avoid truncation issues
+        while let Some(start) = s.find(""reasoning_content"") {
+            if let Some(colon) = s[start..].find(':') {
+                let val_start = start + colon + 1;
+                let rest = &s[val_start..];
+                if rest.trim_start().starts_with('"') {
+                    // Find the opening quote, then find matching close
+                    let q_start = val_start + rest.find('"').unwrap_or(0);
+                    let mut depth = 0i32;
+                    let mut escaped = false;
+                    let mut q_end = q_start;
+                    for (i, ch) in s[q_start..].char_indices() {
+                        if escaped { escaped = false; continue; }
+                        if ch == '\\' { escaped = true; continue; }
+                        if ch == '"' {
+                            q_end = q_start + i;
+                            break;
+                        }
+                    }
+                    // Remove from "reasoning_content" to end of value
+                    let end = s[q_end+1..].find(',').map(|p| q_end + 1 + p).unwrap_or(s.len());
+                    s = format!("{}{}", &s[..start], &s[end..]);
+                } else {
+                    break;
+                }
+            } else {
+                break;
+            }
+        }
+        s
+    };
+    let resp_body: Value = match serde_json::from_str(&cleaned) {
         Ok(v) => v,
         Err(e) => {
-            tracing::warn!("LLM enrichment parse failed: {e} — body: {}", truncate(resp_text, 200));
+            // If still failing, try to extract just the content field with regex
+            tracing::warn!("LLM enrichment parse failed: {e} — trying fallback extraction");
+            // Try to extract content between quotes after "content":
+            if let Some(content_start) = resp_text.find(""content":") {
+                let rest = &resp_text[content_start + 10..];
+                let trimmed = rest.trim_start();
+                if trimmed.starts_with('"') && trimmed.len() > 2 {
+                    let inner = &trimmed[1..];
+                    if let Some(end) = inner.find('"') {
+                        let content = &inner[..end];
+                        return json!({
+                            "executive_summary": content,
+                            "recommendations": [],
+                            "overall_risk": "medium"
+                        });
+                    }
+                }
+            }
             return Value::Null;
         }
     };
