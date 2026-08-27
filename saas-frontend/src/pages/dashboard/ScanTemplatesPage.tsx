@@ -8,8 +8,6 @@ import { useTranslation } from 'react-i18next';
 import { motion } from 'framer-motion';
 import { useScanTemplates, useCreateScanTemplate, useDeleteScanTemplate } from '../../hooks/useApiQueries';
 
-const navigate = useNavigate();
-
 const TOOL_ICONS: Record<string, string> = {
   nmap: '🔍', sqlmap: '💉', testssl: '🔐', wpscan: '🌐',
   nikto: '🕷️', metasploit: '💥', burpsuite: '🔬', default: '⚙️',
@@ -181,6 +179,7 @@ function TemplateCard({ template, onDelete, deleteConfirm, setDeleteConfirm, isO
   isOwned: boolean;
 }) {
   const { t } = useTranslation();
+  const navigate = useNavigate();
   const icon = TOOL_ICONS[template.tool_id ?? ''] ?? TOOL_ICONS.default;
   return (
     <motion.div

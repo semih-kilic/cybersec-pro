@@ -640,11 +640,19 @@ pub async fn agent_binary(
     }
     let dir = std::env::var("AGENT_BIN_DIR")
         .unwrap_or_else(|_| "/home/cybersec/cybersec-pro/agent-binaries".to_string());
-    // Try exact name first, then strip .exe suffix as fallback (Cloudflare blocks .exe)
+    // Try exact name first, then with .exe appended, then with .exe stripped
     let base = format!("cybersec-agent-{platform}");
-    let path_exact = std::path::PathBuf::from(&dir).join(&base);
-    let path_noext = std::path::PathBuf::from(&dir).join(base.trim_end_matches(".exe"));
-    let path = if path_exact.exists() { path_exact } else { path_noext };
+    let dir_path = std::path::PathBuf::from(&dir);
+    let path_exact = dir_path.join(&base);
+    let path_with_exe = dir_path.join(format!("{base}.exe"));
+    let path_noext = dir_path.join(base.trim_end_matches(".exe"));
+    let path = if path_exact.exists() {
+        path_exact
+    } else if path_with_exe.exists() {
+        path_with_exe
+    } else {
+        path_noext
+    };
     let bytes = match tokio::fs::read(&path).await {
         Ok(b) => b,
         Err(_) => return (StatusCode::NOT_FOUND, Json(json!({

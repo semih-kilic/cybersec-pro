@@ -31,6 +31,10 @@ jobs:
             runner: ubuntu-latest
             artifact: cybersec-agent-linux-arm64
             cross: true
+          - target: x86_64-pc-windows-gnu
+            runner: ubuntu-latest
+            artifact: cybersec-agent-windows-amd64.exe
+            windows: true
     steps:
       - uses: actions/checkout@v4
 
@@ -47,6 +51,14 @@ jobs:
           mkdir -p rust-agent/.cargo
           printf '[target.aarch64-unknown-linux-gnu]\nlinker = "aarch64-linux-gnu-gcc"\n' > rust-agent/.cargo/config.toml
 
+      - name: Install cross compiler (x86_64-w64-mingw32)
+        if: matrix.windows
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y gcc-mingw-w64-x86-64
+          mkdir -p rust-agent/.cargo
+          printf '[target.x86_64-pc-windows-gnu]\nlinker = "x86_64-w64-mingw32-gcc"\n' > rust-agent/.cargo/config.toml
+
       - name: Cache cargo
         uses: actions/cache@v4
         with:
@@ -61,7 +73,7 @@ jobs:
         run: cargo build --release --target ${{ matrix.target }}
 
       - name: Strip
-        if: runner.os != 'Linux' || matrix.target == 'x86_64-unknown-linux-gnu'
+        if: (runner.os != 'Linux' || matrix.target == 'x86_64-unknown-linux-gnu') && !matrix.windows
         working-directory: rust-agent
         run: strip target/${{ matrix.target }}/release/cybersec-agent
 
@@ -70,9 +82,19 @@ jobs:
         working-directory: rust-agent
         run: aarch64-linux-gnu-strip target/${{ matrix.target }}/release/cybersec-agent
 
+      - name: Strip (windows)
+        if: matrix.windows
+        working-directory: rust-agent
+        run: x86_64-w64-mingw32-strip target/${{ matrix.target }}/release/cybersec-agent.exe
+
       - name: Rename
         working-directory: rust-agent
-        run: cp target/${{ matrix.target }}/release/cybersec-agent ${{ matrix.artifact }}
+        run: |
+          if [ -n "${{ matrix.windows }}" ]; then
+            cp target/${{ matrix.target }}/release/cybersec-agent.exe ${{ matrix.artifact }}
+          else
+            cp target/${{ matrix.target }}/release/cybersec-agent ${{ matrix.artifact }}
+          fi
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
