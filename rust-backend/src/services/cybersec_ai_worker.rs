@@ -708,7 +708,8 @@ async fn llm_enrich_findings(findings: &[Value]) -> Value {
     });
 
     let client = reqwest::Client::builder()
-        .timeout(std::time::Duration::from_secs(60))
+        .timeout(std::time::Duration::from_secs(120))
+        .use_rustls_tls()
         .build()
         .unwrap_or_default();
 
