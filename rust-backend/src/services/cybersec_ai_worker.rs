@@ -270,7 +270,7 @@ async fn process_job(
             "type": "llm_analysis",
             "analysis": llm_analysis,
             "source": "llm",
-            "model": "nvidia/llama-3.1-8b-instruct",
+            "model": "mistralai/mistral-7b-instruct-v0.3",
             "enriched_at": chrono::Utc::now().to_rfc3339(),
         }));
         save_progress!(db, id, steps, findings);
