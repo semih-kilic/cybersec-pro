@@ -269,8 +269,8 @@ async fn process_job(
         findings.push(json!({
             "type": "llm_analysis",
             "analysis": llm_analysis,
-            "source": "openai",
-            "model": "gpt-4o-mini",
+            "source": "llm",
+            "model": "nvidia/llama-3.1-8b-instruct",
             "enriched_at": chrono::Utc::now().to_rfc3339(),
         }));
         save_progress!(db, id, steps, findings);
@@ -633,8 +633,21 @@ fn truncate(s: &str, max: usize) -> String {
 }
 
 
-fn openai_api_key() -> Option<String> {
-    std::env::var("OPENAI_API_KEY").ok().filter(|k| !k.trim().is_empty())
+fn llm_api_key() -> Option<String> {
+    std::env::var("NVIDIA_API_KEY")
+        .or_else(|_| std::env::var("OPENAI_API_KEY"))
+        .ok()
+        .filter(|k| !k.trim().is_empty())
+}
+
+fn llm_base_url() -> String {
+    std::env::var("LLM_BASE_URL")
+        .unwrap_or_else(|_| "https://integrate.api.nvidia.com/v1".to_string())
+}
+
+fn llm_model() -> String {
+    std::env::var("LLM_MODEL")
+        .unwrap_or_else(|_| "nvidia/llama-3.1-8b-instruct".to_string())
 }
 
 /// Sends all findings to OpenAI for risk-prioritised analysis, remediation
@@ -642,7 +655,7 @@ fn openai_api_key() -> Option<String> {
 /// with `recommendations` (array) and `executive_summary` (string), or `null`
 /// if the API key is missing or the call fails.
 async fn llm_enrich_findings(findings: &[Value]) -> Value {
-    let api_key = match openai_api_key() {
+    let api_key = match llm_api_key() {
         Some(k) => k,
         None => return Value::Null,
     };
@@ -699,7 +712,7 @@ async fn llm_enrich_findings(findings: &[Value]) -> Value {
         .unwrap_or_default();
 
     let resp = match client
-        .post("https://api.openai.com/v1/chat/completions")
+        .post(format!("{}/chat/completions", llm_base_url()))
         .header("Authorization", format!("Bearer {}", api_key))
         .header("Content-Type", "application/json")
         .json(&body)
