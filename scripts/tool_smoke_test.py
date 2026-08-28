@@ -30,9 +30,12 @@ from pathlib import Path
 
 import psycopg2  # type: ignore
 
-DB_URL = os.environ.get(
-    "DATABASE_URL",
-    "postgres://cybersec:***REMOVED-BY-AUDIT***@localhost:5432/cybersec_pro",
+# AUDIT 2026-08-28: the production Postgres password used to be hardcoded here
+# and was committed to git. Credentials now come from the environment only.
+DB_URL = os.environ.get("DATABASE_URL") or (
+    "postgres://cybersec:{pw}@localhost:5432/cybersec_pro".format(
+        pw=os.environ.get("DB_PASSWORD", "")
+    )
 )
 
 # Probable install roots for third-party scripts shipped with relative paths.
