@@ -378,7 +378,7 @@ export function TerminalPage() {
                 )}
                 {agents.map(agent => (
                   <option key={String(agent.id)} value={String(agent.id)}>
-                    {agent.status === 'online' ? '🟢' : '🔴'} {agent.name} {agent.ip_address ? `(${agent.ip_address})` : ''} {agent.connection_type === 'local' ? '[Local]' : '[SSH]'}
+                    {agent.status === 'online' ? '🟢' : '🔴'} {agent.name} {agent.ip_address ? `(${agent.ip_address})` : ''} {agent.connection_type === 'local' ? '[Local]' : agent.connection_type === 'reverse_tunnel' ? '[Agent]' : '[SSH]'}
                   </option>
                 ))}
               </select>
@@ -397,20 +397,19 @@ export function TerminalPage() {
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
               </svg>
-              Connect
+              {t('terminal.connect', 'Connect')}
             </button>
 
             <button
-              onClick={() => fetchAgents()}
-              className="px-4 py-2 bg-gray-700 hover:bg-gray-600 text-white rounded-lg text-sm font-medium transition flex items-center gap-2"
+              onClick={() => { fetchAgents(); testConnection(); }}
+              className="px-3 py-2 bg-gray-800 hover:bg-gray-700 text-gray-300 rounded-lg text-sm transition flex items-center gap-1.5"
             >
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
               </svg>
-              Refresh
+              {t('terminal.refresh', 'Refresh')}
             </button>
 
-            {/* Connection Status */}
             <div className="ml-auto flex items-center gap-4">
               {selectedAgent && (
                 <div className="text-sm">
@@ -428,12 +427,12 @@ export function TerminalPage() {
               {isConnected ? (
                 <span className="flex items-center gap-2 text-green-400 text-sm bg-green-600/10 px-3 py-1.5 rounded-lg">
                   <span className="w-2 h-2 bg-green-400 rounded-full animate-pulse" />
-                  SSH Connected
+                  {selectedAgent?.connection_type === 'reverse_tunnel' ? t('terminal.agentConnected', 'Agent Connected') : t('terminal.sshConnected', 'SSH Connected')}
                 </span>
               ) : (
                 <span className="flex items-center gap-2 text-gray-400 text-sm bg-gray-600/10 px-3 py-1.5 rounded-lg">
                   <span className="w-2 h-2 bg-gray-400 rounded-full" />
-                  Not Connected
+                  {t('terminal.notConnected', 'Not Connected')}
                 </span>
               )}
             </div>
