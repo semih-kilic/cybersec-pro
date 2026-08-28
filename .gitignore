@@ -1,7 +1,14 @@
 # CyberSec Pro - Git Ignore File
 
-# === SECURITY: Never commit these ===
+# ═══════════════════════════════════════════════════════════════
+# SECURITY — never commit these
+# AUDIT 2026-08-28: the repo contained BOTH the encrypted database
+# backups AND the key that decrypts them. Anyone with repo access
+# had the full production database. Keys now live in ~/.secrets/.
+# ═══════════════════════════════════════════════════════════════
 .env
+.env.*
+!.env.example
 *.pem
 *.key
 *.crt
@@ -11,12 +18,22 @@ credentials.json
 service-account.json
 *.secret
 secrets/
+.backup-key
 **/state.json
+
+# Database dumps & backups (contain real user data + password hashes)
+backups/
+*.sql.gz.enc
+dump-*.sql
+*-dump.sql
+db-dump*.sql
 
 # === Environment & Config ===
 .env.local
 .env.*.local
 *.local.yml
+rust-backend/.env.bak*
+*.env.bak.*
 
 # Nested Git Repositories
 cs50_final_project/
@@ -35,13 +52,10 @@ __pycache__/
 *$py.class
 *.so
 .Python
-build/
 develop-eggs/
-dist/
 downloads/
 eggs/
 .eggs/
-lib/
 lib64/
 parts/
 sdist/
@@ -76,44 +90,36 @@ Thumbs.db
 *.temp
 temp/
 
-# Backup files
+# Backup / scratch files
 *.backup
 *.bak
+*.bak-[0-9]*
+*.bak.[0-9]*
 vscode-backups/
 
-# Sensitive data
-*.key
-*.pem
-*.p12
-config.json
-.env
-.env.local
-
-# Node modules
+# Node
 node_modules/
 
 # Build outputs
 dist/
 build/
-# Rust build artifacts (any nested target/)
+out/
 **/target/
+*.tsbuildinfo
+cybersec-wasm/pkg/
 
-# Backup env files
-rust-backend/.env.bak*
-*.env.bak.*
-
-# Large binaries (do not commit)
-ngrok
+# Compiled binaries (build them, don't commit them)
+bin/
 agent-binaries/
+ngrok
 *.exe
 *.mp4
-.env.staging
+*.wasm
 
 # Docker build copies (not committed)
 rust-backend/cybersec-proto/
 rust-scan-engine/cybersec-proto/
-cybersec-wasm/target/
-cybersec-wasm/pkg/
+
+# Keep these
 !frontend/src/lib/
-cybersec-wasm/target/
-cybersec-wasm/pkg/
+!nginx/ssl/.gitkeep

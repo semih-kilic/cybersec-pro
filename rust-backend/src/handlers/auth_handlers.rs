@@ -465,16 +465,31 @@ pub async fn login(
     let pw_hash = user.password_hash.as_deref().unwrap_or_default();
 
     if !verify_password(&body.password, pw_hash) {
-        // Increment failed login counter, lock after 5 failures
-        let new_count = user.failed_login_count.unwrap_or(0) + 1;
+        // Increment the failure counter ATOMICALLY and lock after 5 tries.
+        //
+        // This used to compute `user.failed_login_count + 1` from the row read
+        // at the top of the handler. That value is stale by the time we get
+        // here — in particular the "lockout expired, clear the counter" UPDATE
+        // above had already reset it to 0, so the very next wrong password
+        // incremented 5 -> 6 and re-locked an account that had just served its
+        // lockout. Doing the arithmetic in SQL also removes the lost-update
+        // race between concurrent login attempts.
+        let new_count: i32 = sqlx::query_scalar(
+            "UPDATE users \
+                SET failed_login_count = COALESCE(failed_login_count, 0) + 1, \
+                    last_failed_login = NOW() \
+              WHERE id = $1 \
+          RETURNING failed_login_count",
+        )
+        .bind(&user.id)
+        .fetch_one(&state.db)
+        .await
+        .unwrap_or(1);
+
         if new_count >= 5 {
             let _ = sqlx::query(
-                "UPDATE users SET failed_login_count = $1, last_failed_login = NOW(), locked_until = NOW() + INTERVAL '15 minutes' WHERE id = $2"
-            ).bind(new_count).bind(&user.id).execute(&state.db).await;
-        } else {
-            let _ = sqlx::query(
-                "UPDATE users SET failed_login_count = $1, last_failed_login = NOW() WHERE id = $2"
-            ).bind(new_count).bind(&user.id).execute(&state.db).await;
+                "UPDATE users SET locked_until = NOW() + INTERVAL '15 minutes' WHERE id = $1"
+            ).bind(&user.id).execute(&state.db).await;
         }
         record_login_history(&state.db, &user.id, &headers, false, Some("Invalid password")).await;
         log_audit(&state.db, "login_failed", "auth", "warning", Some(&user.id), user.organization_id.as_deref(), None, Some("user"), Some(&user.id), "failure", Some(&headers)).await;
