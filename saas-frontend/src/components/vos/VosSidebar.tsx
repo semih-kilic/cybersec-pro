@@ -61,14 +61,10 @@ export function VosSidebar({
       {/* Brand row */}
       <div className="h-vos-topbar flex items-center gap-vos-3 px-vos-4 border-b border-vos-border-1">
         <div
-          className="size-8 rounded-vos-sm flex items-center justify-center shrink-0 transition-transform duration-200 hover:scale-105"
-          style={{ background: 'var(--vos-accent)' }}
+          className="size-8 rounded-lg flex items-center justify-center shrink-0 transition-transform duration-200 hover:scale-105 shadow-md shadow-cyan-500/20 bg-gradient-to-r from-cyan-500 to-blue-500"
         >
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden>
-            <path
-              d="M12 2L3 7v6c0 5 3.8 9.5 9 11 5.2-1.5 9-6 9-11V7l-9-5z"
-              fill="white"
-            />
+          <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden>
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
           </svg>
         </div>
         {!collapsed && (
