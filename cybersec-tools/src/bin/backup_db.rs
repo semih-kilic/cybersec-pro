@@ -15,7 +15,7 @@ struct Cli {
     #[arg(long, env = "BACKUP_DIR", default_value = "/home/cybersec/cybersec-pro/backups")]
     backup_dir: String,
 
-    #[arg(long, env = "BACKUP_KEY_FILE", default_value = "/home/cybersec/cybersec-pro/.backup-key")]
+    #[arg(long, env = "BACKUP_KEY_FILE", default_value = "/home/cybersec/.secrets/backup-key")]
     key_file: String,
 
     #[arg(long, env = "KEEP_DAYS", default_value = "30")]

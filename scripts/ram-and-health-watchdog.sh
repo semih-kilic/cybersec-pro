@@ -1,84 +1,79 @@
 #!/bin/bash
-# 🛡️ CyberSec Pro — Automated RAM & Service Health Watchdog
-# Runs continuously or via cron/timer to keep RAM low & services 100% healthy.
-# 2026-08-08: Backend is now deployed via Docker Compose (cybersec-api).
-# check_backend() was migrated to manage the Docker container instead of the
-# bare-metal process, so it no longer steals port 5001.
+# 🛡️ CyberSec Pro — Service Health Watchdog (Docker-aware)
+#
+# AUDIT 2026-08-28 — bu script host'un kilitlenmesine katkida bulunuyordu.
+# Duzeltilen uc hata:
+#
+#  1) check_frontend() prod'da her 5 dakikada `npm run dev` (Vite) baslatiyordu.
+#     Prod'da dashboard nginx tarafindan /srv/saas-frontend/dist'ten statik
+#     servis ediliyor; 3001'de hicbir sey dinlememeli. Vite dev server ayrica
+#     *:3001 (tum arayuzler) uzerinde acikti ve surekli RAM/CPU yiyordu.
+#     -> Tamamen kaldirildi; sadece WATCHDOG_DEV_MODE=1 ile opt-in.
+#
+#  2) check_engine() `pkill -f cybersec-scan-engine` calistiriyordu. Docker
+#     konteyner surecleri host PID namespace'inde GORUNUR oldugu icin bu komut
+#     konteynerin ICINDEKI motoru olduruyordu; ardindan 5002'ye bind edemeyen
+#     bare-metal bir kopya baslatmaya calisiyor, Docker restart:always ile
+#     yarisiyor ve servis flap ediyordu.
+#     -> Docker-aware saglik kontrolu ile degistirildi; pkill yok.
+#
+#  3) clean_ram() bellek dusukken `sysctl -w vm.drop_caches=3` yapiyordu. Bu
+#     page cache'i atar, "available" bellegi anlamli sekilde artirmaz ve I/O
+#     performansini bozar. Artik earlyoom (v1.9) gercek OOM korumasini sagliyor.
+#     -> drop_caches kaldirildi; sadece raporlama birakildi.
+
+set -uo pipefail
 
 BASEDIR="/home/cybersec/cybersec-pro"
-RUST_DIR="$BASEDIR/rust-backend"
-SCAN_ENGINE_DIR="$BASEDIR/rust-scan-engine"
-FRONTEND_DIR="$BASEDIR/saas-frontend"
-LOGFILE="/tmp/cybersec-watchdog.log"
+LOGFILE="/var/log/cybersec-watchdog.log"
+[ -w "$(dirname "$LOGFILE")" ] || LOGFILE="/tmp/cybersec-watchdog.log"
 
-log() {
-    echo "[$(date '+%Y-%m-%d %H:%M:%S')] $1" >> "$LOGFILE"
-}
+log() { echo "[$(date '+%Y-%m-%d %H:%M:%S')] $1" >> "$LOGFILE"; }
 
-# 1. RAM Optimization & Zombie Cleanup
-clean_ram() {
-    # Kill orphaned Maltego or desktop Java processes if running in background
-    if pgrep -f "maltego" >/dev/null 2>&1; then
-        pkill -f "maltego" >/dev/null 2>&1
-        log "RAM Watchdog: Terminated idle Maltego background process."
-    fi
-
-    # Kill stale vite staging or preview servers on non-standard ports
-    if pgrep -f "vite.config.staging.ts" >/dev/null 2>&1; then
-        pkill -f "vite.config.staging.ts" >/dev/null 2>&1
-        log "RAM Watchdog: Terminated stale Vite staging process."
-    fi
-
-    # Check available memory
-    FREE_MEM_MB=$(free -m | awk '/^Mem:/{print $7}')
-    if [ "$FREE_MEM_MB" -lt 1000 ]; then
-        log "RAM Watchdog: Low available RAM (${FREE_MEM_MB}MB). Trimming page cache..."
-        sync
-        sudo sysctl -w vm.drop_caches=3 >/dev/null 2>&1 || true
+# ── 1. Bellek raporu (mudahale yok; OOM korumasi earlyoom'da) ──────────
+report_ram() {
+    local avail
+    avail=$(awk '/^MemAvailable:/{print int($2/1024)}' /proc/meminfo)
+    if [ "${avail:-9999}" -lt 1000 ]; then
+        log "WARN: dusuk kullanilabilir RAM (${avail}MB). earlyoom devrede; en cok bellek kullananlar:"
+        ps -eo rss,comm --sort=-rss --no-headers 2>/dev/null | head -5 \
+            | awk '{printf "         %6.0f MB  %s\n", $1/1024, $2}' >> "$LOGFILE"
     fi
 }
 
-# 2. Auto-Healing: Check Backend (Docker container cybersec-api on port 5001)
-check_backend() {
-    local status
-    status=$(docker inspect -f '{{.State.Health.Status}}' cybersec-api 2>/dev/null || echo "missing")
-    if [ "$status" != "healthy" ]; then
-        log "Auto-Healing: Backend container (cybersec-api) is $status. Restarting..."
-        cd "$BASEDIR"
-        docker compose up -d rust-backend 2>/dev/null || docker restart cybersec-api 2>/dev/null || true
-        log "Auto-Healing: Backend container restart triggered."
+# ── 2. Konteyner sagligi — Docker-aware, pkill YOK ────────────────────
+# Saglikli olmayan konteyneri compose ile yerinde yeniden baslatir.
+check_container() {
+    local name="$1" svc="$2" status health
+    status=$(docker inspect -f '{{.State.Status}}' "$name" 2>/dev/null || echo missing)
+    health=$(docker inspect -f '{{if .State.Health}}{{.State.Health.Status}}{{else}}none{{end}}' "$name" 2>/dev/null || echo none)
+
+    # "starting" gecici bir durum; mudahale etme (restart dongusune sokar).
+    if [ "$health" = "starting" ]; then
+        return 0
+    fi
+    if [ "$status" != "running" ] || { [ "$health" != "none" ] && [ "$health" != "healthy" ]; }; then
+        log "Auto-Healing: $name status=$status health=$health -> yeniden baslatiliyor"
+        ( cd "$BASEDIR" && docker compose up -d "$svc" >/dev/null 2>&1 ) \
+            || docker restart "$name" >/dev/null 2>&1 \
+            || log "Auto-Healing: $name yeniden baslatilamadi"
     fi
 }
 
-# 3. Auto-Healing: Check Scan Engine (Port 5002)
-check_engine() {
-    if ! curl -s http://localhost:5002/health | grep -q "healthy"; then
-        log "Auto-Healing: Scan Engine on port 5002 is DOWN. Restarting..."
-        pkill -f "cybersec-scan-engine" >/dev/null 2>&1 || true
-        sleep 1
-        cd "$SCAN_ENGINE_DIR"
-        if [ -f "$SCAN_ENGINE_DIR/.env" ]; then
-            set -a; source "$SCAN_ENGINE_DIR/.env"; set +a
-        fi
-        SCAN_ENGINE_PORT=5002 RUST_LOG=info nohup ./target/release/cybersec-scan-engine > /tmp/engine.log 2>&1 &
-        log "Auto-Healing: Scan Engine restart triggered."
-    fi
+# ── 3. Dev-only: yerel gelistirme makinesinde Vite ayakta tutulur ──────
+# Prod'da ASLA calismaz. Acmak icin: WATCHDOG_DEV_MODE=1
+check_frontend_dev() {
+    [ "${WATCHDOG_DEV_MODE:-0}" = "1" ] || return 0
+    curl -sf -o /dev/null --max-time 3 http://127.0.0.1:3001 && return 0
+    log "DEV: Vite (3001) kapali, baslatiliyor"
+    ( cd "$BASEDIR/saas-frontend" && nohup npm run dev -- --port 3001 --host 127.0.0.1 \
+        > /tmp/frontend-dev.log 2>&1 & )
 }
 
-# 4. Auto-Healing: Check Frontend (Port 3001)
-check_frontend() {
-    if ! curl -s http://localhost:3001 >/dev/null 2>&1; then
-        log "Auto-Healing: Frontend on port 3001 is DOWN. Restarting..."
-        pkill -f "vite --port 3001" >/dev/null 2>&1 || true
-        sleep 1
-        cd "$FRONTEND_DIR"
-        nohup npm run dev -- --port 3001 > /tmp/frontend.log 2>&1 &
-        log "Auto-Healing: Frontend restart triggered."
-    fi
-}
-
-# Run all checks
-clean_ram
-check_backend
-check_engine
-check_frontend
+report_ram
+check_container cybersec-api          rust-backend
+check_container cybersec-scan-engine  rust-scan-engine
+check_container cybersec-db           postgres
+check_container cybersec-redis        redis
+check_container cybersec-nginx        nginx
+check_frontend_dev

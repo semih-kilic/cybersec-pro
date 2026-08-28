@@ -31,7 +31,19 @@ pub struct User {
     pub mfa_enabled_at: Option<NaiveDateTime>,
     // Security / lockout (Phase 1)
     pub failed_login_count: Option<i32>,
-    pub locked_until: Option<NaiveDateTime>,
+    // NOTE: `locked_until` is deliberately NOT mapped here.
+    //
+    // The declared schema (services/db.rs) creates it as TIMESTAMP, but the
+    // live database has it as TIMESTAMPTZ — the original ALTER ran with
+    // IF NOT EXISTS against an already-existing column, so the two drifted.
+    // sqlx only type-checks a column when its value is non-NULL, so a strict
+    // Rust type appeared to work right up until the first account was actually
+    // locked; from that moment `SELECT * FROM users` failed to decode and
+    // `.unwrap_or(None)` turned it into "invalid email or password" — forever,
+    // because `locked_until` is only cleared on a *successful* login.
+    //
+    // The lockout check now runs in SQL (see `auth_handlers::login`), which is
+    // correct for either column type and gets the timezone semantics right.
     pub last_failed_login: Option<NaiveDateTime>,
     pub mfa_required: Option<bool>,
     // RBAC (Phase 1)
@@ -112,7 +124,6 @@ mod tests {
             mfa_backup_codes: None,
             mfa_enabled_at: None,
             failed_login_count: None,
-            locked_until: None,
             last_failed_login: None,
             mfa_required: None,
             permissions: None,

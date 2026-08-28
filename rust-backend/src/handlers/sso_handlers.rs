@@ -66,9 +66,14 @@ pub struct CreateSSORequest {
 
 pub async fn create_sso_config(
     State(state): State<Arc<AppState>>,
-    auth: AuthUser,
+    admin: crate::middleware::auth_middleware::AdminUser,
     Json(body): Json<CreateSSORequest>,
 ) -> impl IntoResponse {
+    // PRIVILEGE FIX: this took a plain `AuthUser`, so ANY member of an
+    // enterprise org — including a read-only `viewer` — could overwrite the
+    // organisation's SSO configuration: point it at an attacker-controlled IdP,
+    // set `default_role: "admin"`, and log in as an administrator.
+    let auth = &admin.0;
     let org_id = match &auth.org_id {
         Some(id) => id,
         None => return (StatusCode::FORBIDDEN, Json(json!({"error": "Organization required"}))).into_response(),
@@ -88,15 +93,36 @@ pub async fn create_sso_config(
 
     let id = Uuid::new_v4().to_string();
 
-    // Delete existing config first (upsert behavior)
-    let _ = sqlx::query("DELETE FROM sso_configs WHERE organization_id = $1")
-        .bind(org_id)
-        .execute(&state.db)
-        .await;
+    // DATA-LOSS FIX: the DELETE and the INSERT used to run as two independent
+    // statements, and the INSERT ended with a literal `0` for the boolean
+    // `is_enabled` column. Postgres rejects that with "column is_enabled is of
+    // type boolean but expression is of type integer", but the error was
+    // swallowed by `let _ =`. Net effect: saving an SSO config returned
+    // 201 "SSO configuration saved" while actually DELETING the existing
+    // configuration and storing nothing.
+    //
+    // Now: one transaction, `FALSE` instead of `0`, and errors are surfaced.
+    let mut tx = match state.db.begin().await {
+        Ok(t) => t,
+        Err(e) => {
+            tracing::error!("sso config: could not begin transaction: {e}");
+            return (StatusCode::INTERNAL_SERVER_ERROR, Json(json!({"error": "Could not save SSO configuration"}))).into_response();
+        }
+    };
 
-    let _ = sqlx::query(
+    if let Err(e) = sqlx::query("DELETE FROM sso_configs WHERE organization_id = $1")
+        .bind(org_id)
+        .execute(&mut *tx)
+        .await
+    {
+        let _ = tx.rollback().await;
+        tracing::error!("sso config: delete failed: {e}");
+        return (StatusCode::INTERNAL_SERVER_ERROR, Json(json!({"error": "Could not save SSO configuration"}))).into_response();
+    }
+
+    let insert = sqlx::query(
         "INSERT INTO sso_configs (id, organization_id, provider_type, provider_name, saml_entity_id, saml_sso_url, saml_certificate, oidc_client_id, oidc_client_secret, oidc_issuer_url, ldap_host, ldap_port, ldap_bind_dn, ldap_bind_password, ldap_base_dn, ldap_user_filter, domain_hint, enforce_sso, jit_provisioning, default_role, is_enabled)
-         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, 0)"
+         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, FALSE)"
     )
     .bind(&id)
     .bind(org_id)
@@ -118,8 +144,19 @@ pub async fn create_sso_config(
     .bind(body.enforce_sso.unwrap_or(false))
     .bind(body.jit_provisioning.unwrap_or(true))
     .bind(body.default_role.as_deref().unwrap_or("user"))
-    .execute(&state.db)
+    .execute(&mut *tx)
     .await;
+
+    if let Err(e) = insert {
+        let _ = tx.rollback().await;
+        tracing::error!("sso config: insert failed: {e}");
+        return (StatusCode::INTERNAL_SERVER_ERROR, Json(json!({"error": "Could not save SSO configuration"}))).into_response();
+    }
+
+    if let Err(e) = tx.commit().await {
+        tracing::error!("sso config: commit failed: {e}");
+        return (StatusCode::INTERNAL_SERVER_ERROR, Json(json!({"error": "Could not save SSO configuration"}))).into_response();
+    }
 
     (StatusCode::CREATED, Json(json!({
         "message": "SSO configuration saved",

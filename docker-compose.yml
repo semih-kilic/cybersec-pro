@@ -138,6 +138,14 @@ services:
       timeout: 10s
       retries: 3
       start_period: 30s
+    deploy:
+      resources:
+        limits:
+          cpus: '1.5'
+          memory: 2G
+        reservations:
+          cpus: '0.25'
+          memory: 256M
     networks:
     - cybersec-network
   nginx:
@@ -166,6 +174,11 @@ services:
       interval: 30s
       timeout: 5s
       retries: 3
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 256M
     networks:
     - cybersec-network
   kali-tools:
@@ -193,6 +206,11 @@ services:
     - 127.0.0.1:7681:7681
     depends_on:
     - redis
+    deploy:
+      resources:
+        limits:
+          cpus: '2'
+          memory: 3G
     networks:
     - cybersec-network
   web-terminal:
@@ -206,6 +224,11 @@ services:
     - kali_home:/root
     ports:
     - "127.0.0.1:7682:7681"
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 256M
     networks:
     - cybersec-network
   wireguard:
@@ -232,6 +255,11 @@ services:
     - 51820:51820/udp
     sysctls:
     - net.ipv4.conf.all.src_valid_mark=1
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 256M
     networks:
     - cybersec-network
 networks:

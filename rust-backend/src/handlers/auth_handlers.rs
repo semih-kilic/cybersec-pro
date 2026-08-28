@@ -16,7 +16,7 @@ use crate::services::audit::log_audit;
 use crate::services::auth::{
     create_access_token, create_refresh_token, hash_password, verify_password,
     generate_totp_secret, generate_totp_uri, generate_totp_qr_code, verify_totp,
-    generate_backup_codes, hash_backup_code, verify_backup_code,
+    generate_backup_codes, hash_backup_codes_json, backup_codes_from_json, verify_backup_code,
 };
 use crate::AppState;
 use crate::services::email::{EmailConfig, send_welcome_email, send_verification_email};
@@ -74,11 +74,9 @@ async fn record_login_history(
     failure_reason: Option<&str>,
 ) {
     let id = Uuid::new_v4().to_string();
-    let ip = headers
-        .get("x-forwarded-for")
-        .or_else(|| headers.get("x-real-ip"))
-        .and_then(|v| v.to_str().ok())
-        .map(|s| s.split(',').next().unwrap_or(s).trim().to_string());
+    // Was `.split(',').next()` — the FIRST element, which is whatever the client
+    // sent. That let anyone write an arbitrary IP into the security audit trail.
+    let ip = crate::services::net::client_ip(headers);
     let ua = headers
         .get("user-agent")
         .and_then(|v| v.to_str().ok())
@@ -158,12 +156,7 @@ pub async fn register(
     Json(body): Json<RegisterRequest>,
 ) -> impl IntoResponse {
     // Rate limit check
-    let ip = headers.get("x-forwarded-for")
-        .and_then(|v| v.to_str().ok())
-        .and_then(|s| s.split(',').last())
-        .map(|s| s.trim())
-        .unwrap_or("unknown")
-        .to_string();
+    let ip = crate::services::net::client_ip_or_unknown(&headers);
     if state.rate_limiter.is_limited(&format!("register:{}", ip), 3, std::time::Duration::from_secs(60)) {
         return (StatusCode::TOO_MANY_REQUESTS, Json(json!({"error": "Too many registration attempts"}))).into_response();
     }
@@ -396,18 +389,25 @@ pub async fn login(
     headers: HeaderMap,
     Json(body): Json<LoginRequest>,
 ) -> impl IntoResponse {
-    let ip = headers.get("x-forwarded-for")
-        .and_then(|v| v.to_str().ok())
-        .unwrap_or("unknown");
+    // Was the RAW header value. Because nginx appends to whatever the client
+    // sends, an attacker could vary the prefix on every request and land in a
+    // fresh rate-limit bucket each time — defeating brute-force protection
+    // entirely. `client_ip` pins the key to the hop nginx itself wrote.
+    let ip = crate::services::net::client_ip_or_unknown(&headers);
     if state.rate_limiter.is_limited(&format!("login:{}", ip), 5, std::time::Duration::from_secs(60)) {
         return (StatusCode::TOO_MANY_REQUESTS, Json(json!({"error": "Too many login attempts"}))).into_response();
     }
+
+    // Registration lowercases the address before storing it, so the lookup has
+    // to as well. Without this, anyone who typed their email with different
+    // capitalisation than at signup simply could not log in.
+    let login_email = body.email.trim().to_lowercase();
 
     // Find user
     let user: Option<User> = sqlx::query_as(
         "SELECT * FROM users WHERE email = $1 AND is_active = TRUE"
     )
-    .bind(&body.email)
+    .bind(&login_email)
     .fetch_optional(&state.db)
     .await
     .unwrap_or(None);
@@ -415,25 +415,54 @@ pub async fn login(
     let user = match user {
         Some(u) => u,
         None => {
-            log_audit(&state.db, "login_failed", "auth", "warning", None, None, Some(json!({"email": body.email})), None, None, "failure", Some(&headers)).await;
+            log_audit(&state.db, "login_failed", "auth", "warning", None, None, Some(json!({"email": login_email})), None, None, "failure", Some(&headers)).await;
             return (StatusCode::UNAUTHORIZED, Json(json!({"error": "Invalid email or password"}))).into_response();
         }
     };
 
-    // Check account lockout (5 failed attempts → 15 min lockout)
-    if let Some(locked_until) = user.locked_until {
-        let now = chrono::Utc::now().naive_utc();
-        if locked_until > now {
-            record_login_history(&state.db, &user.id, &headers, false, Some("Account locked")).await;
-            return (StatusCode::TOO_MANY_REQUESTS, Json(json!({"error": "Account temporarily locked. Try again later."}))).into_response();
-        }
+    // Check account lockout (5 failed attempts → 15 min lockout).
+    //
+    // Evaluated in SQL on purpose: `locked_until` is TIMESTAMPTZ in the live
+    // database but TIMESTAMP in the declared schema, and decoding it into a
+    // fixed Rust type bricked any account that ever got locked (see the note in
+    // `models::user`). Comparing server-side is correct for both types.
+    let is_locked: bool = sqlx::query_scalar(
+        "SELECT COALESCE(locked_until > NOW(), FALSE) FROM users WHERE id = $1",
+    )
+    .bind(&user.id)
+    .fetch_one(&state.db)
+    .await
+    .unwrap_or(false);
+
+    if is_locked {
+        record_login_history(&state.db, &user.id, &headers, false, Some("Account locked")).await;
+        return (StatusCode::TOO_MANY_REQUESTS, Json(json!({"error": "Account temporarily locked. Try again later."}))).into_response();
     }
 
-    // Verify password
-    let pw_hash = match &user.password_hash {
-        Some(h) => h,
-        None => return (StatusCode::UNAUTHORIZED, Json(json!({"error": "Please use OAuth to login"}))).into_response(),
-    };
+    // The lockout window has passed — clear the stale counter so the user gets a
+    // full set of attempts again. Previously the counter stayed at 5, so the
+    // very next mistyped password re-locked the account immediately.
+    let _ = sqlx::query(
+        "UPDATE users SET failed_login_count = 0, locked_until = NULL \
+         WHERE id = $1 AND locked_until IS NOT NULL AND locked_until <= NOW()",
+    )
+    .bind(&user.id)
+    .execute(&state.db)
+    .await;
+
+    // Verify password.
+    //
+    // Some rows carry an empty string instead of NULL for "no password set"
+    // (OAuth/SSO accounts). Those used to fall through to verification and fail
+    // with a misleading "invalid email or password"; `is_passwordless` treats
+    // both spellings as the same thing.
+    if crate::services::auth::is_passwordless(user.password_hash.as_deref()) {
+        return (StatusCode::UNAUTHORIZED, Json(json!({
+            "error": "This account has no password set. Please sign in with your identity provider.",
+            "code": "NO_PASSWORD_SET"
+        }))).into_response();
+    }
+    let pw_hash = user.password_hash.as_deref().unwrap_or_default();
 
     if !verify_password(&body.password, pw_hash) {
         // Increment failed login counter, lock after 5 failures
@@ -472,30 +501,46 @@ pub async fn login(
             None => return (StatusCode::OK, Json(json!({"mfa_required": true, "message": "MFA code required"}))).into_response(),
         };
 
-        if let Some(secret) = &user.mfa_secret {
+        // FAIL CLOSED: if MFA is flagged on but no secret is stored, the old code
+        // skipped this whole block and completed the login *without verifying
+        // anything*. A missing secret is a broken enrolment, not a free pass.
+        let Some(secret) = &user.mfa_secret else {
+            tracing::error!("user {} has mfa_enabled but no mfa_secret; refusing login", user.id);
+            record_login_history(&state.db, &user.id, &headers, false, Some("MFA misconfigured")).await;
+            return (StatusCode::UNAUTHORIZED, Json(json!({
+                "error": "Two-factor authentication is misconfigured for this account. Contact support.",
+                "code": "MFA_MISCONFIGURED"
+            }))).into_response();
+        };
+        {
             let valid = verify_totp(secret, mfa_code).unwrap_or(false);
             if !valid {
                 // Try backup codes
-                if let Some(serde_json::Value::Array(codes)) = &user.mfa_backup_codes {
-                    let string_codes: Vec<String> = codes.iter()
-                        .filter_map(|v| v.as_str().map(|s| s.to_string()))
-                        .collect();
-                    if let Some(used_idx) = verify_backup_code(mfa_code, &string_codes) {
-                        // Remove used backup code (one-time use)
+                let string_codes = backup_codes_from_json(user.mfa_backup_codes.as_ref());
+                match verify_backup_code(mfa_code, &string_codes) {
+                    Some(used_idx) => {
+                        // Burn the code — single use. The old UPDATE bound a
+                        // String to the jsonb column and always failed silently,
+                        // so backup codes were infinitely reusable.
                         let mut remaining = string_codes.clone();
                         remaining.remove(used_idx);
-                        let updated = serde_json::to_string(&remaining).unwrap_or_default();
-                        let _ = sqlx::query("UPDATE users SET mfa_backup_codes = $1 WHERE id = $2")
+                        let updated = serde_json::Value::Array(
+                            remaining.into_iter().map(serde_json::Value::String).collect(),
+                        );
+                        if let Err(e) = sqlx::query("UPDATE users SET mfa_backup_codes = $1 WHERE id = $2")
                             .bind(&updated)
                             .bind(&user.id)
                             .execute(&state.db)
-                            .await;
-                        // backup code valid — continue to login
-                    } else {
+                            .await
+                        {
+                            // Refuse the login rather than let the code be reused.
+                            tracing::error!("could not burn backup code for {}: {}", user.id, e);
+                            return (StatusCode::INTERNAL_SERVER_ERROR, Json(json!({"error": "Could not complete two-factor verification"}))).into_response();
+                        }
+                    }
+                    None => {
                         return (StatusCode::UNAUTHORIZED, Json(json!({"error": "Invalid MFA code"}))).into_response();
                     }
-                } else {
-                    return (StatusCode::UNAUTHORIZED, Json(json!({"error": "Invalid MFA code"}))).into_response();
                 }
             }
         }
@@ -813,16 +858,26 @@ pub async fn mfa_verify(
         return (StatusCode::BAD_REQUEST, Json(json!({"error": "Invalid MFA code"}))).into_response();
     }
 
-    // Generate backup codes
+    // Generate backup codes.
+    //
+    // BUG FIX: this bound a Rust `String` to the `jsonb` column, so Postgres
+    // rejected every UPDATE with "is of type jsonb but expression is of type
+    // text". The error was discarded by `let _ =`, so the endpoint returned 200
+    // with a fresh set of codes while `mfa_enabled` stayed FALSE — users
+    // believed MFA was on when it was never enabled. Binding a
+    // `serde_json::Value` makes the type line up, and the result is now checked.
     let backup_codes = generate_backup_codes();
-    let hashed_codes: Vec<String> = backup_codes.iter().map(|c| hash_backup_code(c)).collect();
-    let codes_json = serde_json::to_string(&hashed_codes).unwrap_or_default();
+    let codes_json = hash_backup_codes_json(&backup_codes);
 
-    let _ = sqlx::query("UPDATE users SET mfa_enabled = TRUE, mfa_backup_codes = $1, mfa_enabled_at = CURRENT_TIMESTAMP WHERE id = $2")
+    if let Err(e) = sqlx::query("UPDATE users SET mfa_enabled = TRUE, mfa_backup_codes = $1, mfa_enabled_at = CURRENT_TIMESTAMP WHERE id = $2")
         .bind(&codes_json)
         .bind(&auth.user_id)
         .execute(&state.db)
-        .await;
+        .await
+    {
+        tracing::error!("failed to enable MFA for {}: {}", auth.user_id, e);
+        return (StatusCode::INTERNAL_SERVER_ERROR, Json(json!({"error": "Could not enable two-factor authentication"}))).into_response();
+    }
 
     log_audit(&state.db, "mfa_enable", "security", "info", Some(&auth.user_id), auth.org_id.as_deref(), None, Some("user"), Some(&auth.user_id), "success", Some(&headers)).await;
 
@@ -881,8 +936,12 @@ pub async fn mfa_status(
     State(state): State<Arc<AppState>>,
     auth: AuthUser,
 ) -> impl IntoResponse {
-    let row: Option<(Option<bool>, Option<String>, Option<String>)> = sqlx::query_as(
-        "SELECT mfa_enabled, mfa_enabled_at, mfa_backup_codes FROM users WHERE id = $1"
+    // BUG FIX: `mfa_backup_codes` is jsonb but was decoded into Option<String>,
+    // which sqlx rejects at runtime. The error fell into `.unwrap_or(None)`, so
+    // this endpoint reported `mfa_enabled: false` for every user, always.
+    // Casting to text in SQL keeps the Rust type honest.
+    let row: Option<(Option<bool>, Option<String>, Option<serde_json::Value>)> = sqlx::query_as(
+        "SELECT mfa_enabled, CAST(mfa_enabled_at AS TEXT), mfa_backup_codes FROM users WHERE id = $1"
     )
     .bind(&auth.user_id)
     .fetch_optional(&state.db)
@@ -891,10 +950,7 @@ pub async fn mfa_status(
 
     match row {
         Some((enabled, enabled_at, backup_codes_json)) => {
-            let backup_codes_remaining = backup_codes_json
-                .and_then(|j| serde_json::from_str::<Vec<String>>(&j).ok())
-                .map(|codes| codes.len())
-                .unwrap_or(0);
+            let backup_codes_remaining = backup_codes_from_json(backup_codes_json.as_ref()).len();
             Json(json!({
                 "mfa_enabled": enabled.unwrap_or(false),
                 "mfa_enabled_at": enabled_at,
@@ -917,9 +973,7 @@ pub async fn forgot_password(
     headers: HeaderMap,
     Json(body): Json<ForgotPasswordRequest>,
 ) -> impl IntoResponse {
-    let ip = headers.get("x-forwarded-for")
-        .and_then(|v| v.to_str().ok())
-        .unwrap_or("unknown");
+    let ip = crate::services::net::client_ip_or_unknown(&headers);
     if state.rate_limiter.is_limited(&format!("forgot_password:{}", ip), 3, std::time::Duration::from_secs(300)) {
         return (StatusCode::TOO_MANY_REQUESTS, Json(json!({"error": "Too many requests. Please try again later."}))).into_response();
     }
@@ -1001,9 +1055,7 @@ pub async fn reset_password(
     headers: HeaderMap,
     Json(body): Json<ResetPasswordRequest>,
 ) -> impl IntoResponse {
-    let ip = headers.get("x-forwarded-for")
-        .and_then(|v| v.to_str().ok())
-        .unwrap_or("unknown");
+    let ip = crate::services::net::client_ip_or_unknown(&headers);
     if state.rate_limiter.is_limited(&format!("reset_password:{}", ip), 5, std::time::Duration::from_secs(300)) {
         return (StatusCode::TOO_MANY_REQUESTS, Json(json!({"error": "Too many attempts. Please try again later."}))).into_response();
     }

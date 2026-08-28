@@ -2,6 +2,7 @@ pub mod auth;
 pub mod db;
 pub mod plan;
 pub mod audit;
+pub mod net;
 pub mod target_authorization;
 pub mod service_manager;
 pub mod email;

@@ -640,17 +640,15 @@ pub async fn change_password(
         return (StatusCode::UNAUTHORIZED, Json(json!({"error": "Current password is incorrect"}))).into_response();
     }
 
-    // Hash new password (scope to avoid !Send across await)
-    let new_hash = {
-        let salt = argon2::password_hash::SaltString::generate(&mut argon2::password_hash::rand_core::OsRng);
-        match argon2::PasswordHasher::hash_password(
-            &argon2::Argon2::default(),
-            new_password.as_bytes(),
-            &salt,
-        ) {
-            Ok(h) => h.to_string(),
-            Err(_) => return (StatusCode::INTERNAL_SERVER_ERROR, Json(json!({"error": "Password hashing failed"}))).into_response(),
-        }
+    // Hash the new password in the SAME format the login path verifies.
+    //
+    // BUG FIX: this used to hash with argon2 while `verify_password` only
+    // understood the werkzeug scrypt/pbkdf2 formats, so changing your password
+    // permanently locked you out of your own account. `hash_password` is the
+    // single canonical hasher, shared with register and reset_password.
+    let new_hash = match crate::services::auth::hash_password(&new_password) {
+        Ok(h) => h,
+        Err(_) => return (StatusCode::INTERNAL_SERVER_ERROR, Json(json!({"error": "Password hashing failed"}))).into_response(),
     };
 
     let _ = sqlx::query("UPDATE users SET password_changed_at = EXTRACT(EPOCH FROM NOW())::BIGINT, password_hash = $1 WHERE id = $2")

@@ -1272,34 +1272,26 @@ pub async fn mfa_verify_setup(
     };
 
     if totp.check_current(code).unwrap_or(false) {
-        // Generate 10 backup codes (scope rng to avoid !Send across await)
-        let (backup_codes, hashed_json) = {
-            use rand::Rng;
-            let mut rng = rand::thread_rng();
-            let mut codes: Vec<String> = Vec::new();
-            let mut hashed: Vec<String> = Vec::new();
-            for _ in 0..10 {
-                let code_val: u32 = rng.gen_range(10000000..99999999);
-                let code_str = format!("{}", code_val);
-                codes.push(code_str.clone());
-                let salt = argon2::password_hash::SaltString::generate(&mut argon2::password_hash::rand_core::OsRng);
-                if let Ok(hash) = argon2::PasswordHasher::hash_password(
-                    &argon2::Argon2::default(),
-                    code_str.as_bytes(),
-                    &salt,
-                ) {
-                    hashed.push(hash.to_string());
-                }
-            }
-            (codes, serde_json::to_string(&hashed).unwrap_or_else(|_| "[]".to_string()))
-        };
+        // Backup codes go through the SAME helpers the login path verifies with.
+        //
+        // BUG FIX (two of them):
+        //  * These codes were argon2-hashed, but `login` only ever checks them
+        //    with the SHA-256 helper — so codes issued here could never be
+        //    redeemed. Two divergent MFA implementations were both routed.
+        //  * The hashes were bound as a Rust String to a jsonb column, so the
+        //    UPDATE always failed and `let _ =` hid it: MFA was never enabled.
+        let backup_codes = crate::services::auth::generate_backup_codes();
+        let hashed_json = crate::services::auth::hash_backup_codes_json(&backup_codes);
 
-        // Enable MFA + store hashed backup codes
-        let _ = sqlx::query("UPDATE users SET mfa_enabled = true, mfa_backup_codes = $1 WHERE id = $2")
+        if let Err(e) = sqlx::query("UPDATE users SET mfa_enabled = true, mfa_backup_codes = $1, mfa_enabled_at = CURRENT_TIMESTAMP WHERE id = $2")
             .bind(&hashed_json)
             .bind(&user.user_id)
             .execute(&state.db)
-            .await;
+            .await
+        {
+            tracing::error!("failed to enable MFA for {}: {}", user.user_id, e);
+            return (StatusCode::INTERNAL_SERVER_ERROR, Json(json!({"error": "Could not enable two-factor authentication", "verified": false}))).into_response();
+        }
 
         Json(json!({"message": "MFA verified and enabled", "verified": true, "backup_codes": backup_codes})).into_response()
     } else {
@@ -1317,8 +1309,10 @@ pub async fn mfa_regenerate_backup(
         None => return (StatusCode::BAD_REQUEST, Json(json!({"error": "Password required"}))).into_response(),
     };
 
-    // Verify password
-    let row: Option<(String, Option<bool>)> = sqlx::query_as(
+    // `password_hash` is nullable (OAuth/SSO accounts) — decoding it as a
+    // non-optional String made sqlx error out and the `.unwrap_or(None)` below
+    // turned that into a misleading "User not found".
+    let row: Option<(Option<String>, Option<bool>)> = sqlx::query_as(
         "SELECT password_hash, mfa_enabled FROM users WHERE id = $1"
     )
     .bind(&user.user_id)
@@ -1335,43 +1329,36 @@ pub async fn mfa_regenerate_backup(
         return (StatusCode::BAD_REQUEST, Json(json!({"error": "MFA is not enabled"}))).into_response();
     }
 
-    // Verify password
-    use argon2::PasswordVerifier;
-    let parsed_hash = match argon2::PasswordHash::new(&pw_hash) {
-        Ok(h) => h,
-        Err(_) => return (StatusCode::INTERNAL_SERVER_ERROR, Json(json!({"error": "Password verification error"}))).into_response(),
-    };
-    if argon2::Argon2::default().verify_password(password.as_bytes(), &parsed_hash).is_err() {
+    if crate::services::auth::is_passwordless(pw_hash.as_deref()) {
+        return (StatusCode::BAD_REQUEST, Json(json!({
+            "error": "This account has no password set. Please sign in with your identity provider.",
+            "code": "NO_PASSWORD_SET"
+        }))).into_response();
+    }
+
+    // BUG FIX: this used argon2 directly, but every real password is stored in
+    // the werkzeug scrypt format. `PasswordHash::new` therefore always failed
+    // and the endpoint returned 500 "Password verification error" for everyone —
+    // regenerating backup codes was impossible. `verify_password` understands
+    // every format we actually write.
+    if !crate::services::auth::verify_password(&password, pw_hash.as_deref().unwrap_or_default()) {
         return (StatusCode::UNAUTHORIZED, Json(json!({"error": "Invalid password"}))).into_response();
     }
 
-    // Generate 10 new backup codes (scope rng to avoid !Send across await)
-    let (backup_codes, hashed_json) = {
-        use rand::Rng;
-        let mut rng = rand::thread_rng();
-        let mut codes: Vec<String> = Vec::new();
-        let mut hashed: Vec<String> = Vec::new();
-        for _ in 0..10 {
-            let code_val: u32 = rng.gen_range(10000000..99999999);
-            let code_str = format!("{}", code_val);
-            codes.push(code_str.clone());
-            let salt = argon2::password_hash::SaltString::generate(&mut argon2::password_hash::rand_core::OsRng);
-            if let Ok(hash) = argon2::PasswordHasher::hash_password(
-                &argon2::Argon2::default(),
-                code_str.as_bytes(),
-                &salt,
-            ) {
-                hashed.push(hash.to_string());
-            }
-        }
-        (codes, serde_json::to_string(&hashed).unwrap_or_else(|_| "[]".to_string()))
-    };
+    // Same shared helpers as enrolment, so the codes we hand out here are the
+    // ones `login` can actually redeem.
+    let backup_codes = crate::services::auth::generate_backup_codes();
+    let hashed_json = crate::services::auth::hash_backup_codes_json(&backup_codes);
 
-    let _ = sqlx::query("UPDATE users SET mfa_backup_codes = $1 WHERE id = $2")
+    if let Err(e) = sqlx::query("UPDATE users SET mfa_backup_codes = $1 WHERE id = $2")
         .bind(&hashed_json)
         .bind(&user.user_id)
         .execute(&state.db)
-        .await;
+        .await
+    {
+        tracing::error!("failed to regenerate backup codes for {}: {}", user.user_id, e);
+        return (StatusCode::INTERNAL_SERVER_ERROR, Json(json!({"error": "Could not regenerate backup codes"}))).into_response();
+    }
 
     Json(json!({"backup_codes": backup_codes, "message": "Backup codes regenerated"})).into_response()
 }

@@ -7,7 +7,7 @@ set -euo pipefail
 DB_USER="${DB_USER:-cybersec}"
 DB_NAME="${DB_NAME:-cybersec_pro}"
 BACKUP_DIR="${BACKUP_DIR:-/home/cybersec/cybersec-pro/backups}"
-KEYFILE="${BACKUP_KEY_FILE:-/home/cybersec/cybersec-pro/.backup-key}"
+KEYFILE="${BACKUP_KEY_FILE:-/home/cybersec/.secrets/backup-key}"
 KEEP_DAYS="${KEEP_DAYS:-30}"
 
 if [ ! -f "$KEYFILE" ]; then
