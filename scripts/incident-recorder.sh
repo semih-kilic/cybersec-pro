@@ -46,8 +46,14 @@ fi
 
 # Last resource sample before the stop — proves whether the guest was busy.
 # Pick the last real sample line (skip headers and "LINUX RESTART" markers).
+# sar prints a 12-hour clock with a separate AM/PM field on some locales,
+# which shifts every column by one. Anchor on the header instead of guessing:
+# %memused is the 4th value after the timestamp, whatever the clock format.
 res=$(sar -u 2>/dev/null | awk '/^[0-9]/ && NF>6 && $0 !~ /RESTART/ {l=$0} END{if(l){n=split(l,f," "); printf "idle=%s%% steal=%s%%", f[n], f[n-1]}}')
-mem=$(sar -r 2>/dev/null | awk '/^[0-9]/ && NF>6 && $0 !~ /RESTART/ {l=$0} END{if(l){split(l,f," "); printf "memused=%s%%", f[5]}}')
+mem=$(sar -r 2>/dev/null | awk '
+    /kbmemfree/ {for(i=1;i<=NF;i++) if($i=="%memused") col=i; next}
+    /^[0-9]/ && $0 !~ /RESTART/ {l=$0}
+    END{if(l && col){split(l,f," "); printf "memused=%s%%", f[col]}}')
 
 printf '%s | boot=%s | prev_boot_last_log=%s | verdict=%s | clean=%s oom=%s panic=%s acpi=%s | %s %s\n' \
   "$now" "$boot_at" "${prev_end:-unknown}" "$verdict" \
