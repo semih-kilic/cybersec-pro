@@ -331,7 +331,8 @@ fn classify_ioc_type(raw_type: &str, raw_value: &str) -> (String, String) {
     if lt.contains("md5") || lt.contains("sha1") || lt.contains("sha256") || lt.contains("hash") {
         // Show truncated hash
         let v = if raw_value.len() > 24 {
-            format!("{}…", &raw_value[..24])
+            // Indicator values come from external feeds and are not ASCII-safe.
+            format!("{}…", crate::services::net::truncate_bytes(raw_value, 24))
         } else { raw_value.to_string() };
         return ("Hash".into(), v);
     }

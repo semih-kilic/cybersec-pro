@@ -1093,6 +1093,33 @@ pub async fn start_scan(
         return (StatusCode::BAD_REQUEST, Json(json!({"error": "Invalid target: contains HTML/script characters"}))).into_response();
     }
 
+    // A target that begins with `-` is read by the tool as an option, not as a
+    // host: `nmap --script=/tmp/evil.nse` runs an arbitrary NSE script,
+    // `-oN /etc/cron.d/x` writes a file. The command builder drops such values
+    // as a last line of defence, but rejecting here gives the caller a real
+    // error instead of a scan that silently ran without its target.
+    if target.starts_with('-') {
+        return (StatusCode::BAD_REQUEST, Json(json!({
+            "error": "Invalid target: a target may not begin with '-' (it would be interpreted as a command-line option)",
+            "code": "TARGET_LOOKS_LIKE_FLAG"
+        }))).into_response();
+    }
+
+    // Same rule for every supplied parameter that could stand alone in argv.
+    if let Some(obj) = body.parameters.as_ref().and_then(|p| p.as_object()) {
+        for (k, v) in obj {
+            if let Some(sv) = v.as_str() {
+                if sv.trim_start().starts_with('-') {
+                    return (StatusCode::BAD_REQUEST, Json(json!({
+                        "error": format!("Invalid value for '{}': parameters may not begin with '-' (it would be interpreted as a command-line option)", k),
+                        "code": "PARAM_LOOKS_LIKE_FLAG",
+                        "parameter": k
+                    }))).into_response();
+                }
+            }
+        }
+    }
+
 
     // Target type validation: check if target matches tool's expected target_types
     if let Some(params) = tool.parameters.as_ref() {
@@ -1298,31 +1325,48 @@ pub async fn start_scan(
         }
     }
 
-    // Zero-code: substitute user-supplied parameters into the command_template
-    // (placeholders like {url}, {wordlist}, {lhost}, {lport}, {user}, etc.).
-    // Built-in {target}/{host}/{url}/{ip}/{domain} fall through to parse_template.
-    let command_template = {
-        let mut tpl = tool.command_template.clone();
-        if let (Some(t), Some(obj)) = (tpl.as_mut(), body.parameters.as_ref().and_then(|p| p.as_object())) {
-            for (k, v) in obj {
-                if k == "target" { continue; } // target handled separately
-                let val = v.as_str().map(String::from).unwrap_or_else(|| v.to_string());
-                // Defensive: reject newlines/backticks/$() — never let a param introduce shell metachars.
-                let safe = val.replace(['\n', '\r', '`'], "");
-                if safe.contains("$(") || safe.contains("&&") || safe.contains("||") || safe.contains(';') || safe.contains('|') {
-                    tracing::warn!("scan param '{}' rejected (shell metachars)", k);
-                    continue;
-                }
-                *t = t.replace(&format!("{{{}}}", k), &safe);
-            }
-        }
-        tpl
-    };
+    // Zero-code: collect user-supplied parameters for the command template
+    // (placeholders like {url}, {wordlist}, {lhost}, {lport}, {user}).
+    //
+    // INJECTION FIX: these values used to be written straight into the template
+    // string here, and `parse_template` then split the whole thing on
+    // whitespace — so any value containing a space became several argv entries
+    // and the caller could inject arbitrary flags into the tool (`--script`,
+    // `-oN <path>`, `--os-shell`). Values are now handed to the builder as
+    // data; it tokenises the trusted template first and fills one placeholder
+    // per argument, so a value can never create a new argument.
+    let command_template = tool.command_template.clone();
+    let scan_params: std::collections::BTreeMap<String, String> = body
+        .parameters
+        .as_ref()
+        .and_then(|p| p.as_object())
+        .map(|obj| {
+            obj.iter()
+                .filter(|(k, _)| k.as_str() != "target") // target is handled separately
+                .filter_map(|(k, v)| {
+                    let val = v.as_str().map(String::from).unwrap_or_else(|| v.to_string());
+                    // Strip characters that have no business in an argv entry.
+                    // This is defence in depth: nothing goes through a shell,
+                    // but a NUL or newline in argv is never legitimate.
+                    let safe: String = val.replace(['\n', '\r', '\0'], "");
+                    if safe.is_empty() {
+                        return None;
+                    }
+                    Some((k.clone(), safe))
+                })
+                .collect()
+        })
+        .unwrap_or_default();
 
     // Build the final program + argv from the (substituted) template.
     // This is the single source of truth for what the scan engine will execute.
-    let (program, command_args) = build_command(&tool.binary_name.as_deref().unwrap_or(&tool.name), target, command_template.as_deref())
-        .unwrap_or_else(|_| (tool.name.clone(), vec![target.to_string()]));
+    let (program, command_args) = crate::scan_engine::tool_registry::build_command_with_params(
+        tool.binary_name.as_deref().unwrap_or(&tool.name),
+        target,
+        command_template.as_deref(),
+        &scan_params,
+    )
+    .unwrap_or_else(|_| (tool.name.clone(), vec![target.to_string()]));
 
     // Create scan record FIRST with an atomic concurrency guard: the INSERT only
     // proceeds when the org's running+pending count is below the plan limit.
@@ -1512,8 +1556,8 @@ pub async fn start_scan(
     // NOTE: disabled while reverse-tunnel routing is off — tools run server-side.
     if is_reverse_tunnel && tunnel_routing_enabled {
         let aid = body.agent_id.clone().unwrap_or_default();
-        let (program, args) = crate::scan_engine::tool_registry::build_command(
-            &tool.name, target, command_template.as_deref()
+        let (program, args) = crate::scan_engine::tool_registry::build_command_with_params(
+            &tool.name, target, command_template.as_deref(), &scan_params
         ).unwrap_or_else(|_| (tool.name.clone(), vec![target.to_string()]));
         // JSON argv protocol: send the exact argument array so the agent runs the
         // tool without shell interpolation (no shell-escape issues). Also keep a

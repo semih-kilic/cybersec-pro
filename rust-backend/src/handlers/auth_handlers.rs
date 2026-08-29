@@ -64,6 +64,56 @@ pub fn is_disposable_email(email_lower: &str) -> bool {
     DISPOSABLE_DOMAINS.iter().any(|d| *d == domain)
 }
 
+// ── Refresh-token cookie ───────────────────────────────────
+//
+// BUG FIX: login returned both tokens in the JSON body and never set a cookie,
+// while the SaaS frontend calls `/auth/refresh` with `credentials: "include"`
+// and stores only the access token. The refresh cookie therefore never
+// existed, every refresh returned 401, the failure was swallowed by a silent
+// `catch {}`, and users were logged out the moment the 1-hour access token
+// expired. Issuing the cookie here makes the flow the frontend already expects
+// actually work — and keeps the refresh token out of JavaScript's reach.
+
+const REFRESH_COOKIE: &str = "refresh_token_cookie";
+/// Scope the cookie to the auth endpoints; nothing else needs to see it.
+const REFRESH_COOKIE_PATH: &str = "/api/v1/auth";
+
+/// `Secure` is on unless explicitly disabled for local HTTP development.
+fn cookie_secure() -> bool {
+    !std::env::var("COOKIE_INSECURE")
+        .map(|v| v == "1" || v.eq_ignore_ascii_case("true"))
+        .unwrap_or(false)
+}
+
+fn refresh_cookie(token: &str, max_age_secs: i64) -> String {
+    format!(
+        "{name}={token}; HttpOnly; SameSite=Lax; Path={path}; Max-Age={age}{secure}",
+        name = REFRESH_COOKIE,
+        token = token,
+        path = REFRESH_COOKIE_PATH,
+        age = max_age_secs,
+        secure = if cookie_secure() { "; Secure" } else { "" },
+    )
+}
+
+/// A cookie that immediately expires the stored refresh token.
+fn clear_refresh_cookie() -> String {
+    format!(
+        "{name}=; HttpOnly; SameSite=Lax; Path={path}; Max-Age=0{secure}",
+        name = REFRESH_COOKIE,
+        path = REFRESH_COOKIE_PATH,
+        secure = if cookie_secure() { "; Secure" } else { "" },
+    )
+}
+
+/// Attach a `Set-Cookie` header to an already-built response.
+fn with_cookie(mut resp: axum::response::Response, cookie: String) -> axum::response::Response {
+    if let Ok(v) = axum::http::HeaderValue::from_str(&cookie) {
+        resp.headers_mut().append(axum::http::header::SET_COOKIE, v);
+    }
+    resp
+}
+
 // ── Helper: record login history ──────────────────────────
 
 async fn record_login_history(
@@ -589,13 +639,16 @@ pub async fn login(
         None
     };
 
-    (StatusCode::OK, Json(json!({
+    let body = (StatusCode::OK, Json(json!({
         "message": "Login successful",
         "user": user.to_response(),
         "organization": org_response,
         "access_token": access_token,
         "refresh_token": refresh_token
-    }))).into_response()
+    }))).into_response();
+
+    // 30 days, matching the refresh token's own lifetime.
+    with_cookie(body, refresh_cookie(&refresh_token, 30 * 24 * 3600))
 }
 
 // ── Refresh Token ──────────────────────────────────────────
@@ -630,7 +683,18 @@ pub async fn refresh(
                 return (StatusCode::UNAUTHORIZED, Json(json!({"error": "Refresh token has been revoked"}))).into_response();
             }
             Ok(false) => {}
-            Err(e) => tracing::warn!("refresh blacklist lookup failed: {e}"),
+            Err(e) => {
+                // FAIL CLOSED: this used to log a warning and carry on, so
+                // while Redis was unavailable every revoked refresh token —
+                // including ones revoked at logout or after a compromise —
+                // silently worked again. Refusing costs the user a re-login;
+                // accepting hands an attacker the session back.
+                tracing::error!("refresh blacklist unavailable, refusing refresh: {e}");
+                return (StatusCode::SERVICE_UNAVAILABLE, Json(json!({
+                    "error": "Session service temporarily unavailable. Please sign in again.",
+                    "code": "REVOCATION_CHECK_UNAVAILABLE"
+                }))).into_response();
+            }
         }
     }
 
@@ -673,16 +737,25 @@ pub async fn refresh(
         let now = chrono::Utc::now().timestamp();
         let ttl = (claims.exp - now).max(60) as u64;
         let revoked_key = format!("revoked:refresh:{}", jti);
-        match state.cache.set(&revoked_key, "1", std::time::Duration::from_secs(ttl)).await {
-            Ok(_) => {}
-            Err(e) => tracing::warn!("refresh blacklist write failed: {e}"),
+        // If the old token cannot be revoked, do not hand out a new one:
+        // otherwise both remain valid and rotation silently stops protecting
+        // anything.
+        if let Err(e) = state.cache.set(&revoked_key, "1", std::time::Duration::from_secs(ttl)).await {
+            tracing::error!("could not revoke rotated refresh token: {e}");
+            return (StatusCode::SERVICE_UNAVAILABLE, Json(json!({
+                "error": "Session service temporarily unavailable. Please sign in again.",
+                "code": "REVOCATION_WRITE_UNAVAILABLE"
+            }))).into_response();
         }
     }
 
-    (StatusCode::OK, Json(json!({
+    let body = (StatusCode::OK, Json(json!({
         "access_token": access_token,
         "refresh_token": new_refresh
-    }))).into_response()
+    }))).into_response();
+
+    // Rotation only works if the client actually receives the new token.
+    with_cookie(body, refresh_cookie(&new_refresh, 30 * 24 * 3600))
 }
 
 fn extract_refresh_token(headers: &HeaderMap) -> Option<String> {
@@ -715,8 +788,50 @@ pub async fn logout(
     auth: AuthUser,
     headers: HeaderMap,
 ) -> impl IntoResponse {
+    // BUG FIX: logout used to only write an audit line. It revoked nothing and
+    // cleared nothing, so a refresh token captured before logout stayed valid
+    // for its full 30 days and could mint fresh access tokens at will —
+    // "log out everywhere" did not log you out anywhere.
+    //
+    // Now the presented refresh token's `jti` is blacklisted for the remainder
+    // of its lifetime and the cookie is expired.
+    if let Some(token) = extract_refresh_token(&headers) {
+        if let Ok(claims) = crate::services::auth::decode_token(&state.jwt_secret, &token) {
+            if claims.token_type == "refresh" {
+                if let Some(jti) = &claims.jti {
+                    let now = chrono::Utc::now().timestamp();
+                    let ttl = (claims.exp - now).max(60) as u64;
+                    let key = format!("revoked:refresh:{}", jti);
+                    if let Err(e) = state
+                        .cache
+                        .set(&key, "1", std::time::Duration::from_secs(ttl))
+                        .await
+                    {
+                        // Redis down: say so rather than claim a revocation we
+                        // did not perform.
+                        tracing::error!("logout could not revoke refresh token: {e}");
+                        log_audit(&state.db, "logout", "auth", "warning", Some(&auth.user_id), auth.org_id.as_deref(),
+                                  Some(json!({"revoked": false, "reason": "cache unavailable"})),
+                                  Some("user"), Some(&auth.user_id), "partial", Some(&headers)).await;
+                        return with_cookie(
+                            (StatusCode::OK, Json(json!({
+                                "message": "Logged out on this device, but the session could not be revoked server-side.",
+                                "revoked": false
+                            }))).into_response(),
+                            clear_refresh_cookie(),
+                        );
+                    }
+                }
+            }
+        }
+    }
+
     log_audit(&state.db, "logout", "auth", "info", Some(&auth.user_id), auth.org_id.as_deref(), None, Some("user"), Some(&auth.user_id), "success", Some(&headers)).await;
-    Json(json!({"message": "Logged out successfully"})).into_response()
+
+    with_cookie(
+        (StatusCode::OK, Json(json!({"message": "Logged out successfully", "revoked": true}))).into_response(),
+        clear_refresh_cookie(),
+    )
 }
 
 // ── Get Current User ───────────────────────────────────────
@@ -1122,7 +1237,7 @@ pub async fn reset_password(
 
 #[cfg(test)]
 mod tests {
-    use super::{extract_refresh_token, validate_email};
+    use super::{clear_refresh_cookie, extract_refresh_token, refresh_cookie, validate_email, REFRESH_COOKIE};
     use axum::http::{HeaderMap, HeaderValue};
 
     // ── validate_email ────────────────────────────────────
@@ -1258,5 +1373,51 @@ mod tests {
             HeaderValue::from_static("session=abc;  refresh_token_cookie=padded-token"),
         );
         assert_eq!(extract_refresh_token(&headers).as_deref(), Some("padded-token"));
+    }
+
+    // ── refresh cookie (#12: the cookie was never issued) ─────────────
+
+    #[test]
+    fn refresh_cookie_carries_the_token_and_hardening_flags() {
+        let c = refresh_cookie("tok-123", 2592000);
+        assert!(c.starts_with(&format!("{REFRESH_COOKIE}=tok-123;")), "{c}");
+        assert!(c.contains("HttpOnly"), "must be unreadable from JavaScript: {c}");
+        assert!(c.contains("SameSite=Lax"), "{c}");
+        assert!(c.contains("Path=/api/v1/auth"), "scope it to the auth endpoints: {c}");
+        assert!(c.contains("Max-Age=2592000"), "{c}");
+    }
+
+    #[test]
+    fn refresh_cookie_is_secure_by_default() {
+        std::env::remove_var("COOKIE_INSECURE");
+        assert!(refresh_cookie("t", 60).contains("; Secure"));
+    }
+
+    #[test]
+    fn clear_cookie_expires_immediately_and_carries_no_value() {
+        let c = clear_refresh_cookie();
+        assert!(c.contains("Max-Age=0"), "{c}");
+        assert!(c.starts_with(&format!("{REFRESH_COOKIE}=;")), "{c}");
+        assert!(c.contains("HttpOnly"), "{c}");
+        assert!(c.contains("Path=/api/v1/auth"), "path must match or the browser keeps the old cookie: {c}");
+    }
+
+    #[test]
+    fn issued_cookie_is_readable_back_by_the_extractor() {
+        // End-to-end shape check: what login sets must be what refresh reads.
+        let set = refresh_cookie("round-trip-token", 60);
+        let value = set.split(';').next().unwrap().to_string();
+        let mut headers = HeaderMap::new();
+        headers.insert("cookie", HeaderValue::from_str(&value).unwrap());
+        assert_eq!(extract_refresh_token(&headers).as_deref(), Some("round-trip-token"));
+    }
+
+    #[test]
+    fn cleared_cookie_yields_no_token() {
+        let cleared = clear_refresh_cookie();
+        let value = cleared.split(';').next().unwrap().to_string();
+        let mut headers = HeaderMap::new();
+        headers.insert("cookie", HeaderValue::from_str(&value).unwrap());
+        assert_eq!(extract_refresh_token(&headers).as_deref(), Some(""));
     }
 }

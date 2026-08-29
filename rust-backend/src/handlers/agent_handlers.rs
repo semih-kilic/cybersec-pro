@@ -927,7 +927,14 @@ pub async fn agent_job_result(
     let truncate = |s: Option<&str>| -> Option<String> {
         s.map(|v| {
             if v.len() > MAX_OUTPUT_BYTES {
-                format!("{}\n...[truncated {} bytes]", &v[..MAX_OUTPUT_BYTES], v.len() - MAX_OUTPUT_BYTES)
+                // Agent stdout is arbitrary tool output and routinely contains
+                // non-ASCII; `&v[..MAX_OUTPUT_BYTES]` panicked on a multi-byte
+                // boundary.
+                format!(
+                    "{}\n...[truncated {} bytes]",
+                    crate::services::net::truncate_bytes(v, MAX_OUTPUT_BYTES),
+                    v.len() - MAX_OUTPUT_BYTES
+                )
             } else {
                 v.to_string()
             }

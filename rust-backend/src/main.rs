@@ -184,6 +184,13 @@ async fn main() -> anyhow::Result<()> {
 
     // Build router
     let app = build_router(state.clone())
+        // Blanket rate limiting. Only 9 of ~232 routes limited themselves by
+        // hand, and the paid AI endpoints were not among them. Applying it as a
+        // layer means a new route is protected by default.
+        .layer(axum_middleware::from_fn_with_state(
+            state.clone(),
+            middleware::global_rate_limit::guard,
+        ))
         .layer(axum_middleware::from_fn_with_state(
             state.clone(),
             kill_switch::guard,

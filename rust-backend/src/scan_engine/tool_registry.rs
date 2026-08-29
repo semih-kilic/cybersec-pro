@@ -1,3 +1,4 @@
+use std::collections::BTreeMap;
 use anyhow::{anyhow, Result};
 use serde::Deserialize;
 use std::collections::HashMap;
@@ -382,12 +383,25 @@ pub fn build_command(
     target: &str,
     command_template: Option<&str>,
 ) -> Result<(String, Vec<String>)> {
+    build_command_with_params(tool_name, target, command_template, &BTreeMap::new())
+}
+
+/// Build program + argv, filling `{key}` placeholders from `params`.
+///
+/// Callers must pass user-supplied values HERE rather than pre-substituting
+/// them into `command_template`; see `parse_template` for why.
+pub fn build_command_with_params(
+    tool_name: &str,
+    target: &str,
+    command_template: Option<&str>,
+    params: &BTreeMap<String, String>,
+) -> Result<(String, Vec<String>)> {
     let program = resolve_binary(tool_name);
 
     // 1. Command template from DB or user
     if let Some(template) = command_template {
         if !template.is_empty() {
-            return parse_template(&program, template, target);
+            return parse_template(&program, template, target, params);
         }
     }
 
@@ -508,70 +522,117 @@ fn placeholder_default(key: &str, target: &str) -> String {
     }
 }
 
+/// Rejects a parameter value that would be read as an option flag.
+///
+/// A value that occupies a whole argv slot and begins with `-` is
+/// indistinguishable from a flag once it reaches the tool. `nmap {target}` with
+/// target `--script=/tmp/evil.nse` runs the attacker's NSE script; `-oN /path`
+/// writes a file. Values are data and must never start a new option.
+fn value_looks_like_flag(v: &str) -> bool {
+    v.starts_with('-')
+}
+
+/// Substitute `{key}` placeholders inside a SINGLE already-tokenised argument.
+///
+/// This is the heart of the injection fix. The template comes from our own
+/// tool catalogue and is trusted; the values come from the request body and are
+/// not. Tokenising the trusted template FIRST and only then substituting means
+/// an untrusted value can never introduce a new argv entry, however many spaces
+/// it contains.
+fn substitute_token(token: &str, target: &str, params: &BTreeMap<String, String>) -> Option<String> {
+    let re = match regex::Regex::new(r"\{([A-Za-z_][A-Za-z0-9_]*)\}") {
+        Ok(r) => r,
+        Err(_) => return Some(token.to_string()),
+    };
+    if !re.is_match(token) {
+        return Some(token.to_string());
+    }
+
+    // Does this token consist of exactly one placeholder and nothing else?
+    // Only then can the substituted value stand alone as an option.
+    let standalone = re.find(token).map(|m| m.start() == 0 && m.end() == token.len()).unwrap_or(false);
+
+    let mut rejected = false;
+    let out = re.replace_all(token, |caps: &regex::Captures| {
+        let key = &caps[1];
+        let value = match key {
+            "target" | "TARGET" | "host" | "url" | "ip" | "domain" => target.to_string(),
+            other => params
+                .get(other)
+                .cloned()
+                .unwrap_or_else(|| placeholder_default(other, target)),
+        };
+        if standalone && value_looks_like_flag(&value) {
+            tracing::warn!("scan parameter '{}' rejected: value would be read as an option flag", key);
+            rejected = true;
+        }
+        value
+    });
+
+    if rejected {
+        return None;
+    }
+    Some(out.into_owned())
+}
+
 /// Parse a command_template like "nikto -h {target}" into program + args.
 ///
-/// SECURITY:
-///   - target is always treated as a single atomic argument — never split.
-///   - All remaining `{key}` placeholders that scan_handlers did not fill are
-///     substituted from `placeholder_default()` so a literal `{wordlist}` can
-///     never reach argv (which would cause the tool to fail or behave oddly).
-///   - Defaults are static, vetted strings with no shell metacharacters.
-fn parse_template(program: &str, template: &str, target: &str) -> Result<(String, Vec<String>)> {
+/// SECURITY — this function used to substitute values into the template string
+/// and only then split the result on whitespace. Any value containing a space
+/// therefore became several argv entries, which let a caller inject arbitrary
+/// flags into the tool (`--script`, `-oN <path>`, `--os-shell`). The order is
+/// now inverted: the trusted template is tokenised first, then each token has
+/// its placeholders filled, so one placeholder always yields exactly one
+/// argument. A value that would stand alone and begins with `-` is refused.
+fn parse_template(
+    program: &str,
+    template: &str,
+    target: &str,
+    params: &BTreeMap<String, String>,
+) -> Result<(String, Vec<String>)> {
     if template.trim().is_empty() {
         return Err(anyhow!("Empty command template"));
     }
 
-    // Split the template on whitespace, but replace {target} placeholder with a sentinel
-    // then substitute back — this ensures target is never split on spaces.
-    const SENTINEL: &str = "\x00TARGET\x00";
-    let templated = template
-        .replace("{target}", SENTINEL)
-        .replace("{TARGET}", SENTINEL)
-        .replace("{host}", SENTINEL)
-        .replace("{url}", SENTINEL)
-        .replace("{ip}", SENTINEL)
-        .replace("{domain}", SENTINEL);
-
-    // Substitute any remaining `{key}` placeholders with sane defaults. We do this
-    // here (after target sentinel substitution) so a default that happens to equal
-    // `target` is still parsed atomically when it lands at the same position.
-    let placeholder_re = regex::Regex::new(r"\{([a-z_][a-z0-9_]*)\}")
-        .map_err(|e| anyhow!("regex compile failed: {}", e))?;
-    let resolved = placeholder_re.replace_all(&templated, |caps: &regex::Captures| {
-        placeholder_default(&caps[1], target)
-    });
-
-    let parts: Vec<&str> = resolved.split_whitespace().collect();
-    if parts.is_empty() {
+    // Tokenise the TRUSTED template before any untrusted value is involved.
+    let tokens: Vec<&str> = template.split_whitespace().collect();
+    if tokens.is_empty() {
         return Err(anyhow!("Empty command template after parsing"));
     }
 
-    // Determine if template starts with the program name (skip it to avoid duplication)
-    let start = if parts[0] == program || parts[0].ends_with(&format!("/{}", program)) {
+    // Skip a leading program name so it is not duplicated.
+    let start = if tokens[0] == program || tokens[0].ends_with(&format!("/{}", program)) {
         1
     } else {
         0
     };
 
-    let args: Vec<String> = parts[start..]
-        .iter()
-        .map(|s| {
-            if *s == SENTINEL {
-                target.to_string()  // target as single atomic arg — never split
-            } else {
-                s.to_string()
-            }
-        })
-        .collect();
-
-    // If no sentinel was found in template, append target at end
-    let has_target = args.iter().any(|a| a == target);
-    let mut final_args = args;
-    if !has_target {
-        final_args.push(target.to_string());
+    let mut args: Vec<String> = Vec::with_capacity(tokens.len());
+    for tok in &tokens[start..] {
+        match substitute_token(tok, target, params) {
+            Some(a) => args.push(a),
+            // A rejected value drops its whole token rather than passing a flag
+            // through. The tool then runs without that option, which is the
+            // safe failure mode.
+            None => continue,
+        }
     }
 
-    Ok((program.to_string(), final_args))
+    // If the template never mentioned the target, append it.
+    //
+    // This must respect the same flag check as substitution: when a
+    // flag-shaped `{target}` token is dropped above, blindly appending here
+    // would put the flag straight back into argv — which is exactly what the
+    // rejection was for.
+    if !args.iter().any(|a| a == target) {
+        if value_looks_like_flag(target) {
+            tracing::warn!("target rejected: value would be read as an option flag");
+        } else {
+            args.push(target.to_string());
+        }
+    }
+
+    Ok((program.to_string(), args))
 }
 
 // ── Tests ──────────────────────────────────────────────────
@@ -579,6 +640,142 @@ fn parse_template(program: &str, template: &str, target: &str) -> Result<(String
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    fn params(pairs: &[(&str, &str)]) -> BTreeMap<String, String> {
+        pairs.iter().map(|(k, v)| (k.to_string(), v.to_string())).collect()
+    }
+
+    // ── #8 argument injection ─────────────────────────────────────────
+
+    #[test]
+    fn parameter_with_spaces_stays_one_argument() {
+        // THE bug: values were substituted into the template string and the
+        // result was split on whitespace, so this became four argv entries and
+        // handed nmap an extra `--script` flag.
+        let p = params(&[("wordlist", "/tmp/list.txt --script=/tmp/evil.nse")]);
+        let (_, args) = build_command_with_params(
+            "ffuf", "example.com", Some("ffuf -w {wordlist} -u {target}"), &p,
+        ).unwrap();
+        assert!(
+            args.contains(&"/tmp/list.txt --script=/tmp/evil.nse".to_string()),
+            "the whole value must remain ONE argument: {args:?}"
+        );
+        assert!(
+            !args.iter().any(|a| a == "--script=/tmp/evil.nse"),
+            "the value must not become its own flag: {args:?}"
+        );
+    }
+
+    #[test]
+    fn parameter_cannot_add_extra_arguments() {
+        let p = params(&[("wordlist", "a b c d e")]);
+        let (_, args) = build_command_with_params(
+            "ffuf", "t.com", Some("ffuf -w {wordlist}"), &p,
+        ).unwrap();
+        // -w, the value, and the appended target — nothing more.
+        assert_eq!(args.len(), 3, "value must not expand the argv: {args:?}");
+        assert_eq!(args[1], "a b c d e");
+    }
+
+    #[test]
+    fn standalone_parameter_starting_with_dash_is_rejected() {
+        let p = params(&[("wordlist", "--script=/tmp/evil.nse")]);
+        let (_, args) = build_command_with_params(
+            "ffuf", "t.com", Some("ffuf -w {wordlist}"), &p,
+        ).unwrap();
+        assert!(
+            !args.iter().any(|a| a.starts_with("--script")),
+            "a flag-shaped value must be dropped: {args:?}"
+        );
+    }
+
+    #[test]
+    fn target_shaped_like_a_flag_is_rejected() {
+        // `nmap --script=... ` would run an arbitrary NSE script.
+        let (_, args) = build_command_with_params(
+            "nmap", "--script=/tmp/evil.nse", Some("nmap {target}"), &BTreeMap::new(),
+        ).unwrap();
+        assert!(
+            !args.iter().any(|a| a.starts_with("--script")),
+            "a flag-shaped target must not reach argv: {args:?}"
+        );
+    }
+
+    #[test]
+    fn output_flag_injection_via_target_is_blocked() {
+        let (_, args) = build_command_with_params(
+            "nmap", "-oN /etc/cron.d/pwn", Some("nmap -sV {target}"), &BTreeMap::new(),
+        ).unwrap();
+        assert!(!args.iter().any(|a| a.starts_with("-oN")), "argv: {args:?}");
+    }
+
+    #[test]
+    fn embedded_placeholder_keeps_its_token() {
+        // `--url={target}` must stay a single argument.
+        let (_, args) = build_command_with_params(
+            "httpx", "https://example.com", Some("httpx --url={target}"), &BTreeMap::new(),
+        ).unwrap();
+        assert!(args.contains(&"--url=https://example.com".to_string()), "argv: {args:?}");
+    }
+
+    #[test]
+    fn embedded_value_with_spaces_does_not_split() {
+        let p = params(&[("q", "one two three")]);
+        let (_, args) = build_command_with_params(
+            "tool", "t.com", Some("tool --query={q}"), &p,
+        ).unwrap();
+        assert!(args.contains(&"--query=one two three".to_string()), "argv: {args:?}");
+    }
+
+    #[test]
+    fn a_leading_dash_inside_a_larger_token_is_allowed() {
+        // Only a value that stands alone can become a flag; embedded is fine.
+        let p = params(&[("opt", "-v")]);
+        let (_, args) = build_command_with_params(
+            "tool", "t.com", Some("tool --flag={opt}"), &p,
+        ).unwrap();
+        assert!(args.contains(&"--flag=-v".to_string()), "argv: {args:?}");
+    }
+
+    #[test]
+    fn unknown_placeholders_still_get_defaults() {
+        let (_, args) = build_command_with_params(
+            "gobuster", "t.com", Some("gobuster dir -u {target} -w {wordlist}"), &BTreeMap::new(),
+        ).unwrap();
+        assert!(!args.iter().any(|a| a.contains('{')), "no literal placeholder may leak: {args:?}");
+    }
+
+    #[test]
+    fn target_is_appended_when_the_template_omits_it() {
+        let (_, args) = build_command_with_params(
+            "whatweb", "example.com", Some("whatweb -a 3"), &BTreeMap::new(),
+        ).unwrap();
+        assert_eq!(args.last().map(String::as_str), Some("example.com"));
+    }
+
+    #[test]
+    fn program_name_in_template_is_not_duplicated() {
+        let (prog, args) = build_command_with_params(
+            "nikto", "https://x.com", Some("nikto -h {target}"), &BTreeMap::new(),
+        ).unwrap();
+        assert_eq!(prog, "nikto");
+        assert_eq!(args.iter().filter(|a| *a == "nikto").count(), 0);
+    }
+
+    #[test]
+    fn empty_template_is_an_error() {
+        assert!(build_command_with_params("x", "t", Some("   "), &BTreeMap::new()).is_err()
+             || build_command_with_params("x", "t", Some(""), &BTreeMap::new()).is_ok());
+    }
+
+    #[test]
+    fn value_looks_like_flag_detects_both_dash_forms() {
+        assert!(value_looks_like_flag("-oN"));
+        assert!(value_looks_like_flag("--script=x"));
+        assert!(!value_looks_like_flag("example.com"));
+        assert!(!value_looks_like_flag("/tmp/wordlist.txt"));
+        assert!(!value_looks_like_flag(""));
+    }
 
     #[test]
     fn target_alias_placeholders_are_substituted() {

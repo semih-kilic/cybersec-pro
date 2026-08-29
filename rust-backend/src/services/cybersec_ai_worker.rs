@@ -626,7 +626,8 @@ fn truncate(s: &str, max: usize) -> String {
     if s.len() <= max {
         s.to_string()
     } else {
-        let mut out = s[..max].to_string();
+        // Tool output is arbitrary bytes; a byte-index slice panicked here.
+        let mut out = crate::services::net::truncate_bytes(s, max).to_string();
         out.push_str("\n… [truncated]");
         out
     }

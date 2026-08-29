@@ -612,7 +612,10 @@ pub async fn interpret_results(
     if req.use_llm {
         let sys = "You are a senior security analyst. Summarize these scan findings in 4-6 sentences: highest risk items, common patterns, suggested remediation priority.";
         let usr = serde_json::to_string(&req.findings).unwrap_or_default();
-        let usr = if usr.len() > 6000 { format!("{}…(truncated)", &usr[..6000]) } else { usr };
+        // Was `&usr[..6000]`, which panics when byte 6000 lands inside a
+        // multi-byte character. `usr` is the JSON-serialised request body, so
+        // any caller could crash this handler with one well-placed emoji.
+        let usr = crate::services::net::truncate_with_notice(&usr, 6000, "…(truncated)");
         llm_summary = llm_enrich(sys, &usr).await;
     }
 

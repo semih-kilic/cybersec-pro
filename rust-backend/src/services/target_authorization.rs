@@ -49,26 +49,97 @@ impl TargetType {
     }
 }
 
-/// Well-known public/sandbox targets that do not require explicit authorization.
-/// These are public, intentionally-vulnerable, or localhost targets commonly
-/// used for learning and demonstration.
+/// Well-known public/sandbox targets that do not require explicit
+/// authorization. These are public, intentionally-vulnerable, or loopback
+/// targets used for learning and demonstration.
+const SANDBOX_HOSTS: &[&str] = &[
+    "scanme.nmap.org",
+    "testphp.vulnweb.com",
+    "example.com",
+    "example.org",
+    "example.net",
+    "localhost",
+];
+
+/// Loopback / unspecified addresses that need no authorization.
+const SANDBOX_IPS: &[&str] = &["127.0.0.1", "0.0.0.0", "::1"];
+
+/// Returns true when `target` is a known sandbox target.
+///
+/// SECURITY — this used to match with `starts_with`, which let an attacker
+/// walk straight past the authorization gate:
+///
+///   example.com.attacker.net  starts_with "example.com"  -> "sandbox"
+///   192.168.1.100             starts_with "192.168.1.1"  -> "sandbox"
+///   127.0.0.15                starts_with "127.0.0.1"    -> "sandbox"
+///   localhost.evil.com        starts_with "localhost"    -> "sandbox"
+///
+/// Any of those would be scanned with no recorded ownership confirmation,
+/// which is the one thing the gate exists to prevent. Matching is now exact
+/// for hosts and IPs, with true subdomains of the sandbox domains allowed.
 pub fn is_sandbox_target(target: &str) -> bool {
     let t = target.trim().to_lowercase();
-    let sandbox_patterns = [
-        "scanme.nmap.org",
-        "testphp.vulnweb.com",
-        "example.com",
-        "example.org",
-        "localhost",
-        "127.0.0.1",
-        "0.0.0.0",
-        "::1",
-        "10.0.0.1",
-        "192.168.1.1",
-        "172.16.0.1",
-        "[::1]",
-    ];
-    sandbox_patterns.iter().any(|p| t == *p || t.starts_with(p))
+    if t.is_empty() {
+        return false;
+    }
+
+    // Strip a URL scheme, credentials, port, path and brackets so the check
+    // sees the bare host. `http://example.com:8080/x` must resolve the same
+    // way as `example.com`.
+    let host = extract_host(&t);
+    if host.is_empty() {
+        return false;
+    }
+
+    // Loopback and unspecified addresses, compared numerically so that
+    // 127.0.0.15 does not pass as 127.0.0.1.
+    if let Ok(ip) = host.parse::<std::net::IpAddr>() {
+        if ip.is_loopback() || ip.is_unspecified() {
+            return true;
+        }
+        return SANDBOX_IPS
+            .iter()
+            .filter_map(|s| s.parse::<std::net::IpAddr>().ok())
+            .any(|s| s == ip);
+    }
+
+    // Hostnames: exact match, or a genuine subdomain of a sandbox domain.
+    SANDBOX_HOSTS.iter().any(|h| host == *h || host.ends_with(&format!(".{h}")))
+}
+
+/// Reduce a target string to its bare host for comparison.
+fn extract_host(target: &str) -> String {
+    let mut t = target.trim();
+
+    // scheme://
+    if let Some(pos) = t.find("://") {
+        t = &t[pos + 3..];
+    }
+    // user:pass@
+    if let Some(pos) = t.rfind('@') {
+        t = &t[pos + 1..];
+    }
+    // path / query / fragment
+    t = t.split(['/', '?', '#']).next().unwrap_or(t);
+
+    // [::1]:8080 or [::1]
+    if let Some(rest) = t.strip_prefix('[') {
+        if let Some(end) = rest.find(']') {
+            return rest[..end].to_string();
+        }
+    }
+
+    // host:port — only strip when what follows is entirely digits, so an
+    // unbracketed IPv6 address is not mangled.
+    if let Some(pos) = t.rfind(':') {
+        let (h, p) = t.split_at(pos);
+        let p = &p[1..];
+        if !p.is_empty() && p.chars().all(|c| c.is_ascii_digit()) && !h.contains(':') {
+            return h.to_string();
+        }
+    }
+
+    t.to_string()
 }
 
 pub fn classify_target(target: &str) -> TargetType {
@@ -346,4 +417,109 @@ pub async fn revoke_authorization(
     .await;
 
     Ok(())
+}
+
+#[cfg(test)]
+mod sandbox_tests {
+    use super::*;
+
+    // ── #11 the prefix bypass ─────────────────────────────────────────
+
+    #[test]
+    fn genuine_sandbox_targets_are_recognised() {
+        for t in ["scanme.nmap.org", "example.com", "example.org",
+                  "testphp.vulnweb.com", "localhost", "127.0.0.1", "0.0.0.0", "::1"] {
+            assert!(is_sandbox_target(t), "{t} should be sandbox");
+        }
+    }
+
+    #[test]
+    fn lookalike_domains_are_not_sandbox() {
+        // The whole point: `starts_with` let these through with no
+        // ownership confirmation recorded.
+        for t in ["example.com.attacker.net", "example.comevil.tld",
+                  "localhost.evil.com", "scanme.nmap.org.attacker.net",
+                  "example.org.co", "testphp.vulnweb.com.evil.net"] {
+            assert!(!is_sandbox_target(t), "{t} must NOT be treated as sandbox");
+        }
+    }
+
+    #[test]
+    fn neighbouring_ips_are_not_sandbox() {
+        // The old list contained bare private addresses (10.0.0.1, 192.168.1.1,
+        // 172.16.0.1) and `starts_with` turned each into a whole /24 of free
+        // scanning. Those are somebody's LAN, not a sandbox — they need an
+        // ownership confirmation like any other host.
+        for t in ["10.0.0.1", "10.0.0.100", "192.168.1.1", "192.168.1.100",
+                  "192.168.1.10", "172.16.0.1", "172.16.0.100", "0.0.0.01"] {
+            assert!(!is_sandbox_target(t), "{t} must NOT be treated as sandbox");
+        }
+    }
+
+    #[test]
+    fn the_whole_loopback_range_is_sandbox() {
+        // 127.0.0.0/8 is this machine, so scanning it needs no third-party
+        // authorization. Unlike the old prefix match, this is a real numeric
+        // range check rather than a string coincidence.
+        for t in ["127.0.0.1", "127.0.0.10", "127.0.0.15", "127.1.2.3"] {
+            assert!(is_sandbox_target(t), "{t} is loopback and should be sandbox");
+        }
+    }
+
+    #[test]
+    fn all_loopback_addresses_are_sandbox() {
+        for t in ["127.0.0.1", "127.1.2.3", "::1"] {
+            assert!(is_sandbox_target(t), "{t} is loopback and should be sandbox");
+        }
+    }
+
+    #[test]
+    fn real_subdomains_of_sandbox_domains_are_allowed() {
+        for t in ["www.example.com", "a.b.example.org", "sub.scanme.nmap.org"] {
+            assert!(is_sandbox_target(t), "{t} is a true subdomain and should be sandbox");
+        }
+    }
+
+    #[test]
+    fn urls_and_ports_resolve_to_the_same_verdict() {
+        assert!(is_sandbox_target("http://example.com"));
+        assert!(is_sandbox_target("https://example.com:8443/path?q=1"));
+        assert!(is_sandbox_target("http://user:pw@example.com/x"));
+        assert!(is_sandbox_target("http://127.0.0.1:5001/health"));
+        assert!(is_sandbox_target("[::1]:8080"));
+        // …and the bypasses stay closed through a URL too.
+        assert!(!is_sandbox_target("http://example.com.attacker.net/"));
+        assert!(!is_sandbox_target("https://localhost.evil.com:443/"));
+    }
+
+    #[test]
+    fn empty_and_junk_targets_are_not_sandbox() {
+        for t in ["", "   ", "://", "@", "..."] {
+            assert!(!is_sandbox_target(t), "{t:?} must not be sandbox");
+        }
+    }
+
+    #[test]
+    fn case_and_whitespace_do_not_change_the_verdict() {
+        assert!(is_sandbox_target("  EXAMPLE.COM  "));
+        assert!(!is_sandbox_target("  EXAMPLE.COM.ATTACKER.NET  "));
+    }
+
+    #[test]
+    fn a_real_customer_domain_still_needs_authorization() {
+        for t in ["cyber-sec-pro.com", "google.com", "8.8.8.8", "203.0.113.7"] {
+            assert!(!is_sandbox_target(t), "{t} must require explicit authorization");
+        }
+    }
+
+    // ── extract_host ──────────────────────────────────────────────────
+
+    #[test]
+    fn extract_host_strips_every_url_part() {
+        assert_eq!(extract_host("https://user:pw@example.com:8443/p?q=1#f"), "example.com");
+        assert_eq!(extract_host("example.com"), "example.com");
+        assert_eq!(extract_host("[2001:db8::1]:443"), "2001:db8::1");
+        assert_eq!(extract_host("2001:db8::1"), "2001:db8::1");
+        assert_eq!(extract_host("10.0.0.5:22"), "10.0.0.5");
+    }
 }
