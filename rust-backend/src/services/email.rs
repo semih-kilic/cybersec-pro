@@ -344,12 +344,28 @@ async fn try_send_provider(cfg: &EmailConfig, email: &Message) -> Result<(), Str
             .build()
     };
 
-    mailer
+    let response = mailer
         .send(email.clone())
         .await
         .map_err(|e| format!("SMTP send error: {}", e))?;
 
-    tracing::info!("✅ Email sent via {}", cfg.smtp_server);
+    // Log what the server actually said, not just that we reached it.
+    //
+    // "Email sent" alone is close to useless when a message does not arrive:
+    // it only means the relay accepted the connection. Providers return a
+    // queue/message id on acceptance (Mailjet, SendGrid, SES all do), and that
+    // id is what turns "we think it sent" into something you can look up in the
+    // provider's dashboard or quote in a support ticket.
+    let detail = response
+        .message()
+        .collect::<Vec<_>>()
+        .join(" ");
+    tracing::info!(
+        "✅ Email accepted by {} (code {}): {}",
+        cfg.smtp_server,
+        response.code(),
+        if detail.is_empty() { "<no detail>" } else { detail.trim() }
+    );
     Ok(())
 }
 
