@@ -1,6 +1,7 @@
 pub mod auth;
 pub mod db;
 pub mod plan;
+pub mod billing;
 pub mod audit;
 pub mod net;
 pub mod target_authorization;

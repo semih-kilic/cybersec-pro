@@ -96,14 +96,184 @@ pub async fn get_subscription(
     .unwrap_or(None);
 
     let (plan, stripe_id) = org.unwrap_or(("trial".into(), None));
+
+    // Pull the live subscription so the dashboard can show renewal date, status
+    // and whether the plan is scheduled to end — none of which was exposed
+    // before, leaving the billing screen unable to explain anything.
+    // Timestamps are cast to text in SQL on purpose. This table has a mix of
+    // TIMESTAMP and TIMESTAMPTZ columns (older columns vs newer ones), and
+    // decoding either into a fixed Rust type fails at runtime the moment a row
+    // has a non-NULL value — silently, via `.unwrap_or(None)`. Casting sidesteps
+    // the ambiguity entirely; the client only ever renders these.
+    let sub: Option<(String, Option<String>, Option<String>, Option<String>, bool, Option<String>, Option<String>)> =
+        sqlx::query_as(
+            "SELECT status, stripe_subscription_id, \
+                    to_char(current_period_start AT TIME ZONE 'UTC', 'YYYY-MM-DD\"T\"HH24:MI:SSZ'), \
+                    to_char(current_period_end   AT TIME ZONE 'UTC', 'YYYY-MM-DD\"T\"HH24:MI:SSZ'), \
+                    COALESCE(cancel_at_period_end, FALSE), \
+                    to_char(trial_end AT TIME ZONE 'UTC', 'YYYY-MM-DD\"T\"HH24:MI:SSZ'), \
+                    billing_interval \
+               FROM subscriptions WHERE organization_id = $1 \
+              ORDER BY created_at DESC LIMIT 1",
+        )
+        .bind(org_id)
+        .fetch_optional(&state.db)
+        .await
+        .unwrap_or(None);
+
+    let ent = crate::services::billing::resolve_entitlement(&plan, sub.as_ref().map(|s| s.0.as_str()));
+
     let configs = crate::services::plan::get_plan_configs();
-    let config = configs.get(plan.as_str());
+    // Limits shown must match the limits ENFORCED, so use the effective plan.
+    let config = configs.get(ent.effective_plan.as_str());
+
+    let subscription_json = sub.as_ref().map(|(status, sub_id, ps, pe, cape, trial_end, interval)| json!({
+        "status": status,
+        "stripe_subscription_id": sub_id,
+        "current_period_start": ps,
+        "current_period_end": pe,
+        "cancel_at_period_end": cape,
+        "trial_end": trial_end,
+        "billing_interval": interval,
+    }));
 
     (StatusCode::OK, Json(json!({
-        "plan_type": plan,
+        "plan_type": ent.nominal_plan,
+        "effective_plan": ent.effective_plan,
+        "payment_state": {
+            "status": ent.status,
+            "in_grace": ent.in_grace,
+            "downgraded": ent.downgraded,
+        },
         "stripe_customer_id": stripe_id,
+        "subscription": subscription_json,
         "config": config
     }))).into_response()
+}
+
+/// Build the renderable invoice view from a stored record.
+fn invoice_view_from(
+    rec: &crate::services::billing::InvoiceRecord,
+    plan: Option<&str>,
+    to: &str,
+) -> crate::services::email_templates::InvoiceView {
+    use crate::services::billing::format_money;
+    use crate::services::email_templates::{InvoiceLine, InvoiceView};
+
+    let fmt_ts = |t: Option<i64>| {
+        t.and_then(|s| chrono::DateTime::from_timestamp(s, 0))
+            .map(|d| d.format("%Y-%m-%d").to_string())
+    };
+
+    let lines = rec
+        .line_items
+        .as_array()
+        .map(|arr| {
+            arr.iter()
+                .map(|item| InvoiceLine {
+                    description: item
+                        .get("description")
+                        .and_then(|d| d.as_str())
+                        .unwrap_or("Subscription")
+                        .to_string(),
+                    amount_formatted: format_money(
+                        item.get("amount").and_then(|a| a.as_i64()).unwrap_or(rec.total),
+                        &rec.currency,
+                    ),
+                })
+                .collect::<Vec<_>>()
+        })
+        .filter(|v: &Vec<InvoiceLine>| !v.is_empty())
+        .unwrap_or_else(|| {
+            vec![InvoiceLine {
+                description: "Subscription".to_string(),
+                amount_formatted: format_money(rec.total, &rec.currency),
+            }]
+        });
+
+    let period = match (fmt_ts(rec.period_start), fmt_ts(rec.period_end)) {
+        (Some(a), Some(b)) => Some(format!("{a} → {b}")),
+        _ => None,
+    };
+
+    InvoiceView {
+        number: rec.number.clone().unwrap_or_else(|| rec.stripe_invoice_id.clone()),
+        status: rec.status.clone(),
+        issued_on: fmt_ts(rec.paid_at)
+            .or_else(|| fmt_ts(rec.period_start))
+            .unwrap_or_else(|| chrono::Utc::now().format("%Y-%m-%d").to_string()),
+        period,
+        customer_name: rec.customer_name.clone().unwrap_or_else(|| to.to_string()),
+        customer_email: to.to_string(),
+        plan_label: match plan {
+            Some("starter") => "Starter Plan".to_string(),
+            Some("professional") => "Professional Plan".to_string(),
+            Some("enterprise") => "Enterprise Plan".to_string(),
+            Some(other) => other.to_string(),
+            None => "Subscription".to_string(),
+        },
+        lines,
+        subtotal_formatted: format_money(rec.subtotal, &rec.currency),
+        tax_formatted: format_money(rec.tax, &rec.currency),
+        total_formatted: format_money(rec.total, &rec.currency),
+        amount_paid_formatted: format_money(rec.amount_paid, &rec.currency),
+        hosted_invoice_url: rec.hosted_invoice_url.clone(),
+        invoice_pdf: rec.invoice_pdf.clone(),
+    }
+}
+
+// ── Invoices / billing history ─────────────────────────────
+
+/// GET /api/v1/billing/invoices — the organisation's payment history.
+///
+/// The settings screen has always advertised "billing history"; until now
+/// nothing persisted invoices, so there was nothing to list.
+pub async fn list_invoices(
+    State(state): State<Arc<AppState>>,
+    auth: AuthUser,
+) -> impl IntoResponse {
+    let org_id = match &auth.org_id {
+        Some(id) => id,
+        None => return (StatusCode::FORBIDDEN, Json(json!({"error": "Organization required"}))).into_response(),
+    };
+
+    let rows: Vec<(String, Option<String>, String, Option<String>, String, i64, i64, i64,
+                   Option<chrono::DateTime<chrono::Utc>>, Option<chrono::DateTime<chrono::Utc>>,
+                   Option<chrono::DateTime<chrono::Utc>>, Option<String>, Option<String>, i32)> =
+        sqlx::query_as(
+            "SELECT stripe_invoice_id, number, status, plan_type, currency, \
+                    subtotal, tax, total, \
+                    period_start, period_end, paid_at, \
+                    hosted_invoice_url, invoice_pdf, attempt_count \
+               FROM invoices WHERE organization_id = $1 \
+              ORDER BY COALESCE(paid_at, created_at) DESC LIMIT 100",
+        )
+        .bind(org_id)
+        .fetch_all(&state.db)
+        .await
+        .unwrap_or_default();
+
+    let invoices: Vec<_> = rows.into_iter().map(
+        |(id, number, status, plan, currency, subtotal, tax, total, ps, pe, paid_at, url, pdf, attempts)| json!({
+            "id": id,
+            "number": number,
+            "status": status,
+            "plan_type": plan,
+            "currency": currency.to_uppercase(),
+            "subtotal": subtotal,
+            "tax": tax,
+            "total": total,
+            "total_formatted": crate::services::billing::format_money(total, &currency),
+            "period_start": ps.map(|d| d.to_rfc3339()),
+            "period_end": pe.map(|d| d.to_rfc3339()),
+            "paid_at": paid_at.map(|d| d.to_rfc3339()),
+            "hosted_invoice_url": url,
+            "invoice_pdf": pdf,
+            "attempt_count": attempts,
+        })
+    ).collect();
+
+    (StatusCode::OK, Json(json!({"invoices": invoices, "count": invoices.len()}))).into_response()
 }
 
 // ── Create Checkout Session ────────────────────────────────
@@ -382,29 +552,36 @@ pub async fn stripe_webhook(
     let event_type = event.get("type").and_then(|t| t.as_str()).unwrap_or("");
     let event_id = event.get("id").and_then(|i| i.as_str()).unwrap_or("");
 
-    // Idempotency: skip already-processed events
+    // Idempotency.
+    //
+    // BUG FIX: this used to mark the event processed BEFORE running the handler.
+    // If anything below failed — a database blip, a bad payload — the event was
+    // already recorded, so Stripe's retry was rejected as a duplicate and the
+    // plan change was lost for good. The row is now claimed as `processing` and
+    // only flipped to `processed` once the handler has actually finished, so a
+    // retry of a failed event is still allowed to do its work.
+    //
+    // `INSERT ... ON CONFLICT DO NOTHING RETURNING` gives us an atomic claim:
+    // exactly one concurrent delivery gets a row back, the rest see None.
     if !event_id.is_empty() {
-        let already_processed: Option<(String,)> = sqlx::query_as(
-            "SELECT id FROM stripe_events WHERE event_id = $1"
+        let claimed: Option<(String,)> = sqlx::query_as(
+            "INSERT INTO stripe_events (event_id, event_type, status, processed_at) \
+             VALUES ($1, $2, 'processing', CURRENT_TIMESTAMP) \
+             ON CONFLICT (event_id) DO UPDATE \
+                SET status = 'processing' \
+              WHERE stripe_events.status <> 'processed' \
+             RETURNING event_id",
         )
         .bind(event_id)
+        .bind(event_type)
         .fetch_optional(&state.db)
         .await
         .unwrap_or(None);
 
-        if already_processed.is_some() {
+        if claimed.is_none() {
             tracing::info!("Stripe event {} already processed, skipping", event_id);
             return (StatusCode::OK, Json(json!({"received": true, "duplicate": true}))).into_response();
         }
-
-        // Record event as processed
-        let _ = sqlx::query(
-            "INSERT INTO stripe_events (event_id, event_type, processed_at) VALUES ($1, $2, CURRENT_TIMESTAMP) ON CONFLICT (event_id) DO NOTHING"
-        )
-        .bind(event_id)
-        .bind(event_type)
-        .execute(&state.db)
-        .await;
     }
 
     match event_type {
@@ -642,7 +819,98 @@ pub async fn stripe_webhook(
                 );
             }
         }
-        _ => {}
+        // ── Newly handled events (audit 2026-08-29) ──────────────────
+        "customer.subscription.trial_will_end" => {
+            // Fires 3 days before a trial converts. Surfaces the upcoming charge
+            // so the customer is never surprised by it.
+            if let Some(data) = event.get("data").and_then(|d| d.get("object")) {
+                let customer_id = data.get("customer").and_then(|c| c.as_str()).unwrap_or("");
+                let trial_end = data.get("trial_end").and_then(|t| t.as_i64());
+                if !customer_id.is_empty() {
+                    let _ = sqlx::query(
+                        "UPDATE subscriptions SET trial_end = $1, updated_at = NOW() \
+                          WHERE stripe_subscription_id = $2",
+                    )
+                    .bind(trial_end.and_then(|t| chrono::DateTime::from_timestamp(t, 0)))
+                    .bind(data.get("id").and_then(|i| i.as_str()).unwrap_or(""))
+                    .execute(&state.db)
+                    .await;
+                    tracing::info!("trial ending soon for customer={}", customer_id);
+                }
+            }
+        }
+        "charge.refunded" => {
+            // Keep the stored invoice honest after a refund, otherwise billing
+            // history keeps showing money the customer no longer paid.
+            if let Some(data) = event.get("data").and_then(|d| d.get("object")) {
+                let invoice_id = data.get("invoice").and_then(|i| i.as_str()).unwrap_or("");
+                let refunded = data.get("amount_refunded").and_then(|a| a.as_i64()).unwrap_or(0);
+                if !invoice_id.is_empty() {
+                    let _ = sqlx::query(
+                        "UPDATE invoices \
+                            SET amount_paid = GREATEST(amount_paid - $1, 0), \
+                                status = CASE WHEN $1 >= total THEN 'refunded' ELSE status END, \
+                                updated_at = NOW() \
+                          WHERE stripe_invoice_id = $2",
+                    )
+                    .bind(refunded)
+                    .bind(invoice_id)
+                    .execute(&state.db)
+                    .await;
+                    tracing::info!("refund of {} recorded against invoice {}", refunded, invoice_id);
+                }
+            }
+        }
+        _ => {
+            tracing::debug!("unhandled Stripe event type: {}", event_type);
+        }
+    }
+
+    // Persist the invoice behind any invoice.* event so billing history exists.
+    //
+    // Done once, after the event-specific handling, so every invoice shape
+    // (paid, failed, upcoming, voided) lands in the same table.
+    if event_type.starts_with("invoice.") {
+        if let Some(obj) = event.get("data").and_then(|d| d.get("object")) {
+            if let Some(rec) = crate::services::billing::parse_invoice(obj) {
+                let plan = rec.price_id.as_deref().map(resolve_plan_from_price_id).filter(|p| !p.is_empty());
+                match crate::services::billing::upsert_invoice(&state.db, &rec, plan).await {
+                    Ok(true) => {
+                        tracing::info!("invoice {} stored ({})", rec.stripe_invoice_id, rec.status);
+                        // Email the receipt for genuinely paid invoices only —
+                        // never for drafts, $0 renewals or failed attempts.
+                        if rec.status.eq_ignore_ascii_case("paid") && rec.amount_paid > 0 {
+                            if let (Some(cfg), Some(to)) = (
+                                crate::services::email::EmailConfig::from_env(),
+                                rec.customer_email.clone(),
+                            ) {
+                                let view = invoice_view_from(&rec, plan, &to);
+                                tokio::spawn(async move {
+                                    if let Err(e) = crate::services::email::send_invoice_email(&cfg, &view).await {
+                                        tracing::warn!("invoice email failed for {}: {}", view.customer_email, e);
+                                    }
+                                });
+                            }
+                        }
+                    }
+                    Ok(false) => tracing::debug!(
+                        "invoice {} has no matching organization; not stored",
+                        rec.stripe_invoice_id
+                    ),
+                    Err(e) => tracing::error!("failed to store invoice {}: {}", rec.stripe_invoice_id, e),
+                }
+            }
+        }
+    }
+
+    // Only now is the event genuinely done — see the idempotency note above.
+    if !event_id.is_empty() {
+        let _ = sqlx::query(
+            "UPDATE stripe_events SET status = 'processed', completed_at = NOW() WHERE event_id = $1",
+        )
+        .bind(event_id)
+        .execute(&state.db)
+        .await;
     }
 
     (StatusCode::OK, Json(json!({"received": true}))).into_response()

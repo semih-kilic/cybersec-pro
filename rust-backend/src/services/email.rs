@@ -164,6 +164,33 @@ pub(crate) fn payment_plain_text(name: &str, amount: &str, plan_name: &str) -> S
     )
 }
 
+/// Email the customer their invoice/receipt.
+///
+/// Distinct from `send_payment_confirmation`, which only says "we took your
+/// money". This carries the actual document: number, period, line items, tax
+/// breakdown and links to the Stripe-hosted copy and PDF — what a business
+/// customer needs for their own bookkeeping.
+pub async fn send_invoice_email(
+    cfg: &EmailConfig,
+    view: &crate::services::email_templates::InvoiceView,
+) -> Result<(), String> {
+    let html = crate::services::email_templates::invoice_document(view);
+    let plain = format!(
+        "Invoice {}\n\nBilled to: {} <{}>\n{}\n\nSubtotal: {}\nTax: {}\nTotal: {}\nPaid: {}\n\n{}\n\n(c) 2026 CyberSec Pro",
+        view.number,
+        view.customer_name,
+        view.customer_email,
+        view.period.clone().unwrap_or_default(),
+        view.subtotal_formatted,
+        view.tax_formatted,
+        view.total_formatted,
+        view.amount_paid_formatted,
+        view.hosted_invoice_url.clone().unwrap_or_default(),
+    );
+    let subject = format!("Invoice {} - CyberSec Pro", view.number);
+    send_email(cfg, &view.customer_email, &subject, &plain, &html).await
+}
+
 pub async fn send_verification_email(
     cfg: &EmailConfig,
     to_email: &str,

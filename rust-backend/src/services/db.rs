@@ -96,6 +96,39 @@ r#"CREATE TABLE IF NOT EXISTS subscriptions (
     created_at TIMESTAMP DEFAULT NOW()
 )"#,
 
+r#"CREATE TABLE IF NOT EXISTS invoices (
+    id TEXT PRIMARY KEY,
+    organization_id TEXT NOT NULL REFERENCES organizations(id) ON DELETE CASCADE,
+    stripe_invoice_id TEXT UNIQUE NOT NULL,
+    stripe_subscription_id TEXT,
+    stripe_customer_id TEXT,
+    number TEXT,
+    status TEXT NOT NULL DEFAULT 'draft',
+    plan_type TEXT,
+    billing_reason TEXT,
+    currency TEXT NOT NULL DEFAULT 'eur',
+    subtotal BIGINT NOT NULL DEFAULT 0,
+    tax BIGINT NOT NULL DEFAULT 0,
+    total BIGINT NOT NULL DEFAULT 0,
+    amount_paid BIGINT NOT NULL DEFAULT 0,
+    amount_due BIGINT NOT NULL DEFAULT 0,
+    customer_email TEXT,
+    customer_name TEXT,
+    hosted_invoice_url TEXT,
+    invoice_pdf TEXT,
+    period_start TIMESTAMPTZ,
+    period_end TIMESTAMPTZ,
+    paid_at TIMESTAMPTZ,
+    attempt_count INTEGER NOT NULL DEFAULT 0,
+    line_items JSONB NOT NULL DEFAULT '[]'::jsonb,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+)"#,
+
+"CREATE INDEX IF NOT EXISTS idx_invoices_org ON invoices(organization_id, created_at DESC)",
+"CREATE INDEX IF NOT EXISTS idx_invoices_sub ON invoices(stripe_subscription_id)",
+"CREATE INDEX IF NOT EXISTS idx_invoices_status ON invoices(status)",
+
 r#"CREATE TABLE IF NOT EXISTS agents (
     id TEXT PRIMARY KEY,
     organization_id TEXT NOT NULL REFERENCES organizations(id),
@@ -518,6 +551,42 @@ r#"CREATE TABLE IF NOT EXISTS newsletter_subscribers (
 "CREATE INDEX IF NOT EXISTS idx_newsletter_active ON newsletter_subscribers(is_active)",
 
 r#"ALTER TABLE users ADD COLUMN IF NOT EXISTS password_changed_at BIGINT NOT NULL DEFAULT 0"#,
+
+// ── Billing (audit 2026-08-29) ────────────────────────────────────────
+// stripe_events only recorded that an event was *seen*. The webhook marked an
+// event processed BEFORE handling it, so any failure mid-handler meant the
+// event was never retried and the plan change was silently lost. A status
+// column lets us record "seen" first (for concurrency) and flip to "processed"
+// only once the handler succeeded, so Stripe's retries can still fix it.
+r#"ALTER TABLE stripe_events ADD COLUMN IF NOT EXISTS status TEXT NOT NULL DEFAULT 'processed'"#,
+r#"ALTER TABLE stripe_events ADD COLUMN IF NOT EXISTS error TEXT"#,
+r#"ALTER TABLE stripe_events ADD COLUMN IF NOT EXISTS completed_at TIMESTAMPTZ"#,
+
+// Richer subscription state so the dashboard can show what Stripe knows.
+r#"ALTER TABLE subscriptions ADD COLUMN IF NOT EXISTS cancel_at_period_end BOOLEAN NOT NULL DEFAULT FALSE"#,
+r#"ALTER TABLE subscriptions ADD COLUMN IF NOT EXISTS canceled_at TIMESTAMPTZ"#,
+r#"ALTER TABLE subscriptions ADD COLUMN IF NOT EXISTS trial_end TIMESTAMPTZ"#,
+r#"ALTER TABLE subscriptions ADD COLUMN IF NOT EXISTS billing_interval TEXT"#,
+r#"ALTER TABLE subscriptions ADD COLUMN IF NOT EXISTS updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()"#,
+"CREATE INDEX IF NOT EXISTS idx_subscriptions_org ON subscriptions(organization_id)",
+"CREATE INDEX IF NOT EXISTS idx_subscriptions_status ON subscriptions(status)",
+
+// The original subscriptions table used `TIMESTAMP` while every column added
+// later used `TIMESTAMPTZ`. Mixed types in one table are a decoding landmine:
+// sqlx only type-checks a column when its value is non-NULL, so a query works
+// until the first row that actually has a period set, then fails at runtime and
+// gets swallowed by `.unwrap_or(None)`. Normalise to TIMESTAMPTZ (existing
+// values were written as UTC).
+r#"DO $$
+BEGIN
+  IF EXISTS (SELECT 1 FROM information_schema.columns
+              WHERE table_name='subscriptions' AND column_name='current_period_start'
+                AND data_type='timestamp without time zone') THEN
+    ALTER TABLE subscriptions
+      ALTER COLUMN current_period_start TYPE TIMESTAMPTZ USING current_period_start AT TIME ZONE 'UTC',
+      ALTER COLUMN current_period_end   TYPE TIMESTAMPTZ USING current_period_end   AT TIME ZONE 'UTC';
+  END IF;
+END $$;"#,
 r#"ALTER TABLE agents ADD COLUMN IF NOT EXISTS ssh_passphrase_encrypted TEXT"#,
 
 // ── Phase 8: God Mode feature flags ─────────────────────────────────────

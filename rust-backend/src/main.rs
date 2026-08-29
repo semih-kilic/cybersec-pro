@@ -439,6 +439,18 @@ fn build_router(state: Arc<AppState>) -> Router {
             "/api/v1/billing/founding-member/status",
             get(billing_handlers::founding_member_status),
         )
+        // Billing history — the settings screen advertised this all along but
+        // no endpoint existed and nothing persisted invoices.
+        .route(
+            "/api/v1/billing/invoices",
+            get(billing_handlers::list_invoices),
+        )
+        // The SaaS frontend calls /billing/upgrade; it was never routed, so the
+        // upgrade button 404'd. Alias it onto the checkout handler.
+        .route(
+            "/api/v1/billing/upgrade",
+            post(billing_handlers::create_checkout),
+        )
         // ── Dashboard ─────────────────────────────────────────
         .route(
             "/api/v1/dashboard/security-summary",

@@ -1163,13 +1163,47 @@ pub async fn start_scan(
     let is_gui_tool = tool.gui_required.unwrap_or(false);
 
     // Check plan access
-    let org_plan: Option<(String, Option<String>)> = sqlx::query_as("SELECT plan_type, CAST(created_at AS TEXT) FROM organizations WHERE id = $1")
-        .bind(&org_id)
-        .fetch_optional(&state.db)
-        .await
-        .unwrap_or(None);
-    let plan = org_plan.as_ref().map(|p| p.0.clone()).unwrap_or_else(|| "trial".into());
+    // Read the stored plan together with the latest Stripe subscription status.
+    //
+    // ENFORCEMENT FIX: quotas used to be resolved from `organizations.plan_type`
+    // alone. `subscriptions.status` was written by the webhook (`past_due`,
+    // `unpaid`, `canceled`) and then never read anywhere, so an organisation
+    // whose card had been declined for weeks kept its full paid scan limits.
+    // `resolve_entitlement` collapses the two into the plan we should actually
+    // enforce, while still reporting what the customer nominally bought.
+    let org_plan: Option<(String, Option<String>, Option<String>)> = sqlx::query_as(
+        "SELECT o.plan_type, CAST(o.created_at AS TEXT), \
+                (SELECT s.status FROM subscriptions s \
+                  WHERE s.organization_id = o.id \
+                  ORDER BY s.created_at DESC LIMIT 1) \
+           FROM organizations o WHERE o.id = $1",
+    )
+    .bind(&org_id)
+    .fetch_optional(&state.db)
+    .await
+    .unwrap_or(None);
+
+    let nominal_plan = org_plan.as_ref().map(|p| p.0.clone()).unwrap_or_else(|| "trial".into());
     let org_created_at = org_plan.as_ref().and_then(|p| p.1.clone());
+    let sub_status = org_plan.as_ref().and_then(|p| p.2.clone());
+    let entitlement = crate::services::billing::resolve_entitlement(&nominal_plan, sub_status.as_deref());
+
+    if entitlement.downgraded {
+        return (StatusCode::PAYMENT_REQUIRED, Json(json!({
+            "error": "Your subscription is no longer active. Update your payment method to keep scanning.",
+            "code": "SUBSCRIPTION_INACTIVE",
+            "plan": entitlement.nominal_plan,
+            "subscription_status": entitlement.status,
+        }))).into_response();
+    }
+    if entitlement.in_grace {
+        tracing::warn!(
+            "org {} is past_due but still within the dunning window; allowing scan",
+            org_id
+        );
+    }
+
+    let plan = entitlement.effective_plan.clone();
 
     let mut concurrent_limit: i64 = i64::MAX;
 
