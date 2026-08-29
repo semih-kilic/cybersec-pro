@@ -1,0 +1,6 @@
+[Unit]
+Description=CyberSec Pro — restart VM 100 if it stops unexpectedly
+After=pve-guests.service
+[Service]
+Type=oneshot
+ExecStart=/usr/local/sbin/cybersec-vm-guard.sh
