@@ -63,6 +63,15 @@ pub async fn run_retention_loop(pool: PgPool) {
         return;
     }
 
+    // Say so at startup. Without this the only observable difference between
+    // "enabled and nothing to purge" and "never started" was a debug-level line
+    // nobody sees at the default log level.
+    tracing::info!(
+        "data retention purge ENABLED (scans older than {}d, audit logs older than {}d; runs daily)",
+        scan_retention_days(),
+        log_retention_days()
+    );
+
     let mut ticker = tokio::time::interval(std::time::Duration::from_secs(24 * 3600));
     loop {
         ticker.tick().await;
