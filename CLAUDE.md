@@ -20,7 +20,7 @@ Primary goals:
 
 - `rust-backend/` - main API (Axum, port 5001)
 - `rust-scan-engine/` - standalone scan engine (port 5002, not wired in compose)
-- `rust-service-manager/` - watchdog/super-admin utility service
+- `rust-agent/` - reverse-tunnel agent (there is no `rust-service-manager/` directory; the watchdog lives in `rust-backend/src/services/service_manager.rs`)
 - `saas-frontend/` - React/Vite SaaS app
 - `frontend/` - Next.js marketing site
 - `nginx/` - reverse-proxy config and TLS mount paths
@@ -63,7 +63,8 @@ cd rust-service-manager && cargo run
 ### Frontends
 ```bash
 cd saas-frontend && npm install && npm run dev
-cd frontend && pnpm install && pnpm dev
+cd frontend && npm install && npm run dev   # npm, not pnpm: CI uses `npm ci` and
+                                            # the stale pnpm-lock.yaml was removed 2026-08-29
 ```
 
 ### CI quality commands (local parity with pipeline)
@@ -132,8 +133,14 @@ CI artifacts for observability:
    - CI runs purple_team, report_handlers, scan engine unit tests; i18n parity checks; frontend vitest.
 3. ✅ Keep i18n parity stable with CI checks for locale drift.
    - 49/49 scopes complete; drift detection in pipeline.
-4. ✅ Align scan engine integration strategy with compose and routing.
-   - Nginx /api/v3/ routing (600s timeouts); 16 scanner unit tests (injection, whitelist, build_command); CI step added.
+4. ⚠️ Align scan engine integration strategy with compose and routing.
+   - The engine is wired in compose and the backend delegates to it over `SCAN_ENGINE_URL`.
+   - There is **no** `/api/v3/` block in `nginx/nginx.conf` — the engine is reached
+     only from the backend on the internal network, never from the edge.
+   - Scanner unit tests exist but did **not compile** until 2026-08-29: a test
+     called `build_command` as if it returned `Vec<String>` after the signature
+     changed to `(String, Vec<String>)`, so `cargo test` failed and the suite had
+     never actually run despite CI claiming to.
 5. ✅ Expand billing/Stripe flow beyond stub endpoints.
    - `customer.subscription.updated`: updates `organizations.plan_type` + upserts `subscriptions` record with period tracking.
    - `invoice.payment_failed`: marks `subscriptions.status = 'past_due'` with attempt count logging.
@@ -184,3 +191,58 @@ CI artifacts for observability:
 - **Backend listens on `0.0.0.0:5001`.** Health endpoint: `GET /api/health` → `{"engine":"rust-axum","status":"healthy","version":"4.0.0"}`. Frontend dev server is `vite --port 3001`. Nginx is in front for production routing.
 
 
+
+
+## 14) Security Audit — 2026-08-29
+
+A full audit ran over the whole repository. What changed, and what to know:
+
+### Host stability
+The VM was being hard-stopped repeatedly. It was **not** a guest problem: the
+Proxmox host's OOM killer was killing the VM's `kvm` process, seven times over
+eleven days, because VM 100 was allocated **16000 MB on a host with 15868 MB**.
+The guest only used ~2 GB, but its page cache counts toward the kvm process's
+RSS. Fixed by resizing to `memory 12000` / `balloon 4096`, raising host swap
+2 GB → 10 GB, and adding a guard timer that restarts the VM within 30s.
+See `scripts/proxmox-host/`.
+
+### Secrets
+`.backup-key`, 16 encrypted production database backups, a 4.3 MB plaintext dump
+and `rust-backend/.env.staging` (23 live values) were all in git history — and
+the key and the ciphertext were in the *same repository*. `JWT_SECRET_KEY`,
+`STRIPE_WEBHOOK_SECRET`, `GITHUB_CLIENT_SECRET` and `GOOGLE_CLIENT_SECRET` were
+still the production values. History was purged, the repo recreated, and the
+JWT and Stripe webhook secrets rotated. Secrets now live in `~/.secrets/`.
+
+`auto-git-sync.sh` was the root cause (unconditional `git add -A`); it now
+refuses to commit secret-shaped or oversized files.
+
+### Things that looked implemented but did nothing
+  * **API keys** authenticated nothing — no code read `key_hash`, and its
+    per-key argon2 salt made lookup impossible. Now works via `key_lookup`.
+  * **MFA** never enabled: a Rust `String` was bound to a `jsonb` column and the
+    error was swallowed by `let _ =`.
+  * **SSH agents** never ran: the executor requires a pinned host key and
+    nothing ever wrote one.
+  * **Role hierarchy** was decorative — `viewer` could do everything.
+  * **GDPR retention purge** was never scheduled (now opt-in via
+    `DATA_RETENTION_ENABLED`).
+  * **Refresh tokens**: the backend never set the cookie the frontend read, so
+    sessions died after 60 minutes; logout revoked nothing.
+  * **Saving an SSO config** deleted the existing one and stored nothing
+    (`is_enabled` bound as integer `0` into a boolean column).
+
+### Standing conventions after the audit
+  * `ENCRYPTION_KEY` encrypts secrets at rest and is **separate** from
+    `JWT_SECRET_KEY`. Never merge them: the signing key gets rotated.
+  * Timestamps: `subscriptions` and `users.locked_until` mix `TIMESTAMP` and
+    `TIMESTAMPTZ`. sqlx only type-checks a column when the value is non-NULL, so
+    a mismatch appears to work until the first non-null row. Cast to text in SQL
+    when the column type is uncertain.
+  * Never bind a Rust `String` to a `jsonb` column — bind `serde_json::Value`.
+  * Command templates are tokenised **before** user values are substituted, so a
+    value can never introduce a new argv entry. Values starting with `-` are
+    refused.
+  * `services::net::truncate_bytes` for any user-influenced truncation; a byte
+    slice panics on a multi-byte boundary.
+  * Rate limiting is a global middleware with cost tiers, not per-handler calls.

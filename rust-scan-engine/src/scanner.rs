@@ -549,7 +549,7 @@ mod tests {
     #[test]
     fn scan_engine_nuclei_includes_as_flag() {
         let req = make_request("nuclei", "https://example.com");
-        let args = ScanEngine::build_command(&req);
+        let (_program, args) = ScanEngine::build_command(&req);
         assert!(args.contains(&"-as".to_string()), "nuclei missing -as auto-scan flag");
         assert!(args.contains(&"https://example.com".to_string()));
     }

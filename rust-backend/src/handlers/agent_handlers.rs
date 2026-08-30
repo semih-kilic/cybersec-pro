@@ -27,14 +27,38 @@ fn jwt_secret() -> String {
 /// table. Kept separate from `jwt_secret()` so we don't break decryption of
 /// passwords already in the DB when the JWT signing secret rotates. Requires
 /// `JWT_SECRET_KEY` — fails closed on missing config instead of a known default.
+/// Key used to encrypt secrets at rest (agent SSH credentials, SSO secrets).
+///
+/// AUDIT 2026-08-29 — this used to return `JWT_SECRET_KEY`, so one value both
+/// signed every session token and encrypted every stored credential. That
+/// couples two things with opposite lifecycles: rotating the JWT secret is
+/// routine (and mandatory after a token leak — we did exactly that during this
+/// audit), but doing so would have made every stored SSH credential
+/// permanently undecryptable, with no error until someone tried to use an agent.
+///
+/// `ENCRYPTION_KEY` is now separate. `JWT_SECRET_KEY` is still accepted as a
+/// fallback so existing ciphertext keeps working, with a warning.
 pub(crate) fn password_encryption_key() -> String {
-    std::env::var("JWT_SECRET_KEY").unwrap_or_else(|_| {
-        std::env::var("JWT_SECRET").unwrap_or_else(|_| {
-            panic!(
-                "JWT_SECRET_KEY must be set: refusing to encrypt agent SSH passwords with a default secret"
-            )
+    if let Ok(k) = std::env::var("ENCRYPTION_KEY") {
+        if k.trim().len() >= 32 {
+            return k;
+        }
+        tracing::error!("ENCRYPTION_KEY is set but shorter than 32 characters; ignoring it");
+    }
+    // Legacy path: secrets encrypted before ENCRYPTION_KEY existed.
+    std::env::var("JWT_SECRET_KEY")
+        .or_else(|_| std::env::var("JWT_SECRET"))
+        .map(|k| {
+            tracing::warn!(
+                "ENCRYPTION_KEY is not set; falling back to JWT_SECRET_KEY for secret encryption. \
+                 Rotating the JWT secret will make stored credentials undecryptable — set \
+                 ENCRYPTION_KEY to decouple them."
+            );
+            k
         })
-    })
+        .unwrap_or_else(|_| {
+            panic!("ENCRYPTION_KEY or JWT_SECRET_KEY must be set: refusing to encrypt secrets with a default")
+        })
 }
 
 /// Extracts a Bearer token from the Authorization header.

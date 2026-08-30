@@ -97,8 +97,10 @@ temp/
 *.bak.[0-9]*
 vscode-backups/
 
-# Node
+# Node — npm is the standard here; a second lockfile drifts from what CI builds
 node_modules/
+pnpm-lock.yaml
+yarn.lock
 
 # Build outputs
 dist/

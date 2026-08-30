@@ -63,6 +63,40 @@ pub struct CreateSSORequest {
     pub default_role: Option<String>,
 }
 
+/// Encrypt an SSO secret for storage.
+///
+/// AUDIT 2026-08-29 — `oidc_client_secret` and `ldap_bind_password` were stored
+/// in plaintext, while agent SSH credentials in the same database were
+/// AES-256-GCM encrypted. Anyone with read access to `sso_configs` held the
+/// organisation's IdP client secret and its directory bind password outright.
+fn encrypt_sso_secret(value: Option<&String>) -> Option<String> {
+    let v = value.map(|s| s.trim()).filter(|s| !s.is_empty())?;
+    // Already-encrypted values are re-saved untouched on an edit.
+    let key = crate::handlers::agent_handlers::password_encryption_key();
+    match crate::services::connection_engine::crypto::encrypt_password(v, &key) {
+        Ok(enc) => Some(enc),
+        Err(e) => {
+            tracing::error!("could not encrypt SSO secret: {e}");
+            None
+        }
+    }
+}
+
+/// Decrypt a stored SSO secret, tolerating rows written before encryption.
+fn decrypt_sso_secret(stored: Option<&str>) -> Option<String> {
+    let v = stored.map(str::trim).filter(|s| !s.is_empty())?;
+    let key = crate::handlers::agent_handlers::password_encryption_key();
+    match crate::services::connection_engine::crypto::decrypt_password(v, &key) {
+        Ok(plain) => Some(plain),
+        // Legacy plaintext row: use as-is so existing SSO keeps working, and
+        // say so, because it should be re-saved to encrypt it.
+        Err(_) => {
+            tracing::warn!("SSO secret is not encrypted (legacy row); re-save the SSO configuration to encrypt it");
+            Some(v.to_string())
+        }
+    }
+}
+
 pub async fn create_sso_config(
     State(state): State<Arc<AppState>>,
     admin: crate::middleware::auth_middleware::AdminUser,
@@ -131,12 +165,12 @@ pub async fn create_sso_config(
     .bind(&body.saml_sso_url)
     .bind(&body.saml_certificate)
     .bind(&body.oidc_client_id)
-    .bind(&body.oidc_client_secret)
+    .bind(encrypt_sso_secret(body.oidc_client_secret.as_ref()))
     .bind(&body.oidc_issuer_url)
     .bind(&body.ldap_host)
     .bind(body.ldap_port.unwrap_or(389))
     .bind(&body.ldap_bind_dn)
-    .bind(&body.ldap_bind_password)
+    .bind(encrypt_sso_secret(body.ldap_bind_password.as_ref()))
     .bind(&body.ldap_base_dn)
     .bind(&body.ldap_user_filter)
     .bind(&body.domain_hint)
@@ -630,7 +664,7 @@ pub async fn sso_oidc_callback(
     }
 
     let client_id = client_id.unwrap_or_default();
-    let client_secret = client_secret.unwrap_or_default();
+    let client_secret = decrypt_sso_secret(client_secret.as_deref()).unwrap_or_default();
     let issuer_url = issuer_url.unwrap_or_default();
     let redirect_uri = "https://api.cyber-sec-pro.com/v1/auth/sso/oidc/callback";
 
@@ -785,7 +819,7 @@ pub async fn test_sso_connection(
         let host = host.unwrap_or_default();
         let port = port.unwrap_or(389);
         let bind_dn = bind_dn.unwrap_or_default();
-        let bind_pw = bind_pw.unwrap_or_default();
+        let bind_pw = decrypt_sso_secret(bind_pw.as_deref()).unwrap_or_default();
 
         let ldap_url = build_ldap_url(&host, port);
 
@@ -896,5 +930,55 @@ mod tests {
     fn extract_saml_name_id_handles_multiline_xml() {
         let xml = "<samlp:Response>\n  <saml:Assertion>\n    <saml:NameID>\n      multi@line.com\n    </saml:NameID>\n  </saml:Assertion>\n</samlp:Response>";
         assert_eq!(extract_saml_name_id(xml).as_deref(), Some("multi@line.com"));
+    }
+}
+
+#[cfg(test)]
+mod secret_tests {
+    use super::*;
+
+    fn with_key<T>(f: impl FnOnce() -> T) -> T {
+        std::env::set_var("ENCRYPTION_KEY", "test-encryption-key-at-least-32-characters-long");
+        f()
+    }
+
+    #[test]
+    fn sso_secret_round_trips() {
+        with_key(|| {
+            let plain = "super-secret-oidc-client-secret".to_string();
+            let enc = encrypt_sso_secret(Some(&plain)).expect("should encrypt");
+            assert_ne!(enc, plain, "must not be stored in plaintext");
+            assert_eq!(decrypt_sso_secret(Some(&enc)).as_deref(), Some(plain.as_str()));
+        });
+    }
+
+    #[test]
+    fn encryption_is_non_deterministic() {
+        with_key(|| {
+            // A random nonce per encryption: two identical secrets must not
+            // produce identical ciphertext.
+            let p = "same-secret".to_string();
+            assert_ne!(encrypt_sso_secret(Some(&p)), encrypt_sso_secret(Some(&p)));
+        });
+    }
+
+    #[test]
+    fn empty_and_missing_secrets_stay_empty() {
+        with_key(|| {
+            assert!(encrypt_sso_secret(None).is_none());
+            assert!(encrypt_sso_secret(Some(&String::new())).is_none());
+            assert!(encrypt_sso_secret(Some(&"   ".to_string())).is_none());
+            assert!(decrypt_sso_secret(None).is_none());
+            assert!(decrypt_sso_secret(Some("")).is_none());
+        });
+    }
+
+    #[test]
+    fn legacy_plaintext_rows_still_work() {
+        with_key(|| {
+            // Rows written before encryption must keep working rather than
+            // breaking SSO for an existing customer.
+            assert_eq!(decrypt_sso_secret(Some("legacy-plaintext")).as_deref(), Some("legacy-plaintext"));
+        });
     }
 }
