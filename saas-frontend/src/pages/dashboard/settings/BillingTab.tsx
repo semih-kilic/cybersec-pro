@@ -17,8 +17,38 @@ const PLAN_DETAILS: Record<string, { label: string; color: string; gradient: str
   enterprise:    { label: 'Enterprise',    color: 'text-yellow-400', gradient: 'from-yellow-600 to-orange-600', price: '$349/mo' },
 };
 
+interface Invoice {
+  id: string;
+  number: string | null;
+  status: string;
+  plan_type: string | null;
+  currency: string;
+  total: number;
+  total_formatted: string;
+  period_start: string | null;
+  period_end: string | null;
+  paid_at: string | null;
+  hosted_invoice_url: string | null;
+  invoice_pdf: string | null;
+  attempt_count: number;
+}
+
 interface BillingData {
   plan_type: string;
+  /** The plan actually enforced — differs from plan_type when billing lapsed. */
+  effective_plan?: string;
+  payment_state?: {
+    status: string | null;
+    in_grace: boolean;
+    downgraded: boolean;
+  };
+  subscription?: {
+    status: string;
+    current_period_end: string | null;
+    cancel_at_period_end: boolean;
+    trial_end: string | null;
+    billing_interval: string | null;
+  } | null;
   stripe_customer_id: string | null;
   config: {
     level: number;
@@ -36,6 +66,8 @@ interface BillingData {
 export function BillingTab({ userPlan }: SettingsTabProps) {
   const { t } = useTranslation();
   const [billing, setBilling] = useState<BillingData | null>(null);
+  const [invoices, setInvoices] = useState<Invoice[]>([]);
+  const [invoicesLoaded, setInvoicesLoaded] = useState(false);
   const portalMutation = useOpenBillingPortal();
 
   // ── Danger zone state ──
@@ -77,13 +109,25 @@ export function BillingTab({ userPlan }: SettingsTabProps) {
 
   useEffect(() => {
     (async () => {
+      const inv = await api.get<{ invoices: Invoice[] }>('/billing/invoices');
+      setInvoices(inv.data?.invoices ?? []);
+      setInvoicesLoaded(true);
+    })();
+  }, []);
+
+  useEffect(() => {
+    (async () => {
       const res = await api.get<BillingData>('/billing/subscription');
       if (res.data) setBilling(res.data);
     })();
   }, []);
 
+  // Show the plan the customer bought, but label it honestly when billing has
+  // lapsed: the API reports `effective_plan` as what is actually enforced.
   const planKey = billing?.plan_type || userPlan || 'trial';
   const plan = PLAN_DETAILS[planKey] || PLAN_DETAILS.trial;
+  const enforcedKey = billing?.effective_plan || planKey;
+  const planDowngraded = enforcedKey !== planKey;
   const config = billing?.config;
 
   const toolCount = config?.tool_limit && config.tool_limit > 0 ? `All ${config.tool_limit}` : '—';
@@ -108,6 +152,11 @@ export function BillingTab({ userPlan }: SettingsTabProps) {
           <div>
             <p className="text-white/70 text-xs uppercase tracking-wider font-medium">{t('billing.currentPlan', 'Current Plan')}</p>
             <h3 className="text-white text-2xl font-bold mt-1">{plan.label}</h3>
+            {planDowngraded && (
+              <p className="text-red-300 text-xs mt-1">
+                {t('billing.enforcedAs', 'Currently limited to')} {(PLAN_DETAILS[enforcedKey] || PLAN_DETAILS.trial).label}
+              </p>
+            )}
             <div className="flex items-center gap-4 mt-3 text-white/80 text-sm flex-wrap">
               <span>🛡️ {toolCount} tools</span>
               <span>🔄 {scanLimit} scans/day</span>
@@ -184,6 +233,132 @@ export function BillingTab({ userPlan }: SettingsTabProps) {
             {planKey === 'trial' && (
               <a href="/dashboard/upgrade" className="text-blue-400 hover:underline text-sm mt-1 inline-block">{t('billing.addPayment', 'Add payment method →')}</a>
             )}
+          </div>
+        )}
+      </div>
+
+      {/* ── Payment problem banner ──
+          The API now reports whether billing has lapsed. past_due keeps access
+          during Stripe's retry window but must be visible; a lapsed
+          subscription silently downgrades what the account may actually do. */}
+      {billing?.payment_state?.downgraded && (
+        <div className="p-4 border border-red-500/40 rounded-xl bg-red-500/[0.06]">
+          <h3 className="text-red-400 font-semibold mb-1">
+            {t('billing.lapsedTitle', 'Your subscription is no longer active')}
+          </h3>
+          <p className="text-gray-300 text-sm">
+            {t('billing.lapsedDesc', 'Your plan has been downgraded until payment is restored. Update your payment method to regain full access.')}
+            {billing.payment_state.status && (
+              <span className="text-gray-500"> ({billing.payment_state.status})</span>
+            )}
+          </p>
+        </div>
+      )}
+      {billing?.payment_state?.in_grace && !billing?.payment_state?.downgraded && (
+        <div className="p-4 border border-amber-500/40 rounded-xl bg-amber-500/[0.06]">
+          <h3 className="text-amber-400 font-semibold mb-1">
+            {t('billing.pastDueTitle', 'We could not process your last payment')}
+          </h3>
+          <p className="text-gray-300 text-sm">
+            {t('billing.pastDueDesc', 'Your access continues for now while we retry, but please update your payment method to avoid interruption.')}
+          </p>
+        </div>
+      )}
+
+      {/* ── Renewal ── */}
+      {billing?.subscription?.current_period_end && (
+        <div className="p-4 bg-gray-800/40 border border-gray-700 rounded-xl flex items-center justify-between">
+          <div>
+            <p className="text-gray-400 text-xs uppercase tracking-wider">
+              {billing.subscription.cancel_at_period_end
+                ? t('billing.endsOn', 'Access ends on')
+                : t('billing.renewsOn', 'Renews on')}
+            </p>
+            <p className="text-white text-sm mt-0.5">
+              {new Date(billing.subscription.current_period_end).toLocaleDateString()}
+            </p>
+          </div>
+          {billing.subscription.billing_interval && (
+            <span className="text-gray-500 text-xs capitalize">
+              {t('billing.billed', 'billed')} {billing.subscription.billing_interval}ly
+            </span>
+          )}
+        </div>
+      )}
+
+      {/* ── Billing history ──
+          This section is why the invoices endpoint exists: the heading above
+          has always promised "billing history" with nothing behind it. */}
+      <div className="p-5 bg-gray-800/40 border border-gray-700 rounded-xl">
+        <h3 className="text-white font-semibold mb-4">{t('billing.history', 'Billing History')}</h3>
+
+        {!invoicesLoaded ? (
+          <p className="text-gray-500 text-sm">{t('common.loading', 'Loading…')}</p>
+        ) : invoices.length === 0 ? (
+          <p className="text-gray-500 text-sm">
+            {t('billing.noInvoices', 'No invoices yet. Once you subscribe, every payment will appear here.')}
+          </p>
+        ) : (
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="text-gray-500 text-xs uppercase tracking-wider border-b border-gray-700">
+                  <th className="text-left font-medium py-2 pr-4">{t('billing.invoice', 'Invoice')}</th>
+                  <th className="text-left font-medium py-2 pr-4">{t('billing.date', 'Date')}</th>
+                  <th className="text-left font-medium py-2 pr-4">{t('billing.status', 'Status')}</th>
+                  <th className="text-right font-medium py-2 pr-4">{t('billing.amount', 'Amount')}</th>
+                  <th className="text-right font-medium py-2"></th>
+                </tr>
+              </thead>
+              <tbody>
+                {invoices.map((inv) => (
+                  <tr key={inv.id} className="border-b border-gray-800 last:border-0">
+                    <td className="py-2.5 pr-4 text-gray-300 font-mono text-xs">{inv.number || inv.id}</td>
+                    <td className="py-2.5 pr-4 text-gray-400">
+                      {inv.paid_at || inv.period_start
+                        ? new Date((inv.paid_at || inv.period_start) as string).toLocaleDateString()
+                        : '—'}
+                    </td>
+                    <td className="py-2.5 pr-4">
+                      <span
+                        className={
+                          'px-2 py-0.5 rounded-full text-xs font-medium ' +
+                          (inv.status === 'paid'
+                            ? 'bg-emerald-500/15 text-emerald-400'
+                            : inv.status === 'refunded'
+                            ? 'bg-gray-500/15 text-gray-400'
+                            : 'bg-amber-500/15 text-amber-400')
+                        }
+                      >
+                        {inv.status}
+                      </span>
+                      {inv.attempt_count > 1 && (
+                        <span className="text-gray-600 text-xs ml-2">
+                          {inv.attempt_count} {t('billing.attempts', 'attempts')}
+                        </span>
+                      )}
+                    </td>
+                    <td className="py-2.5 pr-4 text-right text-white font-medium whitespace-nowrap">
+                      {inv.total_formatted}
+                    </td>
+                    <td className="py-2.5 text-right whitespace-nowrap">
+                      {inv.invoice_pdf && (
+                        <a href={inv.invoice_pdf} target="_blank" rel="noopener noreferrer"
+                           className="text-blue-400 hover:underline text-xs">
+                          {t('billing.pdf', 'PDF')}
+                        </a>
+                      )}
+                      {inv.hosted_invoice_url && (
+                        <a href={inv.hosted_invoice_url} target="_blank" rel="noopener noreferrer"
+                           className="text-blue-400 hover:underline text-xs ml-3">
+                          {t('billing.view', 'View')}
+                        </a>
+                      )}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
           </div>
         )}
       </div>
