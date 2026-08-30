@@ -3915,9 +3915,55 @@ pub async fn ai_suggest(
 pub async fn ai_remediation(
     _user: AuthUser,
     State(_state): State<Arc<AppState>>,
-    Json(_body): Json<serde_json::Value>,
+    Json(body): Json<serde_json::Value>,
 ) -> impl IntoResponse {
-    Json(json!({"remediation": "AI remediation not yet available", "steps": []})).into_response()
+    use crate::services::remediation::{lookup, generic_by_severity, FindingContext, RemediationSource};
+
+    // Was a hard-coded "not yet available" stub. Now: the curated knowledge base
+    // is the primary, auditable source; the LLM is a fallback only when no rule
+    // matches, and its output is clearly marked as AI-generated.
+    let title = body.get("title").and_then(|v| v.as_str())
+        .or_else(|| body.get("finding").and_then(|v| v.as_str()))
+        .unwrap_or("");
+    let severity = body.get("severity").and_then(|v| v.as_str()).unwrap_or("medium");
+    let cve = body.get("cve").and_then(|v| v.as_str());
+    let service = body.get("service").and_then(|v| v.as_str());
+    let port = body.get("port").and_then(|v| v.as_u64()).map(|p| p as u16);
+
+    let ctx = FindingContext { title, severity, cve, port, service };
+
+    if let Some(rem) = lookup(&ctx) {
+        return Json(json!({
+            "summary": rem.summary, "impact": rem.impact, "steps": rem.steps,
+            "references": rem.references, "source": "knowledge_base"
+        })).into_response();
+    }
+
+    // No curated rule — try the LLM if configured.
+    if !title.is_empty() {
+        let sys = "You are a security remediation assistant. Given a scan finding, reply with a JSON object                    {\"summary\":\"...\",\"impact\":\"...\",\"steps\":[\"...\"],\"references\":[\"...\"]}.                    Be concrete and do not invent CVE numbers or URLs.";
+        let usr = format!("Finding: {title}\nSeverity: {severity}\nService: {}\nCVE: {}",
+                          service.unwrap_or("n/a"), cve.unwrap_or("n/a"));
+        if let Some(ai) = crate::handlers::ai_handlers::llm_enrich_public(sys, &usr).await {
+            if let Ok(parsed) = serde_json::from_str::<serde_json::Value>(ai.trim()) {
+                let mut obj = parsed;
+                obj["source"] = json!("ai_generated");
+                return Json(obj).into_response();
+            }
+            return Json(json!({
+                "summary": "AI-generated guidance", "impact": "", "steps": [ai],
+                "references": [], "source": "ai_generated"
+            })).into_response();
+        }
+    }
+
+    // Last resort: generic guidance keyed on severity, never empty.
+    let g = generic_by_severity(severity);
+    let _ = RemediationSource::KnowledgeBase; // keep import used
+    Json(json!({
+        "summary": g.summary, "impact": g.impact, "steps": g.steps,
+        "references": g.references, "source": "knowledge_base"
+    })).into_response()
 }
 
 pub async fn ai_report_summary(

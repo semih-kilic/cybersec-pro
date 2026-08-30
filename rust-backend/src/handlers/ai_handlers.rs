@@ -340,6 +340,11 @@ fn validate_command(cmd: &str) -> Value {
 // LLM (OpenAI) — optional enrichment
 // ══════════════════════════════════════════════════════════
 
+/// Public wrapper so other handlers can reuse the LLM helper.
+pub async fn llm_enrich_public(system: &str, user: &str) -> Option<String> {
+    llm_enrich(system, user).await
+}
+
 async fn llm_enrich(system: &str, user: &str) -> Option<String> {
     let api_key = std::env::var("OPENAI_API_KEY").ok()?;
     if api_key.is_empty() { return None; }

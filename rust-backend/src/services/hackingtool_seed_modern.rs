@@ -1303,7 +1303,7 @@ pub async fn seed_modern_tools(pool: &PgPool) -> Result<(usize, usize), sqlx::Er
                 risk_context, tool_group, binary_name, kali_package
             ) VALUES (
                 $1, $2, 'hackingtool', $3, $4, $5,
-                'starter', TRUE, 'cli', $6, $7,
+                'starter', FALSE, 'cli', $6, $7,
                 $2, $3, $8, $9,
                 $10, 'hackingtool', $2, ''
             )

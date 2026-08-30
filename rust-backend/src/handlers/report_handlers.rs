@@ -160,7 +160,7 @@ pub async fn create_report(
         .await
         .unwrap_or(None);
 
-        if let Some(scan) = row {
+        if let Some(mut scan) = row {
             // Look up tool name
             let tool: Option<ToolName> = sqlx::query_as(
                 "SELECT name FROM tools WHERE id = $1"
@@ -170,6 +170,12 @@ pub async fn create_report(
             .await
             .unwrap_or(None);
             let tool_name = tool.and_then(|t| t.name).unwrap_or_else(|| "Unknown Tool".into());
+
+            // Enrich each finding with remediation guidance so the report can say
+            // how to fix what it found, not just what it found.
+            if let Some(f) = scan.findings.as_mut() {
+                crate::services::remediation::enrich_findings(f);
+            }
 
             // Aggregate severity counts
             if let Some(ref f) = scan.findings {

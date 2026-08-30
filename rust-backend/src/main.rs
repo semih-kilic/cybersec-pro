@@ -66,6 +66,10 @@ async fn main() -> anyhow::Result<()> {
         Err(e) => tracing::warn!("modern tool seeding failed: {e}"),
     }
 
+    // Apply curated zero-input parameter forms (choice-based, no raw flags).
+    // Runs after the seeders so it overwrites their generic templates.
+    let _ = services::tool_forms::seed_tool_forms(&db).await;
+
     // JWT secret (required — must be at least 32 chars)
     let jwt_secret = std::env::var("JWT_SECRET_KEY")
         .or_else(|_| std::env::var("SECRET_KEY"))

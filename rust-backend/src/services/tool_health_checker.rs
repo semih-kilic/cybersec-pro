@@ -164,11 +164,48 @@ async fn persist_health_check(pool: &PgPool, result: &HealthCheckResult) {
 }
 
 /// Run health checks for all active CLI tools (batch, with concurrency limit)
+/// Reconcile `is_active` with what is actually runnable.
+///
+/// AUDIT 2026-08-30: `is_active` was set to TRUE by the seeders regardless of
+/// whether the binary existed, which is how the catalogue came to advertise 183
+/// tools while only 86 could run. The seeders now insert as FALSE, and this
+/// function — run after each health sweep — flips a tool active exactly when its
+/// binary is present in the scan engine, and inactive when it is not. The
+/// catalogue therefore tracks reality automatically instead of drifting.
+///
+/// Returns (activated, deactivated).
+pub async fn sync_active_with_health(pool: &PgPool, results: &[HealthCheckResult]) -> (u64, u64) {
+    let mut activated = 0u64;
+    let mut deactivated = 0u64;
+    for r in results {
+        // "installed" means the binary resolved in the scan engine. A tool that
+        // installs but errors on --version is still runnable, so `installed`
+        // (not the stricter `status == healthy`) is the right gate here.
+        let should_be_active = r.installed;
+        let res = sqlx::query(
+            "UPDATE tools SET is_active = $1 WHERE id = $2 AND is_active IS DISTINCT FROM $1",
+        )
+        .bind(should_be_active)
+        .bind(&r.tool_id)
+        .execute(pool)
+        .await;
+        if let Ok(q) = res {
+            if q.rows_affected() > 0 {
+                if should_be_active { activated += 1; } else { deactivated += 1; }
+            }
+        }
+    }
+    if activated > 0 || deactivated > 0 {
+        tracing::info!("tool activation synced: {activated} activated, {deactivated} deactivated");
+    }
+    (activated, deactivated)
+}
+
 pub async fn run_full_health_check(pool: &PgPool) -> Vec<HealthCheckResult> {
     info!("Starting full health check for all active CLI tools");
 
     let tools: Vec<(String, Option<String>)> = sqlx::query_as(
-        "SELECT id, binary_name FROM tools WHERE is_active = true AND tool_type = 'cli' AND binary_name != ''"
+        "SELECT id, binary_name FROM tools WHERE tool_type = 'cli' AND COALESCE(binary_name,'') != ''"
     )
     .fetch_all(pool)
     .await
@@ -216,6 +253,16 @@ pub async fn run_full_health_check(pool: &PgPool) -> Vec<HealthCheckResult> {
 
 /// Background task: run health checks daily
 pub async fn run_health_check_loop(pool: PgPool) {
+    // Reconcile the catalogue with reality once at startup rather than waiting
+    // until 3am. This is what makes `is_active` reflect what can actually run
+    // shortly after boot, given the seeders now insert everything as inactive.
+    {
+        tokio::time::sleep(Duration::from_secs(20)).await;
+        info!("Running initial tool health check + activation sync...");
+        let results = run_full_health_check(&pool).await;
+        let _ = sync_active_with_health(&pool, &results).await;
+    }
+
     info!("Tool health check loop started");
 
     info!("Running startup health check for all tools...");
@@ -243,6 +290,7 @@ pub async fn run_health_check_loop(pool: PgPool) {
         tokio::time::sleep(Duration::from_secs(wait_secs)).await;
 
         info!("Running scheduled daily health check...");
-        let _ = run_full_health_check(&pool).await;
+        let results = run_full_health_check(&pool).await;
+        let _ = sync_active_with_health(&pool, &results).await;
     }
 }

@@ -23,6 +23,8 @@ pub mod threat_intel;
 pub mod vulnerability_db;
 pub mod cache;
 pub mod tool_health_checker;
+pub mod tool_forms;
+pub mod remediation;
 pub mod stuck_scan_detector;
 pub mod compliance_mapper;
 pub mod email_templates;

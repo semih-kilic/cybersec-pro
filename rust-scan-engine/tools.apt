@@ -1,0 +1,84 @@
+# Tools the scan engine must be able to execute, installed from the Kali repo.
+# Generated 2026-08-30 from the gap between the active catalogue (183 tools)
+# and what the runtime image actually had (86). One package per line.
+#
+# Why this exists: the catalogue advertised 183 tools while the container
+# running them had 86, so 97 of them failed at execution with
+# "Tool binary not found" — which is what produced the 764 'broken' and
+# 471 'missing' rows in the tool health table.
+
+apktool
+armitage
+assetfinder
+autopsy
+beef
+bettercap
+binwalk
+bloodhound
+bulk-extractor
+burpsuite
+certipy-ad
+cewl
+chisel
+dnscat2-server
+dnsenum
+dnsrecon
+dradis
+dsniff
+enum4linux-ng
+evil-winrm
+faraday
+fcrackzip
+feroxbuster
+fierce
+foremost
+fping
+ghidra
+gobuster
+gophish
+gospider
+gowitness
+guymager
+hakrawler
+hashid
+hping3
+jadx
+johnny
+joomscan
+kismet
+macchanger
+maltego
+masscan
+mtr
+name-that-hash
+ncat
+netdiscover
+netexec
+nikto
+ophcrack
+pixiewps
+radare2
+reaver
+regripper
+rizin
+samdump2
+sherlock
+smbmap
+spiderfoot
+ssdeep
+sshuttle
+stegseek
+strace
+tcptraceroute
+testdisk
+theharvester
+traceroute
+unicornscan
+upx-ucl
+whois
+wifiphisher
+wifite
+wireshark
+xsser
+xsstrike
+zaproxy
