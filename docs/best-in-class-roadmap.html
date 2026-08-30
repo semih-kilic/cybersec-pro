@@ -1,0 +1,432 @@
+<title>CyberSec Pro — Sınıfının En İyisi Yol Haritası</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Chivo:ital,wght@0,400;0,600;0,700;0,900;1,400&family=Source+Sans+3:ital,wght@0,400;0,500;0,600;1,400&family=JetBrains+Mono:wght@400;500;700&display=swap">
+<style>
+  :root {
+    /* dark-first: bare root is the dark palette */
+    --ground: #0B1017;
+    --surface: #121A24;
+    --surface-2: #172230;
+    --border: #223041;
+    --border-soft: #1a2634;
+    --ink: #E5ECF4;
+    --muted: #8496AC;
+    --faint: #5C6E86;
+    --accent: #4FD1C5;
+    --accent-dim: #2c8378;
+    --done: #58C98A;
+    --prog: #EAB646;
+    --plan: #7286A0;
+    --gap: #F0736F;
+    --shadow: 0 1px 0 rgba(255,255,255,.03), 0 8px 30px rgba(0,0,0,.35);
+  }
+  @media (prefers-color-scheme: light) {
+    :root:not([data-theme="dark"]) {
+      --ground: #F3F6FA;
+      --surface: #FFFFFF;
+      --surface-2: #F7F9FC;
+      --border: #DCE4EE;
+      --border-soft: #E7EDF4;
+      --ink: #0E1620;
+      --muted: #56677E;
+      --faint: #8496AC;
+      --accent: #12897C;
+      --accent-dim: #7fd0c7;
+      --done: #1F9D5B;
+      --prog: #B8811A;
+      --plan: #607089;
+      --gap: #D5433E;
+      --shadow: 0 1px 2px rgba(16,30,50,.04), 0 10px 30px rgba(16,30,50,.07);
+    }
+  }
+  :root[data-theme="light"] {
+    --ground: #F3F6FA; --surface: #FFFFFF; --surface-2: #F7F9FC;
+    --border: #DCE4EE; --border-soft: #E7EDF4; --ink: #0E1620;
+    --muted: #56677E; --faint: #8496AC; --accent: #12897C; --accent-dim: #7fd0c7;
+    --done: #1F9D5B; --prog: #B8811A; --plan: #607089; --gap: #D5433E;
+    --shadow: 0 1px 2px rgba(16,30,50,.04), 0 10px 30px rgba(16,30,50,.07);
+  }
+  :root[data-theme="dark"] {
+    --ground: #0B1017; --surface: #121A24; --surface-2: #172230;
+    --border: #223041; --border-soft: #1a2634; --ink: #E5ECF4;
+    --muted: #8496AC; --faint: #5C6E86; --accent: #4FD1C5; --accent-dim: #2c8378;
+    --done: #58C98A; --prog: #EAB646; --plan: #7286A0; --gap: #F0736F;
+    --shadow: 0 1px 0 rgba(255,255,255,.03), 0 8px 30px rgba(0,0,0,.35);
+  }
+
+  * { box-sizing: border-box; }
+  html { -webkit-text-size-adjust: 100%; }
+  body {
+    margin: 0;
+    background: var(--ground);
+    color: var(--ink);
+    font-family: "Source Sans 3", system-ui, sans-serif;
+    font-size: 16.5px;
+    line-height: 1.62;
+    -webkit-font-smoothing: antialiased;
+  }
+  .wrap { max-width: 1080px; margin: 0 auto; padding: 0 24px; }
+
+  /* ── type ── */
+  h1, h2, h3 { font-family: "Chivo", sans-serif; text-wrap: balance; margin: 0; }
+  .mono { font-family: "JetBrains Mono", monospace; }
+  .eyebrow {
+    font-family: "JetBrains Mono", monospace;
+    font-size: 12px; letter-spacing: .16em; text-transform: uppercase;
+    color: var(--accent); font-weight: 500;
+  }
+
+  /* ── hero ── */
+  header { border-bottom: 1px solid var(--border); background:
+    radial-gradient(120% 140% at 100% 0%, color-mix(in srgb, var(--accent) 7%, transparent), transparent 55%); }
+  .hero { padding: 66px 0 46px; }
+  .hero h1 { font-size: clamp(34px, 5.2vw, 58px); font-weight: 900; line-height: 1.02; letter-spacing: -.02em; }
+  .hero .lede { color: var(--muted); font-size: clamp(17px, 2.2vw, 20px); max-width: 60ch; margin: 20px 0 0; }
+  .hero .meta { margin-top: 22px; display: flex; flex-wrap: wrap; gap: 8px 18px; color: var(--faint); font-size: 13px; }
+  .hero .meta .mono { color: var(--muted); }
+
+  /* ── state strip ── */
+  .strip { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 1px;
+    background: var(--border-soft); border: 1px solid var(--border); border-radius: 14px; overflow: hidden; margin-top: 34px; }
+  .stat { background: var(--surface); padding: 18px 20px; }
+  .stat .n { font-family: "Chivo", sans-serif; font-weight: 700; font-size: 26px; letter-spacing: -.01em;
+    font-variant-numeric: tabular-nums; }
+  .stat .n small { font-size: 15px; color: var(--faint); font-weight: 400; }
+  .stat .l { font-size: 12.5px; color: var(--muted); margin-top: 2px; }
+  .stat .n.ok { color: var(--done); } .stat .n.warn { color: var(--prog); }
+
+  /* ── sections ── */
+  section { padding: 56px 0; border-bottom: 1px solid var(--border-soft); }
+  .sec-head { margin-bottom: 30px; }
+  .sec-head h2 { font-size: clamp(23px, 3vw, 31px); font-weight: 700; letter-spacing: -.01em; margin-top: 8px; }
+  .sec-head p { color: var(--muted); max-width: 66ch; margin: 12px 0 0; }
+
+  /* ── initiative cards ── */
+  .init { display: grid; gap: 14px; }
+  .card { background: var(--surface); border: 1px solid var(--border); border-radius: 14px;
+    padding: 22px 24px; box-shadow: var(--shadow); }
+  .card-top { display: flex; align-items: flex-start; gap: 16px; }
+  .idx { font-family: "Chivo", sans-serif; font-weight: 900; font-size: 15px; color: var(--ground);
+    background: var(--accent); width: 30px; height: 30px; border-radius: 8px; flex: none;
+    display: grid; place-items: center; margin-top: 2px; }
+  .card h3 { font-size: 19px; font-weight: 700; letter-spacing: -.01em; flex: 1; }
+  .card .body { color: var(--muted); margin: 12px 0 0; }
+  .card .body strong { color: var(--ink); font-weight: 600; }
+
+  /* status pill */
+  .pill { font-family: "JetBrains Mono", monospace; font-size: 11px; font-weight: 500; letter-spacing: .04em;
+    text-transform: uppercase; padding: 4px 9px; border-radius: 999px; white-space: nowrap; flex: none;
+    border: 1px solid; }
+  .pill.done { color: var(--done); border-color: color-mix(in srgb, var(--done) 40%, transparent);
+    background: color-mix(in srgb, var(--done) 12%, transparent); }
+  .pill.prog { color: var(--prog); border-color: color-mix(in srgb, var(--prog) 40%, transparent);
+    background: color-mix(in srgb, var(--prog) 12%, transparent); }
+  .pill.plan { color: var(--plan); border-color: color-mix(in srgb, var(--plan) 40%, transparent);
+    background: color-mix(in srgb, var(--plan) 12%, transparent); }
+
+  .sub { margin-top: 16px; display: grid; gap: 8px; }
+  .sub .row { display: flex; gap: 11px; align-items: baseline; font-size: 14.5px; }
+  .sub .row .k { font-family: "JetBrains Mono", monospace; font-size: 11.5px; color: var(--accent);
+    flex: none; width: 74px; padding-top: 1px; }
+  .sub .row .v { color: var(--muted); } .sub .row .v b { color: var(--ink); font-weight: 600; }
+
+  /* ── competitor / gap tables ── */
+  .tbl-wrap { overflow-x: auto; border: 1px solid var(--border); border-radius: 14px; background: var(--surface); }
+  table { border-collapse: collapse; width: 100%; font-size: 14.5px; }
+  th, td { text-align: left; padding: 13px 18px; border-bottom: 1px solid var(--border-soft); vertical-align: top; }
+  thead th { font-family: "JetBrains Mono", monospace; font-size: 11px; letter-spacing: .08em;
+    text-transform: uppercase; color: var(--faint); font-weight: 500; background: var(--surface-2); }
+  tbody tr:last-child td { border-bottom: none; }
+  td.name { font-weight: 600; color: var(--ink); white-space: nowrap; }
+  td .mono { color: var(--muted); font-size: 13px; }
+  .have { color: var(--done); font-weight: 600; } .havenot { color: var(--gap); font-weight: 600; }
+
+  /* gap grid */
+  .gaps { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 14px; }
+  .gap { background: var(--surface); border: 1px solid var(--border); border-radius: 13px; padding: 18px 20px;
+    border-left: 3px solid var(--gap); }
+  .gap h3 { font-size: 16px; font-weight: 700; }
+  .gap p { color: var(--muted); font-size: 14px; margin: 8px 0 0; }
+  .gap .who { font-family: "JetBrains Mono", monospace; font-size: 11px; color: var(--faint); margin-top: 10px; }
+
+  /* tool chips */
+  .tools { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 8px; }
+  .chip { font-family: "JetBrains Mono", monospace; font-size: 12.5px; padding: 5px 11px; border-radius: 8px;
+    background: var(--surface-2); border: 1px solid var(--border); color: var(--ink); }
+  .chip .rank { color: var(--accent); font-weight: 700; }
+
+  /* sequence */
+  .seq { display: grid; gap: 0; counter-reset: step; }
+  .step { display: grid; grid-template-columns: 42px 1fr; gap: 18px; padding: 18px 0;
+    border-bottom: 1px solid var(--border-soft); }
+  .step:last-child { border-bottom: none; }
+  .step .marker { font-family: "Chivo", sans-serif; font-weight: 900; font-size: 15px; color: var(--accent);
+    border: 1.5px solid var(--accent-dim); border-radius: 9px; height: 34px; display: grid; place-items: center;
+    font-variant-numeric: tabular-nums; }
+  .step h3 { font-size: 17px; font-weight: 700; }
+  .step p { color: var(--muted); font-size: 14.5px; margin: 5px 0 0; }
+  .step .tag { font-family: "JetBrains Mono", monospace; font-size: 11px; color: var(--faint); margin-left: 10px; }
+
+  .callout { background: var(--surface-2); border: 1px solid var(--border); border-left: 3px solid var(--accent);
+    border-radius: 12px; padding: 18px 22px; margin-top: 26px; color: var(--muted); font-size: 15px; }
+  .callout b { color: var(--ink); }
+
+  footer { padding: 40px 0 60px; color: var(--faint); font-size: 13px; }
+  a { color: var(--accent); }
+  @media (max-width: 620px) {
+    .card-top { flex-wrap: wrap; } .sub .row { flex-wrap: wrap; } .sub .row .k { width: auto; }
+  }
+</style>
+
+<header>
+  <div class="wrap hero">
+    <div class="eyebrow">Ürün Stratejisi · Denetim sonrası · Ağustos 2026</div>
+    <h1>Sınıfının en iyisi olma yol haritası</h1>
+    <p class="lede">Uygulama artık güvenli ve kararlı. Bu belge, onu "çalışan bir platform"dan Pentera, NodeZero ve Intruder ile aynı sofraya oturan bir ürüne taşıyan altı girişimi, gerçek pazar araştırmasıyla önceliklendirir.</p>
+    <div class="meta">
+      <span>Kaynak: <span class="mono">6 rakip platform + 2026 araç kullanım verisi</span></span>
+      <span>Mevcut şube: <span class="mono">hardening/audit-2026-08</span></span>
+    </div>
+
+    <div class="strip">
+      <div class="stat"><div class="n">183</div><div class="l">Hedef kürasyonlu araç</div></div>
+      <div class="stat"><div class="n warn">10<small> / 183</small></div><div class="l">Seçim-tabanlı form tamam</div></div>
+      <div class="stat"><div class="n ok">484</div><div class="l">Geçen test (backend + motor)</div></div>
+      <div class="stat"><div class="n">13</div><div class="l">Remediation kuralı (+AI)</div></div>
+      <div class="stat"><div class="n">33</div><div class="l">Dashboard sayfası</div></div>
+    </div>
+  </div>
+</header>
+
+<main>
+  <!-- ── Landscape ── -->
+  <section>
+    <div class="wrap">
+      <div class="sec-head">
+        <div class="eyebrow">Madde 1 & 5 · Rekabet analizi</div>
+        <h2>Dünyanın en iyileri ne yapıyor</h2>
+        <p>İki uçtan araştırdım: <b>otonom doğrulama platformları</b> (Pentera, NodeZero) ve <b>düşük-sürtünmeli sürekli tarayıcılar</b> (Intruder, Detectify, Astra, pentest-tools.com). İkisinin de bizde eksik olan güçlü yanları var — ve ikisinin de bizim daha iyi yapabileceğimiz zayıf yanları.</p>
+      </div>
+
+      <div class="tbl-wrap">
+        <table>
+          <thead><tr><th>Platform</th><th>Güçlü yanı</th><th>Bizde durumu</th></tr></thead>
+          <tbody>
+            <tr><td class="name">Pentera / NodeZero</td>
+              <td>Kanıtlanmış <b>saldırı yolları</b> (attack paths), MITRE ATT&amp;CK kill-chain haritası, gerçek zamanlı exploit görünümü, <b>düzeltme doğrulama</b> (fix &rarr; re-test)</td>
+              <td><span class="havenot">Eksik</span> <span class="mono">— Purple Team var ama zincir görselleştirme yok</span></td></tr>
+            <tr><td class="name">Intruder / Detectify</td>
+              <td>En düşük kurulum sürtünmesi, <b>sürekli/zamanlanmış tarama</b>, "bulguyla ne yapacağını bilmene gerek yok" yaklaşımı</td>
+              <td><span class="have">Kısmen</span> <span class="mono">— zamanlayıcı var, remediation KB yeni eklendi</span></td></tr>
+            <tr><td class="name">pentest-tools.com</td>
+              <td><b>Seçim-tabanlı tarama sihirbazı</b>: Light/Deep/Custom önayarlar, dropdown teknikler, toggle'lar — komut satırı yok. Her araçta "bu ne işe yarar" açıklaması</td>
+              <td><span class="have">Aynı modeldeyiz</span> <span class="mono">— nmap formumuz birebir bu yapıda</span></td></tr>
+            <tr><td class="name">Astra / Cobalt</td>
+              <td>Tarayıcı + insan doğrulaması, uyumluluk (SOC 2, ISO) odaklı raporlar, temiz remediation iş akışı</td>
+              <td><span class="have">Güçlüyüz</span> <span class="mono">— uyumluluk sayfası + yeni remediation motoru</span></td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="callout">
+        <b>Çıkarım:</b> Kimse "her aracı, tüm parametreleriyle, komut yazmadan çalıştır" vaadini bizim hedeflediğimiz kadar geniş sunmuyor. Büyük platformlar birkaç motora kilitli; biz 183 aracı bu deneyime taşırsak, kategoride benzersiz oluruz. Onlardan almamız gereken tek şey <b>saldırı yolu görselleştirme + düzeltme doğrulama</b>.
+      </div>
+    </div>
+  </section>
+
+  <!-- ── Six initiatives ── -->
+  <section>
+    <div class="wrap">
+      <div class="sec-head">
+        <div class="eyebrow">Sizin altı maddeniz · İşlenmiş hali</div>
+        <h2>Girişimler ve durumları</h2>
+        <p>Talebinizdeki her maddeyi araştırmayla birleştirip somut bir iş kalemine dönüştürdüm. Sıra, aşağıdaki "önerilen akış"ta.</p>
+      </div>
+
+      <div class="init">
+        <div class="card">
+          <div class="card-top">
+            <div class="idx">1</div>
+            <h3>Rakiplerden daha iyi, daha kullanıcı dostu</h3>
+            <span class="pill prog">Araştırıldı</span>
+          </div>
+          <p class="body">Pazar araştırması tamam. Fark yaratacağımız yer net: <strong>tek bir motor değil, 183 aracın tamamı</strong> aynı seçim-tabanlı, komutsuz deneyimle. Rakiplerin güçlü olduğu iki alanı (saldırı yolu, fix doğrulama) yol haritasına aldım.</p>
+        </div>
+
+        <div class="card">
+          <div class="card-top">
+            <div class="idx">2</div>
+            <h3>En çok kullanılan araçlar %100 kullanıcı dostu çalışsın</h3>
+            <span class="pill prog">Başladı · 10 / 183</span>
+          </div>
+          <p class="body">Her araç, tüm parametreleriyle, kullanıcı <strong>hiç ham komut yazmadan</strong> — sadece dropdown/checkbox/kaydırıcıdan seçerek çalışır. Motor argümanı kurar. Bu, sizin vizyonunuzun kalbi.</p>
+          <div class="sub">
+            <div class="row"><span class="k">TAMAM</span><span class="v"><b>nmap, nuclei, nikto, ffuf, gobuster, subfinder, sqlmap, wpscan, masscan, whatweb</b> — referans kalitesinde</span></div>
+            <div class="row"><span class="k">SIRADA</span><span class="v">Kalan 173 araç, ~10'ar partiler halinde, her partide onayınıza sunularak</span></div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-top">
+            <div class="idx">3</div>
+            <h3>183 aracı tespit et, öne çıkar, kur</h3>
+            <span class="pill prog">Altyapı hazır · kurulum sürüyor</span>
+          </div>
+          <p class="body">Kararınız: tek yetkili liste = <strong>gerçek kullanım + kurulu olma</strong> temelli 183 araç. <strong>Katalog artık gerçeği yansıtıyor</strong> — sağlık senkronu, motorda çalışanı otomatik aktive ediyor.</p>
+          <div class="sub">
+            <div class="row"><span class="k">ÇÖZÜLDÜ</span><span class="v">Motor imajı yeniden üretilemezdi (<span class="mono">:cache</span> etiketi kayıptı) — düzeltildi</span></div>
+            <div class="row"><span class="k">SÜRÜYOR</span><span class="v">97 eksik aracın kurulumu (apt+pip+go+gem+release) — imaj derleniyor</span></div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-top">
+            <div class="idx">4</div>
+            <h3>Kullanıcı hangi aracın ne işe yaradığını bilmeli</h3>
+            <span class="pill plan">Planlandı</span>
+          </div>
+          <p class="body">pentest-tools.com her aracın üstünde bir <strong>"bu araç ne yapar"</strong> açıklaması gösteriyor. Bizde alan var (398 araçta açıklama) ama "iş dostu" değil. Her araca: bir cümlelik amaç, ne zaman kullanılır, örnek hedef, tehlike seviyesi.</p>
+        </div>
+
+        <div class="card">
+          <div class="card-top">
+            <div class="idx">5</div>
+            <h3>Onlarda olup bizde olmayan ne varsa planla</h3>
+            <span class="pill prog">Araştırıldı → boşluk listesi ↓</span>
+          </div>
+          <p class="body">Aşağıdaki boşluk analizini rakip özelliklerinden çıkardım. Her biri ayrı bir iş kalemi; hangilerini alacağımıza birlikte karar vereceğiz.</p>
+        </div>
+
+        <div class="card">
+          <div class="card-top">
+            <div class="idx">6</div>
+            <h3>Her dashboard sayfası dünyanın en iyisi olsun</h3>
+            <span class="pill plan">Planlandı · 33 sayfa</span>
+          </div>
+          <p class="body">33 sayfa var. Her birini tek tek "en iyi rakip nasıl yapıyor" ölçütüyle elden geçireceğiz — özellikle <strong>Reports</strong> (saldırı yolu + remediation), <strong>Agents</strong> (gerçek zamanlı durum), <strong>NewScan</strong> (sihirbaz akışı). Kalite geçişi, işlevden sonra.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── Most-used tools ── -->
+  <section>
+    <div class="wrap">
+      <div class="sec-head">
+        <div class="eyebrow">Madde 2 & 3 · 2026 kullanım verisi</div>
+        <h2>Dünyada en çok kullanılan araçlar</h2>
+        <p>OSCP/CPENT sınavları, HackTheBox/TryHackMe adaptasyonu ve gerçek angajman sıklığına göre 2026'nın çekirdek zinciri. İlk 10 formumuz zaten bu listeden — doğru yerdeyiz.</p>
+      </div>
+      <div class="tools">
+        <span class="chip"><span class="rank">01</span> nmap</span>
+        <span class="chip"><span class="rank">02</span> Burp Suite</span>
+        <span class="chip"><span class="rank">03</span> Metasploit</span>
+        <span class="chip"><span class="rank">04</span> nuclei</span>
+        <span class="chip"><span class="rank">05</span> sqlmap</span>
+        <span class="chip"><span class="rank">06</span> OWASP ZAP</span>
+        <span class="chip"><span class="rank">07</span> BloodHound</span>
+        <span class="chip"><span class="rank">08</span> Nessus</span>
+        <span class="chip"><span class="rank">09</span> gobuster / ffuf</span>
+        <span class="chip"><span class="rank">10</span> Caido</span>
+        <span class="chip"><span class="rank">11</span> Acunetix</span>
+        <span class="chip"><span class="rank">12</span> Qualys</span>
+      </div>
+      <div class="callout">
+        <b>Kendi verimiz de bunu doğruluyor:</b> son 120 günde en çok çalıştırılan araçlar <span class="mono">nmap (40×), dig, msfvenom, hashcat, masscan, sqlmap, nikto, nuclei</span>. Formladığım ilk 10, hem dünya listesiyle hem kendi kullanımınızla örtüşüyor.
+      </div>
+    </div>
+  </section>
+
+  <!-- ── Gap analysis ── -->
+  <section>
+    <div class="wrap">
+      <div class="sec-head">
+        <div class="eyebrow">Madde 5 · Boşluk analizi</div>
+        <h2>Onlarda olup bizde olmayanlar</h2>
+        <p>Rakip özelliklerini tarayıp bizimkiyle karşılaştırdım. Kırmızı kenarlı her kart, planlamamız gereken bir yeteneği gösterir.</p>
+      </div>
+      <div class="gaps">
+        <div class="gap">
+          <h3>Saldırı yolu görselleştirme</h3>
+          <p>Bulguları tek tek değil, bir saldırganın zincirleyeceği <b>yol</b> olarak gösterme. Reconnaissance → exploit → impact, adım adım.</p>
+          <div class="who">Pentera, NodeZero · yüksek etki</div>
+        </div>
+        <div class="gap">
+          <h3>MITRE ATT&amp;CK haritalaması</h3>
+          <p>Her bulguyu ATT&amp;CK taktiğine bağlama. Purple Team'de matris var ama tarama sonuçları ona bağlı değil.</p>
+          <div class="who">Pentera Surface · orta etki</div>
+        </div>
+        <div class="gap">
+          <h3>Düzeltme doğrulama (re-test)</h3>
+          <p>"Düzelttim" dedikten sonra <b>aynı bulguyu tekrar tarayıp</b> gerçekten kapandığını kanıtlama. Rakiplerin en sevilen özelliği.</p>
+          <div class="who">NodeZero Fix Action · yüksek etki</div>
+        </div>
+        <div class="gap">
+          <h3>Gerçek zamanlı exploit görünümü</h3>
+          <p>Tarama sürerken hangi adımın çalıştığını canlı izleme. SSE altyapımız var — üstüne görsel bir akış kurulabilir.</p>
+          <div class="who">NodeZero · orta etki</div>
+        </div>
+        <div class="gap">
+          <h3>Tarama önayarları (Light/Deep)</h3>
+          <p>Araç seçmeden "hızlı tara / derin tara" gibi tek tıkla profiller. Bizde araç-bazında var, hedef-bazında yok.</p>
+          <div class="who">Intruder, pentest-tools · düşük efor</div>
+        </div>
+        <div class="gap">
+          <h3>Sürekli/otomatik yeniden tarama</h3>
+          <p>Bir hedefi kaydet, düzenli otomatik tara, yeni bulguyu bildir. Zamanlayıcımız var ama "sürekli izleme" ürünleşmemiş.</p>
+          <div class="who">Intruder, Detectify · orta etki</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── Sequence ── -->
+  <section>
+    <div class="wrap">
+      <div class="sec-head">
+        <div class="eyebrow">Önerilen akış</div>
+        <h2>Hangi sırayla ilerleyelim</h2>
+        <p>Önce temeli bitir (araçların çalışması), sonra deneyimi cilala (formlar, açıklamalar), en son farklılaştır (saldırı yolu, dashboard). Her adım, bir öncekinin üstüne kurulur.</p>
+      </div>
+      <div class="seq">
+        <div class="step">
+          <div class="marker">1</div>
+          <div><h3>Motor imajını bitir, 183'ü kesinleştir <span class="tag">devam ediyor</span></h3>
+            <p>97 eksik araç kurulumu tamamlanınca, gerçekte çalışan 183'ü sabitle, 1327 pasif kaydı sil, iki seeder'ı emekliye ayır.</p></div>
+        </div>
+        <div class="step">
+          <div class="marker">2</div>
+          <div><h3>183 aracın tamamına seçim-tabanlı form <span class="tag">en büyük parça</span></h3>
+            <p>~10'ar araçlık partiler. Her partiyi canlıda gösterip onayınızı alarak. Madde 2 &amp; 3'ün özü.</p></div>
+        </div>
+        <div class="step">
+          <div class="marker">3</div>
+          <div><h3>Her araca "ne işe yarar" bilgi katmanı <span class="tag">Madde 4</span></h3>
+            <p>Amaç, ne zaman kullanılır, örnek hedef, tehlike seviyesi. Form partileriyle paralel gidebilir.</p></div>
+        </div>
+        <div class="step">
+          <div class="marker">4</div>
+          <div><h3>Reports sayfası: saldırı yolu + remediation <span class="tag">Madde 5+6</span></h3>
+            <p>Remediation motoru hazır; üstüne bulgu zinciri görselleştirmesi ve fix-doğrulama iş akışı.</p></div>
+        </div>
+        <div class="step">
+          <div class="marker">5</div>
+          <div><h3>Dashboard sayfalarını sırayla en iyiye çek <span class="tag">Madde 6</span></h3>
+            <p>Agents, NewScan, Overview... her biri "en iyi rakip nasıl yapıyor" ölçütüyle. Kalite geçişi.</p></div>
+        </div>
+      </div>
+
+      <div class="callout">
+        <b>Dürüst zaman beklentisi:</b> Bu bir oturumluk iş değil — 173 forma tek tek doğru bayrakları yazmak, boşluk özelliklerini kurmak ve 33 sayfayı elden geçirmek büyük bir program. Her parçayı test ederek, gösterip onaylatarak ilerleyeceğim. Bu belge, o programın haritası.
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="wrap">
+    CyberSec Pro · Sınıfının en iyisi yol haritası · Ağustos 2026 denetimi sonrası hazırlandı.
+    Kaynaklar: Pentera, Horizon3 NodeZero, Intruder, Detectify, pentest-tools.com dokümantasyonu ve 2026 pentest araç kullanım araştırması.
+  </div>
+</footer>
