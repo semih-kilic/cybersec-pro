@@ -141,7 +141,7 @@ pub fn parse_output(tool_name: &str, output: &str) -> Option<JsonValue> {
             | "0trace" | "0trace.sh" | "traceroute" | "mtr"
             | "iftop" | "nethogs" | "nload" | "iptraf-ng" | "vnstat" | "bmon" | "tftpd32"
             | "mitmproxy" | "mitm6" | "hamster-sidejack" | "hb-honeypot" | "above"
-            | "lockphish" | "saycheese" | "maskphish" | "weeman"
+            | "lockphish" | "saycheese" | "weeman"
             => parse_packet_capture(output),
         // VoIP
         "sippts" | "sipp" | "siparmyknife" | "sipsak" | "sipvicious"
@@ -191,8 +191,8 @@ pub fn parse_output(tool_name: &str, output: &str) -> Option<JsonValue> {
         // Mobile / APK static analysis
         "apktool" | "baksmali" | "smali" | "d2j-dex2jar" | "dex2jar" | "jadx" | "jadx-gui"
             | "frida" | "frida-tools" | "frida-ps" | "frida-trace" | "objection"
-            | "mobsf" | "mob_droid" | "androguard" | "androwarn" | "quark_engine"
-            | "androbugs" | "qark" | "drozer" | "apkleaks" | "apkid"
+           
+            | "qark" | "drozer" | "apkleaks" | "apkid"
             | "mara_framework" | "mara-framework"
             => parse_vuln_findings(output),
         // Binary RE / disassembly / debug / packer / fuzz-helper

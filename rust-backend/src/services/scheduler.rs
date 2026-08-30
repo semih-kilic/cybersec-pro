@@ -52,7 +52,7 @@ pub async fn run_scheduler(db: PgPool, scan_tx: broadcast::Sender<String>) {
 /// Also marks sweep params as "retention-applied" so re-runs are idempotent.
 async fn purge_expired_data(db: &PgPool) -> Result<(), String> {
     let mut total = 0i64;
-    let now = chrono::Utc::now().naive_utc();
+    let _now = chrono::Utc::now().naive_utc();
 
     let audit_deleted = sqlx::query(
         "DELETE FROM audit_logs WHERE created_at < NOW() - INTERVAL '12 months' RETURNING id"
@@ -215,13 +215,14 @@ async fn tick(db: &PgPool, scan_tx: &broadcast::Sender<String>) -> Result<(), St
         tokio::spawn(async move {
             use crate::scan_engine::executor::{execute_scan, AgentSshInfo};
 
-            let agent_info: Option<AgentSshInfo> = agent_ssh.map(|(h, p, u, k, pp, fp)| AgentSshInfo {
+            let agent_info: Option<AgentSshInfo> = agent_ssh.map(|(h, p, u, k, pp, fp, hk)| AgentSshInfo {
                 ssh_host: h,
                 ssh_port: p,
                 ssh_username: u,
                 ssh_key_path: k,
                 ssh_passphrase: pp,
                 ssh_fingerprint: fp,
+                ssh_host_key: hk,
             });
 
             let result = execute_scan(&tool_name2, &target2, command_template.as_deref(), &scan_tx2, &scan_id2, agent_info, tool.gui_required.unwrap_or(false)).await;
@@ -320,13 +321,13 @@ async fn resolve_agent_ssh(
     db: &PgPool,
     agent_id: Option<&str>,
     org_id: &str,
-) -> Option<(String, i32, String, Option<String>, Option<String>, Option<String>)> {
+) -> Option<(String, i32, String, Option<String>, Option<String>, Option<String>, Option<String>)> {
     let aid = agent_id?;
     if aid.is_empty() {
         return None;
     }
-    let row: Option<(Option<String>, Option<String>, Option<i32>, Option<String>, Option<String>, Option<String>, Option<String>)> = sqlx::query_as(
-        "SELECT connection_type, ssh_host, ssh_port, ssh_username, ssh_key_path, ssh_passphrase_encrypted, ssh_fingerprint FROM agents WHERE id = $1 AND organization_id = $2",
+    let row: Option<(Option<String>, Option<String>, Option<i32>, Option<String>, Option<String>, Option<String>, Option<String>, Option<String>)> = sqlx::query_as(
+        "SELECT connection_type, ssh_host, ssh_port, ssh_username, ssh_key_path, ssh_passphrase_encrypted, ssh_fingerprint, ssh_host_key FROM agents WHERE id = $1 AND organization_id = $2",
     )
     .bind(aid)
     .bind(org_id)
@@ -334,7 +335,7 @@ async fn resolve_agent_ssh(
     .await
     .unwrap_or(None);
 
-    row.and_then(|(ct, host, port, user, key, pp_enc, fp)| {
+    row.and_then(|(ct, host, port, user, key, pp_enc, fp, host_key)| {
         // Only SSH-configured agents are dispatched remotely. Other connection types
         // (direct/local/reverse_tunnel) execute on the backend host.
         if ct.as_deref() != Some("ssh") {
@@ -345,7 +346,7 @@ async fn resolve_agent_ssh(
             crate::services::connection_engine::crypto::decrypt_password(enc, &secret).ok()
         });
         match (host, user) {
-            (Some(h), Some(u)) if !h.is_empty() && !u.is_empty() => Some((h, port.unwrap_or(22), u, key, passphrase, fp)),
+            (Some(h), Some(u)) if !h.is_empty() && !u.is_empty() => Some((h, port.unwrap_or(22), u, key, passphrase, fp, host_key)),
             _ => None,
         }
     })

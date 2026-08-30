@@ -25,6 +25,28 @@ impl FromRequestParts<Arc<AppState>> for AuthUser
 
     async fn from_request_parts(parts: &mut Parts, state: &Arc<AppState>) -> Result<Self, Self::Rejection> {
         let jwt_secret = &state.jwt_secret;
+
+        // API key first: keys are recognisable by their `csp_` prefix, so this
+        // never shadows a JWT. Until now the whole API-key feature
+        // authenticated nothing at all — keys could be created and shown to the
+        // customer but opened no endpoint.
+        if let Some(raw) = crate::services::api_key::extract_api_key(&parts.headers) {
+            return match crate::services::api_key::authenticate(&state.db, &raw).await {
+                Some(id) => Ok(AuthUser {
+                    user_id: id.user_id,
+                    org_id: Some(id.organization_id),
+                    // API keys act with ordinary user rights; privilege
+                    // escalation must go through a real login.
+                    role: "user".to_string(),
+                }),
+                None => Err((
+                    StatusCode::UNAUTHORIZED,
+                    Json(serde_json::json!({"error": "Invalid or revoked API key"})),
+                )
+                    .into_response()),
+            };
+        }
+
         let token = extract_token(parts);
 
         let token = token.ok_or_else(|| {
@@ -130,9 +152,41 @@ impl FromRequestParts<Arc<AppState>> for AnalystUser
     }
 }
 
+/// Any role permitted to change state.
+///
+/// AUDIT 2026-08-29 — `/api/v1/roles` tells customers that `viewer` is
+/// "Read-only access to dashboards and reports", but nothing enforced it: a
+/// viewer could start scans, cancel them, delete targets and create reports
+/// like anyone else. `AnalystUser`, `role_level` and `has_role_access` were all
+/// dead code — the hierarchy was documented and never applied.
+///
+/// This guard is the minimum honest enforcement of that contract: everything at
+/// `user` level or above may write; `viewer` may not.
+pub struct WriteUser(pub AuthUser);
+
+#[async_trait]
+impl FromRequestParts<Arc<AppState>> for WriteUser {
+    type Rejection = Response;
+
+    async fn from_request_parts(parts: &mut Parts, state: &Arc<AppState>) -> Result<Self, Self::Rejection> {
+        let user = AuthUser::from_request_parts(parts, state).await?;
+        if !has_role_access(&user.role, "user") {
+            return Err((
+                StatusCode::FORBIDDEN,
+                Json(serde_json::json!({
+                    "error": "Your role has read-only access. Ask an administrator for a higher role to perform this action.",
+                    "code": "READ_ONLY_ROLE",
+                    "role": user.role
+                })),
+            )
+                .into_response());
+        }
+        Ok(WriteUser(user))
+    }
+}
+
 /// Role hierarchy for permission checks.
 /// superadmin > admin > analyst > user > viewer
-#[allow(dead_code)] // Public API surface; covered by tests, awaiting wire-up in route guards.
 pub fn role_level(role: &str) -> u8 {
     match role {
         "superadmin" => 5,
@@ -145,7 +199,6 @@ pub fn role_level(role: &str) -> u8 {
 }
 
 /// Check if a role has at least the required permission level.
-#[allow(dead_code)] // Public API surface; covered by tests, awaiting wire-up in route guards.
 pub fn has_role_access(user_role: &str, required_role: &str) -> bool {
     role_level(user_role) >= role_level(required_role)
 }
@@ -211,6 +264,44 @@ mod tests {
     fn has_role_access_unknown_role_cannot_access_anything() {
         assert!(!has_role_access("unknown", "viewer"));
         assert!(!has_role_access("", "viewer"));
+    }
+
+    // ── WriteUser policy (#21: the hierarchy was never enforced) ─────
+
+    /// The rule WriteUser applies. `/api/v1/roles` documents viewer as
+    /// "Read-only access to dashboards and reports"; everything above it may
+    /// change state.
+    fn may_write(role: &str) -> bool {
+        has_role_access(role, "user")
+    }
+
+    #[test]
+    fn viewer_cannot_write() {
+        assert!(!may_write("viewer"), "viewer is documented as read-only");
+    }
+
+    #[test]
+    fn every_role_above_viewer_can_write() {
+        for r in ["user", "analyst", "admin", "superadmin"] {
+            assert!(may_write(r), "{r} should be able to write");
+        }
+    }
+
+    #[test]
+    fn unknown_or_empty_roles_cannot_write() {
+        // Fail closed: a role we do not recognise gets the least privilege.
+        for r in ["", "guest", "Viewer", "USER", "nonsense"] {
+            assert!(!may_write(r), "{r:?} must not be able to write");
+        }
+    }
+
+    #[test]
+    fn write_permission_follows_the_documented_levels() {
+        // Mirrors the levels published by /api/v1/roles.
+        assert_eq!(role_level("viewer"), 1);
+        assert_eq!(role_level("user"), 2);
+        assert!(role_level("viewer") < role_level("user"));
+        assert!(!may_write("viewer") && may_write("user"));
     }
 
     // ── VALID_ROLES ──────────────────────────────────────────────────

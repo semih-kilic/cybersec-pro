@@ -18,7 +18,6 @@ use uuid::Uuid;
 use crate::middleware::auth_middleware::AuthUser;
 use crate::models::{Scan, Tool};
 use crate::scan_engine::executor::{execute_scan, AgentSshInfo};
-use crate::scan_engine::tool_registry::build_command;
 use crate::services::audit::log_audit;
 use crate::AppState;
 
@@ -1000,7 +999,8 @@ pub struct StartScanRequest {
 
 pub async fn start_scan(
     State(state): State<Arc<AppState>>,
-    auth: AuthUser,
+    // Read-only roles must not be able to start scans — see WriteUser.
+    crate::middleware::auth_middleware::WriteUser(auth): crate::middleware::auth_middleware::WriteUser,
     headers: HeaderMap,
     Json(body): Json<StartScanRequest>,
 ) -> impl IntoResponse {
@@ -1489,9 +1489,9 @@ pub async fn start_scan(
 
     // Look up agent connection_type + SSH info. Reverse-tunnel agents run jobs
     // by long-polling the backend; SSH agents are dialled directly.
-    let agent_meta: Option<(Option<String>, Option<String>, Option<i32>, Option<String>, Option<String>, Option<String>, Option<String>)> = if let Some(ref aid) = body.agent_id {
+    let agent_meta: Option<(Option<String>, Option<String>, Option<i32>, Option<String>, Option<String>, Option<String>, Option<String>, Option<String>)> = if let Some(ref aid) = body.agent_id {
         sqlx::query_as(
-            "SELECT connection_type, ssh_host, ssh_port, ssh_username, ssh_key_path, ssh_passphrase_encrypted, ssh_fingerprint FROM agents WHERE id = $1 AND organization_id = $2"
+            "SELECT connection_type, ssh_host, ssh_port, ssh_username, ssh_key_path, ssh_passphrase_encrypted, ssh_fingerprint, ssh_host_key FROM agents WHERE id = $1 AND organization_id = $2"
         )
         .bind(aid)
         .bind(&org_id)
@@ -1513,7 +1513,7 @@ pub async fn start_scan(
     // "direct"/"local" agents (and anything misconfigured without SSH host/user)
     // fall through to local execution on the backend host, which has all tools installed.
     let agent_ssh: Option<AgentSshInfo> = if connection_type == "ssh" && !is_reverse_tunnel {
-        agent_meta.as_ref().and_then(|(_ct, host, port, user, key, pp_enc, fingerprint)| {
+        agent_meta.as_ref().and_then(|(_ct, host, port, user, key, pp_enc, fingerprint, host_key)| {
             let passphrase = pp_enc.as_deref().and_then(|enc| {
                 let secret = crate::handlers::agent_handlers::password_encryption_key();
                 crate::services::connection_engine::crypto::decrypt_password(enc, &secret).ok()
@@ -1526,6 +1526,7 @@ pub async fn start_scan(
                     ssh_key_path: key.clone(),
                     ssh_passphrase: passphrase,
                     ssh_fingerprint: fingerprint.clone(),
+                    ssh_host_key: host_key.clone(),
                 }),
                 _ => None,
             }
@@ -2076,7 +2077,7 @@ pub async fn demo_scan(
 
 pub async fn create_scan(
     state: State<Arc<AppState>>,
-    auth: AuthUser,
+    auth: crate::middleware::auth_middleware::WriteUser,
     headers: HeaderMap,
     body: Json<StartScanRequest>,
 ) -> impl IntoResponse {

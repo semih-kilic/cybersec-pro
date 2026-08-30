@@ -18,7 +18,7 @@ pub async fn notify_integrations(
     .await
     .unwrap_or_default();
 
-    for (id, int_type, webhook_url, config, name) in integrations {
+    for (id, int_type, webhook_url, config, _name) in integrations {
         let config_val: Value = config.as_deref().and_then(|c| serde_json::from_str(c).ok()).unwrap_or_default();
 
         let result = match int_type.as_str() {

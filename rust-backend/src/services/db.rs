@@ -571,6 +571,34 @@ r#"ALTER TABLE subscriptions ADD COLUMN IF NOT EXISTS updated_at TIMESTAMPTZ NOT
 "CREATE INDEX IF NOT EXISTS idx_subscriptions_org ON subscriptions(organization_id)",
 "CREATE INDEX IF NOT EXISTS idx_subscriptions_status ON subscriptions(status)",
 
+// ── API keys (audit 2026-08-29) ───────────────────────────────────────
+// `key_hash` holds a per-key salted argon2 digest, which cannot be looked up:
+// finding the owner of a presented key would mean fetching every row and
+// verifying each one. Nothing ever did, so the whole API-key feature
+// authenticated nothing. `key_lookup` is a deterministic SHA-256 of the raw
+// key — safe here because keys are 256-bit random values, so there is no
+// dictionary to attack — and it can be indexed.
+r#"ALTER TABLE api_keys ADD COLUMN IF NOT EXISTS key_lookup TEXT"#,
+"CREATE UNIQUE INDEX IF NOT EXISTS idx_api_keys_lookup ON api_keys(key_lookup) WHERE key_lookup IS NOT NULL",
+r#"ALTER TABLE api_keys ADD COLUMN IF NOT EXISTS revoked_at TIMESTAMPTZ"#,
+
+// Pinned SSH host key ("<keytype> <base64>"), captured on first contact.
+// `ssh_fingerprint` was read by the executor but never written by anything, so
+// SSH agent execution always failed; and a fingerprint cannot go in a
+// known_hosts file anyway. See services::ssh_hostkey.
+r#"ALTER TABLE agents ADD COLUMN IF NOT EXISTS ssh_host_key TEXT"#,
+
+// ── SSO domain claims (audit 2026-08-29) ──────────────────────────────
+// `sso_configs.domain_hint` had no uniqueness constraint, and the SAML/OIDC
+// callbacks look a config up by domain alone. Any organisation could therefore
+// claim any domain — including a competitor's — and, with JIT provisioning on,
+// have logins for that domain provisioned into its own tenant. A domain may now
+// be claimed by exactly one organisation.
+"CREATE UNIQUE INDEX IF NOT EXISTS idx_sso_domain_hint ON sso_configs(lower(domain_hint)) WHERE domain_hint IS NOT NULL AND domain_hint <> ''",
+// Records that an organisation proved control of the domain (DNS TXT check).
+r#"ALTER TABLE sso_configs ADD COLUMN IF NOT EXISTS domain_verified_at TIMESTAMPTZ"#,
+r#"ALTER TABLE sso_configs ADD COLUMN IF NOT EXISTS domain_verification_token TEXT"#,
+
 // The original subscriptions table used `TIMESTAMP` while every column added
 // later used `TIMESTAMPTZ`. Mixed types in one table are a decoding landmine:
 // sqlx only type-checks a column when its value is non-NULL, so a query works

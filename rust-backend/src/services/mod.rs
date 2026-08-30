@@ -4,6 +4,8 @@ pub mod plan;
 pub mod billing;
 pub mod audit;
 pub mod net;
+pub mod api_key;
+pub mod ssh_hostkey;
 pub mod target_authorization;
 pub mod service_manager;
 pub mod email;

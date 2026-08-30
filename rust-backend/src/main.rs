@@ -173,6 +173,17 @@ async fn main() -> anyhow::Result<()> {
         });
     }
 
+    // Spawn data-retention sweep. The purge functions existed but nothing ever
+    // called them, while the retention health endpoint reported a "pending
+    // purge" count that never went down. Off unless DATA_RETENTION_ENABLED=true.
+    {
+        let db = state.db.clone();
+        tokio::spawn(async move {
+            tokio::time::sleep(std::time::Duration::from_secs(45)).await;
+            services::data_retention::run_retention_loop(db).await;
+        });
+    }
+
     // Spawn CyberSec AI worker (autonomous pentest job processor)
     {
         let db = Arc::new(state.db.clone());

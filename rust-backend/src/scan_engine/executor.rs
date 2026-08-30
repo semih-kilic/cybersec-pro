@@ -53,9 +53,12 @@ pub struct AgentSshInfo {
     pub ssh_key_path: Option<String>,
     /// Passphrase for the private key (decrypted at dispatch time).
     pub ssh_passphrase: Option<String>,
-    /// Known host fingerprint stored at agent registration time.
-    /// If Some, StrictHostKeyChecking is enabled and fingerprint is verified.
+    /// Legacy fingerprint column. Never populated by any code path; kept so
+    /// existing rows still deserialise.
     pub ssh_fingerprint: Option<String>,
+    /// Pinned host key as `"<keytype> <base64>"`, captured at registration.
+    /// When absent the connection is refused rather than trusted blindly.
+    pub ssh_host_key: Option<String>,
 }
 
 /// Execute a security scan tool as a subprocess with real-time output streaming.
@@ -95,14 +98,18 @@ pub async fn execute_scan(
             "-p".to_string(), ssh.ssh_port.to_string(),
         ];
 
-        // Use stored fingerprint for host verification (prevents MITM)
-        if let Some(fp) = &ssh.ssh_fingerprint {
+        // Pin the host's public key (prevents MITM).
+        //
+        // FIX: this used to write `[host]:port <fingerprint>` into known_hosts.
+        // A known_hosts line is `<host> <keytype> <base64-key>` — a fingerprint
+        // is a digest OF the key and can never appear there, so OpenSSH would
+        // have rejected the file. It never got that far in practice: nothing in
+        // the codebase ever wrote `ssh_fingerprint`, so it was NULL on every
+        // agent and SSH execution always failed on the branch below.
+        if let Some(stored) = ssh.ssh_host_key.as_deref().and_then(crate::services::ssh_hostkey::parse_stored) {
             ssh_args.push("-o".to_string());
             ssh_args.push("StrictHostKeyChecking=yes".to_string());
-            ssh_args.push("-o".to_string());
-            ssh_args.push(format!("FingerprintHash=sha256"));
-            // Write known_hosts entry to a temp file
-            let known_hosts_content = format!("[{}]:{} {}\n", ssh.ssh_host, ssh.ssh_port, fp);
+            let known_hosts_content = stored.known_hosts_line(&ssh.ssh_host, ssh.ssh_port);
             let tmp_path = format!("/tmp/cybersec_known_hosts_{}", uuid::Uuid::new_v4());
             // Create 0600 up front (never world-readable, not even briefly).
             if write_private_file(&tmp_path, &known_hosts_content).await.is_ok() {
@@ -118,9 +125,10 @@ pub async fn execute_scan(
                 });
             }
         } else {
-            // No fingerprint stored — refuse connection for security
+            // Still fail closed — but the operator can now actually satisfy
+            // this, because agent registration pins a real host key.
             return Err(anyhow!(
-                "Agent {} has no stored SSH fingerprint. Re-register the agent to store its fingerprint.",
+                "Agent {} has no pinned SSH host key. Re-register the agent so its host key can be captured.",
                 ssh.ssh_host
             ));
         }
@@ -379,7 +387,6 @@ async fn write_private_file(path: &str, content: &str) -> std::io::Result<()> {
 /// Using `OpenOptions::mode` means the file never exists with looser
 /// permissions, unlike `write()` followed by `set_permissions()`.
 async fn write_private_file_mode(path: &str, content: &str, mode: u32) -> std::io::Result<()> {
-    use std::os::unix::fs::OpenOptionsExt;
     use tokio::io::AsyncWriteExt;
     let mut f = tokio::fs::OpenOptions::new()
         .write(true)

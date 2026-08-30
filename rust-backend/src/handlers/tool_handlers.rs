@@ -12,7 +12,6 @@ use std::sync::Arc;
 use crate::middleware::auth_middleware::AuthUser;
 use crate::models::Tool;
 use crate::AppState;
-use crate::services::cache::CacheService;
 use crate::services::cache::keys;
 
 // â”€â”€ Pure helpers (testable without DB) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€

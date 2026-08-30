@@ -242,14 +242,19 @@ pub async fn create_api_key(
     let id = uuid::Uuid::new_v4().to_string();
     let perms_str = serde_json::to_string(&permissions).unwrap_or_else(|_| "[\"read\"]".to_string());
 
+    // key_lookup is the deterministic digest the auth path searches on; key_hash
+    // stays as the argon2 verification digest. Without the lookup column a
+    // presented key cannot be traced back to its row at all, which is why this
+    // feature authenticated nothing.
     let result = sqlx::query(
-        "INSERT INTO api_keys (id, organization_id, user_id, name, key_hash, key_preview, permissions) VALUES ($1, $2, $3, $4, $5, $6, $7::jsonb)"
+        "INSERT INTO api_keys (id, organization_id, user_id, name, key_hash, key_lookup, key_preview, permissions) VALUES ($1, $2, $3, $4, $5, $6, $7, $8::jsonb)"
     )
     .bind(&id)
     .bind(&org_id)
     .bind(&user.user_id)
     .bind(&name)
     .bind(&key_hash)
+    .bind(crate::services::api_key::lookup_hash(&raw_key))
     .bind(&key_preview)
     .bind(&perms_str)
     .execute(&state.db)
@@ -330,9 +335,12 @@ pub async fn rotate_api_key(
     };
 
     let result = sqlx::query(
-        "UPDATE api_keys SET key_hash = $1, key_preview = $2, rotated_at = NOW(), usage_count = 0 WHERE id = $3"
+        "UPDATE api_keys SET key_hash = $1, key_lookup = $2, key_preview = $3, rotated_at = NOW(), usage_count = 0 WHERE id = $4"
     )
-    .bind(&key_hash).bind(&key_preview).bind(&key_id)
+    .bind(&key_hash)
+    .bind(crate::services::api_key::lookup_hash(&raw_key))
+    .bind(&key_preview)
+    .bind(&key_id)
     .execute(&state.db).await;
 
     match result {

@@ -4,7 +4,6 @@ use axum::{
     response::{IntoResponse, Redirect},
     Json,
 };
-use base64::Engine as _;
 use serde::Deserialize;
 use serde_json::json;
 use std::sync::Arc;
@@ -149,6 +148,20 @@ pub async fn create_sso_config(
 
     if let Err(e) = insert {
         let _ = tx.rollback().await;
+        // A unique-violation here means another organisation already claims the
+        // domain. Say so plainly instead of reporting a server error.
+        let is_conflict = e
+            .as_database_error()
+            .and_then(|db| db.code())
+            .map(|c| c == "23505")
+            .unwrap_or(false);
+        if is_conflict {
+            tracing::warn!("sso config: domain '{}' already claimed", body.domain_hint.as_deref().unwrap_or(""));
+            return (StatusCode::CONFLICT, Json(json!({
+                "error": "This domain is already configured for SSO by another organization. Contact support if you believe this is your domain.",
+                "code": "SSO_DOMAIN_TAKEN"
+            }))).into_response();
+        }
         tracing::error!("sso config: insert failed: {e}");
         return (StatusCode::INTERNAL_SERVER_ERROR, Json(json!({"error": "Could not save SSO configuration"}))).into_response();
     }
@@ -384,55 +397,28 @@ pub struct SSOInitQuery {
 }
 
 pub async fn sso_saml_init(
-    State(state): State<Arc<AppState>>,
-    Query(params): Query<SSOInitQuery>,
+    State(_state): State<Arc<AppState>>,
+    Query(_params): Query<SSOInitQuery>,
 ) -> impl IntoResponse {
-
-    // SECURITY AUDIT 2026-08: SAML assertion signature verification is not
-    // implemented (certificate parsed then discarded). Endpoint disabled until
-    // a proper SAML SP library validates signatures/audience/expiry.
-    return (StatusCode::SERVICE_UNAVAILABLE, Json(json!({"error": "SAML login temporarily disabled for security review"}))).into_response();
-
-    let domain = params.domain.as_deref()
-        .or_else(|| params.email.as_deref().and_then(|e| e.split('@').nth(1)))
-        .unwrap_or("");
-
-    let config: Option<(Option<String>, Option<String>, Option<String>)> = sqlx::query_as(
-        "SELECT saml_entity_id, saml_sso_url, saml_certificate FROM sso_configs \
-         WHERE (domain_hint = $1) AND is_enabled = TRUE AND provider_type = 'saml'"
+    // SAML is disabled pending a real SP implementation.
+    //
+    // The previous version parsed the IdP certificate and then threw it away:
+    // assertion signatures, audience and expiry were never validated, so any
+    // forged SAMLResponse naming a configured domain would have been accepted.
+    // It was short-circuited with an early return, which left ~150 lines of
+    // unreachable code behind it — including an INSERT against columns that do
+    // not exist (`full_name`, `auth_provider`). That is a trap: deleting the
+    // early return to "re-enable" SAML would have produced a broken, unsafe
+    // path. The dead body is removed; re-enabling means writing it properly
+    // against a vetted SAML SP library.
+    (
+        StatusCode::SERVICE_UNAVAILABLE,
+        Json(json!({
+            "error": "SAML login is not available. Use OIDC or LDAP.",
+            "code": "SAML_NOT_IMPLEMENTED"
+        })),
     )
-    .bind(domain)
-    .fetch_optional(&state.db)
-    .await
-    .unwrap_or(None);
-
-    let (_entity_id, sso_url, _cert) = match config {
-        Some(c) => c,
-        None => return (StatusCode::NOT_FOUND, Json(json!({"error": "No SAML SSO configuration found for this domain"}))).into_response(),
-    };
-
-    let sso_url = match sso_url {
-        Some(u) if !u.is_empty() => u,
-        _ => return (StatusCode::BAD_REQUEST, Json(json!({"error": "SAML SSO URL not configured"}))).into_response(),
-    };
-
-    // Build SAML AuthnRequest (SP-initiated)
-    let request_id = format!("_cspr_{}", Uuid::new_v4());
-    let issue_instant = chrono::Utc::now().format("%Y-%m-%dT%H:%M:%SZ").to_string();
-    let acs_url = "https://api.cyber-sec-pro.com/v1/auth/sso/saml/callback";
-
-    let authn_request = format!(
-        r#"<samlp:AuthnRequest xmlns:samlp="urn:oasis:names:tc:SAML:2.0:protocol" xmlns:saml="urn:oasis:names:tc:SAML:2.0:assertion" ID="{}" Version="2.0" IssueInstant="{}" Destination="{}" AssertionConsumerServiceURL="{}" ProtocolBinding="urn:oasis:names:tc:SAML:2.0:bindings:HTTP-POST"><saml:Issuer>https://cyber-sec-pro.com</saml:Issuer></samlp:AuthnRequest>"#,
-        request_id, issue_instant, sso_url, acs_url
-    );
-
-    let encoded = base64::engine::general_purpose::STANDARD.encode(authn_request.as_bytes());
-    let redirect_url = format!("{}?SAMLRequest={}", sso_url, urlencoding::encode(&encoded));
-
-    Json(json!({
-        "redirect_url": redirect_url,
-        "request_id": request_id
-    })).into_response()
+        .into_response()
 }
 
 /// SAML Callback — receives SAML Response from IdP
@@ -445,106 +431,28 @@ pub struct SAMLCallbackRequest {
 }
 
 pub async fn sso_saml_callback(
-    State(state): State<Arc<AppState>>,
-    axum::Form(body): axum::Form<SAMLCallbackRequest>,
+    State(_state): State<Arc<AppState>>,
+    axum::Form(_body): axum::Form<SAMLCallbackRequest>,
 ) -> impl IntoResponse {
-
-    // SECURITY AUDIT 2026-08: SAML assertion signature verification is not
-    // implemented (certificate parsed then discarded). Endpoint disabled until
-    // a proper SAML SP library validates signatures/audience/expiry.
-    return (StatusCode::SERVICE_UNAVAILABLE, Json(json!({"error": "SAML login temporarily disabled for security review"}))).into_response();
-
-    let saml_response = match &body.saml_response {
-        Some(r) if !r.is_empty() => r,
-        _ => return (StatusCode::BAD_REQUEST, Json(json!({"error": "Missing SAMLResponse"}))).into_response(),
-    };
-
-    // Decode SAML Response
-    let decoded = match base64::engine::general_purpose::STANDARD.decode(saml_response) {
-        Ok(d) => d,
-        Err(_) => return (StatusCode::BAD_REQUEST, Json(json!({"error": "Invalid SAMLResponse encoding"}))).into_response(),
-    };
-    let xml = String::from_utf8_lossy(&decoded);
-
-    // Extract NameID (email) from SAML Response XML
-    // This is a simplified parser — production would use a full SAML library
-    let email = extract_saml_name_id(&xml);
-    let email = match email {
-        Some(e) => e,
-        None => return (StatusCode::BAD_REQUEST, Json(json!({"error": "Could not extract user identity from SAML response"}))).into_response(),
-    };
-
-    let email_domain = email.split('@').nth(1).unwrap_or("");
-
-    // Find SSO config for this domain
-    let config: Option<(String, Option<String>, Option<bool>, Option<String>)> = sqlx::query_as(
-        "SELECT organization_id, saml_certificate, jit_provisioning, default_role \
-         FROM sso_configs WHERE domain_hint = $1 AND is_enabled = TRUE AND provider_type = 'saml'"
+    // SAML is disabled pending a real SP implementation.
+    //
+    // The previous version parsed the IdP certificate and then threw it away:
+    // assertion signatures, audience and expiry were never validated, so any
+    // forged SAMLResponse naming a configured domain would have been accepted.
+    // It was short-circuited with an early return, which left ~150 lines of
+    // unreachable code behind it — including an INSERT against columns that do
+    // not exist (`full_name`, `auth_provider`). That is a trap: deleting the
+    // early return to "re-enable" SAML would have produced a broken, unsafe
+    // path. The dead body is removed; re-enabling means writing it properly
+    // against a vetted SAML SP library.
+    (
+        StatusCode::SERVICE_UNAVAILABLE,
+        Json(json!({
+            "error": "SAML login is not available. Use OIDC or LDAP.",
+            "code": "SAML_NOT_IMPLEMENTED"
+        })),
     )
-    .bind(email_domain)
-    .fetch_optional(&state.db)
-    .await
-    .unwrap_or(None);
-
-    let (org_id, _cert, jit, default_role) = match config {
-        Some(c) => c,
-        None => return (StatusCode::FORBIDDEN, Json(json!({"error": "No SSO configuration for this domain"}))).into_response(),
-    };
-
-    let role = default_role.unwrap_or_else(|| "user".to_string());
-    let jit = jit.unwrap_or(true);
-
-    // Find or create user
-    let user: Option<(String, Option<String>)> = sqlx::query_as(
-        "SELECT id, role FROM users WHERE email = $1 AND organization_id = $2"
-    )
-    .bind(&email)
-    .bind(&org_id)
-    .fetch_optional(&state.db)
-    .await
-    .unwrap_or(None);
-
-    let (user_id, user_role) = match user {
-        Some((id, r)) => (id, r.unwrap_or_else(|| role.clone())),
-        None => {
-            if !jit {
-                return (StatusCode::FORBIDDEN, Json(json!({"error": "User not provisioned"}))).into_response();
-            }
-            let new_id = Uuid::new_v4().to_string();
-            let name = email.split('@').next().unwrap_or("User");
-            let _ = sqlx::query(
-                "INSERT INTO users (id, email, full_name, organization_id, role, is_active, auth_provider, created_at) \
-                 VALUES ($1, $2, $3, $4, $5, TRUE, 'saml', NOW())"
-            )
-            .bind(&new_id)
-            .bind(&email)
-            .bind(name)
-            .bind(&org_id)
-            .bind(&role)
-            .execute(&state.db)
-            .await;
-            (new_id, role.clone())
-        }
-    };
-
-    let _ = sqlx::query("UPDATE users SET last_login = NOW() WHERE id = $1")
-        .bind(&user_id)
-        .execute(&state.db)
-        .await;
-
-    let access_token = create_access_token(
-        &state.jwt_secret, &user_id, Some(&org_id), &user_role
-    ).unwrap_or_default();
-    let refresh_token = create_refresh_token(
-        &state.jwt_secret, &user_id
-    ).unwrap_or_default();
-
-    // Redirect to dashboard with token in URL fragment (secure — not sent to server)
-    let redirect_url = format!(
-        "https://app.cyber-sec-pro.com/dashboard/sso-callback#access_token={}&refresh_token={}",
-        access_token, refresh_token
-    );
-    Redirect::temporary(&redirect_url).into_response()
+        .into_response()
 }
 
 // ── Pure helpers (testable without DB) ─────────────────────────────────
@@ -696,6 +604,30 @@ pub async fn sso_oidc_callback(
         Some(c) => c,
         None => return (StatusCode::NOT_FOUND, Json(json!({"error": "No OIDC SSO configuration found"}))).into_response(),
     };
+
+    // Refuse to provision into an organisation that has not proved control of
+    // the domain. `domain_hint` had no uniqueness constraint and no ownership
+    // check, so any tenant could claim any domain and — with JIT provisioning
+    // on — collect logins for it. The unique index closes the race; this closes
+    // the claim itself.
+    let domain_verified: bool = sqlx::query_scalar(
+        "SELECT domain_verified_at IS NOT NULL FROM sso_configs \
+          WHERE organization_id = $1 AND provider_type = 'oidc' LIMIT 1",
+    )
+    .bind(&org_id)
+    .fetch_optional(&state.db)
+    .await
+    .ok()
+    .flatten()
+    .unwrap_or(false);
+
+    if !domain_verified {
+        tracing::warn!("OIDC login refused: domain '{}' is not verified for org {}", state_domain, org_id);
+        return (StatusCode::FORBIDDEN, Json(json!({
+            "error": "This SSO domain has not been verified. An administrator must verify domain ownership before SSO logins are accepted.",
+            "code": "SSO_DOMAIN_NOT_VERIFIED"
+        }))).into_response();
+    }
 
     let client_id = client_id.unwrap_or_default();
     let client_secret = client_secret.unwrap_or_default();

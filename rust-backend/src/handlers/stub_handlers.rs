@@ -12,7 +12,6 @@ use sqlx::Row;
 
 use crate::middleware::auth_middleware::{AuthUser, AdminUser};
 use crate::services::auth::{create_access_token, create_refresh_token};
-use crate::services::audit::log_audit;
 use crate::scan_engine::parsers::deduplicate_findings;
 use crate::AppState;
 
@@ -2098,6 +2097,29 @@ pub async fn test_agent(
     let result = crate::services::connection_engine::test_ssh_connection(&params).await;
 
     if result.success {
+        // Pin the host's public key on first successful contact.
+        //
+        // The executor refuses to dispatch over SSH without a pinned key, and
+        // until now nothing ever stored one — `ssh_fingerprint` was NULL on
+        // every agent, so remote execution failed 100% of the time with
+        // "re-register the agent", which did not help because re-registering
+        // stored nothing either. Capturing it here (trust-on-first-use) is what
+        // makes SSH agents work at all, and pins them against later MITM.
+        match crate::services::ssh_hostkey::scan_host_key(&host, port as i32).await {
+            Ok(hk) => {
+                match sqlx::query("UPDATE agents SET ssh_host_key = $1 WHERE id = $2")
+                    .bind(hk.to_stored())
+                    .bind(&agent_id)
+                    .execute(&state.db)
+                    .await
+                {
+                    Ok(_) => tracing::info!("pinned {} host key for agent {}", hk.key_type, agent_id),
+                    Err(e) => tracing::warn!("could not store host key for agent {}: {}", agent_id, e),
+                }
+            }
+            Err(e) => tracing::warn!("could not scan host key for agent {}: {}", agent_id, e),
+        }
+
         // Update agent with discovered info
         let _ = sqlx::query(
             "UPDATE agents SET status = 'online', last_heartbeat = CURRENT_TIMESTAMP, \
@@ -3632,7 +3654,7 @@ pub async fn admin_delete_user(
     State(state): State<Arc<AppState>>,
     Path(user_id): Path<String>,
 ) -> impl IntoResponse {
-    use crate::middleware::auth_middleware::SuperAdminUser as _SAType; // keep tier imports warm
+     // keep tier imports warm
 
     // Don't allow deleting yourself
     if user_id == admin.0.user_id {
@@ -5031,7 +5053,7 @@ pub async fn gdpr_delete_account(
     State(state): State<Arc<AppState>>,
     axum::Json(body): axum::Json<DeleteAccountBody>,
 ) -> impl IntoResponse {
-    use argon2::PasswordVerifier;
+    
 
     // ── 0. Type-to-confirm guard ────────────────────────────────────────
     if body.confirm_text.as_deref() != Some("DELETE") {

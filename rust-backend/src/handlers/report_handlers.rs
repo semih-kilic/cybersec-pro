@@ -735,15 +735,31 @@ fn generate_html_report(
         "CyberSec Pro".to_string()
     };
 
+    // Length of the semicircular gauge path: pi * r, with r = 80.
+    const SEMICIRCLE_LEN: f64 = std::f64::consts::PI * 80.0;
+
     // SVG Charts
     let risk_gauge_svg = format!(r##"<svg viewBox="0 0 200 120" xmlns="http://www.w3.org/2000/svg" class="risk-gauge">
         <path d="M 20 100 A 80 80 0 0 1 180 100" fill="none" stroke="#e2e8f0" stroke-width="12" stroke-linecap="round"/>
-        <path d="M 20 100 A 80 80 0 0 1 180 100" fill="none" stroke="{risk_color}" stroke-width="12" stroke-linecap="round" stroke-dasharray="{} {}"/>
+        <path d="M 20 100 A 80 80 0 0 1 180 100" fill="none" stroke="{risk_color}" stroke-width="12" stroke-linecap="round" stroke-dasharray="{filled} {arc_len}"/>
         <text x="100" y="95" text-anchor="middle" font-size="32" font-weight="800" fill="{risk_color}">{risk_score}</text>
         <text x="100" y="115" text-anchor="middle" font-size="12" fill="#64748b">/ 100</text>
     </svg>"##,
-        risk_score = (risk_score as f64 * 2.51) as i32,
-        risk_level = risk_level,
+        // BUG FIX (two of them, both visible to the customer):
+        //
+        // 1. `stroke-dasharray="{} {}"` used positional slots, which Rust
+        //    filled from the NAMED arguments in order — so the second value was
+        //    `risk_level`, a word like "High", inside a numeric SVG attribute.
+        //    The gauge arc was drawn wrong on every report.
+        //
+        // 2. `risk_score` was rebound to `risk_score * 2.51` for the arc maths,
+        //    and the `<text>` element then printed that instead of the score:
+        //    a risk of 100 was rendered as "251" under a "/ 100" label.
+        //
+        // The arc length and the printed score are now separate values.
+        filled = ((risk_score as f64 / 100.0) * SEMICIRCLE_LEN).round() as i32,
+        arc_len = SEMICIRCLE_LEN.round() as i32,
+        risk_score = risk_score,
         risk_color = risk_color
     );
 
