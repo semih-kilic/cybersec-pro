@@ -252,6 +252,188 @@ fn definitions() -> Vec<ToolForm> {
                     {"label":"Very fast (100000)","value":"--rate 100000"}]}
             ]),
         },
+        // ── Batch 2: most-used form-less tools ───────────────────────────
+        ToolForm {
+            name: "dig",
+            template: "dig {record_type} {target} {short}",
+            target_types: &["domain","ip"],
+            danger: "low",
+            purpose: "Bir alan adının DNS kayıtlarını sorgular — hangi IP'ye çözümlendiğini, mail sunucusunu, ad sunucularını gösterir.",
+            when_to_use: "Bir hedefin altyapısını anlamanın ilk adımı: nereye barındırılıyor, mail nereden gidiyor?",
+            form: json!([
+                {"name":"record_type","label":"Kayıt türü","type":"select","default":"A",
+                 "options":[
+                    {"label":"A (IPv4 adresi)","value":"A"},
+                    {"label":"AAAA (IPv6)","value":"AAAA"},
+                    {"label":"MX (mail sunucusu)","value":"MX"},
+                    {"label":"NS (ad sunucusu)","value":"NS"},
+                    {"label":"TXT (SPF/DKIM vb.)","value":"TXT"},
+                    {"label":"ANY (hepsi)","value":"ANY"}]},
+                {"name":"short","label":"Kısa çıktı","type":"boolean","default":true,"true_value":"+short","false_value":""}
+            ]),
+        },
+        ToolForm {
+            name: "dnsrecon",
+            template: "dnsrecon -d {target} {enum_type}",
+            target_types: &["domain"],
+            danger: "low",
+            purpose: "Bir alan adı hakkında kapsamlı DNS bilgisi toplar — alt alanlar, kayıt türleri, bölge transferi denemesi.",
+            when_to_use: "Bir hedefin DNS ayak izini çıkarmak: kaç alt alan var, yanlış yapılandırma var mı?",
+            form: json!([
+                {"name":"enum_type","label":"Tarama türü","type":"select","default":"-t std",
+                 "options":[
+                    {"label":"Standart (varsayılan)","value":"-t std"},
+                    {"label":"Bölge transferi denemesi","value":"-t axfr"},
+                    {"label":"Kaba kuvvet alt alan","value":"-t brt"},
+                    {"label":"Ters DNS","value":"-t rvl"}]}
+            ]),
+        },
+        ToolForm {
+            name: "dnsenum",
+            template: "dnsenum {target} {options}",
+            target_types: &["domain"],
+            danger: "low",
+            purpose: "Bir alan adının DNS bilgilerini ve alt alanlarını numaralandırır, Google ile alt alan arar.",
+            when_to_use: "dnsrecon'a alternatif: hedef alan adının tüm DNS yüzeyini keşfetmek için.",
+            form: json!([
+                {"name":"options","label":"Kapsam","type":"select","default":"--noreverse",
+                 "options":[
+                    {"label":"Ters aramasız (hızlı)","value":"--noreverse"},
+                    {"label":"Tam (ters dahil)","value":""},
+                    {"label":"Sadece ad sunucuları","value":"--nocolor -o /dev/null"}]}
+            ]),
+        },
+        ToolForm {
+            name: "dnsmap",
+            template: "dnsmap {target}",
+            target_types: &["domain"],
+            danger: "low",
+            purpose: "Bir alan adının alt alanlarını yerleşik kelime listesiyle kaba kuvvetle bulur.",
+            when_to_use: "İnternet bağlantısı olmadan, hızlı bir alt alan taraması gerektiğinde.",
+            form: json!([]),
+        },
+        ToolForm {
+            name: "fierce",
+            template: "fierce --domain {target} {wide}",
+            target_types: &["domain"],
+            danger: "low",
+            purpose: "Bir alan adının IP alanını ve alt alanlarını keşfeder, komşu IP'leri tarar.",
+            when_to_use: "Bir şirketin sahip olduğu IP bloklarını ve ilgili alt alanları bulmak için.",
+            form: json!([
+                {"name":"wide","label":"Geniş tarama","type":"boolean","default":false,"true_value":"--wide","false_value":""}
+            ]),
+        },
+        ToolForm {
+            name: "fping",
+            template: "fping {mode} {target}",
+            target_types: &["ip","network"],
+            danger: "low",
+            purpose: "Birden çok hedefi aynı anda pingler — bir ağda hangi hostların ayakta olduğunu hızla bulur.",
+            when_to_use: "Bir alt ağı taramadan önce: hangi IP'ler canlı, hangileri boş?",
+            form: json!([
+                {"name":"mode","label":"Mod","type":"select","default":"-a",
+                 "options":[
+                    {"label":"Sadece canlı hostlar","value":"-a"},
+                    {"label":"Alt ağ tara (-g gerekir)","value":"-g -a"},
+                    {"label":"İstatistikle","value":"-s -a"}]}
+            ]),
+        },
+        ToolForm {
+            name: "enum4linux",
+            template: "enum4linux {scope} {target}",
+            target_types: &["ip"],
+            danger: "medium",
+            purpose: "Windows/Samba sistemlerinden kullanıcı, paylaşım, grup ve politika bilgisi çeker (SMB numaralandırma).",
+            when_to_use: "Bir Windows makinesi veya Samba sunucusu bulduğunuzda: kullanıcı adları, paylaşımlar neler?",
+            form: json!([
+                {"name":"scope","label":"Ne toplansın","type":"select","default":"-a",
+                 "options":[
+                    {"label":"Her şey (varsayılan)","value":"-a"},
+                    {"label":"Kullanıcılar","value":"-U"},
+                    {"label":"Paylaşımlar","value":"-S"},
+                    {"label":"Grup üyelikleri","value":"-G"}]}
+            ]),
+        },
+        ToolForm {
+            name: "evil-winrm",
+            template: "evil-winrm -i {target} -u {username} -p {password}",
+            target_types: &["ip"],
+            danger: "high",
+            purpose: "Windows sistemlere WinRM üzerinden uzaktan komut kabuğu açar — geçerli kimlik bilgisiyle tam erişim.",
+            when_to_use: "Bir Windows makinesinin kullanıcı adı/parolasını ele geçirdikten sonra bağlanmak için.",
+            form: json!([
+                {"name":"username","label":"Kullanıcı adı","type":"text","required":true,"placeholder":"administrator"},
+                {"name":"password","label":"Parola","type":"password","required":true,"placeholder":"parola veya hash"}
+            ]),
+        },
+        ToolForm {
+            name: "exiftool",
+            template: "exiftool {target}",
+            target_types: &["file"],
+            danger: "low",
+            purpose: "Bir dosyanın gizli üstverisini (metadata) okur — fotoğrafın çekildiği konum, cihaz, yazar, oluşturma tarihi.",
+            when_to_use: "Bir belgede veya fotoğrafta sızıntı bilgi aramak: GPS konumu, iç kullanıcı adları, yazılım sürümü.",
+            form: json!([]),
+        },
+        ToolForm {
+            name: "hashid",
+            template: "hashid {mode} {target}",
+            target_types: &["target"],
+            danger: "low",
+            purpose: "Bir hash değerinin hangi algoritmayla üretildiğini tahmin eder (MD5, SHA, bcrypt vb.).",
+            when_to_use: "Kırmadan önce: elinizdeki hash ne türde, hangi araçla kırılır?",
+            form: json!([
+                {"name":"mode","label":"Çıktı","type":"select","default":"",
+                 "options":[
+                    {"label":"Türleri listele","value":""},
+                    {"label":"Hashcat moduyla","value":"-m"},
+                    {"label":"John formatıyla","value":"-j"}]}
+            ]),
+        },
+        ToolForm {
+            name: "tcpdump",
+            template: "tcpdump -i {interface} {count} {filter}",
+            target_types: &["target"],
+            danger: "medium",
+            purpose: "Ağ trafiğini canlı yakalar ve gösterir — bir arayüzden geçen paketleri dinler.",
+            when_to_use: "Bir sistemde ne konuşuluyor görmek: hangi bağlantılar var, düz metin parola geçiyor mu?",
+            form: json!([
+                {"name":"interface","label":"Arayüz","type":"select","default":"any",
+                 "options":[
+                    {"label":"Tüm arayüzler","value":"any"},
+                    {"label":"eth0","value":"eth0"},
+                    {"label":"wlan0","value":"wlan0"}]},
+                {"name":"count","label":"Paket sayısı","type":"select","default":"-c 100",
+                 "options":[
+                    {"label":"100 paket","value":"-c 100"},
+                    {"label":"500 paket","value":"-c 500"},
+                    {"label":"1000 paket","value":"-c 1000"}]},
+                {"name":"filter","label":"Filtre","type":"select","default":"",
+                 "options":[
+                    {"label":"Tümü","value":""},
+                    {"label":"Sadece HTTP","value":"port 80"},
+                    {"label":"Sadece DNS","value":"port 53"},
+                    {"label":"Sadece HTTPS","value":"port 443"}]}
+            ]),
+        },
+        ToolForm {
+            name: "bloodhound-python",
+            template: "bloodhound-python -u {username} -p {password} -d {target} -c {collection} -ns {nameserver}",
+            target_types: &["domain"],
+            danger: "high",
+            purpose: "Active Directory'yi haritalar — kullanıcılar, gruplar, makineler ve aralarındaki saldırı yollarını toplar.",
+            when_to_use: "Bir AD ortamında geçerli kimlik bilgisi aldıktan sonra: yönetici olmaya giden yol nerede?",
+            form: json!([
+                {"name":"username","label":"Kullanıcı adı","type":"text","required":true,"placeholder":"user"},
+                {"name":"password","label":"Parola","type":"password","required":true,"placeholder":"parola"},
+                {"name":"nameserver","label":"DC adresi","type":"text","required":true,"placeholder":"10.0.0.1"},
+                {"name":"collection","label":"Toplama kapsamı","type":"select","default":"Default",
+                 "options":[
+                    {"label":"Varsayılan","value":"Default"},
+                    {"label":"Hepsi","value":"All"},
+                    {"label":"Oturum verileri","value":"Session"}]}
+            ]),
+        },
         ToolForm {
             name: "whatweb",
             template: "whatweb {aggression} {target}",
@@ -267,6 +449,228 @@ fn definitions() -> Vec<ToolForm> {
                     {"label":"Aggressive","value":"-a 4"}]}
             ]),
         },
+        ToolForm {
+            name: "httpx",
+            template: "httpx -u {target} {status_code} {title} {tech_detect} {web_server} {follow_redirects} -json",
+            target_types: &["url","domain","ip"],
+            danger: "low",
+            purpose: "Bir listedeki adreslerin canlı olup olmadığını hızlıca yoklar ve HTTP ayrıntılarını (durum kodu, başlık, teknoloji) toplar.",
+            when_to_use: "Elinizde çok sayıda alt alan adı/adres varken hangilerinin gerçekten yayında olduğunu ayıklamak için.",
+            form: json!([
+                {"name":"status_code","label":"Durum kodunu göster","type":"boolean","default":true,"true_value":"-sc","false_value":""},
+                {"name":"title","label":"Sayfa başlığını al","type":"boolean","default":true,"true_value":"-title","false_value":""},
+                {"name":"tech_detect","label":"Teknolojileri tespit et","type":"boolean","default":true,"true_value":"-td","false_value":""},
+                {"name":"web_server","label":"Sunucu başlığını göster","type":"boolean","default":false,"true_value":"-server","false_value":""},
+                {"name":"follow_redirects","label":"Yönlendirmeleri takip et","type":"boolean","default":false,"true_value":"-fr","false_value":""}
+            ]),
+        },
+        ToolForm {
+            name: "katana",
+            template: "katana -u {target} {depth} {js_crawl} {known_files} -jsonl",
+            target_types: &["url","domain"],
+            danger: "low",
+            purpose: "Bir web sitesini gezerek tüm bağlantıları, uç noktaları ve JavaScript içindeki gizli yolları çıkarır.",
+            when_to_use: "Bir hedefin saldırı yüzeyini haritalamak: hangi sayfalar, API uçları ve parametreler var?",
+            form: json!([
+                {"name":"depth","label":"Gezinme derinliği","type":"select","default":"-d 2",
+                 "options":[
+                    {"label":"Yüzeysel (1)","value":"-d 1"},
+                    {"label":"Orta (2, varsayılan)","value":"-d 2"},
+                    {"label":"Derin (4)","value":"-d 4"}]},
+                {"name":"js_crawl","label":"JavaScript'i tara","type":"boolean","default":true,"true_value":"-jc","false_value":""},
+                {"name":"known_files","label":"robots.txt/sitemap dahil et","type":"boolean","default":true,"true_value":"-kf all","false_value":""}
+            ]),
+        },
+        ToolForm {
+            name: "gospider",
+            template: "gospider -s {target} {depth} {concurrent} {third_party}",
+            target_types: &["url","domain"],
+            danger: "low",
+            purpose: "Hızlı bir web örümceği — siteyi gezerek bağlantıları, formları ve kaynakları toplar.",
+            when_to_use: "Bir siteyi hızlıca haritalamak ve dış kaynaklardan (Wayback, sitemap) ek URL toplamak için.",
+            form: json!([
+                {"name":"depth","label":"Derinlik","type":"select","default":"-d 2",
+                 "options":[
+                    {"label":"Yüzeysel (1)","value":"-d 1"},
+                    {"label":"Orta (2, varsayılan)","value":"-d 2"},
+                    {"label":"Derin (3)","value":"-d 3"}]},
+                {"name":"concurrent","label":"Eşzamanlılık","type":"select","default":"-c 10",
+                 "options":[
+                    {"label":"Nazik (5)","value":"-c 5"},
+                    {"label":"Normal (10, varsayılan)","value":"-c 10"},
+                    {"label":"Hızlı (20)","value":"-c 20"}]},
+                {"name":"third_party","label":"Üçüncü taraf kaynakları dahil et","type":"boolean","default":false,"true_value":"-a","false_value":""}
+            ]),
+        },
+        ToolForm {
+            name: "dirsearch",
+            template: "dirsearch -u {target} {extensions} {status_filter} {recursive}",
+            target_types: &["url","domain"],
+            danger: "medium",
+            purpose: "Bir web sunucusunda gizli dizinleri ve dosyaları (yönetim panelleri, yedekler, config) kaba kuvvetle arar.",
+            when_to_use: "Bağlantısı olmayan ama sunucuda duran gizli sayfaları ve dosyaları bulmak için.",
+            form: json!([
+                {"name":"extensions","label":"Aranacak uzantılar","type":"select","default":"-e php,html,js",
+                 "options":[
+                    {"label":"Web (php,html,js) — varsayılan","value":"-e php,html,js"},
+                    {"label":"Microsoft (asp,aspx)","value":"-e asp,aspx"},
+                    {"label":"Yedek/eski (bak,old,txt,zip)","value":"-e bak,old,txt,zip"},
+                    {"label":"Hepsi karışık","value":"-e php,html,js,asp,aspx,bak,old,txt"}]},
+                {"name":"status_filter","label":"Durum kodu filtresi","type":"select","default":"",
+                 "options":[
+                    {"label":"Tümü (varsayılan)","value":""},
+                    {"label":"Sadece bulunanlar (200,301,302)","value":"-i 200,301,302"},
+                    {"label":"404/403'ü gizle","value":"-x 404,403"}]},
+                {"name":"recursive","label":"Alt dizinlere in (özyinelemeli)","type":"boolean","default":false,"true_value":"-r","false_value":""}
+            ]),
+        },
+        ToolForm {
+            name: "dirb",
+            template: "dirb {target} {wordlist} {extensions} {silent}",
+            target_types: &["url","domain"],
+            danger: "medium",
+            purpose: "Klasik dizin/dosya kaba kuvvet aracı — bir kelime listesiyle sunucudaki gizli yolları dener.",
+            when_to_use: "Basit ve güvenilir bir dizin taraması için; sonuçları hızlı okunur.",
+            form: json!([
+                {"name":"wordlist","label":"Kelime listesi","type":"select","default":"/usr/share/wordlists/dirb/common.txt",
+                 "options":[
+                    {"label":"Common (küçük, hızlı) — varsayılan","value":"/usr/share/wordlists/dirb/common.txt"},
+                    {"label":"Big (büyük, kapsamlı)","value":"/usr/share/wordlists/dirb/big.txt"}]},
+                {"name":"extensions","label":"Uzantı ekle","type":"select","default":"",
+                 "options":[
+                    {"label":"Yok (varsayılan)","value":""},
+                    {"label":".php,.html","value":"-X .php,.html"},
+                    {"label":".bak,.old,.txt","value":"-X .bak,.old,.txt"}]},
+                {"name":"silent","label":"Sessiz mod (banner yok)","type":"boolean","default":true,"true_value":"-S","false_value":""}
+            ]),
+        },
+        ToolForm {
+            name: "feroxbuster",
+            template: "feroxbuster -u {target} {wordlist} {depth} {extensions} {status} -q",
+            target_types: &["url","domain"],
+            danger: "medium",
+            purpose: "Çok hızlı, özyinelemeli dizin/dosya kaba kuvvet aracı (Rust ile yazılmış).",
+            when_to_use: "Büyük bir siteyi hızla taramak ve bulunan dizinlerin içine otomatik inmek için.",
+            form: json!([
+                {"name":"wordlist","label":"Kelime listesi","type":"select","default":"-w /usr/share/wordlists/dirb/common.txt",
+                 "options":[
+                    {"label":"Common (hızlı) — varsayılan","value":"-w /usr/share/wordlists/dirb/common.txt"},
+                    {"label":"Big (kapsamlı)","value":"-w /usr/share/wordlists/dirb/big.txt"}]},
+                {"name":"depth","label":"Özyineleme derinliği","type":"select","default":"-d 2",
+                 "options":[
+                    {"label":"Sadece kök (1)","value":"-d 1"},
+                    {"label":"Orta (2, varsayılan)","value":"-d 2"},
+                    {"label":"Derin (4)","value":"-d 4"}]},
+                {"name":"extensions","label":"Uzantılar","type":"select","default":"",
+                 "options":[
+                    {"label":"Yok (varsayılan)","value":""},
+                    {"label":"php,html,js","value":"-x php,html,js"},
+                    {"label":"txt,bak,old","value":"-x txt,bak,old"}]},
+                {"name":"status","label":"Durum kodu filtresi","type":"select","default":"",
+                 "options":[
+                    {"label":"Tümü (varsayılan)","value":""},
+                    {"label":"Sadece 200,301,302","value":"-s 200,301,302"}]}
+            ]),
+        },
+        ToolForm {
+            name: "commix",
+            template: "commix -u {target} {level} {technique} --batch",
+            target_types: &["url"],
+            danger: "high",
+            purpose: "Web uygulamalarındaki komut enjeksiyonu (OS command injection) açıklarını otomatik bulur ve sömürür.",
+            when_to_use: "Bir parametrenin işletim sistemi komutu çalıştırıp çalıştırmadığını test etmek için.",
+            form: json!([
+                {"name":"level","label":"Test yoğunluğu","type":"select","default":"--level 1",
+                 "options":[
+                    {"label":"Düşük (1, hızlı) — varsayılan","value":"--level 1"},
+                    {"label":"Orta (2)","value":"--level 2"},
+                    {"label":"Yüksek (3, kapsamlı)","value":"--level 3"}]},
+                {"name":"technique","label":"Teknik","type":"select","default":"",
+                 "options":[
+                    {"label":"Tümü (varsayılan)","value":""},
+                    {"label":"Klasik (sonuç ekranda)","value":"--technique=c"},
+                    {"label":"Zaman tabanlı (kör)","value":"--technique=t"}]}
+            ]),
+        },
+        ToolForm {
+            name: "joomscan",
+            template: "joomscan --url {target} {enumerate}",
+            target_types: &["url","domain"],
+            danger: "medium",
+            purpose: "Joomla tabanlı sitelerdeki zafiyetleri, bileşenleri ve yanlış yapılandırmaları tarar.",
+            when_to_use: "Hedef bir Joomla sitesiyse; sürüm, savunmasız bileşenler ve açık dizinleri ortaya çıkarır.",
+            form: json!([
+                {"name":"enumerate","label":"Bileşenleri listele","type":"boolean","default":true,"true_value":"--enumerate-components","false_value":""}
+            ]),
+        },
+        ToolForm {
+            name: "binwalk",
+            template: "binwalk {mode} {target}",
+            target_types: &["file"],
+            danger: "low",
+            purpose: "Bir ikili dosya/firmware içindeki gömülü dosyaları, dosya sistemlerini ve sıkıştırılmış blokları bulur.",
+            when_to_use: "Bir firmware imajını veya bilinmeyen bir ikili dosyayı analiz edip içindekileri çıkarmak için.",
+            form: json!([
+                {"name":"mode","label":"Mod","type":"select","default":"-B",
+                 "options":[
+                    {"label":"İmza taraması (varsayılan)","value":"-B"},
+                    {"label":"Çıkar (içindeki dosyaları ayıkla)","value":"-e"},
+                    {"label":"Entropi analizi","value":"-E"}]}
+            ]),
+        },
+        ToolForm {
+            name: "apktool",
+            template: "apktool {action} {target}",
+            target_types: &["file"],
+            danger: "low",
+            purpose: "Android APK dosyalarını açar (decompile) — kaynakları, manifest'i ve smali kodunu okunur hale getirir.",
+            when_to_use: "Bir Android uygulamasının içini incelemek: izinler, sabit kodlanmış sırlar, uç noktalar.",
+            form: json!([
+                {"name":"action","label":"İşlem","type":"select","default":"d",
+                 "options":[
+                    {"label":"Decode (aç) — varsayılan","value":"d"},
+                    {"label":"Sadece manifest (kaynaksız)","value":"d -s"}]}
+            ]),
+        },
+        ToolForm {
+            name: "crackmapexec",
+            template: "crackmapexec {protocol} {target} {username} {password} {action}",
+            target_types: &["ip","domain","network"],
+            danger: "high",
+            purpose: "Ağdaki Windows/AD sistemlerine karşı kimlik doğrulama, sıralama (enum) ve yatay hareket için İsviçre çakısı.",
+            when_to_use: "Bir kimlik bilgisiyle (veya null oturumla) ağdaki makineleri, paylaşımları ve kullanıcıları haritalamak için.",
+            form: json!([
+                {"name":"protocol","label":"Protokol","type":"select","default":"smb",
+                 "options":[
+                    {"label":"SMB (varsayılan)","value":"smb"},
+                    {"label":"WinRM","value":"winrm"},
+                    {"label":"SSH","value":"ssh"},
+                    {"label":"LDAP","value":"ldap"},
+                    {"label":"MSSQL","value":"mssql"}]},
+                {"name":"username","label":"Kullanıcı adı (opsiyonel)","type":"text","required":false,"placeholder":"örn. administrator","default":""},
+                {"name":"password","label":"Parola (opsiyonel)","type":"password","required":false,"default":""},
+                {"name":"action","label":"Eylem","type":"select","default":"",
+                 "options":[
+                    {"label":"Sadece kimlik doğrula (varsayılan)","value":""},
+                    {"label":"Paylaşımları listele","value":"--shares"},
+                    {"label":"Kullanıcıları listele","value":"--users"},
+                    {"label":"Parola politikası","value":"--pass-pol"}]}
+            ]),
+        },
+        ToolForm {
+            name: "amass",
+            template: "amass enum {mode} -d {target}",
+            target_types: &["domain"],
+            danger: "low",
+            purpose: "Bir alan adına ait alt alan adlarını çok sayıda kaynaktan derleyerek kapsamlı bir harita çıkarır.",
+            when_to_use: "Bir kurumun dışa dönük tüm varlıklarını (alt alan adlarını) keşfetmek için — kapsam belirlemenin ilk adımı.",
+            form: json!([
+                {"name":"mode","label":"Tarama modu","type":"select","default":"-passive",
+                 "options":[
+                    {"label":"Pasif (sessiz, hedefe dokunmaz) — varsayılan","value":"-passive"},
+                    {"label":"Aktif (DNS çözümleme + doğrulama)","value":"-active"}]}
+            ]),
+        },
     ]
 }
 
@@ -277,6 +681,48 @@ pub struct FormSeedResult {
 }
 
 /// Apply every curated form to the catalogue on startup.
+/// Collapse duplicate curated rows to one per tool.
+///
+/// Many tools are seeded by BOTH the hackingtool catalogue and the modern/base
+/// catalogue, leaving two `curated` rows for the same name (e.g. two `httpx`).
+/// The form seeder updates every name match, so it re-curates both on each
+/// startup; this pass runs right after it and keeps only the single best row
+/// curated+active per name, demoting the rest. Deterministic and idempotent,
+/// so the curated pool converges to one row per tool on every boot.
+///
+/// "Best" = has a form, then has a purpose, then a real category (not the
+/// generic "Hackingtool Collection"), then the oldest row.
+pub async fn dedupe_curated(pool: &PgPool) -> u64 {
+    let res = sqlx::query(
+        "WITH ranked AS (
+            SELECT id, row_number() OVER (
+                PARTITION BY lower(name)
+                ORDER BY COALESCE(parameters ? 'form', false) DESC,
+                         COALESCE(parameters ? 'purpose', false) DESC,
+                         (category IS DISTINCT FROM 'Hackingtool Collection') DESC,
+                         created_at ASC NULLS LAST,
+                         id ASC
+            ) AS rn
+            FROM tools
+            WHERE curated
+         )
+         UPDATE tools t
+            SET curated = FALSE, is_active = FALSE
+           FROM ranked r
+          WHERE t.id = r.id AND r.rn > 1",
+    )
+    .execute(pool)
+    .await;
+    match res {
+        Ok(r) => {
+            let n = r.rows_affected();
+            if n > 0 { tracing::info!("curated dedupe: demoted {n} duplicate rows"); }
+            n
+        }
+        Err(e) => { tracing::warn!("curated dedupe failed: {e}"); 0 }
+    }
+}
+
 /// One-time curation bootstrap: promote the working tool set to `curated`.
 ///
 /// The catalogue holds 1510 records from three sources. The 183-tool product
@@ -344,6 +790,7 @@ pub async fn seed_tool_forms(pool: &PgPool) -> FormSeedResult {
         }
     }
     tracing::info!("tool forms seeded: {applied} applied, {not_found} not found");
+    dedupe_curated(pool).await;
     FormSeedResult { applied, not_found }
 }
 
@@ -355,15 +802,20 @@ mod tests {
     fn every_definition_is_well_formed() {
         for d in definitions() {
             assert!(!d.name.is_empty());
-            assert!(d.template.contains("{target}") || d.template.contains("{fuzz_url}"),
-                    "{}: template must reference the target", d.name);
+            // Most tools reference the target directly; a few take a different
+            // primary input (tcpdump reads an interface). The rule is that the
+            // template has at least one placeholder to fill, not a specific name.
+            let re0 = regex::Regex::new(r"\{[a-z_]+\}").unwrap();
+            assert!(re0.is_match(d.template), "{}: template has no placeholder", d.name);
             let form = d.form.as_array().expect("form is an array");
-            assert!(!form.is_empty(), "{}: form has no controls", d.name);
+            // Some tools take only a target (dnsmap, exiftool) — an empty
+            // control list is valid; the user still picks the target on the
+            // scan page. What must never happen is a control that is malformed.
             for c in form {
                 assert!(c.get("name").and_then(|v| v.as_str()).is_some(), "{}: control missing name", d.name);
                 assert!(c.get("label").and_then(|v| v.as_str()).is_some(), "{}: control missing label", d.name);
                 let ty = c.get("type").and_then(|v| v.as_str()).unwrap_or("");
-                assert!(["text","number","select","boolean"].contains(&ty),
+                assert!(["text","number","select","boolean","password"].contains(&ty),
                         "{}: control '{}' has bad type '{}'", d.name, c["name"], ty);
             }
         }

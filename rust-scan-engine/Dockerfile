@@ -105,6 +105,13 @@ RUN set +e; \
         && chmod +x /usr/local/bin/sliver-server && /usr/local/bin/sliver-server version >/dev/null 2>&1) \
         || { rm -f /usr/local/bin/sliver-server; echo "SKIP rel: sliver" >> /var/log/tool-install-skips.log; }
 
+# 7) Wordlists: decompress rockyou so hashcat/john/hydra can read it directly.
+RUN set +e; \
+    if [ -f /usr/share/wordlists/rockyou.txt.gz ] && [ ! -f /usr/share/wordlists/rockyou.txt ]; then \
+        gunzip -kf /usr/share/wordlists/rockyou.txt.gz \
+        && echo "rockyou decompressed" || echo "SKIP wl: rockyou" >> /var/log/tool-install-skips.log; \
+    fi
+
 # ─────────────────────────────────────────────────────────────────────────
 # Stage 3: Runtime.
 # ─────────────────────────────────────────────────────────────────────────
