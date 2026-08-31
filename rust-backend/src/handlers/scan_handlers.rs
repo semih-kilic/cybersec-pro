@@ -1105,10 +1105,58 @@ pub async fn start_scan(
         }))).into_response();
     }
 
-    // Same rule for every supplied parameter that could stand alone in argv.
+    // Whitelist of trusted option values per parameter, taken from the tool's
+    // own form definition. A submitted value that exactly matches one of these
+    // is a choice WE authored (a select option, a boolean true/false value) —
+    // not free user input — so it may legitimately be, or contain, a flag. This
+    // is the security boundary that lets zero-code forms carry flags like `-sV`
+    // without opening argument injection to arbitrary user text.
+    let param_whitelist: std::collections::HashMap<String, std::collections::HashSet<String>> = {
+        let mut m = std::collections::HashMap::new();
+        if let Some(form) = tool.parameters.as_ref()
+            .and_then(|p| p.get("form"))
+            .and_then(|f| f.as_array())
+        {
+            for ctrl in form {
+                let name = match ctrl.get("name").and_then(|v| v.as_str()) {
+                    Some(n) => n.to_string(),
+                    None => continue,
+                };
+                let mut allowed = std::collections::HashSet::new();
+                if let Some(opts) = ctrl.get("options").and_then(|o| o.as_array()) {
+                    for o in opts {
+                        if let Some(v) = o.get("value").and_then(|v| v.as_str()) {
+                            allowed.insert(v.to_string());
+                        }
+                    }
+                }
+                for key in ["true_value", "false_value"] {
+                    if let Some(v) = ctrl.get(key).and_then(|v| v.as_str()) {
+                        allowed.insert(v.to_string());
+                    }
+                }
+                if !allowed.is_empty() {
+                    m.insert(name, allowed);
+                }
+            }
+        }
+        m
+    };
+
+    // Same rule for every supplied parameter that could stand alone in argv —
+    // except values that match the tool's own whitelist, which are trusted and
+    // recorded so the command builder may treat them as flag-bearing options.
+    let mut trusted_params: std::collections::BTreeSet<String> = std::collections::BTreeSet::new();
     if let Some(obj) = body.parameters.as_ref().and_then(|p| p.as_object()) {
         for (k, v) in obj {
             if let Some(sv) = v.as_str() {
+                let is_whitelisted = param_whitelist
+                    .get(k)
+                    .is_some_and(|set| set.contains(sv));
+                if is_whitelisted {
+                    trusted_params.insert(k.clone());
+                    continue;
+                }
                 if sv.trim_start().starts_with('-') {
                     return (StatusCode::BAD_REQUEST, Json(json!({
                         "error": format!("Invalid value for '{}': parameters may not begin with '-' (it would be interpreted as a command-line option)", k),
@@ -1349,9 +1397,15 @@ pub async fn start_scan(
                     // This is defence in depth: nothing goes through a shell,
                     // but a NUL or newline in argv is never legitimate.
                     let safe: String = val.replace(['\n', '\r', '\0'], "");
-                    if safe.is_empty() {
-                        return None;
-                    }
+                    // Keep empty values in the map. An empty value means the
+                    // form control resolved to nothing (a boolean's off state,
+                    // an unset optional select) and its template placeholder
+                    // must be DROPPED. If the key were removed here instead, the
+                    // builder would treat the placeholder as absent and fall
+                    // back to placeholder_default() — which returns the target,
+                    // silently duplicating it into argv (e.g. `nmap … 1.2.3.4
+                    // 1.2.3.4 1.2.3.4`). An empty string resolves to "" and the
+                    // token is skipped, which is the intended behaviour.
                     Some((k.clone(), safe))
                 })
                 .collect()
@@ -1360,11 +1414,12 @@ pub async fn start_scan(
 
     // Build the final program + argv from the (substituted) template.
     // This is the single source of truth for what the scan engine will execute.
-    let (program, command_args) = crate::scan_engine::tool_registry::build_command_with_params(
+    let (program, command_args) = crate::scan_engine::tool_registry::build_command_with_trusted(
         tool.binary_name.as_deref().unwrap_or(&tool.name),
         target,
         command_template.as_deref(),
         &scan_params,
+        &trusted_params,
     )
     .unwrap_or_else(|_| (tool.name.clone(), vec![target.to_string()]));
 
@@ -1557,8 +1612,8 @@ pub async fn start_scan(
     // NOTE: disabled while reverse-tunnel routing is off — tools run server-side.
     if is_reverse_tunnel && tunnel_routing_enabled {
         let aid = body.agent_id.clone().unwrap_or_default();
-        let (program, args) = crate::scan_engine::tool_registry::build_command_with_params(
-            &tool.name, target, command_template.as_deref(), &scan_params
+        let (program, args) = crate::scan_engine::tool_registry::build_command_with_trusted(
+            &tool.name, target, command_template.as_deref(), &scan_params, &trusted_params
         ).unwrap_or_else(|_| (tool.name.clone(), vec![target.to_string()]));
         // JSON argv protocol: send the exact argument array so the agent runs the
         // tool without shell interpolation (no shell-escape issues). Also keep a
@@ -1722,11 +1777,12 @@ pub async fn start_scan(
         });
     }
 
-    // Build command string for response from the SUBSTITUTED template so the
-    // API reports the actual command that will be executed (not raw placeholders).
-    let (program, args) = crate::scan_engine::tool_registry::build_command(&tool.binary_name.as_deref().unwrap_or(&tool.name), target, response_command.as_deref())
-        .unwrap_or_else(|_| (tool.name.clone(), vec![target.to_string()]));
-    let command_str = format!("{} {}", program, args.join(" "));
+    // Report the exact command that was built for execution. This reuses the
+    // whitelist-aware (program, command_args) computed above — NOT a second,
+    // params-less build_command(), which ignored every form value and echoed
+    // the target once per placeholder.
+    let _ = &response_command; // retained for backward compat / logging call sites
+    let command_str = format!("{} {}", program, command_args.join(" "));
 
     let exec_mode = if scan_engine_metadata.is_some() {
         "delegated"

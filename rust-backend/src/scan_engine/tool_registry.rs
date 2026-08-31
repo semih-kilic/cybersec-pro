@@ -1,4 +1,5 @@
 use std::collections::BTreeMap;
+use std::collections::BTreeSet;
 use anyhow::{anyhow, Result};
 use serde::Deserialize;
 use std::collections::HashMap;
@@ -396,12 +397,28 @@ pub fn build_command_with_params(
     command_template: Option<&str>,
     params: &BTreeMap<String, String>,
 ) -> Result<(String, Vec<String>)> {
+    build_command_with_trusted(tool_name, target, command_template, params, &BTreeSet::new())
+}
+
+/// Like `build_command_with_params`, but `trusted` names the parameters whose
+/// value came from a closed whitelist authored by us (a form `select`/`boolean`
+/// option), not from free user input. Only these may resolve to something that
+/// looks like a flag, and only these are split on whitespace into multiple argv
+/// entries — so a form option like "--top-ports 1000" becomes two real args.
+/// Every other value keeps the strict single-arg, no-leading-dash rule.
+pub fn build_command_with_trusted(
+    tool_name: &str,
+    target: &str,
+    command_template: Option<&str>,
+    params: &BTreeMap<String, String>,
+    trusted: &BTreeSet<String>,
+) -> Result<(String, Vec<String>)> {
     let program = resolve_binary(tool_name);
 
     // 1. Command template from DB or user
     if let Some(template) = command_template {
         if !template.is_empty() {
-            return parse_template(&program, template, target, params);
+            return parse_template(&program, template, target, params, trusted);
         }
     }
 
@@ -539,6 +556,31 @@ fn value_looks_like_flag(v: &str) -> bool {
 /// not. Tokenising the trusted template FIRST and only then substituting means
 /// an untrusted value can never introduce a new argv entry, however many spaces
 /// it contains.
+/// If `tok` is exactly one `{placeholder}` and nothing else, return the key.
+fn standalone_key(tok: &str) -> Option<&str> {
+    let inner = tok.strip_prefix('{')?.strip_suffix('}')?;
+    if inner.is_empty() {
+        return None;
+    }
+    let ok = inner.chars().enumerate().all(|(i, c)| {
+        if i == 0 { c.is_ascii_alphabetic() || c == '_' }
+        else { c.is_ascii_alphanumeric() || c == '_' }
+    });
+    if ok { Some(inner) } else { None }
+}
+
+/// Resolve a placeholder key to its value: target aliases map to the target,
+/// everything else comes from the params map (or a per-key default).
+fn resolve_placeholder(key: &str, target: &str, params: &BTreeMap<String, String>) -> String {
+    match key {
+        "target" | "TARGET" | "host" | "url" | "ip" | "domain" => target.to_string(),
+        other => params
+            .get(other)
+            .cloned()
+            .unwrap_or_else(|| placeholder_default(other, target)),
+    }
+}
+
 fn substitute_token(token: &str, target: &str, params: &BTreeMap<String, String>) -> Option<String> {
     let re = match regex::Regex::new(r"\{([A-Za-z_][A-Za-z0-9_]*)\}") {
         Ok(r) => r,
@@ -589,6 +631,7 @@ fn parse_template(
     template: &str,
     target: &str,
     params: &BTreeMap<String, String>,
+    trusted: &BTreeSet<String>,
 ) -> Result<(String, Vec<String>)> {
     if template.trim().is_empty() {
         return Err(anyhow!("Empty command template"));
@@ -609,11 +652,33 @@ fn parse_template(
 
     let mut args: Vec<String> = Vec::with_capacity(tokens.len());
     for tok in &tokens[start..] {
+        // A token that is exactly one placeholder (`{key}`) can expand to a
+        // whole option. When that key is trusted (its value is a whitelisted
+        // form choice) we allow flags and split the value into separate argv
+        // entries, so "--top-ports 1000" or "-sV" lands as real arguments.
+        if let Some(key) = standalone_key(tok) {
+            let value = resolve_placeholder(key, target, params);
+            if value.is_empty() {
+                continue;
+            }
+            if trusted.contains(key) {
+                for piece in value.split_whitespace() {
+                    args.push(piece.to_string());
+                }
+                continue;
+            }
+            // Untrusted standalone value: never let it introduce a flag.
+            if value_looks_like_flag(&value) {
+                tracing::warn!("scan parameter '{}' rejected: value would be read as an option flag", key);
+                continue;
+            }
+            args.push(value);
+            continue;
+        }
+        // Embedded placeholder(s) inside a larger token (e.g. `-type={record}`):
+        // substitute inline; the result is always a single argv entry.
         match substitute_token(tok, target, params) {
             Some(a) => args.push(a),
-            // A rejected value drops its whole token rather than passing a flag
-            // through. The tool then runs without that option, which is the
-            // safe failure mode.
             None => continue,
         }
     }
@@ -872,3 +937,79 @@ mod tests {
         assert_eq!(placeholder_default("totally_unknown", "TGT"), "TGT");
     }
 }
+
+#[cfg(test)]
+mod trusted_substitution_tests {
+    use super::build_command_with_trusted;
+    use std::collections::{BTreeMap, BTreeSet};
+
+    fn params(pairs: &[(&str, &str)]) -> BTreeMap<String, String> {
+        pairs.iter().map(|(k, v)| (k.to_string(), v.to_string())).collect()
+    }
+    fn trusted(keys: &[&str]) -> BTreeSet<String> {
+        keys.iter().map(|k| k.to_string()).collect()
+    }
+
+    #[test]
+    fn trusted_flag_value_is_kept() {
+        let (_p, args) = build_command_with_trusted(
+            "nmap", "example.com",
+            Some("nmap {scan_type} {timing} {target}"),
+            &params(&[("scan_type", "-sS"), ("timing", "-T4")]),
+            &trusted(&["scan_type", "timing"]),
+        ).unwrap();
+        assert!(args.contains(&"-sS".to_string()), "trusted -sS kept: {:?}", args);
+        assert!(args.contains(&"-T4".to_string()), "trusted -T4 kept: {:?}", args);
+        assert!(args.contains(&"example.com".to_string()));
+    }
+
+    #[test]
+    fn trusted_multiword_value_is_split_into_argv() {
+        let (_p, args) = build_command_with_trusted(
+            "nmap", "example.com",
+            Some("nmap {port_spec} {target}"),
+            &params(&[("port_spec", "--top-ports 1000")]),
+            &trusted(&["port_spec"]),
+        ).unwrap();
+        // must be two separate argv entries, not one "--top-ports 1000"
+        assert!(args.contains(&"--top-ports".to_string()), "split flag: {:?}", args);
+        assert!(args.contains(&"1000".to_string()), "split value: {:?}", args);
+        assert!(!args.contains(&"--top-ports 1000".to_string()), "not glued: {:?}", args);
+    }
+
+    #[test]
+    fn untrusted_flag_value_is_still_dropped() {
+        // Same value but NOT trusted (as if it were free user text): must be dropped.
+        let (_p, args) = build_command_with_trusted(
+            "nmap", "example.com",
+            Some("nmap {evil} {target}"),
+            &params(&[("evil", "-oN/etc/passwd")]),
+            &trusted(&[]),
+        ).unwrap();
+        assert!(!args.iter().any(|a| a.starts_with('-')), "untrusted flag dropped: {:?}", args);
+        assert!(args.contains(&"example.com".to_string()));
+    }
+
+    #[test]
+    fn embedded_placeholder_substitutes_inline() {
+        let (_p, args) = build_command_with_trusted(
+            "nslookup", "example.com",
+            Some("nslookup -type={record} {target}"),
+            &params(&[("record", "MX")]),
+            &trusted(&["record"]),
+        ).unwrap();
+        assert!(args.contains(&"-type=MX".to_string()), "inline: {:?}", args);
+    }
+
+    #[test]
+    fn empty_trusted_value_collapses() {
+        let (_p, args) = build_command_with_trusted(
+            "nmap", "example.com",
+            Some("nmap {os} {target}"),
+            &params(&[("os", "")]),
+            &trusted(&["os"]),
+        ).unwrap();
+        assert_eq!(args, vec!["example.com".to_string()], "empty collapses: {:?}", args);
+    }
+}
+
