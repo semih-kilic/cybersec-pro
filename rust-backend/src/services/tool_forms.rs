@@ -792,6 +792,169 @@ fn definitions() -> Vec<ToolForm> {
                     {"label":"Küçük liste (hızlı)","value":"/usr/share/wordlists/dirb/common.txt"}]}
             ]),
         },
+        ToolForm {
+            name: "whois",
+            template: "whois {target}",
+            target_types: &["domain","ip"],
+            danger: "low",
+            purpose: "Bir alan adının veya IP'nin kayıt bilgilerini (sahip, kayıt tarihi, ad sunucuları, iletişim) sorgular.",
+            when_to_use: "Bir hedefin kime ait olduğunu, ne zaman kaydedildiğini ve altyapı ipuçlarını öğrenmek için.",
+            form: json!([]),
+        },
+        ToolForm {
+            name: "host",
+            template: "host -t {record} {target}",
+            target_types: &["domain","ip"],
+            danger: "low",
+            purpose: "Basit ve hızlı DNS sorgu aracı — bir alan adının IP, posta sunucusu veya diğer kayıtlarını çözer.",
+            when_to_use: "Bir alan adının A/MX/NS gibi belirli bir DNS kaydını hızlıca öğrenmek için.",
+            form: json!([
+                {"name":"record","label":"Kayıt türü","type":"select","default":"A",
+                 "options":[
+                    {"label":"A (IPv4) — varsayılan","value":"A"},
+                    {"label":"AAAA (IPv6)","value":"AAAA"},
+                    {"label":"MX (posta sunucusu)","value":"MX"},
+                    {"label":"NS (ad sunucusu)","value":"NS"},
+                    {"label":"TXT (SPF/DKIM vb.)","value":"TXT"},
+                    {"label":"Hepsi (ANY)","value":"ANY"}]}
+            ]),
+        },
+        ToolForm {
+            name: "nslookup",
+            template: "nslookup -type={record} {target}",
+            target_types: &["domain","ip"],
+            danger: "low",
+            purpose: "Klasik DNS sorgu aracı — alan adı/IP çözümlemesi ve kayıt sorgulama yapar.",
+            when_to_use: "Hızlı bir DNS kontrolü veya ters DNS (IP → isim) sorgusu için.",
+            form: json!([
+                {"name":"record","label":"Kayıt türü","type":"select","default":"A",
+                 "options":[
+                    {"label":"A (IPv4) — varsayılan","value":"A"},
+                    {"label":"AAAA (IPv6)","value":"AAAA"},
+                    {"label":"MX (posta)","value":"MX"},
+                    {"label":"NS (ad sunucusu)","value":"NS"},
+                    {"label":"TXT","value":"TXT"},
+                    {"label":"PTR (ters DNS)","value":"PTR"}]}
+            ]),
+        },
+        ToolForm {
+            name: "theHarvester",
+            template: "theHarvester -d {target} -b {source} -l {limit}",
+            target_types: &["domain"],
+            danger: "low",
+            purpose: "Açık kaynaklardan (arama motorları, sertifika kayıtları) bir alan adına ait e-postaları, alt alan adlarını ve isimleri toplar.",
+            when_to_use: "Bir kurumun dış izini (e-posta adresleri, çalışanlar, alt alan adları) pasifçe çıkarmak için.",
+            form: json!([
+                {"name":"source","label":"Kaynak","type":"select","default":"crtsh",
+                 "options":[
+                    {"label":"crt.sh (sertifikalar) — varsayılan","value":"crtsh"},
+                    {"label":"Bing","value":"bing"},
+                    {"label":"DuckDuckGo","value":"duckduckgo"},
+                    {"label":"HackerTarget","value":"hackertarget"},
+                    {"label":"RapidDNS","value":"rapiddns"},
+                    {"label":"Hepsi (all)","value":"all"}]},
+                {"name":"limit","label":"Sonuç limiti","type":"select","default":"200",
+                 "options":[
+                    {"label":"100","value":"100"},
+                    {"label":"200 (varsayılan)","value":"200"},
+                    {"label":"500","value":"500"}]}
+            ]),
+        },
+        ToolForm {
+            name: "assetfinder",
+            template: "assetfinder {subs_only} {target}",
+            target_types: &["domain"],
+            danger: "low",
+            purpose: "Bir alan adına ait alt alan adlarını çeşitli açık kaynaklardan hızlıca bulur.",
+            when_to_use: "Kapsam belirlerken bir alan adının alt alan adlarını saniyeler içinde listelemek için.",
+            form: json!([
+                {"name":"subs_only","label":"Sadece alt alan adları","type":"boolean","default":true,"true_value":"--subs-only","false_value":""}
+            ]),
+        },
+        ToolForm {
+            name: "waybackurls",
+            template: "waybackurls {target}",
+            target_types: &["domain"],
+            danger: "low",
+            purpose: "Wayback Machine arşivinden bir alan adının geçmişte bilinen tüm URL'lerini çeker.",
+            when_to_use: "Eski/unutulmuş uç noktaları, parametreleri ve silinmiş sayfaları keşfetmek için.",
+            form: json!([]),
+        },
+        ToolForm {
+            name: "wafw00f",
+            template: "wafw00f {findall} {target}",
+            target_types: &["url","domain"],
+            danger: "low",
+            purpose: "Bir web sitesinin önünde hangi Web Uygulama Güvenlik Duvarı (WAF) olduğunu tespit eder.",
+            when_to_use: "Saldırı denemelerinden önce hedefin bir WAF ile korunup korunmadığını anlamak için.",
+            form: json!([
+                {"name":"findall","label":"Tüm WAF'ları dene (sadece ilki değil)","type":"boolean","default":false,"true_value":"-a","false_value":""}
+            ]),
+        },
+        ToolForm {
+            name: "wapiti",
+            template: "wapiti -u {target} --scope {scope} -l {level}",
+            target_types: &["url"],
+            danger: "medium",
+            purpose: "Web uygulamalarını tarayarak SQL enjeksiyonu, XSS, dosya dahil etme gibi açıkları otomatik bulur.",
+            when_to_use: "Bir web uygulamasında yaygın OWASP zafiyetlerini kutu-siyah (black-box) taramayla tespit etmek için.",
+            form: json!([
+                {"name":"scope","label":"Kapsam","type":"select","default":"folder",
+                 "options":[
+                    {"label":"Klasör (varsayılan)","value":"folder"},
+                    {"label":"Sadece URL","value":"url"},
+                    {"label":"Tüm alan adı","value":"domain"}]},
+                {"name":"level","label":"Saldırı seviyesi","type":"select","default":"1",
+                 "options":[
+                    {"label":"Seviye 1 (hızlı) — varsayılan","value":"1"},
+                    {"label":"Seviye 2 (kapsamlı)","value":"2"}]}
+            ]),
+        },
+        ToolForm {
+            name: "xsstrike",
+            template: "xsstrike -u {target} {crawl}",
+            target_types: &["url"],
+            danger: "high",
+            purpose: "Gelişmiş XSS (Cross-Site Scripting) tespit aracı — akıllı yük üretimi ve WAF atlatma ile çalışır.",
+            when_to_use: "Bir parametrenin XSS'e açık olup olmadığını derinlemesine test etmek için.",
+            form: json!([
+                {"name":"crawl","label":"Siteyi gez (tüm parametreleri bul)","type":"boolean","default":false,"true_value":"--crawl","false_value":""}
+            ]),
+        },
+        ToolForm {
+            name: "searchsploit",
+            template: "searchsploit {target}",
+            target_types: &["keyword"],
+            danger: "low",
+            purpose: "Exploit-DB'nin yerel kopyasında bilinen exploit ve zafiyet kayıtlarını arar (örn. 'apache 2.4').",
+            when_to_use: "Tespit ettiğiniz bir ürün/sürüm için hazır exploit olup olmadığını hızlıca kontrol etmek için.",
+            form: json!([]),
+        },
+        ToolForm {
+            name: "testssl",
+            template: "testssl {protocols} --severity {severity} {target}",
+            target_types: &["url","domain","ip"],
+            danger: "low",
+            purpose: "Bir sunucunun TLS/SSL yapılandırmasını derinlemesine denetler: zayıf protokoller, şifreler, sertifika sorunları.",
+            when_to_use: "Bir HTTPS servisinin şifreleme hijyenini (eski TLS, zayıf cipher, sertifika) ölçmek için.",
+            form: json!([
+                {"name":"severity","label":"Minimum önem","type":"select","default":"LOW",
+                 "options":[
+                    {"label":"Tümü (LOW) — varsayılan","value":"LOW"},
+                    {"label":"MEDIUM ve üzeri","value":"MEDIUM"},
+                    {"label":"Sadece HIGH/CRITICAL","value":"HIGH"}]},
+                {"name":"protocols","label":"Sadece protokol kontrolü (hızlı)","type":"boolean","default":false,"true_value":"-p","false_value":""}
+            ]),
+        },
+        ToolForm {
+            name: "gowitness",
+            template: "gowitness scan single -u {target}",
+            target_types: &["url","domain"],
+            danger: "low",
+            purpose: "Bir web sayfasının ekran görüntüsünü alır — çok sayıda hedefi görsel olarak hızlıca gözden geçirmeyi sağlar.",
+            when_to_use: "Onlarca/yüzlerce canlı adresi tek tek açmadan neye benzediklerini görmek için.",
+            form: json!([]),
+        },
     ]
 }
 
