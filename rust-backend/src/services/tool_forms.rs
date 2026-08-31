@@ -634,11 +634,11 @@ fn definitions() -> Vec<ToolForm> {
         },
         ToolForm {
             name: "crackmapexec",
-            template: "crackmapexec {protocol} {target} {username} {password} {action}",
+            template: "crackmapexec {protocol} {target} {action}",
             target_types: &["ip","domain","network"],
             danger: "high",
             purpose: "Ağdaki Windows/AD sistemlerine karşı kimlik doğrulama, sıralama (enum) ve yatay hareket için İsviçre çakısı.",
-            when_to_use: "Bir kimlik bilgisiyle (veya null oturumla) ağdaki makineleri, paylaşımları ve kullanıcıları haritalamak için.",
+            when_to_use: "Kimlik gerektirmeden (null oturum) ağdaki makineleri, paylaşımları ve kullanıcıları haritalamak için.",
             form: json!([
                 {"name":"protocol","label":"Protokol","type":"select","default":"smb",
                  "options":[
@@ -647,8 +647,6 @@ fn definitions() -> Vec<ToolForm> {
                     {"label":"SSH","value":"ssh"},
                     {"label":"LDAP","value":"ldap"},
                     {"label":"MSSQL","value":"mssql"}]},
-                {"name":"username","label":"Kullanıcı adı (opsiyonel)","type":"text","required":false,"placeholder":"örn. administrator","default":""},
-                {"name":"password","label":"Parola (opsiyonel)","type":"password","required":false,"default":""},
                 {"name":"action","label":"Eylem","type":"select","default":"",
                  "options":[
                     {"label":"Sadece kimlik doğrula (varsayılan)","value":""},
@@ -955,6 +953,246 @@ fn definitions() -> Vec<ToolForm> {
             when_to_use: "Onlarca/yüzlerce canlı adresi tek tek açmadan neye benzediklerini görmek için.",
             form: json!([]),
         },
+        ToolForm {
+            name: "naabu",
+            template: "naabu -host {target} -top-ports {ports} -s {scan_type} -silent",
+            target_types: &["ip","domain","network"],
+            danger: "medium",
+            purpose: "Çok hızlı port tarayıcı (ProjectDiscovery) — bir hedefteki açık portları kısa sürede bulur.",
+            when_to_use: "Nmap'ten önce hızlı bir açık-port ön taraması yapmak için; sonucu nmap'e devredebilirsiniz.",
+            form: json!([
+                {"name":"ports","label":"Port kapsamı","type":"select","default":"100",
+                 "options":[
+                    {"label":"En popüler 100 (varsayılan)","value":"100"},
+                    {"label":"En popüler 1000","value":"1000"},
+                    {"label":"Tümü (full)","value":"full"}]},
+                {"name":"scan_type","label":"Tarama türü","type":"select","default":"CONNECT",
+                 "options":[
+                    {"label":"CONNECT (root gerekmez) — varsayılan","value":"CONNECT"},
+                    {"label":"SYN (hızlı, root)","value":"SYN"}]}
+            ]),
+        },
+        ToolForm {
+            name: "netdiscover",
+            template: "netdiscover -P -r {target} {passive}",
+            target_types: &["network","ip"],
+            danger: "low",
+            purpose: "ARP ile yerel ağdaki canlı cihazları keşfeder — IP ve MAC adreslerini listeler.",
+            when_to_use: "Bir yerel ağda hangi cihazların açık olduğunu pasif/aktif olarak haritalamak için.",
+            form: json!([
+                {"name":"passive","label":"Pasif mod (paket göndermez)","type":"boolean","default":false,"true_value":"-p","false_value":""}
+            ]),
+        },
+        ToolForm {
+            name: "mtr",
+            template: "mtr -r -c {count} {protocol} {target}",
+            target_types: &["ip","domain"],
+            danger: "low",
+            purpose: "traceroute ve ping'i birleştirir — hedefe giden her adımın gecikme ve paket kaybını gösterir.",
+            when_to_use: "Bir hedefe giden yol boyunca nerede gecikme/kayıp olduğunu teşhis etmek için.",
+            form: json!([
+                {"name":"count","label":"Ölçüm sayısı","type":"select","default":"10",
+                 "options":[
+                    {"label":"5 (hızlı)","value":"5"},
+                    {"label":"10 (varsayılan)","value":"10"},
+                    {"label":"20 (kararlı)","value":"20"}]},
+                {"name":"protocol","label":"Protokol","type":"select","default":"",
+                 "options":[
+                    {"label":"ICMP (varsayılan)","value":""},
+                    {"label":"TCP","value":"-T"},
+                    {"label":"UDP","value":"-u"}]}
+            ]),
+        },
+        ToolForm {
+            name: "traceroute",
+            template: "traceroute {protocol} {target}",
+            target_types: &["ip","domain"],
+            danger: "low",
+            purpose: "Bir hedefe giden ağ yolundaki her yönlendiriciyi (hop) sırayla listeler.",
+            when_to_use: "Trafiğin hangi yoldan gittiğini ve nerede durduğunu görmek için.",
+            form: json!([
+                {"name":"protocol","label":"Yöntem","type":"select","default":"",
+                 "options":[
+                    {"label":"UDP (varsayılan)","value":""},
+                    {"label":"ICMP","value":"-I"},
+                    {"label":"TCP (firewall aşar)","value":"-T"}]}
+            ]),
+        },
+        ToolForm {
+            name: "tcptraceroute",
+            template: "tcptraceroute {target} {port}",
+            target_types: &["ip","domain"],
+            danger: "low",
+            purpose: "TCP paketleriyle yol izler — ICMP'yi engelleyen güvenlik duvarlarının arkasını görebilir.",
+            when_to_use: "Normal traceroute engellendiğinde belirli bir porta giden yolu haritalamak için.",
+            form: json!([
+                {"name":"port","label":"Hedef port","type":"select","default":"80",
+                 "options":[
+                    {"label":"80 (HTTP) — varsayılan","value":"80"},
+                    {"label":"443 (HTTPS)","value":"443"},
+                    {"label":"22 (SSH)","value":"22"}]}
+            ]),
+        },
+        ToolForm {
+            name: "unicornscan",
+            template: "unicornscan {mode} {target}",
+            target_types: &["ip","network"],
+            danger: "medium",
+            purpose: "Asenkron, yüksek hızlı port ve servis tarayıcı — büyük ağ aralıklarını verimli tarar.",
+            when_to_use: "Geniş IP aralıklarında hızlı, durum-bilgisiz (stateless) port taraması için.",
+            form: json!([
+                {"name":"mode","label":"Tarama türü","type":"select","default":"-mT",
+                 "options":[
+                    {"label":"TCP (varsayılan)","value":"-mT"},
+                    {"label":"UDP","value":"-mU"}]}
+            ]),
+        },
+        ToolForm {
+            name: "hping3",
+            template: "hping3 -c {count} {mode} {target}",
+            target_types: &["ip","domain"],
+            danger: "medium",
+            purpose: "Özelleştirilebilir paket üreticisi — güvenlik duvarı kuralı testi, port kontrolü ve yol keşfi yapar.",
+            when_to_use: "Bir firewall'ın belirli paketlere nasıl yanıt verdiğini test etmek veya özel prob göndermek için.",
+            form: json!([
+                {"name":"count","label":"Paket sayısı","type":"select","default":"3",
+                 "options":[
+                    {"label":"3 (varsayılan)","value":"3"},
+                    {"label":"10","value":"10"}]},
+                {"name":"mode","label":"Paket türü","type":"select","default":"-1",
+                 "options":[
+                    {"label":"ICMP ping (varsayılan)","value":"-1"},
+                    {"label":"TCP SYN → port 80","value":"-S -p 80"},
+                    {"label":"UDP → port 53","value":"-2 -p 53"}]}
+            ]),
+        },
+        ToolForm {
+            name: "smbclient",
+            template: "smbclient -L {target} -N",
+            target_types: &["ip","domain"],
+            danger: "low",
+            purpose: "SMB/Windows paylaşımlarına erişim aracı — bir sunucudaki paylaşılan klasörleri listeler.",
+            when_to_use: "Bir Windows/Samba sunucusunda anonim (null) oturumla hangi paylaşımların açık olduğunu görmek için.",
+            form: json!([]),
+        },
+        ToolForm {
+            name: "smbmap",
+            template: "smbmap -H {target}",
+            target_types: &["ip","domain"],
+            danger: "low",
+            purpose: "SMB paylaşımlarını ve üzerlerindeki erişim izinlerini (okuma/yazma) haritalar.",
+            when_to_use: "Bir hedefteki SMB paylaşımlarına anonim erişimi ve izin seviyelerini hızlıca kontrol etmek için.",
+            form: json!([]),
+        },
+        ToolForm {
+            name: "ldapsearch",
+            template: "ldapsearch -x -H ldap://{target} -s base namingContexts",
+            target_types: &["ip","domain"],
+            danger: "low",
+            purpose: "LDAP/Active Directory dizin sorgu aracı — sunucunun kök bilgisini (naming context) anonim çeker.",
+            when_to_use: "Bir AD/LDAP sunucusunun anonim sorguya izin verip vermediğini ve temel yapısını görmek için.",
+            form: json!([]),
+        },
+        ToolForm {
+            name: "enum4linux-ng",
+            template: "enum4linux-ng {mode} {target}",
+            target_types: &["ip","domain"],
+            danger: "low",
+            purpose: "Windows/Samba sistemlerinden kullanıcı, grup, paylaşım ve politika bilgilerini toplar (enum4linux'un modern sürümü).",
+            when_to_use: "Bir Windows hedefi hakkında anonim SMB üzerinden kapsamlı bilgi toplamak için.",
+            form: json!([
+                {"name":"mode","label":"Toplama kapsamı","type":"select","default":"-A",
+                 "options":[
+                    {"label":"Hepsi (-A) — varsayılan","value":"-A"},
+                    {"label":"Paylaşımlar (-S)","value":"-S"},
+                    {"label":"Kullanıcılar (-U)","value":"-U"},
+                    {"label":"Parola politikası (-P)","value":"-P"}]}
+            ]),
+        },
+        ToolForm {
+            name: "netexec",
+            template: "netexec {protocol} {target} {action}",
+            target_types: &["ip","domain","network"],
+            danger: "high",
+            purpose: "Ağ üzerinde toplu kimlik doğrulama ve sıralama için modern araç (CrackMapExec'in devamı, nxc).",
+            when_to_use: "Ağdaki Windows/AD makinelerini anonim veya kimlikli olarak toplu haritalamak için.",
+            form: json!([
+                {"name":"protocol","label":"Protokol","type":"select","default":"smb",
+                 "options":[
+                    {"label":"SMB (varsayılan)","value":"smb"},
+                    {"label":"WinRM","value":"winrm"},
+                    {"label":"SSH","value":"ssh"},
+                    {"label":"LDAP","value":"ldap"},
+                    {"label":"MSSQL","value":"mssql"}]},
+                {"name":"action","label":"Eylem","type":"select","default":"",
+                 "options":[
+                    {"label":"Kimlik doğrula (varsayılan)","value":""},
+                    {"label":"Paylaşımlar","value":"--shares"},
+                    {"label":"Kullanıcılar","value":"--users"},
+                    {"label":"Parola politikası","value":"--pass-pol"}]}
+            ]),
+        },
+        ToolForm {
+            name: "tlsx",
+            template: "tlsx -u {target} {mode} -silent",
+            target_types: &["ip","domain","url"],
+            danger: "low",
+            purpose: "Hızlı TLS veri toplayıcı (ProjectDiscovery) — sertifika alanları, sürüm ve şifre bilgilerini çeker.",
+            when_to_use: "Bir hedefin TLS sertifikasındaki isimleri (SAN/CN) ve TLS yapılandırmasını hızlıca almak için.",
+            form: json!([
+                {"name":"mode","label":"Bilgi türü","type":"select","default":"-san -cn",
+                 "options":[
+                    {"label":"Sertifika isimleri (SAN+CN) — varsayılan","value":"-san -cn"},
+                    {"label":"TLS sürümü","value":"-tls-version"},
+                    {"label":"Şifre paketi (cipher)","value":"-cipher"}]}
+            ]),
+        },
+        ToolForm {
+            name: "kerbrute",
+            template: "kerbrute userenum -d {target} {userlist}",
+            target_types: &["domain"],
+            danger: "medium",
+            purpose: "Kerberos üzerinden geçerli Active Directory kullanıcı adlarını hızlıca doğrular (kilitlenme yaratmadan).",
+            when_to_use: "Bir AD alan adında hangi kullanıcı adlarının gerçekten var olduğunu sessizce keşfetmek için.",
+            form: json!([
+                {"name":"userlist","label":"Kullanıcı adı listesi","type":"select","default":"/usr/share/wordlists/dirb/common.txt",
+                 "options":[
+                    {"label":"Genel liste (varsayılan)","value":"/usr/share/wordlists/dirb/common.txt"}]}
+            ]),
+        },
+        ToolForm {
+            name: "sherlock",
+            template: "sherlock {target}",
+            target_types: &["keyword"],
+            danger: "low",
+            purpose: "Bir kullanıcı adını yüzlerce sosyal medya ve web sitesinde arayarak hesapları bulur (OSINT).",
+            when_to_use: "Bir kişinin/markanın hangi platformlarda aynı kullanıcı adıyla hesabı olduğunu tespit etmek için.",
+            form: json!([]),
+        },
+        ToolForm {
+            name: "cewl",
+            template: "cewl -d {depth} {target}",
+            target_types: &["url","domain"],
+            danger: "low",
+            purpose: "Bir web sitesini gezip içindeki kelimelerden hedefe özel bir parola/kelime listesi üretir.",
+            when_to_use: "Kaba kuvvet saldırıları için hedefin kendi içeriğinden özelleştirilmiş bir kelime listesi oluşturmak için.",
+            form: json!([
+                {"name":"depth","label":"Tarama derinliği","type":"select","default":"-d 2",
+                 "options":[
+                    {"label":"1 (yüzeysel)","value":"-d 1"},
+                    {"label":"2 (varsayılan)","value":"-d 2"},
+                    {"label":"3 (derin)","value":"-d 3"}]}
+            ]),
+        },
+        ToolForm {
+            name: "name-that-hash",
+            template: "name-that-hash -t {target}",
+            target_types: &["keyword"],
+            danger: "low",
+            purpose: "Bir hash değerinin hangi algoritmaya ait olduğunu (MD5, SHA, bcrypt, NTLM…) tespit eder.",
+            when_to_use: "Elinizdeki bilinmeyen bir hash'i kırmadan önce türünü belirlemek için (hangi mod/format).",
+            form: json!([]),
+        },
     ]
 }
 
@@ -965,6 +1203,63 @@ pub struct FormSeedResult {
 }
 
 /// Apply every curated form to the catalogue on startup.
+/// Tools that cannot run as a headless, one-shot scan against a target and so
+/// must never sit in the curated (runnable) pool. Four reasons, all real:
+///   * GUI / desktop apps (need an X display): ghidra, wireshark, maltego …
+///   * interactive REPL / TUI: gdb, radare2, frida, pacu
+///   * long-running listeners / proxies / C2: responder, bettercap, mitmproxy,
+///     evilginx2, dnscat2, chisel, sshuttle, gophish, wifiphisher
+///   * live wireless hardware: airodump-ng, aireplay-ng, kismet, reaver, wifite
+///   * run-on-target or local-only: linpeas, winpeas, strace, ltrace, nc, socat,
+///     macchanger, msfvenom (payload generator), crunch (wordlist generator)
+/// Marking them here keeps the runnable list honest instead of showing a broken
+/// form. They stay in the catalogue (searchable) but curated=FALSE.
+pub const NON_SCANNABLE: &[&str] = &[
+    // GUI / desktop
+    "armitage", "autopsy", "bloodhound", "ghidra", "guymager", "maltego",
+    "wireshark", "zaproxy", "radare2", "frida", "cutter",
+    // interactive REPL / TUI
+    "gdb", "pacu",
+    // listeners / proxies / C2
+    "responder", "bettercap", "mitmproxy", "evilginx2", "dnscat2", "chisel",
+    "sshuttle", "gophish", "wifiphisher", "sliver",
+    // live wireless hardware
+    "aireplay-ng", "airmon-ng", "airodump-ng", "kismet", "reaver", "wifite",
+    "pixiewps",
+    // run-on-target scripts / windows-only / local
+    "linpeas", "winpeas", "linux-exploit-suggester", "nishang", "mimikatz",
+    "strace", "ltrace", "nc", "ncat", "socat", "macchanger", "scapy",
+    "dsniff", "tcpreplay", "testdisk", "photorec",
+    // generators (not a scan of a target)
+    "msfvenom", "crunch",
+    // collaboration platforms
+    "dradis", "faraday",
+];
+
+/// Demote every NON_SCANNABLE tool out of the curated/active pool. Idempotent;
+/// runs each startup so a future catalogue re-seed can never resurrect them as
+/// runnable. Also stamps `business_category='needs_interactive'` so the UI can
+/// explain why they are not offered as a scan.
+pub async fn demote_non_scannable(pool: &PgPool) -> u64 {
+    let res = sqlx::query(
+        "UPDATE tools
+            SET curated = FALSE, is_active = FALSE,
+                business_category = 'needs_interactive'
+          WHERE lower(name) = ANY($1) AND (curated OR is_active)",
+    )
+    .bind(NON_SCANNABLE.iter().map(|s| s.to_string()).collect::<Vec<String>>())
+    .execute(pool)
+    .await;
+    match res {
+        Ok(r) => {
+            let n = r.rows_affected();
+            if n > 0 { tracing::info!("non-scannable demote: removed {n} interactive/GUI tools from curated pool"); }
+            n
+        }
+        Err(e) => { tracing::warn!("non-scannable demote failed: {e}"); 0 }
+    }
+}
+
 /// Collapse duplicate curated rows to one per tool.
 ///
 /// Many tools are seeded by BOTH the hackingtool catalogue and the modern/base
@@ -1075,6 +1370,7 @@ pub async fn seed_tool_forms(pool: &PgPool) -> FormSeedResult {
     }
     tracing::info!("tool forms seeded: {applied} applied, {not_found} not found");
     dedupe_curated(pool).await;
+    demote_non_scannable(pool).await;
     FormSeedResult { applied, not_found }
 }
 
