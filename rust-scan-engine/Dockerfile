@@ -104,6 +104,15 @@ RUN set +e; \
     (curl -fsSL "https://github.com/BishopFox/sliver/releases/latest/download/sliver-server_linux" -o /usr/local/bin/sliver-server \
         && chmod +x /usr/local/bin/sliver-server && /usr/local/bin/sliver-server version >/dev/null 2>&1) \
         || { rm -f /usr/local/bin/sliver-server; echo "SKIP rel: sliver" >> /var/log/tool-install-skips.log; }
+    # ProjectDiscovery httpx: a pip dependency ships a Python `httpx` console
+    # script that shadows the real prober on PATH. Install the ELF release over
+    # it so `httpx -sc -title -td` (what the tool form uses) actually runs.
+    HTTPX_VER=1.6.9; \
+    (curl -fsSL "https://github.com/projectdiscovery/httpx/releases/download/v${HTTPX_VER}/httpx_${HTTPX_VER}_linux_amd64.zip" -o /tmp/httpx.zip \
+        && (unzip -o /tmp/httpx.zip httpx -d /tmp >/dev/null 2>&1 || python3 -c "import zipfile;zipfile.ZipFile('/tmp/httpx.zip').extract('httpx','/tmp')") \
+        && install -m755 /tmp/httpx /usr/local/bin/httpx && rm -f /tmp/httpx.zip /tmp/httpx \
+        && /usr/local/bin/httpx -version >/dev/null 2>&1) \
+        || echo "SKIP rel: pd-httpx" >> /var/log/tool-install-skips.log
 
 # 7) Wordlists: decompress rockyou so hashcat/john/hydra can read it directly.
 RUN set +e; \

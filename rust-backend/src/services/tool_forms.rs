@@ -671,6 +671,127 @@ fn definitions() -> Vec<ToolForm> {
                     {"label":"Aktif (DNS çözümleme + doğrulama)","value":"-active"}]}
             ]),
         },
+        ToolForm {
+            name: "hydra",
+            template: "hydra {username} -P {passlist} {target} {service}",
+            target_types: &["ip","domain"],
+            danger: "high",
+            purpose: "Ağ servislerine (SSH, FTP, RDP…) karşı kullanıcı adı/parola deneyerek zayıf kimlik bilgilerini bulur.",
+            when_to_use: "Bir servisin varsayılan veya zayıf parola ile korunup korunmadığını test etmek için.",
+            form: json!([
+                {"name":"service","label":"Hedef servis","type":"select","default":"ssh",
+                 "options":[
+                    {"label":"SSH (varsayılan)","value":"ssh"},
+                    {"label":"FTP","value":"ftp"},
+                    {"label":"RDP (uzak masaüstü)","value":"rdp"},
+                    {"label":"SMB","value":"smb"},
+                    {"label":"MySQL","value":"mysql"},
+                    {"label":"Telnet","value":"telnet"}]},
+                {"name":"username","label":"Kullanıcı adı","type":"select","default":"-l admin",
+                 "options":[
+                    {"label":"admin (varsayılan)","value":"-l admin"},
+                    {"label":"root","value":"-l root"},
+                    {"label":"administrator","value":"-l administrator"}]},
+                {"name":"passlist","label":"Parola listesi","type":"select","default":"/usr/share/wordlists/rockyou.txt",
+                 "options":[
+                    {"label":"rockyou (14M, kapsamlı) — varsayılan","value":"/usr/share/wordlists/rockyou.txt"},
+                    {"label":"Küçük liste (hızlı test)","value":"/usr/share/wordlists/dirb/common.txt"}]}
+            ]),
+        },
+        ToolForm {
+            name: "john",
+            template: "john {wordlist} {format} {target}",
+            target_types: &["file"],
+            danger: "high",
+            purpose: "Çevrimdışı parola kırıcı — ele geçirilmiş hash dosyalarını sözlük saldırısıyla çözmeye çalışır.",
+            when_to_use: "Bir hash dosyanız (shadow, NTLM dökümü vb.) varken parolaların ne kadar zayıf olduğunu ölçmek için.",
+            form: json!([
+                {"name":"wordlist","label":"Saldırı yöntemi","type":"select","default":"--wordlist=/usr/share/wordlists/rockyou.txt",
+                 "options":[
+                    {"label":"rockyou sözlüğü — varsayılan","value":"--wordlist=/usr/share/wordlists/rockyou.txt"},
+                    {"label":"Artımlı kaba kuvvet (yavaş)","value":"--incremental"}]},
+                {"name":"format","label":"Hash türü","type":"select","default":"",
+                 "options":[
+                    {"label":"Otomatik algıla (varsayılan)","value":""},
+                    {"label":"MD5","value":"--format=raw-md5"},
+                    {"label":"SHA-1","value":"--format=raw-sha1"},
+                    {"label":"SHA-256","value":"--format=raw-sha256"},
+                    {"label":"NTLM (Windows)","value":"--format=NT"},
+                    {"label":"bcrypt","value":"--format=bcrypt"},
+                    {"label":"sha512crypt (Linux shadow)","value":"--format=sha512crypt"}]}
+            ]),
+        },
+        ToolForm {
+            name: "hashcat",
+            template: "hashcat -a 0 {hash_mode} {target} {wordlist} --quiet",
+            target_types: &["file"],
+            danger: "high",
+            purpose: "Dünyanın en hızlı parola kırıcısı (GPU destekli) — hash'leri sözlük saldırısıyla çözer.",
+            when_to_use: "Büyük bir hash setini yüksek hızda kırmayı denemek için; hash türünü seçmeniz yeterli.",
+            form: json!([
+                {"name":"hash_mode","label":"Hash türü","type":"select","default":"-m 0",
+                 "options":[
+                    {"label":"MD5 (varsayılan)","value":"-m 0"},
+                    {"label":"SHA-1","value":"-m 100"},
+                    {"label":"SHA-256","value":"-m 1400"},
+                    {"label":"SHA-512","value":"-m 1700"},
+                    {"label":"NTLM (Windows)","value":"-m 1000"},
+                    {"label":"bcrypt","value":"-m 3200"},
+                    {"label":"WPA/WPA2","value":"-m 22000"}]},
+                {"name":"wordlist","label":"Sözlük","type":"select","default":"/usr/share/wordlists/rockyou.txt",
+                 "options":[
+                    {"label":"rockyou (varsayılan)","value":"/usr/share/wordlists/rockyou.txt"}]}
+            ]),
+        },
+        ToolForm {
+            name: "medusa",
+            template: "medusa -h {target} {username} -P {passlist} -M {module}",
+            target_types: &["ip","domain"],
+            danger: "high",
+            purpose: "Hydra'ya benzer paralel ağ oturum kırıcı — servislere karşı hızlı, çok iş parçacıklı parola denemesi.",
+            when_to_use: "Çok sayıda hedefe/servise karşı paralel parola testi yaparken hız gerektiğinde.",
+            form: json!([
+                {"name":"module","label":"Hedef servis","type":"select","default":"ssh",
+                 "options":[
+                    {"label":"SSH (varsayılan)","value":"ssh"},
+                    {"label":"FTP","value":"ftp"},
+                    {"label":"SMB","value":"smbnt"},
+                    {"label":"MySQL","value":"mysql"},
+                    {"label":"RDP","value":"rdp"}]},
+                {"name":"username","label":"Kullanıcı adı","type":"select","default":"-u admin",
+                 "options":[
+                    {"label":"admin (varsayılan)","value":"-u admin"},
+                    {"label":"root","value":"-u root"}]},
+                {"name":"passlist","label":"Parola listesi","type":"select","default":"/usr/share/wordlists/rockyou.txt",
+                 "options":[
+                    {"label":"rockyou — varsayılan","value":"/usr/share/wordlists/rockyou.txt"},
+                    {"label":"Küçük liste (hızlı)","value":"/usr/share/wordlists/dirb/common.txt"}]}
+            ]),
+        },
+        ToolForm {
+            name: "ncrack",
+            template: "ncrack {port} --user {username} -P {passlist} {target}",
+            target_types: &["ip","domain"],
+            danger: "high",
+            purpose: "Nmap ailesinden yüksek hızlı ağ kimlik doğrulama kırıcısı; büyük ölçekli parola testleri için tasarlandı.",
+            when_to_use: "Nmap ile keşfettiğiniz servislerde zayıf oturum bilgilerini hızla doğrulamak için.",
+            form: json!([
+                {"name":"port","label":"Hedef servis (port)","type":"select","default":"-p 22",
+                 "options":[
+                    {"label":"SSH / 22 (varsayılan)","value":"-p 22"},
+                    {"label":"FTP / 21","value":"-p 21"},
+                    {"label":"RDP / 3389","value":"-p 3389"},
+                    {"label":"MySQL / 3306","value":"-p 3306"}]},
+                {"name":"username","label":"Kullanıcı adı","type":"select","default":"--user admin",
+                 "options":[
+                    {"label":"admin (varsayılan)","value":"--user admin"},
+                    {"label":"root","value":"--user root"}]},
+                {"name":"passlist","label":"Parola listesi","type":"select","default":"/usr/share/wordlists/rockyou.txt",
+                 "options":[
+                    {"label":"rockyou — varsayılan","value":"/usr/share/wordlists/rockyou.txt"},
+                    {"label":"Küçük liste (hızlı)","value":"/usr/share/wordlists/dirb/common.txt"}]}
+            ]),
+        },
     ]
 }
 
