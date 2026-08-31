@@ -182,8 +182,13 @@ pub async fn sync_active_with_health(pool: &PgPool, results: &[HealthCheckResult
         // installs but errors on --version is still runnable, so `installed`
         // (not the stricter `status == healthy`) is the right gate here.
         let should_be_active = r.installed;
+        // Bootstrap: a tool that resolves in the scan engine and is being
+        // health-checked belongs to the working set, so mark it curated too.
+        // This is idempotent — once curated, it stays curated even if a later
+        // image drops it (it just goes inactive), which is the intended
+        // behaviour: the 183-tool set is stable, availability is not.
         let res = sqlx::query(
-            "UPDATE tools SET is_active = $1 WHERE id = $2 AND is_active IS DISTINCT FROM $1",
+            "UPDATE tools SET is_active = $1, curated = (curated OR $1)               WHERE id = $2 AND (is_active IS DISTINCT FROM $1 OR (curated = FALSE AND $1))",
         )
         .bind(should_be_active)
         .bind(&r.tool_id)
@@ -205,7 +210,7 @@ pub async fn run_full_health_check(pool: &PgPool) -> Vec<HealthCheckResult> {
     info!("Starting full health check for all active CLI tools");
 
     let tools: Vec<(String, Option<String>)> = sqlx::query_as(
-        "SELECT id, binary_name FROM tools WHERE tool_type = 'cli' AND COALESCE(binary_name,'') != ''"
+        "SELECT id, binary_name FROM tools               WHERE COALESCE(binary_name,'') != ''                 AND (curated = TRUE OR NOT EXISTS (SELECT 1 FROM tools WHERE curated = TRUE))               AND tool_type = 'cli'"
     )
     .fetch_all(pool)
     .await

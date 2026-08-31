@@ -588,6 +588,16 @@ r#"ALTER TABLE api_keys ADD COLUMN IF NOT EXISTS revoked_at TIMESTAMPTZ"#,
 // known_hosts file anyway. See services::ssh_hostkey.
 r#"ALTER TABLE agents ADD COLUMN IF NOT EXISTS ssh_host_key TEXT"#,
 
+// Curated flag: which tools belong to the 183-tool first-class catalogue.
+// AUDIT 2026-08-30: the catalogue mixed 1510 records from three sources. The
+// product's promise is a curated set of tools that run to 100% with a
+// choice-based form. `curated = TRUE` marks a tool as part of that set; the
+// health sync only activates curated tools, so the raw kali_tools.json bulk
+// never surfaces to users. Non-curated records stay in the DB for reference
+// but are never active.
+r#"ALTER TABLE tools ADD COLUMN IF NOT EXISTS curated BOOLEAN NOT NULL DEFAULT FALSE"#,
+"CREATE INDEX IF NOT EXISTS idx_tools_curated ON tools(curated) WHERE curated",
+
 // ── SSO domain claims (audit 2026-08-29) ──────────────────────────────
 // `sso_configs.domain_hint` had no uniqueness constraint, and the SAML/OIDC
 // callbacks look a config up by domain alone. Any organisation could therefore

@@ -30,6 +30,11 @@ struct ToolForm {
     /// Target kinds this tool accepts, for client-side validation.
     target_types: &'static [&'static str],
     danger: &'static str,
+    /// One plain-language sentence: what this tool does. Shown above the form so
+    /// a user who has never heard of the tool knows what it is for (Madde 4).
+    purpose: &'static str,
+    /// When you would reach for it — the practical use case.
+    when_to_use: &'static str,
 }
 
 /// Build the curated forms. Kept as data so it is reviewable at a glance.
@@ -40,6 +45,8 @@ fn definitions() -> Vec<ToolForm> {
             template: "nmap {scan_type} {timing} {port_spec} {service_detection} {os_detection} {script_scan} {target}",
             target_types: &["ip", "domain", "network"],
             danger: "medium",
+            purpose: "Bir hedefteki açık portları ve çalışan servisleri haritalar — bir ağın 'kapılarını' yoklar.",
+            when_to_use: "Bir sisteme saldırı yüzeyini anlamak için ilk adım: hangi servisler dışarıya açık?",
             form: json!([
                 {"name":"scan_type","label":"Scan technique","type":"select","default":"-sS",
                  "description":"How ports are probed",
@@ -75,6 +82,8 @@ fn definitions() -> Vec<ToolForm> {
             template: "nuclei -u {target} {severity} {tags} {rate_limit} -j",
             target_types: &["url","domain"],
             danger: "medium",
+            purpose: "Binlerce hazır şablonla bilinen zafiyetleri, yanlış yapılandırmaları ve açık panelleri tarar.",
+            when_to_use: "Bir web hedefinde bilinen CVE'leri ve yaygın güvenlik açıklarını hızlıca taramak için.",
             form: json!([
                 {"name":"severity","label":"Minimum severity","type":"select","default":"-severity medium,high,critical",
                  "options":[
@@ -101,6 +110,8 @@ fn definitions() -> Vec<ToolForm> {
             template: "nikto -h {target} {ssl} {tuning}",
             target_types: &["url","domain","ip"],
             danger: "medium",
+            purpose: "Web sunucularını tehlikeli dosyalar, eski yazılım ve yapılandırma hataları için tarar.",
+            when_to_use: "Bir web sunucusunun temel hijyenini kontrol etmek: unutulmuş dosyalar, güncel olmayan bileşenler.",
             form: json!([
                 {"name":"ssl","label":"Force HTTPS","type":"boolean","default":false,"true_value":"-ssl","false_value":""},
                 {"name":"tuning","label":"Test focus","type":"select","default":"",
@@ -116,6 +127,8 @@ fn definitions() -> Vec<ToolForm> {
             template: "ffuf -u {fuzz_url} -w {wordlist} {match_codes} {threads}",
             target_types: &["url"],
             danger: "medium",
+            purpose: "Bir web sitesinde gizli dizinleri, dosyaları ve parametreleri kelime listesiyle keşfeder (fuzzing).",
+            when_to_use: "Bir sitede link verilmemiş yönetim panelleri, yedek dosyalar veya gizli uç noktalar bulmak için.",
             form: json!([
                 {"name":"fuzz_url","label":"URL with FUZZ keyword","type":"text","required":true,
                  "placeholder":"https://example.com/FUZZ","description":"Put FUZZ where words are inserted"},
@@ -141,6 +154,8 @@ fn definitions() -> Vec<ToolForm> {
             template: "gobuster dir -u {target} -w {wordlist} {extensions} {threads}",
             target_types: &["url"],
             danger: "medium",
+            purpose: "Web dizinlerini, alt alan adlarını ve DNS kayıtlarını kelime listesiyle kaba kuvvetle keşfeder.",
+            when_to_use: "ffuf'a benzer: bir hedefte gizli içerik ararken hızlı ve güvenilir bir seçenek.",
             form: json!([
                 {"name":"wordlist","label":"Wordlist","type":"select","default":"/usr/share/wordlists/dirb/common.txt",
                  "options":[
@@ -162,6 +177,8 @@ fn definitions() -> Vec<ToolForm> {
             template: "subfinder -d {target} {sources} -silent",
             target_types: &["domain"],
             danger: "low",
+            purpose: "Bir alan adına ait alt alan adlarını (subdomain) pasif kaynaklardan toplar.",
+            when_to_use: "Bir şirketin saldırı yüzeyini genişletmek: app.x.com, vpn.x.com gibi unutulmuş alt alanları bulmak.",
             form: json!([
                 {"name":"sources","label":"Source set","type":"select","default":"",
                  "options":[
@@ -174,6 +191,8 @@ fn definitions() -> Vec<ToolForm> {
             template: "sqlmap -u {target} --batch {level} {risk} {technique}",
             target_types: &["url"],
             danger: "high",
+            purpose: "Web uygulamalarındaki SQL enjeksiyon açıklarını otomatik tespit eder ve sömürür.",
+            when_to_use: "Bir formun veya URL parametresinin veritabanına sızma açığı olup olmadığını test etmek için.",
             form: json!([
                 {"name":"level","label":"Test depth","type":"select","default":"--level 1",
                  "options":[
@@ -197,6 +216,8 @@ fn definitions() -> Vec<ToolForm> {
             template: "wpscan --url {target} --no-banner {enumerate} {detection}",
             target_types: &["url"],
             danger: "medium",
+            purpose: "WordPress sitelerini savunmasız eklentiler, temalar ve kullanıcılar için tarar.",
+            when_to_use: "Hedef WordPress ise: hangi eklentinin bilinen açığı var, kullanıcı adları neler?",
             form: json!([
                 {"name":"enumerate","label":"Enumerate","type":"select","default":"-e vp",
                  "options":[
@@ -216,6 +237,8 @@ fn definitions() -> Vec<ToolForm> {
             template: "masscan {target} {ports} {rate}",
             target_types: &["ip","network"],
             danger: "high",
+            purpose: "İnternet ölçeğinde çok hızlı port taraması yapar — nmap'ten kat kat hızlı, ama daha az detaylı.",
+            when_to_use: "Geniş IP aralıklarını (tüm bir /16 ağı gibi) saniyeler içinde taramak için.",
             form: json!([
                 {"name":"ports","label":"Ports","type":"select","default":"-p1-1000",
                  "options":[
@@ -234,6 +257,8 @@ fn definitions() -> Vec<ToolForm> {
             template: "whatweb {aggression} {target}",
             target_types: &["url","domain"],
             danger: "low",
+            purpose: "Bir web sitesinin hangi teknolojilerle çalıştığını belirler (CMS, sunucu, framework, JS kütüphaneleri).",
+            when_to_use: "Bir hedefi tanımanın ilk adımı: WordPress mi, hangi sunucu, hangi sürüm?",
             form: json!([
                 {"name":"aggression","label":"Aggression","type":"select","default":"-a 1",
                  "options":[
@@ -260,14 +285,21 @@ pub async fn seed_tool_forms(pool: &PgPool) -> FormSeedResult {
             "form": def.form,
             "target_types": def.target_types,
             "danger_level": def.danger,
+            "purpose": def.purpose,
+            "when_to_use": def.when_to_use,
         });
+        // business_description carries the plain-language "what this does" line
+        // shown to users; risk_context carries the danger level.
         let res = sqlx::query(
-            "UPDATE tools SET command_template = $1, parameters = $2, is_active = TRUE \
+            "UPDATE tools SET command_template = $1, parameters = $2, curated = TRUE, is_active = TRUE, \
+                    business_description = $4, risk_context = $5 \
               WHERE lower(name) = lower($3)",
         )
         .bind(def.template)
         .bind(&params)
         .bind(def.name)
+        .bind(def.purpose)
+        .bind(def.danger)
         .execute(pool)
         .await;
         match res {

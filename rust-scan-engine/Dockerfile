@@ -50,7 +50,8 @@ RUN mkdir -p /var/lib/apt/lists/partial /var/cache/apt/archives/partial && \
 #    /var/log/tool-install-skips.log; the post-build report shows the result.
 RUN apt-get update || (sleep 5 && apt-get update)
 # Prerequisites first, each tolerant so one missing name cannot abort the layer.
-RUN for pkg in testdisk python3-pip python3-venv pipx golang-go ruby-full ca-certificates curl git wget; do \
+RUN for pkg in testdisk python3-pip python3-venv pipx golang-go ruby-full ca-certificates curl git wget \
+              libxml2-dev libxslt1-dev libffi-dev libssl-dev python3-dev build-essential zlib1g-dev; do \
         apt-get install -y --no-install-recommends "$pkg" || echo "SKIP prereq: $pkg" >> /var/log/tool-install-skips.log; \
     done
 # Then the tool packages, one by one.
@@ -63,9 +64,10 @@ RUN while IFS= read -r pkg; do \
 
 # 2) pip tools (system-wide; --break-system-packages: this is a dedicated
 #    scanner image, not a shared host).
-RUN pip3 install --no-cache-dir --break-system-packages \
-        flare-capa maigret objection oletools prowler scoutsuite \
-        frida-tools volatility3 || true
+RUN for pkg in flare-capa maigret objection oletools prowler scoutsuite frida-tools volatility3; do \
+        pip3 install --no-cache-dir --break-system-packages --ignore-installed "$pkg" \
+          || echo "SKIP pip: $pkg" >> /var/log/tool-install-skips.log; \
+    done
 
 # 3) Go tools -> /usr/local/bin.
 ENV GOBIN=/usr/local/bin GOPATH=/root/go
@@ -81,12 +83,27 @@ RUN for pkg in \
 # 4) gem tools.
 RUN gem install zsteg --no-document || true
 
-# 5) Release-only tools (best-effort; a failure must not break the build).
-RUN set -e; ARCH=$(dpkg --print-architecture); \
-    (curl -fsSL "https://github.com/RustScan/RustScan/releases/latest/download/rustscan_amd64.deb" -o /tmp/rustscan.deb \
-        && dpkg -i /tmp/rustscan.deb && rm -f /tmp/rustscan.deb) || echo "rustscan skipped"; \
+# 5) git-clone script tools -> /opt, symlinked into PATH (best-effort).
+RUN set +e; \
+    git clone --depth 1 https://github.com/AlessandroZ/LaZagne /opt/lazagne 2>/dev/null \
+        && printf '#!/bin/sh\nexec python3 /opt/lazagne/Linux/laZagne.py "$@"\n' > /usr/local/bin/lazagne \
+        && chmod +x /usr/local/bin/lazagne || echo "SKIP git: lazagne" >> /var/log/tool-install-skips.log; \
+    git clone --depth 1 https://github.com/htr-tech/zphisher /opt/zphisher 2>/dev/null \
+        && printf '#!/bin/sh\ncd /opt/zphisher && exec bash zphisher.sh "$@"\n' > /usr/local/bin/zphisher \
+        && chmod +x /usr/local/bin/zphisher || echo "SKIP git: zphisher" >> /var/log/tool-install-skips.log; \
+    git clone --depth 1 https://github.com/AonCyberLabs/Windows-Exploit-Suggester /opt/wes 2>/dev/null \
+        && printf '#!/bin/sh\nexec python3 /opt/wes/windows-exploit-suggester.py "$@"\n' > /usr/local/bin/windows-exploit-suggester \
+        && chmod +x /usr/local/bin/windows-exploit-suggester || echo "SKIP git: wes" >> /var/log/tool-install-skips.log; \
+    printf '#!/bin/sh\nexec curl -s "https://crt.sh/?q=$1&output=json"\n' > /usr/local/bin/crtsh \
+        && chmod +x /usr/local/bin/crtsh
+
+# 6) Release binaries with pinned working URLs (best-effort).
+RUN set +e; \
+    (curl -fsSL "https://github.com/bee-san/RustScan/releases/download/2.4.1/rustscan_2.4.1_amd64.deb" -o /tmp/rustscan.deb \
+        && apt-get install -y /tmp/rustscan.deb && rm -f /tmp/rustscan.deb) || echo "SKIP rel: rustscan" >> /var/log/tool-install-skips.log; \
     (curl -fsSL "https://github.com/BishopFox/sliver/releases/latest/download/sliver-server_linux" -o /usr/local/bin/sliver-server \
-        && chmod +x /usr/local/bin/sliver-server) || echo "sliver skipped"
+        && chmod +x /usr/local/bin/sliver-server && /usr/local/bin/sliver-server version >/dev/null 2>&1) \
+        || { rm -f /usr/local/bin/sliver-server; echo "SKIP rel: sliver" >> /var/log/tool-install-skips.log; }
 
 # ─────────────────────────────────────────────────────────────────────────
 # Stage 3: Runtime.
