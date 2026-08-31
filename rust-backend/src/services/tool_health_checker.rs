@@ -181,19 +181,20 @@ pub async fn sync_active_with_health(pool: &PgPool, results: &[HealthCheckResult
         // "installed" means the binary resolved in the scan engine. A tool that
         // installs but errors on --version is still runnable, so `installed`
         // (not the stricter `status == healthy`) is the right gate here.
-        let should_be_active = r.installed;
-        // Bootstrap: a tool that resolves in the scan engine and is being
-        // health-checked belongs to the working set, so mark it curated too.
-        // This is idempotent — once curated, it stays curated even if a later
-        // image drops it (it just goes inactive), which is the intended
-        // behaviour: the 183-tool set is stable, availability is not.
+        // A tool is active only if it is BOTH curated (part of the 183 set) AND
+        // installed. A curated tool whose binary is missing goes inactive; a
+        // non-curated tool never activates no matter what is installed. This is
+        // what keeps the raw kali_tools.json bulk out of the user-facing
+        // catalogue — the earlier logic activated anything installed and reached
+        // 513 active.
         let res = sqlx::query(
-            "UPDATE tools SET is_active = $1, curated = (curated OR $1)               WHERE id = $2 AND (is_active IS DISTINCT FROM $1 OR (curated = FALSE AND $1))",
+            "UPDATE tools SET is_active = (curated AND $1)               WHERE id = $2 AND is_active IS DISTINCT FROM (curated AND $1)",
         )
-        .bind(should_be_active)
+        .bind(r.installed)
         .bind(&r.tool_id)
         .execute(pool)
         .await;
+        let should_be_active = r.installed;
         if let Ok(q) = res {
             if q.rows_affected() > 0 {
                 if should_be_active { activated += 1; } else { deactivated += 1; }
@@ -210,7 +211,7 @@ pub async fn run_full_health_check(pool: &PgPool) -> Vec<HealthCheckResult> {
     info!("Starting full health check for all active CLI tools");
 
     let tools: Vec<(String, Option<String>)> = sqlx::query_as(
-        "SELECT id, binary_name FROM tools               WHERE COALESCE(binary_name,'') != ''                 AND (curated = TRUE OR NOT EXISTS (SELECT 1 FROM tools WHERE curated = TRUE))               AND tool_type = 'cli'"
+        "SELECT id, binary_name FROM tools               WHERE tool_type = 'cli' AND COALESCE(binary_name,'') != ''               ORDER BY curated DESC"
     )
     .fetch_all(pool)
     .await

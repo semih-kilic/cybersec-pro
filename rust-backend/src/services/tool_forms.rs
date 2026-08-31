@@ -277,7 +277,39 @@ pub struct FormSeedResult {
 }
 
 /// Apply every curated form to the catalogue on startup.
+/// One-time curation bootstrap: promote the working tool set to `curated`.
+///
+/// The catalogue holds 1510 records from three sources. The 183-tool product
+/// set is defined as "tools that are cli, have a binary, and were already
+/// active" — i.e. the real-usage-plus-installed set the operator built up over
+/// time, per the product decision. This runs before the form seeder so that
+/// `is_active = curated AND installed` has a curated pool to work with. It only
+/// ever ADDS curation (never un-curates), so it is safe to run every startup.
+pub async fn bootstrap_curated(pool: &PgPool) -> u64 {
+    // If a curated set already exists, this is a no-op after the first run.
+    let existing: i64 = sqlx::query_scalar("SELECT count(*) FROM tools WHERE curated")
+        .fetch_one(pool).await.unwrap_or(0);
+    if existing >= 50 {
+        return 0; // already bootstrapped
+    }
+    let res = sqlx::query(
+        "UPDATE tools SET curated = TRUE           WHERE curated = FALSE AND is_active = TRUE             AND tool_type = 'cli' AND COALESCE(binary_name,'') != ''",
+    )
+    .execute(pool)
+    .await;
+    match res {
+        Ok(r) => {
+            let n = r.rows_affected();
+            if n > 0 { tracing::info!("curation bootstrap: promoted {n} active tools to curated"); }
+            n
+        }
+        Err(e) => { tracing::warn!("curation bootstrap failed: {e}"); 0 }
+    }
+}
+
 pub async fn seed_tool_forms(pool: &PgPool) -> FormSeedResult {
+    bootstrap_curated(pool).await;
+
     let mut applied = 0;
     let mut not_found = 0;
     for def in definitions() {
