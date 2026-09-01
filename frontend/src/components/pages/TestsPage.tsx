@@ -1,8 +1,9 @@
+import dynamic from "next/dynamic";
 "use client";
 
 import { useTranslations } from "next-intl";
 import RevealOnScroll from "@/components/animations/RevealOnScroll";
-import CyberRadar from "@/components/three/CyberRadar";
+const CyberRadar = dynamic(() => import("@/components/three/CyberRadar"), { ssr: false });
 import { Shield, Wifi, Globe, Bug, Database, Lock, Terminal, FileSearch, Radio, Server, Code2, Zap } from "lucide-react";
 
 const assessmentTypes = [

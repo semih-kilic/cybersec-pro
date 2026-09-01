@@ -62,12 +62,37 @@ function TypeWriter({ text, speed = 30 }: { text: string; speed?: number }) {
   return <>{displayed}{showCursor && <span className="animate-pulse text-[var(--color-neon)]">|</span>}</>;
 }
 
+// Heavy WebGL (Three.js ~875KB + ~1.1MB earth textures) is desktop-only eye
+// candy. On mobile, coarse-pointer, small viewports or reduced-motion we skip
+// it entirely — that alone removes ~2MB and the main-thread block that was
+// wrecking the mobile PageSpeed score. On capable desktops we still load it,
+// but only after the browser is idle so it never competes with first paint/LCP.
+function useHeavyVisuals(): boolean {
+  const [ok, setOk] = useState(false);
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    const coarse = window.matchMedia("(pointer: coarse)").matches;
+    const small = window.innerWidth < 1024;
+    if (reduce || coarse || small) return; // no Three.js on mobile / reduced-motion
+    const ric: typeof window.requestIdleCallback | undefined =
+      (window as unknown as { requestIdleCallback?: typeof window.requestIdleCallback }).requestIdleCallback;
+    const id = ric ? ric(() => setOk(true)) : window.setTimeout(() => setOk(true), 800);
+    return () => {
+      const cic = (window as unknown as { cancelIdleCallback?: (h: number) => void }).cancelIdleCallback;
+      if (ric && cic) cic(id as number); else clearTimeout(id as number);
+    };
+  }, []);
+  return ok;
+}
+
 export default function HeroSection() {
   const t = useTranslations("hero");
   const sectionRef = useRef<HTMLElement>(null);
   const { scrollYProgress } = useScroll({ target: sectionRef, offset: ["start start", "end start"] });
   const yContent = useTransform(scrollYProgress, [0, 1], [0, 150]);
   const opacityContent = useTransform(scrollYProgress, [0, 0.8], [1, 0]);
+  const heavyVisuals = useHeavyVisuals();
 
   const stats = [
     { value: t("stats.tools"), label: t("stats.toolsLabel") },
@@ -78,8 +103,19 @@ export default function HeroSection() {
 
   return (
     <section ref={sectionRef} className="relative min-h-screen overflow-hidden">
-      <MatrixRain />
-      <CyberAttackGlobe />
+      {heavyVisuals ? (
+        <>
+          <MatrixRain />
+          <CyberAttackGlobe />
+        </>
+      ) : (
+        // Lightweight static backdrop for mobile / reduced-motion — same mood,
+        // zero JS, zero WebGL, zero texture download.
+        <div
+          aria-hidden
+          className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_50%_-20%,rgba(0,255,170,0.10),transparent_60%),radial-gradient(ellipse_at_80%_120%,rgba(0,120,255,0.10),transparent_55%)]"
+        />
+      )}
 
       <motion.div
         style={{ y: yContent, opacity: opacityContent }}

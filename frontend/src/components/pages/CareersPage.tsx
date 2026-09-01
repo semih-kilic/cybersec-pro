@@ -1,8 +1,9 @@
+import dynamic from "next/dynamic";
 "use client";
 
 import { useTranslations } from "next-intl";
 import RevealOnScroll from "@/components/animations/RevealOnScroll";
-import CyberRadar from "@/components/three/CyberRadar";
+const CyberRadar = dynamic(() => import("@/components/three/CyberRadar"), { ssr: false });
 import { Handshake, Building2, GraduationCap, Globe, Shield, Mail, ExternalLink, Users, Target, Zap } from "lucide-react";
 
 const partnerships = [
