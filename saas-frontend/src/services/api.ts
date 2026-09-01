@@ -173,6 +173,26 @@ class ApiService {
   // MFA — V20
   // ================================
 
+  // Upload a file to use as the target of a file-based scan tool. The backend
+  // stores it in the shared upload volume and returns { path, filename, size };
+  // that path is passed as the scan target. Raw bytes (not multipart).
+  async uploadScanFile(file: File) {
+    const headers: Record<string, string> = {};
+    if (this.token) headers['Authorization'] = `Bearer ${this.token}`;
+    try {
+      const response = await fetch(`${API_BASE}/scans/upload?filename=${encodeURIComponent(file.name)}`, {
+        method: 'POST',
+        headers,
+        body: file,
+      });
+      const data = await response.json();
+      if (!response.ok) return { error: data.error || 'Upload failed' };
+      return { data: data as { path: string; filename: string; size: number } };
+    } catch {
+      return { error: 'Network error during upload' };
+    }
+  }
+
   async getMfaStatus() {
     return this.request<{
       mfa_enabled: boolean;

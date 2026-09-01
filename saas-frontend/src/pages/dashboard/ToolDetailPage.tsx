@@ -78,6 +78,11 @@ export function ToolDetailPage() {
   const [authzVersion, setAuthzVersion] = useState('');
   const [authzLoading, setAuthzLoading] = useState(false);
   const lastAuthzTargetRef = useRef('');
+  // File-based tools (target_types includes "file") upload their input; the
+  // returned server path becomes the scan target.
+  const [uploadedFile, setUploadedFile] = useState<{ path: string; name: string; size: number } | null>(null);
+  const [uploading, setUploading] = useState(false);
+  const [uploadError, setUploadError] = useState<string | null>(null);
 
   const { data: agentsList } = useAgentsList();
   const agents = (agentsList || []) as { id: string | number; name: string; ip_address?: string; status: string; platform?: string }[];
@@ -222,9 +227,25 @@ export function ToolDetailPage() {
     return params.find(p => p.required && (p.name.toLowerCase().includes('target') || p.name.toLowerCase().includes('host') || p.name.toLowerCase().includes('url') || p.name.toLowerCase().includes('domain') || p.name.toLowerCase().includes('input'))) || params.find(p => p.required);
   };
 
+  const isFileTool = (): boolean => {
+    const tt = (tool?.parameters as any)?.target_types;
+    return Array.isArray(tt) && tt.map((x: string) => String(x).toLowerCase()).includes('file');
+  };
+
   const getTargetValue = (): string => {
+    if (isFileTool()) return uploadedFile?.path || '';
     const tp = findTargetParam();
     return tp ? (paramValues[tp.name] as string) || '' : '';
+  };
+
+  const handleFileUpload = async (file: File) => {
+    setUploadError(null);
+    if (file.size > 200 * 1024 * 1024) { setUploadError('File too large (max 200MB)'); return; }
+    setUploading(true);
+    const res = await api.uploadScanFile(file);
+    setUploading(false);
+    if (res.error || !res.data) { setUploadError(res.error || 'Upload failed'); return; }
+    setUploadedFile({ path: res.data.path, name: res.data.filename, size: res.data.size });
   };
 
   const generateCommand = () => {
@@ -388,16 +409,40 @@ export function ToolDetailPage() {
                 <span className="text-lg">🎯</span>
                 <h3 className="text-white font-semibold">{t('common.target', 'Target')} <span className="text-red-400">*</span></h3>
               </div>
-              <p className="text-gray-500 text-xs mb-3">{t('scans.targetHint', 'Enter the IP address, domain, or URL you want to scan. You must own or have permission to test this target.')}</p>
-              <input
-                type="text"
-                placeholder={t('scans.targetPlaceholder', 'e.g. 192.168.1.0/24, example.com, https://app.example.com')}
-                value={getTargetValue()}
-                onChange={(e) => { const tp = findTargetParam(); if (tp) setParamValues(prev => ({ ...prev, [tp.name]: e.target.value })); }}
-                disabled={isScanning}
-                onKeyDown={(e) => { if (e.key === 'Enter' && getTargetValue()) handleRunScan(); }}
-                className={`w-full px-4 py-3 bg-gray-800 border rounded-lg text-white placeholder-gray-500 focus:outline-none transition disabled:opacity-50 ${!getTargetValue() ? 'border-yellow-600/50 focus:border-yellow-500' : 'border-gray-700 focus:border-kali-blue'}`}
-              />
+              {isFileTool() ? (
+                <div>
+                  <p className="text-gray-500 text-xs mb-3">{t('scans.fileHint', 'This tool analyzes a file you upload (binary, image, PCAP, memory dump, hash file…). It is stored privately and only this scan can read it.')}</p>
+                  <label className={`flex flex-col items-center justify-center w-full px-4 py-6 border-2 border-dashed rounded-lg cursor-pointer transition ${uploadedFile ? 'border-green-600/50 bg-green-900/10' : 'border-gray-700 hover:border-kali-blue bg-gray-800'} ${(isScanning || uploading) ? 'opacity-50 pointer-events-none' : ''}`}>
+                    <input
+                      type="file"
+                      className="hidden"
+                      disabled={isScanning || uploading}
+                      onChange={(e) => { const f = e.target.files?.[0]; if (f) handleFileUpload(f); }}
+                    />
+                    {uploading ? (
+                      <span className="text-sm text-gray-300">⏳ {t('scans.uploading', 'Uploading…')}</span>
+                    ) : uploadedFile ? (
+                      <span className="text-sm text-green-400">✅ {uploadedFile.name} ({Math.round(uploadedFile.size / 1024)} KB) — {t('scans.fileReady', 'ready')}</span>
+                    ) : (
+                      <span className="text-sm text-gray-400">📎 {t('scans.selectFile', 'Click to select a file (max 200MB)')}</span>
+                    )}
+                  </label>
+                  {uploadError && <p className="text-red-400 text-xs mt-2">❌ {uploadError}</p>}
+                </div>
+              ) : (
+                <>
+                  <p className="text-gray-500 text-xs mb-3">{t('scans.targetHint', 'Enter the IP address, domain, or URL you want to scan. You must own or have permission to test this target.')}</p>
+                  <input
+                    type="text"
+                    placeholder={t('scans.targetPlaceholder', 'e.g. 192.168.1.0/24, example.com, https://app.example.com')}
+                    value={getTargetValue()}
+                    onChange={(e) => { const tp = findTargetParam(); if (tp) setParamValues(prev => ({ ...prev, [tp.name]: e.target.value })); }}
+                    disabled={isScanning}
+                    onKeyDown={(e) => { if (e.key === 'Enter' && getTargetValue()) handleRunScan(); }}
+                    className={`w-full px-4 py-3 bg-gray-800 border rounded-lg text-white placeholder-gray-500 focus:outline-none transition disabled:opacity-50 ${!getTargetValue() ? 'border-yellow-600/50 focus:border-yellow-500' : 'border-gray-700 focus:border-kali-blue'}`}
+                  />
+                </>
+              )}
               {!getTargetValue() && scanStatus === 'idle' && (
                 <p className="text-yellow-500/80 text-xs mt-2">⚠️ {t('scans.targetRequired', 'Target is required to start a scan')}</p>
               )}
