@@ -75,7 +75,7 @@ impl ScanEngine {
         // Reading the stored pid avoids locking the Child, which `wait()` holds
         // for the process's whole lifetime — locking here would deadlock.
         if let Some((pid, _child)) = children.read().await.get(scan_id) {
-            kill_process_group(*pid);
+            Self::kill_process_group(*pid);
         }
     }
 
@@ -360,7 +360,7 @@ impl ScanEngine {
 
         // Reap any background children the tool left behind on normal exit, then
         // drop the handle. Without this, detached grandchildren leak.
-        kill_process_group(pid);
+        Self::kill_process_group(pid);
         children.write().await.remove(scan_id);
 
         Ok(status.code().unwrap_or(-1))
