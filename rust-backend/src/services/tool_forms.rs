@@ -1385,6 +1385,61 @@ fn definitions() -> Vec<ToolForm> {
                     {"label":"Küçük liste (hızlı)","value":"/usr/share/wordlists/dirb/common.txt"}]}
             ]),
         },
+        ToolForm {
+            name: "foremost",
+            template: "foremost -T -t {types} -i {target} -o /tmp/foremost",
+            target_types: &["file"],
+            danger: "low",
+            purpose: "Dosya oymacılığı (file carving) — bir disk imajı veya ham veriden silinmiş/gömülü dosyaları başlık imzalarına göre kurtarır.",
+            when_to_use: "Bir disk imajından veya bellek dökümünden kaybolmuş resim, belge, arşiv gibi dosyaları geri çıkarmak için.",
+            form: json!([
+                {"name":"types","label":"Kurtarılacak dosya türleri","type":"select","default":"all",
+                 "options":[
+                    {"label":"Tümü (varsayılan)","value":"all"},
+                    {"label":"Resimler (jpg,png,gif,bmp)","value":"jpg,png,gif,bmp"},
+                    {"label":"Belgeler (pdf,doc,htm)","value":"pdf,doc,htm"},
+                    {"label":"Arşivler (zip,rar)","value":"zip,rar"},
+                    {"label":"Çalıştırılabilir (exe)","value":"exe"}]}
+            ]),
+        },
+        ToolForm {
+            name: "certipy",
+            template: "certipy-ad find -u {username} -p {password} -dc-ip {target} -vulnerable -stdout",
+            target_types: &["ip","domain"],
+            danger: "medium",
+            purpose: "Active Directory Sertifika Servisi'ndeki (AD CS) yanlış yapılandırmaları ve ayrıcalık yükseltme yollarını (ESC1-ESC8) tespit eder.",
+            when_to_use: "Bir AD ortamında sertifika tabanlı ayrıcalık yükseltme açıklarını (AD CS) taramak için — kimlik bilgisi gerekir.",
+            form: json!([
+                {"name":"username","label":"Kullanıcı adı (user@domain)","type":"text","required":true,"placeholder":"örn. user@corp.local","default":""},
+                {"name":"password","label":"Parola","type":"password","required":true,"default":""}
+            ]),
+        },
+        ToolForm {
+            name: "iputils-arping",
+            template: "arping -c {count} {target}",
+            target_types: &["ip"],
+            danger: "low",
+            purpose: "ARP seviyesinde bir IP adresine ping atarak yerel ağdaki bir cihazın canlı olup olmadığını ve MAC adresini öğrenir.",
+            when_to_use: "Bir IP'nin yerel ağda aktif olup olmadığını ICMP engelli olsa bile ARP ile doğrulamak için.",
+            form: json!([
+                {"name":"count","label":"Paket sayısı","type":"select","default":"3",
+                 "options":[
+                    {"label":"3 (varsayılan)","value":"3"},
+                    {"label":"5","value":"5"}]}
+            ]),
+        },
+        ToolForm {
+            name: "impacket-secretsdump",
+            template: "impacket-secretsdump {username}:{password}@{target}",
+            target_types: &["ip","domain"],
+            danger: "high",
+            purpose: "Uzak bir Windows/AD sisteminden parola hash'lerini (SAM, LSA, NTDS.dit) kimlik bilgisiyle çıkarır.",
+            when_to_use: "Geçerli bir hesapla bir domain controller veya Windows makineden kimlik bilgisi hash'lerini toplamak için.",
+            form: json!([
+                {"name":"username","label":"Kullanıcı adı (DOMAIN/user)","type":"text","required":true,"placeholder":"örn. CORP/administrator","default":""},
+                {"name":"password","label":"Parola","type":"password","required":true,"default":""}
+            ]),
+        },
     ]
 }
 
@@ -1428,6 +1483,16 @@ pub const NON_SCANNABLE: &[&str] = &[
     "dradis", "faraday",
     // stdin-only (no argv target), interactive RDP, web-UI platform, cloud-env
     "hakrawler", "dnsx", "xfreerdp", "spiderfoot", "cloudfox",
+    // need infra we don't have yet: per-scan output-dir browser (jadx,
+    // bulk_extractor), 2-file upload (samdump2), or overlap hydra (patator)
+    "jadx", "bulk_extractor", "samdump2", "patator",
+    // leftover bootstrap promotions that are not one-shot scans: generators
+    // (maskprocessor, wordlists), wrappers/meta (proxychains4, impacket-scripts),
+    // interactive/hardware/windows/C2 (afl-fuzz, ettercap-text-only, mitm6,
+    // powershell-empire, sharphound, kerberoast, unix-privesc-check, blkcalc)
+    "maskprocessor", "wordlists", "proxychains4", "impacket-scripts",
+    "afl-fuzz", "ettercap-text-only", "mitm6", "powershell-empire",
+    "sharphound", "kerberoast", "unix-privesc-check", "blkcalc",
 ];
 
 /// Demote every NON_SCANNABLE tool out of the curated/active pool. Idempotent;
