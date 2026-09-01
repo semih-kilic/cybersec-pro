@@ -16,6 +16,7 @@ cybersec-proto = { path = "../cybersec-proto" }
 # Web framework
 axum = { version = "0.7", features = ["ws", "macros"] }
 tokio = { version = "1", features = ["full"] }
+libc = "0.2"
 tower = "0.4"
 tower-http = { version = "0.5", features = ["cors", "trace", "compression-gzip"] }
 

@@ -1193,6 +1193,198 @@ fn definitions() -> Vec<ToolForm> {
             when_to_use: "Elinizdeki bilinmeyen bir hash'i kırmadan önce türünü belirlemek için (hangi mod/format).",
             form: json!([]),
         },
+        ToolForm {
+            name: "strings",
+            template: "strings -n {minlen} {target}",
+            target_types: &["file"],
+            danger: "low",
+            purpose: "Bir ikili dosyanın içindeki okunabilir metinleri (URL'ler, yollar, gömülü sırlar) çıkarır.",
+            when_to_use: "Bir binary/malware örneğinde hızlıca ipucu aramak: sabit kodlanmış adresler, komutlar, anahtarlar.",
+            form: json!([
+                {"name":"minlen","label":"En az uzunluk","type":"select","default":"4",
+                 "options":[
+                    {"label":"4 karakter (varsayılan)","value":"4"},
+                    {"label":"6 karakter","value":"6"},
+                    {"label":"8 karakter","value":"8"}]}
+            ]),
+        },
+        ToolForm {
+            name: "ssdeep",
+            template: "ssdeep {target}",
+            target_types: &["file"],
+            danger: "low",
+            purpose: "Bir dosyanın bulanık (fuzzy) hash'ini hesaplar — benzer dosyaları/varyantları eşleştirmeye yarar.",
+            when_to_use: "İki malware örneğinin ne kadar benzediğini veya bilinen bir örneğe yakınlığını ölçmek için.",
+            form: json!([]),
+        },
+        ToolForm {
+            name: "objdump",
+            template: "objdump {mode} {target}",
+            target_types: &["file"],
+            danger: "low",
+            purpose: "Nesne/çalıştırılabilir dosyaları inceler: assembly'ye döker, başlıkları ve sembolleri gösterir.",
+            when_to_use: "Bir binary'nin iç yapısını, disassembly'sini veya bölüm başlıklarını incelemek için.",
+            form: json!([
+                {"name":"mode","label":"Görünüm","type":"select","default":"-x",
+                 "options":[
+                    {"label":"Tüm başlıklar (-x) — varsayılan","value":"-x"},
+                    {"label":"Disassembly (-d)","value":"-d"},
+                    {"label":"Semboller (-t)","value":"-t"}]}
+            ]),
+        },
+        ToolForm {
+            name: "oletools",
+            template: "oleid {target}",
+            target_types: &["file"],
+            danger: "low",
+            purpose: "Office belgelerini (Word/Excel) makro, gömülü nesne ve şüpheli göstergeler açısından analiz eder.",
+            when_to_use: "Bir Office dosyasının zararlı makro veya oltalama içerip içermediğini kontrol etmek için.",
+            form: json!([]),
+        },
+        ToolForm {
+            name: "chntpw",
+            template: "chntpw -l {target}",
+            target_types: &["file"],
+            danger: "low",
+            purpose: "Windows SAM kayıt dosyasındaki yerel kullanıcı hesaplarını listeler (ve düzenleyebilir).",
+            when_to_use: "Ele geçirilmiş bir SAM dosyasındaki Windows kullanıcı hesaplarını görmek için.",
+            form: json!([]),
+        },
+        ToolForm {
+            name: "capa",
+            template: "capa {target}",
+            target_types: &["file"],
+            danger: "low",
+            purpose: "Bir çalıştırılabilir dosyanın yeteneklerini (ağ, şifreleme, kalıcılık, anti-analiz) kural tabanlı tespit eder.",
+            when_to_use: "Bir malware örneğinin ne yapabileceğini çalıştırmadan, statik olarak anlamak için.",
+            form: json!([]),
+        },
+        ToolForm {
+            name: "tshark",
+            template: "tshark -r {target} {filter}",
+            target_types: &["file"],
+            danger: "low",
+            purpose: "Wireshark'ın komut satırı sürümü — kaydedilmiş bir ağ trafiği (pcap) dosyasını analiz eder.",
+            when_to_use: "Bir pcap yakalamasını inceleyip protokolleri, konuşmaları ve şüpheli trafiği görmek için.",
+            form: json!([
+                {"name":"filter","label":"Görüntü filtresi","type":"select","default":"",
+                 "options":[
+                    {"label":"Tümü (varsayılan)","value":""},
+                    {"label":"Sadece HTTP","value":"-Y http"},
+                    {"label":"Sadece DNS","value":"-Y dns"},
+                    {"label":"Sadece TCP","value":"-Y tcp"}]}
+            ]),
+        },
+        ToolForm {
+            name: "zsteg",
+            template: "zsteg {mode} {target}",
+            target_types: &["file"],
+            danger: "low",
+            purpose: "PNG/BMP görüntülerinde LSB steganografi ile gizlenmiş veriyi tespit eder.",
+            when_to_use: "Bir görüntü dosyasında gizli mesaj/veri saklanıp saklanmadığını kontrol etmek için (CTF/adli).",
+            form: json!([
+                {"name":"mode","label":"Tarama","type":"select","default":"-a",
+                 "options":[
+                    {"label":"Tüm yöntemler (-a) — varsayılan","value":"-a"},
+                    {"label":"Hızlı (varsayılan yöntemler)","value":""}]}
+            ]),
+        },
+        ToolForm {
+            name: "aircrack-ng",
+            template: "aircrack-ng -w {wordlist} {target}",
+            target_types: &["file"],
+            danger: "high",
+            purpose: "Yakalanmış bir WPA/WPA2 el sıkışmasını (.cap) sözlük saldırısıyla kırmayı dener.",
+            when_to_use: "Elinizde bir WiFi handshake yakalaması varken parolanın zayıf olup olmadığını test etmek için.",
+            form: json!([
+                {"name":"wordlist","label":"Parola listesi","type":"select","default":"/usr/share/wordlists/rockyou.txt",
+                 "options":[
+                    {"label":"rockyou (varsayılan)","value":"/usr/share/wordlists/rockyou.txt"},
+                    {"label":"Küçük liste (hızlı)","value":"/usr/share/wordlists/dirb/common.txt"}]}
+            ]),
+        },
+        ToolForm {
+            name: "stegseek",
+            template: "stegseek {target} {wordlist} -xf /dev/null",
+            target_types: &["file"],
+            danger: "medium",
+            purpose: "Steghide ile gizlenmiş veriyi çok hızlı sözlük saldırısıyla açar (JPG/WAV/BMP).",
+            when_to_use: "Steghide parolasını kırıp bir görüntüde/ses dosyasında gizli veriyi ortaya çıkarmak için.",
+            form: json!([
+                {"name":"wordlist","label":"Parola listesi","type":"select","default":"/usr/share/wordlists/rockyou.txt",
+                 "options":[
+                    {"label":"rockyou (varsayılan)","value":"/usr/share/wordlists/rockyou.txt"}]}
+            ]),
+        },
+        ToolForm {
+            name: "pypykatz",
+            template: "pypykatz lsa minidump {target}",
+            target_types: &["file"],
+            danger: "high",
+            purpose: "Bir LSASS bellek dökümünden Windows kimlik bilgilerini (parola hash'leri, biletler) çıkarır.",
+            when_to_use: "Ele geçirilmiş bir lsass.dmp dosyasından oturum açmış kullanıcıların kimlik bilgilerini almak için.",
+            form: json!([]),
+        },
+        ToolForm {
+            name: "regripper",
+            template: "rip -r {target} -f {profile}",
+            target_types: &["file"],
+            danger: "low",
+            purpose: "Windows kayıt (registry) kovanlarından adli açıdan önemli bilgileri çıkarır.",
+            when_to_use: "Bir registry hive dosyasından kullanıcı aktivitesi, yüklü yazılım ve sistem yapılandırması çıkarmak için.",
+            form: json!([
+                {"name":"profile","label":"Kovan profili","type":"select","default":"software",
+                 "options":[
+                    {"label":"SOFTWARE","value":"software"},
+                    {"label":"SYSTEM","value":"system"},
+                    {"label":"NTUSER.DAT","value":"ntuser"},
+                    {"label":"SAM","value":"sam"}]}
+            ]),
+        },
+        ToolForm {
+            name: "volatility3",
+            template: "vol -f {target} {plugin}",
+            target_types: &["file"],
+            danger: "low",
+            purpose: "Bellek (RAM) dökümlerini adli olarak analiz eder: çalışan süreçler, ağ bağlantıları, enjeksiyonlar.",
+            when_to_use: "Bir bellek görüntüsünden olay anındaki süreçleri, bağlantıları ve zararlı izleri çıkarmak için.",
+            form: json!([
+                {"name":"plugin","label":"Analiz eklentisi","type":"select","default":"windows.pslist",
+                 "options":[
+                    {"label":"Süreç listesi (pslist) — varsayılan","value":"windows.pslist"},
+                    {"label":"Süreç ağacı (pstree)","value":"windows.pstree"},
+                    {"label":"Ağ bağlantıları (netscan)","value":"windows.netscan"},
+                    {"label":"Komut satırları (cmdline)","value":"windows.cmdline"}]}
+            ]),
+        },
+        ToolForm {
+            name: "upx",
+            template: "upx {action} {target}",
+            target_types: &["file"],
+            danger: "low",
+            purpose: "Çalıştırılabilir dosya paketleyici (packer) — bir binary'nin UPX ile sıkıştırılmış olup olmadığını kontrol eder.",
+            when_to_use: "Bir malware örneğinin UPX ile paketlenip paketlenmediğini test etmek ve içeriğini listelemek için.",
+            form: json!([
+                {"name":"action","label":"İşlem","type":"select","default":"-t",
+                 "options":[
+                    {"label":"Test et (-t) — varsayılan","value":"-t"},
+                    {"label":"Bilgi listele (-l)","value":"-l"}]}
+            ]),
+        },
+        ToolForm {
+            name: "fcrackzip",
+            template: "fcrackzip -D -u -p {wordlist} {target}",
+            target_types: &["file"],
+            danger: "high",
+            purpose: "Parola korumalı ZIP dosyalarını sözlük saldırısıyla kırmayı dener.",
+            when_to_use: "Şifreli bir ZIP arşivinin parolasının zayıf olup olmadığını test etmek için.",
+            form: json!([
+                {"name":"wordlist","label":"Parola listesi","type":"select","default":"/usr/share/wordlists/rockyou.txt",
+                 "options":[
+                    {"label":"rockyou (varsayılan)","value":"/usr/share/wordlists/rockyou.txt"},
+                    {"label":"Küçük liste (hızlı)","value":"/usr/share/wordlists/dirb/common.txt"}]}
+            ]),
+        },
     ]
 }
 
@@ -1234,6 +1426,8 @@ pub const NON_SCANNABLE: &[&str] = &[
     "msfvenom", "crunch",
     // collaboration platforms
     "dradis", "faraday",
+    // stdin-only (no argv target), interactive RDP, web-UI platform, cloud-env
+    "hakrawler", "dnsx", "xfreerdp", "spiderfoot", "cloudfox",
 ];
 
 /// Demote every NON_SCANNABLE tool out of the curated/active pool. Idempotent;

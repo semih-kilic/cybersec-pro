@@ -1235,6 +1235,61 @@ pub async fn upload_avatar(
     Json(json!({"message": "Avatar uploaded", "avatar_url": avatar_url})).into_response()
 }
 
+/// Upload a file to be used as the TARGET of a file-based scan tool (forensic
+/// images, binaries, hash files, APKs, PCAPs, memory dumps…). The bytes are
+/// written under the org's own directory in the shared `/data/uploads` volume,
+/// which the scan engine mounts read-only. The returned `path` is what the
+/// caller passes as the scan `target`; `start_scan` confines file-tool targets
+/// to this directory, so an uploaded path can never point at host files.
+pub async fn upload_scan_file(
+    user: AuthUser,
+    State(_state): State<Arc<AppState>>,
+    Query(params): Query<std::collections::HashMap<String, String>>,
+    body: axum::body::Bytes,
+) -> impl IntoResponse {
+    const MAX: usize = 200 * 1024 * 1024; // 200 MB
+    if body.is_empty() {
+        return (StatusCode::BAD_REQUEST, Json(json!({"error": "No file data received"}))).into_response();
+    }
+    if body.len() > MAX {
+        return (StatusCode::BAD_REQUEST, Json(json!({"error": "File too large. Max 200MB"}))).into_response();
+    }
+    let org_id = match user.org_id.as_deref() {
+        Some(o) if uuid::Uuid::parse_str(o).is_ok() => o.to_string(),
+        _ => return (StatusCode::BAD_REQUEST, Json(json!({"error": "No valid organization"}))).into_response(),
+    };
+    // Sanitise the client-supplied name down to a safe basename.
+    let raw = params.get("filename").cloned().unwrap_or_default();
+    let base = std::path::Path::new(&raw)
+        .file_name()
+        .and_then(|s| s.to_str())
+        .unwrap_or("upload.bin");
+    let mut safe: String = base
+        .chars()
+        .map(|c| if c.is_ascii_alphanumeric() || matches!(c, '.' | '_' | '-') { c } else { '_' })
+        .collect();
+    if safe.is_empty() || safe == "." || safe == ".." || safe.len() > 128 {
+        safe = "upload.bin".to_string();
+    }
+    let id = uuid::Uuid::new_v4();
+    let dir = format!("/data/uploads/{}", org_id);
+    if let Err(e) = tokio::fs::create_dir_all(&dir).await {
+        tracing::error!("upload: mkdir failed: {}", e);
+        return (StatusCode::INTERNAL_SERVER_ERROR, Json(json!({"error": "Server storage error"}))).into_response();
+    }
+    let path = format!("{}/{}_{}", dir, id, safe);
+    if let Err(e) = tokio::fs::write(&path, &body).await {
+        tracing::error!("upload: write failed: {}", e);
+        return (StatusCode::INTERNAL_SERVER_ERROR, Json(json!({"error": "Failed to save file"}))).into_response();
+    }
+    tracing::info!("scan upload: org={} path={} size={}", org_id, path, body.len());
+    (StatusCode::CREATED, Json(json!({
+        "path": path,
+        "filename": safe,
+        "size": body.len()
+    }))).into_response()
+}
+
 pub async fn mfa_verify_setup(
     user: AuthUser,
     State(state): State<Arc<AppState>>,

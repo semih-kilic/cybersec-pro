@@ -1175,7 +1175,25 @@ pub async fn start_scan(
             let allowed: Vec<String> = target_types.iter()
                 .filter_map(|v| v.as_str().map(|s| s.to_lowercase()))
                 .collect();
-            
+
+            // File-input tools: the target is a path to an uploaded file. Confine
+            // it to the org's own upload directory so a file tool can never be
+            // pointed at host files (`strings /etc/shadow`, `foremost /dev/sda`).
+            // Uploads land at /data/uploads/<org_id>/<uuid>_<name>; require that
+            // exact prefix and reject any traversal.
+            if allowed.iter().any(|t| t == "file") {
+                let expected_prefix = format!("/data/uploads/{}/", org_id);
+                let ok = target.starts_with(&expected_prefix)
+                    && !target.contains("..")
+                    && !target[expected_prefix.len()..].contains('/');
+                if !ok {
+                    return (StatusCode::BAD_REQUEST, Json(json!({
+                        "error": "This tool needs an uploaded file. Upload the file first and use the returned path as the target.",
+                        "code": "FILE_TARGET_REQUIRED"
+                    }))).into_response();
+                }
+            }
+
             if !allowed.is_empty() {
                 // Classify the target
                 let target_lower = target.to_lowercase();

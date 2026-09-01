@@ -23,7 +23,7 @@ pub struct ScanEngine {
     scans: Arc<RwLock<HashMap<String, ScanStatus>>>,
     outputs: Arc<RwLock<HashMap<String, Vec<String>>>>,
     /// Live child processes keyed by scan_id — enables real cancellation.
-    children: Arc<RwLock<HashMap<String, Arc<tokio::sync::Mutex<tokio::process::Child>>>>>,
+    children: Arc<RwLock<HashMap<String, (u32, Arc<tokio::sync::Mutex<tokio::process::Child>>)>>>,
     semaphore: Arc<Semaphore>,
     max_workers: usize,
 }
@@ -66,12 +66,24 @@ impl ScanEngine {
 
     /// Kill a live child process (best-effort).
     async fn kill_child(
-        children: &Arc<RwLock<HashMap<String, Arc<tokio::sync::Mutex<tokio::process::Child>>>>>,
+        children: &Arc<RwLock<HashMap<String, (u32, Arc<tokio::sync::Mutex<tokio::process::Child>>)>>>,
         scan_id: &str,
     ) {
-        if let Some(child) = children.read().await.get(scan_id) {
-            let _ = child.lock().await.start_kill();
+        // Kill the whole process GROUP, not just the direct child. Tools like
+        // amass/nuclei spawn sub-processes; killing only the child reparents the
+        // grandchildren to PID 1 where they run forever (the 14h orphans we saw).
+        // Reading the stored pid avoids locking the Child, which `wait()` holds
+        // for the process's whole lifetime — locking here would deadlock.
+        if let Some((pid, _child)) = children.read().await.get(scan_id) {
+            kill_process_group(*pid);
         }
+    }
+
+    /// SIGKILL an entire process group. A negative pid signals every process in
+    /// the group led by `pid` (established via `.process_group(0)` at spawn).
+    fn kill_process_group(pid: u32) {
+        if pid == 0 { return; }
+        unsafe { libc::kill(-(pid as i32), libc::SIGKILL); }
     }
 
     /// Validate and sanitize scan parameters
@@ -283,7 +295,7 @@ impl ScanEngine {
         program: &str,
         args: &[String],
         outputs: &Arc<RwLock<HashMap<String, Vec<String>>>>,
-        children: &Arc<RwLock<HashMap<String, Arc<tokio::sync::Mutex<tokio::process::Child>>>>>,
+        children: &Arc<RwLock<HashMap<String, (u32, Arc<tokio::sync::Mutex<tokio::process::Child>>)>>>,
         scan_id: &str,
     ) -> Result<i32, AppError> {
         tracing::info!("Executing: {} {:?}", program, args);
@@ -293,6 +305,7 @@ impl ScanEngine {
             .stdout(Stdio::piped())
             .stderr(Stdio::piped())
             .kill_on_drop(true) // Safety: kill process if task is dropped
+            .process_group(0)   // own group, so we can kill the whole subtree
             .spawn()
             .map_err(|e| AppError::ScanExec(format!("Failed to spawn {}: {}", program, e)))?;
 
@@ -336,13 +349,18 @@ impl ScanEngine {
             });
         }
 
-        // Register the live child so `cancel` can terminate it.
+        // Register the live child (with its pid) so `cancel`/timeout can kill
+        // the whole process group.
+        let pid = child.id().unwrap_or(0);
         let child = Arc::new(tokio::sync::Mutex::new(child));
-        children.write().await.insert(scan_id.to_string(), child.clone());
+        children.write().await.insert(scan_id.to_string(), (pid, child.clone()));
 
         let status = child.lock().await.wait().await
             .map_err(|e| AppError::ScanExec(format!("Process wait failed: {}", e)))?;
 
+        // Reap any background children the tool left behind on normal exit, then
+        // drop the handle. Without this, detached grandchildren leak.
+        kill_process_group(pid);
         children.write().await.remove(scan_id);
 
         Ok(status.code().unwrap_or(-1))

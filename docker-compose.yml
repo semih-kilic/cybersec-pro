@@ -65,6 +65,7 @@ services:
       context: ./rust-backend
       dockerfile: Dockerfile
     container_name: cybersec-api
+    init: true   # tini as PID 1: reap zombie child processes
     restart: always
     security_opt:
     - no-new-privileges:true
@@ -81,6 +82,9 @@ services:
     - ENCRYPTION_KEY=${ENCRYPTION_KEY:?ENCRYPTION_KEY must be set}
     volumes:
     - ./agent-binaries:/agent-binaries:ro
+    # Shared with rust-scan-engine: user-uploaded scan inputs (forensic images,
+    # binaries, hash files). Backend writes here; the engine reads them RO.
+    - scan_uploads:/data/uploads
     ports:
     - 127.0.0.1:5001:5001
     depends_on:
@@ -113,6 +117,7 @@ services:
       context: .
       dockerfile: rust-scan-engine/Dockerfile
     container_name: cybersec-scan-engine
+    init: true   # tini as PID 1: reap zombie tool processes
     # Runs as root deliberately: nmap SYN scans need NET_RAW, and Docker does
     # not put added capabilities in the ambient set, so a non-root process would
     # silently lose them and fall back to slower TCP-connect scans.
@@ -136,6 +141,10 @@ services:
     restart: always
     env_file:
     - ./rust-backend/.env
+    volumes:
+    # Read-only view of the shared upload store; file-based tools read their
+    # input from here. RO so a tool can never tamper with another org's upload.
+    - scan_uploads:/data/uploads:ro
     environment:
     - DATABASE_URL=postgres://cybersec:${DB_PASSWORD:?DB_PASSWORD must be set}@postgres:5432/cybersec_pro
     - SCAN_ENGINE_PORT=5002
@@ -300,6 +309,8 @@ networks:
       config:
       - subnet: 172.29.0.0/16
 volumes:
+  scan_uploads:
+    driver: local
   postgres_data:
     driver: local
   redis_data:

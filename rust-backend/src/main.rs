@@ -550,6 +550,7 @@ fn build_router(state: Arc<AppState>) -> Router {
         .route("/api/v1/auth/resend-verification", post(stub_handlers::resend_verification))
         .route("/api/v1/auth/verify-email", get(stub_handlers::verify_email))
         .route("/api/v1/auth/avatar", post(stub_handlers::upload_avatar))
+        .route("/api/v1/scans/upload", post(stub_handlers::upload_scan_file))
         .route("/api/v1/auth/mfa/verify-setup", post(stub_handlers::mfa_verify_setup))
         .route("/api/v1/auth/mfa/regenerate-backup", post(stub_handlers::mfa_regenerate_backup))
         // ── Tool extras ───────────────────────────────────────
