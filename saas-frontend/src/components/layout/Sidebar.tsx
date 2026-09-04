@@ -16,6 +16,7 @@ const navigation = [
   { nameKey: 'nav.dashboard', href: '/dashboard', icon: DashboardIcon },
   { nameKey: 'nav.tools', href: '/dashboard/tools', icon: ToolsIcon },
   { nameKey: 'nav.scans', href: '/dashboard/scans', icon: ScansIcon },
+  { nameKey: 'nav.workflows', href: '/dashboard/workflows', icon: ScansIcon },
   { nameKey: 'nav.targets', href: '/dashboard/targets', icon: TargetsIcon },
   { nameKey: 'nav.reports', href: '/dashboard/reports', icon: ReportsIcon },
   { nameKey: 'nav.schedule', href: '/dashboard/schedule', icon: ScheduleIcon },

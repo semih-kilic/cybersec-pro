@@ -96,6 +96,7 @@ const TrustCenterPage = lazy(() => import('./pages/TrustCenterPage').then(m => (
 const DemoPage = lazy(() => import('./pages/DemoPage').then(m => ({ default: m.DemoPage })));
 const FreeScanPage = lazy(() => import('./pages/FreeScanPage').then(m => ({ default: m.FreeScanPage })));
 const PipelineBuilderPage = lazy(() => import('./pages/dashboard/PipelineBuilderPage'));
+const WorkflowsPage = lazy(() => import('./pages/dashboard/WorkflowsPage'));
 
 // GDPR Cookie Consent
 import { CookieConsentBanner } from './components/CookieConsent';
@@ -402,6 +403,7 @@ function AppRoutes() {
         <Route path="ai" element={<AIAssistantPage />} />
         <Route path="purple-team" element={<PurpleTeamPage />} />
             <Route path="pipeline-builder" element={<PipelineBuilderPage />} />
+            <Route path="workflows" element={<WorkflowsPage />} />
         <Route path="admin" element={<SuperadminRoute><AdminPage /></SuperadminRoute>} />
         <Route path="service-manager" element={<SuperadminRoute><ServiceManagerPage /></SuperadminRoute>} />
         <Route path="god-mode" element={<SuperadminRoute><GodModePage /></SuperadminRoute>} />

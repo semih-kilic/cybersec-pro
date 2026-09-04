@@ -562,6 +562,8 @@ fn build_router(state: Arc<AppState>) -> Router {
         .route("/api/v2/tools/:tool_id", get(stub_handlers::v2_tool_detail))
         // ── Scan singular variants ────────────────────────────
         .route("/api/v1/scan/start", post(scan_handlers::start_scan))
+        .route("/api/v1/workflows", axum::routing::get(workflow_handlers::list_workflows))
+        .route("/api/v1/workflows/:id", axum::routing::get(workflow_handlers::get_workflow))
         .route("/api/v1/scan/:scan_id/output", get(scan_handlers::scan_output_stream))
         .route("/api/v1/scan/:scan_id/result", get(stub_handlers::scan_result))
         .route("/api/v1/scan/:scan_id/stop", post(scan_handlers::cancel_scan))

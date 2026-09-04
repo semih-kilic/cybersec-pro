@@ -415,6 +415,15 @@ class ApiService {
     }>('/scans');
   }
 
+  // Scan Workflows ("playbooks") — curated multi-tool bundles run on one target.
+  async listWorkflows() {
+    return this.request<{ workflows: Array<{
+      id: string; name: string; description: string; category: string;
+      icon: string; danger: string; target_types: string[];
+      steps: Array<{ tool: string; label: string; params: Record<string, unknown> }>;
+    }> }>(`/workflows`);
+  }
+
   async getScan(scanId: string) {
     return this.request<{
       scan: Scan;
