@@ -29,6 +29,7 @@ import api, { ScanResult, StreamConnectionStatus, ToolConfig } from '../../servi
 import { useTarget } from '../../contexts/TargetContext';
 import { useAuth } from '../../hooks/useAuth';
 import { ScanProgress } from '../../components/dashboard/ScanProgress';
+import RescanVerification from './RescanVerification';
 import { useQuery } from '@tanstack/react-query';
 import { queryKeys, CACHE_TIMES } from '../../lib/queryClient';
 import {
@@ -1475,6 +1476,9 @@ export function ScanExecutionPage() {
                 </div>
               </div>
             </div>
+          )}
+          {currentScanId && (status === 'completed' || status === 'failed') && (
+            <RescanVerification scanId={currentScanId} status={status} />
           )}
         </div>
       </div>

@@ -1746,17 +1746,21 @@ pub async fn scan_result(
     State(state): State<Arc<AppState>>,
 ) -> impl IntoResponse {
     let org_id = user.org_id.as_deref().unwrap_or("");
+    // 10 cols: id, status, output, findings(text), error_log, target, tool_name,
+    // command_template, parameters(text), tool_id — the last two added so the
+    // client can faithfully re-run this scan (see scan_diff / re-scan flow).
+    type ResultRow = (String, String, Option<String>, Option<String>, Option<String>, Option<String>, Option<String>, Option<String>, Option<String>, Option<String>);
     let scan = if !org_id.is_empty() {
-        sqlx::query_as::<_, (String, String, Option<String>, Option<String>, Option<String>, Option<String>, Option<String>, Option<String>)>(
-            "SELECT s.id, s.status, s.output, CAST(s.findings AS TEXT), s.error_log, s.target, t.name, t.command_template FROM scans s LEFT JOIN tools t ON s.tool_id = t.id WHERE s.id = $1 AND s.organization_id = $2"
+        sqlx::query_as::<_, ResultRow>(
+            "SELECT s.id, s.status, s.output, CAST(s.findings AS TEXT), s.error_log, s.target, t.name, t.command_template, CAST(s.parameters AS TEXT), s.tool_id FROM scans s LEFT JOIN tools t ON s.tool_id = t.id WHERE s.id = $1 AND s.organization_id = $2"
         )
         .bind(&scan_id)
         .bind(org_id)
         .fetch_optional(&state.db)
         .await
     } else {
-        sqlx::query_as::<_, (String, String, Option<String>, Option<String>, Option<String>, Option<String>, Option<String>, Option<String>)>(
-            "SELECT s.id, s.status, s.output, CAST(s.findings AS TEXT), s.error_log, s.target, t.name, t.command_template FROM scans s LEFT JOIN tools t ON s.tool_id = t.id WHERE s.id = $1 AND s.user_id = $2"
+        sqlx::query_as::<_, ResultRow>(
+            "SELECT s.id, s.status, s.output, CAST(s.findings AS TEXT), s.error_log, s.target, t.name, t.command_template, CAST(s.parameters AS TEXT), s.tool_id FROM scans s LEFT JOIN tools t ON s.tool_id = t.id WHERE s.id = $1 AND s.user_id = $2"
         )
         .bind(&scan_id)
         .bind(&user.user_id)
@@ -1765,8 +1769,10 @@ pub async fn scan_result(
     };
 
     match scan {
-        Ok(Some((id, status, output, findings, error_log, target, tool_name, command))) => {
+        Ok(Some((id, status, output, findings, error_log, target, tool_name, command, parameters, tool_id))) => {
             let findings_val: serde_json::Value = findings.and_then(|f| serde_json::from_str(&f).ok()).unwrap_or(json!(null));
+            let parameters_val: serde_json::Value = parameters.and_then(|p| serde_json::from_str(&p).ok()).unwrap_or(json!({}));
+            let is_rescan = parameters_val.get("_rescan_of").and_then(|v| v.as_str()).is_some();
             let output_str = output.unwrap_or_default();
             Json(json!({
                 "scan": {
@@ -1775,8 +1781,11 @@ pub async fn scan_result(
                     "output": output_str,
                     "target": target,
                     "tool_name": tool_name,
+                    "tool_id": tool_id,
                     "command": command,
                     "error_log": error_log,
+                    "parameters": parameters_val,
+                    "is_rescan": is_rescan,
                 },
                 "execution_result": {
                     "status": status,

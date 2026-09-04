@@ -353,6 +353,7 @@ fn build_router(state: Arc<AppState>) -> Router {
         .route("/api/v1/scans/network-sweep", post(scan_handlers::network_sweep))
         .route("/api/v1/scans/create", post(scan_handlers::create_scan))
         .route("/api/v1/scans/:scan_id", get(scan_handlers::get_scan).delete(scan_handlers::delete_scan))
+        .route("/api/v1/scans/:scan_id/diff", get(scan_handlers::scan_diff))
         .route(
             "/api/v1/scans/:scan_id/output",
             get(scan_handlers::scan_output_stream),

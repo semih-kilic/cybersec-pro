@@ -2574,4 +2574,192 @@ fn parse_findings_simple(output: &str) -> JsonValue {
     JsonValue::Array(findings)
 }
 
+// ── Re-scan verification diff ───────────────────────────────
+// A "re-scan" re-runs a completed scan against the same target with the same
+// tool + parameters; the new scan carries `parameters._rescan_of = <baseline
+// scan id>` (set by the client, which reuses the fully-guarded start_scan
+// path). This endpoint compares the two runs' findings and classifies each as
+// fixed / still-present / new so a user can verify a remediation worked.
+
+/// The subset of a scan row needed to diff two runs.
+struct DiffScan {
+    parameters: Option<JsonValue>,
+    findings: Option<JsonValue>,
+    output: Option<String>,
+    created_at: Option<chrono::NaiveDateTime>,
+    tool_id: String,
+    target: String,
+    status: Option<String>,
+}
+
+async fn fetch_diff_scan(db: &sqlx::PgPool, auth: &AuthUser, scan_id: &str) -> Option<DiffScan> {
+    type Row = (Option<JsonValue>, Option<JsonValue>, Option<String>, Option<chrono::NaiveDateTime>, String, String, Option<String>);
+    let row: Option<Row> = match &auth.org_id {
+        Some(org) => sqlx::query_as(
+            "SELECT parameters, findings, output, created_at, tool_id, target, status FROM scans WHERE id = $1 AND organization_id = $2"
+        ).bind(scan_id).bind(org).fetch_optional(db).await.unwrap_or(None),
+        None => sqlx::query_as(
+            "SELECT parameters, findings, output, created_at, tool_id, target, status FROM scans WHERE id = $1 AND user_id = $2"
+        ).bind(scan_id).bind(&auth.user_id).fetch_optional(db).await.unwrap_or(None),
+    };
+    row.map(|(parameters, findings, output, created_at, tool_id, target, status)| DiffScan {
+        parameters, findings, output, created_at, tool_id, target, status,
+    })
+}
+
+/// Collapse internal whitespace so two runs that format a finding slightly
+/// differently still match.
+fn normalize_sig(s: &str) -> String {
+    s.split_whitespace().collect::<Vec<_>>().join(" ")
+}
+
+/// Build a stable signature for an object-shaped finding.
+fn object_finding_sig(f: &JsonValue) -> Option<String> {
+    for key in ["title", "name", "id", "template-id", "matched-at", "description"] {
+        if let Some(s) = f.get(key).and_then(|v| v.as_str()) {
+            let sig = normalize_sig(s);
+            if !sig.is_empty() {
+                return Some(sig);
+            }
+        }
+    }
+    None
+}
+
+/// Reduce a scan's findings (or, failing that, its raw output) to a set of
+/// comparable finding signatures. Handles both stored shapes: an array of
+/// `{type,value}` (parse_findings_simple) and an object with
+/// `services[]`/`vulnerabilities[]` (scan-engine parsers).
+fn extract_finding_signatures(findings: &Option<JsonValue>, output: &Option<String>) -> std::collections::BTreeSet<String> {
+    use std::collections::BTreeSet;
+    let mut set: BTreeSet<String> = BTreeSet::new();
+    match findings {
+        Some(JsonValue::Array(arr)) => {
+            for f in arr {
+                match f {
+                    JsonValue::String(s) => {
+                        let sig = normalize_sig(s);
+                        if !sig.is_empty() { set.insert(sig); }
+                    }
+                    JsonValue::Object(_) => {
+                        let ty = f.get("type").and_then(|v| v.as_str()).unwrap_or("");
+                        // "address" entries are host headers (e.g. "Nmap scan
+                        // report for X"), not findings — never diff them.
+                        if ty.eq_ignore_ascii_case("address") { continue; }
+                        if let Some(v) = f.get("value").and_then(|v| v.as_str()) {
+                            let sig = normalize_sig(v);
+                            if !sig.is_empty() { set.insert(sig); }
+                        } else if let Some(sig) = object_finding_sig(f) {
+                            set.insert(sig);
+                        }
+                    }
+                    _ => {}
+                }
+            }
+        }
+        Some(JsonValue::Object(map)) => {
+            if let Some(JsonValue::Array(services)) = map.get("services") {
+                for svc in services {
+                    if let Some(port) = svc.get("port").and_then(|p| p.as_u64()) {
+                        let proto = svc.get("protocol").and_then(|p| p.as_str()).unwrap_or("tcp");
+                        let name = svc.get("service").and_then(|s| s.as_str()).unwrap_or("");
+                        set.insert(normalize_sig(&format!("port {}/{} {}", port, proto, name)));
+                    }
+                }
+            }
+            for key in ["vulnerabilities", "findings", "issues"] {
+                if let Some(JsonValue::Array(items)) = map.get(key) {
+                    for v in items {
+                        if let Some(sig) = object_finding_sig(v) {
+                            set.insert(sig);
+                        } else if let Some(s) = v.as_str() {
+                            let sig = normalize_sig(s);
+                            if !sig.is_empty() { set.insert(sig); }
+                        }
+                    }
+                }
+            }
+        }
+        _ => {}
+    }
+    // Fallback: no structured findings — pull finding-shaped lines from output.
+    if set.is_empty() {
+        if let Some(out) = output {
+            for line in out.lines() {
+                let l = line.trim();
+                if l.is_empty() { continue; }
+                let low = l.to_lowercase();
+                let looks_like_finding = l.contains("/tcp") || l.contains("/udp")
+                    || low.contains("open") || low.contains("vulnerable")
+                    || low.contains("cve-") || l.starts_with('[');
+                if looks_like_finding {
+                    let sig = normalize_sig(l);
+                    if !sig.is_empty() { set.insert(sig); }
+                    if set.len() >= 500 { break; }
+                }
+            }
+        }
+    }
+    set
+}
+
+/// GET /api/v1/scans/:scan_id/diff — verify a re-scan against its baseline.
+pub async fn scan_diff(
+    State(state): State<Arc<AppState>>,
+    auth: AuthUser,
+    Path(scan_id): Path<String>,
+) -> impl IntoResponse {
+    let Some(current) = fetch_diff_scan(&state.db, &auth, &scan_id).await else {
+        return (StatusCode::NOT_FOUND, Json(json!({"error": "Scan not found"}))).into_response();
+    };
+    let baseline_id = current.parameters.as_ref()
+        .and_then(|p| p.get("_rescan_of"))
+        .and_then(|v| v.as_str())
+        .map(|s| s.to_string());
+    let Some(baseline_id) = baseline_id else {
+        return (StatusCode::BAD_REQUEST, Json(json!({
+            "error": "This scan is not a re-scan, so there is no baseline to compare against."
+        }))).into_response();
+    };
+    let Some(baseline) = fetch_diff_scan(&state.db, &auth, &baseline_id).await else {
+        return (StatusCode::NOT_FOUND, Json(json!({"error": "Baseline scan not found or not accessible."}))).into_response();
+    };
+
+    let cur_set = extract_finding_signatures(&current.findings, &current.output);
+    let base_set = extract_finding_signatures(&baseline.findings, &baseline.output);
+
+    let fixed: Vec<&String> = base_set.difference(&cur_set).collect();
+    let still_present: Vec<&String> = base_set.intersection(&cur_set).collect();
+    let new_findings: Vec<&String> = cur_set.difference(&base_set).collect();
+
+    let tool_name: Option<String> = sqlx::query_scalar("SELECT name FROM tools WHERE id = $1")
+        .bind(&current.tool_id)
+        .fetch_optional(&state.db)
+        .await
+        .unwrap_or(None);
+
+    let fmt = |d: &Option<chrono::NaiveDateTime>| d.map(|x| x.format("%Y-%m-%dT%H:%M:%S").to_string());
+
+    (StatusCode::OK, Json(json!({
+        "baseline_scan_id": baseline_id,
+        "baseline_at": fmt(&baseline.created_at),
+        "baseline_status": baseline.status,
+        "current_scan_id": scan_id,
+        "current_at": fmt(&current.created_at),
+        "current_status": current.status,
+        "target": current.target,
+        "tool_name": tool_name.unwrap_or_default(),
+        "fixed": fixed,
+        "still_present": still_present,
+        "new_findings": new_findings,
+        "counts": {
+            "fixed": fixed.len(),
+            "still_present": still_present.len(),
+            "new": new_findings.len(),
+            "baseline_total": base_set.len(),
+            "current_total": cur_set.len()
+        }
+    }))).into_response()
+}
+
 

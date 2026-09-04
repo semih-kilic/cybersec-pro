@@ -431,6 +431,25 @@ class ApiService {
     }>(`/scan/${scanId}/result`);
   }
 
+  // Verify a re-scan against its baseline: findings classified fixed /
+  // still-present / new. 400 when the scan is not a re-scan.
+  async getScanDiff(scanId: string) {
+    return this.request<{
+      baseline_scan_id: string;
+      baseline_at?: string;
+      baseline_status?: string;
+      current_scan_id: string;
+      current_at?: string;
+      current_status?: string;
+      target: string;
+      tool_name: string;
+      fixed: string[];
+      still_present: string[];
+      new_findings: string[];
+      counts: { fixed: number; still_present: number; new: number; baseline_total: number; current_total: number };
+    }>(`/scans/${scanId}/diff`);
+  }
+
   async demoScan(tool: string, target: string) {
     return this.request<{
       demo: boolean;
