@@ -534,8 +534,15 @@ fn placeholder_default(key: &str, target: &str) -> String {
         "process" | "provider" | "action" | "message"
         | "target_kind" | "bucket" => target.to_string(),
 
-        // Unknown: best to use target than leak `{xxx}` literally.
-        _ => target.to_string(),
+        // Unknown / unfilled optional parameter: resolve to empty, NOT the
+        // target. These keys are optional flag slots in a tool's form
+        // ({scan_type}, {severity}, {tags}, {ssl}, …); when a scan omits them
+        // (a network sweep passes no params, or the user leaves a field blank)
+        // a `target` default injected the target into every empty slot, so
+        // e.g. nmap scanned the host once per unfilled placeholder. An empty
+        // standalone `{key}` is skipped cleanly by parse_template, so nothing
+        // leaks and the real target is still appended exactly once.
+        _ => String::new(),
     }
 }
 
@@ -934,7 +941,9 @@ mod tests {
         assert_eq!(placeholder_default("user", "T"), "admin");
         assert_eq!(placeholder_default("password", "T"), "password");
         assert_eq!(placeholder_default("file", "/tmp/x"), "/tmp/x");
-        assert_eq!(placeholder_default("totally_unknown", "TGT"), "TGT");
+        // Unknown / unfilled optional parameters resolve to empty (not the
+        // target) so an omitted flag slot does not inject the target.
+        assert_eq!(placeholder_default("totally_unknown", "TGT"), "");
     }
 }
 
