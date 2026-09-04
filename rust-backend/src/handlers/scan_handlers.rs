@@ -2206,15 +2206,27 @@ pub async fn network_sweep(
         }
     }
 
-    let tool_name = body.tool.as_deref().unwrap_or("nmap").to_string();
+    // The client may send either the tool's name ("nmap") or its UUID id
+    // (the "browse all" grid sends the id), so resolve against both and derive
+    // the canonical name for the guard below.
+    let tool_input = body.tool.as_deref().unwrap_or("nmap").to_string();
+    let tool: Option<crate::models::Tool> = sqlx::query_as(
+        "SELECT * FROM tools WHERE (id = $1 OR name = $2) AND is_active = TRUE LIMIT 1"
+    )
+    .bind(&tool_input)
+    .bind(&tool_input)
+    .fetch_optional(&state.db)
+    .await
+    .unwrap_or(None);
+    let tool_name = tool.as_ref().map(|t| t.name.clone()).unwrap_or_else(|| tool_input.clone());
 
     // A sweep discovers live hosts and then runs the per-host tool against each
     // bare IP. Only network/port scanners make sense here; web-oriented tools
     // (gobuster, wpscan, nikto, …) need a URL + wordlist and fail on every host,
     // flooding the scan history with useless "failed" rows. Restrict to an
     // allowlist so the failure happens up-front with a clear message instead.
-    // Checked before the authorization gate so a wrong tool choice is rejected
-    // with a specific message rather than a generic authz error.
+    // Checked (by resolved name) before the authorization gate so a wrong tool
+    // choice is rejected with a specific message rather than a generic authz error.
     const SWEEP_TOOLS: &[&str] = &[
         "nmap", "masscan", "naabu", "unicornscan", "fping", "netdiscover",
     ];
@@ -2275,15 +2287,7 @@ pub async fn network_sweep(
     // traffic routing stays off until a traffic tunnel is implemented.
     let tunnel_routing_enabled = false;
 
-    // Resolve the sweep tool once (used for the sweep scan row and per-host scans)
-    let tool: Option<crate::models::Tool> = sqlx::query_as(
-        "SELECT * FROM tools WHERE (id = $1 OR name = $2) AND is_active = TRUE LIMIT 1"
-    )
-    .bind(&tool_name)
-    .bind(&tool_name)
-    .fetch_optional(&state.db)
-    .await
-    .unwrap_or(None);
+    // `tool` was already resolved (by id or name) above for the sweep guard.
 
     // Create a visible sweep scan row so the sweep shows up in /dashboard/scans
     let sweep_scan_id = Uuid::new_v4().to_string();
