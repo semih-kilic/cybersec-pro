@@ -816,7 +816,7 @@ pub async fn list_scans(
     let (scans, total): (Vec<Scan>, i64) = match (&auth.org_id, &q.status) {
         (Some(org_id), Some(status)) => {
             let rows = sqlx::query_as(
-                "SELECT id, organization_id, user_id, tool_id, target, parameters, status, agent_id, project_id, NULL::TEXT AS output, error_log, NULL::JSONB AS findings, report_path, started_at, completed_at, created_at FROM scans FROM scans WHERE organization_id = $1 AND status = $2 ORDER BY created_at DESC LIMIT $3 OFFSET $4"
+                "SELECT id, organization_id, user_id, tool_id, target, parameters, status, agent_id, project_id, NULL::TEXT AS output, error_log, NULL::JSONB AS findings, report_path, started_at, completed_at, created_at FROM scans WHERE organization_id = $1 AND status = $2 ORDER BY created_at DESC LIMIT $3 OFFSET $4"
             )
             .bind(org_id).bind(status).bind(per_page as i64).bind(offset as i64)
             .fetch_all(&state.db).await.unwrap_or_default();
@@ -827,7 +827,7 @@ pub async fn list_scans(
         }
         (Some(org_id), None) => {
             let rows = sqlx::query_as(
-                "SELECT id, organization_id, user_id, tool_id, target, parameters, status, agent_id, project_id, NULL::TEXT AS output, error_log, NULL::JSONB AS findings, report_path, started_at, completed_at, created_at FROM scans FROM scans WHERE organization_id = $1 ORDER BY created_at DESC LIMIT $2 OFFSET $3"
+                "SELECT id, organization_id, user_id, tool_id, target, parameters, status, agent_id, project_id, NULL::TEXT AS output, error_log, NULL::JSONB AS findings, report_path, started_at, completed_at, created_at FROM scans WHERE organization_id = $1 ORDER BY created_at DESC LIMIT $2 OFFSET $3"
             )
             .bind(org_id).bind(per_page as i64).bind(offset as i64)
             .fetch_all(&state.db).await.unwrap_or_default();
@@ -838,7 +838,7 @@ pub async fn list_scans(
         }
         (None, Some(status)) => {
             let rows = sqlx::query_as(
-                "SELECT id, organization_id, user_id, tool_id, target, parameters, status, agent_id, project_id, NULL::TEXT AS output, error_log, NULL::JSONB AS findings, report_path, started_at, completed_at, created_at FROM scans FROM scans WHERE user_id = $1 AND status = $2 ORDER BY created_at DESC LIMIT $3 OFFSET $4"
+                "SELECT id, organization_id, user_id, tool_id, target, parameters, status, agent_id, project_id, NULL::TEXT AS output, error_log, NULL::JSONB AS findings, report_path, started_at, completed_at, created_at FROM scans WHERE user_id = $1 AND status = $2 ORDER BY created_at DESC LIMIT $3 OFFSET $4"
             )
             .bind(&auth.user_id).bind(status).bind(per_page as i64).bind(offset as i64)
             .fetch_all(&state.db).await.unwrap_or_default();
@@ -849,7 +849,7 @@ pub async fn list_scans(
         }
         (None, None) => {
             let rows = sqlx::query_as(
-                "SELECT id, organization_id, user_id, tool_id, target, parameters, status, agent_id, project_id, NULL::TEXT AS output, error_log, NULL::JSONB AS findings, report_path, started_at, completed_at, created_at FROM scans FROM scans WHERE user_id = $1 ORDER BY created_at DESC LIMIT $2 OFFSET $3"
+                "SELECT id, organization_id, user_id, tool_id, target, parameters, status, agent_id, project_id, NULL::TEXT AS output, error_log, NULL::JSONB AS findings, report_path, started_at, completed_at, created_at FROM scans WHERE user_id = $1 ORDER BY created_at DESC LIMIT $2 OFFSET $3"
             )
             .bind(&auth.user_id).bind(per_page as i64).bind(offset as i64)
             .fetch_all(&state.db).await.unwrap_or_default();
@@ -2206,6 +2206,27 @@ pub async fn network_sweep(
         }
     }
 
+    let tool_name = body.tool.as_deref().unwrap_or("nmap").to_string();
+
+    // A sweep discovers live hosts and then runs the per-host tool against each
+    // bare IP. Only network/port scanners make sense here; web-oriented tools
+    // (gobuster, wpscan, nikto, …) need a URL + wordlist and fail on every host,
+    // flooding the scan history with useless "failed" rows. Restrict to an
+    // allowlist so the failure happens up-front with a clear message instead.
+    // Checked before the authorization gate so a wrong tool choice is rejected
+    // with a specific message rather than a generic authz error.
+    const SWEEP_TOOLS: &[&str] = &[
+        "nmap", "masscan", "naabu", "unicornscan", "fping", "netdiscover",
+    ];
+    if !SWEEP_TOOLS.contains(&tool_name.as_str()) {
+        return (StatusCode::BAD_REQUEST, Json(json!({
+            "error": format!(
+                "'{}' can't run a network sweep. A sweep scans every host in the subnet, so it needs a network/port scanner ({}). To use '{}', switch to 'Single Target' and give it a URL/host.",
+                tool_name, SWEEP_TOOLS.join(", "), tool_name
+            )
+        }))).into_response();
+    }
+
     // ── Target authorization gate (bypass-proof) ────────────────────────
     // Sweeping a subnet scans every live host inside it, so the subnet itself
     // must carry an explicit, timestamped ownership confirmation.
@@ -2231,7 +2252,6 @@ pub async fn network_sweep(
         }
     };
 
-    let tool_name = body.tool.as_deref().unwrap_or("nmap").to_string();
     let sweep_id = Uuid::new_v4().to_string();
 
     // Resolve agent

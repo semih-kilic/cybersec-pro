@@ -34,6 +34,18 @@ const QUICK_TOOLS = [
   { id: 'subfinder', label: 'Subdomains',      icon: '🗺️', desc: 'Discover subdomains' },
 ];
 
+// A network sweep discovers live hosts, then runs the chosen tool on each bare
+// IP. Only network/port scanners work per-host — web tools (gobuster, wpscan…)
+// need a URL and just fail on every host. Keep this list in sync with the
+// backend SWEEP_TOOLS allowlist in scan_handlers.rs::network_sweep.
+const SWEEP_TOOL_IDS = ['nmap', 'masscan', 'naabu', 'unicornscan', 'fping', 'netdiscover'];
+const SWEEP_QUICK_TOOLS = [
+  { id: 'nmap',    label: 'Port Scan',     icon: '🔍', desc: 'Ports, services & versions' },
+  { id: 'masscan', label: 'Fast Ports',    icon: '⚡', desc: 'High-speed port sweep' },
+  { id: 'naabu',   label: 'Port Discover', icon: '📡', desc: 'Fast port discovery' },
+  { id: 'fping',   label: 'Host Ping',     icon: '📶', desc: 'Live-host check' },
+];
+
 export function NewScanPage() {
   const { t } = useTranslation();
   useDocumentTitle('New Scan — CyberSec Pro');
@@ -181,9 +193,14 @@ export function NewScanPage() {
     }
   };
 
-  const filteredTools = toolSearch
-    ? allTools.filter(t => t.name.toLowerCase().includes(toolSearch.toLowerCase()) || (t.description || '').toLowerCase().includes(toolSearch.toLowerCase()))
+  // In network-sweep mode, only network/port scanners can run per-host.
+  const sweepScoped = scanMode === 'network'
+    ? allTools.filter(t => SWEEP_TOOL_IDS.includes((t.slug || '').toLowerCase()) || SWEEP_TOOL_IDS.includes((t.name || '').toLowerCase()))
     : allTools;
+  const filteredTools = toolSearch
+    ? sweepScoped.filter(t => t.name.toLowerCase().includes(toolSearch.toLowerCase()) || (t.description || '').toLowerCase().includes(toolSearch.toLowerCase()))
+    : sweepScoped;
+  const quickTools = scanMode === 'network' ? SWEEP_QUICK_TOOLS : QUICK_TOOLS;
 
   if (toolsLoading) return <NewScanPageSkeleton />;
 
@@ -285,7 +302,7 @@ export function NewScanPage() {
           <SectionLabel icon={<Zap size={13} />} text="Select tool" />
           {!showAllTools && (
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-vos-2 mb-vos-3">
-              {QUICK_TOOLS.map(qt => (
+              {quickTools.map(qt => (
                 <button
                   key={qt.id}
                   onClick={() => setSelectedTool(qt.id)}

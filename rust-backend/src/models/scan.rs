@@ -13,7 +13,11 @@ pub struct Scan {
     pub parameters: Option<JsonValue>,
     pub status: Option<String>,
     pub agent_id: Option<String>,
-    pub project_id: Option<i64>,
+    // DB column is INTEGER (INT4); sqlx decodes that to i32, not i64. Using i64
+    // here made every row with a non-NULL project_id fail to decode, which in a
+    // fetch_all() collapses the whole result to an empty Vec (list_scans showed
+    // total>0 but an empty scans array). Match the real column width.
+    pub project_id: Option<i32>,
     pub output: Option<String>,
     pub error_log: Option<String>,
     pub findings: Option<JsonValue>,
