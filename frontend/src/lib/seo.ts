@@ -11,26 +11,26 @@ type PageSEO = {
 const pageMeta: Record<string, Record<string, PageSEO>> = {
   home: {
     en: {
-      title: "CyberSec Pro — Cloud Cybersecurity | 87 Kali Tools",
+      title: "CyberSec Pro — Cloud Cybersecurity | 89 Kali Tools",
       description:
-        "Run 87 Kali Linux security tools from your browser. Automated vulnerability scanning, penetration testing, and security assessments. No setup required. Start free.",
+        "Run 89 Kali Linux security tools from your browser. Automated vulnerability scanning, penetration testing, and security assessments. No setup required. Start free.",
     },
     tr: {
-      title: "CyberSec Pro — Bulut Siber Güvenlik Platformu | 87 Kali Linux Aracı",
+      title: "CyberSec Pro — Bulut Siber Güvenlik Platformu | 89 Kali Linux Aracı",
       description:
-        "87 Kali Linux güvenlik aracını tarayıcınızdan çalıştırın. Otomatik zafiyet tarama, penetrasyon testi ve güvenlik değerlendirmeleri. Kurulum gerektirmez.",
+        "89 Kali Linux güvenlik aracını tarayıcınızdan çalıştırın. Otomatik zafiyet tarama, penetrasyon testi ve güvenlik değerlendirmeleri. Kurulum gerektirmez.",
     },
   },
   about: {
     en: {
       title: "About CyberSec Pro — Cloud Penetration Testing Platform",
       description:
-        "Built by security engineers for security engineers. Learn about CyberSec Pro's mission to democratize offensive security with 87 cloud-based Kali Linux tools.",
+        "Built by security engineers for security engineers. Learn about CyberSec Pro's mission to democratize offensive security with 89 cloud-based Kali Linux tools.",
     },
     tr: {
       title: "Hakkımızda — CyberSec Pro Siber Güvenlik Platformu",
       description:
-        "Güvenlik mühendisleri tarafından, güvenlik mühendisleri için yapıldı. 87 bulut tabanlı Kali Linux aracıyla saldırı güvenliğini demokratikleştirme misyonumuzu öğrenin.",
+        "Güvenlik mühendisleri tarafından, güvenlik mühendisleri için yapıldı. 89 bulut tabanlı Kali Linux aracıyla saldırı güvenliğini demokratikleştirme misyonumuzu öğrenin.",
     },
   },
   "trust-center": {
@@ -45,14 +45,14 @@ const pageMeta: Record<string, Record<string, PageSEO>> = {
   },
   tools: {
     en: {
-      title: "87 Security Tools — Kali Linux Arsenal Online",
+      title: "89 Security Tools — Kali Linux Arsenal Online",
       description:
-        "Access 87 Kali Linux security tools across 14 categories. Nmap, Metasploit, Burp Suite, SQLMap, Nikto, Hydra and more — all in your browser.",
+        "Access 89 Kali Linux security tools across 14 categories. Nmap, Nuclei, SQLMap, Nikto, ffuf, WPScan, Hydra and more — all in your browser.",
     },
     tr: {
-      title: "87 Güvenlik Aracı — Online Kali Linux Cephaneliği",
+      title: "89 Güvenlik Aracı — Online Kali Linux Cephaneliği",
       description:
-        "14 kategoride 87 Kali Linux güvenlik aracına erişin. Nmap, Metasploit, Burp Suite, SQLMap, Nikto, Hydra ve daha fazlası — hepsi tarayıcınızda.",
+        "14 kategoride 89 Kali Linux güvenlik aracına erişin. Nmap, Nuclei, SQLMap, Nikto, ffuf, WPScan, Hydra ve daha fazlası — hepsi tarayıcınızda.",
     },
   },
   blog: {
@@ -71,12 +71,12 @@ const pageMeta: Record<string, Record<string, PageSEO>> = {
     en: {
       title: "Documentation — Getting Started with CyberSec Pro",
       description:
-        "Complete guide to setting up scans, using 87 security tools, generating reports, and integrating CyberSec Pro into your workflow.",
+        "Complete guide to setting up scans, using 89 security tools, generating reports, and integrating CyberSec Pro into your workflow.",
     },
     tr: {
       title: "Dokümantasyon — CyberSec Pro ile Başlangıç Rehberi",
       description:
-        "Tarama kurulumu, 87 güvenlik aracı kullanımı, rapor oluşturma ve CyberSec Pro entegrasyonu için kapsamlı rehber.",
+        "Tarama kurulumu, 89 güvenlik aracı kullanımı, rapor oluşturma ve CyberSec Pro entegrasyonu için kapsamlı rehber.",
     },
   },
   "api-reference": {
@@ -337,7 +337,7 @@ export function getOrganizationJsonLd() {
     name: "CyberSec Pro",
     url: BASE_URL,
     logo: `${BASE_URL}/icon.svg`,
-    description: "Cloud-based offensive security platform with 87 Kali Linux tools.",
+    description: "Cloud-based offensive security platform with 89 Kali Linux tools.",
     founder: {
       "@type": "Person",
       name: "CyberSec Pro Team",
@@ -358,7 +358,7 @@ export function getWebsiteJsonLd() {
     "@type": "WebSite",
     name: "CyberSec Pro",
     url: BASE_URL,
-    description: "Cloud-based offensive security platform with 87 Kali Linux tools.",
+    description: "Cloud-based offensive security platform with 89 Kali Linux tools.",
     potentialAction: {
       "@type": "SearchAction",
       target: {
@@ -390,21 +390,21 @@ export function getSoftwareJsonLd() {
         price: "29",
         priceCurrency: "EUR",
         name: "Starter",
-        description: "All 87 tools, 30 scans/month, basic reports",
+        description: "All 89 tools, 30 scans/month, basic reports",
       },
       {
         "@type": "Offer",
         price: "99",
         priceCurrency: "EUR",
         name: "Professional",
-        description: "All 87 tools, 250 scans/month, AI suggestions, compliance reports",
+        description: "All 89 tools, 250 scans/month, AI suggestions, compliance reports",
       },
       {
         "@type": "Offer",
         price: "349",
         priceCurrency: "EUR",
         name: "Enterprise",
-        description: "All 87 tools, 5000 scans/month, SSO/SAML, priority support, dedicated manager",
+        description: "All 89 tools, 5000 scans/month, SSO/SAML, priority support, dedicated manager",
       },
     ],
   };

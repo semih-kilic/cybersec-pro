@@ -8,8 +8,8 @@ import { ArrowRight, Terminal } from "lucide-react";
 const sampleTools = [
   { name: "Nmap", category: "Network Scanner", cmd: "nmap -sV -sC target" },
   { name: "SQLMap", category: "SQL Injection", cmd: "sqlmap -u url --dbs" },
-  { name: "Burp Suite", category: "Web Proxy", cmd: "burpsuite --project-file" },
-  { name: "Metasploit", category: "Exploitation", cmd: "msfconsole -q" },
+  { name: "Nuclei", category: "Vulnerability Scan", cmd: "nuclei -u url -severity high,critical" },
+  { name: "WPScan", category: "WordPress Scan", cmd: "wpscan --url url" },
   { name: "Hydra", category: "Brute Force", cmd: "hydra -l user -P list target" },
   { name: "Nikto", category: "Web Scanner", cmd: "nikto -h target" },
   { name: "Gobuster", category: "Directory Scan", cmd: "gobuster dir -u url -w list" },

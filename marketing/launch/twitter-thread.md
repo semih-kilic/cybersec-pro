@@ -1,7 +1,7 @@
 # CyberSec Pro Launch Thread (7 tweets)
 
 ## Tweet 1 (Hook)
-We just shipped 87 Kali Linux tools to the cloud.
+We just shipped 89 Kali Linux tools to the cloud.
 
 No VM. No setup. No dependency hell.
 
@@ -38,7 +38,7 @@ The shared proto crate pattern is 🤌
 ## Tweet 5 (WASM)
 We compiled Rust → WebAssembly for the frontend.
 
-Tool search (87 tools) runs entirely in the browser.
+Tool search (89 tools) runs entirely in the browser.
 
 174KB binary. Fuzzy matching. Zero API calls for filtering.
 
@@ -54,7 +54,7 @@ Compliance isn't optional.
 ## Tweet 7 (CTA)
 Open source CLI coming soon: `cargo install cybersec-cli`
 
-87 tools. 14 categories. Zero infrastructure.
+89 tools. 14 categories. Zero infrastructure.
 
 Try it: cyber-sec-pro.com
 GitHub: github.com/semih-kilic/cybersec-pro

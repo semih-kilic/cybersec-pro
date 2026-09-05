@@ -1440,6 +1440,44 @@ fn definitions() -> Vec<ToolForm> {
                 {"name":"password","label":"Parola","type":"password","required":true,"default":""}
             ]),
         },
+        ToolForm {
+            name: "arjun",
+            template: "arjun -u {target} {method} {threads}",
+            target_types: &["url"],
+            danger: "medium",
+            purpose: "Bir web uç noktasındaki gizli/dokümante edilmemiş HTTP parametrelerini (GET/POST) keşfeder.",
+            when_to_use: "Bir sayfanın link verilmemiş parametrelerini bulup gizli işlevleri veya zafiyet giriş noktalarını ortaya çıkarmak için.",
+            form: json!([
+                {"name":"method","label":"HTTP method","type":"select","default":"-m GET",
+                 "description":"Parametrelerin hangi istek türüyle deneneceği",
+                 "options":[
+                    {"label":"GET (default)","value":"-m GET"},
+                    {"label":"POST","value":"-m POST"},
+                    {"label":"JSON body","value":"-m JSON"},
+                    {"label":"Query in headers","value":"-m HEADERS"}]},
+                {"name":"threads","label":"Concurrency","type":"select","default":"-t 10",
+                 "options":[
+                    {"label":"Gentle (5)","value":"-t 5"},
+                    {"label":"Normal (10, default)","value":"-t 10"},
+                    {"label":"Fast (25)","value":"-t 25"}]}
+            ]),
+        },
+        ToolForm {
+            name: "dmitry",
+            template: "dmitry {modules} {target}",
+            target_types: &["domain","ip"],
+            danger: "low",
+            purpose: "Bir hedef hakkında pasif istihbarat toplar: whois kayıtları, Netcraft bilgisi, alt alan adları ve e-posta adresleri.",
+            when_to_use: "Bir alan adı için hızlı, tek komutluk açık kaynak keşif (OSINT) özeti çıkarmak için.",
+            form: json!([
+                {"name":"modules","label":"Toplanacak bilgi","type":"select","default":"-iw",
+                 "description":"Hangi pasif kaynakların sorgulanacağı",
+                 "options":[
+                    {"label":"Whois (hızlı, default)","value":"-iw"},
+                    {"label":"Whois + Netcraft","value":"-iwn"},
+                    {"label":"Tam pasif (whois, netcraft, alt alanlar, e-postalar)","value":"-iwnse"}]}
+            ]),
+        },
     ]
 }
 

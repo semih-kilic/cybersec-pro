@@ -1,7 +1,7 @@
 {
   "meta": {
     "title": "CyberSec Pro — Saldırı Güvenliği Platformu",
-    "description": "87 Kali Linux aracıyla bulut tabanlı saldırı güvenliği platformu. Otomatik güvenlik açığı taraması, penetrasyon testi ve güvenlik değerlendirmeleri.",
+    "description": "89 Kali Linux aracıyla bulut tabanlı saldırı güvenliği platformu. Otomatik güvenlik açığı taraması, penetrasyon testi ve güvenlik değerlendirmeleri.",
     "trustCenterTitle": "Güven Merkezi — CyberSec Pro | Güvenlik, Uyumluluk & Şeffaflık",
     "trustCenterDesc": "CyberSec Pro güvenlik merkezi: SOC 2, ISO 27001, GDPR uyumluluk bilgileri, responsible disclosure politikası, bug bounty programı, alt işlemciler ve DPA."
   },
@@ -24,12 +24,12 @@
   "hero": {
     "badge": "Bulut Tabanlı Saldırı Güvenliği",
     "title": "Saldırı Güvenliği\nPlatformu",
-    "titleHighlight": "87 Araç.",
-    "subtitle": "87 Kali Linux aracını 14 kategoride tarayıcınızdan çalıştırın. Kurulum yok. Altyapı yok. Sadece sonuçlar.",
+    "titleHighlight": "89 Araç.",
+    "subtitle": "89 Kali Linux aracını 14 kategoride tarayıcınızdan çalıştırın. Kurulum yok. Altyapı yok. Sadece sonuçlar.",
     "cta": "Ücretsiz Taramayı Başlat",
     "ctaSecondary": "Güvenlik Araçlarını Gör",
     "stats": {
-      "tools": "87",
+      "tools": "89",
       "toolsLabel": "Güvenlik Aracı",
       "categories": "18",
       "categoriesLabel": "Kategori",
@@ -49,8 +49,8 @@
         "description": "Birkaç tıklamayla karmaşık güvenlik taramalarını yapılandırın ve çalıştırın. Tekrarlayan değerlendirmeler planlayın."
       },
       "tools": {
-        "title": "87 Kali Aracı",
-        "description": "Nmap'ten Metasploit'e, Burp Suite'ten SQLMap'e — tam Kali Linux cephaneliğine erişin."
+        "title": "89 Kali Aracı",
+        "description": "Nmap'ten Nuclei'e, WPScan'ten SQLMap'e — tam Kali Linux cephaneliğine erişin."
       },
       "reports": {
         "title": "Profesyonel Raporlar",
@@ -86,7 +86,7 @@
         "price": "$0",
         "period": "14 gün",
         "features": [
-          "Tüm 87 güvenlik aracı",
+          "Tüm 89 güvenlik aracı",
           "Günde 3 tarama",
           "1 eşzamanlı tarama",
           "PDF bulgular raporu",
@@ -99,7 +99,7 @@
         "price": "$29",
         "period": "/ay",
         "features": [
-          "Tüm 87 güvenlik aracı",
+          "Tüm 89 güvenlik aracı",
           "Ayda 30 tarama",
           "2 eşzamanlı tarama",
           "1 domain/uygulama",
@@ -116,7 +116,7 @@
         "price": "$99",
         "period": "/ay",
         "features": [
-          "Tüm 87 güvenlik aracı",
+          "Tüm 89 güvenlik aracı",
           "Ayda 250 tarama",
           "5 eşzamanlı tarama",
           "5 domain/uygulamaya kadar",
@@ -136,7 +136,7 @@
         "price": "$349",
         "period": "/ay",
         "features": [
-          "Tüm 87 güvenlik aracı",
+          "Tüm 89 güvenlik aracı",
           "Ayda 5.000 tarama",
           "Sınırsız eşzamanlı tarama",
           "Sınırsız domain/uygulama",
@@ -160,8 +160,8 @@
   },
   "tools": {
     "badge": "Güvenlik Cephaneliği",
-    "title": "87 Araç. 14 Kategori.",
-    "subtitle": "14 kategoride 87 küratörlü Kali Linux aracı — tarayıcınızda çalışmaya hazır. Kurulum yok, indirme yok.",
+    "title": "89 Araç. 14 Kategori.",
+    "subtitle": "14 kategoride 89 küratörlü Kali Linux aracı — tarayıcınızda çalışmaya hazır. Kurulum yok, indirme yok.",
     "searchPlaceholder": "Araç ara...",
     "allCategories": "Tümü",
     "runTool": "Aracı Çalıştır",
@@ -185,7 +185,7 @@
       },
       "q3": {
         "q": "Kaç araç mevcut?",
-        "a": "CyberSec Pro, Nmap, Metasploit, Burp Suite, SQLMap, Nikto, Hydra ve daha fazlası dahil 14 kategoride 87 Kali Linux aracı sunar."
+        "a": "CyberSec Pro, Nmap, Nuclei, WPScan, SQLMap, Nikto, Hydra ve daha fazlası dahil 14 kategoride 89 Kali Linux aracı sunar."
       },
       "q4": {
         "q": "Hangi tarama türleri mevcut?",
@@ -231,7 +231,7 @@
     "button": "Ücretsiz Taramayı Başlat"
   },
   "footer": {
-    "description": "Bulut tabanlı saldırı güvenliği platformu. 14 kategoride 87 Kali Linux aracı.",
+    "description": "Bulut tabanlı saldırı güvenliği platformu. 14 kategoride 89 Kali Linux aracı.",
     "platform": "Platform",
     "company": "Şirket",
     "legal": "Yasal",

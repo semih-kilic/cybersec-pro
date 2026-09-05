@@ -77,7 +77,7 @@ export function CommandPalette({ isOpen, onClose }: CommandPaletteProps) {
       { id: 'tool-nikto', label: 'Nikto', description: 'Web server scanner', icon: <ToolIcon />, action: nav('/dashboard/tools'), category: 'tool' as const, keywords: ['web', 'vulnerability'] },
       { id: 'tool-gobuster', label: 'Gobuster', description: 'Directory brute-forcer', icon: <ToolIcon />, action: nav('/dashboard/tools'), category: 'tool' as const, keywords: ['directory', 'bruteforce', 'fuzz'] },
       { id: 'tool-hydra', label: 'Hydra', description: 'Password cracker', icon: <ToolIcon />, action: nav('/dashboard/tools'), category: 'tool' as const, keywords: ['password', 'brute', 'login'] },
-      { id: 'tool-burpsuite', label: 'Burp Suite', description: 'Web security testing', icon: <ToolIcon />, action: nav('/dashboard/tools'), category: 'tool' as const, keywords: ['proxy', 'web', 'intercept'] },
+      { id: 'tool-nuclei', label: 'Nuclei', description: 'Template-based vulnerability scanner', icon: <ToolIcon />, action: nav('/dashboard/tools'), category: 'tool' as const, keywords: ['vulnerability', 'cve', 'web', 'templates'] },
     ];
   }, [navigate, onClose, t]);
 

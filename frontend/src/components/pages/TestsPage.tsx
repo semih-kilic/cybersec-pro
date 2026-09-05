@@ -1,5 +1,5 @@
-import dynamic from "next/dynamic";
 "use client";
+import dynamic from "next/dynamic";
 
 import { useTranslations } from "next-intl";
 import RevealOnScroll from "@/components/animations/RevealOnScroll";

@@ -1,7 +1,7 @@
 {
   "meta": {
     "title": "CyberSec Pro — Offensive-Security-Plattform",
-    "description": "Cloud-basierte Offensive-Security-Plattform mit 87 Kali-Linux-Tools. Automatisiertes Schwachstellen-Scanning, Penetrationstests und Sicherheitsbewertungen."
+    "description": "Cloud-basierte Offensive-Security-Plattform mit 89 Kali-Linux-Tools. Automatisiertes Schwachstellen-Scanning, Penetrationstests und Sicherheitsbewertungen."
   },
   "nav": {
     "features": "Funktionen",
@@ -22,12 +22,12 @@
   "hero": {
     "badge": "Cloud-basierte Offensive Security",
     "title": "Offensive-Security-\nPlattform",
-    "titleHighlight": "87 Tools.",
-    "subtitle": "Führen Sie 87 Kali-Linux-Tools in 14 Kategorien direkt im Browser aus. Keine Einrichtung. Keine Infrastruktur. Nur Ergebnisse.",
+    "titleHighlight": "89 Tools.",
+    "subtitle": "Führen Sie 89 Kali-Linux-Tools in 14 Kategorien direkt im Browser aus. Keine Einrichtung. Keine Infrastruktur. Nur Ergebnisse.",
     "cta": "Kostenlosen Scan starten",
     "ctaSecondary": "Sicherheitstools ansehen",
     "stats": {
-      "tools": "87",
+      "tools": "89",
       "toolsLabel": "Sicherheitstools",
       "categories": "18",
       "categoriesLabel": "Kategorien",
@@ -47,8 +47,8 @@
         "description": "Konfigurieren und starten Sie komplexe Sicherheitsscans mit wenigen Klicks. Planen Sie wiederkehrende Bewertungen."
       },
       "tools": {
-        "title": "87 Kali-Tools",
-        "description": "Zugriff auf das komplette Kali-Linux-Arsenal — von Nmap bis Metasploit, Burp Suite bis SQLMap."
+        "title": "89 Kali-Tools",
+        "description": "Zugriff auf das komplette Kali-Linux-Arsenal — von Nmap bis Nuclei, WPScan bis SQLMap."
       },
       "reports": {
         "title": "Professionelle Berichte",
@@ -84,7 +84,7 @@
         "price": "$0",
         "period": "3 Tage",
         "features": [
-          "Alle 87 Sicherheitstools",
+          "Alle 89 Sicherheitstools",
           "3 Scans pro Tag",
           "1 gleichzeitiger Scan",
           "PDF-Bericht mit Ergebnissen",
@@ -97,7 +97,7 @@
         "price": "29 $",
         "period": "/Monat",
         "features": [
-          "Alle 87 Sicherheitstools",
+          "Alle 89 Sicherheitstools",
           "30 Scans pro Monat",
           "2 gleichzeitige Scans",
           "1 Domain/Anwendung",
@@ -114,7 +114,7 @@
         "price": "99 $",
         "period": "/Monat",
         "features": [
-          "Alle 87 Sicherheitstools",
+          "Alle 89 Sicherheitstools",
           "250 Scans pro Monat",
           "5 gleichzeitige Scans",
           "Bis zu 5 Domains/Anwendungen",
@@ -134,7 +134,7 @@
         "price": "349 $",
         "period": "/Monat",
         "features": [
-          "Alle 87 Sicherheitstools",
+          "Alle 89 Sicherheitstools",
           "5.000 Scans pro Monat",
           "Unbegrenzte gleichzeitige Scans",
           "Unbegrenzte Domains/Anwendungen",
@@ -158,8 +158,8 @@
   },
   "tools": {
     "badge": "Sicherheits-Arsenal",
-    "title": "87 Tools. 14 Kategorien.",
-    "subtitle": "87 kuratierte Kali-Linux-Tools in 14 Kategorien — sofort im Browser einsatzbereit. Keine Installation nötig.",
+    "title": "89 Tools. 14 Kategorien.",
+    "subtitle": "89 kuratierte Kali-Linux-Tools in 14 Kategorien — sofort im Browser einsatzbereit. Keine Installation nötig.",
     "searchPlaceholder": "Tools suchen...",
     "allCategories": "Alle",
     "runTool": "Tool starten",
@@ -183,7 +183,7 @@
       },
       "q3": {
         "q": "Wie viele Tools sind verfügbar?",
-        "a": "CyberSec Pro bietet 87 Kali Linux Tools in 14 Kategorien, darunter Nmap, Metasploit, Burp Suite und SQLMap."
+        "a": "CyberSec Pro bietet 89 Kali Linux Tools in 14 Kategorien, darunter Nmap, Nuclei, WPScan und SQLMap."
       },
       "q4": {
         "q": "Welche Scan-Typen gibt es?",
@@ -229,7 +229,7 @@
     "button": "Kostenlosen Scan starten"
   },
   "footer": {
-    "description": "Cloud-basierte Offensive-Security-Plattform. 87 Kali-Linux-Tools in 14 Kategorien.",
+    "description": "Cloud-basierte Offensive-Security-Plattform. 89 Kali-Linux-Tools in 14 Kategorien.",
     "platform": "Plattform",
     "company": "Unternehmen",
     "legal": "Rechtliches",
