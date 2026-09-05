@@ -9,7 +9,7 @@ import { Target, BookOpen, User, Shield, Globe, Lock, Clock, Award, CheckCircle,
 const ParticleField = dynamic(() => import("@/components/three/ParticleField"), { ssr: false });
 
 const stats = [
-  { value: "2024", label: "Founded" },
+  { value: "2025", label: "Founded" },
   {value: "87", label: "Kali Tools" },
   { value: "2", label: "Continents" },
   { value: "24/7", label: "Scanning" },
