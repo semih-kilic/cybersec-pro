@@ -1327,7 +1327,7 @@ fn definitions() -> Vec<ToolForm> {
         },
         ToolForm {
             name: "regripper",
-            template: "rip -r {target} -f {profile}",
+            template: "regripper -r {target} -f {profile}",
             target_types: &["file"],
             danger: "low",
             purpose: "Windows kayıt (registry) kovanlarından adli açıdan önemli bilgileri çıkarır.",
