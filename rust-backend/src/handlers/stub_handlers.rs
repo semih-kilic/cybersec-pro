@@ -1813,14 +1813,94 @@ pub async fn scan_stop(
 
 pub async fn scan_rerun(
     Path(scan_id): Path<String>,
-    _user: AuthUser,
-    State(_state): State<Arc<AppState>>,
+    user: crate::middleware::auth_middleware::WriteUser,
+    headers: axum::http::HeaderMap,
+    State(state): State<Arc<AppState>>,
 ) -> impl IntoResponse {
-    // Honesty fix: previous version returned fake success without queueing anything.
-    (StatusCode::NOT_IMPLEMENTED, Json(json!({
-        "error": "Scan rerun is not implemented yet",
-        "scan_id": scan_id
-    }))).into_response()
+    let auth = user.0;
+    let org_id = auth.org_id.clone().unwrap_or_else(|| auth.user_id.clone());
+
+    // Load the original scan's tool, target and parameters — scoped to the org so
+    // a rerun can never reach another tenant's scan.
+    let row = sqlx::query(
+        "SELECT t.name AS tool_name, s.target AS target, s.parameters::text AS params, \
+                s.agent_id AS agent_id, s.project_id AS project_id \
+           FROM scans s JOIN tools t ON t.id = s.tool_id \
+          WHERE s.id = $1 AND s.organization_id = $2",
+    )
+    .bind(&scan_id)
+    .bind(&org_id)
+    .fetch_optional(&state.db)
+    .await;
+
+    let row = match row {
+        Ok(Some(r)) => r,
+        Ok(None) => {
+            return (StatusCode::NOT_FOUND, Json(json!({"error": "Scan not found"}))).into_response()
+        }
+        Err(e) => {
+            return (StatusCode::INTERNAL_SERVER_ERROR, Json(json!({"error": format!("DB error: {}", e)}))).into_response()
+        }
+    };
+
+    let tool_name: String = row.get("tool_name");
+    let target: String = row.get("target");
+    let params_text: Option<String> = row.get("params");
+    let agent_id: Option<String> = row.get("agent_id");
+    let project_id: Option<i32> = row.get("project_id");
+
+    // Authorization guard: a rerun re-uses the ownership authorization the user
+    // already confirmed for this target. If none is on record (never authorized,
+    // or since revoked/expired) we do NOT silently re-authorize — the user must
+    // start the scan from the scan page and confirm again. This keeps the
+    // bypass-proof authorization guarantee intact for reruns too.
+    if crate::services::target_authorization::current_authorization_id(&state.db, &org_id, &target)
+        .await
+        .is_none()
+    {
+        return (StatusCode::FORBIDDEN, Json(json!({
+            "error": "This target has no active authorization on record. Start the scan from the scan page and confirm you are authorized to test it."
+        }))).into_response();
+    }
+
+    // Carry the original parameters forward and tag the rerun so the UI can link
+    // it back to the scan it repeats (same convention as the re-scan feature).
+    let mut params: serde_json::Value = params_text
+        .as_deref()
+        .and_then(|t| serde_json::from_str(t).ok())
+        .unwrap_or_else(|| json!({}));
+    if let Some(obj) = params.as_object_mut() {
+        obj.insert("_rescan_of".to_string(), json!(scan_id));
+    }
+
+    // Delegate to the real scan launcher so the rerun goes through the exact same
+    // path as any other scan: quota/concurrency enforcement, tool resolution,
+    // local / SSH-agent / reverse-tunnel dispatch, and finding de-duplication.
+    // start_scan re-checks the confirmation against the canonical statement;
+    // because an authorization row already exists for this target the check
+    // passes and the row's last_used_at is bumped.
+    let req = crate::handlers::scan_handlers::StartScanRequest {
+        tool: Some(tool_name),
+        tool_id: None,
+        target: target.clone(),
+        parameters: Some(params),
+        execution_mode: None,
+        agent_id,
+        project_id: project_id.map(|v| v as i64),
+        authorization: Some(crate::handlers::scan_handlers::ScanAuthorizationBody {
+            confirmed: true,
+            scope_statement: crate::services::target_authorization::canonical_statement(&target),
+        }),
+    };
+
+    crate::handlers::scan_handlers::start_scan(
+        State(state),
+        crate::middleware::auth_middleware::WriteUser(auth),
+        headers,
+        Json(req),
+    )
+    .await
+    .into_response()
 }
 
 pub async fn scan_business_report(
@@ -3410,14 +3490,9 @@ pub async fn create_checkout_session(
     Json(json!({"error": "Billing not configured"})).into_response()
 }
 
-// ── SSO test ───────────────────────────────────────────────
-
-pub async fn sso_test(
-    _user: AuthUser,
-    State(_state): State<Arc<AppState>>,
-) -> impl IntoResponse {
-    Json(json!({"status": "ok", "message": "SSO test not implemented"})).into_response()
-}
+// (Removed dead `sso_test` stub — the live SSO connection test is
+//  `sso_handlers::test_sso_connection`, wired at POST /api/v1/sso/test, which
+//  actually binds to the configured LDAP server. The old stub was never routed.)
 
 // ── Admin endpoints ────────────────────────────────────────
 
