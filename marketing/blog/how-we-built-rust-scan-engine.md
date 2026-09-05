@@ -1,18 +1,18 @@
 ---
-title: "How We Built a Rust-Powered Scan Engine with gRPC for 1,510 Security Tools"
+title: "How We Built a Rust-Powered Scan Engine with gRPC for 87 Security Tools"
 date: 2026-08-18
 author: CyberSec Pro Team
 tags: [rust, gRPC, webassembly, security, docker, pentest]
 description: "A deep technical dive into building a cloud-native scan engine in Rust with gRPC inter-service communication and WebAssembly browser modules."
 ---
 
-# How We Built a Rust-Powered Scan Engine with gRPC for 1,510 Security Tools
+# How We Built a Rust-Powered Scan Engine with gRPC for 87 Security Tools
 
 ## Why We Built This
 
 Every pentester knows the drill: update Kali, verify tool versions, fight dependency conflicts, allocate enough RAM for parallel scans. We wanted to eliminate that friction entirely — open a browser, pick a tool, run it, get results.
 
-The challenge wasn't just wrapping CLI tools in a web UI. It was building a platform that could orchestrate 1,510 different security tools at scale, with proper auth, audit logging, and compliance. And it had to be fast.
+The challenge wasn't just wrapping CLI tools in a web UI. It was building a platform that could orchestrate 87 different security tools at scale, with proper auth, audit logging, and compliance. And it had to be fast.
 
 We chose Rust. Here's why, and how it worked out.
 
@@ -81,7 +81,7 @@ One gotcha: `async` closures with `.or_else()` don't work the way you'd expect i
 
 ## WebAssembly: Search in the Browser
 
-For the frontend tool catalog (1,510 tools), we built a WASM module:
+For the frontend tool catalog (87 tools), we built a WASM module:
 
 ```rust
 #[wasm_bindgen]
@@ -96,9 +96,9 @@ pub struct ToolSearchEngine {
 - `useWasmSearch` React hook integrates with the existing `ToolsPage.tsx`
 - JS fallback for browsers without WASM support
 
-The search runs entirely client-side — no API round-trip for filtering 1,510 tools. Users notice instant results.
+The search runs entirely client-side — no API round-trip for filtering 87 tools. Users notice instant results.
 
-## Scaling to 1,510 Tools
+## Scaling to 87 Tools
 
 Each tool has metadata in PostgreSQL:
 
@@ -113,7 +113,7 @@ CREATE TABLE tools (
 );
 ```
 
-35 categories. Tool health monitoring runs via Docker exec. Auto-categorization groups tools by function (recon, exploitation, forensics, etc.).
+14 categories. Tool health monitoring runs via Docker exec. Auto-categorization groups tools by function (recon, exploitation, forensics, etc.).
 
 ## Compliance from Day One
 

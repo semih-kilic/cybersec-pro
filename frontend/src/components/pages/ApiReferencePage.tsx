@@ -52,10 +52,10 @@ const groups: EndpointGroup[] = [
   },
   {
     id: "tools", label: "Tools", icon: Terminal, color: "var(--color-cyan)",
-    description: "Browse, search, and configure the full arsenal of 183 verified Kali Linux security tools.",
+    description: "Browse, search, and configure the full arsenal of 87 verified Kali Linux security tools.",
     endpoints: [
       { method: "GET", path: "/api/v1/tools", description: "List all tools with pagination (default 50/page). Filter by category, name, status" },
-      { method: "GET", path: "/api/v1/tools/count", description: "Get total tool count (returns { total: 183, active: N })" },
+      { method: "GET", path: "/api/v1/tools/count", description: "Get total tool count (returns { total: 87, active: N })" },
       { method: "GET", path: "/api/v1/tools/stats", description: "Tool usage statistics — most used, avg scan duration, success rates" },
       { method: "GET", path: "/api/v1/tools/available", description: "List tools available for current user's plan tier" },
       { method: "GET", path: "/api/v1/tools/health", description: "Health check for a specific tool (ready, version, last tested)" },

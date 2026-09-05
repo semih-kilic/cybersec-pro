@@ -1,7 +1,7 @@
 {
   "meta": {
     "title": "CyberSec Pro — 进攻性安全平台",
-    "description": "基于云的进攻性安全平台，拥有396个Kali Linux工具。自动化漏洞扫描、渗透测试和安全评估。"
+    "description": "基于云的进攻性安全平台，拥有87个Kali Linux工具。自动化漏洞扫描、渗透测试和安全评估。"
   },
   "nav": {
     "features": "功能",
@@ -22,8 +22,8 @@
   "hero": {
     "badge": "基于云的进攻性安全",
     "title": "进攻性安全\n平台",
-    "titleHighlight": "396个工具。",
-    "subtitle": "在浏览器中运行18个类别的396个Kali Linux工具。无需设置。无需基础设施。只需结果。",
+    "titleHighlight": "87个工具。",
+    "subtitle": "在浏览器中运行14个类别的87个Kali Linux工具。无需设置。无需基础设施。只需结果。",
     "cta": "开始免费扫描",
     "ctaSecondary": "查看安全工具",
     "stats": {
@@ -47,7 +47,7 @@
         "description": "通过几次点击即可配置和运行复杂的安全扫描。安排定期评估。"
       },
       "tools": {
-        "title": "396个Kali工具",
+        "title": "87个Kali工具",
         "description": "访问完整的Kali Linux工具库——从Nmap到Metasploit，从Burp Suite到SQLMap。"
       },
       "reports": {
@@ -84,7 +84,7 @@
         "price": "$0",
         "period": "3天",
         "features": [
-          "全部396个安全工具",
+          "全部87个安全工具",
           "每天3次扫描",
           "1个并发扫描",
           "PDF结果报告",
@@ -97,7 +97,7 @@
         "price": "$29",
         "period": "/月",
         "features": [
-          "全部396个安全工具",
+          "全部87个安全工具",
           "每月30次扫描",
           "2个并发扫描",
           "1个域名/应用",
@@ -114,7 +114,7 @@
         "price": "$99",
         "period": "/月",
         "features": [
-          "全部396个安全工具",
+          "全部87个安全工具",
           "每月250次扫描",
           "5个并发扫描",
           "最多5个域名/应用",
@@ -134,7 +134,7 @@
         "price": "$349",
         "period": "/月",
         "features": [
-          "全部396个安全工具",
+          "全部87个安全工具",
           "每月5,000次扫描",
           "无限并发扫描",
           "无限域名/应用",
@@ -158,8 +158,8 @@
   },
   "tools": {
     "badge": "安全工具库",
-    "title": "396个工具。18个类别。",
-    "subtitle": "18 个类别中的 183 个精选 Kali Linux 工具 — 可在浏览器中直接运行。无需安装。",
+    "title": "87个工具。14个类别。",
+    "subtitle": "14 个类别中的 87 个精选 Kali Linux 工具 — 可在浏览器中直接运行。无需安装。",
     "searchPlaceholder": "搜索工具...",
     "allCategories": "全部",
     "runTool": "运行工具",
@@ -183,7 +183,7 @@
       },
       "q3": {
         "q": "有多少工具？",
-        "a": "18个类别中的396个Kali Linux工具，包括Nmap、Metasploit、Burp Suite和SQLMap。"
+        "a": "14个类别中的87个Kali Linux工具，包括Nmap、Metasploit、Burp Suite和SQLMap。"
       },
       "q4": {
         "q": "有哪些扫描类型？",
@@ -229,7 +229,7 @@
     "button": "开始免费扫描"
   },
   "footer": {
-    "description": "基于云的进攻性安全平台。18个类别的396个Kali Linux工具。",
+    "description": "基于云的进攻性安全平台。14个类别的87个Kali Linux工具。",
     "platform": "平台",
     "company": "公司",
     "legal": "法律信息",

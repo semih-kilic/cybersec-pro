@@ -8,14 +8,19 @@
  */
 
 export const CATALOG_COUNTS = {
-  // Database verified counts
-  TOTAL_TOOLS: 183,           // Active tools in database (verified 2026-08-10)
-  TOTAL_CATEGORIES: 18,       // Distinct categories in tools table
-  WORKING_TOOLS: 152,          // Verified working tools (health check passed 2026-08-10)
+  // Database verified counts (SELECT ... WHERE is_active = TRUE, 2026-09-04).
+  // Only active, curated tools are shown/runnable in the product — every one
+  // has a working parameter form. Inactive rows (missing binaries / broken)
+  // are NOT counted here and are not exposed anywhere in the UI.
+  TOTAL_TOOLS: 87,            // is_active = TRUE (all curated, all have a form)
+  TOTAL_CATEGORIES: 14,       // distinct categories among active tools
+  WORKING_TOOLS: 87,          // every active tool runs end-to-end
   TOTAL_TOOLS_DEPRECATED: {
-    V325: 325,      // Old marketing number
-    V778: 778,      // Inflated number (includes inactive/deprecated)
-    V61: 61,        // Working tools count (deprecated label)
+    V325: 325,      // old marketing number — do not use
+    V778: 778,      // inflated (included inactive/deprecated) — do not use
+    V183: 183,      // stale (2026-08-10, before curation) — do not use
+    V396: 396,      // stale locale value — do not use
+    V1510: 1510,    // total catalog rows incl. inactive/broken — NOT the product count
   },
 
   // Plan limits (from rust-backend/src/services/plan.rs)

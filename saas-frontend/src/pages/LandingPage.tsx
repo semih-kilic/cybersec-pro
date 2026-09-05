@@ -260,12 +260,12 @@ export function LandingPage() {
           
           <div className="grid md:grid-cols-3 gap-8">
             {[
-              { icon: '🔍', title: 'Information Gathering', desc: '130+ tools for reconnaissance, DNS recon, subdomain enumeration, OSINT' },
-              { icon: '🌐', title: 'Web Application', desc: '100+ tools for web scanning, SQL injection, XSS testing, fuzzing' },
-              { icon: '🔐', title: 'Password Attacks', desc: '80+ tools for hash cracking, brute force, dictionary attacks' },
-              { icon: '🛡️', title: 'Vulnerability Analysis', desc: '60+ tools for scanning, SSL testing, vulnerability detection' },
-              { icon: '💀', title: 'Exploitation', desc: '50+ tools including Metasploit Framework for authorized testing' },
-              { icon: '📊', title: 'Forensics & Reporting', desc: '60+ tools for memory analysis, file carving, GDPR-compliant audit reports' },
+              { icon: '🔍', title: 'Information Gathering', desc: 'Nmap, masscan, subfinder, amass, theHarvester and more for recon, DNS & subdomain enumeration, OSINT' },
+              { icon: '🌐', title: 'Web Application', desc: 'ffuf, gobuster, feroxbuster, nikto, sqlmap, wpscan, whatweb for web scanning, SQLi, XSS, fuzzing' },
+              { icon: '🔐', title: 'Password Attacks', desc: 'hydra, john, hashcat, medusa, ncrack, kerbrute for hash cracking, brute force, dictionary attacks' },
+              { icon: '🛡️', title: 'Vulnerability Analysis', desc: 'nuclei, naabu, testssl, wapiti, xsstrike, searchsploit for scanning, SSL testing, CVE detection' },
+              { icon: '💀', title: 'Exploitation & AD', desc: 'impacket, CrackMapExec/netexec, evil-winrm, bloodhound, commix for authorized post-exploitation' },
+              { icon: '📊', title: 'Forensics & Reporting', desc: 'volatility3, binwalk, foremost, exiftool, stegseek for memory/file analysis + GDPR-compliant reports' },
             ].map((feature, i) => (
               <div key={i} className="bg-gray-800/50 rounded-xl p-6 border border-gray-700 hover:border-cyan-500/50 transition">
                 <div className="text-3xl mb-4">{feature.icon}</div>

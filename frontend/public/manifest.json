@@ -1,7 +1,7 @@
 {
   "name": "CyberSec Pro",
   "short_name": "CyberSec",
-  "description": "Cloud-based offensive security platform with 401 Kali Linux tools. Automated vulnerability scanning and penetration testing.",
+  "description": "Cloud-based offensive security platform with 87 Kali Linux tools. Automated vulnerability scanning and penetration testing.",
   "start_url": "/en/",
   "display": "standalone",
   "background_color": "#0a0e14",

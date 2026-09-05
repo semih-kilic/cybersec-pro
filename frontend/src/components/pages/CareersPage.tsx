@@ -1,5 +1,5 @@
-import dynamic from "next/dynamic";
 "use client";
+import dynamic from "next/dynamic";
 
 import { useTranslations } from "next-intl";
 import RevealOnScroll from "@/components/animations/RevealOnScroll";
@@ -31,7 +31,7 @@ const partnerships = [
   {
     icon: Shield,
     title: "Security Consultancies",
-    description: "Enhance your penetration testing and security assessment services with CyberSec Pro's 183-tool arsenal and automated reporting.",
+    description: "Enhance your penetration testing and security assessment services with CyberSec Pro's 87-tool arsenal and automated reporting.",
     color: "var(--color-orange)",
     opportunities: ["White-label reports", "Bulk scan pricing", "Custom tool configurations", "Priority support"],
   },

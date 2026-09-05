@@ -28,7 +28,7 @@ const PLANS: Plan[] = [
     monthlyPrice: 0,
     yearlyPrice: 0,
     features: [
-      { name: 'All 183 security tools', included: true },
+      { name: 'All 87 security tools', included: true },
       { name: '3 scans per day', included: true },
       { name: '1 concurrent scan', included: true },
       { name: 'PDF report with findings', included: true },
@@ -65,7 +65,7 @@ const PLANS: Plan[] = [
     originalMonthlyPrice: undefined,
     originalYearlyPrice: undefined,
     features: [
-      { name: 'All 183 security tools', included: true },
+      { name: 'All 87 security tools', included: true },
       { name: '30 scans per month', included: true },
       { name: '2 concurrent scans', included: true },
       { name: '1 domain/application', included: true },
@@ -81,7 +81,7 @@ const PLANS: Plan[] = [
     monthlyPrice: 99,
     yearlyPrice: 949,
     features: [
-      { name: 'All 183 security tools', included: true },
+      { name: 'All 87 security tools', included: true },
       { name: '250 scans per month', included: true },
       { name: '5 concurrent scans', included: true },
       { name: 'Up to 5 domains/applications', included: true },
@@ -100,7 +100,7 @@ const PLANS: Plan[] = [
     monthlyPrice: 349,
     yearlyPrice: 3349,
     features: [
-      { name: 'All 183 security tools', included: true },
+      { name: 'All 87 security tools', included: true },
       { name: '5,000 scans per month', included: true },
       { name: 'Unlimited concurrent scans', included: true },
       { name: 'Unlimited domains/applications', included: true },
