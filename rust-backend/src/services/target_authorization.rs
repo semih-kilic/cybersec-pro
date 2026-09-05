@@ -235,6 +235,65 @@ pub async fn authorize_and_check(
         return Ok((authz_id, canonical_statement(target), SCOPE_STATEMENT_VERSION.to_string()));
     }
 
+    // Uploaded-file targets are inherently authorized: the file was uploaded by an
+    // authenticated member of THIS org, and start_scan confines file tools to the
+    // org's own upload directory (/data/uploads/<org_id>/, no traversal, no
+    // sub-paths). Asking the user to "confirm ownership" of their own uploaded
+    // file is meaningless friction, so — like sandbox targets — skip the
+    // confirmation and record the authorization automatically. The org-scoped
+    // prefix is what makes this safe (a path outside it never reaches here as a
+    // bypass, and start_scan rejects it regardless).
+    let upload_prefix = format!("/data/uploads/{}/", org_id);
+    if target.starts_with(&upload_prefix) && !target.contains("..") {
+        let id = uuid::Uuid::new_v4().to_string();
+        let now = chrono::Utc::now();
+        let _ = sqlx::query(
+            "INSERT INTO target_authorizations (id, organization_id, user_id, target, target_type, scope_statement, statement_version, confirmed_at, last_used_at)
+             VALUES ($1, $2, $3, $4, 'uploaded_file', $5, $6, $7, $7) ON CONFLICT (organization_id, target) DO NOTHING",
+        )
+        .bind(&id)
+        .bind(org_id)
+        .bind(user_id)
+        .bind(target)
+        .bind(canonical_statement(target))
+        .bind(SCOPE_STATEMENT_VERSION)
+        .bind(now)
+        .execute(pool)
+        .await;
+
+        let actual_id: Option<(String,)> = sqlx::query_as(
+            "SELECT id FROM target_authorizations WHERE organization_id = $1 AND target = $2",
+        )
+        .bind(org_id)
+        .bind(target)
+        .fetch_optional(pool)
+        .await
+        .map_err(|e| format!("Authorization check failed: {}", e))?;
+        let authz_id = actual_id.map(|(id,)| id).unwrap_or_else(|| id.clone());
+
+        log_audit(
+            pool,
+            "target_authorization_uploaded_file",
+            "target",
+            "info",
+            Some(user_id),
+            Some(org_id),
+            Some(serde_json::json!({
+                "target": target,
+                "target_type": "uploaded_file",
+                "confirmed": true,
+                "upload_bypass": true,
+            })),
+            Some("target_authorization"),
+            Some(&id),
+            "success",
+            headers,
+        )
+        .await;
+
+        return Ok((authz_id, canonical_statement(target), SCOPE_STATEMENT_VERSION.to_string()));
+    }
+
     let statement = canonical_statement(target);
 
     let confirmation = match confirmation {

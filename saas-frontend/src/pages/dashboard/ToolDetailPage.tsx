@@ -278,7 +278,7 @@ export function ToolDetailPage() {
   const handleRunScan = async () => {
     const scanTarget = getTargetValue();
     if (!scanTarget) { toast.warning('Target Required', 'Please enter a target to scan'); return; }
-    if (!authzConfirmed) { toast.warning('Ownership Confirmation Required', 'Confirm that you own or have permission to test this target before starting the scan.'); return; }
+    if (!isFileTool() && !authzConfirmed) { toast.warning('Ownership Confirmation Required', 'Confirm that you own or have permission to test this target before starting the scan.'); return; }
 
     addGlobalTarget(scanTarget);
     addRecentTarget(scanTarget);
@@ -461,7 +461,18 @@ export function ToolDetailPage() {
                   )}
                 </div>
               )}
-              {scanStatus === 'idle' && (
+              {/* Files you upload are inherently authorized (they stay private to
+                  your org), so no ownership confirmation is shown for file tools. */}
+              {scanStatus === 'idle' && isFileTool() && uploadedFile && (
+                <div className="mt-4 flex items-start gap-2 p-3 rounded-lg border bg-green-500/5 border-green-500/25">
+                  <span className="text-green-400 mt-0.5">✓</span>
+                  <span className="flex-1 min-w-0">
+                    <span className="block text-xs font-medium text-gray-200">Ready to analyze your uploaded file.</span>
+                    <span className="block text-[11px] text-gray-500 mt-0.5 leading-relaxed">No ownership confirmation is needed for files you upload — they stay private to your organization.</span>
+                  </span>
+                </div>
+              )}
+              {scanStatus === 'idle' && !isFileTool() && (
                 <label className={`mt-4 flex items-start gap-2 p-3 rounded-lg border transition ${authzConfirmed ? 'bg-green-500/5 border-green-500/25' : 'bg-yellow-500/5 border-yellow-600/25'}`}>
                   <input
                     type="checkbox"
@@ -655,7 +666,7 @@ export function ToolDetailPage() {
                       <p className="text-blue-400 text-sm font-medium">⚡ GUI Tool — Runs headlessly via Xvfb virtual framebuffer on the server.</p>
                     </div>
                   )}
-                  <button onClick={handleRunScan} disabled={!getTargetValue().trim() || !authzConfirmed}
+                  <button onClick={handleRunScan} disabled={!getTargetValue().trim() || (!isFileTool() && !authzConfirmed)}
                     className="w-full py-3.5 bg-gradient-to-r from-kali-blue to-kali-purple text-white font-bold rounded-lg hover:opacity-90 transition flex items-center justify-center gap-2 disabled:opacity-40 disabled:cursor-not-allowed text-base">
                     <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
                     {t('scans.newScan', 'Run Scan')}
