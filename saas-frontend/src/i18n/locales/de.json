@@ -88,11 +88,11 @@
     "pipelineBuilder": "Pipeline-Builder"
   },
   "landing": {
-    "badge": "289 Professionelle Sicherheitstools • DSGVO-konform 🇪🇺",
+    "badge": "88 Professionelle Sicherheitstools • DSGVO-konform 🇪🇺",
     "headline": "Die fortschrittlichste Kali Linux Plattform in Europa",
     "headlinePart1": "Die fortschrittlichste",
     "headlinePart2": "Plattform in Europa",
-    "subheadline": "289 Penetrationstest-Tools in Ihrem Browser. Keine Installation erforderlich. Enterprise-Sicherheitsplattform für europäische Compliance-Standards.",
+    "subheadline": "88 Penetrationstest-Tools in Ihrem Browser. Keine Installation erforderlich. Enterprise-Sicherheitsplattform für europäische Compliance-Standards.",
     "startTrial": "Kostenlos testen",
     "startTrial14": "Kostenlos testen - 3 Tage",
     "startTrialNow": "Jetzt kostenlos testen",
@@ -104,7 +104,7 @@
     "pricingTitle": "Einfache, transparente Preise",
     "pricingSubtitle": "Keine versteckten Gebühren • Jederzeit kündbar",
     "ctaTitle": "Bereit loszulegen?",
-    "ctaSubtitle": "CyberSec Pro bringt 289 Kali-ähnliche Sicherheitstools und kontinuierliches Monitoring in Ihren Browser. Starten Sie eine kostenlose Testversion gegen Ihre eigenen autorisierten Ziele.",
+    "ctaSubtitle": "CyberSec Pro bringt 88 Kali-ähnliche Sicherheitstools und kontinuierliches Monitoring in Ihren Browser. Starten Sie eine kostenlose Testversion gegen Ihre eigenen autorisierten Ziele.",
     "copyright": "© 2026 CyberSec Pro von Semih Kılıç. Alle Rechte vorbehalten.",
     "viewTools": "Alle Tools anzeigen",
     "contactSales": "Vertrieb kontaktieren",
@@ -301,7 +301,7 @@
   },
   "tools": {
     "title": "Sicherheitstools",
-    "subtitle": "289 professionelle Penetrationstest-Tools",
+    "subtitle": "88 professionelle Penetrationstest-Tools",
     "searchPlaceholder": "Tools suchen...",
     "allCategories": "Alle Kategorien",
     "runTool": "Tool ausführen",
@@ -921,7 +921,7 @@
     "section2Title": "2. Dienstbeschreibung",
     "section2Body": "CyberSec Pro bietet eine cloudbasierte Penetration-Testing-Plattform mit Zugang zu Sicherheitstools für autorisierte Testzwecke. Der Dienst umfasst:",
     "section2": {
-      "item1": "Zugriff auf 289 Kali-Linux-Sicherheitstools über eine Weboberfläche",
+      "item1": "Zugriff auf 88 Kali-Linux-Sicherheitstools über eine Weboberfläche",
       "item2": "Planung und Ausführung von Scans",
       "item3": "Berichterstellung und Nachverfolgung von Schwachstellen",
       "item4": "Remote-Agentenverwaltung für verteilte Tests"

@@ -82,7 +82,8 @@ def register_user(email: str, password: str, first_name: str, last_name: str, or
         "password": password,
         "first_name": first_name,
         "last_name": last_name,
-        "organization_name": org_name
+        "organization_name": org_name,
+        "consent": True
     }
     if invite_token:
         data["invite_token"] = invite_token
@@ -156,7 +157,8 @@ def test_6_1_rbac_team_management(token: str) -> bool:
         "password": "Test123!",
         "first_name": "Invited",
         "last_name": "User",
-        "invite_token": "invalid-token"
+        "invite_token": "invalid-token",
+        "consent": True
     })
     if status == 400 and "Invalid or expired invitation token" in str(data):
         log_test("6.1.5 - Invalid invite token rejected", True)

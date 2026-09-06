@@ -1,7 +1,7 @@
 {
   "meta": {
     "title": "CyberSec Pro — Offensive Security Platform",
-    "description": "Cloud-based offensive security platform with 89 Kali Linux tools. Automated vulnerability scanning, penetration testing, and security assessments.",
+    "description": "Cloud-based offensive security platform with 88 Kali Linux tools. Automated vulnerability scanning, penetration testing, and security assessments.",
     "trustCenterTitle": "Trust Center — CyberSec Pro | Security, Compliance & Transparency",
     "trustCenterDesc": "CyberSec Pro Trust Center: SOC 2, ISO 27001, GDPR compliance details, responsible disclosure policy, bug bounty program, sub-processors, and DPA."
   },
@@ -24,12 +24,12 @@
   "hero": {
     "badge": "Trusted by Security Teams",
     "title": "Continuous Attack Surface\nManagement Platform",
-    "titleHighlight": "89 Kali Tools.",
+    "titleHighlight": "88 Kali Tools.",
     "subtitle": "Enterprise-grade offensive security. Scan, assess, and remediate vulnerabilities across your entire infrastructure from a single cloud platform.",
     "cta": "Start Free Scan",
     "ctaSecondary": "Schedule Demo",
     "stats": {
-      "tools": "89+",
+      "tools": "88+",
       "toolsLabel": "Security Tools",
       "categories": "18",
       "categoriesLabel": "Categories",
@@ -49,7 +49,7 @@
         "description": "Configure and run complex security scans with a few clicks. Schedule recurring assessments."
       },
       "tools": {
-        "title": "89 Kali Tools",
+        "title": "88 Kali Tools",
         "description": "Access the complete Kali Linux arsenal — from Nmap to Nuclei, WPScan to SQLMap."
       },
       "reports": {
@@ -86,7 +86,7 @@
         "price": "$0",
         "period": "14 days",
         "features": [
-          "All 89 security tools",
+          "All 88 security tools",
           "3 scans per day",
           "1 concurrent scan",
           "PDF report with findings",
@@ -99,7 +99,7 @@
         "price": "$29",
         "period": "/month",
         "features": [
-          "All 89 security tools",
+          "All 88 security tools",
           "30 scans per month",
           "2 concurrent scans",
           "1 domain/application",
@@ -116,7 +116,7 @@
         "price": "$99",
         "period": "/month",
         "features": [
-          "All 89 security tools",
+          "All 88 security tools",
           "250 scans per month",
           "5 concurrent scans",
           "Up to 5 domains/applications",
@@ -136,7 +136,7 @@
         "price": "$349",
         "period": "/month",
         "features": [
-          "All 89 security tools",
+          "All 88 security tools",
           "5,000 scans per month",
           "Unlimited concurrent scans",
           "Unlimited domains/applications",
@@ -160,8 +160,8 @@
   },
   "tools": {
     "badge": "Security Arsenal",
-    "title": "89 Tools. 14 Categories.",
-    "subtitle": "89 curated Kali Linux tools across 14 categories — ready to run in your browser. No setup, no installs.",
+    "title": "88 Tools. 14 Categories.",
+    "subtitle": "88 curated Kali Linux tools across 14 categories — ready to run in your browser. No setup, no installs.",
     "searchPlaceholder": "Search tools...",
     "allCategories": "All",
     "runTool": "Run Tool",
@@ -185,7 +185,7 @@
       },
       "q3": {
         "q": "How many tools are available?",
-        "a": "CyberSec Pro provides 89 Kali Linux tools across 14 categories, including Nmap, Nuclei, WPScan, SQLMap, Nikto, Hydra, and many more. Tool availability depends on your plan tier."
+        "a": "CyberSec Pro provides 88 Kali Linux tools across 14 categories, including Nmap, Nuclei, WPScan, SQLMap, Nikto, Hydra, and many more. Tool availability depends on your plan tier."
       },
       "q4": {
         "q": "What scan types are available?",
@@ -231,7 +231,7 @@
     "button": "Start Free Scan"
   },
   "footer": {
-    "description": "Cloud-based offensive security platform. 89 Kali Linux tools across 14 categories.",
+    "description": "Cloud-based offensive security platform. 88 Kali Linux tools across 14 categories.",
     "platform": "Platform",
     "company": "Company",
     "legal": "Legal",

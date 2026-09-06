@@ -87,11 +87,11 @@
     "pipelineBuilder": "流水线构建器"
   },
   "landing": {
-    "badge": "289 款专业安全工具 · 符合 GDPR 合规要求 ≡",
+    "badge": "88 款专业安全工具 · 符合 GDPR 合规要求 ≡",
     "headline": "欧洲最先进的 Kali Linux 平台",
     "headlinePart1": "最先进的",
     "headlinePart2": "欧洲平台",
-    "subheadline": "289 款渗透测试工具，直接在浏览器中使用，无需安装。企业级安全测试平台，专为欧洲合规标准而构建。",
+    "subheadline": "88 款渗透测试工具，直接在浏览器中使用，无需安装。企业级安全测试平台，专为欧洲合规标准而构建。",
     "startTrial": "开始免费试用",
     "startTrial14": "开始免费试用 - 3 天",
     "startTrialNow": "立即开始免费试用",
@@ -103,7 +103,7 @@
     "pricingTitle": "简单透明的定价",
     "pricingSubtitle": "无隐藏费用 · 随时取消",
     "ctaTitle": "准备好开始了吗？",
-    "ctaSubtitle": "CyberSec Pro 为您带来 289 款 Kali 风格的安全工具和持续监控。开始针对您自己授权目标的免费试用。",
+    "ctaSubtitle": "CyberSec Pro 为您带来 88 款 Kali 风格的安全工具和持续监控。开始针对您自己授权目标的免费试用。",
     "copyright": "© 2026 CyberSec Pro by Semih Kılıç。保留所有权利。",
     "viewTools": "查看所有工具",
     "contactSales": "联系销售",
@@ -300,7 +300,7 @@
   },
   "tools": {
     "title": "安全工具",
-    "subtitle": "289 款专业渗透测试工具",
+    "subtitle": "88 款专业渗透测试工具",
     "searchPlaceholder": "搜索工具...",
     "allCategories": "所有分类",
     "runTool": "运行工具",
@@ -920,7 +920,7 @@
     "section2Title": "2. 服务描述",
     "section2Body": "CyberSec Pro 提供基于云的渗透测试平台，提供安全工具用于授权测试目的。本服务包括：",
     "section2": {
-      "item1": "通过 Web 界面访问 289 款 Kali Linux 安全工具",
+      "item1": "通过 Web 界面访问 88 款 Kali Linux 安全工具",
       "item2": "扫描计划和执行功能",
       "item3": "报告生成和漏洞跟踪",
       "item4": "分布式测试的远程代理管理"

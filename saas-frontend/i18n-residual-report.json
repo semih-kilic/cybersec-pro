@@ -6,7 +6,48 @@
     "fr",
     "it"
   ],
-  "scopesScanned": 52,
-  "sameAsEnglishResidualKeys": 0,
-  "topResidualScopes": []
+  "scopesScanned": 56,
+  "sameAsEnglishResidualKeys": 133,
+  "topResidualScopes": [
+    {
+      "scope": "admin",
+      "count": 28
+    },
+    {
+      "scope": "trust",
+      "count": 24
+    },
+    {
+      "scope": "godMode",
+      "count": 23
+    },
+    {
+      "scope": "aiAssistant",
+      "count": 19
+    },
+    {
+      "scope": "agents",
+      "count": 9
+    },
+    {
+      "scope": "landing",
+      "count": 9
+    },
+    {
+      "scope": "community",
+      "count": 4
+    },
+    {
+      "scope": "scanTemplates",
+      "count": 4
+    },
+    {
+      "scope": "securityNews",
+      "count": 4
+    },
+    {
+      "scope": "vulnDB",
+      "count": 4
+    }
+  ]
 }

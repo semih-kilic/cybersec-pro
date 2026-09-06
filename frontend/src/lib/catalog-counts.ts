@@ -12,10 +12,12 @@ export const CATALOG_COUNTS = {
   // Only active, curated tools are shown/runnable in the product — every one
   // has a working parameter form and is verified to run end-to-end. Inactive
   // rows (missing binaries / broken) are NOT counted here and never exposed.
-  TOTAL_TOOLS: 89,            // is_active = TRUE (all curated, all have a form)
+  TOTAL_TOOLS: 88,            // is_active = TRUE (all curated, all have a form)
   TOTAL_CATEGORIES: 14,       // distinct categories among active tools
-  WORKING_TOOLS: 89,          // every active tool runs end-to-end
+  WORKING_TOOLS: 88,          // every active tool runs end-to-end
   TOTAL_TOOLS_DEPRECATED: {
+    V89: 89,        // prior count (before evil-winrm demoted — interactive shell) — do not use
+
     V87: 87,        // prior curated count (before arjun + dmitry) — do not use
     V325: 325,      // old marketing number — do not use
     V778: 778,      // inflated (included inactive/deprecated) — do not use

@@ -88,11 +88,11 @@
     "pipelineBuilder": "Creador de Pipelines"
   },
   "landing": {
-    "badge": "289 herramientas de seguridad profesionales • Cumple con RGPD 🇪🇺",
+    "badge": "88 herramientas de seguridad profesionales • Cumple con RGPD 🇪🇺",
     "headline": "La plataforma Kali Linux más avanzada de Europa",
     "headlinePart1": "La Más Avanzada",
     "headlinePart2": "Plataforma en Europa",
-    "subheadline": "289 herramientas de pruebas de penetración en tu navegador. Sin instalación. Plataforma de seguridad empresarial para estándares europeos.",
+    "subheadline": "88 herramientas de pruebas de penetración en tu navegador. Sin instalación. Plataforma de seguridad empresarial para estándares europeos.",
     "startTrial": "Prueba Gratuita",
     "startTrial14": "Prueba Gratuita - 3 Días",
     "startTrialNow": "Comienza tu prueba gratuita ahora",
@@ -104,7 +104,7 @@
     "pricingTitle": "Precios simples y transparentes",
     "pricingSubtitle": "Sin cargos ocultos • Cancela cuando quieras",
     "ctaTitle": "¿Listo para empezar?",
-    "ctaSubtitle": "CyberSec Pro lleva 289 herramientas de seguridad estilo Kali y monitoreo continuo a tu navegador. Inicia una prueba gratuita contra tus propios objetivos autorizados.",
+    "ctaSubtitle": "CyberSec Pro lleva 88 herramientas de seguridad estilo Kali y monitoreo continuo a tu navegador. Inicia una prueba gratuita contra tus propios objetivos autorizados.",
     "copyright": "© 2026 CyberSec Pro por Semih Kılıç. Todos los derechos reservados.",
     "viewTools": "Ver todas las herramientas",
     "contactSales": "Contactar ventas",
@@ -301,7 +301,7 @@
   },
   "tools": {
     "title": "Herramientas de seguridad",
-    "subtitle": "289 herramientas profesionales de pruebas de penetración",
+    "subtitle": "88 herramientas profesionales de pruebas de penetración",
     "searchPlaceholder": "Buscar herramientas...",
     "allCategories": "Todas las categorías",
     "runTool": "Ejecutar herramienta",
@@ -921,7 +921,7 @@
     "section2Title": "2. Descripción del servicio",
     "section2Body": "CyberSec Pro proporciona una plataforma de pruebas de penetración basada en la nube con acceso a herramientas de seguridad para fines de pruebas autorizadas. El Servicio incluye:",
     "section2": {
-      "item1": "Acceso a 289 herramientas de seguridad de Kali Linux mediante interfaz web",
+      "item1": "Acceso a 88 herramientas de seguridad de Kali Linux mediante interfaz web",
       "item2": "Capacidades de planificación y ejecución de escaneos",
       "item3": "Generación de informes y seguimiento de vulnerabilidades",
       "item4": "Gestión remota de agentes para pruebas distribuidas"

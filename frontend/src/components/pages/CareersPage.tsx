@@ -31,7 +31,7 @@ const partnerships = [
   {
     icon: Shield,
     title: "Security Consultancies",
-    description: "Enhance your penetration testing and security assessment services with CyberSec Pro's 89-tool arsenal and automated reporting.",
+    description: "Enhance your penetration testing and security assessment services with CyberSec Pro's 88-tool arsenal and automated reporting.",
     color: "var(--color-orange)",
     opportunities: ["White-label reports", "Bulk scan pricing", "Custom tool configurations", "Priority support"],
   },

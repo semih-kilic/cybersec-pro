@@ -24,7 +24,7 @@ The API and scan engine communicate via gRPC (tonic 0.12). REST fallback exists 
 Why? Sub-millisecond latency between services. When you're orchestrating 1,000+ parallel scans, every millisecond in service-to-service overhead compounds.
 
 **2. WebAssembly for browser-side compute**
-Tool search (89 tools) runs as a 174KB WASM binary in the browser. No API round-trip for filtering. `wasm-pack build --target web` + `useWasmSearch` React hook.
+Tool search (88 tools) runs as a 174KB WASM binary in the browser. No API round-trip for filtering. `wasm-pack build --target web` + `useWasmSearch` React hook.
 
 **3. Multi-stage Docker builds**
 Every Rust service uses multi-stage builds. Builder stage compiles, runtime stage copies only the binary. Result: scan engine image is ~50MB.

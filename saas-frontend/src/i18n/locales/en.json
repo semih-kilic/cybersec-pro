@@ -88,11 +88,11 @@
     "pipelineBuilder": "Pipeline Builder"
   },
   "landing": {
-    "badge": "289 Professional Security Tools • GDPR Compliant 🇪🇺",
+    "badge": "88 Professional Security Tools • GDPR Compliant 🇪🇺",
     "headline": "The Most Advanced Kali Linux Platform in Europe",
     "headlinePart1": "The Most Advanced",
     "headlinePart2": "Platform in Europe",
-    "subheadline": "289 penetration testing tools in your browser. No installation required. Enterprise-grade security testing platform, built for European compliance standards.",
+    "subheadline": "88 penetration testing tools in your browser. No installation required. Enterprise-grade security testing platform, built for European compliance standards.",
     "startTrial": "Start Free Trial",
     "startTrial14": "Start Free Trial - 3 Days",
     "startTrialNow": "Start Your Free Trial Now",
@@ -104,7 +104,7 @@
     "pricingTitle": "Simple, Transparent Pricing",
     "pricingSubtitle": "No hidden fees • Cancel anytime",
     "ctaTitle": "Ready to Get Started?",
-    "ctaSubtitle": "CyberSec Pro brings 289 Kali-style security tools and continuous monitoring to your browser. Start a free trial against your own authorized targets.",
+    "ctaSubtitle": "CyberSec Pro brings 88 Kali-style security tools and continuous monitoring to your browser. Start a free trial against your own authorized targets.",
     "copyright": "© 2026 CyberSec Pro by Semih Kılıç. All rights reserved.",
     "viewTools": "View All Tools",
     "contactSales": "Contact Sales",
@@ -301,7 +301,7 @@
   },
   "tools": {
     "title": "Security Tools",
-    "subtitle": "289 professional penetration testing tools",
+    "subtitle": "88 professional penetration testing tools",
     "searchPlaceholder": "Search tools...",
     "allCategories": "All Categories",
     "runTool": "Run Tool",
@@ -921,7 +921,7 @@
     "section2Title": "2. Service Description",
     "section2Body": "CyberSec Pro provides a cloud-based penetration testing platform with access to security tools for authorized testing purposes. The Service includes:",
     "section2": {
-      "item1": "Access to 289 Kali Linux security tools via web interface",
+      "item1": "Access to 88 Kali Linux security tools via web interface",
       "item2": "Scan scheduling and execution capabilities",
       "item3": "Report generation and vulnerability tracking",
       "item4": "Remote agent management for distributed testing"

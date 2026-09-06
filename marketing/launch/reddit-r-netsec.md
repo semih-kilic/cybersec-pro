@@ -20,7 +20,7 @@ The key architectural decision was using **gRPC** (tonic 0.12 + prost 0.13) for 
 
 ## Why Rust?
 
-The scan engine needs to orchestrate 89 different Kali tools, many of which spawn subprocesses, parse output, and return structured results. Python was too slow for the orchestration layer (we benchmarked — 3x latency improvement). Go was an option but the Rust ecosystem for process management and output parsing is excellent.
+The scan engine needs to orchestrate 88 different Kali tools, many of which spawn subprocesses, parse output, and return structured results. Python was too slow for the orchestration layer (we benchmarked — 3x latency improvement). Go was an option but the Rust ecosystem for process management and output parsing is excellent.
 
 Backend: ~36,000 lines of Rust across 101 source files.
 Scan engine: ~931 lines (still early, most logic is in tool wrappers).
@@ -41,7 +41,7 @@ tonic 0.12 has a new `Routes` API that broke some patterns — had to use `tonic
 
 ## WebAssembly
 
-For the frontend tool catalog (89 tools), we built a WASM module that handles fuzzy search entirely in the browser:
+For the frontend tool catalog (88 tools), we built a WASM module that handles fuzzy search entirely in the browser:
 
 - `cybersec-wasm` Rust crate → `wasm-pack build --target web`
 - 174KB optimized binary

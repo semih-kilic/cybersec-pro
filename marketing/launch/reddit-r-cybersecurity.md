@@ -2,7 +2,7 @@
 
 I've been a pentester for years, and the thing that always annoyed me was setup time. Every engagement starts the same way: update Kali, verify tool versions, make sure your VM has enough RAM for parallel scans, deal with dependency conflicts...
 
-So I built CyberSec Pro — a cloud platform with 89 Kali Linux tools ready to go. No VM management, no dependency hell, no "which version of nuclei am I running?"
+So I built CyberSec Pro — a cloud platform with 88 Kali Linux tools ready to go. No VM management, no dependency hell, no "which version of nuclei am I running?"
 
 ## But the real story is the compliance side
 
@@ -17,7 +17,7 @@ We also went through CCPA-CPRA compliance (for California users), SOC 2 readines
 
 ## The result
 
-- 89 security tools across 14 categories
+- 88 security tools across 14 categories
 - Auto-scaling Docker containers
 - Real-time scan monitoring
 - Team collaboration

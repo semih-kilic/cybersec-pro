@@ -1,7 +1,7 @@
 {
   "meta": {
     "title": "CyberSec Pro — Plataforma de Seguridad Ofensiva",
-    "description": "Plataforma de seguridad ofensiva en la nube con 89 herramientas de Kali Linux. Escaneo automatizado de vulnerabilidades, pruebas de penetración y evaluaciones de seguridad."
+    "description": "Plataforma de seguridad ofensiva en la nube con 88 herramientas de Kali Linux. Escaneo automatizado de vulnerabilidades, pruebas de penetración y evaluaciones de seguridad."
   },
   "nav": {
     "features": "Funciones",
@@ -22,12 +22,12 @@
   "hero": {
     "badge": "Seguridad Ofensiva en la Nube",
     "title": "Plataforma de\nSeguridad Ofensiva",
-    "titleHighlight": "89 Herramientas.",
-    "subtitle": "Ejecute 89 herramientas de Kali Linux en 14 categorías desde su navegador. Sin configuración. Sin infraestructura. Solo resultados.",
+    "titleHighlight": "88 Herramientas.",
+    "subtitle": "Ejecute 88 herramientas de Kali Linux en 14 categorías desde su navegador. Sin configuración. Sin infraestructura. Solo resultados.",
     "cta": "Iniciar escaneo gratuito",
     "ctaSecondary": "Ver herramientas",
     "stats": {
-      "tools": "89",
+      "tools": "88",
       "toolsLabel": "Herramientas de seguridad",
       "categories": "18",
       "categoriesLabel": "Categorías",
@@ -47,7 +47,7 @@
         "description": "Configure y ejecute escaneos de seguridad complejos con unos pocos clics. Programe evaluaciones recurrentes."
       },
       "tools": {
-        "title": "89 herramientas Kali",
+        "title": "88 herramientas Kali",
         "description": "Acceda al arsenal completo de Kali Linux — desde Nmap hasta Nuclei, de WPScan a SQLMap."
       },
       "reports": {
@@ -84,7 +84,7 @@
         "price": "0 $",
         "period": "3 días",
         "features": [
-          "Las 89 herramientas de seguridad",
+          "Las 88 herramientas de seguridad",
           "3 escaneos por día",
           "1 escaneo simultáneo",
           "Informe PDF con hallazgos",
@@ -97,7 +97,7 @@
         "price": "29 $",
         "period": "/mes",
         "features": [
-          "Las 89 herramientas de seguridad",
+          "Las 88 herramientas de seguridad",
           "30 escaneos por mes",
           "2 escaneos simultáneos",
           "1 dominio/aplicación",
@@ -114,7 +114,7 @@
         "price": "99 $",
         "period": "/mes",
         "features": [
-          "Las 89 herramientas de seguridad",
+          "Las 88 herramientas de seguridad",
           "250 escaneos por mes",
           "5 escaneos simultáneos",
           "Hasta 5 dominios/aplicaciones",
@@ -134,7 +134,7 @@
         "price": "349 $",
         "period": "/mes",
         "features": [
-          "Las 89 herramientas de seguridad",
+          "Las 88 herramientas de seguridad",
           "5.000 escaneos por mes",
           "Escaneos simultáneos ilimitados",
           "Dominios/aplicaciones ilimitados",
@@ -158,8 +158,8 @@
   },
   "tools": {
     "badge": "Arsenal de seguridad",
-    "title": "89 herramientas. 14 categorías.",
-    "subtitle": "89 herramientas Kali Linux seleccionadas en 14 categorías — listas para usar en tu navegador. Sin instalación.",
+    "title": "88 herramientas. 14 categorías.",
+    "subtitle": "88 herramientas Kali Linux seleccionadas en 14 categorías — listas para usar en tu navegador. Sin instalación.",
     "searchPlaceholder": "Buscar herramientas...",
     "allCategories": "Todas",
     "runTool": "Ejecutar herramienta",
@@ -183,7 +183,7 @@
       },
       "q3": {
         "q": "¿Cuántas herramientas hay disponibles?",
-        "a": "89 herramientas Kali Linux en 14 categorías, incluyendo Nmap, Nuclei, WPScan y SQLMap."
+        "a": "88 herramientas Kali Linux en 14 categorías, incluyendo Nmap, Nuclei, WPScan y SQLMap."
       },
       "q4": {
         "q": "¿Qué tipos de escaneo hay?",
@@ -229,7 +229,7 @@
     "button": "Iniciar escaneo gratuito"
   },
   "footer": {
-    "description": "Plataforma de seguridad ofensiva en la nube. 89 herramientas Kali Linux en 14 categorías.",
+    "description": "Plataforma de seguridad ofensiva en la nube. 88 herramientas Kali Linux en 14 categorías.",
     "platform": "Plataforma",
     "company": "Empresa",
     "legal": "Legal",

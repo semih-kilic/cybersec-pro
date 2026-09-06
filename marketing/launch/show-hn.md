@@ -1,6 +1,6 @@
-# Show HN: CyberSec Pro – 89 Kali Linux tools, zero infrastructure
+# Show HN: CyberSec Pro – 88 Kali Linux tools, zero infrastructure
 
-I've been building CyberSec Pro, a cloud-native platform that gives you instant access to 89 Kali Linux security tools without managing any infrastructure.
+I've been building CyberSec Pro, a cloud-native platform that gives you instant access to 88 Kali Linux security tools without managing any infrastructure.
 
 **The problem:** Every pentester and security team wastes hours setting up and maintaining their Kali boxes. Tool versions drift, dependencies break, and you can't easily share results with your team.
 
@@ -9,7 +9,7 @@ I've been building CyberSec Pro, a cloud-native platform that gives you instant 
 - **Rust scan engine** with gRPC (tonic) for inter-service communication + REST fallback for backward compat
 - **WebAssembly modules** — tool search runs entirely in the browser (174KB binary, fuzzy matching, pre-built index)
 - **Auto-scaling Docker containers** — nginx, API, scan engine, PostgreSQL, Redis
-- **89 tools** across 14 categories (recon, exploitation, forensics, wireless, web, crypto, etc.)
+- **88 tools** across 14 categories (recon, exploitation, forensics, wireless, web, crypto, etc.)
 
 **Tech stack:**
 ```

@@ -7,22 +7,65 @@
       "probableHardcodedLines": []
     },
     {
+      "filePath": "src/pages/DemoPage.tsx",
+      "hasUseTranslation": true,
+      "hasTCalls": true,
+      "probableHardcodedLines": [
+        141,
+        200,
+        230,
+        234,
+        238
+      ]
+    },
+    {
       "filePath": "src/pages/ForgotPasswordPage.tsx",
       "hasUseTranslation": true,
       "hasTCalls": true,
       "probableHardcodedLines": []
     },
     {
+      "filePath": "src/pages/FreeScanPage.tsx",
+      "hasUseTranslation": true,
+      "hasTCalls": true,
+      "probableHardcodedLines": [
+        91,
+        131,
+        144,
+        157
+      ]
+    },
+    {
       "filePath": "src/pages/GDPRPage.tsx",
       "hasUseTranslation": true,
       "hasTCalls": true,
-      "probableHardcodedLines": []
+      "probableHardcodedLines": [
+        256,
+        259
+      ]
     },
     {
       "filePath": "src/pages/LandingPage.tsx",
       "hasUseTranslation": true,
       "hasTCalls": true,
-      "probableHardcodedLines": []
+      "probableHardcodedLines": [
+        186,
+        194,
+        213,
+        220,
+        284,
+        285,
+        292,
+        293,
+        294,
+        324,
+        325,
+        331,
+        332,
+        339,
+        340,
+        371
+      ]
     },
     {
       "filePath": "src/pages/LoginPage.tsx",
@@ -40,13 +83,22 @@
       "filePath": "src/pages/PrivacyPolicyPage.tsx",
       "hasUseTranslation": true,
       "hasTCalls": true,
-      "probableHardcodedLines": []
+      "probableHardcodedLines": [
+        117,
+        118,
+        130,
+        131,
+        141,
+        162
+      ]
     },
     {
       "filePath": "src/pages/RegisterPage.tsx",
       "hasUseTranslation": true,
       "hasTCalls": true,
-      "probableHardcodedLines": []
+      "probableHardcodedLines": [
+        273
+      ]
     },
     {
       "filePath": "src/pages/ResetPasswordPage.tsx",
@@ -100,19 +152,44 @@
       "filePath": "src/pages/dashboard/AgentJobsPage.tsx",
       "hasUseTranslation": true,
       "hasTCalls": true,
-      "probableHardcodedLines": []
+      "probableHardcodedLines": [
+        258,
+        259,
+        261,
+        266,
+        267,
+        268,
+        271
+      ]
     },
     {
       "filePath": "src/pages/dashboard/AgentsPage.tsx",
       "hasUseTranslation": true,
       "hasTCalls": true,
-      "probableHardcodedLines": []
+      "probableHardcodedLines": [
+        226,
+        227,
+        228,
+        236,
+        268,
+        280,
+        281,
+        287,
+        987,
+        995,
+        1003
+      ]
     },
     {
       "filePath": "src/pages/dashboard/AnalyticsPage.tsx",
       "hasUseTranslation": true,
       "hasTCalls": true,
-      "probableHardcodedLines": []
+      "probableHardcodedLines": [
+        85,
+        93,
+        94,
+        211
+      ]
     },
     {
       "filePath": "src/pages/dashboard/BillingPage.tsx",
@@ -148,6 +225,17 @@
       "probableHardcodedLines": []
     },
     {
+      "filePath": "src/pages/dashboard/FoundingMemberPanel.tsx",
+      "hasUseTranslation": false,
+      "hasTCalls": false,
+      "probableHardcodedLines": [
+        84,
+        90,
+        96,
+        100
+      ]
+    },
+    {
       "filePath": "src/pages/dashboard/GodModePage.tsx",
       "hasUseTranslation": true,
       "hasTCalls": true,
@@ -162,14 +250,44 @@
     {
       "filePath": "src/pages/dashboard/NewScanPage.tsx",
       "hasUseTranslation": true,
-      "hasTCalls": true,
-      "probableHardcodedLines": []
+      "hasTCalls": false,
+      "probableHardcodedLines": [
+        216,
+        227,
+        230,
+        268,
+        275,
+        335,
+        368,
+        374,
+        411,
+        434,
+        444
+      ]
     },
     {
       "filePath": "src/pages/dashboard/OverviewPage.tsx",
       "hasUseTranslation": true,
       "hasTCalls": true,
       "probableHardcodedLines": []
+    },
+    {
+      "filePath": "src/pages/dashboard/PipelineBuilderPage.tsx",
+      "hasUseTranslation": false,
+      "hasTCalls": true,
+      "probableHardcodedLines": [
+        333,
+        377,
+        387,
+        535,
+        536,
+        537,
+        538,
+        674,
+        680,
+        728,
+        914
+      ]
     },
     {
       "filePath": "src/pages/dashboard/ProjectsPage.tsx",
@@ -190,20 +308,30 @@
       "probableHardcodedLines": []
     },
     {
+      "filePath": "src/pages/dashboard/RescanVerification.tsx",
+      "hasUseTranslation": false,
+      "hasTCalls": false,
+      "probableHardcodedLines": [
+        127,
+        129,
+        154
+      ]
+    },
+    {
       "filePath": "src/pages/dashboard/ScanExecutionPage.tsx",
       "hasUseTranslation": true,
       "hasTCalls": true,
       "probableHardcodedLines": [
-        813,
-        814,
-        826,
-        827,
-        850,
-        858,
-        1243,
-        1244,
-        1250,
-        1251
+        981,
+        982,
+        994,
+        995,
+        1018,
+        1026,
+        1462,
+        1463,
+        1469,
+        1470
       ]
     },
     {
@@ -252,13 +380,7 @@
       "filePath": "src/pages/dashboard/TerminalPage.tsx",
       "hasUseTranslation": true,
       "hasTCalls": true,
-      "probableHardcodedLines": [
-        428,
-        553,
-        554,
-        561,
-        569
-      ]
+      "probableHardcodedLines": []
     },
     {
       "filePath": "src/pages/dashboard/ThreatIntelPage.tsx",
@@ -271,12 +393,14 @@
       "hasUseTranslation": true,
       "hasTCalls": true,
       "probableHardcodedLines": [
-        372,
-        373,
-        395,
-        403,
-        413,
-        414
+        470,
+        471,
+        508,
+        509,
+        531,
+        539,
+        549,
+        550
       ]
     },
     {
@@ -288,14 +412,31 @@
     {
       "filePath": "src/pages/dashboard/UpgradePage.tsx",
       "hasUseTranslation": true,
-      "hasTCalls": true,
-      "probableHardcodedLines": []
+      "hasTCalls": false,
+      "probableHardcodedLines": [
+        572,
+        589,
+        645,
+        674,
+        681,
+        685,
+        690,
+        695
+      ]
     },
     {
       "filePath": "src/pages/dashboard/VulnerabilityDBPage.tsx",
       "hasUseTranslation": true,
       "hasTCalls": true,
       "probableHardcodedLines": []
+    },
+    {
+      "filePath": "src/pages/dashboard/WorkflowsPage.tsx",
+      "hasUseTranslation": false,
+      "hasTCalls": false,
+      "probableHardcodedLines": [
+        119
+      ]
     },
     {
       "filePath": "src/pages/dashboard/settings/ApiKeysTab.tsx",
@@ -307,7 +448,9 @@
       "filePath": "src/pages/dashboard/settings/BillingTab.tsx",
       "hasUseTranslation": true,
       "hasTCalls": true,
-      "probableHardcodedLines": []
+      "probableHardcodedLines": [
+        397
+      ]
     },
     {
       "filePath": "src/pages/dashboard/settings/IntegrationsTab.tsx",

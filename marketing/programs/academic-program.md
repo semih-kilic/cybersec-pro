@@ -29,7 +29,7 @@ The cybersecurity industry has a talent gap. We believe every student interested
 
 **Free**
 
-- Full access to 89 security tools
+- Full access to 88 security tools
 - 100 scans per month
 - Individual dashboard
 - Community support

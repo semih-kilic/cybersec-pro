@@ -354,18 +354,10 @@ fn definitions() -> Vec<ToolForm> {
                     {"label":"Grup üyelikleri","value":"-G"}]}
             ]),
         },
-        ToolForm {
-            name: "evil-winrm",
-            template: "evil-winrm -i {target} -u {username} -p {password}",
-            target_types: &["ip"],
-            danger: "high",
-            purpose: "Windows sistemlere WinRM üzerinden uzaktan komut kabuğu açar — geçerli kimlik bilgisiyle tam erişim.",
-            when_to_use: "Bir Windows makinesinin kullanıcı adı/parolasını ele geçirdikten sonra bağlanmak için.",
-            form: json!([
-                {"name":"username","label":"Kullanıcı adı","type":"text","required":true,"placeholder":"administrator"},
-                {"name":"password","label":"Parola","type":"password","required":true,"placeholder":"parola veya hash"}
-            ]),
-        },
+        // evil-winrm is intentionally NOT curated: it opens an INTERACTIVE
+        // PowerShell session over WinRM and waits for stdin, so it can never
+        // produce a one-shot scan result — in a headless run it just hangs. It
+        // lives in NON_SCANNABLE below and stays searchable in the catalogue.
         ToolForm {
             name: "exiftool",
             template: "exiftool {target}",
@@ -1503,8 +1495,8 @@ pub const NON_SCANNABLE: &[&str] = &[
     // GUI / desktop
     "armitage", "autopsy", "bloodhound", "ghidra", "guymager", "maltego",
     "wireshark", "zaproxy", "radare2", "frida", "cutter",
-    // interactive REPL / TUI
-    "gdb", "pacu",
+    // interactive REPL / TUI / remote shells (wait on stdin — never one-shot)
+    "gdb", "pacu", "evil-winrm",
     // listeners / proxies / C2
     "responder", "bettercap", "mitmproxy", "evilginx2", "dnscat2", "chisel",
     "sshuttle", "gophish", "wifiphisher", "sliver",
