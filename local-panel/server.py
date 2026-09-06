@@ -62,23 +62,32 @@ async function api(p,method='GET'){
 }
 function act(id,action){
   if(action!=='status' && !confirm(action.toUpperCase()+' — are you sure?'))return;
-  api('/v1/admin/services/'+id+'/action','POST',{action}).then(load);
+  api('/v1/admin/service-manager/services/'+id+'/action','POST',{action}).then(load);
 }
 async function load(){
   try{
     const d = await api('/v1/admin/service-manager/dashboard');
     const k = document.getElementById('kpis');
     const sys = d.system||{};
+    const svcs = d.services||[];
+    const healthyCount = d.summary?.running ?? svcs.filter(s=>s.health_ok||s.status==='running').length;
+    const totalCount = d.summary?.total_services ?? svcs.length;
     k.innerHTML = `
       <div class="card"><span>CPU</span><b>${(sys.cpu_percent??0).toFixed(0)}%</b></div>
       <div class="card"><span>RAM</span><b>${(sys.memory_percent??0).toFixed(0)}%</b></div>
       <div class="card"><span>Disk</span><b>${(sys.disk_percent??0).toFixed(0)}%</b></div>
-      <div class="card"><span>Services healthy</span><b>${(d.services_healthy??0)}/${(d.services_total??0)}</b></div>`;
-    const st = s => s==='running'?'<span class="pill ok">running</span>':s==='stopped'?'<span class="pill bad">stopped</span>':`<span class="pill warn">${s||'?'}</span>`;
+      <div class="card"><span>Services healthy</span><b>${healthyCount}/${totalCount}</b></div>`;
+    const st = s => (s.health_ok||s.status==='running')?'<span class="pill ok">running</span>':s.status==='stopped'?'<span class="pill bad">stopped</span>':`<span class="pill warn">${s.status||'?'}</span>`;
     document.querySelector('#services').innerHTML = '<tr><th>Service</th><th>Status</th><th>Actions</th></tr>' +
-      (d.services||[]).map(s=>`<tr><td><b>${s.name}</b><br><span style="color:#6b7280;font-size:11px">${s.description||''}</span></td>
-        <td>${st(s.status)}</td>
-        <td>${['start','restart','stop'].map(a=>`<button onclick="act('${s.id}','${a}')">${a}</button>`).join('')}</td></tr>`).join('');
+      svcs.map(s=>{
+        const cfg = s.config || {};
+        const name = cfg.name || s.name || 'Unknown';
+        const desc = cfg.description || s.description || (cfg.port ? `Port ${cfg.port}` : '');
+        const id = cfg.id || s.id || '';
+        return `<tr><td><b>${name}</b><br><span style="color:#6b7280;font-size:11px">${desc}</span></td>
+        <td>${st(s)}</td>
+        <td>${['start','restart','stop'].map(a=>`<button onclick="act('${id}','${a}')">${a}</button>`).join('')}</td></tr>`;
+      }).join('');
     const al = d.alerts||[];
     document.querySelector('#alerts').innerHTML = '<tr><th>Severity</th><th>Message</th><th>Action</th></tr>' +
       (al.length?al.map(a=>`<tr><td><span class="pill ${a.severity==='critical'?'bad':'warn'}">${a.severity}</span></td>
@@ -88,7 +97,7 @@ async function load(){
     document.getElementById('clock').textContent = new Date().toLocaleTimeString();
   }catch(e){console.log(e)}
 }
-function ack(id){ api('/v1/admin/alerts/'+id+'/acknowledge','POST',{acknowledged:true}).then(load); }
+function ack(id){ api('/v1/admin/service-manager/alerts/'+id+'/acknowledge','POST',{acknowledged:true}).then(load); }
 function boot(){
   if(!T())return;
   document.getElementById('login').style.display='none';
@@ -106,6 +115,14 @@ class H(BaseHTTPRequestHandler):
 
     def do_OPTIONS(self):
         self.send_response(204); self._cors(); self.end_headers()
+
+    def do_HEAD(self):
+        if self.path in ("/", "/index.html"):
+            self.send_response(200); self._cors()
+            self.send_header("Content-Type", "text/html; charset=utf-8")
+            self.send_header("Content-Length", str(len(HTML.encode())))
+            self.end_headers(); return
+        self.send_response(404); self.end_headers()
 
     def do_GET(self):
         if self.path in ("/", "/index.html"):
