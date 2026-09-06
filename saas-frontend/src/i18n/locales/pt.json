@@ -185,7 +185,7 @@
       "enterprise": "Enterprise",
       "enterpriseItem1": "Todas as Ferramentas",
       "enterpriseItem2": "Tudo ilimitado",
-      "enterpriseItem3": "SSO / SAML / LDAP",
+      "enterpriseItem3": "SSO / OIDC / LDAP",
       "enterpriseItem4": "Gerente de conta dedicado"
     }
   },

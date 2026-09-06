@@ -142,7 +142,7 @@
           "専任アカウントマネージャー",
           "全コンプライアンスフレームワーク (NIST, OWASP, GDPR, PCI DSS, HIPAA, SOC 2)",
           "会社ロゴ入りホワイトラベルレポート",
-          "SSO / SAML / LDAP",
+          "SSO / OIDC / LDAP",
           "無制限ユーザー&チームコラボレーション",
           "高度なAPI (Webhooks、統合)",
           "Custom SLA available on request",

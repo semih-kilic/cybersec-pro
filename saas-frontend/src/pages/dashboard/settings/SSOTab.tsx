@@ -13,7 +13,9 @@ export function SSOTab({ setMessage, userPlan }: SettingsTabProps) {
   const { data: ssoData } = useSSOConfig();
   const ssoConfig = ssoData?.config ?? null;
   const [ssoTestResult, setSsoTestResult] = useState<{ success: boolean; message: string } | null>(null);
-  const [ssoProviderType, setSsoProviderType] = useState<'saml' | 'ldap' | 'oidc'>('saml');
+  // Default to OIDC: it is the working, secure provider (covers Okta, Azure AD,
+  // Google, GitHub…). SAML is not yet available — see the provider grid below.
+  const [ssoProviderType, setSsoProviderType] = useState<'saml' | 'ldap' | 'oidc'>('oidc');
   const [ssoForm, setSsoForm] = useState<Record<string, any>>({});
 
   const saveMutation = useSaveSSOConfig();
@@ -27,7 +29,7 @@ export function SSOTab({ setMessage, userPlan }: SettingsTabProps) {
   // Sync form from query data
   useEffect(() => {
     if (ssoConfig) {
-      setSsoProviderType(ssoConfig.provider_type as 'saml' | 'ldap' | 'oidc' || 'saml');
+      setSsoProviderType(ssoConfig.provider_type as 'saml' | 'ldap' | 'oidc' || 'oidc');
       setSsoForm(ssoConfig as Record<string, any>);
     }
   }, [ssoConfig]);
@@ -124,19 +126,27 @@ export function SSOTab({ setMessage, userPlan }: SettingsTabProps) {
             <label className="block text-sm font-medium text-gray-300 mb-3">{t('sso.providerType', 'Identity Provider Type')}</label>
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
               {([
-                { id: 'saml' as const, name: 'SAML 2.0', desc: 'Okta, Azure AD, OneLogin', icon: '🛡️' },
-                { id: 'oidc' as const, name: 'OpenID Connect', desc: 'Google Workspace, GitHub Enterprise', icon: '🔗' },
-                { id: 'ldap' as const, name: 'LDAP', desc: 'Active Directory, OpenLDAP', icon: '📁' },
+                { id: 'oidc' as const, name: 'OpenID Connect', desc: 'Okta, Azure AD, Google Workspace, GitHub', icon: '🔗', available: true },
+                { id: 'ldap' as const, name: 'LDAP', desc: 'Active Directory, OpenLDAP', icon: '📁', available: true },
+                { id: 'saml' as const, name: 'SAML 2.0', desc: t('sso.samlComingSoonDesc', 'Coming soon — use OpenID Connect for Okta/Azure AD today'), icon: '🛡️', available: false },
               ]).map((p) => (
                 <button
                   key={p.id}
-                  onClick={() => { setSsoProviderType(p.id); setSsoForm((f: any) => ({ ...f, provider_type: p.id })); }}
-                  className={`p-4 rounded-xl border-2 text-left transition ${
-                    ssoProviderType === p.id
-                      ? 'border-kali-blue bg-kali-blue/10'
-                      : 'border-gray-700 bg-gray-800/50 hover:border-gray-600'
+                  disabled={!p.available}
+                  onClick={() => { if (!p.available) return; setSsoProviderType(p.id); setSsoForm((f: any) => ({ ...f, provider_type: p.id })); }}
+                  className={`relative p-4 rounded-xl border-2 text-left transition ${
+                    !p.available
+                      ? 'border-gray-800 bg-gray-800/30 opacity-60 cursor-not-allowed'
+                      : ssoProviderType === p.id
+                        ? 'border-kali-blue bg-kali-blue/10'
+                        : 'border-gray-700 bg-gray-800/50 hover:border-gray-600'
                   }`}
                 >
+                  {!p.available && (
+                    <span className="absolute top-2 right-2 text-[10px] uppercase tracking-wide bg-gray-700 text-gray-300 px-1.5 py-0.5 rounded">
+                      {t('sso.comingSoon', 'Coming soon')}
+                    </span>
+                  )}
                   <span className="text-2xl">{p.icon}</span>
                   <h4 className="text-white font-semibold mt-2">{p.name}</h4>
                   <p className="text-gray-400 text-xs mt-1">{p.desc}</p>

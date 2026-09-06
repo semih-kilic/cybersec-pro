@@ -178,7 +178,7 @@
       "enterprise": "Empresarial",
       "enterpriseItem1": "Todas las herramientas",
       "enterpriseItem2": "Todo ilimitado",
-      "enterpriseItem3": "Integracion SSO / SAML / LDAP",
+      "enterpriseItem3": "Integracion SSO / OIDC / LDAP",
       "enterpriseItem4": "Gestor de cuenta dedicado",
       "runtimeCredential": "Credenciales",
       "runtimeDefault": "Predeterminado",

@@ -142,7 +142,7 @@
           "전담 계정 매니저",
           "모든 규정 준수 프레임워크 (NIST, OWASP, GDPR, PCI DSS, HIPAA, SOC 2)",
           "회사 로고 화이트라벨 보고서",
-          "SSO / SAML / LDAP",
+          "SSO / OIDC / LDAP",
           "무제한 사용자 & 팀 협업",
           "고급 API (웹훅, 통합)",
           "Custom SLA available on request",

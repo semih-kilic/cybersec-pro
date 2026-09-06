@@ -108,7 +108,7 @@ const PLANS: Plan[] = [
       { name: 'Dedicated account manager', included: true },
       { name: 'All compliance frameworks (NIST, OWASP, GDPR, PCI DSS, HIPAA, SOC 2)', included: true },
       { name: 'White-label reports with company logo', included: true },
-      { name: 'SSO / SAML / LDAP', included: true },
+      { name: 'SSO / OIDC / LDAP', included: true },
       { name: 'Unlimited users & team collaboration', included: true },
       { name: 'Advanced API (webhooks, integrations)', included: true },
       { name: 'Custom SLA available on request', included: true },

@@ -404,7 +404,7 @@ export function getSoftwareJsonLd() {
         price: "349",
         priceCurrency: "EUR",
         name: "Enterprise",
-        description: "All 88 tools, 5000 scans/month, SSO/SAML, priority support, dedicated manager",
+        description: "All 88 tools, 5000 scans/month, SSO/OIDC, priority support, dedicated manager",
       },
     ],
   };

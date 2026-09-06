@@ -186,7 +186,7 @@
       "enterprise": "Enterprise",
       "enterpriseItem1": "All Tools",
       "enterpriseItem2": "Unlimited everything",
-      "enterpriseItem3": "SSO / SAML / LDAP",
+      "enterpriseItem3": "SSO / OIDC / LDAP",
       "enterpriseItem4": "Dedicated account manager"
     }
   },

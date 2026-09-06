@@ -185,7 +185,7 @@
       "enterprise": "엔터프라이즈",
       "enterpriseItem1": "모든 도구",
       "enterpriseItem2": "무제한 사용",
-      "enterpriseItem3": "SSO / SAML / LDAP",
+      "enterpriseItem3": "SSO / OIDC / LDAP",
       "enterpriseItem4": "전담 계정 관리자"
     }
   },

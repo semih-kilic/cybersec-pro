@@ -185,7 +185,7 @@
       "enterprise": "エンタープライズ",
       "enterpriseItem1": "すべてのツール",
       "enterpriseItem2": "無制限のすべて",
-      "enterpriseItem3": "SSO / SAML / LDAP",
+      "enterpriseItem3": "SSO / OIDC / LDAP",
       "enterpriseItem4": "専任アカウントマネージャー"
     }
   },

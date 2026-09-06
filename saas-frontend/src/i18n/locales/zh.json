@@ -185,7 +185,7 @@
       "enterprise": "企业版",
       "enterpriseItem1": "所有工具",
       "enterpriseItem2": "无限量使用",
-      "enterpriseItem3": "SSO / SAML / LDAP",
+      "enterpriseItem3": "SSO / OIDC / LDAP",
       "enterpriseItem4": "专属客户经理"
     }
   },

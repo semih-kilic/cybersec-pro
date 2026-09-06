@@ -142,7 +142,7 @@
           "专属客户经理",
           "所有合规框架 (NIST, OWASP, GDPR, PCI DSS, HIPAA, SOC 2)",
           "公司Logo白标报告",
-          "SSO / SAML / LDAP",
+          "SSO / OIDC / LDAP",
           "无限用户和团队协作",
           "高级API (Webhooks、集成)",
           "Custom SLA available on request",

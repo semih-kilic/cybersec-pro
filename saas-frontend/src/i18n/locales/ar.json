@@ -185,7 +185,7 @@
       "enterprise": "المؤسسات",
       "enterpriseItem1": "جميع الأدوات",
       "enterpriseItem2": "كل شيء غير محدود",
-      "enterpriseItem3": "SSO / SAML / LDAP",
+      "enterpriseItem3": "SSO / OIDC / LDAP",
       "enterpriseItem4": "مدير حساب مخصص"
     }
   },

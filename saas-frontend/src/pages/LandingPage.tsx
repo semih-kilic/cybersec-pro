@@ -483,7 +483,7 @@ export function LandingPage() {
                   <span className="text-purple-400">✓</span> {t('landing.plan.enterpriseItem2', 'Unlimited everything')}
                 </li>
                 <li className="flex items-center gap-2">
-                  <span className="text-purple-400">✓</span> {t('landing.plan.enterpriseItem3', 'SSO / SAML / LDAP')}
+                  <span className="text-purple-400">✓</span> {t('landing.plan.enterpriseItem3', 'SSO / OIDC / LDAP')}
                 </li>
                 <li className="flex items-center gap-2">
                   <span className="text-purple-400">✓</span> {t('landing.plan.enterpriseItem4', 'Dedicated account manager')}

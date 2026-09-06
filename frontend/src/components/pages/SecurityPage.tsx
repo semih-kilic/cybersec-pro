@@ -12,7 +12,7 @@ const features = [
   { icon: Server, title: "Isolated Infrastructure", description: "Each scan runs in an isolated container. No cross-tenant data access. Enterprise plans get dedicated instances.", color: "var(--color-cyan)" },
   { icon: Shield, title: "SOC 2-Aligned Controls", description: "Infrastructure designed against SOC 2 Trust Services Criteria (Security, Availability, Confidentiality). Independent audit not yet completed.", color: "var(--color-purple)" },
   { icon: Eye, title: "Audit Logging", description: "Complete audit trail of all actions. Immutable logs with tamper detection. Export logs for compliance.", color: "var(--color-orange)" },
-  { icon: KeyRound, title: "MFA & SSO", description: "Multi-factor authentication with TOTP. Enterprise SSO via SAML 2.0 and OAuth 2.0 integration.", color: "var(--color-neon)" },
+  { icon: KeyRound, title: "MFA & SSO", description: "Multi-factor authentication with TOTP. Enterprise SSO via OpenID Connect (OIDC) and LDAP / Active Directory.", color: "var(--color-neon)" },
   { icon: RefreshCcw, title: "Automatic Updates", description: "Security patches applied within 24 hours. Tool databases updated daily. Zero-downtime deployments.", color: "var(--color-cyan)" },
 ];
 

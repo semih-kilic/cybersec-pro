@@ -144,7 +144,7 @@
           "Dedicated account manager",
           "All compliance frameworks (NIST, OWASP, GDPR, PCI DSS, HIPAA, SOC 2)",
           "White-label reports with company logo",
-          "SSO / SAML / LDAP",
+          "SSO / OIDC / LDAP",
           "Unlimited users & team collaboration",
           "Advanced API (webhooks, integrations)",
           "Custom SLA available on request",
@@ -484,7 +484,7 @@
           },
           {
             "title": "MFA, SSO & Zero Trust",
-            "description": "Multi-factor authentication via TOTP/WebAuthn. SAML 2.0, OAuth 2.0, OpenID Connect SSO. RBAC + ABAC."
+            "description": "Multi-factor authentication via TOTP/WebAuthn. OAuth 2.0 / OpenID Connect (OIDC) SSO + LDAP / Active Directory. RBAC + ABAC."
           },
           {
             "title": "Continuous Patching",
