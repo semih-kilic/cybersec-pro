@@ -35,8 +35,8 @@
       "categoriesLabel": "Categories",
       "uptime": "99.9",
       "uptimeLabel": "% Uptime SLA",
-      "scans": "SOC 2",
-      "scansLabel": "Type II Certified"
+      "scans": "3",
+      "scansLabel": "Day Free Trial"
     }
   },
   "features": {
@@ -349,6 +349,7 @@
       "badge": "Trust Center",
       "title": "Trust Center",
       "subtitle": "Everything you need to know about our platform's security, compliance, and transparency. Full alignment with industry-leading security standards.",
+      "certBadgesNote": "Frameworks we align with or are actively pursuing — see current certification status below.",
       "status": {
         "operational": "All Systems Operational",
         "link": "status.cyber-sec-pro.com →"
@@ -416,7 +417,7 @@
         },
         "pentest": {
           "title": "Security Tests & Audits",
-          "description": "Tests conducted by independent third-party security firms. Enterprise customers can access summary reports by signing an NDA.",
+          "description": "Continuous internal security testing using our own platform and manual review. Independent third-party penetration testing is planned; summary reports will be available to Enterprise customers under NDA once completed.",
           "scope": "Scope:",
           "findings": "Findings:",
           "requestReport": "Request summary report (NDA required)"
@@ -475,7 +476,7 @@
             "description": "Each scan runs in an isolated container. No cross-tenant access. Dedicated instances for Enterprise plans."
           },
           {
-            "title": "SOC 2 Type II Controls",
+            "title": "SOC 2-Aligned Controls",
             "description": "Infrastructure designed according to SOC 2 Trust Services Criteria (Security, Availability, Confidentiality, Privacy)."
           },
           {
@@ -502,7 +503,7 @@
         "complianceFrameworks": [
           {
             "name": "SOC 2 Type II",
-            "note": "Annual audit — Ernst & Young"
+            "note": "SOC 2 controls implemented (Type II audit planned)"
           },
           {
             "name": "GDPR",
@@ -510,7 +511,7 @@
           },
           {
             "name": "ISO 27001:2022",
-            "note": "Certified — BSI Group"
+            "note": "Designed to ISO 27001:2022 (certification in progress)"
           },
           {
             "name": "ISO 27701",
@@ -522,11 +523,11 @@
           },
           {
             "name": "PCI DSS v4.0",
-            "note": "Level 1 Service Provider"
+            "note": "PCI DSS v4.0-aligned controls"
           },
           {
             "name": "HIPAA",
-            "note": "BAA available — PHI encryption"
+            "note": "HIPAA-aligned controls — PHI encryption"
           },
           {
             "name": "KVKK",
@@ -537,8 +538,8 @@
             "note": "California Consumer Privacy Act"
           },
           {
-            "name": "CSA STAR Level 2",
-            "note": "Cloud Security Alliance Certification"
+            "name": "CSA STAR",
+            "note": "Cloud Security Alliance — framework aligned"
           }
         ],
         "subProcessorPurposes": [

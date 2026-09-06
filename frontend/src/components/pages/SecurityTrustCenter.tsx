@@ -45,17 +45,21 @@ const trustFeaturesBase = [
   { icon: Activity, color: "var(--color-orange)" },
 ];
 
+// `compliant: true` = legal framework we self-attest alignment with (GDPR, NIST CSF,
+// KVKK, CCPA — no external certification body). `compliant: false` = certification /
+// third-party audit we do NOT yet hold; shown as "Pending" with an honest "in progress"
+// note. Do not flip any of these to true without a certificate/report on file.
 const complianceFrameworksBase = [
-  { compliant: true, icon: ShieldCheck, color: "var(--color-neon)" },
-  { compliant: true, icon: Scale, color: "var(--color-cyan)" },
-  { compliant: true, icon: Award, color: "var(--color-purple)" },
-  { compliant: true, icon: Fingerprint, color: "var(--color-orange)" },
-  { compliant: true, icon: Shield, color: "var(--color-neon)" },
-  { compliant: true, icon: Lock, color: "var(--color-cyan)" },
-  { compliant: true, icon: ShieldCheck, color: "var(--color-purple)" },
-  { compliant: true, icon: Scale, color: "var(--color-orange)" },
-  { compliant: true, icon: Users, color: "var(--color-neon)" },
-  { compliant: true, icon: Award, color: "var(--color-cyan)" },
+  { compliant: false, icon: ShieldCheck, color: "var(--color-neon)" },   // SOC 2 Type II
+  { compliant: true, icon: Scale, color: "var(--color-cyan)" },          // GDPR
+  { compliant: false, icon: Award, color: "var(--color-purple)" },       // ISO 27001:2022
+  { compliant: false, icon: Fingerprint, color: "var(--color-orange)" }, // ISO 27701
+  { compliant: true, icon: Shield, color: "var(--color-neon)" },         // NIST CSF 2.0
+  { compliant: false, icon: Lock, color: "var(--color-cyan)" },          // PCI DSS v4.0
+  { compliant: false, icon: ShieldCheck, color: "var(--color-purple)" }, // HIPAA
+  { compliant: true, icon: Scale, color: "var(--color-orange)" },        // KVKK
+  { compliant: true, icon: Users, color: "var(--color-neon)" },          // CCPA/CPRA
+  { compliant: false, icon: Award, color: "var(--color-cyan)" },         // CSA STAR
 ];
 
 
@@ -70,11 +74,15 @@ const subProcessorsBase = [
   { name: "Sentry", location: "ABD (EU SCC)", dpa: true, website: "https://sentry.io/privacy/" },
 ];
 
+// Internal, continuous security testing performed with our own platform + manual review.
+// These are NOT third-party engagements — do not name an external firm or offer a
+// downloadable third-party report unless one genuinely exists on file. Independent
+// third-party penetration testing is planned (see sections.pentest.description).
 const pentestHistoryBase = [
-  { date: "2026-06-15", type: "External Penetration Test", auditor: "Cobalt.io — CREST Certified", reportAvailable: true },
-  { date: "2026-03-10", type: "Source Code Review (SAST)", auditor: "NCC Group", reportAvailable: true },
-  { date: "2025-12-01", type: "Cloud Infrastructure Audit", auditor: "Bishop Fox", reportAvailable: true },
-  { date: "2025-09-20", type: "Red Team Exercise", auditor: "Mandiant (Google Cloud)", reportAvailable: false },
+  { date: "2026-06-15", type: "Platform Security Assessment", auditor: "CyberSec Pro Security Team (internal)", reportAvailable: false },
+  { date: "2026-03-10", type: "Source Code Review (SAST)", auditor: "CyberSec Pro Security Team (internal)", reportAvailable: false },
+  { date: "2025-12-01", type: "Cloud Infrastructure Review", auditor: "CyberSec Pro Security Team (internal)", reportAvailable: false },
+  { date: "2025-09-20", type: "Internal Red-Team Exercise", auditor: "CyberSec Pro Security Team (internal)", reportAvailable: false },
 ];
 
 const bugBountyRewardsBase = [
@@ -163,6 +171,9 @@ export default function SecurityTrustCenter() {
                 </div>
               ))}
             </div>
+            <p className="mx-auto mt-4 max-w-2xl text-xs text-white/40">
+              {t("certBadgesNote")}
+            </p>
 
             {/* Live Status Banner */}
             <div className="mt-8 inline-flex items-center gap-2 px-4 py-2 rounded-full bg-green-500/10 border border-green-500/20">
@@ -524,9 +535,15 @@ export default function SecurityTrustCenter() {
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center justify-between">
                         <span className="font-semibold text-white text-sm">{cf.name}</span>
-                        <span className="px-2 py-0.5 rounded-full text-xs font-semibold bg-green-500/20 text-green-400 shrink-0">
-                          ✓ {t("sections.compliance.compliant")}
-                        </span>
+                        {cf.compliant ? (
+                          <span className="px-2 py-0.5 rounded-full text-xs font-semibold bg-green-500/20 text-green-400 shrink-0">
+                            ✓ {t("sections.compliance.compliant")}
+                          </span>
+                        ) : (
+                          <span className="px-2 py-0.5 rounded-full text-xs font-semibold bg-amber-500/20 text-amber-400 shrink-0">
+                            {t("sections.compliance.pending")}
+                          </span>
+                        )}
                       </div>
                       <span className="text-xs text-white/40">{cf.note}</span>
                     </div>

@@ -349,6 +349,7 @@
       "badge": "Güven Merkezi",
       "title": "Güven Merkezi",
       "subtitle": "Platformumuzun güvenliği, uyumluluğu ve şeffaflığı hakkında bilmeniz gereken her şey. Endüstri lider güvenlik standartlarına tam uyumluluk.",
+      "certBadgesNote": "Uyum sağladığımız veya aktif olarak hedeflediğimiz çerçeveler — güncel sertifikasyon durumu aşağıdadır.",
       "status": {
         "operational": "Tüm Sistemler Operasyonel",
         "link": "status.cyber-sec-pro.com →"
@@ -416,7 +417,7 @@
         },
         "pentest": {
           "title": "Güvenlik Testleri & Denetimler",
-          "description": "Bağımsız üçüncü taraf güvenlik firmaları tarafından gerçekleştirilen testler. Kurumsal müşteriler NDA imzalayarak özet raporlara erişebilir.",
+          "description": "Kendi platformumuz ve manuel inceleme ile sürekli dahili güvenlik testleri. Bağımsız üçüncü taraf sızma testi planlanıyor; tamamlandığında özet raporlar Kurumsal müşterilere NDA kapsamında sunulacaktır.",
           "scope": "Kapsam:",
           "findings": "Bulgular:",
           "requestReport": "Özet rapor talep et (NDA gerekli)"
@@ -475,7 +476,7 @@
             "description": "Her tarama izole konteynerde çalışır. Cross-tenant erişim yok. Kurumsal planlarda özel dedicated instance."
           },
           {
-            "title": "SOC 2 Type II Kontrolleri",
+            "title": "SOC 2 Uyumlu Kontroller",
             "description": "Altyapı SOC 2 Trust Services Criteria (Güvenlik, Erişilebilirlik, Gizlilik) uyumlu tasarlanmış."
           },
           {
@@ -502,7 +503,7 @@
         "complianceFrameworks": [
           {
             "name": "SOC 2 Type II",
-            "note": "Yıllık denetim — Ernst & Young"
+            "note": "SOC 2 kontrolleri uygulandı (Tip II denetimi planlanıyor)"
           },
           {
             "name": "GDPR",
@@ -510,7 +511,7 @@
           },
           {
             "name": "ISO 27001:2022",
-            "note": "Sertifikalı — BSI Group"
+            "note": "ISO 27001:2022'ye göre tasarlandı (sertifikasyon sürüyor)"
           },
           {
             "name": "ISO 27701",
@@ -522,11 +523,11 @@
           },
           {
             "name": "PCI DSS v4.0",
-            "note": "Seviye 1 Servis Sağlayıcı"
+            "note": "PCI DSS v4.0 uyumlu kontroller"
           },
           {
             "name": "HIPAA",
-            "note": "BAA mevcut — PHI şifreleme"
+            "note": "HIPAA uyumlu kontroller — PHI şifreleme"
           },
           {
             "name": "KVKK",
@@ -537,8 +538,8 @@
             "note": "Kaliforniya Tüketici Gizliliği Yasası"
           },
           {
-            "name": "CSA STAR Level 2",
-            "note": "Bulut Güvenliği İttifakı Sertifikası"
+            "name": "CSA STAR",
+            "note": "Bulut Güvenliği İttifakı — çerçeve uyumu"
           }
         ],
         "subProcessorPurposes": [
