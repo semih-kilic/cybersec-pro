@@ -2219,6 +2219,41 @@ pub struct NetworkSweepRequest {
 
 
 
+/// Extract a curated tool form's default values so a sweep can build a complete,
+/// runnable command for each host. Without this, template placeholders like
+/// `{ports}`/`{rate}` resolve to empty and are dropped (parse_template skips an
+/// empty standalone placeholder), so e.g. masscan would run with no `-p` and
+/// abort. Defaults come from our own seeded form definitions, so they are
+/// trusted (a value like `-p1-1000` or `--rate 1000` may contain flags and
+/// split into multiple argv entries).
+fn sweep_form_defaults(
+    tool: &crate::models::Tool,
+) -> (
+    std::collections::BTreeMap<String, String>,
+    std::collections::BTreeSet<String>,
+) {
+    let mut params = std::collections::BTreeMap::new();
+    let mut trusted = std::collections::BTreeSet::new();
+    if let Some(form) = tool
+        .parameters
+        .as_ref()
+        .and_then(|p| p.get("form"))
+        .and_then(|f| f.as_array())
+    {
+        for field in form {
+            let name = field.get("name").and_then(|v| v.as_str());
+            let default = field.get("default").and_then(|v| v.as_str());
+            if let (Some(name), Some(default)) = (name, default) {
+                if !default.is_empty() {
+                    params.insert(name.to_string(), default.to_string());
+                    trusted.insert(name.to_string());
+                }
+            }
+        }
+    }
+    (params, trusted)
+}
+
 pub async fn network_sweep(
     State(state): State<Arc<AppState>>,
     auth: AuthUser,
@@ -2539,42 +2574,93 @@ pub async fn network_sweep(
                     });
                 }
             } else {
-                // Local execution
+                // Per-host scans delegate to the scan engine, where every tool is
+                // installed. Running them locally in the backend container only
+                // works for nmap (the sole scanner in the API image) — masscan,
+                // naabu, unicornscan, fping and netdiscover live only in the
+                // engine, so the old local path failed every host with
+                // "No such file or directory (os error 2)". Curated form defaults
+                // are applied so the command is complete (e.g. masscan gets
+                // -p1-1000 --rate 1000; an empty {ports} would otherwise drop out).
                 let db2 = db.clone();
                 let scan_id2 = scan_id.clone();
                 let tool2 = tool.clone();
                 let host2 = host.clone();
                 let scan_tx2 = scan_tx.clone();
+                let org_id2 = org_id_spawn.clone();
+                let user_id2 = user_id_spawn.clone();
+                let subnet2 = subnet_spawn.clone();
+                let sweep_id2 = sweep_id_spawn.clone();
                 tokio::spawn(async move {
-                    let (program, args) = crate::scan_engine::tool_registry::build_command(
-                        &tool2.name, &host2, tool2.command_template.as_deref()
+                    let (defaults, trusted) = sweep_form_defaults(&tool2);
+                    let (program, args) = crate::scan_engine::tool_registry::build_command_with_trusted(
+                        &tool2.name, &host2, tool2.command_template.as_deref(), &defaults, &trusted,
                     ).unwrap_or_else(|_| (tool2.name.clone(), vec![host2.clone()]));
-                    let result = tokio::process::Command::new(&program)
-                        .args(&args)
-                        .output()
-                        .await;
-                    let (status, output) = match result {
-                        Ok(out) => {
-                            let o = String::from_utf8_lossy(&out.stdout).to_string();
-                            let s = if out.status.success() { "completed" } else { "failed" };
-                            (s, o)
+
+                    if let Some(engine_url) = configured_scan_engine_url() {
+                        // Delegated execution (production path — tools live here).
+                        let client = reqwest::Client::new();
+                        match start_scan_on_engine(
+                            &client, &engine_url, &tool2.name, &host2,
+                            None, Some(program.clone()), Some(args.clone()),
+                        ).await {
+                            Ok(remote) => {
+                                // Persist engine metadata so status/restart reconciliation works.
+                                let base = json!({"sweep_id": sweep_id2, "subnet": subnet2});
+                                let metadata = ScanEngineMetadata {
+                                    url: engine_url.clone(),
+                                    remote_scan_id: remote.scan_id.clone(),
+                                };
+                                let merged = merge_scan_parameters(&base, &metadata);
+                                let _ = sqlx::query("UPDATE scans SET parameters = $1::jsonb WHERE id = $2")
+                                    .bind(&merged).bind(&scan_id2).execute(&db2).await;
+                                // Polls the engine, streams output, and finalizes the scan row.
+                                monitor_scan_engine(
+                                    db2, scan_tx2, scan_id2, remote.scan_id, engine_url,
+                                    org_id2, user_id2, tool2.name.clone(), host2,
+                                ).await;
+                            }
+                            Err(e) => {
+                                let _ = sqlx::query(
+                                    "UPDATE scans SET status='failed', output=$1, completed_at=CURRENT_TIMESTAMP, scan_phase='complete' WHERE id=$2"
+                                )
+                                .bind(format!("Failed to delegate scan to engine: {}", e))
+                                .bind(&scan_id2)
+                                .execute(&db2)
+                                .await;
+                                let _ = scan_tx2.send(json!({
+                                    "type": "complete", "scan_id": scan_id2.clone(), "status": "failed"
+                                }).to_string());
+                            }
                         }
-                        Err(e) => ("failed", e.to_string()),
-                    };
-                    let _ = sqlx::query(
-                        "UPDATE scans SET status=$1, output=$2, findings=$3::jsonb, completed_at=CURRENT_TIMESTAMP, scan_phase='complete' WHERE id=$4"
-                    )
-                    .bind(status)
-                    .bind(&output)
-                    .bind(serde_json::to_value(parse_findings_simple(&output)).unwrap_or(json!([])))
-                    .bind(&scan_id2)
-                    .execute(&db2)
-                    .await;
-                    let _ = scan_tx2.send(json!({
-                        "type": "complete",
-                        "scan_id": scan_id2.clone(),
-                        "status": status
-                    }).to_string());
+                    } else {
+                        // No engine configured: local fallback (only nmap is
+                        // present in the backend image).
+                        let result = tokio::process::Command::new(&program)
+                            .args(&args)
+                            .output()
+                            .await;
+                        let (status, output) = match result {
+                            Ok(out) => {
+                                let o = String::from_utf8_lossy(&out.stdout).to_string();
+                                let s = if out.status.success() { "completed" } else { "failed" };
+                                (s, o)
+                            }
+                            Err(e) => ("failed", e.to_string()),
+                        };
+                        let _ = sqlx::query(
+                            "UPDATE scans SET status=$1, output=$2, findings=$3::jsonb, completed_at=CURRENT_TIMESTAMP, scan_phase='complete' WHERE id=$4"
+                        )
+                        .bind(status)
+                        .bind(&output)
+                        .bind(serde_json::to_value(parse_findings_simple(&output)).unwrap_or(json!([])))
+                        .bind(&scan_id2)
+                        .execute(&db2)
+                        .await;
+                        let _ = scan_tx2.send(json!({
+                            "type": "complete", "scan_id": scan_id2.clone(), "status": status
+                        }).to_string());
+                    }
                 });
             }
         }
