@@ -18,52 +18,57 @@ pub async fn notify_integrations(
     .await
     .unwrap_or_default();
 
-    for (id, int_type, webhook_url, config, _name) in integrations {
-        let config_val: Value = config.as_deref().and_then(|c| serde_json::from_str(c).ok()).unwrap_or_default();
+    // Dispatch every integration concurrently. Each send_* has its own 10-15s
+    // HTTP timeout; running them sequentially meant one slow or unreachable
+    // endpoint (e.g. a webhook to a dead host) delayed all the others and held
+    // up scan finalization by the SUM of the timeouts. join_all bounds the total
+    // wait to the slowest single integration instead. Each task owns its row and
+    // records its own success/last_error, so results stay independent.
+    let tasks = integrations
+        .into_iter()
+        .map(|(id, int_type, webhook_url, config, _name)| async move {
+            let config_val: Value = config
+                .as_deref()
+                .and_then(|c| serde_json::from_str(c).ok())
+                .unwrap_or_default();
 
-        let result = match int_type.as_str() {
-            "slack" => {
-                let url = match webhook_url {
-                    Some(u) if !u.is_empty() => u,
-                    _ => continue,
-                };
-                send_slack(&url, event_type, payload).await
-            }
-            "teams" => {
-                let url = match webhook_url {
-                    Some(u) if !u.is_empty() => u,
-                    _ => continue,
-                };
-                send_teams(&url, event_type, payload).await
-            }
-            "webhook" => {
-                let url = match webhook_url {
-                    Some(u) if !u.is_empty() => u,
-                    _ => continue,
-                };
-                send_webhook(&url, event_type, payload).await
-            }
-            "jira" => send_jira(&config_val, event_type, payload).await,
-            "github" => send_github(&config_val, event_type, payload).await,
-            "servicenow" => send_servicenow(&config_val, event_type, payload).await,
-            _ => continue,
-        };
+            let result = match int_type.as_str() {
+                "slack" => match webhook_url {
+                    Some(u) if !u.is_empty() => send_slack(&u, event_type, payload).await,
+                    _ => return,
+                },
+                "teams" => match webhook_url {
+                    Some(u) if !u.is_empty() => send_teams(&u, event_type, payload).await,
+                    _ => return,
+                },
+                "webhook" => match webhook_url {
+                    Some(u) if !u.is_empty() => send_webhook(&u, event_type, payload).await,
+                    _ => return,
+                },
+                "jira" => send_jira(&config_val, event_type, payload).await,
+                "github" => send_github(&config_val, event_type, payload).await,
+                "servicenow" => send_servicenow(&config_val, event_type, payload).await,
+                _ => return,
+            };
 
-        if let Err(e) = result {
-            tracing::error!("Integration {} ({}) failed: {}", id, int_type, e);
-            // Update last_error
-            let _ = sqlx::query("UPDATE integrations SET last_error = $1, updated_at = NOW() WHERE id = $2")
+            if let Err(e) = result {
+                tracing::error!("Integration {} ({}) failed: {}", id, int_type, e);
+                let _ = sqlx::query(
+                    "UPDATE integrations SET last_error = $1, updated_at = NOW() WHERE id = $2",
+                )
                 .bind(format!("{}", e))
                 .bind(&id)
                 .execute(db)
                 .await;
-        } else {
-            let _ = sqlx::query("UPDATE integrations SET last_triggered_at = NOW(), last_error = NULL, updated_at = NOW() WHERE id = $1")
-                .bind(&id)
-                .execute(db)
-                .await;
-        }
-    }
+            } else {
+                let _ = sqlx::query("UPDATE integrations SET last_triggered_at = NOW(), last_error = NULL, updated_at = NOW() WHERE id = $1")
+                    .bind(&id)
+                    .execute(db)
+                    .await;
+            }
+        });
+
+    futures::future::join_all(tasks).await;
 }
 
 /// Pure helper: returns (color, emoji) for a Slack attachment based on event type.
