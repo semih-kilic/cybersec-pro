@@ -4043,14 +4043,9 @@ pub async fn admin_ack_alert(
 
 // ── AI endpoints ───────────────────────────────────────────
 
-pub async fn ai_suggest(
-    _user: AuthUser,
-    State(_state): State<Arc<AppState>>,
-    Json(_body): Json<serde_json::Value>,
-) -> impl IntoResponse {
-    Json(json!({"suggestions": [], "message": "AI suggestions not yet available"})).into_response()
-}
-
+// `ai_suggest` / `ai_report_summary` stubs were removed; the `/ai/suggest` and
+// `/ai/report-summary` routes now delegate to the real ai_handlers
+// (suggest_tools / interpret_results). `ai_remediation` below is real.
 pub async fn ai_remediation(
     _user: AuthUser,
     State(_state): State<Arc<AppState>>,
@@ -4103,14 +4098,6 @@ pub async fn ai_remediation(
         "summary": g.summary, "impact": g.impact, "steps": g.steps,
         "references": g.references, "source": "knowledge_base"
     })).into_response()
-}
-
-pub async fn ai_report_summary(
-    _user: AuthUser,
-    State(_state): State<Arc<AppState>>,
-    Json(_body): Json<serde_json::Value>,
-) -> impl IntoResponse {
-    Json(json!({"summary": "AI report summary not yet available"})).into_response()
 }
 
 // ── Purple Team endpoints ──────────────────────────────────

@@ -1,4 +1,4 @@
-import React, { useState, useReducer, useRef, useCallback, useEffect } from "react";
+import React, { useState, useReducer, useCallback, useEffect } from "react";
 
 // ─── Types ──────────────────────────────────────────────────────────────────
 
@@ -125,19 +125,6 @@ const CATEGORY_COLORS: Record<string, string> = {
   "Post-Exploitation": "amber",
   Reporting: "purple",
 };
-
-const MOCK_OUTPUT_LINES: string[] = [
-  "[INFO] Initializing pipeline step...",
-  "[INFO] Connecting to target...",
-  "[INFO] Target identified. Starting scan.",
-  "[INFO] Scanning ports 1-1000...",
-  "[INFO] Port 22/tcp open - SSH",
-  "[INFO] Port 80/tcp open - HTTP",
-  "[INFO] Port 443/tcp open - HTTPS",
-  "[INFO] Analyzing service versions...",
-  "[INFO] Checking for known vulnerabilities...",
-  "[INFO] Step completed successfully.",
-];
 
 // ─── i18n ───────────────────────────────────────────────────────────────────
 
@@ -554,148 +541,6 @@ const StepConfigPanel: React.FC<StepConfigProps> = ({ step, onUpdate, onClose })
   );
 };
 
-// ─── Execution View ─────────────────────────────────────────────────────────
-
-interface ExecutionViewProps {
-  pipeline: Pipeline;
-  onCancel: () => void;
-  onBack: () => void;
-}
-
-const ExecutionView: React.FC<ExecutionViewProps> = ({ pipeline, onCancel, onBack }) => {
-  const [logs, setLogs] = useState<Record<string, string[]>>({});
-  const logEndRefs = useRef<Record<string, HTMLDivElement | null>>({});
-
-  const scrollToBottom = useCallback((id: string) => {
-    logEndRefs.current[id]?.scrollIntoView({ behavior: "smooth" });
-  }, []);
-
-  useEffect(() => {
-    let mounted = true;
-    let stepIndex = 0;
-
-    const runStep = async () => {
-      if (!mounted || stepIndex >= pipeline.steps.length) return;
-
-      const step = pipeline.steps[stepIndex];
-      setLogs((prev) => ({ ...prev, [step.id]: [] }));
-
-      for (let lineIdx = 0; lineIdx < MOCK_OUTPUT_LINES.length; lineIdx++) {
-        if (!mounted) return;
-        await new Promise((r) => setTimeout(r, 200 + Math.random() * 300));
-        if (!mounted) return;
-        setLogs((prev) => ({
-          ...prev,
-          [step.id]: [...(prev[step.id] ?? []), MOCK_OUTPUT_LINES[lineIdx]],
-        }));
-        scrollToBottom(step.id);
-      }
-
-      if (!mounted) return;
-      const success = Math.random() > 0.15;
-      setLogs((prev) => ({
-        ...prev,
-        [step.id]: [...(prev[step.id] ?? []), success ? "[OK] Step completed successfully." : "[FAIL] Step failed with errors."],
-      }));
-
-      window.dispatchEvent(
-        new CustomEvent("pipeline-step-done", {
-          detail: { stepId: step.id, success },
-        })
-      );
-
-      stepIndex++;
-      if (mounted && stepIndex < pipeline.steps.length) {
-        setTimeout(runStep, 500);
-      }
-    };
-
-    runStep();
-    return () => {
-      mounted = false;
-    };
-  }, [pipeline.steps, scrollToBottom]);
-
-  const completedCount = pipeline.steps.filter((s) => s.status === "completed").length;
-  const failedCount = pipeline.steps.filter((s) => s.status === "failed").length;
-  const progressPct = pipeline.steps.length > 0 ? ((completedCount + failedCount) / pipeline.steps.length) * 100 : 0;
-
-  return (
-    <div className="flex h-full flex-col">
-      <div className="flex items-center justify-between border-b border-gray-800 px-6 py-4">
-        <div className="flex items-center gap-4">
-          <h2 className="text-lg font-bold text-white">{t("pipeline.execution_view")}</h2>
-          <PipelineStatusBadge status={pipeline.status} />
-        </div>
-        <div className="flex items-center gap-3">
-          <button
-            onClick={onCancel}
-            className="rounded-lg border border-gray-700 bg-gray-800 px-4 py-2 text-sm font-medium text-gray-300 transition hover:bg-gray-700 hover:text-white"
-          >
-            {t("pipeline.cancel")}
-          </button>
-          <button
-            onClick={onBack}
-            className="rounded-lg border border-gray-700 bg-gray-800 px-4 py-2 text-sm font-medium text-gray-300 transition hover:bg-gray-700 hover:text-white"
-          >
-            {t("pipeline.back_to_edit")}
-          </button>
-        </div>
-      </div>
-
-      <div className="mb-4 px-6 pt-4">
-        <div className="mb-2 flex items-center justify-between text-xs text-gray-400">
-          <span>{completedCount + failedCount} / {pipeline.steps.length} steps</span>
-          <span>{Math.round(progressPct)}%</span>
-        </div>
-        <div className="h-2 w-full overflow-hidden rounded-full bg-gray-800">
-          <div
-            className="h-full rounded-full bg-gradient-to-r from-cyan-500 to-emerald-500 transition-all duration-500 ease-out"
-            style={{ width: `${progressPct}%` }}
-          />
-        </div>
-      </div>
-
-      <div className="flex-1 overflow-y-auto px-6 pb-6 space-y-4">
-        {pipeline.steps.map((step, i) => {
-          const stepLogs = logs[step.id] ?? [];
-          return (
-            <div key={step.id} className="rounded-xl border border-gray-800 bg-gray-900/50 overflow-hidden">
-              <div className="flex items-center justify-between border-b border-gray-800/50 px-4 py-3">
-                <div className="flex items-center gap-3">
-                  <span className="text-xs font-bold text-gray-500">#{i + 1}</span>
-                  <span className="text-sm">{TOOL_DEFINITIONS.find((td) => td.id === step.tool)?.icon}</span>
-                  <span className="text-sm font-semibold text-white">{step.tool}</span>
-                  <StatusIcon status={step.status} />
-                </div>
-                <span className={`text-xs font-medium ${
-                  step.status === "completed" ? "text-emerald-400" : step.status === "failed" ? "text-red-400" : step.status === "running" ? "text-cyan-400" : "text-gray-500"
-                }`}>
-                  {step.status.charAt(0).toUpperCase() + step.status.slice(1)}
-                </span>
-              </div>
-              <div className="max-h-48 overflow-y-auto bg-black/50 p-3 font-mono text-xs leading-relaxed">
-                {stepLogs.length === 0 && step.status === "pending" && (
-                  <span className="text-gray-600">Waiting...</span>
-                )}
-                {stepLogs.map((line, li) => (
-                  <div key={li} className={
-                    line.includes("[FAIL]") ? "text-red-400" : line.includes("[OK]") ? "text-emerald-400" : "text-green-400"
-                  }>
-                    <span className="mr-1 select-none text-gray-700">&gt;</span>
-                    {line}
-                  </div>
-                ))}
-                <div ref={(el) => { logEndRefs.current[step.id] = el; }} />
-              </div>
-            </div>
-          );
-        })}
-      </div>
-    </div>
-  );
-};
-
 // ─── Schedule Modal ─────────────────────────────────────────────────────────
 
 interface ScheduleModalProps {
@@ -762,7 +607,6 @@ export default function PipelineBuilderPage() {
   });
   const [selectedStepId, setSelectedStepId] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
-  const [view, setView] = useState<"edit" | "execute">("edit");
   const [showSchedule, setShowSchedule] = useState(false);
   const [showToast, setShowToast] = useState<string | null>(null);
 
@@ -811,21 +655,6 @@ export default function PipelineBuilderPage() {
   );
 
   const selectedStep = pipeline.steps.find((s) => s.id === selectedStepId);
-
-  if (view === "execute") {
-    return (
-      <div className="flex h-screen flex-col bg-gray-950 text-white">
-        <ExecutionView
-          pipeline={pipeline}
-          onCancel={() => {
-            dispatch({ type: "SET_PIPELINE_STATUS", status: "draft" });
-            setView("edit");
-          }}
-          onBack={() => setView("edit")}
-        />
-      </div>
-    );
-  }
 
   return (
     <div className="flex h-screen flex-col bg-gray-950 text-white">

@@ -629,9 +629,13 @@ fn build_router(state: Arc<AppState>) -> Router {
         .route("/api/v1/superadmin/organizations", get(superadmin_handlers::list_organizations))
         .route("/api/v1/superadmin/organizations/:org_id/plan", put(superadmin_handlers::change_org_plan))
         // ── AI ────────────────────────────────────────────────
-        .route("/api/v1/ai/suggest", post(stub_handlers::ai_suggest))
+        // Legacy aliases: `/ai/suggest` and `/ai/report-summary` used to be
+        // "not yet available" stubs. They now delegate to the real handlers so
+        // older API clients get working responses; the documented paths are
+        // `/ai/suggest-tools` and `/ai/interpret-results`.
+        .route("/api/v1/ai/suggest", post(ai_handlers::suggest_tools))
         .route("/api/v1/ai/remediation", post(stub_handlers::ai_remediation))
-        .route("/api/v1/ai/report-summary", post(stub_handlers::ai_report_summary))
+        .route("/api/v1/ai/report-summary", post(ai_handlers::interpret_results))
         // ── CyberSec Pro AI (intelligent assistant) ───────────
         .route("/api/v1/ai/tools", get(ai_handlers::list_tools))
         .route("/api/v1/ai/suggest-tools", post(ai_handlers::suggest_tools))

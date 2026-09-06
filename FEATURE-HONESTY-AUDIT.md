@@ -35,10 +35,11 @@ real implementation), or **CONFIRM** (business fact only the owner can verify).
   Templates**, which do have backends.)
 - **DONE (this session):** nav shows a **"Soon"** badge; page shows a **Preview**
   banner; Save and Run no longer fake success — they say execution/saving is
-  coming soon and point users to Scans / Workflows. *Remaining cleanup:* the
+  coming soon and point users to Scans / Workflows. *Cleanup DONE:* the
   `ExecutionView` sub-component (with `MOCK_OUTPUT_LINES` + `Math.random`
-  step-success) is now **unreachable** (nothing sets the "execute" view anymore)
-  but still sits in the bundle as dead code — delete it in a follow-up.
+  step-success), the `view`/`setView` state machine, and the now-unused `useRef`
+  import were **deleted** (−171 lines); the mock string is gone from the built
+  bundle. saas-frontend rebuilt (exit 0) and live via the `dist/static-v2` mount.
 
 ---
 
@@ -58,9 +59,12 @@ uses those:
   two stub routes or make them delegate to the real handlers, so an API customer
   never hits a "not yet available" response.
 - **DONE (this session):** API Reference now documents `/ai/interpret-results`
-  and `/ai/suggest-tools` (the working endpoints). *Remaining low-priority backend
-  cleanup:* delete or delegate the now-unadvertised stub routes `/ai/suggest`
-  and `/ai/report-summary` (needs a backend rebuild).
+  and `/ai/suggest-tools` (the working endpoints). **Backend cleanup DONE:** the
+  legacy routes `/ai/suggest` and `/ai/report-summary` now **delegate** to the
+  real handlers (`suggest_tools` / `interpret_results`) instead of returning
+  "not yet available"; the two stub handler functions were deleted. Backend
+  rebuilt + recreated; live-tested both legacy paths return real data (tool
+  suggestions and severity-count summaries), zero "not yet available" responses.
 
 ---
 
