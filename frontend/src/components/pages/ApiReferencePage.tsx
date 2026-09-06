@@ -153,8 +153,8 @@ const groups: EndpointGroup[] = [
     description: "AI-powered security insights — remediation advice, report summarization, and scan suggestions.",
     endpoints: [
       { method: "POST", path: "/api/v1/ai/remediation", description: "Get AI-generated remediation steps for a specific finding (CVE + context)" },
-      { method: "POST", path: "/api/v1/ai/report-summary", description: "Generate an AI executive summary from scan results" },
-      { method: "POST", path: "/api/v1/ai/suggest", description: "Get AI suggestions for next scan based on findings and target profile" },
+      { method: "POST", path: "/api/v1/ai/interpret-results", description: "Generate an AI executive summary from a scan's findings" },
+      { method: "POST", path: "/api/v1/ai/suggest-tools", description: "Get AI tool suggestions for a target based on its profile" },
     ],
   },
   {

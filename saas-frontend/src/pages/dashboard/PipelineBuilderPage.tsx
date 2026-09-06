@@ -168,6 +168,11 @@ const t = (key: string): string => {
     "pipeline.back_to_edit": "Back to Editor",
     "pipeline.schedule_cron": "Cron Expression",
     "pipeline.schedule_desc": "Set a cron schedule for this pipeline",
+    "pipeline.previewBanner":
+      "Preview: you can design a pipeline here, but saving and running are not available yet. Use Scans or Workflows to run tools today.",
+    "pipeline.saveComingSoon": "Preview — saving pipelines is coming soon.",
+    "pipeline.runComingSoon":
+      "Preview — running pipelines is coming soon. Use Scans or Workflows to run tools now.",
   };
   return dict[key] ?? key;
 };
@@ -782,67 +787,20 @@ export default function PipelineBuilderPage() {
     [selectedStepId, pipeline.steps]
   );
 
-  const handleSave = useCallback(async () => {
-    if (pipeline.steps.length === 0) {
-      toast("Add at least one step before saving.");
-      return;
-    }
-    try {
-      const res = await fetch("/api/v1/pipelines", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(pipeline),
-      });
-      if (res.ok) {
-        const data = await res.json();
-        dispatch({ type: "LOAD_PIPELINE", pipeline: { ...pipeline, id: data.id } });
-      }
-    } catch {
-      // Backend not available, mock save
-    }
-    toast(t("pipeline.save_success"));
-  }, [pipeline, toast]);
+  // Pipeline persistence is not implemented yet — there is no /api/v1/pipelines
+  // endpoint. Do NOT fake a successful save (the old code swallowed the failure
+  // and showed "saved" anyway). Tell the truth instead. See the "Preview" banner.
+  const handleSave = useCallback(() => {
+    toast(t("pipeline.saveComingSoon"));
+  }, [toast]);
 
+  // Execution used to be a pure client-side simulation (Math.random decided
+  // "completed"/"failed" and printed "Step completed successfully.") — there is
+  // no pipeline runner on the backend. Faking a run is dishonest, so instead we
+  // say so. Individual Scans and Workflows execute for real today.
   const handleRun = useCallback(() => {
-    if (pipeline.steps.length === 0) {
-      toast("Add at least one step before running.");
-      return;
-    }
-    dispatch({ type: "SET_PIPELINE_STATUS", status: "running" });
-    pipeline.steps.forEach((s) => dispatch({ type: "SET_STEP_STATUS", stepId: s.id, status: "pending" }));
-    setView("execute");
-
-    let stepIdx = 0;
-    const runNext = () => {
-      if (stepIdx >= pipeline.steps.length) {
-        dispatch({ type: "SET_PIPELINE_STATUS", status: "completed" });
-        return;
-      }
-      const step = pipeline.steps[stepIdx];
-      dispatch({ type: "SET_STEP_STATUS", stepId: step.id, status: "running" });
-
-      const duration = 1500 + Math.random() * 2500;
-      setTimeout(() => {
-        const success = Math.random() > 0.1;
-        dispatch({
-          type: "SET_STEP_STATUS",
-          stepId: step.id,
-          status: success ? "completed" : "failed",
-          output: success ? "Step completed successfully." : "Step failed.",
-        });
-        stepIdx++;
-        if (success && stepIdx < pipeline.steps.length) {
-          setTimeout(runNext, 300);
-        } else if (!success) {
-          dispatch({ type: "SET_PIPELINE_STATUS", status: "failed" });
-        } else {
-          dispatch({ type: "SET_PIPELINE_STATUS", status: "completed" });
-        }
-      }, duration);
-    };
-    setTimeout(runNext, 500);
-    toast(t("pipeline.run_started"));
-  }, [pipeline, toast]);
+    toast(t("pipeline.runComingSoon"));
+  }, [toast]);
 
   const handleInsertAfter = useCallback(
     (afterIndex: number) => {
@@ -891,6 +849,12 @@ export default function PipelineBuilderPage() {
           </span>
         </div>
       </header>
+
+      {/* Preview notice — the pipeline builder is a design preview; there is no
+          backend to persist or execute pipelines yet. */}
+      <div className="border-b border-amber-500/30 bg-amber-500/10 px-6 py-2.5 text-sm text-amber-300">
+        {t("pipeline.previewBanner")}
+      </div>
 
       {/* Main Content */}
       <div className="flex flex-1 overflow-hidden">
