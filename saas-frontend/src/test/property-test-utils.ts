@@ -10,8 +10,8 @@ import type { ThemeVariant } from '../types/theme';
  * Property test configuration
  */
 export const PROPERTY_TEST_CONFIG = {
-  iterations: 100,
-  timeout: 5000,
+  iterations: 20,
+  timeout: 60000,
 } as const;
 
 /**

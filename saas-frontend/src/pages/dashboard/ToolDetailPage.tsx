@@ -591,7 +591,15 @@ export function ToolDetailPage() {
                           {param.type === 'select' && (
                             <select value={(paramValues[param.name] as string) || ''} onChange={(e) => handleParamChange(param.name, e.target.value)} disabled={isScanning} className="w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded-lg text-white focus:outline-none focus:border-kali-blue transition disabled:opacity-50">
                               <option value="">{t('common.selectDots', 'Select...')}</option>
-                              {param.options?.map(opt => <option key={opt} value={opt.split(' ')[0]}>{opt}</option>)}
+                              {param.options?.map((opt: any, i: number) => {
+                                // Two shapes: legacy string options, and curated
+                                // zero-code form options `{label, value}`. Rendering
+                                // the object directly throws React error #31.
+                                const isObj = opt !== null && typeof opt === 'object';
+                                const value = isObj ? String(opt.value ?? '') : String(opt).split(' ')[0];
+                                const label = isObj ? String(opt.label ?? opt.value ?? '') : String(opt);
+                                return <option key={`${value}-${i}`} value={value}>{label}</option>;
+                              })}
                             </select>
                           )}
                           {param.type === 'boolean' && (

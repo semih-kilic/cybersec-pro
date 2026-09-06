@@ -125,9 +125,10 @@ describe('ScanExecutionPage — delegated execution mode', () => {
 
     renderPage('nmap');
 
-    // Fill target
+    // Fill target and confirm authorization
     const targetInput = screen.getByPlaceholderText(/192\.168\.1\.0/i);
     fireEvent.change(targetInput, { target: { value: '10.0.0.1' } });
+    fireEvent.click(screen.getByRole('checkbox'));
 
     // Click Run Scan
     const startBtn = screen.getByRole('button', { name: /run scan/i });
@@ -135,7 +136,7 @@ describe('ScanExecutionPage — delegated execution mode', () => {
 
     // Badge should appear
     await waitFor(() => {
-      expect(screen.getByText('⚙️ Scan Engine')).toBeInTheDocument();
+      expect(screen.getByText('Scan Engine')).toBeInTheDocument();
     });
     expect(screen.getByText('rust-scan-engine')).toBeInTheDocument();
   });
@@ -155,11 +156,12 @@ describe('ScanExecutionPage — delegated execution mode', () => {
 
     const targetInput = screen.getByPlaceholderText(/192\.168\.1\.0/i);
     fireEvent.change(targetInput, { target: { value: '10.0.0.2' } });
+    fireEvent.click(screen.getByRole('checkbox'));
 
     fireEvent.click(screen.getByRole('button', { name: /run scan/i }));
 
     await waitFor(() => {
-      expect(screen.getByText('⚙️ Scan Engine')).toBeInTheDocument();
+      expect(screen.getByText('Scan Engine')).toBeInTheDocument();
     });
     // Fallback text
     expect(screen.getByText('rust-scan-engine')).toBeInTheDocument();
@@ -180,6 +182,7 @@ describe('ScanExecutionPage — delegated execution mode', () => {
 
     const targetInput = screen.getByPlaceholderText(/192\.168\.1\.0/i);
     fireEvent.change(targetInput, { target: { value: '10.0.0.3' } });
+    fireEvent.click(screen.getByRole('checkbox'));
 
     fireEvent.click(screen.getByRole('button', { name: /run scan/i }));
 
@@ -191,7 +194,7 @@ describe('ScanExecutionPage — delegated execution mode', () => {
     });
   });
 
-  it('does NOT show ⚙️ Scan Engine badge for local execution mode', async () => {
+  it('does NOT show Scan Engine badge for local execution mode', async () => {
     mockedApi.executeScan.mockResolvedValueOnce({
       data: {
         scan_id: 'scan-local-001',
@@ -205,12 +208,13 @@ describe('ScanExecutionPage — delegated execution mode', () => {
 
     const targetInput = screen.getByPlaceholderText(/192\.168\.1\.0/i);
     fireEvent.change(targetInput, { target: { value: '10.0.0.4' } });
+    fireEvent.click(screen.getByRole('checkbox'));
 
     fireEvent.click(screen.getByRole('button', { name: /run scan/i }));
 
     await waitFor(() => {
-      expect(screen.getByText('🖥️ Running on Server')).toBeInTheDocument();
+      expect(screen.getByText('Running on Server')).toBeInTheDocument();
     });
-    expect(screen.queryByText('⚙️ Scan Engine')).not.toBeInTheDocument();
+    expect(screen.queryByText('Scan Engine')).not.toBeInTheDocument();
   });
 });
