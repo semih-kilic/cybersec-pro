@@ -290,6 +290,58 @@ impl ScanEngine {
         Ok(scan_id)
     }
 
+    /// Redact credential values from an argv before it is written to the log.
+    /// The engine runs the real argv (with the substituted password) but must
+    /// never log a credential — the privacy contract is that per-scan credentials
+    /// live only in memory. Redacts: the value after a secret flag (`--password`,
+    /// `-p`, `--token`, `--hashes`, …), `key=value` where the key looks secret,
+    /// and the password segment of a `user:pass@host` connection string. `-p` is
+    /// ambiguous (password vs. nmap port spec) so obvious port specs stay visible.
+    fn redact_args_for_log(args: &[String]) -> Vec<String> {
+        const SECRET_FLAGS: &[&str] = &[
+            "-p", "--password", "--pass", "-pw", "--api-key", "--apikey",
+            "--token", "--secret", "--hashes", "--hash",
+        ];
+        let is_port_like =
+            |s: &str| !s.is_empty() && s.chars().all(|c| c.is_ascii_digit() || matches!(c, ',' | '-' | ':'));
+        let mut out = Vec::with_capacity(args.len());
+        let mut pending: Option<String> = None; // secret flag awaiting its value
+        for a in args {
+            if let Some(flag) = pending.take() {
+                if flag == "-p" && is_port_like(a) {
+                    out.push(a.clone()); // nmap-style port spec, not a secret
+                } else {
+                    out.push("***".to_string());
+                }
+                continue;
+            }
+            let al = a.to_ascii_lowercase();
+            if SECRET_FLAGS.contains(&al.as_str()) {
+                out.push(a.clone());
+                pending = Some(al);
+                continue;
+            }
+            if let Some((k, _)) = a.split_once('=') {
+                let kl = k.to_ascii_lowercase();
+                if ["pass", "token", "secret", "cred", "apikey", "api-key", "api_key"]
+                    .iter()
+                    .any(|s| kl.contains(s))
+                {
+                    out.push(format!("{}=***", k));
+                    continue;
+                }
+            }
+            if let Some(at) = a.find('@') {
+                if let Some(colon) = a[..at].find(':') {
+                    out.push(format!("{}:***{}", &a[..colon], &a[at..]));
+                    continue;
+                }
+            }
+            out.push(a.clone());
+        }
+        out
+    }
+
     /// Run a process safely (no shell, argument vector only)
     async fn run_process(
         program: &str,
@@ -298,7 +350,7 @@ impl ScanEngine {
         children: &Arc<RwLock<HashMap<String, (u32, Arc<tokio::sync::Mutex<tokio::process::Child>>)>>>,
         scan_id: &str,
     ) -> Result<i32, AppError> {
-        tracing::info!("Executing: {} {:?}", program, args);
+        tracing::info!("Executing: {} {:?}", program, Self::redact_args_for_log(args));
 
         let mut child = Command::new(program)
             .args(args)

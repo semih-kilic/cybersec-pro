@@ -104,6 +104,50 @@ fn configured_scan_engine_url() -> Option<String> {
         .filter(|value| !value.is_empty())
 }
 
+/// Redact secret-valued fields before scan parameters are persisted.
+///
+/// Per-scan credentials (passwords, API keys, tokens) are forwarded to the
+/// executor in the command argv and the scan-engine request, but MUST NOT be
+/// written to the DB: the privacy contract (CLAUDE.md §12, the /dashboard/privacy
+/// page) is that they live only in memory for the duration of the run. A field
+/// is treated as secret when the tool's form marks it `type: "password"` or its
+/// key name matches the credential pattern (`pass|passwd|pwd|secret|token|
+/// api[_-]?key|credential`). Redacted values become the string "***redacted***"
+/// so the parameter set still round-trips for display and diffing.
+fn redact_secret_params(params: &JsonValue, tool_form: Option<&JsonValue>) -> JsonValue {
+    let secret_names: std::collections::HashSet<String> = tool_form
+        .and_then(|f| f.as_array())
+        .map(|form| {
+            form.iter()
+                .filter(|field| field.get("type").and_then(|t| t.as_str()) == Some("password"))
+                .filter_map(|field| field.get("name").and_then(|n| n.as_str()))
+                .map(|n| n.to_lowercase())
+                .collect()
+        })
+        .unwrap_or_default();
+
+    // Compiled once per call; the key set is tiny so this is not a hot path.
+    let secret_re = regex::Regex::new(r"(?i)(pass|passwd|pwd|secret|token|api[_-]?key|credential)")
+        .expect("static secret regex is valid");
+
+    match params {
+        JsonValue::Object(map) => {
+            let mut out = serde_json::Map::with_capacity(map.len());
+            for (k, v) in map {
+                let is_secret = !v.is_null()
+                    && (secret_names.contains(&k.to_lowercase()) || secret_re.is_match(k));
+                if is_secret {
+                    out.insert(k.clone(), JsonValue::String("***redacted***".to_string()));
+                } else {
+                    out.insert(k.clone(), v.clone());
+                }
+            }
+            JsonValue::Object(out)
+        }
+        other => other.clone(),
+    }
+}
+
 fn merge_scan_parameters(base: &JsonValue, metadata: &ScanEngineMetadata) -> JsonValue {
     let mut merged = match base {
         JsonValue::Object(map) => JsonValue::Object(map.clone()),
@@ -1446,7 +1490,13 @@ pub async fn start_scan(
     // This closes the TOCTOU race where parallel requests each pass the earlier
     // non-atomic COUNT check and overshoot `concurrent_scans`.
     let scan_id = Uuid::new_v4().to_string();
-    let params_json = body.parameters.as_ref().cloned().unwrap_or(serde_json::json!({}));
+    // The real credentials are already baked into `command_args` (built above) and
+    // are forwarded to the engine via `body.parameters` below. What we PERSIST must
+    // have secret fields redacted — passwords/tokens never touch the DB.
+    let params_json = redact_secret_params(
+        &body.parameters.as_ref().cloned().unwrap_or(serde_json::json!({})),
+        tool.parameters.as_ref().and_then(|p| p.get("form")),
+    );
     let insert_res = sqlx::query(
         "INSERT INTO scans (id, organization_id, user_id, tool_id, target, parameters, status, scan_phase, agent_id, project_id, authorization_id, started_at)
          SELECT $1, $2, $3, $4, $5, $6::jsonb, 'running', 'initializing', $7, $8, $9, CURRENT_TIMESTAMP

@@ -19,8 +19,11 @@ RUN cd rust-scan-engine && cargo build --release 2>/dev/null || true
 RUN rm -rf rust-scan-engine/src
 
 COPY rust-scan-engine/src/ rust-scan-engine/src/
-ARG REBUILD=2026-08-17-grpc-final
-RUN cd rust-scan-engine && rm -rf target/release/cybersec-scan-engine target/release/deps/cybersec* \
+ARG REBUILD=2026-09-05-cred-redact
+# NB: $REBUILD must be referenced in this RUN or BuildKit will not invalidate the
+# cache when the arg changes — a bare `ARG` alone is ignored by BuildKit. Bump the
+# default (or pass --build-arg REBUILD=...) to force a fresh compile of our crate.
+RUN echo "rebuild token: $REBUILD" && cd rust-scan-engine && rm -rf target/release/cybersec-scan-engine target/release/deps/cybersec* \
     && cargo build --release
 # ─────────────────────────────────────────────────────────────────────────
 # Stage 2: Tools. All security tools live in a pre-built base image
