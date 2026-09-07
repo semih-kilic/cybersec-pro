@@ -17,29 +17,33 @@ real implementation), or **CONFIRM** (business fact only the owner can verify).
 
 ---
 
-## B. Confirmed non-functional / simulated — ACTION NEEDED
+## B. Pipeline Builder — **now fully real** ✅
 
-### B1. Pipeline Builder (`/dashboard/pipeline-builder`) — **not real**
-- **What the user sees:** a prominent sidebar feature to build multi-step scan
-  pipelines, "Save", and "Run" with live step progress.
-- **Reality:** there is **no backend**. `POST /api/v1/pipelines` is not routed and
-  no pipeline handler exists.
-  - **Save** falls into `catch { // Backend not available, mock save }` and then
-    shows a success toast — nothing is persisted.
-  - **Run** is a pure client-side animation: `setTimeout` + `Math.random() > 0.1`
-    decides fake success/failure and prints "Step completed successfully."
-- **Recommended action:** **SOON** — add a "Soon" badge in the nav + a "Preview:
-  saving and execution are not available yet" banner, and disable the fake
-  Save/Run; **or REMOVE** it from the sidebar until a real pipeline engine exists.
-  (Real multi-step automation already exists as **Workflows** and **Scan
-  Templates**, which do have backends.)
-- **DONE (this session):** nav shows a **"Soon"** badge; page shows a **Preview**
-  banner; Save and Run no longer fake success — they say execution/saving is
-  coming soon and point users to Scans / Workflows. *Cleanup DONE:* the
-  `ExecutionView` sub-component (with `MOCK_OUTPUT_LINES` + `Math.random`
-  step-success), the `view`/`setView` state machine, and the now-unused `useRef`
-  import were **deleted** (−171 lines); the mock string is gone from the built
-  bundle. saas-frontend rebuilt (exit 0) and live via the `dist/static-v2` mount.
+### B1. Pipeline Builder (`/dashboard/pipeline-builder`)
+- **Was:** no backend (`/api/v1/pipelines` unrouted); **Save** fell into
+  `catch { // mock save }` then toasted success (nothing persisted); **Run** was a
+  `setTimeout` + `Math.random()` client-side animation printing "Step completed
+  successfully." First made honest ("Soon" badge + preview banner + truthful
+  toasts) and the mock `ExecutionView`/`MOCK_OUTPUT_LINES` deleted.
+- **Now (built this session): a real persistence + execution engine.**
+  - **DB:** `pipelines` (definition JSONB) + `pipeline_runs` (status + per-step
+    results) tables (additive, in `db.rs`).
+  - **API:** `POST/GET/PUT/DELETE /api/v1/pipelines`, `POST /api/v1/pipelines/:id/run`,
+    `GET /api/v1/pipelines/:id/runs`, `GET /api/v1/pipeline-runs/:run_id`
+    (`handlers/pipeline_handlers.rs`).
+  - **Execution:** the run handler enforces the same bypass-proof **target
+    authorization gate** as a single scan, then a background runner executes each
+    step **sequentially as a real engine-delegated scan** — reusing the exact
+    helpers the individual-scan / network-sweep paths use (`sweep_form_defaults`
+    + `build_command_with_trusted` + `start_scan_on_engine` + `monitor_scan_engine`),
+    awaiting each step before the next. Every step is a real `scans` row with live
+    output and appears in scan history. No simulation anywhere.
+  - **Frontend:** real Save (create/update), real Run (target + authorization
+    confirmation, mirroring the scan flow) and a live run view that polls the run
+    and links each step to its real scan. Sidebar "Soon" badge and the preview
+    banner removed.
+  - Verified end-to-end (see session notes): a pipeline runs its steps as real
+    scans against a sandbox target and the run reaches `completed`.
 
 ---
 

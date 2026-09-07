@@ -328,11 +328,6 @@ export function Sidebar({ isOpen = false, onClose, isCollapsed = false, onToggle
                   Live
                 </span>
               )}
-              {!isCollapsed && item.nameKey === 'nav.pipelineBuilder' && (
-                <span className="ml-auto px-2 py-0.5 text-xs bg-gray-700 text-gray-300 rounded-full">
-                  {t('nav.soon', 'Soon')}
-                </span>
-              )}
             </NavLink>
           );
         })}

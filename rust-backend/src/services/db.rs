@@ -816,5 +816,35 @@ ON CONFLICT DO NOTHING"#,
 
 // CCPA 100k+ household threshold: US residents with $25M+ revenue etc. require
 // annual audits and risk assessments. Kept as an informational control set.
+
+// ── Scan pipelines (multi-step, ordered scans) ───────────────────────
+// A pipeline is a saved, ordered set of steps ({tool, params}); running one
+// executes each step as a real scan (delegated to the scan engine) in order.
+r#"CREATE TABLE IF NOT EXISTS pipelines (
+    id TEXT PRIMARY KEY,
+    organization_id TEXT NOT NULL REFERENCES organizations(id),
+    user_id TEXT NOT NULL REFERENCES users(id),
+    name TEXT NOT NULL,
+    description TEXT,
+    definition JSONB NOT NULL,
+    created_at TIMESTAMP DEFAULT NOW(),
+    updated_at TIMESTAMP DEFAULT NOW()
+)"#,
+"CREATE INDEX IF NOT EXISTS idx_pipelines_org ON pipelines(organization_id)",
+
+r#"CREATE TABLE IF NOT EXISTS pipeline_runs (
+    id TEXT PRIMARY KEY,
+    pipeline_id TEXT NOT NULL REFERENCES pipelines(id) ON DELETE CASCADE,
+    organization_id TEXT NOT NULL REFERENCES organizations(id),
+    user_id TEXT NOT NULL REFERENCES users(id),
+    target TEXT NOT NULL,
+    status TEXT DEFAULT 'running',
+    step_results JSONB DEFAULT '[]'::jsonb,
+    error TEXT,
+    started_at TIMESTAMP DEFAULT NOW(),
+    finished_at TIMESTAMP
+)"#,
+"CREATE INDEX IF NOT EXISTS idx_pipeline_runs_org ON pipeline_runs(organization_id)",
+"CREATE INDEX IF NOT EXISTS idx_pipeline_runs_pipeline ON pipeline_runs(pipeline_id)",
 ];
 

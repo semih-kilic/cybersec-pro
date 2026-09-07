@@ -1,4 +1,31 @@
 import React, { useState, useReducer, useCallback, useEffect } from "react";
+import { Link } from "react-router-dom";
+
+// Authenticated fetch against the platform API (mirrors the token pattern used
+// across the dashboard: bearer token from localStorage).
+async function apiFetch(path: string, init?: RequestInit): Promise<Response> {
+  const jwt = localStorage.getItem("token") || "";
+  const headers: Record<string, string> = {
+    "Content-Type": "application/json",
+    ...(init?.headers as Record<string, string> | undefined),
+  };
+  if (jwt) headers["Authorization"] = "Bearer " + jwt;
+  return fetch(path, { ...init, headers });
+}
+
+interface PipelineRunStep {
+  index: number;
+  tool: string;
+  scan_id?: string;
+  status: string;
+  error?: string;
+}
+interface PipelineRun {
+  id: string;
+  target: string;
+  status: string;
+  steps: PipelineRunStep[];
+}
 
 // ─── Types ──────────────────────────────────────────────────────────────────
 
@@ -155,11 +182,24 @@ const t = (key: string): string => {
     "pipeline.back_to_edit": "Back to Editor",
     "pipeline.schedule_cron": "Cron Expression",
     "pipeline.schedule_desc": "Set a cron schedule for this pipeline",
-    "pipeline.previewBanner":
-      "Preview: you can design a pipeline here, but saving and running are not available yet. Use Scans or Workflows to run tools today.",
-    "pipeline.saveComingSoon": "Preview — saving pipelines is coming soon.",
-    "pipeline.runComingSoon":
-      "Preview — running pipelines is coming soon. Use Scans or Workflows to run tools now.",
+    "pipeline.saving": "Saving…",
+    "pipeline.running": "Running…",
+    "pipeline.needs_name": "Give the pipeline a name first.",
+    "pipeline.needs_step": "Add at least one tool step first.",
+    "pipeline.save_failed": "Could not save pipeline.",
+    "pipeline.run_modal_title": "Run Pipeline",
+    "pipeline.run_target": "Target (host, URL, or IP)",
+    "pipeline.run_target_placeholder": "scanme.nmap.org, example.com, or 10.0.0.5",
+    "pipeline.run_intro": "Each step runs in order against this target as a real scan.",
+    "pipeline.run_needs_target": "Enter a target to run against.",
+    "pipeline.run_needs_authz": "Confirm you are authorized to test this target.",
+    "pipeline.run_start": "Start Run",
+    "pipeline.run_failed": "Could not start pipeline run.",
+    "pipeline.run_title": "Pipeline Run",
+    "pipeline.run_target_label": "Target",
+    "pipeline.view_scan": "View scan →",
+    "pipeline.close_run": "Close",
+    "pipeline.step_waiting": "Waiting",
   };
   return dict[key] ?? key;
 };
@@ -609,6 +649,15 @@ export default function PipelineBuilderPage() {
   const [searchQuery, setSearchQuery] = useState("");
   const [showSchedule, setShowSchedule] = useState(false);
   const [showToast, setShowToast] = useState<string | null>(null);
+  const [pipelineId, setPipelineId] = useState<string | null>(null);
+  const [saving, setSaving] = useState(false);
+  const [starting, setStarting] = useState(false);
+  const [showRunModal, setShowRunModal] = useState(false);
+  const [runTarget, setRunTarget] = useState("");
+  const [authzStatement, setAuthzStatement] = useState("");
+  const [authzConfirmed, setAuthzConfirmed] = useState(false);
+  const [runId, setRunId] = useState<string | null>(null);
+  const [runData, setRunData] = useState<PipelineRun | null>(null);
 
   const toast = useCallback((msg: string) => {
     setShowToast(msg);
@@ -631,20 +680,107 @@ export default function PipelineBuilderPage() {
     [selectedStepId, pipeline.steps]
   );
 
-  // Pipeline persistence is not implemented yet — there is no /api/v1/pipelines
-  // endpoint. Do NOT fake a successful save (the old code swallowed the failure
-  // and showed "saved" anyway). Tell the truth instead. See the "Preview" banner.
-  const handleSave = useCallback(() => {
-    toast(t("pipeline.saveComingSoon"));
-  }, [toast]);
+  // Persist the pipeline (create or update). Returns the pipeline id on success.
+  const savePipeline = useCallback(async (): Promise<string | null> => {
+    if (!pipeline.name.trim()) { toast(t("pipeline.needs_name")); return null; }
+    if (pipeline.steps.length === 0) { toast(t("pipeline.needs_step")); return null; }
+    const definition = { steps: pipeline.steps.map((s) => ({ tool: s.tool, params: s.params })) };
+    const bodyStr = JSON.stringify({ name: pipeline.name, definition });
+    setSaving(true);
+    try {
+      const res = pipelineId
+        ? await apiFetch(`/api/v1/pipelines/${pipelineId}`, { method: "PUT", body: bodyStr })
+        : await apiFetch(`/api/v1/pipelines`, { method: "POST", body: bodyStr });
+      if (!res.ok) { toast(t("pipeline.save_failed")); return null; }
+      const data = await res.json().catch(() => ({}));
+      const id = pipelineId ?? data.id;
+      if (!pipelineId && data.id) setPipelineId(data.id);
+      return id ?? null;
+    } catch {
+      toast(t("pipeline.save_failed"));
+      return null;
+    } finally {
+      setSaving(false);
+    }
+  }, [pipeline, pipelineId, toast]);
 
-  // Execution used to be a pure client-side simulation (Math.random decided
-  // "completed"/"failed" and printed "Step completed successfully.") — there is
-  // no pipeline runner on the backend. Faking a run is dishonest, so instead we
-  // say so. Individual Scans and Workflows execute for real today.
+  const handleSave = useCallback(async () => {
+    const id = await savePipeline();
+    if (id) toast(t("pipeline.save_success"));
+  }, [savePipeline, toast]);
+
   const handleRun = useCallback(() => {
-    toast(t("pipeline.runComingSoon"));
-  }, [toast]);
+    if (pipeline.steps.length === 0) { toast(t("pipeline.needs_step")); return; }
+    setShowRunModal(true);
+  }, [pipeline.steps.length, toast]);
+
+  // Fetch the authorization statement for the run target. Sandbox targets
+  // (localhost, scanme.nmap.org, …) return none and need no confirmation.
+  useEffect(() => {
+    if (!showRunModal) return;
+    const tgt = runTarget.trim();
+    setAuthzConfirmed(false);
+    setAuthzStatement("");
+    if (!tgt) return;
+    let cancelled = false;
+    apiFetch("/api/v1/authorizations/preview", { method: "POST", body: JSON.stringify({ target: tgt }) })
+      .then((r) => r.json())
+      .then((d) => { if (!cancelled) setAuthzStatement(d.scope_statement || ""); })
+      .catch(() => {});
+    return () => { cancelled = true; };
+  }, [runTarget, showRunModal]);
+
+  const startRun = useCallback(async () => {
+    const tgt = runTarget.trim();
+    if (!tgt) { toast(t("pipeline.run_needs_target")); return; }
+    if (authzStatement && !authzConfirmed) { toast(t("pipeline.run_needs_authz")); return; }
+    setStarting(true);
+    try {
+      const id = await savePipeline();
+      if (!id) return;
+      const payload: Record<string, unknown> = { target: tgt };
+      if (authzStatement) payload.authorization = { confirmed: authzConfirmed, scope_statement: authzStatement };
+      const res = await apiFetch(`/api/v1/pipelines/${id}/run`, { method: "POST", body: JSON.stringify(payload) });
+      if (!res.ok) {
+        const d = await res.json().catch(() => ({}));
+        toast(d.error || t("pipeline.run_failed"));
+        return;
+      }
+      const data = await res.json();
+      setRunId(data.run_id);
+      setRunData(null);
+      setShowRunModal(false);
+      toast(t("pipeline.run_started"));
+    } catch {
+      toast(t("pipeline.run_failed"));
+    } finally {
+      setStarting(false);
+    }
+  }, [runTarget, authzStatement, authzConfirmed, savePipeline, toast]);
+
+  // Poll the run record until it reaches a terminal state.
+  useEffect(() => {
+    if (!runId) return;
+    let cancelled = false;
+    let timer: ReturnType<typeof setTimeout>;
+    const poll = async () => {
+      try {
+        const res = await apiFetch(`/api/v1/pipeline-runs/${runId}`);
+        if (res.ok) {
+          const d = await res.json();
+          if (cancelled) return;
+          setRunData(d);
+          if (d.status === "running") timer = setTimeout(poll, 2000);
+        } else if (!cancelled) {
+          timer = setTimeout(poll, 3000);
+        }
+      } catch {
+        if (!cancelled) timer = setTimeout(poll, 3000);
+      }
+    };
+    poll();
+    return () => { cancelled = true; clearTimeout(timer); };
+  }, [runId]);
 
   const handleInsertAfter = useCallback(
     (afterIndex: number) => {
@@ -678,12 +814,6 @@ export default function PipelineBuilderPage() {
           </span>
         </div>
       </header>
-
-      {/* Preview notice — the pipeline builder is a design preview; there is no
-          backend to persist or execute pipelines yet. */}
-      <div className="border-b border-amber-500/30 bg-amber-500/10 px-6 py-2.5 text-sm text-amber-300">
-        {t("pipeline.previewBanner")}
-      </div>
 
       {/* Main Content */}
       <div className="flex flex-1 overflow-hidden">
@@ -800,24 +930,24 @@ export default function PipelineBuilderPage() {
 
             <button
               onClick={handleSave}
-              disabled={pipeline.steps.length === 0}
+              disabled={pipeline.steps.length === 0 || saving}
               className="inline-flex items-center gap-2 rounded-lg bg-cyan-600 px-5 py-2.5 text-sm font-semibold text-white shadow-lg shadow-cyan-600/25 transition hover:bg-cyan-500 disabled:cursor-not-allowed disabled:opacity-40"
             >
               <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4" />
               </svg>
-              {t("pipeline.save")}
+              {saving ? t("pipeline.saving") : t("pipeline.save")}
             </button>
 
             <button
               onClick={handleRun}
-              disabled={pipeline.steps.length === 0 || pipeline.status === "running"}
+              disabled={pipeline.steps.length === 0 || starting}
               className="inline-flex items-center gap-2 rounded-lg bg-emerald-600 px-5 py-2.5 text-sm font-semibold text-white shadow-lg shadow-emerald-600/25 transition hover:bg-emerald-500 disabled:cursor-not-allowed disabled:opacity-40"
             >
               <svg className="h-4 w-4" fill="currentColor" viewBox="0 0 24 24">
                 <path d="M8 5v14l11-7z" />
               </svg>
-              {t("pipeline.run")}
+              {starting ? t("pipeline.running") : t("pipeline.run")}
             </button>
           </div>
         </div>
@@ -825,6 +955,100 @@ export default function PipelineBuilderPage() {
 
       {/* Schedule Modal */}
       {showSchedule && <ScheduleModal onClose={() => setShowSchedule(false)} />}
+
+      {/* Run Modal — collect target + authorization, then start a real run */}
+      {showRunModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4" onClick={() => !starting && setShowRunModal(false)}>
+          <div className="w-full max-w-lg rounded-2xl border border-gray-800 bg-gray-900 p-6 shadow-2xl" onClick={(e) => e.stopPropagation()}>
+            <h3 className="text-lg font-bold text-white">{t("pipeline.run_modal_title")}</h3>
+            <p className="mt-1 text-sm text-gray-500">{t("pipeline.run_intro")}</p>
+            <label className="mt-4 block text-sm font-medium text-gray-300">{t("pipeline.run_target")}</label>
+            <input
+              type="text"
+              autoFocus
+              value={runTarget}
+              onChange={(e) => setRunTarget(e.target.value)}
+              placeholder={t("pipeline.run_target_placeholder")}
+              className="mt-1 w-full rounded-lg border border-gray-700 bg-gray-800 px-4 py-2.5 text-sm text-white placeholder-gray-500 focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500"
+            />
+            {authzStatement && (
+              <label className="mt-4 flex cursor-pointer items-start gap-2 rounded-lg border border-amber-500/30 bg-amber-500/10 p-3 text-xs text-amber-200">
+                <input type="checkbox" checked={authzConfirmed} onChange={(e) => setAuthzConfirmed(e.target.checked)} className="mt-0.5" />
+                <span>{authzStatement}</span>
+              </label>
+            )}
+            <div className="mt-6 flex justify-end gap-3">
+              <button onClick={() => setShowRunModal(false)} disabled={starting} className="rounded-lg border border-gray-700 bg-gray-800 px-4 py-2 text-sm font-medium text-gray-300 hover:bg-gray-700 disabled:opacity-40">
+                {t("pipeline.cancel")}
+              </button>
+              <button onClick={startRun} disabled={starting || !runTarget.trim() || (!!authzStatement && !authzConfirmed)} className="rounded-lg bg-emerald-600 px-5 py-2 text-sm font-semibold text-white hover:bg-emerald-500 disabled:cursor-not-allowed disabled:opacity-40">
+                {starting ? t("pipeline.running") : t("pipeline.run_start")}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Live Run view — polls the run and shows each step's real scan status */}
+      {runId && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4" onClick={() => setRunId(null)}>
+          <div className="flex max-h-[80vh] w-full max-w-2xl flex-col overflow-hidden rounded-2xl border border-gray-800 bg-gray-900 shadow-2xl" onClick={(e) => e.stopPropagation()}>
+            <div className="flex items-center justify-between border-b border-gray-800 px-6 py-4">
+              <div>
+                <h3 className="text-lg font-bold text-white">{t("pipeline.run_title")}</h3>
+                {runData && (
+                  <p className="mt-0.5 text-xs text-gray-500">
+                    {t("pipeline.run_target_label")}: <span className="font-mono text-gray-300">{runData.target}</span>
+                  </p>
+                )}
+              </div>
+              <span className={`rounded-full px-3 py-1 text-xs font-semibold ${
+                runData?.status === "completed" ? "bg-emerald-500/20 text-emerald-300"
+                : runData?.status === "failed" ? "bg-red-500/20 text-red-300"
+                : "bg-cyan-500/20 text-cyan-300"
+              }`}>
+                {runData?.status ?? "running"}
+              </span>
+            </div>
+            <div className="flex-1 overflow-y-auto p-6">
+              <ol className="space-y-3">
+                {pipeline.steps.map((s, idx) => {
+                  const td = TOOL_DEFINITIONS.find((x) => x.id === s.tool);
+                  const rstep = runData?.steps?.find((r) => r.index === idx);
+                  const status = rstep?.status ?? (runData ? "running" : "pending");
+                  return (
+                    <li key={s.id} className="flex items-center gap-3 rounded-lg border border-gray-800 bg-gray-950/50 p-3">
+                      <span className="text-base">{td?.icon ?? "🔧"}</span>
+                      <div className="min-w-0 flex-1">
+                        <p className="truncate text-sm font-medium text-white">{td?.name ?? s.tool}</p>
+                        {rstep?.scan_id && (
+                          <Link to={`/dashboard/scans/${rstep.scan_id}`} className="text-xs text-cyan-400 hover:underline">
+                            {t("pipeline.view_scan")}
+                          </Link>
+                        )}
+                        {rstep?.error && <p className="text-xs text-red-400">{rstep.error}</p>}
+                      </div>
+                      <span className={`shrink-0 rounded-full px-2.5 py-1 text-xs font-semibold ${
+                        status === "completed" ? "bg-emerald-500/20 text-emerald-300"
+                        : status === "failed" ? "bg-red-500/20 text-red-300"
+                        : status === "running" ? "bg-cyan-500/20 text-cyan-300"
+                        : "bg-gray-700 text-gray-400"
+                      }`}>
+                        {status === "pending" ? t("pipeline.step_waiting") : status}
+                      </span>
+                    </li>
+                  );
+                })}
+              </ol>
+            </div>
+            <div className="border-t border-gray-800 px-6 py-3 text-right">
+              <button onClick={() => setRunId(null)} className="rounded-lg border border-gray-700 bg-gray-800 px-4 py-2 text-sm font-medium text-gray-300 hover:bg-gray-700">
+                {t("pipeline.close_run")}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

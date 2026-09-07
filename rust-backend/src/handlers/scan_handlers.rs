@@ -31,9 +31,9 @@ pub struct ScanQuery {
 const SCAN_ENGINE_METADATA_KEY: &str = "_scan_engine";
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-struct ScanEngineMetadata {
-    url: String,
-    remote_scan_id: String,
+pub(crate) struct ScanEngineMetadata {
+    pub(crate) url: String,
+    pub(crate) remote_scan_id: String,
 }
 
 #[derive(Debug, Serialize)]
@@ -46,8 +46,8 @@ struct ScanEngineStartRequest {
 }
 
 #[derive(Debug, Deserialize)]
-struct ScanEngineStartResponse {
-    scan_id: String,
+pub(crate) struct ScanEngineStartResponse {
+    pub(crate) scan_id: String,
 }
 
 #[derive(Debug, Deserialize)]
@@ -97,7 +97,7 @@ async fn grpc_client() -> anyhow::Result<crate::grpc_client::ScanEngineGrpcClien
         .map_err(|e| anyhow::anyhow!("gRPC connect failed: {}", e))
 }
 
-fn configured_scan_engine_url() -> Option<String> {
+pub(crate) fn configured_scan_engine_url() -> Option<String> {
     std::env::var("SCAN_ENGINE_URL")
         .ok()
         .map(|value| value.trim().trim_end_matches('/').to_string())
@@ -114,7 +114,7 @@ fn configured_scan_engine_url() -> Option<String> {
 /// key name matches the credential pattern (`pass|passwd|pwd|secret|token|
 /// api[_-]?key|credential`). Redacted values become the string "***redacted***"
 /// so the parameter set still round-trips for display and diffing.
-fn redact_secret_params(params: &JsonValue, tool_form: Option<&JsonValue>) -> JsonValue {
+pub(crate) fn redact_secret_params(params: &JsonValue, tool_form: Option<&JsonValue>) -> JsonValue {
     let secret_names: std::collections::HashSet<String> = tool_form
         .and_then(|f| f.as_array())
         .map(|form| {
@@ -148,7 +148,7 @@ fn redact_secret_params(params: &JsonValue, tool_form: Option<&JsonValue>) -> Js
     }
 }
 
-fn merge_scan_parameters(base: &JsonValue, metadata: &ScanEngineMetadata) -> JsonValue {
+pub(crate) fn merge_scan_parameters(base: &JsonValue, metadata: &ScanEngineMetadata) -> JsonValue {
     let mut merged = match base {
         JsonValue::Object(map) => JsonValue::Object(map.clone()),
         JsonValue::Null => JsonValue::Object(serde_json::Map::new()),
@@ -180,7 +180,7 @@ fn normalize_scan_engine_status(status: &str) -> &str {
     }
 }
 
-async fn start_scan_on_engine(
+pub(crate) async fn start_scan_on_engine(
     client: &reqwest::Client,
     engine_url: &str,
     tool: &str,
@@ -514,7 +514,7 @@ async fn finalize_scan(
     }
 }
 
-async fn monitor_scan_engine(
+pub(crate) async fn monitor_scan_engine(
     db: sqlx::PgPool,
     scan_tx: tokio::sync::broadcast::Sender<String>,
     backend_scan_id: String,
@@ -2226,7 +2226,7 @@ pub struct NetworkSweepRequest {
 /// abort. Defaults come from our own seeded form definitions, so they are
 /// trusted (a value like `-p1-1000` or `--rate 1000` may contain flags and
 /// split into multiple argv entries).
-fn sweep_form_defaults(
+pub(crate) fn sweep_form_defaults(
     tool: &crate::models::Tool,
 ) -> (
     std::collections::BTreeMap<String, String>,
