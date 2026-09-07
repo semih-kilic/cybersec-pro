@@ -1175,45 +1175,87 @@ pub async fn test_sso_connection(
         None => return (StatusCode::FORBIDDEN, Json(json!({"error": "Organization required"}))).into_response(),
     };
 
-    let config: Option<(String, Option<String>, Option<i32>, Option<String>, Option<String>)> = sqlx::query_as(
-        "SELECT provider_type, ldap_host, ldap_port, ldap_bind_dn, ldap_bind_password FROM sso_configs WHERE organization_id = $1"
+    let config: Option<(String, Option<String>, Option<i32>, Option<String>, Option<String>, Option<String>, Option<String>, Option<String>, Option<String>)> = sqlx::query_as(
+        "SELECT provider_type, ldap_host, ldap_port, ldap_bind_dn, ldap_bind_password, \
+         saml_entity_id, saml_sso_url, saml_certificate, oidc_issuer_url \
+         FROM sso_configs WHERE organization_id = $1"
     )
     .bind(org_id)
     .fetch_optional(&state.db)
     .await
     .unwrap_or(None);
 
-    let (provider_type, host, port, bind_dn, bind_pw) = match config {
+    let (provider_type, host, port, bind_dn, bind_pw, saml_entity, saml_sso, saml_cert, oidc_issuer) = match config {
         Some(c) => c,
         None => return Json(json!({"status": "error", "message": "No SSO config found"})).into_response(),
     };
 
-    if provider_type == "ldap" {
-        let host = host.unwrap_or_default();
-        let port = port.unwrap_or(389);
-        let bind_dn = bind_dn.unwrap_or_default();
-        let bind_pw = decrypt_sso_secret(bind_pw.as_deref()).unwrap_or_default();
+    match provider_type.as_str() {
+        "ldap" => {
+            let host = host.unwrap_or_default();
+            let port = port.unwrap_or(389);
+            let bind_dn = bind_dn.unwrap_or_default();
+            let bind_pw = decrypt_sso_secret(bind_pw.as_deref()).unwrap_or_default();
 
-        let ldap_url = build_ldap_url(&host, port);
+            let ldap_url = build_ldap_url(&host, port);
 
-        let result = tokio::task::spawn_blocking(move || -> Result<String, String> {
-            use ldap3::LdapConn;
-            let mut ldap = LdapConn::new(&ldap_url)
-                .map_err(|e| format!("Connection failed: {}", e))?;
-            ldap.simple_bind(&bind_dn, &bind_pw)
-                .map_err(|e| format!("Bind failed: {}", e))?
-                .success()
-                .map_err(|e| format!("Bind error: {:?}", e))?;
-            let _ = ldap.unbind();
-            Ok("LDAP connection successful".to_string())
-        }).await.unwrap_or(Err("Task failed".to_string()));
+            let result = tokio::task::spawn_blocking(move || -> Result<String, String> {
+                use ldap3::LdapConn;
+                let mut ldap = LdapConn::new(&ldap_url)
+                    .map_err(|e| format!("Connection failed: {}", e))?;
+                ldap.simple_bind(&bind_dn, &bind_pw)
+                    .map_err(|e| format!("Bind failed: {}", e))?
+                    .success()
+                    .map_err(|e| format!("Bind error: {:?}", e))?;
+                let _ = ldap.unbind();
+                Ok("LDAP connection successful".to_string())
+            }).await.unwrap_or(Err("Task failed".to_string()));
 
-        match result {
-            Ok(msg) => Json(json!({"status": "success", "message": msg})).into_response(),
-            Err(e) => Json(json!({"status": "error", "message": e})).into_response(),
+            match result {
+                Ok(msg) => Json(json!({"status": "success", "message": msg})).into_response(),
+                Err(e) => Json(json!({"status": "error", "message": e})).into_response(),
+            }
         }
-    } else {
-        Json(json!({"status": "info", "message": format!("{} — connection test requires manual verification via browser SSO flow", provider_type)})).into_response()
+        "saml" => {
+            // Validate the SAML config the same way a real login builds it: the SP
+            // must construct, which requires a parseable IdP signing certificate and
+            // the entity ID + SSO URL. This catches misconfiguration up-front.
+            match build_saml_sp(
+                &saml_entity.unwrap_or_default(),
+                &saml_sso.unwrap_or_default(),
+                &saml_cert.unwrap_or_default(),
+            ) {
+                Ok(_) => Json(json!({
+                    "status": "success",
+                    "message": "SAML configuration is valid — SP builds and the IdP signing certificate parsed. Complete a browser SSO login to verify the IdP end-to-end."
+                })).into_response(),
+                Err(e) => Json(json!({"status": "error", "message": format!("SAML configuration error: {}", e)})).into_response(),
+            }
+        }
+        "oidc" => {
+            let issuer = oidc_issuer.unwrap_or_default();
+            if issuer.trim().is_empty() {
+                return Json(json!({"status": "error", "message": "OIDC issuer URL is not configured"})).into_response();
+            }
+            let url = format!("{}/.well-known/openid-configuration", issuer.trim_end_matches('/'));
+            let client = reqwest::Client::builder()
+                .timeout(std::time::Duration::from_secs(10))
+                .build()
+                .unwrap_or_default();
+            match client.get(&url).send().await {
+                Ok(r) if r.status().is_success() => {
+                    let body: serde_json::Value = r.json().await.unwrap_or_default();
+                    if body.get("authorization_endpoint").is_some() && body.get("token_endpoint").is_some() {
+                        Json(json!({"status": "success", "message": "OIDC provider reachable — discovery document is valid."})).into_response()
+                    } else {
+                        Json(json!({"status": "error", "message": "OIDC discovery document is missing authorization/token endpoints."})).into_response()
+                    }
+                }
+                Ok(r) => Json(json!({"status": "error", "message": format!("OIDC discovery returned HTTP {}", r.status().as_u16())})).into_response(),
+                Err(e) => Json(json!({"status": "error", "message": format!("Could not reach OIDC discovery endpoint: {}", e)})).into_response(),
+            }
+        }
+        other => Json(json!({"status": "info", "message": format!("Unknown SSO provider '{}'.", other)})).into_response(),
     }
 }
 
