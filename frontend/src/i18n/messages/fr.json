@@ -142,7 +142,7 @@
           "Gestionnaire de compte dédié",
           "Tous les cadres de conformité (NIST, OWASP, GDPR, PCI DSS, HIPAA, SOC 2)",
           "Rapports marque blanche avec logo",
-          "SSO / OIDC / LDAP",
+          "SSO / SAML 2.0 / OIDC / LDAP",
           "Utilisateurs & collaboration d'équipe illimités",
           "API avancée (webhooks, intégrations)",
           "SLA personnalisé sur demande",

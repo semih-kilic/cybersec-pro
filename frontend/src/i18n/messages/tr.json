@@ -144,7 +144,7 @@
           "Özel hesap yöneticisi",
           "Tüm uyumluluk çerçeveleri (NIST, OWASP, GDPR, PCI DSS, HIPAA, SOC 2)",
           "Şirket logolu beyaz etiket raporlar",
-          "SSO / OIDC / LDAP",
+          "SSO / SAML 2.0 / OIDC / LDAP",
           "Sınırsız kullanıcı & ekip işbirliği",
           "Gelişmiş API (webhooks, entegrasyonlar)",
           "Talep üzerine özel SLA",
@@ -485,7 +485,7 @@
           },
           {
             "title": "MFA, SSO & Zero Trust",
-            "description": "TOTP/WebAuthn ile çok faktörlü kimlik doğrulama. OAuth 2.0 / OpenID Connect (OIDC) SSO + LDAP / Active Directory. RBAC + ABAC."
+            "description": "TOTP/WebAuthn ile çok faktörlü kimlik doğrulama. SAML 2.0 / OpenID Connect (OIDC) SSO + LDAP / Active Directory. RBAC + ABAC."
           },
           {
             "title": "Sürekli Yama Yönetimi",

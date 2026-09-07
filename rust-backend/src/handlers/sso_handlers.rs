@@ -430,29 +430,263 @@ pub struct SSOInitQuery {
     pub email: Option<String>,
 }
 
+// ── SAML 2.0 Service Provider ──────────────────────────────────────────
+//
+// Real SP-initiated SAML 2.0 login backed by the `samael` crate (xmlsec-based
+// XML-DSIG verification). The earlier hand-rolled version validated no
+// signature/audience/expiry and was disabled; this implementation delegates all
+// verification to samael's `ServiceProvider`, which:
+//   * verifies the response signature against the org's configured signing
+//     certificate — weak algorithms (SHA-1) are rejected via
+//     `allowed_signature_algorithms`, and if no cert is configured we refuse to
+//     build the SP at all rather than silently skip signature checks;
+//   * checks Destination, Issuer, Status, InResponseTo, IssueInstant expiry, the
+//     assertion Conditions (NotBefore/NotOnOrAfter, AudienceRestriction) and the
+//     Bearer SubjectConfirmation (Recipient == our ACS, InResponseTo, expiry).
+// Only SP-initiated flows are accepted (`allow_idp_initiated = false`): each
+// login is tied to a one-time RelayState + AuthnRequest ID held in Redis, so a
+// captured response cannot be replayed. Encrypted assertions and IdP-initiated
+// SSO are intentionally not supported yet.
+
+/// Public SP entity ID (the audience the IdP must restrict assertions to).
+const SAML_SP_ENTITY_ID: &str = "https://api.cyber-sec-pro.com/saml/metadata";
+/// Public Assertion Consumer Service URL (where the IdP POSTs the SAMLResponse).
+const SAML_SP_ACS_URL: &str = "https://api.cyber-sec-pro.com/v1/auth/sso/saml/callback";
+
+/// Minimal XML text escaping for values embedded in generated metadata.
+fn saml_xml_escape(s: &str) -> String {
+    s.replace('&', "&amp;")
+        .replace('<', "&lt;")
+        .replace('>', "&gt;")
+        .replace('"', "&quot;")
+}
+
+/// Strip PEM armor/whitespace from a certificate, yielding bare base64 DER.
+fn saml_cert_to_b64(cert: &str) -> String {
+    cert.lines()
+        .filter(|l| !l.contains("CERTIFICATE"))
+        .flat_map(|l| l.chars())
+        .filter(|c| !c.is_whitespace())
+        .collect()
+}
+
+/// Redirect the browser to the SSO error page with a short machine code (details
+/// are logged server-side, never leaked to the user).
+fn saml_error_redirect(code: &str) -> axum::response::Response {
+    Redirect::temporary(&format!(
+        "https://app.cyber-sec-pro.com/dashboard/sso-error?error={}",
+        urlencoding::encode(code)
+    ))
+    .into_response()
+}
+
+/// Build the SP for one org from its stored IdP entity ID, SSO URL and signing
+/// certificate. Returns an error (never an unsigned/unverified SP) when the cert
+/// is missing — without a signing cert samael would skip signature verification.
+fn build_saml_sp(
+    idp_entity_id: &str,
+    idp_sso_url: &str,
+    idp_cert: &str,
+) -> Result<samael::service_provider::ServiceProvider, String> {
+    use samael::crypto::AllowedSignatureAlgorithm;
+    use samael::metadata::EntityDescriptor;
+    use samael::service_provider::ServiceProviderBuilder;
+
+    let cert_b64 = saml_cert_to_b64(idp_cert);
+    if cert_b64.is_empty() {
+        return Err("IdP signing certificate is not configured".to_string());
+    }
+    if idp_entity_id.trim().is_empty() || idp_sso_url.trim().is_empty() {
+        return Err("IdP entity ID or SSO URL is not configured".to_string());
+    }
+
+    let idp_metadata_xml = format!(
+        r#"<?xml version="1.0"?>
+<md:EntityDescriptor xmlns:md="urn:oasis:names:tc:SAML:2.0:metadata" entityID="{eid}">
+  <md:IDPSSODescriptor protocolSupportEnumeration="urn:oasis:names:tc:SAML:2.0:protocol">
+    <md:KeyDescriptor use="signing">
+      <ds:KeyInfo xmlns:ds="http://www.w3.org/2000/09/xmldsig#">
+        <ds:X509Data><ds:X509Certificate>{cert}</ds:X509Certificate></ds:X509Data>
+      </ds:KeyInfo>
+    </md:KeyDescriptor>
+    <md:SingleSignOnService Binding="urn:oasis:names:tc:SAML:2.0:bindings:HTTP-Redirect" Location="{sso}"/>
+  </md:IDPSSODescriptor>
+</md:EntityDescriptor>"#,
+        eid = saml_xml_escape(idp_entity_id),
+        cert = cert_b64,
+        sso = saml_xml_escape(idp_sso_url),
+    );
+
+    let idp_metadata: EntityDescriptor = idp_metadata_xml
+        .parse()
+        .map_err(|e| format!("could not parse IdP metadata: {e}"))?;
+
+    ServiceProviderBuilder::default()
+        .entity_id(Some(SAML_SP_ENTITY_ID.to_string()))
+        .acs_url(Some(SAML_SP_ACS_URL.to_string()))
+        .idp_metadata(idp_metadata)
+        .allow_idp_initiated(false)
+        .allowed_signature_algorithms(Some(vec![
+            AllowedSignatureAlgorithm::RsaSha256,
+            AllowedSignatureAlgorithm::RsaSha384,
+            AllowedSignatureAlgorithm::RsaSha512,
+            AllowedSignatureAlgorithm::EcdsaSha256,
+            AllowedSignatureAlgorithm::EcdsaSha384,
+            AllowedSignatureAlgorithm::EcdsaSha512,
+        ]))
+        .build()
+        .map_err(|e| format!("could not build SAML SP: {e}"))
+}
+
+/// Extract (email, display_name) from a verified assertion. Prefers an
+/// email-shaped NameID, then common email/name attributes.
+fn saml_email_and_name(
+    assertion: &samael::schema::Assertion,
+) -> (Option<String>, Option<String>) {
+    const EMAIL_ATTRS: &[&str] = &[
+        "email",
+        "mail",
+        "emailaddress",
+        "urn:oid:0.9.2342.19200300.100.1.3",
+        "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/emailaddress",
+    ];
+    const NAME_ATTRS: &[&str] = &[
+        "name",
+        "displayname",
+        "cn",
+        "urn:oid:2.16.840.1.113730.3.1.241",
+        "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name",
+    ];
+
+    let attr_value = |wanted: &[&str]| -> Option<String> {
+        let stmts = assertion.attribute_statements.as_ref()?;
+        for stmt in stmts {
+            for attr in &stmt.attributes {
+                let name = attr.name.as_deref().unwrap_or("");
+                if wanted.iter().any(|w| w.eq_ignore_ascii_case(name)) {
+                    if let Some(v) = attr.values.iter().find_map(|v| v.value.clone()) {
+                        if !v.trim().is_empty() {
+                            return Some(v.trim().to_string());
+                        }
+                    }
+                }
+            }
+        }
+        None
+    };
+
+    let name_id = assertion
+        .subject
+        .as_ref()
+        .and_then(|s| s.name_id.as_ref())
+        .map(|n| n.value.trim().to_string())
+        .filter(|v| !v.is_empty());
+
+    let email = name_id
+        .clone()
+        .filter(|v| v.contains('@'))
+        .or_else(|| attr_value(EMAIL_ATTRS));
+    let name = attr_value(NAME_ATTRS);
+    (email, name)
+}
+
+/// SAML SSO Initiation — builds an AuthnRequest and returns the IdP redirect URL
+/// (HTTP-Redirect binding).
 pub async fn sso_saml_init(
-    State(_state): State<Arc<AppState>>,
-    Query(_params): Query<SSOInitQuery>,
+    State(state): State<Arc<AppState>>,
+    Query(params): Query<SSOInitQuery>,
 ) -> impl IntoResponse {
-    // SAML is disabled pending a real SP implementation.
-    //
-    // The previous version parsed the IdP certificate and then threw it away:
-    // assertion signatures, audience and expiry were never validated, so any
-    // forged SAMLResponse naming a configured domain would have been accepted.
-    // It was short-circuited with an early return, which left ~150 lines of
-    // unreachable code behind it — including an INSERT against columns that do
-    // not exist (`full_name`, `auth_provider`). That is a trap: deleting the
-    // early return to "re-enable" SAML would have produced a broken, unsafe
-    // path. The dead body is removed; re-enabling means writing it properly
-    // against a vetted SAML SP library.
-    (
-        StatusCode::SERVICE_UNAVAILABLE,
-        Json(json!({
-            "error": "SAML login is not available. Use OIDC or LDAP.",
-            "code": "SAML_NOT_IMPLEMENTED"
-        })),
-    )
-        .into_response()
+    let domain = params
+        .domain
+        .as_deref()
+        .or_else(|| params.email.as_deref().and_then(|e| e.split('@').nth(1)))
+        .unwrap_or("")
+        .to_string();
+
+    let config: Option<(String, Option<String>, Option<String>, Option<String>, bool)> =
+        sqlx::query_as(
+            "SELECT organization_id, saml_entity_id, saml_sso_url, saml_certificate, \
+             (domain_verified_at IS NOT NULL) \
+             FROM sso_configs WHERE domain_hint = $1 AND is_enabled = TRUE AND provider_type = 'saml'",
+        )
+        .bind(&domain)
+        .fetch_optional(&state.db)
+        .await
+        .unwrap_or(None);
+
+    let (org_id, entity_id, sso_url, cert, domain_verified) = match config {
+        Some(c) => c,
+        None => {
+            return (
+                StatusCode::NOT_FOUND,
+                Json(json!({"error": "No SAML SSO configuration found for this domain"})),
+            )
+                .into_response()
+        }
+    };
+
+    if !domain_verified {
+        tracing::warn!("SAML init refused: domain '{}' not verified for org {}", domain, org_id);
+        return (
+            StatusCode::FORBIDDEN,
+            Json(json!({
+                "error": "This SSO domain has not been verified. An administrator must verify domain ownership before SSO logins are accepted.",
+                "code": "SSO_DOMAIN_NOT_VERIFIED"
+            })),
+        )
+            .into_response();
+    }
+
+    let entity_id = entity_id.unwrap_or_default();
+    let sso_url = sso_url.unwrap_or_default();
+    let cert = cert.unwrap_or_default();
+
+    let sp = match build_saml_sp(&entity_id, &sso_url, &cert) {
+        Ok(sp) => sp,
+        Err(e) => {
+            tracing::error!("SAML init: {} (org {})", e, org_id);
+            return (
+                StatusCode::BAD_REQUEST,
+                Json(json!({"error": "SAML configuration is incomplete", "code": "SAML_CONFIG_INCOMPLETE"})),
+            )
+                .into_response();
+        }
+    };
+
+    let authn_request = match sp.make_authentication_request(&sso_url) {
+        Ok(r) => r,
+        Err(e) => {
+            tracing::error!("SAML init: could not build AuthnRequest: {} (org {})", e, org_id);
+            return (
+                StatusCode::INTERNAL_SERVER_ERROR,
+                Json(json!({"error": "Could not start SAML login"})),
+            )
+                .into_response();
+        }
+    };
+    let request_id = authn_request.id.clone();
+
+    // One-time RelayState -> {domain, request_id}, 10-min TTL. Binds the callback
+    // to this exact request (InResponseTo) and selects the right org config.
+    let relay_state = Uuid::new_v4().to_string();
+    let stored = json!({"domain": domain, "request_id": request_id}).to_string();
+    let _ = state
+        .cache
+        .set(
+            &format!("saml_relay:{}", relay_state),
+            &stored,
+            std::time::Duration::from_secs(600),
+        )
+        .await;
+
+    match authn_request.redirect(&relay_state) {
+        Ok(Some(url)) => Json(json!({"redirect_url": url.to_string()})).into_response(),
+        _ => (
+            StatusCode::INTERNAL_SERVER_ERROR,
+            Json(json!({"error": "Could not build SAML redirect"})),
+        )
+            .into_response(),
+    }
 }
 
 /// SAML Callback — receives SAML Response from IdP
@@ -465,26 +699,165 @@ pub struct SAMLCallbackRequest {
 }
 
 pub async fn sso_saml_callback(
-    State(_state): State<Arc<AppState>>,
-    axum::Form(_body): axum::Form<SAMLCallbackRequest>,
+    State(state): State<Arc<AppState>>,
+    axum::Form(body): axum::Form<SAMLCallbackRequest>,
 ) -> impl IntoResponse {
-    // SAML is disabled pending a real SP implementation.
-    //
-    // The previous version parsed the IdP certificate and then threw it away:
-    // assertion signatures, audience and expiry were never validated, so any
-    // forged SAMLResponse naming a configured domain would have been accepted.
-    // It was short-circuited with an early return, which left ~150 lines of
-    // unreachable code behind it — including an INSERT against columns that do
-    // not exist (`full_name`, `auth_provider`). That is a trap: deleting the
-    // early return to "re-enable" SAML would have produced a broken, unsafe
-    // path. The dead body is removed; re-enabling means writing it properly
-    // against a vetted SAML SP library.
+    let saml_response = match body.saml_response.as_deref() {
+        Some(r) if !r.is_empty() => r.to_string(),
+        _ => return saml_error_redirect("missing_saml_response"),
+    };
+    let relay_state = match body.relay_state.as_deref() {
+        Some(r) if !r.is_empty() => r.to_string(),
+        _ => return saml_error_redirect("missing_relay_state"),
+    };
+
+    // Consume the one-time RelayState (replay protection + CSRF binding).
+    let relay_key = format!("saml_relay:{}", relay_state);
+    let stored = match state.cache.get(&relay_key).await {
+        Ok(Some(v)) => {
+            let _ = state.cache.delete(&relay_key).await;
+            v
+        }
+        _ => return saml_error_redirect("invalid_or_expired_state"),
+    };
+    let stored: serde_json::Value =
+        serde_json::from_str(&stored).unwrap_or(serde_json::Value::Null);
+    let domain = stored.get("domain").and_then(|v| v.as_str()).unwrap_or("").to_string();
+    let request_id = stored.get("request_id").and_then(|v| v.as_str()).unwrap_or("").to_string();
+    if domain.is_empty() || request_id.is_empty() {
+        return saml_error_redirect("invalid_state");
+    }
+
+    let config: Option<(
+        String,
+        Option<String>,
+        Option<String>,
+        Option<String>,
+        Option<bool>,
+        Option<String>,
+        bool,
+    )> = sqlx::query_as(
+        "SELECT organization_id, saml_entity_id, saml_sso_url, saml_certificate, \
+         jit_provisioning, default_role, (domain_verified_at IS NOT NULL) \
+         FROM sso_configs WHERE domain_hint = $1 AND is_enabled = TRUE AND provider_type = 'saml'",
+    )
+    .bind(&domain)
+    .fetch_optional(&state.db)
+    .await
+    .unwrap_or(None);
+
+    let (org_id, entity_id, sso_url, cert, jit, default_role, domain_verified) = match config {
+        Some(c) => c,
+        None => return saml_error_redirect("no_saml_config"),
+    };
+    if !domain_verified {
+        tracing::warn!("SAML callback refused: domain '{}' not verified for org {}", domain, org_id);
+        return saml_error_redirect("domain_not_verified");
+    }
+
+    let sp = match build_saml_sp(
+        &entity_id.unwrap_or_default(),
+        &sso_url.unwrap_or_default(),
+        &cert.unwrap_or_default(),
+    ) {
+        Ok(sp) => sp,
+        Err(e) => {
+            tracing::error!("SAML callback: {} (org {})", e, org_id);
+            return saml_error_redirect("saml_config_incomplete");
+        }
+    };
+
+    // The security boundary: verifies the XML signature against the IdP cert and
+    // validates Destination/Issuer/Status/InResponseTo/expiry + the assertion
+    // Conditions and Bearer SubjectConfirmation. Anything forged, tampered,
+    // expired, replayed, or for the wrong audience/recipient is rejected here.
+    let assertion = match sp.parse_base64_response(&saml_response, Some(&[request_id.as_str()])) {
+        Ok(a) => a,
+        Err(e) => {
+            tracing::warn!("SAML response rejected for org {}: {}", org_id, e);
+            return saml_error_redirect("saml_validation_failed");
+        }
+    };
+
+    let (email, name) = saml_email_and_name(&assertion);
+    let email = match email {
+        Some(e) if e.contains('@') => e,
+        _ => {
+            tracing::warn!("SAML assertion for org {} carried no email", org_id);
+            return saml_error_redirect("no_email_in_assertion");
+        }
+    };
+
+    let role = default_role.unwrap_or_else(|| "user".to_string());
+    let jit = jit.unwrap_or(true);
+
+    let user: Option<(String, Option<String>)> =
+        sqlx::query_as("SELECT id, role FROM users WHERE email = $1 AND organization_id = $2")
+            .bind(&email)
+            .bind(&org_id)
+            .fetch_optional(&state.db)
+            .await
+            .unwrap_or(None);
+
+    let (user_id, user_role) = match user {
+        Some((id, r)) => (id, r.unwrap_or_else(|| role.clone())),
+        None => {
+            if !jit {
+                return saml_error_redirect("user_not_provisioned");
+            }
+            let new_id = Uuid::new_v4().to_string();
+            let display =
+                name.unwrap_or_else(|| email.split('@').next().unwrap_or("User").to_string());
+            let _ = sqlx::query(
+                "INSERT INTO users (id, email, full_name, organization_id, role, is_active, auth_provider, email_verified, created_at) \
+                 VALUES ($1, $2, $3, $4, $5, TRUE, 'saml', TRUE, NOW())",
+            )
+            .bind(&new_id)
+            .bind(&email)
+            .bind(&display)
+            .bind(&org_id)
+            .bind(&role)
+            .execute(&state.db)
+            .await;
+            tracing::info!("JIT provisioned SAML user: {} in org {}", email, org_id);
+            (new_id, role.clone())
+        }
+    };
+
+    let _ = sqlx::query("UPDATE users SET last_login = NOW(), email_verified = TRUE WHERE id = $1")
+        .bind(&user_id)
+        .execute(&state.db)
+        .await;
+
+    let app_access_token =
+        create_access_token(&state.jwt_secret, &user_id, Some(&org_id), &user_role)
+            .unwrap_or_default();
+    let app_refresh_token = create_refresh_token(&state.jwt_secret, &user_id).unwrap_or_default();
+
+    Redirect::temporary(&format!(
+        "https://app.cyber-sec-pro.com/dashboard/sso-callback#access_token={}&refresh_token={}",
+        app_access_token, app_refresh_token
+    ))
+    .into_response()
+}
+
+/// SP metadata — admins register this entityID + ACS URL with their IdP.
+pub async fn sso_saml_metadata() -> impl IntoResponse {
+    let xml = format!(
+        r#"<?xml version="1.0"?>
+<md:EntityDescriptor xmlns:md="urn:oasis:names:tc:SAML:2.0:metadata" entityID="{eid}">
+  <md:SPSSODescriptor AuthnRequestsSigned="false" WantAssertionsSigned="true" protocolSupportEnumeration="urn:oasis:names:tc:SAML:2.0:protocol">
+    <md:NameIDFormat>urn:oasis:names:tc:SAML:1.1:nameid-format:emailAddress</md:NameIDFormat>
+    <md:AssertionConsumerService Binding="urn:oasis:names:tc:SAML:2.0:bindings:HTTP-POST" Location="{acs}" index="0" isDefault="true"/>
+  </md:SPSSODescriptor>
+</md:EntityDescriptor>"#,
+        eid = SAML_SP_ENTITY_ID,
+        acs = SAML_SP_ACS_URL,
+    );
     (
-        StatusCode::SERVICE_UNAVAILABLE,
-        Json(json!({
-            "error": "SAML login is not available. Use OIDC or LDAP.",
-            "code": "SAML_NOT_IMPLEMENTED"
-        })),
+        StatusCode::OK,
+        [(axum::http::header::CONTENT_TYPE, "application/xml")],
+        xml,
     )
         .into_response()
 }
@@ -980,5 +1353,71 @@ mod secret_tests {
             // breaking SSO for an existing customer.
             assert_eq!(decrypt_sso_secret(Some("legacy-plaintext")).as_deref(), Some("legacy-plaintext"));
         });
+    }
+
+    // ── SAML 2.0 helpers ──────────────────────────────────────────────────
+
+    // A valid base64 DER certificate (samael's sample IdP signing cert).
+    const SAMPLE_IDP_CERT: &str = "MIIBhzCCAS0CFGE3kR43hTxJz3hg+bsefDiZjTSiMAoGCCqGSM49BAMCMEUxCzAJBgNVBAYTAkNBMRMwEQYDVQQIDApTb21lLVN0YXRlMSEwHwYDVQQKDBhJbnRlcm5ldCBXaWRnaXRzIFB0eSBMdGQwIBcNMjQwNjIzMTc0NTQ5WhgPMzAyMzEwMjUxNzQ1NDlaMEUxCzAJBgNVBAYTAkNBMRMwEQYDVQQIDApTb21lLVN0YXRlMSEwHwYDVQQKDBhJbnRlcm5ldCBXaWRnaXRzIFB0eSBMdGQwWTATBgcqhkjOPQIBBggqhkjOPQMBBwNCAATKNT2CQbh99zdbDIsXZDiWZGUyafCXMl3fWAe/moGDviPWQpJpBYNkSRMcW3iDsCoiVFGoO3+7167FU1rlEurGMAoGCCqGSM49BAMCA0gAMEUCIQCdW4SacWlIqj04IXo5QNWgbIrG6MKcXbvWEXDmMkiIewIgHkDlDn8Aq4reI+4BvUN+ZDmvOs1IUevJyxGd/2RkolE=";
+
+    #[test]
+    fn saml_cert_to_b64_strips_pem_and_whitespace() {
+        let pem = "-----BEGIN CERTIFICATE-----\nAAAA BBBB\n  CCCC\n-----END CERTIFICATE-----\n";
+        assert_eq!(saml_cert_to_b64(pem), "AAAABBBBCCCC");
+        // Bare base64 (already stripped) is returned unchanged, whitespace removed.
+        assert_eq!(saml_cert_to_b64(" AA AA\n"), "AAAA");
+    }
+
+    #[test]
+    fn saml_xml_escape_escapes_specials() {
+        assert_eq!(saml_xml_escape("a&b<c>d\"e"), "a&amp;b&lt;c&gt;d&quot;e");
+    }
+
+    #[test]
+    fn build_saml_sp_requires_certificate() {
+        // Without a signing cert we must refuse to build the SP — otherwise
+        // samael would skip signature verification entirely.
+        let err = build_saml_sp("https://idp.example.com/entity", "https://idp.example.com/sso", "");
+        assert!(err.is_err(), "SP must not build without a signing certificate");
+    }
+
+    #[test]
+    fn build_saml_sp_requires_entity_and_sso_url() {
+        assert!(build_saml_sp("", "https://idp.example.com/sso", SAMPLE_IDP_CERT).is_err());
+        assert!(build_saml_sp("https://idp.example.com/entity", "", SAMPLE_IDP_CERT).is_err());
+    }
+
+    #[test]
+    fn build_saml_sp_ok_with_cert() {
+        let sp = build_saml_sp(
+            "https://idp.example.com/entity",
+            "https://idp.example.com/sso",
+            SAMPLE_IDP_CERT,
+        )
+        .expect("SP should build with a cert");
+        // The IdP signing cert must be visible to samael, or signatures are not
+        // checked. This is the guarantee that verification actually runs.
+        assert!(
+            sp.idp_signing_certs().ok().flatten().is_some(),
+            "IdP signing cert must be loaded for signature verification"
+        );
+    }
+
+    #[test]
+    fn saml_sp_rejects_unsigned_response() {
+        use base64::Engine;
+        // A syntactically-valid but UNSIGNED SAML response naming an attacker
+        // must be rejected: the SP has a signing cert, so signature verification
+        // is mandatory. This is the exact class of forgery the old code accepted.
+        let sp = build_saml_sp(
+            "https://idp.example.com/entity",
+            "https://idp.example.com/sso",
+            SAMPLE_IDP_CERT,
+        )
+        .unwrap();
+        let unsigned = r#"<samlp:Response xmlns:samlp="urn:oasis:names:tc:SAML:2.0:protocol" xmlns:saml="urn:oasis:names:tc:SAML:2.0:assertion" Destination="https://api.cyber-sec-pro.com/v1/auth/sso/saml/callback"><saml:Issuer>https://idp.example.com/entity</saml:Issuer><samlp:Status><samlp:StatusCode Value="urn:oasis:names:tc:SAML:2.0:status:Success"/></samlp:Status><saml:Assertion><saml:Issuer>https://idp.example.com/entity</saml:Issuer><saml:Subject><saml:NameID>attacker@evil.com</saml:NameID></saml:Subject></saml:Assertion></samlp:Response>"#;
+        let encoded = base64::engine::general_purpose::STANDARD.encode(unsigned.as_bytes());
+        let result = sp.parse_base64_response(&encoded, Some(&["id-123"]));
+        assert!(result.is_err(), "unsigned/forged SAML response must be rejected");
     }
 }

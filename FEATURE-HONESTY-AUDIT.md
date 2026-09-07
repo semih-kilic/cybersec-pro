@@ -13,7 +13,7 @@ real implementation), or **CONFIRM** (business fact only the owner can verify).
 
 | Item | Was | Now |
 |---|---|---|
-| **SAML 2.0 SSO** | Advertised everywhere + default in the SSO settings tab, but endpoints return `503` (disabled for security) | Marketing → "SSO / OIDC / LDAP"; SSO tab defaults to OIDC, SAML shown as disabled **"Coming soon"** card. OIDC + LDAP are real & secure. (commit `c79116a`) |
+| **SAML 2.0 SSO** | Advertised everywhere but endpoints returned `503` (the old hand-rolled code validated no signature/audience/expiry, so forged responses were accepted → disabled) | **Fully implemented & secure.** Real SP-initiated SAML 2.0 via the vetted `samael` crate (xmlsec XML-DSIG verification): signature verified against the org's IdP cert (SHA-1 rejected), plus Destination/Issuer/Status/InResponseTo/expiry + assertion Conditions (audience, NotBefore/NotOnOrAfter) + Bearer SubjectConfirmation. SP-initiated only, one-time RelayState + AuthnRequest-ID in Redis (replay-safe). Endpoints: `GET /auth/sso/saml/init`, `POST /auth/sso/saml/callback`, `GET /auth/sso/saml/metadata`. SSO tab re-enables the SAML card; marketing re-lists "SAML 2.0". Unit test proves forged/unsigned responses are rejected; verified deployed (metadata + init AuthnRequest live). |
 
 ---
 

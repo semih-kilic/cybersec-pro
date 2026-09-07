@@ -217,7 +217,7 @@ const groups: EndpointGroup[] = [
       { method: "GET", path: "/api/v1/email/config", description: "Get email notification configuration" },
       { method: "POST", path: "/api/v1/email/send-license", description: "Send license key to a user via email" },
       { method: "POST", path: "/api/v1/email/send-welcome", description: "Send welcome onboarding email to a new user" },
-      { method: "POST", path: "/api/v1/sso/test", description: "Test SSO configuration (OIDC/LDAP)" },
+      { method: "POST", path: "/api/v1/sso/test", description: "Test SSO configuration (SAML/OIDC/LDAP)" },
       { method: "POST", path: "/api/v1/sso/toggle", description: "Enable or disable SSO for the organisation" },
       { method: "GET", path: "/api/v1/health", description: "API health check — returns { status: 'ok' }", auth: false },
       { method: "GET", path: "/api/v1/ready", description: "Readiness probe — database, Redis, scan engine status", auth: false },

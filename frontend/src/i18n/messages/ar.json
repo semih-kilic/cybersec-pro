@@ -142,7 +142,7 @@
           "مدير حساب مخصص",
           "جميع أطر الامتثال (NIST, OWASP, GDPR, PCI DSS, HIPAA, SOC 2)",
           "تقارير بعلامة بيضاء مع شعار الشركة",
-          "SSO / OIDC / LDAP",
+          "SSO / SAML 2.0 / OIDC / LDAP",
           "مستخدمون وتعاون فريق غير محدود",
           "API متقدم (webhooks، تكاملات)",
           "Custom SLA available on request",

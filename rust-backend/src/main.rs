@@ -518,6 +518,7 @@ fn build_router(state: Arc<AppState>) -> Router {
         .route("/api/v1/auth/sso/ldap", post(sso_handlers::sso_ldap_login))
         .route("/api/v1/auth/sso/saml/init", get(sso_handlers::sso_saml_init))
         .route("/api/v1/auth/sso/saml/callback", post(sso_handlers::sso_saml_callback))
+        .route("/api/v1/auth/sso/saml/metadata", get(sso_handlers::sso_saml_metadata))
         .route("/api/v1/auth/sso/oidc/init", get(sso_handlers::sso_oidc_init))
         .route("/api/v1/auth/sso/oidc/callback", get(sso_handlers::sso_oidc_callback))
         // ── Settings: Notification Preferences ────────────────

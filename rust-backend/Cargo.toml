@@ -107,6 +107,7 @@ sysinfo = "0.30"
 
 # CLI tool for operations
 clap = { version = "4", features = ["derive"] }
+samael = "0.0.22"
 
 [profile.release]
 opt-level = 3

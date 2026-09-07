@@ -142,7 +142,7 @@
           "Gerente de cuenta dedicado",
           "Todos los marcos de cumplimiento (NIST, OWASP, GDPR, PCI DSS, HIPAA, SOC 2)",
           "Informes marca blanca con logo",
-          "SSO / OIDC / LDAP",
+          "SSO / SAML 2.0 / OIDC / LDAP",
           "Usuarios y colaboración de equipo ilimitados",
           "API avanzada (webhooks, integraciones)",
           "SLA personalizado bajo solicitud",

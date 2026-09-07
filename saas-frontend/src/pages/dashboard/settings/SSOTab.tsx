@@ -13,8 +13,8 @@ export function SSOTab({ setMessage, userPlan }: SettingsTabProps) {
   const { data: ssoData } = useSSOConfig();
   const ssoConfig = ssoData?.config ?? null;
   const [ssoTestResult, setSsoTestResult] = useState<{ success: boolean; message: string } | null>(null);
-  // Default to OIDC: it is the working, secure provider (covers Okta, Azure AD,
-  // Google, GitHub…). SAML is not yet available — see the provider grid below.
+  // Default to OIDC (the most common enterprise choice: Okta, Azure AD, Google,
+  // GitHub). SAML 2.0 and LDAP are also fully supported — see the provider grid.
   const [ssoProviderType, setSsoProviderType] = useState<'saml' | 'ldap' | 'oidc'>('oidc');
   const [ssoForm, setSsoForm] = useState<Record<string, any>>({});
 
@@ -128,7 +128,7 @@ export function SSOTab({ setMessage, userPlan }: SettingsTabProps) {
               {([
                 { id: 'oidc' as const, name: 'OpenID Connect', desc: 'Okta, Azure AD, Google Workspace, GitHub', icon: '🔗', available: true },
                 { id: 'ldap' as const, name: 'LDAP', desc: 'Active Directory, OpenLDAP', icon: '📁', available: true },
-                { id: 'saml' as const, name: 'SAML 2.0', desc: t('sso.samlComingSoonDesc', 'Coming soon — use OpenID Connect for Okta/Azure AD today'), icon: '🛡️', available: false },
+                { id: 'saml' as const, name: 'SAML 2.0', desc: 'Okta, Azure AD, OneLogin, ADFS, Ping', icon: '🛡️', available: true },
               ]).map((p) => (
                 <button
                   key={p.id}
@@ -186,8 +186,9 @@ export function SSOTab({ setMessage, userPlan }: SettingsTabProps) {
               <div className="p-4 bg-gray-800/50 rounded-lg mt-4">
                 <p className="text-gray-400 text-xs mb-2">{t('sso.spMetadata', 'Your Service Provider (SP) metadata:')}</p>
                 <div className="space-y-1 text-xs font-mono text-gray-300">
-                  <p><span className="text-gray-500">ACS URL:</span> https://app.cyber-sec-pro.com/api/v1/sso/saml/callback</p>
-                  <p><span className="text-gray-500">Entity ID:</span> https://app.cyber-sec-pro.com</p>
+                  <p><span className="text-gray-500">ACS URL:</span> https://api.cyber-sec-pro.com/v1/auth/sso/saml/callback</p>
+                  <p><span className="text-gray-500">Entity ID:</span> https://api.cyber-sec-pro.com/saml/metadata</p>
+                  <p><span className="text-gray-500">Metadata:</span> https://api.cyber-sec-pro.com/v1/auth/sso/saml/metadata</p>
                   <p><span className="text-gray-500">Name ID:</span> urn:oasis:names:tc:SAML:1.1:nameid-format:emailAddress</p>
                 </div>
               </div>
