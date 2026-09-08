@@ -711,9 +711,12 @@ export function ScanExecutionPage() {
             className="vos-input w-full"
           >
             <option value="">Select {name}</option>
-            {param.options?.map((opt: string) => (
-              <option key={opt} value={opt}>{opt}</option>
-            ))}
+            {param.options?.map((opt: any, i: number) => {
+              const isObj = opt !== null && typeof opt === 'object';
+              const optValue = isObj ? String(opt.value ?? '') : String(opt).split(' ')[0];
+              const optLabel = isObj ? String(opt.label ?? opt.value ?? '') : String(opt);
+              return <option key={`${optValue}-${i}`} value={optValue}>{optLabel}</option>;
+            })}
           </select>
         );
       case 'number':
