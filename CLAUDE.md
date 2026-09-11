@@ -246,3 +246,29 @@ refuses to commit secret-shaped or oversized files.
   * `services::net::truncate_bytes` for any user-influenced truncation; a byte
     slice panics on a multi-byte boundary.
   * Rate limiting is a global middleware with cost tiers, not per-handler calls.
+
+## 15) Transport & Edge Facts (Sep 2026)
+
+- **There is no WebSocket server.** `rust-backend` has no `WebSocketUpgrade`,
+  `axum::extract::ws`, `socketioxide` or `tokio_tungstenite`. Live scan output
+  is SSE (`scan_handlers::scan_output_stream`). `saas-frontend`'s
+  `socketManager` only dials when `window.__WS_URL__` is set — nothing sets it,
+  so it is an intentional no-op. Do not "fix" it by making it connect, and never
+  write "WebSocket" in user-facing copy; say Server-Sent Events.
+- **Browser notifications** are produced in one place: the scan page fires one
+  native notification per scan on completed/failed, and asks for permission
+  from the start-scan click. Nothing else may request that permission.
+- **nginx publishes port 80 only.** Cloudflare Tunnel terminates TLS and
+  forwards to `http://localhost:80` with `httpHostHeader`, so `https://127.0.0.1`
+  probes always fail. Reach the origin with
+  `curl -H "Host: app.cyber-sec-pro.com" http://127.0.0.1/...`.
+- **Cloudflare rewrites the HTML after it leaves the origin.** "Email Address
+  Obfuscation" turns a bare-text email into a `__cf_email__` span, which breaks
+  React hydration (error #418) on prerendered pages — production only, clean
+  under `next dev`. Visible addresses must go through
+  `frontend/src/components/Email.tsx`, which wraps them in `<!--email_off-->`.
+  `mailto:` hrefs are attributes and are safe to leave as they are.
+- **Mail path**: primary `in-v3.mailjet.com:587`, fallback `smtp.gmail.com:465`.
+  Real sub-processors are Stripe, Cloudflare, Mailjet, Gmail SMTP — no AWS,
+  Supabase, Vercel or Sentry is configured. Data lives in Canada (Toronto).
+  The Trust Center table is a GDPR Art. 28 disclosure; keep it true.
