@@ -65,13 +65,14 @@ const complianceFrameworksBase = [
 
 
 const subProcessorsBase = [
-  { name: "Stripe, Inc.", location: "ABD (EU SCC + DPF)", dpa: true, website: "https://stripe.com/privacy" },
-  { name: "Vercel, Inc.", location: "Global Edge (EU SCC)", dpa: true, website: "https://vercel.com/legal/privacy-policy" },
-  { name: "Cloudflare, Inc.", location: "Global (EU SCC + DPF)", dpa: true, website: "https://www.cloudflare.com/privacypolicy/" },
-  { name: "AWS (Amazon)", location: "EU (Frankfurt, eu-central-1)", dpa: true, website: "https://aws.amazon.com/privacy/" },
-  { name: "PostgreSQL (Supabase)", location: "EU (Frankfurt)", dpa: true, website: "https://supabase.com/privacy" },
-  { name: "SendGrid (Twilio)", location: "ABD (EU SCC)", dpa: true, website: "https://www.twilio.com/legal/privacy" },
-  { name: "Sentry", location: "ABD (EU SCC)", dpa: true, website: "https://sentry.io/privacy/" },
+  // Only processors this deployment actually uses. Verified against the running
+  // stack: Stripe keys and Cloudflare are live, mail goes out over Mailjet with a
+  // Gmail SMTP fallback. PostgreSQL runs in our own container in Canada — it is
+  // not Supabase — and there is no AWS, Vercel or Sentry integration configured.
+  { name: "Stripe, Inc.", location: "United States (EU SCC + DPF)", dpa: true, website: "https://stripe.com/privacy" },
+  { name: "Cloudflare, Inc.", location: "Global edge (EU SCC + DPF)", dpa: true, website: "https://www.cloudflare.com/privacypolicy/" },
+  { name: "Mailjet", location: "EU (EU SCC)", dpa: true, website: "https://www.mailjet.com/legal/privacy-policy/" },
+  { name: "Google (Gmail SMTP)", location: "United States (EU SCC + DPF)", dpa: true, website: "https://policies.google.com/privacy" },
 ];
 
 // Internal, continuous security testing performed with our own platform + manual review.

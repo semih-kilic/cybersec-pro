@@ -765,7 +765,7 @@
       "encryptionItem1": "TLS 1.3（通信中）",
       "encryptionItem2": "AES-256（保存時）",
       "infrastructure": "インフラストラクチャ",
-      "infrastructureItem1": "EUデータセンター",
+      "infrastructureItem1": "カナダのデータセンター",
       "infrastructureItem2": "DDoS保護",
       "accessControl": "アクセス制御",
       "accessControlItem1": "RBAC",

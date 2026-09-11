@@ -56,7 +56,7 @@
       },
       "realtime": {
         "title": "リアルタイム結果",
-        "description": "WebSocketでスキャン結果をライブ表示。完全なインタラクティブ機能を備えたターミナル形式の出力。"
+        "description": "Server-Sent Events でスキャン結果をライブでご覧いただけます。完全にインタラクティブなターミナル形式の出力。"
       },
       "api": {
         "title": "RESTful API",

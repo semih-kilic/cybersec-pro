@@ -56,7 +56,7 @@
       },
       "realtime": {
         "title": "نتائج فورية",
-        "description": "تابع نتائج الفحص مباشرة عبر WebSocket. إخراج بنمط الطرفية مع تفاعل كامل."
+        "description": "تابع نتائج الفحص مباشرة عبر Server-Sent Events. مخرجات بأسلوب الطرفية مع تفاعل كامل."
       },
       "api": {
         "title": "واجهة RESTful API",

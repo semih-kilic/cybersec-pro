@@ -166,7 +166,7 @@ export default function PrivacyPolicyPage() {
               <h2 className="text-2xl font-semibold text-white mb-3">8. Sub-Processors</h2>
               <ul className="list-disc list-inside space-y-1">
                 <li><strong className="text-white">Stripe</strong> — Payment processing (PCI DSS Level 1 compliant)</li>
-                <li><strong className="text-white">Cloudflare</strong> — CDN and DDoS protection (EU data centers)</li>
+                <li><strong className="text-white">Cloudflare</strong> — CDN and DDoS protection (global edge network)</li>
               </ul>
             </section>
 

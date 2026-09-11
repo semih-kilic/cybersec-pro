@@ -56,7 +56,7 @@
       },
       "realtime": {
         "title": "Resultados en tiempo real",
-        "description": "Observe los resultados de los escaneos en directo a través de WebSocket. Salida estilo terminal con interactividad completa."
+        "description": "Observe los resultados de los escaneos en directo mediante Server-Sent Events. Salida estilo terminal con interactividad completa."
       },
       "api": {
         "title": "API RESTful",

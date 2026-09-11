@@ -56,7 +56,7 @@
       },
       "realtime": {
         "title": "Echtzeit-Ergebnisse",
-        "description": "Verfolgen Sie Scan-Ergebnisse live per WebSocket. Terminal-artige Ausgabe mit voller Interaktivität."
+        "description": "Verfolgen Sie Scan-Ergebnisse live über Server-Sent Events. Terminal-artige Ausgabe mit voller Interaktivität."
       },
       "api": {
         "title": "RESTful-API",

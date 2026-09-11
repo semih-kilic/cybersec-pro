@@ -67,7 +67,7 @@ export default function DocsPage() {
                     { n: "2", title: "Set Up MFA", desc: "Navigate to Settings → Security and enable TOTP-based MFA using Google Authenticator, Authy, or any RFC 6238 compatible app. MFA is mandatory for all accounts." },
                     { n: "3", title: "Add Your First Target", desc: "Go to Targets → Add Target. Enter your domain or IP address. Verify ownership via DNS TXT record, HTTP file upload, or HTML meta tag verification." },
                     { n: "4", title: "Configure Scan Profile", desc: "Choose a scan type (Quick, Full, Custom, or Scheduled). Select tools and set parameters. Save as a reusable profile for future scans." },
-                    { n: "5", title: "Launch Scan", desc: "Click 'Start Scan' and watch results stream live via WebSocket. Terminal-style output shows real-time tool execution with progress indicators." },
+                    { n: "5", title: "Launch Scan", desc: "Click 'Start Scan' and watch results stream live over Server-Sent Events. Terminal-style output shows real-time tool execution with progress indicators." },
                     { n: "6", title: "Generate Report", desc: "Once complete, generate reports in PDF, HTML, JSON, CSV, or Markdown. Use templates (Executive, Technical, Compliance) for professional output." },
                   ].map((step) => (
                     <div key={step.n} className="flex flex-col gap-3">
@@ -99,7 +99,7 @@ export default function DocsPage() {
                       <li>• Firefox 88+</li>
                       <li>• Safari 15+</li>
                       <li>• Edge 90+</li>
-                      <li>• WebSocket support required</li>
+                      <li>• Server-Sent Events (SSE) support required</li>
                     </ul>
                   </div>
                   <div>
@@ -107,7 +107,7 @@ export default function DocsPage() {
                     <ul className="text-sm text-white/50 space-y-1">
                       <li>• Stable internet connection (5 Mbps+)</li>
                       <li>• HTTPS port 443 access</li>
-                      <li>• WebSocket connections supported</li>
+                      <li>• Server-Sent Events (SSE) supported</li>
                       <li>• No VPN/proxy restrictions on API calls</li>
                     </ul>
                   </div>
@@ -153,7 +153,7 @@ export default function DocsPage() {
             <RevealOnScroll>
               <div className="glass-card p-8">
                 <h2 className="text-2xl font-bold text-white mb-6">Scanning & Assessment</h2>
-                <p className="text-sm text-white/50 mb-6">CyberSec Pro offers four distinct scan modes, each designed for different assessment scenarios. All scans produce real-time output streamed via WebSocket.</p>
+                <p className="text-sm text-white/50 mb-6">CyberSec Pro offers four distinct scan modes, each designed for different assessment scenarios. All scans produce real-time output streamed over Server-Sent Events.</p>
                 <div className="grid gap-4 md:grid-cols-2">
                   {[
                     { name: "Quick Scan", desc: "Top 20 tools run in parallel — Nmap, Nikto, WhatWeb, SSL scan, and more. Ideal for a fast security posture overview. Typically completes in 5-15 minutes depending on target size.", color: "var(--color-neon)", time: "5-15 min" },
@@ -202,7 +202,7 @@ export default function DocsPage() {
                   {[
                     { label: "Pause & Resume", desc: "Pause any running scan and resume later without losing progress." },
                     { label: "Incremental Results", desc: "Results are saved as each tool completes — never lose data mid-scan." },
-                    { label: "Real-Time Streaming", desc: "Watch tool output live via WebSocket in a terminal-style interface." },
+                    { label: "Real-Time Streaming", desc: "Watch tool output live over Server-Sent Events in a terminal-style interface." },
                   ].map((f) => (
                     <div key={f.label} className="glass-card p-4">
                       <h4 className="text-xs font-bold text-white/70">{f.label}</h4>
@@ -632,7 +632,7 @@ DELETE /api/v1/settings/api-keys/:key_id`}</pre>
                   {[
                     { title: "Data Export", desc: "Export all your data (scans, reports, settings) in JSON format via /api/v1/gdpr/export. Available within 24 hours." },
                     { title: "Account Deletion", desc: "Full account deletion via /api/v1/gdpr/delete-account. 30-day cooling period, then permanent removal." },
-                    { title: "Data Residency", desc: "EU data stays in EU data centres (Frankfurt, Amsterdam). Configure per-organisation data residency requirements." },
+                    { title: "Data Residency", desc: "Customer data, scan results and logs are stored in Canadian data centres and do not leave Canadian jurisdiction without your explicit consent." },
                     { title: "Audit Logs", desc: "Complete audit trail: every login, scan, report, and settings change. Retained for 24 months. Exportable." },
                   ].map((d) => (
                     <div key={d.title} className="glass-card p-4">
@@ -661,7 +661,7 @@ DELETE /api/v1/settings/api-keys/:key_id`}</pre>
                     { layer: "Frontend", tech: "Next.js 15 + React 18", desc: "Static-generated marketing site with next-intl (10 languages). Three.js/R3F for 3D visualisations, GSAP animations." },
                     { layer: "Dashboard", tech: "React + Vite + TanStack Query", desc: "SPA dashboard with real-time scan streaming, role-based access, and offline-capable data caching." },
                     { layer: "Database", tech: "PostgreSQL 16", desc: "Primary data store with row-level security, full-text search, and automated backup. AES-256 encryption at rest." },
-                    { layer: "Cache", tech: "Redis", desc: "Session management, rate limiting, scan queue, and real-time pub/sub for WebSocket events." },
+                    { layer: "Cache", tech: "Redis", desc: "Session management, rate limiting, scan queue, and pub/sub fan-out for live scan output." },
                     { layer: "Scan Engine", tech: "Containerised Kali Tools", desc: "Each tool runs in an isolated container with resource limits. Results parsed by custom Rust parsers for structured output." },
                   ].map((t) => (
                     <div key={t.layer} className="glass-card p-4">

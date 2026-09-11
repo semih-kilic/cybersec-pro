@@ -58,7 +58,7 @@
       },
       "realtime": {
         "title": "Gerçek Zamanlı Sonuçlar",
-        "description": "WebSocket ile tarama sonuçlarını canlı izleyin. Terminal tarzı çıktı ile tam etkileşim."
+        "description": "Tarama sonuçlarını Server-Sent Events ile canlı izleyin. Tam etkileşimli, terminal tarzı çıktı."
       },
       "api": {
         "title": "RESTful API",
@@ -544,12 +544,9 @@
         ],
         "subProcessorPurposes": [
           "Ödeme işleme",
-          "Arayüz barındırma & CDN",
           "DDoS koruması, WAF, CDN",
-          "Arka uç altyapısı, S3 depolama",
-          "İlişkisel veritabanı",
           "İşlemsel e-posta",
-          "Hata izleme ve raporlama"
+          "İşlemsel e-posta (yedek aktarım)"
         ],
         "pentestHistory": [
           {

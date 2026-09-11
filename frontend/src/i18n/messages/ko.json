@@ -56,7 +56,7 @@
       },
       "realtime": {
         "title": "실시간 결과",
-        "description": "WebSocket을 통해 스캔 결과를 실시간으로 확인하세요. 완전한 대화형 기능을 갖춘 터미널 스타일 출력."
+        "description": "Server-Sent Events로 스캔 결과를 실시간으로 확인하세요. 완전한 상호작용이 가능한 터미널 스타일 출력."
       },
       "api": {
         "title": "RESTful API",

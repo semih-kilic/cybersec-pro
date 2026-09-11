@@ -765,7 +765,7 @@
       "encryptionItem1": "TLS 1.3 em trânsito",
       "encryptionItem2": "AES-256 em repouso",
       "infrastructure": "Infraestrutura",
-      "infrastructureItem1": "Data centers da UE",
+      "infrastructureItem1": "Data centers no Canadá",
       "infrastructureItem2": "Proteção contra DDoS",
       "accessControl": "Controle de Acesso",
       "accessControlItem1": "RBAC",

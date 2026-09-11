@@ -58,7 +58,7 @@
       },
       "realtime": {
         "title": "Real-Time Results",
-        "description": "Watch scan results stream live via WebSocket. Terminal-style output with full interactivity."
+        "description": "Watch scan results stream live over Server-Sent Events. Terminal-style output with full interactivity."
       },
       "api": {
         "title": "RESTful API",
@@ -544,12 +544,9 @@
         ],
         "subProcessorPurposes": [
           "Payment processing",
-          "Frontend hosting & CDN",
           "DDoS protection, WAF, CDN",
-          "Backend infrastructure, S3 storage",
-          "Relational database",
           "Transactional email",
-          "Error tracking and monitoring"
+          "Transactional email (fallback relay)"
         ],
         "pentestHistory": [
           {

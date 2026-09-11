@@ -148,7 +148,7 @@ export default function PrivacyPage() {
                 <p><strong className="text-white/70">Stripe:</strong> Payment processing — PCI DSS Level 1 certified. We never access or store your full card number.</p>
                 <p><strong className="text-white/70">GitHub OAuth:</strong> Optional authentication provider. We only access your email and profile name.</p>
                 <p><strong className="text-white/70">Redis (self-hosted):</strong> Session management and caching — hosted on our own infrastructure, no third-party access.</p>
-                <p><strong className="text-white/70">PostgreSQL (self-hosted):</strong> Primary database — encrypted at rest, hosted in EU data centres.</p>
+                <p><strong className="text-white/70">PostgreSQL (self-hosted):</strong> Primary database — encrypted at rest, hosted on our own infrastructure in Canada.</p>
               </div>
             </div>
           </RevealOnScroll>

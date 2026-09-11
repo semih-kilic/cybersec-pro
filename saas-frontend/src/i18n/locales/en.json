@@ -765,7 +765,7 @@
       "encryptionItem1": "TLS 1.3 in transit",
       "encryptionItem2": "AES-256 at rest",
       "infrastructure": "Infrastructure",
-      "infrastructureItem1": "EU data centers",
+      "infrastructureItem1": "Canadian data centres",
       "infrastructureItem2": "DDoS protection",
       "accessControl": "Access Control",
       "accessControlItem1": "RBAC",

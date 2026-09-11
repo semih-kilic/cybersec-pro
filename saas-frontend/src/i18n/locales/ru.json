@@ -765,7 +765,7 @@
       "encryptionItem1": "TLS 1.3 при передаче",
       "encryptionItem2": "AES-256 при хранении",
       "infrastructure": "Инфраструктура",
-      "infrastructureItem1": "Дата-центры ЕС",
+      "infrastructureItem1": "Дата-центры в Канаде",
       "infrastructureItem2": "Защита от DDoS",
       "accessControl": "Управление доступом",
       "accessControlItem1": "RBAC",

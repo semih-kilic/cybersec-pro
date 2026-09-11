@@ -319,7 +319,7 @@ export default function GDPRPage() {
               <div className="grid md:grid-cols-3 gap-3">
                 {[
                   { icon: '🔒', title: t('gdpr.measure.encryption', 'Encryption'), items: [t('gdpr.measure.encryptionItem1', 'TLS 1.3 in transit'), t('gdpr.measure.encryptionItem2', 'AES-256 at rest')] },
-                  { icon: '🏰', title: t('gdpr.measure.infrastructure', 'Infrastructure'), items: [t('gdpr.measure.infrastructureItem1', 'EU data centers'), t('gdpr.measure.infrastructureItem2', 'DDoS protection')] },
+                  { icon: '🏰', title: t('gdpr.measure.infrastructure', 'Infrastructure'), items: [t('gdpr.measure.infrastructureItem1', 'Canadian data centres'), t('gdpr.measure.infrastructureItem2', 'DDoS protection')] },
                   { icon: '🔑', title: t('gdpr.measure.accessControl', 'Access Control'), items: [t('gdpr.measure.accessControlItem1', 'RBAC'), t('gdpr.measure.accessControlItem2', 'MFA support'), t('gdpr.measure.accessControlItem3', 'Audit logs')] },
                 ].map((measure, i) => (
                   <div key={i} className="bg-gray-900/50 rounded-lg p-4 border border-gray-700">

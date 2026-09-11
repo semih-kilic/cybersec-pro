@@ -765,7 +765,7 @@
       "encryptionItem1": "传输中使用 TLS 1.3",
       "encryptionItem2": "静态数据使用 AES-256",
       "infrastructure": "基础设施",
-      "infrastructureItem1": "欧盟数据中心",
+      "infrastructureItem1": "加拿大数据中心",
       "infrastructureItem2": "DDoS 防护",
       "accessControl": "访问控制",
       "accessControlItem1": "RBAC",

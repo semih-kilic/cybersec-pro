@@ -56,7 +56,7 @@
       },
       "realtime": {
         "title": "实时结果",
-        "description": "通过WebSocket实时查看扫描结果。具有完全交互功能的终端式输出。"
+        "description": "通过 Server-Sent Events 实时查看扫描结果。具有完全交互功能的终端式输出。"
       },
       "api": {
         "title": "RESTful API",

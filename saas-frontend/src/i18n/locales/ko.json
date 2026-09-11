@@ -765,7 +765,7 @@
       "encryptionItem1": "전송 중 TLS 1.3",
       "encryptionItem2": "저장 시 AES-256",
       "infrastructure": "인프라",
-      "infrastructureItem1": "EU 데이터 센터",
+      "infrastructureItem1": "캐나다 데이터 센터",
       "infrastructureItem2": "DDoS 보호",
       "accessControl": "접근 제어",
       "accessControlItem1": "RBAC",

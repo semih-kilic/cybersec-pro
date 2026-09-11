@@ -765,7 +765,7 @@
       "encryptionItem1": "Aktarımda TLS 1.3",
       "encryptionItem2": "Depolamada AES-256",
       "infrastructure": "Altyapı",
-      "infrastructureItem1": "AB veri merkezleri",
+      "infrastructureItem1": "Kanada veri merkezleri",
       "infrastructureItem2": "DDoS koruması",
       "accessControl": "Erişim Kontrolü",
       "accessControlItem1": "RBAC",

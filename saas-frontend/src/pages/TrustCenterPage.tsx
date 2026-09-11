@@ -10,9 +10,11 @@ export function TrustCenterPage() {
   const { t } = useTranslation();
 
   const subProcessors = [
-    { name: 'Hetzner', purpose: t('trust.subprocessors.hosting', 'Infrastructure hosting'), location: 'EU' },
-    { name: 'Stripe', purpose: t('trust.subprocessors.payments', 'Payment processing'), location: 'Ireland (EU)' },
-    { name: 'Cloudflare', purpose: t('trust.subprocessors.cdn', 'CDN & DDoS protection'), location: 'Global (EU data residency)' },
+    // Only processors actually in use. Infrastructure is self-hosted in Canada,
+    // so there is no third-party hosting provider to list.
+    { name: 'Stripe', purpose: t('trust.subprocessors.payments', 'Payment processing'), location: 'United States' },
+    { name: 'Cloudflare', purpose: t('trust.subprocessors.cdn', 'CDN & DDoS protection'), location: 'Global edge' },
+    { name: 'Mailjet', purpose: t('trust.subprocessors.email', 'Transactional email'), location: 'EU' },
   ];
 
   return (

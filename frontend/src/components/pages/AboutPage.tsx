@@ -21,7 +21,7 @@ const values = [
   { icon: Shield, title: "Accessibility", desc: "88 verified Kali tools accessible through your browser. Plans start free — no VMs, no CLI dependencies, no complex setup." },
   { icon: BookOpen, title: "Transparency", desc: "Every scan produces reproducible output. Raw results alongside parsed summaries so you can verify and audit every finding." },
   { icon: Lock, title: "Privacy & Trust", desc: "AES-256 encryption at rest, TLS 1.3 in transit. Multi-tenant isolation ensures your scan data stays yours." },
-  { icon: Clock, title: "Continuous Protection", desc: "Scheduled scans, 24/7 monitoring, and real-time WebSocket alerts keep you ahead of emerging threats." },
+  { icon: Clock, title: "Continuous Protection", desc: "Scheduled scans, continuous monitoring, and live scan output streamed to your browser keep you ahead of emerging threats." },
 ];
 
 const compliance = [
@@ -34,9 +34,9 @@ const compliance = [
 
 const security = [
   { title: "AES-256 Encryption", desc: "Data encrypted at rest and in transit with military-grade encryption standards." },
-  { title: "Global Infrastructure", desc: "Multi-region deployment for low-latency scanning and data residency compliance." },
+  { title: "Isolated Scan Infrastructure", desc: "Every scan runs in its own container with no cross-tenant access. Dedicated instances on Enterprise plans." },
   { title: "GDPR Ready", desc: "Full data subject rights: access, rectify, delete, export, and withdraw consent." },
-  { title: "EU Data Residency", desc: "European data stays in European data centers. Data stays in-region for compliance." },
+  { title: "Canadian Data Residency", desc: "Customer data, scan results and logs stay in Canadian data centres. Nothing leaves Canadian jurisdiction without your explicit consent." },
 ];
 
 export default function AboutPage() {
