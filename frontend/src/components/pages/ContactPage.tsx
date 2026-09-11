@@ -7,6 +7,7 @@ import GlitchText from "@/components/animations/GlitchText";
 import Link from "next/link";
 import { Mail, ArrowRight, Headphones, Handshake } from "lucide-react";
 
+import { Email } from '../Email';
 const ParticleField = dynamic(() => import("@/components/three/ParticleField"), { ssr: false });
 
 export default function ContactPage() {
@@ -41,7 +42,7 @@ export default function ContactPage() {
             <div className="flex items-center gap-2 font-mono text-xs text-white/40">
               <span className="uppercase text-white/30">Email</span>
               <a href="mailto:support@cyber-sec-pro.com" className="truncate text-[var(--color-neon)] hover:underline">
-                support@cyber-sec-pro.com
+                <Email address="support@cyber-sec-pro.com" />
               </a>
             </div>
             <span className="inline-block w-fit rounded-full border border-[var(--color-neon)]/15 bg-[var(--color-neon)]/[0.06] px-3 py-1 font-mono text-xs font-semibold text-[var(--color-neon)]">
@@ -91,7 +92,7 @@ export default function ContactPage() {
             <div className="flex items-center gap-2 font-mono text-xs text-white/40">
               <span className="uppercase text-white/30">Email</span>
               <a href="mailto:support@cyber-sec-pro.com" className="truncate text-[var(--color-neon)] hover:underline">
-                support@cyber-sec-pro.com
+                <Email address="support@cyber-sec-pro.com" />
               </a>
             </div>
             <span className="inline-block w-fit rounded-full border border-[var(--color-neon)]/15 bg-[var(--color-neon)]/[0.06] px-3 py-1 font-mono text-xs font-semibold text-[var(--color-neon)]">

@@ -6,6 +6,7 @@ import RevealOnScroll from "@/components/animations/RevealOnScroll";
 const CyberRadar = dynamic(() => import("@/components/three/CyberRadar"), { ssr: false });
 import { Handshake, Building2, GraduationCap, Globe, Shield, Mail, ExternalLink, Users, Target, Zap } from "lucide-react";
 
+import { Email } from '../Email';
 const partnerships = [
   {
     icon: Building2,
@@ -184,7 +185,7 @@ export default function CareersPage() {
               href="mailto:partnerships@cyber-sec-pro.com?subject=Partnership%20Inquiry"
               className="mt-6 inline-block text-lg font-mono text-[var(--color-neon)] hover:underline"
             >
-              partnerships@cyber-sec-pro.com
+              <Email address="partnerships@cyber-sec-pro.com" />
             </a>
             <p className="mt-3 text-xs text-white/30">We respond to all inquiries within 3 business days.</p>
           </div>

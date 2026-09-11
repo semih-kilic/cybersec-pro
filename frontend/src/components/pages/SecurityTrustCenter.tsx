@@ -32,6 +32,7 @@ import {
   ChevronUp,
 } from "lucide-react";
 
+import { Email } from '../Email';
 /* ─── DATA ────────────────────────────────────────────────────────── */
 
 const trustFeaturesBase = [
@@ -400,7 +401,7 @@ export default function SecurityTrustCenter() {
                   <p>
                     {t("sections.disclosure.channelDesc")}{" "}
                     <a href="mailto:security@cyber-sec-pro.com" className="text-[var(--color-cyan)] hover:underline font-medium">
-                      security@cyber-sec-pro.com
+                      <Email address="security@cyber-sec-pro.com" />
                     </a>
                   </p>
                   <div className="mt-3 p-3 rounded-lg bg-black/30 border border-white/5">

@@ -5,6 +5,7 @@ import RevealOnScroll from "@/components/animations/RevealOnScroll";
 import DataShield from "@/components/three/DataShield";
 import { AlertTriangle } from "lucide-react";
 
+import { Email } from '../Email';
 export default function TermsPage() {
   const t = useTranslations("terms");
   const pricing = useTranslations("pricing");
@@ -159,7 +160,7 @@ export default function TermsPage() {
             <div className="glass-card p-6 border-[var(--color-neon)]/20">
               <h2 className="text-xl font-bold text-white mb-3">Contact</h2>
               <p className="text-sm text-white/50">Questions about these Terms? Contact us at:</p>
-              <p className="mt-2 text-sm font-mono text-[var(--color-neon)]">support@cyber-sec-pro.com</p>
+              <p className="mt-2 text-sm font-mono text-[var(--color-neon)]"><Email address="support@cyber-sec-pro.com" /></p>
               <p className="mt-2 text-xs text-white/40">These Terms were last updated on January 15, 2026. We will notify active users of material changes via email 30 days before they take effect.</p>
             </div>
           </RevealOnScroll>

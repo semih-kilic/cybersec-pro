@@ -6,6 +6,7 @@ import RevealOnScroll from "@/components/animations/RevealOnScroll";
 import GlitchText from "@/components/animations/GlitchText";
 import { Target, BookOpen, User, Shield, Globe, Lock, Clock, Award, CheckCircle, ArrowRight, Mail } from "lucide-react";
 
+import { Email } from '../Email';
 const ParticleField = dynamic(() => import("@/components/three/ParticleField"), { ssr: false });
 
 const stats = [
@@ -208,7 +209,7 @@ export default function AboutPage() {
                   &ldquo;I&apos;m building CyberSec Pro entirely on my own — no team, no investors, just one person&apos;s vision to make professional-grade security testing accessible to everyone. If you believe in this mission, your support means the world.&rdquo;
                 </p>
                 <a href="mailto:info@cyber-sec-pro.com" className="mt-4 inline-flex items-center gap-2 text-xs text-white/40 hover:text-[var(--color-neon)] transition">
-                  <Mail size={12} /> support@cyber-sec-pro.com
+                  <Mail size={12} /> <Email address="info@cyber-sec-pro.com" />
                 </a>
               </div>
             </div>
