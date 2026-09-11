@@ -44,18 +44,23 @@ export default defineConfig({
     cssCodeSplit: true,
     rollupOptions: {
       output: {
-        // Use a function for manualChunks to be compatible with newer Rollup/Rolldown
+        // Ordered most-specific first. The previous rule list opened with a
+        // bare `includes('react')` test, which swallowed react-router,
+        // react-i18next, @tanstack/* and lucide-react into `vendor` before
+        // their own rules could ever match — so `router`, `query` and friends
+        // were never emitted.
         manualChunks(id: string) {
           if (!id.includes('node_modules')) return undefined;
-          if (id.includes('react') || id.includes('react-dom')) return 'vendor';
-          if (id.includes('react-router-dom')) return 'router';
+          // recharts is deliberately NOT split out: forcing it into a named
+          // chunk pulled it into the entry graph, so it loaded on every page
+          // instead of staying inside AnalyticsPage's lazy chunk.
+          if (id.includes('react-router')) return 'router';
+          if (id.includes('@tanstack')) return 'query';
+          if (id.includes('i18next')) return 'i18n';
+          if (id.includes('@headlessui') || id.includes('@heroicons') || id.includes('lucide-react')) return 'ui';
           if (id.includes('framer-motion')) return 'motion';
-          if (id.includes('@tanstack/react-query')) return 'query';
-          if (id.includes('i18next') || id.includes('react-i18next') || id.includes('i18next-browser-languagedetector')) return 'i18n';
-          if (id.includes('@headlessui') || id.includes('@heroicons')) return 'ui';
-          if (id.includes('@stripe/stripe-js') || id.includes('@stripe/react-stripe-js')) return 'stripe';
           if (id.includes('socket.io-client')) return 'socket';
-          if (id.includes('react-hook-form') || id.includes('@hookform') || id.includes('zod')) return 'forms';
+          if (id.includes('/react-dom/') || id.includes('/react/') || id.includes('/scheduler/')) return 'vendor';
           return undefined;
         },
       },
