@@ -25,7 +25,7 @@ import {
 } from 'lucide-react';
 import { useDocumentTitle } from '../../hooks/useUtilities';
 import api, { ScanResult, StreamConnectionStatus, ToolConfig } from '../../services/api';
-// import { useScanSubscription } from '../../hooks/useWebSocket'; // REMOVED: Socket.IO not available on backend
+import { useBrowserNotifications } from '../../hooks/useBrowserNotifications';
 import { useTarget } from '../../contexts/TargetContext';
 import { useAuth } from '../../hooks/useAuth';
 import { ScanProgress } from '../../components/dashboard/ScanProgress';
@@ -172,6 +172,7 @@ function formatElapsed(seconds: number) {
 
 export function ScanExecutionPage() {
   const { t } = useTranslation();
+  const { requestPermission: requestNotifyPermission, show: showNotification } = useBrowserNotifications();
   useDocumentTitle('Scan Execution — CyberSec Pro');
   const { scanId, toolId: routeToolId } = useParams<{ scanId: string; toolId: string }>();
   const [searchParams] = useSearchParams();
@@ -591,6 +592,31 @@ export function ScanExecutionPage() {
     return () => clearInterval(poll);
   }, [currentScanId, status]);
 
+  // Native notification when a scan reaches a terminal state. Fires once per
+  // scan, and `show()` stays silent while the tab is focused — the on-page
+  // toast already covers that case. This is the only producer of browser
+  // notifications in the app; the old Socket.IO bridge never fired because
+  // there is no WebSocket server.
+  const notifiedScanRef = useRef<string | null>(null);
+  useEffect(() => {
+    if (!currentScanId) return;
+    if (status !== 'completed' && status !== 'failed') return;
+    if (notifiedScanRef.current === currentScanId) return;
+    notifiedScanRef.current = currentScanId;
+
+    const label = tool?.name || toolId || 'Scan';
+    showNotification(
+      status === 'completed' ? `${label} scan completed` : `${label} scan failed`,
+      {
+        body:
+          status === 'completed'
+            ? `Finished on ${target}. Open the tab to see the results.`
+            : `Stopped on ${target}. Open the tab to see what went wrong.`,
+        tag: `scan-${currentScanId}`,
+      },
+    );
+  }, [status, currentScanId, tool?.name, toolId, target, showNotification]);
+
   const handleStartScan = async () => {
     if (!target) {
       setError('Target is required');
@@ -601,6 +627,9 @@ export function ScanExecutionPage() {
       return;
     }
     addGlobalTarget(target);
+    // Asked here, on a real user gesture, and only for a notification we will
+    // actually send: the scan-finished one below. Browsers prompt at most once.
+    void requestNotifyPermission();
     setError(null);
     setOutput([]);
     setStatus('running');

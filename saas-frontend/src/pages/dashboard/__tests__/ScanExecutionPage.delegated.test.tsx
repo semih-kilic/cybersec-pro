@@ -47,9 +47,6 @@ vi.mock('../../../components/ui/Toast', () => ({
 vi.mock('../../../contexts/TargetContext', () => ({
   useTarget: () => ({ target: '', addRecentTarget: vi.fn() }),
 }));
-vi.mock('../../../hooks/useWebSocket', () => ({
-  useScanSubscription: () => ({ lastMessage: null, readyState: 0, output: [] }),
-}));
 vi.mock('../../../hooks/useUtilities', () => ({
   useDocumentTitle: vi.fn(),
 }));

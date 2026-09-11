@@ -741,16 +741,16 @@ function HealthTab({ d }: { d: AdminOverview }) {
   const items = [
     { title: 'Backend API', detail: 'Rust Axum', metric: 'Port 5001' },
     { title: 'PostgreSQL', detail: 'cybersec_pro database', metric: 'localhost:5432' },
-    { title: 'Nginx Proxy', detail: 'Reverse proxy active', metric: 'Port 80 / 443' },
+    { title: 'Nginx Proxy', detail: 'Reverse proxy active', metric: 'Port 80 (TLS at edge)' },
     { title: 'Stripe Payments', detail: 'Live mode', metric: 'price IDs configured' },
-    { title: 'Email (SMTP)', detail: 'Gmail SMTP', metric: 'smtp.gmail.com:465' },
+    { title: 'Email (SMTP)', detail: 'Mailjet, Gmail fallback', metric: 'in-v3.mailjet.com:587' },
     { title: 'CyberSec AI Worker', detail: 'Autonomous job processor', metric: '6s poll interval' },
   ];
 
   const services = [
     'Authentication & JWT',
     'Rate Limiting',
-    'WebSocket (Socket.IO)',
+    'SSE Scan Output Streaming',
     'Service Manager Watchdog',
     'Site Monitor',
     'Audit Logging',

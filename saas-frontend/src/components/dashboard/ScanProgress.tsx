@@ -2,7 +2,12 @@
  * 🛡️ CyberSec Pro — Scan Progress Stepper (V12)
  *
  * Vertical stepper showing every scan lifecycle phase in real-time.
- * Subscribes to WebSocket `scan_phase_update` events.
+ *
+ * Driven by `externalPhase`, which the page feeds from the SSE scan stream.
+ * `status`/`progress`/`outputCount` are the fallback when a phase event has
+ * not arrived yet. The wsManager subscription below is a dormant second
+ * source: there is no Socket.IO server today, so it never fires, but it keeps
+ * working if a deployment ever sets window.__WS_URL__.
  *
  * Phases:
  *   INITIALIZING → RESOLVING_TARGET → PREPARING_TOOL → EXECUTING

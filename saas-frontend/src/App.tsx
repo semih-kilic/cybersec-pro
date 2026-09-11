@@ -38,9 +38,8 @@ import { CommandPalette } from './components/ui/CommandPalette';
 import { useKeyboardShortcuts } from './hooks/useKeyboardShortcuts';
 import { ShortcutsHelp } from './components/ui/ShortcutsHelp';
 
-// Real-time: WebSocket manager + browser notifications
+// Real-time: WebSocket manager (inert until window.__WS_URL__ is set)
 import { wsManager } from './lib/socketManager';
-import { useBrowserNotifications } from './hooks/useBrowserNotifications';
 
 // Pages — lazy loaded for optimal code splitting
 const LandingPage = lazy(() => import('./pages/LandingPage').then(m => ({ default: m.LandingPage })));
@@ -245,14 +244,15 @@ const DASHBOARD_BOTTOM_NAV: VosNavItem[] = [
 function DashboardLayout() {
   const { user, logout } = useAuth();
   const { isPaletteOpen, openPalette, closePalette, showShortcutsHelp, setShowShortcutsHelp } = useKeyboardShortcuts();
-  const { requestPermission } = useBrowserNotifications();
   const location = useLocation();
 
-  // Connect WebSocket once when dashboard mounts
+  // Connect WebSocket once when dashboard mounts. No-op unless a deployment
+  // sets window.__WS_URL__ — there is no Socket.IO server today, scan output
+  // arrives over SSE. Notification permission is asked for on the scan page,
+  // from a real user gesture, not here.
   useEffect(() => {
     wsManager.connect();
-    requestPermission();
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+  }, []);
 
   // Google Analytics — track SPA route changes
   useEffect(() => {
