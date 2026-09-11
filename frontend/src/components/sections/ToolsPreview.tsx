@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useTranslations } from "next-intl";
+import { useTranslations, useLocale } from "next-intl";
 import RevealOnScroll from "@/components/animations/RevealOnScroll";
 import { ArrowRight, Terminal } from "lucide-react";
 
@@ -19,6 +19,10 @@ const sampleTools = [
 
 export default function ToolsPreview() {
   const t = useTranslations("tools");
+  const locale = useLocale();
+  // Locale-prefixed route: a bare "/tools" makes Next prefetch an unresolved
+  // [locale] path and 404.
+  const lp = (path: string) => `/${locale}${path}`;
 
   return (
     <section id="tools" className="relative py-28">
@@ -54,7 +58,7 @@ export default function ToolsPreview() {
         </div>
 
         <div className="mt-12 text-center">
-          <Link href="/tools" className="btn-outline">
+          <Link href={lp("/tools")} className="btn-outline">
             {t("viewDetails")} <ArrowRight size={16} />
           </Link>
         </div>

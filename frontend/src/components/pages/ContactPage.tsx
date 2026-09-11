@@ -1,6 +1,6 @@
 "use client";
 
-import { useTranslations } from "next-intl";
+import { useTranslations, useLocale } from "next-intl";
 import dynamic from "next/dynamic";
 import RevealOnScroll from "@/components/animations/RevealOnScroll";
 import GlitchText from "@/components/animations/GlitchText";
@@ -11,6 +11,10 @@ const ParticleField = dynamic(() => import("@/components/three/ParticleField"), 
 
 export default function ContactPage() {
   const t = useTranslations("contact");
+  const locale = useLocale();
+  // Routes are locale-prefixed; a bare "/docs" makes Next prefetch an
+  // unresolved [locale] path and 404.
+  const lp = (path: string) => `/${locale}${path}`;
 
   return (
     <>
@@ -72,7 +76,7 @@ export default function ContactPage() {
                 {t("support.trial").split("—")[1]}
               </li>
             </ul>
-            <Link href="/docs" className="btn-outline mt-auto justify-center">
+            <Link href={lp("/docs")} className="btn-outline mt-auto justify-center">
               {t("support.cta")} <ArrowRight size={14} />
             </Link>
           </div>
@@ -109,9 +113,9 @@ export default function ContactPage() {
           <div className="mx-auto max-w-xl rounded-2xl border border-[var(--color-neon)]/10 bg-[var(--color-neon)]/[0.02] p-10">
             <h2 className="text-2xl font-bold">{t("ctaSection.title")}</h2>
             <p className="mt-3 text-sm text-white/50">{t("ctaSection.subtitle")}</p>
-            <Link href="/dashboard/login" className="btn-primary mt-6">
+            <a href="/dashboard/login" className="btn-primary mt-6">
               {t("ctaSection.button")} <ArrowRight size={14} />
-            </Link>
+            </a>
           </div>
         </RevealOnScroll>
       </section>

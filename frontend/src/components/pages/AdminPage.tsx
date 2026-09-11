@@ -4,7 +4,6 @@ import dynamic from "next/dynamic";
 import RevealOnScroll from "@/components/animations/RevealOnScroll";
 const MatrixRain = dynamic(() => import("@/components/three/MatrixRain"), { ssr: false });
 import { ShieldAlert } from "lucide-react";
-import Link from "next/link";
 
 export default function AdminPage() {
   return (
@@ -21,9 +20,9 @@ export default function AdminPage() {
             The admin panel is available in the dashboard application. Please log in with your admin credentials.
           </p>
           <div className="mt-8">
-            <Link href="/dashboard" className="btn-primary">
+            <a href="/dashboard" className="btn-primary">
               Go to Dashboard
-            </Link>
+            </a>
           </div>
         </div>
       </RevealOnScroll>

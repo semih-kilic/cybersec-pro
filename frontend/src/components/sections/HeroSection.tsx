@@ -1,7 +1,6 @@
 "use client";
 
 import dynamic from "next/dynamic";
-import Link from "next/link";
 import { useTranslations } from "next-intl";
 import { motion, useScroll, useTransform } from "framer-motion";
 import { ArrowRight, Cloud } from "lucide-react";
@@ -157,9 +156,9 @@ export default function HeroSection() {
           transition={{ duration: 0.6, delay: 0.8 }}
           className="mt-10"
         >
-          <Link href="/dashboard/login" className="btn-primary group text-base">
+          <a href="/dashboard/login" className="btn-primary group text-base">
             {t("cta")} <ArrowRight size={16} className="transition-transform group-hover:translate-x-1" />
-          </Link>
+          </a>
         </motion.div>
 
         {/* Stats bar with counter animation */}

@@ -79,12 +79,12 @@ export default function Header() {
         {/* Actions */}
         <div className="hidden items-center gap-3 md:flex">
           <LanguageSwitcher />
-          <Link href="/dashboard/login" className="font-mono text-sm text-[var(--color-neon)] transition hover:underline">
+          <a href="/dashboard/login" className="font-mono text-sm text-[var(--color-neon)] transition hover:underline">
             {t("login")}
-          </Link>
-          <Link href="/dashboard/login" className="btn-primary text-xs">
+          </a>
+          <a href="/dashboard/login" className="btn-primary text-xs">
             {t("getAccess")}
-          </Link>
+          </a>
         </div>
 
         {/* Mobile toggle */}
@@ -108,9 +108,9 @@ export default function Header() {
           ))}
           <div className="mt-3 flex items-center gap-3">
             <LanguageSwitcher />
-            <Link href="/dashboard/login" className="btn-primary text-xs" onClick={() => setOpen(false)}>
+            <a href="/dashboard/login" className="btn-primary text-xs" onClick={() => setOpen(false)}>
               {t("getAccess")}
-            </Link>
+            </a>
           </div>
         </div>
       )}

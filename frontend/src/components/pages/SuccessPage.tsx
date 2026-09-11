@@ -1,6 +1,6 @@
 "use client";
 
-import { useTranslations } from "next-intl";
+import { useTranslations, useLocale } from "next-intl";
 import dynamic from "next/dynamic";
 import RevealOnScroll from "@/components/animations/RevealOnScroll";
 import { CheckCircle, BookOpen, LayoutDashboard } from "lucide-react";
@@ -10,6 +10,10 @@ const ParticleField = dynamic(() => import("@/components/three/ParticleField"), 
 
 export default function SuccessPage() {
   const t = useTranslations("success");
+  const locale = useLocale();
+  // Routes are locale-prefixed; a bare "/docs" makes Next prefetch an
+  // unresolved [locale] path and 404.
+  const lp = (path: string) => `/${locale}${path}`;
 
   return (
     <>
@@ -23,11 +27,11 @@ export default function SuccessPage() {
           <h1 className="text-4xl font-extrabold md:text-5xl">{t("title")}</h1>
           <p className="mt-4 text-lg text-white/55">{t("subtitle")}</p>
           <div className="mt-8 flex flex-col gap-4 sm:flex-row sm:justify-center">
-            <Link href="/dashboard" className="btn-primary inline-flex items-center gap-2">
+            <a href="/dashboard" className="btn-primary inline-flex items-center gap-2">
               <LayoutDashboard className="h-5 w-5" />
               {t("dashboard")}
-            </Link>
-            <Link href="/docs" className="btn-outline inline-flex items-center gap-2">
+            </a>
+            <Link href={lp("/docs")} className="btn-outline inline-flex items-center gap-2">
               <BookOpen className="h-5 w-5" />
               {t("docs")}
             </Link>

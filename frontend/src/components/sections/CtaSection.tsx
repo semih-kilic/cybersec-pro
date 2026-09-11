@@ -1,6 +1,5 @@
 "use client";
 
-import Link from "next/link";
 import { useTranslations } from "next-intl";
 import { motion } from "framer-motion";
 import { ArrowRight } from "lucide-react";
@@ -55,9 +54,9 @@ export default function CtaSection() {
           transition={{ duration: 0.6, delay: 0.2 }}
           className="mt-8"
         >
-          <Link href="/dashboard/login" className="btn-primary text-base">
+          <a href="/dashboard/login" className="btn-primary text-base">
             {t("button")} <ArrowRight size={16} />
-          </Link>
+          </a>
         </motion.div>
       </div>
     </section>
