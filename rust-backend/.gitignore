@@ -12,3 +12,12 @@ scanme.nmap.org/
 backblue.gif
 fade.gif
 index.html
+
+# Recurring junk: editor/tooling backups, stray logs, diagnostic Dockerfiles
+# and scan report output. These kept getting committed by auto-git-sync.
+*.bak
+*.bak-*
+*.bak_*
+*.log
+Dockerfile.diag*
+reports/
