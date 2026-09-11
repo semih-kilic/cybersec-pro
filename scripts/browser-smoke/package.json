@@ -1,0 +1,14 @@
+{
+  "name": "cybersec-browser-smoke",
+  "private": true,
+  "version": "1.0.0",
+  "type": "module",
+  "description": "Headless-browser smoke tests for the deployed dashboard and marketing site. Kept out of the app packages so the Playwright driver never ships to users.",
+  "scripts": {
+    "dashboard": "node dashboard.mjs",
+    "marketing": "node marketing.mjs"
+  },
+  "dependencies": {
+    "playwright-core": "^1.50.0"
+  }
+}
