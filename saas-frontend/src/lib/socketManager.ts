@@ -7,7 +7,7 @@
  *   wsManager.connect(token);
  *   wsManager.on('scan_complete', handler);
  */
-import { io, Socket } from 'socket.io-client';
+import type { Socket } from 'socket.io-client';
 
 // --- Types ---
 export type WSEvent =
@@ -68,7 +68,27 @@ class WebSocketManager {
   connect(token?: string): void {
     if (this.socket?.connected) return;
 
+    // This deployment has no Socket.IO server: the backend streams scan output
+    // over SSE and nothing behind nginx answers /socket.io. Connecting anyway
+    // pointed the client at the SPA's own origin, where nginx replied with
+    // index.html; socket.io could not parse that and retried forever. Stay
+    // disconnected unless a deployment explicitly provides a server URL.
+    if (!WS_URL) {
+      this.setState('disconnected');
+      return;
+    }
+
+    void this.openSocket(token);
+  }
+
+  /**
+   * socket.io-client is loaded on demand so the ~12 KB client only ships to
+   * deployments that actually set window.__WS_URL__.
+   */
+  private async openSocket(token?: string): Promise<void> {
     this.setState('connecting');
+
+    const { io } = await import('socket.io-client');
 
     const socket = io(WS_URL + '/scans', {
       reconnection: false, // we handle reconnection ourselves
