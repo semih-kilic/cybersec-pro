@@ -15,15 +15,11 @@ Disallow: /dashboard/settings
 Disallow: /api/
 Disallow: /auth/
 
-# Block AI training crawlers (optional — remove if you want them)
-User-agent: GPTBot
-Disallow: /
-User-agent: CCBot
-Disallow: /
-User-agent: ClaudeBot
-Disallow: /
-User-agent: Google-Extended
-Disallow: /
+# AI crawlers are deliberately NOT blocked here. The public pages on this host
+# (login, register, privacy, terms, gdpr, docs) are the ones we want assistants
+# and answer engines to be able to read and cite. The private app surfaces are
+# already disallowed above by path, which is the right granularity — blocking a
+# crawler wholesale also removes the public pages from its index.
 
 Sitemap: https://app.cyber-sec-pro.com/sitemap.xml
 Sitemap: https://cyber-sec-pro.com/sitemap.xml

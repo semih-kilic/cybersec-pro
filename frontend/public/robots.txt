@@ -1,8 +1,9 @@
 User-agent: *
 Allow: /
 
-Disallow: /app/
-Disallow: /api/
+# The dashboard lives on app.cyber-sec-pro.com and carries its own robots.txt;
+# robots rules are per-host, so nothing about it belongs in this file. /app/ and
+# /api/ used to be listed here and are both 404 on this host.
 
 # Structured summary for AI assistants and answer engines (llmstxt.org)
 # LLM-Index: https://cyber-sec-pro.com/llms.txt
