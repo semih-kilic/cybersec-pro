@@ -4,4 +4,7 @@ Allow: /
 Disallow: /app/
 Disallow: /api/
 
+# Structured summary for AI assistants and answer engines (llmstxt.org)
+# LLM-Index: https://cyber-sec-pro.com/llms.txt
+
 Sitemap: https://cyber-sec-pro.com/sitemap.xml

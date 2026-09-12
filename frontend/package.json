@@ -6,7 +6,10 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "postbuild": "node scripts/generate-sitemap.mjs && node scripts/generate-llms-txt.mjs",
+    "sitemap": "node scripts/generate-sitemap.mjs",
+    "llms": "node scripts/generate-llms-txt.mjs"
   },
   "dependencies": {
     "@gsap/react": "^2.1.2",

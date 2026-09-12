@@ -35,7 +35,7 @@ const compliance = [
 
 const security = [
   { title: "AES-256 Encryption", desc: "Data encrypted at rest and in transit with military-grade encryption standards." },
-  { title: "Isolated Scan Infrastructure", desc: "Every scan runs in its own container with no cross-tenant access. Dedicated instances on Enterprise plans." },
+  { title: "Isolated Scan Execution", desc: "Scans run in a dedicated scan container, one process per job. Commands are tokenised before any value you enter is substituted, so no shell is ever involved." },
   { title: "GDPR Ready", desc: "Full data subject rights: access, rectify, delete, export, and withdraw consent." },
   { title: "Canadian Data Residency", desc: "Customer data, scan results and logs stay in Canadian data centres. Nothing leaves Canadian jurisdiction without your explicit consent." },
 ];

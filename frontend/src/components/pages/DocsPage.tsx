@@ -63,7 +63,7 @@ export default function DocsPage() {
                 <p className="text-sm text-white/50 mb-6">Get up and running with CyberSec Pro in under 5 minutes. Follow these steps to launch your first security assessment.</p>
                 <div className="grid gap-6 md:grid-cols-3">
                   {[
-                    { n: "1", title: "Create Account", desc: "Register at cyber-sec-pro.com with your email address or GitHub OAuth. Verify your email to activate. You'll receive a 14-day free trial with access to basic scanning tools." },
+                    { n: "1", title: "Create Account", desc: "Register at cyber-sec-pro.com with your email address or GitHub OAuth. Verify your email to activate. You'll receive a 14-day free trial: all 88 tools, 3 scans per day, PDF reports." },
                     { n: "2", title: "Set Up MFA", desc: "Navigate to Settings → Security and enable TOTP-based MFA using Google Authenticator, Authy, or any RFC 6238 compatible app. MFA is mandatory for all accounts." },
                     { n: "3", title: "Add Your First Target", desc: "Go to Targets → Add Target. Enter your domain or IP address. Verify ownership via DNS TXT record, HTTP file upload, or HTML meta tag verification." },
                     { n: "4", title: "Configure Scan Profile", desc: "Choose a scan type (Quick, Full, Custom, or Scheduled). Select tools and set parameters. Save as a reusable profile for future scans." },
@@ -325,23 +325,23 @@ export default function DocsPage() {
                 <h2 className="text-xl font-bold text-white mb-4">Tool Access by Plan</h2>
                 <div className="grid gap-3 md:grid-cols-4">
                   {[
-                    { plan: "Free Trial", count: "88", desc: "All tools, 1 scan, 14-day trial", color: "white/60" },
+                    { plan: "Free Trial", count: "88", desc: "All tools, 3 scans/day, 14-day trial", color: "white/60" },
                     {
                       plan: `${pricing("plans.starter.name")} (${pricing("plans.starter.price")}${pricing("plans.starter.period")})`,
                       count: "88",
-                      desc: "1 domain, weekly scans, reports",
+                      desc: "30 scans/month, 1 project, scheduled scans",
                       color: "var(--color-neon)",
                     },
                     {
                       plan: `${pricing("plans.professional.name")} (${pricing("plans.professional.price")}${pricing("plans.professional.period")})`,
                       count: "88",
-                      desc: "5 domains, API, compliance reports",
+                      desc: "250 scans/month, 5 projects, API, compliance reports",
                       color: "var(--color-cyan)",
                     },
                     {
                       plan: `${pricing("plans.enterprise.name")} (${pricing("plans.enterprise.price")}${pricing("plans.enterprise.period")})`,
                       count: "88",
-                      desc: "Unlimited, SSO, dedicated support",
+                      desc: "5,000 scans/month, SSO, unlimited projects + seats",
                       color: "var(--color-purple)",
                     },
                   ].map((p) => (

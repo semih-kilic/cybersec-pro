@@ -378,33 +378,64 @@ export function getSoftwareJsonLd() {
     operatingSystem: "Web Browser",
     applicationCategory: "SecurityApplication",
     offers: [
+      // Mirrors rust-backend/src/services/plan.rs exactly — these limits are
+      // what the backend enforces, and Stripe charges these amounts in USD
+      // (verified against the live price objects). Answer engines quote this
+      // block verbatim, so it must not drift from the product.
       {
         "@type": "Offer",
         price: "0",
-        priceCurrency: "EUR",
+        priceCurrency: "USD",
         name: "Free Trial",
-        description: "14-day free trial with all security tools",
+        description: "14 days, 3 scans per day, all 88 tools, PDF reports",
       },
       {
         "@type": "Offer",
         price: "29",
-        priceCurrency: "EUR",
+        priceCurrency: "USD",
         name: "Starter",
-        description: "All 88 tools, 30 scans/month, basic reports",
+        description:
+          "All 88 tools, 30 scans/month, 2 concurrent scans, PDF + HTML reports, scheduled scans, 3 team members",
+        priceSpecification: {
+          "@type": "UnitPriceSpecification",
+          price: "29",
+          priceCurrency: "USD",
+          billingDuration: 1,
+          billingIncrement: 1,
+          unitText: "MONTH",
+        },
       },
       {
         "@type": "Offer",
         price: "99",
-        priceCurrency: "EUR",
+        priceCurrency: "USD",
         name: "Professional",
-        description: "All 88 tools, 250 scans/month, AI suggestions, compliance reports",
+        description:
+          "All 88 tools, 250 scans/month, 5 concurrent scans, AI suggestions and remediation, compliance reports, REST API access, Purple Team, 10 team members",
+        priceSpecification: {
+          "@type": "UnitPriceSpecification",
+          price: "99",
+          priceCurrency: "USD",
+          billingDuration: 1,
+          billingIncrement: 1,
+          unitText: "MONTH",
+        },
       },
       {
         "@type": "Offer",
         price: "349",
-        priceCurrency: "EUR",
+        priceCurrency: "USD",
         name: "Enterprise",
-        description: "All 88 tools, 5000 scans/month, SSO (SAML/OIDC/LDAP), priority support, dedicated manager",
+        description:
+          "All 88 tools, 5000 scans/month, unlimited concurrent scans, projects and team members, SSO (SAML, OIDC, LDAP), everything in Professional",
+        priceSpecification: {
+          "@type": "UnitPriceSpecification",
+          price: "349",
+          priceCurrency: "USD",
+          billingDuration: 1,
+          billingIncrement: 1,
+          unitText: "MONTH",
+        },
       },
     ],
   };
