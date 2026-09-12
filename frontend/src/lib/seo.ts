@@ -438,3 +438,63 @@ export function getBlogPostJsonLd(slug: string) {
     keywords: post.tags.join(", "),
   };
 }
+
+/**
+ * Structured data for a single tool page.
+ *
+ * Deliberately does not claim authorship of the tool: nmap, sqlmap and the
+ * rest are third-party software, so the page is a `TechArticle` we publish
+ * *about* the tool, and the tool itself sits in `about` as a
+ * `SoftwareApplication`. The BreadcrumbList tells a crawler where the page
+ * sits, which is how these end up cited as "the nmap page on CyberSec Pro"
+ * rather than as a loose URL.
+ */
+export function getToolJsonLd(
+  tool: {
+    name: string;
+    description?: string;
+    category?: string;
+    subcategory?: string | null;
+    business_category?: string | null;
+    plan_required?: string;
+  },
+  locale: string,
+  slug: string,
+) {
+  const url = `${BASE_URL}/${locale}/tools/${slug}/`;
+  const category = tool.subcategory || tool.business_category || tool.category || "Security";
+
+  return {
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "TechArticle",
+        "@id": `${url}#article`,
+        headline: `${tool.name} — run it in your browser`,
+        description:
+          tool.description ||
+          `${tool.name} runs on CyberSec Pro with a generated parameter form and live output.`,
+        inLanguage: locale,
+        url,
+        isPartOf: { "@type": "WebSite", "@id": `${BASE_URL}/#website` },
+        publisher: { "@type": "Organization", name: "CyberSec Pro", url: BASE_URL },
+        about: {
+          "@type": "SoftwareApplication",
+          name: tool.name,
+          applicationCategory: "SecurityApplication",
+          applicationSubCategory: category,
+          operatingSystem: "Web Browser",
+        },
+      },
+      {
+        "@type": "BreadcrumbList",
+        "@id": `${url}#breadcrumb`,
+        itemListElement: [
+          { "@type": "ListItem", position: 1, name: "CyberSec Pro", item: `${BASE_URL}/${locale}/` },
+          { "@type": "ListItem", position: 2, name: "Tools", item: `${BASE_URL}/${locale}/tools/` },
+          { "@type": "ListItem", position: 3, name: tool.name, item: url },
+        ],
+      },
+    ],
+  };
+}

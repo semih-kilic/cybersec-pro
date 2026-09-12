@@ -59,13 +59,27 @@ const PLAN_COLORS: Record<string, string> = {
   enterprise: "text-rose-400 border-rose-400/30 bg-rose-400/10",
 };
 
-export default function ToolDetailPage({ slug }: { slug: string }) {
+/**
+ * `initialTool` is resolved at build time by the route and rendered on the
+ * server, so the prerendered HTML carries the tool's real name, description,
+ * category and plan. Without it this page shipped "Loading tool details…" as
+ * its entire content — which is what a crawler saw on all 890 tool pages.
+ * The client fetch below now only runs when the server had nothing to give.
+ */
+export default function ToolDetailPage({
+  slug,
+  initialTool = null,
+}: {
+  slug: string;
+  initialTool?: Tool | null;
+}) {
   const locale = useLocale();
-  const [tool, setTool] = useState<Tool | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [tool, setTool] = useState<Tool | null>(initialTool);
+  const [loading, setLoading] = useState(!initialTool);
   const [notFound, setNotFound] = useState(false);
 
   useEffect(() => {
+    if (initialTool) return;
     let cancelled = false;
     (async () => {
       try {
@@ -260,7 +274,7 @@ export default function ToolDetailPage({ slug }: { slug: string }) {
           <div className="glass-card p-8 text-center">
             <h2 className="mb-2 text-2xl font-extrabold">Ready to use {tool.name}?</h2>
             <p className="mb-6 text-white/50">
-              Run {tool.name} and 395 other tools directly in your browser — no setup, no VMs.
+              Run {tool.name} and 87 other curated security tools directly in your browser — no setup, no VMs.
             </p>
             <div className="flex flex-col items-center justify-center gap-3 sm:flex-row">
               <a href="/dashboard/login" className="btn-primary">
