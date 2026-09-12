@@ -991,7 +991,9 @@
     "predefinedPresets": "Vordefinierte Voreinstellungen",
     "presetsSubtitle": "Einsatzbereite Parameterkombinationen für gängige Anwendungsfälle",
     "executionNode": "Ausführungsknoten",
-    "executionHint": "Wählen Sie, wo der Scan ausgeführt wird. Verwenden Sie einen privaten Agenten, um interne Netzwerke hinter Ihrer Firewall zu scannen."
+    "executionHint": "Wählen Sie, wo der Scan ausgeführt wird. Verwenden Sie einen privaten Agenten, um interne Netzwerke hinter Ihrer Firewall zu scannen.",
+    "zeroKnowledge": "Zero-Knowledge — Zugangsdaten gehen ausschließlich an Ihren Agenten und werden auf unseren Servern nie gespeichert.",
+    "learnMore": "Mehr erfahren"
   },
   "toolsCatalog": {
     "noToolsFound": "Keine Tools gefunden",

@@ -991,7 +991,9 @@
     "predefinedPresets": "Önceden Tanımlı Hazır Ayarlar",
     "presetsSubtitle": "Yaygın kullanım durumları için hazır parametre kombinasyonları",
     "executionNode": "Çalıştırma Düğümü",
-    "executionHint": "Taramanın çalıştırılacağı yeri seçin. Güvenlik duvarınızın arkasındaki dahili ağları taramak için özel bir ajan kullanın."
+    "executionHint": "Taramanın çalıştırılacağı yeri seçin. Güvenlik duvarınızın arkasındaki dahili ağları taramak için özel bir ajan kullanın.",
+    "zeroKnowledge": "Sıfır bilgi — kimlik bilgileri yalnızca sizin aracınıza gönderilir ve sunucularımızda hiçbir zaman saklanmaz.",
+    "learnMore": "Daha fazla bilgi"
   },
   "toolsCatalog": {
     "noToolsFound": "Araç bulunamadı",

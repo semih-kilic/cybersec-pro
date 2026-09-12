@@ -11,6 +11,7 @@ import { getToolConfig, getSmartDefaults, ToolConfig } from '../../config/toolCo
 import { useTarget } from '../../contexts/TargetContext';
 import { useQuery } from '@tanstack/react-query';
 import { queryKeys, CACHE_TIMES } from '../../lib/queryClient';
+import { parseFormParameters, parseObjectParameters, resolveSelectOption } from '../../lib/toolFormParams';
 import { useAgentsList } from '../../hooks/useApiQueries';
 import api, { StreamConnectionStatus } from '../../services/api';
 
@@ -32,8 +33,6 @@ interface ToolParameter {
   options?: string[]; description?: string; group?: string;
   secret?: boolean;
 }
-
-const SECRET_NAME_RE = /pass|secret|token|api[_-]?key|credential/i;
 
 interface Tool {
   id: string; name: string; slug?: string; description: string;
@@ -167,57 +166,21 @@ export function ToolDetailPage() {
 
   const getNormalizedParams = (): ToolParameter[] => {
     if (!tool) return [];
+    // Precedence is unchanged; only the flattening moved to lib/toolFormParams.
     // 1. DB-backed zero-code form (parameters.form) is the source of truth.
     //    This ships for all `ht_*` and seeded tools; static configs must NOT shadow it.
-    if (tool.parameters && typeof tool.parameters === 'object' && !Array.isArray(tool.parameters) && Array.isArray((tool.parameters as any).form)) {
-      const form = (tool.parameters as any).form as Array<any>;
-      if (form.length > 0) {
-        return form.map((f) => {
-          const isSecret = f.type === 'password' || SECRET_NAME_RE.test(String(f.name || ''));
-          return {
-            name: f.name,
-            flag: '', // Backend handles substitution via command_template {placeholders}
-            type: (f.type === 'url' || f.type === 'email' || f.type === 'password') ? 'text' : (f.type as ToolParameter['type']),
-            required: !!f.required,
-            default: f.default !== undefined ? String(f.default) : undefined,
-            placeholder: f.placeholder || (f.default !== undefined ? String(f.default) : ''),
-            options: f.options,
-            description: f.label || f.name,
-            group: f.group || 'Parameters',
-            secret: isSecret,
-          } as ToolParameter;
-        });
-      }
-    }
+    const fromForm = parseFormParameters(tool.parameters);
+    if (fromForm && fromForm.length > 0) return fromForm as ToolParameter[];
     // 2. Array-shaped parameters from the API.
     if (Array.isArray(tool.parameters) && tool.parameters.length > 0) return tool.parameters;
     // 3. Static config fallback (only when DB provided nothing).
     if (toolConfig && Array.isArray(toolConfig.parameters) && toolConfig.parameters.length > 0) return toolConfig.parameters;
-    // Hackingtool seed shape: { form: [{name,label,type,required,placeholder,default,options}], danger_level, target_types }
-    if (tool.parameters && typeof tool.parameters === 'object' && Array.isArray((tool.parameters as any).form)) {
-      const form = (tool.parameters as any).form as Array<any>;
-      return form.map((f) => {
-        const isSecret = f.type === 'password' || SECRET_NAME_RE.test(String(f.name || ''));
-        return {
-          name: f.name,
-          flag: '', // Backend handles substitution via command_template {placeholders}
-          type: (f.type === 'url' || f.type === 'email' || f.type === 'password') ? 'text' : (f.type as ToolParameter['type']),
-          required: !!f.required,
-          default: f.default !== undefined ? String(f.default) : undefined,
-          placeholder: f.placeholder || (f.default !== undefined ? String(f.default) : ''),
-          options: f.options,
-          description: f.label || f.name,
-          group: 'Parameters',
-          secret: isSecret,
-        } as ToolParameter;
-      });
-    }
+    // 4. A form-shaped tool that declares no fields stays empty rather than
+    //    inheriting someone else's static parameter list.
+    if (fromForm) return fromForm as ToolParameter[];
+    // 5. Plain-object shape, e.g. { target: { type, required } }.
     if (tool.parameters && typeof tool.parameters === 'object') {
-      return Object.entries(tool.parameters).map(([key, param]: [string, any]) => ({
-        name: param.description || key, flag: param.flag || '', type: param.type || 'text',
-        required: param.required || false, default: param.default, placeholder: param.placeholder || param.default || '',
-        options: param.options, description: param.description || key, group: param.group || 'General'
-      }));
+      return parseObjectParameters(tool.parameters) as ToolParameter[];
     }
     return getToolConfig(getToolSlug(tool)).parameters;
   };
@@ -591,14 +554,9 @@ export function ToolDetailPage() {
                           {param.type === 'select' && (
                             <select value={(paramValues[param.name] as string) || ''} onChange={(e) => handleParamChange(param.name, e.target.value)} disabled={isScanning} className="w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded-lg text-white focus:outline-none focus:border-kali-blue transition disabled:opacity-50">
                               <option value="">{t('common.selectDots', 'Select...')}</option>
-                              {param.options?.map((opt: any, i: number) => {
-                                // Two shapes: legacy string options, and curated
-                                // zero-code form options `{label, value}`. Rendering
-                                // the object directly throws React error #31.
-                                const isObj = opt !== null && typeof opt === 'object';
-                                const value = isObj ? String(opt.value ?? '') : String(opt).split(' ')[0];
-                                const label = isObj ? String(opt.label ?? opt.value ?? '') : String(opt);
-                                return <option key={`${value}-${i}`} value={value}>{label}</option>;
+                              {param.options?.map((opt: unknown, i: number) => {
+                                const { value, label, key } = resolveSelectOption(opt, i);
+                                return <option key={key} value={value}>{label}</option>;
                               })}
                             </select>
                           )}

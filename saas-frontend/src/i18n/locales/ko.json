@@ -991,7 +991,9 @@
     "predefinedPresets": "사전 정의 프리셋",
     "presetsSubtitle": "일반적인 사용 사례를 위한 즉시 사용 가능한 매개변수 조합",
     "executionNode": "실행 노드",
-    "executionHint": "스캔을 실행할 위치를 선택하세요. 방화벽 뒤의 내부 네트워크를 스캔하려면 프라이빗 에이전트를 사용하세요."
+    "executionHint": "스캔을 실행할 위치를 선택하세요. 방화벽 뒤의 내부 네트워크를 스캔하려면 프라이빗 에이전트를 사용하세요.",
+    "zeroKnowledge": "제로 널리지 — 자격 증명은 고객의 에이전트로만 전송되며 당사 서버에 저장되지 않습니다.",
+    "learnMore": "자세히 보기"
   },
   "toolsCatalog": {
     "noToolsFound": "도구를 찾을 수 없음",

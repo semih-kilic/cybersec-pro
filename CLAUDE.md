@@ -178,7 +178,7 @@ CI artifacts for observability:
 
 ## 12) Privacy / Zero-knowledge Credentials
 
-- Inputs flagged secret (`f.type === 'password'` OR name matches `pass|secret|token|api[_-]?key|credential`) are rendered masked with an inline 🔒 banner on every tool form.
+- Inputs flagged secret (`f.type === 'password'` OR name matches `pass|secret|token|api[_-]?key|credential`) are rendered masked with an inline 🔒 banner on every tool form. One implementation decides this: `saas-frontend/src/lib/toolFormParams.ts`. Both forms that can launch a scan (`ToolDetailPage`, `ScanExecutionPage`) flatten parameters through it, and the `secret` flag travels with the field — the scan page had no masking at all until 2026-09-12 because it had its own copy of the flattening. Never flatten tool parameters inline; never write the flattened map back over `tool.parameters`, which is where `target_types` and `danger_level` live.
 - Per-scan credentials are forwarded to the executing agent in memory and discarded when the job ends. Not written to DB, logs, backups, or analytics.
 - BYO Vault is supported for credential resolution at run time: HashiCorp Vault, AWS Secrets Manager, GCP Secret Manager, Azure Key Vault, 1Password Connect.
 - Public docs: `/dashboard/privacy` carries the full "Zero-knowledge credential handling" section.

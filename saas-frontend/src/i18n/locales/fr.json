@@ -991,7 +991,9 @@
     "predefinedPresets": "Préréglages prédéfinis",
     "presetsSubtitle": "Combinaisons de paramètres prêtes à l'emploi pour les cas d'usage courants",
     "executionNode": "Nœud d'exécution",
-    "executionHint": "Choisissez où exécuter le scan. Utilisez un agent privé pour scanner des réseaux internes derrière votre pare-feu."
+    "executionHint": "Choisissez où exécuter le scan. Utilisez un agent privé pour scanner des réseaux internes derrière votre pare-feu.",
+    "zeroKnowledge": "Zero-knowledge — les identifiants ne sont transmis qu'à votre agent et ne sont jamais conservés sur nos serveurs.",
+    "learnMore": "En savoir plus"
   },
   "toolsCatalog": {
     "noToolsFound": "Aucun outil trouve",

@@ -1,6 +1,12 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useMemo, useRef } from 'react';
 import { useParams, useSearchParams, Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
+import {
+  parseFormParameters,
+  parseObjectParameters,
+  resolveSelectOption,
+  type NormalizedParam,
+} from '../../lib/toolFormParams';
 import { motion } from 'framer-motion';
 import {
   Activity,
@@ -231,26 +237,18 @@ export function ScanExecutionPage() {
   const outputRef = useRef<HTMLDivElement>(null);
   const toolId = routeToolId || searchParams.get('tool') || '';
 
-  // ── Normalize `.form`-shaped tool parameters (ht_* + seeded tools) into the
-  //    map shape the parameter renderer expects. Without this, those tools
-  //    rendered bogus inputs named "form"/"danger_level"/"target_types".
-  useEffect(() => {
-    if (!tool) return;
-    const p: any = tool.parameters;
-    if (p && typeof p === 'object' && !Array.isArray(p) && Array.isArray(p.form)) {
-      const normalized: Record<string, any> = {};
-      for (const f of p.form) {
-        normalized[f.name] = {
-          type: f.type === 'url' || f.type === 'email' || f.type === 'password' ? 'text' : (f.type || 'text'),
-          required: !!f.required,
-          label: f.label || f.name,
-          placeholder: f.placeholder || (f.default !== undefined ? String(f.default) : ''),
-          default: f.default,
-          options: f.options,
-        };
-      }
-      setTool({ ...tool, parameters: normalized });
-    }
+  // ── Flatten `.form`-shaped tool parameters (ht_* + seeded tools) into the
+  //    list the renderer walks. This used to run as an effect that wrote the
+  //    flattened map back over `tool.parameters` — which deleted the
+  //    `target_types` and `danger_level` keys that sit beside `form`, so the
+  //    "Accepted Target Types" panel below could never render for any of the
+  //    470 tools that declare them. Deriving instead of mutating leaves the
+  //    API response intact.
+  const renderableParams = useMemo<NormalizedParam[]>(() => {
+    if (!tool) return [];
+    const fromForm = parseFormParameters(tool.parameters);
+    if (fromForm) return fromForm;
+    return parseObjectParameters(tool.parameters);
   }, [tool]);
 
   // ── Scan Template prefill: ?template=<id> bumps use_count and fills fields ──
@@ -717,7 +715,7 @@ export function ScanExecutionPage() {
     setParameters((prev) => ({ ...prev, [name]: value }));
   };
 
-  const renderParameterInput = (name: string, param: any) => {
+  const renderParameterInput = (name: string, param: NormalizedParam) => {
     const value = parameters[name];
     switch (param.type) {
       case 'boolean':
@@ -740,11 +738,9 @@ export function ScanExecutionPage() {
             className="vos-input w-full"
           >
             <option value="">Select {name}</option>
-            {param.options?.map((opt: any, i: number) => {
-              const isObj = opt !== null && typeof opt === 'object';
-              const optValue = isObj ? String(opt.value ?? '') : String(opt).split(' ')[0];
-              const optLabel = isObj ? String(opt.label ?? opt.value ?? '') : String(opt);
-              return <option key={`${optValue}-${i}`} value={optValue}>{optLabel}</option>;
+            {param.options?.map((opt: unknown, i: number) => {
+              const { value: optValue, label: optLabel, key } = resolveSelectOption(opt, i);
+              return <option key={key} value={optValue}>{optLabel}</option>;
             })}
           </select>
         );
@@ -762,13 +758,23 @@ export function ScanExecutionPage() {
         );
       default:
         return (
-          <input
-            type="text"
-            value={(value as string) || ''}
-            onChange={(e) => handleParamChange(name, e.target.value)}
-            className="vos-input w-full"
-            placeholder={param.description}
-          />
+          <>
+            <input
+              type={param.secret ? 'password' : 'text'}
+              autoComplete={param.secret ? 'new-password' : 'off'}
+              value={(value as string) || ''}
+              onChange={(e) => handleParamChange(name, e.target.value)}
+              className="vos-input w-full"
+              placeholder={param.description}
+            />
+            {param.secret && (
+              <p className="mt-1 flex flex-wrap items-center gap-1 text-[11px] text-emerald-400">
+                <span>🔒</span>
+                <span>{t('toolDetail.zeroKnowledge', 'Zero-knowledge — credentials are sent to your agent only and are never persisted on our servers.')}</span>
+                <Link to="/dashboard/privacy" className="underline hover:text-emerald-300">{t('toolDetail.learnMore', 'Learn more')}</Link>
+              </p>
+            )}
+          </>
         );
     }
   };
@@ -1107,7 +1113,7 @@ export function ScanExecutionPage() {
             </div>
           </Section>
 
-          {tool && Object.keys(tool.parameters || {}).length > 0 && (
+          {renderableParams.length > 0 && (
             <Section
               title={
                 <span className="flex items-center gap-2">
@@ -1117,12 +1123,13 @@ export function ScanExecutionPage() {
               }
             >
               <div className="space-y-vos-4">
-                {Object.entries(tool.parameters || {}).map(([name, param]) => (
-                  <div key={name}>
+                {renderableParams.map((param) => (
+                  <div key={param.name}>
                     <label className="block text-vos-xs uppercase tracking-vos-wide font-semibold text-vos-text-3 mb-1.5">
-                      {name.replace(/_/g, ' ')}
+                      {param.name.replace(/_/g, ' ')}
+                      {param.required && <span className="ml-1 text-vos-danger">*</span>}
                     </label>
-                    {renderParameterInput(name, param)}
+                    {renderParameterInput(param.name, param)}
                   </div>
                 ))}
                   </div>

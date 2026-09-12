@@ -991,7 +991,9 @@
     "predefinedPresets": "预定义预设",
     "presetsSubtitle": "常用用例的即用型参数组合",
     "executionNode": "执行节点",
-    "executionHint": "选择扫描运行位置。使用私有代理扫描防火墙后面的内部网络。"
+    "executionHint": "选择扫描运行位置。使用私有代理扫描防火墙后面的内部网络。",
+    "zeroKnowledge": "零知识 — 凭据仅发送至您的代理，绝不会保存在我们的服务器上。",
+    "learnMore": "了解更多"
   },
   "toolsCatalog": {
     "noToolsFound": "未找到工具",

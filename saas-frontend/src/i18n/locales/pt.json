@@ -991,7 +991,9 @@
     "predefinedPresets": "Predefinições Pré-definidas",
     "presetsSubtitle": "Combinações de parâmetros prontas para uso em casos comuns",
     "executionNode": "Nó de Execução",
-    "executionHint": "Escolha onde executar a varredura. Use um agente privado para varrer redes internas atrás do firewall."
+    "executionHint": "Escolha onde executar a varredura. Use um agente privado para varrer redes internas atrás do firewall.",
+    "zeroKnowledge": "Zero-knowledge — as credenciais são enviadas apenas para o seu agente e nunca são guardadas nos nossos servidores.",
+    "learnMore": "Saber mais"
   },
   "toolsCatalog": {
     "noToolsFound": "Nenhuma ferramenta encontrada",

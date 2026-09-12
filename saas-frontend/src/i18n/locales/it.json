@@ -991,7 +991,9 @@
     "predefinedPresets": "Preset predefiniti",
     "presetsSubtitle": "Combinazioni di parametri pronte all'uso per casi comuni",
     "executionNode": "Nodo di esecuzione",
-    "executionHint": "Scegli dove eseguire la scansione. Usa un agente privato per scansionare reti interne dietro il tuo firewall."
+    "executionHint": "Scegli dove eseguire la scansione. Usa un agente privato per scansionare reti interne dietro il tuo firewall.",
+    "zeroKnowledge": "Zero-knowledge — le credenziali vengono inviate solo al vostro agente e non vengono mai conservate sui nostri server.",
+    "learnMore": "Scopri di più"
   },
   "toolsCatalog": {
     "noToolsFound": "Nessuno strumento trovato",

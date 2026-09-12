@@ -991,7 +991,9 @@
     "predefinedPresets": "Predefined Presets",
     "presetsSubtitle": "Ready-to-use parameter combinations for common use cases",
     "executionNode": "Execution Node",
-    "executionHint": "Choose where to run the scan. Use a private agent to scan internal networks behind your firewall."
+    "executionHint": "Choose where to run the scan. Use a private agent to scan internal networks behind your firewall.",
+    "zeroKnowledge": "Zero-knowledge — credentials are sent to your agent only and are never persisted on our servers.",
+    "learnMore": "Learn more"
   },
   "toolsCatalog": {
     "noToolsFound": "No tools found",
