@@ -590,3 +590,55 @@ export function getPricingJsonLd(locale: string, faq: { q: string; a: string }[]
     ],
   };
 }
+
+/**
+ * Structured data for the free mini-tools page.
+ *
+ * Three separate WebApplications in an ItemList, not one blob: each is a
+ * distinct thing someone searches for, and listing them individually is what
+ * lets a result surface "Header Security Checker" rather than the page as a
+ * whole. `isAccessibleForFree` and a zero-price Offer are the honest way to say
+ * free — they genuinely need no account.
+ */
+export function getMiniToolsJsonLd(locale: string) {
+  const url = `${BASE_URL}/${locale}/tools/mini-tools/`;
+  const tools = [
+    { name: "Online Subdomain Finder", description: "Discover the subdomains of a domain from the browser. No sign-up, no install." },
+    { name: "HTTP Security Header Checker", description: "Analyse the HTTP security headers of any public URL and see what is missing." },
+    { name: "DNS Lookup Tool", description: "Resolve DNS records for a hostname from the browser." },
+  ];
+
+  return {
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "ItemList",
+        "@id": `${url}#tools`,
+        name: "Free online security tools",
+        itemListElement: tools.map((tool, i) => ({
+          "@type": "ListItem",
+          position: i + 1,
+          item: {
+            "@type": "WebApplication",
+            name: tool.name,
+            description: tool.description,
+            url,
+            applicationCategory: "SecurityApplication",
+            operatingSystem: "Web Browser",
+            isAccessibleForFree: true,
+            offers: { "@type": "Offer", price: "0", priceCurrency: "USD" },
+          },
+        })),
+      },
+      {
+        "@type": "BreadcrumbList",
+        "@id": `${url}#breadcrumb`,
+        itemListElement: [
+          { "@type": "ListItem", position: 1, name: "CyberSec Pro", item: `${BASE_URL}/${locale}/` },
+          { "@type": "ListItem", position: 2, name: "Tools", item: `${BASE_URL}/${locale}/tools/` },
+          { "@type": "ListItem", position: 3, name: "Free online tools", item: url },
+        ],
+      },
+    ],
+  };
+}

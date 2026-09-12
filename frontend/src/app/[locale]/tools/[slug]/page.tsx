@@ -18,7 +18,23 @@ export async function generateMetadata({
   params: Promise<{ locale: string; slug: string }>;
 }): Promise<Metadata> {
   const { locale, slug } = await params;
-  if (slug === "mini-tools") return getPageMetadata("tools", locale);
+
+  // mini-tools is not a tool page and not the tools index: it is the three
+  // free, no-sign-up utilities (subdomain finder, HTTP security header check,
+  // DNS lookup). It was inheriting the index page's title, which is both a
+  // duplicate and a waste — those are exactly the queries people type.
+  if (slug === "mini-tools") {
+    const url = `https://cyber-sec-pro.com/${locale}/tools/mini-tools/`;
+    const title = "Free Online Security Tools — Subdomain Finder, Header Checker, DNS Lookup";
+    const description =
+      "Three security tools that run in your browser with no sign-up and no install: find subdomains for a domain, check a site's HTTP security headers, and run a DNS lookup. Instant results, free.";
+    return {
+      title,
+      description,
+      alternates: { canonical: url, languages: getAlternateLanguages("/tools/mini-tools/") },
+      openGraph: { title, description, url, type: "website" },
+    };
+  }
 
   const tool = await getToolBySlug(slug);
   if (!tool) return getPageMetadata("tools", locale);
