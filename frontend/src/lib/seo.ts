@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { locales } from "@/i18n/config";
 
+import { blogPostsList } from "./blog-posts";
 const BASE_URL = "https://cyber-sec-pro.com";
 
 type PageSEO = {
@@ -181,65 +182,34 @@ const pageMeta: Record<string, Record<string, PageSEO>> = {
   },
 };
 
+/**
+ * Per-post metadata, derived from the canonical post list rather than
+ * duplicated here.
+ *
+ * It used to be a hand-written literal, and it had drifted: it carried 6 of
+ * the 10 posts. The other four rendered with the blog index's generic title
+ * and no BlogPosting schema at all — 40 pages across the locales that search
+ * and answer engines could not tell apart from each other. Deriving it means a
+ * new post gets correct metadata by existing, not by someone remembering to
+ * add it in a second place.
+ */
 export const blogPostMeta: Record<
   string,
   { title: string; description: string; date: string; author: string; category: string; tags: string[] }
-> = {
-  "mastering-wireshark": {
-    title: "Mastering Wireshark: Advanced Network Analysis Guide",
-    description:
-      "Learn advanced Wireshark techniques for network analysis, packet capture, and protocol inspection. Complete guide for security professionals.",
-    date: "2026-01-15",
-    author: "Semih Kılıç",
-    category: "Tools",
-    tags: ["wireshark", "network-analysis", "packet-capture", "security-tools"],
-  },
-  "hashcat-vs-john": {
-    title: "Hashcat vs John the Ripper: Password Cracking Tools Compared",
-    description:
-      "Comprehensive comparison of Hashcat and John the Ripper. Performance benchmarks, use cases, and best practices for password security testing.",
-    date: "2026-01-12",
-    author: "Semih Kılıç",
-    category: "Tools",
-    tags: ["hashcat", "john-the-ripper", "password-cracking", "security-tools"],
-  },
-  "owasp-top-10-2026": {
-    title: "OWASP Top 10 2026: Web Application Security Vulnerabilities",
-    description:
-      "Complete guide to OWASP Top 10 2026 vulnerabilities. Understand, detect, and remediate the most critical web application security risks.",
-    date: "2026-01-08",
-    author: "Semih Kılıç",
-    category: "Security",
-    tags: ["owasp", "web-security", "vulnerabilities", "application-security"],
-  },
-  "metasploit-zero-to-exploit": {
-    title: "Metasploit Framework: From Zero to Exploit — Complete Tutorial",
-    description:
-      "Step-by-step Metasploit tutorial for beginners. Learn penetration testing, exploit development, and post-exploitation techniques.",
-    date: "2026-01-05",
-    author: "Semih Kılıç",
-    category: "Tutorials",
-    tags: ["metasploit", "penetration-testing", "exploit-development", "ethical-hacking"],
-  },
-  "ci-cd-pentest-automation": {
-    title: "CI/CD Penetration Testing Automation — DevSecOps Guide",
-    description:
-      "Integrate automated penetration testing into your CI/CD pipeline. DevSecOps best practices with practical examples.",
-    date: "2026-01-03",
-    author: "Semih Kılıç",
-    category: "DevSecOps",
-    tags: ["ci-cd", "devsecops", "automation", "penetration-testing"],
-  },
-  "wireless-security-assessment": {
-    title: "Wireless Security Assessment: Complete WiFi Penetration Testing Guide",
-    description:
-      "Learn WiFi penetration testing techniques. WPA2/WPA3 security assessment, wireless network auditing, and best practices.",
-    date: "2025-12-15",
-    author: "Semih Kılıç",
-    category: "Wireless",
-    tags: ["wifi-security", "wireless-testing", "wpa2", "network-security"],
-  },
-};
+> = Object.fromEntries(
+  blogPostsList.map((p) => [
+    p.slug,
+    {
+      title: p.title,
+      description: p.excerpt,
+      date: p.date,
+      author: p.author,
+      category: p.category,
+      tags: p.tags,
+    },
+  ]),
+);
+
 
 function getAlternateLanguages(path: string): Record<string, string> {
   const languages: Record<string, string> = {};
