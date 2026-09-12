@@ -47,6 +47,15 @@ const SOURCES: &[FeedSource] = &[
     FeedSource { name: "SANS ISC", url: "https://isc.sans.edu/rssfeed_full.xml", category: "Research" },
 ];
 
+/// Only absolute http(s) links may reach a renderer as an `href`.
+/// Scheme comparison is ASCII-case-insensitive because `JavaScript:` is the
+/// same URL to a browser as `javascript:`.
+pub(crate) fn is_safe_link(link: &str) -> bool {
+    let l = link.trim();
+    let lower = l.to_ascii_lowercase();
+    (lower.starts_with("http://") || lower.starts_with("https://")) && l.len() > 8
+}
+
 pub async fn get_news(force_refresh: bool) -> Vec<NewsItem> {
     if !force_refresh {
         if let Ok(guard) = CACHE.read() {
@@ -145,13 +154,21 @@ fn parse_rss(xml: &str, src: &FeedSource) -> Vec<NewsItem> {
 
         if title.is_empty() { continue; }
 
+        // Feeds are third-party XML parsed with regexes, and this link is
+        // rendered as an `href` on both the dashboard and the public marketing
+        // page. A `javascript:` or `data:` URL in any upstream feed would
+        // otherwise become a clickable script on our own origin, so the scheme
+        // is checked here — at the one place every consumer reads from — rather
+        // than in each renderer.
         let link = LINK_RE.captures(block)
             .and_then(|c| {
                 let raw = c.get(1).map(|m| m.as_str().trim().to_string());
                 let href = c.get(2).map(|m| m.as_str().trim().to_string());
                 href.or(raw)
             })
+            .filter(|l| is_safe_link(l))
             .unwrap_or_default();
+        if link.is_empty() { continue; }
 
         let summary = DESC_RE.captures(block)
             .and_then(|c| c.get(1).or_else(|| c.get(2)).or_else(|| c.get(3)))
@@ -290,4 +307,38 @@ fn short_hash(s: &str) -> String {
     let mut h = DefaultHasher::new();
     s.hash(&mut h);
     format!("{:x}", h.finish())
+}
+
+#[cfg(test)]
+mod tests {
+    use super::is_safe_link;
+
+    #[test]
+    fn accepts_ordinary_feed_links() {
+        assert!(is_safe_link("https://thehackernews.com/2026/09/cisa-adds-5.html"));
+        assert!(is_safe_link("http://example.com/a"));
+        assert!(is_safe_link("  https://krebsonsecurity.com/feed/  "));
+    }
+
+    #[test]
+    fn rejects_script_and_data_urls_whatever_their_casing() {
+        for bad in [
+            "javascript:alert(1)",
+            "JavaScript:alert(1)",
+            "JAVASCRIPT:alert(document.cookie)",
+            "data:text/html;base64,PHNjcmlwdD4=",
+            "vbscript:msgbox(1)",
+            "file:///etc/passwd",
+        ] {
+            assert!(!is_safe_link(bad), "{bad} must not reach an href");
+        }
+    }
+
+    #[test]
+    fn rejects_relative_and_empty_links() {
+        // A renderer would resolve these against our own origin.
+        for bad in ["", "   ", "/dashboard", "//evil.example", "https://", "http://"] {
+            assert!(!is_safe_link(bad), "{bad:?} must not reach an href");
+        }
+    }
 }

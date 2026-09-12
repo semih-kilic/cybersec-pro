@@ -167,10 +167,6 @@
     "runTool": "Lancer l'outil",
     "viewDetails": "Voir les détails"
   },
-  "testimonials": {
-    "badge": "Approuvé par les équipes de sécurité",
-    "title": "Ce que disent nos utilisateurs"
-  },
   "faq": {
     "badge": "FAQ",
     "title": "Questions fréquemment posées",
