@@ -3,7 +3,7 @@
     "title": "CyberSec Pro — Saldırı Güvenliği Platformu",
     "description": "88 Kali Linux aracıyla bulut tabanlı saldırı güvenliği platformu. Otomatik güvenlik açığı taraması, penetrasyon testi ve güvenlik değerlendirmeleri.",
     "trustCenterTitle": "Güven Merkezi — CyberSec Pro | Güvenlik, Uyumluluk & Şeffaflık",
-    "trustCenterDesc": "CyberSec Pro güvenlik merkezi: SOC 2, ISO 27001, GDPR uyumluluk bilgileri, responsible disclosure politikası, bug bounty programı, alt işlemciler ve DPA."
+    "trustCenterDesc": "CyberSec Pro Güven Merkezi: uyum sağladığımız güvenlik çerçeveleri ve henüz sahip olmadığımız sertifikalar, sorumlu açıklama politikamız, alt işleyiciler, Kanada veri yerleşimi ve DPA."
   },
   "nav": {
     "features": "Özellikler",
@@ -348,7 +348,7 @@
     "trustCenter": {
       "badge": "Güven Merkezi",
       "title": "Güven Merkezi",
-      "subtitle": "Platformumuzun güvenliği, uyumluluğu ve şeffaflığı hakkında bilmeniz gereken her şey. Endüstri lider güvenlik standartlarına tam uyumluluk.",
+      "subtitle": "Platformun nasıl korunduğu, verinizin nerede durduğu ve hangi sertifikalara sahip olduğumuz — sahip olmadıklarımız dâhil — hakkında söyleyebileceğimiz her şey.",
       "certBadgesNote": "Uyum sağladığımız veya aktif olarak hedeflediğimiz çerçeveler — güncel sertifikasyon durumu aşağıdadır.",
       "status": {
         "operational": "Tüm Sistemler Operasyonel",
@@ -367,7 +367,7 @@
           "scopeIn": "In-Scope:",
           "scopeOut": "Out-of-Scope:",
           "channel": "Bildirim Kanalı",
-          "channelDesc": "Güvenlik açıklarını PGP şifreli olarak bildirin:",
+          "channelDesc": "Güvenlik açıklarını şu adrese bildirin:",
           "reportTemplate": "Rapor şablonu:",
           "sla": "Yanıt SLA",
           "slaFirst": "İlk onay:",
@@ -405,7 +405,7 @@
           "location": "Konum",
           "signed": "İmzalı",
           "pending": "Bekliyor",
-          "footer": "Son güncelleme: Temmuz 2026. Alt işlemci değişikliklerinde 30 gün önceden bildirim yapılır."
+          "footer": "Son güncelleme: Eylül 2026. Alt işleyici değişikliklerinden 30 gün önce bildirim yaparız."
         },
         "dpa": {
           "title": "Veri İşleme Sözleşmesi (DPA)",
@@ -436,7 +436,7 @@
           "security": "Güvenlik",
           "legal": "Hukuk/DPA",
           "privacy": "Gizlilik",
-          "footer": "Güven Merkezi son güncelleme: Temmuz 2026 · Politika sürümü: 2.1.0 · Yıllık gözden geçirme: Aralık 2026"
+          "footer": "Güven Merkezi son güncelleme: Eylül 2026 · Politika sürümü: 2.2.0 · Sonraki gözden geçirme: Mart 2027"
         },
         "dataResidency": {
           "title": "Veri Yerleşimi & Gizlilik",
@@ -446,7 +446,7 @@
           "storageDescription": "Tüm müşteri verileri, tarama sonuçları ve günlükler yalnızca Kanada veri merkezlerinde depolanır. Açık müşteri onayı olmadan veriler Kanada dışına çıkmaz.",
           "encryptionAtRest": "Duruştaki Şifreleme",
           "encryptionAtRestValue": "AES-256-GCM",
-          "encryptionDescription": "Tüm veriler, her kiracı için benzersiz anahtarlarla AES-256-GCM kullanılarak şifrelenir. Anahtar rotasyonu her 90 günde bir gerçekleştirilir. Anahtarlar donanım güvenlik modülünde (HSM) saklanır.",
+          "encryptionDescription": "Sırlar ve saklanan kimlik bilgileri AES-256-GCM ile şifrelenir. Şifreleme anahtarı token imzalama anahtarından ayrıdır, yalnızca sunucu ortamında bulunur ve veritabanına, yedeklere veya depoya hiçbir zaman yazılmaz.",
           "encryptionInTransit": "Aktarım Şifreleme",
           "encryptionInTransitValue": "TLS 1.3",
           "encryptionInTransitDescription": "Tüm API ve web trafiği, mükemmel ileri gizlilik ile TLS 1.3 kullanır. Şifreleme paketleri, kullanılabilir en güçlü yapılandırmalarla sınırlandırılmıştır.",
@@ -457,7 +457,7 @@
           "noLoggingPolicy1": "Ham paket yakalama depolama yok",
           "noLoggingPolicy2": "Yük içeriği saklama yok",
           "noLoggingPolicy3": "Tarama sonuçlarında kişisel veri yok",
-          "noLoggingPolicy4": "Tarama sonuçları 30 gün sonra otomatik silinir (yapılandırılabilir)",
+          "noLoggingPolicy4": "Tarama sonuçları 90 gün, denetim kayıtları bir yıl sonra otomatik olarak silinir",
           "dataProcessing": "Veri İşleme İlkeleri",
           "dataProcessing1": "Amaç sınırlaması — veriler yalnızca belirtilen güvenlik taraması amaçları için toplanır",
           "dataProcessing2": "Veri azaltma — yalnızca gerekli olan minimum veriyi toplarız",
@@ -468,36 +468,36 @@
       "arrays": {
         "trustFeatures": [
           {
-            "title": "Uçtan Uca Şifreleme",
-            "description": "AES-256 ile rest, TLS 1.3 ile transit. Zero-knowledge tarama sonuçları. Forward secrecy ile anahtar rotasyonu."
+            "title": "Aktarımda ve beklemede şifreleme",
+            "description": "Her bağlantıda perfect forward secrecy ile TLS 1.3. Sırlar ve saklanan kimlik bilgileri, token imzalama anahtarından ayrı tutulan bir anahtarla AES-256-GCM kullanılarak şifrelenir."
           },
           {
-            "title": "İzole Altyapı",
-            "description": "Her tarama izole konteynerde çalışır. Cross-tenant erişim yok. Kurumsal planlarda özel dedicated instance."
+            "title": "İzole çalıştırma",
+            "description": "Taramalar, iş başına tek bir süreç olacak şekilde özel tarama konteynerinde sunucu tarafında çalışır. Komut, sizin değerleriniz yerleştirilmeden önce parçalarına ayrılır; araya hiçbir kabuk girmez ve her sorgu organizasyonunuzla sınırlanır."
           },
           {
-            "title": "SOC 2 Uyumlu Kontroller",
-            "description": "Altyapı SOC 2 Trust Services Criteria (Güvenlik, Erişilebilirlik, Gizlilik) uyumlu tasarlanmış."
+            "title": "SOC 2 ile uyumlu kontroller",
+            "description": "Altyapı, SOC 2 Trust Services Criteria (Güvenlik, Erişilebilirlik, Gizlilik, Mahremiyet) ölçütlerine göre tasarlandı. Type II denetimi henüz tamamlanmadı — aşağıdaki çerçeve tablosu her birinin durumunu tek tek gösteriyor."
           },
           {
-            "title": "Değiştirilemez Denetim Kayıtları",
-            "description": "Tüm eylemlerin eksiksiz ve değiştirilemez denetim kaydı. SIEM entegrasyonu. Uyumluluk için WORM depolama."
+            "title": "Yalnızca eklemeli denetim kaydı",
+            "description": "Ayrıcalıklı işlemler, organizasyonunuzla sınırlı ve panelden sorgulanabilen, yalnızca eklemeli bir denetim kaydına yazılır. Kayıtlar bir yıl saklanır."
           },
           {
-            "title": "MFA, SSO & Zero Trust",
-            "description": "TOTP/WebAuthn ile çok faktörlü kimlik doğrulama. SAML 2.0 / OpenID Connect (OIDC) SSO + LDAP / Active Directory. RBAC + ABAC."
+            "title": "MFA, SSO ve roller",
+            "description": "Tek kullanımlık yedek kodlarla birlikte TOTP tabanlı çok faktörlü kimlik doğrulama. Kurumsal planda SAML 2.0, OIDC ve LDAP / Active Directory çoklu oturum açma. Rol tabanlı erişim denetimi arayüzde değil, sunucuda uygulanır."
           },
           {
-            "title": "Sürekli Yama Yönetimi",
-            "description": "Kritik güvenlik yamaları 24 saat içinde uygulanır. CVE veritabanları saatlik güncellenir. SBOM otomatik oluşturulur."
+            "title": "Bakımı bize ait araç zinciri",
+            "description": "Tarayıcı imajları ve zafiyet şablonları bizim tarafımızdan yeniden derlenip dağıtılır. Siz ne bir tarayıcı güncellersiniz ne de bir Kali makinesi yamalarsınız."
           },
           {
-            "title": "Veri Minimizasyonu",
-            "description": "GDPR Madde 5(1)(c) uyumlu veri minimizasyonu. Otomatik veri yaşam döngüsü yönetimi. Anonimleştirme."
+            "title": "Veri minimizasyonu",
+            "description": "Ham trafiği değil, tarama üst verilerini ve bulguları saklarız. Saklama süresi yapılandırılabilir; verinizi dilediğiniz zaman dışa aktarabilir veya silebilirsiniz. GDPR Madde 5(1)(c)."
           },
           {
-            "title": "Gerçek Zamanlı Tehdit Tespiti",
-            "description": "ML destekli anomali tespiti. Gerçek zamanlı IDS/IPS. Otomatik threat intelligence feed entegrasyonu."
+            "title": "Platform izleme",
+            "description": "Her uç noktada maliyet katmanlı hız sınırlama, hesap etkinliğinde istatistiksel anomali tespiti ve arızalanan bir servisi insan beklemeden yeniden başlatan sağlık gözcüleri."
           }
         ],
         "complianceFrameworks": [
@@ -550,23 +550,13 @@
         ],
         "pentestHistory": [
           {
-            "scope": "Tüm platform — API, Web App, Altyapı, Mobil",
-            "findings": "0 Kritik, 0 Yüksek, 2 Orta (düzeltildi), 3 Düşük (düzeltildi)",
-            "status": "Düzeltildi"
+            "scope": "https://app.cyber-sec-pro.com — TLS, başlıklar, CORS, hatalı yapılandırma ve ifşa şablonları; ayrıca XSS, SQLi ve açık yönlendirme denemeleri",
+            "findings": "0 kritik, 0 yüksek, 0 orta, 31 bilgilendirme. Wapiti: 0 zafiyet.",
+            "status": "Başarılı"
           },
           {
-            "scope": "Backend API, Kimlik Doğrulama, Yetkilendirme, Kripto",
-            "findings": "0 Kritik, 0 Yüksek, 1 Orta (düzeltildi), 2 Düşük (düzeltildi)",
-            "status": "Düzeltildi"
-          },
-          {
-            "scope": "AWS, Kubernetes, Ağ Segmentasyonu, IAM",
-            "findings": "0 Kritik, 0 Yüksek, 0 Orta, 1 Düşük (düzeltildi)",
-            "status": "Düzeltildi"
-          },
-          {
-            "scope": "Sosyal Mühendislik, Fiziksel, Dijital — Full Kill Chain",
-            "findings": "0 Kritik, 1 Yüksek (düzeltildi), 2 Orta (düzeltildi)",
+            "scope": "Depo genelinde kimlik doğrulama, yetkilendirme, sır yönetimi, API anahtarları, MFA, SSO ve oturum yönetimi",
+            "findings": "Üretimde çalışmadığı görülen birkaç kontrol yeniden yazıldı ve korudukları sırlar döndürüldü. Her düzeltme bir regresyon testiyle sabitlendi.",
             "status": "Düzeltildi"
           }
         ],
@@ -610,10 +600,7 @@
   },
   "terminal": {
     "title": "Çalışırken Görün",
-    "subtitle": "Gerçek bir Nmap ağ keşif taramasını canlı izleyin. Sonuçları profesyonel arayüzümüzde gerçek zamanlı görün.",
-    "runScan": "Taramayı Başlat",
-    "running": "Çalışıyor...",
-    "clickToStart": "Demoyu başlatmak için \"Taramayı Başlat\"a tıklayın veya buraya kaydırın..."
+    "subtitle": "Gerçek bir Nmap ağ keşif taramasını canlı izleyin. Sonuçları profesyonel arayüzümüzde gerçek zamanlı görün."
   },
   "blogSection": {
     "badge": "Güncel Haberler",
@@ -621,24 +608,8 @@
     "subtitle": "En son saldırı güvenliği araştırmaları, araç eğitimleri ve sektör analizleriyle tehditlerin önünde olun.",
     "readMore": "Devamını Oku",
     "minRead": "dk okuma",
-    "viewAll": "Tüm Yazıları Gör"
-  },
-  "upgrade": {
-    "customSla": "Talep üzerinde özel SLA",
-    "perYear": "/yıl",
-    "billedAnnually": "/ay olarak yıllık faturalandırılır",
-    "perMonth": "/ay",
-    "year": "yıl",
-    "costReduction": "maliyet azaltması",
-    "backToSettings": "Ayarlara dön",
-    "faq1q": "Planımı nasıl yükselirim?",
-    "faq1a": "İstediğiniz plandaki \"Yüksel\" düğmesine tıklayın. Güvenli ödeme işlemcimize yönlendirileceksiniz.",
-    "faq2q": "Planımı düşürebilir miyim?",
-    "faq2a": "Evet. Yeni planınız bir sonraki fatura döneminin başlangıcında yürürlüğe girecektir.",
-    "faq3q": "Hangi ödeme yöntemlerini kabul ediyorsunuz?",
-    "faq3a": "Tüm büyük kredi kartları (Visa, MasterCard, Amex), PayPal ve Kurumsal planlar için banka havaleleri.",
-    "faq4q": "Para iade garantisi var mı?",
-    "faq4a": "Evet, 30 günlük para iade garantisi. Memnun kalmazsınız tam iade için bizimle iletişime geçin."
+    "viewAll": "Tüm Yazıları Gör",
+    "backToBlog": "Bloga dön"
   },
   "founding": {
     "bar": "Kurucu Üye fırsatı — ömür boyu $19/ay (%81 indirim). Sadece 10 kişi.",
@@ -751,5 +722,80 @@
     "ctaBody": "On dört gün, 88 aracın tamamı, günde üç tarama. Hacim gerektirdiğinde yukarı çıkın.",
     "ctaButton": "Hesabınızı oluşturun",
     "ctaSecondary": "Enterprise için bize yazın"
+  },
+  "comparison": {
+    "title": "Bulut Kali ile yerel Kali",
+    "subtitle": "Ekipler neden kendi Kali Linux kurulumlarını sürdürmek yerine CyberSec Pro'yu seçiyor.",
+    "thead": {
+      "feature": "Özellik",
+      "local": "Yerel Kali",
+      "cloud": "CyberSec Pro"
+    },
+    "rows": {
+      "hardware": {
+        "feature": "Donanım kaynağı",
+        "local": "CPU, RAM ve disk tüketir",
+        "cloud": "Sıfır donanım yükü"
+      },
+      "setup": {
+        "feature": "Kurulum süresi",
+        "local": "Saatler süren kurulum ve yapılandırma",
+        "cloud": "Kaydolun, saniyeler içinde tarayın"
+      },
+      "reporting": {
+        "feature": "Raporlama",
+        "local": "Raporu elle hazırlarsınız",
+        "cloud": "Tek tıkla PDF / HTML / CSV"
+      },
+      "team": {
+        "feature": "Ekip çalışması",
+        "local": "Yerleşik paylaşım yok",
+        "cloud": "Ortak panolar ve roller"
+      },
+      "cicd": {
+        "feature": "CI/CD entegrasyonu",
+        "local": "Kendi betiğinizi yazmanız gerekir",
+        "cloud": "Yerleşik API ve webhook"
+      },
+      "scheduled": {
+        "feature": "Zamanlanmış taramalar",
+        "local": "Cron ve özel betikler",
+        "cloud": "Yerleşik 7/24 zamanlama"
+      },
+      "updates": {
+        "feature": "Araç güncellemeleri",
+        "local": "Elle apt yükseltmeleri",
+        "cloud": "Bakımı bizde — yamalayacağınız bir şey yok"
+      },
+      "compliance": {
+        "feature": "Uyum raporları",
+        "local": "Şablonları elle doldurma",
+        "cloud": "PCI, GDPR, ISO, SOC 2 şablonları"
+      }
+    }
+  },
+  "sampleReports": {
+    "title": "Örnek raporlar",
+    "subtitle": "Bulgularımızın kalitesini ve derinliğini görmek için örnek raporları indirin.",
+    "technical": {
+      "title": "Teknik rapor",
+      "description": "Nmap, Nikto ve SSL Labs bulgularının tamamı, giderme adımlarıyla birlikte.",
+      "cta": "Örnek teknik raporu indir (PDF)"
+    },
+    "executive": {
+      "title": "Yönetici özeti",
+      "description": "Yönetim için üst düzey risk skoru, uyum boşlukları ve önceliklendirilmiş aksiyon maddeleri.",
+      "cta": "Yönetici özetini indir (PDF)"
+    }
+  },
+  "demo": {
+    "title": "Hemen deneyin — kayıt gerekmez",
+    "subtitle": "scanme.nmap.org üzerinde canlı bir Nmap taramasını doğrudan bu sayfadan çalıştırın. Gerçek tarama çıktısını saniyeler içinde görün.",
+    "toolPlaceholder": "Araç",
+    "targetPlaceholder": "Hedef (örn. scanme.nmap.org)",
+    "runScan": "Taramayı başlat",
+    "scanning": "Taranıyor...",
+    "scanStarted": "Tarama başladı",
+    "error": "Hata"
   }
 }

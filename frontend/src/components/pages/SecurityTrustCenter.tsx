@@ -35,6 +35,13 @@ import {
 import { Email } from '../Email';
 /* ─── DATA ────────────────────────────────────────────────────────── */
 
+// The key at /.well-known/pgp-key.txt is a placeholder, not a usable public
+// key — a researcher who followed the "encrypt your report with PGP" instruction
+// would have had nothing to encrypt to. Until a real key is generated and
+// published (and referenced again from security.txt), the PGP surface stays off.
+// Flip this to true in the same commit that adds the key.
+const PGP_KEY_PUBLISHED = false;
+
 const trustFeaturesBase = [
   { icon: Lock, color: "var(--color-neon)" },
   { icon: Server, color: "var(--color-cyan)" },
@@ -81,10 +88,13 @@ const subProcessorsBase = [
 // downloadable third-party report unless one genuinely exists on file. Independent
 // third-party penetration testing is planned (see sections.pentest.description).
 const pentestHistoryBase = [
-  { date: "2026-06-15", type: "Platform Security Assessment", auditor: "CyberSec Pro Security Team (internal)", reportAvailable: false },
-  { date: "2026-03-10", type: "Source Code Review (SAST)", auditor: "CyberSec Pro Security Team (internal)", reportAvailable: false },
-  { date: "2025-12-01", type: "Cloud Infrastructure Review", auditor: "CyberSec Pro Security Team (internal)", reportAvailable: false },
-  { date: "2025-09-20", type: "Internal Red-Team Exercise", auditor: "CyberSec Pro Security Team (internal)", reportAvailable: false },
+  // Only engagements with evidence on file. The previous four entries described
+  // third-party assessments that never happened — one of them scoped to "AWS,
+  // Kubernetes", neither of which is in this stack. These two are real: the
+  // weekly automated scan writes its summary to compliance/pentest/, and the
+  // August audit's fixes are each covered by a regression test.
+  { date: "2026-09-06", type: "Automated external scan (weekly)", auditor: "Nuclei 3.11 + Wapiti 3.2, run against production", reportAvailable: false },
+  { date: "2026-08-29", type: "Full-repository security audit", auditor: "CyberSec Pro Security Team (internal)", reportAvailable: false },
 ];
 
 const bugBountyRewardsBase = [
@@ -324,7 +334,9 @@ export default function SecurityTrustCenter() {
               <p className="text-white/30"># RFC 9116 Compliant</p>
               <p className="text-[var(--color-neon)]">Contact: <span className="text-white/70">mailto:security@cyber-sec-pro.com</span></p>
               <p className="text-[var(--color-neon)]">Contact: <span className="text-white/70">https://cyber-sec-pro.com/trust-center#responsible-disclosure</span></p>
-              <p className="text-[var(--color-neon)]">Encryption: <span className="text-white/70">https://cyber-sec-pro.com/.well-known/pgp-key.txt</span></p>
+              {PGP_KEY_PUBLISHED && (
+                <p className="text-[var(--color-neon)]">Encryption: <span className="text-white/70">https://cyber-sec-pro.com/.well-known/pgp-key.txt</span></p>
+              )}
               <p className="text-[var(--color-neon)]">Acknowledgments: <span className="text-white/70">https://cyber-sec-pro.com/trust-center#acknowledgments</span></p>
               <p className="text-[var(--color-neon)]">Policy: <span className="text-white/70">https://cyber-sec-pro.com/trust-center#responsible-disclosure</span></p>
               <p className="text-[var(--color-neon)]">Hiring: <span className="text-white/70">https://cyber-sec-pro.com/careers</span></p>
@@ -342,15 +354,17 @@ export default function SecurityTrustCenter() {
                 <ExternalLink size={14} />
                 {t("sections.securityTxt.directAccess")}
               </a>
-              <a
-                href="/.well-known/pgp-key.txt"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-flex items-center gap-2 text-sm text-[var(--color-purple)] hover:underline"
-              >
-                <KeyRound size={14} />
-                {t("sections.securityTxt.pgpKey")}
-              </a>
+              {PGP_KEY_PUBLISHED && (
+                <a
+                  href="/.well-known/pgp-key.txt"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-2 text-sm text-[var(--color-purple)] hover:underline"
+                >
+                  <KeyRound size={14} />
+                  {t("sections.securityTxt.pgpKey")}
+                </a>
+              )}
             </div>
           </div>
         </RevealOnScroll>
@@ -830,13 +844,15 @@ export default function SecurityTrustCenter() {
                     <FileCheck size={14} />
                     security.txt
                   </a>
-                  <a
-                    href="/.well-known/pgp-key.txt"
-                    className="inline-flex items-center gap-2 px-4 py-2 bg-white/10 text-white rounded-lg text-sm font-semibold hover:bg-white/15 transition"
-                  >
-                    <KeyRound size={14} />
-                    PGP Key
-                  </a>
+                  {PGP_KEY_PUBLISHED && (
+                    <a
+                      href="/.well-known/pgp-key.txt"
+                      className="inline-flex items-center gap-2 px-4 py-2 bg-white/10 text-white rounded-lg text-sm font-semibold hover:bg-white/15 transition"
+                    >
+                      <KeyRound size={14} />
+                      PGP Key
+                    </a>
+                  )}
                 </div>
               </div>
             </div>

@@ -1,7 +1,9 @@
 {
   "meta": {
     "title": "CyberSec Pro — 공격적 보안 플랫폼",
-    "description": "88개의 Kali Linux 도구를 갖춘 클라우드 기반 공격적 보안 플랫폼. 자동화된 취약점 스캔, 침투 테스트 및 보안 평가."
+    "description": "88개의 Kali Linux 도구를 갖춘 클라우드 기반 공격적 보안 플랫폼. 자동화된 취약점 스캔, 침투 테스트 및 보안 평가.",
+    "trustCenterTitle": "트러스트 센터 — CyberSec Pro | 보안·컴플라이언스·투명성",
+    "trustCenterDesc": "CyberSec Pro 트러스트 센터: 우리가 따르는 보안 프레임워크와 아직 취득하지 않은 인증, 취약점 공개 정책, 하위 처리자, 캐나다 데이터 보관, DPA를 안내합니다."
   },
   "nav": {
     "features": "기능",
@@ -342,7 +344,242 @@
   "security": {
     "badge": "보안",
     "title": "보안 최우선",
-    "subtitle": "플랫폼과 고객 데이터의 보안을 최우선으로 생각합니다."
+    "subtitle": "플랫폼과 고객 데이터의 보안을 최우선으로 생각합니다.",
+    "trustCenter": {
+      "badge": "트러스트 센터",
+      "title": "트러스트 센터",
+      "subtitle": "플랫폼을 어떻게 보호하는지, 데이터가 어디에 저장되는지, 어떤 인증을 보유했는지 — 보유하지 않은 것까지 포함해 말씀드릴 수 있는 모든 것입니다.",
+      "certBadgesNote": "우리가 따르고 있거나 적극적으로 취득을 추진 중인 프레임워크입니다. 현재 인증 상태는 아래 표를 참고하세요.",
+      "status": {
+        "operational": "모든 시스템 정상 운영 중",
+        "link": "status.cyber-sec-pro.com →"
+      },
+      "sections": {
+        "securityTxt": {
+          "title": "security.txt",
+          "description": "IETF RFC 9116을 완전히 준수하는 보안 연락처 파일입니다. 검색 엔진과 보안 연구자가 자동으로 찾을 수 있습니다.",
+          "directAccess": "security.txt 바로 열기",
+          "pgpKey": "PGP 키"
+        },
+        "disclosure": {
+          "title": "취약점 공개 정책과 버그 바운티",
+          "scope": "범위",
+          "scopeIn": "범위 내:",
+          "scopeOut": "범위 외:",
+          "channel": "신고 채널",
+          "channelDesc": "보안 취약점은 아래로 알려주세요:",
+          "reportTemplate": "신고 양식:",
+          "sla": "응답 SLA",
+          "slaFirst": "최초 회신:",
+          "slaUpdate": "진행 상황 공유:",
+          "slaFix": "수정 또는 예외 처리:",
+          "safeHarbor": "세이프 하버",
+          "safeHarbor1": "본 정책을 준수한 신고에 대해서는 법적 조치를 취하지 않습니다",
+          "safeHarbor2": "신고자의 신원은 비공개로 유지합니다",
+          "safeHarbor3": "수정 완료 후 명예의 전당에 등재합니다",
+          "safeHarbor4": "서면 허가 없는 테스트는 금지합니다",
+          "bountyTable": "버그 바운티 보상 기준",
+          "tableLevel": "심각도",
+          "tableReward": "보상",
+          "tableExamples": "해당 사례"
+        },
+        "compliance": {
+          "title": "컴플라이언스 프레임워크",
+          "compliant": "준수",
+          "pending": "진행 중"
+        },
+        "incident": {
+          "title": "침해 사고 대응 SLA",
+          "description": "ISO 27035 및 NIST SP 800-61 Rev.2를 따르는 침해 사고 대응 절차입니다:",
+          "priority": "우선순위",
+          "detection": "탐지",
+          "response": "대응",
+          "notification": "통지",
+          "resolution": "해결"
+        },
+        "subprocessors": {
+          "title": "하위 처리자",
+          "description": "GDPR 제28조 제2항에 따라 데이터를 처리하는 제3자 업체입니다. 모든 하위 처리자와 데이터 처리 계약(DPA)을 체결했습니다.",
+          "provider": "업체",
+          "purpose": "목적",
+          "location": "소재지",
+          "signed": "체결 완료",
+          "pending": "진행 중",
+          "footer": "최종 업데이트: 2026년 9월. 하위 처리자가 변경될 경우 30일 전에 안내드립니다."
+        },
+        "dpa": {
+          "title": "데이터 처리 계약(DPA)",
+          "description": "GDPR 제28조에 따라 모든 고객에게 데이터 처리 계약을 제공합니다. EU 표준계약조항(EU SCC 2021)과 영국 IDTA가 포함됩니다.",
+          "scopeTitle": "DPA 적용 범위",
+          "dpiaTitle": "DPIA(개인정보 영향평가)",
+          "requestBtn": "DPA 요청하기",
+          "dpoBtn": "DPO에 문의하기"
+        },
+        "pentest": {
+          "title": "보안 테스트와 감사",
+          "description": "자체 플랫폼과 수동 검토를 통해 내부 보안 테스트를 지속적으로 수행합니다. 독립적인 제3자 모의해킹은 예정되어 있으며, 완료 후 요약 보고서를 NDA 하에 엔터프라이즈 고객에게 제공합니다.",
+          "scope": "범위:",
+          "findings": "결과:",
+          "requestReport": "요약 보고서 요청(NDA 필요)"
+        },
+        "hallOfFame": {
+          "title": "보안 명예의 전당",
+          "description": "취약점 공개 정책에 따라 제보해 주신 연구자 여러분께 감사드립니다.",
+          "empty": "취약점을 제보하시면 명예의 전당에 오르는 첫 번째 연구자가 되실 수 있습니다.",
+          "reportBtn": "취약점 제보하기"
+        },
+        "contact": {
+          "statusTitle": "시스템 상태",
+          "statusDesc": "모든 서비스의 상태를 실시간으로 확인하세요.",
+          "statusBtn": "상태 페이지",
+          "contactTitle": "보안 문의처",
+          "security": "보안",
+          "legal": "법무/DPA",
+          "privacy": "개인정보",
+          "footer": "트러스트 센터 최종 업데이트: 2026년 9월 · 정책 버전: 2.2.0 · 다음 검토: 2027년 3월"
+        },
+        "dataResidency": {
+          "title": "데이터 보관 위치와 개인정보",
+          "subtitle": "고객의 데이터는 언제나 캐나다에 머무릅니다.",
+          "storageLocation": "주 데이터 저장 위치",
+          "storageLocationValue": "캐나다 🇨🇦",
+          "storageDescription": "모든 고객 데이터와 스캔 결과, 로그는 캐나다 내 데이터센터에만 저장됩니다. 고객의 명시적 동의 없이는 어떤 데이터도 캐나다 관할권을 벗어나지 않습니다.",
+          "encryptionAtRest": "저장 시 암호화",
+          "encryptionAtRestValue": "AES-256-GCM",
+          "encryptionDescription": "비밀 값과 저장된 자격 증명은 AES-256-GCM으로 암호화됩니다. 암호화 키는 토큰 서명 키와 분리되어 서버 환경에만 존재하며, 데이터베이스나 백업, 저장소에 기록되지 않습니다.",
+          "encryptionInTransit": "전송 시 암호화",
+          "encryptionInTransitValue": "TLS 1.3",
+          "encryptionInTransitDescription": "모든 API·웹 트래픽은 순방향 비밀성을 갖춘 TLS 1.3을 사용하며, 암호 스위트는 사용 가능한 가장 강력한 구성으로 제한합니다.",
+          "noLogging": "원본 트래픽을 기록하지 않음",
+          "noLoggingValue": "제로 널리지",
+          "noLoggingDescription": "원본 네트워크 트래픽이나 스캔 페이로드를 기록·저장·처리하지 않습니다. 운영 목적으로는 메타데이터(타임스탬프, 대상 IP, 도구 종류, 심각도별 건수)만 보관합니다.",
+          "noLoggingPolicy": "기록하지 않겠다는 약속",
+          "noLoggingPolicy1": "패킷 캡처를 저장하지 않습니다",
+          "noLoggingPolicy2": "페이로드 내용을 보관하지 않습니다",
+          "noLoggingPolicy3": "스캔 결과에 개인정보를 담지 않습니다",
+          "noLoggingPolicy4": "스캔 결과는 90일 후, 감사 로그는 1년 후 자동 삭제됩니다",
+          "dataProcessing": "데이터 처리 원칙",
+          "dataProcessing1": "목적 제한 — 명시한 보안 스캔 목적으로만 데이터를 수집합니다",
+          "dataProcessing2": "데이터 최소화 — 꼭 필요한 최소한만 수집합니다",
+          "dataProcessing3": "투명성 — 어떤 데이터를 왜 저장하는지 항상 알 수 있습니다",
+          "dataProcessing4": "이용자 통제 — 언제든지 데이터를 내보내거나 삭제할 수 있습니다"
+        }
+      },
+      "arrays": {
+        "trustFeatures": [
+          {
+            "title": "전송 구간과 저장 구간 암호화",
+            "description": "모든 연결에 순방향 비밀성을 갖춘 TLS 1.3을 사용합니다. 비밀 값과 저장된 자격 증명은 토큰 서명 키와 분리해 보관하는 키로 AES-256-GCM 암호화됩니다."
+          },
+          {
+            "title": "격리된 실행",
+            "description": "스캔은 전용 스캔 컨테이너 안에서 서버 측으로 실행되며, 작업당 프로세스 하나를 사용합니다. 명령은 고객의 입력값이 들어가기 전에 토큰으로 분해되므로 셸이 개입하지 않고, 모든 조회는 소속 조직으로 한정됩니다."
+          },
+          {
+            "title": "SOC 2에 맞춘 통제",
+            "description": "인프라는 SOC 2 신뢰 서비스 기준(보안, 가용성, 기밀성, 프라이버시)에 맞춰 설계되었습니다. Type II 감사는 아직 완료되지 않았으며, 아래 프레임워크 표에 각 항목의 상태를 그대로 적었습니다."
+          },
+          {
+            "title": "추가 전용 감사 로그",
+            "description": "권한이 필요한 작업은 추가 전용 감사 로그에 기록되며, 소속 조직으로 한정되어 대시보드에서 조회할 수 있습니다. 로그는 1년간 보관합니다."
+          },
+          {
+            "title": "MFA, SSO, 역할",
+            "description": "일회용 백업 코드를 지원하는 TOTP 기반 다중 인증. 엔터프라이즈에서는 SAML 2.0, OIDC, LDAP/Active Directory 싱글 사인온을 제공합니다. 역할 기반 접근 제어는 화면이 아니라 서버에서 강제됩니다."
+          },
+          {
+            "title": "우리가 관리하는 도구 체인",
+            "description": "스캐너 이미지와 취약점 템플릿은 저희가 다시 빌드해 배포합니다. 고객이 직접 스캐너를 업데이트하거나 Kali 장비에 패치를 적용할 일은 없습니다."
+          },
+          {
+            "title": "데이터 최소화",
+            "description": "원본 트래픽이 아니라 스캔 메타데이터와 탐지 결과를 저장합니다. 보관 기간은 설정할 수 있고, 데이터는 언제든 내보내거나 삭제할 수 있습니다. GDPR 제5조 제1항 (c)."
+          },
+          {
+            "title": "플랫폼 모니터링",
+            "description": "모든 엔드포인트에 비용 등급별 요청 제한을 적용하고, 계정 활동에 대한 통계적 이상 탐지를 수행하며, 장애가 난 서비스는 헬스 워치독이 사람을 기다리지 않고 재시작합니다."
+          }
+        ],
+        "complianceFrameworks": [
+          {
+            "name": "SOC 2 Type II",
+            "note": "SOC 2 통제 항목 구현 완료(Type II 감사 예정)"
+          },
+          {
+            "name": "GDPR",
+            "note": "제6·17·25·28·32·35조 완전 준수"
+          },
+          {
+            "name": "ISO 27001:2022",
+            "note": "ISO 27001:2022에 맞춰 설계(인증 진행 중)"
+          },
+          {
+            "name": "ISO 27701",
+            "note": "프라이버시 정보 관리"
+          },
+          {
+            "name": "NIST CSF 2.0",
+            "note": "프레임워크 전면 준수"
+          },
+          {
+            "name": "PCI DSS v4.0",
+            "note": "PCI DSS v4.0에 맞춘 통제"
+          },
+          {
+            "name": "HIPAA",
+            "note": "HIPAA에 맞춘 통제 — PHI 암호화"
+          },
+          {
+            "name": "KVKK",
+            "note": "튀르키예 개인정보 보호법"
+          },
+          {
+            "name": "CCPA/CPRA",
+            "note": "캘리포니아 소비자 프라이버시법"
+          },
+          {
+            "name": "CSA STAR",
+            "note": "클라우드 보안 연합 — 프레임워크 준수"
+          }
+        ],
+        "subProcessorPurposes": [
+          "결제 처리",
+          "DDoS 방어, WAF, CDN",
+          "트랜잭션 이메일",
+          "트랜잭션 이메일(예비 중계)"
+        ],
+        "pentestHistory": [
+          {
+            "scope": "https://app.cyber-sec-pro.com — TLS, 헤더, CORS, 설정 오류 및 정보 노출 템플릿과 XSS·SQLi·오픈 리다이렉트 점검",
+            "findings": "치명 0건, 높음 0건, 보통 0건, 정보 31건. Wapiti: 취약점 0건.",
+            "status": "통과"
+          },
+          {
+            "scope": "저장소 전반의 인증, 인가, 비밀 관리, API 키, MFA, SSO, 세션 관리",
+            "findings": "운영 환경에서 실제로 동작하지 않던 통제 몇 가지를 발견해 다시 구현했고, 해당 통제가 보호하던 비밀 값은 교체했습니다. 각 수정은 회귀 테스트로 고정했습니다.",
+            "status": "조치 완료"
+          }
+        ],
+        "bugBountyRewards": [
+          {
+            "severity": "치명적",
+            "examples": "원격 코드 실행, 인증 우회, SQL 인젝션, 데이터 유출"
+          },
+          {
+            "severity": "높음",
+            "examples": "권한 상승, SSRF, 저장형 XSS"
+          },
+          {
+            "severity": "보통",
+            "examples": "CSRF, IDOR, 정보 노출"
+          },
+          {
+            "severity": "낮음",
+            "examples": "반사형 XSS, 오픈 리다이렉트, 보안 헤더 누락"
+          }
+        ]
+      }
+    }
   },
   "tests": {
     "badge": "보안 평가",
@@ -371,6 +608,194 @@
     "subtitle": "최신 공격적 보안 연구, 도구 튜토리얼 및 산업 분석으로 위협에 앞서세요.",
     "readMore": "더 읽기",
     "minRead": "분 소요",
-    "viewAll": "모든 기사 보기"
+    "viewAll": "모든 기사 보기",
+    "backToBlog": "블로그로 돌아가기"
+  },
+  "comparison": {
+    "title": "클라우드 Kali와 로컬 Kali",
+    "subtitle": "팀이 Kali Linux를 직접 구축해 관리하는 대신 CyberSec Pro를 선택하는 이유.",
+    "thead": {
+      "feature": "항목",
+      "local": "로컬 Kali",
+      "cloud": "CyberSec Pro"
+    },
+    "rows": {
+      "hardware": {
+        "feature": "하드웨어 자원",
+        "local": "CPU·메모리·저장 공간을 소모",
+        "cloud": "하드웨어 부담 없음"
+      },
+      "setup": {
+        "feature": "구축 시간",
+        "local": "설치와 설정에 몇 시간",
+        "cloud": "가입 후 몇 초 만에 스캔"
+      },
+      "reporting": {
+        "feature": "보고서",
+        "local": "보고서를 직접 작성",
+        "cloud": "클릭 한 번으로 PDF / HTML / CSV"
+      },
+      "team": {
+        "feature": "팀 협업",
+        "local": "기본 공유 기능 없음",
+        "cloud": "공유 대시보드와 역할 관리"
+      },
+      "cicd": {
+        "feature": "CI/CD 연동",
+        "local": "직접 스크립트를 작성해야 함",
+        "cloud": "기본 제공 API와 웹훅"
+      },
+      "scheduled": {
+        "feature": "예약 스캔",
+        "local": "cron과 직접 만든 스크립트",
+        "cloud": "24시간 예약 기능 내장"
+      },
+      "updates": {
+        "feature": "도구 업데이트",
+        "local": "apt 업그레이드를 직접 수행",
+        "cloud": "저희가 관리 — 패치할 것이 없음"
+      },
+      "compliance": {
+        "feature": "컴플라이언스 보고서",
+        "local": "템플릿을 직접 작성",
+        "cloud": "PCI·GDPR·ISO·SOC 2 템플릿"
+      }
+    }
+  },
+  "sampleReports": {
+    "title": "보고서 샘플",
+    "subtitle": "샘플 보고서를 내려받아 탐지 결과의 품질과 깊이를 직접 확인해 보세요.",
+    "technical": {
+      "title": "기술 보고서",
+      "description": "Nmap, Nikto, SSL Labs의 전체 탐지 결과와 조치 방법을 담았습니다.",
+      "cta": "기술 보고서 샘플 내려받기(PDF)"
+    },
+    "executive": {
+      "title": "경영진 요약",
+      "description": "경영진을 위한 종합 위험 점수, 컴플라이언스 격차, 우선순위가 매겨진 조치 항목.",
+      "cta": "경영진 요약 내려받기(PDF)"
+    }
+  },
+  "demo": {
+    "title": "지금 사용해 보세요 — 가입 불필요",
+    "subtitle": "이 페이지에서 바로 scanme.nmap.org를 대상으로 실제 Nmap 스캔을 실행해 보세요. 실제 출력이 몇 초 만에 나타납니다.",
+    "toolPlaceholder": "도구",
+    "targetPlaceholder": "대상(예: scanme.nmap.org)",
+    "runScan": "스캔 실행",
+    "scanning": "스캔 중…",
+    "scanStarted": "스캔을 시작했습니다",
+    "error": "오류"
+  },
+  "founding": {
+    "bar": "창립 멤버 혜택 — 월 19달러 평생 고정(81% 할인). 단 10자리.",
+    "barCta": "자리 예약하기",
+    "foundingTitle": "창립 멤버 — 월 19달러 평생 고정",
+    "foundingSub": "선착순 10명은 81% 할인을 영구 고정합니다. 정가는 월 99달러입니다.",
+    "foundingCta": "창립 멤버 자리 잡기"
+  },
+  "pricingPage": {
+    "badge": "요금제",
+    "title": "스캔량에 맞춰 요금제를 고르세요",
+    "subtitle": "무료 체험을 포함한 모든 요금제에 88개 도구가 전부 들어 있습니다. 달라지는 것은 사용량과 자동화, 그리고 팀에 필요한 관리 기능입니다.",
+    "annualNote": "연간 결제 시 모든 유료 요금제가 20% 저렴해집니다.",
+    "compare": {
+      "title": "각 요금제가 실제로 적용하는 제한",
+      "subtitle": "요금제 설정에서 읽어와 백엔드가 실제로 적용하는 제한이며, 마케팅용 반올림 수치가 아닙니다.",
+      "plan": "요금제",
+      "unlimited": "무제한",
+      "included": "포함",
+      "notIncluded": "이 요금제에는 없음",
+      "groups": {
+        "scanning": "스캔",
+        "workspace": "작업 공간",
+        "reports": "보고서",
+        "automation": "자동화와 AI",
+        "access": "접근과 지원"
+      },
+      "rows": {
+        "tools": "보안 도구",
+        "scans": "스캔 한도",
+        "concurrent": "동시 스캔",
+        "projects": "프로젝트",
+        "seats": "팀 구성원",
+        "agents": "원격 에이전트",
+        "basicReports": "탐지 결과와 기본 보고서",
+        "pdf": "PDF 보고서",
+        "html": "HTML 보고서",
+        "compliance": "컴플라이언스 보고서",
+        "scheduled": "예약 스캔",
+        "aiSuggestions": "AI 스캔 추천",
+        "aiRemediation": "AI 조치 가이드",
+        "purpleTeam": "퍼플팀 훈련",
+        "ldap": "LDAP / Active Directory 스캔",
+        "api": "REST API 접근",
+        "sso": "SSO(SAML, OIDC, LDAP)",
+        "priority": "우선 지원"
+      },
+      "values": {
+        "allTools": "88개 전부",
+        "trialScans": "14일간 하루 3회",
+        "perMonth": "월 {n}회"
+      }
+    },
+    "faq": {
+      "title": "결정하기 전에",
+      "items": [
+        {
+          "q": "무료 체험에서는 무엇을 쓸 수 있나요?",
+          "a": "14일 동안 하루 3회 스캔, 그리고 88개 도구 전부 — 유료 요금제와 동일한 목록입니다. 탐지 결과와 PDF 보고서는 포함되지만, HTML·컴플라이언스 보고서와 예약 기능, AI 기능은 포함되지 않습니다."
+        },
+        {
+          "q": "스캔 1회는 어떻게 계산하나요?",
+          "a": "도구 하나를 대상 하나에 대해 한 번 실행하는 것이 1회입니다. 조치 확인을 위해 같은 도구를 다시 돌리면 다시 1회로 계산되지만, 결과가 원래 스캔과 연결되어 무엇이 해결되고 무엇이 남아 있으며 무엇이 새로 생겼는지 확인할 수 있습니다."
+        },
+        {
+          "q": "요금제를 바꾸거나 해지할 수 있나요?",
+          "a": "네. 결제 설정의 Stripe 고객 포털에서 직접 처리할 수 있습니다. 상위 요금제로의 변경은 즉시 적용되고, 해지는 이미 결제한 기간이 끝날 때까지 유지됩니다."
+        },
+        {
+          "q": "환불이 되나요?",
+          "a": "구매 후 14일 이내이고 계정에서 스캔을 한 번도 실행하지 않았다면 환불해 드립니다. 이 조건은 이용약관에 적혀 있고 적힌 그대로 적용합니다."
+        },
+        {
+          "q": "연간 결제는 얼마나 절약되나요?",
+          "a": "20%입니다. Starter는 연 348달러 대신 279달러, Professional은 1,188달러 대신 949달러, Enterprise는 4,188달러 대신 3,349달러입니다."
+        },
+        {
+          "q": "제 데이터는 어디에 저장되나요?",
+          "a": "캐나다입니다. 스캔 결과와 탐지 내용, 로그는 캐나다 내 데이터센터에 머무르며, 명시적으로 동의하지 않는 한 캐나다 관할권을 벗어나지 않습니다."
+        },
+        {
+          "q": "스캔에 입력한 자격 증명을 저장하나요?",
+          "a": "아니요. 스캔용 자격 증명은 해당 작업이 진행되는 동안만 메모리에 남았다가 작업이 끝나면 폐기됩니다. 데이터베이스나 로그, 백업에 기록되지 않으며 무언가를 저장하기 전에 마스킹됩니다. 원한다면 실행 시점에 고객사의 볼트에서 가져올 수도 있습니다."
+        },
+        {
+          "q": "SSO를 쓰려면 어떤 요금제가 필요한가요?",
+          "a": "엔터프라이즈입니다. SAML 2.0, OIDC, LDAP를 지원하며, 연결 테스트는 양식만 저장하는 것이 아니라 실제 엔드포인트를 검증합니다."
+        }
+      ]
+    },
+    "trust": {
+      "residency": {
+        "t": "캐나다 데이터 보관",
+        "d": "스캔 결과와 탐지 내용, 로그는 캐나다 내 데이터센터에 머무릅니다."
+      },
+      "credentials": {
+        "t": "자격 증명은 저장하지 않습니다",
+        "d": "작업 중에만 메모리에 두고, 무엇이든 기록하기 전에 마스킹합니다."
+      },
+      "cancel": {
+        "t": "언제든 해지 가능",
+        "d": "Stripe 고객 포털에서 직접 처리할 수 있습니다. 전화할 필요가 없습니다."
+      },
+      "refund": {
+        "t": "14일 환불",
+        "d": "계정에서 스캔을 실행하지 않았다면 14일 이내 전액 환불해 드립니다."
+      }
+    },
+    "ctaTitle": "무료 체험으로 시작하세요",
+    "ctaBody": "14일 동안 88개 도구 전부, 하루 3회 스캔. 사용량이 늘면 그때 올리시면 됩니다.",
+    "ctaButton": "계정 만들기",
+    "ctaSecondary": "엔터프라이즈 상담 요청"
   }
 }

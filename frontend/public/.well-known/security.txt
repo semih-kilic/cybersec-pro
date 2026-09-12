@@ -3,7 +3,6 @@
 
 Contact: mailto:security@cyber-sec-pro.com
 Contact: https://cyber-sec-pro.com/trust-center#responsible-disclosure
-Encryption: https://cyber-sec-pro.com/.well-known/pgp-key.txt
 Acknowledgments: https://cyber-sec-pro.com/trust-center#acknowledgments
 Policy: https://cyber-sec-pro.com/trust-center#responsible-disclosure
 Hiring: https://cyber-sec-pro.com/careers

@@ -1,7 +1,9 @@
 {
   "meta": {
     "title": "CyberSec Pro — Plateforme de Sécurité Offensive",
-    "description": "Plateforme de sécurité offensive dans le cloud avec 88 outils Kali Linux. Scan automatisé des vulnérabilités, tests de pénétration et évaluations de sécurité."
+    "description": "Plateforme de sécurité offensive dans le cloud avec 88 outils Kali Linux. Scan automatisé des vulnérabilités, tests de pénétration et évaluations de sécurité.",
+    "trustCenterTitle": "Centre de confiance — CyberSec Pro | Sécurité, conformité et transparence",
+    "trustCenterDesc": "Centre de confiance CyberSec Pro : les référentiels de sécurité que nous suivons et les certifications que nous n'avons pas encore, notre politique de divulgation responsable, nos sous-traitants, la résidence des données au Canada et le DPA."
   },
   "nav": {
     "features": "Fonctionnalités",
@@ -342,7 +344,242 @@
   "security": {
     "badge": "Sécurité",
     "title": "La sécurité avant tout",
-    "subtitle": "Nous prenons très au sérieux la sécurité de notre plateforme et de vos données."
+    "subtitle": "Nous prenons très au sérieux la sécurité de notre plateforme et de vos données.",
+    "trustCenter": {
+      "badge": "Centre de confiance",
+      "title": "Centre de confiance",
+      "subtitle": "Tout ce que nous pouvons vous dire sur la sécurisation de la plateforme, l'endroit où vivent vos données et les certifications que nous détenons — y compris celles que nous ne détenons pas.",
+      "certBadgesNote": "Référentiels que nous suivons ou que nous visons activement — l'état actuel des certifications figure ci-dessous.",
+      "status": {
+        "operational": "Tous les systèmes sont opérationnels",
+        "link": "status.cyber-sec-pro.com →"
+      },
+      "sections": {
+        "securityTxt": {
+          "title": "security.txt",
+          "description": "Notre fichier de contact sécurité, pleinement conforme à la RFC 9116 de l'IETF. Découvert automatiquement par les moteurs de recherche et les chercheurs en sécurité.",
+          "directAccess": "Accès direct à security.txt",
+          "pgpKey": "Clé PGP"
+        },
+        "disclosure": {
+          "title": "Divulgation responsable et bug bounty",
+          "scope": "Périmètre",
+          "scopeIn": "Dans le périmètre :",
+          "scopeOut": "Hors périmètre :",
+          "channel": "Canal de signalement",
+          "channelDesc": "Signalez les failles de sécurité à :",
+          "reportTemplate": "Modèle de rapport :",
+          "sla": "SLA de réponse",
+          "slaFirst": "Première réponse :",
+          "slaUpdate": "Point d'avancement :",
+          "slaFix": "Correction ou exception :",
+          "safeHarbor": "Safe harbor",
+          "safeHarbor1": "Aucune action en justice ne sera engagée pour un signalement conforme à cette politique",
+          "safeHarbor2": "L'identité de la personne qui signale reste confidentielle",
+          "safeHarbor3": "Ajout au tableau d'honneur après correction",
+          "safeHarbor4": "Tout test sans autorisation écrite est interdit",
+          "bountyTable": "Barème des récompenses",
+          "tableLevel": "Gravité",
+          "tableReward": "Récompense",
+          "tableExamples": "Exemples de découvertes"
+        },
+        "compliance": {
+          "title": "Référentiels de conformité",
+          "compliant": "Conforme",
+          "pending": "En attente"
+        },
+        "incident": {
+          "title": "SLA de réponse aux incidents",
+          "description": "Nos procédures de réponse aux incidents, conformes à l'ISO 27035 et au NIST SP 800-61 Rev. 2 :",
+          "priority": "Priorité",
+          "detection": "Détection",
+          "response": "Réponse",
+          "notification": "Notification",
+          "resolution": "Résolution"
+        },
+        "subprocessors": {
+          "title": "Sous-traitants",
+          "description": "Prestataires tiers traitant des données au titre de l'article 28(2) du RGPD. Tous ont signé un accord de traitement des données (DPA).",
+          "provider": "Prestataire",
+          "purpose": "Finalité",
+          "location": "Localisation",
+          "signed": "Signé",
+          "pending": "En attente",
+          "footer": "Dernière mise à jour : septembre 2026. Nous prévenons 30 jours à l'avance de tout changement de sous-traitant."
+        },
+        "dpa": {
+          "title": "Accord de traitement des données (DPA)",
+          "description": "Nous fournissons un accord de traitement des données à tous nos clients au titre de l'article 28 du RGPD. Il inclut les clauses contractuelles types de l'UE (CCT 2021) et l'IDTA britannique.",
+          "scopeTitle": "Périmètre du DPA",
+          "dpiaTitle": "AIPD (analyse d'impact relative à la protection des données)",
+          "requestBtn": "Demander le DPA",
+          "dpoBtn": "Contacter le DPO"
+        },
+        "pentest": {
+          "title": "Tests de sécurité et audits",
+          "description": "Tests de sécurité internes continus, menés avec notre propre plateforme et par revue manuelle. Des tests d'intrusion indépendants sont prévus ; les rapports de synthèse seront mis à disposition des clients Enterprise sous NDA une fois réalisés.",
+          "scope": "Périmètre :",
+          "findings": "Résultats :",
+          "requestReport": "Demander le rapport de synthèse (NDA requis)"
+        },
+        "hallOfFame": {
+          "title": "Tableau d'honneur sécurité",
+          "description": "Nous remercions les chercheurs qui signalent des vulnérabilités conformément à notre politique de divulgation responsable.",
+          "empty": "En signalant une vulnérabilité, vous pourriez être la première personne inscrite à notre tableau d'honneur.",
+          "reportBtn": "Signaler une vulnérabilité"
+        },
+        "contact": {
+          "statusTitle": "État des systèmes",
+          "statusDesc": "Suivez l'état de tous les services en temps réel.",
+          "statusBtn": "Page d'état",
+          "contactTitle": "Contact sécurité",
+          "security": "Sécurité",
+          "legal": "Juridique/DPA",
+          "privacy": "Confidentialité",
+          "footer": "Centre de confiance mis à jour en septembre 2026 · Version de la politique : 2.2.0 · Prochaine revue : mars 2027"
+        },
+        "dataResidency": {
+          "title": "Résidence des données et confidentialité",
+          "subtitle": "Vos données restent au Canada. Toujours.",
+          "storageLocation": "Stockage principal des données",
+          "storageLocationValue": "Canada 🇨🇦",
+          "storageDescription": "Toutes les données clients, les résultats de scan et les journaux sont stockés exclusivement dans des centres de données canadiens. Aucune donnée ne quitte la juridiction canadienne sans le consentement explicite du client.",
+          "encryptionAtRest": "Chiffrement au repos",
+          "encryptionAtRestValue": "AES-256-GCM",
+          "encryptionDescription": "Les secrets et les identifiants stockés sont chiffrés en AES-256-GCM. La clé de chiffrement est distincte de la clé de signature des jetons, ne vit que dans l'environnement du serveur et n'est jamais écrite dans la base de données, les sauvegardes ou le dépôt.",
+          "encryptionInTransit": "Chiffrement en transit",
+          "encryptionInTransitValue": "TLS 1.3",
+          "encryptionInTransitDescription": "Tout le trafic API et web utilise TLS 1.3 avec confidentialité persistante. Les suites de chiffrement sont limitées aux configurations les plus robustes disponibles.",
+          "noLogging": "Aucun journal du trafic brut",
+          "noLoggingValue": "Zero-knowledge",
+          "noLoggingDescription": "Nous ne journalisons, ne stockons ni ne traitons le trafic réseau brut ou les charges utiles de scan. Seules les métadonnées (horodatages, IP cibles, types d'outils, nombre de résultats par gravité) sont conservées à des fins d'exploitation.",
+          "noLoggingPolicy": "Notre engagement de non-journalisation",
+          "noLoggingPolicy1": "Aucune conservation de capture de paquets",
+          "noLoggingPolicy2": "Aucune conservation du contenu des charges utiles",
+          "noLoggingPolicy3": "Aucune donnée personnelle dans les résultats de scan",
+          "noLoggingPolicy4": "Les résultats de scan sont purgés automatiquement après 90 jours, les journaux d'audit après un an",
+          "dataProcessing": "Principes de traitement des données",
+          "dataProcessing1": "Limitation des finalités — les données ne sont collectées que pour les analyses de sécurité annoncées",
+          "dataProcessing2": "Minimisation — nous collectons le strict nécessaire",
+          "dataProcessing3": "Transparence — vous savez toujours quelles données nous conservons et pourquoi",
+          "dataProcessing4": "Contrôle de l'utilisateur — vous pouvez exporter ou supprimer vos données à tout moment"
+        }
+      },
+      "arrays": {
+        "trustFeatures": [
+          {
+            "title": "Chiffrement en transit et au repos",
+            "description": "TLS 1.3 avec confidentialité persistante sur chaque connexion. Les secrets et les identifiants stockés sont chiffrés en AES-256-GCM, sous une clé distincte de celle qui signe les jetons."
+          },
+          {
+            "title": "Exécution isolée",
+            "description": "Les scans s'exécutent côté serveur dans un conteneur de scan dédié, un processus par tâche. La commande est découpée en jetons avant l'insertion de vos valeurs, donc aucun shell n'intervient, et chaque requête est limitée à votre organisation."
+          },
+          {
+            "title": "Contrôles alignés sur SOC 2",
+            "description": "Infrastructure conçue selon les Trust Services Criteria de SOC 2 (sécurité, disponibilité, confidentialité, vie privée). L'audit de type II n'est pas terminé — le tableau des référentiels ci-dessous indique précisément où en est chacun."
+          },
+          {
+            "title": "Journal d'audit en ajout seul",
+            "description": "Les actions privilégiées sont écrites dans un journal d'audit en ajout seul, limité à votre organisation et consultable depuis le tableau de bord. Les journaux sont conservés un an."
+          },
+          {
+            "title": "MFA, SSO et rôles",
+            "description": "Authentification multifacteur par TOTP avec codes de secours à usage unique. Authentification unique SAML 2.0, OIDC et LDAP / Active Directory sur Enterprise. Le contrôle d'accès par rôle est appliqué sur le serveur, pas dans l'interface."
+          },
+          {
+            "title": "Chaîne d'outils maintenue",
+            "description": "Les images des scanners et leurs modèles de vulnérabilités sont reconstruits et redéployés par nos soins. Vous ne mettez jamais un scanner à jour et ne corrigez jamais une machine Kali."
+          },
+          {
+            "title": "Minimisation des données",
+            "description": "Nous stockons les métadonnées de scan et les résultats, pas le trafic brut. La durée de conservation est configurable et vous pouvez exporter ou supprimer vos données à tout moment. Article 5(1)(c) du RGPD."
+          },
+          {
+            "title": "Supervision de la plateforme",
+            "description": "Limitation de débit par paliers de coût sur chaque point d'accès, détection statistique d'anomalies sur l'activité des comptes et chiens de garde qui redémarrent un service défaillant sans attendre un humain."
+          }
+        ],
+        "complianceFrameworks": [
+          {
+            "name": "SOC 2 Type II",
+            "note": "Contrôles SOC 2 mis en œuvre (audit de type II prévu)"
+          },
+          {
+            "name": "RGPD",
+            "note": "Pleine conformité aux art. 6, 17, 25, 28, 32, 35"
+          },
+          {
+            "name": "ISO 27001:2022",
+            "note": "Conçu selon l'ISO 27001:2022 (certification en cours)"
+          },
+          {
+            "name": "ISO 27701",
+            "note": "Management de la protection de la vie privée"
+          },
+          {
+            "name": "NIST CSF 2.0",
+            "note": "Alignement complet sur le référentiel"
+          },
+          {
+            "name": "PCI DSS v4.0",
+            "note": "Contrôles alignés sur PCI DSS v4.0"
+          },
+          {
+            "name": "HIPAA",
+            "note": "Contrôles alignés sur HIPAA — chiffrement des PHI"
+          },
+          {
+            "name": "KVKK",
+            "note": "Loi turque sur la protection des données personnelles"
+          },
+          {
+            "name": "CCPA/CPRA",
+            "note": "California Consumer Privacy Act"
+          },
+          {
+            "name": "CSA STAR",
+            "note": "Cloud Security Alliance — aligné sur le référentiel"
+          }
+        ],
+        "subProcessorPurposes": [
+          "Traitement des paiements",
+          "Protection DDoS, WAF, CDN",
+          "E-mails transactionnels",
+          "E-mails transactionnels (relais de secours)"
+        ],
+        "pentestHistory": [
+          {
+            "scope": "https://app.cyber-sec-pro.com — TLS, en-têtes, CORS, modèles de mauvaise configuration et d'exposition, plus des sondes XSS, SQLi et redirection ouverte",
+            "findings": "0 critique, 0 élevée, 0 moyenne, 31 informatives. Wapiti : 0 vulnérabilité.",
+            "status": "Réussi"
+          },
+          {
+            "scope": "Authentification, autorisation, gestion des secrets, clés d'API, MFA, SSO et gestion des sessions, sur l'ensemble du dépôt",
+            "findings": "Plusieurs contrôles se sont révélés inopérants en production et ont été reconstruits ; les secrets qu'ils protégeaient ont été renouvelés. Chaque correction est verrouillée par un test de non-régression.",
+            "status": "Corrigé"
+          }
+        ],
+        "bugBountyRewards": [
+          {
+            "severity": "Critique",
+            "examples": "RCE, contournement d'authentification, injection SQL, fuite de données"
+          },
+          {
+            "severity": "Élevée",
+            "examples": "Élévation de privilèges, SSRF, XSS stocké"
+          },
+          {
+            "severity": "Moyenne",
+            "examples": "CSRF, IDOR, divulgation d'informations"
+          },
+          {
+            "severity": "Faible",
+            "examples": "XSS réfléchi, redirection ouverte, en-têtes manquants"
+          }
+        ]
+      }
+    }
   },
   "tests": {
     "badge": "Évaluation de sécurité",
@@ -371,6 +608,194 @@
     "subtitle": "Gardez une longueur d'avance sur les menaces avec les dernières recherches et tutoriels en sécurité offensive.",
     "readMore": "Lire la suite",
     "minRead": "min de lecture",
-    "viewAll": "Voir tous les articles"
+    "viewAll": "Voir tous les articles",
+    "backToBlog": "Retour au blog"
+  },
+  "comparison": {
+    "title": "Kali dans le cloud ou Kali en local",
+    "subtitle": "Pourquoi les équipes choisissent CyberSec Pro plutôt que d'entretenir leur propre installation Kali Linux.",
+    "thead": {
+      "feature": "Fonctionnalité",
+      "local": "Kali local",
+      "cloud": "CyberSec Pro"
+    },
+    "rows": {
+      "hardware": {
+        "feature": "Ressources matérielles",
+        "local": "Consomme CPU, RAM et stockage",
+        "cloud": "Aucune charge matérielle"
+      },
+      "setup": {
+        "feature": "Temps de mise en place",
+        "local": "Des heures d'installation et de configuration",
+        "cloud": "Inscrivez-vous et scannez en quelques secondes"
+      },
+      "reporting": {
+        "feature": "Rapports",
+        "local": "Rapports rédigés à la main",
+        "cloud": "PDF / HTML / CSV en un clic"
+      },
+      "team": {
+        "feature": "Travail en équipe",
+        "local": "Aucun partage intégré",
+        "cloud": "Tableaux de bord partagés et rôles"
+      },
+      "cicd": {
+        "feature": "Intégration CI/CD",
+        "local": "Scripts sur mesure nécessaires",
+        "cloud": "API et webhooks natifs"
+      },
+      "scheduled": {
+        "feature": "Scans planifiés",
+        "local": "Cron et scripts maison",
+        "cloud": "Planification 24h/24 intégrée"
+      },
+      "updates": {
+        "feature": "Mises à jour des outils",
+        "local": "Mises à niveau apt manuelles",
+        "cloud": "Maintenu par nous — rien à corriger"
+      },
+      "compliance": {
+        "feature": "Rapports de conformité",
+        "local": "Remplissage manuel de modèles",
+        "cloud": "Modèles PCI, RGPD, ISO, SOC 2"
+      }
+    }
+  },
+  "sampleReports": {
+    "title": "Exemples de rapports",
+    "subtitle": "Téléchargez des exemples de rapports pour juger de la qualité et de la profondeur de nos résultats.",
+    "technical": {
+      "title": "Rapport technique",
+      "description": "L'ensemble des résultats Nmap, Nikto et SSL Labs, avec les étapes de correction.",
+      "cta": "Télécharger l'exemple de rapport technique (PDF)"
+    },
+    "executive": {
+      "title": "Synthèse pour la direction",
+      "description": "Score de risque global, écarts de conformité et actions hiérarchisées à l'attention de la direction.",
+      "cta": "Télécharger la synthèse (PDF)"
+    }
+  },
+  "demo": {
+    "title": "Essayez maintenant — sans inscription",
+    "subtitle": "Lancez un vrai scan Nmap sur scanme.nmap.org directement depuis cette page. Vous verrez la sortie en quelques secondes.",
+    "toolPlaceholder": "Outil",
+    "targetPlaceholder": "Cible (ex. scanme.nmap.org)",
+    "runScan": "Lancer le scan",
+    "scanning": "Analyse en cours…",
+    "scanStarted": "Scan lancé",
+    "error": "Erreur"
+  },
+  "founding": {
+    "bar": "Offre membre fondateur — 19 $/mois à vie (81 % de réduction). 10 places seulement.",
+    "barCta": "Réserver ma place",
+    "foundingTitle": "Membre fondateur — 19 $/mois à vie",
+    "foundingSub": "Les 10 premiers membres bloquent 81 % de réduction pour toujours. Prix normal : 99 $/mois.",
+    "foundingCta": "Réserver une place de fondateur"
+  },
+  "pricingPage": {
+    "badge": "Tarifs",
+    "title": "Choisissez une formule selon votre volume de scans",
+    "subtitle": "Toutes les formules incluent les 88 outils — l'essai gratuit aussi. Ce qui change, c'est le volume, l'automatisation et les contrôles dont une équipe a besoin.",
+    "annualNote": "La facturation annuelle fait économiser 20 % sur toutes les formules payantes.",
+    "compare": {
+      "title": "Ce que chaque formule applique réellement",
+      "subtitle": "Ce sont les limites appliquées par le backend, lues dans la configuration des formules — pas des arrondis marketing.",
+      "plan": "Formule",
+      "unlimited": "Illimité",
+      "included": "Inclus",
+      "notIncluded": "Pas dans cette formule",
+      "groups": {
+        "scanning": "Analyse",
+        "workspace": "Espace de travail",
+        "reports": "Rapports",
+        "automation": "Automatisation et IA",
+        "access": "Accès et support"
+      },
+      "rows": {
+        "tools": "Outils de sécurité",
+        "scans": "Quota de scans",
+        "concurrent": "Scans simultanés",
+        "projects": "Projets",
+        "seats": "Membres de l'équipe",
+        "agents": "Agents distants",
+        "basicReports": "Résultats et rapports de base",
+        "pdf": "Rapports PDF",
+        "html": "Rapports HTML",
+        "compliance": "Rapports de conformité",
+        "scheduled": "Scans planifiés",
+        "aiSuggestions": "Suggestions de scan par IA",
+        "aiRemediation": "Conseils de correction par IA",
+        "purpleTeam": "Exercices Purple Team",
+        "ldap": "Analyse LDAP / Active Directory",
+        "api": "Accès à l'API REST",
+        "sso": "SSO (SAML, OIDC, LDAP)",
+        "priority": "Support prioritaire"
+      },
+      "values": {
+        "allTools": "Les 88",
+        "trialScans": "3 / jour pendant 14 jours",
+        "perMonth": "{n} / mois"
+      }
+    },
+    "faq": {
+      "title": "Avant de choisir",
+      "items": [
+        {
+          "q": "Que comprend l'essai gratuit ?",
+          "a": "Quatorze jours, trois scans par jour et les 88 outils — le même catalogue que les formules payantes. Les résultats et les rapports PDF sont inclus ; les rapports HTML et de conformité, la planification et les fonctions d'IA ne le sont pas."
+        },
+        {
+          "q": "Qu'est-ce qui compte pour un scan ?",
+          "a": "Une exécution d'un outil sur une cible. Relancer le même outil pour vérifier une correction compte à nouveau, et le résultat est rattaché à l'original afin que vous voyiez ce qui est corrigé, ce qui reste ouvert et ce qui est nouveau."
+        },
+        {
+          "q": "Puis-je changer de formule ou résilier ?",
+          "a": "Oui, depuis le portail client Stripe dans vos paramètres de facturation. Les montées en gamme prennent effet immédiatement ; les résiliations courent jusqu'à la fin de la période déjà payée."
+        },
+        {
+          "q": "Proposez-vous des remboursements ?",
+          "a": "Dans les 14 jours suivant l'achat, à condition qu'aucun scan n'ait été exécuté sur le compte. Cette condition figure dans les CGU et nous l'appliquons telle quelle."
+        },
+        {
+          "q": "Combien fait économiser la facturation annuelle ?",
+          "a": "20 %. Starter revient à 279 $ par an au lieu de 348 $, Professional à 949 $ au lieu de 1 188 $, Enterprise à 3 349 $ au lieu de 4 188 $."
+        },
+        {
+          "q": "Où mes données sont-elles stockées ?",
+          "a": "Au Canada. Les résultats de scan, les vulnérabilités relevées et les journaux restent dans des centres de données canadiens, et rien ne quitte la juridiction canadienne sans votre consentement explicite."
+        },
+        {
+          "q": "Conservez-vous les identifiants que je saisis pour un scan ?",
+          "a": "Non. Les identifiants d'un scan restent en mémoire le temps de la tâche puis sont effacés. Ils ne sont jamais écrits en base de données, dans les journaux ni dans les sauvegardes, et ils sont masqués avant toute persistance. Vous pouvez aussi les résoudre à l'exécution depuis votre propre coffre-fort."
+        },
+        {
+          "q": "Quelle formule faut-il pour le SSO ?",
+          "a": "Enterprise. Elle couvre SAML 2.0, OIDC et LDAP, et le test de connexion valide le véritable point d'accès au lieu de se contenter d'enregistrer le formulaire."
+        }
+      ]
+    },
+    "trust": {
+      "residency": {
+        "t": "Données hébergées au Canada",
+        "d": "Résultats, vulnérabilités et journaux restent dans des centres de données canadiens."
+      },
+      "credentials": {
+        "t": "Les identifiants ne sont jamais stockés",
+        "d": "Gardés en mémoire le temps de la tâche, masqués avant toute écriture."
+      },
+      "cancel": {
+        "t": "Résiliation à tout moment",
+        "d": "En libre-service via le portail client Stripe. Aucun appel nécessaire."
+      },
+      "refund": {
+        "t": "Remboursement sous 14 jours",
+        "d": "Remboursement intégral sous 14 jours si aucun scan n'a été lancé sur le compte."
+      }
+    },
+    "ctaTitle": "Commencer par l'essai gratuit",
+    "ctaBody": "Quatorze jours, les 88 outils, trois scans par jour. Vous passerez à la formule supérieure quand le volume l'exigera.",
+    "ctaButton": "Créer votre compte",
+    "ctaSecondary": "Parlons de l'offre Enterprise"
   }
 }

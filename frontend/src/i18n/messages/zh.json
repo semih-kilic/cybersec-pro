@@ -1,7 +1,9 @@
 {
   "meta": {
     "title": "CyberSec Pro — 进攻性安全平台",
-    "description": "基于云的进攻性安全平台，拥有88个Kali Linux工具。自动化漏洞扫描、渗透测试和安全评估。"
+    "description": "基于云的进攻性安全平台，拥有88个Kali Linux工具。自动化漏洞扫描、渗透测试和安全评估。",
+    "trustCenterTitle": "信任中心 — CyberSec Pro | 安全、合规与透明",
+    "trustCenterDesc": "CyberSec Pro 信任中心：我们对齐的安全框架、尚未取得的认证、漏洞披露政策、子处理方、加拿大数据驻留以及数据处理协议（DPA）。"
   },
   "nav": {
     "features": "功能",
@@ -342,7 +344,242 @@
   "security": {
     "badge": "安全",
     "title": "安全第一",
-    "subtitle": "我们非常重视平台和您数据的安全。"
+    "subtitle": "我们非常重视平台和您数据的安全。",
+    "trustCenter": {
+      "badge": "信任中心",
+      "title": "信任中心",
+      "subtitle": "关于平台如何受到保护、您的数据存放在哪里、我们持有哪些认证——包括我们尚未持有的认证——我们能告诉您的一切。",
+      "certBadgesNote": "我们对齐或正在积极申请的框架，当前认证状态见下表。",
+      "status": {
+        "operational": "所有系统运行正常",
+        "link": "status.cyber-sec-pro.com →"
+      },
+      "sections": {
+        "securityTxt": {
+          "title": "security.txt",
+          "description": "我们的安全联系文件，完全符合 IETF RFC 9116。搜索引擎与安全研究人员可自动发现。",
+          "directAccess": "直接访问 security.txt",
+          "pgpKey": "PGP 密钥"
+        },
+        "disclosure": {
+          "title": "漏洞披露政策与漏洞赏金",
+          "scope": "范围",
+          "scopeIn": "范围内：",
+          "scopeOut": "范围外：",
+          "channel": "报告渠道",
+          "channelDesc": "请将安全漏洞报告发送至：",
+          "reportTemplate": "报告模板：",
+          "sla": "响应 SLA",
+          "slaFirst": "首次回复：",
+          "slaUpdate": "状态更新：",
+          "slaFix": "修复或例外说明：",
+          "safeHarbor": "安全港条款",
+          "safeHarbor1": "对于符合本政策的报告，我们不会采取法律行动",
+          "safeHarbor2": "报告者的身份将予以保密",
+          "safeHarbor3": "漏洞修复后将列入名人堂",
+          "safeHarbor4": "禁止在未获书面许可的情况下进行测试",
+          "bountyTable": "漏洞赏金奖励表",
+          "tableLevel": "严重程度",
+          "tableReward": "奖励",
+          "tableExamples": "示例漏洞"
+        },
+        "compliance": {
+          "title": "合规框架",
+          "compliant": "已符合",
+          "pending": "进行中"
+        },
+        "incident": {
+          "title": "安全事件响应 SLA",
+          "description": "我们的事件响应流程符合 ISO 27035 与 NIST SP 800-61 Rev.2：",
+          "priority": "优先级",
+          "detection": "检测",
+          "response": "响应",
+          "notification": "通知",
+          "resolution": "解决"
+        },
+        "subprocessors": {
+          "title": "子处理方",
+          "description": "依据 GDPR 第 28 条第 2 款处理数据的第三方服务商。所有子处理方均已签署数据处理协议（DPA）。",
+          "provider": "服务商",
+          "purpose": "用途",
+          "location": "所在地",
+          "signed": "已签署",
+          "pending": "办理中",
+          "footer": "最后更新：2026 年 9 月。子处理方发生变更时，我们会提前 30 天通知。"
+        },
+        "dpa": {
+          "title": "数据处理协议（DPA）",
+          "description": "依据 GDPR 第 28 条，我们为所有客户提供数据处理协议，其中包含欧盟标准合同条款（EU SCC 2021）与英国 IDTA。",
+          "scopeTitle": "DPA 范围",
+          "dpiaTitle": "DPIA（数据保护影响评估）",
+          "requestBtn": "索取 DPA",
+          "dpoBtn": "联系数据保护官"
+        },
+        "pentest": {
+          "title": "安全测试与审计",
+          "description": "我们使用自有平台并辅以人工复核，持续进行内部安全测试。独立第三方渗透测试已在计划中；完成后将在签署保密协议的前提下向企业版客户提供摘要报告。",
+          "scope": "范围：",
+          "findings": "结果：",
+          "requestReport": "索取摘要报告（需签署 NDA）"
+        },
+        "hallOfFame": {
+          "title": "安全名人堂",
+          "description": "感谢按照我们的漏洞披露政策报告安全问题的研究人员。",
+          "empty": "报告一个漏洞，您就可能成为名人堂中的第一位研究者。",
+          "reportBtn": "报告漏洞"
+        },
+        "contact": {
+          "statusTitle": "系统状态",
+          "statusDesc": "实时查看所有服务的运行状态。",
+          "statusBtn": "状态页面",
+          "contactTitle": "安全联系方式",
+          "security": "安全",
+          "legal": "法务／DPA",
+          "privacy": "隐私",
+          "footer": "信任中心最后更新：2026 年 9 月 · 政策版本：2.2.0 · 下次复核：2027 年 3 月"
+        },
+        "dataResidency": {
+          "title": "数据驻留与隐私",
+          "subtitle": "您的数据始终留在加拿大。",
+          "storageLocation": "主要数据存储地",
+          "storageLocationValue": "加拿大 🇨🇦",
+          "storageDescription": "所有客户数据、扫描结果和日志仅存储在加拿大境内的数据中心。未经客户明确同意，数据不会离开加拿大司法管辖区。",
+          "encryptionAtRest": "静态加密",
+          "encryptionAtRestValue": "AES-256-GCM",
+          "encryptionDescription": "机密信息与保存的凭据均使用 AES-256-GCM 加密。加密密钥与令牌签名密钥相互独立，仅存在于服务器环境中，绝不会写入数据库、备份或代码仓库。",
+          "encryptionInTransit": "传输加密",
+          "encryptionInTransitValue": "TLS 1.3",
+          "encryptionInTransitDescription": "所有 API 与网页流量均使用具备前向保密性的 TLS 1.3，加密套件仅限于当前可用的最强配置。",
+          "noLogging": "不记录原始流量",
+          "noLoggingValue": "零知识",
+          "noLoggingDescription": "我们不记录、不存储、不处理原始网络流量或扫描载荷。出于运维需要，仅保留元数据（时间戳、目标 IP、工具类型、各严重级别的数量）。",
+          "noLoggingPolicy": "我们的不记录承诺",
+          "noLoggingPolicy1": "不保存数据包捕获文件",
+          "noLoggingPolicy2": "不保留载荷内容",
+          "noLoggingPolicy3": "扫描结果中不含个人数据",
+          "noLoggingPolicy4": "扫描结果 90 天后自动清除，审计日志保留一年",
+          "dataProcessing": "数据处理原则",
+          "dataProcessing1": "目的限制——数据仅为已声明的安全扫描目的而收集",
+          "dataProcessing2": "数据最小化——我们只收集必要的最少数据",
+          "dataProcessing3": "透明——您随时都知道我们保存了哪些数据以及原因",
+          "dataProcessing4": "用户可控——您可以随时导出或删除自己的数据"
+        }
+      },
+      "arrays": {
+        "trustFeatures": [
+          {
+            "title": "传输与存储加密",
+            "description": "每一条连接都使用具备前向保密性的 TLS 1.3。机密信息与保存的凭据使用 AES-256-GCM 加密，其密钥与令牌签名密钥分开保管。"
+          },
+          {
+            "title": "隔离执行",
+            "description": "扫描在服务器端的专用扫描容器中运行，每个任务一个进程。命令在填入您的参数之前就已拆分为词元，因此不会经过 shell；每一次查询都限定在您的组织范围内。"
+          },
+          {
+            "title": "对齐 SOC 2 的控制措施",
+            "description": "基础设施按照 SOC 2 信任服务标准（安全性、可用性、保密性、隐私）设计。Type II 审计尚未完成——下方的框架表逐项说明了各自的状态。"
+          },
+          {
+            "title": "仅追加的审计日志",
+            "description": "特权操作会写入仅追加的审计日志，限定在您的组织范围内，并可从控制台查询。日志保留一年。"
+          },
+          {
+            "title": "多因素认证、单点登录与角色",
+            "description": "基于 TOTP 的多因素认证，并提供一次性备用码。企业版支持 SAML 2.0、OIDC 以及 LDAP／Active Directory 单点登录。基于角色的访问控制在服务器端强制执行，而不是在界面上。"
+          },
+          {
+            "title": "由我们维护的工具链",
+            "description": "扫描器镜像及其漏洞模板由我们重新构建并部署。您无需更新扫描器，也无需为 Kali 主机打补丁。"
+          },
+          {
+            "title": "数据最小化",
+            "description": "我们保存扫描元数据与检测结果，而非原始流量。保留期可配置，您可以随时导出或删除数据。GDPR 第 5 条第 1 款(c)项。"
+          },
+          {
+            "title": "平台监控",
+            "description": "每个接口都有按成本分级的限流，对账户活动进行统计异常检测，并由健康看门狗在无需人工介入的情况下重启故障服务。"
+          }
+        ],
+        "complianceFrameworks": [
+          {
+            "name": "SOC 2 Type II",
+            "note": "已实施 SOC 2 控制措施（Type II 审计已列入计划）"
+          },
+          {
+            "name": "GDPR",
+            "note": "完全符合第 6、17、25、28、32、35 条"
+          },
+          {
+            "name": "ISO 27001:2022",
+            "note": "按 ISO 27001:2022 设计（认证进行中）"
+          },
+          {
+            "name": "ISO 27701",
+            "note": "隐私信息管理"
+          },
+          {
+            "name": "NIST CSF 2.0",
+            "note": "完全对齐该框架"
+          },
+          {
+            "name": "PCI DSS v4.0",
+            "note": "对齐 PCI DSS v4.0 的控制措施"
+          },
+          {
+            "name": "HIPAA",
+            "note": "对齐 HIPAA 的控制措施——PHI 加密"
+          },
+          {
+            "name": "KVKK",
+            "note": "土耳其个人数据保护法"
+          },
+          {
+            "name": "CCPA/CPRA",
+            "note": "加州消费者隐私法"
+          },
+          {
+            "name": "CSA STAR",
+            "note": "云安全联盟——已对齐该框架"
+          }
+        ],
+        "subProcessorPurposes": [
+          "支付处理",
+          "DDoS 防护、WAF、CDN",
+          "事务性邮件",
+          "事务性邮件（备用中继）"
+        ],
+        "pentestHistory": [
+          {
+            "scope": "https://app.cyber-sec-pro.com — TLS、响应头、CORS、错误配置与信息暴露模板，另加 XSS、SQL 注入与开放重定向探测",
+            "findings": "0 项严重、0 项高危、0 项中危、31 项提示。Wapiti：0 个漏洞。",
+            "status": "通过"
+          },
+          {
+            "scope": "整个代码仓库的认证、授权、机密管理、API 密钥、多因素认证、单点登录与会话管理",
+            "findings": "发现若干控制措施在生产环境中并未真正生效，已重写；其所保护的机密已轮换。每项修复都由回归测试固定下来。",
+            "status": "已修复"
+          }
+        ],
+        "bugBountyRewards": [
+          {
+            "severity": "严重",
+            "examples": "远程代码执行、认证绕过、SQL 注入、数据泄露"
+          },
+          {
+            "severity": "高危",
+            "examples": "权限提升、SSRF、存储型 XSS"
+          },
+          {
+            "severity": "中危",
+            "examples": "CSRF、IDOR、信息泄露"
+          },
+          {
+            "severity": "低危",
+            "examples": "反射型 XSS、开放重定向、缺失安全响应头"
+          }
+        ]
+      }
+    }
   },
   "tests": {
     "badge": "安全评估",
@@ -371,6 +608,194 @@
     "subtitle": "通过最新的攻击性安全研究、工具教程和行业分析，始终领先于威胁。",
     "readMore": "阅读更多",
     "minRead": "分钟阅读",
-    "viewAll": "查看所有文章"
+    "viewAll": "查看所有文章",
+    "backToBlog": "返回博客"
+  },
+  "comparison": {
+    "title": "云端 Kali 与本地 Kali",
+    "subtitle": "团队为什么选择 CyberSec Pro，而不是自己维护一套 Kali Linux。",
+    "thead": {
+      "feature": "对比项",
+      "local": "本地 Kali",
+      "cloud": "CyberSec Pro"
+    },
+    "rows": {
+      "hardware": {
+        "feature": "硬件资源",
+        "local": "占用 CPU、内存与存储",
+        "cloud": "零硬件负担"
+      },
+      "setup": {
+        "feature": "上手时间",
+        "local": "数小时的安装与配置",
+        "cloud": "注册后几秒即可开始扫描"
+      },
+      "reporting": {
+        "feature": "报告",
+        "local": "手工撰写报告",
+        "cloud": "一键生成 PDF / HTML / CSV"
+      },
+      "team": {
+        "feature": "团队协作",
+        "local": "没有内置的共享能力",
+        "cloud": "共享看板与角色权限"
+      },
+      "cicd": {
+        "feature": "CI/CD 集成",
+        "local": "需要自己编写脚本",
+        "cloud": "原生 API 与 Webhook"
+      },
+      "scheduled": {
+        "feature": "定时扫描",
+        "local": "cron 加自定义脚本",
+        "cloud": "内置全天候定时调度"
+      },
+      "updates": {
+        "feature": "工具更新",
+        "local": "手动执行 apt 升级",
+        "cloud": "由我们维护——无需您打补丁"
+      },
+      "compliance": {
+        "feature": "合规报告",
+        "local": "手工填写模板",
+        "cloud": "PCI、GDPR、ISO、SOC 2 模板"
+      }
+    }
+  },
+  "sampleReports": {
+    "title": "报告样例",
+    "subtitle": "下载样例报告，了解我们检测结果的质量与深度。",
+    "technical": {
+      "title": "技术报告",
+      "description": "完整的 Nmap、Nikto 与 SSL Labs 检测结果，并附修复步骤。",
+      "cta": "下载技术报告样例（PDF）"
+    },
+    "executive": {
+      "title": "管理层摘要",
+      "description": "面向管理层的总体风险评分、合规差距与按优先级排列的行动项。",
+      "cta": "下载管理层摘要（PDF）"
+    }
+  },
+  "demo": {
+    "title": "立即体验 — 无需注册",
+    "subtitle": "直接在本页面对 scanme.nmap.org 运行一次真实的 Nmap 扫描，几秒内即可看到真实输出。",
+    "toolPlaceholder": "工具",
+    "targetPlaceholder": "目标（例如 scanme.nmap.org）",
+    "runScan": "开始扫描",
+    "scanning": "正在扫描…",
+    "scanStarted": "扫描已开始",
+    "error": "错误"
+  },
+  "founding": {
+    "bar": "创始会员优惠 — 每月 19 美元，终身有效（立省 81%）。仅限 10 个名额。",
+    "barCta": "抢占名额",
+    "foundingTitle": "创始会员 — 每月 19 美元，终身有效",
+    "foundingSub": "前 10 位会员可永久锁定 81% 折扣。原价：每月 99 美元。",
+    "foundingCta": "抢占创始名额"
+  },
+  "pricingPage": {
+    "badge": "价格",
+    "title": "按扫描量选择套餐",
+    "subtitle": "包括免费试用在内，每个套餐都包含全部 88 款工具。区别在于用量、自动化程度，以及团队所需的管理能力。",
+    "annualNote": "按年付费，所有付费套餐立省 20%。",
+    "compare": {
+      "title": "每个套餐实际执行的限制",
+      "subtitle": "这些是后端从套餐配置中读取并实际执行的限制，不是营销上的约数。",
+      "plan": "套餐",
+      "unlimited": "无限制",
+      "included": "包含",
+      "notIncluded": "此套餐不含",
+      "groups": {
+        "scanning": "扫描",
+        "workspace": "工作区",
+        "reports": "报告",
+        "automation": "自动化与 AI",
+        "access": "访问与支持"
+      },
+      "rows": {
+        "tools": "安全工具",
+        "scans": "扫描额度",
+        "concurrent": "并发扫描数",
+        "projects": "项目",
+        "seats": "团队成员",
+        "agents": "远程代理",
+        "basicReports": "检测结果与基础报告",
+        "pdf": "PDF 报告",
+        "html": "HTML 报告",
+        "compliance": "合规报告",
+        "scheduled": "定时扫描",
+        "aiSuggestions": "AI 扫描建议",
+        "aiRemediation": "AI 修复指导",
+        "purpleTeam": "紫队演练",
+        "ldap": "LDAP／Active Directory 扫描",
+        "api": "REST API 访问",
+        "sso": "单点登录（SAML、OIDC、LDAP）",
+        "priority": "优先支持"
+      },
+      "values": {
+        "allTools": "全部 88 款",
+        "trialScans": "14 天内每天 3 次",
+        "perMonth": "每月 {n} 次"
+      }
+    },
+    "faq": {
+      "title": "在您决定之前",
+      "items": [
+        {
+          "q": "免费试用能用到什么？",
+          "a": "14 天、每天 3 次扫描，以及全部 88 款工具——与付费套餐相同的目录。包含检测结果与 PDF 报告；不包含 HTML 报告、合规报告、定时调度和 AI 功能。"
+        },
+        {
+          "q": "怎样算一次扫描？",
+          "a": "用一款工具针对一个目标运行一次。为验证修复而重新运行同一款工具会再计一次，但结果会与原始扫描关联，让您看清哪些已修复、哪些仍然存在、哪些是新增的。"
+        },
+        {
+          "q": "可以更换或取消套餐吗？",
+          "a": "可以，在账单设置中的 Stripe 客户门户操作。升级立即生效；取消将持续到您已付费周期结束为止。"
+        },
+        {
+          "q": "是否提供退款？",
+          "a": "购买后 14 天内，且账户中未执行过任何扫描，即可退款。该条件写在服务条款中，我们严格按字面执行。"
+        },
+        {
+          "q": "按年付费能省多少？",
+          "a": "20%。Starter 每年 279 美元（原价 348 美元），Professional 949 美元（原价 1,188 美元），Enterprise 3,349 美元（原价 4,188 美元）。"
+        },
+        {
+          "q": "我的数据存放在哪里？",
+          "a": "加拿大。扫描结果、检测发现与日志都留在加拿大境内的数据中心，未经您的明确同意，任何数据都不会离开加拿大司法管辖区。"
+        },
+        {
+          "q": "你们会保存我为扫描填写的凭据吗？",
+          "a": "不会。扫描所用的凭据只在该任务执行期间保留在内存中，任务结束即丢弃。它们绝不会写入数据库、日志或备份，并且在任何持久化之前都会被脱敏。您也可以在运行时从自己的密钥库中获取。"
+        },
+        {
+          "q": "使用单点登录需要哪个套餐？",
+          "a": "企业版。它支持 SAML 2.0、OIDC 与 LDAP，并且连接测试会真正验证实际端点，而不只是保存表单。"
+        }
+      ]
+    },
+    "trust": {
+      "residency": {
+        "t": "加拿大数据驻留",
+        "d": "扫描结果、检测发现与日志均留在加拿大境内的数据中心。"
+      },
+      "credentials": {
+        "t": "绝不保存凭据",
+        "d": "仅在任务执行期间保存在内存中，写入任何内容前都会脱敏。"
+      },
+      "cancel": {
+        "t": "随时可取消",
+        "d": "通过 Stripe 客户门户自助办理，无需致电。"
+      },
+      "refund": {
+        "t": "14 天退款",
+        "d": "若账户中未运行过扫描，14 天内可全额退款。"
+      }
+    },
+    "ctaTitle": "从免费试用开始",
+    "ctaBody": "14 天、全部 88 款工具、每天 3 次扫描。等用量上来了再升级。",
+    "ctaButton": "创建账户",
+    "ctaSecondary": "咨询企业版方案"
   }
 }

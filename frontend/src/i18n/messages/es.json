@@ -1,7 +1,9 @@
 {
   "meta": {
     "title": "CyberSec Pro — Plataforma de Seguridad Ofensiva",
-    "description": "Plataforma de seguridad ofensiva en la nube con 88 herramientas de Kali Linux. Escaneo automatizado de vulnerabilidades, pruebas de penetración y evaluaciones de seguridad."
+    "description": "Plataforma de seguridad ofensiva en la nube con 88 herramientas de Kali Linux. Escaneo automatizado de vulnerabilidades, pruebas de penetración y evaluaciones de seguridad.",
+    "trustCenterTitle": "Centro de confianza — CyberSec Pro | Seguridad, cumplimiento y transparencia",
+    "trustCenterDesc": "Centro de confianza de CyberSec Pro: los marcos de seguridad con los que nos alineamos y las certificaciones que aún no tenemos, nuestra política de divulgación responsable, subencargados, residencia de datos en Canadá y DPA."
   },
   "nav": {
     "features": "Funciones",
@@ -342,7 +344,242 @@
   "security": {
     "badge": "Seguridad",
     "title": "La seguridad es lo primero",
-    "subtitle": "Nos tomamos muy en serio la seguridad de nuestra plataforma y de sus datos."
+    "subtitle": "Nos tomamos muy en serio la seguridad de nuestra plataforma y de sus datos.",
+    "trustCenter": {
+      "badge": "Centro de confianza",
+      "title": "Centro de confianza",
+      "subtitle": "Todo lo que podemos contarle sobre cómo se protege la plataforma, dónde viven sus datos y qué certificaciones tenemos — incluidas las que no tenemos.",
+      "certBadgesNote": "Marcos con los que nos alineamos o que estamos persiguiendo activamente — el estado actual de cada certificación está más abajo.",
+      "status": {
+        "operational": "Todos los sistemas operativos",
+        "link": "status.cyber-sec-pro.com →"
+      },
+      "sections": {
+        "securityTxt": {
+          "title": "security.txt",
+          "description": "Nuestro archivo de contacto de seguridad, plenamente conforme con la RFC 9116 del IETF. Lo descubren automáticamente los buscadores y los investigadores de seguridad.",
+          "directAccess": "Acceso directo a security.txt",
+          "pgpKey": "Clave PGP"
+        },
+        "disclosure": {
+          "title": "Divulgación responsable y bug bounty",
+          "scope": "Alcance",
+          "scopeIn": "Dentro del alcance:",
+          "scopeOut": "Fuera del alcance:",
+          "channel": "Canal de notificación",
+          "channelDesc": "Comunique las vulnerabilidades de seguridad a:",
+          "reportTemplate": "Plantilla de informe:",
+          "sla": "SLA de respuesta",
+          "slaFirst": "Primera respuesta:",
+          "slaUpdate": "Actualización de estado:",
+          "slaFix": "Corrección o excepción:",
+          "safeHarbor": "Puerto seguro",
+          "safeHarbor1": "No emprenderemos acciones legales por informes que cumplan esta política",
+          "safeHarbor2": "La identidad de quien informa se mantiene confidencial",
+          "safeHarbor3": "Se añadirá al salón de la fama una vez corregida",
+          "safeHarbor4": "Está prohibido realizar pruebas sin permiso por escrito",
+          "bountyTable": "Tabla de recompensas",
+          "tableLevel": "Gravedad",
+          "tableReward": "Recompensa",
+          "tableExamples": "Ejemplos de hallazgos"
+        },
+        "compliance": {
+          "title": "Marcos de cumplimiento",
+          "compliant": "Conforme",
+          "pending": "Pendiente"
+        },
+        "incident": {
+          "title": "SLA de respuesta a incidentes",
+          "description": "Nuestros procedimientos de respuesta a incidentes, conformes con ISO 27035 y NIST SP 800-61 Rev. 2:",
+          "priority": "Prioridad",
+          "detection": "Detección",
+          "response": "Respuesta",
+          "notification": "Notificación",
+          "resolution": "Resolución"
+        },
+        "subprocessors": {
+          "title": "Subencargados del tratamiento",
+          "description": "Terceros que tratan datos conforme al artículo 28(2) del RGPD. Todos los subencargados han firmado un acuerdo de tratamiento de datos (DPA).",
+          "provider": "Proveedor",
+          "purpose": "Finalidad",
+          "location": "Ubicación",
+          "signed": "Firmado",
+          "pending": "Pendiente",
+          "footer": "Última actualización: septiembre de 2026. Avisamos con 30 días de antelación de cualquier cambio de subencargado."
+        },
+        "dpa": {
+          "title": "Acuerdo de tratamiento de datos (DPA)",
+          "description": "Ofrecemos un acuerdo de tratamiento de datos a todos los clientes conforme al artículo 28 del RGPD. Incluye las cláusulas contractuales tipo de la UE (EU SCC 2021) y el IDTA del Reino Unido.",
+          "scopeTitle": "Alcance del DPA",
+          "dpiaTitle": "EIPD (evaluación de impacto relativa a la protección de datos)",
+          "requestBtn": "Solicitar el DPA",
+          "dpoBtn": "Contactar con el DPO"
+        },
+        "pentest": {
+          "title": "Pruebas de seguridad y auditorías",
+          "description": "Pruebas de seguridad internas continuas con nuestra propia plataforma y revisión manual. Está previsto realizar pruebas de penetración independientes; los informes resumidos estarán disponibles para clientes Enterprise bajo NDA una vez completadas.",
+          "scope": "Alcance:",
+          "findings": "Hallazgos:",
+          "requestReport": "Solicitar el informe resumido (requiere NDA)"
+        },
+        "hallOfFame": {
+          "title": "Salón de la fama de seguridad",
+          "description": "Agradecemos a las personas investigadoras que comunican vulnerabilidades conforme a nuestra política de divulgación responsable.",
+          "empty": "Comunicando una vulnerabilidad podría ser la primera persona en nuestro salón de la fama.",
+          "reportBtn": "Comunicar una vulnerabilidad"
+        },
+        "contact": {
+          "statusTitle": "Estado del sistema",
+          "statusDesc": "Siga el estado de todos los servicios en tiempo real.",
+          "statusBtn": "Página de estado",
+          "contactTitle": "Contacto de seguridad",
+          "security": "Seguridad",
+          "legal": "Legal/DPA",
+          "privacy": "Privacidad",
+          "footer": "Centro de confianza actualizado en septiembre de 2026 · Versión de la política: 2.2.0 · Próxima revisión: marzo de 2027"
+        },
+        "dataResidency": {
+          "title": "Residencia de datos y privacidad",
+          "subtitle": "Sus datos se quedan en Canadá. Siempre.",
+          "storageLocation": "Almacenamiento principal de datos",
+          "storageLocationValue": "Canadá 🇨🇦",
+          "storageDescription": "Todos los datos de clientes, resultados de escaneo y registros se almacenan exclusivamente en centros de datos canadienses. Ningún dato sale de la jurisdicción canadiense sin el consentimiento explícito del cliente.",
+          "encryptionAtRest": "Cifrado en reposo",
+          "encryptionAtRestValue": "AES-256-GCM",
+          "encryptionDescription": "Los secretos y las credenciales almacenadas se cifran con AES-256-GCM. La clave de cifrado es distinta de la clave de firma de los tokens, vive solo en el entorno del servidor y nunca se escribe en la base de datos, en las copias de seguridad ni en el repositorio.",
+          "encryptionInTransit": "Cifrado en tránsito",
+          "encryptionInTransitValue": "TLS 1.3",
+          "encryptionInTransitDescription": "Todo el tráfico de la API y de la web usa TLS 1.3 con confidencialidad directa perfecta. Las suites de cifrado están limitadas a las configuraciones más sólidas disponibles.",
+          "noLogging": "Sin registro de tráfico en bruto",
+          "noLoggingValue": "Zero-knowledge",
+          "noLoggingDescription": "No registramos, almacenamos ni procesamos tráfico de red en bruto ni cargas útiles de escaneo. Solo conservamos metadatos (marcas de tiempo, IP objetivo, tipos de herramienta, recuentos por gravedad) con fines operativos.",
+          "noLoggingPolicy": "Nuestro compromiso de no registrar",
+          "noLoggingPolicy1": "Sin almacenamiento de capturas de paquetes",
+          "noLoggingPolicy2": "Sin retención del contenido de las cargas útiles",
+          "noLoggingPolicy3": "Sin datos personales en los resultados de escaneo",
+          "noLoggingPolicy4": "Los resultados de escaneo se purgan automáticamente a los 90 días y los registros de auditoría al año",
+          "dataProcessing": "Principios de tratamiento de datos",
+          "dataProcessing1": "Limitación de la finalidad: los datos se recogen únicamente para los análisis de seguridad declarados",
+          "dataProcessing2": "Minimización de datos: recogemos lo mínimo necesario",
+          "dataProcessing3": "Transparencia: siempre sabe qué datos guardamos y por qué",
+          "dataProcessing4": "Control del usuario: puede exportar o eliminar sus datos en cualquier momento"
+        }
+      },
+      "arrays": {
+        "trustFeatures": [
+          {
+            "title": "Cifrado en tránsito y en reposo",
+            "description": "TLS 1.3 con confidencialidad directa perfecta en cada conexión. Los secretos y las credenciales almacenadas se cifran con AES-256-GCM, bajo una clave separada de la que firma los tokens."
+          },
+          {
+            "title": "Ejecución aislada",
+            "description": "Los escaneos se ejecutan en el servidor, en un contenedor de escaneo dedicado, con un proceso por trabajo. El comando se divide en tokens antes de insertar sus valores, así que no interviene ningún intérprete de comandos, y cada consulta está limitada a su organización."
+          },
+          {
+            "title": "Controles alineados con SOC 2",
+            "description": "Infraestructura diseñada según los Trust Services Criteria de SOC 2 (seguridad, disponibilidad, confidencialidad, privacidad). La auditoría Type II no se ha completado: la tabla de marcos que aparece más abajo indica exactamente en qué punto está cada uno."
+          },
+          {
+            "title": "Registro de auditoría solo de anexado",
+            "description": "Las acciones privilegiadas se escriben en un registro de auditoría de solo anexado, limitado a su organización y consultable desde el panel. Los registros se conservan un año."
+          },
+          {
+            "title": "MFA, SSO y roles",
+            "description": "Autenticación multifactor mediante TOTP con códigos de respaldo de un solo uso. Inicio de sesión único con SAML 2.0, OIDC y LDAP / Active Directory en Enterprise. El control de acceso por roles se aplica en el servidor, no en la interfaz."
+          },
+          {
+            "title": "Cadena de herramientas mantenida",
+            "description": "Nosotros reconstruimos y redesplegamos las imágenes de los escáneres y sus plantillas de vulnerabilidades. Usted nunca actualiza un escáner ni parchea una máquina Kali."
+          },
+          {
+            "title": "Minimización de datos",
+            "description": "Guardamos metadatos de escaneo y hallazgos, no tráfico en bruto. La retención es configurable y puede exportar o eliminar sus datos cuando quiera. Artículo 5(1)(c) del RGPD."
+          },
+          {
+            "title": "Supervisión de la plataforma",
+            "description": "Limitación de peticiones por niveles de coste en cada endpoint, detección estadística de anomalías en la actividad de la cuenta y vigilantes de salud que reinician un servicio caído sin esperar a una persona."
+          }
+        ],
+        "complianceFrameworks": [
+          {
+            "name": "SOC 2 Type II",
+            "note": "Controles SOC 2 implementados (auditoría Type II prevista)"
+          },
+          {
+            "name": "RGPD",
+            "note": "Cumplimiento pleno de los art. 6, 17, 25, 28, 32, 35"
+          },
+          {
+            "name": "ISO 27001:2022",
+            "note": "Diseñado conforme a ISO 27001:2022 (certificación en curso)"
+          },
+          {
+            "name": "ISO 27701",
+            "note": "Gestión de información de privacidad"
+          },
+          {
+            "name": "NIST CSF 2.0",
+            "note": "Alineación completa con el marco"
+          },
+          {
+            "name": "PCI DSS v4.0",
+            "note": "Controles alineados con PCI DSS v4.0"
+          },
+          {
+            "name": "HIPAA",
+            "note": "Controles alineados con HIPAA — cifrado de PHI"
+          },
+          {
+            "name": "KVKK",
+            "note": "Ley turca de protección de datos personales"
+          },
+          {
+            "name": "CCPA/CPRA",
+            "note": "California Consumer Privacy Act"
+          },
+          {
+            "name": "CSA STAR",
+            "note": "Cloud Security Alliance — alineado con el marco"
+          }
+        ],
+        "subProcessorPurposes": [
+          "Procesamiento de pagos",
+          "Protección DDoS, WAF, CDN",
+          "Correo transaccional",
+          "Correo transaccional (relé de respaldo)"
+        ],
+        "pentestHistory": [
+          {
+            "scope": "https://app.cyber-sec-pro.com — TLS, cabeceras, CORS, plantillas de mala configuración y exposición, además de pruebas de XSS, SQLi y redirección abierta",
+            "findings": "0 críticas, 0 altas, 0 medias, 31 informativas. Wapiti: 0 vulnerabilidades.",
+            "status": "Superado"
+          },
+          {
+            "scope": "Autenticación, autorización, gestión de secretos, claves de API, MFA, SSO y gestión de sesiones en todo el repositorio",
+            "findings": "Varios controles resultaron no funcionar en producción y se reconstruyeron; los secretos que protegían se rotaron. Cada corrección queda fijada por una prueba de regresión.",
+            "status": "Corregido"
+          }
+        ],
+        "bugBountyRewards": [
+          {
+            "severity": "Crítica",
+            "examples": "RCE, elusión de autenticación, inyección SQL, fuga de datos"
+          },
+          {
+            "severity": "Alta",
+            "examples": "Escalada de privilegios, SSRF, XSS almacenado"
+          },
+          {
+            "severity": "Media",
+            "examples": "CSRF, IDOR, divulgación de información"
+          },
+          {
+            "severity": "Baja",
+            "examples": "XSS reflejado, redirección abierta, cabeceras ausentes"
+          }
+        ]
+      }
+    }
   },
   "tests": {
     "badge": "Evaluación de seguridad",
@@ -371,6 +608,194 @@
     "subtitle": "Mantente al día con las últimas investigaciones de seguridad ofensiva, tutoriales y análisis del sector.",
     "readMore": "Leer más",
     "minRead": "min de lectura",
-    "viewAll": "Ver todos los artículos"
+    "viewAll": "Ver todos los artículos",
+    "backToBlog": "Volver al blog"
+  },
+  "comparison": {
+    "title": "Kali en la nube frente a Kali local",
+    "subtitle": "Por qué los equipos eligen CyberSec Pro en lugar de mantener su propia instalación de Kali Linux.",
+    "thead": {
+      "feature": "Característica",
+      "local": "Kali local",
+      "cloud": "CyberSec Pro"
+    },
+    "rows": {
+      "hardware": {
+        "feature": "Recursos de hardware",
+        "local": "Consume CPU, RAM y almacenamiento",
+        "cloud": "Cero carga de hardware"
+      },
+      "setup": {
+        "feature": "Tiempo de puesta en marcha",
+        "local": "Horas de instalación y configuración",
+        "cloud": "Regístrese y escanee en segundos"
+      },
+      "reporting": {
+        "feature": "Informes",
+        "local": "Informes elaborados a mano",
+        "cloud": "PDF / HTML / CSV con un clic"
+      },
+      "team": {
+        "feature": "Trabajo en equipo",
+        "local": "Sin compartición integrada",
+        "cloud": "Paneles compartidos y roles"
+      },
+      "cicd": {
+        "feature": "Integración CI/CD",
+        "local": "Requiere scripts propios",
+        "cloud": "API y webhooks nativos"
+      },
+      "scheduled": {
+        "feature": "Escaneos programados",
+        "local": "Cron y scripts propios",
+        "cloud": "Programación 24/7 integrada"
+      },
+      "updates": {
+        "feature": "Actualización de herramientas",
+        "local": "Actualizaciones apt manuales",
+        "cloud": "Lo mantenemos nosotros: nada que parchear"
+      },
+      "compliance": {
+        "feature": "Informes de cumplimiento",
+        "local": "Rellenar plantillas a mano",
+        "cloud": "Plantillas PCI, RGPD, ISO y SOC 2"
+      }
+    }
+  },
+  "sampleReports": {
+    "title": "Informes de ejemplo",
+    "subtitle": "Descargue informes de ejemplo para ver la calidad y la profundidad de nuestros hallazgos.",
+    "technical": {
+      "title": "Informe técnico",
+      "description": "Todos los hallazgos de Nmap, Nikto y SSL Labs, con los pasos de corrección.",
+      "cta": "Descargar informe técnico de ejemplo (PDF)"
+    },
+    "executive": {
+      "title": "Resumen ejecutivo",
+      "description": "Puntuación de riesgo de alto nivel, brechas de cumplimiento y acciones priorizadas para la dirección.",
+      "cta": "Descargar resumen ejecutivo (PDF)"
+    }
+  },
+  "demo": {
+    "title": "Pruébelo ahora — sin registro",
+    "subtitle": "Lance un escaneo real de Nmap contra scanme.nmap.org directamente desde esta página. Verá la salida en segundos.",
+    "toolPlaceholder": "Herramienta",
+    "targetPlaceholder": "Objetivo (p. ej. scanme.nmap.org)",
+    "runScan": "Ejecutar escaneo",
+    "scanning": "Escaneando…",
+    "scanStarted": "Escaneo iniciado",
+    "error": "Error"
+  },
+  "founding": {
+    "bar": "Oferta de miembro fundador: 19 $/mes de por vida (81 % de descuento). Solo 10 plazas.",
+    "barCta": "Reservar plaza",
+    "foundingTitle": "Miembro fundador — 19 $/mes de por vida",
+    "foundingSub": "Los 10 primeros miembros fijan un 81 % de descuento para siempre. Precio normal: 99 $/mes.",
+    "foundingCta": "Reservar plaza de fundador"
+  },
+  "pricingPage": {
+    "badge": "Precios",
+    "title": "Elija un plan según cuánto escanee",
+    "subtitle": "Todos los planes incluyen las 88 herramientas, también la prueba gratuita. Lo que cambia es el volumen, la automatización y los controles que necesita un equipo.",
+    "annualNote": "La facturación anual ahorra un 20 % en todos los planes de pago.",
+    "compare": {
+      "title": "Lo que cada plan aplica de verdad",
+      "subtitle": "Estos son los límites que aplica el backend, leídos de la configuración de planes; no son redondeos de marketing.",
+      "plan": "Plan",
+      "unlimited": "Ilimitado",
+      "included": "Incluido",
+      "notIncluded": "No está en este plan",
+      "groups": {
+        "scanning": "Escaneo",
+        "workspace": "Espacio de trabajo",
+        "reports": "Informes",
+        "automation": "Automatización e IA",
+        "access": "Acceso y soporte"
+      },
+      "rows": {
+        "tools": "Herramientas de seguridad",
+        "scans": "Cuota de escaneos",
+        "concurrent": "Escaneos simultáneos",
+        "projects": "Proyectos",
+        "seats": "Miembros del equipo",
+        "agents": "Agentes remotos",
+        "basicReports": "Hallazgos e informes básicos",
+        "pdf": "Informes en PDF",
+        "html": "Informes en HTML",
+        "compliance": "Informes de cumplimiento",
+        "scheduled": "Escaneos programados",
+        "aiSuggestions": "Sugerencias de escaneo con IA",
+        "aiRemediation": "Guía de corrección con IA",
+        "purpleTeam": "Ejercicios de Purple Team",
+        "ldap": "Escaneo de LDAP / Active Directory",
+        "api": "Acceso a la API REST",
+        "sso": "SSO (SAML, OIDC, LDAP)",
+        "priority": "Soporte prioritario"
+      },
+      "values": {
+        "allTools": "Las 88",
+        "trialScans": "3 al día durante 14 días",
+        "perMonth": "{n} / mes"
+      }
+    },
+    "faq": {
+      "title": "Antes de decidir",
+      "items": [
+        {
+          "q": "¿Qué incluye la prueba gratuita?",
+          "a": "Catorce días, tres escaneos al día y las 88 herramientas: el mismo catálogo que los planes de pago. Se incluyen los hallazgos y los informes en PDF; no se incluyen los informes HTML y de cumplimiento, la programación ni las funciones de IA."
+        },
+        {
+          "q": "¿Qué cuenta como un escaneo?",
+          "a": "Una ejecución de una herramienta contra un objetivo. Volver a ejecutar la misma herramienta para comprobar una corrección cuenta de nuevo, y el resultado queda enlazado con el original para que vea qué se ha corregido, qué sigue abierto y qué es nuevo."
+        },
+        {
+          "q": "¿Puedo cambiar o cancelar mi plan?",
+          "a": "Sí, desde el portal de cliente de Stripe en sus ajustes de facturación. Las mejoras de plan surten efecto de inmediato; las cancelaciones llegan hasta el final del periodo ya pagado."
+        },
+        {
+          "q": "¿Ofrecen reembolsos?",
+          "a": "Dentro de los 14 días siguientes a la compra, siempre que no se haya ejecutado ningún escaneo en la cuenta. Esa condición está en los Términos y la aplicamos tal como está escrita."
+        },
+        {
+          "q": "¿Cuánto ahorra la facturación anual?",
+          "a": "Un 20 %. Starter cuesta 279 $ al año en lugar de 348 $, Professional 949 $ en lugar de 1.188 $ y Enterprise 3.349 $ en lugar de 4.188 $."
+        },
+        {
+          "q": "¿Dónde se almacenan mis datos?",
+          "a": "En Canadá. Los resultados de escaneo, los hallazgos y los registros permanecen en centros de datos canadienses, y nada sale de la jurisdicción canadiense sin su consentimiento explícito."
+        },
+        {
+          "q": "¿Guardan las credenciales que introduzco para un escaneo?",
+          "a": "No. Las credenciales de un escaneo se mantienen en memoria durante el trabajo y se descartan al terminar. Nunca se escriben en la base de datos, en los registros ni en las copias de seguridad, y se ocultan antes de persistir nada. También puede resolverlas en tiempo de ejecución desde su propio vault."
+        },
+        {
+          "q": "¿Qué plan necesito para SSO?",
+          "a": "Enterprise. Cubre SAML 2.0, OIDC y LDAP, y la prueba de conexión valida el endpoint real en lugar de limitarse a guardar el formulario."
+        }
+      ]
+    },
+    "trust": {
+      "residency": {
+        "t": "Residencia de datos en Canadá",
+        "d": "Resultados, hallazgos y registros permanecen en centros de datos canadienses."
+      },
+      "credentials": {
+        "t": "Las credenciales nunca se almacenan",
+        "d": "En memoria durante el trabajo y ocultas antes de escribir nada."
+      },
+      "cancel": {
+        "t": "Cancele cuando quiera",
+        "d": "Autogestión desde el portal de cliente de Stripe. Sin llamadas."
+      },
+      "refund": {
+        "t": "Reembolso en 14 días",
+        "d": "Reembolso íntegro en 14 días si no se ha ejecutado ningún escaneo en la cuenta."
+      }
+    },
+    "ctaTitle": "Empiece con la prueba gratuita",
+    "ctaBody": "Catorce días, las 88 herramientas, tres escaneos al día. Suba de plan cuando el volumen lo pida.",
+    "ctaButton": "Cree su cuenta",
+    "ctaSecondary": "Hablemos del plan Enterprise"
   }
 }

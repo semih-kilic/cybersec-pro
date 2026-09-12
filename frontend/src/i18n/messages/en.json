@@ -3,7 +3,7 @@
     "title": "CyberSec Pro — Offensive Security Platform",
     "description": "Cloud-based offensive security platform with 88 Kali Linux tools. Automated vulnerability scanning, penetration testing, and security assessments.",
     "trustCenterTitle": "Trust Center — CyberSec Pro | Security, Compliance & Transparency",
-    "trustCenterDesc": "CyberSec Pro Trust Center: SOC 2, ISO 27001, GDPR compliance details, responsible disclosure policy, bug bounty program, sub-processors, and DPA."
+    "trustCenterDesc": "CyberSec Pro Trust Center: the security frameworks we align with and the certifications we do not yet hold, our responsible disclosure policy, sub-processors, Canadian data residency and DPA."
   },
   "nav": {
     "features": "Features",
@@ -348,7 +348,7 @@
     "trustCenter": {
       "badge": "Trust Center",
       "title": "Trust Center",
-      "subtitle": "Everything you need to know about our platform's security, compliance, and transparency. Full alignment with industry-leading security standards.",
+      "subtitle": "Everything we can tell you about how the platform is secured, where your data lives, and which certifications we hold — including the ones we don't.",
       "certBadgesNote": "Frameworks we align with or are actively pursuing — see current certification status below.",
       "status": {
         "operational": "All Systems Operational",
@@ -367,7 +367,7 @@
           "scopeIn": "In-Scope:",
           "scopeOut": "Out-of-Scope:",
           "channel": "Reporting Channel",
-          "channelDesc": "Please report security vulnerabilities encrypted with PGP to:",
+          "channelDesc": "Report security vulnerabilities to:",
           "reportTemplate": "Report template:",
           "sla": "Response SLA",
           "slaFirst": "First response:",
@@ -405,7 +405,7 @@
           "location": "Location",
           "signed": "Signed",
           "pending": "Pending",
-          "footer": "Last updated: July 2026. 30 days prior notice is provided for sub-processor changes."
+          "footer": "Last updated: September 2026. We give 30 days notice before a sub-processor changes."
         },
         "dpa": {
           "title": "Data Processing Agreement (DPA)",
@@ -436,7 +436,7 @@
           "security": "Security",
           "legal": "Legal/DPA",
           "privacy": "Privacy",
-          "footer": "Trust Center last updated: July 2026 · Policy version: 2.1.0 · Annual review: December 2026"
+          "footer": "Trust Center last updated: September 2026 · Policy version: 2.2.0 · Next review: March 2027"
         },
         "dataResidency": {
           "title": "Data Residency & Privacy",
@@ -446,7 +446,7 @@
           "storageDescription": "All customer data, scan results, and logs are stored exclusively in Canadian data centers. No data leaves Canadian jurisdiction without explicit customer consent.",
           "encryptionAtRest": "Encryption at Rest",
           "encryptionAtRestValue": "AES-256-GCM",
-          "encryptionDescription": "All data is encrypted using AES-256-GCM with unique per-tenant keys. Key rotation occurs every 90 days. Keys are stored in a hardware security module (HSM).",
+          "encryptionDescription": "Secrets and stored credentials are encrypted with AES-256-GCM. The encryption key is separate from the token-signing key, lives only in the server environment, and is never written to the database, the backups or the repository.",
           "encryptionInTransit": "Encryption in Transit",
           "encryptionInTransitValue": "TLS 1.3",
           "encryptionInTransitDescription": "All API and web traffic uses TLS 1.3 with perfect forward secrecy. Cipher suites are restricted to the strongest available configurations.",
@@ -457,7 +457,7 @@
           "noLoggingPolicy1": "No raw packet capture storage",
           "noLoggingPolicy2": "No payload content retention",
           "noLoggingPolicy3": "No personal data in scan results",
-          "noLoggingPolicy4": "Scan results auto-delete after 30 days (configurable)",
+          "noLoggingPolicy4": "Scan results are purged automatically after 90 days, audit logs after a year",
           "dataProcessing": "Data Processing Principles",
           "dataProcessing1": "Purpose limitation — data collected only for stated security scanning purposes",
           "dataProcessing2": "Data minimization — we collect the minimum data necessary",
@@ -468,36 +468,36 @@
       "arrays": {
         "trustFeatures": [
           {
-            "title": "End-to-End Encryption",
-            "description": "AES-256 for rest, TLS 1.3 for transit. Zero-knowledge scan results. Key rotation with forward secrecy."
+            "title": "Encryption in transit and at rest",
+            "description": "TLS 1.3 with perfect forward secrecy on every connection. Secrets and stored credentials are encrypted with AES-256-GCM, under a key held separately from the token-signing key."
           },
           {
-            "title": "Isolated Infrastructure",
-            "description": "Each scan runs in an isolated container. No cross-tenant access. Dedicated instances for Enterprise plans."
+            "title": "Isolated execution",
+            "description": "Scans run server-side in a dedicated scan container, one process per job. The command is tokenised before any of your values are substituted, so no shell is involved, and every query is scoped to your organization."
           },
           {
-            "title": "SOC 2-Aligned Controls",
-            "description": "Infrastructure designed according to SOC 2 Trust Services Criteria (Security, Availability, Confidentiality, Privacy)."
+            "title": "SOC 2-aligned controls",
+            "description": "Infrastructure designed against the SOC 2 Trust Services Criteria (Security, Availability, Confidentiality, Privacy). The Type II audit has not been completed — the framework table below says exactly where each one stands."
           },
           {
-            "title": "Immutable Audit Logging",
-            "description": "Complete and immutable audit trails of all actions. SIEM integration. WORM storage for compliance."
+            "title": "Append-only audit logging",
+            "description": "Privileged actions are written to an append-only audit log, scoped to your organization and queryable from the dashboard. Logs are retained for a year."
           },
           {
-            "title": "MFA, SSO & Zero Trust",
-            "description": "Multi-factor authentication via TOTP/WebAuthn. SAML 2.0 / OpenID Connect (OIDC) SSO + LDAP / Active Directory. RBAC + ABAC."
+            "title": "MFA, SSO and roles",
+            "description": "Multi-factor authentication over TOTP with single-use backup codes. SAML 2.0, OIDC and LDAP / Active Directory single sign-on on Enterprise. Role-based access control is enforced on the server, not in the UI."
           },
           {
-            "title": "Continuous Patching",
-            "description": "Critical security patches applied within 24 hours. CVE databases updated hourly. Automated SBOM generation."
+            "title": "Maintained toolchain",
+            "description": "Scanner images and their vulnerability templates are rebuilt and redeployed by us. You never update a scanner, and you never patch a Kali box."
           },
           {
-            "title": "Data Minimization",
-            "description": "Data minimization compliant with GDPR Article 5(1)(c). Automated data lifecycle management."
+            "title": "Data minimization",
+            "description": "We store scan metadata and findings, not raw traffic. Retention is configurable, and you can export or delete your data at any time. GDPR Article 5(1)(c)."
           },
           {
-            "title": "Real-Time Threat Detection",
-            "description": "ML-powered anomaly detection. Real-time IDS/IPS. Automated threat intelligence feed integration."
+            "title": "Platform monitoring",
+            "description": "Rate limiting with cost tiers on every endpoint, statistical anomaly detection on account activity, and health watchdogs that restart a failed service without waiting for a human."
           }
         ],
         "complianceFrameworks": [
@@ -550,23 +550,13 @@
         ],
         "pentestHistory": [
           {
-            "scope": "Full platform — API, Web App, Infrastructure, Mobile",
-            "findings": "0 Critical, 0 High, 2 Medium (fixed), 3 Low (fixed)",
-            "status": "Remediated"
+            "scope": "https://app.cyber-sec-pro.com — TLS, headers, CORS, misconfiguration and exposure templates, plus XSS, SQLi and open-redirect probes",
+            "findings": "0 critical, 0 high, 0 medium, 31 informational. Wapiti: 0 vulnerabilities.",
+            "status": "Pass"
           },
           {
-            "scope": "Backend API, Authentication, Authorization, Crypto",
-            "findings": "0 Critical, 0 High, 1 Medium (fixed), 2 Low (fixed)",
-            "status": "Remediated"
-          },
-          {
-            "scope": "AWS, Kubernetes, Network Segmentation, IAM",
-            "findings": "0 Critical, 0 High, 0 Medium, 1 Low (fixed)",
-            "status": "Remediated"
-          },
-          {
-            "scope": "Social Engineering, Physical, Digital — Full Kill Chain",
-            "findings": "0 Critical, 1 High (fixed), 2 Medium (fixed)",
+            "scope": "Authentication, authorization, secrets handling, API keys, MFA, SSO and session management, across the whole repository",
+            "findings": "Several controls were found to be non-functional in production and were rebuilt; the secrets they protected were rotated. Each fix is locked in by a regression test.",
             "status": "Remediated"
           }
         ],
@@ -663,12 +653,12 @@
       "updates": {
         "feature": "Tool Updates",
         "local": "Manual apt upgrades",
-        "cloud": "Auto-updated toolchain"
+        "cloud": "Maintained by us — nothing to patch"
       },
       "compliance": {
         "feature": "Compliance Reports",
         "local": "Manual template filling",
-        "cloud": "PCI, GDPR, ISO, SOC2 ready"
+        "cloud": "PCI, GDPR, ISO, SOC 2 templates"
       }
     }
   },

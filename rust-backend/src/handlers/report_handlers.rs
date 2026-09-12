@@ -993,7 +993,7 @@ h4{{font-size:13px;font-weight:600;color:#475569;margin:16px 0 10px;text-transfo
     <div class="toc-item"><div class="toc-num">05</div><div class="toc-title">Compliance Status</div><div class="toc-page">7</div></div>
     <div class="toc-item"><div class="toc-num">06</div><div class="toc-title">Recommendations</div><div class="toc-page">8</div></div>
     <div class="toc-item"><div class="toc-num">07</div><div class="toc-title">Methodology</div><div class="toc-page">9</div></div>
-    <div class="toc-item"><div class="toc-num">08</div><div class="toc-title">Digital Signature</div><div class="toc-page">10</div></div>
+    <div class="toc-item"><div class="toc-num">08</div><div class="toc-title">Content digest</div><div class="toc-page">10</div></div>
 </div>
 
 <!-- Main Content -->
@@ -1076,7 +1076,7 @@ h4{{font-size:13px;font-weight:600;color:#475569;margin:16px 0 10px;text-transfo
         <tr><td><strong>Data residency</strong></td><td>Canada</td></tr>
     </table>
 
-    <!-- Digital Signature -->
+    <!-- Content digest -->
     <div class="signature">
         <div class="signature-box">
             <div class="signature-name">Automated assessment</div>
