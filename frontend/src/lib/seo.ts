@@ -211,7 +211,7 @@ export const blogPostMeta: Record<
 );
 
 
-function getAlternateLanguages(path: string): Record<string, string> {
+export function getAlternateLanguages(path: string): Record<string, string> {
   const languages: Record<string, string> = {};
   for (const locale of locales) {
     languages[locale] = `${BASE_URL}/${locale}${path}`;

@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { setRequestLocale } from "next-intl/server";
-import { getPageMetadata, getToolJsonLd } from "@/lib/seo";
+import { getPageMetadata, getToolJsonLd, getAlternateLanguages } from "@/lib/seo";
 import { getToolCatalog, getToolBySlug, nameToSlug } from "@/lib/tools-catalog";
 import ToolDetailPage from "@/components/pages/ToolDetailPage";
 
@@ -33,6 +33,9 @@ export async function generateMetadata({
     description: description.slice(0, 300),
     alternates: {
       canonical: `https://cyber-sec-pro.com/${locale}/tools/${slug}/`,
+      // Every other page type carries these; the tool pages were the one gap,
+      // and they are 89 of the site's 112 pages.
+      languages: getAlternateLanguages(`/tools/${slug}/`),
     },
     openGraph: {
       title: `${tool.name} — run it in your browser`,
