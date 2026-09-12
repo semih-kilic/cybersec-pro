@@ -7,17 +7,32 @@ import { Lock, Server, Shield, Eye, KeyRound, RefreshCcw } from "lucide-react";
 
 const CyberAttackGlobe = dynamic(() => import("@/components/three/CyberAttackGlobe"), { ssr: false });
 
-const features = [
-  { icon: Lock, title: "End-to-End Encryption", description: "All data encrypted at rest (AES-256) and in transit (TLS 1.3). Zero-knowledge architecture for scan results.", color: "var(--color-neon)" },
-  { icon: Server, title: "Isolated Infrastructure", description: "Each scan runs in an isolated container. No cross-tenant data access. Enterprise plans get dedicated instances.", color: "var(--color-cyan)" },
-  { icon: Shield, title: "SOC 2-Aligned Controls", description: "Infrastructure designed against SOC 2 Trust Services Criteria (Security, Availability, Confidentiality). Independent audit not yet completed.", color: "var(--color-purple)" },
-  { icon: Eye, title: "Audit Logging", description: "Complete audit trail of all actions. Immutable logs with tamper detection. Export logs for compliance.", color: "var(--color-orange)" },
-  { icon: KeyRound, title: "MFA & SSO", description: "Multi-factor authentication with TOTP. Enterprise SSO via SAML 2.0, OpenID Connect (OIDC), and LDAP / Active Directory.", color: "var(--color-neon)" },
-  { icon: RefreshCcw, title: "Automatic Updates", description: "Security patches applied within 24 hours. Tool databases updated daily. Zero-downtime deployments.", color: "var(--color-cyan)" },
+// Icons only. The six cards used to carry hardcoded English strings that no
+// locale translated and that four of them got wrong — "Enterprise plans get
+// dedicated instances", "immutable logs with tamper detection", "export logs
+// for compliance", "security patches applied within 24 hours … tool databases
+// updated daily". None of that exists. They now render the first six entries
+// of the Trust Center's own feature list, so the two pages cannot drift again
+// and this page is translated in all ten locales for free.
+const icons = [Lock, Server, Shield, Eye, KeyRound, RefreshCcw];
+const colors = [
+  "var(--color-neon)",
+  "var(--color-cyan)",
+  "var(--color-purple)",
+  "var(--color-orange)",
+  "var(--color-neon)",
+  "var(--color-cyan)",
 ];
 
 export default function SecurityPage() {
   const t = useTranslations("security");
+  const tc = useTranslations("security.trustCenter.arrays.trustFeatures");
+  const features = icons.map((icon, i) => ({
+    icon,
+    color: colors[i],
+    title: tc(`${i}.title`),
+    description: tc(`${i}.description`),
+  }));
 
   return (
     <>
