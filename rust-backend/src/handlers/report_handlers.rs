@@ -780,6 +780,31 @@ fn generate_html_report(
     let med_pct_str = format!("{:.1}", med_pct);
     let low_pct_str = format!("{:.1}", low_pct);
 
+    // Digest over what the report actually asserts: the scans it covers, their
+    // targets, the tools that produced them, the findings, and the severity
+    // counts. It used to be `format!("{:016x}", (name.len() + now.len() +
+    // template.len()) * CONST)` — a 64-bit multiply of three string *lengths*,
+    // 16 hex characters long, printed under the heading "Digital Signature" and
+    // labelled SHA-256. It was bound to nothing and verified nothing, in a
+    // document a customer may hand to their auditor.
+    let content_digest: String = {
+        use sha2::{Digest, Sha256};
+        let mut h = Sha256::new();
+        h.update(name.as_bytes());
+        h.update(template.as_bytes());
+        h.update(now.as_bytes());
+        for (scan, tool) in scans {
+            h.update(scan.id.as_bytes());
+            h.update(scan.target.as_bytes());
+            h.update(tool.as_bytes());
+            if let Some(ref f) = scan.findings {
+                h.update(f.to_string().as_bytes());
+            }
+        }
+        h.update(format!("{}:{}:{}:{}:{}:{}:{}", total, crit, high, med, low, info, risk_score).as_bytes());
+        format!("{:x}", h.finalize())
+    };
+
     format!(r##"<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -1048,18 +1073,18 @@ h4{{font-size:13px;font-weight:600;color:#475569;margin:16px 0 10px;text-transfo
         <tr><td><strong>Report Template</strong></td><td>{template_title}</td></tr>
         <tr><td><strong>Generated</strong></td><td>{now}</td></tr>
         <tr><td><strong>Classification</strong></td><td>Confidential</td></tr>
-        <tr><td><strong>Compliance</strong></td><td>SOC 2 Type II, ISO 27001, GDPR</td></tr>
+        <tr><td><strong>Data residency</strong></td><td>Canada</td></tr>
     </table>
 
     <!-- Digital Signature -->
     <div class="signature">
         <div class="signature-box">
-            <div class="signature-name">CyberSec Pro Security Team</div>
-            <div class="signature-line">Authorized Security Analyst</div>
+            <div class="signature-name">Automated assessment</div>
+            <div class="signature-line">Produced by CyberSec Pro — not reviewed by an analyst</div>
         </div>
         <div class="signature-box" style="text-align:right">
-            <div class="signature-name">Digital Signature</div>
-            <div class="signature-line">Signed: {now} | ID: {scan_id}</div>
+            <div class="signature-name">Content digest</div>
+            <div class="signature-line">Generated: {now} | Scan ID: {scan_id}</div>
             <div style="margin-top:8px;font-size:10px;color:#94a8b8">SHA-256: {sha}</div>
         </div>
     </div>
@@ -1080,7 +1105,7 @@ h4{{font-size:13px;font-weight:600;color:#475569;margin:16px 0 10px;text-transfo
         date_short = date_short,
         scan_count = scans.len(),
         scan_id = scans.first().map(|(s, _)| &s.id).unwrap_or(&"N/A".to_string()),
-        sha = format!("{:016x}", ((name.len() + now.len() + template.len()) as u64).wrapping_mul(0x9E3779B97F4A7C15)),
+        sha = content_digest,
         tools_count = tools_count,
         categories_count = categories_count,
         total = total,
@@ -1827,5 +1852,75 @@ mod tests {
         let html = build_executive_summary(&scans, "full");
         // 2 unique targets — the summary embeds the deduplicated count
         assert!(html.contains("<strong>2</strong>"), "should deduplicate to 2 unique targets");
+    }
+
+    /// Fixture for the digest tests below.
+    fn digest_scan(id: &str, target: &str, tool: &str) -> (ScanRow, String) {
+        (ScanRow {
+            id: id.into(),
+            tool_id: "t".into(),
+            target: target.into(),
+            output: None,
+            findings: None,
+            started_at: None,
+            completed_at: None,
+        }, tool.into())
+    }
+
+    fn digest_report(scans: &[(ScanRow, String)], crit: i32) -> String {
+        generate_html_report(
+            "Acme Corp", "full", "2026-09-12 10:00", "2026-09-12",
+            scans,
+            5, crit, 1, 2, 1, 0,
+            42, "Medium",
+            None, None, None, None, false, None,
+            88, 14,
+        )
+    }
+
+    fn extract_digest(html: &str) -> String {
+        let i = html.find("SHA-256: ").expect("digest label missing from report");
+        html[i + "SHA-256: ".len()..]
+            .chars()
+            .take_while(|c| c.is_ascii_hexdigit())
+            .collect()
+    }
+
+    /// The digest used to be a 64-bit multiply of three string *lengths*, 16 hex
+    /// characters, printed under "Digital Signature" and labelled SHA-256. It was
+    /// bound to nothing. These two tests are what stops that coming back.
+    #[test]
+    fn report_digest_is_a_real_sha256() {
+        let scans = vec![digest_scan("scan-1", "10.0.0.1", "nmap")];
+        let digest = extract_digest(&digest_report(&scans, 1));
+        assert_eq!(digest.len(), 64, "SHA-256 is 64 hex characters, got {}", digest.len());
+        assert!(digest.chars().all(|c| c.is_ascii_hexdigit()), "digest is not hex: {digest}");
+    }
+
+    #[test]
+    fn report_digest_is_bound_to_report_content() {
+        let a = vec![digest_scan("scan-1", "10.0.0.1", "nmap")];
+        let b = vec![digest_scan("scan-1", "10.0.0.2", "nmap")];   // different target
+        let c = vec![digest_scan("scan-2", "10.0.0.1", "nmap")];   // different scan id
+
+        let da = extract_digest(&digest_report(&a, 1));
+        assert_ne!(da, extract_digest(&digest_report(&b, 1)), "target must change the digest");
+        assert_ne!(da, extract_digest(&digest_report(&c, 1)), "scan id must change the digest");
+        assert_ne!(da, extract_digest(&digest_report(&a, 9)), "severity counts must change the digest");
+        assert_eq!(da, extract_digest(&digest_report(&a, 1)), "same input must give the same digest");
+    }
+
+    /// The methodology table asserted "SOC 2 Type II, ISO 27001, GDPR" as the
+    /// platform's own compliance, in a document a customer may forward to their
+    /// auditor. Those certifications are not held — the Trust Center marks every
+    /// one of them `compliant: false`.
+    #[test]
+    fn report_does_not_claim_certifications_we_do_not_hold() {
+        let scans = vec![digest_scan("scan-1", "10.0.0.1", "nmap")];
+        let html = digest_report(&scans, 1);
+        for claim in ["SOC 2 Type II, ISO 27001", "Authorized Security Analyst"] {
+            assert!(!html.contains(claim), "report still claims: {claim}");
+        }
+        assert!(html.contains("not reviewed by an analyst"), "report should say it is automated");
     }
 }
