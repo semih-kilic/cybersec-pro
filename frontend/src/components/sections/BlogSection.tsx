@@ -6,6 +6,7 @@ import { Clock, ArrowRight, Shield, Bug, Terminal, Wifi, Server, Code2 } from "l
 import Link from "next/link";
 import { useLocale } from "next-intl";
 
+import { blogPostsList } from "@/lib/blog-posts";
 const CATEGORY_COLORS: Record<string, string> = {
   Tools: "#9fef00",
   Security: "#00d4ff",
@@ -24,56 +25,13 @@ const CATEGORY_ICONS: Record<string, typeof Shield> = {
   Wireless: Wifi,
 };
 
-const POSTS = [
-  {
-    slug: "mastering-wireshark",
-    title: "Mastering Wireshark: Network Traffic Analysis Deep Dive",
-    category: "Tools",
-    readTime: 12,
-    date: "2026-01-15",
-    excerpt: "Advanced packet capture and analysis techniques — from protocol dissection to identifying malicious traffic patterns in real-time.",
-  },
-  {
-    slug: "hashcat-vs-john",
-    title: "Hashcat vs John the Ripper: Password Cracking Compared",
-    category: "Tools",
-    readTime: 10,
-    date: "2026-01-12",
-    excerpt: "GPU-accelerated password recovery showdown. Benchmarks, rule-based attacks, and choosing the right tool for the job.",
-  },
-  {
-    slug: "owasp-top-10-2026",
-    title: "OWASP Top 10 in 2026: What's Changed",
-    category: "Security",
-    readTime: 12,
-    date: "2026-01-08",
-    excerpt: "An updated look at the most critical web application security risks and how to mitigate them with modern tools.",
-  },
-  {
-    slug: "metasploit-zero-to-exploit",
-    title: "Metasploit Framework: From Zero to Exploit",
-    category: "Tutorials",
-    readTime: 15,
-    date: "2026-01-05",
-    excerpt: "Hands-on walkthrough of the Metasploit Framework — modules, payloads, encoders, and post-exploitation techniques.",
-  },
-  {
-    slug: "ci-cd-pentest-automation",
-    title: "Automating Penetration Tests with CI/CD",
-    category: "DevSecOps",
-    readTime: 10,
-    date: "2026-01-03",
-    excerpt: "Integrate security testing into your development pipeline with CyberSec Pro's API and GitHub Actions.",
-  },
-  {
-    slug: "wireless-security-assessment",
-    title: "Wireless Security Assessment Best Practices",
-    category: "Wireless",
-    readTime: 9,
-    date: "2025-12-15",
-    excerpt: "Comprehensive guide to testing Wi-Fi network security using aircrack-ng, wifite, and bettercap.",
-  },
-];
+/**
+ * The six most recent posts, taken from the shared list instead of a fourth
+ * hand-maintained copy. The copy that used to live here had its own titles and
+ * its own read times, which is how the home page came to disagree with the
+ * blog index about both.
+ */
+const POSTS = blogPostsList.slice(0, 6);
 
 const container = {
   hidden: {},
