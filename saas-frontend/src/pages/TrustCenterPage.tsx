@@ -6,6 +6,11 @@ import { useTranslation } from 'react-i18next';
 import { Helmet } from 'react-helmet-async';
 import { Link } from 'react-router-dom';
 
+// /.well-known/pgp-key.txt holds a placeholder, not a usable public key, so
+// "encrypt your report with PGP" pointed researchers at nothing. Same flag as
+// the marketing Trust Center: flip it in the commit that publishes a real key.
+const PGP_KEY_PUBLISHED = false;
+
 export function TrustCenterPage() {
   const { t } = useTranslation();
 
@@ -40,7 +45,9 @@ export function TrustCenterPage() {
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-16">
             {[
               { label: t('trust.quick.securityTxt', 'security.txt'), href: '/.well-known/security.txt', desc: t('trust.quick.securityTxtDesc', 'RFC 9116 security policy') },
-              { label: t('trust.quick.pgpKey', 'PGP Key'), href: '/.well-known/pgp-key.txt', desc: t('trust.quick.pgpKeyDesc', 'Encrypt vulnerability reports') },
+              ...(PGP_KEY_PUBLISHED
+                ? [{ label: t('trust.quick.pgpKey', 'PGP Key'), href: '/.well-known/pgp-key.txt', desc: t('trust.quick.pgpKeyDesc', 'Encrypt vulnerability reports') }]
+                : []),
               { label: t('trust.quick.dpa', 'DPA'), href: '#dpa', desc: t('trust.quick.dpaDesc', 'Data Processing Agreement') },
             ].map((link) => (
               <a
@@ -71,7 +78,7 @@ export function TrustCenterPage() {
               <div className="p-4 rounded-lg bg-black/30 border border-white/5">
                 <div className="text-xs text-gray-500 mb-1">{t('trust.dataResidency.encryptionAtRest', 'Encryption at Rest')}</div>
                 <div className="text-lg font-mono font-bold text-purple-400 mb-1">{t('trust.dataResidency.encryptionAtRestValue', 'AES-256-GCM')}</div>
-                <div className="text-xs text-gray-400">{t('trust.dataResidency.encryptionDescription', 'Per-tenant keys with 90-day rotation, stored in HSM.')}</div>
+                <div className="text-xs text-gray-400">{t('trust.dataResidency.encryptionDescription', 'Secrets and stored credentials, under a key held separately from the token-signing key.')}</div>
               </div>
               <div className="p-4 rounded-lg bg-black/30 border border-white/5">
                 <div className="text-xs text-gray-500 mb-1">{t('trust.dataResidency.encryptionInTransit', 'Encryption in Transit')}</div>
@@ -91,7 +98,7 @@ export function TrustCenterPage() {
                   t('trust.dataResidency.noLoggingPolicy1', 'No raw packet capture storage'),
                   t('trust.dataResidency.noLoggingPolicy2', 'No payload content retention'),
                   t('trust.dataResidency.noLoggingPolicy3', 'No personal data in scan results'),
-                  t('trust.dataResidency.noLoggingPolicy4', 'Scan results auto-delete after 30 days'),
+                  t('trust.dataResidency.noLoggingPolicy4', 'Scan results auto-delete after 90 days'),
                 ].map((item, i) => (
                   <div key={i} className="flex items-center gap-2 text-xs text-gray-400">
                     <span className="h-1.5 w-1.5 rounded-full bg-green-400 shrink-0" />
@@ -113,7 +120,7 @@ export function TrustCenterPage() {
               </p>
               <ul className="list-disc pl-5 space-y-2">
                 <li>{t('trust.disclosure.scope', 'Scope: All CyberSec Pro services, APIs, and infrastructure at cyber-sec-pro.com and app.cyber-sec-pro.com.')}</li>
-                <li>{t('trust.disclosure.contact', 'Contact: security@cyber-sec-pro.com (PGP key available at /.well-known/pgp-key.txt)')}</li>
+                <li>{t('trust.disclosure.contact', 'Contact: security@cyber-sec-pro.com')}</li>
                 <li>{t('trust.disclosure.response', 'Response time: We will acknowledge your report within 48 hours and provide a timeline for resolution within 5 business days.')}</li>
                 <li>{t('trust.disclosure.safeHarbor', 'Safe Harbor: We will not pursue legal action against researchers who follow this policy and act in good faith.')}</li>
               </ul>
@@ -126,20 +133,20 @@ export function TrustCenterPage() {
           {/* Last Pentest */}
           <section className="mb-12 p-6 rounded-2xl border border-zinc-700/50 bg-zinc-900/30">
             <h2 className="text-xl font-bold text-white mb-4">
-              {t('trust.pentest.title', 'Last Penetration Test')}
+              {t('trust.pentest.title', 'Latest Security Test')}
             </h2>
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-sm">
               <div>
                 <div className="text-gray-500 mb-1">{t('trust.pentest.date', 'Date')}</div>
-                <div className="text-white font-medium">2026-07-15</div>
+                <div className="text-white font-medium">2026-09-06</div>
               </div>
               <div>
                 <div className="text-gray-500 mb-1">{t('trust.pentest.scope', 'Scope')}</div>
-                <div className="text-white font-medium">{t('trust.pentest.scopeValue', 'Full infrastructure + API')}</div>
+                <div className="text-white font-medium">{t('trust.pentest.scopeValue', 'Automated external scan of the production app (Nuclei + Wapiti), run weekly')}</div>
               </div>
               <div>
                 <div className="text-gray-500 mb-1">{t('trust.pentest.status', 'Status')}</div>
-                <div className="text-green-400 font-medium">{t('trust.pentest.statusValue', 'All findings remediated')}</div>
+                <div className="text-green-400 font-medium">{t('trust.pentest.statusValue', '0 critical, 0 high, 0 medium')}</div>
               </div>
             </div>
           </section>

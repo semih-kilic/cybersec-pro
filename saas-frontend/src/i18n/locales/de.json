@@ -1715,7 +1715,7 @@
     "dataResidency": {
       "encryptionAtRest": "Verschlüsselung im Ruhezustand",
       "encryptionAtRestValue": "AES-256-GCM",
-      "encryptionDescription": "Mandantenspezifische Schlüssel mit 90-Tage-Rotation, gespeichert in HSM.",
+      "encryptionDescription": "Geheimnisse und gespeicherte Zugangsdaten, unter einem vom Token-Signaturschlüssel getrennten Schlüssel.",
       "encryptionInTransit": "Verschlüsselung bei Datenübertragung",
       "encryptionInTransitDescription": "Perfekte Vorwärtsgeheimnis auf allen API- und Webverkehr.",
       "encryptionInTransitValue": "TLS 1.3",
@@ -1725,7 +1725,7 @@
       "noLoggingPolicy1": "Keine Speicherung von Rohpaketdaten",
       "noLoggingPolicy2": "Keine Aufbewahrung von Nutzdateninhalten",
       "noLoggingPolicy3": "Keine personenbezogenen Daten in Scan-Ergebnissen",
-      "noLoggingPolicy4": "Scan-Ergebnisse werden nach 30 Tagen automatisch gelöscht",
+      "noLoggingPolicy4": "Scan-Ergebnisse werden nach 90 Tagen automatisch gelöscht",
       "noLoggingValue": "Zero-Knowledge",
       "storageDescription": "Alle Kundendaten werden ausschließlich in kanadischen Rechenzentren gespeichert.",
       "storageLocation": "Primärer Datenspeicher",
@@ -1734,7 +1734,7 @@
       "title": "Datenspeicherung & Datenschutz"
     },
     "disclosure": {
-      "contact": "Kontakt: security@cyber-sec-pro.com (PGP-Schlüssel unter /.well-known/pgp-key.txt verfügbar)",
+      "contact": "Kontakt: security@cyber-sec-pro.com",
       "p1": "Wir nehmen die Sicherheit von CyberSec Pro ernst. Wenn Sie eine Sicherheitsschwachstelle entdecken, schätzen wir Ihre Hilfe bei der verantwortungsvollen Offenlegung gegenüber uns.",
       "policyDuration": "Richtlinie gültig ab: 01.01.2025. Zuletzt überprüft: 12.08.2026.",
       "response": "Antwortzeit: Wir bestätigen Ihren Bericht innerhalb von 48 Stunden und stellen einen Zeitplan für die Behebung innerhalb von 5 Werktagen bereit.",
@@ -1752,10 +1752,10 @@
     "pentest": {
       "date": "Datum",
       "scope": "Umfang",
-      "scopeValue": "Gesamte Infrastruktur + API",
+      "scopeValue": "Wöchentlicher automatisierter externer Scan der Produktions-App (Nuclei + Wapiti)",
       "status": "Status",
-      "statusValue": "Alle Feststellungen behoben",
-      "title": "Letzter Penetrationstest"
+      "statusValue": "0 kritisch, 0 hoch, 0 mittel",
+      "title": "Letzter Sicherheitstest"
     },
     "quick": {
       "dpa": "DVA",

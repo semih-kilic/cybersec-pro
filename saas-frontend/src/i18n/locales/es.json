@@ -1715,7 +1715,7 @@
     "dataResidency": {
       "encryptionAtRest": "Cifrado en reposo",
       "encryptionAtRestValue": "AES-256-GCM",
-      "encryptionDescription": "Claves por inquilino con rotación de 90 días, almacenadas en HSM.",
+      "encryptionDescription": "Secretos y credenciales almacenadas, bajo una clave separada de la que firma los tokens.",
       "encryptionInTransit": "Cifrado en tránsito",
       "encryptionInTransitDescription": "Secreto perfecto hacia adelante en todo el tráfico de API y web.",
       "encryptionInTransitValue": "TLS 1.3",
@@ -1725,7 +1725,7 @@
       "noLoggingPolicy1": "Sin almacenamiento de paquetes sin procesar",
       "noLoggingPolicy2": "Sin retención de contenido de payload",
       "noLoggingPolicy3": "Sin datos personales en los resultados de escaneo",
-      "noLoggingPolicy4": "Los resultados de escaneo se eliminan automáticamente después de 30 días",
+      "noLoggingPolicy4": "Los resultados de escaneo se eliminan automáticamente a los 90 días",
       "noLoggingValue": "Conocimiento cero",
       "storageDescription": "Todos los datos del cliente se almacenan exclusivamente en centros de datos canadienses.",
       "storageLocation": "Ubicación principal de almacenamiento de datos",
@@ -1734,7 +1734,7 @@
       "title": "Residencia de datos y privacidad"
     },
     "disclosure": {
-      "contact": "Contacto: security@cyber-sec-pro.com (clave PGP disponible en /.well-known/pgp-key.txt)",
+      "contact": "Contacto: security@cyber-sec-pro.com",
       "p1": "Nos tomamos la seguridad de CyberSec Pro en serio. Si descubre una vulnerabilidad de seguridad, apreciamos su ayuda para divulgarla de manera responsable.",
       "policyDuration": "Política vigente desde: 01/01/2025. Última revisión: 12/08/2026.",
       "response": "Tiempo de respuesta: Confirmaremos su informe dentro de las 48 horas y proporcionaremos un plazo de resolución dentro de los 5 días hábiles.",
@@ -1752,10 +1752,10 @@
     "pentest": {
       "date": "Fecha",
       "scope": "Alcance",
-      "scopeValue": "Infraestructura completa + API",
+      "scopeValue": "Escaneo externo automatizado semanal de la aplicación en producción (Nuclei + Wapiti)",
       "status": "Estado",
-      "statusValue": "Todos los hallazgos remediados",
-      "title": "Última prueba de penetración"
+      "statusValue": "0 críticas, 0 altas, 0 medias",
+      "title": "Última prueba de seguridad"
     },
     "quick": {
       "dpa": "DPA",

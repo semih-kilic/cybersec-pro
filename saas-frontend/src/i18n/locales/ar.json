@@ -1723,18 +1723,18 @@
       "title": "الكشف المسؤول",
       "p1": "نأخذ أمان CyberSec Pro على محمل الجد. إذا اكتشفت ثغرة أمنية، نقدّر مساعدتك في الإبلاغ عنها بطريقة مسؤولة.",
       "scope": "النطاق: جميع خدمات CyberSec Pro والـ API والبنية التحتية على cyber-sec-pro.com و app.cyber-sec-pro.com.",
-      "contact": "التواصل: security@cyber-sec-pro.com (مفتاح PGP متاح على /.well-known/pgp-key.txt)",
+      "contact": "للتواصل: security@cyber-sec-pro.com",
       "response": "وقت الاستجابة: سنُثبت تقريرك خلال 48 ساعة ونوفر جدولاً زمنياً للحل خلال 5 أيام عمل.",
       "safeHarbor": "الميناء الآمن: لن نتبع إجراءات قانونية ضد الباحثين الذين يتبعون هذه السياسة ويتصرفون بحسن نية.",
       "policyDuration": "السياسة سارية المفعول: 2025-01-01. آخر مراجعة: 2026-08-12."
     },
     "pentest": {
-      "title": "آخر اختبار اختراق",
+      "title": "أحدث اختبار أمني",
       "date": "التاريخ",
       "scope": "النطاق",
-      "scopeValue": "البنية التحتية الكاملة + API",
+      "scopeValue": "فحص خارجي آلي أسبوعي لتطبيق الإنتاج (Nuclei + Wapiti)",
       "status": "الحالة",
-      "statusValue": "تم علاج جميع النتائج"
+      "statusValue": "0 حرجة، 0 عالية، 0 متوسطة"
     },
     "subprocessors": {
       "title": "المعالجون الفرعيون",
@@ -1759,7 +1759,7 @@
       "storageDescription": "جميع بيانات العملاء مخزنة حصرياً في مراكز البيانات الكندية.",
       "encryptionAtRest": "التشفير أثناء التخزين",
       "encryptionAtRestValue": "AES-256-GCM",
-      "encryptionDescription": "مفاتيح لكل مستأجر مع تدوير كل 90 يوماً، مخزنة في HSM.",
+      "encryptionDescription": "الأسرار وبيانات الاعتماد المحفوظة، بمفتاح يُحفظ منفصلًا عن مفتاح توقيع الرموز.",
       "encryptionInTransit": "التشفير أثناء النقل",
       "encryptionInTransitValue": "TLS 1.3",
       "encryptionInTransitDescription": "الإحكام الأمامي المثالي لجميع حركة مرور API والويب.",
@@ -1770,7 +1770,7 @@
       "noLoggingPolicy1": "لا تخزين لتقاط الحزم الأولية",
       "noLoggingPolicy2": "لا احتفاظ بمحتوى الحمل",
       "noLoggingPolicy3": "لا بيانات شخصية في نتائج الفحص",
-      "noLoggingPolicy4": "حذف نتائج الفحص تلقائياً بعد 30 يوماً"
+      "noLoggingPolicy4": "تُحذف نتائج الفحص تلقائيًا بعد 90 يومًا"
     }
   },
   "demo": {

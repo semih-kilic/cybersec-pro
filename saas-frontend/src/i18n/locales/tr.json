@@ -1723,18 +1723,18 @@
       "title": "Sorumlu İfşa",
       "p1": "CyberSec Pro'nun güvenliğini ciddiye alıyoruz. Bir güvenlik kırılganlığı keşfederseniz, bunu sorumlu bir şekilde bize ifşa etmenize yardımcı olmanızı takdir ederiz.",
       "scope": "Kapsam: cyber-sec-pro.com ve app.cyber-sec-pro.com adresindeki tüm CyberSec Pro hizmetleri, API'leri ve altyapısı.",
-      "contact": "İletişim: security@cyber-sec-pro.com (PGP anahtarı /.well-known/pgp-key.txt adresinde mevcuttur)",
+      "contact": "İletişim: security@cyber-sec-pro.com",
       "response": "Yanıt süresi: Raporunuzu 48 saat içinde onaylayacağız ve 5 iş günü içinde çözüm için bir zaman çizelgesi sunacağız.",
       "safeHarbor": "Güvenli Liman: Bu politikaya uyan ve iyi niyetle hareket eden araştırmacılara karşı yasal işlem başlatmayacağız.",
       "policyDuration": "Politika yürürlük tarihi: 2025-01-01. Son gözden geçirme: 2026-08-12."
     },
     "pentest": {
-      "title": "Son Penetrasyon Testi",
+      "title": "En Son Güvenlik Testi",
       "date": "Tarih",
       "scope": "Kapsam",
-      "scopeValue": "Tam altyapı + API",
+      "scopeValue": "Üretim uygulamasının haftalık otomatik dış taraması (Nuclei + Wapiti)",
       "status": "Durum",
-      "statusValue": "Tüm bulgular giderildi"
+      "statusValue": "0 kritik, 0 yüksek, 0 orta"
     },
     "subprocessors": {
       "title": "Alt İşlemciler",
@@ -1759,7 +1759,7 @@
       "storageDescription": "Tüm müşteri verileri yalnızca Kanada veri merkezlerinde saklanır.",
       "encryptionAtRest": "Depolama Şifrelemesi",
       "encryptionAtRestValue": "AES-256-GCM",
-      "encryptionDescription": "HSM'de saklanan 90 günlük döndürmeli kiracı başına anahtarlar.",
+      "encryptionDescription": "Sırlar ve saklanan kimlik bilgileri; token imzalama anahtarından ayrı tutulan bir anahtarla.",
       "encryptionInTransit": "Aktarım Şifrelemesi",
       "encryptionInTransitValue": "TLS 1.3",
       "encryptionInTransitDescription": "Tüm API ve web trafiğinde mükemmel ileri gizlilik.",
@@ -1770,7 +1770,7 @@
       "noLoggingPolicy1": "Ham paket yakalama depolaması yok",
       "noLoggingPolicy2": "İçerik saklama yok",
       "noLoggingPolicy3": "Tarama sonuçlarında kişisel veri yok",
-      "noLoggingPolicy4": "Tarama sonuçları 30 gün sonra otomatik silinir"
+      "noLoggingPolicy4": "Tarama sonuçları 90 gün sonra otomatik silinir"
     }
   },
   "demo": {
