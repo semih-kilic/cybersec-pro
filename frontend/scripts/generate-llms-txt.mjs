@@ -148,7 +148,7 @@ if (!existsSync(join(OUT, L))) {
   process.exit(1);
 }
 
-const CORE = ['', 'tools', 'docs', 'api-reference', 'security', 'trust-center', 'blog'];
+const CORE = ['', 'pricing', 'tools', 'docs', 'api-reference', 'security', 'trust-center', 'blog'];
 const COMPANY = ['about', 'contact', 'careers'];
 const LEGAL = ['privacy', 'terms'];
 const tools = dirs('tools').filter((d) => d !== 'mini-tools');
@@ -169,7 +169,7 @@ const llms =
 
 writeFileSync(join(OUT, 'llms.txt'), llms);
 
-const FULL = ['', 'tools', 'docs', 'api-reference', 'security', 'trust-center', 'about'];
+const FULL = ['', 'pricing', 'tools', 'docs', 'api-reference', 'security', 'trust-center', 'about'];
 const full =
   HEADER +
   FULL.map((p) => {

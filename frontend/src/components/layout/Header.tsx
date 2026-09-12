@@ -17,7 +17,7 @@ export default function Header() {
   const links = [
     { href: lp("/#features"), label: t("features") },
     { href: lp("/tools"), label: t("arsenal") },
-    { href: lp("/#pricing"), label: t("pricing") },
+    { href: lp("/pricing/"), label: t("pricing") },
     { href: lp("/docs"), label: t("docs") },
     { href: lp("/api-reference"), label: t("api") },
     { href: lp("/trust-center"), label: t("trustCenter") },

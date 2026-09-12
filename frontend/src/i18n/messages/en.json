@@ -702,5 +702,110 @@
     "foundingTitle": "Founding Member — $19/mo lifetime",
     "foundingSub": "First 10 members lock 81% off forever. Normal price: $99/mo.",
     "foundingCta": "Claim Founding Spot"
+  },
+  "pricingPage": {
+    "badge": "Pricing",
+    "title": "Pick a plan by how much you scan",
+    "subtitle": "Every plan includes all 88 tools — the free trial too. What changes is volume, automation, and the controls a team needs.",
+    "annualNote": "Annual billing saves 20% on every paid plan.",
+    "compare": {
+      "title": "What each plan actually enforces",
+      "subtitle": "These are the limits the backend applies, read from the plan configuration — not marketing rounding.",
+      "plan": "Plan",
+      "unlimited": "Unlimited",
+      "included": "Included",
+      "notIncluded": "Not in this plan",
+      "groups": {
+        "scanning": "Scanning",
+        "workspace": "Workspace",
+        "reports": "Reports",
+        "automation": "Automation & AI",
+        "access": "Access & support"
+      },
+      "rows": {
+        "tools": "Security tools",
+        "scans": "Scan quota",
+        "concurrent": "Concurrent scans",
+        "projects": "Projects",
+        "seats": "Team members",
+        "agents": "Remote agents",
+        "basicReports": "Findings & basic reports",
+        "pdf": "PDF reports",
+        "html": "HTML reports",
+        "compliance": "Compliance reports",
+        "scheduled": "Scheduled scans",
+        "aiSuggestions": "AI scan suggestions",
+        "aiRemediation": "AI remediation guidance",
+        "purpleTeam": "Purple Team exercises",
+        "ldap": "LDAP / Active Directory scanning",
+        "api": "REST API access",
+        "sso": "SSO (SAML, OIDC, LDAP)",
+        "priority": "Priority support"
+      },
+      "values": {
+        "allTools": "All 88",
+        "trialScans": "3 / day for 14 days",
+        "perMonth": "{n} / month"
+      }
+    },
+    "faq": {
+      "title": "Before you decide",
+      "items": [
+        {
+          "q": "What do I get on the free trial?",
+          "a": "Fourteen days, three scans a day, and all 88 tools — the same catalogue paid plans get. Findings and PDF reports are included; HTML and compliance reports, scheduling and the AI features are not."
+        },
+        {
+          "q": "What counts as one scan?",
+          "a": "One run of one tool against one target. Re-running the same tool to verify a fix counts again, and the result is linked to the original so you can see what was fixed, what is still open and what is new."
+        },
+        {
+          "q": "Can I change or cancel my plan?",
+          "a": "Yes, from the Stripe customer portal in your billing settings. Upgrades take effect immediately; cancellations run to the end of the period you have paid for."
+        },
+        {
+          "q": "Do you offer refunds?",
+          "a": "Within 14 days of purchase, provided no scans have been executed on the account. That condition is in the Terms and we apply it as written."
+        },
+        {
+          "q": "How much does annual billing save?",
+          "a": "20%. Starter is $279 a year instead of $348, Professional $949 instead of $1,188, Enterprise $3,349 instead of $4,188."
+        },
+        {
+          "q": "Where is my data stored?",
+          "a": "In Canada. Scan results, findings and logs stay in Canadian data centres, and nothing leaves Canadian jurisdiction without your explicit consent."
+        },
+        {
+          "q": "Do you store the credentials I enter for a scan?",
+          "a": "No. Credentials for a scan are held in memory for the length of that job and discarded when it ends. They are never written to the database, to logs or to backups, and they are redacted before anything is persisted. You can also resolve them at run time from your own vault."
+        },
+        {
+          "q": "Which plan do I need for SSO?",
+          "a": "Enterprise. It covers SAML 2.0, OIDC and LDAP, and the connection test validates the real endpoint rather than only saving the form."
+        }
+      ]
+    },
+    "trust": {
+      "residency": {
+        "t": "Canadian data residency",
+        "d": "Results, findings and logs stay in Canadian data centres."
+      },
+      "credentials": {
+        "t": "Credentials are never stored",
+        "d": "Held in memory for the job, redacted before anything is written."
+      },
+      "cancel": {
+        "t": "Cancel any time",
+        "d": "Self-serve through the Stripe customer portal. No call required."
+      },
+      "refund": {
+        "t": "14-day refund",
+        "d": "Full refund within 14 days if no scans have been run on the account."
+      }
+    },
+    "ctaTitle": "Start on the free trial",
+    "ctaBody": "Fourteen days, all 88 tools, three scans a day. Move up when the volume asks for it.",
+    "ctaButton": "Create your account",
+    "ctaSecondary": "Talk to us about Enterprise"
   }
 }

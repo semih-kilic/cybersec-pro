@@ -498,3 +498,95 @@ export function getToolJsonLd(
     ],
   };
 }
+
+/**
+ * Structured data for the pricing page: the four Offers plus a FAQPage.
+ *
+ * Prices and quotas come from rust-backend/src/services/plan.rs and were
+ * checked against the live Stripe price objects — 29 / 99 / 349 USD monthly and
+ * 279 / 949 / 3349 USD yearly. An answer engine quoting this block is quoting
+ * what the backend enforces and what the card is actually charged.
+ */
+export function getPricingJsonLd(locale: string, faq: { q: string; a: string }[]) {
+  const url = `${BASE_URL}/${locale}/pricing/`;
+
+  const tiers = [
+    { name: "Free Trial", month: "0", year: null, blurb: "14 days, 3 scans per day, all 88 tools, PDF reports" },
+    { name: "Starter", month: "29", year: "279", blurb: "All 88 tools, 30 scans/month, 2 concurrent, 3 team members, HTML reports, scheduled scans" },
+    { name: "Professional", month: "99", year: "949", blurb: "All 88 tools, 250 scans/month, 5 concurrent, 10 team members, AI suggestions and remediation, compliance reports, REST API, Purple Team" },
+    { name: "Enterprise", month: "349", year: "3349", blurb: "All 88 tools, 5000 scans/month, unlimited concurrent scans, projects and team members, SSO (SAML, OIDC, LDAP)" },
+  ];
+
+  return {
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "Product",
+        "@id": `${url}#product`,
+        name: "CyberSec Pro",
+        description:
+          "Hosted penetration-testing platform: 88 curated security tools run from the browser with live output.",
+        url,
+        brand: { "@type": "Organization", name: "CyberSec Pro", url: BASE_URL },
+        offers: tiers.flatMap((tier) => {
+          const monthly = {
+            "@type": "Offer",
+            name: `${tier.name} (monthly)`,
+            price: tier.month,
+            priceCurrency: "USD",
+            description: tier.blurb,
+            url,
+            availability: "https://schema.org/InStock",
+            priceSpecification: {
+              "@type": "UnitPriceSpecification",
+              price: tier.month,
+              priceCurrency: "USD",
+              billingDuration: 1,
+              billingIncrement: 1,
+              unitText: "MONTH",
+            },
+          };
+          if (!tier.year) return [monthly];
+          return [
+            monthly,
+            {
+              "@type": "Offer",
+              name: `${tier.name} (annual)`,
+              price: tier.year,
+              priceCurrency: "USD",
+              description: `${tier.blurb}. Billed yearly, 20% below the monthly rate.`,
+              url,
+              availability: "https://schema.org/InStock",
+              priceSpecification: {
+                "@type": "UnitPriceSpecification",
+                price: tier.year,
+                priceCurrency: "USD",
+                billingDuration: 1,
+                billingIncrement: 1,
+                unitText: "YEAR",
+              },
+            },
+          ];
+        }),
+      },
+      {
+        "@type": "FAQPage",
+        "@id": `${url}#faq`,
+        inLanguage: locale,
+        mainEntity: faq.map((item) => ({
+          "@type": "Question",
+          name: item.q,
+          acceptedAnswer: { "@type": "Answer", text: item.a },
+        })),
+      },
+      {
+        "@type": "BreadcrumbList",
+        "@id": `${url}#breadcrumb`,
+        itemListElement: [
+          { "@type": "ListItem", position: 1, name: "CyberSec Pro", item: `${BASE_URL}/${locale}/` },
+          { "@type": "ListItem", position: 2, name: "Pricing", item: url },
+        ],
+      },
+    ],
+  };
+}

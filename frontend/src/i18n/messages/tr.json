@@ -646,5 +646,110 @@
     "foundingTitle": "Kurucu Üye — ömür boyu $19/ay",
     "foundingSub": "İlk 10 üye ömür boyu %81 indirim kazanır. Normal fiyat: $99/ay.",
     "foundingCta": "Kurucu Yerini Ayır"
+  },
+  "pricingPage": {
+    "badge": "Fiyatlandırma",
+    "title": "Planı tarama hacminize göre seçin",
+    "subtitle": "Her plan 88 aracın tamamını içerir — ücretsiz deneme dahil. Değişen şey hacim, otomasyon ve bir ekibin ihtiyaç duyduğu kontroller.",
+    "annualNote": "Yıllık ödemede her ücretli planda %20 tasarruf.",
+    "compare": {
+      "title": "Her planın gerçekte uyguladığı sınırlar",
+      "subtitle": "Bunlar backend'in uyguladığı limitler — plan yapılandırmasından okundu, pazarlama yuvarlaması değil.",
+      "plan": "Plan",
+      "unlimited": "Sınırsız",
+      "included": "Dahil",
+      "notIncluded": "Bu planda yok",
+      "groups": {
+        "scanning": "Tarama",
+        "workspace": "Çalışma alanı",
+        "reports": "Raporlar",
+        "automation": "Otomasyon ve yapay zekâ",
+        "access": "Erişim ve destek"
+      },
+      "rows": {
+        "tools": "Güvenlik aracı",
+        "scans": "Tarama kotası",
+        "concurrent": "Eşzamanlı tarama",
+        "projects": "Proje",
+        "seats": "Ekip üyesi",
+        "agents": "Uzak ajan",
+        "basicReports": "Bulgular ve temel raporlar",
+        "pdf": "PDF rapor",
+        "html": "HTML rapor",
+        "compliance": "Uyumluluk raporları",
+        "scheduled": "Zamanlanmış tarama",
+        "aiSuggestions": "Yapay zekâ tarama önerileri",
+        "aiRemediation": "Yapay zekâ giderme rehberi",
+        "purpleTeam": "Purple Team tatbikatları",
+        "ldap": "LDAP / Active Directory taraması",
+        "api": "REST API erişimi",
+        "sso": "SSO (SAML, OIDC, LDAP)",
+        "priority": "Öncelikli destek"
+      },
+      "values": {
+        "allTools": "88'in tamamı",
+        "trialScans": "14 gün boyunca günde 3",
+        "perMonth": "ayda {n}"
+      }
+    },
+    "faq": {
+      "title": "Karar vermeden önce",
+      "items": [
+        {
+          "q": "Ücretsiz denemede ne alıyorum?",
+          "a": "On dört gün, günde üç tarama ve 88 aracın tamamı — ücretli planlarla aynı katalog. Bulgular ve PDF raporlar dahil; HTML ve uyumluluk raporları, zamanlama ve yapay zekâ özellikleri dahil değil."
+        },
+        {
+          "q": "Bir tarama neye eşit?",
+          "a": "Bir aracın bir hedefe karşı tek çalıştırılması. Bir düzeltmeyi doğrulamak için aynı aracı yeniden çalıştırmak tekrar sayılır; sonuç orijinaline bağlanır, böylece neyin düzeldiğini, neyin açık kaldığını ve neyin yeni olduğunu görürsünüz."
+        },
+        {
+          "q": "Planımı değiştirebilir veya iptal edebilir miyim?",
+          "a": "Evet, faturalandırma ayarlarınızdaki Stripe müşteri portalından. Yükseltmeler anında geçerli olur; iptaller ödemesini yaptığınız dönemin sonuna kadar işler."
+        },
+        {
+          "q": "İade yapıyor musunuz?",
+          "a": "Satın almadan sonraki 14 gün içinde, hesapta hiç tarama çalıştırılmamış olması şartıyla. Bu koşul Şartlar'da yazılıdır ve yazıldığı gibi uygulanır."
+        },
+        {
+          "q": "Yıllık ödeme ne kadar kazandırıyor?",
+          "a": "%20. Starter yılda 348 dolar yerine 279 dolar, Professional 1.188 yerine 949 dolar, Enterprise 4.188 yerine 3.349 dolar."
+        },
+        {
+          "q": "Verilerim nerede saklanıyor?",
+          "a": "Kanada'da. Tarama sonuçları, bulgular ve kayıtlar Kanada veri merkezlerinde kalır; açık onayınız olmadan hiçbir şey Kanada yargı alanı dışına çıkmaz."
+        },
+        {
+          "q": "Tarama için girdiğim kimlik bilgilerini saklıyor musunuz?",
+          "a": "Hayır. Bir taramanın kimlik bilgileri yalnızca o iş süresince bellekte tutulur ve iş bitince atılır. Veritabanına, kayıtlara veya yedeklere hiç yazılmaz; kalıcı hale gelen her şeyden önce maskelenir. Ayrıca çalışma anında kendi kasanızdan da çözümleyebilirsiniz."
+        },
+        {
+          "q": "SSO için hangi plan gerekiyor?",
+          "a": "Enterprise. SAML 2.0, OIDC ve LDAP'ı kapsar ve bağlantı testi yalnızca formu kaydetmek yerine gerçek uç noktayı doğrular."
+        }
+      ]
+    },
+    "trust": {
+      "residency": {
+        "t": "Kanada veri ikametgâhı",
+        "d": "Sonuçlar, bulgular ve kayıtlar Kanada veri merkezlerinde kalır."
+      },
+      "credentials": {
+        "t": "Kimlik bilgileri saklanmaz",
+        "d": "İş süresince bellekte tutulur, yazılmadan önce maskelenir."
+      },
+      "cancel": {
+        "t": "İstediğiniz zaman iptal",
+        "d": "Stripe müşteri portalından kendiniz. Telefon gerekmez."
+      },
+      "refund": {
+        "t": "14 gün iade",
+        "d": "Hesapta tarama çalıştırılmamışsa 14 gün içinde tam iade."
+      }
+    },
+    "ctaTitle": "Ücretsiz denemeyle başlayın",
+    "ctaBody": "On dört gün, 88 aracın tamamı, günde üç tarama. Hacim gerektirdiğinde yukarı çıkın.",
+    "ctaButton": "Hesabınızı oluşturun",
+    "ctaSecondary": "Enterprise için bize yazın"
   }
 }

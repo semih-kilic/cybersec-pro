@@ -24,11 +24,11 @@ import { chromium } from 'playwright-core';
 const BASE = process.env.SMOKE_MARKETING_BASE || 'https://cyber-sec-pro.com';
 
 const PAGES = [
-  '', 'tools', 'tools/nmap', 'tools/mini-tools', 'security', 'trust-center',
+  '', 'pricing', 'tools', 'tools/nmap', 'tools/mini-tools', 'security', 'trust-center',
   'docs', 'api-reference', 'about', 'contact', 'careers', 'blog',
   'privacy', 'terms', 'success',
 ];
-const LOCALE_PAGES = ['', 'trust-center', 'security'];
+const LOCALE_PAGES = ['', 'pricing', 'trust-center', 'security'];
 const LOCALES = ['en', 'tr', 'de', 'fr', 'es', 'ar', 'ja', 'ko', 'ru', 'zh'];
 
 const THIRD_PARTY = /cloudflareinsights|google-analytics|googletagmanager|www\.google\.com\/|doubleclick|gtag|fonts\.(googleapis|gstatic)/i;
