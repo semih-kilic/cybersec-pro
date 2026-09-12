@@ -1,28 +1,29 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-  <!-- Marketing site -->
-  <url><loc>https://cyber-sec-pro.com/</loc><changefreq>weekly</changefreq><priority>1.0</priority></url>
-  <url><loc>https://cyber-sec-pro.com/pricing</loc><changefreq>weekly</changefreq><priority>0.9</priority></url>
-  <url><loc>https://cyber-sec-pro.com/features</loc><changefreq>monthly</changefreq><priority>0.8</priority></url>
-  <url><loc>https://cyber-sec-pro.com/docs</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
-  <url><loc>https://cyber-sec-pro.com/changelog</loc><changefreq>weekly</changefreq><priority>0.6</priority></url>
-  <url><loc>https://cyber-sec-pro.com/security</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
-  <url><loc>https://cyber-sec-pro.com/trust-center</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
+<!--
+  Public entry points on app.cyber-sec-pro.com.
 
-  <!-- Application -->
-  <url><loc>https://app.cyber-sec-pro.com/</loc><changefreq>weekly</changefreq><priority>1.0</priority></url>
-  <url><loc>https://app.cyber-sec-pro.com/tools</loc><changefreq>daily</changefreq><priority>0.9</priority></url>
-  <url><loc>https://app.cyber-sec-pro.com/dashboard</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
-  <url><loc>https://app.cyber-sec-pro.com/dashboard/scans/new</loc><changefreq>weekly</changefreq><priority>0.7</priority></url>
+  This file used to also list seven marketing URLs on cyber-sec-pro.com —
+  /pricing, /features, /docs, /changelog, /trust-center and the root — every one
+  of which 404s, because the marketing site is locale-prefixed (/en/pricing/).
+  A sitemap should only carry URLs on its own host anyway; the marketing host
+  publishes its own, generated from the build, with hreflang for all ten
+  locales.
+
+  Auth-gated routes (/dashboard, /dashboard/scans/new) are gone too: they are
+  behind a login, so advertising them to a crawler achieves nothing.
+
+  Every URL below was checked and returns 200.
+-->
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <url><loc>https://app.cyber-sec-pro.com/tools/</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
+
   <url><loc>https://app.cyber-sec-pro.com/dashboard/login</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>
   <url><loc>https://app.cyber-sec-pro.com/dashboard/register</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
   <url><loc>https://app.cyber-sec-pro.com/dashboard/forgot-password</loc><changefreq>yearly</changefreq><priority>0.3</priority></url>
 
-  <!-- Legal -->
   <url><loc>https://app.cyber-sec-pro.com/dashboard/privacy</loc><changefreq>monthly</changefreq><priority>0.4</priority></url>
   <url><loc>https://app.cyber-sec-pro.com/dashboard/terms</loc><changefreq>monthly</changefreq><priority>0.3</priority></url>
   <url><loc>https://app.cyber-sec-pro.com/dashboard/gdpr</loc><changefreq>monthly</changefreq><priority>0.3</priority></url>
 
-  <!-- Reference -->
   <url><loc>https://app.cyber-sec-pro.com/dashboard/docs.html</loc><changefreq>weekly</changefreq><priority>0.7</priority></url>
 </urlset>

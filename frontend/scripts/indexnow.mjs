@@ -49,7 +49,22 @@ for (let i = 0; i < urls.length; i += CHUNK) {
   });
   // 200 = accepted, 202 = accepted but key still being validated.
   if (res.status !== 200 && res.status !== 202) {
-    console.error(`indexnow: batch ${i / CHUNK + 1} rejected — HTTP ${res.status} ${await res.text()}`);
+    const body = await res.text();
+
+    // First submission from a new key returns this while IndexNow fetches
+    // /<key>.txt out of band. It is not a configuration error and there is
+    // nothing to fix — the only action is to run this again later.
+    if (body.includes('SiteVerificationNotCompleted')) {
+      console.log(
+        `indexnow: key not verified yet. IndexNow fetches ${ORIGIN}/${KEY}.txt on its own\n` +
+          `          schedule after a first submission; re-run this in an hour or so.\n` +
+          `          Nothing to fix — confirm the file is reachable with:\n` +
+          `            curl -s ${ORIGIN}/${KEY}.txt`,
+      );
+      process.exit(75); // EX_TEMPFAIL: retry later, not a failure to act on
+    }
+
+    console.error(`indexnow: batch ${i / CHUNK + 1} rejected — HTTP ${res.status} ${body}`);
     process.exit(1);
   }
   sent += batch.length;

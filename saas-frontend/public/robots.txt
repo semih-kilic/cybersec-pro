@@ -21,5 +21,5 @@ Disallow: /auth/
 # already disallowed above by path, which is the right granularity — blocking a
 # crawler wholesale also removes the public pages from its index.
 
+# Only this host's sitemap belongs here; the marketing site declares its own.
 Sitemap: https://app.cyber-sec-pro.com/sitemap.xml
-Sitemap: https://cyber-sec-pro.com/sitemap.xml
