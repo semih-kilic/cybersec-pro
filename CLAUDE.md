@@ -272,3 +272,53 @@ refuses to commit secret-shaped or oversized files.
   Real sub-processors are Stripe, Cloudflare, Mailjet, Gmail SMTP — no AWS,
   Supabase, Vercel or Sentry is configured. Data lives in Canada (Toronto).
   The Trust Center table is a GDPR Art. 28 disclosure; keep it true.
+
+## 16) Security Claims We May Not Make (Sep 2026)
+
+Two Trust Centers exist — `frontend/src/components/pages/SecurityTrustCenter.tsx`
+(public) and `saas-frontend/src/pages/TrustCenterPage.tsx` (auth-gated). Both
+carried claims the code does not support. Before writing anything into either
+one, or into `llms.txt`, a report template or a pricing page, check this list.
+
+**Does not exist. Do not claim it.**
+
+| Claim | Reality |
+|---|---|
+| HSM / hardware security module | `ENCRYPTION_KEY` lives in the server environment |
+| Key rotation every 90 days | nothing rotates any key on a schedule |
+| WebAuthn / FIDO2 | MFA is TOTP + single-use backup codes (`auth_handlers.rs:581`) |
+| ABAC | role-based only; grepping `ABAC` matches "mfaB**abac**kupHint" |
+| WORM storage, SIEM integration | `audit_logs` is a plain Postgres table with no export |
+| Automated SBOM generation | syft/grype are tools we *offer*, not ones we run on ourselves |
+| ML anomaly detection, IDS/IPS, automated threat-intel feeds | avg + 2.5σ on scan volume (`security_handlers.rs:438`); the APT list in `threat_intel_handlers.rs` is hardcoded |
+| Dedicated instances on Enterprise | no such concept in the backend |
+| Third-party penetration test | planned, never performed. Naming a firm or offering its report is a fabrication |
+| Auto-updated toolchain | nuclei templates update at image build; nothing updates on a schedule |
+
+**True, and safe to state.** TLS 1.3 with PFS; AES-256-GCM for secrets at rest
+under a key separate from `JWT_SECRET_KEY`; one process per job in a dedicated
+scan container with the command tokenised before substitution; org-scoped
+queries and append-only audit logs; TOTP MFA; SAML/OIDC/LDAP SSO on Enterprise;
+rate limiting with cost tiers; watchdogs that restart failed services.
+
+**Retention**, from the running environment, not the defaults in
+`services/data_retention.rs`: `DATA_RETENTION_ENABLED=true`,
+`SCAN_RETENTION_DAYS=90`, `LOG_RETENTION_DAYS=365`. Say 90 days for scans and a
+year for audit logs.
+
+**Evidenced security testing** is the weekly `scripts/pentest-scan.sh` run
+(cron Sunday 04:00): Nuclei + Wapiti against `https://app.cyber-sec-pro.com`,
+summary written to `compliance/pentest/scan-summary-*.md`. Latest at time of
+writing: 0 critical / 0 high / 0 medium / 31 info, Wapiti 0. Cite that file,
+never invented severity counts.
+
+**PGP.** `frontend/public/.well-known/pgp-key.txt` is a placeholder, so both
+Trust Centers hide the PGP surface behind `PGP_KEY_PUBLISHED = false` and
+`security.txt` has no `Encryption:` line. Publishing a real key means replacing
+the file, flipping both constants and restoring that line — in one commit.
+
+**Marketing i18n.** `frontend/src/i18n/messages/{en,tr,de,fr,es,ar,ja,zh,ru,ko}.json`,
+416 keys, all ten at parity. `en.json` is the source of truth, and
+`src/i18n/request.ts` deep-merges against English, so a missing key silently
+renders in English instead of erroring — parity has to be measured, not
+observed. Verify with the key-diff script pattern, not by looking at a page.
