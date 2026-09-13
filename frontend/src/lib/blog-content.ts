@@ -46,86 +46,97 @@ export const BLOG_POSTS: Record<string, BlogPost> = {
     category: "Tools",
     date: "2026-01-15",
     author: "Semih Kilic",
-    excerpt: "Advanced packet capture and analysis techniques — from protocol dissection to identifying malicious traffic patterns in real-time.",
+    excerpt: "Capture filters delete, display filters hide — confusing them costs you evidence. Following streams, reading traffic for beaconing and tunnelling, and scripting it all with tshark.",
     tags: ["wireshark", "network-analysis", "packet-capture", "traffic-analysis"],
     content: `
-## Introduction
+## The mindset that makes Wireshark useful
 
-Wireshark is the world's foremost and widely-used network protocol analyzer. It lets you see what's happening on your network at a microscopic level. In this deep dive, we'll cover advanced techniques that go beyond basic packet capture.
+Open Wireshark on a busy interface and you get thousands of packets a second — a firehose that tells you nothing until you know what you are looking for. The people who find Wireshark indispensable and the people who find it overwhelming are looking at the same tool; the difference is entirely one of method. This guide is about the method: capture less, filter hard, and know what normal looks like before you go hunting for abnormal.
 
-## Setting Up Capture Filters
+Almost everything below also assumes the traffic is yours to look at. Packet capture on a network you do not own or administer can break wiretapping law, and "I was just curious" is not a defence. On your own network, in a lab, or with written authorisation, it is one of the most powerful diagnostic and forensic tools there is.
 
-Before capturing traffic, it's crucial to set up proper capture filters to reduce noise:
+## Two kinds of filter, and the costly mistake of confusing them
+
+Wireshark has two filter systems that look similar and do completely different jobs. Getting them straight is the first real skill.
+
+A **capture filter** decides what gets *recorded*. It runs before packets are saved, uses the low-level BPF syntax, and what it drops is gone forever. Use it to keep a capture manageable on a busy link:
 
 \`\`\`
-# Capture only HTTP/HTTPS traffic
+# Only web traffic
 tcp port 80 or tcp port 443
 
-# Capture traffic from a specific subnet
+# Only one subnet
 net 192.168.1.0/24
 
-# Capture DNS queries only
+# Only DNS
 udp port 53
 \`\`\`
 
-## Display Filters for Forensic Analysis
-
-Once you have captured data, display filters help you isolate relevant packets:
+A **display filter** decides what you *see* in a capture you already have. It uses Wireshark's own richer syntax, and it hides rather than deletes — clear it and every packet is back:
 
 \`\`\`
-# Find HTTP POST requests (potential data exfiltration)
+# HTTP POSTs — a place data leaves the network
 http.request.method == "POST"
 
-# Find DNS queries to suspicious TLDs
+# DNS lookups to throwaway TLDs
 dns.qry.name contains ".xyz" or dns.qry.name contains ".top"
 
-# Detect potential C2 beaconing (regular interval connections)
-tcp.flags.syn == 1 && tcp.flags.ack == 0
+# TLS to a non-standard port
+tls && tcp.port != 443
 \`\`\`
 
-## Identifying Malicious Traffic Patterns
+The mistake that costs you evidence: using a *capture* filter when you should have used a *display* filter. If you capture only port 443 and later realise the interesting activity was on port 8443, that traffic was never written and cannot be recovered. On anything you might need to investigate afterwards, capture broadly and filter the display narrowly. Capture filters are for taming volume on a link too busy to record whole; display filters are for the actual analysis.
 
-### 1. DNS Tunneling Detection
-Look for unusually long DNS queries or high-frequency DNS requests to the same domain. DNS tunneling often uses TXT records with base64-encoded data.
+## Following the conversation, not the packet
 
-### 2. Beaconing Analysis
-C2 (Command and Control) traffic often shows regular intervals. Use the Statistics > Conversations feature to identify hosts with periodic connections.
+A single packet rarely tells a story; the exchange does. Wireshark's most useful everyday feature is **Follow TCP Stream** (right-click a packet → Follow → TCP Stream), which reassembles both directions of a connection into the actual back-and-forth — the HTTP request and its response, the commands and replies of a plaintext protocol, laid out in order. This is where you stop reading hex and start reading what happened.
 
-### 3. Data Exfiltration Indicators
-- Large outbound data transfers during off-hours
-- Encrypted connections to non-standard ports
-- HTTP POST requests with large payloads to unknown domains
+Two menus turn a capture into an overview:
 
-## Protocol Dissection
+- **Statistics → Conversations** lists every pair of hosts talking, with byte and packet counts. It is how you spot the one internal host sending far more data outbound than any other.
+- **Statistics → Protocol Hierarchy** breaks the capture down by protocol, so an unexpected sliver of something — IRC on a corporate network, an odd amount of ICMP — jumps out against the normal mix.
 
-Wireshark's protocol dissectors allow deep inspection of application-layer protocols. Custom dissectors can be written in Lua for proprietary protocols.
+## Reading traffic for signs of trouble
 
-## TShark for Automated Analysis
+Once you can filter and follow, the forensic questions become approachable. A few patterns worth knowing by sight:
 
-For automated analysis pipelines, TShark (Wireshark's CLI) is invaluable:
+**Beaconing.** Command-and-control malware tends to phone home on a regular cadence — a connection every 60 seconds, say, whether or not there is anything to do. In *Conversations*, that shows as a host pair with a steady, metronomic packet rhythm rather than the bursty pattern of human activity. Regularity is the tell.
+
+**DNS tunnelling.** DNS is allowed out of almost every network, which makes it a favourite covert channel. The signatures are unusually long query names, a high volume of \`TXT\` lookups, and a flood of subdomains under one parent domain — data smuggled out one query at a time. A display filter on \`dns\` plus a glance at query lengths surfaces it.
+
+**Data exfiltration.** Large outbound transfers at hours when nobody is working, encrypted connections to non-standard ports, or big HTTP \`POST\` bodies to a domain no one recognises. None is proof on its own; together, and against a baseline of what this network normally does, they are a lead.
+
+The common thread is that every one of these is defined *relative to normal*. You cannot recognise abnormal beaconing without knowing this network's usual rhythm, or a suspicious destination without knowing the usual ones. Which is why the single most valuable thing you can do with Wireshark is study known-good traffic first.
+
+## tshark: Wireshark without the window
+
+The GUI is for exploring; \`tshark\`, its command-line sibling, is for repeating and automating. Anything you do once by hand, tshark lets you script over many captures:
 
 \`\`\`bash
-# Extract all HTTP URLs from a capture
-tshark -r capture.pcap -Y "http.request" -T fields -e http.host -e http.request.uri
+# Every HTTP host and path requested in a capture
+tshark -r capture.pcap -Y "http.request" \\
+  -T fields -e http.host -e http.request.uri
 
-# Count connections per source IP
+# Talkers, busiest first — the CLI version of the Conversations view
 tshark -r capture.pcap -T fields -e ip.src | sort | uniq -c | sort -rn | head -20
 
-# Export specific streams
+# Carve one TCP stream out into its own file for closer study
 tshark -r capture.pcap -Y "tcp.stream eq 5" -w stream5.pcap
 \`\`\`
 
-## Best Practices
+\`-Y\` takes the same display-filter syntax as the GUI, and \`-T fields -e …\` prints named fields as columns you can pipe into \`sort\`, \`awk\` or a script. This is how you go from analysing one capture to processing a directory of them the same way every time — the foundation of any automated triage pipeline.
 
-1. **Always capture with proper authorization** — Unauthorized packet capture may violate laws
-2. **Use ring buffers** for continuous monitoring to avoid disk space issues
-3. **Encrypt your captures** as they may contain sensitive data
-4. **Timestamp analysis** is crucial for incident response timelines
-5. **Combine with other tools** like Zeek (Bro) for automated threat detection
+## Working habits that save you later
 
-## Conclusion
+- **Capture broad, filter narrow.** Record more than you think you need; a display filter can always narrow it, a capture filter cannot un-drop a packet.
+- **Use a ring buffer for long captures.** \`-b filesize:\` / \`-b files:\` (or the GUI's multiple-file options) roll over old files so continuous monitoring does not fill the disk.
+- **Treat captures as sensitive.** A pcap can contain credentials, tokens and personal data in the clear. Encrypt it at rest and delete it when the work is done — it is exactly the kind of file that turns a capture session into a breach.
+- **Timestamp everything.** In incident response the sequence and timing of packets is often the whole finding; note the capture's time base.
+- **Baseline first.** Capture a known-good period and learn its shape. Every anomaly you will ever find is defined against that.
 
-Mastering Wireshark requires practice and understanding of network protocols. Start with your own lab environment, analyze known-good traffic first, then gradually move to more complex scenarios. The key is understanding what "normal" looks like so you can identify anomalies.
+## Where a hosted scanner fits — and where it doesn't
+
+Wireshark reads traffic that reaches the machine it runs on, which means capture is inherently local: to see a network's packets you need to be on that network, and no remote service can sniff air or wire it cannot touch. That part stays on your own machine. What a platform like CyberSec Pro complements is the *active* side of an assessment — the scanning, enumeration and exploitation tools that generate traffic and probe services, run server-side in a dedicated container with their output streamed back. A common workflow pairs the two: run an authorised scan from the platform, capture the resulting traffic locally in Wireshark, and use the packet view to confirm exactly what the target did in response. The scanner tells you what is exposed; the capture tells you what actually happened on the wire.
     `,
   },
   "hashcat-vs-john": {
@@ -134,67 +145,74 @@ Mastering Wireshark requires practice and understanding of network protocols. St
     category: "Tools",
     date: "2026-01-12",
     author: "Semih Kilic",
-    excerpt: "GPU-accelerated password recovery showdown. Benchmarks, rule-based attacks, and choosing the right tool for the job.",
+    excerpt: "The one question that decides between them, why the GPU advantage vanishes on bcrypt, and why even Hashcat users reach for John's *2john helpers. They are complements, not rivals.",
     tags: ["hashcat", "john-the-ripper", "password-cracking", "GPU"],
     content: `
-## Overview
+## Two tools, and the question that actually decides between them
 
-Password cracking is an essential skill in penetration testing. Two tools dominate this space: **Hashcat** (GPU-focused) and **John the Ripper** (CPU-focused with GPU support). Let's compare them head-to-head.
+Hashcat and John the Ripper both crack password hashes, both are free, and both are on every serious tester's machine. The lazy framing is "Hashcat is the GPU one, John is the CPU one" — true as far as it goes, and useless when you are staring at a hash file deciding what to run. The question that decides it is simpler: **do you already know what the hash is, and is it a common format?** If yes, Hashcat's speed wins. If no — an odd format, a file John recognises and you don't, a box with no GPU — John's versatility wins. Most professionals keep both for exactly this reason, and this guide is about knowing which to reach for when.
 
-## GPU vs CPU Performance
+## Where the speed difference comes from — and where it evaporates
 
-| Hash Type | Hashcat (RTX 4090) | John the Ripper (CPU) | Speed Ratio |
-|-----------|--------------------|-----------------------|-------------|
-| MD5 | 164 GH/s | 850 MH/s | 193x |
-| SHA-256 | 22 GH/s | 320 MH/s | 69x |
-| bcrypt | 184 kH/s | 45 kH/s | 4x |
-| NTLM | 300 GH/s | 1.2 GH/s | 250x |
+Hashcat is built to run on the GPU, and on fast hash types the gap over CPU cracking is enormous — a good graphics card computes MD5 or NTLM guesses hundreds of times faster than a CPU can. Published benchmarks put a high-end GPU in the hundreds of billions of NTLM guesses per second; a CPU is in the low billions at best. For a large list of fast hashes, that ratio is the difference between an afternoon and a month.
 
-## Attack Modes
+But the gap is a property of the *hash type*, not the tools, and it collapses on slow hashes:
 
-### Hashcat Attack Modes
-- **Dictionary Attack** (-a 0): Straight wordlist attack
-- **Combination Attack** (-a 1): Combine two wordlists
-- **Brute-Force** (-a 3): Mask-based attack
-- **Rule-Based** (-a 0 -r rules): Apply transformation rules
-- **Hybrid** (-a 6, -a 7): Wordlist + mask combinations
+| Hash type | Character | GPU advantage |
+|---|---|---|
+| MD5, NTLM | fast | very large — hundreds of × |
+| SHA-256 | fast | large |
+| bcrypt | slow by design | small — often only a few × |
 
-### John the Ripper Modes
-- **Single Crack**: Uses login names and GECOS info
-- **Wordlist**: Dictionary with optional rules
-- **Incremental**: Brute-force with character frequency optimization
-- **External**: Custom cracking modes via C-like config
+bcrypt is the honest example. Its whole purpose is to resist fast guessing, and it resists a GPU nearly as well as a CPU — so Hashcat's headline advantage nearly vanishes, and the two tools finish a bcrypt job in the same order of magnitude of time. Treat any single benchmark number as an order-of-magnitude guide, not a spec: it shifts with the GPU, the driver, the hashcat version and the exact hash. Run \`hashcat -b\` on your own hardware for a figure you can trust.
 
-## When to Use Which
+The real lesson is not "Hashcat is 200× faster". It is that the *algorithm* decides whether speed even matters — and when the target uses bcrypt, your choice of tool matters far less than your choice of wordlist and rules.
 
-**Choose Hashcat when:**
-- You have a powerful GPU
-- Cracking large hash lists
-- Need maximum speed for common hash types
-- Working with modern hash algorithms
+## What each tool is actually better at
 
-**Choose John the Ripper when:**
-- Working with exotic/uncommon hash formats
-- Need automatic hash detection
-- Running on servers without GPUs
-- Need incremental mode's smart brute-force
+**Hashcat's strengths** are raw throughput on common hashes and a mask-attack engine that is a pleasure to use once \`?l?u?d?s\` is muscle memory. If you have a GPU, a large list of a known common hash type, and want maximum speed, this is the tool.
 
-## Practical Example
+**John the Ripper's strengths** are the ones that show up when the situation is awkward:
+
+- **It identifies hashes for you.** Point John at a file and it will often just recognise the format and start, where Hashcat needs the correct \`-m\` first. On an unfamiliar hash, John is the faster path to a running crack.
+- **It handles exotic formats.** The \`*2john\` helper family — \`zip2john\`, \`ssh2john\`, \`keepass2john\`, \`pdf2john\` and dozens more — extracts a crackable hash from an encrypted archive, an SSH key, a password manager database or a PDF. This is often the *only* practical way to get at those, and it is John's territory.
+- **"Single crack" mode** uses the account's own metadata — username, full name, GECOS fields — as candidate passwords, which catches the person who set their password to a variation of their own name. Nothing in Hashcat does this as naturally.
+- **It needs no GPU.** On a server, a VM, or any box without a graphics card, John just works.
+
+## Side by side
 
 \`\`\`bash
-# Hashcat: Crack NTLM hashes with rockyou
-hashcat -m 1000 -a 0 hashes.txt /usr/share/wordlists/rockyou.txt -r /usr/share/hashcat/rules/best64.rule
+# Hashcat: NTLM list, dictionary + the best64 rules. The bread-and-butter run.
+hashcat -m 1000 -a 0 hashes.txt rockyou.txt -r rules/best64.rule
 
-# John: Crack shadow file
-john --wordlist=/usr/share/wordlists/rockyou.txt --rules=All /etc/shadow
-
-# Hashcat: Mask attack for 8-char passwords
+# Hashcat: a shaped brute force for 8-char "Aaaaa11!" passwords.
 hashcat -m 0 -a 3 hashes.txt ?u?l?l?l?l?d?d?s
+
+# John: crack a Linux shadow file, letting it detect the format.
+john --wordlist=rockyou.txt --rules /etc/shadow
+
+# John: turn an encrypted ZIP into a hash, then crack it — the thing Hashcat can't do alone.
+zip2john secret.zip > zip.hash
+john --wordlist=rockyou.txt zip.hash
 \`\`\`
 
-## Conclusion
+That last pair is the clearest illustration of the split: Hashcat has no equivalent of \`zip2john\`, so even a die-hard Hashcat user reaches for John to *extract* the hash — and may then feed it back to Hashcat to crack it fast. The tools are complementary far more than they are rivals.
 
-Both tools are essential in a penetration tester's arsenal. Use Hashcat for raw GPU power and John for versatility. Many professionals use both in their workflows.
+## A workflow that uses both
+
+1. **Identify.** If you don't know the format, let John try first, or run \`hashcat --identify\`.
+2. **Extract, if needed.** Encrypted archive, SSH key, PDF, KeePass? That is a \`*2john\` job.
+3. **Crack fast, if it's a common hash and you have a GPU.** Hand the hash to Hashcat with a dictionary and \`best64\`.
+4. **Fall back to John** for anything exotic, or when there is no GPU to be had.
+5. **Spend effort on guesses, not tools.** On a slow hash, neither tool will brute-force its way through — a good wordlist and rule set is what cracks it, in either tool.
+
+## The rule that applies to both
+
+Cracking a hash you were not authorised in writing to test is unlawful, and the plaintexts you recover — in any tool — are among the most sensitive data an engagement produces. Report the findings, store the results encrypted, and delete them when the work is done. Practise on your own hashes, deliberately vulnerable VMs, or sanctioned CTF material until the workflow above is second nature.
+
+## Running either without local setup
+
+Both tools install cleanly, and Hashcat in particular rewards real GPU hardware you control. If you would rather not provision a cracking box, CyberSec Pro runs Hashcat from a browser — hashes and options on a form, the command shown before it runs, output streamed back, the job isolated in its own container and the hashes treated as the sensitive material they are. For the format-extraction and detection work, John on a local machine remains the natural companion. The decision is unchanged either way: known common hash and speed matters, reach for Hashcat; unknown or exotic format, reach for John; and when it's bcrypt, stop worrying about the tool and improve your wordlist.
     `,
   },
   "owasp-top-10-2026": {
@@ -203,52 +221,62 @@ Both tools are essential in a penetration tester's arsenal. Use Hashcat for raw 
     category: "Security",
     date: "2026-01-08",
     author: "Semih Kilic",
-    excerpt: "An updated look at the most critical web application security risks and how to mitigate them with modern tools.",
+    excerpt: "The 2021 list is still the official one; there is no finalised 2026 ranking. Here is what counts today, where the next edition is genuinely heading (API, supply chain, AI), and why scanners are weakest on the number-one risk.",
     tags: ["OWASP", "web-security", "top-10", "application-security"],
     content: `
-## The Evolving Threat Landscape
+## First, what the OWASP Top 10 actually is — and is not
 
-The OWASP Top 10 continues to evolve as web technologies advance. In 2026, several categories have shifted to reflect modern application architectures including microservices, serverless, and AI-integrated applications.
+The OWASP Top 10 is a periodically updated awareness document that ranks the most critical categories of web application security risk. It is not a standard, not a checklist you certify against, and not updated every year. The last finalised edition is **2021**. A revision has been in progress, with community data collection and a draft under discussion, and the security community has been debating what will move — but until OWASP publishes and finalises it, there is no official "2026" list, and anyone presenting one as settled fact is guessing with confidence.
 
-## Key Changes from 2021
+So treat this as what it is: the current official Top 10 is 2021, and the shifts below are the well-supported *directions* the next edition is widely expected to reflect, driven by how applications are actually built now. Where something is anticipated rather than published, it says so.
 
-### 1. AI/ML Security Risks (NEW)
-With the proliferation of AI-powered applications, new attack vectors have emerged:
-- **Prompt Injection** — Manipulating LLM inputs to bypass safety controls
-- **Training Data Poisoning** — Compromising model training pipelines
-- **Model Inversion** — Extracting sensitive training data from models
+## The 2021 list, which is still the one that counts
 
-### 2. API Security Misconfigurations (Elevated)
-APIs now account for over 80% of web traffic. Common issues include:
-- Broken Object Level Authorization (BOLA)
-- Excessive data exposure in API responses
-- Missing rate limiting and resource quotas
+If you are testing an application today, this is the framework to test against, because it is the one that is finalised:
 
-### 3. Supply Chain Vulnerabilities (Elevated)
-The software supply chain remains a critical attack surface:
-- Dependency confusion attacks
-- Compromised CI/CD pipelines
-- Malicious package injection
+1. **Broken Access Control** — the number-one risk in 2021, and the one that shows up most in real engagements.
+2. **Cryptographic Failures** — weak or missing encryption of data in transit and at rest.
+3. **Injection** — SQL, command, LDAP; still present, now including cross-site scripting as a form of injection.
+4. **Insecure Design** — a category about flaws in the design itself, not the implementation.
+5. **Security Misconfiguration** — default credentials, verbose errors, unnecessary features left enabled.
+6. **Vulnerable and Outdated Components** — running dependencies with known CVEs.
+7. **Identification and Authentication Failures** — weak session management, credential stuffing exposure.
+8. **Software and Data Integrity Failures** — trusting code or data from untrusted sources, including insecure deserialization.
+9. **Security Logging and Monitoring Failures** — not seeing the attack while it happens.
+10. **Server-Side Request Forgery (SSRF)** — added in 2021, reflecting how often modern apps fetch URLs on the server's behalf.
 
-## Mitigation Strategies
+Broken Access Control sitting at the top is the single most useful thing in the list. It is not a subtle cryptographic flaw; it is "user A can read user B's data by changing an ID in the URL", and it is everywhere. If you test one thing thoroughly, test authorisation on every object your app exposes.
 
-1. **Shift-Left Security**: Integrate security testing into CI/CD pipelines
-2. **Zero Trust Architecture**: Never trust, always verify
-3. **SBOM (Software Bill of Materials)**: Track all dependencies
-4. **AI Security Testing**: Specialized tools for LLM applications
-5. **API Gateway Security**: Centralized API protection
+## Where the next edition is widely expected to move
 
-## Using CyberSec Pro for OWASP Testing
+These are the pressures the community has been responding to. Read them as "what to start paying attention to", not as a published ranking.
 
-CyberSec Pro's automated scanning engine covers all OWASP Top 10 categories with tools like:
-- **Nikto** for web server misconfiguration detection
-- **SQLMap** for injection testing
-- **OWASP ZAP** for comprehensive web app scanning
-- **Nuclei** for template-based vulnerability detection
+**Broken access control is not going anywhere.** Every signal points to it staying at or near the top. The move to APIs and microservices has multiplied the number of places an authorisation check can be missing, not reduced it.
 
-## Conclusion
+**API-specific risks are the clearest growth area.** Applications are now mostly API calls behind a thin client, and the failure modes have their own shape — **Broken Object Level Authorization** (the API version of "change the ID, read someone else's record"), excessive data returned in responses that the client then filters, and missing rate limits. OWASP maintains a separate **API Security Top 10** precisely because this deserved its own document; anyone testing a modern app should read it alongside the main list.
 
-Stay ahead of threats by continuously testing your applications against the latest OWASP guidelines. Automated tools combined with manual testing provide the best coverage.
+**Supply-chain risk has graduated from a subcategory to a headline.** "Vulnerable and Outdated Components" was always on the list, but dependency-confusion attacks, compromised build pipelines and malicious packages pushed to public registries have made the software supply chain a first-class target. A Software Bill of Materials (SBOM) and pinned, verified dependencies are now baseline hygiene, not advanced practice.
+
+**AI-integrated applications are the genuinely new surface.** Applications that embed large language models introduce failure modes that did not exist when the 2021 list was written — **prompt injection** (crafting input that overrides the model's instructions), training-data poisoning, and leaking sensitive context through the model. OWASP addressed this with a dedicated **Top 10 for LLM Applications** rather than folding it into the web list, which tells you both that it is real and that it is treated as its own domain. If your app has an LLM in it, that separate list is the one to test against.
+
+## How to actually test against any of this
+
+The value of the Top 10 is as a coverage map: it tells you what *kinds* of flaw to look for, and you use tools to look. Against a real target that means combining automated breadth with manual depth:
+
+- **Broad web scanning** — OWASP ZAP for an active crawl-and-attack pass across the app, and Nuclei for fast, template-based checks of known issues. These catch misconfiguration, outdated components and many injection points quickly.
+- **Injection testing** — sqlmap for SQL injection specifically, once you have found a candidate parameter (the companion sqlmap guide covers this in depth).
+- **Server and configuration checks** — Nikto for web-server misconfiguration and dangerous defaults.
+- **The manual half** — access-control testing is mostly manual, because only you know that user A should not see user B's order. No scanner reliably finds "change the ID and you get someone else's data"; you find it by trying.
+
+That last point is the one to internalise. Automated tools are excellent at the categories that have a signature — outdated components, misconfigurations, reflected injection. They are weak exactly where the number-one risk lives, because broken access control depends on knowing the application's intended rules. Scanners give you breadth; a human testing authorisation on every object gives you the finding that matters most.
+
+## The honest way to use this list
+
+Test against the 2021 edition, because it is the finalised one. Watch the API, supply-chain and AI directions, because that is where the next edition is heading and where modern apps are actually breaking. And read the two companion lists — API Security Top 10 and the LLM Top 10 — if your application is an API or embeds a model, because the main web list was never designed to cover those in depth. When OWASP finalises the next Top 10, revisit; until then, anyone quoting a definitive 2026 ranking is ahead of the source.
+
+## Testing your OWASP coverage with CyberSec Pro
+
+CyberSec Pro runs the tools above — OWASP ZAP, Nuclei, Nikto and sqlmap among the 88 in the catalogue — from a browser, on a generated form, with the command shown before it runs and the output streamed back. That covers the breadth half well: the categories a scanner can detect, run consistently and repeatably, with results you can diff between assessments. It does not replace the manual access-control testing that the top risk demands, and no tool honestly claims to. Use the automated scans to clear the ground quickly, and spend your own time where the scanner is blind — on whether your application actually enforces who is allowed to see what.
     `,
   },
   "metasploit-zero-to-exploit": {
@@ -380,18 +408,29 @@ Either way, the mental model is what carries over: exploit and payload are separ
     category: "DevSecOps",
     date: "2026-01-03",
     author: "Semih Kilic",
-    excerpt: "Integrate security testing into your development pipeline with CyberSec Pro's API and GitHub Actions.",
+    excerpt: "The real CyberSec Pro API contract for a GitHub Actions pipeline — start a scan, poll it, gate the build on severity — and why a noisy gate is worse than no gate.",
     tags: ["CI/CD", "automation", "DevSecOps", "GitHub-Actions"],
     content: `
-## Why Automate Security Testing?
+## The case for automating the boring half
 
-Manual penetration testing is thorough but slow. By integrating automated security scans into your CI/CD pipeline, you can:
-- **Catch vulnerabilities early** in the development lifecycle
-- **Reduce remediation costs** (fixing in dev is 10x cheaper than production)
-- **Ensure continuous compliance** with security standards
-- **Scale security testing** across multiple projects
+Manual penetration testing is where the real findings come from — the access-control flaw a human notices, the business-logic abuse no scanner has a signature for. But a lot of security work is not that. Checking that no dependency has a known CVE, that a scan of the staging site still comes back clean, that no secret got committed — this is repetitive, mechanical, and exactly the kind of thing that gets skipped under deadline pressure precisely because it is repetitive. Automating it in the pipeline means it runs on every change whether anyone remembers or not, and it catches the regression in development, where a fix is cheap, rather than in production, where it is not.
 
-## CyberSec Pro API Integration
+The goal is not to replace the pentest. It is to let the pentester spend their time on the half that needs a human, by making the machine handle the half that does not.
+
+## Where each check belongs in the pipeline
+
+Security testing is not one step; different checks belong at different stages, because they need different things to be true.
+
+- **Pre-commit / commit:** secret scanning and a dependency audit. These need only the source, run in seconds, and stop the two most common own-goals — a committed credential, a pulled-in package with a known CVE — before they land.
+- **Build:** static analysis (SAST) and container image scanning. These need the code compiled and the image built, but not deployed.
+- **Post-deploy to staging:** dynamic analysis (DAST) against the running application. This is the stage that needs a live URL, and it is where a tool that actually exercises the app — like a CyberSec Pro scan — fits.
+- **Scheduled, out of band:** a fuller scan weekly, independent of any single change, to catch the slow drift a per-commit scan is too narrow to see.
+
+The mistake is trying to do everything at every stage. A DAST scan on every commit is too slow and needs a deployment that may not exist yet; a secret scan post-deploy is too late. Match the check to the stage that can actually support it.
+
+## Triggering a scan from GitHub Actions
+
+Here is the real integration against the CyberSec Pro API. Note the exact shape — the endpoint, the authentication header, and the request body are what the API actually accepts:
 
 \`\`\`yaml
 # .github/workflows/security-scan.yml
@@ -403,39 +442,85 @@ on:
     branches: [main]
 
 jobs:
-  security-scan:
+  dast:
     runs-on: ubuntu-latest
     steps:
-      - name: Trigger CyberSec Pro Scan
+      - name: Start a scan of the staging deployment
+        id: scan
         run: |
-          curl -X POST https://api.cyber-sec-pro.com/v1/scans \\
-            -H "Authorization: Bearer \${{ secrets.CYBERSEC_API_KEY }}" \\
+          RESPONSE=$(curl -sS -X POST https://api.cyber-sec-pro.com/api/v1/scans \\
+            -H "X-API-Key: \${{ secrets.CYBERSEC_API_KEY }}" \\
             -H "Content-Type: application/json" \\
             -d '{
-              "target": "\${{ github.event.repository.homepage }}",
-              "tool_id": "nikto",
-              "options": {"tuning": "1234567890"}
-            }'
+              "tool": "nuclei",
+              "target": "https://staging.example.com",
+              "parameters": { "severity": "critical,high" }
+            }')
+          echo "scan_id=$(echo "$RESPONSE" | jq -r .scan_id)" >> "$GITHUB_OUTPUT"
 \`\`\`
 
-## Pipeline Architecture
+Three things are worth calling out because they are the parts people get wrong. The path is \`/api/v1/scans\` — the \`/api\` prefix is part of it. Authentication is an API key in the \`X-API-Key\` header (CyberSec Pro keys start with \`csp_\`; the same key also works as \`Authorization: Bearer csp_...\`), not a user password. And the body's fields are \`tool\`, \`target\` and \`parameters\` — you pass the tool by name or as \`tool_id\`, and \`parameters\` is the same options object the tool's form builds in the dashboard.
 
-1. **Pre-commit**: Secret scanning, dependency audit
-2. **Build**: SAST (Static Analysis), container scanning
-3. **Deploy (Staging)**: DAST (Dynamic Analysis) with CyberSec Pro
-4. **Post-Deploy**: Continuous monitoring, vulnerability alerts
+A successful call returns \`201\` with a body like:
 
-## Best Practices
+\`\`\`json
+{ "success": true, "scan_id": "3f2a…", "status": "running", "engine": "rust-axum" }
+\`\`\`
 
-- Never block deployments on informational findings
-- Set severity thresholds (block on Critical/High only)
-- Keep scan results in a centralized dashboard
-- Automate ticket creation for new vulnerabilities
-- Schedule weekly full scans in addition to pipeline scans
+That \`scan_id\` is what you poll.
 
-## Conclusion
+## Waiting for the result and acting on it
 
-DevSecOps is not optional — it's essential. Start small with automated dependency checks, then gradually add DAST and infrastructure scanning to your pipeline.
+Starting a scan is asynchronous — the call returns immediately with a \`scan_id\`, and the scan runs server-side. A useful pipeline waits for it to finish and then decides whether to fail the build:
+
+\`\`\`yaml
+      - name: Wait for the scan and gate on severity
+        run: |
+          SCAN_ID="\${{ steps.scan.outputs.scan_id }}"
+          for i in $(seq 1 60); do
+            RESULT=$(curl -sS https://api.cyber-sec-pro.com/api/v1/scans/$SCAN_ID \\
+              -H "X-API-Key: \${{ secrets.CYBERSEC_API_KEY }}")
+            STATUS=$(echo "$RESULT" | jq -r '.scan.status')
+            [ "$STATUS" = "completed" ] && break
+            [ "$STATUS" = "failed" ] && { echo "scan failed"; exit 1; }
+            sleep 10
+          done
+
+          CRIT=$(echo "$RESULT" | jq -r '.scan.findings_summary.critical // 0')
+          HIGH=$(echo "$RESULT" | jq -r '.scan.findings_summary.high // 0')
+          echo "Critical: $CRIT  High: $HIGH"
+          if [ "$CRIT" -gt 0 ]; then
+            echo "::error::Critical findings — failing the build."
+            exit 1
+          fi
+\`\`\`
+
+\`GET /api/v1/scans/{scan_id}\` returns the scan with its \`status\` and, once complete, a \`findings_summary\` broken down by severity — the same structure the dashboard shows. Polling it until \`completed\` and reading those counts is the whole mechanism.
+
+## The gate is a policy decision, not a technical one
+
+The most important line in that script is the one that decides what fails the build, and it is a judgement call, not a default.
+
+- **Gate on Critical, and maybe High.** These are the findings worth stopping a deploy for.
+- **Never gate on informational or low findings.** A pipeline that fails the build over a missing header teaches developers to ignore the security step — and once they are routing around it, it protects nothing. A noisy gate is worse than no gate.
+- **Report everything, block on little.** Send the full result to a dashboard or a ticket queue so nothing is lost, but let only genuinely serious findings stop the line.
+
+The failure mode of DevSecOps is not too little scanning; it is scanning that cries wolf until everyone stops listening. Tune the gate so that a red build always means something a developer should actually stop and fix.
+
+## Start small, then widen
+
+You do not roll all of this out at once. The order that works:
+
+1. **Secret scanning** in pre-commit. Highest value, lowest friction, catches the worst mistakes.
+2. **Dependency audit** in CI. Nearly free, and "Vulnerable and Outdated Components" is a standing OWASP risk.
+3. **A DAST scan against staging**, gated on Critical only, once the first two are trusted.
+4. **A scheduled weekly full scan**, independent of commits, once the per-commit scan is stable.
+
+Each step earns trust before the next is added. A pipeline that starts by blocking every merge on a hundred low-severity findings gets disabled within a week; one that starts by quietly catching committed secrets earns the room to grow.
+
+## Doing it with CyberSec Pro
+
+The API above is real and is how the automation works: issue an API key in your account settings, store it as a CI secret, and the same \`POST /api/v1/scans\` you saw drives every stage. Because the scan runs server-side in a dedicated container, your CI runner does not need the tools installed — it just makes an HTTPS call and reads the result — and the findings land in the same dashboard as your manual scans, so the pipeline's output and a tester's output live in one place. Automate the mechanical half here; keep the human on the half that needs judgement.
     `,
   },
   "wireless-security-assessment": {
@@ -444,77 +529,110 @@ DevSecOps is not optional — it's essential. Start small with automated depende
     category: "Wireless",
     date: "2025-12-15",
     author: "Semih Kilic",
-    excerpt: "Comprehensive guide to testing Wi-Fi network security using aircrack-ng, wifite, and bettercap.",
+    excerpt: "The card that matters more than any tool, why WPA2 falls to an offline crack while WPA3 resists it, the PMKID attack that needs no client, and where the deauth ethics line sits.",
     tags: ["wireless", "WiFi", "aircrack-ng", "wifite", "bettercap"],
     content: `
-## Wireless Security Testing Methodology
+## Why Wi-Fi is a different kind of target
 
-Wireless networks present unique attack surfaces. This guide covers the essential tools and techniques for assessing Wi-Fi security.
+Every other assessment in this series assumes you can reach the target over a network. Wi-Fi is the network, and that changes the game: the traffic is in the air, anyone in range can see the frames, and "in range" for a directional antenna is a lot further than the car park. You are not looking for an open port; you are looking at whether the encryption protecting that air is sound, whether the authentication can be captured and cracked offline, and whether a client can be tricked into connecting to something you control.
 
-## Essential Tools
+This is legitimate, necessary work on networks you own or are contracted to test — and it is a criminal offence on any other. Wireless makes that line easy to cross by accident, because your card will happily capture your neighbour's traffic along with your target's. The whole discipline below assumes written authorisation and a scope that names the SSIDs you may touch.
 
-### Aircrack-ng Suite
-The foundational toolkit for wireless assessment:
+## The one piece of hardware that matters
+
+Before any tool, you need a wireless adapter that supports **monitor mode** and **packet injection**. Most built-in laptop cards do neither well. Monitor mode lets the card report every frame in the air rather than only those addressed to it; injection lets it transmit crafted frames, which several attacks below require. Adapters built on Atheros or Ralink chipsets (the common Alfa cards, for instance) are the usual choice precisely because their drivers support both. Without the right card, half of what follows silently does nothing, and that is the most common reason a beginner's wireless assessment produces no results.
+
+## Getting into monitor mode
+
+The aircrack-ng suite is the foundation, and the first step is putting the interface into monitor mode:
 
 \`\`\`bash
-# Put interface in monitor mode
-airmon-ng start wlan0
+# Kill processes that will fight you for the interface.
+sudo airmon-ng check kill
 
-# Scan for networks
-airodump-ng wlan0mon
+# Put wlan0 into monitor mode — it becomes wlan0mon.
+sudo airmon-ng start wlan0
 
-# Capture handshake for specific network
-airodump-ng -c 6 --bssid AA:BB:CC:DD:EE:FF -w capture wlan0mon
+# See every network and client in range.
+sudo airodump-ng wlan0mon
+\`\`\`
 
-# Deauth attack (to capture handshake)
-aireplay-ng -0 5 -a AA:BB:CC:DD:EE:FF wlan0mon
+That last command is your radar. It lists access points with their BSSID (the AP's MAC), channel, encryption type, and signal strength, and below them the clients currently associated. Read the encryption column first: it tells you whether you are looking at WPA2, WPA3, or — still, in the wild — WEP, and that decides everything about the attack that follows.
 
-# Crack WPA2 handshake
+## The WPA2 attack, and what it actually captures
+
+The classic WPA2-Personal assessment does not attack the encryption directly. It captures the **four-way handshake** — the exchange that happens when a client joins the network — and then attacks the password *offline*, at your own pace, on your own hardware. The handshake contains enough to verify a password guess without ever touching the network again.
+
+\`\`\`bash
+# Lock onto one AP and channel, and write captures to a file.
+sudo airodump-ng -c 6 --bssid AA:BB:CC:DD:EE:FF -w capture wlan0mon
+
+# In a second terminal: nudge a connected client to reconnect, so we catch
+# the handshake it sends when it comes back.
+sudo aireplay-ng -0 5 -a AA:BB:CC:DD:EE:FF wlan0mon
+\`\`\`
+
+That second command is a **deauthentication attack**: it forges frames telling a client it has been disconnected, so it reconnects and produces a fresh handshake for you to capture. It is also the most disruptive thing in the wireless toolkit — you are knocking real devices off the network, and on a production environment that is a genuine interruption you must have authorised. When \`airodump-ng\` shows \`WPA handshake: AA:BB:...\` in its header, you have what you need and can stop.
+
+Then the password falls — or does not — offline:
+
+\`\`\`bash
 aircrack-ng -w /usr/share/wordlists/rockyou.txt capture-01.cap
 \`\`\`
 
-### Wifite (Automated)
-For rapid assessment of multiple networks:
+This is a dictionary attack, and it only ever finds passwords that are in your wordlist. A WPA2 network with a long random passphrase is, for practical purposes, safe from this — which is the finding you report when it holds. For serious cracking, convert the capture to hashcat's format (\`hcxpcapngtool\`) and let a GPU do the work; the companion Hashcat guide covers mode \`22000\`.
+
+## PMKID: the attack that needs no client
+
+Newer than the handshake capture, the **PMKID attack** grabs the material it needs directly from the access point, without waiting for a client to connect and without deauthenticating anyone. On an AP that is vulnerable to it, this is both faster and far quieter — no disruption, no client required.
 
 \`\`\`bash
-# Automated scan and attack
-wifite --kill --no-reaver
-
-# Target specific encryption
-wifite --wpa --dict /path/to/wordlist.txt
+sudo hcxdumptool -i wlan0mon -o capture.pcapng
+# then convert and crack the PMKID with hashcat mode 22000
 \`\`\`
 
-### Bettercap (MITM)
-For man-in-the-middle testing:
+Its existence is also why "just use a strong passphrase" remains the real defence: PMKID or handshake, the offline crack still comes down to whether the password is guessable.
+
+## Faster surveys with wifite
+
+For assessing many networks rather than one, \`wifite\` orchestrates the aircrack-ng tools automatically — it will scan, capture handshakes and PMKIDs, and attempt cracks against the targets you select.
 
 \`\`\`bash
-# Start bettercap
-bettercap -iface wlan0
+sudo wifite --kill
+sudo wifite --wpa --dict /usr/share/wordlists/rockyou.txt
+\`\`\`
 
-# ARP spoofing
+It is a time-saver, not a replacement for understanding what it does — every action it takes is one of the manual steps above, including the deauth, so the same authorisation and disruption caveats apply.
+
+## Rogue APs and the client-side attack
+
+Not every wireless risk is about cracking the AP. An **evil twin** is a rogue access point broadcasting the same SSID as the legitimate one, hoping clients — or people — connect to it instead. \`bettercap\` is the tool for the man-in-the-middle side of an assessment once a client is talking to you:
+
+\`\`\`bash
+sudo bettercap -iface wlan0
+> net.probe on
 > set arp.spoof.targets 192.168.1.0/24
 > arp.spoof on
-
-# DNS spoofing
-> set dns.spoof.domains example.com
-> dns.spoof on
 \`\`\`
 
-## Assessment Checklist
+This tests a different control entirely: whether clients validate what they connect to, whether the network isolates clients from each other, and whether traffic that should be encrypted end-to-end actually is. On a corporate assessment it is often more revealing than the passphrase crack, because it measures how the humans and their devices behave, not just how strong a string is.
 
-1. **Encryption Strength**: WPA3 > WPA2-AES > WPA2-TKIP > WEP (never use)
-2. **SSID Security**: Disable SSID broadcast in sensitive environments
-3. **Client Isolation**: Prevent lateral movement between wireless clients
-4. **Rogue AP Detection**: Monitor for evil twin attacks
-5. **802.1X/RADIUS**: Enterprise authentication for corporate networks
+## What the assessment is really checking
 
-## Legal Warning
+Pull the individual attacks up to the level of a report, and a wireless assessment answers a handful of questions:
 
-**Wireless testing must only be performed on networks you own or have explicit written permission to test.** Unauthorized wireless access is a criminal offense in most jurisdictions.
+- **Encryption.** WPA3 (SAE) resists the offline dictionary attack that WPA2 permits; WPA2-AES is acceptable with a strong passphrase; WPA2-TKIP is deprecated; WEP is broken and any WEP network is a finding on its own.
+- **Passphrase strength.** If the handshake cracks against a wordlist, the passphrase is the problem, not the protocol.
+- **Enterprise auth.** 802.1X/RADIUS (WPA2/3-Enterprise) replaces the shared passphrase with per-user credentials — the right answer for a corporate network, and worth checking is actually enforced rather than sitting alongside an open guest SSID.
+- **Client behaviour.** Do devices connect to any SSID with the right name? Are clients isolated from one another? Is there a rogue AP already present?
 
-## Conclusion
+## Practising legally
 
-Regular wireless security assessments are essential for any organization. Combine automated scanning with manual testing for comprehensive coverage.
+You cannot practise this on "some network nearby" — that is the offence. Build a target you own: a spare home router you configure with a deliberately weak WPA2 passphrase, an old phone as the client. Deauth it, capture the handshake, crack your own password. That teaches the entire workflow with zero legal exposure, and it is the only honest way to get the reps in.
+
+## Running the analysis without a Wi-Fi rig
+
+Capturing handshakes needs a physical radio in the room, so the capture step is always local — no cloud tool can sniff air it cannot reach. What does not need to be local is the *cracking*: once you have a \`.cap\` or \`.pcapng\`, converting and cracking it is a compute job. CyberSec Pro runs the aircrack-ng and hashcat side of the work — you upload the capture, choose the wordlist and mode, see the command before it runs, and watch progress stream back, with the job isolated in its own container and the capture treated as the sensitive material it is. The radio stays in your hands; the GPU work does not have to.
     `,
   },
 
@@ -952,45 +1070,109 @@ Post-exploitation is where a self-managed Metasploit install earns its keep, and
     category: "Tools",
     date: "2026-01-28",
     author: "Semih Kilic",
-    excerpt: "Advanced Hashcat techniques for password auditing — hash modes, rule-based attacks, and optimization.",
+    excerpt: "You do not reverse a hash — you out-guess it. Why the algorithm's speed decides your whole strategy, why rules out-crack giant wordlists, and how to shape a mask instead of brute-forcing the keyspace.",
     tags: ["hashcat", "password-cracking", "hash-cracking", "security-audit"],
     content: `
-## Introduction
+## What you are really doing when you "crack" a hash
 
-Hashcat is the world's fastest password recovery utility. It supports GPU acceleration and over 300 hash types.
+Hashcat does not reverse a hash — nothing does. It guesses passwords, hashes each guess with the same algorithm, and compares. Everything about using it well follows from that one fact: your job is to make good guesses quickly, and the two levers you have are *how fast* you can hash (the algorithm and the GPU) and *how good* your guesses are (wordlists, rules and masks). A cracking session that fails is almost never a limit of the tool; it is a limit of one of those two levers.
 
-## Hash Modes
+This is a legitimate and routine part of security work: auditing whether your organisation's password policy actually holds, recovering your own lost credentials, and — in a sanctioned engagement — proving that captured hashes lead to plaintext. All of it assumes the hashes are yours to test.
 
-- **MD5:** -m 0
-- **NTLM:** -m 1000
-- **SHA-256:** -m 1400
-- **sha512crypt:** -m 1800
-- **bcrypt:** -m 3200
+## Tell hashcat what it is looking at: the hash mode
 
-## Attack Modes
+The \`-m\` flag is the first thing to get right, because a wrong mode means every guess is hashed the wrong way and nothing will ever match. A few you will meet constantly:
 
-### Dictionary Attack
-- **Basic:** hashcat -m 0 -a 0 hashes.txt wordlist.txt
-- **With rules:** hashcat -m 0 -a 0 hashes.txt wordlist.txt -r rules/best64.rule
+| \`-m\` | Algorithm | Where you find it |
+|---|---|---|
+| 0 | MD5 | old web apps, CTFs |
+| 1000 | NTLM | Windows account hashes |
+| 1800 | sha512crypt | Linux \`/etc/shadow\` |
+| 3200 | bcrypt | modern web app databases |
+| 5600 | NetNTLMv2 | captured from SMB on a network |
+| 13100 | Kerberos RC4 (Kerberoast) | Active Directory service accounts |
+| 22000 | WPA-PBKDF2 | Wi-Fi handshakes |
 
-### Mask Attack
-- **Unknown chars:** hashcat -m 0 -a 3 hashes.txt ?l?l?l?l?l?l?l?l
-  - ?l = lowercase, ?u = uppercase, ?d = digit, ?s = special
+The number matters less than the habit: identify the hash before you attack it. If you are unsure, \`hashcat --identify hashes.txt\` will suggest candidate modes, and \`--example-hashes\` prints a sample of every format so you can compare shapes.
 
-### Hybrid Attack
-- **Word + mask:** hashcat -m 0 -a 6 hashes.txt wordlist.txt ?d?d?d?d
-- **Mask + word:** hashcat -m 0 -a 7 hashes.txt ?d?d?d?d wordlist.txt
+## The speed of an algorithm is the whole game
 
-## Optimization
+Here is the single most important thing a bullet list of commands never tells you. These algorithms are not in the same universe of speed:
 
-- **GPU selection:** -d 1
-- **Speed optimization:** -O
-- **Session management:** --session=mysession
-- **Restore session:** --session=mysession --restore
+- **MD5 and NTLM** are *fast* hashes — a modern GPU computes them in the hundreds of billions per second. A weak Windows password falls in minutes.
+- **bcrypt and sha512crypt** are *slow by design*. bcrypt has a deliberate work factor that a GPU cannot shortcut; the same hardware that does 100+ billion MD5 guesses a second manages a few hundred thousand bcrypt guesses a second — five or six orders of magnitude slower.
 
-## Conclusion
+The practical consequence: against MD5, brute force is on the table. Against bcrypt, brute force is hopeless and you must spend your limited guesses wisely — a targeted wordlist with rules, not a mask over the whole keyspace. Knowing which kind of hash you hold decides your entire strategy, and it is why "just brute-force it" is beginner advice that stops working the moment the target uses a real password-storage algorithm.
 
-Hashcat is essential for password security auditing. Use it to verify password policies.
+## The four attack modes, and when each earns its place
+
+\`\`\`bash
+# -a 0  Dictionary: try every word in a list. Your default first move.
+hashcat -m 1000 -a 0 hashes.txt rockyou.txt
+
+# -a 0 -r  Dictionary + rules: mutate each word. The highest-yield attack there is.
+hashcat -m 1000 -a 0 hashes.txt rockyou.txt -r rules/best64.rule
+
+# -a 3  Mask (brute force): every string matching a pattern. Only for fast hashes.
+hashcat -m 1000 -a 3 hashes.txt ?u?l?l?l?l?d?d?s
+
+# -a 6  Hybrid: a word followed by a mask. Catches "password2026!" patterns.
+hashcat -m 1000 -a 6 hashes.txt rockyou.txt ?d?d?d?d
+\`\`\`
+
+Start with a plain dictionary. It is fast and it catches the genuinely weak passwords first, which is often all an audit needs to prove its point. Then add rules — this is where most real cracks happen, and it deserves its own section below. Reach for masks only against fast hashes, and only for patterns you have reason to expect.
+
+## Masks: brute force with a shape
+
+A mask attack (\`-a 3\`) tries every string that fits a pattern, built from character-set tokens:
+
+- \`?l\` lowercase, \`?u\` uppercase, \`?d\` digit, \`?s\` special, \`?a\` all of the above.
+
+So \`?u?l?l?l?l?d?d?s\` is "capital, four lowercase, two digits, a symbol" — the exact shape of \`Summer26!\` and a million passwords like it. This matters because unrestricted brute force grows impossibly fast: every position you add multiplies the keyspace by the size of its character set, and \`?a?a?a?a?a?a?a?a\` (eight of anything) is already tens of quadrillions of candidates. A well-chosen mask that encodes how people actually build passwords turns an impossible search into a finishable one. Masks are precision, not brute strength.
+
+## Rules are where the cracks come from
+
+A rule file mutates each dictionary word on the fly — capitalise it, append digits, swap \`a\` for \`@\`, reverse it, double it. This is high-yield because it mirrors exactly how people modify a base word to satisfy a policy: \`password\` becomes \`Password1\`, \`P@ssw0rd!\`, \`password2026\`.
+
+\`\`\`bash
+# best64: 64 of the most productive rules. The one to start with.
+hashcat -m 1000 -a 0 hashes.txt rockyou.txt -r rules/best64.rule
+
+# Stack rule files to multiply their effect (and the runtime).
+hashcat -m 1000 -a 0 hashes.txt rockyou.txt -r rules/best64.rule -r rules/toggles1.rule
+\`\`\`
+
+\`best64.rule\` ships with hashcat and is the right default — a small, dense set that catches the common mutations without exploding your runtime. \`dive.rule\` and \`OneRuleToRuleThemAll\` are far larger and find more, at a cost in time. The insight worth keeping: a modest wordlist with a good rule set beats a giant wordlist with none, because the rules generate the mutations a static list can never contain.
+
+## Getting more from the hardware
+
+\`\`\`bash
+hashcat -b                              # benchmark: what your GPU does per hash type
+hashcat -m 1000 -a 0 h.txt w.txt -O     # optimised kernels — faster, caps password length
+hashcat -m 1000 -a 0 h.txt w.txt -w 3   # workload 3: push the GPU harder
+\`\`\`
+
+\`-O\` enables optimised kernels that are meaningfully faster but assume a maximum password length (usually 31 or fewer), so a very long passphrase can be silently skipped — know that trade before you rely on it. \`-w\` sets how aggressively hashcat drives the card; \`-w 3\` is a good default on a dedicated cracking box, lower if you need the machine to stay responsive. And always run \`hashcat -b\` once on new hardware so you know, in advance, whether a given attack against a given hash type will take minutes or years.
+
+## Don't lose a long session
+
+\`\`\`bash
+hashcat -m 1000 -a 0 h.txt w.txt -r rules/best64.rule --session=audit1
+hashcat --session=audit1 --restore     # resume after a stop or reboot
+hashcat -m 1000 h.txt --show           # print already-cracked plaintexts from the potfile
+\`\`\`
+
+Named sessions let you stop and resume a multi-day run, and hashcat records every crack in a *potfile* so re-running the same hashes instantly shows what is already broken rather than redoing the work. \`--show\` reads that potfile — it is how you pull results out at the end.
+
+## Using the results honestly
+
+The output of a cracking session is a list of real people's real passwords, even in a sanctioned audit — it is some of the most sensitive data you will handle. Report the *findings* (how many fell, to what kind of attack, how fast, which policy gaps that reveals), store the plaintexts encrypted, and destroy them when the engagement closes. The point of the exercise is to fix weak passwords, not to keep a trophy list. And, as always: crack only hashes you own or are authorised in writing to test.
+
+## Running hashcat without a GPU rig of your own
+
+Serious cracking wants a real GPU, and building or renting one is the right move for heavy work. For an audit that does not justify the hardware — or to check a policy against a wordlist without provisioning a machine — CyberSec Pro runs hashcat from a browser: you supply the hashes and choose the mode, attack and rules on a form, see the command before it runs, and watch progress stream back. The job runs server-side in a dedicated container, and the hashes you upload are treated as the sensitive material they are — held for the job and never written to logs or backups.
+
+Whichever way you run it, the thinking carries over: identify the hash, respect how fast (or slow) its algorithm is, spend your guesses on rules and shaped masks rather than blind brute force, and handle what you recover like the liability it is.
     `,
   },
 };
