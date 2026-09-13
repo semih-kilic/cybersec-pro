@@ -373,11 +373,7 @@
           "safeHarbor1": "对于符合本政策的报告，我们不会采取法律行动",
           "safeHarbor2": "报告者的身份将予以保密",
           "safeHarbor3": "漏洞修复后将列入名人堂",
-          "safeHarbor4": "禁止在未获书面许可的情况下进行测试",
-          "bountyTable": "漏洞赏金奖励表",
-          "tableLevel": "严重程度",
-          "tableReward": "奖励",
-          "tableExamples": "示例漏洞"
+          "safeHarbor4": "禁止在未获书面许可的情况下进行测试"
         },
         "compliance": {
           "title": "合规框架",
@@ -554,24 +550,6 @@
             "scope": "整个代码仓库的认证、授权、机密管理、API 密钥、多因素认证、单点登录与会话管理",
             "findings": "发现若干控制措施在生产环境中并未真正生效，已重写；其所保护的机密已轮换。每项修复都由回归测试固定下来。",
             "status": "已修复"
-          }
-        ],
-        "bugBountyRewards": [
-          {
-            "severity": "严重",
-            "examples": "远程代码执行、认证绕过、SQL 注入、数据泄露"
-          },
-          {
-            "severity": "高危",
-            "examples": "权限提升、SSRF、存储型 XSS"
-          },
-          {
-            "severity": "中危",
-            "examples": "CSRF、IDOR、信息泄露"
-          },
-          {
-            "severity": "低危",
-            "examples": "反射型 XSS、开放重定向、缺失安全响应头"
           }
         ]
       }

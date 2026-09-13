@@ -1,5 +1,5 @@
 # CyberSec Pro - Project State
-Last updated: 2026-09-12
+Last updated: 2026-09-13
 
 ## Active Development Snapshot
 
@@ -11,7 +11,7 @@ Last updated: 2026-09-12
 - Infra: Postgres, Redis, nginx (publishes port 80 only; Cloudflare Tunnel terminates TLS), web-terminal
 
 ### i18n status
-- **Marketing (`frontend/src/i18n/messages/`)**: `{en,tr,de,fr,es,ar,ja,zh,ru,ko}` — **414 keys, all ten at parity** (completed 2026-09-12). `en.json` is the source of truth; `src/i18n/request.ts` deep-merges to English, so a missing key renders silently in English — **parity must be measured with a key diff, never eyeballed**.
+- **Marketing (`frontend/src/i18n/messages/`)**: `{en,tr,de,fr,es,ar,ja,zh,ru,ko}` — **409 keys, all ten at parity** (2026-09-13). `en.json` is the source of truth; `src/i18n/request.ts` deep-merges to English, so a missing key renders silently in English — **parity must be measured with a key diff, never eyeballed**.
 - **Dashboard (`saas-frontend/src/i18n/locales/`)**: `{en,de,es,fr,it,tr,pt,ru,ja,ko,zh,ar}` — react-i18next with inline English defaults; a string change means editing both the default argument and all locale files. CI gate: `npm run i18n:check` / `i18n:residual`.
 
 ### Frontend CI/Gates Status
@@ -25,6 +25,9 @@ The product must describe itself truthfully. Verified allow/deny list of securit
 - **No HSM, key rotation, WebAuthn, ABAC, WORM, SIEM export, SBOM automation, ML anomaly/IDS-IPS, dedicated instances, or third-party pentest.** Retention is 90 days (scans) / 365 (audit logs).
 - **PGP key is a placeholder** — both Trust Centers gate it behind `PGP_KEY_PUBLISHED = false`; `security.txt` has no `Encryption:` line.
 - Generated report: no false certifications, no fictitious analyst signature, real SHA-256 content digest.
+
+### Dashboard light theme (2026-09-13)
+`scope-dark` is **gone** — six Knowledge/Intel pages used it to stay dark inside a light app, which masked the real defect: dark-first accents (`text-gray-400`, `text-cyan-400`, `text-red-400`) are 1.6–2.6:1 on white. The `html.light` map in `index.css` now inverts the ramp properly (accents `-300→-700`, `-400→-600/-700`) and covers the previously unmapped opacity variants. A browser contrast audit took the Knowledge pages from **243 sub-AA text pairs to 0**. Do not reintroduce `scope-dark`; see CLAUDE.md §17.
 
 ### Key Technical Debt
 1. Purple Team is DB-backed deterministic simulation; production-grade execution telemetry + correlation with real scan findings is still on the roadmap.

@@ -97,13 +97,6 @@ const pentestHistoryBase = [
   { date: "2026-08-29", type: "Full-repository security audit", auditor: "CyberSec Pro Security Team (internal)", reportAvailable: false },
 ];
 
-const bugBountyRewardsBase = [
-  { cvss: "9.0–10.0", reward: "$5,000 – $15,000", color: "#ef4444" },
-  { cvss: "7.0–8.9", reward: "$2,000 – $5,000", color: "#f97316" },
-  { cvss: "4.0–6.9", reward: "$500 – $2,000", color: "#eab308" },
-  { cvss: "0.1–3.9", reward: "$100 – $500", color: "#22c55e" },
-];
-
 const incidentResponseSLA = [
   { priority: "P0 — Critical", detection: "≤ 15 min", response: "≤ 30 min", notification: "≤ 1 hour", resolution: "≤ 4 hours", color: "#ef4444" },
   { priority: "P1 — High", detection: "≤ 30 min", response: "≤ 1 hour", notification: "≤ 4 hours", resolution: "≤ 24 hours", color: "#f97316" },
@@ -149,12 +142,6 @@ export default function SecurityTrustCenter() {
     scope: t(`arrays.pentestHistory.${i}.scope`),
     findings: t(`arrays.pentestHistory.${i}.findings`),
     status: t(`arrays.pentestHistory.${i}.status`)
-  }));
-
-  const bugBountyRewards = bugBountyRewardsBase.map((f, i) => ({
-    ...f,
-    severity: t(`arrays.bugBountyRewards.${i}.severity`),
-    examples: t(`arrays.bugBountyRewards.${i}.examples`)
   }));
 
   return (
@@ -482,43 +469,6 @@ export default function SecurityTrustCenter() {
                       <span>{t("sections.disclosure.safeHarbor4")}</span>
                     </li>
                   </ul>
-                </div>
-              </div>
-
-              {/* Bug Bounty Table */}
-              <div>
-                <h3 className="text-white font-semibold mb-3 flex items-center gap-2">
-                  <span className="flex h-6 w-6 items-center justify-center rounded-full bg-yellow-500/20 text-yellow-400 text-xs font-bold">$</span>
-                  {t("sections.disclosure.bountyTable")}
-                </h3>
-                <div className="overflow-x-auto ml-8">
-                  <table className="w-full text-sm">
-                    <thead>
-                      <tr className="border-b border-white/10">
-                        <th className="text-left py-3 px-2 text-white/70 font-semibold">{t("sections.disclosure.tableLevel")}</th>
-                        <th className="text-left py-3 px-2 text-white/70 font-semibold">CVSS</th>
-                        <th className="text-left py-3 px-2 text-white/70 font-semibold">{t("sections.disclosure.tableReward")}</th>
-                        <th className="text-left py-3 px-2 text-white/70 font-semibold hidden md:table-cell">{t("sections.disclosure.tableExamples")}</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {bugBountyRewards.map((r) => (
-                        <tr key={r.severity} className="border-b border-white/5">
-                          <td className="py-3 px-2">
-                            <span
-                              className="px-2 py-1 rounded text-xs font-bold"
-                              style={{ backgroundColor: `${r.color}20`, color: r.color }}
-                            >
-                              {r.severity}
-                            </span>
-                          </td>
-                          <td className="py-3 px-2 text-white/60 font-mono text-xs">{r.cvss}</td>
-                          <td className="py-3 px-2 text-white font-semibold">{r.reward}</td>
-                          <td className="py-3 px-2 text-white/40 text-xs hidden md:table-cell">{r.examples}</td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
                 </div>
               </div>
             </div>

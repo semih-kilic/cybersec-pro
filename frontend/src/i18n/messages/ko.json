@@ -373,11 +373,7 @@
           "safeHarbor1": "본 정책을 준수한 신고에 대해서는 법적 조치를 취하지 않습니다",
           "safeHarbor2": "신고자의 신원은 비공개로 유지합니다",
           "safeHarbor3": "수정 완료 후 명예의 전당에 등재합니다",
-          "safeHarbor4": "서면 허가 없는 테스트는 금지합니다",
-          "bountyTable": "버그 바운티 보상 기준",
-          "tableLevel": "심각도",
-          "tableReward": "보상",
-          "tableExamples": "해당 사례"
+          "safeHarbor4": "서면 허가 없는 테스트는 금지합니다"
         },
         "compliance": {
           "title": "컴플라이언스 프레임워크",
@@ -554,24 +550,6 @@
             "scope": "저장소 전반의 인증, 인가, 비밀 관리, API 키, MFA, SSO, 세션 관리",
             "findings": "운영 환경에서 실제로 동작하지 않던 통제 몇 가지를 발견해 다시 구현했고, 해당 통제가 보호하던 비밀 값은 교체했습니다. 각 수정은 회귀 테스트로 고정했습니다.",
             "status": "조치 완료"
-          }
-        ],
-        "bugBountyRewards": [
-          {
-            "severity": "치명적",
-            "examples": "원격 코드 실행, 인증 우회, SQL 인젝션, 데이터 유출"
-          },
-          {
-            "severity": "높음",
-            "examples": "권한 상승, SSRF, 저장형 XSS"
-          },
-          {
-            "severity": "보통",
-            "examples": "CSRF, IDOR, 정보 노출"
-          },
-          {
-            "severity": "낮음",
-            "examples": "반사형 XSS, 오픈 리다이렉트, 보안 헤더 누락"
           }
         ]
       }

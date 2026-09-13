@@ -373,11 +373,7 @@
           "safeHarbor1": "No emprenderemos acciones legales por informes que cumplan esta política",
           "safeHarbor2": "La identidad de quien informa se mantiene confidencial",
           "safeHarbor3": "Se añadirá al salón de la fama una vez corregida",
-          "safeHarbor4": "Está prohibido realizar pruebas sin permiso por escrito",
-          "bountyTable": "Tabla de recompensas",
-          "tableLevel": "Gravedad",
-          "tableReward": "Recompensa",
-          "tableExamples": "Ejemplos de hallazgos"
+          "safeHarbor4": "Está prohibido realizar pruebas sin permiso por escrito"
         },
         "compliance": {
           "title": "Marcos de cumplimiento",
@@ -554,24 +550,6 @@
             "scope": "Autenticación, autorización, gestión de secretos, claves de API, MFA, SSO y gestión de sesiones en todo el repositorio",
             "findings": "Varios controles resultaron no funcionar en producción y se reconstruyeron; los secretos que protegían se rotaron. Cada corrección queda fijada por una prueba de regresión.",
             "status": "Corregido"
-          }
-        ],
-        "bugBountyRewards": [
-          {
-            "severity": "Crítica",
-            "examples": "RCE, elusión de autenticación, inyección SQL, fuga de datos"
-          },
-          {
-            "severity": "Alta",
-            "examples": "Escalada de privilegios, SSRF, XSS almacenado"
-          },
-          {
-            "severity": "Media",
-            "examples": "CSRF, IDOR, divulgación de información"
-          },
-          {
-            "severity": "Baja",
-            "examples": "XSS reflejado, redirección abierta, cabeceras ausentes"
           }
         ]
       }

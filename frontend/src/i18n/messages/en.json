@@ -373,11 +373,7 @@
           "safeHarbor1": "No legal action will be taken for reports complying with this policy",
           "safeHarbor2": "Reporter's identity will be kept confidential",
           "safeHarbor3": "Will be added to Hall of Fame after remediation",
-          "safeHarbor4": "Testing without written permission is prohibited",
-          "bountyTable": "Bug Bounty Reward Table",
-          "tableLevel": "Severity",
-          "tableReward": "Reward",
-          "tableExamples": "Example Findings"
+          "safeHarbor4": "Testing without written permission is prohibited"
         },
         "compliance": {
           "title": "Compliance Frameworks",
@@ -554,24 +550,6 @@
             "scope": "Authentication, authorization, secrets handling, API keys, MFA, SSO and session management, across the whole repository",
             "findings": "Several controls were found to be non-functional in production and were rebuilt; the secrets they protected were rotated. Each fix is locked in by a regression test.",
             "status": "Remediated"
-          }
-        ],
-        "bugBountyRewards": [
-          {
-            "severity": "Critical",
-            "examples": "RCE, Authentication Bypass, SQL Injection, Data Breach"
-          },
-          {
-            "severity": "High",
-            "examples": "Privilege Escalation, SSRF, Stored XSS"
-          },
-          {
-            "severity": "Medium",
-            "examples": "CSRF, IDOR, Information Disclosure"
-          },
-          {
-            "severity": "Low",
-            "examples": "Reflected XSS, Open Redirect, Missing Headers"
           }
         ]
       }

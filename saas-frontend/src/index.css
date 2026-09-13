@@ -551,9 +551,11 @@ html.light pre[class*="text-green"] {
 html.light code[class*="text-green"] {
   color: #059669 !important;
 }
-html.light div[role="log"] {
-  background-color: #1e293b !important;
-}
+/* `div[role="log"]` (ScansPage scan output) used to be forced to #1e293b here.
+   That component now uses theme-aware vos tokens — in light mode its own
+   background is #fff and its text is --vos-success #248a3d, so forcing a dark
+   ground produced dark green on dark slate (~1.6:1). The tokens are correct in
+   both themes; the override is obsolete. */
 
 /* Status badges keep their colors */
 html.light .bg-blue-500\/20 { background-color: rgba(59,130,246,0.1) !important; }
@@ -631,77 +633,189 @@ html, body { overflow-y: auto !important; height: auto !important; }
 [data-vos-app] { min-height: 100vh; }
 
 
-/* ── Generic dark-page scope (Knowledge/Intel pages) ─────────────────────
-   Pages designed dark-on-dark must opt out of the html.light overrides.
-   Add className="scope-dark" to the page root container.
 
-   These pages (Threat Intel, Vulnerability DB, Security News, Community,
-   plus the Compliance/Purple Team panels) are authored dark-first: white
-   headings, neon accents, gray-900 cards. The child rules below remap the
-   grays back to dark, but the scope container itself had no background — so
-   in light mode the white headings and the translucent cards floated on the
-   light #f8fafc app background, which is the washed-out look. Painting a real
-   dark surface here restores the dark console these pages were designed to be,
-   with full contrast back. */
-html.light .scope-dark {
-  color: #d1d5db;
-  background-color: #0b1220;
+/* ══════════════════════════════════════════════════════════════════════
+   LIGHT THEME — readable accents & surfaces  (2026-09-13)
+
+   The dashboard is authored dark-first, so colour utilities are picked from
+   the bright end of the Tailwind ramp (text-gray-400, text-cyan-400,
+   text-red-400 …). Those are correct on near-black and far too pale on white:
+   text-green-400 on #fff is 1.8:1, text-yellow-400 is 1.6:1 — well under the
+   4.5:1 WCAG AA needs. That, not the page background, was the "washed out"
+   look on the Knowledge/Intel pages; they used to opt out of light mode
+   entirely via a `.scope-dark` island, which just traded the problem for a
+   dark slab sitting in a light app.
+
+   Instead, invert the ramp honestly: in a dark theme a *lower* number is
+   brighter and therefore more prominent, so in light mode it must become
+   *darker*. -300 → -700, -400 → -600/-700. Every value below is AA on white.
+   ══════════════════════════════════════════════════════════════════════ */
+
+/* ── Muted body text ──────────────────────────────────────────────────
+   Both used to land on #94a3b8 (2.6:1). 170 uses across the dashboard. */
+/* Measured in-browser: values that clear 4.5:1 on pure white can still fail on
+   the faintly tinted card surfaces these actually sit on, so the whole ramp is
+   set with margin. Monotonic, so the visual hierarchy is preserved. */
+html.light .text-gray-200 { color: #3d4859 !important; } /* 8.6:1 */
+html.light .text-gray-300 { color: #475569 !important; } /* 7.4:1 */
+html.light .text-gray-400 { color: #515e70 !important; } /* 6.2:1 */
+html.light .text-gray-500 { color: #5b6878 !important; } /* 5.3:1 */
+
+/* ── Accent text ──────────────────────────────────────────────────────
+   Severity badges, metric values, IOC labels, status pills. */
+html.light .text-red-400     { color: #b91c1c !important; } /* 6.0:1 */
+html.light .text-red-300     { color: #991b1b !important; } /* 7.5:1 */
+html.light .text-green-400   { color: #166534 !important; } /* 6.6:1 */
+html.light .text-green-300   { color: #14532d !important; } /* 8.6:1 */
+html.light .text-emerald-400 { color: #047857 !important; }
+html.light .text-emerald-300 { color: #065f46 !important; }
+html.light .text-yellow-400  { color: #854d0e !important; } /* 6.6:1 */
+html.light .text-yellow-300  { color: #854d0e !important; }
+html.light .text-amber-400   { color: #b45309 !important; }
+html.light .text-orange-400  { color: #c2410c !important; } /* 5.1:1 */
+html.light .text-orange-300  { color: #9a3412 !important; }
+html.light .text-purple-400  { color: #7e22ce !important; } /* 6.0:1 */
+html.light .text-purple-300  { color: #6b21a8 !important; }
+html.light .text-blue-400    { color: #2563eb !important; } /* 5.2:1 */
+html.light .text-blue-300    { color: #1d4ed8 !important; }
+html.light .text-pink-400    { color: #db2777 !important; }
+html.light .text-teal-400    { color: #0f766e !important; }
+html.light .text-indigo-400  { color: #4f46e5 !important; }
+html.light .text-cyan-300    { color: #155e75 !important; }
+/* cyan-400 was already mapped to #0891b2 further up; measured 3.4–3.6:1 on the
+   cyan-tinted chips it is used on, so it is re-pointed here. */
+html.light .text-cyan-400    { color: #0e7490 !important; } /* 5.1:1 */
+
+/* ── Surface & border variants the global map didn't cover ──────────── */
+html.light .bg-gray-900\/80 { background-color: rgba(255,255,255,0.85) !important; }
+html.light .bg-gray-900\/70 { background-color: rgba(255,255,255,0.8) !important; }
+html.light .bg-gray-900\/60 { background-color: rgba(255,255,255,0.75) !important; }
+html.light .bg-gray-900\/40 { background-color: rgba(255,255,255,0.6) !important; }
+html.light .bg-gray-900\/30 { background-color: rgba(248,250,252,0.6) !important; }
+html.light .bg-gray-900\/20 { background-color: rgba(248,250,252,0.45) !important; }
+html.light .bg-gray-800\/20 { background-color: rgba(241,245,249,0.45) !important; }
+html.light .bg-gray-800\/70 { background-color: rgba(241,245,249,0.8) !important; }
+html.light .bg-gray-700\/50 { background-color: rgba(226,232,240,0.6) !important; }
+html.light .bg-gray-500\/20 { background-color: rgba(203,213,225,0.45) !important; }
+html.light .bg-black\/40 { background-color: rgba(241,245,249,0.85) !important; }
+html.light .bg-black\/30 { background-color: rgba(241,245,249,0.7) !important; }
+html.light .bg-black\/20 { background-color: rgba(241,245,249,0.55) !important; }
+html.light .border-gray-700\/40 { border-color: rgba(226,232,240,0.7) !important; }
+html.light .border-gray-700\/30 { border-color: rgba(226,232,240,0.55) !important; }
+html.light .border-gray-800\/50 { border-color: rgba(226,232,240,0.6) !important; }
+html.light .border-gray-500\/30 { border-color: rgba(203,213,225,0.6) !important; }
+html.light .divide-gray-800\/50 > * + * { border-color: rgba(226,232,240,0.7) !important; }
+
+/* ── Light-mode elevation ─────────────────────────────────────────────
+   On white, a 1px hairline alone reads flat, so give the standard dashboard
+   card a soft two-layer shadow and let it lift slightly on hover. Shadow
+   carries the depth; the border stays for edge definition. */
+html.light [class*="rounded-xl"][class*="border-gray-800"],
+html.light [class*="rounded-xl"][class*="border-gray-700"] {
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04),
+              0 4px 12px -2px rgba(15, 23, 42, 0.06);
+  transition: box-shadow 200ms ease, transform 200ms ease;
 }
-/* Full-page consoles (root container is `scope-dark … max-w-7xl`) become a
-   deliberate dark panel rather than a full-bleed slab with light gutters. */
-html.light .scope-dark.max-w-7xl {
-  border: 1px solid #1f2937;
-  border-radius: 16px;
-  box-shadow: 0 12px 32px -16px rgba(2, 6, 23, 0.45);
-  margin-top: 12px;
-  margin-bottom: 24px;
+html.light [class*="rounded-xl"][class*="border-gray-800"]:hover,
+html.light [class*="rounded-xl"][class*="border-gray-700"]:hover {
+  box-shadow: 0 2px 4px rgba(15, 23, 42, 0.06),
+              0 12px 24px -6px rgba(15, 23, 42, 0.10);
 }
-/* scope-dark applied directly to a translucent card (Compliance / Purple Team
-   panels: `scope-dark bg-gray-900/50 border …` all on one element). The global
-   light overrides lighten that element's own utility classes with !important,
-   and the descendant child rules below can't reach the element itself — so
-   re-assert a solid dark card here. Compound selectors (0,3,0) outrank the
-   global (0,2,0) rules. A solid fill (not the dark translucent used inside the
-   full-page consoles) keeps this a crisp dark island on the otherwise light
-   page instead of a muddy grey. */
-html.light .scope-dark.bg-gray-900\/50 { background-color: #111827 !important; }
-html.light .scope-dark.border-gray-800 { border-color: #1f2937 !important; }
-html.light .scope-dark.border-gray-700\/50 { border-color: rgba(55,65,81,0.6) !important; }
-html.light .scope-dark .text-white { color: #ffffff !important; }
-html.light .scope-dark .text-gray-100 { color: #f3f4f6 !important; }
-html.light .scope-dark .text-gray-200 { color: #e5e7eb !important; }
-html.light .scope-dark .text-gray-300 { color: #d1d5db !important; }
-html.light .scope-dark .text-gray-400 { color: #9ca3af !important; }
-html.light .scope-dark .text-gray-500 { color: #6b7280 !important; }
-html.light .scope-dark .bg-gray-950 { background-color: #030712 !important; }
-html.light .scope-dark .bg-gray-900 { background-color: #111827 !important; }
-html.light .scope-dark .bg-gray-900\/95 { background-color: rgba(17,24,39,0.95) !important; }
-html.light .scope-dark .bg-gray-900\/80 { background-color: rgba(17,24,39,0.8) !important; }
-html.light .scope-dark .bg-gray-900\/70 { background-color: rgba(17,24,39,0.7) !important; }
-html.light .scope-dark .bg-gray-900\/60 { background-color: rgba(17,24,39,0.6) !important; }
-html.light .scope-dark .bg-gray-900\/50 { background-color: rgba(17,24,39,0.5) !important; }
-html.light .scope-dark .bg-gray-900\/40 { background-color: rgba(17,24,39,0.4) !important; }
-html.light .scope-dark .bg-gray-900\/30 { background-color: rgba(17,24,39,0.3) !important; }
-html.light .scope-dark .bg-gray-900\/20 { background-color: rgba(17,24,39,0.2) !important; }
-html.light .scope-dark .bg-gray-800 { background-color: #1f2937 !important; }
-html.light .scope-dark .bg-gray-800\/80 { background-color: rgba(31,41,55,0.8) !important; }
-html.light .scope-dark .bg-gray-800\/70 { background-color: rgba(31,41,55,0.7) !important; }
-html.light .scope-dark .bg-gray-800\/60 { background-color: rgba(31,41,55,0.6) !important; }
-html.light .scope-dark .bg-gray-800\/50 { background-color: rgba(31,41,55,0.5) !important; }
-html.light .scope-dark .bg-gray-800\/40 { background-color: rgba(31,41,55,0.4) !important; }
-html.light .scope-dark .bg-gray-800\/30 { background-color: rgba(31,41,55,0.3) !important; }
-html.light .scope-dark .bg-gray-800\/20 { background-color: rgba(31,41,55,0.2) !important; }
-html.light .scope-dark .bg-gray-700 { background-color: #374151 !important; }
-html.light .scope-dark .border-gray-700 { border-color: #374151 !important; }
-html.light .scope-dark .border-gray-800 { border-color: #1f2937 !important; }
-html.light .scope-dark input {
-  background-color: rgba(17,24,39,0.85) !important;
+@media (prefers-reduced-motion: reduce) {
+  html.light [class*="rounded-xl"][class*="border-gray-800"],
+  html.light [class*="rounded-xl"][class*="border-gray-700"] { transition: none; }
+}
+
+/* ── text-white on saturated chrome ───────────────────────────────────
+   The blanket `.text-white -> #1e293b` rule near the top exists for text on
+   neutral surfaces that turn light. On a saturated button or badge it is wrong:
+   it painted dark slate on cyan/orange, e.g. "+ Create Template" at 2.6:1 and
+   the sidebar's own "Upgrade Plan" CTA. Saturated gradients and the 500/600/700
+   solids are dark enough for white text in either theme, so restore it there.
+
+   Element-level only, never a descendant match: a card carrying merely
+   `hover:bg-gradient-to-r`, or a faint `from-yellow-500/10 to-yellow-600/5`
+   tint, is *light* in light mode, and matching its children painted white text
+   on a white card. Hence the hover guard and the `<shade>/` opacity guards.
+   Compound selectors (0,3,0) outrank the (0,2,0) blanket rule. */
+html.light .text-white[class*="bg-gradient-to"]:not([class*="hover:bg-gradient"]):not([class*="400/"]):not([class*="500/"]):not([class*="600/"]),
+html.light .text-white[class*="bg-cyan-500"],
+html.light .text-white[class*="bg-cyan-600"],
+html.light .text-white[class*="bg-cyan-700"],
+html.light .text-white[class*="bg-blue-500"],
+html.light .text-white[class*="bg-blue-600"],
+html.light .text-white[class*="bg-blue-700"],
+html.light .text-white[class*="bg-red-500"],
+html.light .text-white[class*="bg-red-600"],
+html.light .text-white[class*="bg-red-700"],
+html.light .text-white[class*="bg-green-500"],
+html.light .text-white[class*="bg-green-600"],
+html.light .text-white[class*="bg-green-700"],
+html.light .text-white[class*="bg-emerald-500"],
+html.light .text-white[class*="bg-emerald-600"],
+html.light .text-white[class*="bg-purple-600"],
+html.light .text-white[class*="bg-purple-700"],
+html.light .text-white[class*="bg-yellow-600"] {
   color: #ffffff !important;
-  border-color: #374151 !important;
 }
-html.light .scope-dark input::placeholder { color: #6b7280 !important; }
-html.light .scope-dark select {
-  background-color: #1f2937 !important;
-  color: #ffffff !important;
-  border-color: #374151 !important;
-}
+
+/* ── RegisterPage stays a deliberate dark island ──────────────────────
+   `.register-dark` already re-darkens the grays; the accent rules above would
+   otherwise paint dark text on its dark ground, so restore the bright ramp.
+   Higher specificity (0,3,0) beats the (0,2,0) rules above. */
+html.light .register-dark .text-cyan-400   { color: #22d3ee !important; }
+html.light .register-dark .text-cyan-300   { color: #67e8f9 !important; }
+html.light .register-dark .text-red-400    { color: #f87171 !important; }
+html.light .register-dark .text-green-400  { color: #4ade80 !important; }
+html.light .register-dark .text-blue-400   { color: #60a5fa !important; }
+html.light .register-dark .text-blue-300   { color: #93c5fd !important; }
+
+/* ── Long tail of neutral utilities ───────────────────────────────────
+   Found by cross-referencing every neutral utility used in the .tsx against
+   the light-mode map: 65 had no rule, so they rendered their raw dark Tailwind
+   value on a light page. The visible symptom was e.g. the Threat Intel IOC rows
+   (`bg-gray-950/50` = rgba(3,7,18,.5)) showing as mid-grey bars over white. */
+
+/* Dark surfaces → light */
+html.light .bg-gray-950\/80 { background-color: rgba(248,250,252,0.9) !important; }
+html.light .bg-gray-950\/50 { background-color: rgba(248,250,252,0.8) !important; }
+html.light .bg-gray-950\/30 { background-color: rgba(248,250,252,0.6) !important; }
+html.light .bg-gray-700\/30 { background-color: rgba(226,232,240,0.5) !important; }
+html.light .bg-gray-600 { background-color: #e2e8f0 !important; }
+html.light .bg-gray-500 { background-color: #e2e8f0 !important; }
+html.light .bg-gray-500\/10 { background-color: rgba(203,213,225,0.35) !important; }
+html.light .bg-gray-400 { background-color: #cbd5e1 !important; }
+html.light .bg-black { background-color: #f1f5f9 !important; }
+html.light .bg-zinc-950 { background-color: #f8fafc !important; }
+html.light .bg-zinc-900 { background-color: #ffffff !important; }
+html.light .bg-zinc-900\/50 { background-color: rgba(255,255,255,0.7) !important; }
+html.light .bg-zinc-900\/30 { background-color: rgba(248,250,252,0.6) !important; }
+html.light .bg-zinc-800 { background-color: #f1f5f9 !important; }
+
+/* White overlays were subtle lifts on black; on white they vanish, so invert
+   them into equally subtle dark tints. */
+html.light .bg-white\/5  { background-color: rgba(15,23,42,0.04) !important; }
+html.light .bg-white\/10 { background-color: rgba(15,23,42,0.06) !important; }
+html.light .bg-white\/20 { background-color: rgba(15,23,42,0.08) !important; }
+html.light .border-white\/5  { border-color: rgba(15,23,42,0.06) !important; }
+html.light .border-white\/10 { border-color: rgba(15,23,42,0.10) !important; }
+html.light .border-white\/20 { border-color: rgba(15,23,42,0.14) !important; }
+
+/* Dark borders → light */
+html.light .border-gray-900 { border-color: #e2e8f0 !important; }
+html.light .border-gray-800\/60 { border-color: rgba(226,232,240,0.75) !important; }
+html.light .border-gray-700\/60 { border-color: rgba(226,232,240,0.8) !important; }
+html.light .border-gray-600\/50 { border-color: rgba(203,213,225,0.6) !important; }
+html.light .border-gray-600\/30 { border-color: rgba(203,213,225,0.45) !important; }
+html.light .border-zinc-700 { border-color: #e2e8f0 !important; }
+html.light .border-zinc-700\/50 { border-color: rgba(226,232,240,0.6) !important; }
+html.light .divide-gray-700\/50 > * + * { border-color: rgba(226,232,240,0.7) !important; }
+
+/* Dark gradient stops → light. Tailwind's --tw-gradient-stops is composed from
+   these vars, so redefining them re-composes the gradient. */
+html.light .from-gray-900 { --tw-gradient-from: #ffffff !important; }
+html.light .from-gray-800 { --tw-gradient-from: #f8fafc !important; }
+html.light .via-gray-800  { --tw-gradient-via: #f8fafc !important; }
+html.light .via-gray-900  { --tw-gradient-via: #ffffff !important; }
+html.light .to-gray-900   { --tw-gradient-to: #ffffff !important; }
+html.light .to-gray-800   { --tw-gradient-to: #f8fafc !important; }

@@ -373,11 +373,7 @@
           "safeHarbor1": "Aucune action en justice ne sera engagée pour un signalement conforme à cette politique",
           "safeHarbor2": "L'identité de la personne qui signale reste confidentielle",
           "safeHarbor3": "Ajout au tableau d'honneur après correction",
-          "safeHarbor4": "Tout test sans autorisation écrite est interdit",
-          "bountyTable": "Barème des récompenses",
-          "tableLevel": "Gravité",
-          "tableReward": "Récompense",
-          "tableExamples": "Exemples de découvertes"
+          "safeHarbor4": "Tout test sans autorisation écrite est interdit"
         },
         "compliance": {
           "title": "Référentiels de conformité",
@@ -554,24 +550,6 @@
             "scope": "Authentification, autorisation, gestion des secrets, clés d'API, MFA, SSO et gestion des sessions, sur l'ensemble du dépôt",
             "findings": "Plusieurs contrôles se sont révélés inopérants en production et ont été reconstruits ; les secrets qu'ils protégeaient ont été renouvelés. Chaque correction est verrouillée par un test de non-régression.",
             "status": "Corrigé"
-          }
-        ],
-        "bugBountyRewards": [
-          {
-            "severity": "Critique",
-            "examples": "RCE, contournement d'authentification, injection SQL, fuite de données"
-          },
-          {
-            "severity": "Élevée",
-            "examples": "Élévation de privilèges, SSRF, XSS stocké"
-          },
-          {
-            "severity": "Moyenne",
-            "examples": "CSRF, IDOR, divulgation d'informations"
-          },
-          {
-            "severity": "Faible",
-            "examples": "XSS réfléchi, redirection ouverte, en-têtes manquants"
           }
         ]
       }

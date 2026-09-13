@@ -373,11 +373,7 @@
           "safeHarbor1": "Gegen Meldungen, die dieser Richtlinie entsprechen, gehen wir nicht rechtlich vor",
           "safeHarbor2": "Die Identität der meldenden Person wird vertraulich behandelt",
           "safeHarbor3": "Nach der Behebung erfolgt die Aufnahme in die Hall of Fame",
-          "safeHarbor4": "Tests ohne schriftliche Erlaubnis sind untersagt",
-          "bountyTable": "Bug-Bounty-Prämien",
-          "tableLevel": "Schweregrad",
-          "tableReward": "Prämie",
-          "tableExamples": "Beispielhafte Funde"
+          "safeHarbor4": "Tests ohne schriftliche Erlaubnis sind untersagt"
         },
         "compliance": {
           "title": "Compliance-Rahmenwerke",
@@ -554,24 +550,6 @@
             "scope": "Authentifizierung, Autorisierung, Umgang mit Geheimnissen, API-Schlüssel, MFA, SSO und Sitzungsverwaltung im gesamten Repository",
             "findings": "Mehrere Kontrollen erwiesen sich in der Produktion als wirkungslos und wurden neu gebaut; die von ihnen geschützten Geheimnisse wurden rotiert. Jede Korrektur ist durch einen Regressionstest abgesichert.",
             "status": "Behoben"
-          }
-        ],
-        "bugBountyRewards": [
-          {
-            "severity": "Kritisch",
-            "examples": "RCE, Umgehung der Authentifizierung, SQL-Injection, Datenabfluss"
-          },
-          {
-            "severity": "Hoch",
-            "examples": "Rechteausweitung, SSRF, Stored XSS"
-          },
-          {
-            "severity": "Mittel",
-            "examples": "CSRF, IDOR, Informationsoffenlegung"
-          },
-          {
-            "severity": "Niedrig",
-            "examples": "Reflected XSS, Open Redirect, fehlende Header"
           }
         ]
       }

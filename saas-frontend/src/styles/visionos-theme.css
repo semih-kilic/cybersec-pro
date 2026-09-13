@@ -307,7 +307,7 @@ html.light {
   --vos-accent-glow: rgba(0, 102, 204, 0.20);
 
   /* Apple system semantic (light mode) */
-  --vos-success:       #248a3d;
+  --vos-success:       #1b7a38;
   --vos-success-soft:  rgba(36, 138, 61, 0.10);
   --vos-warning:       #b25000;
   --vos-warning-soft:  rgba(178, 80, 0, 0.10);

@@ -373,11 +373,7 @@
           "safeHarbor1": "Bu politikaya uygun raporlar için yasal işlem başlatılmayacaktır",
           "safeHarbor2": "Raporlayan kişinin kimliği gizli tutulacaktır",
           "safeHarbor3": "Düzeltme sonrası Hall of Fame'e eklenecektir",
-          "safeHarbor4": "Yazılı izin olmadan test yapılmamalıdır",
-          "bountyTable": "Bug Bounty Ödül Tablosu",
-          "tableLevel": "Seviye",
-          "tableReward": "Ödül",
-          "tableExamples": "Örnek Bulgular"
+          "safeHarbor4": "Yazılı izin olmadan test yapılmamalıdır"
         },
         "compliance": {
           "title": "Uyumluluk Çerçeveleri",
@@ -554,24 +550,6 @@
             "scope": "Depo genelinde kimlik doğrulama, yetkilendirme, sır yönetimi, API anahtarları, MFA, SSO ve oturum yönetimi",
             "findings": "Üretimde çalışmadığı görülen birkaç kontrol yeniden yazıldı ve korudukları sırlar döndürüldü. Her düzeltme bir regresyon testiyle sabitlendi.",
             "status": "Düzeltildi"
-          }
-        ],
-        "bugBountyRewards": [
-          {
-            "severity": "Kritik",
-            "examples": "RCE, Kimlik Doğrulama Atlama, SQL Injection, Veri Sızıntısı"
-          },
-          {
-            "severity": "Yüksek",
-            "examples": "Yetki Yükseltme, SSRF, Kalıcı XSS"
-          },
-          {
-            "severity": "Orta",
-            "examples": "CSRF, IDOR, Bilgi İfşası"
-          },
-          {
-            "severity": "Düşük",
-            "examples": "Yansıyan XSS, Açık Yönlendirme, Eksik Başlıklar"
           }
         ]
       }

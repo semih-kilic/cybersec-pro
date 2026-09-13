@@ -294,6 +294,7 @@ one, or into `llms.txt`, a report template or a pricing page, check this list.
 | Dedicated instances on Enterprise | no such concept in the backend |
 | Third-party penetration test | planned, never performed. Naming a firm or offering its report is a fabrication |
 | Auto-updated toolchain | nuclei templates update at image build; nothing updates on a schedule |
+| Paid bug bounty program | there is no funded bounty. The Trust Center's "Bug Bounty Reward Table" ($100–$15,000 by severity) was removed 2026-09-13; responsible disclosure stays, the payouts were never real |
 
 **True, and safe to state.** TLS 1.3 with PFS; AES-256-GCM for secrets at rest
 under a key separate from `JWT_SECRET_KEY`; one process per job in a dedicated
@@ -318,7 +319,37 @@ Trust Centers hide the PGP surface behind `PGP_KEY_PUBLISHED = false` and
 the file, flipping both constants and restoring that line — in one commit.
 
 **Marketing i18n.** `frontend/src/i18n/messages/{en,tr,de,fr,es,ar,ja,zh,ru,ko}.json`,
-416 keys, all ten at parity. `en.json` is the source of truth, and
+409 keys, all ten at parity. `en.json` is the source of truth, and
 `src/i18n/request.ts` deep-merges against English, so a missing key silently
 renders in English instead of erroring — parity has to be measured, not
 observed. Verify with the key-diff script pattern, not by looking at a page.
+
+## 17) Dashboard Light Theme (Sep 2026)
+
+The dashboard is authored **dark-first**: pages pick colours from the bright end
+of the Tailwind ramp (`text-gray-400`, `text-cyan-400`, `text-red-400`), which
+is right on near-black and far too pale on white. Light mode is a class-based
+override map (`html.light …`) in `saas-frontend/src/index.css`.
+
+- **There is no `scope-dark` any more.** It was an escape hatch that kept six
+  Knowledge/Intel pages dark inside a light app; it hid the real bug (unreadable
+  accents) behind a dark slab and looked broken next to the light chrome.
+  Removed 2026-09-13 — do not reintroduce it. Fix contrast in the map instead.
+- **Inverting the ramp.** In a dark theme a *lower* Tailwind number is brighter
+  and so more prominent; in light mode it must become *darker*. Accents map
+  `-300 → -700`, `-400 → -600/-700`. Greys run `#1e293b → #5b6878`, monotonic.
+- **Measure, don't eyeball.** Values that clear 4.5:1 on pure white can fail on
+  the faintly tinted cards they actually sit on. The audit that drove this walks
+  every text node, composites the real effective background (including alpha
+  layers), and reports sub-AA pairs. It took the Knowledge pages 243 → 0.
+- **Two traps that produced invisible text.** (1) `html.light .text-white →
+  #1e293b` is for neutral surfaces; on a saturated button it painted dark slate
+  on cyan (2.6:1), so saturated gradients/solids restore white — **element-level
+  only**, never a descendant match, because a card carrying just
+  `hover:bg-gradient-to-r` or a `from-yellow-500/10` tint is *light*, and
+  matching its children put white text on a white card. (2) Unmapped opacity
+  variants render their raw dark value: `bg-gray-950/50` showed as grey bars over
+  white. Cross-check used utilities against the map when adding a page.
+- `.register-dark` (RegisterPage) is the one remaining deliberate dark island and
+  carries its own accent restorations.
+

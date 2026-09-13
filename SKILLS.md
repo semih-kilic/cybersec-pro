@@ -10,7 +10,7 @@ There are **two** locale trees; they use different i18n libraries and different 
 - next-intl, 10 locales, `en.json` is the source of truth.
 - **Trap:** `src/i18n/request.ts` deep-merges every locale against English, so a missing key renders silently *as English* — a half-translated locale looks fine on the page. Coverage must be **measured**, never eyeballed.
 - Flow: author `en` (and `tr`) first → translate the block into the other locales → **verify with a flatten-and-diff script** over the JSON files (`en` key set minus each locale) → build → check the built page shows the localized string, not the English fallback.
-- Current status: **414 keys, all ten at parity** (2026-09-12).
+- Current status: **409 keys, all ten at parity** (2026-09-13; 414 → 409 when the unbacked bug-bounty reward table was removed).
 
 ### Dashboard — `saas-frontend/src/i18n/locales/{en,de,es,fr,it,tr,pt,ru,ja,ko,zh,ar}.json`
 - react-i18next with inline English defaults in the TSX. Changing a string means editing **both** the `t('key', 'English default')` argument **and** every locale JSON.

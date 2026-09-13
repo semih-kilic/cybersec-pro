@@ -1,7 +1,15 @@
 import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useSearchParams } from 'react-router-dom';
+import { motion, AnimatePresence } from 'framer-motion';
+import { ChevronDown } from 'lucide-react';
 import { FoundingMemberBanner } from '../../components/FoundingMemberBanner';
+
+/** Features shown before the rest collapse behind "More (+N)".
+ *  Plans list 6–14 features; without a cap the Enterprise card is three times
+ *  the height of Free and the five plans can't share one row. Mirrors the
+ *  marketing site's PricingSection (VISIBLE_LIMIT = 5). */
+const VISIBLE_FEATURES = 5;
 
 interface PlanFeature {
   name: string;
@@ -117,6 +125,124 @@ const PLANS: Plan[] = [
     ],
   },
 ];
+
+/** One pricing card. Extracted so each can own its expand/collapse state —
+ *  a hook can't live inside the .map() that renders the row. */
+function PlanCard({
+  plan,
+  price,
+  originalPrice,
+  savings,
+  monthlyEquiv,
+  billingPeriod,
+  ctaLabel,
+  onSelect,
+}: {
+  plan: Plan;
+  price: number;
+  originalPrice?: number;
+  savings: number;
+  monthlyEquiv: number;
+  billingPeriod: 'month' | 'year';
+  ctaLabel: string;
+  onSelect: () => void;
+}) {
+  const [expanded, setExpanded] = useState(false);
+
+  const visible = plan.features.slice(0, VISIBLE_FEATURES);
+  const extra = plan.features.slice(VISIBLE_FEATURES);
+  const needsCollapse = extra.length > 0;
+
+  const renderFeature = (feature: PlanFeature, idx: number) => (
+    <li key={`${feature.name}-${idx}`} className="plan-card__feature">
+      <span
+        className={`plan-card__feature-icon plan-card__feature-icon--${
+          feature.included ? 'included' : 'excluded'
+        }`}
+      >
+        {feature.included ? '✓' : '—'}
+      </span>
+      {feature.name}
+    </li>
+  );
+
+  return (
+    <div className={`plan-card ${plan.highlighted ? 'plan-card--highlighted' : ''}`}>
+      {plan.badge && <div className="plan-card__badge">{plan.badge}</div>}
+      <div className="plan-card__urgency">{plan.urgencyText || ' '}</div>
+      <h3 className="plan-card__name">{plan.name}</h3>
+      <div className="plan-card__price-block">
+        {originalPrice && (
+          <span className="plan-card__original-price">${originalPrice}</span>
+        )}
+        <span className="plan-card__price">${price}</span>
+        <span className="plan-card__interval">
+          /{billingPeriod === 'year' ? 'year' : 'month'}
+        </span>
+      </div>
+      <div className="plan-card__yearly-note">
+        {billingPeriod === 'year' && price > 0 ? (
+          <>
+            <span>
+              That's just <strong>${monthlyEquiv}/mo</strong>
+            </span>
+            {savings > 0 && (
+              <>
+                {' '}
+                <span className="plan-card__yearly-savings">Save ${savings}/year</span>
+              </>
+            )}
+          </>
+        ) : (
+          <span>&nbsp;</span>
+        )}
+      </div>
+
+      <ul className="plan-card__features">{visible.map(renderFeature)}</ul>
+
+      <AnimatePresence initial={false}>
+        {needsCollapse && expanded && (
+          <motion.div
+            key="extra-features"
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: 'auto', opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            transition={{ duration: 0.28, ease: 'easeInOut' }}
+            style={{ overflow: 'hidden' }}
+          >
+            <ul className="plan-card__features plan-card__features--extra">
+              {extra.map(renderFeature)}
+            </ul>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {needsCollapse && (
+        <button
+          type="button"
+          className="plan-card__more"
+          onClick={() => setExpanded((v) => !v)}
+          aria-expanded={expanded}
+        >
+          <ChevronDown
+            size={14}
+            className={`plan-card__more-icon ${expanded ? 'plan-card__more-icon--open' : ''}`}
+          />
+          {expanded ? 'Show less' : `More (+${extra.length})`}
+        </button>
+      )}
+
+      <button
+        className={`plan-card__cta ${
+          plan.highlighted ? 'plan-card__cta--primary' : 'plan-card__cta--secondary'
+        }`}
+        onClick={onSelect}
+      >
+        {ctaLabel}
+      </button>
+    </div>
+  );
+}
 
 export default function UpgradePage() {
   const { t } = useTranslation();
@@ -287,7 +413,7 @@ export default function UpgradePage() {
         }
         .upgrade-page__subtitle {
           font-size: 16px;
-          color: #64748b;
+          color: #515e70;
           margin: 0 0 24px;
         }
         .billing-toggle {
@@ -308,7 +434,7 @@ export default function UpgradePage() {
           cursor: pointer;
           transition: all 0.2s;
           background: transparent;
-          color: #64748b;
+          color: #515e70;
           position: relative;
         }
         .billing-toggle__btn--active {
@@ -333,13 +459,27 @@ export default function UpgradePage() {
           margin-top: 4px;
           margin-bottom: 24px;
         }
+        /* Every plan shares one row so prices can be compared at a glance.
+           auto-flow:column + auto-columns:1fr gives each card its own equal
+           column whatever the count (the Founding card drops out once the
+           spots are gone), and stretch keeps the row a single height so the
+           bottom-pinned CTAs line up. */
         .upgrade-page__grid {
           display: grid;
-          grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
-          gap: 24px;
-          /* stretch, not start: every card fills its row height so the whole
-             row is one height and the bottom-pinned CTAs line up */
+          grid-auto-flow: column;
+          grid-auto-columns: minmax(0, 1fr);
+          gap: 16px;
           align-items: stretch;
+        }
+        /* Below the width where five columns stay legible, fall back to a
+           wrapping grid rather than crushing the cards. */
+        @media (max-width: 1180px) {
+          .upgrade-page__grid {
+            grid-auto-flow: row;
+            grid-auto-columns: auto;
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            gap: 20px;
+          }
         }
         .plan-card {
           /* flex column so the CTA can be pushed to the bottom (margin-top:auto)
@@ -350,10 +490,18 @@ export default function UpgradePage() {
           height: 100%;
           background: #ffffff;
           border: 1px solid #e2e8f0;
-          border-radius: 12px;
-          padding: 32px 24px;
+          border-radius: 14px;
+          /* tighter than the old 32/24 so five columns breathe */
+          padding: 28px 18px;
           position: relative;
-          transition: box-shadow 0.2s, transform 0.2s;
+          transition: box-shadow 0.25s ease, transform 0.25s ease, border-color 0.25s ease;
+        }
+        .plan-card:hover {
+          transform: translateY(-4px);
+        }
+        @media (prefers-reduced-motion: reduce) {
+          .plan-card { transition: none; }
+          .plan-card:hover { transform: none; }
         }
         .plan-card:hover {
           box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
@@ -393,7 +541,7 @@ export default function UpgradePage() {
           margin-bottom: 4px;
         }
         .plan-card__name {
-          font-size: 20px;
+          font-size: 18px;
           font-weight: 700;
           color: #0f172a;
           margin: 0 0 16px;
@@ -404,26 +552,27 @@ export default function UpgradePage() {
           margin-bottom: 4px;
         }
         .plan-card__price {
-          font-size: 40px;
+          font-size: 32px;
           font-weight: 800;
           color: #0f172a;
         }
         .plan-card__original-price {
-          font-size: 18px;
-          color: #94a3b8;
+          font-size: 15px;
+          /* measured 2.56:1 at #94a3b8 — struck-through, but still has to be read */
+          color: #515e70;
           text-decoration: line-through;
           margin-right: 8px;
           font-weight: 400;
         }
         .plan-card__interval {
           font-size: 14px;
-          color: #64748b;
+          color: #515e70;
           font-weight: 400;
         }
         .plan-card__yearly-note {
           text-align: center;
           font-size: 13px;
-          color: #64748b;
+          color: #515e70;
           margin-bottom: 20px;
           min-height: 20px;
         }
@@ -439,14 +588,41 @@ export default function UpgradePage() {
         .plan-card__features {
           list-style: none;
           padding: 0;
-          margin: 0 0 24px;
+          margin: 0 0 10px;
+        }
+        .plan-card__features--extra {
+          margin: 0 0 10px;
+        }
+        /* "More (+N)" / "Show less" disclosure, mirroring the marketing site */
+        .plan-card__more {
+          align-self: flex-start;
+          display: inline-flex;
+          align-items: center;
+          gap: 6px;
+          margin: 0 0 18px;
+          padding: 0;
+          background: none;
+          border: none;
+          cursor: pointer;
+          font-size: 13px;
+          font-weight: 600;
+          /* orange-500 on white is 2.8:1; orange-700 is 5.1:1 */
+          color: #c2410c;
+          transition: opacity 0.2s ease;
+        }
+        .plan-card__more:hover { opacity: 0.75; }
+        .plan-card__more-icon { transition: transform 0.3s ease; }
+        .plan-card__more-icon--open { transform: rotate(180deg); }
+        @media (prefers-reduced-motion: reduce) {
+          .plan-card__more-icon { transition: none; }
         }
         .plan-card__feature {
           display: flex;
           align-items: center;
           gap: 10px;
-          padding: 8px 0;
-          font-size: 14px;
+          padding: 7px 0;
+          font-size: 13px;
+          line-height: 1.45;
           color: #334155;
         }
         .plan-card__feature-icon {
@@ -521,7 +697,7 @@ export default function UpgradePage() {
         }
         .checkout-modal__subtitle {
           font-size: 14px;
-          color: #64748b;
+          color: #515e70;
           margin: 0 0 24px;
         }
         .checkout-modal__summary {
@@ -612,73 +788,25 @@ export default function UpgradePage() {
       </div>
 
       <div className="upgrade-page__grid">
-        {PLANS.filter((p) => p.id !== 'founding_member' || foundingAvailable).map((plan) => {
-          const price = getPrice(plan);
-          const originalPrice = getOriginalPrice(plan);
-          const savings = getYearlySavings(plan);
-          const monthlyEquiv = getMonthlyEquivalent(plan);
-
-          return (
-            <div
-              key={plan.id}
-              className={`plan-card ${plan.highlighted ? 'plan-card--highlighted' : ''}`}
-            >
-              {plan.badge && (
-                <div className="plan-card__badge">{plan.badge}</div>
-              )}
-              <div className="plan-card__urgency">{plan.urgencyText || ' '}</div>
-              <h3 className="plan-card__name">{plan.name}</h3>
-              <div className="plan-card__price-block">
-                {originalPrice && (
-                  <span className="plan-card__original-price">
-                    ${originalPrice}
-                  </span>
-                )}
-                <span className="plan-card__price">
-                  ${price}
-                </span>
-                <span className="plan-card__interval">
-                  /{billingPeriod === 'year' ? 'year' : 'month'}
-                </span>
-              </div>
-              <div className="plan-card__yearly-note">
-                {billingPeriod === 'year' && price > 0 ? (
-                  <>
-                    <span>That's just <strong>${monthlyEquiv}/mo</strong></span>
-                    {savings > 0 && (
-                      <>
-                        {' '}
-                        <span className="plan-card__yearly-savings">
-                          Save ${savings}/year
-                        </span>
-                      </>
-                    )}
-                  </>
-                ) : (
-                  <span>&nbsp;</span>
-                )}
-              </div>
-              <ul className="plan-card__features">
-                {plan.features.map((feature, idx) => (
-                  <li key={idx} className="plan-card__feature">
-                    <span
-                      className={`plan-card__feature-icon plan-card__feature-icon--${feature.included ? 'included' : 'excluded'}`}
-                    >
-                      {feature.included ? '✓' : '—'}
-                    </span>
-                    {feature.name}
-                  </li>
-                ))}
-              </ul>
-              <button
-                className={`plan-card__cta ${plan.highlighted ? 'plan-card__cta--primary' : 'plan-card__cta--secondary'}`}
-                onClick={() => handleSelectPlan(plan.id)}
-              >
-                {plan.id === 'free' ? 'Current Plan' : plan.highlighted ? 'Claim Founding Spot' : 'Select Plan'}
-              </button>
-            </div>
-          );
-        })}
+        {PLANS.filter((p) => p.id !== 'founding_member' || foundingAvailable).map((plan) => (
+          <PlanCard
+            key={plan.id}
+            plan={plan}
+            price={getPrice(plan)}
+            originalPrice={getOriginalPrice(plan)}
+            savings={getYearlySavings(plan)}
+            monthlyEquiv={getMonthlyEquivalent(plan)}
+            billingPeriod={billingPeriod}
+            ctaLabel={
+              plan.id === 'free'
+                ? 'Current Plan'
+                : plan.highlighted
+                ? 'Claim Founding Spot'
+                : 'Select Plan'
+            }
+            onSelect={() => handleSelectPlan(plan.id)}
+          />
+        ))}
       </div>
 
       {showCheckout && selectedPlanData && (
@@ -709,7 +837,7 @@ export default function UpgradePage() {
                 <span>
                   ${getPrice(selectedPlanData)}
                   {selectedPlanData.id !== 'free' && (
-                    <span style={{ fontWeight: 400, fontSize: 13, color: '#64748b' }}>
+                    <span style={{ fontWeight: 400, fontSize: 13, color: '#515e70' }}>
                       {' '}/ {billingPeriod === 'year' ? 'year' : 'month'}
                     </span>
                   )}
