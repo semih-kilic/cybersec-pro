@@ -16,7 +16,6 @@ export interface BlogPost {
   slug: string;
   title: string;
   category: string;
-  readTime: number;
   date: string;
   author: string;
   excerpt: string;
@@ -45,7 +44,6 @@ export const BLOG_POSTS: Record<string, BlogPost> = {
     slug: "mastering-wireshark",
     title: "Mastering Wireshark: Network Traffic Analysis Deep Dive",
     category: "Tools",
-    readTime: 12,
     date: "2026-01-15",
     author: "Semih Kilic",
     excerpt: "Advanced packet capture and analysis techniques — from protocol dissection to identifying malicious traffic patterns in real-time.",
@@ -134,7 +132,6 @@ Mastering Wireshark requires practice and understanding of network protocols. St
     slug: "hashcat-vs-john",
     title: "Hashcat vs John the Ripper: Password Cracking Compared",
     category: "Tools",
-    readTime: 10,
     date: "2026-01-12",
     author: "Semih Kilic",
     excerpt: "GPU-accelerated password recovery showdown. Benchmarks, rule-based attacks, and choosing the right tool for the job.",
@@ -204,7 +201,6 @@ Both tools are essential in a penetration tester's arsenal. Use Hashcat for raw 
     slug: "owasp-top-10-2026",
     title: "OWASP Top 10 in 2026: What's Changed",
     category: "Security",
-    readTime: 12,
     date: "2026-01-08",
     author: "Semih Kilic",
     excerpt: "An updated look at the most critical web application security risks and how to mitigate them with modern tools.",
@@ -259,7 +255,6 @@ Stay ahead of threats by continuously testing your applications against the late
     slug: "metasploit-zero-to-exploit",
     title: "Getting Started with Metasploit: Architecture, Workflow and Meterpreter",
     category: "Tutorials",
-    readTime: 15,
     date: "2026-01-05",
     author: "Semih Kilic",
     excerpt: "Hands-on walkthrough of the Metasploit Framework — modules, payloads, encoders, and post-exploitation techniques.",
@@ -339,7 +334,6 @@ Metasploit is an incredibly powerful framework. Master it in a controlled lab en
     slug: "ci-cd-pentest-automation",
     title: "Automating Penetration Tests with CI/CD",
     category: "DevSecOps",
-    readTime: 10,
     date: "2026-01-03",
     author: "Semih Kilic",
     excerpt: "Integrate security testing into your development pipeline with CyberSec Pro's API and GitHub Actions.",
@@ -404,7 +398,6 @@ DevSecOps is not optional — it's essential. Start small with automated depende
     slug: "wireless-security-assessment",
     title: "Wireless Security Assessment Best Practices",
     category: "Wireless",
-    readTime: 9,
     date: "2025-12-15",
     author: "Semih Kilic",
     excerpt: "Comprehensive guide to testing Wi-Fi network security using aircrack-ng, wifite, and bettercap.",
@@ -485,7 +478,6 @@ Regular wireless security assessments are essential for any organization. Combin
     slug: "sqlmap-injection-guide",
     title: "SQLMap: Automated SQL Injection Testing Guide",
     category: "Tools",
-    readTime: 15,
     date: "2026-03-10",
     author: "Semih Kilic",
     excerpt: "Complete guide to using SQLMap for automated SQL injection detection and exploitation.",
@@ -538,59 +530,192 @@ SQLMap is essential for web application security testing. Master its capabilitie
     slug: "nmap-network-scanning",
     title: "Nmap: Complete Network Scanning & Discovery Guide",
     category: "Tools",
-    readTime: 14,
     date: "2026-02-28",
     author: "Semih Kilic",
-    excerpt: "Master Nmap for network discovery, port scanning, service detection, and OS fingerprinting.",
+    excerpt: "Why your scan found nothing, what the six port states actually mean, and the two-pass workflow that scales past one host. With real output from a host we control.",
     tags: ["nmap", "network-scanning", "port-scanning", "reconnaissance"],
     content: `
-## Introduction
+## What Nmap is actually telling you
 
-Nmap (Network Mapper) is the industry standard for network discovery and security auditing. Every security professional must master Nmap.
+Nmap sends packets and reports what came back. That sounds obvious, and it is the single most useful thing to keep in mind, because every line of output is an *inference* drawn from a response — or from the absence of one. A port marked \`open\` means a probe got an acknowledgement. A port marked \`filtered\` means nothing came back at all, and Nmap cannot tell you whether that is a firewall, a dropped packet, or a host that stopped answering because you scanned it too fast.
 
-## Basic Scanning
+Most bad scan results come from forgetting this. The tool is not reading the target's configuration; it is guessing from the outside, and it will tell you how confident it is if you read carefully.
 
-- **Quick scan:** nmap target.com
-- **All ports:** nmap -p- target.com
-- **Specific ports:** nmap -p 22,80,443 target.com
-- **Port range:** nmap -p 1-1000 target.com
+## Your first scan, and what the default quietly leaves out
 
-## Service Detection
+\`\`\`
+nmap scanme.nmap.org
+\`\`\`
 
-- **Version detection:** nmap -sV target.com
-- **Aggressive scan:** nmap -A target.com
-- **HTTP servers:** nmap --script http-server-header target.com
+That scans **1,000 TCP ports**, not 65,535. They are the thousand ports Nmap's authors found most often open in a large internet survey, and they catch the overwhelming majority of real services. They also miss the interesting ones: an admin panel on 8443, a forgotten Redis on 6379, a debug listener someone left on 31337.
 
-## Scan Techniques
+So the default is the right first scan and the wrong last one:
 
-- **SYN scan (stealth):** nmap -sS target.com
-- **TCP connect:** nmap -sT target.com
-- **UDP scan:** nmap -sU target.com
-- **Null scan:** nmap -sN target.com
+\`\`\`
+# Every TCP port. Slower, and the one that finds the surprises.
+nmap -p- target.example.com
 
-## NSE Scripts
+# A middle ground — the 3,000 most common.
+nmap --top-ports 3000 target.example.com
 
-- **Default scripts:** nmap -sC target.com
-- **Vuln scan:** nmap --script vuln target.com
-- **HTTP enum:** nmap --script http-enum target.com
-- **SSL check:** nmap --script ssl-enum-ciphers target.com
+# Exactly what you care about.
+nmap -p 22,80,443,8080,8443 target.example.com
+\`\`\`
 
-## Output Formats
+If you only ever run one command against a host you are responsible for, make it \`-p-\`. Every "we didn't know that was exposed" incident starts with a scan that stopped at 1,000.
 
-- **Normal:** nmap -oN scan.txt target.com
-- **XML:** nmap -oX scan.xml target.com
-- **Grepable:** nmap -oG scan.grep target.com
+## When a scan finds nothing: host discovery
 
-## Conclusion
+Before touching a single port, Nmap decides whether the host is even up. On a local network that is an ARP request; across the internet it is a mix of ICMP echo, a TCP ACK to 80, a SYN to 443, and an ICMP timestamp request. If none of those come back, Nmap declares the host down and **never scans it**.
 
-Nmap is the foundation of network security testing. Practice in your own lab and always obtain proper authorization.
+Plenty of production hosts drop all of it. That produces the most common false conclusion in network scanning: "the host is down", when it is serving traffic perfectly well.
+
+\`\`\`
+# Skip discovery. Treat the host as up and scan it regardless.
+nmap -Pn target.example.com
+
+# The opposite: discovery only, no port scan. A fast inventory sweep.
+nmap -sn 10.0.0.0/24
+\`\`\`
+
+\`-sn\` over a /24 is the fastest honest answer to "what is actually on this network". Run it first, then scan what it finds.
+
+## Choosing a scan type
+
+\`\`\`
+nmap -sS target    # SYN scan — needs root
+nmap -sT target    # TCP connect — works unprivileged
+nmap -sU target    # UDP — a different animal entirely
+\`\`\`
+
+**\`-sS\`** sends a SYN, waits for the SYN/ACK, and sends a RST instead of completing the handshake. It is the default *when you have privileges*, because it is faster and because the connection never completes, so many applications never log it. It needs raw sockets, which means root or \`CAP_NET_RAW\`.
+
+**\`-sT\`** asks the operating system to open a real connection. It works without privileges and it is what Nmap silently falls back to if you forget \`sudo\`. The handshake completes, so the target's application logs see a connection from you. If you are scanning without privileges and wondering why the target noticed, this is why.
+
+**\`-sU\`** is the one people skip, and skipping it is how DNS, SNMP, NTP and IKE stay invisible in reports. UDP has no handshake: a closed port answers with ICMP port-unreachable, an open port usually answers with nothing at all — which looks identical to a firewall drop. Nmap has to wait out a timeout on every non-responsive port, and Linux rate-limits the ICMP replies it depends on. A full UDP scan of 65,535 ports can genuinely take hours. Scope it:
+
+\`\`\`
+nmap -sU --top-ports 100 target.example.com
+\`\`\`
+
+## Six port states, not two
+
+This is where most reports go wrong. Nmap has six states and people read only two of them.
+
+| State | What it means |
+|---|---|
+| \`open\` | Something is listening and it answered |
+| \`closed\` | The host answered and refused — the host is up, nothing is on that port |
+| \`filtered\` | Nothing came back. A firewall is probably dropping your probe |
+| \`unfiltered\` | Reachable, but Nmap cannot tell open from closed (ACK scans) |
+| \`open\\|filtered\` | No answer, and for this scan type that is ambiguous (common on UDP) |
+| \`closed\\|filtered\` | Ambiguity between closed and filtered (idle scans) |
+
+\`closed\` and \`filtered\` are not synonyms, and the difference matters more than it looks. A host that returns \`closed\` for 999 ports and \`filtered\` for one is telling you that one port is being deliberately protected — which is usually the interesting one. A host that returns \`filtered\` for everything is behind a default-deny firewall and your scan is measuring the firewall, not the host.
+
+## Version detection is a guess, with a confidence level
+
+\`\`\`
+nmap -sV target.example.com
+nmap -sV --version-intensity 9 target.example.com   # try every probe
+nmap -A target.example.com                          # -sV, -sC, -O and traceroute
+\`\`\`
+
+\`-sV\` connects and compares what the service says against a fingerprint database of thousands of signatures. When the service is chatty, the result is excellent. When it isn't, the result is thin — and thin is the correct answer, not a failure.
+
+Here is a scan against a host we control, so we can compare the output to the configuration behind it:
+
+\`\`\`
+PORT     STATE  SERVICE       VERSION
+80/tcp   open   http          nginx
+3389/tcp open   ms-wbt-server Microsoft Terminal Service
+\`\`\`
+
+Nginx is reported with no version at all. That is not Nmap giving up — it is \`server_tokens off\` in the nginx configuration, which strips the version from the \`Server\` header. Nmap reported exactly as much as the service was willing to say. If you are on the defending side, that line is what a hardened banner is supposed to look like.
+
+\`-A\` is the convenient bundle: version detection, the default script set, OS detection and a traceroute. It is also loud and slow. Use it when you have already decided a host is worth the attention, not as your opening move.
+
+## NSE: the part that gets skipped
+
+The Nmap Scripting Engine is where the tool stops being a port scanner. Roughly 600 scripts ship with it, grouped into categories.
+
+\`\`\`
+nmap -sC target                           # the "default" category
+nmap --script vuln target                 # known-vulnerability checks
+nmap --script ssl-enum-ciphers -p 443 t   # every cipher suite the TLS stack offers
+nmap --script http-enum -p 80,443 target  # common paths and admin panels
+nmap --script smb-os-discovery -p 445 t   # Windows host details over SMB
+\`\`\`
+
+Two categories deserve care. \`safe\` scripts do not crash services or use significant bandwidth. \`intrusive\` ones might — and \`vuln\` pulls in a number of them. \`--script vuln\` against a production box during business hours is a real way to cause an outage you will have to explain. Read what a script does before you point it at something you do not own:
+
+\`\`\`
+nmap --script-help ssl-enum-ciphers
+\`\`\`
+
+## Speed, and what you trade for it
+
+\`\`\`
+nmap -T4 target                    # a sensible default on a good network
+nmap --min-rate 1000 target        # at least 1,000 packets per second
+nmap -p- --min-rate 5000 target    # all 65,535 ports, fast, on a LAN
+\`\`\`
+
+\`-T0\` through \`-T5\` set timing templates. \`-T4\` is the usual choice; \`-T5\` is aggressive enough that on a congested link or through a rate-limiting firewall it will start **missing open ports** — Nmap gives up on a retransmit before the answer arrives. A fast scan that misses a service is worse than a slow one, because you will write "not exposed" in a report and be wrong.
+
+\`--min-rate\` is the more honest control: it sets a packet rate floor rather than a vague aggression level, and it makes your scans reproducible. If you are scanning across the internet rather than a LAN, start lower and watch for a rising \`filtered\` count — that is the signal you are being rate-limited and your results are degrading.
+
+## Output you can actually use later
+
+\`\`\`
+nmap -oA scan-2026-09-13 target.example.com
+\`\`\`
+
+\`-oA\` writes all three formats at once: \`.nmap\` (what you saw on screen), \`.gnmap\` (one line per host, for \`grep\` and \`awk\`), and \`.xml\`.
+
+Take the XML seriously. It is the format every other tool reads — report generators, \`ndiff\`, and anything that wants structured findings. And with two scans you can diff them:
+
+\`\`\`
+ndiff monday.xml friday.xml
+\`\`\`
+
+That output — what opened, what closed, what changed version between two dates — is more useful to most organisations than any single scan. A port that appeared on Friday is an event. A port that was there both times is inventory.
+
+## A workflow that scales past one host
+
+For anything bigger than a single machine, scan in two passes.
+
+\`\`\`
+# 1. Who is alive?
+nmap -sn 10.0.0.0/16 -oG alive.gnmap
+grep "Status: Up" alive.gnmap | awk '{print $2}' > live-hosts.txt
+
+# 2. What is on them? Fast and wide first.
+nmap -iL live-hosts.txt -p- --min-rate 2000 -oA wide
+
+# 3. Version and script detail, only on the ports you actually found.
+nmap -iL live-hosts.txt -p 22,80,443,3306,8080 -sV -sC -oA deep
+\`\`\`
+
+The mistake is running \`-A -p-\` against a whole range in one go. It takes days, it is loud enough to generate tickets, and it produces one enormous file nobody reads. Wide-and-shallow, then narrow-and-deep, gets the same information in a fraction of the time.
+
+## Before you scan anything
+
+Port scanning a host you do not own or have written permission to test is unlawful in many jurisdictions, and "I was only looking" has not been a successful defence. Get authorisation in writing, keep the scope in the document, and stay inside it. \`scanme.nmap.org\` exists precisely so that people can practise legally — the Nmap project maintains it for that purpose, and asks that you not hammer it.
+
+On your own infrastructure, none of this applies and you should be scanning it regularly. The asset you do not know about is the one that gets you.
+
+## Running this without the local setup
+
+Everything above runs on an Nmap install you maintain yourself, and that is a perfectly good way to work. If you would rather not maintain it, CyberSec Pro runs Nmap — with the flags above, on a generated form, with the command shown before it executes — from a browser, and streams the output as it arrives. The scan runs server-side in a dedicated container, one process per job, and the result is stored so you can diff it against the next one.
+
+Either way, the thinking is the same: know what the states mean, scan the whole port range at least once, and never trust a scan that was faster than the network.
     `,
   },
   "metasploit-exploitation": {
     slug: "metasploit-exploitation",
     title: "Metasploit Modules, Payloads and the Exploitation Workflow",
     category: "Tools",
-    readTime: 18,
     date: "2026-02-15",
     author: "Semih Kilic",
     excerpt: "Complete walkthrough of Metasploit Framework — module types, exploit development, and post-exploitation.",
@@ -644,7 +769,6 @@ Metasploit is powerful but must be used responsibly. Master the basics in a lab 
     slug: "hashcat-password-cracking",
     title: "Hashcat: GPU-Accelerated Password Cracking Mastery",
     category: "Tools",
-    readTime: 16,
     date: "2026-01-28",
     author: "Semih Kilic",
     excerpt: "Advanced Hashcat techniques for password auditing — hash modes, rule-based attacks, and optimization.",

@@ -175,9 +175,21 @@ function renderMarkdown(md: string): string {
     .replace(/\*(.*?)\*/g, '<em>$1</em>')
     .replace(/```(\w*)\n([\s\S]*?)```/g, '<pre><code class="language-$1">$2</code></pre>')
     .replace(/`(.*?)`/g, '<code>$1</code>')
-    .replace(/^\| (.+) \|$/gm, (match) => {
+    .replace(/^\|(.+)\|$/gm, (match) => {
       const cells = match.split('|').filter(c => c.trim()).map(c => c.trim());
       return '<tr>' + cells.map(c => c.match(/^[-:]+$/) ? '' : `<td>${c}</td>`).join('') + '</tr>';
+    })
+    // Drop the |---|---| separator row, which the cell filter above leaves as
+    // an empty <tr>, then wrap each run of rows in a real <table>. Without the
+    // wrapper the browser's parser discards stray <tr>/<td> tags and the cells
+    // run together as one paragraph — which is what every markdown table in a
+    // post did, despite the prose-table/th/td styles on the container.
+    .replace(/^<tr>(?:<td>[-:]+<\/td>)*<\/tr>\n?/gm, '')
+    .replace(/(?:^<tr>.*<\/tr>$\n?)+/gm, (block) => {
+      const [first, ...rest] = block.match(/<tr>.*?<\/tr>/g) || [];
+      if (!first) return block;
+      const head = first.replace(/<td>/g, '<th>').replace(/<\/td>/g, '</th>');
+      return `<table><thead>${head}</thead><tbody>${rest.join('')}</tbody></table>\n`;
     })
     .replace(/^- (.*$)/gm, '<li>$1</li>')
     .replace(/^(\d+)\. (.*$)/gm, '<li>$2</li>')
@@ -185,6 +197,5 @@ function renderMarkdown(md: string): string {
     .replace(/\n\n/g, '</p><p>')
     .replace(/^(?!<[hupoltd])/gm, '')
     .replace(/<p><\/p>/g, '')
-    .replace(/<tr><td>[-:]+<\/td>.*?<\/tr>/g, '')
     ;
 }
