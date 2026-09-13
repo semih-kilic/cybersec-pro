@@ -4,26 +4,22 @@ This file defines practical, repeatable workflows for this repository.
 
 ## 1) i18n Translation Skill
 
-Target:
-- `saas-frontend/src/i18n/locales/{en,de,es,fr,it}.json`
+There are **two** locale trees; they use different i18n libraries and different workflows.
 
-Current status:
-- Parity pass completed (`49/49` scopes, `0` same-as-English residual keys)
-- Ongoing work is maintenance mode (prevent drift)
+### Marketing site — `frontend/src/i18n/messages/{en,tr,de,fr,es,ar,ja,zh,ru,ko}.json`
+- next-intl, 10 locales, `en.json` is the source of truth.
+- **Trap:** `src/i18n/request.ts` deep-merges every locale against English, so a missing key renders silently *as English* — a half-translated locale looks fine on the page. Coverage must be **measured**, never eyeballed.
+- Flow: author `en` (and `tr`) first → translate the block into the other locales → **verify with a flatten-and-diff script** over the JSON files (`en` key set minus each locale) → build → check the built page shows the localized string, not the English fallback.
+- Current status: **414 keys, all ten at parity** (2026-09-12).
 
-Flow:
-1. Pick one scope from `en.json`.
-2. Read same scope in all locales.
-3. Translate user-facing strings in `de/es/fr/it`.
-4. Keep technical placeholders stable when appropriate.
-5. Run `npm run i18n:check` and fix syntax/coverage issues.
-6. Run `npm run i18n:residual` before merging locale changes.
+### Dashboard — `saas-frontend/src/i18n/locales/{en,de,es,fr,it,tr,pt,ru,ja,ko,zh,ar}.json`
+- react-i18next with inline English defaults in the TSX. Changing a string means editing **both** the `t('key', 'English default')` argument **and** every locale JSON.
+- Flow: pick a scope in `en.json` → translate user-facing strings in each locale → keep technical placeholders/IDs stable → `npm run i18n:check` and `npm run i18n:residual`.
 
-Quality checks:
-- no broken JSON
-- no accidental key drift
-- no untranslated user-facing high-visibility labels
-- keep proper nouns/technical tokens intentional and consistent
+Quality checks (both trees):
+- no broken JSON, no accidental key drift
+- no untranslated high-visibility labels (measure, don't assume)
+- proper nouns / technical tokens intentional and consistent
 
 ## 2) Rust API Implementation Skill
 

@@ -1,61 +1,47 @@
 # CyberSec Pro - Project State
-Last updated: 2026-04-21
+Last updated: 2026-09-12
 
 ## Active Development Snapshot
 
 ### Platform
-- Main API: `rust-backend` (Axum, port 5001)
+- Main API: `rust-backend` (Axum, port 5001, `sqlx 0.8`)
+- Scan engine: `rust-scan-engine` (port 5002) — **integrated** in `docker-compose.yml`, reached only from the backend over `SCAN_ENGINE_URL`, never from the edge
 - SaaS app: `saas-frontend` (React + Vite)
-- Marketing app: `frontend` (Next.js 16)
-- Standalone scan engine exists but is not integrated into compose runtime
+- Marketing app: `frontend` (Next.js 16, static export, `[locale]` routing, 10 locales)
+- Infra: Postgres, Redis, nginx (publishes port 80 only; Cloudflare Tunnel terminates TLS), web-terminal
 
-### Current i18n Progress (`saas-frontend`)
-- Locales: `en`, `de`, `es`, `fr`, `it`
-- Completed scopes: 49 / 49
-- Remaining keys: 0
-- Latest completed scopes: `sso`, `tools`, `toolsCatalog`, `serviceManager`, `landing`, `overview`, `admin`, `integrations`, `team`, `privacy`
-- Status: Locale parity pass complete (no same-as-English residuals vs `en` baseline)
+### i18n status
+- **Marketing (`frontend/src/i18n/messages/`)**: `{en,tr,de,fr,es,ar,ja,zh,ru,ko}` — **414 keys, all ten at parity** (completed 2026-09-12). `en.json` is the source of truth; `src/i18n/request.ts` deep-merges to English, so a missing key renders silently in English — **parity must be measured with a key diff, never eyeballed**.
+- **Dashboard (`saas-frontend/src/i18n/locales/`)**: `{en,de,es,fr,it,tr,pt,ru,ja,ko,zh,ar}` — react-i18next with inline English defaults; a string change means editing both the default argument and all locale files. CI gate: `npm run i18n:check` / `i18n:residual`.
 
 ### Frontend CI/Gates Status
-- Frontend workflow runs with npm (`npm ci`) and npm scripts, aligned with `saas-frontend/package-lock.json`.
-- Enforced frontend gates:
-	- `npm run i18n:check`
-	- `npm run i18n:residual`
-	- `npm run type-check`
-	- `npm run test:purple-flow`
-	- `npm run build`
-- Current local parity checks: passing (i18n, type-check, Purple Team flow tests, and production build).
+- `saas-frontend`: npm-based (`npm ci`), gates `i18n:check`, `i18n:residual`, `type-check`, `test:purple-flow`, `build`. Vitest suite currently 60/60.
+- Real-browser smoke tests: `scripts/browser-smoke/marketing.mjs` (52/52 clean) and `dashboard.mjs` (needs `SMOKE_JWT`). Not yet wired into CI.
+
+### Honesty baseline (2026-09) — do not regress
+The product must describe itself truthfully. Verified allow/deny list of security claims is **CLAUDE.md §16**. Established facts:
+- **No WebSocket server.** Scan output is SSE (`scan_handlers::scan_output_stream`). Never write "WebSocket" in user copy.
+- **Canonical tool count is 88** (active + curated), not the ~1,510 catalogue rows. Keep every surface consistent.
+- **No HSM, key rotation, WebAuthn, ABAC, WORM, SIEM export, SBOM automation, ML anomaly/IDS-IPS, dedicated instances, or third-party pentest.** Retention is 90 days (scans) / 365 (audit logs).
+- **PGP key is a placeholder** — both Trust Centers gate it behind `PGP_KEY_PUBLISHED = false`; `security.txt` has no `Encryption:` line.
+- Generated report: no false certifications, no fictitious analyst signature, real SHA-256 content digest.
 
 ### Key Technical Debt
-1. Purple Team endpoints now provide a DB-backed minimal flow (`chains`, `playbooks`, `mitre`, `dashboard`, `create`, `list`, `detail`); remaining debt is production-grade execution and telemetry.
-2. Billing/Stripe is still partially stubbed.
-3. `rust-scan-engine` integration path is pending.
-4. SQLx version mismatch (`0.8` vs `0.7`) remains unresolved.
+1. Purple Team is DB-backed deterministic simulation; production-grade execution telemetry + correlation with real scan findings is still on the roadmap.
+2. Billing/Stripe flow is partially stubbed (webhooks + portal work; broader flow incomplete).
+3. Blog posts are strong now but the platform has no CMS — content lives in `frontend/src/lib/blog-content.ts`.
+4. `dashboard.mjs` smoke test and Brotli at the edge remain un-wired (both low priority).
 
-### Recent Backend Progress (2026-04-21)
-- Added static Purple Team chain/playbook catalogs and MITRE matrix response.
-- Replaced in-memory exercise state with `purple_team_exercises` PostgreSQL persistence and DB-driven dashboard/list/detail.
-- Added automatic lifecycle progression in Purple Team reads (`pending -> running -> completed`) with payload/metric sync.
-- Enriched completed Purple Team payload simulation with step timeline, blue-team alerts, gap-analysis details, and MITRE coverage-map entries.
-- Added chain/target-aware detection profile so completion metrics vary by exercise scenario instead of fixed ratios.
-- Added environment-variable controls for Purple Team detection profile tuning without code changes.
-- Added `PURPLE_TEAM_PROFILE_JSON` override support (nested/flat keys) with precedence over individual tuning env vars.
-- Added admin-only runtime profile management endpoint (`/api/v1/settings/purple-team/profile`) backed by `purple_team_profiles` table.
-- Purple Team lifecycle now reads organization profile from DB first, then falls back to `PURPLE_TEAM_PROFILE_JSON`, then `PURPLE_TEAM_DETECT_*` env vars.
-- Added unit tests for purple-team exercise payload shape and chain/default builder behavior in `rust-backend/src/handlers/stub_handlers.rs`.
-
-### Recent Frontend Progress (2026-04-21)
-- Added and stabilized admin Purple Team runtime profile flow:
-	- admin-only settings tab
-	- dashboard tuning summary for admins
-	- bidirectional deep-links between dashboard and settings
-- Added role/guard tests:
-	- `src/pages/dashboard/__tests__/PurpleTeamAdminFlow.test.tsx`
-	- `src/pages/dashboard/__tests__/SettingsPageRoleVisibility.test.tsx`
-- Fixed dashboard compile regressions caused by missing `t` bindings in helper components and `useDocumentTitle` ordering issues.
-- Removed unused deprecated terminal dependencies from `saas-frontend` (`xterm`, `xterm-addon-fit`, `xterm-addon-web-links`) and cleaned stale Vite chunk mapping.
+### Recent Progress (2026-09-11 → 2026-09-12)
+- **AI discoverability**: removed origin + Cloudflare AI-crawler blocks; generated `sitemap.xml` (1,130 URLs, hreflang, 0 dead), `llms.txt`/`llms-full.txt`, IndexNow submission, per-tool + pricing structured data; fixed React #418 (Cloudflare email obfuscation) via `frontend/src/components/Email.tsx`.
+- **Honesty audit**: corrected both Trust Centers, the `/security` page, the hero badge, and the report generator (see baseline above); documented in CLAUDE.md §16.
+- **Marketing i18n**: brought 8 locales from ~50% to 414/414; built a real pricing page mirroring `plan.rs`.
+- **Blog**: all 10 posts rewritten to 1,200–1,900 words, verified against installed tools; `renderMarkdown` table rendering fixed.
+- **Tool params**: unified in `saas-frontend/src/lib/toolFormParams.ts` (21 tests) — fixed unmasked credential fields and the missing target-types panel on the scan page.
+- **Feed hardening**: `news_feed.rs` rejects non-http(s) links (3 tests); deleted dead `TestimonialsSection`.
 
 ### Working Conventions
-- Scope-based translation workflow for i18n.
-- Validate locale integrity immediately after edit batches.
+- Verify a claim against the code (file + line) before writing it into any user-facing surface.
+- After a frontend build, `nginx -t && nginx -s reload` (60s `open_file_cache` serves the old index.html otherwise). `dist/`/`out/` are gitignored — verify the deployed chunk, not the `.tsx`.
+- Reach the origin with `curl -H "Host: <host>" http://127.0.0.1/...` (TLS terminates at the edge).
 - Keep docs synced to real manifests (`Cargo.toml`, `package.json`, `docker-compose.yml`).
