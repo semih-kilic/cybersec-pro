@@ -337,9 +337,17 @@ export default function UpgradePage() {
           display: grid;
           grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
           gap: 24px;
-          align-items: start;
+          /* stretch, not start: every card fills its row height so the whole
+             row is one height and the bottom-pinned CTAs line up */
+          align-items: stretch;
         }
         .plan-card {
+          /* flex column so the CTA can be pushed to the bottom (margin-top:auto)
+             and every card's button sits on the same line regardless of how many
+             features the plan lists */
+          display: flex;
+          flex-direction: column;
+          height: 100%;
           background: #ffffff;
           border: 1px solid #e2e8f0;
           border-radius: 12px;
@@ -377,6 +385,10 @@ export default function UpgradePage() {
           color: #dc2626;
           font-size: 13px;
           font-weight: 600;
+          line-height: 17px;
+          /* rendered on every card (as &nbsp; when the plan has no urgency line)
+             so the plan name and price row start at the same height across cards */
+          min-height: 17px;
           margin-top: 8px;
           margin-bottom: 4px;
         }
@@ -457,6 +469,9 @@ export default function UpgradePage() {
         }
         .plan-card__cta {
           width: 100%;
+          /* margin-top:auto absorbs the height difference between plans, pinning
+             every CTA to the bottom edge of its (equal-height) card */
+          margin-top: auto;
           padding: 12px;
           border-radius: 8px;
           font-size: 15px;
@@ -611,9 +626,7 @@ export default function UpgradePage() {
               {plan.badge && (
                 <div className="plan-card__badge">{plan.badge}</div>
               )}
-              {plan.urgencyText && (
-                <div className="plan-card__urgency">{plan.urgencyText}</div>
-              )}
+              <div className="plan-card__urgency">{plan.urgencyText || ' '}</div>
               <h3 className="plan-card__name">{plan.name}</h3>
               <div className="plan-card__price-block">
                 {originalPrice && (
