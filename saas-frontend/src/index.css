@@ -66,12 +66,21 @@ body {
   -moz-osx-font-smoothing: grayscale;
 }
 
-/* Remove default button styles */
-button {
-  border: none;
-  background: none;
-  cursor: pointer;
-  font-family: inherit;
+/* Remove default button styles.
+   MUST stay inside @layer base. Unlayered rules beat *every* layered rule
+   regardless of specificity, so as a bare `button {}` this reset silently
+   cancelled `background-color` on every Tailwind bg-* utility applied to a
+   <button> — `bg-vos-accent`, `bg-vos-danger` and friends computed to
+   rgba(0,0,0,0) in both themes. Dark mode hid it (white label on a dark page
+   still reads); light mode exposed it as white-on-white. Inside the base layer
+   the utilities layer wins, which is the intended order. */
+@layer base {
+  button {
+    border: none;
+    background: none;
+    cursor: pointer;
+    font-family: inherit;
+  }
 }
 
 /* Remove default link styles */
@@ -514,16 +523,25 @@ html.light select[class*="bg-gray-900"] {
 }
 
 /* Buttons */
-html.light button[class*="bg-gray-800"]:not([class*="bg-gray-800/"]) {
+html.light button[class*="bg-gray-800"]:not([class*="bg-gray-800/"]):not([class*="disabled:bg-gray-800"]) {
   background-color: #e2e8f0 !important;
   color: #334155 !important;
 }
 html.light button[class*="bg-gray-800"]:hover {
   background-color: #cbd5e1 !important;
 }
-html.light button[class*="bg-gray-700"] {
+/* `[class*="bg-gray-700"]` also matches the substring inside
+   `disabled:bg-gray-700`, which greyed out *enabled* buttons that merely
+   declare a disabled style — Terminal's cyan "Connect" rendered #cbd5e1 with
+   white text at 1.5:1. Match the real utility only, and style the actual
+   disabled state separately. */
+html.light button[class*="bg-gray-700"]:not([class*="disabled:bg-gray-700"]) {
   background-color: #cbd5e1 !important;
   color: #334155 !important;
+}
+html.light button[class*="disabled:bg-gray-"]:disabled {
+  background-color: #e2e8f0 !important;
+  color: #64748b !important;
 }
 
 /* Modal backdrop */
@@ -755,8 +773,31 @@ html.light .text-white[class*="bg-emerald-500"],
 html.light .text-white[class*="bg-emerald-600"],
 html.light .text-white[class*="bg-purple-600"],
 html.light .text-white[class*="bg-purple-700"],
-html.light .text-white[class*="bg-yellow-600"] {
+html.light .text-white[class*="bg-yellow-600"],
+/* Design-system / custom accents. bg-kali-blue and bg-vos-accent alone account
+   for ~70 white-on-accent buttons (Settings "Save Changes", Projects "New
+   Project", Schedule "Schedule Scan"). vos-skin-overrides already sets
+   `color: var(--vos-text-on-accent)` on these, but it is imported *before* the
+   html.light block, so at equal specificity the blanket rule won on source
+   order. Light-mode --vos-accent is #0066cc (white = 5.6:1) and --vos-danger
+   #d70015 (5.4:1), so white is the correct colour here. */
+html.light .text-white[class*="bg-kali-blue"],
+html.light .text-white[class*="bg-kali-purple"],
+html.light .text-white[class*="bg-vos-accent"],
+html.light .text-white[class*="bg-vos-danger"],
+html.light .text-white[class*="bg-sky-500"],
+html.light .text-white[class*="bg-sky-600"],
+html.light .text-white[class*="bg-[#0077b5]"],
+html.light .text-white[class*="bg-[#006399]"] {
   color: #ffffff !important;
+}
+/* One exception: a button that declares `disabled:bg-gray-700` swaps its
+   saturated fill for a light grey when disabled (Terminal's "Connect"), so
+   white would sit on #e2e8f0 at 1.5:1. Buttons that merely dim with
+   opacity-50 keep their fill, and must keep white — hence keying on the
+   `disabled:bg-` class rather than on :disabled alone. (0,4,0) > (0,3,0). */
+html.light .text-white[class*="disabled:bg-"]:disabled {
+  color: #1e293b !important;
 }
 
 /* ── RegisterPage stays a deliberate dark island ──────────────────────
@@ -819,3 +860,59 @@ html.light .via-gray-800  { --tw-gradient-via: #f8fafc !important; }
 html.light .via-gray-900  { --tw-gradient-via: #ffffff !important; }
 html.light .to-gray-900   { --tw-gradient-to: #ffffff !important; }
 html.light .to-gray-800   { --tw-gradient-to: #f8fafc !important; }
+
+/* ── Genuinely dark widgets ───────────────────────────────────────────
+   A terminal emulator and a dark dropdown stay dark in light mode by design
+   (the console is `bg-[#0d0d0d]`, the language menu `bg-[#0b1220]`). The accent
+   inversion above is for text on light surfaces, so inside these it produced
+   dark-on-near-black — the terminal prompt measured 2.7:1. Restore the bright
+   ramp here. This is scoped to two specific widgets, not whole pages: unlike
+   the old `scope-dark`, a console that stays dark is a deliberate, conventional
+   choice rather than a page opting out of the theme. */
+html.light .bg-\[\#0d0d0d\],
+html.light .bg-\[\#0b1220\] { color: #d1d5db; }
+html.light .bg-\[\#0d0d0d\] .text-white,
+html.light .bg-\[\#0b1220\] .text-white { color: #ffffff !important; }
+html.light .bg-\[\#0d0d0d\] .text-gray-300,
+html.light .bg-\[\#0b1220\] .text-gray-300 { color: #d1d5db !important; }
+html.light .bg-\[\#0d0d0d\] .text-gray-400,
+html.light .bg-\[\#0b1220\] .text-gray-400 { color: #9ca3af !important; }
+html.light .bg-\[\#0d0d0d\] .text-gray-500,
+html.light .bg-\[\#0b1220\] .text-gray-500 { color: #8b93a1 !important; }
+html.light .bg-\[\#0d0d0d\] .text-green-400,
+html.light .bg-\[\#0b1220\] .text-green-400 { color: #4ade80 !important; }
+html.light .bg-\[\#0d0d0d\] .text-green-300 { color: #86efac !important; }
+html.light .bg-\[\#0d0d0d\] .text-cyan-400,
+html.light .bg-\[\#0b1220\] .text-cyan-400 { color: #22d3ee !important; }
+html.light .bg-\[\#0d0d0d\] .text-cyan-300 { color: #67e8f9 !important; }
+html.light .bg-\[\#0d0d0d\] .text-red-400 { color: #f87171 !important; }
+html.light .bg-\[\#0d0d0d\] .text-yellow-400 { color: #facc15 !important; }
+html.light .bg-\[\#0d0d0d\] .text-blue-400 { color: #60a5fa !important; }
+/* ...and their inner surfaces, or the global map whitens the terminal's own
+   `bg-gray-900` header while the island darkens its text (measured 2.5:1). */
+html.light .bg-\[\#0d0d0d\] .bg-gray-900,
+html.light .bg-\[\#0b1220\] .bg-gray-900 { background-color: #111827 !important; }
+html.light .bg-\[\#0d0d0d\] .bg-gray-800,
+html.light .bg-\[\#0b1220\] .bg-gray-800 { background-color: #1f2937 !important; }
+html.light .bg-\[\#0d0d0d\] .bg-gray-700 { background-color: #374151 !important; }
+html.light .bg-\[\#0d0d0d\] .border-gray-800,
+html.light .bg-\[\#0b1220\] .border-gray-800 { border-color: #1f2937 !important; }
+html.light .bg-\[\#0d0d0d\] .border-gray-700 { border-color: #374151 !important; }
+
+/* ── Dark-mode accent FILL vs accent TEXT ─────────────────────────────
+   --vos-accent (#0a84ff) has to do two jobs: it tints accent *text* on a near
+   black ground, and it fills primary buttons that carry white labels. Those
+   pull opposite ways — white on #0a84ff is 3.65:1, but darkening the token
+   itself dropped accent text to unreadable (measured: 36 -> 137 failures).
+   So darken only the fill. Dark is the default theme, hence :not(.light). */
+html:not(.light) .bg-vos-accent,
+html:not(.light) .bg-kali-blue,
+html:not(.light) .bg-kali-purple,
+html:not(.light) .bg-cyan-600,
+html:not(.light) .bg-cyan-700,
+html:not(.light) .bg-sky-500,
+html:not(.light) .bg-sky-600 {
+  /* !important: vos-skin-overrides sets these to var(--vos-accent) !important */
+  background-color: #0064c8 !important;
+}
+html:not(.light) .bg-vos-danger { background-color: #c1121f !important; }

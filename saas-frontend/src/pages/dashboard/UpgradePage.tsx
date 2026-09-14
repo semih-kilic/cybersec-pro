@@ -751,6 +751,46 @@ export default function UpgradePage() {
         .checkout-modal__btn--cancel:hover {
           background: #e2e8f0;
         }
+        /* The block above is written for a light surface (white cards, #0f172a
+           headings). Dark is the DEFAULT theme, where that left the title and
+           subtitle dark-on-dark (measured 1.18:1) and the cards floating as
+           white slabs. Re-point the surfaces for it. */
+        html:not(.light) .upgrade-page__title { color: #f8fafc; }
+        html:not(.light) .upgrade-page__subtitle,
+        html:not(.light) .upgrade-page__savings-note { color: #94a3b8; }
+        html:not(.light) .plan-card {
+          background: #111827;
+          border-color: #1f2937;
+        }
+        html:not(.light) .plan-card__name,
+        html:not(.light) .plan-card__price { color: #f8fafc; }
+        html:not(.light) .plan-card__interval,
+        html:not(.light) .plan-card__yearly-note { color: #9ca3af; }
+        html:not(.light) .plan-card__original-price { color: #9ca3af; }
+        html:not(.light) .plan-card__urgency { color: #f87171; }
+        html:not(.light) .plan-card__yearly-savings { background: #064e3b; color: #6ee7b7; }
+        html:not(.light) .plan-card__feature { color: #d1d5db; }
+        html:not(.light) .plan-card__feature-icon--included { background: #064e3b; color: #6ee7b7; }
+        html:not(.light) .plan-card__feature-icon--excluded { background: #1f2937; color: #4b5563; }
+        html:not(.light) .plan-card__more { color: #fb923c; }
+        html:not(.light) .plan-card__cta--secondary {
+          background: #1f2937;
+          color: #e5e7eb;
+          border-color: #374151;
+        }
+        html:not(.light) .plan-card__cta--secondary:hover { background: #374151; }
+        html:not(.light) .billing-toggle { background: #1f2937; }
+        html:not(.light) .billing-toggle__btn { color: #9ca3af; }
+        html:not(.light) .billing-toggle__btn--active { background: #374151; color: #f8fafc; }
+        html:not(.light) .checkout-modal { background: #111827; }
+        html:not(.light) .checkout-modal__title { color: #f8fafc; }
+        html:not(.light) .checkout-modal__subtitle { color: #9ca3af; }
+        html:not(.light) .checkout-modal__summary { background: #1f2937; }
+        html:not(.light) .checkout-modal__row { color: #d1d5db; }
+        html:not(.light) .checkout-modal__row--total { color: #f8fafc; border-top-color: #374151; }
+        html:not(.light) .checkout-modal__btn--cancel {
+          background: #1f2937; color: #e5e7eb; border-color: #374151;
+        }
         .checkout-modal__secure {
           text-align: center;
           font-size: 12px;
